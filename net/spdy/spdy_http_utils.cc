@@ -40,8 +40,6 @@ bool SpdyHeadersToHttpResponse(const SpdyHeaderBlock& headers,
     return false;
   version = it->second;
 
-  response->response_time = base::Time::Now();
-
   std::string raw_headers(version);
   raw_headers.push_back(' ');
   raw_headers.append(status);

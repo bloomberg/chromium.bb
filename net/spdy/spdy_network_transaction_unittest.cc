@@ -3223,133 +3223,6 @@ TEST_P(SpdyNetworkTransactionTest, RedirectGetRequest) {
   EXPECT_TRUE(data2.at_write_eof());
 }
 
-// Detect response with upper case headers and reset the stream.
-TEST_P(SpdyNetworkTransactionTest, UpperCaseHeaders) {
-  if (GetParam().protocol > kProtoSPDY3)
-    return;
-
-  scoped_ptr<SpdyFrame> syn(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
-  MockWrite writes[] = {
-    CreateMockWrite(*syn, 0),
-    CreateMockWrite(*rst, 2),
-  };
-
-  const char* const kExtraHeaders[] = {"X-UpperCase", "yes"};
-  scoped_ptr<SpdyFrame>
-      reply(spdy_util_.ConstructSpdyGetSynReply(kExtraHeaders, 1, 1));
-  MockRead reads[] = {
-    CreateMockRead(*reply, 1),
-    MockRead(ASYNC, ERR_IO_PENDING, 3),  // Force a pause
-  };
-
-  HttpResponseInfo response;
-  HttpResponseInfo response2;
-  OrderedSocketData data(reads, arraysize(reads),
-                         writes, arraysize(writes));
-  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
-                                     BoundNetLog(), GetParam(), NULL);
-  helper.RunToCompletion(&data);
-  TransactionHelperResult out = helper.output();
-  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, out.rv);
-}
-
-// Detect response with upper case headers in a HEADERS frame and reset the
-// stream.
-TEST_P(SpdyNetworkTransactionTest, UpperCaseHeadersInHeadersFrame) {
-  if (GetParam().protocol > kProtoSPDY3)
-    return;
-
-  scoped_ptr<SpdyFrame> syn(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
-  MockWrite writes[] = {
-    CreateMockWrite(*syn, 0),
-    CreateMockWrite(*rst, 2),
-  };
-
-  scoped_ptr<SpdyHeaderBlock> initial_headers(new SpdyHeaderBlock());
-  (*initial_headers)[spdy_util_.GetStatusKey()] = "200 OK";
-  (*initial_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
-  scoped_ptr<SpdyFrame> stream1_reply(
-      spdy_util_.ConstructSpdyControlFrame(initial_headers.Pass(),
-                                           false,
-                                           1,
-                                           LOWEST,
-                                           SYN_REPLY,
-                                           CONTROL_FLAG_NONE,
-                                           0));
-
-  scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
-  (*late_headers)["X-UpperCase"] = "yes";
-  scoped_ptr<SpdyFrame> stream1_headers(
-      spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
-                                           false,
-                                           1,
-                                           LOWEST,
-                                           HEADERS,
-                                           CONTROL_FLAG_NONE,
-                                           0));
-  scoped_ptr<SpdyFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  MockRead reads[] = {
-    CreateMockRead(*stream1_reply),
-    CreateMockRead(*stream1_headers),
-    CreateMockRead(*stream1_body),
-    MockRead(ASYNC, 0, 0)  // EOF
-  };
-
-  DelayedSocketData data(1, reads, arraysize(reads),
-                         writes, arraysize(writes));
-  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
-                                     BoundNetLog(), GetParam(), NULL);
-  helper.RunToCompletion(&data);
-  TransactionHelperResult out = helper.output();
-  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, out.rv);
-}
-
-// Detect push stream with upper case headers and reset the stream.
-TEST_P(SpdyNetworkTransactionTest, UpperCaseHeadersOnPush) {
-  if (GetParam().protocol > kProtoSPDY3)
-    return;
-
-  scoped_ptr<SpdyFrame> syn(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
-  scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
-  MockWrite writes[] = {
-    CreateMockWrite(*syn, 0),
-    CreateMockWrite(*rst, 2),
-  };
-
-  scoped_ptr<SpdyFrame>
-      reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  const char* const extra_headers[] = {"X-UpperCase", "yes"};
-  scoped_ptr<SpdyFrame>
-      push(spdy_util_.ConstructSpdyPush(
-          extra_headers, 1, 2, 1, "http://www.google.com"));
-  scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
-  MockRead reads[] = {
-    CreateMockRead(*reply, 1),
-    CreateMockRead(*push, 1),
-    CreateMockRead(*body, 1),
-    MockRead(ASYNC, ERR_IO_PENDING, 3),  // Force a pause
-  };
-
-  HttpResponseInfo response;
-  HttpResponseInfo response2;
-  OrderedSocketData data(reads, arraysize(reads),
-                         writes, arraysize(writes));
-  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
-                                     BoundNetLog(), GetParam(), NULL);
-  helper.RunToCompletion(&data);
-  TransactionHelperResult out = helper.output();
-  EXPECT_EQ(OK, out.rv);
-}
-
 // Send a spdy request to www.google.com. Get a pushed stream that redirects to
 // www.foo.com.
 TEST_P(SpdyNetworkTransactionTest, RedirectServerPush) {
@@ -6202,11 +6075,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   ReadResult(trans, &data, &result);
 
   // Verify that the received push data is same as the expected push data.
-  EXPECT_EQ(result2.compare(expected_push_result), 0)
-      << "Received data: "
-      << result2
-      << "||||| Expected data: "
-      << expected_push_result;
+  EXPECT_EQ(expected_push_result, result2);
 
   // Verify the SYN_REPLY.
   // Copy the response info, because trans goes away.
@@ -6467,57 +6336,6 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyWithLateHeaders) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
-}
-
-TEST_P(SpdyNetworkTransactionTest, SynReplyWithDuplicateLateHeaders) {
-  if (GetParam().protocol > kProtoSPDY3)
-    return;
-
-  scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
-  MockWrite writes[] = { CreateMockWrite(*req) };
-
-  scoped_ptr<SpdyHeaderBlock> initial_headers(new SpdyHeaderBlock());
-  (*initial_headers)[spdy_util_.GetStatusKey()] = "200 OK";
-  (*initial_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
-  scoped_ptr<SpdyFrame> stream1_reply(
-      spdy_util_.ConstructSpdyControlFrame(initial_headers.Pass(),
-                                           false,
-                                           1,
-                                           LOWEST,
-                                           SYN_REPLY,
-                                           CONTROL_FLAG_NONE,
-                                           0));
-
-  scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
-  (*late_headers)[spdy_util_.GetStatusKey()] = "500 Server Error";
-  scoped_ptr<SpdyFrame> stream1_headers(
-      spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
-                                           false,
-                                           1,
-                                           LOWEST,
-                                           HEADERS,
-                                           CONTROL_FLAG_NONE,
-                                           0));
-  scoped_ptr<SpdyFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, false));
-  scoped_ptr<SpdyFrame> stream1_body2(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  MockRead reads[] = {
-    CreateMockRead(*stream1_reply),
-    CreateMockRead(*stream1_body),
-    CreateMockRead(*stream1_headers),
-    CreateMockRead(*stream1_body2),
-    MockRead(ASYNC, 0, 0)  // EOF
-  };
-
-  DelayedSocketData data(1, reads, arraysize(reads),
-                         writes, arraysize(writes));
-  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
-                                     BoundNetLog(), GetParam(), NULL);
-  helper.RunToCompletion(&data);
-  TransactionHelperResult out = helper.output();
-  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, out.rv);
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {

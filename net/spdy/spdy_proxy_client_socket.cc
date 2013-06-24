@@ -439,27 +439,25 @@ void SpdyProxyClientSocket::OnRequestHeadersSent() {
   OnIOComplete(OK);
 }
 
-int SpdyProxyClientSocket::OnResponseHeadersReceived(
-    const SpdyHeaderBlock& response,
-    base::Time response_time,
-    int status) {
+SpdyResponseHeadersStatus SpdyProxyClientSocket::OnResponseHeadersUpdated(
+    const SpdyHeaderBlock& response_headers) {
   // If we've already received the reply, existing headers are too late.
   // TODO(mbelshe): figure out a way to make HEADERS frames useful after the
   //                initial response.
   if (next_state_ != STATE_READ_REPLY_COMPLETE)
-    return OK;
+    return RESPONSE_HEADERS_ARE_COMPLETE;
 
   // Save the response
   if (!SpdyHeadersToHttpResponse(
-          response, spdy_stream_->GetProtocolVersion(), &response_))
-      return ERR_INCOMPLETE_SPDY_HEADERS;
+          response_headers, spdy_stream_->GetProtocolVersion(), &response_))
+    return RESPONSE_HEADERS_ARE_INCOMPLETE;
 
-  OnIOComplete(status);
-  return OK;
+  OnIOComplete(OK);
+  return RESPONSE_HEADERS_ARE_COMPLETE;
 }
 
 // Called when data is received or on EOF (if |buffer| is NULL).
-int SpdyProxyClientSocket::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
+void SpdyProxyClientSocket::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   if (buffer) {
     net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED,
                                   buffer->GetRemainingSize(),
@@ -477,7 +475,6 @@ int SpdyProxyClientSocket::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
     user_buffer_len_ = 0;
     c.Run(rv);
   }
-  return OK;
 }
 
 void SpdyProxyClientSocket::OnDataSent()  {

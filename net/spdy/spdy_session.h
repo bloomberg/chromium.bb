@@ -636,7 +636,10 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   // Calls OnResponseReceived().
   // Returns true if successful.
-  bool Respond(const SpdyHeaderBlock& headers, SpdyStream* stream);
+  bool Respond(const SpdyHeaderBlock& response_headers,
+               base::Time response_time,
+               base::TimeTicks recv_first_byte_time,
+               SpdyStream* stream);
 
   void RecordPingRTTHistogram(base::TimeDelta duration);
   void RecordHistograms();

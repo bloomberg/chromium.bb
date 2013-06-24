@@ -2694,9 +2694,7 @@ class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
   virtual ~DropReceivedDataDelegate() {}
 
   // Drop any received data.
-  virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE {
-    return OK;
-  }
+  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE {}
 };
 
 // Send data back and forth but use a delegate that drops its received

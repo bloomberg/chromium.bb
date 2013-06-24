@@ -1638,11 +1638,15 @@ void SpdySession::OnSynStreamCompressed(
 }
 
 
-bool SpdySession::Respond(const SpdyHeaderBlock& headers, SpdyStream* stream) {
+bool SpdySession::Respond(const SpdyHeaderBlock& response_headers,
+                          base::Time response_time,
+                          base::TimeTicks recv_first_byte_time,
+                          SpdyStream* stream) {
   int rv = OK;
   SpdyStreamId stream_id = stream->stream_id();
   // May invalidate |stream|.
-  rv = stream->OnResponseHeadersReceived(headers);
+  rv = stream->OnInitialResponseHeadersReceived(
+      response_headers, response_time, recv_first_byte_time);
   if (rv < 0) {
     DCHECK_NE(rv, ERR_IO_PENDING);
     CloseActiveStream(stream_id, rv);
@@ -1658,6 +1662,9 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
                               bool fin,
                               bool unidirectional,
                               const SpdyHeaderBlock& headers) {
+  base::Time response_time = base::Time::Now();
+  base::TimeTicks recv_first_byte_time = base::TimeTicks::Now();
+
   if (net_log_.IsLoggingAllEvents()) {
     net_log_.AddEvent(
         NetLog::TYPE_SPDY_SESSION_PUSHED_SYN_STREAM,
@@ -1753,7 +1760,6 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   DeleteExpiredPushedStreams();
   unclaimed_pushed_streams_[url] = PushedStreamInfo(stream_id, time_func_());
 
-  stream->set_response_received();
   InsertActivatedStream(stream.Pass());
 
   ActiveStreamMap::iterator it = active_streams_.find(stream_id);
@@ -1763,7 +1769,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   }
 
   // Parse the headers.
-  if (!Respond(headers, it->second.stream))
+  if (!Respond(headers, response_time, recv_first_byte_time, it->second.stream))
     return;
 
   base::StatsCounter push_requests("spdy.pushed_streams");
@@ -1808,6 +1814,9 @@ void SpdySession::DeleteExpiredPushedStreams() {
 void SpdySession::OnSynReply(SpdyStreamId stream_id,
                              bool fin,
                              const SpdyHeaderBlock& headers) {
+  base::Time response_time = base::Time::Now();
+  base::TimeTicks recv_first_byte_time = base::TimeTicks::Now();
+
   if (net_log().IsLoggingAllEvents()) {
     net_log().AddEvent(
         NetLog::TYPE_SPDY_SESSION_SYN_REPLY,
@@ -1833,10 +1842,9 @@ void SpdySession::OnSynReply(SpdyStreamId stream_id,
                 RST_STREAM_STREAM_IN_USE, error);
     return;
   }
-  stream->set_response_received();
   it->second.waiting_for_syn_reply = false;
 
-  Respond(headers, stream);
+  Respond(headers, response_time, recv_first_byte_time, stream);
 }
 
 void SpdySession::OnHeaders(SpdyStreamId stream_id,
@@ -1860,7 +1868,7 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
   SpdyStream* stream = it->second.stream;
   CHECK_EQ(stream->stream_id(), stream_id);
 
-  int rv = stream->OnHeaders(headers);
+  int rv = stream->OnAdditionalResponseHeadersReceived(headers);
   if (rv < 0) {
     DCHECK_NE(rv, ERR_IO_PENDING);
     CloseActiveStream(stream_id, rv);

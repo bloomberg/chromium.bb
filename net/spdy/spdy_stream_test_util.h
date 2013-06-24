@@ -27,10 +27,9 @@ class ClosingDelegate : public SpdyStream::Delegate {
 
   // SpdyStream::Delegate implementation.
   virtual void OnRequestHeadersSent() OVERRIDE;
-  virtual int OnResponseHeadersReceived(const SpdyHeaderBlock& response,
-                                        base::Time response_time,
-                                        int status) OVERRIDE;
-  virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
+  virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
+      const SpdyHeaderBlock& response_headers) OVERRIDE;
+  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
   virtual void OnDataSent() OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
 
@@ -49,10 +48,9 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   virtual ~StreamDelegateBase();
 
   virtual void OnRequestHeadersSent() OVERRIDE;
-  virtual int OnResponseHeadersReceived(const SpdyHeaderBlock& response,
-                                        base::Time response_time,
-                                        int status) OVERRIDE;
-  virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
+  virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
+      const SpdyHeaderBlock& response_headers) OVERRIDE;
+  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
   virtual void OnDataSent() OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
 
@@ -82,7 +80,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   SpdyStreamId stream_id_;
   TestCompletionCallback callback_;
   bool send_headers_completed_;
-  SpdyHeaderBlock response_;
+  SpdyHeaderBlock response_headers_;
   SpdyReadQueue received_data_queue_;
 };
 
@@ -94,7 +92,7 @@ class StreamDelegateDoNothing : public StreamDelegateBase {
   virtual ~StreamDelegateDoNothing();
 };
 
-// Test delegate that sends data immediately in OnResponseHeadersReceived().
+// Test delegate that sends data immediately in OnResponseHeadersUpdated().
 class StreamDelegateSendImmediate : public StreamDelegateBase {
  public:
   // |data| can be NULL.
@@ -102,9 +100,8 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
                               base::StringPiece data);
   virtual ~StreamDelegateSendImmediate();
 
-  virtual int OnResponseHeadersReceived(const SpdyHeaderBlock& response,
-                                        base::Time response_time,
-                                        int status) OVERRIDE;
+  virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
+      const SpdyHeaderBlock& response_headers) OVERRIDE;
 
  private:
   base::StringPiece data_;

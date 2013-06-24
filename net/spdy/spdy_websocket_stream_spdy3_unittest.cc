@@ -95,17 +95,16 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
     if (!on_sent_data_.is_null())
       on_sent_data_.Run(&events_.back());
   }
-  virtual int OnReceivedSpdyResponseHeader(
-      const SpdyHeaderBlock& headers, int status) OVERRIDE {
+  virtual void OnSpdyResponseHeadersUpdated(
+      const SpdyHeaderBlock& response_headers) OVERRIDE {
     events_.push_back(
         SpdyWebSocketStreamEvent(
             SpdyWebSocketStreamEvent::EVENT_RECEIVED_HEADER,
-            headers,
-            status,
+            response_headers,
+            OK,
             std::string()));
     if (!on_received_header_.is_null())
       on_received_header_.Run(&events_.back());
-    return status;
   }
   virtual void OnSentSpdyData(size_t bytes_sent) OVERRIDE {
     events_.push_back(

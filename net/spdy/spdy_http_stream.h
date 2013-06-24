@@ -76,10 +76,9 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   // SpdyStream::Delegate implementation.
   virtual void OnRequestHeadersSent() OVERRIDE;
-  virtual int OnResponseHeadersReceived(const SpdyHeaderBlock& response,
-                                        base::Time response_time,
-                                        int status) OVERRIDE;
-  virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
+  virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
+      const SpdyHeaderBlock& response_headers) OVERRIDE;
+  virtual void OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
   virtual void OnDataSent() OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
 
@@ -130,7 +129,9 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   scoped_ptr<HttpResponseInfo> push_response_info_;
 
-  bool response_headers_received_;  // Indicates waiting for more HEADERS.
+  // We don't use SpdyStream's |response_header_status_| as we
+  // sometimes call back into our delegate before it is updated.
+  SpdyResponseHeadersStatus response_headers_status_;
 
   // We buffer the response body as it arrives asynchronously from the stream.
   SpdyReadQueue response_body_queue_;

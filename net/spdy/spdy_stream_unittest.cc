@@ -206,11 +206,17 @@ TEST_P(SpdyStreamTest, PushedStream) {
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
   scoped_refptr<SpdySession> spdy_session(CreateSpdySession());
 
-  MockRead reads[] = {
-    MockRead(ASYNC, 0, 0), // EOF
-  };
+  scoped_ptr<SpdyFrame> initial_window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
+  if (spdy_util_.protocol() >= kProtoSPDY31)
+    AddWrite(*initial_window_update);
 
-  OrderedSocketData data(reads, arraysize(reads), NULL, 0);
+  AddReadEOF();
+
+  OrderedSocketData data(GetReads(), GetNumReads(),
+                         GetWrites(), GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
 
@@ -228,24 +234,29 @@ TEST_P(SpdyStreamTest, PushedStream) {
                     kSpdyStreamInitialWindowSize,
                     net_log);
   stream.set_stream_id(2);
-  EXPECT_FALSE(stream.response_received());
   EXPECT_FALSE(stream.HasUrl());
 
   // Set a couple of headers.
   SpdyHeaderBlock response;
   spdy_util_.AddUrlToHeaderBlock(kStreamUrl, &response);
-  stream.OnResponseHeadersReceived(response);
+  stream.OnInitialResponseHeadersReceived(
+      response, base::Time::Now(), base::TimeTicks::Now());
 
   // Send some basic headers.
   SpdyHeaderBlock headers;
-  response[spdy_util_.GetStatusKey()] = "200";
-  response[spdy_util_.GetVersionKey()] = "OK";
-  stream.OnHeaders(headers);
+  headers[spdy_util_.GetStatusKey()] = "200";
+  headers[spdy_util_.GetVersionKey()] = "OK";
+  stream.OnAdditionalResponseHeadersReceived(headers);
 
-  stream.set_response_received();
-  EXPECT_TRUE(stream.response_received());
   EXPECT_TRUE(stream.HasUrl());
   EXPECT_EQ(kStreamUrl, stream.GetUrl().spec());
+
+  StreamDelegateDoNothing delegate(stream.GetWeakPtr());
+  stream.SetDelegate(&delegate);
+
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy_util_.GetStatusKey()));
 
   spdy_session->CloseSessionOnError(
       ERR_CONNECTION_CLOSED, true, "Closing session");
@@ -486,6 +497,336 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
             delegate.GetResponseHeaderValue(spdy_util_.GetVersionKey()));
   EXPECT_EQ(std::string(), delegate.TakeReceivedData());
   EXPECT_TRUE(data.at_write_eof());
+}
+
+// Receiving a header with uppercase ASCII should result in a protocol
+// error.
+TEST_P(SpdyStreamTest, UpperCaseHeaders) {
+  GURL url(kStreamUrl);
+
+  session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
+
+  scoped_ptr<SpdyFrame> initial_window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
+  if (spdy_util_.protocol() >= kProtoSPDY31)
+    AddWrite(*initial_window_update);
+
+  scoped_ptr<SpdyFrame> syn(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  AddWrite(*syn);
+
+  const char* const kExtraHeaders[] = {"X-UpperCase", "yes"};
+  scoped_ptr<SpdyFrame>
+      reply(spdy_util_.ConstructSpdyGetSynReply(kExtraHeaders, 1, 1));
+  AddRead(*reply);
+
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
+  AddWrite(*rst);
+
+  AddReadEOF();
+
+  DeterministicSocketData data(GetReads(), GetNumReads(),
+                               GetWrites(), GetNumWrites());
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  scoped_refptr<SpdySession> session(CreateSpdySession());
+
+  InitializeSpdySession(session, host_port_pair_);
+
+  base::WeakPtr<SpdyStream> stream =
+      CreateStreamSynchronously(
+          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  ASSERT_TRUE(stream.get() != NULL);
+
+  StreamDelegateDoNothing delegate(stream);
+  stream->SetDelegate(&delegate);
+
+  EXPECT_FALSE(stream->HasUrl());
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(kStreamUrl));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND));
+  EXPECT_TRUE(stream->HasUrl());
+  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
+
+  // For the initial window update.
+  if (spdy_util_.protocol() >= kProtoSPDY31)
+    data.RunFor(1);
+
+  data.RunFor(4);
+
+  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, delegate.WaitForClose());
+}
+
+// Receiving a header with uppercase ASCII should result in a protocol
+// error even for a push stream.
+TEST_P(SpdyStreamTest, UpperCaseHeadersOnPush) {
+  GURL url(kStreamUrl);
+
+  session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
+
+  scoped_ptr<SpdyFrame> initial_window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
+  if (spdy_util_.protocol() >= kProtoSPDY31)
+    AddWrite(*initial_window_update);
+
+  scoped_ptr<SpdyFrame> syn(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  AddWrite(*syn);
+
+  scoped_ptr<SpdyFrame>
+      reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  AddRead(*reply);
+
+  const char* const extra_headers[] = {"X-UpperCase", "yes"};
+  scoped_ptr<SpdyFrame>
+      push(spdy_util_.ConstructSpdyPush(extra_headers, 1, 2, 1, kStreamUrl));
+  AddRead(*push);
+
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
+  AddWrite(*rst);
+
+  AddReadEOF();
+
+  DeterministicSocketData data(GetReads(), GetNumReads(),
+                               GetWrites(), GetNumWrites());
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  scoped_refptr<SpdySession> session(CreateSpdySession());
+
+  InitializeSpdySession(session, host_port_pair_);
+
+  base::WeakPtr<SpdyStream> stream =
+      CreateStreamSynchronously(
+          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  ASSERT_TRUE(stream.get() != NULL);
+
+  StreamDelegateDoNothing delegate(stream);
+  stream->SetDelegate(&delegate);
+
+  EXPECT_FALSE(stream->HasUrl());
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(kStreamUrl));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND));
+  EXPECT_TRUE(stream->HasUrl());
+  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
+
+  // For the initial window update.
+  if (spdy_util_.protocol() >= kProtoSPDY31)
+    data.RunFor(1);
+
+  data.RunFor(4);
+
+  base::WeakPtr<SpdyStream> push_stream;
+  EXPECT_EQ(OK, session->GetPushStream(url, &push_stream, BoundNetLog()));
+  EXPECT_FALSE(push_stream);
+
+  data.RunFor(1);
+
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+}
+
+// Receiving a header with uppercase ASCII in a HEADERS frame should
+// result in a protocol error.
+TEST_P(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
+  GURL url(kStreamUrl);
+
+  session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
+
+  scoped_ptr<SpdyFrame> initial_window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
+  if (spdy_util_.protocol() >= kProtoSPDY31)
+    AddWrite(*initial_window_update);
+
+  scoped_ptr<SpdyFrame> syn(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  AddWrite(*syn);
+
+  scoped_ptr<SpdyFrame>
+      reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  AddRead(*reply);
+
+  scoped_ptr<SpdyFrame>
+      push(spdy_util_.ConstructSpdyPush(NULL, 0, 2, 1, kStreamUrl));
+  AddRead(*push);
+
+  scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
+  (*late_headers)["X-UpperCase"] = "yes";
+  scoped_ptr<SpdyFrame> headers_frame(
+      spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
+                                           false,
+                                           2,
+                                           LOWEST,
+                                           HEADERS,
+                                           CONTROL_FLAG_NONE,
+                                           0));
+  AddRead(*headers_frame);
+
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
+  AddWrite(*rst);
+
+  AddReadEOF();
+
+  DeterministicSocketData data(GetReads(), GetNumReads(),
+                               GetWrites(), GetNumWrites());
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  scoped_refptr<SpdySession> session(CreateSpdySession());
+
+  InitializeSpdySession(session, host_port_pair_);
+
+  base::WeakPtr<SpdyStream> stream =
+      CreateStreamSynchronously(
+          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  ASSERT_TRUE(stream.get() != NULL);
+
+  StreamDelegateDoNothing delegate(stream);
+  stream->SetDelegate(&delegate);
+
+  EXPECT_FALSE(stream->HasUrl());
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(kStreamUrl));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND));
+  EXPECT_TRUE(stream->HasUrl());
+  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
+
+  // For the initial window update.
+  if (spdy_util_.protocol() >= kProtoSPDY31)
+    data.RunFor(1);
+
+  data.RunFor(3);
+
+  base::WeakPtr<SpdyStream> push_stream;
+  EXPECT_EQ(OK, session->GetPushStream(url, &push_stream, BoundNetLog()));
+  EXPECT_TRUE(push_stream);
+
+  data.RunFor(1);
+
+  EXPECT_EQ(OK, session->GetPushStream(url, &push_stream, BoundNetLog()));
+  EXPECT_FALSE(push_stream);
+
+  data.RunFor(2);
+
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+}
+
+// Receiving a duplicate header in a HEADERS frame should result in a
+// protocol error.
+TEST_P(SpdyStreamTest, DuplicateHeaders) {
+  GURL url(kStreamUrl);
+
+  session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
+
+  scoped_ptr<SpdyFrame> initial_window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
+  if (spdy_util_.protocol() >= kProtoSPDY31)
+    AddWrite(*initial_window_update);
+
+  scoped_ptr<SpdyFrame> syn(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  AddWrite(*syn);
+
+  scoped_ptr<SpdyFrame>
+      reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  AddRead(*reply);
+
+  scoped_ptr<SpdyFrame>
+      push(spdy_util_.ConstructSpdyPush(NULL, 0, 2, 1, kStreamUrl));
+  AddRead(*push);
+
+  scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
+  (*late_headers)[spdy_util_.GetStatusKey()] = "500 Server Error";
+  scoped_ptr<SpdyFrame> headers_frame(
+      spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
+                                           false,
+                                           2,
+                                           LOWEST,
+                                           HEADERS,
+                                           CONTROL_FLAG_NONE,
+                                           0));
+  AddRead(*headers_frame);
+
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
+  AddWrite(*rst);
+
+  AddReadEOF();
+
+  DeterministicSocketData data(GetReads(), GetNumReads(),
+                               GetWrites(), GetNumWrites());
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  scoped_refptr<SpdySession> session(CreateSpdySession());
+
+  InitializeSpdySession(session, host_port_pair_);
+
+  base::WeakPtr<SpdyStream> stream =
+      CreateStreamSynchronously(
+          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  ASSERT_TRUE(stream.get() != NULL);
+
+  StreamDelegateDoNothing delegate(stream);
+  stream->SetDelegate(&delegate);
+
+  EXPECT_FALSE(stream->HasUrl());
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(kStreamUrl));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND));
+  EXPECT_TRUE(stream->HasUrl());
+  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
+
+  // For the initial window update.
+  if (spdy_util_.protocol() >= kProtoSPDY31)
+    data.RunFor(1);
+
+  data.RunFor(3);
+
+  base::WeakPtr<SpdyStream> push_stream;
+  EXPECT_EQ(OK, session->GetPushStream(url, &push_stream, BoundNetLog()));
+  EXPECT_TRUE(push_stream);
+
+  data.RunFor(1);
+
+  EXPECT_EQ(OK, session->GetPushStream(url, &push_stream, BoundNetLog()));
+  EXPECT_FALSE(push_stream);
+
+  data.RunFor(2);
+
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 }
 
 // The tests below are only for SPDY/3 and above.

@@ -306,20 +306,17 @@ void WebSocketJob::OnSentSpdyHeaders() {
   handshake_request_.reset();
 }
 
-int WebSocketJob::OnReceivedSpdyResponseHeader(
-    const SpdyHeaderBlock& headers, int status) {
+void WebSocketJob::OnSpdyResponseHeadersUpdated(
+    const SpdyHeaderBlock& response_headers) {
   DCHECK_NE(INITIALIZED, state_);
   if (state_ != CONNECTING)
-    return status;
-  if (status != OK)
-    return status;
+    return;
   // TODO(toyoshim): Fallback to non-spdy connection?
-  handshake_response_->ParseResponseHeaderBlock(headers,
+  handshake_response_->ParseResponseHeaderBlock(response_headers,
                                                 challenge_,
                                                 spdy_protocol_version_);
 
   SaveCookiesAndNotifyHeadersComplete();
-  return OK;
 }
 
 void WebSocketJob::OnSentSpdyData(size_t bytes_sent) {

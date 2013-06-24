@@ -87,17 +87,16 @@ void SpdyWebSocketStream::OnRequestHeadersSent() {
   delegate_->OnSentSpdyHeaders();
 }
 
-int SpdyWebSocketStream::OnResponseHeadersReceived(
-    const SpdyHeaderBlock& response,
-    base::Time response_time, int status) {
+SpdyResponseHeadersStatus SpdyWebSocketStream::OnResponseHeadersUpdated(
+    const SpdyHeaderBlock& response_headers) {
   DCHECK(delegate_);
-  return delegate_->OnReceivedSpdyResponseHeader(response, status);
+  delegate_->OnSpdyResponseHeadersUpdated(response_headers);
+  return RESPONSE_HEADERS_ARE_COMPLETE;
 }
 
-int SpdyWebSocketStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
+void SpdyWebSocketStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   DCHECK(delegate_);
   delegate_->OnReceivedSpdyData(buffer.Pass());
-  return OK;
 }
 
 void SpdyWebSocketStream::OnDataSent() {
