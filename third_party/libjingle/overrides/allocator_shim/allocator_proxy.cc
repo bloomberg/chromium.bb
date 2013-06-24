@@ -8,8 +8,8 @@
 #error "Only compile the allocator proxy with the shared_library implementation"
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-#error "The allocator proxy isn't supported (or needed) on mac or android."
+#if defined(OS_MACOSX)
+#error "The allocator proxy isn't supported (or needed) on mac."
 #endif
 
 extern AllocateFunction g_alloc;

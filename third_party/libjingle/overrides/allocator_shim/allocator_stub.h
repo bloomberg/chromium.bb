@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MACOSX)
 
 typedef void* (*AllocateFunction)(std::size_t);
 typedef void (*DellocateFunction)(void*);
@@ -19,6 +19,6 @@ typedef void (*DellocateFunction)(void*);
 void* Allocate(std::size_t n);
 void Dellocate(void* p);
 
-#endif  // OS_MACOSX && OS_ANDROID
+#endif  // OS_MACOSX
 
 #endif  // THIRD_PARTY_LIBJINGLE_OVERRIDES_ALLOCATOR_SHIM_ALLOCATOR_STUB_H_

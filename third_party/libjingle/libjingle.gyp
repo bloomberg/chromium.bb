@@ -898,12 +898,13 @@
             'libjingle_webrtc_common',
           ],
           'conditions': [
-            ['libpeer_target_type!="static_library"', {
+            ['libpeer_allocator_shim==1 and '
+             'libpeer_target_type!="static_library"', {
               'sources': [
                 'overrides/initialize_module.cc',
               ],
               'conditions': [
-                ['OS!="mac" and OS!="android"', {
+                ['OS!="mac"', {
                   'sources': [
                     'overrides/allocator_shim/allocator_proxy.cc',
                   ],
@@ -935,7 +936,7 @@
             ['OS=="mac" and libpeer_target_type!="static_library"', {
               'product_name': 'libpeerconnection',
             }],
-            ['OS=="android" and "<(libpeer_target_type)"=="static_library"', {
+            ['OS=="android"', {
               'standalone_static_library': 1,
             }],
             ['OS=="linux" and libpeer_target_type!="static_library"', {

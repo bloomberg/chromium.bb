@@ -61,10 +61,6 @@ static base::FilePath GetLibPeerConnectionPath() {
   CHECK(PathService::Get(base::DIR_MODULE, &path));
   path = path.Append(FILE_PATH_LITERAL("Libraries"))
              .Append(FILE_PATH_LITERAL("libpeerconnection.so"));
-#elif defined(OS_ANDROID)
-  base::FilePath path;
-  CHECK(PathService::Get(base::DIR_MODULE, &path));
-  path = path.Append(FILE_PATH_LITERAL("libpeerconnection.so"));
 #else
   base::FilePath path;
   CHECK(PathService::Get(base::DIR_MODULE, &path));
@@ -98,7 +94,7 @@ bool InitializeWebRtcModule() {
   // PS: This function is actually implemented in allocator_proxy.cc with the
   // new/delete overrides.
   return initialize_module(*CommandLine::ForCurrentProcess(),
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MACOSX)
       &Allocate, &Dellocate,
 #endif
       logging::GetLogMessageHandler(),

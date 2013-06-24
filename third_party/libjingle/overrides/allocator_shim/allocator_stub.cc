@@ -4,8 +4,8 @@
 
 #include "allocator_shim/allocator_stub.h"
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-#error "The allocator stub isn't supported (or needed) on mac or android."
+#if defined(OS_MACOSX)
+#error "The allocator stub isn't supported (or needed) on mac."
 #endif
 
 void* Allocate(std::size_t n) {
