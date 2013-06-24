@@ -274,8 +274,10 @@ FileTasks.prototype.executeDefaultInternal_ = function(urls) {
           if (props && props[0] && props[0].contentMimeType)
             mimeType = props[0].contentMimeType;
 
+          var messageString = extension == 'exe' ? 'NO_ACTION_FOR_EXECUTABLE' :
+                                                   'NO_ACTION_FOR_FILE';
           var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
-          var text = loadTimeData.getStringF('NO_ACTION_FOR_FILE',
+          var text = loadTimeData.getStringF(messageString,
                                              webStoreUrl,
                                              FileTasks.NO_ACTION_FOR_FILE_URL);
           this.fileManager_.alert.showHtml(filename, text, function() {});
