@@ -204,6 +204,8 @@
             'v8/custom/V8PannerNodeCustom.cpp',
             'v8/custom/V8PerformanceEntryCustom.cpp',
             'v8/custom/V8PopStateEventCustom.cpp',
+            'v8/custom/V8PromiseCustom.cpp',
+            'v8/custom/V8PromiseResolverCustom.cpp',
             'v8/custom/V8SQLResultSetRowListCustom.cpp',
             'v8/custom/V8SQLTransactionCustom.cpp',
             'v8/custom/V8SQLTransactionSyncCustom.cpp',
