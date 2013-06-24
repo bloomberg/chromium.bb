@@ -21,6 +21,10 @@ const char kEnableVp8AlphaPlayback[] = "enable-vp8-alpha-playback";
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 
+// Override suppressed responses to canPlayType().
+const char kOverrideEncryptedMediaCanPlayType[] =
+    "override-encrypted-media-canplaytype";
+
 #if defined(GOOGLE_TV)
 // Use external video surface for video with more than or equal pixels to
 // specified value. For example, value of 0 will enable external video surface

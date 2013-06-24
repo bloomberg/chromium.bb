@@ -22,6 +22,8 @@ MEDIA_EXPORT extern const char kEnableVp8AlphaPlayback[];
 
 MEDIA_EXPORT extern const char kVideoThreads[];
 
+MEDIA_EXPORT extern const char kOverrideEncryptedMediaCanPlayType[];
+
 #if defined(GOOGLE_TV)
 MEDIA_EXPORT extern const char kUseExternalVideoSurfaceThresholdInPixels[];
 #endif
