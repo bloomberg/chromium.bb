@@ -376,6 +376,11 @@ div.splitter {
   width: 20px;
 }
 
+#volume-list:focus .root-item[selected] > div.root-eject {
+  -webkit-filter: brightness(0) invert();
+  opacity: 1;
+}
+
 #directory-tree .tree-row > div.root-eject[hidden] {
   /* [hidden] has alredy set in dialog.css, but it is overridden by the
    * selector '.tree-item > .tree-row > * 'in tree.js, hence we need to
