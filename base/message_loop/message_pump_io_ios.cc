@@ -179,7 +179,7 @@ void MessagePumpIOSForIO::HandleFdIOEvent(CFFileDescriptorRef fdref,
   // Ensure that |fdref| will remain live for the duration of this function
   // call even if |controller| is deleted or |StopWatchingFileDescriptor()| is
   // called, either of which will cause |fdref| to be released.
-  mac::ScopedCFTypeRef<CFFileDescriptorRef> scoped_fdref(
+  ScopedCFTypeRef<CFFileDescriptorRef> scoped_fdref(
       fdref, base::scoped_policy::RETAIN);
 
   int fd = CFFileDescriptorGetNativeDescriptor(fdref);

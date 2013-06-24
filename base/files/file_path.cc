@@ -1171,7 +1171,7 @@ int FilePath::HFSFastUnicodeCompare(const StringType& string1,
 }
 
 StringType FilePath::GetHFSDecomposedForm(const StringType& string) {
-  mac::ScopedCFTypeRef<CFStringRef> cfstring(
+  ScopedCFTypeRef<CFStringRef> cfstring(
       CFStringCreateWithBytesNoCopy(
           NULL,
           reinterpret_cast<const UInt8*>(string.c_str()),
@@ -1218,7 +1218,7 @@ int FilePath::CompareIgnoreCase(const StringType& string1,
   // GetHFSDecomposedForm() returns an empty string in an error case.
   if (hfs1.empty() || hfs2.empty()) {
     NOTREACHED();
-    mac::ScopedCFTypeRef<CFStringRef> cfstring1(
+    ScopedCFTypeRef<CFStringRef> cfstring1(
         CFStringCreateWithBytesNoCopy(
             NULL,
             reinterpret_cast<const UInt8*>(string1.c_str()),
@@ -1226,7 +1226,7 @@ int FilePath::CompareIgnoreCase(const StringType& string1,
             kCFStringEncodingUTF8,
             false,
             kCFAllocatorNull));
-    mac::ScopedCFTypeRef<CFStringRef> cfstring2(
+    ScopedCFTypeRef<CFStringRef> cfstring2(
         CFStringCreateWithBytesNoCopy(
             NULL,
             reinterpret_cast<const UInt8*>(string2.c_str()),

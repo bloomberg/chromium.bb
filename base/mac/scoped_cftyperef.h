@@ -101,12 +101,6 @@ class ScopedCFTypeRef {
   CFT object_;
 };
 
-// TODO(thakis): Remove this once all clients use base::ScopedCFTypeRef
-// directly.
-namespace mac {
-using base::ScopedCFTypeRef;
-}  // namespace mac
-
 }  // namespace base
 
 #endif  // BASE_MAC_SCOPED_CFTYPEREF_H_
