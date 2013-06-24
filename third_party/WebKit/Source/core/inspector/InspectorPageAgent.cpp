@@ -711,26 +711,18 @@ void InspectorPageAgent::setShowDebugBorders(ErrorString*, bool show)
 {
     m_state->setBoolean(PageAgentState::pageAgentShowDebugBorders, show);
     m_client->setShowDebugBorders(show);
-    if (mainFrame() && mainFrame()->view())
-        mainFrame()->view()->invalidate();
 }
 
 void InspectorPageAgent::setShowFPSCounter(ErrorString*, bool show)
 {
     m_state->setBoolean(PageAgentState::pageAgentShowFPSCounter, show);
     m_client->setShowFPSCounter(show);
-
-    if (mainFrame() && mainFrame()->view())
-        mainFrame()->view()->invalidate();
 }
 
 void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString*, bool enabled)
 {
     m_state->setBoolean(PageAgentState::pageAgentContinuousPaintingEnabled, enabled);
     m_client->setContinuousPaintingEnabled(enabled);
-
-    if (!enabled && mainFrame() && mainFrame()->view())
-        mainFrame()->view()->invalidate();
 }
 
 void InspectorPageAgent::getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum* status)
