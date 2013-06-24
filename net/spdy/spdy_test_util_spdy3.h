@@ -35,10 +35,6 @@ namespace test_spdy3 {
 SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
                              int extra_header_count,
                              int stream_id,
-                             int associated_stream_id);
-SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
-                             int extra_header_count,
-                             int stream_id,
                              int associated_stream_id,
                              const char* url);
 SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],

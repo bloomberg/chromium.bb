@@ -798,27 +798,6 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyConnect(
 SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
                                            int extra_header_count,
                                            int stream_id,
-                                           int associated_stream_id) {
-  const char* const kStandardGetHeaders[] = {
-    "hello",         "bye",
-    GetStatusKey(),  "200",
-    GetVersionKey(), "HTTP/1.1"
-  };
-  return ConstructSpdyControlFrame(extra_headers,
-                                   extra_header_count,
-                                   false,
-                                   stream_id,
-                                   LOWEST,
-                                   SYN_STREAM,
-                                   CONTROL_FLAG_NONE,
-                                   kStandardGetHeaders,
-                                   arraysize(kStandardGetHeaders),
-                                   associated_stream_id);
-}
-
-SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
-                                           int extra_header_count,
-                                           int stream_id,
                                            int associated_stream_id,
                                            const char* url) {
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock());

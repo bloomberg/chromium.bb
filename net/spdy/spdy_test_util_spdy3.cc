@@ -23,15 +23,6 @@ namespace test_spdy3 {
 SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
                              int extra_header_count,
                              int stream_id,
-                             int associated_stream_id) {
-  SpdyTestUtil util(kProtoSPDY3);
-  return util.ConstructSpdyPush(extra_headers, extra_header_count,
-                                stream_id, associated_stream_id);
-}
-
-SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
-                             int extra_header_count,
-                             int stream_id,
                              int associated_stream_id,
                              const char* url) {
   SpdyTestUtil util(kProtoSPDY3);

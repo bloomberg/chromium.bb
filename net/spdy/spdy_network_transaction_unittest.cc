@@ -3329,7 +3329,8 @@ TEST_P(SpdyNetworkTransactionTest, UpperCaseHeadersOnPush) {
       reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   const char* const extra_headers[] = {"X-UpperCase", "yes"};
   scoped_ptr<SpdyFrame>
-      push(spdy_util_.ConstructSpdyPush(extra_headers, 1, 2, 1));
+      push(spdy_util_.ConstructSpdyPush(
+          extra_headers, 1, 2, 1, "http://www.google.com"));
   scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
     CreateMockRead(*reply, 1),
@@ -4015,8 +4016,19 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushNoURL) {
 
   scoped_ptr<SpdyFrame>
       stream1_reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdyFrame>
-      stream2_syn(spdy_util_.ConstructSpdyPush(NULL, 0, 2, 1));
+  scoped_ptr<SpdyHeaderBlock> incomplete_headers(new SpdyHeaderBlock());
+  (*incomplete_headers)["hello"] = "bye";
+  (*incomplete_headers)[spdy_util_.GetStatusKey()] = "200 OK";
+  (*incomplete_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
+  scoped_ptr<SpdyFrame> stream2_syn(
+      spdy_util_.ConstructSpdyControlFrame(incomplete_headers.Pass(),
+                                           false,
+                                           2,  // Stream ID
+                                           LOWEST,
+                                           SYN_STREAM,
+                                           CONTROL_FLAG_NONE,
+                                           // Associated stream ID
+                                           1));
   MockRead reads[] = {
     CreateMockRead(*stream1_reply, 2),
     CreateMockRead(*stream2_syn, 3),
