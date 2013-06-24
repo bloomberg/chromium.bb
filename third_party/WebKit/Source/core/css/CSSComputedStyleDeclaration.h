@@ -85,6 +85,7 @@ private:
     virtual CSSRule* parentRule() const;
     virtual unsigned length() const;
     virtual String item(unsigned index) const;
+    PassRefPtr<RenderStyle> computeRenderStyle(CSSPropertyID) const;
     virtual PassRefPtr<CSSValue> getPropertyCSSValue(const String& propertyName);
     virtual String getPropertyValue(const String& propertyName);
     virtual String getPropertyPriority(const String& propertyName);
