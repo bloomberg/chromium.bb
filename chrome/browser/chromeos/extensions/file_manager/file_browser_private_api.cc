@@ -59,6 +59,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/page_zoom.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_locale_settings.h"
 #include "grit/generated_resources.h"
@@ -453,7 +454,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<ZipSelectionFunction>();
   registry->RegisterFunction<ValidatePathNameLengthFunction>();
   registry->RegisterFunction<OpenNewWindowFunction>();
-
+  registry->RegisterFunction<ZoomFunction>();
   event_router_->ObserveFileSystemEvents();
 }
 
@@ -3091,5 +3092,24 @@ bool OpenNewWindowFunction::RunImpl() {
   std::string url;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
   file_manager_util::OpenNewWindow(profile_, GURL(url));
+  return true;
+}
+
+bool ZoomFunction::RunImpl() {
+  content::RenderViewHost* const view_host = render_view_host();
+  std::string operation;
+  args_->GetString(0, &operation);
+  content::PageZoom zoom_type;
+  if (operation == "in") {
+    zoom_type = content::PAGE_ZOOM_IN;
+  } else if (operation == "out") {
+    zoom_type = content::PAGE_ZOOM_OUT;
+  } else if (operation == "reset") {
+    zoom_type = content::PAGE_ZOOM_RESET;
+  } else {
+    NOTREACHED();
+    return false;
+  }
+  view_host->Zoom(zoom_type);
   return true;
 }

@@ -797,4 +797,14 @@ class OpenNewWindowFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class ZoomFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.zoom",
+                             FILEBROWSERPRIVATE_ZOOM);
+
+ protected:
+  virtual ~ZoomFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_PRIVATE_API_H_

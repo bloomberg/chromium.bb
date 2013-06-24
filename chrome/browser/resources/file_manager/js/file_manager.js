@@ -688,6 +688,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                                   i);
     }
 
+    CommandUtil.registerCommand(doc, 'zoom-in', Commands.zoomInCommand);
+    CommandUtil.registerCommand(doc, 'zoom-out', Commands.zoomOutCommand);
+    CommandUtil.registerCommand(doc, 'zoom-reset', Commands.zoomResetCommand);
+
     CommandUtil.registerCommand(doc, 'cut', Commands.defaultCommand, doc);
     CommandUtil.registerCommand(doc, 'copy', Commands.defaultCommand, doc);
 

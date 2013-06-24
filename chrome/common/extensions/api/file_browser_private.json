@@ -1157,6 +1157,17 @@
             "description": "Internal url to be opened."
           }
         ]
+      },
+      {
+        "name": "zoom",
+        "description": "Changes the zoom factor of the Files.app.",
+        "parameters": [
+          {
+            "name": "operation",
+            "type": "string",
+            "enum": ["in", "out", "reset"]
+          }
+        ]
       }
     ],
     "events": [

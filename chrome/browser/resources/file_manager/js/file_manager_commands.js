@@ -71,6 +71,14 @@ CommandUtil.canExecuteVisibleOnDriveWithCtrlKeyOnly =
 };
 
 /**
+ * Sets as the command as always enabled.
+ * @param {Event} event Command event to mark.
+ */
+CommandUtil.canExecuteAlways = function(event) {
+  event.canExecute = true;
+};
+
+/**
  * Returns a single selected/passed entry or null.
  * @param {Event} event Command event.
  * @param {FileManager} fileManager FileManager to use.
@@ -264,9 +272,7 @@ Commands.changeDefaultAppCommand = {
   execute: function(event, fileManager) {
     fileManager.showChangeDefaultAppPicker();
   },
-  canExecute: function(event, fileManager) {
-    event.canExecute = true;
-  }
+  canExecute: CommandUtil.canExecuteAlways
 };
 
 /**
@@ -322,9 +328,7 @@ Commands.volumeHelpCommand = {
     else
       chrome.windows.create({url: FileManager.FILES_APP_HELP});
   },
-  canExecute: function(event, fileManager) {
-    event.canExecute = true;
-  }
+  canExecute: CommandUtil.canExecuteAlways
 };
 
 /**
@@ -490,4 +494,34 @@ Commands.shareCommand = {
         selection && selection.totalCount == 1;
     event.command.setHidden(!fileManager.isOnDrive());
   }
+};
+
+/**
+ * Zoom in to the Files.app.
+ */
+Commands.zoomInCommand = {
+  execute: function(event) {
+    chrome.fileBrowserPrivate.zoom('in');
+  },
+  canExecute: CommandUtil.canExecuteAlways
+};
+
+/**
+ * Zoom out from the Files.app.
+ */
+Commands.zoomOutCommand = {
+  execute: function(event) {
+    chrome.fileBrowserPrivate.zoom('out');
+  },
+  canExecute: CommandUtil.canExecuteAlways
+};
+
+/**
+ * Reset the zoom factor.
+ */
+Commands.zoomResetCommand = {
+  execute: function(event) {
+    chrome.fileBrowserPrivate.zoom('reset');
+  },
+  canExecute: CommandUtil.canExecuteAlways
 };
