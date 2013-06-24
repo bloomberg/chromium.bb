@@ -9,7 +9,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/shell/common/shell_switches.h"
-#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
+#include "third_party/WebKit/public/testing/WebPreferences.h"
 #include "webkit/common/webpreferences.h"
 
 namespace content {

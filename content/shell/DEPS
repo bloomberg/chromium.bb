@@ -21,5 +21,5 @@ include_rules = [
   "+ui/views",
 
   # For WebTestRunner library
-  "+third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public",
+  "+third_party/WebKit/public/testing",
 ]

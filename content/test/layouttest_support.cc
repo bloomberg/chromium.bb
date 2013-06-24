@@ -12,7 +12,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
-#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
+#include "third_party/WebKit/public/testing/WebTestProxy.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "content/browser/web_contents/web_contents_drag_win.h"
