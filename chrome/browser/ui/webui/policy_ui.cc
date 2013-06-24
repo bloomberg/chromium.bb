@@ -15,8 +15,6 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
@@ -34,9 +32,6 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -57,6 +52,14 @@
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest.h"
 #endif
 
 namespace em = enterprise_management;
@@ -522,6 +525,7 @@ void PolicyUIHandler::SendPolicyValues() const {
   GetChromePolicyValues(chrome_policies);
   all_policies.Set("chromePolicies", chrome_policies);
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Get extensions.
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()));
@@ -556,6 +560,7 @@ void PolicyUIHandler::SendPolicyValues() const {
     extension_values->Set(extension->id(), extension_value);
   }
   all_policies.Set("extensionPolicies", extension_values);
+#endif
 
   web_ui()->CallJavascriptFunction("policy.Page.setPolicyValues", all_policies);
 }
