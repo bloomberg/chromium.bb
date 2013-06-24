@@ -224,6 +224,10 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
   NOTIMPLEMENTED();
 }
 
+const std::vector<SystemTrayItem*>& SystemTray::GetTrayItems() const {
+  return items_.get();
+}
+
 void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {
   ShowDefaultViewWithOffset(creation_type,
                             TrayBubbleView::InitParams::kArrowDefaultOffset);

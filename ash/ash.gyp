@@ -697,6 +697,7 @@
         'shell/window_watcher.cc',
         'shell/window_watcher_unittest.cc',
         'system/chromeos/network/network_state_notifier_unittest.cc',
+        'system/chromeos/screen_security/screen_tray_item_unittest.cc',
         'system/chromeos/power/tray_power_unittest.cc',
         'system/chromeos/tray_display_unittest.cc',
         'system/tray/system_tray_unittest.cc',

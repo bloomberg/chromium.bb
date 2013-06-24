@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_ITEM_VIEW_H_
 #define ASH_SYSTEM_TRAY_TRAY_ITEM_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/view.h"
 
@@ -26,11 +27,13 @@ namespace internal {
 // Base-class for items in the tray. It makes sure the widget is updated
 // correctly when the visibility/size of the tray item changes. It also adds
 // animation when showing/hiding the item in the tray.
-class TrayItemView : public views::View,
-                     public ui::AnimationDelegate {
+class ASH_EXPORT TrayItemView : public views::View,
+                                public ui::AnimationDelegate {
  public:
   explicit TrayItemView(SystemTrayItem* owner);
   virtual ~TrayItemView();
+
+  static void DisableAnimationsForTest();
 
   // Convenience function for creating a child Label or ImageView.
   void CreateLabel();

@@ -18,6 +18,9 @@ namespace {
 const int kTrayIconHeight = 29;
 const int kTrayIconWidth = 29;
 const int kTrayItemAnimationDurationMS = 200;
+
+// Animations can be disabled for testing.
+bool animations_enabled = true;
 }
 
 namespace ash {
@@ -35,6 +38,11 @@ TrayItemView::TrayItemView(SystemTrayItem* owner)
 
 TrayItemView::~TrayItemView() {}
 
+// static
+void TrayItemView::DisableAnimationsForTest() {
+  animations_enabled = false;
+}
+
 void TrayItemView::CreateLabel() {
   label_ = new views::Label;
   AddChildView(label_);
@@ -46,7 +54,7 @@ void TrayItemView::CreateImageView() {
 }
 
 void TrayItemView::SetVisible(bool set_visible) {
-  if (!GetWidget()) {
+  if (!GetWidget() || !animations_enabled) {
     views::View::SetVisible(set_visible);
     return;
   }

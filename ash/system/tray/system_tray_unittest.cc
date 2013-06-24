@@ -156,6 +156,13 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
   tray->AddTrayItem(test_item);
   tray->AddTrayItem(detailed_item);
 
+  // Check items have been added
+  const std::vector<SystemTrayItem*>& items = tray->GetTrayItems();
+  ASSERT_TRUE(
+      std::find(items.begin(), items.end(), test_item) != items.end());
+  ASSERT_TRUE(
+      std::find(items.begin(), items.end(), detailed_item) != items.end());
+
   // Ensure the tray views are created.
   ASSERT_TRUE(test_item->tray_view() != NULL);
   ASSERT_TRUE(detailed_item->tray_view() != NULL);

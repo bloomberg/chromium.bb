@@ -70,6 +70,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   // Removes an existing tray item.
   void RemoveTrayItem(SystemTrayItem* item);
 
+  // Returns all tray items that has been added to system tray.
+  const std::vector<SystemTrayItem*>& GetTrayItems() const;
+
   // Shows the default view of all items.
   void ShowDefaultView(BubbleCreationType creation_type);
 

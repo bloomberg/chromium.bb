@@ -15,8 +15,8 @@ class View;
 namespace ash {
 namespace internal {
 
-class ScreenShareTrayItem : public ScreenTrayItem,
-                            public ScreenShareObserver {
+class ASH_EXPORT ScreenShareTrayItem : public ScreenTrayItem,
+                                       public ScreenShareObserver {
  public:
   explicit ScreenShareTrayItem(SystemTray* system_tray);
   virtual ~ScreenShareTrayItem();
