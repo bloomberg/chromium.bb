@@ -28,7 +28,7 @@
 
 namespace WebCore {
 
-    enum FontSmoothingMode { AutoSmoothing, NoSmoothing, Antialiased, SubpixelAntialiased };
+enum FontSmoothingMode { AutoSmoothing, NoSmoothing, Antialiased, SubpixelAntialiased };
     
 } // namespace WebCore
 

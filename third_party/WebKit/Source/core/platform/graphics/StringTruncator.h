@@ -33,16 +33,16 @@
 
 namespace WebCore {
     
-    class Font;
-    
-    class StringTruncator {
-    public:
-        enum EnableRoundingHacksOrNot { DisableRoundingHacks, EnableRoundingHacks };
+class Font;
 
-        static String centerTruncate(const String&, float maxWidth, const Font&, EnableRoundingHacksOrNot = DisableRoundingHacks);
-        static String rightTruncate(const String&, float maxWidth, const Font&, EnableRoundingHacksOrNot = DisableRoundingHacks);
-        static float width(const String&, const Font&, EnableRoundingHacksOrNot = DisableRoundingHacks);
-    };
+class StringTruncator {
+public:
+    enum EnableRoundingHacksOrNot { DisableRoundingHacks, EnableRoundingHacks };
+
+    static String centerTruncate(const String&, float maxWidth, const Font&, EnableRoundingHacksOrNot = DisableRoundingHacks);
+    static String rightTruncate(const String&, float maxWidth, const Font&, EnableRoundingHacksOrNot = DisableRoundingHacks);
+    static float width(const String&, const Font&, EnableRoundingHacksOrNot = DisableRoundingHacks);
+};
     
 } // namespace WebCore
 

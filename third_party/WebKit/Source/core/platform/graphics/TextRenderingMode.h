@@ -28,7 +28,7 @@
 
 namespace WebCore {
 
-    enum TextRenderingMode { AutoTextRendering, OptimizeSpeed, OptimizeLegibility, GeometricPrecision };
+enum TextRenderingMode { AutoTextRendering, OptimizeSpeed, OptimizeLegibility, GeometricPrecision };
     
 } // namespace WebCore
 
