@@ -311,7 +311,6 @@ input[type='submit'][disabled]:hover {
     url('../images/common/button.png') 1x,
     url('../images/common/2x/button.png') 2x) 5 / 5px / 2px repeat;
   color: rgb(150, 150, 150);
-  padding: 2px 14px;
 }
 
 /* Gray progress bar. */
