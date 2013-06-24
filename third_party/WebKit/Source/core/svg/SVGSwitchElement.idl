@@ -25,9 +25,9 @@
 
 interface SVGSwitchElement : SVGStyledElement,
                              SVGLangSpace,
-                             SVGExternalResourcesRequired,
                              SVGTransformable {
 };
 
+SVGSwitchElement implements SVGExternalResourcesRequired;
 SVGSwitchElement implements SVGTests;
 

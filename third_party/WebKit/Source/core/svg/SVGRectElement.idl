@@ -26,7 +26,6 @@
 
 interface SVGRectElement : SVGStyledElement,
                            SVGLangSpace,
-                           SVGExternalResourcesRequired,
                            SVGTransformable {
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;
@@ -36,5 +35,6 @@ interface SVGRectElement : SVGStyledElement,
     readonly attribute SVGAnimatedLength ry;
 };
 
+SVGRectElement implements SVGExternalResourcesRequired;
 SVGRectElement implements SVGTests;
 

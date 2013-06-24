@@ -24,8 +24,8 @@
  */
 
 interface SVGSymbolElement : SVGStyledElement,
-                             SVGLangSpace,
-                             SVGExternalResourcesRequired,
-                             SVGFitToViewBox {
+                             SVGLangSpace {
 };
 
+SVGSymbolElement implements SVGExternalResourcesRequired;
+SVGSymbolElement implements SVGFitToViewBox;

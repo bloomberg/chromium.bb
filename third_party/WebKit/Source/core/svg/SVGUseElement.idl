@@ -25,7 +25,6 @@
 
 interface SVGUseElement : SVGStyledElement,
                           SVGLangSpace,
-                          SVGExternalResourcesRequired,
                           SVGTransformable {
     readonly attribute SVGAnimatedLength   x;
     readonly attribute SVGAnimatedLength   y;
@@ -36,6 +35,7 @@ interface SVGUseElement : SVGStyledElement,
     readonly attribute SVGElementInstance animatedInstanceRoot;
 };
 
+SVGUseElement implements SVGExternalResourcesRequired;
 SVGUseElement implements SVGTests;
 SVGUseElement implements SVGURIReference;
 

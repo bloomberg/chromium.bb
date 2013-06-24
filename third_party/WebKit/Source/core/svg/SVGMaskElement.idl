@@ -24,8 +24,7 @@
  */
 
 interface SVGMaskElement : SVGStyledElement,
-                           SVGLangSpace,
-                           SVGExternalResourcesRequired {
+                           SVGLangSpace {
     readonly attribute SVGAnimatedEnumeration maskUnits;
     readonly attribute SVGAnimatedEnumeration maskContentUnits;
 
@@ -35,5 +34,6 @@ interface SVGMaskElement : SVGStyledElement,
     readonly attribute SVGAnimatedLength height;
 };
 
+SVGMaskElement implements SVGExternalResourcesRequired;
 SVGMaskElement implements SVGTests;
 

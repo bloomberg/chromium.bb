@@ -24,8 +24,7 @@
  */
 
 interface SVGTextContentElement : SVGStyledElement,
-                                  SVGLangSpace,
-                                  SVGExternalResourcesRequired {
+                                  SVGLangSpace {
     // lengthAdjust Types
     const unsigned short LENGTHADJUST_UNKNOWN          = 0;
     const unsigned short LENGTHADJUST_SPACING          = 1;
@@ -47,5 +46,6 @@ interface SVGTextContentElement : SVGStyledElement,
                          [Default=Undefined,IsIndex] optional unsigned long length);
 };
 
+SVGTextContentElement implements SVGExternalResourcesRequired;
 SVGTextContentElement implements SVGTests;
 

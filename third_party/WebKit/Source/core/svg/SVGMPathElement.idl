@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGMPathElement : SVGElement,
-                            SVGExternalResourcesRequired {
+interface SVGMPathElement : SVGElement {
 };
 
+SVGMPathElement implements SVGExternalResourcesRequired;
 SVGMPathElement implements SVGURIReference;
 

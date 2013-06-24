@@ -25,10 +25,7 @@
 // TODO: no events::DocumentEvent available!
 interface SVGSVGElement : SVGStyledElement,
                           SVGLangSpace,
-                          SVGExternalResourcesRequired,
-                          SVGTransformable,
-                          SVGFitToViewBox,
-                          SVGZoomAndPan {
+                          SVGTransformable {
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;
     readonly attribute SVGAnimatedLength width;
@@ -75,5 +72,8 @@ interface SVGSVGElement : SVGStyledElement,
     Element getElementById([Default=Undefined] optional DOMString elementId);
 };
 
+SVGSVGElement implements SVGExternalResourcesRequired;
 SVGSVGElement implements SVGTests;
+SVGSVGElement implements SVGFitToViewBox;
+SVGSVGElement implements SVGZoomAndPan;
 

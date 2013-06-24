@@ -26,7 +26,6 @@
 
 interface SVGPathElement : SVGStyledElement,
                            SVGLangSpace,
-                           SVGExternalResourcesRequired,
                            SVGTransformable {
     readonly attribute SVGAnimatedNumber pathLength;
 
@@ -109,5 +108,6 @@ interface SVGPathElement : SVGStyledElement,
     readonly attribute SVGPathSegList animatedNormalizedPathSegList;
 };
 
+SVGPathElement implements SVGExternalResourcesRequired;
 SVGPathElement implements SVGTests;
 

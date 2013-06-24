@@ -25,11 +25,11 @@
 
 interface SVGPolylineElement : SVGStyledElement,
                                SVGLangSpace,
-                               SVGExternalResourcesRequired,
                                SVGTransformable {
     readonly attribute SVGPointList points;
     readonly attribute SVGPointList animatedPoints;
 };
 
+SVGPolylineElement implements SVGExternalResourcesRequired;
 SVGPolylineElement implements SVGTests;
 
