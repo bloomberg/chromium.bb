@@ -87,9 +87,9 @@ class ASH_EXPORT Launcher {
 
   views::View* GetAppListButtonView() const;
 
-  // Switches to a 0-indexed (in order of creation) window.
-  // A negative index switches to the last window in the list.
-  void SwitchToWindow(int window_index);
+  // Launch a 0-indexed launcher item in the Launcher.
+  // A negative index launches the last launcher item in the launcher.
+  void LaunchAppIndexAt(int item_index);
 
   // Only to be called for testing. Retrieves the LauncherView.
   // TODO(sky): remove this!

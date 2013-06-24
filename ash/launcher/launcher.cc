@@ -146,11 +146,11 @@ views::View* Launcher::GetAppListButtonView() const {
   return launcher_view_->GetAppListButtonView();
 }
 
-void Launcher::SwitchToWindow(int window_index) {
+void Launcher::LaunchAppIndexAt(int item_index) {
   LauncherModel* launcher_model = launcher_view_->model();
   const LauncherItems& items = launcher_model->items();
   int item_count = launcher_model->item_count();
-  int indexes_left = window_index >= 0 ? window_index : item_count;
+  int indexes_left = item_index >= 0 ? item_index : item_count;
   int found_index = -1;
 
   // Iterating until we have hit the index we are interested in which
@@ -165,7 +165,7 @@ void Launcher::SwitchToWindow(int window_index) {
   // There are two ways how found_index can be valid: a.) the nth item was
   // found (which is true when indexes_left is -1) or b.) the last item was
   // requested (which is true when index was passed in as a negative number).
-  if (found_index >= 0 && (indexes_left == -1 || window_index < 0) &&
+  if (found_index >= 0 && (indexes_left == -1 || item_index < 0) &&
       (delegate_->IsPerAppLauncher() ||
        (items[found_index].status == ash::STATUS_RUNNING ||
         items[found_index].status == ash::STATUS_CLOSED))) {

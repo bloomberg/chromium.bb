@@ -762,32 +762,32 @@ bool AcceleratorController::PerformAction(int action,
       if (ime_control_delegate_)
         return ime_control_delegate_->HandleSwitchIme(accelerator);
       break;
-    case SELECT_WIN_0:
-      Launcher::ForPrimaryDisplay()->SwitchToWindow(0);
+    case LAUNCH_APP_0:
+      Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(0);
       return true;
-    case SELECT_WIN_1:
-      Launcher::ForPrimaryDisplay()->SwitchToWindow(1);
+    case LAUNCH_APP_1:
+      Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(1);
       return true;
-    case SELECT_WIN_2:
-      Launcher::ForPrimaryDisplay()->SwitchToWindow(2);
+    case LAUNCH_APP_2:
+      Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(2);
       return true;
-    case SELECT_WIN_3:
-      Launcher::ForPrimaryDisplay()->SwitchToWindow(3);
+    case LAUNCH_APP_3:
+      Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(3);
       return true;
-    case SELECT_WIN_4:
-      Launcher::ForPrimaryDisplay()->SwitchToWindow(4);
+    case LAUNCH_APP_4:
+      Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(4);
       return true;
-    case SELECT_WIN_5:
-      Launcher::ForPrimaryDisplay()->SwitchToWindow(5);
+    case LAUNCH_APP_5:
+      Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(5);
       return true;
-    case SELECT_WIN_6:
-      Launcher::ForPrimaryDisplay()->SwitchToWindow(6);
+    case LAUNCH_APP_6:
+      Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(6);
       return true;
-    case SELECT_WIN_7:
-      Launcher::ForPrimaryDisplay()->SwitchToWindow(7);
+    case LAUNCH_APP_7:
+      Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(7);
       return true;
-    case SELECT_LAST_WIN:
-      Launcher::ForPrimaryDisplay()->SwitchToWindow(-1);
+    case LAUNCH_LAST_APP:
+      Launcher::ForPrimaryDisplay()->LaunchAppIndexAt(-1);
       return true;
     case WINDOW_SNAP_LEFT:
     case WINDOW_SNAP_RIGHT: {
