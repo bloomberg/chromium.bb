@@ -3,19 +3,34 @@
  * found in the LICENSE file. */
 
 #extension-view {
+  border-spacing: 2px;
   width: 100%;
 }
 
-#extension-view tr:nth-child(odd) {
+#extension-view tr:nth-child(odd):not([class='header']) {
   background: rgb(239, 243, 255);
 }
 
 #extension-view td {
+  padding: 0.35em 0.5em 0;
   vertical-align: top;
 }
 
-#extension-view .extension-memory {
+#extension-view .header th {
+  border-bottom: 1px solid rgb(181, 198, 222);
+  padding: 0.35em 0.5em 0;
+  vertical-align: bottom;
+}
+
+#extension-view .extension-id {
   text-align: right;
+  width: 4em;
+}
+
+#extension-view .extension-memory {
+  border-left: 1px solid rgb(181, 198, 222);
+  text-align: right;
+  width: 7em;
 }
 
 #extension-view #extension-template {
