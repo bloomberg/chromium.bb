@@ -11,7 +11,7 @@
   background-repeat: no-repeat;
 }
 
-tree:focus [selected] [file-type-icon],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon],
 list:focus [selected] [file-type-icon],
 list.autocomplete-suggestions [selected] [file-type-icon] {
   background-image: -webkit-image-set(
@@ -25,7 +25,7 @@ list.autocomplete-suggestions [selected] [file-type-icon] {
     url('../images/files/file_types/200/archive.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='archive'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='archive'],
 list:focus [selected] [file-type-icon='archive'],
 list.autocomplete-suggestions [selected] [file-type-icon='archive'] {
   background-image: -webkit-image-set(
@@ -39,7 +39,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='archive'] {
     url('../images/files/file_types/200/audio.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='audio'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='audio'],
 list:focus [selected] [file-type-icon='audio'],
 list.autocomplete-suggestions [selected] [file-type-icon='audio'] {
   background-image: -webkit-image-set(
@@ -53,7 +53,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='audio'] {
     url('../images/files/file_types/200/excel.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='excel'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='excel'],
 list:focus [selected] [file-type-icon='excel'],
 list.autocomplete-suggestions [selected] [file-type-icon='excel'] {
   background-image: -webkit-image-set(
@@ -67,7 +67,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='excel'] {
     url('../images/files/file_types/200/folder.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='folder'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='folder'],
 list:focus [selected] [file-type-icon='folder'],
 list.autocomplete-suggestions [selected] [file-type-icon='folder'] {
   background-image: -webkit-image-set(
@@ -81,7 +81,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='folder'] {
     url('../images/files/file_types/200/form.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='form'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='form'],
 list:focus [selected] [file-type-icon='form'],
 list.autocomplete-suggestions [selected] [file-type-icon='form'] {
   background-image: -webkit-image-set(
@@ -95,7 +95,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='form'] {
     url('../images/files/file_types/200/gdoc.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='gdoc'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gdoc'],
 list:focus [selected] [file-type-icon='gdoc'],
 list.autocomplete-suggestions [selected] [file-type-icon='gdoc'] {
   background-image: -webkit-image-set(
@@ -109,7 +109,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='gdoc'] {
     url('../images/files/file_types/200/gdraw.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='gdraw'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gdraw'],
 list:focus [selected] [file-type-icon='gdraw'],
 list.autocomplete-suggestions [selected] [file-type-icon='gdraw'] {
   background-image: -webkit-image-set(
@@ -123,7 +123,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='gdraw'] {
     url('../images/files/file_types/200/glink.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='glink'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='glink'],
 list:focus [selected] [file-type-icon='glink'],
 list.autocomplete-suggestions [selected] [file-type-icon='glink'] {
   background-image: -webkit-image-set(
@@ -137,7 +137,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='glink'] {
     url('../images/files/file_types/200/gsheet.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='gsheet'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gsheet'],
 list:focus [selected] [file-type-icon='gsheet'],
 list.autocomplete-suggestions [selected] [file-type-icon='gsheet'] {
   background-image: -webkit-image-set(
@@ -151,7 +151,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='gsheet'] {
     url('../images/files/file_types/200/gslides.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='gslides'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gslides'],
 list:focus [selected] [file-type-icon='gslides'],
 list.autocomplete-suggestions [selected] [file-type-icon='gslides'] {
   background-image: -webkit-image-set(
@@ -165,7 +165,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='gslides'] {
     url('../images/files/file_types/200/gtable.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='gtable'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='gtable'],
 list:focus [selected] [file-type-icon='gtable'],
 list.autocomplete-suggestions [selected] [file-type-icon='gtable'] {
   background-image: -webkit-image-set(
@@ -179,7 +179,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='gtable'] {
     url('../images/files/file_types/200/image.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='image'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='image'],
 list:focus [selected] [file-type-icon='image'],
 list.autocomplete-suggestions [selected] [file-type-icon='image'] {
   background-image: -webkit-image-set(
@@ -193,7 +193,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='image'] {
     url('../images/files/file_types/200/pdf.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='pdf'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='pdf'],
 list:focus [selected] [file-type-icon='pdf'],
 list.autocomplete-suggestions [selected] [file-type-icon='pdf'] {
   background-image: -webkit-image-set(
@@ -207,7 +207,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='pdf'] {
     url('../images/files/file_types/200/ppt.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='ppt'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='ppt'],
 list:focus [selected] [file-type-icon='ppt'],
 list.autocomplete-suggestions [selected] [file-type-icon='ppt'] {
   background-image: -webkit-image-set(
@@ -221,7 +221,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='ppt'] {
     url('../images/files/file_types/200/script.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='script'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='script'],
 list:focus [selected] [file-type-icon='script'],
 list.autocomplete-suggestions [selected] [file-type-icon='script'] {
   background-image: -webkit-image-set(
@@ -235,7 +235,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='script'] {
     url('../images/files/file_types/200/sites.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='sites'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='sites'],
 list:focus [selected] [file-type-icon='sites'],
 list.autocomplete-suggestions [selected] [file-type-icon='sites'] {
   background-image: -webkit-image-set(
@@ -249,7 +249,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='sites'] {
     url('../images/files/file_types/200/video.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='video'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='video'],
 list:focus [selected] [file-type-icon='video'],
 list.autocomplete-suggestions [selected] [file-type-icon='video'] {
   background-image: -webkit-image-set(
@@ -263,7 +263,7 @@ list.autocomplete-suggestions [selected] [file-type-icon='video'] {
     url('../images/files/file_types/200/word.png') 2x);
 }
 
-tree:focus [selected] [file-type-icon='word'],
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='word'],
 list:focus [selected] [file-type-icon='word'],
 list.autocomplete-suggestions [selected] [file-type-icon='word'] {
   background-image: -webkit-image-set(
