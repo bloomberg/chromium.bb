@@ -207,7 +207,6 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     AddTestExtension(extension_service_, FPL("example1"));
     AddTestExtension(extension_service_, FPL("example2"));
 
-    SetDisableDriveAPI(true);
     RegisterSyncableFileSystem();
 
     fake_drive_service_ = new FakeDriveService;
@@ -253,7 +252,6 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     fake_drive_service_ = NULL;
 
     RevokeSyncableFileSystem();
-    SetDisableDriveAPI(false);
 
     extension_service_ = NULL;
     profile_.reset();
@@ -455,6 +453,18 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     return resource_id;
   }
 
+  void TestRegisterNewOrigin();
+  void TestRegisterExistingOrigin();
+  void TestRegisterOriginWithSyncDisabled();
+  void TestUnregisterOrigin();
+  void TestUpdateRegisteredOrigins();
+  void TestRemoteChange_NoChange();
+  void TestRemoteChange_Busy();
+  void TestRemoteChange_NewFile();
+  void TestRemoteChange_UpdateFile();
+  void TestRemoteChange_Override();
+  void TestRemoteChange_Folder();
+
  private:
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -489,7 +499,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
 
 #if !defined(OS_ANDROID)
 
-TEST_F(DriveFileSyncServiceFakeTest, RegisterNewOrigin) {
+void DriveFileSyncServiceFakeTest::TestRegisterNewOrigin() {
   SetUpSyncRootDirectory();
 
   SetUpDriveSyncService(true);
@@ -504,7 +514,7 @@ TEST_F(DriveFileSyncServiceFakeTest, RegisterNewOrigin) {
   EXPECT_TRUE(!remote_change_handler().HasChanges());
 }
 
-TEST_F(DriveFileSyncServiceFakeTest, RegisterExistingOrigin) {
+void DriveFileSyncServiceFakeTest::TestRegisterExistingOrigin() {
   SetUpSyncRootDirectory();
   const std::string origin_resource_id =
       SetUpOriginRootDirectory(kExtensionName1);
@@ -529,7 +539,28 @@ TEST_F(DriveFileSyncServiceFakeTest, RegisterExistingOrigin) {
   EXPECT_EQ(3u, remote_change_handler().ChangesSize());
 }
 
-TEST_F(DriveFileSyncServiceFakeTest, UnregisterOrigin) {
+void DriveFileSyncServiceFakeTest::TestRegisterOriginWithSyncDisabled() {
+  SetUpSyncRootDirectory();
+
+  // Usually the sync service starts here, but since we're setting up a drive
+  // service with sync disabled sync doesn't start (while register origin should
+  // still return OK).
+  SetUpDriveSyncService(false);
+
+  bool done = false;
+  sync_service()->RegisterOriginForTrackingChanges(
+      ExtensionNameToGURL(kExtensionName1),
+      base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
+  message_loop()->RunUntilIdle();
+  EXPECT_TRUE(done);
+
+  // We must not have started batch sync for the newly registered origin,
+  // so it should still be in the batch_sync_origins.
+  VerifySizeOfRegisteredOrigins(1u, 0u, 0u);
+  EXPECT_TRUE(!remote_change_handler().HasChanges());
+}
+
+void DriveFileSyncServiceFakeTest::TestUnregisterOrigin() {
   SetUpSyncRootDirectory();
   SetUpOriginRootDirectory(kExtensionName1);
   SetUpOriginRootDirectory(kExtensionName2);
@@ -550,7 +581,7 @@ TEST_F(DriveFileSyncServiceFakeTest, UnregisterOrigin) {
   EXPECT_TRUE(!remote_change_handler().HasChanges());
 }
 
-TEST_F(DriveFileSyncServiceFakeTest, UpdateRegisteredOrigins) {
+void DriveFileSyncServiceFakeTest::TestUpdateRegisteredOrigins() {
   SetUpSyncRootDirectory();
   SetUpOriginRootDirectory(kExtensionName1);
   SetUpOriginRootDirectory(kExtensionName2);
@@ -582,7 +613,7 @@ TEST_F(DriveFileSyncServiceFakeTest, UpdateRegisteredOrigins) {
   VerifySizeOfRegisteredOrigins(1u, 0u, 0u);
 }
 
-TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_NoChange) {
+void DriveFileSyncServiceFakeTest::TestRemoteChange_NoChange() {
   SetUpSyncRootDirectory();
 
   SetUpDriveSyncService(true);
@@ -596,7 +627,7 @@ TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_NoChange) {
   EXPECT_TRUE(!remote_change_handler().HasChanges());
 }
 
-TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Busy) {
+void DriveFileSyncServiceFakeTest::TestRemoteChange_Busy() {
   const char kFileName[] = "File 1.txt";
   const GURL origin = ExtensionNameToGURL(kExtensionName1);
 
@@ -624,7 +655,7 @@ TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Busy) {
                       SYNC_DIRECTION_NONE);
 }
 
-TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_NewFile) {
+void DriveFileSyncServiceFakeTest::TestRemoteChange_NewFile() {
   const char kFileName[] = "File 1.txt";
   const GURL origin = ExtensionNameToGURL(kExtensionName1);
 
@@ -656,7 +687,7 @@ TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_NewFile) {
                       SYNC_DIRECTION_REMOTE_TO_LOCAL);
 }
 
-TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_UpdateFile) {
+void DriveFileSyncServiceFakeTest::TestRemoteChange_UpdateFile() {
   const char kFileName[] = "File 1.txt";
   const GURL origin = ExtensionNameToGURL(kExtensionName1);
 
@@ -688,28 +719,7 @@ TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_UpdateFile) {
                       SYNC_DIRECTION_REMOTE_TO_LOCAL);
 }
 
-TEST_F(DriveFileSyncServiceFakeTest, RegisterOriginWithSyncDisabled) {
-  SetUpSyncRootDirectory();
-
-  // Usually the sync service starts here, but since we're setting up a drive
-  // service with sync disabled sync doesn't start (while register origin should
-  // still return OK).
-  SetUpDriveSyncService(false);
-
-  bool done = false;
-  sync_service()->RegisterOriginForTrackingChanges(
-      ExtensionNameToGURL(kExtensionName1),
-      base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
-  message_loop()->RunUntilIdle();
-  EXPECT_TRUE(done);
-
-  // We must not have started batch sync for the newly registered origin,
-  // so it should still be in the batch_sync_origins.
-  VerifySizeOfRegisteredOrigins(1u, 0u, 0u);
-  EXPECT_TRUE(!remote_change_handler().HasChanges());
-}
-
-TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Override) {
+void DriveFileSyncServiceFakeTest::TestRemoteChange_Override() {
   const base::FilePath kFilePath(FPL("File 1.txt"));
   const std::string kFileResourceId("file:2_file_resource_id");
   const std::string kFileResourceId2("file:2_file_resource_id_2");
@@ -767,7 +777,7 @@ TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Override) {
       kFileResourceId2, 8, "updated_file_md5"));
 }
 
-TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Folder) {
+void DriveFileSyncServiceFakeTest::TestRemoteChange_Folder() {
   SetUpSyncRootDirectory();
   const std::string origin_resource_id =
       SetUpOriginRootDirectory(kExtensionName1);
@@ -779,6 +789,116 @@ TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Folder) {
   // Expect to drop this change for file.
   EXPECT_FALSE(AppendIncrementalRemoteChangeByResourceId(
       resource_id, ExtensionNameToGURL(kExtensionName1)));
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RegisterNewOrigin) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  TestRegisterNewOrigin();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RegisterNewOrigin_WAPI) {
+  ScopedDisableDriveAPI disable_drive_api;
+  TestRegisterNewOrigin();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RegisterExistingOrigin) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  TestRegisterExistingOrigin();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RegisterExistingOrigin_WAPI) {
+  ScopedDisableDriveAPI disable_drive_api;
+  TestRegisterExistingOrigin();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RegisterOriginWithSyncDisabled) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  TestRegisterOriginWithSyncDisabled();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RegisterOriginWithSyncDisabled_WAPI) {
+  ScopedDisableDriveAPI disable_drive_api;
+  TestRegisterOriginWithSyncDisabled();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, UnregisterOrigin) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  TestUnregisterOrigin();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, UnregisterOrigin_WAPI) {
+  ScopedDisableDriveAPI disable_drive_api;
+  TestUnregisterOrigin();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, UpdateRegisteredOrigins) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  TestUpdateRegisteredOrigins();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, UpdateRegisteredOrigins_WAPI) {
+  ScopedDisableDriveAPI disable_drive_api;
+  TestUpdateRegisteredOrigins();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_NoChange) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  TestRemoteChange_NoChange();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_NoChange_WAPI) {
+  ScopedDisableDriveAPI disable_drive_api;
+  TestRemoteChange_NoChange();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Busy) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  TestRemoteChange_Busy();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Busy_WAPI) {
+  ScopedDisableDriveAPI disable_drive_api;
+  TestRemoteChange_Busy();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_NewFile) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  TestRemoteChange_NewFile();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_NewFile_WAPI) {
+  ScopedDisableDriveAPI disable_drive_api;
+  TestRemoteChange_NewFile();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_UpdateFile) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  TestRemoteChange_UpdateFile();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_UpdateFile_WAPI) {
+  ScopedDisableDriveAPI disable_drive_api;
+  TestRemoteChange_UpdateFile();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Override) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  TestRemoteChange_Override();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Override_WAPI) {
+  ScopedDisableDriveAPI disable_drive_api;
+  TestRemoteChange_Override();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Folder) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  TestRemoteChange_Folder();
+}
+
+TEST_F(DriveFileSyncServiceFakeTest, RemoteChange_Folder_WAPI) {
+  ScopedDisableDriveAPI disable_drive_api;
+  TestRemoteChange_Folder();
 }
 
 #endif  // !defined(OS_ANDROID)
