@@ -285,11 +285,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // Called at most once by the SpdySession when the initial response
   // headers have been received for this stream, i.e., a SYN_REPLY (or
   // SYN_STREAM for push streams) frame has been received. This is the
-  // entry point for a push stream. Returns a status code; if it is an
-  // error, the stream may have already been closed.
-  //
-  // TODO(akalin): Guarantee that the stream is already closed if an
-  // error is returned.
+  // entry point for a push stream. Returns a status code; if it is
+  // an error, the stream was closed by this function.
   int OnInitialResponseHeadersReceived(const SpdyHeaderBlock& response_headers,
                                        base::Time response_time,
                                        base::TimeTicks recv_first_byte_time);
@@ -297,10 +294,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // Called by the SpdySession (only after
   // OnInitialResponseHeadersReceived() has been called) when
   // late-bound headers are received for a stream. Returns a status
-  // code; if it is an error, ths stream may have already been closed.
-  //
-  // TODO(akalin): Guarantee that the stream is already closed if an
-  // error is returned.
+  // code; if it is an error, the stream was closed by this function.
   int OnAdditionalResponseHeadersReceived(
       const SpdyHeaderBlock& additional_response_headers);
 
@@ -340,10 +334,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // it.
   void Close();
 
-  // Returns whether or not this stream is closed. Note that the only
-  // time a stream is closed and not deleted is in its delegate's
-  // OnClose() method.
-  bool closed() const { return io_state_ == STATE_DONE; }
+  // Must be used only by the SpdySession.
+  base::WeakPtr<SpdyStream> GetWeakPtr();
 
   // Interface for the delegate to use.
 
@@ -382,12 +374,14 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // called only when the stream is still open.
   void PossiblyResumeIfSendStalled();
 
-  // Must be used only by the SpdySession.
-  base::WeakPtr<SpdyStream> GetWeakPtr();
+  // Returns whether or not this stream is closed. Note that the only
+  // time a stream is closed and not deleted is in its delegate's
+  // OnClose() method.
+  bool IsClosed() const;
 
-  bool is_idle() const {
-    return io_state_ == STATE_OPEN || io_state_ == STATE_DONE;
-  }
+  // Returns whether or not this stream has finished sending its
+  // request headers and is ready to send/receive more data.
+  bool IsIdle() const;
 
   int response_status() const { return response_status_; }
 
@@ -416,8 +410,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
     STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE,
     STATE_SEND_REQUEST_HEADERS,
     STATE_SEND_REQUEST_HEADERS_COMPLETE,
-    STATE_OPEN,
-    STATE_DONE
+    STATE_IDLE,
+    STATE_CLOSED
   };
 
   void OnGetDomainBoundCertComplete(int result);
@@ -461,11 +455,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Merge the given headers into |response_headers_| and calls
   // OnResponseHeadersUpdated() on the delegate (if attached).
-  // Returns a status code; if it is an error, the stream may have
-  // already been closed.
-  //
-  // TODO(akalin): Guarantee that the stream is already closed if an
-  // error is returned.
+  // Returns a status code; if it is an error, the stream was closed
+  // by this function.
   int MergeWithResponseHeaders(const SpdyHeaderBlock& new_response_headers);
 
   const SpdyStreamType type_;

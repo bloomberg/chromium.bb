@@ -107,7 +107,7 @@ int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
 
   // Check if we already have the response headers. If so, return synchronously.
   if (response_headers_status_ == RESPONSE_HEADERS_ARE_COMPLETE) {
-    CHECK(stream_->is_idle());
+    CHECK(stream_->IsIdle());
     return OK;
   }
 
@@ -119,10 +119,9 @@ int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
 
 int SpdyHttpStream::ReadResponseBody(
     IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
-  if (stream_.get()) {
-    CHECK(stream_->is_idle());
-    CHECK(!stream_->closed());
-  }
+  if (stream_.get())
+    CHECK(stream_->IsIdle());
+
   CHECK(buf);
   CHECK(buf_len);
   CHECK(!callback.is_null());
@@ -349,7 +348,7 @@ void SpdyHttpStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   // ReadResponseBody(), therefore user_buffer_ may be NULL.  This may often
   // happen for server initiated streams.
   DCHECK(stream_.get());
-  DCHECK(!stream_->closed() || stream_->type() == SPDY_PUSH_STREAM);
+  DCHECK(!stream_->IsClosed() || stream_->type() == SPDY_PUSH_STREAM);
   if (buffer) {
     response_body_queue_.Enqueue(buffer.Pass());
 

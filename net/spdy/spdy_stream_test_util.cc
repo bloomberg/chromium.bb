@@ -16,7 +16,9 @@ namespace net {
 namespace test {
 
 ClosingDelegate::ClosingDelegate(
-    const base::WeakPtr<SpdyStream>& stream) : stream_(stream) {}
+    const base::WeakPtr<SpdyStream>& stream) : stream_(stream) {
+  DCHECK(stream_);
+}
 
 ClosingDelegate::~ClosingDelegate() {}
 
@@ -32,9 +34,9 @@ void ClosingDelegate::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {}
 void ClosingDelegate::OnDataSent() {}
 
 void ClosingDelegate::OnClose(int status) {
-  DCHECK(stream_.get());
+  DCHECK(stream_);
   stream_->Close();
-  DCHECK(!stream_.get());
+  // The |stream_| may still be alive (if it is our delegate).
 }
 
 StreamDelegateBase::StreamDelegateBase(
