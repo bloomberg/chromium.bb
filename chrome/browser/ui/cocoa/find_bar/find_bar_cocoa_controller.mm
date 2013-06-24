@@ -123,6 +123,11 @@ const float kRightEdgeOffset = 25;
     findBarBridge_->GetFindBarController()->EndFindSession(
         FindBarController::kKeepSelectionOnPage,
         FindBarController::kKeepResultsInFindBox);
+
+  // Turn off hover state on close button else the button will remain
+  // hovered when we bring the find bar back up.
+  // crbug.com/227424
+  [[closeButton_ cell] setIsMouseInside:NO];
 }
 
 - (IBAction)previousResult:(id)sender {
