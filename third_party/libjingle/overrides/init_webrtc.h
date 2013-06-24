@@ -40,7 +40,7 @@ typedef void (*DestroyWebRtcMediaEngineFunction)(
 // to go through GetProcAddress et al and rely on specific name mangling.
 typedef bool (*InitializeModuleFunction)(
     const CommandLine& command_line,
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
     AllocateFunction alloc,
     DellocateFunction dealloc,
 #endif
