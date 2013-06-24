@@ -240,8 +240,8 @@ class ExecutiveTest(unittest.TestCase):
             return  # This function isn't implemented properly on windows yet.
         import multiprocessing
 
-        NUM_PROCESSES = 4
-        DELAY_SECS = 0.25
+        NUM_PROCESSES = 2
+        DELAY_SECS = 0.50
         cmd_line = [sys.executable, '-c', 'import time; time.sleep(%f); print "hello"' % DELAY_SECS]
         cwd = os.getcwd()
         commands = [tuple([cmd_line, cwd])] * NUM_PROCESSES
