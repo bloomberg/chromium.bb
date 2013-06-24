@@ -64,10 +64,12 @@ bool WebSocketExtensionParser::consumeToken()
 {
     skipSpaces();
     const char* start = m_current;
-    while (m_current < m_end && isASCIIPrintable(*m_current) && !isSeparator(*m_current))
-        ++m_current;
-    if (start < m_current) {
-        m_currentToken = String(start, m_current - start);
+    const char* current = m_current;
+    while (current < m_end && isASCIIPrintable(*current) && !isSeparator(*current))
+        ++current;
+    if (start < current) {
+        m_currentToken = String(start, current - start);
+        m_current = current;
         return true;
     }
     return false;
@@ -76,21 +78,26 @@ bool WebSocketExtensionParser::consumeToken()
 bool WebSocketExtensionParser::consumeQuotedString()
 {
     skipSpaces();
-    if (m_current >= m_end || *m_current != '"')
+    const char* current = m_current;
+    if (current >= m_end || *current != '"')
         return false;
 
     Vector<char> buffer;
-    ++m_current;
-    while (m_current < m_end && *m_current != '"') {
-        if (*m_current == '\\' && ++m_current >= m_end)
+    ++current;
+    while (current < m_end && *current != '"') {
+        if (*current == '\\' && ++current >= m_end)
             return false;
-        buffer.append(*m_current);
-        ++m_current;
+        // RFC6455 requires that the value after quoted-string unescaping
+        // MUST conform to the 'token' ABNF.
+        if (!isASCIIPrintable(*current) || isSeparator(*current))
+            return false;
+        buffer.append(*current);
+        ++current;
     }
-    if (m_current >= m_end || *m_current != '"')
+    if (current >= m_end || *current != '"' || buffer.isEmpty())
         return false;
     m_currentToken = String::fromUTF8(buffer.data(), buffer.size());
-    ++m_current;
+    m_current = ++current;
     return true;
 }
 
@@ -130,8 +137,9 @@ bool WebSocketExtensionParser::parseExtension(String& extensionToken, HashMap<St
                 extensionParameters.add(parameterToken, currentToken());
             else
                 return false;
-        } else
+        } else {
             extensionParameters.add(parameterToken, String());
+        }
     }
     if (!finished() && !consumeCharacter(','))
         return false;

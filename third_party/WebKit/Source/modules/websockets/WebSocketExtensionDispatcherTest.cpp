@@ -144,10 +144,10 @@ TEST_F(WebSocketExtensionDispatcherTest, TestMultiple)
 TEST_F(WebSocketExtensionDispatcherTest, TestQuotedString)
 {
     addMockProcessor("x-foo");
-    EXPECT_TRUE(m_extensions.processHeaderValue("x-foo; param1=\"quoted string\"; param2=\"\\\"quoted\\\" string\\\\\""));
+    ASSERT_TRUE(m_extensions.processHeaderValue("x-foo; param1=\"quoted-string\"; param2=\"quoted\\.string\""));
     EXPECT_EQ(2, m_parsedParameters[0].size());
-    EXPECT_EQ("quoted string", m_parsedParameters[0].get("param1"));
-    EXPECT_EQ("\"quoted\" string\\", m_parsedParameters[0].get("param2"));
+    EXPECT_EQ("quoted-string", m_parsedParameters[0].get("param1"));
+    EXPECT_EQ("quoted.string", m_parsedParameters[0].get("param2"));
 }
 
 TEST_F(WebSocketExtensionDispatcherTest, TestInvalid)
@@ -163,6 +163,11 @@ TEST_F(WebSocketExtensionDispatcherTest, TestInvalid)
         "x-foo; bar=\"mismatch quote",
         "x-foo; bar=\"\\\"",
         "x-foo; \"bar\"=baz",
+        "x-foo; bar=\"\"",
+        "x-foo; bar=\" \"",
+        "x-foo; bar=\"bar baz\"",
+        "x-foo; bar=\"bar,baz\"",
+        "x-foo; bar=\"ba\xffr,baz\"",
         "x-foo x-bar",
         "x-foo, x-baz"
         "x-foo, ",
