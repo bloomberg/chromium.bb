@@ -946,3 +946,10 @@
    fun:GetXWindowName
    fun:ash::test::DisplayControllerTest_XWidowNameForRootWindow_Test::TestBody
 }
+{
+   bug_253434
+   Heapcheck:Leak
+   ...
+   fun:*DeviceOAuth2TokenServiceTest_RefreshTokenValidation_*
+}
+
