@@ -68,11 +68,11 @@ index d1f8d1f..67bf660 100644
    "optional_permissions": [
      "<all_urls>"
    ],
-@@ -41,16 +27,20 @@
-     "storage",
+@@ -42,16 +28,20 @@
      "clipboardRead",
--    "clipboardWrite"
-+    "clipboardWrite",
+     "clipboardWrite",
+-    "nativeMessaging"
++    "nativeMessaging",
 +    "experimental"
    ],
 -  "plugins": [
