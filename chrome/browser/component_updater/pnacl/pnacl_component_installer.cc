@@ -284,9 +284,18 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
   return true;
 }
 
+// Given |file|, which can be a path like "_platform_specific/arm/pnacl_foo",
+// returns the assumed install path. The path separator in |file| is '/'
+// for all platforms. Caller is responsible for checking that the
+// |installed_file| actually exists.
 bool PnaclComponentInstaller::GetInstalledFile(
     const std::string& file, base::FilePath* installed_file) {
-  return false;
+  if (current_version().Equals(Version(kNullVersion)))
+    return false;
+
+  *installed_file = GetPnaclBaseDirectory().AppendASCII(
+      current_version().GetString()).AppendASCII(file);
+  return true;
 }
 
 void PnaclComponentInstaller::AddInstallCallback(
