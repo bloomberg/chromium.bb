@@ -853,13 +853,17 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ]
     },
     {
+      // Panel fitting is only used with OS_CHROMEOS. To avoid displaying an
+      // error in chrome:gpu on every other platform, this blacklist entry needs
+      // to only match on chromeos. The drawback is that panel_fitting will not
+      // appear to be blacklisted if accidentally queried on non-chromeos.
       "id": 57,
-      "description": "Enable panel fitting capability on ChromeOS only on IVB and SNB Graphics Controllers.",
+      "description": "Chrome OS panel fitting is only supported for Intel IVB and SNB Graphics Controllers.",
+      "os": {
+        "type": "chromeos"
+      },
       "exceptions": [
         {
-          "os": {
-            "type": "chromeos"
-          },
           "vendor_id": "0x8086",
           "device_id": ["0x0106", "0x0116", "0x0166"]
         }

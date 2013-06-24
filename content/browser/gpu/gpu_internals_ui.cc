@@ -324,18 +324,16 @@ base::Value* GetFeatureStatus() {
           " about:flags or command line.",
           true
       },
+#if defined(OS_CHROMEOS)
       {
           "panel_fitting",
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_PANEL_FITTING),
-#if defined(OS_CHROMEOS)
           command_line.HasSwitch(switches::kDisablePanelFitting),
-#else
-          true,
-#endif
-          "Panel fitting is unavailable, either disabled at the command"
-          " line or not supported by the current system.",
+          "Panel fitting has been disabled, either via about:flags or command"
+          " line.",
           false
       },
+#endif
       {
           "force_compositing_mode",
           manager->IsFeatureBlacklisted(
