@@ -191,10 +191,14 @@ class MagnificationManagerImpl : public MagnificationManager,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE:
-        // Update |profile_| when entering the login screen.
-        SetProfile(ProfileHelper::GetSigninProfile());
+      case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
+        // Update |profile_| when entering the login screen or when entering a
+        // session.
+        Profile* profile = ProfileManager::GetDefaultProfile();
+        if (ProfileHelper::IsSigninProfile(profile))
+          SetProfile(profile);
         break;
+      }
       case chrome::NOTIFICATION_SESSION_STARTED:
         // Update |profile_| when entering a session.
         SetProfile(ProfileManager::GetDefaultProfile());
