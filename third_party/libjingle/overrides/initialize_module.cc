@@ -20,7 +20,7 @@
 #define ALLOC_EXPORT __attribute__((visibility("default")))
 #endif
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 // These are used by our new/delete overrides in
 // allocator_shim/allocator_proxy.cc
 AllocateFunction g_alloc = NULL;
@@ -44,7 +44,7 @@ extern "C" {
 // Called from init_webrtc.cc.
 ALLOC_EXPORT
 bool InitializeModule(const CommandLine& command_line,
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
                       AllocateFunction alloc,
                       DellocateFunction dealloc,
 #endif
@@ -53,7 +53,7 @@ bool InitializeModule(const CommandLine& command_line,
                       webrtc::AddTraceEventPtr trace_add_trace_event,
                       CreateWebRtcMediaEngineFunction* create_media_engine,
                       DestroyWebRtcMediaEngineFunction* destroy_media_engine) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   g_alloc = alloc;
   g_dealloc = dealloc;
 #endif
