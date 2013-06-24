@@ -155,10 +155,11 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
   virtual void SetInMemoryBackend(int backend_id,
       history::InMemoryHistoryBackend* backend) OVERRIDE {
     // Send the backend to the history service on the main thread.
+    scoped_ptr<history::InMemoryHistoryBackend> in_memory_backend(backend);
     service_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&HistoryService::SetInMemoryBackend, history_service_,
-                   backend_id, backend));
+                   backend_id, base::Passed(&in_memory_backend)));
   }
 
   virtual void BroadcastNotifications(
@@ -1076,17 +1077,16 @@ syncer::SyncError HistoryService::ProcessLocalDeleteDirective(
       delete_directive);
 }
 
-void HistoryService::SetInMemoryBackend(int backend_id,
-    history::InMemoryHistoryBackend* mem_backend) {
+void HistoryService::SetInMemoryBackend(
+    int backend_id, scoped_ptr<history::InMemoryHistoryBackend> mem_backend) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!history_backend_.get() || current_backend_id_ != backend_id) {
     DVLOG(1) << "Message from obsolete backend";
-    // Cleaning up the memory backend.
-    delete mem_backend;
+    // mem_backend is deleted.
     return;
   }
   DCHECK(!in_memory_backend_) << "Setting mem DB twice";
-  in_memory_backend_.reset(mem_backend);
+  in_memory_backend_.reset(mem_backend.release());
 
   // The database requires additional initialization once we own it.
   in_memory_backend_->AttachToHistoryService(profile_);

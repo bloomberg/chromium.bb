@@ -392,6 +392,7 @@ class HistoryBackendTest : public testing::Test {
     backend_ = NULL;
     mem_backend_.reset();
     file_util::Delete(test_dir_, true);
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetInMemoryBackend(int backend_id, InMemoryHistoryBackend* backend) {
