@@ -80,8 +80,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
   virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
 #endif  // defined(TOOLKIT_GTK)
-  virtual void OnSwapCompositorFrame(
-      scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
 
   // RenderWidgetHostViewPort implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -173,14 +171,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 #endif
 
   bool is_showing() const { return is_showing_; }
-  bool did_swap_compositor_frame() const { return did_swap_compositor_frame_; }
 
  protected:
   RenderWidgetHostImpl* rwh_;
 
  private:
   bool is_showing_;
-  bool did_swap_compositor_frame_;
 };
 
 #if defined(COMPILER_MSVC)

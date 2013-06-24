@@ -29,9 +29,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_SwapOut_ACK::ID:
     case ViewHostMsg_ClosePage_ACK::ID:
     case ViewHostMsg_DomOperationResponse::ID:
-    case ViewHostMsg_SwapCompositorFrame::ID:
-    case ViewHostMsg_UpdateIsDelayed::ID:
-    case ViewHostMsg_DidActivateAcceleratedCompositing::ID:
     // Allow cross-process JavaScript calls.
     case ViewHostMsg_RouteCloseEvent::ID:
     case ViewHostMsg_RouteMessageEvent::ID:
