@@ -9,16 +9,21 @@
 # it takes too long to run all browser_tests with Dr.Memory,
 # and we only select subset to run
 # A*: ~70  tests
-# B*: ~100 tests
+# DrM-i#1052-c#52
+AutofillTest.*
+AcceleratedCompositingBlockedTest.*
+AppApiTest.*
+BrowserAccessibilityStateImplTest.*
+B*
 C*
 D*
 E*
 F*
 G*
-H*
-I*
-J*
-K*
+# H*: ~35  tests
+# I*: ~10  tests
+# J*: 0    tests
+# K*: 1    tests
 L*
 M*
 N*
@@ -28,9 +33,9 @@ Q*
 R*
 S*
 T*
-U*
-V*
+# U*: ~20  tests
+# V*: 5    tests
 W*
-X*
-Y*
-Z*
+# X*: 0    tests
+# Y*: 0    tests
+# Z*: 0    tests
