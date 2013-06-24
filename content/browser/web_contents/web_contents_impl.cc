@@ -3481,6 +3481,7 @@ void WebContentsImpl::BeforeUnloadFiredFromRenderManager(
                     BeforeUnloadFired(proceed_time));
   if (delegate_)
     delegate_->BeforeUnloadFired(this, proceed, proceed_to_fire_unload);
+  // Note: |this| might be deleted at this point.
 }
 
 void WebContentsImpl::RenderViewGoneFromRenderManager(
