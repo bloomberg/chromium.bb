@@ -57,8 +57,6 @@ public:
 
     bool isId() const;
 
-    CSSStyleDeclaration* style();
-
     void setSpecified(bool specified) { m_specified = specified; }
 
     void attachToElement(Element*);

@@ -55,7 +55,6 @@ public:
 
     virtual AffineTransform localCoordinateSpaceTransform(SVGLocatable::CTMScope) const;
 
-    virtual CSSStyleDeclaration* style() { return StyledElement::style(); }
     virtual bool needsPendingResourceHandling() const { return true; }
 
 protected: 

@@ -34,7 +34,6 @@
 #include "core/css/SelectorCheckerFastPath.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/StylePropertySet.h"
-#include "core/dom/StyledElement.h"
 #include "core/rendering/RenderRegion.h"
 
 namespace WebCore {
@@ -90,7 +89,7 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
 
     const StyleResolverState& state = m_state;
     Element* element = state.element();
-    const StyledElement* styledElement = state.styledElement();
+    const Element* styledElement = state.styledElement();
     const AtomicString& pseudoId = element->shadowPseudoId();
     if (!pseudoId.isEmpty()) {
         ASSERT(styledElement);

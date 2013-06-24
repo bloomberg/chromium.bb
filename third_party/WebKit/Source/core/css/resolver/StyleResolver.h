@@ -85,7 +85,6 @@ class StyleRuleRegion;
 class StyleShader;
 class StyleSheet;
 class StyleSheetList;
-class StyledElement;
 
 class MediaQueryResult {
     WTF_MAKE_NONCOPYABLE(MediaQueryResult); WTF_MAKE_FAST_ALLOCATED;
@@ -189,8 +188,8 @@ private:
     RenderStyle* locateSharedStyle();
     bool styleSharingCandidateMatchesRuleSet(RuleSet*);
     Node* locateCousinList(Element* parent, unsigned& visitedNodeCount) const;
-    StyledElement* findSiblingForStyleSharing(Node*, unsigned& count) const;
-    bool canShareStyleWithElement(StyledElement*) const;
+    Element* findSiblingForStyleSharing(Node*, unsigned& count) const;
+    bool canShareStyleWithElement(Element*) const;
 
     PassRefPtr<RenderStyle> styleForKeyframe(const RenderStyle*, const StyleKeyframe*, KeyframeValue&);
 
@@ -374,7 +373,7 @@ private:
     void cacheBorderAndBackground();
 
 private:
-    bool canShareStyleWithControl(StyledElement*) const;
+    bool canShareStyleWithControl(Element*) const;
 
     void applyProperty(CSSPropertyID, CSSValue*);
 
@@ -399,7 +398,7 @@ private:
     void sweepMatchedPropertiesCache(Timer<StyleResolver>*);
 
     bool classNamesAffectedByRules(const SpaceSplitString&) const;
-    bool sharingCandidateHasIdenticalStyleAffectingAttributes(StyledElement*) const;
+    bool sharingCandidateHasIdenticalStyleAffectingAttributes(Element*) const;
 
     unsigned m_matchedPropertiesCacheAdditionsSinceLastSweep;
 

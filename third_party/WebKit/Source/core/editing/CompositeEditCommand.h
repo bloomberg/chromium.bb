@@ -34,8 +34,8 @@
 namespace WebCore {
 
 class EditingStyle;
+class Element;
 class HTMLElement;
-class StyledElement;
 class Text;
 
 class EditCommandComposition : public UndoStep {
@@ -118,7 +118,7 @@ protected:
     void prepareWhitespaceAtPositionForSplit(Position&);
     bool canRebalance(const Position&) const;
     bool shouldRebalanceLeadingWhitespaceFor(const String&) const;
-    void removeCSSProperty(PassRefPtr<StyledElement>, CSSPropertyID);
+    void removeCSSProperty(PassRefPtr<Element>, CSSPropertyID);
     void removeNodeAttribute(PassRefPtr<Element>, const QualifiedName& attribute);
     void removeChildrenInRange(PassRefPtr<Node>, unsigned from, unsigned to);
     virtual void removeNode(PassRefPtr<Node>, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);

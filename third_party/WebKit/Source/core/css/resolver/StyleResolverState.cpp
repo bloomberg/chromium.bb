@@ -22,10 +22,10 @@
 #include "config.h"
 #include "core/css/resolver/StyleResolverState.h"
 
+#include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeRenderingContext.h"
-#include "core/dom/StyledElement.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/rendering/RenderTheme.h"
 
@@ -56,7 +56,7 @@ void StyleResolverState::clear()
 void StyleResolverState::initElement(Element* e)
 {
     m_element = e;
-    m_styledElement = e && e->isStyledElement() ? static_cast<StyledElement*>(e) : 0;
+    m_styledElement = e && e->isStyledElement() ? e : 0;
     m_elementLinkState = e ? e->document()->visitedLinkState()->determineLinkState(e) : NotInsideLink;
 }
 

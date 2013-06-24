@@ -543,18 +543,17 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
         return 0;
     if (parent->hasScopedHTMLStyleChild())
         return 0;
-    StyledElement* p = static_cast<StyledElement*>(parent);
-    if (p->inlineStyle())
+    if (parent->inlineStyle())
         return 0;
-    if (p->isSVGElement() && toSVGElement(p)->animatedSMILStyleProperties())
+    if (parent->isSVGElement() && toSVGElement(parent)->animatedSMILStyleProperties())
         return 0;
-    if (p->hasID() && m_features.idsInRules.contains(p->idForStyleResolution().impl()))
+    if (parent->hasID() && m_features.idsInRules.contains(parent->idForStyleResolution().impl()))
         return 0;
 
-    RenderStyle* parentStyle = p->renderStyle();
+    RenderStyle* parentStyle = parent->renderStyle();
     unsigned subcount = 0;
-    Node* thisCousin = p;
-    Node* currentNode = p->previousSibling();
+    Node* thisCousin = parent;
+    Node* currentNode = parent->previousSibling();
 
     // Reserve the tries for this level. This effectively makes sure that the algorithm
     // will never go deeper than cStyleSearchLevelThreshold levels into recursion.
@@ -590,7 +589,7 @@ bool StyleResolver::styleSharingCandidateMatchesRuleSet(RuleSet* ruleSet)
     return collector.hasAnyMatchingRules(ruleSet);
 }
 
-bool StyleResolver::canShareStyleWithControl(StyledElement* element) const
+bool StyleResolver::canShareStyleWithControl(Element* element) const
 {
     const StyleResolverState& state = m_state;
 
@@ -646,7 +645,7 @@ static inline bool elementHasDirectionAuto(Element* element)
     return element->isHTMLElement() && toHTMLElement(element)->hasDirectionAuto();
 }
 
-bool StyleResolver::sharingCandidateHasIdenticalStyleAffectingAttributes(StyledElement* sharingCandidate) const
+bool StyleResolver::sharingCandidateHasIdenticalStyleAffectingAttributes(Element* sharingCandidate) const
 {
     const StyleResolverState& state = m_state;
     if (state.element()->elementData() == sharingCandidate->elementData())
@@ -682,7 +681,7 @@ bool StyleResolver::sharingCandidateHasIdenticalStyleAffectingAttributes(StyledE
     return true;
 }
 
-bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
+bool StyleResolver::canShareStyleWithElement(Element* element) const
 {
     RenderStyle* style = element->renderStyle();
     const StyleResolverState& state = m_state;
@@ -769,17 +768,17 @@ bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
     return true;
 }
 
-inline StyledElement* StyleResolver::findSiblingForStyleSharing(Node* node, unsigned& count) const
+inline Element* StyleResolver::findSiblingForStyleSharing(Node* node, unsigned& count) const
 {
     for (; node; node = node->previousSibling()) {
         if (!node->isStyledElement())
             continue;
-        if (canShareStyleWithElement(static_cast<StyledElement*>(node)))
+        if (canShareStyleWithElement(toElement(node)))
             break;
         if (count++ == cStyleSearchThreshold)
             return 0;
     }
-    return static_cast<StyledElement*>(node);
+    return toElement(node);
 }
 
 RenderStyle* StyleResolver::locateSharedStyle()
@@ -819,7 +818,7 @@ RenderStyle* StyleResolver::locateSharedStyle()
     // Check previous siblings and their cousins.
     unsigned count = 0;
     unsigned visitedNodeCount = 0;
-    StyledElement* shareElement = 0;
+    Element* shareElement = 0;
     Node* cousinList = state.styledElement()->previousSibling();
     while (cousinList) {
         shareElement = findSiblingForStyleSharing(cousinList, count);

@@ -25,7 +25,9 @@
 #ifndef Element_h
 #define Element_h
 
+#include "CSSPropertyNames.h"
 #include "HTMLNames.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/SpaceSplitString.h"
@@ -36,8 +38,8 @@
 namespace WebCore {
 
 class Animation;
-
 class Attr;
+class Attribute;
 class ClientRect;
 class ClientRectList;
 class DOMStringMap;
@@ -48,12 +50,16 @@ class ElementShadow;
 class InputMethodContext;
 class IntSize;
 class Locale;
+class MutableStylePropertySet;
+class PropertySetCSSStyleDeclaration;
 class PseudoElement;
 class RenderRegion;
 class ShadowRoot;
 class ShareableElementData;
 class StylePropertySet;
 class UniqueElementData;
+
+struct PresentationAttributeCacheKey;
 
 class ElementData : public RefCounted<ElementData> {
     WTF_MAKE_FAST_ALLOCATED;
@@ -108,7 +114,6 @@ protected:
 
 private:
     friend class Element;
-    friend class StyledElement;
     friend class ShareableElementData;
     friend class UniqueElementData;
     friend class SVGElement;
@@ -345,7 +350,7 @@ public:
 
     const Vector<RefPtr<Attr> >& attrNodeList();
 
-    virtual CSSStyleDeclaration* style();
+    CSSStyleDeclaration* style();
 
     const QualifiedName& tagQName() const { return m_tagName; }
     String tagName() const { return nodeName(); }
@@ -372,6 +377,23 @@ public:
     String nodeNamePreservingCase() const;
 
     void setBooleanAttribute(const QualifiedName& name, bool);
+
+    virtual const StylePropertySet* additionalPresentationAttributeStyle() { return 0; }
+    void invalidateStyleAttribute();
+
+    const StylePropertySet* inlineStyle() const { return elementData() ? elementData()->m_inlineStyle.get() : 0; }
+
+    bool setInlineStyleProperty(CSSPropertyID, CSSValueID identifier, bool important = false);
+    bool setInlineStyleProperty(CSSPropertyID, CSSPropertyID identifier, bool important = false);
+    bool setInlineStyleProperty(CSSPropertyID, double value, CSSPrimitiveValue::UnitTypes, bool important = false);
+    bool setInlineStyleProperty(CSSPropertyID, const String& value, bool important = false);
+    bool removeInlineStyleProperty(CSSPropertyID);
+    void removeAllInlineStyleProperties();
+
+    void synchronizeStyleAttributeInternal() const;
+
+    const StylePropertySet* presentationAttributeStyle();
+    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) { }
 
     // For exposing to DOM only.
     NamedNodeMap* attributes() const;
@@ -610,6 +632,14 @@ protected:
         ScriptWrappable::init(this);
     }
 
+    virtual bool isPresentationAttribute(const QualifiedName&) const { return false; }
+
+    void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, CSSValueID identifier);
+    void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, double value, CSSPrimitiveValue::UnitTypes);
+    void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, const String& value);
+
+    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
+
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
@@ -637,6 +667,16 @@ protected:
     void classAttributeChanged(const AtomicString& newClassString);
 
 private:
+    void styleAttributeChanged(const AtomicString& newStyleString, AttributeModificationReason);
+
+    void inlineStyleChanged();
+    PropertySetCSSStyleDeclaration* inlineStyleCSSOMWrapper();
+    void setInlineStyleFromString(const AtomicString&);
+    MutableStylePropertySet* ensureMutableInlineStyle();
+
+    void makePresentationAttributeCacheKey(PresentationAttributeCacheKey&) const;
+    void rebuildPresentationAttributeStyle();
+
     void updatePseudoElement(PseudoId, StyleChange);
     void createPseudoElementIfNeeded(PseudoId);
 
@@ -917,6 +957,21 @@ inline void Node::removedFrom(ContainerNode* insertionPoint)
         clearFlag(InDocumentFlag);
     if (isInShadowTree() && !treeScope()->rootNode()->isShadowRoot())
         clearFlag(IsInShadowTreeFlag);
+}
+
+inline void Element::invalidateStyleAttribute()
+{
+    ASSERT(elementData());
+    elementData()->m_styleAttributeIsDirty = true;
+}
+
+inline const StylePropertySet* Element::presentationAttributeStyle()
+{
+    if (!elementData())
+        return 0;
+    if (elementData()->m_presentationAttributeStyleIsDirty)
+        rebuildPresentationAttributeStyle();
+    return elementData()->presentationAttributeStyle();
 }
 
 inline bool isShadowHost(const Node* node)

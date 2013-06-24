@@ -69,7 +69,7 @@ bool SVGTSpanElement::rendererIsNeeded(const NodeRenderingContext& context)
             || parentNode()->hasTagName(SVGNames::textTag)
             || parentNode()->hasTagName(SVGNames::textPathTag)
             || parentNode()->hasTagName(SVGNames::tspanTag)))
-        return StyledElement::rendererIsNeeded(context);
+        return Element::rendererIsNeeded(context);
 
     return false;
 }

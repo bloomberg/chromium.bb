@@ -30,7 +30,7 @@
 #include "core/css/SelectorCheckerFastPath.h"
 
 #include "HTMLNames.h"
-#include "core/dom/StyledElement.h"
+#include "core/dom/Element.h"
 #include "core/html/HTMLDocument.h"
 
 namespace WebCore {
@@ -75,7 +75,7 @@ inline bool fastCheckSingleSelector(const CSSSelector*& selector, const Element*
 
 inline bool checkClassValue(const Element* element, const CSSSelector* selector)
 {
-    return element->hasClass() && static_cast<const StyledElement*>(element)->classNames().contains(selector->value().impl());
+    return element->hasClass() && element->classNames().contains(selector->value().impl());
 }
 
 inline bool checkIDValue(const Element* element, const CSSSelector* selector)

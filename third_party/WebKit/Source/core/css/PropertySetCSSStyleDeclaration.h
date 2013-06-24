@@ -36,13 +36,13 @@ class CSSProperty;
 class CSSValue;
 class MutableStylePropertySet;
 class StyleSheetContents;
-class StyledElement;
+class Element;
 
 class PropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
 public:
     PropertySetCSSStyleDeclaration(MutableStylePropertySet* propertySet) : m_propertySet(propertySet) { }
     
-    virtual StyledElement* parentElement() const { return 0; }
+    virtual Element* parentElement() const { return 0; }
     virtual void clearParentElement() { ASSERT_NOT_REACHED(); }
     StyleSheetContents* contextStyleSheet() const;
     
@@ -117,7 +117,7 @@ private:
 class InlineCSSStyleDeclaration : public PropertySetCSSStyleDeclaration
 {
 public:
-    InlineCSSStyleDeclaration(MutableStylePropertySet* propertySet, StyledElement* parentElement)
+    InlineCSSStyleDeclaration(MutableStylePropertySet* propertySet, Element* parentElement)
         : PropertySetCSSStyleDeclaration(propertySet)
         , m_parentElement(parentElement) 
     {
@@ -127,12 +127,12 @@ public:
     
 private:
     virtual CSSStyleSheet* parentStyleSheet() const OVERRIDE;
-    virtual StyledElement* parentElement() const OVERRIDE { return m_parentElement; }
+    virtual Element* parentElement() const OVERRIDE { return m_parentElement; }
     virtual void clearParentElement() OVERRIDE { m_parentElement = 0; }
 
     virtual void didMutate(MutationType) OVERRIDE;
 
-    StyledElement* m_parentElement;
+    Element* m_parentElement;
 };
 
 } // namespace WebCore

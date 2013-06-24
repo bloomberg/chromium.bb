@@ -48,7 +48,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 SVGElement::SVGElement(const QualifiedName& tagName, Document* document, ConstructionType constructionType)
-    : StyledElement(tagName, document, constructionType)
+    : Element(tagName, document, constructionType)
 {
     ScriptWrappable::init(this);
     setHasCustomStyleCallbacks();
@@ -180,7 +180,7 @@ void SVGElement::removedFrom(ContainerNode* rootParent)
 {
     bool wasInDocument = rootParent->inDocument();
 
-    StyledElement::removedFrom(rootParent);
+    Element::removedFrom(rootParent);
 
     if (wasInDocument) {
         document()->accessSVGExtensions()->rebuildAllElementReferencesForTarget(this);
@@ -335,7 +335,7 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
     else if (name == SVGNames::onactivateAttr)
         setAttributeEventListener(eventNames().DOMActivateEvent, createAttributeEventListener(this, name, value));
     else
-        StyledElement::parseAttribute(name, value);
+        Element::parseAttribute(name, value);
 }
 
 void SVGElement::animatedPropertyTypeForAttribute(const QualifiedName& attributeName, Vector<AnimatedPropertyType>& propertyTypes)
@@ -500,7 +500,7 @@ Timer<SVGElement>* SVGElement::svgLoadEventTimer()
 
 void SVGElement::finishParsingChildren()
 {
-    StyledElement::finishParsingChildren();
+    Element::finishParsingChildren();
 
     // The outermost SVGSVGElement SVGLoad event is fired through Document::dispatchWindowLoadEvent.
     if (isOutermostSVGSVGElement())
@@ -535,7 +535,7 @@ bool SVGElement::childShouldCreateRenderer(const NodeRenderingContext& childCont
 
 void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason)
 {
-    StyledElement::attributeChanged(name, newValue);
+    Element::attributeChanged(name, newValue);
 
     if (isIdAttributeName(name))
         document()->accessSVGExtensions()->rebuildAllElementReferencesForTarget(this);

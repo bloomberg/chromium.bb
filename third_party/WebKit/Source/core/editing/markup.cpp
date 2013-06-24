@@ -299,8 +299,8 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element* element
         } else
             newInlineStyle = EditingStyle::create();
 
-        if (element->isStyledElement() && static_cast<StyledElement*>(element)->inlineStyle())
-            newInlineStyle->overrideWithStyle(static_cast<StyledElement*>(element)->inlineStyle());
+        if (element->isStyledElement() && element->inlineStyle())
+            newInlineStyle->overrideWithStyle(element->inlineStyle());
 
         if (shouldAnnotateOrForceInline) {
             if (shouldAnnotate())

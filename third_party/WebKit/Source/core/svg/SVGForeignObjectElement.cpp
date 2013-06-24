@@ -142,7 +142,7 @@ bool SVGForeignObjectElement::childShouldCreateRenderer(const NodeRenderingConte
         return childContext.node()->hasTagName(SVGNames::svgTag);
 
     // Skip over SVG rules which disallow non-SVG kids
-    return StyledElement::childShouldCreateRenderer(childContext);
+    return Element::childShouldCreateRenderer(childContext);
 }
 
 bool SVGForeignObjectElement::rendererIsNeeded(const NodeRenderingContext& context)

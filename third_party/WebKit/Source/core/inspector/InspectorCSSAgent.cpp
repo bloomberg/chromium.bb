@@ -1603,7 +1603,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorCSSAgent::buildObjectForAttribut
         return 0;
 
     // FIXME: Ugliness below.
-    StylePropertySet* attributeStyle = const_cast<StylePropertySet*>(static_cast<StyledElement*>(element)->presentationAttributeStyle());
+    StylePropertySet* attributeStyle = const_cast<StylePropertySet*>(element->presentationAttributeStyle());
     if (!attributeStyle)
         return 0;
 

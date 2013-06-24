@@ -33,7 +33,6 @@ class CSSStyleSheet;
 class CSSValue;
 class MutableStylePropertySet;
 class StylePropertySet;
-class StyledElement;
 
 typedef int ExceptionCode;
 

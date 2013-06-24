@@ -148,7 +148,7 @@ bool SVGTextPathElement::rendererIsNeeded(const NodeRenderingContext& context)
     if (parentNode()
         && (parentNode()->hasTagName(SVGNames::aTag)
             || parentNode()->hasTagName(SVGNames::textTag)))
-        return StyledElement::rendererIsNeeded(context);
+        return Element::rendererIsNeeded(context);
 
     return false;
 }

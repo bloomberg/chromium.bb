@@ -145,7 +145,7 @@ bool HTMLElement::isPresentationAttribute(const QualifiedName& name) const
 {
     if (name == alignAttr || name == contenteditableAttr || name == hiddenAttr || name == langAttr || name.matches(XMLNames::langAttr) || name == draggableAttr || name == dirAttr)
         return true;
-    return StyledElement::isPresentationAttribute(name);
+    return Element::isPresentationAttribute(name);
 }
 
 void HTMLElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
@@ -189,7 +189,7 @@ void HTMLElement::collectStyleForPresentationAttribute(const QualifiedName& name
         if (!fastHasAttribute(XMLNames::langAttr))
             mapLanguageAttributeToLocale(value, style);
     } else
-        StyledElement::collectStyleForPresentationAttribute(name, value, style);
+        Element::collectStyleForPresentationAttribute(name, value, style);
 }
 
 AtomicString HTMLElement::eventNameForAttributeName(const QualifiedName& attrName) const
@@ -279,7 +279,7 @@ AtomicString HTMLElement::eventNameForAttributeName(const QualifiedName& attrNam
 void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (isIdAttributeName(name) || name == classAttr || name == styleAttr)
-        return StyledElement::parseAttribute(name, value);
+        return Element::parseAttribute(name, value);
 
     if (name == dirAttr)
         dirAttributeChanged(value);
@@ -752,7 +752,7 @@ bool HTMLElement::rendererIsNeeded(const NodeRenderingContext& context)
         if (frame && frame->loader()->subframeLoader()->allowPlugins(NotAboutToInstantiatePlugin))
             return false;
     }
-    return StyledElement::rendererIsNeeded(context);
+    return Element::rendererIsNeeded(context);
 }
 
 RenderObject* HTMLElement::createRenderer(RenderStyle* style)
@@ -806,7 +806,7 @@ static void setHasDirAutoFlagRecursively(Node* firstNode, bool flag, Node* lastN
 
 void HTMLElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
-    StyledElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+    Element::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
     adjustDirectionalityIfNeededAfterChildrenChanged(beforeChange, childCountDelta);
 }
 
@@ -1057,7 +1057,7 @@ void HTMLElement::defaultEventHandler(Event* event)
             return;
     }
 
-    StyledElement::defaultEventHandler(event);
+    Element::defaultEventHandler(event);
 }
 
 void HTMLElement::handleKeypressEvent(KeyboardEvent* event)

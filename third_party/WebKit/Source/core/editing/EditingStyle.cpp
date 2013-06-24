@@ -38,11 +38,11 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Position.h"
 #include "core/dom/QualifiedName.h"
-#include "core/dom/StyledElement.h"
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -715,7 +715,7 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
     return state;
 }
 
-bool EditingStyle::conflictsWithInlineStyleOfElement(StyledElement* element, EditingStyle* extractedStyle, Vector<CSSPropertyID>* conflictingProperties) const
+bool EditingStyle::conflictsWithInlineStyleOfElement(Element* element, EditingStyle* extractedStyle, Vector<CSSPropertyID>* conflictingProperties) const
 {
     ASSERT(element);
     ASSERT(!conflictingProperties || conflictingProperties->isEmpty());
@@ -969,7 +969,7 @@ void EditingStyle::mergeTypingStyle(Document* document)
     mergeStyle(typingStyle->style(), OverrideValues);
 }
 
-void EditingStyle::mergeInlineStyleOfElement(StyledElement* element, CSSPropertyOverrideMode mode, PropertiesToInclude propertiesToInclude)
+void EditingStyle::mergeInlineStyleOfElement(Element* element, CSSPropertyOverrideMode mode, PropertiesToInclude propertiesToInclude)
 {
     ASSERT(element);
     if (!element->inlineStyle())
@@ -988,14 +988,14 @@ void EditingStyle::mergeInlineStyleOfElement(StyledElement* element, CSSProperty
     }
 }
 
-static inline bool elementMatchesAndPropertyIsNotInInlineStyleDecl(const HTMLElementEquivalent* equivalent, const StyledElement* element,
+static inline bool elementMatchesAndPropertyIsNotInInlineStyleDecl(const HTMLElementEquivalent* equivalent, const Element* element,
     EditingStyle::CSSPropertyOverrideMode mode, StylePropertySet* style)
 {
     return equivalent->matches(element) && (!element->inlineStyle() || !equivalent->propertyExistsInStyle(element->inlineStyle()))
         && (mode == EditingStyle::OverrideValues || !equivalent->propertyExistsInStyle(style));
 }
 
-void EditingStyle::mergeInlineAndImplicitStyleOfElement(StyledElement* element, CSSPropertyOverrideMode mode, PropertiesToInclude propertiesToInclude)
+void EditingStyle::mergeInlineAndImplicitStyleOfElement(Element* element, CSSPropertyOverrideMode mode, PropertiesToInclude propertiesToInclude)
 {
     RefPtr<EditingStyle> styleFromRules = EditingStyle::create();
     styleFromRules->mergeStyleFromRulesForSerialization(element);
@@ -1041,7 +1041,7 @@ PassRefPtr<EditingStyle> EditingStyle::wrappingStyleForSerialization(Node* conte
     // When not annotating for interchange, we only preserve inline style declarations.
     for (Node* node = context; node && !node->isDocumentNode(); node = node->parentNode()) {
         if (node->isStyledElement() && !isMailBlockquote(node)) {
-            wrappingStyle->mergeInlineAndImplicitStyleOfElement(static_cast<StyledElement*>(node), EditingStyle::DoNotOverrideValues,
+            wrappingStyle->mergeInlineAndImplicitStyleOfElement(toElement(node), EditingStyle::DoNotOverrideValues,
                 EditingStyle::EditingPropertiesInEffect);
         }
     }
@@ -1105,7 +1105,7 @@ static PassRefPtr<MutableStylePropertySet> styleFromMatchedRulesForElement(Eleme
     return style.release();
 }
 
-void EditingStyle::mergeStyleFromRules(StyledElement* element)
+void EditingStyle::mergeStyleFromRules(Element* element)
 {
     RefPtr<MutableStylePropertySet> styleFromMatchedRules = styleFromMatchedRulesForElement(element,
         StyleResolver::AuthorCSSRules | StyleResolver::CrossOriginCSSRules);
@@ -1118,7 +1118,7 @@ void EditingStyle::mergeStyleFromRules(StyledElement* element)
     m_mutableStyle = styleFromMatchedRules;
 }
 
-void EditingStyle::mergeStyleFromRulesForSerialization(StyledElement* element)
+void EditingStyle::mergeStyleFromRulesForSerialization(Element* element)
 {
     mergeStyleFromRules(element);
 
@@ -1153,7 +1153,7 @@ static void removePropertiesInStyle(MutableStylePropertySet* styleToRemoveProper
     styleToRemovePropertiesFrom->removePropertiesInSet(propertiesToRemove.data(), propertiesToRemove.size());
 }
 
-void EditingStyle::removeStyleFromRulesAndContext(StyledElement* element, Node* context)
+void EditingStyle::removeStyleFromRulesAndContext(Element* element, Node* context)
 {
     ASSERT(element);
     if (!m_mutableStyle)

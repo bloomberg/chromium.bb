@@ -574,7 +574,7 @@ void CompositeEditCommand::deleteSelection(const VisibleSelection &selection, bo
         applyCommandToComposite(DeleteSelectionCommand::create(selection, smartDelete, mergeBlocksAfterDelete, replace, expandForSpecialElements, sanitizeMarkup));
 }
 
-void CompositeEditCommand::removeCSSProperty(PassRefPtr<StyledElement> element, CSSPropertyID property)
+void CompositeEditCommand::removeCSSProperty(PassRefPtr<Element> element, CSSPropertyID property)
 {
     applyCommandToComposite(RemoveCSSPropertyCommand::create(document(), element, property));
 }

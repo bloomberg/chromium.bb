@@ -477,7 +477,7 @@ bool SVGSVGElement::rendererIsNeeded(const NodeRenderingContext& context)
     // https://bugs.webkit.org/show_bug.cgi?id=103493
     if (document()->documentElement() == this)
         return true;
-    return StyledElement::rendererIsNeeded(context);
+    return Element::rendererIsNeeded(context);
 }
 
 RenderObject* SVGSVGElement::createRenderer(RenderStyle*)

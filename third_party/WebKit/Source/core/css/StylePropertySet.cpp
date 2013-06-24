@@ -533,7 +533,7 @@ CSSStyleDeclaration* MutableStylePropertySet::ensureCSSStyleDeclaration()
     return cssomWrapper;
 }
 
-CSSStyleDeclaration* MutableStylePropertySet::ensureInlineCSSStyleDeclaration(StyledElement* parentElement)
+CSSStyleDeclaration* MutableStylePropertySet::ensureInlineCSSStyleDeclaration(Element* parentElement)
 {
     if (m_ownsCSSOMWrapper) {
         ASSERT(propertySetCSSOMWrapperMap().get(this)->parentElement() == parentElement);

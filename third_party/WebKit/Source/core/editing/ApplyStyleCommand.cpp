@@ -66,7 +66,7 @@ bool isLegacyAppleStyleSpan(const Node *node)
     return elem->hasLocalName(spanAttr) && elem->getAttribute(classAttr) == styleSpanClassString();
 }
 
-static bool hasNoAttributeOrOnlyStyleAttribute(const StyledElement* element, ShouldStyleAttributeBeEmpty shouldStyleAttributeBeEmpty)
+static bool hasNoAttributeOrOnlyStyleAttribute(const Element* element, ShouldStyleAttributeBeEmpty shouldStyleAttributeBeEmpty)
 {
     if (!element->hasAttributes())
         return true;
@@ -501,7 +501,7 @@ void ApplyStyleCommand::removeEmbeddingUpToEnclosingBlock(Node* node, Node* unsp
         if (!n->isStyledElement())
             continue;
 
-        StyledElement* element = static_cast<StyledElement*>(n);
+        Element* element = toElement(n);
         int unicodeBidi = getIdentifierValue(CSSComputedStyleDeclaration::create(element).get(), CSSPropertyUnicodeBidi);
         if (!unicodeBidi || unicodeBidi == CSSValueNormal)
             continue;
@@ -1026,9 +1026,9 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(EditingStyle* style, Node*
     while (current && current != targetNode && current->contains(targetNode)) {
         NodeVector currentChildren;
         getChildNodes(current.get(), currentChildren);
-        RefPtr<StyledElement> styledElement;
+        RefPtr<Element> styledElement;
         if (current->isStyledElement() && isStyledInlineElementToRemove(toElement(current.get()))) {
-            styledElement = static_cast<StyledElement*>(current.get());
+            styledElement = toElement(current.get());
             elementsToPushDown.append(styledElement);
         }
 

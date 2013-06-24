@@ -1880,11 +1880,10 @@ String Node::debugName() const
 
     if (hasClass()) {
         name.appendLiteral(" class=\'");
-        const StyledElement* styledElement = static_cast<const StyledElement*>(this);
-        for (size_t i = 0; i < styledElement->classNames().size(); ++i) {
+        for (size_t i = 0; i < toElement(this)->classNames().size(); ++i) {
             if (i > 0)
                 name.append(' ');
-            name.append(styledElement->classNames()[i]);
+            name.append(toElement(this)->classNames()[i]);
         }
         name.append('\'');
     }

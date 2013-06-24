@@ -65,7 +65,6 @@ class StyleRuleBase;
 class StyleRuleKeyframes;
 class StyleKeyframe;
 class StyleSheetContents;
-class StyledElement;
 
 struct CSSParserLocation {
     int lineNumber;

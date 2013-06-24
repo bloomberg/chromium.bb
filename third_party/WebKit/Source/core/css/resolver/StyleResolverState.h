@@ -38,7 +38,6 @@ namespace WebCore {
 class FillLayer;
 class FontDescription;
 class RenderRegion;
-class StyledElement;
 
 typedef HashMap<CSSPropertyID, RefPtr<CSSValue> > PendingImagePropertyMap;
 typedef HashMap<FilterOperation*, RefPtr<CSSSVGDocumentValue> > PendingSVGDocumentMap;
@@ -73,7 +72,7 @@ public:
 
     Document* document() const { return m_element->document(); }
     Element* element() const { return m_element; }
-    StyledElement* styledElement() const { return m_styledElement; }
+    Element* styledElement() const { return m_styledElement; }
     void setStyle(PassRefPtr<RenderStyle> style) { m_style = style; }
     RenderStyle* style() const { return m_style.get(); }
     PassRefPtr<RenderStyle> takeStyle() { return m_style.release(); }
@@ -122,7 +121,7 @@ public:
 private:
     Element* m_element;
     RefPtr<RenderStyle> m_style;
-    StyledElement* m_styledElement;
+    Element* m_styledElement;
     ContainerNode* m_parentNode;
     RefPtr<RenderStyle> m_parentStyle;
     RenderStyle* m_rootElementStyle;

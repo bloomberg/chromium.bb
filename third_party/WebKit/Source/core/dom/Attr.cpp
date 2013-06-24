@@ -24,9 +24,9 @@
 #include "core/dom/Attr.h"
 
 #include "XMLNSNames.h"
+#include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScopedEventQueue.h"
-#include "core/dom/StyledElement.h"
 #include "core/dom/Text.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"

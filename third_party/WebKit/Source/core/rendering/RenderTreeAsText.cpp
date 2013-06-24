@@ -405,11 +405,11 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
 
             if (node->hasClass()) {
                 ts << " class=\"";
-                StyledElement* styledElement = static_cast<StyledElement*>(node);
-                for (size_t i = 0; i < styledElement->classNames().size(); ++i) {
+                Element* element = toElement(node);
+                for (size_t i = 0; i < element->classNames().size(); ++i) {
                     if (i > 0)
                         ts << " ";
-                    ts << styledElement->classNames()[i];
+                    ts << element->classNames()[i];
                 }
                 ts << "\"";
             }

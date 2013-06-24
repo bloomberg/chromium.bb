@@ -57,7 +57,6 @@ class Position;
 class QualifiedName;
 class RenderStyle;
 class StylePropertySet;
-class StyledElement;
 class VisibleSelection;
 
 class EditingStyle : public RefCounted<EditingStyle> {
@@ -117,8 +116,8 @@ public:
     enum ShouldIgnoreTextOnlyProperties { IgnoreTextOnlyProperties, DoNotIgnoreTextOnlyProperties };
     TriState triStateOfStyle(EditingStyle*) const;
     TriState triStateOfStyle(const VisibleSelection&) const;
-    bool conflictsWithInlineStyleOfElement(StyledElement* element) const { return conflictsWithInlineStyleOfElement(element, 0, 0); }
-    bool conflictsWithInlineStyleOfElement(StyledElement* element, EditingStyle* extractedStyle, Vector<CSSPropertyID>& conflictingProperties) const
+    bool conflictsWithInlineStyleOfElement(Element* element) const { return conflictsWithInlineStyleOfElement(element, 0, 0); }
+    bool conflictsWithInlineStyleOfElement(Element* element, EditingStyle* extractedStyle, Vector<CSSPropertyID>& conflictingProperties) const
     {
         return conflictsWithInlineStyleOfElement(element, extractedStyle, &conflictingProperties);
     }
@@ -133,11 +132,11 @@ public:
     void prepareToApplyAt(const Position&, ShouldPreserveWritingDirection = DoNotPreserveWritingDirection);
     void mergeTypingStyle(Document*);
     enum CSSPropertyOverrideMode { OverrideValues, DoNotOverrideValues };
-    void mergeInlineStyleOfElement(StyledElement*, CSSPropertyOverrideMode, PropertiesToInclude = AllProperties);
+    void mergeInlineStyleOfElement(Element*, CSSPropertyOverrideMode, PropertiesToInclude = AllProperties);
     static PassRefPtr<EditingStyle> wrappingStyleForSerialization(Node* context, bool shouldAnnotate);
-    void mergeStyleFromRules(StyledElement*);
-    void mergeStyleFromRulesForSerialization(StyledElement*);
-    void removeStyleFromRulesAndContext(StyledElement*, Node* context);
+    void mergeStyleFromRules(Element*);
+    void mergeStyleFromRulesForSerialization(Element*);
+    void removeStyleFromRulesAndContext(Element*, Node* context);
     void removePropertiesInElementDefaultStyle(Element*);
     void forceInline();
     int legacyFontSize(Document*) const;
@@ -161,8 +160,8 @@ private:
     void replaceFontSizeByKeywordIfPossible(RenderStyle*, CSSComputedStyleDeclaration*);
     void extractFontSizeDelta();
     TriState triStateOfStyle(CSSStyleDeclaration* styleToCompare, ShouldIgnoreTextOnlyProperties) const;
-    bool conflictsWithInlineStyleOfElement(StyledElement*, EditingStyle* extractedStyle, Vector<CSSPropertyID>* conflictingProperties) const;
-    void mergeInlineAndImplicitStyleOfElement(StyledElement*, CSSPropertyOverrideMode, PropertiesToInclude);
+    bool conflictsWithInlineStyleOfElement(Element*, EditingStyle* extractedStyle, Vector<CSSPropertyID>* conflictingProperties) const;
+    void mergeInlineAndImplicitStyleOfElement(Element*, CSSPropertyOverrideMode, PropertiesToInclude);
     void mergeStyle(const StylePropertySet*, CSSPropertyOverrideMode);
 
     RefPtr<MutableStylePropertySet> m_mutableStyle;

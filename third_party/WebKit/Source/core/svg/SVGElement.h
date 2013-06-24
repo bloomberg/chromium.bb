@@ -22,7 +22,7 @@
 #ifndef SVGElement_h
 #define SVGElement_h
 
-#include "core/dom/StyledElement.h"
+#include "core/dom/Element.h"
 #include "core/platform/Timer.h"
 #include "core/svg/SVGLocatable.h"
 #include "core/svg/SVGParsingError.h"
@@ -41,7 +41,7 @@ class SVGElementInstance;
 class SVGElementRareData;
 class SVGSVGElement;
 
-class SVGElement : public StyledElement {
+class SVGElement : public Element {
 public:
     static PassRefPtr<SVGElement> create(const QualifiedName&, Document*);
     virtual ~SVGElement();

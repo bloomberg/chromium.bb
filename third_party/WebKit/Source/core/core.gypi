@@ -1894,7 +1894,6 @@
             'dom/StringCallback.h',
             'dom/StyleElement.cpp',
             'dom/StyleElement.h',
-            'dom/StyledElement.cpp',
             'dom/TagNodeList.cpp',
             'dom/TagNodeList.h',
             'dom/Text.cpp',

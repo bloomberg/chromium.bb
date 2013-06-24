@@ -123,7 +123,7 @@ bool SVGStyledElement::rendererIsNeeded(const NodeRenderingContext& context)
     // with the SVG content. In general, the SVG user agent will include the unknown
     // elements in the DOM but will otherwise ignore unknown elements. 
     if (!parentOrShadowHostElement() || parentOrShadowHostElement()->isSVGElement())
-        return StyledElement::rendererIsNeeded(context);
+        return Element::rendererIsNeeded(context);
 
     return false;
 }
@@ -305,14 +305,14 @@ void SVGStyledElement::parseAttribute(const QualifiedName& name, const AtomicStr
 {
     // SVG animation has currently requires special storage of values so we set
     // the className here.  svgAttributeChanged actually causes the resulting
-    // style updates (instead of StyledElement::parseAttribute). We don't
-    // tell StyledElement about the change to avoid parsing the class list twice
+    // style updates (instead of Element::parseAttribute). We don't
+    // tell Element about the change to avoid parsing the class list twice
     if (name == HTMLNames::classAttr) {
         setClassNameBaseValue(value);
         return;
     }
 
-    // id is handled by StyledElement which SVGElement inherits from
+    // id is handled by Element which SVGElement inherits from
     SVGElement::parseAttribute(name, value);
 }
 

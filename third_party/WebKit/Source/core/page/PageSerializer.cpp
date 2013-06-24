@@ -216,7 +216,7 @@ void PageSerializer::serializeFrame(Frame* frame)
         Element* element = toElement(node);
         // We have to process in-line style as it might contain some resources (typically background images).
         if (element->isStyledElement())
-            retrieveResourcesForProperties(static_cast<StyledElement*>(element)->inlineStyle(), document);
+            retrieveResourcesForProperties(element->inlineStyle(), document);
 
         if (element->hasTagName(HTMLNames::imgTag)) {
             HTMLImageElement* imageElement = toHTMLImageElement(element);
