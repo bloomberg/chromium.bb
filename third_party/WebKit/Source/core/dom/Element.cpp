@@ -101,7 +101,7 @@ static inline bool shouldIgnoreAttributeCase(const Element* e)
 {
     return e && e->document()->isHTMLDocument() && e->isHTMLElement();
 }
-    
+
 class StyleResolverParentPusher {
 public:
     StyleResolverParentPusher(Element* parent)
@@ -471,7 +471,7 @@ const AtomicString& Element::getAttribute(const QualifiedName& name) const
     return nullAtom;
 }
 
-void Element::scrollIntoView(bool alignToTop) 
+void Element::scrollIntoView(bool alignToTop)
 {
     document()->updateLayoutIgnorePendingStylesheets();
 
@@ -640,7 +640,7 @@ int Element::clientWidth()
                 return adjustForAbsoluteZoom(view->layoutWidth(), renderView);
         }
     }
-    
+
     if (RenderBox* renderer = renderBox())
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientWidth(), renderer).round();
     return 0;
@@ -652,7 +652,7 @@ int Element::clientHeight()
 
     // When in strict mode, clientHeight for the document element should return the height of the containing frame.
     // When in quirks mode, clientHeight for the body element should return the height of the containing frame.
-    bool inQuirksMode = document()->inQuirksMode();     
+    bool inQuirksMode = document()->inQuirksMode();
 
     if ((!inQuirksMode && document()->documentElement() == this) ||
         (inQuirksMode && isHTMLElement() && document()->body() == this)) {
@@ -661,7 +661,7 @@ int Element::clientHeight()
                 return adjustForAbsoluteZoom(view->layoutHeight(), renderView);
         }
     }
-    
+
     if (RenderBox* renderer = renderBox())
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientHeight(), renderer).round();
     return 0;
@@ -789,7 +789,7 @@ PassRefPtr<ClientRect> Element::getBoundingClientRect()
     document()->adjustFloatRectForScrollAndAbsoluteZoom(result, renderer());
     return ClientRect::create(result);
 }
-    
+
 IntRect Element::screenRect() const
 {
     if (!renderer())
@@ -1344,7 +1344,7 @@ void Element::attach(const AttachContext& context)
 
     createPseudoElementIfNeeded(AFTER);
 
-    if (hasRareData()) {   
+    if (hasRareData()) {
         ElementRareData* data = elementRareData();
         if (data->needsFocusAppearanceUpdateSoonAfterAttach()) {
             if (isFocusable() && document()->focusedNode() == this)
@@ -1529,8 +1529,8 @@ void Element::recalcStyle(StyleChange change)
         if (n->isTextNode()) {
             toText(n)->recalcTextStyle(change);
             continue;
-        } 
-        if (!n->isElementNode()) 
+        }
+        if (!n->isElementNode())
             continue;
         Element* element = toElement(n);
         bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() == FullStyleChange;
@@ -1655,7 +1655,7 @@ static void checkForSiblingStyleChanges(Element* e, RenderStyle* style, bool fin
 {
     // :empty selector.
     checkForEmptyStyleChange(e, style);
-    
+
     if (!style || (e->needsStyleRecalc() && e->childrenAffectedByPositionalRules()))
         return;
 
@@ -1666,18 +1666,18 @@ static void checkForSiblingStyleChanges(Element* e, RenderStyle* style, bool fin
         // Find our new first child.
         Node* newFirstChild = 0;
         for (newFirstChild = e->firstChild(); newFirstChild && !newFirstChild->isElementNode(); newFirstChild = newFirstChild->nextSibling()) {};
-        
+
         // Find the first element node following |afterChange|
         Node* firstElementAfterInsertion = 0;
         for (firstElementAfterInsertion = afterChange;
              firstElementAfterInsertion && !firstElementAfterInsertion->isElementNode();
              firstElementAfterInsertion = firstElementAfterInsertion->nextSibling()) {};
-        
+
         // This is the insert/append case.
         if (newFirstChild != firstElementAfterInsertion && firstElementAfterInsertion && firstElementAfterInsertion->attached() &&
             firstElementAfterInsertion->renderStyle() && firstElementAfterInsertion->renderStyle()->firstChildState())
             firstElementAfterInsertion->setNeedsStyleRecalc();
-            
+
         // We also have to handle node removal.
         if (childCountDelta < 0 && newFirstChild == firstElementAfterInsertion && newFirstChild && (!newFirstChild->renderStyle() || !newFirstChild->renderStyle()->firstChildState()))
             newFirstChild->setNeedsStyleRecalc();
@@ -1689,17 +1689,17 @@ static void checkForSiblingStyleChanges(Element* e, RenderStyle* style, bool fin
         // Find our new last child.
         Node* newLastChild = 0;
         for (newLastChild = e->lastChild(); newLastChild && !newLastChild->isElementNode(); newLastChild = newLastChild->previousSibling()) {};
-        
+
         // Find the last element node going backwards from |beforeChange|
         Node* lastElementBeforeInsertion = 0;
         for (lastElementBeforeInsertion = beforeChange;
              lastElementBeforeInsertion && !lastElementBeforeInsertion->isElementNode();
              lastElementBeforeInsertion = lastElementBeforeInsertion->previousSibling()) {};
-        
+
         if (newLastChild != lastElementBeforeInsertion && lastElementBeforeInsertion && lastElementBeforeInsertion->attached() &&
             lastElementBeforeInsertion->renderStyle() && lastElementBeforeInsertion->renderStyle()->lastChildState())
             lastElementBeforeInsertion->setNeedsStyleRecalc();
-            
+
         // We also have to handle node removal.  The parser callback case is similar to node removal as well in that we need to change the last child
         // to match now.
         if ((childCountDelta < 0 || finishedParsingCallback) && newLastChild == lastElementBeforeInsertion && newLastChild && (!newLastChild->renderStyle() || !newLastChild->renderStyle()->lastChildState()))
@@ -1998,7 +1998,7 @@ void Element::focus(bool restorePreviousSelection, FocusDirection direction)
 
     // If the stylesheets have already been loaded we can reliably check isFocusable.
     // If not, we continue and set the focused node on the focus controller below so
-    // that it can be updated soon after attach. 
+    // that it can be updated soon after attach.
     if (doc->haveStylesheetsLoaded()) {
         doc->updateLayoutIgnorePendingStylesheets();
         if (!isFocusable())
@@ -2025,7 +2025,7 @@ void Element::focus(bool restorePreviousSelection, FocusDirection direction)
         ensureElementRareData()->setNeedsFocusAppearanceUpdateSoonAfterAttach(true);
         return;
     }
-        
+
     cancelFocusAppearanceUpdate();
     updateFocusAppearance(restorePreviousSelection);
 }
@@ -2036,14 +2036,14 @@ void Element::updateFocusAppearance(bool /*restorePreviousSelection*/)
         Frame* frame = document()->frame();
         if (!frame)
             return;
-        
+
         // When focusing an editable element in an iframe, don't reset the selection if it already contains a selection.
         if (this == frame->selection()->rootEditableElement())
             return;
 
         // FIXME: We should restore the previous selection if there is one.
         VisibleSelection newSelection = VisibleSelection(firstPositionInOrBeforeNode(this), DOWNSTREAM);
-        
+
         if (frame->selection()->shouldChangeSelection(newSelection)) {
             frame->selection()->setSelection(newSelection);
             frame->selection()->revealSelection();
@@ -3113,7 +3113,6 @@ MutableStylePropertySet* Element::ensureMutableInlineStyle()
 
 PropertySetCSSStyleDeclaration* Element::inlineStyleCSSOMWrapper()
 {
-    ASSERT(isStyledElement());
     if (!inlineStyle() || !inlineStyle()->hasCSSOMWrapper())
         return 0;
     PropertySetCSSStyleDeclaration* cssomWrapper = ensureMutableInlineStyle()->cssStyleDeclaration();
