@@ -15,7 +15,7 @@ namespace proxy {
 namespace {
 
 PP_HostResolver_Private_Hint ConvertToHostResolverPrivateHint(
-    const PP_HostResolver_Hint_Dev& hint) {
+    const PP_HostResolver_Hint& hint) {
   PP_HostResolver_Private_Hint private_hint;
   switch (hint.family) {
     case PP_NETADDRESS_FAMILY_UNSPECIFIED:
@@ -33,7 +33,7 @@ PP_HostResolver_Private_Hint ConvertToHostResolverPrivateHint(
   }
 
   private_hint.flags = 0;
-  if (hint.flags & PP_HOSTRESOLVER_FLAGS_CANONNAME)
+  if (hint.flags & PP_HOSTRESOLVER_FLAG_CANONNAME)
     private_hint.flags |= PP_HOST_RESOLVER_FLAGS_CANONNAME;
 
   return private_hint;
@@ -55,7 +55,7 @@ thunk::PPB_HostResolver_API* HostResolverResource::AsPPB_HostResolver_API() {
 
 int32_t HostResolverResource::Resolve(const char* host,
                                       uint16_t port,
-                                      const PP_HostResolver_Hint_Dev* hint,
+                                      const PP_HostResolver_Hint* hint,
                                       scoped_refptr<TrackedCallback> callback) {
   if (!hint)
     return PP_ERROR_BADARGUMENT;

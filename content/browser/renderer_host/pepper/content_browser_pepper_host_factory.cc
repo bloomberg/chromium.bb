@@ -59,9 +59,17 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
       return scoped_ptr<ResourceHost>(new PepperFileSystemBrowserHost(
           host_, instance, params.pp_resource(), file_system_type));
     }
-    case PpapiHostMsg_Gamepad_Create::ID:
+    case PpapiHostMsg_Gamepad_Create::ID: {
       return scoped_ptr<ResourceHost>(new PepperGamepadHost(
           host_, instance, params.pp_resource()));
+    }
+    case PpapiHostMsg_HostResolver_Create::ID: {
+      scoped_refptr<ResourceMessageFilter> host_resolver(
+          new PepperHostResolverMessageFilter(host_, instance, false));
+      return scoped_ptr<ResourceHost>(new MessageFilterHost(
+          host_->GetPpapiHost(), instance, params.pp_resource(),
+          host_resolver));
+    }
     case PpapiHostMsg_FileRef_CreateInternal::ID: {
       PP_Resource file_system;
       std::string internal_path;
@@ -84,13 +92,6 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   // Dev interfaces.
   if (GetPermissions().HasPermission(ppapi::PERMISSION_DEV)) {
     switch (message.type()) {
-      case PpapiHostMsg_HostResolver_Create::ID: {
-        scoped_refptr<ResourceMessageFilter> host_resolver(
-            new PepperHostResolverMessageFilter(host_, instance, false));
-        return scoped_ptr<ResourceHost>(new MessageFilterHost(
-            host_->GetPpapiHost(), instance, params.pp_resource(),
-            host_resolver));
-      }
       case PpapiHostMsg_Printing_Create::ID: {
          scoped_ptr<PepperPrintSettingsManager> manager(
              new PepperPrintSettingsManagerImpl());

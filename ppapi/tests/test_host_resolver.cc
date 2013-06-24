@@ -4,7 +4,7 @@
 
 #include "ppapi/tests/test_host_resolver.h"
 
-#include "ppapi/cpp/dev/host_resolver_dev.h"
+#include "ppapi/cpp/host_resolver.h"
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/tcp_socket.h"
 #include "ppapi/cpp/var.h"
@@ -18,7 +18,7 @@ TestHostResolver::TestHostResolver(TestingInstance* instance)
 }
 
 bool TestHostResolver::Init() {
-  bool host_resolver_is_available = pp::HostResolver_Dev::IsAvailable();
+  bool host_resolver_is_available = pp::HostResolver::IsAvailable();
   if (!host_resolver_is_available)
     instance_->AppendError("PPB_HostResolver interface not available");
 
@@ -98,10 +98,10 @@ std::string TestHostResolver::CheckHTTPResponse(pp::TCPSocket* socket,
 }
 
 std::string TestHostResolver::SyncResolve(
-    pp::HostResolver_Dev* host_resolver,
+    pp::HostResolver* host_resolver,
     const std::string& host,
     uint16_t port,
-    const PP_HostResolver_Hint_Dev& hint) {
+    const PP_HostResolver_Hint& hint) {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   callback.WaitForResult(
       host_resolver->Resolve(host.c_str(), port, hint, callback.GetCallback()));
@@ -111,8 +111,8 @@ std::string TestHostResolver::SyncResolve(
 }
 
 std::string TestHostResolver::ParameterizedTestResolve(
-    const PP_HostResolver_Hint_Dev& hint) {
-  pp::HostResolver_Dev host_resolver(instance_);
+    const PP_HostResolver_Hint& hint) {
+  pp::HostResolver host_resolver(instance_);
 
   ASSERT_SUBTEST_SUCCESS(SyncResolve(&host_resolver, host_, port_, hint));
 
@@ -146,7 +146,7 @@ std::string TestHostResolver::ParameterizedTestResolve(
 }
 
 std::string TestHostResolver::TestEmpty() {
-  pp::HostResolver_Dev host_resolver(instance_);
+  pp::HostResolver host_resolver(instance_);
   ASSERT_EQ(0, host_resolver.GetNetAddressCount());
   pp::NetAddress address = host_resolver.GetNetAddress(0);
   ASSERT_EQ(0, address.pp_resource());
@@ -155,15 +155,15 @@ std::string TestHostResolver::TestEmpty() {
 }
 
 std::string TestHostResolver::TestResolve() {
-  PP_HostResolver_Hint_Dev hint;
+  PP_HostResolver_Hint hint;
   hint.family = PP_NETADDRESS_FAMILY_UNSPECIFIED;
-  hint.flags = PP_HOSTRESOLVER_FLAGS_CANONNAME;
+  hint.flags = PP_HOSTRESOLVER_FLAG_CANONNAME;
   return ParameterizedTestResolve(hint);
 }
 
 std::string TestHostResolver::TestResolveIPv4() {
-  PP_HostResolver_Hint_Dev hint;
+  PP_HostResolver_Hint hint;
   hint.family = PP_NETADDRESS_FAMILY_IPV4;
-  hint.flags = PP_HOSTRESOLVER_FLAGS_CANONNAME;
+  hint.flags = PP_HOSTRESOLVER_FLAG_CANONNAME;
   return ParameterizedTestResolve(hint);
 }

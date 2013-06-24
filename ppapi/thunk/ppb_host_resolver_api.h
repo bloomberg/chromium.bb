@@ -6,7 +6,7 @@
 #define PPAPI_THUNK_PPB_HOST_RESOLVER_API_H_
 
 #include "base/memory/ref_counted.h"
-#include "ppapi/c/dev/ppb_host_resolver_dev.h"
+#include "ppapi/c/ppb_host_resolver.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
@@ -21,7 +21,7 @@ class PPAPI_THUNK_EXPORT PPB_HostResolver_API {
 
   virtual int32_t Resolve(const char* host,
                           uint16_t port,
-                          const PP_HostResolver_Hint_Dev* hint,
+                          const PP_HostResolver_Hint* hint,
                           scoped_refptr<TrackedCallback> callback) = 0;
   virtual PP_Var GetCanonicalName() = 0;
   virtual uint32_t GetNetAddressCount() = 0;

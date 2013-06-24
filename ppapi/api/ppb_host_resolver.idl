@@ -4,46 +4,46 @@
  */
 
 /**
- * This file defines the <code>PPB_HostResolver_Dev</code> interface.
+ * This file defines the <code>PPB_HostResolver</code> interface.
  */
 
 [generate_thunk]
 
 label Chrome {
-  M29 = 0.1
+  M29 = 1.0
 };
 
 /**
- * <code>PP_HostResolver_Flags_Dev</code> is an enumeration of flags which can
- * be OR-ed and passed to the host resolver. Currently there is only one flag
+ * <code>PP_HostResolver_Flag</code> is an enumeration of flags which can be
+ * OR-ed and passed to the host resolver. Currently there is only one flag
  * defined.
  */
 [assert_size(4)]
-enum PP_HostResolver_Flags_Dev {
+enum PP_HostResolver_Flag {
   /**
    * Hint to request the canonical name of the host, which can be retrieved by
    * <code>GetCanonicalName()</code>.
    */
-  PP_HOSTRESOLVER_FLAGS_CANONNAME = 1 << 0
+  PP_HOSTRESOLVER_FLAG_CANONNAME = 1 << 0
 };
 
 /**
- * <code>PP_HostResolver_Hint_Dev</code> represents hints for host resolution.
+ * <code>PP_HostResolver_Hint</code> represents hints for host resolution.
  */
 [assert_size(8)]
-struct PP_HostResolver_Hint_Dev {
+struct PP_HostResolver_Hint {
   /**
    * Network address family.
    */
   PP_NetAddress_Family family;
   /**
-   * Combination of flags from <code>PP_HostResolver_Flags_Dev</code>.
+   * Combination of flags from <code>PP_HostResolver_Flag</code>.
    */
   int32_t flags;
 };
 
 /**
- * The <code>PPB_HostResolver_Dev</code> interface supports host name
+ * The <code>PPB_HostResolver</code> interface supports host name
  * resolution.
  *
  * Permissions: In order to run <code>Resolve()</code>, apps permission
@@ -51,7 +51,7 @@ struct PP_HostResolver_Hint_Dev {
  * For more details about network communication permissions, please see:
  * http://developer.chrome.com/apps/app_network.html
  */
-interface PPB_HostResolver_Dev {
+interface PPB_HostResolver {
   /**
    * Creates a host resolver resource.
    *
@@ -69,8 +69,7 @@ interface PPB_HostResolver_Dev {
    * @param[in] resource A <code>PP_Resource</code> to check.
    *
    * @return <code>PP_TRUE</code> if the input is a
-   * <code>PPB_HostResolver_Dev</code> resource; <code>PP_FALSE</code>
-   * otherwise.
+   * <code>PPB_HostResolver</code> resource; <code>PP_FALSE</code> otherwise.
    */
   PP_Bool IsHostResolver([in] PP_Resource resource);
 
@@ -84,7 +83,7 @@ interface PPB_HostResolver_Dev {
    * @param[in] host The host name (or IP address literal) to resolve.
    * @param[in] port The port number to be set in the resulting network
    * addresses.
-   * @param[in] hint A <code>PP_HostResolver_Hint_Dev</code> structure providing
+   * @param[in] hint A <code>PP_HostResolver_Hint</code> structure providing
    * hints for host resolution.
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion.
@@ -97,7 +96,7 @@ interface PPB_HostResolver_Dev {
   int32_t Resolve([in] PP_Resource host_resolver,
                   [in] str_t host,
                   [in] uint16_t port,
-                  [in] PP_HostResolver_Hint_Dev hint,
+                  [in] PP_HostResolver_Hint hint,
                   [in] PP_CompletionCallback callback);
 
   /**
@@ -107,9 +106,9 @@ interface PPB_HostResolver_Dev {
    * resolver.
    *
    * @return A string <code>PP_Var</code> on success, which is an empty string
-   * if <code>PP_HOSTRESOLVER_FLAGS_CANONNAME</code> is not set in the hint
-   * flags when calling <code>Resolve()</code>; an undefined <code>PP_Var</code>
-   * if there is a pending <code>Resolve()</code> call or the previous
+   * if <code>PP_HOSTRESOLVER_FLAG_CANONNAME</code> is not set in the hint flags
+   * when calling <code>Resolve()</code>; an undefined <code>PP_Var</code> if
+   * there is a pending <code>Resolve()</code> call or the previous
    * <code>Resolve()</code> call failed.
    */
   PP_Var GetCanonicalName([in] PP_Resource host_resolver);

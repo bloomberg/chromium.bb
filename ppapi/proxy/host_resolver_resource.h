@@ -27,7 +27,7 @@ class PPAPI_PROXY_EXPORT HostResolverResource
   // thunk::PPB_HostResolver_API implementation.
   virtual int32_t Resolve(const char* host,
                           uint16_t port,
-                          const PP_HostResolver_Hint_Dev* hint,
+                          const PP_HostResolver_Hint* hint,
                           scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_Var GetCanonicalName() OVERRIDE;
   virtual uint32_t GetNetAddressCount() OVERRIDE;
