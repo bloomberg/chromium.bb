@@ -119,7 +119,7 @@ void IndexedDBTransaction::Abort() {
 }
 
 void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
-  IDB_TRACE("IndexedDBTransaction::abort");
+  IDB_TRACE("IndexedDBTransaction::Abort");
   if (state_ == FINISHED)
     return;
 
@@ -205,7 +205,7 @@ void IndexedDBTransaction::Start() {
 }
 
 void IndexedDBTransaction::Commit() {
-  IDB_TRACE("IndexedDBTransaction::commit");
+  IDB_TRACE("IndexedDBTransaction::Commit");
 
   // In multiprocess ports, front-end may have requested a commit but
   // an abort has already been initiated asynchronously by the
@@ -264,11 +264,11 @@ void IndexedDBTransaction::Commit() {
 }
 
 void IndexedDBTransaction::TaskTimerFired() {
-  IDB_TRACE("IndexedDBTransaction::task_timer_fired");
+  IDB_TRACE("IndexedDBTransaction::TaskTimerFired");
   DCHECK(!IsTaskQueueEmpty());
 
   if (state_ == START_PENDING) {
-    transaction_.begin();
+    transaction_.Begin();
     state_ = RUNNING;
   }
 

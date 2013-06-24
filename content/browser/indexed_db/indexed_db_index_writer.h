@@ -21,10 +21,6 @@ class IndexedDBDatabase;
 class IndexedDBTransaction;
 struct IndexedDBObjectStoreMetadata;
 
-// TODO(alecflett): this namespace is temporary until we move its contents out
-// to their own home.
-namespace IndexedDBObjectStoreImpl {
-
 class IndexWriter {
  public:
   explicit IndexWriter(const IndexedDBIndexMetadata& index_metadata);
@@ -75,7 +71,6 @@ bool MakeIndexWriters(
     ScopedVector<IndexWriter>* index_writers,
     string16* error_message,
     bool* completed) WARN_UNUSED_RESULT;
-};
 
 }  // namespace content
 

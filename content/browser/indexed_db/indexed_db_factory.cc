@@ -54,7 +54,7 @@ void IndexedDBFactory::GetDatabaseNames(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
     const string16& database_identifier,
     const base::FilePath& data_directory) {
-  IDB_TRACE("IndexedDBFactory::get_database_names");
+  IDB_TRACE("IndexedDBFactory::GetDatabaseNames");
   scoped_refptr<IndexedDBBackingStore> backing_store =
       OpenBackingStore(database_identifier, data_directory);
   if (!backing_store.get()) {
@@ -73,7 +73,7 @@ void IndexedDBFactory::DeleteDatabase(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
     const string16& database_identifier,
     const base::FilePath& data_directory) {
-  IDB_TRACE("IndexedDBFactory::delete_database");
+  IDB_TRACE("IndexedDBFactory::DeleteDatabase");
   const string16 unique_identifier =
       ComputeUniqueIdentifier(name, database_identifier);
 
@@ -86,14 +86,13 @@ void IndexedDBFactory::DeleteDatabase(
     return;
   }
 
-  // TODO(jsbell): Everything from now on should be done on another thread.
   scoped_refptr<IndexedDBBackingStore> backing_store =
       OpenBackingStore(database_identifier, data_directory);
   if (!backing_store.get()) {
     callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16("Internal error opening backing store "
-                     "for indexed_db.delete_database.")));
+                     "for indexedDB.deleteDatabase.")));
     return;
   }
 
@@ -103,7 +102,7 @@ void IndexedDBFactory::DeleteDatabase(
     callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16("Internal error creating database backend for "
-                     "indexed_db.delete_database.")));
+                     "indexedDB.deleteDatabase.")));
     return;
   }
 
@@ -156,7 +155,7 @@ void IndexedDBFactory::Open(
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
     const string16& database_identifier,
     const base::FilePath& data_directory) {
-  IDB_TRACE("IndexedDBFactory::open");
+  IDB_TRACE("IndexedDBFactory::Open");
   const string16 unique_identifier =
       ComputeUniqueIdentifier(name, database_identifier);
 

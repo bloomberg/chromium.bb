@@ -266,7 +266,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
    public:
     explicit Transaction(IndexedDBBackingStore* backing_store);
     ~Transaction();
-    void begin();
+    void Begin();
     bool Commit();
     void Rollback();
     void Reset() {

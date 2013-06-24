@@ -83,7 +83,7 @@ IndexedDBCursor::~IndexedDBCursor() {
 void IndexedDBCursor::ContinueFunction(
     scoped_ptr<IndexedDBKey> key,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBCursor::continue");
+  IDB_TRACE("IndexedDBCursor::Continue");
 
   transaction_->ScheduleTask(
       task_type_, new CursorIterationOperation(this, key.Pass(), callbacks));
@@ -92,7 +92,7 @@ void IndexedDBCursor::ContinueFunction(
 void IndexedDBCursor::Advance(
     uint32 count,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBCursor::advance");
+  IDB_TRACE("IndexedDBCursor::Advance");
 
   transaction_->ScheduleTask(
       new CursorAdvanceOperation(this, count, callbacks));
@@ -127,7 +127,7 @@ void IndexedDBCursor::CursorIterationOperation::Perform(
 void IndexedDBCursor::PrefetchContinue(
     int number_to_fetch,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBCursor::prefetch_continue");
+  IDB_TRACE("IndexedDBCursor::PrefetchContinue");
 
   transaction_->ScheduleTask(
       task_type_,
@@ -187,7 +187,7 @@ void IndexedDBCursor::CursorPrefetchIterationOperation::Perform(
 }
 
 void IndexedDBCursor::PrefetchReset(int used_prefetches, int) {
-  IDB_TRACE("IndexedDBCursor::prefetch_reset");
+  IDB_TRACE("IndexedDBCursor::PrefetchReset");
   cursor_.swap(saved_cursor_);
   saved_cursor_.reset();
 
@@ -202,7 +202,7 @@ void IndexedDBCursor::PrefetchReset(int used_prefetches, int) {
 }
 
 void IndexedDBCursor::Close() {
-  IDB_TRACE("IndexedDBCursor::close");
+  IDB_TRACE("IndexedDBCursor::Close");
   closed_ = true;
   cursor_.reset();
   saved_cursor_.reset();

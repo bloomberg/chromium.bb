@@ -20,6 +20,7 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
+#include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 
 using base::Int64ToString16;
@@ -484,7 +485,7 @@ bool IndexedDBDatabase::OpenInternal() {
   bool ok = backing_store_->GetIDBDatabaseMetaData(
       metadata_.name, &metadata_, &success);
   DCHECK(success == (metadata_.id != kInvalidId)) << "success = " << success
-                                                  << " id_ = " << metadata_.id;
+                                                  << " id = " << metadata_.id;
   if (!ok)
     return false;
   if (success)
@@ -510,7 +511,7 @@ void IndexedDBDatabase::CreateObjectStore(int64 transaction_id,
                                           const string16& name,
                                           const IndexedDBKeyPath& key_path,
                                           bool auto_increment) {
-  IDB_TRACE("IndexedDBDatabase::create_object_store");
+  IDB_TRACE("IndexedDBDatabase::CreateObjectStore");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -553,7 +554,7 @@ void CreateObjectStoreOperation::Perform(IndexedDBTransaction* transaction) {
 
 void IndexedDBDatabase::DeleteObjectStore(int64 transaction_id,
                                           int64 object_store_id) {
-  IDB_TRACE("IndexedDBDatabase::delete_object_store");
+  IDB_TRACE("IndexedDBDatabase::DeleteObjectStore");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -579,7 +580,7 @@ void IndexedDBDatabase::CreateIndex(int64 transaction_id,
                                     const IndexedDBKeyPath& key_path,
                                     bool unique,
                                     bool multi_entry) {
-  IDB_TRACE("IndexedDBDatabase::create_index");
+  IDB_TRACE("IndexedDBDatabase::CreateIndex");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -630,7 +631,7 @@ void CreateIndexAbortOperation::Perform(IndexedDBTransaction* transaction) {
 void IndexedDBDatabase::DeleteIndex(int64 transaction_id,
                                     int64 object_store_id,
                                     int64 index_id) {
-  IDB_TRACE("IndexedDBDatabase::delete_index");
+  IDB_TRACE("IndexedDBDatabase::DeleteIndex");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -705,7 +706,7 @@ void IndexedDBDatabase::Get(
     scoped_ptr<IndexedDBKeyRange> key_range,
     bool key_only,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBDatabase::get");
+  IDB_TRACE("IndexedDBDatabase::Get");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -787,7 +788,7 @@ void GetOperation::Perform(IndexedDBTransaction* transaction) {
     if (!ok) {
       callbacks_->OnError(
           IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
-                                 "Internal error in get_record."));
+                                 "Internal error in GetRecord."));
       return;
     }
 
@@ -816,7 +817,7 @@ void GetOperation::Perform(IndexedDBTransaction* transaction) {
   if (!ok) {
     callbacks_->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
-                               "Internal error in get_primary_key_via_index."));
+                               "Internal error in GetPrimaryKeyViaIndex."));
     return;
   }
   if (!primary_key) {
@@ -839,7 +840,7 @@ void GetOperation::Perform(IndexedDBTransaction* transaction) {
   if (!ok) {
     callbacks_->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
-                               "Internal error in get_record."));
+                               "Internal error in GetRecord."));
     return;
   }
 
@@ -868,7 +869,7 @@ static scoped_ptr<IndexedDBKey> GenerateKey(
       object_store_id,
       &current_number);
   if (!ok) {
-    LOG(ERROR) << "Failed to get_key_generator_current_number";
+    LOG(ERROR) << "Failed to GetKeyGeneratorCurrentNumber";
     return make_scoped_ptr(new IndexedDBKey());
   }
   if (current_number < 0 || current_number > max_generator_value)
@@ -903,7 +904,7 @@ void IndexedDBDatabase::Put(int64 transaction_id,
                             scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
                             const std::vector<int64>& index_ids,
                             const std::vector<IndexKeys>& index_keys) {
-  IDB_TRACE("IndexedDBDatabase::put");
+  IDB_TRACE("IndexedDBDatabase::Put");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -976,11 +977,11 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
     }
   }
 
-  ScopedVector<IndexedDBObjectStoreImpl::IndexWriter> index_writers;
+  ScopedVector<IndexWriter> index_writers;
   string16 error_message;
   bool obeys_constraints = false;
   bool backing_store_success =
-      IndexedDBObjectStoreImpl::MakeIndexWriters(transaction,
+      MakeIndexWriters(transaction,
                                                  backing_store_.get(),
                                                  database_id_,
                                                  object_store_,
@@ -1020,7 +1021,7 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
   }
 
   for (size_t i = 0; i < index_writers.size(); ++i) {
-    IndexedDBObjectStoreImpl::IndexWriter* index_writer = index_writers[i];
+    IndexWriter* index_writer = index_writers[i];
     index_writer->WriteIndexKeys(record_identifier,
                                  backing_store_.get(),
                                  transaction->BackingStoreTransaction(),
@@ -1053,7 +1054,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
                                      scoped_ptr<IndexedDBKey> primary_key,
                                      const std::vector<int64>& index_ids,
                                      const std::vector<IndexKeys>& index_keys) {
-  IDB_TRACE("IndexedDBDatabase::set_index_keys");
+  IDB_TRACE("IndexedDBDatabase::SetIndexKeys");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -1062,7 +1063,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
   DCHECK_EQ(transaction->mode(), indexed_db::TRANSACTION_VERSION_CHANGE);
 
   scoped_refptr<IndexedDBBackingStore> store = BackingStore();
-  // TODO(jsbell): This method could be asynchronous, but we need to
+  // TODO(alecflett): This method could be asynchronous, but we need to
   // evaluate if it's worth the extra complexity.
   IndexedDBBackingStore::RecordIdentifier record_identifier;
   bool found = false;
@@ -1086,25 +1087,24 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
     return;
   }
 
-  ScopedVector<IndexedDBObjectStoreImpl::IndexWriter> index_writers;
+  ScopedVector<IndexWriter> index_writers;
   string16 error_message;
   bool obeys_constraints = false;
   DCHECK(metadata_.object_stores.find(object_store_id) !=
          metadata_.object_stores.end());
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores[object_store_id];
-  bool backing_store_success =
-      IndexedDBObjectStoreImpl::MakeIndexWriters(transaction,
-                                                 store.get(),
-                                                 id(),
-                                                 object_store_metadata,
-                                                 *primary_key,
-                                                 false,
-                                                 index_ids,
-                                                 index_keys,
-                                                 &index_writers,
-                                                 &error_message,
-                                                 &obeys_constraints);
+  bool backing_store_success = MakeIndexWriters(transaction,
+                                                store.get(),
+                                                id(),
+                                                object_store_metadata,
+                                                *primary_key,
+                                                false,
+                                                index_ids,
+                                                index_keys,
+                                                &index_writers,
+                                                &error_message,
+                                                &obeys_constraints);
   if (!backing_store_success) {
     transaction->Abort(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -1118,7 +1118,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
   }
 
   for (size_t i = 0; i < index_writers.size(); ++i) {
-    IndexedDBObjectStoreImpl::IndexWriter* index_writer = index_writers[i];
+    IndexWriter* index_writer = index_writers[i];
     index_writer->WriteIndexKeys(record_identifier,
                                  store.get(),
                                  transaction->BackingStoreTransaction(),
@@ -1130,7 +1130,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
 void IndexedDBDatabase::SetIndexesReady(int64 transaction_id,
                                         int64,
                                         const std::vector<int64>& index_ids) {
-  IDB_TRACE("IndexedDBObjectStoreImpl::set_indexes_ready");
+  IDB_TRACE("IndexedDBDatabase::SetIndexesReady");
 
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
@@ -1157,7 +1157,7 @@ void IndexedDBDatabase::OpenCursor(
     bool key_only,
     TaskType task_type,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBDatabase::open_cursor");
+  IDB_TRACE("IndexedDBDatabase::OpenCursor");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -1235,7 +1235,7 @@ void IndexedDBDatabase::Count(
     int64 index_id,
     scoped_ptr<IndexedDBKeyRange> key_range,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBDatabase::count");
+  IDB_TRACE("IndexedDBDatabase::Count");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -1290,7 +1290,7 @@ void IndexedDBDatabase::DeleteRange(
     int64 object_store_id,
     scoped_ptr<IndexedDBKeyRange> key_range,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBDatabase::delete_range");
+  IDB_TRACE("IndexedDBDatabase::DeleteRange");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -1332,7 +1332,7 @@ void IndexedDBDatabase::Clear(
     int64 transaction_id,
     int64 object_store_id,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBDatabase::clear");
+  IDB_TRACE("IndexedDBDatabase::Clear");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -1576,7 +1576,7 @@ void IndexedDBDatabase::OpenConnection(
   if (version == IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION) {
     // For unit tests only - skip upgrade steps. Calling from script with
     // DEFAULT_INT_VERSION throws exception.
-    // TODO(jsbell): Assert that we're executing a unit test.
+    DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
     DCHECK(is_new_database);
     database_callbacks_set_.insert(database_callbacks);
     callbacks->OnSuccess(this, this->metadata());
@@ -1631,7 +1631,7 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
       if (it->get() != database_callbacks.get())
         (*it)->OnVersionChange(metadata_.int_version, requested_version);
     }
-    // TODO(jsbell): Remove the call to on_blocked and instead wait
+    // TODO(jsbell): Remove the call to OnBlocked and instead wait
     // until the frontend tells us that all the "versionchange" events
     // have been delivered.  http://crbug.com/100123
     callbacks->OnBlocked(metadata_.int_version);
@@ -1684,7 +1684,7 @@ void IndexedDBDatabase::DeleteDatabase(
       (*it)->OnVersionChange(metadata_.int_version,
                              IndexedDBDatabaseMetadata::NO_INT_VERSION);
     }
-    // TODO(jsbell): Only fire on_blocked if there are open
+    // TODO(jsbell): Only fire OnBlocked if there are open
     // connections after the VersionChangeEvents are received, not
     // just set up to fire.  http://crbug.com/100123
     callbacks->OnBlocked(metadata_.int_version);
@@ -1764,8 +1764,9 @@ void IndexedDBDatabase::Close(
 
     backing_store_ = NULL;
 
-    // This check should only be false in unit tests.
-    // TODO(jsbell): Assert factory_ || we're executing a unit test.
+    // factory_ should only be null in unit tests.
+    DCHECK(factory_ ||
+           !BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
     if (factory_.get())
       factory_->RemoveIDBDatabaseBackend(identifier_);
   }

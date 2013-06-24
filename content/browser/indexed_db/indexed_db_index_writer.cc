@@ -15,18 +15,18 @@
 
 namespace content {
 
-IndexedDBObjectStoreImpl::IndexWriter::IndexWriter(
+IndexWriter::IndexWriter(
     const IndexedDBIndexMetadata& index_metadata)
     : index_metadata_(index_metadata) {}
 
-IndexedDBObjectStoreImpl::IndexWriter::IndexWriter(
+IndexWriter::IndexWriter(
     const IndexedDBIndexMetadata& index_metadata,
     const IndexedDBDatabase::IndexKeys& index_keys)
     : index_metadata_(index_metadata), index_keys_(index_keys) {}
 
-IndexedDBObjectStoreImpl::IndexWriter::~IndexWriter() {}
+IndexWriter::~IndexWriter() {}
 
-bool IndexedDBObjectStoreImpl::IndexWriter::VerifyIndexKeys(
+bool IndexWriter::VerifyIndexKeys(
     IndexedDBBackingStore* backing_store,
     IndexedDBBackingStore::Transaction* transaction,
     int64 database_id,
@@ -60,7 +60,7 @@ bool IndexedDBObjectStoreImpl::IndexWriter::VerifyIndexKeys(
   return true;
 }
 
-void IndexedDBObjectStoreImpl::IndexWriter::WriteIndexKeys(
+void IndexWriter::WriteIndexKeys(
     const IndexedDBBackingStore::RecordIdentifier& record_identifier,
     IndexedDBBackingStore* backing_store,
     IndexedDBBackingStore::Transaction* transaction,
@@ -80,7 +80,7 @@ void IndexedDBObjectStoreImpl::IndexWriter::WriteIndexKeys(
   }
 }
 
-bool IndexedDBObjectStoreImpl::IndexWriter::AddingKeyAllowed(
+bool IndexWriter::AddingKeyAllowed(
     IndexedDBBackingStore* backing_store,
     IndexedDBBackingStore::Transaction* transaction,
     int64 database_id,
@@ -112,7 +112,7 @@ bool IndexedDBObjectStoreImpl::IndexWriter::AddingKeyAllowed(
   return true;
 }
 
-bool IndexedDBObjectStoreImpl::MakeIndexWriters(
+bool MakeIndexWriters(
     scoped_refptr<IndexedDBTransaction> transaction,
     IndexedDBBackingStore* backing_store,
     int64 database_id,

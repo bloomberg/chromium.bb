@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
@@ -110,10 +111,10 @@ bool LevelDBDatabase::Destroy(const base::FilePath& file_name) {
   return s.ok();
 }
 
-static int CheckFreeSpace(const char* type, const base::FilePath& file_name) {
-  // TODO(dgrogan): Change string16 -> std::string.
-  string16 name = ASCIIToUTF16("WebCore.IndexedDB.LevelDB.Open") +
-                  ASCIIToUTF16(type) + ASCIIToUTF16("FreeDiskSpace");
+static int CheckFreeSpace(const char* const type,
+                          const base::FilePath& file_name) {
+  std::string name =
+      std::string("WebCore.IndexedDB.LevelDB.Open") + type + "FreeDiskSpace";
   int64 free_disk_space_in_k_bytes =
       base::SysInfo::AmountOfFreeDiskSpace(file_name) / 1024;
   if (free_disk_space_in_k_bytes < 0) {
@@ -130,7 +131,7 @@ static int CheckFreeSpace(const char* type, const base::FilePath& file_name) {
                                            : free_disk_space_in_k_bytes;
   const uint64 histogram_max = static_cast<uint64>(1e9);
   COMPILE_ASSERT(histogram_max <= INT_MAX, histogram_max_too_big);
-  base::Histogram::FactoryGet(UTF16ToUTF8(name),
+  base::Histogram::FactoryGet(name,
                               1,
                               histogram_max,
                               11 /*buckets*/,
@@ -371,9 +372,8 @@ scoped_ptr<LevelDBIterator> LevelDBDatabase::CreateIterator(
   read_options.verify_checksums = true;  // TODO(jsbell): Disable this if the
                                          // performance impact is too great.
   read_options.snapshot = snapshot ? snapshot->snapshot_ : 0;
+
   scoped_ptr<leveldb::Iterator> i(db_->NewIterator(read_options));
-  if (!i)  // TODO(jsbell): Double check if we actually need to check this.
-    return scoped_ptr<LevelDBIterator>();
   return scoped_ptr<LevelDBIterator>(new IteratorImpl(i.Pass()));
 }
 

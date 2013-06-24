@@ -59,7 +59,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
 TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
-    transaction1.begin();
+    transaction1.Begin();
     IndexedDBBackingStore::RecordIdentifier record;
     bool ok = backing_store_->PutRecord(
         &transaction1, 1, 1, m_key1, m_value1, &record);
@@ -69,7 +69,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
 
   {
     IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
-    transaction2.begin();
+    transaction2.Begin();
     std::vector<char> result_value;
     bool ok =
         backing_store_->GetRecord(&transaction2, 1, 1, m_key1, &result_value);
@@ -94,7 +94,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
   EncodeIDBKey(index_key, &index_key_raw);
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
-    transaction1.begin();
+    transaction1.Begin();
     IndexedDBBackingStore::RecordIdentifier record;
     bool ok = backing_store_->PutRecord(&transaction1,
                                         high_database_id,
@@ -126,7 +126,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
 
   {
     IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
-    transaction2.begin();
+    transaction2.Begin();
     std::vector<char> result_value;
     bool ok = backing_store_->GetRecord(&transaction2,
                                         high_database_id,
@@ -170,7 +170,7 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
   std::vector<char> result_value;
 
   IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
-  transaction1.begin();
+  transaction1.Begin();
 
   IndexedDBBackingStore::RecordIdentifier record;
   bool ok = backing_store_->PutRecord(&transaction1,
@@ -270,7 +270,7 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
     EXPECT_GT(database_id, 0);
 
     IndexedDBBackingStore::Transaction transaction(backing_store_.get());
-    transaction.begin();
+    transaction.Begin();
 
     ok = backing_store_->CreateObjectStore(&transaction,
                                            database_id,
