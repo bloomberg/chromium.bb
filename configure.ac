@@ -54,7 +54,7 @@ AC_CHECK_HEADERS([execinfo.h])
 
 AC_CHECK_FUNCS([mkostemp strchrnul])
 
-COMPOSITOR_MODULES="wayland-server >= 1.1.90 xkbcommon pixman-1"
+COMPOSITOR_MODULES="wayland-server >= 1.1.90 pixman-1"
 
 AC_ARG_ENABLE(egl, [  --disable-egl],,
               enable_egl=yes)
@@ -62,6 +62,19 @@ AM_CONDITIONAL(ENABLE_EGL, test x$enable_egl = xyes)
 if test x$enable_egl = xyes; then
 	AC_DEFINE([ENABLE_EGL], [1], [Build Weston with EGL support])
 	COMPOSITOR_MODULES="$COMPOSITOR_MODULES egl >= 7.10 glesv2"
+fi
+
+AC_ARG_ENABLE(xkbcommon,
+	      AS_HELP_STRING([--disable-xkbcommon], [Disable libxkbcommon
+			      support: This is only useful in environments
+			      where you do not have a hardware keyboard. If
+			      libxkbcommon support is disabled clients will not
+			      be sent a keymap and and must know how to
+			      interpret the keycode sent for any key event.]),,
+	      enable_xkbcommon=yes)
+if test x$enable_xkbcommon = xyes; then
+	AC_DEFINE(ENABLE_XKBCOMMON, [1], [Build Weston with libxkbcommon support])
+	COMPOSITOR_MODULES="$COMPOSITOR_MODULES xkbcommon"
 fi
 
 PKG_CHECK_MODULES(COMPOSITOR, [$COMPOSITOR_MODULES])

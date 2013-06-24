@@ -2829,7 +2829,6 @@ weston_compositor_init(struct weston_compositor *ec,
 	weston_plane_init(&ec->primary_plane, 0, 0);
 	weston_compositor_stack_plane(ec, &ec->primary_plane, NULL);
 
-	ec->use_xkbcommon = 1;
 	s = weston_config_get_section(ec->config, "keyboard", NULL, NULL);
 	weston_config_section_get_string(s, "keymap_rules",
 					 (char **) &xkb_names.rules, NULL);
@@ -2841,6 +2840,7 @@ weston_compositor_init(struct weston_compositor *ec,
 					 (char **) &xkb_names.variant, NULL);
 	weston_config_section_get_string(s, "keymap_options",
 					 (char **) &xkb_names.options, NULL);
+
 	if (weston_compositor_xkb_init(ec, &xkb_names) < 0)
 		return -1;
 
