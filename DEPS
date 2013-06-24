@@ -115,9 +115,6 @@ deps = {
   "src/native_client":
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
 
-  "src/third_party/pymox/src":
-    (Var("googlecode_url") % "pymox") + "/trunk@70",
-
   "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin":
     Var("nacl_trunk") + "/src/native_client/tests/prebuilt@" +
     Var("nacl_revision"),
