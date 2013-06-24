@@ -258,10 +258,10 @@ Server message: <ph name="server_msg">$3<ex>Incorrect password</ex></ph>
     Stop
   </message>
   <message name="IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED" desc="label for screen sharing notification">
-    You are being helped
+    Sharing control of your screen via Hangouts.
   </message>
   <message name="IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED_NAME" desc="label for screen sharing notification with name">
-    You are being helped by <ph name="HELPER_NAME">$1<ex>Walder Frey</ex></ph>
+    Sharing control of your screen with <ph name="HELPER_NAME">$1<ex>Walder Frey</ex></ph> via Hangouts.
   </message>
 
 </grit-part>
