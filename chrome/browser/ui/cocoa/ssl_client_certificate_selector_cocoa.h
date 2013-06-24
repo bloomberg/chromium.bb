@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
@@ -29,9 +29,9 @@ class SSLClientAuthObserverCocoaBridge;
   std::vector<scoped_refptr<net::X509Certificate> > certificates_;
   // A C++ object to bridge SSLClientAuthObserver notifications to us.
   scoped_ptr<SSLClientAuthObserverCocoaBridge> observer_;
-  scoped_nsobject<SFChooseIdentityPanel> panel_;
+  base::scoped_nsobject<SFChooseIdentityPanel> panel_;
   scoped_ptr<ConstrainedWindowMac> constrainedWindow_;
-  scoped_nsobject<NSWindow> overlayWindow_;
+  base::scoped_nsobject<NSWindow> overlayWindow_;
   BOOL closePending_;
   // A copy of the sheet's frame used to restore on show.
   NSRect oldSheetFrame_;

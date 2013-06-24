@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "ui/base/cocoa/tracking_area.h"
 
@@ -27,7 +27,7 @@ class Profile;
                        BookmarkButtonControllerProtocol> {
  @private
   // The button whose click opened us.
-  scoped_nsobject<BookmarkButton> parentButton_;
+  base::scoped_nsobject<BookmarkButton> parentButton_;
 
   // Bookmark bar folder controller chains are torn down in two ways:
   // 1. Clicking "outside" the folder (see use of the NSEvent local event
@@ -57,13 +57,13 @@ class Profile;
 
   // Our parent controller, if we are a nested folder, otherwise nil.
   // Strong to insure the object lives as long as we need it.
-  scoped_nsobject<BookmarkBarFolderController> parentController_;
+  base::scoped_nsobject<BookmarkBarFolderController> parentController_;
 
   // The main bar controller from whence we or a parent sprang.
   BookmarkBarController* barController_;  // WEAK: It owns us.
 
   // Our buttons.  We do not have buttons for nested folders.
-  scoped_nsobject<NSMutableArray> buttons_;
+  base::scoped_nsobject<NSMutableArray> buttons_;
 
   // The scroll view that contains our main button view (below).
   IBOutlet NSScrollView* scrollView_;
@@ -102,10 +102,10 @@ class Profile;
   // We model hover state as a state machine with specific allowable
   // transitions.  |hoverState_| is the state of this machine at any
   // given time.
-  scoped_nsobject<BookmarkBarFolderHoverState> hoverState_;
+  base::scoped_nsobject<BookmarkBarFolderHoverState> hoverState_;
 
   // Logic for dealing with a click on a bookmark folder button.
-  scoped_nsobject<BookmarkFolderTarget> folderTarget_;
+  base::scoped_nsobject<BookmarkFolderTarget> folderTarget_;
 
   // A controller for a pop-up bookmark folder window (custom menu).
   // We (self) are the parentController_ for our folderController_.

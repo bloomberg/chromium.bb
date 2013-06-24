@@ -139,7 +139,8 @@ void SearchBoxModelObserverBridge::TextChanged() {
 
 - (id)initWithFrame:(NSRect)frame {
   if ((self = [super init])) {
-    scoped_nsobject<NSView> containerView([[NSView alloc] initWithFrame:frame]);
+    base::scoped_nsobject<NSView> containerView(
+        [[NSView alloc] initWithFrame:frame]);
     [self setView:containerView];
     [self addSubviews];
   }
@@ -370,7 +371,7 @@ void SearchBoxModelObserverBridge::TextChanged() {
   if (model->GetCommandIdAt(index) != app_list::AppListMenu::CURRENT_USER)
     return;
 
-  scoped_nsobject<NSView> customItemView([[CurrentUserMenuItemView alloc]
+  base::scoped_nsobject<NSView> customItemView([[CurrentUserMenuItemView alloc]
       initWithDelegate:[[searchBoxController_ delegate] appListDelegate]]);
   [[menu itemAtIndex:index] setView:customItemView];
 }

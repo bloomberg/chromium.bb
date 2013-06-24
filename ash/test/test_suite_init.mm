@@ -8,7 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/mac/bundle_locations.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 
 namespace ash {

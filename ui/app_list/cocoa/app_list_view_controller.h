@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #import "ui/app_list/cocoa/apps_pagination_model_observer.h"
@@ -30,11 +30,12 @@ APP_LIST_EXPORT
                                                     AppsSearchBoxDelegate,
                                                     AppsSearchResultsDelegate> {
  @private
-  scoped_nsobject<AppsGridController> appsGridController_;
-  scoped_nsobject<AppListPagerView> pagerControl_;
-  scoped_nsobject<AppsSearchBoxController> appsSearchBoxController_;
-  scoped_nsobject<AppsSearchResultsController> appsSearchResultsController_;
-  scoped_nsobject<NSView> contentsView_;
+  base::scoped_nsobject<AppsGridController> appsGridController_;
+  base::scoped_nsobject<AppListPagerView> pagerControl_;
+  base::scoped_nsobject<AppsSearchBoxController> appsSearchBoxController_;
+  base::scoped_nsobject<AppsSearchResultsController>
+      appsSearchResultsController_;
+  base::scoped_nsobject<NSView> contentsView_;
   scoped_ptr<app_list::AppListViewDelegate> delegate_;
   BOOL showingSearchResults_;
 }

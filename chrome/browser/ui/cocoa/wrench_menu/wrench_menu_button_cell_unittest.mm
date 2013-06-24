@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.h"
@@ -32,7 +32,7 @@ class WrenchMenuButtonCellTest : public CocoaTest {
     [button_ setButtonType:NSMomentaryPushInButton];
   }
 
-  scoped_nsobject<NSButton> button_;
+  base::scoped_nsobject<NSButton> button_;
 };
 
 TEST_F(WrenchMenuButtonCellTest, Draw) {

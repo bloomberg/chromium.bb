@@ -74,11 +74,11 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
              closeObserver:(void(^)(ZoomBubbleController*))closeObserver {
-  scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
-      initWithContentRect:NSMakeRect(0, 0, 200, 100)
-                styleMask:NSBorderlessWindowMask
-                  backing:NSBackingStoreBuffered
-                    defer:NO]);
+  base::scoped_nsobject<InfoBubbleWindow> window(
+      [[InfoBubbleWindow alloc] initWithContentRect:NSMakeRect(0, 0, 200, 100)
+                                          styleMask:NSBorderlessWindowMask
+                                            backing:NSBackingStoreBuffered
+                                              defer:NO]);
   if ((self = [super initWithWindow:window
                        parentWindow:parentWindow
                          anchoredAt:NSZeroPoint])) {
@@ -208,7 +208,8 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   // Separator view.
   rect.origin.x += NSWidth(rect);
   rect.size.width = 1;
-  scoped_nsobject<NSBox> separatorView([[NSBox alloc] initWithFrame:rect]);
+  base::scoped_nsobject<NSBox> separatorView(
+      [[NSBox alloc] initWithFrame:rect]);
   [separatorView setBoxType:NSBoxCustom];
   ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
   [separatorView setBorderColor:
@@ -241,7 +242,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
 
 - (NSAttributedString*)attributedStringWithString:(NSString*)string
                                            fontSize:(CGFloat)fontSize {
-  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
   [paragraphStyle setAlignment:NSCenterTextAlignment];
   NSDictionary* attributes = @{
@@ -260,7 +261,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
 - (NSButton*)addButtonWithTitleID:(int)titleID
                          fontSize:(CGFloat)fontSize
                            action:(SEL)action {
-  scoped_nsobject<NSButton> button(
+  base::scoped_nsobject<NSButton> button(
       [[ZoomHoverButton alloc] initWithFrame:NSZeroRect]);
   NSString* title = l10n_util::GetNSStringWithFixup(titleID);
   [button setAttributedTitle:[self attributedStringWithString:title
@@ -273,7 +274,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
 }
 
 - (NSTextField*)addZoomPercentTextField {
-  scoped_nsobject<NSTextField> textField(
+  base::scoped_nsobject<NSTextField> textField(
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
   [textField setEditable:NO];
   [textField setBordered:NO];

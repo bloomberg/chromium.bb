@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/base/ui_export.h"
 
 // A custom NSPopUpButtonCell that permits a hover image, and draws only an
@@ -17,7 +17,7 @@
 UI_EXPORT
 @interface HoverImageMenuButtonCell : NSPopUpButtonCell {
  @private
-  scoped_nsobject<NSImage> hoverImage_;
+  base::scoped_nsobject<NSImage> hoverImage_;
   BOOL hovered_;
 }
 

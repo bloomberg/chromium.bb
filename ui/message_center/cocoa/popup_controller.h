@@ -9,7 +9,7 @@
 
 #include <string>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/message_center/message_center_export.h"
 
@@ -34,7 +34,7 @@ MESSAGE_CENTER_EXPORT
   MCPopupCollection* popupCollection_;
 
   // The view controller that provide's the popup content view.
-  scoped_nsobject<MCNotificationController> notificationController_;
+  base::scoped_nsobject<MCNotificationController> notificationController_;
 
   // If the swipe-away gesture received NSEventPhaseEnded.
   BOOL swipeGestureEnded_;
@@ -51,7 +51,7 @@ MESSAGE_CENTER_EXPORT
   NSRect bounds_;
 
   // Used to play animation when the popup shows, changes bounds and closes.
-  scoped_nsobject<NSViewAnimation> boundsAnimation_;
+  base::scoped_nsobject<NSViewAnimation> boundsAnimation_;
 
   // Used to track the popup for mouse entered and exited events.
   ui::ScopedCrTrackingArea trackingArea_;

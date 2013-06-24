@@ -8,7 +8,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/message_center/message_center_tray_delegate.h"
@@ -59,13 +59,13 @@ class MessageCenterTrayBridge :
   scoped_ptr<message_center::MessageCenterTray> tray_;
 
   // Obj-C window controller for the notification tray.
-  scoped_nsobject<MCTrayController> tray_controller_;
+  base::scoped_nsobject<MCTrayController> tray_controller_;
 
   // View that is displayed on the system menu bar item.
-  scoped_nsobject<MCStatusItemView> status_item_view_;
+  base::scoped_nsobject<MCStatusItemView> status_item_view_;
 
   // Obj-C controller for the on-screen popup notifications.
-  scoped_nsobject<MCPopupCollection> popup_collection_;
+  base::scoped_nsobject<MCPopupCollection> popup_collection_;
 
   // Weak pointer factory to posts tasks to self.
   base::WeakPtrFactory<MessageCenterTrayBridge> weak_ptr_factory_;

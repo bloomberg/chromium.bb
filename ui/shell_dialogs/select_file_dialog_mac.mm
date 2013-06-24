@@ -17,7 +17,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "grit/ui_strings.h"
@@ -100,7 +100,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
   virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
 
   // The bridge for results from Cocoa to return to us.
-  scoped_nsobject<SelectFileDialogBridge> bridge_;
+  base::scoped_nsobject<SelectFileDialogBridge> bridge_;
 
   // A map from file dialogs to the |params| user data associated with them.
   std::map<NSSavePanel*, void*> params_map_;

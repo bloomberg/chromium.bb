@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -106,7 +106,8 @@ void MakeShellButton(NSRect* rect,
                      NSView* target,
                      NSString* key,
                      NSUInteger modifier) {
-  scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:*rect]);
+  base::scoped_nsobject<NSButton> button(
+      [[NSButton alloc] initWithFrame:*rect]);
   [button setTitle:title];
   [button setBezelStyle:NSSmallSquareBezelStyle];
   [button setAutoresizingMask:(NSViewMaxXMargin | NSViewMinYMargin)];
@@ -222,7 +223,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
   button_frame.size.width =
       NSWidth(initial_window_bounds) - NSMinX(button_frame);
-  scoped_nsobject<NSTextField> url_edit_view(
+  base::scoped_nsobject<NSTextField> url_edit_view(
       [[NSTextField alloc] initWithFrame:button_frame]);
   [content addSubview:url_edit_view];
   [url_edit_view setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];

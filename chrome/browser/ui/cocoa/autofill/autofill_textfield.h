@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include <base/memory/scoped_nsobject.h>
+#include <base/mac/scoped_nsobject.h>
 
 // Text field used for text inputs inside Autofill.
 // Provide both dog ear and red outline when the contents are marked invalid.
@@ -17,7 +17,7 @@
 @interface AutofillTextFieldCell : NSTextFieldCell {
  @private
   BOOL invalid_;
-  scoped_nsobject<NSImage> icon_;
+  base::scoped_nsobject<NSImage> icon_;
 }
 
 @property(assign, nonatomic) BOOL invalid;

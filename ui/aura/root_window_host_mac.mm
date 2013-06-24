@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/mac/bundle_locations.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
@@ -67,7 +67,7 @@ class RootWindowHostMac : public RootWindowHost,
 
   // An NSWindowController for the root window.  Controls the actual Cocoa
   // window on Mac.
-  scoped_nsobject<NSWindowController> controller_;
+  base::scoped_nsobject<NSWindowController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowHostMac);
 };

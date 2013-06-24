@@ -8,7 +8,7 @@
 
 #include "base/i18n/icu_util.h"
 #include "base/mac/bundle_locations.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -20,9 +20,9 @@ void PreMainMessageLoopStart() {
   icu_util::Initialize();
   ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
-  scoped_nsobject<NSNib>
-      nib([[NSNib alloc] initWithNibNamed:@"MainMenu"
-                                   bundle:base::mac::FrameworkBundle()]);
+  base::scoped_nsobject<NSNib> nib(
+      [[NSNib alloc] initWithNibNamed:@"MainMenu"
+                               bundle:base::mac::FrameworkBundle()]);
   [nib instantiateNibWithOwner:NSApp topLevelObjects:nil];
 }
 

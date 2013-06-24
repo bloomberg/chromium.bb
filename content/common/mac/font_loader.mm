@@ -13,7 +13,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/common/mac/font_descriptor.h"
@@ -112,7 +112,7 @@ void FontLoader::LoadFont(const FontDescriptor& font,
   // it becomes impossible for the system to the find the original file ref
   // since the font now lives in memory as far as it's concerned.
   CTFontRef ct_font_to_encode = (CTFontRef)font_to_encode;
-  scoped_nsobject<NSURL> font_url(
+  base::scoped_nsobject<NSURL> font_url(
       base::mac::CFToNSCast(base::mac::CFCastStrict<CFURLRef>(
           CTFontCopyAttribute(ct_font_to_encode, kCTFontURLAttribute))));
   if (![font_url isFileURL]) {

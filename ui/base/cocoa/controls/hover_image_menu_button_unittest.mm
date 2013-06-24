@@ -23,10 +23,10 @@ class HoverImageMenuButtonTest : public CocoaTest {
   virtual void SetUp() OVERRIDE;
 
  protected:
-  scoped_nsobject<HoverImageMenuButton> menu_button_;
-  scoped_nsobject<NSImage> normal_;
-  scoped_nsobject<NSImage> pressed_;
-  scoped_nsobject<NSImage> hovered_;
+  base::scoped_nsobject<HoverImageMenuButton> menu_button_;
+  base::scoped_nsobject<NSImage> normal_;
+  base::scoped_nsobject<NSImage> pressed_;
+  base::scoped_nsobject<NSImage> hovered_;
 
   DISALLOW_COPY_AND_ASSIGN(HoverImageMenuButtonTest);
 };

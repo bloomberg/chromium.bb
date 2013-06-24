@@ -7,12 +7,12 @@
 #include <cmath>
 
 #include "base/logging.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
-#import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/rect_path_utils.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
@@ -422,7 +422,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     // Draw the top inner highlight.
     NSAffineTransform* highlightTransform = [NSAffineTransform transform];
     [highlightTransform translateXBy:1 yBy:1];
-    scoped_nsobject<NSBezierPath> highlightPath([innerPath copy]);
+    base::scoped_nsobject<NSBezierPath> highlightPath([innerPath copy]);
     [highlightPath transformUsingAffineTransform:highlightTransform];
     [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2] setStroke];
     [highlightPath stroke];
@@ -604,7 +604,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
         [NSColor blackColor];
 
     if (isTemplate && themeProvider && themeProvider->UsingDefaultTheme()) {
-      scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+      base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
       [shadow.get() setShadowColor:themeProvider->GetNSColor(
           ThemeProperties::COLOR_TOOLBAR_BEZEL, true)];
       [shadow.get() setShadowOffset:NSMakeSize(0.0, -lineWidth)];

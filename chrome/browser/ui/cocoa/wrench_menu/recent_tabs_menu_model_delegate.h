@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/base/models/menu_model_delegate.h"
 
 namespace ui {
@@ -26,7 +26,7 @@ class RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 
  private:
   ui::MenuModel* model_;  // weak
-  scoped_nsobject<NSMenu> menu_;
+  base::scoped_nsobject<NSMenu> menu_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentTabsMenuModelDelegate);
 };

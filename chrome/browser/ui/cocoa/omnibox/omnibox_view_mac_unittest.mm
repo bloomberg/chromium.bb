@@ -146,7 +146,7 @@ TEST_F(OmniboxViewMacTest, TabToAutocomplete) {
 
 TEST_F(OmniboxViewMacTest, SetInstantSuggestion) {
   const NSRect frame = NSMakeRect(0, 0, 50, 30);
-  scoped_nsobject<AutocompleteTextField> field(
+  base::scoped_nsobject<AutocompleteTextField> field(
       [[AutocompleteTextField alloc] initWithFrame:frame]);
 
   TestingToolbarModelDelegate delegate;

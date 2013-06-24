@@ -5,14 +5,14 @@
 #import "ui/message_center/cocoa/settings_controller.h"
 
 #include "base/mac/foundation_util.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "grit/ui_strings.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#import "base/memory/scoped_nsobject.h"
 #import "ui/message_center/cocoa/tray_view_controller.h"
 #include "ui/message_center/message_center_style.h"
-#include "skia/ext/skia_utils_mac.h"
 
 const int kMarginWidth = 16;
 const int kEntryHeight = 38;
@@ -27,7 +27,7 @@ const int kCorrectedCheckmarkPadding =
 @interface MCSettingsButtonCell : NSButtonCell {
   // A checkbox's regular image is the checkmark image. This additional image
   // is used for the favicon or app icon shown next to the checkmark.
-  scoped_nsobject<NSImage> extraImage_;
+  base::scoped_nsobject<NSImage> extraImage_;
 }
 - (void)setExtraImage:(NSImage*)extraImage;
 @end
@@ -150,7 +150,7 @@ void NotifierSettingsObserverMac::UpdateFavicon(const GURL& url,
   // Container view.
   NSRect fullFrame =
       NSMakeRect(0, 0, [MCTrayViewController trayWidth], maxHeight);
-  scoped_nsobject<NSBox> view([[NSBox alloc] initWithFrame:fullFrame]);
+  base::scoped_nsobject<NSBox> view([[NSBox alloc] initWithFrame:fullFrame]);
   [view setBorderType:NSNoBorder];
   [view setBoxType:NSBoxCustom];
   [view setContentViewMargins:NSZeroSize];
@@ -199,7 +199,7 @@ void NotifierSettingsObserverMac::UpdateFavicon(const GURL& url,
   // Document view for the notifier settings.
   CGFloat y = 0;
   NSRect documentFrame = NSMakeRect(0, 0, NSWidth(fullFrame), 0);
-  scoped_nsobject<NSView> documentView(
+  base::scoped_nsobject<NSView> documentView(
       [[NSView alloc] initWithFrame:documentFrame]);
   for (int i = notifiers_.size() - 1; i >= 0; --i) {
     message_center::Notifier* notifier = notifiers_[i];
@@ -207,8 +207,9 @@ void NotifierSettingsObserverMac::UpdateFavicon(const GURL& url,
     // TODO(thakis): Use a custom button cell.
     NSRect frame = NSMakeRect(
         kMarginWidth, y, NSWidth(documentFrame) - kMarginWidth, kEntryHeight);
-    scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:frame]);
-    scoped_nsobject<MCSettingsButtonCell> cell(
+    base::scoped_nsobject<NSButton> button(
+        [[NSButton alloc] initWithFrame:frame]);
+    base::scoped_nsobject<MCSettingsButtonCell> cell(
         [[MCSettingsButtonCell alloc]
             initTextCell:base::SysUTF16ToNSString(notifier->name)]);
     [button setCell:cell];

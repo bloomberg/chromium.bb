@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +16,7 @@ class TabStripViewTest : public CocoaTest {
  public:
   TabStripViewTest() {
     NSRect frame = NSMakeRect(0, 0, 100, 30);
-    scoped_nsobject<TabStripView> view(
+    base::scoped_nsobject<TabStripView> view(
         [[TabStripView alloc] initWithFrame:frame]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];

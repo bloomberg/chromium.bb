@@ -42,7 +42,7 @@ TEST_F(CocoaTest, Basic) {
 
   FakeNotifierSettingsProvider provider(notifiers);
 
-  scoped_nsobject<MCSettingsController> controller(
+  base::scoped_nsobject<MCSettingsController> controller(
       [[MCSettingsController alloc] initWithProvider:&provider]);
   [controller view];
 
@@ -58,7 +58,7 @@ TEST_F(CocoaTest, Toggle) {
 
   FakeNotifierSettingsProvider provider(notifiers);
 
-  scoped_nsobject<MCSettingsController> controller(
+  base::scoped_nsobject<MCSettingsController> controller(
       [[MCSettingsController alloc] initWithProvider:&provider]);
   [controller view];
 

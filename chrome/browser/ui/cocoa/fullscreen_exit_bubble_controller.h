@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "googleurl/src/gurl.h"
 
@@ -34,10 +34,10 @@ class Browser;
   // text views cannot conveniently be created in IB. The xib file contains
   // a text field |exitLabelPlaceholder_| that's replaced by this text view
   // |exitLabel_| in -awakeFromNib.
-  scoped_nsobject<NSTextView> exitLabel_;
+  base::scoped_nsobject<NSTextView> exitLabel_;
 
-  scoped_nsobject<NSTimer> hideTimer_;
-  scoped_nsobject<NSAnimation> hideAnimation_;
+  base::scoped_nsobject<NSTimer> hideTimer_;
+  base::scoped_nsobject<NSAnimation> hideAnimation_;
 };
 
 // Initializes a new InfoBarController.

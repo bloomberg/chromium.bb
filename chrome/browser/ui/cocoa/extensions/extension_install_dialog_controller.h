@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
@@ -46,7 +46,7 @@ class ExtensionInstallDialogController :
 
  private:
   ExtensionInstallPrompt::Delegate* delegate_;
-  scoped_nsobject<ExtensionInstallViewController> view_controller_;
+  base::scoped_nsobject<ExtensionInstallViewController> view_controller_;
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
 };
 

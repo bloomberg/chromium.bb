@@ -37,7 +37,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, BasicTest) {
                                            &delegate,
                                            prompt);
 
-  scoped_nsobject<NSWindow> window(
+  base::scoped_nsobject<NSWindow> window(
       [[[controller->view_controller() view] window] retain]);
   EXPECT_TRUE([window isVisible]);
 
@@ -61,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, Permissions) {
                                            &delegate,
                                            prompt);
 
-  scoped_nsobject<NSWindow> window(
+  base::scoped_nsobject<NSWindow> window(
       [[[controller->view_controller() view] window] retain]);
   EXPECT_TRUE([window isVisible]);
 

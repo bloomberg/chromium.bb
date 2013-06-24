@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/sad_tab.h"
 
 #import <Cocoa/Cocoa.h>
@@ -27,7 +27,7 @@ class SadTabCocoa : public SadTab {
   virtual void Show() OVERRIDE;
   virtual void Close() OVERRIDE;
 
-  scoped_nsobject<SadTabController> sad_tab_controller_;
+  base::scoped_nsobject<SadTabController> sad_tab_controller_;
 
   content::WebContents* web_contents_;
 

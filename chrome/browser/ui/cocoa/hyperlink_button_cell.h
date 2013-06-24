@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 // A HyperlinkButtonCell is used to create an NSButton that looks and acts
 // like a hyperlink. The default styling is to look like blue, underlined text
@@ -16,7 +16,7 @@
 //  4. In the Attributes panel, change the Bezel to Square.
 //  5. In the Size panel, set the Height to 16.
 @interface HyperlinkButtonCell : NSButtonCell {
-  scoped_nsobject<NSColor> textColor_;
+  base::scoped_nsobject<NSColor> textColor_;
   BOOL shouldUnderline_;
   BOOL underlineOnHover_;
   BOOL mouseIsInside_;

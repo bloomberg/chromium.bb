@@ -8,7 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 namespace {
 
@@ -32,7 +32,7 @@ CFDictionaryRef CreateGenericPasswordQuery(UInt32 serviceNameLength,
   CFDictionarySetValue(query, kSecClass, kSecClassGenericPassword);
 
   // Set the service name.
-  scoped_nsobject<NSString> service_name_ns(
+  base::scoped_nsobject<NSString> service_name_ns(
       [[NSString alloc] initWithBytes:serviceName
                                length:serviceNameLength
                              encoding:NSUTF8StringEncoding]);
@@ -40,7 +40,7 @@ CFDictionaryRef CreateGenericPasswordQuery(UInt32 serviceNameLength,
                        base::mac::NSToCFCast(service_name_ns));
 
   // Set the account name.
-  scoped_nsobject<NSString> account_name_ns(
+  base::scoped_nsobject<NSString> account_name_ns(
       [[NSString alloc] initWithBytes:accountName
                                length:accountNameLength
                              encoding:NSUTF8StringEncoding]);
@@ -86,7 +86,7 @@ CFDictionaryRef CreateKeychainData(UInt32 serviceNameLength,
                        kSecAttrAccessibleWhenUnlocked);
 
   // Set the service name.
-  scoped_nsobject<NSString> service_name_ns(
+  base::scoped_nsobject<NSString> service_name_ns(
       [[NSString alloc] initWithBytes:serviceName
                                length:serviceNameLength
                              encoding:NSUTF8StringEncoding]);
@@ -94,7 +94,7 @@ CFDictionaryRef CreateKeychainData(UInt32 serviceNameLength,
                        base::mac::NSToCFCast(service_name_ns));
 
   // Set the account name.
-  scoped_nsobject<NSString> account_name_ns(
+  base::scoped_nsobject<NSString> account_name_ns(
       [[NSString alloc] initWithBytes:accountName
                                length:accountNameLength
                              encoding:NSUTF8StringEncoding]);

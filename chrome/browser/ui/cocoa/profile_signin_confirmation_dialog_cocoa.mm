@@ -72,13 +72,11 @@ ProfileSigninConfirmationDialogCocoa::ProfileSigninConfirmationDialogCocoa(
      offerProfileCreation:offer_profile_creation]);
 
   // Setup the constrained window that will show the view.
-  scoped_nsobject<NSWindow> window(
-      [[ConstrainedWindowCustomWindow alloc]
-          initWithContentRect:[[controller_ view] bounds]]);
+  base::scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
+      initWithContentRect:[[controller_ view] bounds]]);
   [[window contentView] addSubview:[controller_ view]];
-  scoped_nsobject<CustomConstrainedWindowSheet> sheet(
-      [[CustomConstrainedWindowSheet alloc]
-          initWithCustomWindow:window]);
+  base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+      [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
   window_.reset(new ConstrainedWindowMac(this, web_contents, sheet));
 }
 

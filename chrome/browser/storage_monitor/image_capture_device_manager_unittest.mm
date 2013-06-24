@@ -45,7 +45,7 @@ const char kTestFileContents[] = "test";
 
 @interface MockICCameraDevice : ICCameraDevice {
  @private
-  scoped_nsobject<NSMutableArray> allMediaFiles_;
+  base::scoped_nsobject<NSMutableArray> allMediaFiles_;
 }
 
 - (void)addMediaFile:(ICCameraFile*)file;
@@ -129,7 +129,7 @@ const char kTestFileContents[] = "test";
 
 @interface MockICCameraFolder : ICCameraFolder {
  @private
-  scoped_nsobject<NSString> name_;
+  base::scoped_nsobject<NSString> name_;
 }
 
 - (id)initWithName:(NSString*)name;
@@ -157,9 +157,9 @@ const char kTestFileContents[] = "test";
 
 @interface MockICCameraFile : ICCameraFile {
  @private
-  scoped_nsobject<NSString> name_;
-  scoped_nsobject<NSDate> date_;
-  scoped_nsobject<MockICCameraFolder> parent_;
+  base::scoped_nsobject<NSString> name_;
+  base::scoped_nsobject<NSDate> date_;
+  base::scoped_nsobject<MockICCameraFolder> parent_;
 }
 
 - (id)init:(NSString*)name;
@@ -262,7 +262,7 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
   MockICCameraDevice* AttachDevice(
       chrome::ImageCaptureDeviceManager* manager) {
     // Ownership will be passed to the device browser delegate.
-    scoped_nsobject<MockICCameraDevice> device(
+    base::scoped_nsobject<MockICCameraDevice> device(
         [[MockICCameraDevice alloc] init]);
     id<ICDeviceBrowserDelegate> delegate = manager->device_browser();
     [delegate deviceBrowser:nil didAddDevice:device moreComing:NO];
@@ -305,17 +305,16 @@ TEST_F(ImageCaptureDeviceManagerTest, OpenCamera) {
   EXPECT_FALSE(chrome::ImageCaptureDeviceManager::deviceForUUID(
       "nonexistent"));
 
-  scoped_nsobject<ImageCaptureDevice> camera(
-      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId)
-          retain]);
+  base::scoped_nsobject<ImageCaptureDevice> camera(
+      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId) retain]);
 
   [camera setListener:listener_.AsWeakPtr()];
   [camera open];
 
-  scoped_nsobject<MockICCameraFile> picture1(
+  base::scoped_nsobject<MockICCameraFile> picture1(
       [[MockICCameraFile alloc] init:@"pic1"]);
   [camera cameraDevice:nil didAddItem:picture1];
-  scoped_nsobject<MockICCameraFile> picture2(
+  base::scoped_nsobject<MockICCameraFile> picture2(
       [[MockICCameraFile alloc] init:@"pic2"]);
   [camera cameraDevice:nil didAddItem:picture2];
   ASSERT_EQ(2U, listener_.items().size());
@@ -339,9 +338,8 @@ TEST_F(ImageCaptureDeviceManagerTest, RemoveCamera) {
   manager.SetNotifications(monitor_.receiver());
   ICCameraDevice* device = AttachDevice(&manager);
 
-  scoped_nsobject<ImageCaptureDevice> camera(
-      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId)
-          retain]);
+  base::scoped_nsobject<ImageCaptureDevice> camera(
+      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId) retain]);
 
   [camera setListener:listener_.AsWeakPtr()];
   [camera open];
@@ -359,18 +357,16 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
   manager.SetNotifications(monitor_.receiver());
   MockICCameraDevice* device = AttachDevice(&manager);
 
-  scoped_nsobject<ImageCaptureDevice> camera(
-      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId)
-          retain]);
+  base::scoped_nsobject<ImageCaptureDevice> camera(
+      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId) retain]);
 
   [camera setListener:listener_.AsWeakPtr()];
   [camera open];
 
   std::string kTestFileName("pic1");
 
-  scoped_nsobject<MockICCameraFile> picture1(
-      [[MockICCameraFile alloc]
-          init:base::SysUTF8ToNSString(kTestFileName)]);
+  base::scoped_nsobject<MockICCameraFile> picture1(
+      [[MockICCameraFile alloc] init:base::SysUTF8ToNSString(kTestFileName)]);
   [device addMediaFile:picture1];
   [camera cameraDevice:nil didAddItem:picture1];
 
@@ -417,17 +413,15 @@ TEST_F(ImageCaptureDeviceManagerTest, TestSubdirectories) {
   manager.SetNotifications(monitor_.receiver());
   MockICCameraDevice* device = AttachDevice(&manager);
 
-  scoped_nsobject<ImageCaptureDevice> camera(
-      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId)
-          retain]);
+  base::scoped_nsobject<ImageCaptureDevice> camera(
+      [chrome::ImageCaptureDeviceManager::deviceForUUID(kDeviceId) retain]);
 
   [camera setListener:listener_.AsWeakPtr()];
   [camera open];
 
   std::string kTestFileName("pic1");
-  scoped_nsobject<MockICCameraFile> picture1(
-      [[MockICCameraFile alloc]
-          init:base::SysUTF8ToNSString(kTestFileName)]);
+  base::scoped_nsobject<MockICCameraFile> picture1(
+      [[MockICCameraFile alloc] init:base::SysUTF8ToNSString(kTestFileName)]);
   [picture1 setParent:base::SysUTF8ToNSString("dir")];
   [device addMediaFile:picture1];
   [camera cameraDevice:nil didAddItem:picture1];

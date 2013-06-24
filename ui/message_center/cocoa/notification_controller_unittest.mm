@@ -5,7 +5,7 @@
 #import "ui/message_center/cocoa/notification_controller.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -110,7 +110,7 @@ TEST_F(NotificationControllerTest, BasicLayout) {
           NULL));
   notification->set_icon(gfx::Image([TestIcon() retain]));
 
-  scoped_nsobject<MCNotificationController> controller(
+  base::scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
                                                messageCenter:NULL]);
   [controller view];
@@ -138,7 +138,7 @@ TEST_F(NotificationControllerTest, OverflowText) {
           std::string(),
           message_center::RichNotificationData(),
           NULL));
-  scoped_nsobject<MCNotificationController> controller(
+  base::scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
                                                messageCenter:NULL]);
   [controller view];
@@ -161,7 +161,7 @@ TEST_F(NotificationControllerTest, Close) {
           NULL));
   MockMessageCenter message_center;
 
-  scoped_nsobject<MCNotificationController> controller(
+  base::scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
                                                messageCenter:&message_center]);
   [controller view];
@@ -186,7 +186,7 @@ TEST_F(NotificationControllerTest, Update) {
           std::string(),
           message_center::RichNotificationData(),
           NULL));
-  scoped_nsobject<MCNotificationController> controller(
+  base::scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
                                                messageCenter:NULL]);
 
@@ -224,7 +224,7 @@ TEST_F(NotificationControllerTest, Buttons) {
           NULL));
   MockMessageCenter message_center;
 
-  scoped_nsobject<MCNotificationController> controller(
+  base::scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
                                                messageCenter:&message_center]);
   [controller view];
@@ -252,7 +252,7 @@ TEST_F(NotificationControllerTest, Image) {
 
   MockMessageCenter message_center;
 
-  scoped_nsobject<MCNotificationController> controller(
+  base::scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
                                                messageCenter:&message_center]);
   [controller view];
@@ -286,7 +286,7 @@ TEST_F(NotificationControllerTest, List) {
           NULL));
 
   MockMessageCenter message_center;
-  scoped_nsobject<MCNotificationController> controller(
+  base::scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
                                                messageCenter:&message_center]);
   [controller view];

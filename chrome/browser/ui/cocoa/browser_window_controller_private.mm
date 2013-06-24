@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/command_line.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -552,21 +552,22 @@ willPositionSheet:(NSWindow*)sheet
   [bookmarkBubbleController_ ok:self];
 
   // Save the current first responder so we can restore after views are moved.
-  scoped_nsobject<FocusTracker> focusTracker(
+  base::scoped_nsobject<FocusTracker> focusTracker(
       [[FocusTracker alloc] initWithWindow:sourceWindow]);
 
   // While we move views (and focus) around, disable any bar visibility changes.
   [self disableBarVisibilityUpdates];
 
   // Retain the tab strip view while we remove it from its superview.
-  scoped_nsobject<NSView> tabStripView;
+  base::scoped_nsobject<NSView> tabStripView;
   if ([self hasTabStrip]) {
     tabStripView.reset([[self tabStripView] retain]);
     [tabStripView removeFromSuperview];
   }
 
   // Ditto for the content view.
-  scoped_nsobject<NSView> contentView([[sourceWindow contentView] retain]);
+  base::scoped_nsobject<NSView> contentView(
+      [[sourceWindow contentView] retain]);
   // Disable autoresizing of subviews while we move views around. This prevents
   // spurious renderer resizes.
   [contentView setAutoresizesSubviews:NO];

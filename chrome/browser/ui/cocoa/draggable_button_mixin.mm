@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 
 namespace {
 

@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,8 +28,8 @@ void ITunesFinderMac::FindITunesLibraryOnFileThread() {
 
   CFStringRef iapp_id = CFSTR("com.apple.iApps");
   CFStringRef itunes_db_key = CFSTR("iTunesRecentDatabasePaths");
-  scoped_nsobject<NSArray> plist(CFToNSCast(CFCast<CFArrayRef>(
-      CFPreferencesCopyAppValue(itunes_db_key, iapp_id))));
+  base::scoped_nsobject<NSArray> plist(CFToNSCast(
+      CFCast<CFArrayRef>(CFPreferencesCopyAppValue(itunes_db_key, iapp_id))));
   if (!plist) {
     PostResultToUIThread(std::string());
     return;

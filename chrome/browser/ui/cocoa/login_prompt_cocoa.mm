@@ -6,7 +6,7 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -73,7 +73,7 @@ class LoginHandlerMac : public LoginHandler,
     WebContents* requesting_contents = GetWebContentsForLogin();
     DCHECK(requesting_contents);
 
-    scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+    base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
         [[CustomConstrainedWindowSheet alloc]
             initWithCustomWindow:[sheet_controller_ window]]);
     constrained_window_.reset(new ConstrainedWindowMac(
@@ -121,7 +121,7 @@ class LoginHandlerMac : public LoginHandler,
   }
 
   // The Cocoa controller of the GUI.
-  scoped_nsobject<LoginHandlerSheet> sheet_controller_;
+  base::scoped_nsobject<LoginHandlerSheet> sheet_controller_;
 
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
 

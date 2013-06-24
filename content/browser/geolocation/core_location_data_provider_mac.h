@@ -9,8 +9,8 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_CORE_LOCATION_DATA_PROVIDER_H_
 #define CONTENT_BROWSER_GEOLOCATION_CORE_LOCATION_DATA_PROVIDER_H_
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_nsobject.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/geoposition.h"
 
@@ -44,7 +44,7 @@ class CoreLocationDataProviderMac
   void PositionUpdated(Geoposition position);
 
   // The wrapper class that supplies this class with position data
-  scoped_nsobject<CoreLocationWrapperMac> wrapper_;
+  base::scoped_nsobject<CoreLocationWrapperMac> wrapper_;
   // The LocationProvider class that should receive position data
   CoreLocationProviderMac* provider_;
 };

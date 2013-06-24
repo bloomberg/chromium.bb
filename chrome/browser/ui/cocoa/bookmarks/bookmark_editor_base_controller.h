@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
@@ -41,10 +41,10 @@ class BookmarkModel;
   BOOL creatingNewFolders_;  // True while in createNewFolders.
   // An array of BookmarkFolderInfo where each item describes a folder in the
   // BookmarkNode structure.
-  scoped_nsobject<NSArray> folderTreeArray_;
+  base::scoped_nsobject<NSArray> folderTreeArray_;
   // Bound to the table view giving a path to the current selections, of which
   // there should only ever be one.
-  scoped_nsobject<NSArray> tableSelectionPaths_;
+  base::scoped_nsobject<NSArray> tableSelectionPaths_;
   // C++ bridge object that observes the BookmarkModel for me.
   scoped_ptr<BookmarkEditorBaseControllerBridge> observer_;
 }

@@ -4,7 +4,7 @@
 
 #import "ui/app_list/cocoa/apps_search_results_controller.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -82,8 +82,9 @@ class AppsSearchResultsControllerTest : public ui::CocoaTest {
   virtual void TearDown() OVERRIDE;
 
  protected:
-  scoped_nsobject<TestAppsSearchResultsDelegate> delegate_;
-  scoped_nsobject<AppsSearchResultsController> apps_search_results_controller_;
+  base::scoped_nsobject<TestAppsSearchResultsDelegate> delegate_;
+  base::scoped_nsobject<AppsSearchResultsController>
+      apps_search_results_controller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppsSearchResultsControllerTest);

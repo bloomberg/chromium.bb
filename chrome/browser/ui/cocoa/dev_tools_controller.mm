@@ -159,7 +159,7 @@ using content::WebContents;
   [devToolsView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
   NSRect containerRect = NSMakeRect(0, 0, 100, 100);
-  scoped_nsobject<NSView> devToolsContainerView(
+  base::scoped_nsobject<NSView> devToolsContainerView(
       [[NSView alloc] initWithFrame:containerRect]);
   [devToolsContainerView addSubview:devToolsView];
   [splitView_ addSubview:devToolsContainerView];

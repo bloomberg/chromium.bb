@@ -5,7 +5,7 @@
 #ifndef UI_APP_LIST_COCOA_APPS_SEARCH_RESULTS_MODEL_BRIDGE_H_
 #define UI_APP_LIST_COCOA_APPS_SEARCH_RESULTS_MODEL_BRIDGE_H_
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/base/models/list_model_observer.h"
@@ -36,7 +36,7 @@ class AppsSearchResultsModelBridge : public ui::ListModelObserver {
   virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE;
 
   AppListModel::SearchResults* results_;   // Weak. Owned by AppListModel.
-  scoped_nsobject<NSTableView> table_view_;
+  base::scoped_nsobject<NSTableView> table_view_;
   ScopedVector<ItemObserver> item_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsSearchResultsModelBridge);

@@ -98,8 +98,9 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   if ((self = [super init])) {
     browser_ = browser;
 
-    scoped_nsobject<NSView> container([[NSView alloc] initWithFrame:NSMakeRect(
-        0, 0, profiles::kAvatarIconWidth, profiles::kAvatarIconHeight)]);
+    base::scoped_nsobject<NSView> container(
+        [[NSView alloc] initWithFrame:NSMakeRect(
+            0, 0, profiles::kAvatarIconWidth, profiles::kAvatarIconHeight)]);
     [self setView:container];
     button_.reset([[NSButton alloc] initWithFrame:NSMakeRect(
         0, 0, profiles::kAvatarIconWidth, profiles::kAvatarIconHeight)]);
@@ -258,7 +259,7 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 - (NSImage*)compositeImageWithShadow:(NSImage*)image {
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;
 
-  scoped_nsobject<NSImage> destination(
+  base::scoped_nsobject<NSImage> destination(
       [[NSImage alloc] initWithSize:[image size]]);
 
   NSRect destRect = NSZeroRect;
@@ -266,7 +267,7 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 
   [destination lockFocus];
 
-  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow.get() setShadowColor:[NSColor colorWithCalibratedWhite:0.0
                                                            alpha:0.75]];
   [shadow.get() setShadowOffset:NSMakeSize(0, 0)];

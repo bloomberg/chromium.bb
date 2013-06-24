@@ -10,7 +10,7 @@
 #include <set>
 
 #include "base/mac/scoped_block.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "base/memory/scoped_ptr.h"
 #include "ui/message_center/message_center_export.h"
 
@@ -37,11 +37,11 @@ MESSAGE_CENTER_EXPORT
   scoped_ptr<message_center::MessageCenterObserver> observer_;
 
   // Array of all on-screen popup notifications.
-  scoped_nsobject<NSMutableArray> popups_;
+  base::scoped_nsobject<NSMutableArray> popups_;
 
   // Array of all on-screen popup notifications that are being faded out
   // for removal.
-  scoped_nsobject<NSMutableArray> popupsBeingRemoved_;
+  base::scoped_nsobject<NSMutableArray> popupsBeingRemoved_;
 
   // For testing only. If not a zero rect, this is the screen size to use
   // for laying out popups.

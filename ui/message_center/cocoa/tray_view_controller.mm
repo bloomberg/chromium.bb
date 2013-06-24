@@ -125,7 +125,7 @@ const CGFloat kTrayBottomMargin = 75;
 
 - (void)loadView {
   // Configure the root view as a background-colored box.
-  scoped_nsobject<NSBox> view([[NSBox alloc] initWithFrame:NSMakeRect(
+  base::scoped_nsobject<NSBox> view([[NSBox alloc] initWithFrame:NSMakeRect(
       0, 0, [MCTrayViewController trayWidth], kControlAreaHeight)]);
   [view setBorderType:NSNoBorder];
   [view setBoxType:NSBoxCustom];
@@ -139,7 +139,7 @@ const CGFloat kTrayBottomMargin = 75;
   [self layoutControlArea];
 
   // Configure the scroll view in which all the notifications go.
-  scoped_nsobject<NSView> documentView(
+  base::scoped_nsobject<NSView> documentView(
       [[NSView alloc] initWithFrame:NSZeroRect]);
   scrollView_.reset([[NSScrollView alloc] initWithFrame:[view frame]]);
   clipView_.reset(
@@ -169,7 +169,7 @@ const CGFloat kTrayBottomMargin = 75;
 
   std::map<std::string, MCNotificationController*> newMap;
 
-  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow setShadowColor:[NSColor colorWithDeviceWhite:0 alpha:0.55]];
   [shadow setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:2.0];
@@ -188,7 +188,7 @@ const CGFloat kTrayBottomMargin = 75;
     const auto& existing = notificationsMap_.find((*it)->id());
     MCNotificationController* notification = nil;
     if (existing == notificationsMap_.end()) {
-      scoped_nsobject<MCNotificationController> controller(
+      base::scoped_nsobject<MCNotificationController> controller(
           [[MCNotificationController alloc]
               initWithNotification:*it
                      messageCenter:messageCenter_]);
@@ -425,7 +425,7 @@ const CGFloat kTrayBottomMargin = 75;
   [[self view] addSubview:backButton_];
 
   // Create the divider line between the control area and the notifications.
-  scoped_nsobject<NSBox> divider(
+  base::scoped_nsobject<NSBox> divider(
       [[NSBox alloc] initWithFrame:NSMakeRect(0, 0, NSWidth([view frame]), 1)]);
   [divider setAutoresizingMask:NSViewMinYMargin];
   [divider setBorderType:NSNoBorder];
@@ -598,7 +598,7 @@ const CGFloat kTrayBottomMargin = 75;
 }
 
 - (void)hideNotificationsPendingRemoval {
-  scoped_nsobject<NSMutableArray> animationDataArray(
+  base::scoped_nsobject<NSMutableArray> animationDataArray(
       [[NSMutableArray alloc] init]);
 
   // Fade-out those notifications pending removal.
@@ -629,7 +629,7 @@ const CGFloat kTrayBottomMargin = 75;
 }
 
 - (void)moveUpRemainingNotifications {
-  scoped_nsobject<NSMutableArray> animationDataArray(
+  base::scoped_nsobject<NSMutableArray> animationDataArray(
       [[NSMutableArray alloc] init]);
 
   // Compute the position where the remaining notifications should start.
@@ -705,7 +705,7 @@ const CGFloat kTrayBottomMargin = 75;
     NSViewAnimationEndFrameKey : [NSValue valueWithRect:newFrame],
     NSViewAnimationEffectKey : NSViewAnimationFadeOutEffect
   };
-  scoped_nsobject<NSViewAnimation> animation([[NSViewAnimation alloc]
+  base::scoped_nsobject<NSViewAnimation> animation([[NSViewAnimation alloc]
       initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
   [animation setDuration:animationDuration_];
   [animation setDelegate:self];

@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
@@ -21,9 +21,9 @@ class WebContents;
  @private
   content::WebContents* webContents_;
 
-  scoped_nsobject<NSView> contentView_;
-  scoped_nsobject<NSSegmentedControl> segmentedControl_;
-  scoped_nsobject<NSTabView> tabView_;
+  base::scoped_nsobject<NSView> contentView_;
+  base::scoped_nsobject<NSSegmentedControl> segmentedControl_;
+  base::scoped_nsobject<NSTabView> tabView_;
 
   // Displays the web site identity.
   NSTextField* identityField_;

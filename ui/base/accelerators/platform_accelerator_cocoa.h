@@ -7,7 +7,7 @@
 
 #include <Foundation/Foundation.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/base/accelerators/platform_accelerator.h"
 
 namespace ui {
@@ -28,7 +28,7 @@ class UI_EXPORT PlatformAcceleratorCocoa : public PlatformAccelerator {
 
  private:
   // String of characters for the key equivalent.
-  scoped_nsobject<NSString> characters_;
+  base::scoped_nsobject<NSString> characters_;
   NSUInteger modifier_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformAcceleratorCocoa);

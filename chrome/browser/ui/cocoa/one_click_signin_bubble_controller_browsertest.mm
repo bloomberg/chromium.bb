@@ -39,7 +39,7 @@ class OneClickSigninBubbleControllerTest : public InProcessBrowserTest {
                 [[controller_ viewController] nibName]);
   }
 
-  scoped_nsobject<OneClickSigninBubbleController> controller_;
+  base::scoped_nsobject<OneClickSigninBubbleController> controller_;
   int callback_count_;
 
  private:

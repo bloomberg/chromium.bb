@@ -5,7 +5,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/common/mac/nscoder_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -27,12 +27,12 @@ TEST_F(NSCoderStdStringTest, encodeDecode) {
   for (size_t i = 0; i < arraysize(testStrings); ++i) {
     NSMutableData *data = [NSMutableData data];
 
-    scoped_nsobject<NSKeyedArchiver> archiver(
+    base::scoped_nsobject<NSKeyedArchiver> archiver(
         [[NSKeyedArchiver alloc] initForWritingWithMutableData:data]);
     nscoder_util::EncodeString(archiver, @"test", testStrings[i]);
     [archiver finishEncoding];
 
-    scoped_nsobject<NSKeyedUnarchiver> unarchiver(
+    base::scoped_nsobject<NSKeyedUnarchiver> unarchiver(
         [[NSKeyedUnarchiver alloc] initForReadingWithData:data]);
     const std::string decoded = nscoder_util::DecodeString(unarchiver, @"test");
 
@@ -43,11 +43,11 @@ TEST_F(NSCoderStdStringTest, encodeDecode) {
 TEST_F(NSCoderStdStringTest, decodeEmpty) {
   NSMutableData *data = [NSMutableData data];
 
-  scoped_nsobject<NSKeyedArchiver> archiver(
+  base::scoped_nsobject<NSKeyedArchiver> archiver(
       [[NSKeyedArchiver alloc] initForWritingWithMutableData:data]);
   [archiver finishEncoding];
 
-  scoped_nsobject<NSKeyedUnarchiver> unarchiver(
+  base::scoped_nsobject<NSKeyedUnarchiver> unarchiver(
       [[NSKeyedUnarchiver alloc] initForReadingWithData:data]);
   const std::string decoded = nscoder_util::DecodeString(unarchiver, @"test");
 

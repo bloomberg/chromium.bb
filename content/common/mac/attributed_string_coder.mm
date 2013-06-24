@@ -7,7 +7,7 @@
 #include <AppKit/AppKit.h>
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/view_messages.h"
@@ -45,7 +45,7 @@ NSAttributedString* AttributedStringCoder::Decode(
     const AttributedStringCoder::EncodedString* str) {
   // Create the return value.
   NSString* plain_text = base::SysUTF16ToNSString(str->string());
-  scoped_nsobject<NSMutableAttributedString> decoded_string(
+  base::scoped_nsobject<NSMutableAttributedString> decoded_string(
       [[NSMutableAttributedString alloc] initWithString:plain_text]);
   // Iterate over all the encoded attributes, attaching each to the string.
   const std::vector<FontAttribute> attributes = str->attributes();

@@ -4,7 +4,7 @@
 
 #import "ui/app_list/cocoa/apps_search_box_controller.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
@@ -87,8 +87,8 @@ class AppsSearchBoxControllerTest : public ui::CocoaTest {
   }
 
  protected:
-  scoped_nsobject<TestAppsSearchBoxDelegate> delegate_;
-  scoped_nsobject<AppsSearchBoxController> apps_search_box_controller_;
+  base::scoped_nsobject<TestAppsSearchBoxDelegate> delegate_;
+  base::scoped_nsobject<AppsSearchBoxController> apps_search_box_controller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppsSearchBoxControllerTest);
@@ -176,7 +176,7 @@ class AppsSearchBoxCustomMenuItemTest : public ui::CocoaTest {
   }
 
  protected:
-  scoped_nsobject<NSView> current_user_menu_item_;
+  base::scoped_nsobject<NSView> current_user_menu_item_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppsSearchBoxCustomMenuItemTest);

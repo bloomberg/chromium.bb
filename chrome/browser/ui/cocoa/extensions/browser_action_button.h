@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 
@@ -31,7 +31,7 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
   scoped_ptr<ExtensionActionIconFactoryBridge> iconFactoryBridge_;
 
   // Used to move the button and query whether a button is currently animating.
-  scoped_nsobject<NSViewAnimation> moveAnimation_;
+  base::scoped_nsobject<NSViewAnimation> moveAnimation_;
 
   // The extension for this button. Weak.
   const extensions::Extension* extension_;

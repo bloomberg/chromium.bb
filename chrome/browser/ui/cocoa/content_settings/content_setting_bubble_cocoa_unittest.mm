@@ -7,7 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
@@ -48,7 +48,7 @@ class ContentSettingBubbleControllerTest
   ContentSettingBubbleController* CreateBubbleController(
       ContentSettingsType settingsType);
 
-  scoped_nsobject<NSWindow> parent_;
+  base::scoped_nsobject<NSWindow> parent_;
 
  private:
   base::mac::ScopedNSAutoreleasePool pool_;

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_util.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -76,7 +76,7 @@
     DCHECK(![[self window] delegate]);
     [theWindow setDelegate:self];
 
-    scoped_nsobject<InfoBubbleView> contentView(
+    base::scoped_nsobject<InfoBubbleView> contentView(
         [[InfoBubbleView alloc] initWithFrame:NSMakeRect(0, 0, 0, 0)]);
     [theWindow setContentView:contentView.get()];
     bubble_ = contentView.get();
@@ -123,7 +123,7 @@
 
 - (NSBox*)separatorWithFrame:(NSRect)frame {
   frame.size.height = 1.0;
-  scoped_nsobject<NSBox> spacer([[NSBox alloc] initWithFrame:frame]);
+  base::scoped_nsobject<NSBox> spacer([[NSBox alloc] initWithFrame:frame]);
   [spacer setBoxType:NSBoxSeparator];
   [spacer setBorderType:NSLineBorder];
   [spacer setAlphaValue:0.2];

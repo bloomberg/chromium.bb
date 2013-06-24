@@ -12,7 +12,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
@@ -62,16 +62,17 @@ class WebContents;
   scoped_ptr<Browser> browser_;
   NSWindow* savedRegularWindow_;
   scoped_ptr<BrowserWindowCocoa> windowShim_;
-  scoped_nsobject<ToolbarController> toolbarController_;
-  scoped_nsobject<TabStripController> tabStripController_;
-  scoped_nsobject<FindBarCocoaController> findBarCocoaController_;
-  scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
-  scoped_nsobject<DownloadShelfController> downloadShelfController_;
-  scoped_nsobject<BookmarkBarController> bookmarkBarController_;
-  scoped_nsobject<DevToolsController> devToolsController_;
-  scoped_nsobject<OverlayableContentsController> overlayableContentsController_;
-  scoped_nsobject<PresentationModeController> presentationModeController_;
-  scoped_nsobject<FullscreenExitBubbleController>
+  base::scoped_nsobject<ToolbarController> toolbarController_;
+  base::scoped_nsobject<TabStripController> tabStripController_;
+  base::scoped_nsobject<FindBarCocoaController> findBarCocoaController_;
+  base::scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
+  base::scoped_nsobject<DownloadShelfController> downloadShelfController_;
+  base::scoped_nsobject<BookmarkBarController> bookmarkBarController_;
+  base::scoped_nsobject<DevToolsController> devToolsController_;
+  base::scoped_nsobject<OverlayableContentsController>
+      overlayableContentsController_;
+  base::scoped_nsobject<PresentationModeController> presentationModeController_;
+  base::scoped_nsobject<FullscreenExitBubbleController>
       fullscreenExitBubbleController_;
 
   // Strong. StatusBubble is a special case of a strong reference that
@@ -106,16 +107,16 @@ class WebContents;
   // The view controller that manages the incognito badge or the multi-profile
   // avatar icon. The view is always in the view hierarchy, but will be hidden
   // unless it's appropriate to show it.
-  scoped_nsobject<AvatarButtonController> avatarButtonController_;
+  base::scoped_nsobject<AvatarButtonController> avatarButtonController_;
 
   // Lazily created view which draws the background for the floating set of bars
   // in presentation mode (for window types having a floating bar; it remains
   // nil for those which don't).
-  scoped_nsobject<NSView> floatingBarBackingView_;
+  base::scoped_nsobject<NSView> floatingBarBackingView_;
 
   // The borderless window used in fullscreen mode.  Lion reuses the original
   // window in fullscreen mode, so this is always nil on Lion.
-  scoped_nsobject<NSWindow> fullscreenWindow_;
+  base::scoped_nsobject<NSWindow> fullscreenWindow_;
 
   // Tracks whether presentation mode was entered from fullscreen mode or
   // directly from normal windowed mode.  Used to determine what to do when
@@ -143,7 +144,7 @@ class WebContents;
   // where keyboard focus is. Whenever an object requires bar visibility, it has
   // itself added to |barVisibilityLocks_|. When it no longer requires bar
   // visibility, it has itself removed.
-  scoped_nsobject<NSMutableSet> barVisibilityLocks_;
+  base::scoped_nsobject<NSMutableSet> barVisibilityLocks_;
 
   // Bar visibility locks and releases only result (when appropriate) in changes
   // in visible state when the following is |YES|.

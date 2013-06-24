@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_pump_mac.h"
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_animation.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_animation.h"
 
 // This class runs an animation for exactly two frames then end it.
 @interface ConstrainedWindowAnimationTestDelegate : NSObject
@@ -57,26 +57,26 @@ class ConstrainedWindowAnimationTest : public CocoaTest {
     delegate_.reset([[ConstrainedWindowAnimationTestDelegate alloc] init]);
   }
 
-  scoped_nsobject<ConstrainedWindowAnimationTestDelegate> delegate_;
+  base::scoped_nsobject<ConstrainedWindowAnimationTestDelegate> delegate_;
 };
 
 // Test the show animation.
 TEST_F(ConstrainedWindowAnimationTest, Show) {
-  scoped_nsobject<NSAnimation> animation(
+  base::scoped_nsobject<NSAnimation> animation(
       [[ConstrainedWindowAnimationShow alloc] initWithWindow:test_window()]);
   [delegate_ runAnimation:animation];
 }
 
 // Test the hide animation.
 TEST_F(ConstrainedWindowAnimationTest, Hide) {
-  scoped_nsobject<NSAnimation> animation(
+  base::scoped_nsobject<NSAnimation> animation(
       [[ConstrainedWindowAnimationHide alloc] initWithWindow:test_window()]);
   [delegate_ runAnimation:animation];
 }
 
 // Test the pulse animation.
 TEST_F(ConstrainedWindowAnimationTest, Pulse) {
-  scoped_nsobject<NSAnimation> animation(
+  base::scoped_nsobject<NSAnimation> animation(
       [[ConstrainedWindowAnimationPulse alloc] initWithWindow:test_window()]);
   [delegate_ runAnimation:animation];
 }

@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/cocoa/table_row_nsimage_cache.h"
 
@@ -31,7 +31,7 @@ class ImageSkia;
   TaskManager* taskManager_;  // weak
   TaskManagerModel* model_;  // weak
 
-  scoped_nsobject<WindowSizeAutosaver> size_saver_;
+  base::scoped_nsobject<WindowSizeAutosaver> size_saver_;
 
   // These contain a permutation of [0..|model_->ResourceCount() - 1|]. Used to
   // implement sorting.
@@ -39,7 +39,7 @@ class ImageSkia;
   std::vector<int> modelToViewMap_;
 
   // Descriptor of the current sort column.
-  scoped_nsobject<NSSortDescriptor> currentSortDescriptor_;
+  base::scoped_nsobject<NSSortDescriptor> currentSortDescriptor_;
 }
 
 // Creates and shows the task manager's window.

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_VERTICAL_GRADIENT_VIEW_H_
 #define CHROME_BROWSER_UI_COCOA_VERTICAL_GRADIENT_VIEW_H_
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -17,9 +17,9 @@
 @interface VerticalGradientView : NSView {
  @private
   // The gradient to draw.
-  scoped_nsobject<NSGradient> gradient_;
+  base::scoped_nsobject<NSGradient> gradient_;
   // Color for bottom stroke.
-  scoped_nsobject<NSColor> strokeColor_;
+  base::scoped_nsobject<NSColor> strokeColor_;
 }
 
 // Gets and sets the gradient to paint as background.

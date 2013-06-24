@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 
 @implementation InfoBubbleView

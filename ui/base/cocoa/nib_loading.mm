@@ -5,12 +5,12 @@
 #import "ui/base/cocoa/nib_loading.h"
 
 #include "base/mac/bundle_locations.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 namespace ui {
 
 NSView* GetViewFromNib(NSString* name) {
-  scoped_nsobject<NSNib> nib(
+  base::scoped_nsobject<NSNib> nib(
       [[NSNib alloc] initWithNibNamed:name
                                bundle:base::mac::FrameworkBundle()]);
   if (!nib)

@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 
 #include "base/mac/mac_util.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -641,7 +641,7 @@ TEST_F(BrowserWindowControllerTest, TestStatusBubblePositioning) {
   NSPoint bubbleOrigin = [controller_ statusBubbleBaseFrame].origin;
 
   // Add a fake subview to devToolsView to emulate docked devTools.
-  scoped_nsobject<NSView> view(
+  base::scoped_nsobject<NSView> view(
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 10, 10)]);
   [[controller_ devToolsView] addSubview:view];
   [[controller_ devToolsView] adjustSubviews];
@@ -653,7 +653,7 @@ TEST_F(BrowserWindowControllerTest, TestStatusBubblePositioning) {
 }
 
 TEST_F(BrowserWindowControllerTest, TestSigninMenuItemNoErrors) {
-  scoped_nsobject<NSMenuItem> syncMenuItem(
+  base::scoped_nsobject<NSMenuItem> syncMenuItem(
       [[NSMenuItem alloc] initWithTitle:@""
                                  action:@selector(commandDispatch)
                           keyEquivalent:@""]);
@@ -697,7 +697,7 @@ TEST_F(BrowserWindowControllerTest, TestSigninMenuItemNoErrors) {
 }
 
 TEST_F(BrowserWindowControllerTest, TestSigninMenuItemAuthError) {
-  scoped_nsobject<NSMenuItem> syncMenuItem(
+  base::scoped_nsobject<NSMenuItem> syncMenuItem(
       [[NSMenuItem alloc] initWithTitle:@""
                                  action:@selector(commandDispatch)
                           keyEquivalent:@""]);
@@ -728,7 +728,7 @@ TEST_F(BrowserWindowControllerTest, TestSigninMenuItemAuthError) {
 // If there's a separator after the signin menu item, make sure it is hidden/
 // shown when the signin menu item is.
 TEST_F(BrowserWindowControllerTest, TestSigninMenuItemWithSeparator) {
-  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
   NSMenuItem* signinMenuItem =
       [menu addItemWithTitle:@""
                       action:@selector(commandDispatch)
@@ -759,7 +759,7 @@ TEST_F(BrowserWindowControllerTest, TestSigninMenuItemWithSeparator) {
 // If there's a non-separator item after the signin menu item, it should not
 // change state when the signin menu item is hidden/shown.
 TEST_F(BrowserWindowControllerTest, TestSigninMenuItemWithNonSeparator) {
-  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
   NSMenuItem* signinMenuItem =
       [menu addItemWithTitle:@""
                       action:@selector(commandDispatch)
@@ -809,7 +809,7 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarHitTest) {
  @private
   // We release the window ourselves, so we don't have to rely on the unittest
   // doing it for us.
-  scoped_nsobject<NSWindow> testFullscreenWindow_;
+  base::scoped_nsobject<NSWindow> testFullscreenWindow_;
 }
 @end
 

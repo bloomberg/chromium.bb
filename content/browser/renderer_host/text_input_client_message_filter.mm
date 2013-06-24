@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_client_mac.h"

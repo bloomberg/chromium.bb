@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 
 // Draws an outlined rounded rect, with an optional image to the left
@@ -46,18 +46,18 @@ class BubbleDecoration : public LocationBarDecoration {
                            UsesPartialKeywordIfNarrow);
 
   // Image drawn in the left side of the bubble.
-  scoped_nsobject<NSImage> image_;
+  base::scoped_nsobject<NSImage> image_;
 
   // Label to draw to right of image.  Can be |nil|.
-  scoped_nsobject<NSString> label_;
+  base::scoped_nsobject<NSString> label_;
 
   // Contains attribute for drawing |label_|.
-  scoped_nsobject<NSMutableDictionary> attributes_;
+  base::scoped_nsobject<NSMutableDictionary> attributes_;
 
   // Colors used to draw the bubble, should be set by the subclass
   // constructor.
-  scoped_nsobject<NSColor> background_color_;
-  scoped_nsobject<NSColor> border_color_;
+  base::scoped_nsobject<NSColor> background_color_;
+  base::scoped_nsobject<NSColor> border_color_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleDecoration);
 };

@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
@@ -126,10 +126,10 @@ class OmniboxPopupViewMac : public OmniboxPopupView {
   NSTextField* field_;  // owned by tab controller
 
   // Child window containing a matrix which implements the popup.
-  scoped_nsobject<NSWindow> popup_;
+  base::scoped_nsobject<NSWindow> popup_;
   NSRect targetPopupFrame_;
 
-  scoped_nsobject<AutocompleteMatrix> autocomplete_matrix_;
+  base::scoped_nsobject<AutocompleteMatrix> autocomplete_matrix_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupViewMac);
 };

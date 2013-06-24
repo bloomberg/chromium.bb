@@ -50,7 +50,7 @@ class ZoomDecoration : public ImageDecoration {
   ZoomBubbleController* bubble_;
 
   // The string to show for a tooltip.
-  scoped_nsobject<NSString> tooltip_;
+  base::scoped_nsobject<NSString> tooltip_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomDecoration);
 };

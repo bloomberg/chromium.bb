@@ -79,7 +79,8 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
     NSRect dummyRect = NSMakeRect(0, 0, 50, 50);
     tab_views_.reset([[NSMutableArray alloc] init]);
     for (int i = 0; i < 2; ++i) {
-      scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:dummyRect]);
+      base::scoped_nsobject<NSView> view(
+          [[NSView alloc] initWithFrame:dummyRect]);
       [tab_views_ addObject:view];
     }
     tab0_.reset([[tab_views_ objectAtIndex:0] retain]);
@@ -135,13 +136,13 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
     EXPECT_EQ(expected_x, NSMinX(sheet_frame));
   }
 
-  scoped_nsobject<NSWindow> sheet_window_;
-  scoped_nsobject<CustomConstrainedWindowSheet> sheet_;
-  scoped_nsobject<ConstrainedWindowSheetController> controller_;
-  scoped_nsobject<NSMutableArray> tab_views_;
-  scoped_nsobject<NSView> active_tab_view_;
-  scoped_nsobject<NSView> tab0_;
-  scoped_nsobject<NSView> tab1_;
+  base::scoped_nsobject<NSWindow> sheet_window_;
+  base::scoped_nsobject<CustomConstrainedWindowSheet> sheet_;
+  base::scoped_nsobject<ConstrainedWindowSheetController> controller_;
+  base::scoped_nsobject<NSMutableArray> tab_views_;
+  base::scoped_nsobject<NSView> active_tab_view_;
+  base::scoped_nsobject<NSView> tab0_;
+  base::scoped_nsobject<NSView> tab1_;
 };
 
 // Test showing then hiding the sheet.
@@ -183,11 +184,11 @@ TEST_F(ConstrainedWindowSheetControllerTest, AddToInactiveTab) {
 
 // Test that two parent windows with two sheet controllers don't conflict.
 TEST_F(ConstrainedWindowSheetControllerTest, TwoParentWindows) {
-  scoped_nsobject<NSWindow> parent_window2([[NSWindow alloc]
-      initWithContentRect:NSMakeRect(0, 0, 30, 30)
-                styleMask:NSTitledWindowMask
-                  backing:NSBackingStoreBuffered
-                    defer:NO]);
+  base::scoped_nsobject<NSWindow> parent_window2(
+      [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 30, 30)
+                                  styleMask:NSTitledWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO]);
   [parent_window2 setReleasedWhenClosed:NO];
 
   ConstrainedWindowSheetController* controller2 =
@@ -255,9 +256,9 @@ TEST_F(ConstrainedWindowSheetControllerTest, ResizeHiddenSheet) {
 
 // Test system sheets.
 TEST_F(ConstrainedWindowSheetControllerTest, SystemSheet) {
-  scoped_nsobject<ConstrainedWindowSystemSheetTest> system_sheet(
+  base::scoped_nsobject<ConstrainedWindowSystemSheetTest> system_sheet(
       [[ConstrainedWindowSystemSheetTest alloc] init]);
-  scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
+  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
   [system_sheet setAlert:alert];
 
   EXPECT_FALSE([[alert window] isVisible]);
@@ -272,9 +273,9 @@ TEST_F(ConstrainedWindowSheetControllerTest, SystemSheet) {
 
 // Test showing a system sheet on an inactive tab.
 TEST_F(ConstrainedWindowSheetControllerTest, SystemSheetAddToInactiveTab) {
-  scoped_nsobject<ConstrainedWindowSystemSheetTest> system_sheet(
+  base::scoped_nsobject<ConstrainedWindowSystemSheetTest> system_sheet(
       [[ConstrainedWindowSystemSheetTest alloc] init]);
-  scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
+  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
   [system_sheet setAlert:alert];
 
   EXPECT_FALSE([[alert window] isVisible]);

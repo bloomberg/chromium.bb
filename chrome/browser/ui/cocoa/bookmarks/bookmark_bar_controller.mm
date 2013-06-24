@@ -1073,8 +1073,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   BookmarkButtonCell* cell = [self cellForBookmarkNode:node];
   NSRect frame = [self frameForBookmarkButtonFromCell:cell xOffset:xOffset];
 
-  scoped_nsobject<BookmarkButton>
-      button([[BookmarkButton alloc] initWithFrame:frame]);
+  base::scoped_nsobject<BookmarkButton> button(
+      [[BookmarkButton alloc] initWithFrame:frame]);
   DCHECK(button.get());
 
   // [NSButton setCell:] warns to NOT use setCell: other than in the

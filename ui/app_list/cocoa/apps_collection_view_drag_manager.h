@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/app_list/app_list_export.h"
 
 @class AppsGridController;
@@ -19,7 +19,7 @@
 APP_LIST_EXPORT
 @interface AppsCollectionViewDragManager : NSObject {
  @private
-  scoped_nsobject<ItemDragController> itemDragController_;
+  base::scoped_nsobject<ItemDragController> itemDragController_;
   AppsGridController* gridController_;  // Weak. Owns us.
 
   NSSize cellSize_;

@@ -46,7 +46,7 @@ class ZoomLevelObserver;
 
   // A shim NSViewController that loads the buttons from the NIB because ObjC
   // doesn't have multiple inheritance as this class is a MenuController.
-  scoped_nsobject<WrenchMenuButtonViewController> buttonViewController_;
+  base::scoped_nsobject<WrenchMenuButtonViewController> buttonViewController_;
 
   // The browser for which this controller exists.
   Browser* browser_;  // weak

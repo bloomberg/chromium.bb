@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 namespace ui {
 class ThemeProvider;
@@ -55,15 +55,15 @@ typedef enum {
   // Custom drawing means we need to perform our own mouse tracking if
   // the cell is setShowsBorderOnlyWhileMouseInside:YES.
   BOOL isMouseInside_;
-  scoped_nsobject<NSTrackingArea> trackingArea_;
+  base::scoped_nsobject<NSTrackingArea> trackingArea_;
   BOOL shouldTheme_;
   CGFloat hoverAlpha_;  // 0-1. Controls the alpha during mouse hover
   NSTimeInterval lastHoverUpdate_;
-  scoped_nsobject<NSGradient> gradient_;
+  base::scoped_nsobject<NSGradient> gradient_;
   gradient_button_cell::PulseState pulseState_;
   CGFloat pulseMultiplier_;  // for selecting pulse direction when continuous.
   CGFloat outerStrokeAlphaMult_;  // For pulsing.
-  scoped_nsobject<NSImage> overlayImage_;
+  base::scoped_nsobject<NSImage> overlayImage_;
 }
 
 // Turn off theming.  Temporary work-around.

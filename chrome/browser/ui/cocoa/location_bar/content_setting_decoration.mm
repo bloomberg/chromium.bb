@@ -228,19 +228,19 @@ CGFloat ContentSettingDecoration::MeasureTextWidth() {
   return [animated_text_ size].width;
 }
 
-scoped_nsobject<NSAttributedString>
+base::scoped_nsobject<NSAttributedString>
 ContentSettingDecoration::CreateAnimatedText() {
   NSString* text =
       l10n_util::GetNSString(
           content_setting_image_model_->explanatory_string_id());
-  scoped_nsobject<NSMutableParagraphStyle> style(
+  base::scoped_nsobject<NSMutableParagraphStyle> style(
       [[NSMutableParagraphStyle alloc] init]);
   // Set line break mode to clip the text, otherwise drawInRect: won't draw a
   // word if it doesn't fit in the bounding box.
   [style setLineBreakMode:NSLineBreakByClipping];
   NSDictionary* attributes = @{ NSFontAttributeName : GetFont(),
                                 NSParagraphStyleAttributeName : style };
-  return scoped_nsobject<NSAttributedString>(
+  return base::scoped_nsobject<NSAttributedString>(
       [[NSAttributedString alloc] initWithString:text attributes:attributes]);
 }
 

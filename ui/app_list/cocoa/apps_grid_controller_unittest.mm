@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "testing/gtest_mac.h"
@@ -114,7 +114,7 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
   }
 
  private:
-  scoped_nsobject<AppsGridController> owned_apps_grid_controller_;
+  base::scoped_nsobject<AppsGridController> owned_apps_grid_controller_;
   scoped_ptr<AppListTestViewDelegate> owned_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridControllerTest);
@@ -502,7 +502,7 @@ TEST_F(AppsGridControllerTest, MouseoverSelects) {
 
 // Test AppsGridPaginationObserver totalPagesChanged().
 TEST_F(AppsGridControllerTest, PaginationObserverPagesChanged) {
-  scoped_nsobject<TestPaginationObserver> observer(
+  base::scoped_nsobject<TestPaginationObserver> observer(
       [[TestPaginationObserver alloc] init]);
   [apps_grid_controller_ setPaginationObserver:observer];
 
@@ -528,7 +528,7 @@ TEST_F(AppsGridControllerTest, PaginationObserverPagesChanged) {
 
 // Test AppsGridPaginationObserver selectedPageChanged().
 TEST_F(AppsGridControllerTest, PaginationObserverSelectedPageChanged) {
-  scoped_nsobject<TestPaginationObserver> observer(
+  base::scoped_nsobject<TestPaginationObserver> observer(
       [[TestPaginationObserver alloc] init]);
   [apps_grid_controller_ setPaginationObserver:observer];
   EXPECT_EQ(0, [[NSAnimationContext currentContext] duration]);
@@ -749,7 +749,7 @@ TEST_F(AppsGridControllerTest, DragAndDropMultiPage) {
 
 // Test scrolling when dragging past edge or over the pager.
 TEST_F(AppsGridControllerTest, ScrollingWhileDragging) {
-  scoped_nsobject<TestPaginationObserver> observer(
+  base::scoped_nsobject<TestPaginationObserver> observer(
       [[TestPaginationObserver alloc] init]);
   [apps_grid_controller_ setPaginationObserver:observer];
 

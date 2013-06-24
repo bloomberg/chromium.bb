@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "chrome/app/breakpad_mac.h"
@@ -265,9 +265,9 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   }
 
   // Now load the nib (from the right bundle).
-  scoped_nsobject<NSNib>
-      nib([[NSNib alloc] initWithNibNamed:@"MainMenu"
-                                   bundle:base::mac::FrameworkBundle()]);
+  base::scoped_nsobject<NSNib> nib(
+      [[NSNib alloc] initWithNibNamed:@"MainMenu"
+                               bundle:base::mac::FrameworkBundle()]);
   // TODO(viettrungluu): crbug.com/20504 - This currently leaks, so if you
   // change this, you'll probably need to change the Valgrind suppression.
   [nib instantiateNibWithOwner:NSApp topLevelObjects:nil];

@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 @class ConfirmBubbleController;
 class ConfirmBubbleModel;
@@ -37,11 +37,11 @@ class ConfirmBubbleModel;
   ConfirmBubbleController* controller_;  // weak
 
   // Controls used in this bubble.
-  scoped_nsobject<NSImageView> icon_;
-  scoped_nsobject<NSTextView> titleLabel_;
-  scoped_nsobject<NSTextView> messageLabel_;
-  scoped_nsobject<NSButton> okButton_;
-  scoped_nsobject<NSButton> cancelButton_;
+  base::scoped_nsobject<NSImageView> icon_;
+  base::scoped_nsobject<NSTextView> titleLabel_;
+  base::scoped_nsobject<NSTextView> messageLabel_;
+  base::scoped_nsobject<NSButton> okButton_;
+  base::scoped_nsobject<NSButton> cancelButton_;
 }
 
 // Initializes a bubble view. Since this initializer programmatically creates a

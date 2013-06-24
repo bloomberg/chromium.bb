@@ -98,7 +98,7 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
 
   // May be NULL during tests.
   if (controller->web_contents()) {
-    scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+    base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
         [[CustomConstrainedWindowSheet alloc]
             initWithCustomWindow:[alert_ window]]);
     window_.reset(new ConstrainedWindowMac(
@@ -121,9 +121,8 @@ void MediaGalleriesDialogCocoa::InitDialogControls() {
                                                         blue:0.625
                                                        alpha:1.0]];
 
-  scoped_nsobject<NSScrollView> scroll_view(
-      [[NSScrollView alloc] initWithFrame:NSMakeRect(
-          0, 0, kCheckboxMaxWidth, kScrollAreaHeight)]);
+  base::scoped_nsobject<NSScrollView> scroll_view([[NSScrollView alloc]
+      initWithFrame:NSMakeRect(0, 0, kCheckboxMaxWidth, kScrollAreaHeight)]);
   [scroll_view setHasVerticalScroller:YES];
   [scroll_view setHasHorizontalScroller:NO];
   [scroll_view setBorderType:NSNoBorder];
@@ -203,7 +202,8 @@ CGFloat MediaGalleriesDialogCocoa::CreateUnattachedCheckboxes(
 }
 
 CGFloat MediaGalleriesDialogCocoa::CreateCheckboxSeparator(CGFloat y_pos) {
-  scoped_nsobject<NSBox> separator([[NSBox alloc] initWithFrame:NSMakeRect(
+  base::scoped_nsobject<NSBox> separator(
+      [[NSBox alloc] initWithFrame:NSMakeRect(
           0, y_pos + kCheckboxMargin * 0.5, kCheckboxMaxWidth, 1.0)]);
   [separator setBoxType:NSBoxSeparator];
   [separator setBorderType:NSLineBorder];
@@ -211,7 +211,7 @@ CGFloat MediaGalleriesDialogCocoa::CreateCheckboxSeparator(CGFloat y_pos) {
   [checkbox_container_ addSubview:separator];
   y_pos += kCheckboxMargin * 0.5 + 4;
 
-  scoped_nsobject<NSTextField> unattached_label(
+  base::scoped_nsobject<NSTextField> unattached_label(
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
   [unattached_label setEditable:NO];
   [unattached_label setSelectable:NO];
@@ -288,7 +288,7 @@ void MediaGalleriesDialogCocoa::UpdateGalleryCheckbox(
     const MediaGalleryPrefInfo& gallery,
     bool permitted,
     CGFloat y_pos) {
-  scoped_nsobject<NSButton> checkbox(
+  base::scoped_nsobject<NSButton> checkbox(
       [[NSButton alloc] initWithFrame:NSZeroRect]);
   NSString* unique_id = GetUniqueIDForGallery(gallery);
   [[checkbox cell] setRepresentedObject:unique_id];
@@ -311,8 +311,8 @@ void MediaGalleriesDialogCocoa::UpdateGalleryCheckbox(
   [checkbox setFrame:rect];
   [checkbox_container_ addSubview:checkbox];
 
-  scoped_nsobject<NSTextField> details(
-    [[NSTextField alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSTextField> details(
+      [[NSTextField alloc] initWithFrame:NSZeroRect]);
   [details setEditable:NO];
   [details setSelectable:NO];
   [details setBezeled:NO];
@@ -355,7 +355,7 @@ void MediaGalleriesDialogCocoa::OnConstrainedWindowClosed(
 // static
 MediaGalleriesDialog* MediaGalleriesDialog::Create(
     MediaGalleriesDialogController* controller) {
-  scoped_nsobject<MediaGalleriesCocoaController> cocoa_controller(
+  base::scoped_nsobject<MediaGalleriesCocoaController> cocoa_controller(
       [[MediaGalleriesCocoaController alloc] init]);
   return new MediaGalleriesDialogCocoa(controller, cocoa_controller);
 }

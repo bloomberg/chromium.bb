@@ -8,7 +8,7 @@
 #include <SecurityInterface/SFCertificateView.h>
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"

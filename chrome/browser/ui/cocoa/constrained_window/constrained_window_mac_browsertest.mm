@@ -66,8 +66,8 @@ class ConstrainedWindowMacTest : public InProcessBrowserTest {
   }
 
  protected:
-  scoped_nsobject<CustomConstrainedWindowSheet> sheet_;
-  scoped_nsobject<NSWindow> sheet_window_;
+  base::scoped_nsobject<CustomConstrainedWindowSheet> sheet_;
+  base::scoped_nsobject<NSWindow> sheet_window_;
   content::WebContents* tab0_;
   content::WebContents* tab1_;
   BrowserWindowController* controller_;
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowClose) {
   EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
   // Close the browser window.
-  scoped_nsobject<NSWindow> browser_window(
+  base::scoped_nsobject<NSWindow> browser_window(
       [browser()->window()->GetNativeWindow() retain]);
   EXPECT_TRUE([browser_window isVisible]);
   [browser()->window()->GetNativeWindow() performClose:nil];

@@ -11,8 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace content {
@@ -53,7 +53,7 @@ class CompositingIOSurfaceContext
   ~CompositingIOSurfaceContext();
 
   int window_number_;
-  scoped_nsobject<NSOpenGLContext> nsgl_context_;
+  base::scoped_nsobject<NSOpenGLContext> nsgl_context_;
   CGLContextObj cgl_context_; // weak, backed by |nsgl_context_|
   bool is_vsync_disabled_;
   scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache_;

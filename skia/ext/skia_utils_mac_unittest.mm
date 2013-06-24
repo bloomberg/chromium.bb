@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "skia/ext/skia_utils_mac.mm"
+
+#include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -57,7 +59,7 @@ SkBitmap SkiaUtilsMacTest::CreateSkBitmap(int width, int height,
 }
 
 NSImage* SkiaUtilsMacTest::CreateNSImage(int width, int height, bool isred) {
-  scoped_nsobject<NSImage> image(
+  base::scoped_nsobject<NSImage> image(
       [[NSImage alloc] initWithSize:NSMakeSize(width, height)]);
   [image lockFocus];
   if (isred)

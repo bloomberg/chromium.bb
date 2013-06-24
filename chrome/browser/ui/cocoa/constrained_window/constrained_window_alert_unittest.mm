@@ -11,7 +11,7 @@ class ConstrainedWindowAlertTest : public CocoaTest {
 
 // Test showing the alert.
 TEST_F(ConstrainedWindowAlertTest, Show) {
-  scoped_nsobject<ConstrainedWindowAlert> alert(
+  base::scoped_nsobject<ConstrainedWindowAlert> alert(
       [[ConstrainedWindowAlert alloc] init]);
   EXPECT_TRUE([alert window]);
   EXPECT_TRUE([alert closeButton]);
@@ -27,7 +27,7 @@ TEST_F(ConstrainedWindowAlertTest, Show) {
 
 // Test showing the alert with no buttons.
 TEST_F(ConstrainedWindowAlertTest, NoButtons) {
-  scoped_nsobject<ConstrainedWindowAlert> alert(
+  base::scoped_nsobject<ConstrainedWindowAlert> alert(
       [[ConstrainedWindowAlert alloc] init]);
   [alert layout];
   [[alert window] makeKeyAndOrderFront:nil];
@@ -35,13 +35,13 @@ TEST_F(ConstrainedWindowAlertTest, NoButtons) {
 
 // Test adding an accessory view to an alert.
 TEST_F(ConstrainedWindowAlertTest, AccessoryView) {
-  scoped_nsobject<ConstrainedWindowAlert> alert(
+  base::scoped_nsobject<ConstrainedWindowAlert> alert(
       [[ConstrainedWindowAlert alloc] init]);
   [alert addButtonWithTitle:@"OK" keyEquivalent:@"" target:nil action:NULL];
   [alert addButtonWithTitle:@"Cancel" keyEquivalent:@"" target:nil action:NULL];
 
   NSRect view_rect = NSMakeRect(0, 0, 700, 300);
-  scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:view_rect]);
+  base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:view_rect]);
   EXPECT_FALSE([alert accessoryView]);
   [alert setAccessoryView:view];
   EXPECT_NSEQ([alert accessoryView], view);

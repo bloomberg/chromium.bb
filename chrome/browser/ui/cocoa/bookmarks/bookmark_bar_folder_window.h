@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_FOLDER_WINDOW_H_
 
 #import <Cocoa/Cocoa.h>
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 
 // Window for a bookmark folder "menu".  This menu pops up when you

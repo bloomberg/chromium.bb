@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_view.h"
 
 #include "base/mac/mac_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
@@ -43,7 +43,7 @@ const CGFloat kBubbleCornerRadius = 8.0;
   [bezier closePath];
   [[NSColor whiteColor] set];
   gfx::ScopedNSGraphicsContextSaveGState scoped_g_state;
-  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   if (base::mac::IsOSLionOrLater()) {
     [shadow setShadowBlurRadius:kShadowBlurRadiusLion];
   } else {

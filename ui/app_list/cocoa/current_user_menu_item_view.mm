@@ -5,7 +5,7 @@
 #import "ui/app_list/cocoa/current_user_menu_item_view.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -35,7 +35,7 @@ const CGFloat kMenuLeftMargin = 3;
         GetNativeImageNamed(IDR_APP_LIST_USER_INDICATOR).AsNSImage();
     NSRect imageRect = NSMakeRect(kMenuLeftMargin, 0, 0, 0);
     imageRect.size = [userImage size];
-    scoped_nsobject<NSImageView> userImageView(
+    base::scoped_nsobject<NSImageView> userImageView(
         [[NSImageView alloc] initWithFrame:imageRect]);
     [userImageView setImage:userImage];
     [self addSubview:userImageView];
@@ -66,7 +66,7 @@ const CGFloat kMenuLeftMargin = 3;
                         labelText:(const string16&)labelText {
   NSRect labelFrame = NSZeroRect;
   labelFrame.origin = origin;
-  scoped_nsobject<NSTextField> label(
+  base::scoped_nsobject<NSTextField> label(
       [[NSTextField alloc] initWithFrame:labelFrame]);
   [label setStringValue:base::SysUTF16ToNSString(labelText)];
   [label setEditable:NO];

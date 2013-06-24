@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 // The baseline shift for text in the NSTextView.
 const float kTextBaselineShift = -1.0;
@@ -96,7 +96,7 @@ const float kTextBaselineShift = -1.0;
                  forKey:NSBaselineOffsetAttributeName];
 
   // Create the attributed string for the message.
-  scoped_nsobject<NSMutableAttributedString> attributedMessage(
+  base::scoped_nsobject<NSMutableAttributedString> attributedMessage(
       [[NSMutableAttributedString alloc] initWithString:message
                                              attributes:attributes]);
 
@@ -115,9 +115,8 @@ const float kTextBaselineShift = -1.0;
                    forKey:NSLinkAttributeName];
 
     // Insert the link into the message at the appropriate offset.
-    scoped_nsobject<NSAttributedString> attributedLink(
-        [[NSAttributedString alloc] initWithString:link
-                                        attributes:attributes]);
+    base::scoped_nsobject<NSAttributedString> attributedLink(
+        [[NSAttributedString alloc] initWithString:link attributes:attributes]);
     [attributedMessage.get() insertAttributedString:attributedLink.get()
                                             atIndex:linkOffset];
     // Ensure the TextView doesn't override the link style.

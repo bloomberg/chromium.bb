@@ -122,10 +122,8 @@ class ZoomLevelObserver {
 
   // Handle the special-cased menu items.
   int command_id = model->GetCommandIdAt(index);
-  scoped_nsobject<NSMenuItem> customItem(
-      [[NSMenuItem alloc] initWithTitle:@""
-                                 action:nil
-                          keyEquivalent:@""]);
+  base::scoped_nsobject<NSMenuItem> customItem(
+      [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""]);
   MenuTrackedRootView* view;
   switch (command_id) {
     case IDC_EDIT_MENU:
@@ -162,9 +160,9 @@ class ZoomLevelObserver {
   if (model && model == [self recentTabsMenuModel] &&
       model->GetLabelFontAt([item tag])) {
     DCHECK([menuItem attributedTitle]);
-    scoped_nsobject<NSMutableAttributedString> title(
-        [[NSMutableAttributedString alloc] initWithAttributedString:
-            [menuItem attributedTitle]]);
+    base::scoped_nsobject<NSMutableAttributedString> title(
+        [[NSMutableAttributedString alloc]
+            initWithAttributedString:[menuItem attributedTitle]]);
     [title addAttribute:NSForegroundColorAttributeName
                   value:[NSColor blackColor]
                   range:NSMakeRange(0, [title length])];

@@ -112,12 +112,12 @@ const double kWidthOfMouseResizeArea = 4.0;
 @interface PanelResizeByMouseOverlay : NSView <MouseDragControllerClient> {
  @private
    Panel* panel_;
-   scoped_nsobject<MouseDragController> dragController_;
-   scoped_nsobject<NSCursor> dragCursor_;
-   scoped_nsobject<NSCursor> eastWestCursor_;
-   scoped_nsobject<NSCursor> northSouthCursor_;
-   scoped_nsobject<NSCursor> northEastSouthWestCursor_;
-   scoped_nsobject<NSCursor> northWestSouthEastCursor_;
+   base::scoped_nsobject<MouseDragController> dragController_;
+   base::scoped_nsobject<NSCursor> dragCursor_;
+   base::scoped_nsobject<NSCursor> eastWestCursor_;
+   base::scoped_nsobject<NSCursor> northSouthCursor_;
+   base::scoped_nsobject<NSCursor> northEastSouthWestCursor_;
+   base::scoped_nsobject<NSCursor> northWestSouthEastCursor_;
    NSRect leftCursorRect_;
    NSRect rightCursorRect_;
    NSRect topCursorRect_;

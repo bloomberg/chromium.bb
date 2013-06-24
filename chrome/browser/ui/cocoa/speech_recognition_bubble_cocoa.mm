@@ -6,7 +6,7 @@
 
 #include "chrome/browser/speech/speech_recognition_bubble.h"
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -35,7 +35,7 @@ class SpeechRecognitionBubbleImpl : public SpeechRecognitionBubbleBase {
   virtual void UpdateImage() OVERRIDE;
 
  private:
-  scoped_nsobject<SpeechRecognitionWindowController> window_;
+  base::scoped_nsobject<SpeechRecognitionWindowController> window_;
   Delegate* delegate_;
   gfx::Rect element_rect_;
 };

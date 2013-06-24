@@ -16,25 +16,24 @@ typedef RenderViewHostTestHarness WebDragSourceMacTest;
 
 TEST_F(WebDragSourceMacTest, DragInvalidlyEscapedBookmarklet) {
   scoped_ptr<WebContents> contents(CreateTestWebContents());
-  scoped_nsobject<NSView> view(
+  base::scoped_nsobject<NSView> view(
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 10, 10)]);
 
   scoped_ptr<WebDropData> dropData(new WebDropData);
   dropData->url = GURL("javascript:%");
 
   WebContentsImpl* contentsImpl = static_cast<WebContentsImpl*>(contents.get());
-  scoped_nsobject<WebDragSource> source(
-      [[WebDragSource alloc]
-        initWithContents:contentsImpl
-                    view:view
-                dropData:dropData.get()
-                   image:nil
-                  offset:NSMakePoint(0, 0)
-              pasteboard:[NSPasteboard pasteboardWithUniqueName]
-        dragOperationMask:NSDragOperationCopy]);
+  base::scoped_nsobject<WebDragSource> source([[WebDragSource alloc]
+      initWithContents:contentsImpl
+                  view:view
+              dropData:dropData.get()
+                 image:nil
+                offset:NSMakePoint(0, 0)
+            pasteboard:[NSPasteboard pasteboardWithUniqueName]
+     dragOperationMask:NSDragOperationCopy]);
 
   // Test that this call doesn't throw any exceptions: http://crbug.com/128371
-  scoped_nsobject<NSPasteboard> pasteboard(
+  base::scoped_nsobject<NSPasteboard> pasteboard(
       [NSPasteboard pasteboardWithUniqueName]);
   [source lazyWriteToPasteboard:pasteboard forType:NSURLPboardType];
 }

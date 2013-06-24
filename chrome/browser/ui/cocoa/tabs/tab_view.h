@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_COCOA_TABS_TAB_VIEW_H_
 #define CHROME_BROWSER_UI_COCOA_TABS_TAB_VIEW_H_
 
-#import <Cocoa/Cocoa.h>
 #include <ApplicationServices/ApplicationServices.h>
+#import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 
 namespace tabs {
@@ -70,7 +70,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   NSCellStateValue state_;
 
   // The tool tip text for this tab view.
-  scoped_nsobject<NSString> toolTipText_;
+  base::scoped_nsobject<NSString> toolTipText_;
 
   // A one-element mask image cache.  This cache makes drawing roughly 16%
   // faster.

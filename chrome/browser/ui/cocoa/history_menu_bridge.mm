@@ -207,12 +207,12 @@ void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
       item->session_id = entry_win->id;
 
       // Create the submenu.
-      scoped_nsobject<NSMenu> submenu([[NSMenu alloc] init]);
+      base::scoped_nsobject<NSMenu> submenu([[NSMenu alloc] init]);
 
       // Create standard items within the window submenu.
       NSString* restore_title = l10n_util::GetNSString(
           IDS_HISTORY_CLOSED_RESTORE_WINDOW_MAC);
-      scoped_nsobject<NSMenuItem> restore_item(
+      base::scoped_nsobject<NSMenuItem> restore_item(
           [[NSMenuItem alloc] initWithTitle:restore_title
                                      action:@selector(openHistoryMenuItem:)
                               keyEquivalent:@""]);

@@ -7,15 +7,15 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/host/continue_window.h"
 
 // Handles the ContinueWindow.
 @interface ContinueWindowMacController : NSObject {
  @private
-  scoped_nsobject<NSMutableArray> shades_;
-  scoped_nsobject<NSAlert> continue_alert_;
+  base::scoped_nsobject<NSMutableArray> shades_;
+  base::scoped_nsobject<NSAlert> continue_alert_;
   remoting::ContinueWindow* continue_window_;
   const remoting::UiStrings* ui_strings_;
 }
@@ -43,7 +43,7 @@ class ContinueWindowMac : public ContinueWindow {
   virtual void HideUi() OVERRIDE;
 
  private:
-  scoped_nsobject<ContinueWindowMacController> controller_;
+  base::scoped_nsobject<ContinueWindowMacController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowMac);
 };
@@ -136,7 +136,7 @@ scoped_ptr<HostWindow> HostWindow::CreateContinueWindow(
 
   NSBundle *bundle = [NSBundle bundleForClass:[self class]];
   NSString *imagePath = [bundle pathForResource:@"chromoting128" ofType:@"png"];
-  scoped_nsobject<NSImage> image(
+  base::scoped_nsobject<NSImage> image(
       [[NSImage alloc] initByReferencingFile:imagePath]);
   [continue_alert_ setIcon:image];
   [continue_alert_ layout];

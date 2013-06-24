@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
@@ -19,8 +19,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#include "third_party/ocmock/gtest_support.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using ::testing::Return;
@@ -51,11 +51,11 @@ class AutocompleteTextFieldCellTest : public CocoaTest {
     // decorations.
     const NSRect frame = NSMakeRect(0, 0, kWidth, 30);
 
-    scoped_nsobject<NSTextField> view(
+    base::scoped_nsobject<NSTextField> view(
         [[NSTextField alloc] initWithFrame:frame]);
     view_ = view.get();
 
-    scoped_nsobject<AutocompleteTextFieldCell> cell(
+    base::scoped_nsobject<AutocompleteTextFieldCell> cell(
         [[AutocompleteTextFieldCell alloc] initTextCell:@"Testing"]);
     [cell setEditable:YES];
     [cell setBordered:YES];

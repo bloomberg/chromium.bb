@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/mac_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/base/ui_export.h"
 
 // A utility class to manage the fullscreen mode for a given window. This class
@@ -16,11 +16,11 @@
 UI_EXPORT
 @interface FullscreenWindowManager : NSObject {
  @private
-  scoped_nsobject<NSWindow> window_;
+  base::scoped_nsobject<NSWindow> window_;
   // Explicitly keep track of the screen we want to position the window in.
   // This is better than using -[NSWindow screen] because that might change if
   // the screen changes to a low resolution.
-  scoped_nsobject<NSScreen> desiredScreen_;
+  base::scoped_nsobject<NSScreen> desiredScreen_;
   base::mac::FullScreenMode fullscreenMode_;
   BOOL fullscreenActive_;
 }

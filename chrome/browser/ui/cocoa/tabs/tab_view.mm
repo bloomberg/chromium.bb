@@ -211,7 +211,7 @@ const CGFloat kRapidCloseDist = 2.5;
   // strip and then deallocated. This will also result in *us* being
   // deallocated. Both these are bad, so we prevent this by retaining the
   // controller.
-  scoped_nsobject<TabController> controller([controller_ retain]);
+  base::scoped_nsobject<TabController> controller([controller_ retain]);
 
   // Try to initiate a drag. This will spin a custom event loop and may
   // dispatch other mouse events.
@@ -379,7 +379,7 @@ const CGFloat kRapidCloseDist = 2.5;
     // Draw a mouse hover gradient for the default themes.
     if (!selected && hoverAlpha > 0) {
       if (themeProvider && !hasCustomTheme) {
-        scoped_nsobject<NSGradient> glow([NSGradient alloc]);
+        base::scoped_nsobject<NSGradient> glow([NSGradient alloc]);
         [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0
                                         alpha:1.0 * hoverAlpha]
                         endingColor:[NSColor colorWithCalibratedWhite:1.0

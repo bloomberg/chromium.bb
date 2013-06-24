@@ -7,7 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/bundle_locations.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "content/shell/shell_application_mac.h"
 
 namespace content {
@@ -16,9 +16,9 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
   // Force the NSApplication subclass to be used.
   [ShellCrApplication sharedApplication];
 
-  scoped_nsobject<NSNib>
-      nib([[NSNib alloc] initWithNibNamed:@"MainMenu"
-                                   bundle:base::mac::FrameworkBundle()]);
+  base::scoped_nsobject<NSNib> nib(
+      [[NSNib alloc] initWithNibNamed:@"MainMenu"
+                               bundle:base::mac::FrameworkBundle()]);
   [nib instantiateNibWithOwner:NSApp topLevelObjects:nil];
 }
 

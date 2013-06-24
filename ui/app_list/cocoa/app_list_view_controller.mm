@@ -141,9 +141,9 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
           [AppsGridController scrollerPadding]);
 
   contentsView_.reset([[FlippedView alloc] initWithFrame:contentsRect]);
-  scoped_nsobject<BackgroundView> backgroundView(
+  base::scoped_nsobject<BackgroundView> backgroundView(
       [[BackgroundView alloc] initWithFrame:
-          NSMakeRect(0, 0, NSMaxX(contentsRect), NSMaxY(contentsRect))]);
+              NSMakeRect(0, 0, NSMaxX(contentsRect), NSMaxY(contentsRect))]);
   appsSearchBoxController_.reset(
       [[AppsSearchBoxController alloc] initWithFrame:
           NSMakeRect(0, 0, NSWidth(contentsRect), kSearchInputHeight)]);

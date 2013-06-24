@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_BROWSER_ZOOM_BUBBLE_CONTROLLER_H_
 
 #include "base/mac/scoped_block.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "ui/base/cocoa/tracking_area.h"
 
@@ -31,7 +31,7 @@ class WebContents;
   base::mac::ScopedBlock<void(^)(ZoomBubbleController*)> closeObserver_;
 
   // The text field that displays the current zoom percentage.
-  scoped_nsobject<NSTextField> zoomPercent_;
+  base::scoped_nsobject<NSTextField> zoomPercent_;
 
   // Whether or not the mouse is over the bubble.
   BOOL isMouseInside_;

@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,7 +18,7 @@ class HoverCloseButtonTest : public CocoaTest {
   }
 
  protected:
-  scoped_nsobject<HoverCloseButton> button_;
+  base::scoped_nsobject<HoverCloseButton> button_;
 };
 
 class WebUIHoverCloseButtonTest : public CocoaTest {
@@ -30,7 +30,7 @@ class WebUIHoverCloseButtonTest : public CocoaTest {
   }
 
  protected:
-  scoped_nsobject<WebUIHoverCloseButton> button_;
+  base::scoped_nsobject<WebUIHoverCloseButton> button_;
 };
 
 TEST_VIEW(HoverCloseButtonTest, button_)

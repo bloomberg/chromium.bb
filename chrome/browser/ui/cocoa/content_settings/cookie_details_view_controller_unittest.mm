@@ -52,14 +52,14 @@ static CookiePromptContentDetailsAdapter* CreateDatabaseTestContent() {
 }
 
 TEST_F(CookieDetailsViewControllerTest, Create) {
-  scoped_nsobject<CookieDetailsViewController> detailsViewController(
+  base::scoped_nsobject<CookieDetailsViewController> detailsViewController(
       [[CookieDetailsViewController alloc] init]);
 }
 
 TEST_F(CookieDetailsViewControllerTest, ShrinkToFit) {
-  scoped_nsobject<CookieDetailsViewController> detailsViewController(
+  base::scoped_nsobject<CookieDetailsViewController> detailsViewController(
       [[CookieDetailsViewController alloc] init]);
-  scoped_nsobject<CookiePromptContentDetailsAdapter> adapter(
+  base::scoped_nsobject<CookiePromptContentDetailsAdapter> adapter(
       [CreateDatabaseTestContent() retain]);
   [detailsViewController.get() setContentObject:adapter.get()];
   NSRect beforeFrame = [[detailsViewController.get() view] frame];
@@ -70,10 +70,10 @@ TEST_F(CookieDetailsViewControllerTest, ShrinkToFit) {
 }
 
 TEST_F(CookieDetailsViewControllerTest, ExpirationEditability) {
-  scoped_nsobject<CookieDetailsViewController> detailsViewController(
+  base::scoped_nsobject<CookieDetailsViewController> detailsViewController(
       [[CookieDetailsViewController alloc] init]);
   [detailsViewController view];
-  scoped_nsobject<CookiePromptContentDetailsAdapter> adapter(
+  base::scoped_nsobject<CookiePromptContentDetailsAdapter> adapter(
       [CreateCookieTestContent(YES) retain]);
   [detailsViewController.get() setContentObject:adapter.get()];
 

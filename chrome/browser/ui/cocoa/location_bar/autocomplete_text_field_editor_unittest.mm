@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
@@ -15,8 +15,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
-#include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/ocmock_extensions.h"
 #import "ui/base/test/cocoa_test_event_utils.h"
 
@@ -35,7 +35,7 @@ class AutocompleteTextFieldEditorTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
     NSRect frame = NSMakeRect(0, 0, 50, 30);
-    scoped_nsobject<AutocompleteTextField> field(
+    base::scoped_nsobject<AutocompleteTextField> field(
         [[AutocompleteTextField alloc] initWithFrame:frame]);
     field_ = field.get();
     [field_ setStringValue:@"Testing"];
@@ -56,7 +56,8 @@ class AutocompleteTextFieldEditorTest : public CocoaTest {
 
   AutocompleteTextFieldEditor* editor_;
   AutocompleteTextField* field_;
-  scoped_nsobject<AutocompleteTextFieldWindowTestDelegate> window_delegate_;
+  base::scoped_nsobject<AutocompleteTextFieldWindowTestDelegate>
+      window_delegate_;
 };
 
 // Disabled because it crashes sometimes. http://crbug.com/49522
@@ -107,7 +108,7 @@ TEST_F(AutocompleteTextFieldEditorTest, PageActionMenus) {
 
   // Trivial menu which we can recognize and which doesn't look like
   // the default editor context menu.
-  scoped_nsobject<id> menu([[NSMenu alloc] initWithTitle:@"Menu"]);
+  base::scoped_nsobject<id> menu([[NSMenu alloc] initWithTitle:@"Menu"]);
   [menu addItemWithTitle:@"Go Fish"
                   action:@selector(goFish:)
            keyEquivalent:@""];

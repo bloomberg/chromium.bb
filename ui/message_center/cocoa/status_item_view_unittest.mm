@@ -4,7 +4,7 @@
 
 #import "ui/message_center/cocoa/status_item_view.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
 class StatusItemViewTest : public ui::CocoaTest {
@@ -24,7 +24,7 @@ class StatusItemViewTest : public ui::CocoaTest {
   }
 
  protected:
-  scoped_nsobject<MCStatusItemView> view_;
+  base::scoped_nsobject<MCStatusItemView> view_;
 };
 
 // These tests are like TEST_VIEW() but set some of the properties.

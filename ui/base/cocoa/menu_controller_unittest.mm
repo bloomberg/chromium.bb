@@ -130,7 +130,7 @@ class FontMenuModel : public SimpleMenuModel {
 TEST_F(MenuControllerTest, EmptyMenu) {
   Delegate delegate;
   SimpleMenuModel model(&delegate);
-  scoped_nsobject<MenuController> menu(
+  base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
   EXPECT_EQ([[menu menu] numberOfItems], 0);
 }
@@ -145,7 +145,7 @@ TEST_F(MenuControllerTest, BasicCreation) {
   model.AddItem(4, ASCIIToUTF16("four"));
   model.AddItem(5, ASCIIToUTF16("five"));
 
-  scoped_nsobject<MenuController> menu(
+  base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
   EXPECT_EQ([[menu menu] numberOfItems], 6);
 
@@ -171,7 +171,7 @@ TEST_F(MenuControllerTest, Submenus) {
   model.AddSubMenuWithStringId(5, kTestLabelResourceId, &submodel);
   model.AddItem(6, ASCIIToUTF16("three"));
 
-  scoped_nsobject<MenuController> menu(
+  base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
   EXPECT_EQ([[menu menu] numberOfItems], 3);
 
@@ -204,7 +204,7 @@ TEST_F(MenuControllerTest, EmptySubmenu) {
   SimpleMenuModel submodel(&delegate);
   model.AddSubMenuWithStringId(2, kTestLabelResourceId, &submodel);
 
-  scoped_nsobject<MenuController> menu(
+  base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
   EXPECT_EQ([[menu menu] numberOfItems], 2);
 }
@@ -218,7 +218,7 @@ TEST_F(MenuControllerTest, PopUpButton) {
 
   // Menu should have an extra item inserted at position 0 that has an empty
   // title.
-  scoped_nsobject<MenuController> menu(
+  base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:YES]);
   EXPECT_EQ([[menu menu] numberOfItems], 4);
   EXPECT_EQ(base::SysNSStringToUTF16([[[menu menu] itemAtIndex:0] title]),
@@ -233,7 +233,7 @@ TEST_F(MenuControllerTest, Execute) {
   Delegate delegate;
   SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("one"));
-  scoped_nsobject<MenuController> menu(
+  base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
   EXPECT_EQ([[menu menu] numberOfItems], 1);
 
@@ -262,7 +262,7 @@ TEST_F(MenuControllerTest, Validate) {
   submodel.AddItem(2, ASCIIToUTF16("sub-one"));
   model.AddSubMenuWithStringId(3, kTestLabelResourceId, &submodel);
 
-  scoped_nsobject<MenuController> menu(
+  base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
   EXPECT_EQ([[menu menu] numberOfItems], 3);
 
@@ -277,7 +277,7 @@ TEST_F(MenuControllerTest, LabelFont) {
   model.AddItem(1, ASCIIToUTF16("one"));
   model.AddItem(2, ASCIIToUTF16("two"));
 
-  scoped_nsobject<MenuController> menu(
+  base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
   EXPECT_EQ([[menu menu] numberOfItems], 2);
 
@@ -294,7 +294,7 @@ TEST_F(MenuControllerTest, DefaultInitializer) {
   model.AddItem(2, ASCIIToUTF16("two"));
   model.AddItem(3, ASCIIToUTF16("three"));
 
-  scoped_nsobject<MenuController> menu([[MenuController alloc] init]);
+  base::scoped_nsobject<MenuController> menu([[MenuController alloc] init]);
   EXPECT_FALSE([menu menu]);
 
   [menu setModel:&model];
@@ -317,7 +317,7 @@ TEST_F(MenuControllerTest, Dynamic) {
   delegate.SetDynamicLabel(initial);
   SimpleMenuModel model(&delegate);
   model.AddItem(1, ASCIIToUTF16("foo"));
-  scoped_nsobject<MenuController> menu(
+  base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
   EXPECT_EQ([[menu menu] numberOfItems], 1);
   // Validate() simulates opening the menu - the item label/icon should be
@@ -359,7 +359,7 @@ TEST_F(MenuControllerTest, OpenClose) {
   model.AddItem(3, ASCIIToUTF16("bf"));
 
   // Create the controller.
-  scoped_nsobject<MenuController> menu(
+  base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
   delegate.menu_to_close_ = [menu menu];
 

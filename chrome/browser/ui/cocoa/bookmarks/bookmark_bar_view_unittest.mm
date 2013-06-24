@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -201,7 +201,7 @@ class BookmarkBarViewTest : public CocoaProfileTest {
     view_.reset([[BookmarkBarView alloc] init]);
   }
 
-  scoped_nsobject<BookmarkBarView> view_;
+  base::scoped_nsobject<BookmarkBarView> view_;
 };
 
 TEST_F(BookmarkBarViewTest, CanDragWindow) {
@@ -209,8 +209,8 @@ TEST_F(BookmarkBarViewTest, CanDragWindow) {
 }
 
 TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
-  scoped_nsobject<FakeBookmarkDraggingInfo>
-      info([[FakeBookmarkDraggingInfo alloc] init]);
+  base::scoped_nsobject<FakeBookmarkDraggingInfo> info(
+      [[FakeBookmarkDraggingInfo alloc] init]);
   [view_ setController:info.get()];
   [info reset];
 
@@ -222,12 +222,13 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
                              ASCIIToUTF16("Test Bookmark"),
                              GURL("http://www.exmaple.com"));
 
-  scoped_nsobject<BookmarkButtonCell> button_cell(
+  base::scoped_nsobject<BookmarkButtonCell> button_cell(
       [[BookmarkButtonCell buttonCellForNode:node
                                         text:nil
                                        image:nil
                               menuController:nil] retain]);
-  scoped_nsobject<BookmarkButton> dragged_button([[BookmarkButton alloc] init]);
+  base::scoped_nsobject<BookmarkButton> dragged_button(
+      [[BookmarkButton alloc] init]);
   [dragged_button setCell:button_cell];
   [info setDraggingSource:dragged_button.get()];
   [info setDragDataType:kBookmarkButtonDragType];
@@ -243,8 +244,8 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
 
 // When dragging bookmarks across profiles, we should always copy, never move.
 TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
-  scoped_nsobject<FakeBookmarkDraggingInfo>
-  info([[FakeBookmarkDraggingInfo alloc] init]);
+  base::scoped_nsobject<FakeBookmarkDraggingInfo> info(
+      [[FakeBookmarkDraggingInfo alloc] init]);
   [view_ setController:info.get()];
   [info reset];
 
@@ -263,12 +264,13 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
                              ASCIIToUTF16("Test Bookmark"),
                              GURL("http://www.exmaple.com"));
 
-  scoped_nsobject<BookmarkButtonCell> button_cell(
+  base::scoped_nsobject<BookmarkButtonCell> button_cell(
       [[BookmarkButtonCell buttonCellForNode:node
                                         text:nil
                                        image:nil
                               menuController:nil] retain]);
-  scoped_nsobject<BookmarkButton> dragged_button([[BookmarkButton alloc] init]);
+  base::scoped_nsobject<BookmarkButton> dragged_button(
+      [[BookmarkButton alloc] init]);
   [dragged_button setCell:button_cell];
   [info setDraggingSource:dragged_button.get()];
   [info setDragDataType:kBookmarkButtonDragType];
@@ -283,8 +285,8 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
 }
 
 TEST_F(BookmarkBarViewTest, URLDragAndDrop) {
-  scoped_nsobject<FakeBookmarkDraggingInfo>
-      info([[FakeBookmarkDraggingInfo alloc] init]);
+  base::scoped_nsobject<FakeBookmarkDraggingInfo> info(
+      [[FakeBookmarkDraggingInfo alloc] init]);
   [view_ setController:info.get()];
   [info reset];
 
@@ -301,12 +303,13 @@ TEST_F(BookmarkBarViewTest, URLDragAndDrop) {
 }
 
 TEST_F(BookmarkBarViewTest, BookmarkButtonDropIndicator) {
-  scoped_nsobject<FakeBookmarkDraggingInfo>
-      info([[FakeBookmarkDraggingInfo alloc] init]);
+  base::scoped_nsobject<FakeBookmarkDraggingInfo> info(
+      [[FakeBookmarkDraggingInfo alloc] init]);
   [view_ setController:info.get()];
   [info reset];
 
-  scoped_nsobject<BookmarkButton> dragged_button([[BookmarkButton alloc] init]);
+  base::scoped_nsobject<BookmarkButton> dragged_button(
+      [[BookmarkButton alloc] init]);
   [info setDraggingSource:dragged_button.get()];
   [info setDragDataType:kBookmarkButtonDragType];
   EXPECT_FALSE([info draggingEnteredCalled]);

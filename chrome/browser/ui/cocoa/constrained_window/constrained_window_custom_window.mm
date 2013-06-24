@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -17,7 +17,7 @@
                               styleMask:NSBorderlessWindowMask
                                 backing:NSBackingStoreBuffered
                                   defer:NO])) {
-    scoped_nsobject<NSView> contentView(
+    base::scoped_nsobject<NSView> contentView(
         [[ConstrainedWindowCustomWindowContentView alloc]
             initWithFrame:NSZeroRect]);
     [self setContentView:contentView];

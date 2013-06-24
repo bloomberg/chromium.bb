@@ -8,7 +8,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/chrome_style.h"
@@ -38,7 +38,7 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
 @implementation AutofillSuggestionContainer
 
 - (NSTextField*)makeDetailSectionLabel:(NSString*)labelText {
-  scoped_nsobject<NSTextField> label([[NSTextField alloc] init]);
+  base::scoped_nsobject<NSTextField> label([[NSTextField alloc] init]);
   [label setFont:
       [[NSFontManager sharedFontManager] convertFont:[label font]
                                          toHaveTrait:NSBoldFontMask]];
@@ -60,14 +60,14 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   inputField_.reset([[AutofillTextField alloc] initWithFrame:NSZeroRect]);
   [inputField_ setHidden:YES];
 
-  scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
   [view setSubviews:
       @[iconImageView_, label_, inputField_, label2_ ]];
   [self setView:view];
 }
 
 - (NSTextField*)createLabelWithFrame:(NSRect)frame {
-  scoped_nsobject<NSTextField> label(
+  base::scoped_nsobject<NSTextField> label(
       [[NSTextField alloc] initWithFrame:frame]);
   [label setEditable:NO];
   [label setDrawsBackground:NO];

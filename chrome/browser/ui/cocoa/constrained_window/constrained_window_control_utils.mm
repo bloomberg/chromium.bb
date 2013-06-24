@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace constrained_window {
@@ -29,7 +29,7 @@ NSAttributedString* GetAttributedLabelString(
 
   const gfx::Font& font =
       ui::ResourceBundle::GetSharedInstance().GetFont(fontStyle);
-  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
   [paragraphStyle setAlignment:alignment];
   [paragraphStyle setLineBreakMode:lineBreakMode];

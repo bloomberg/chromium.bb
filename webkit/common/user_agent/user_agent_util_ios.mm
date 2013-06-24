@@ -9,7 +9,7 @@
 #include <sys/sysctl.h>
 #include <string>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -110,7 +110,7 @@ std::string BuildOSCpuInfo() {
     // objectForKey:NSLocaleLanguageCode and objectForKey:NSLocaleCountryCode)
     // are not useful here because they return information related to the
     // "Region Format" setting, which is different from the "Language" setting.
-    scoped_nsobject<NSDictionary> dialects([[NSDictionary alloc]
+    base::scoped_nsobject<NSDictionary> dialects([[NSDictionary alloc]
         initWithObjectsAndKeys:
             @"ar",    @"ar",  // No dialect code in Safari.
             @"ca-es", @"ca",

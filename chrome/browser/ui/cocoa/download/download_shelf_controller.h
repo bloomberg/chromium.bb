@@ -4,10 +4,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/cocoa/tracking_area.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
+#include "ui/base/cocoa/tracking_area.h"
 
 @class AnimatableView;
 class Browser;
@@ -71,7 +71,7 @@ class PageNavigator;
   ui::ScopedCrTrackingArea trackingArea_;
 
   // The download items we have added to our shelf.
-  scoped_nsobject<NSMutableArray> downloadItemControllers_;
+  base::scoped_nsobject<NSMutableArray> downloadItemControllers_;
 
   // The container that contains (and clamps) all the download items.
   IBOutlet NSView* itemContainerView_;

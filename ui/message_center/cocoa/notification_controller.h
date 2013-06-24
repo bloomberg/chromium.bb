@@ -9,7 +9,7 @@
 
 #include <string>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "ui/message_center/message_center_export.h"
 
 namespace message_center {
@@ -35,22 +35,22 @@ MESSAGE_CENTER_EXPORT
   message_center::MessageCenter* messageCenter_;
 
   // The button that invokes |-close:|, in the upper-right corner.
-  scoped_nsobject<HoverImageButton> closeButton_;
+  base::scoped_nsobject<HoverImageButton> closeButton_;
 
   // The large icon associated with the notification, on the left side.
-  scoped_nsobject<NSImageView> icon_;
+  base::scoped_nsobject<NSImageView> icon_;
 
   // The title of the message.
-  scoped_nsobject<NSTextField> title_;
+  base::scoped_nsobject<NSTextField> title_;
 
   // Body text of the message.
-  scoped_nsobject<NSTextField> message_;
+  base::scoped_nsobject<NSTextField> message_;
 
   // Container for optional list item views.
-  scoped_nsobject<NSView> listItemView_;
+  base::scoped_nsobject<NSView> listItemView_;
 
   // Container for optional items at the bottom of the notification.
-  scoped_nsobject<NSView> bottomView_;
+  base::scoped_nsobject<NSView> bottomView_;
 }
 
 // Creates a new controller for a given notification.

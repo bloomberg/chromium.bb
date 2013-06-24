@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
@@ -49,7 +49,7 @@ class ProfileSigninConfirmationDialogCocoa : ConstrainedWindowMacDelegate {
   virtual void OnConstrainedWindowClosed(ConstrainedWindowMac* window) OVERRIDE;
 
   // Controller for the dialog view.
-  scoped_nsobject<ProfileSigninConfirmationViewController> controller_;
+  base::scoped_nsobject<ProfileSigninConfirmationViewController> controller_;
 
   // The constrained window that contains the dialog view.
   scoped_ptr<ConstrainedWindowMac> window_;

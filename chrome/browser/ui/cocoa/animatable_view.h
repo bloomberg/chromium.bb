@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 
@@ -24,7 +24,7 @@
   IBOutlet id delegate_;  // weak, used to send animation ended messages.
 
  @private
-  scoped_nsobject<NSAnimation> currentAnimation_;
+  base::scoped_nsobject<NSAnimation> currentAnimation_;
   id<ViewResizer> resizeDelegate_;  // weak, usually owns us
 }
 

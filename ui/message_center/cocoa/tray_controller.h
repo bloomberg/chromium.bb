@@ -8,7 +8,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/message_center/message_center_export.h"
 
 @class MCTrayViewController;
@@ -25,7 +25,7 @@ MESSAGE_CENTER_EXPORT
   message_center::MessageCenterTray* tray_;  // Weak, indirectly owns this.
 
   // View controller that provides this window's content.
-  scoped_nsobject<MCTrayViewController> viewController_;
+  base::scoped_nsobject<MCTrayViewController> viewController_;
 
   // An event monitor that listens for clicks outside the tray window to cause
   // it to close.

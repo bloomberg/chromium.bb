@@ -4,7 +4,7 @@
 
 #import "ui/message_center/cocoa/tray_view_controller.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -57,7 +57,7 @@ class TrayViewControllerTest : public ui::CocoaTest {
 
   base::MessageLoop message_loop_;
   scoped_ptr<base::RunLoop> nested_run_loop_;
-  scoped_nsobject<MCTrayViewController> tray_;
+  base::scoped_nsobject<MCTrayViewController> tray_;
 };
 
 TEST_F(TrayViewControllerTest, AddRemoveOne) {

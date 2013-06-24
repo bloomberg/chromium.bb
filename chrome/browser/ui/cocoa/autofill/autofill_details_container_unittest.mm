@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -21,7 +21,7 @@ class AutofillDetailsContainerTest : public ui::CocoaTest {
   }
 
  protected:
-  scoped_nsobject<AutofillDetailsContainer> container_;
+  base::scoped_nsobject<AutofillDetailsContainer> container_;
   testing::NiceMock<autofill::MockAutofillDialogController> controller_;
 };
 

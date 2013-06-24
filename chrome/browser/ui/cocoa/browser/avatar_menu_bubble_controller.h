@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "ui/base/cocoa/tracking_area.h"
@@ -23,7 +23,7 @@ class Browser;
   scoped_ptr<AvatarMenuModel> model_;
 
   // Array of the below view controllers.
-  scoped_nsobject<NSMutableArray> items_;
+  base::scoped_nsobject<NSMutableArray> items_;
 
   // Is set to true if the managed user has clicked on Switch Users.
   BOOL expanded_;
@@ -65,7 +65,7 @@ class Browser;
 
   // The animation showing the edit link, which is run after the user has
   // dwelled over the item for a short delay.
-  scoped_nsobject<NSAnimation> linkAnimation_;
+  base::scoped_nsobject<NSAnimation> linkAnimation_;
 
   // Instance variables that back the outlets.
   __weak NSImageView* iconView_;

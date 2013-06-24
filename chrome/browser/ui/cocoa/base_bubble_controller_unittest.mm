@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
 #include "base/mac/mac_util.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/run_loop_testing.h"
@@ -44,7 +44,7 @@ class BaseBubbleControllerTest : public CocoaTest {
   }
 
  public:
-  scoped_nsobject<NSWindow> bubbleWindow_;
+  base::scoped_nsobject<NSWindow> bubbleWindow_;
   BaseBubbleController* controller_;
 };
 
@@ -118,12 +118,12 @@ TEST_F(BaseBubbleControllerTest, AnchorAlignRightArrow) {
 // the key window changes.
 TEST_F(BaseBubbleControllerTest, ResignKeyCloses) {
   // Closing the bubble will autorelease the controller.
-  scoped_nsobject<BaseBubbleController> keep_alive([controller_ retain]);
+  base::scoped_nsobject<BaseBubbleController> keep_alive([controller_ retain]);
 
   NSWindow* bubble_window = [controller_ window];
   EXPECT_FALSE([bubble_window isVisible]);
 
-  scoped_nsobject<NSWindow> other_window(
+  base::scoped_nsobject<NSWindow> other_window(
       [[NSWindow alloc] initWithContentRect:NSMakeRect(500, 500, 500, 500)
                                   styleMask:NSTitledWindowMask
                                     backing:NSBackingStoreBuffered
@@ -163,7 +163,7 @@ TEST_F(BaseBubbleControllerTest, LionClickOutsideCloses) {
     return;
 
   // Closing the bubble will autorelease the controller.
-  scoped_nsobject<BaseBubbleController> keep_alive([controller_ retain]);
+  base::scoped_nsobject<BaseBubbleController> keep_alive([controller_ retain]);
   NSWindow* window = [controller_ window];
 
   EXPECT_FALSE([window isVisible]);

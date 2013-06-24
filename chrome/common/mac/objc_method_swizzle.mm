@@ -5,7 +5,7 @@
 #import "chrome/common/mac/objc_method_swizzle.h"
 
 #import "base/logging.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 
 namespace ObjcEvilDoers {
 

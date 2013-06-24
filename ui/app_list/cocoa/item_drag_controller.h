@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 @class AppsGridViewItem;
 
@@ -19,8 +19,8 @@
 // item location in the grid.
 @interface ItemDragController : NSViewController {
  @private
-  scoped_nsobject<CALayer> dragLayer_;
-  scoped_nsobject<NSButton> buttonToRestore_;
+  base::scoped_nsobject<CALayer> dragLayer_;
+  base::scoped_nsobject<NSButton> buttonToRestore_;
   NSPoint mouseOffset_;
   NSTimeInterval growStart_;
   BOOL shrinking_;

@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
 #include "chrome/browser/storage_monitor/image_capture_device.h"
@@ -61,7 +61,7 @@ class MTPDeviceDelegateImplMac::DeviceListener
   virtual void ResetDelegate();
 
  private:
-  scoped_nsobject<ImageCaptureDevice> camera_device_;
+  base::scoped_nsobject<ImageCaptureDevice> camera_device_;
 
   // Weak pointer
   MTPDeviceDelegateImplMac* delegate_;

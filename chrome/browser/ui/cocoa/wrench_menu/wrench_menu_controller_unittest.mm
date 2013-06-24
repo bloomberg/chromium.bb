@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -62,7 +62,7 @@ class WrenchMenuControllerTest : public CocoaProfileTest {
     return controller_.get();
   }
 
-  scoped_nsobject<WrenchMenuController> controller_;
+  base::scoped_nsobject<WrenchMenuController> controller_;
 
   scoped_ptr<MockWrenchMenuModel> fake_model_;
 };
@@ -73,7 +73,7 @@ TEST_F(WrenchMenuControllerTest, Initialized) {
 }
 
 TEST_F(WrenchMenuControllerTest, DispatchSimple) {
-  scoped_nsobject<NSButton> button([[NSButton alloc] init]);
+  base::scoped_nsobject<NSButton> button([[NSButton alloc] init]);
   [button setTag:IDC_ZOOM_PLUS];
 
   // Set fake model to test dispatching.

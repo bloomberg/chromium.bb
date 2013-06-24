@@ -4,14 +4,14 @@
 
 #import "chrome/browser/ui/cocoa/notifications/message_center_tray_bridge.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#import "ui/base/test/ui_cocoa_test_helper.h"
 #import "ui/message_center/cocoa/status_item_view.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
 
 class MessageCenterTrayBridgeTest : public ui::CocoaTest {
  public:

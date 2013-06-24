@@ -6,14 +6,14 @@
 #include <objc/runtime.h>
 
 #include "base/logging.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "chrome/common/mac/objc_zombie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 @interface ZombieCxxDestructTest : NSObject
 {
-  scoped_nsobject<id> aRef_;
+  base::scoped_nsobject<id> aRef_;
 }
 - (id)initWith:(id)anObject;
 @end
@@ -54,12 +54,12 @@ namespace {
 // NOTE(shess): To test the negative, comment out the |g_objectDestruct()|
 // call in |ZombieDealloc()|.
 TEST(ObjcZombieTest, CxxDestructors) {
-  scoped_nsobject<id> anObject([[NSObject alloc] init]);
+  base::scoped_nsobject<id> anObject([[NSObject alloc] init]);
   EXPECT_EQ(1u, [anObject retainCount]);
 
   ASSERT_TRUE(ObjcEvilDoers::ZombieEnable(YES, 100));
 
-  scoped_nsobject<ZombieCxxDestructTest> soonInfected(
+  base::scoped_nsobject<ZombieCxxDestructTest> soonInfected(
       [[ZombieCxxDestructTest alloc] initWith:anObject]);
   EXPECT_EQ(2u, [anObject retainCount]);
 
@@ -76,12 +76,12 @@ TEST(ObjcZombieTest, CxxDestructors) {
 // Verify that the associated objects are released when the object is
 // released.
 TEST(ObjcZombieTest, AssociatedObjectsReleased) {
-  scoped_nsobject<id> anObject([[NSObject alloc] init]);
+  base::scoped_nsobject<id> anObject([[NSObject alloc] init]);
   EXPECT_EQ(1u, [anObject retainCount]);
 
   ASSERT_TRUE(ObjcEvilDoers::ZombieEnable(YES, 100));
 
-  scoped_nsobject<ZombieAssociatedObjectTest> soonInfected(
+  base::scoped_nsobject<ZombieAssociatedObjectTest> soonInfected(
       [[ZombieAssociatedObjectTest alloc] initWithAssociatedObject:anObject]);
   EXPECT_EQ(2u, [anObject retainCount]);
 

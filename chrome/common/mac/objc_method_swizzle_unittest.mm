@@ -4,7 +4,7 @@
 
 #import "chrome/common/mac/objc_method_swizzle.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 @interface ObjcMethodSwizzleTest : NSObject
@@ -58,7 +58,7 @@ TEST(ObjcMethodSwizzleTest, GetImplementedInstanceMethod) {
 }
 
 TEST(ObjcMethodSwizzleTest, SwizzleImplementedInstanceMethods) {
-  scoped_nsobject<ObjcMethodSwizzleTest> object(
+  base::scoped_nsobject<ObjcMethodSwizzleTest> object(
       [[ObjcMethodSwizzleTest alloc] init]);
   EXPECT_EQ([object one], 1);
   EXPECT_EQ([object two], 2);

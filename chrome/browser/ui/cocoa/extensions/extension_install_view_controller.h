@@ -9,7 +9,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -45,7 +45,7 @@ class PageNavigator;
   ExtensionInstallPrompt::Delegate* delegate_;  // weak
   scoped_ptr<ExtensionInstallPrompt::Prompt> prompt_;
 
-  scoped_nsobject<NSArray> warnings_;
+  base::scoped_nsobject<NSArray> warnings_;
   BOOL isComputingRowHeight_;
 }
 

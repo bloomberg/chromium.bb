@@ -4,10 +4,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/styled_text_field_test_helper.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -24,13 +24,13 @@ class StyledTextFieldCellTest : public CocoaTest {
     // decorations.
     const NSRect frame = NSMakeRect(0, 0, kWidth, 30);
 
-    scoped_nsobject<StyledTextFieldTestCell> cell(
+    base::scoped_nsobject<StyledTextFieldTestCell> cell(
         [[StyledTextFieldTestCell alloc] initTextCell:@"Testing"]);
     cell_ = cell.get();
     [cell_ setEditable:YES];
     [cell_ setBordered:YES];
 
-    scoped_nsobject<NSTextField> view(
+    base::scoped_nsobject<NSTextField> view(
         [[NSTextField alloc] initWithFrame:frame]);
     view_ = view.get();
     [view_ setCell:cell_];

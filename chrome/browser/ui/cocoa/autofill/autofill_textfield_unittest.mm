@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -20,7 +20,7 @@ class AutofillTextFieldTest : public CocoaTest {
   }
 
  protected:
-  scoped_nsobject<AutofillTextField> textfield_;
+  base::scoped_nsobject<AutofillTextField> textfield_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillTextFieldTest);
 };

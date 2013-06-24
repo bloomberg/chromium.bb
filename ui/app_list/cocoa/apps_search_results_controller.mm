@@ -46,8 +46,8 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
 // Immutable class representing a search result in the NSTableView.
 @interface AppsSearchResultRep : NSObject<NSCopying> {
  @private
-  scoped_nsobject<NSAttributedString> attributedStringValue_;
-  scoped_nsobject<NSImage> resultIcon_;
+  base::scoped_nsobject<NSAttributedString> attributedStringValue_;
+  base::scoped_nsobject<NSImage> resultIcon_;
 }
 
 @property(readonly, nonatomic) NSAttributedString* attributedStringValue;
@@ -140,9 +140,9 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
                                 userInfo:nil]);
   [tableView_ addTrackingArea:trackingArea_.get()];
 
-  scoped_nsobject<NSTableColumn> resultsColumn(
+  base::scoped_nsobject<NSTableColumn> resultsColumn(
       [[NSTableColumn alloc] initWithIdentifier:@""]);
-  scoped_nsobject<NSCell> resultsDataCell(
+  base::scoped_nsobject<NSCell> resultsDataCell(
       [[AppsSearchResultsCell alloc] initTextCell:@""]);
   [resultsColumn setDataCell:resultsDataCell];
   [resultsColumn setWidth:size.width];
@@ -151,13 +151,13 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
   // An NSTableView is normally put in a NSScrollView, but scrolling is not
   // used for the app list. Instead, place it in a container with the desired
   // size; flipped so the table is anchored to the top-left.
-  scoped_nsobject<FlippedView> containerView([[FlippedView alloc] initWithFrame:
-      NSMakeRect(0, 0, size.width, size.height)]);
+  base::scoped_nsobject<FlippedView> containerView([[FlippedView alloc]
+      initWithFrame:NSMakeRect(0, 0, size.width, size.height)]);
 
   // The container is then anchored in an un-flipped view, initially hidden,
   // so that |containerView| slides in from the top when showing results.
-  scoped_nsobject<NSView> clipView([[NSView alloc] initWithFrame:
-      NSMakeRect(0, 0, size.width, 0)]);
+  base::scoped_nsobject<NSView> clipView(
+      [[NSView alloc] initWithFrame:NSMakeRect(0, 0, size.width, 0)]);
 
   [containerView addSubview:tableView_];
   [clipView addSubview:containerView];
@@ -236,8 +236,9 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
             byExtendingSelection:NO];
   }
 
-  scoped_nsobject<AppsSearchResultRep> resultRep([[AppsSearchResultRep alloc]
-      initWithSearchResult:[self searchResults]->GetItemAt(rowIndex)]);
+  base::scoped_nsobject<AppsSearchResultRep> resultRep(
+      [[AppsSearchResultRep alloc]
+          initWithSearchResult:[self searchResults]->GetItemAt(rowIndex)]);
   return resultRep.autorelease();
 }
 
@@ -300,7 +301,7 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
 - (NSMutableAttributedString*)createRenderText:(const base::string16&)content
     tags:(const app_list::SearchResult::Tags&)tags {
   NSFont* boldFont = nil;
-  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
   [paragraphStyle setLineBreakMode:NSLineBreakByTruncatingTail];
   NSDictionary* defaultAttributes = @{
@@ -309,7 +310,7 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
       NSParagraphStyleAttributeName: paragraphStyle
   };
 
-  scoped_nsobject<NSMutableAttributedString> text(
+  base::scoped_nsobject<NSMutableAttributedString> text(
       [[NSMutableAttributedString alloc]
           initWithString:base::SysUTF16ToNSString(content)
               attributes:defaultAttributes]);
@@ -357,7 +358,7 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
     NSMutableAttributedString* detailText =
         [self createRenderText:result->details()
                           tags:result->details_tags()];
-    scoped_nsobject<NSAttributedString> lineBreak(
+    base::scoped_nsobject<NSAttributedString> lineBreak(
         [[NSAttributedString alloc] initWithString:@"\n"]);
     [titleText appendAttributedString:lineBreak];
     [titleText appendAttributedString:detailText];

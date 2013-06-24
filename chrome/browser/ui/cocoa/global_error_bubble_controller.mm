@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/global_error_bubble_controller.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -90,10 +90,10 @@ class Bridge : public GlobalErrorBubbleViewBase {
   std::vector<string16> messages = error_->GetBubbleViewMessages();
   string16 message = JoinString(messages, '\n');
 
-  scoped_nsobject<NSMutableAttributedString> messageValue(
+  base::scoped_nsobject<NSMutableAttributedString> messageValue(
       [[NSMutableAttributedString alloc]
-        initWithString:SysUTF16ToNSString(message)]);
-  scoped_nsobject<NSMutableParagraphStyle> style(
+          initWithString:SysUTF16ToNSString(message)]);
+  base::scoped_nsobject<NSMutableParagraphStyle> style(
       [[NSMutableParagraphStyle alloc] init]);
   [style setParagraphSpacing:kParagraphSpacing];
   [messageValue addAttribute:NSParagraphStyleAttributeName

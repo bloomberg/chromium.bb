@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "testing/platform_test.h"
@@ -13,7 +13,7 @@ class AppControllerTest : public PlatformTest {
 };
 
 TEST_F(AppControllerTest, DockMenu) {
-  scoped_nsobject<AppController> ac([[AppController alloc] init]);
+  base::scoped_nsobject<AppController> ac([[AppController alloc] init]);
   NSMenu* menu = [ac applicationDockMenu:NSApp];
   NSMenuItem* item;
 

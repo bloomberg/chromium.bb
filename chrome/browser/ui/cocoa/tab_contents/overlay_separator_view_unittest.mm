@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/tab_contents/overlay_separator_view.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 
 class OverlayBottomSeparatorViewTest : public CocoaTest {
@@ -17,7 +17,7 @@ class OverlayBottomSeparatorViewTest : public CocoaTest {
   }
 
  protected:
-  scoped_nsobject<OverlayBottomSeparatorView> bottom_view_;
+  base::scoped_nsobject<OverlayBottomSeparatorView> bottom_view_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OverlayBottomSeparatorViewTest);
@@ -39,7 +39,7 @@ class OverlayTopSeparatorViewTest : public CocoaTest {
   }
 
  protected:
-  scoped_nsobject<OverlayTopSeparatorView> top_view_;
+  base::scoped_nsobject<OverlayTopSeparatorView> top_view_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OverlayTopSeparatorViewTest);

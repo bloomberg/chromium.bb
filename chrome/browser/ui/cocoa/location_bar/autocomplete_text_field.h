@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/styled_text_field.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 
@@ -113,18 +113,18 @@ class AutocompleteTextFieldObserver {
  @private
   // Undo manager for this text field.  We use a specific instance rather than
   // the standard undo manager in order to let us clear the undo stack at will.
-  scoped_nsobject<NSUndoManager> undoManager_;
+  base::scoped_nsobject<NSUndoManager> undoManager_;
 
   AutocompleteTextFieldObserver* observer_;  // weak, owned by location bar.
 
   // Handles being a drag-and-drop target.
-  scoped_nsobject<URLDropTargetHandler> dropHandler_;
+  base::scoped_nsobject<URLDropTargetHandler> dropHandler_;
 
   // Holds current tooltip strings, to keep them from being dealloced.
-  scoped_nsobject<NSMutableArray> currentToolTips_;
+  base::scoped_nsobject<NSMutableArray> currentToolTips_;
 
-  scoped_nsobject<NSString> suggestText_;
-  scoped_nsobject<NSColor> suggestColor_;
+  base::scoped_nsobject<NSString> suggestText_;
+  base::scoped_nsobject<NSColor> suggestColor_;
 }
 
 @property(nonatomic) AutocompleteTextFieldObserver* observer;

@@ -215,7 +215,8 @@ const int kHierarchyButtonXMargin = 4;
 
 // We must reapply the text color after any setTitle: call
 - (void)applyTextColor {
-  scoped_nsobject<NSMutableParagraphStyle> style([NSMutableParagraphStyle new]);
+  base::scoped_nsobject<NSMutableParagraphStyle> style(
+      [NSMutableParagraphStyle new]);
   [style setAlignment:NSLeftTextAlignment];
   NSDictionary* dict = [NSDictionary
                          dictionaryWithObjectsAndKeys:textColor_,
@@ -224,9 +225,8 @@ const int kHierarchyButtonXMargin = 4;
                          style.get(), NSParagraphStyleAttributeName,
                          [NSNumber numberWithFloat:0.2], NSKernAttributeName,
                          nil];
-  scoped_nsobject<NSAttributedString> ats([[NSAttributedString alloc]
-                                            initWithString:[self title]
-                                                attributes:dict]);
+  base::scoped_nsobject<NSAttributedString> ats(
+      [[NSAttributedString alloc] initWithString:[self title] attributes:dict]);
   [self setAttributedTitle:ats.get()];
 }
 

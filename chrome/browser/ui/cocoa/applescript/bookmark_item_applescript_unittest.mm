@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_applescript_utils_unittest.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_item_applescript.h"
@@ -35,7 +35,7 @@ TEST_F(BookmarkItemAppleScriptTest, GetAndSetURL) {
             GURL(base::SysNSStringToUTF8([item1 URL])));
 
   // If scripter enters invalid URL.
-  scoped_nsobject<FakeScriptCommand> fakeScriptCommand(
+  base::scoped_nsobject<FakeScriptCommand> fakeScriptCommand(
       [[FakeScriptCommand alloc] init]);
   [item1 setURL:@"invalid-url.org"];
   EXPECT_EQ((int)AppleScript::errInvalidURL,

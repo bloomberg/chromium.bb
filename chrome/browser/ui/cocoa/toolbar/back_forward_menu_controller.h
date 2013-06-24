@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
@@ -27,7 +27,7 @@ const BackForwardMenuType BACK_FORWARD_MENU_TYPE_FORWARD =
   BackForwardMenuType type_;
   MenuButton* button_;  // Weak; comes from nib.
   scoped_ptr<BackForwardMenuModel> model_;
-  scoped_nsobject<NSMenu> backForwardMenu_;
+  base::scoped_nsobject<NSMenu> backForwardMenu_;
 }
 
 // Type (back or forwards); can only be set on initialization.

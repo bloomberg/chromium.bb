@@ -90,7 +90,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 
 // Sets the title for the popup button.
 void SetTitleForPopUpButton(NSPopUpButton* button, NSString* title) {
-  scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
+  base::scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
   [titleItem setTitle:title];
   [[button cell] setUsesItemFromMenu:NO];
   [[button cell] setMenuItem:titleItem.get()];
@@ -293,8 +293,8 @@ MediaMenuParts::~MediaMenuParts() {}
                                 title:(NSString*)title
                                  icon:(NSImage*)icon
                        referenceFrame:(NSRect)referenceFrame {
-  scoped_nsobject<HyperlinkButtonCell> cell([[HyperlinkButtonCell alloc]
-      initTextCell:title]);
+  base::scoped_nsobject<HyperlinkButtonCell> cell(
+      [[HyperlinkButtonCell alloc] initTextCell:title]);
   [cell.get() setAlignment:NSNaturalTextAlignment];
   if (icon) {
     [cell.get() setImagePosition:NSImageLeft];
@@ -410,7 +410,7 @@ MediaMenuParts::~MediaMenuParts() {}
 
   // "Clear" button / text field.
   if (!content.custom_link.empty()) {
-    scoped_nsobject<NSControl> control;
+    base::scoped_nsobject<NSControl> control;
     if(content.custom_link_enabled) {
       NSRect buttonFrame = NSMakeRect(0, 0,
                                       NSWidth(containerFrame),
@@ -512,7 +512,7 @@ MediaMenuParts::~MediaMenuParts() {}
 
     // |buttonFrame| will be resized and repositioned later on.
     NSRect buttonFrame = NSMakeRect(NSMinX(radioFrame), 0, 0, 0);
-    scoped_nsobject<NSPopUpButton> button(
+    base::scoped_nsobject<NSPopUpButton> button(
         [[NSPopUpButton alloc] initWithFrame:buttonFrame]);
     [button setTarget:self];
 

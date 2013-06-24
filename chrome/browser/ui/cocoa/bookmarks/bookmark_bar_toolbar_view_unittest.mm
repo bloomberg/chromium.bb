@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -94,14 +94,14 @@ class BookmarkBarToolbarViewTest : public CocoaTest {
   BookmarkBarToolbarViewTest() {
     controller_.reset([[DrawDetachedBarFakeController alloc] init]);
     NSRect frame = NSMakeRect(0, 0, 400, 40);
-    scoped_nsobject<BookmarkBarToolbarView> view(
+    base::scoped_nsobject<BookmarkBarToolbarView> view(
         [[BookmarkBarToolbarView alloc] initWithFrame:frame]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
     [view_ setController:controller_.get()];
   }
 
-  scoped_nsobject<DrawDetachedBarFakeController> controller_;
+  base::scoped_nsobject<DrawDetachedBarFakeController> controller_;
   BookmarkBarToolbarView* view_;
 };
 

@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 
@@ -34,10 +34,10 @@ class SearchBoxModelObserverBridge;
 APP_LIST_EXPORT
 @interface AppsSearchBoxController : NSViewController<NSTextFieldDelegate> {
  @private
-  scoped_nsobject<SearchTextField> searchTextField_;
-  scoped_nsobject<NSImageView> searchImageView_;
-  scoped_nsobject<HoverImageMenuButton> menuButton_;
-  scoped_nsobject<AppListMenuController> menuController_;
+  base::scoped_nsobject<SearchTextField> searchTextField_;
+  base::scoped_nsobject<NSImageView> searchImageView_;
+  base::scoped_nsobject<HoverImageMenuButton> menuButton_;
+  base::scoped_nsobject<AppListMenuController> menuController_;
   scoped_ptr<app_list::SearchBoxModelObserverBridge> bridge_;
   scoped_ptr<app_list::AppListMenu> appListMenu_;
 

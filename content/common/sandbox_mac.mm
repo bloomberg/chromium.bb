@@ -20,7 +20,7 @@ extern "C" {
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -392,12 +392,12 @@ NSString* LoadSandboxTemplate(int sandbox_type) {
     return nil;
   }
 
-  scoped_nsobject<NSString> common_sandbox_prefix_data(
+  base::scoped_nsobject<NSString> common_sandbox_prefix_data(
       [[NSString alloc] initWithBytes:common_sandbox_definition.data()
                                length:common_sandbox_definition.length()
                              encoding:NSUTF8StringEncoding]);
 
-  scoped_nsobject<NSString> sandbox_data(
+  base::scoped_nsobject<NSString> sandbox_data(
       [[NSString alloc] initWithBytes:sandbox_definition.data()
                                length:sandbox_definition.length()
                              encoding:NSUTF8StringEncoding]);

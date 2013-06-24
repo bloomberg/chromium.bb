@@ -5,8 +5,8 @@
 #import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
 
 @interface BeforeTranslateInfobarController : TranslateInfoBarControllerBase {
-  scoped_nsobject<NSButton> alwaysTranslateButton_;
-  scoped_nsobject<NSButton> neverTranslateButton_;
+  base::scoped_nsobject<NSButton> alwaysTranslateButton_;
+  base::scoped_nsobject<NSButton> neverTranslateButton_;
 }
 
 // Creates and initializes the alwaysTranslate and neverTranslate buttons.

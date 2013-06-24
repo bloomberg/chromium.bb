@@ -374,7 +374,7 @@ void StatusBubbleMac::Create() {
   // teardown sequence in BWC guarantees that |parent_| outlives the status
   // bubble and that the StatusBubble is torn down completely prior to the
   // window going away.
-  scoped_nsobject<BubbleView> view(
+  base::scoped_nsobject<BubbleView> view(
       [[BubbleView alloc] initWithFrame:NSZeroRect themeProvider:parent_]);
   [window_ setContentView:view];
 

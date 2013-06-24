@@ -12,7 +12,7 @@ class BookmarkBarFolderWindowTest : public CocoaTest {
 };
 
 TEST_F(BookmarkBarFolderWindowTest, Borderless) {
-  scoped_nsobject<BookmarkBarFolderWindow> window_;
+  base::scoped_nsobject<BookmarkBarFolderWindow> window_;
   window_.reset([[BookmarkBarFolderWindow alloc]
                   initWithContentRect:NSMakeRect(0,0,20,20)
                             styleMask:0
@@ -29,8 +29,8 @@ class BookmarkBarFolderWindowContentViewTest : public CocoaTest {
                   initWithFrame:NSMakeRect(0, 0, 100, 100)]);
     [[test_window() contentView] addSubview:view_.get()];
   }
-  scoped_nsobject<BookmarkBarFolderWindowContentView> view_;
-  scoped_nsobject<BookmarkBarFolderWindowScrollView> scroll_view_;
+  base::scoped_nsobject<BookmarkBarFolderWindowContentView> view_;
+  base::scoped_nsobject<BookmarkBarFolderWindowScrollView> scroll_view_;
 };
 
 TEST_VIEW(BookmarkBarFolderWindowContentViewTest, view_);
@@ -43,7 +43,7 @@ class BookmarkBarFolderWindowScrollViewTest : public CocoaTest {
                   initWithFrame:NSMakeRect(0, 0, 100, 100)]);
     [[test_window() contentView] addSubview:scroll_view_.get()];
   }
-  scoped_nsobject<BookmarkBarFolderWindowScrollView> scroll_view_;
+  base::scoped_nsobject<BookmarkBarFolderWindowScrollView> scroll_view_;
 };
 
 TEST_VIEW(BookmarkBarFolderWindowScrollViewTest, scroll_view_);

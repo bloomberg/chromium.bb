@@ -4,7 +4,7 @@
 
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
 typedef ui::CocoaTest NSGraphicsContextCrAdditionsTest;
@@ -12,7 +12,7 @@ typedef ui::CocoaTest NSGraphicsContextCrAdditionsTest;
 // Test fails, see http://crbug.com/249241
 TEST_F(NSGraphicsContextCrAdditionsTest, DISABLED_PatternPhase) {
   NSRect frame = NSMakeRect(50, 50, 100, 100);
-  scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:frame]);
+  base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:frame]);
   [[test_window() contentView] addSubview:view];
 
   [view lockFocus];

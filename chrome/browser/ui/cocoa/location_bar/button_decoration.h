@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_LOCATION_BAR_BUTTON_DECORATION_H_
 #define CHROME_BROWSER_UI_COCOA_LOCATION_BAR_BUTTON_DECORATION_H_
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 
 // |LocationBarDecoration| which looks and acts like a button.
@@ -42,9 +42,9 @@ class ButtonDecoration : public LocationBarDecoration {
   void SetPressedImage(NSImage* pressed_image);
 
  private:
-  scoped_nsobject<NSImage> normal_image_;
-  scoped_nsobject<NSImage> hover_image_;
-  scoped_nsobject<NSImage> pressed_image_;
+  base::scoped_nsobject<NSImage> normal_image_;
+  base::scoped_nsobject<NSImage> hover_image_;
+  base::scoped_nsobject<NSImage> pressed_image_;
   ButtonState state_;
 
   NSImage* GetImage();

@@ -61,12 +61,12 @@
   BOOL isDrawingAttention_;
 
   // "Glint" animation is used in "Draw Attention" mode.
-  scoped_nsobject<RepaintAnimation> glintAnimation_;
-  scoped_nsobject<NSTimer> glintAnimationTimer_;
+  base::scoped_nsobject<RepaintAnimation> glintAnimation_;
+  base::scoped_nsobject<NSTimer> glintAnimationTimer_;
   int glintCounter_;
 
   // Drag support.
-  scoped_nsobject<MouseDragController> dragController_;
+  base::scoped_nsobject<MouseDragController> dragController_;
 }
 
 // Callbacks from Close, Minimize, and Restore buttons.

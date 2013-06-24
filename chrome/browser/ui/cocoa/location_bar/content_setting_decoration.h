@@ -52,7 +52,7 @@ class ContentSettingDecoration : public ImageDecoration {
   void SetToolTip(NSString* tooltip);
 
   // Returns an attributed string with the animated text.
-  scoped_nsobject<NSAttributedString> CreateAnimatedText();
+  base::scoped_nsobject<NSAttributedString> CreateAnimatedText();
 
   // Measure the width of the animated text.
   CGFloat MeasureTextWidth();
@@ -62,13 +62,13 @@ class ContentSettingDecoration : public ImageDecoration {
   LocationBarViewMac* owner_;  // weak
   Profile* profile_;  // weak
 
-  scoped_nsobject<NSString> tooltip_;
+  base::scoped_nsobject<NSString> tooltip_;
 
   // Used when the decoration has animated text.
-  scoped_nsobject<ContentSettingAnimationState> animation_;
+  base::scoped_nsobject<ContentSettingAnimationState> animation_;
   CGFloat text_width_;
-  scoped_nsobject<NSAttributedString> animated_text_;
-  scoped_nsobject<NSGradient> gradient_;
+  base::scoped_nsobject<NSAttributedString> animated_text_;
+  base::scoped_nsobject<NSGradient> gradient_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingDecoration);
 };

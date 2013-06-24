@@ -37,7 +37,7 @@ CompositingIOSurfaceContext::Get(int window_number) {
     attributes.push_back(NSOpenGLPFAAllowOfflineRenderers);
   attributes.push_back(0);
 
-  scoped_nsobject<NSOpenGLPixelFormat> glPixelFormat(
+  base::scoped_nsobject<NSOpenGLPixelFormat> glPixelFormat(
       [[NSOpenGLPixelFormat alloc] initWithAttributes:&attributes.front()]);
   if (!glPixelFormat) {
     LOG(ERROR) << "NSOpenGLPixelFormat initWithAttributes failed";
@@ -49,9 +49,9 @@ CompositingIOSurfaceContext::Get(int window_number) {
   NSOpenGLContext* share_context = nil;
   if (!window_map()->empty())
     share_context = window_map()->begin()->second->nsgl_context();
-    scoped_nsobject<NSOpenGLContext> nsgl_context(
-        [[NSOpenGLContext alloc] initWithFormat:glPixelFormat
-                                   shareContext:share_context]);
+  base::scoped_nsobject<NSOpenGLContext> nsgl_context(
+      [[NSOpenGLContext alloc] initWithFormat:glPixelFormat
+                                 shareContext:share_context]);
   if (!nsgl_context) {
     LOG(ERROR) << "NSOpenGLContext initWithFormat failed";
     return NULL;

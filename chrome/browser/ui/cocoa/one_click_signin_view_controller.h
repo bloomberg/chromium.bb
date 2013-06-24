@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/callback.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/browser_window.h"
 
 @class BrowserWindowController;
@@ -31,13 +31,13 @@ class WebContents;
   // This is YES if the user clicked the Learn More link before another action.
   BOOL clickedLearnMore_;
 
-  scoped_nsobject<NSString> errorMessage_;
+  base::scoped_nsobject<NSString> errorMessage_;
 
   // Text fields don't work as well with embedded links as text views, but
   // text views cannot conveniently be created in IB. The xib file contains
   // a text field |informativePlaceholderTextField_| that's replaced by this
   // text view |promo_| in -awakeFromNib.
-  scoped_nsobject<HyperlinkTextView> informativeTextView_;
+  base::scoped_nsobject<HyperlinkTextView> informativeTextView_;
   BrowserWindow::StartSyncCallback startSyncCallback_;
   base::Closure closeCallback_;
   content::WebContents* webContents_;

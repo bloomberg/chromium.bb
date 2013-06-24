@@ -4,7 +4,7 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -175,7 +175,7 @@ class StatusBubbleMacTest : public CocoaTest {
   }
 
   base::MessageLoop message_loop_;
-  scoped_nsobject<StatusBubbleMacTestDelegate> delegate_;
+  base::scoped_nsobject<StatusBubbleMacTestDelegate> delegate_;
   StatusBubbleMac* bubble_;  // Strong.
 };
 

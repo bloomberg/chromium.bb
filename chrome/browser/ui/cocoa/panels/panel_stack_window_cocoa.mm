@@ -226,7 +226,7 @@ void PanelStackWindowCocoa::EndBatchUpdatePanelBounds() {
   int num_of_animations = 1;
   if (need_to_animate_individual_panels)
     num_of_animations += bounds_updates_.size();
-  scoped_nsobject<NSMutableArray> animations(
+  base::scoped_nsobject<NSMutableArray> animations(
       [[NSMutableArray alloc] initWithCapacity:num_of_animations]);
 
   // Add the animation for each panel in the update list.

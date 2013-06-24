@@ -7,12 +7,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 // Base class for all constrained window animation classes.
 @interface ConstrainedWindowAnimationBase : NSAnimation {
  @protected
-  scoped_nsobject<NSWindow> window_;
+  base::scoped_nsobject<NSWindow> window_;
 }
 
 - (id)initWithWindow:(NSWindow*)window;

@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 
 @class BookmarkBarController;
@@ -41,7 +41,7 @@ class BookmarkNode;
 
   // Controller responsible for creating a Cocoa NSMenu from the cross-platform
   // SimpleMenuModel owned by the |bookmarkContextMenuController_|.
-  scoped_nsobject<MenuController> menuController_;
+  base::scoped_nsobject<MenuController> menuController_;
 }
 
 // Initializes the BookmarkContextMenuCocoaController for the given bookmark

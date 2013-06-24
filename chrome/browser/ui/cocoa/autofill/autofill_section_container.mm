@@ -198,7 +198,7 @@ void BreakSuggestionText(const string16& text,
 }
 
 - (NSTextField*)makeDetailSectionLabel:(NSString*)labelText {
-  scoped_nsobject<NSTextField> label([[NSTextField alloc] init]);
+  base::scoped_nsobject<NSTextField> label([[NSTextField alloc] init]);
   [label setFont:
       [[NSFontManager sharedFontManager] convertFont:[label font]
                                          toHaveTrait:NSBoldFontMask]];
@@ -211,7 +211,7 @@ void BreakSuggestionText(const string16& text,
 }
 
 - (MenuButton*)makeSuggestionButton {
-  scoped_nsobject<MenuButton> button([[MenuButton alloc] init]);
+  base::scoped_nsobject<MenuButton> button([[MenuButton alloc] init]);
 
   [button setOpenMenuOnClick:YES];
   [button setBordered:NO];
@@ -245,7 +245,7 @@ void BreakSuggestionText(const string16& text,
   const autofill::DetailInputs& inputs =
       controller_->RequestedFieldsForSection(section_);
 
-  scoped_nsobject<LayoutView> view([[LayoutView alloc] init]);
+  base::scoped_nsobject<LayoutView> view([[LayoutView alloc] init]);
   [view setLayoutManager:
       scoped_ptr<SimpleGridLayout>(new SimpleGridLayout(view))];
   SimpleGridLayout* layout = [view layoutManager];
@@ -274,7 +274,7 @@ void BreakSuggestionText(const string16& text,
     ui::ComboboxModel* input_model =
         controller_->ComboboxModelForAutofillType(input.type);
     if (input_model) {
-      scoped_nsobject<NSPopUpButton> popup(
+      base::scoped_nsobject<NSPopUpButton> popup(
           [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:YES]);
       for (int i = 0; i < input_model->GetItemCount(); ++i) {
         [popup addItemWithTitle:
@@ -285,7 +285,7 @@ void BreakSuggestionText(const string16& text,
       [popup setTag:reinterpret_cast<NSInteger>(&input)];
       layout->AddView(popup);
     } else {
-      scoped_nsobject<AutofillTextField> field(
+      base::scoped_nsobject<AutofillTextField> field(
           [[AutofillTextField alloc] init]);
       [[field cell] setPlaceholderString:
           l10n_util::GetNSStringWithFixup(input.placeholder_text_rid)];

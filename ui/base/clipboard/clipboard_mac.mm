@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -185,11 +185,11 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
   data_provider.reset();
   data.reset();
 
-  scoped_nsobject<NSBitmapImageRep> bitmap(
+  base::scoped_nsobject<NSBitmapImageRep> bitmap(
       [[NSBitmapImageRep alloc] initWithCGImage:cgimage]);
   cgimage.reset();
 
-  scoped_nsobject<NSImage> image([[NSImage alloc] init]);
+  base::scoped_nsobject<NSImage> image([[NSImage alloc] init]);
   [image addRepresentation:bitmap];
 
   // An API to ask the NSImage to write itself to the clipboard comes in 10.6 :(
@@ -343,7 +343,7 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
 
-  scoped_nsobject<NSImage> image(
+  base::scoped_nsobject<NSImage> image(
       [[NSImage alloc] initWithPasteboard:GetPasteboard()]);
   if (!image.get())
     return SkBitmap();

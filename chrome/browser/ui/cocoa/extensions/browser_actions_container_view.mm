@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 
 NSString* const kBrowserActionGrippyDragStartedNotification =

@@ -53,7 +53,7 @@ class FindBarCocoaControllerTest : public CocoaTest {
   }
 
  protected:
-  scoped_nsobject<FindBarCocoaController> controller_;
+  base::scoped_nsobject<FindBarCocoaController> controller_;
 };
 
 TEST_VIEW(FindBarCocoaControllerTest, [controller_ view])
@@ -110,7 +110,7 @@ TEST_F(FindBarCocoaControllerTest, ResultLabelUpdatesCorrectly) {
 }
 
 TEST_F(FindBarCocoaControllerTest, FindTextIsGlobal) {
-  scoped_nsobject<FindBarCocoaController> otherController(
+  base::scoped_nsobject<FindBarCocoaController> otherController(
       [[FindBarCocoaController alloc] initWithBrowser:nil]);
   [[test_window() contentView] addSubview:[otherController view]];
 

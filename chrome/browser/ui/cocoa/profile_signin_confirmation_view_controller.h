@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 
 @class HyperlinkTextView;
@@ -38,14 +38,14 @@ class ProfileSigninConfirmationDelegate;
   base::Closure closeDialogCallback_;
 
   // UI elements.
-  scoped_nsobject<NSBox> promptBox_;
-  scoped_nsobject<NSButton> closeButton_;
-  scoped_nsobject<NSTextField> titleField_;
-  scoped_nsobject<NSTextField> promptField_;
-  scoped_nsobject<NSTextView> explanationField_;
-  scoped_nsobject<ConstrainedWindowButton> createProfileButton_;
-  scoped_nsobject<ConstrainedWindowButton> cancelButton_;
-  scoped_nsobject<ConstrainedWindowButton> okButton_;
+  base::scoped_nsobject<NSBox> promptBox_;
+  base::scoped_nsobject<NSButton> closeButton_;
+  base::scoped_nsobject<NSTextField> titleField_;
+  base::scoped_nsobject<NSTextField> promptField_;
+  base::scoped_nsobject<NSTextView> explanationField_;
+  base::scoped_nsobject<ConstrainedWindowButton> createProfileButton_;
+  base::scoped_nsobject<ConstrainedWindowButton> cancelButton_;
+  base::scoped_nsobject<ConstrainedWindowButton> okButton_;
 }
 
 - (id)initWithBrowser:(Browser*)browser

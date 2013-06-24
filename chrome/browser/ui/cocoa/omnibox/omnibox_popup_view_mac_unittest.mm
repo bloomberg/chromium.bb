@@ -449,7 +449,7 @@ TEST_F(OmniboxPopupViewMacTest, ElideString) {
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObject:font_.GetNativeFont()
                                   forKey:NSFontAttributeName];
-  scoped_nsobject<NSMutableAttributedString> as(
+  base::scoped_nsobject<NSMutableAttributedString> as(
       [[NSMutableAttributedString alloc] initWithString:contents
                                              attributes:attributes]);
 

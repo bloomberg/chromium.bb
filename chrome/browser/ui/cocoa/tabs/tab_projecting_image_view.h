@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/tabs/throbbing_image_view.h"
 
@@ -16,7 +16,7 @@
 // animated glow. This view paints outside the favicon bounds due to the glow.
 @interface TabProjectingImageView : ThrobbingImageView {
  @private
-  scoped_nsobject<NSImage> projectorImage_;
+  base::scoped_nsobject<NSImage> projectorImage_;
 }
 
 - (id)initWithFrame:(NSRect)rect

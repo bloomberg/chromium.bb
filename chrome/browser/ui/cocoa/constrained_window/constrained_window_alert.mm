@@ -110,7 +110,7 @@ const CGFloat kButtonGap = 6;
                     action:(SEL)action {
   if (!buttons_.get())
     buttons_.reset([[NSMutableArray alloc] init]);
-  scoped_nsobject<NSButton> button(
+  base::scoped_nsobject<NSButton> button(
       [[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
   [button setTitle:title];
   [button setKeyEquivalent:keyEquivalent];

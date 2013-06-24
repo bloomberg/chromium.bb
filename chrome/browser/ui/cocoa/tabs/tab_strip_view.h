@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 
 @class NewTabButton;
@@ -23,9 +23,9 @@
   NSTimeInterval lastMouseUp_;
 
   // Handles being a drag-and-drop target.
-  scoped_nsobject<URLDropTargetHandler> dropHandler_;
+  base::scoped_nsobject<URLDropTargetHandler> dropHandler_;
 
-  scoped_nsobject<NewTabButton> newTabButton_;
+  base::scoped_nsobject<NewTabButton> newTabButton_;
 
   // Whether the drop-indicator arrow is shown, and if it is, the coordinate of
   // its tip.

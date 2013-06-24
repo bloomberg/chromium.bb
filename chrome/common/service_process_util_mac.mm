@@ -16,7 +16,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/strings/string_util.h"
@@ -43,7 +43,7 @@ CFStringRef CopyServiceProcessLaunchDName() {
 }
 
 NSString* GetServiceProcessLaunchDLabel() {
-  scoped_nsobject<NSString> name(
+  base::scoped_nsobject<NSString> name(
       base::mac::CFToNSCast(CopyServiceProcessLaunchDName()));
   NSString *label = [name stringByAppendingString:@".service_process"];
   base::FilePath user_data_dir;
@@ -100,7 +100,7 @@ NSString* GetServiceProcessLaunchDSocketEnvVar() {
 IPC::ChannelHandle GetServiceProcessChannel() {
   base::mac::ScopedNSAutoreleasePool pool;
   std::string socket_path;
-  scoped_nsobject<NSDictionary> dictionary(
+  base::scoped_nsobject<NSDictionary> dictionary(
       base::mac::CFToNSCast(Launchd::GetInstance()->CopyExports()));
   NSString *ns_socket_path =
       [dictionary objectForKey:GetServiceProcessLaunchDSocketEnvVar()];
@@ -127,8 +127,8 @@ bool ForceServiceProcessShutdown(const std::string& /* version */,
 bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
   base::mac::ScopedNSAutoreleasePool pool;
   CFStringRef label = base::mac::NSToCFCast(GetServiceProcessLaunchDLabel());
-  scoped_nsobject<NSDictionary> launchd_conf(base::mac::CFToNSCast(
-      Launchd::GetInstance()->CopyJobDictionary(label)));
+  base::scoped_nsobject<NSDictionary> launchd_conf(
+      base::mac::CFToNSCast(Launchd::GetInstance()->CopyJobDictionary(label)));
   if (!launchd_conf.get()) {
     return false;
   }
@@ -404,9 +404,8 @@ void ExecFilePathWatcherCallback::NotifyPathChanged(const base::FilePath& path,
         std::string new_path = base::mac::PathFromFSRef(executable_fsref_);
         NSString* ns_new_path = base::SysUTF8ToNSString(new_path);
         [ns_plist setObject:ns_new_path forKey:@ LAUNCH_JOBKEY_PROGRAM];
-        scoped_nsobject<NSMutableArray> args(
-            [[ns_plist objectForKey:@ LAUNCH_JOBKEY_PROGRAMARGUMENTS]
-             mutableCopy]);
+        base::scoped_nsobject<NSMutableArray> args([[ns_plist
+            objectForKey:@LAUNCH_JOBKEY_PROGRAMARGUMENTS] mutableCopy]);
         [args replaceObjectAtIndex:0 withObject:ns_new_path];
         [ns_plist setObject:args forKey:@ LAUNCH_JOBKEY_PROGRAMARGUMENTS];
         if (!Launchd::GetInstance()->WritePlistToFile(Launchd::User,

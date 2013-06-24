@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
@@ -20,7 +20,8 @@ class AutofillDialogController;
 // UI controller for details for current payment instrument.
 @interface AutofillDetailsContainer : NSViewController<AutofillLayout> {
  @private
-  scoped_nsobject<NSMutableArray> details_;  // The individual detail sections.
+  base::scoped_nsobject<NSMutableArray> details_;   // The individual detail
+                                                    // sections.
   autofill::AutofillDialogController* controller_;  // Not owned.
 }
 

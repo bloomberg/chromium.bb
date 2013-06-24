@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_button.h"
 
 // This a button which displays a user-provided menu "attached" below it upon
@@ -24,10 +24,10 @@
 // value is NO so that custom actions can be hooked up in Interface Builder.
 @interface MenuButton : ToolbarButton {
  @private
-  scoped_nsobject<NSMenu> attachedMenu_;
+  base::scoped_nsobject<NSMenu> attachedMenu_;
   BOOL openMenuOnClick_;
   BOOL openMenuOnRightClick_;
-  scoped_nsobject<NSPopUpButtonCell> popUpCell_;
+  base::scoped_nsobject<NSPopUpButtonCell> popUpCell_;
 }
 
 // The menu to display. Note that it should have no (i.e., a blank) title and

@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
@@ -77,7 +77,7 @@ class CONTENT_EXPORT TextInputClientMac {
 
   NSUInteger character_index_;
   NSRect first_rect_;
-  scoped_nsobject<NSAttributedString> substring_;
+  base::scoped_nsobject<NSAttributedString> substring_;
 
   base::Lock lock_;
   base::ConditionVariable condition_;

@@ -20,7 +20,7 @@ class AutofillSuggestionContainerTest : public ui::CocoaTest {
   }
 
  protected:
-  scoped_nsobject<AutofillSuggestionContainer> container_;
+  base::scoped_nsobject<AutofillSuggestionContainer> container_;
 };
 
 }  // namespace

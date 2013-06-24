@@ -146,7 +146,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
     NSRectFillUsingOperation([self bounds], NSCompositeSourceOver);
 
     if ([glintAnimation_ isAnimating]) {
-      scoped_nsobject<NSGradient> glint([NSGradient alloc]);
+      base::scoped_nsobject<NSGradient> glint([NSGradient alloc]);
       float currentAlpha = 0.8 * [glintAnimation_ currentValue];
       NSColor* startColor = [NSColor colorWithCalibratedWhite:1.0
                                                         alpha:currentAlpha];

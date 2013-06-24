@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "testing/gtest_mac.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #import "ui/app_list/cocoa/app_list_view_controller.h"
@@ -19,7 +19,7 @@ class AppListWindowControllerTest : public ui::CocoaTest {
  protected:
   virtual void TearDown() OVERRIDE;
 
-  scoped_nsobject<AppListWindowController> controller_;
+  base::scoped_nsobject<AppListWindowController> controller_;
 
   app_list::test::AppListTestViewDelegate* delegate() {
     return static_cast<app_list::test::AppListTestViewDelegate*>(

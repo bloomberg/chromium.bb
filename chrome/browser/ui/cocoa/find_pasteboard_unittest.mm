@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -68,7 +68,7 @@ class FindPasteboardTest : public CocoaTest {
     pboard_.reset([[FindPasteboardTesting alloc] init]);
   }
  protected:
-  scoped_nsobject<FindPasteboardTesting> pboard_;
+  base::scoped_nsobject<FindPasteboardTesting> pboard_;
 };
 
 TEST_F(FindPasteboardTest, SettingTextUpdatesPboard) {

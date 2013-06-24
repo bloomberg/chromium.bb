@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
 #import "chrome/browser/ui/cocoa/command_observer_bridge.h"
@@ -45,7 +45,7 @@ class CommandObserverBridgeTest : public PlatformTest {
         observer_([[CommandTestObserver alloc] init]) {
   }
   scoped_ptr<CommandUpdater> updater_;
-  scoped_nsobject<CommandTestObserver> observer_;
+  base::scoped_nsobject<CommandTestObserver> observer_;
 };
 
 // Tests creation and deletion. NULL arguments aren't allowed.

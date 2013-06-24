@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/download/download_item_model.h"
-#import "chrome/browser/ui/cocoa/download/download_item_cell.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/download/download_item_cell.h"
 #include "content/public/test/mock_download_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -32,8 +32,8 @@ class DownloadItemCellTest : public CocoaTest {
   }
 
  protected:
-  scoped_nsobject<DownloadItemCell> cell_;
-  scoped_nsobject<NSButton> button_;
+  base::scoped_nsobject<DownloadItemCell> cell_;
+  base::scoped_nsobject<NSButton> button_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadItemCellTest);

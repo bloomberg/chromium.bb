@@ -59,7 +59,7 @@ const CGFloat kDragThreshold = 5;
 }
 
 - (NSCollectionView*)makePageWithFrame:(NSRect)pageFrame {
-  scoped_nsobject<GridCollectionView> itemCollectionView(
+  base::scoped_nsobject<GridCollectionView> itemCollectionView(
       [[GridCollectionView alloc] initWithFrame:pageFrame]);
   [itemCollectionView setFactory:self];
   [itemCollectionView setMaxNumberOfRows:rows_];
@@ -70,7 +70,7 @@ const CGFloat kDragThreshold = 5;
   [itemCollectionView setBackgroundColors:
       [NSArray arrayWithObject:[NSColor clearColor]]];
 
-  scoped_nsobject<AppsGridViewItem> itemPrototype(
+  base::scoped_nsobject<AppsGridViewItem> itemPrototype(
       [[AppsGridViewItem alloc] initWithSize:cellSize_]);
   [[itemPrototype button] setTarget:gridController_];
   [[itemPrototype button] setAction:@selector(onItemClicked:)];

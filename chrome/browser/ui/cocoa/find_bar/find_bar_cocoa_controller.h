@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/point.h"
 
@@ -33,19 +33,19 @@ class FindNotificationDetails;
 
   Browser* browser_;
 
-  scoped_nsobject<FocusTracker> focusTracker_;
+  base::scoped_nsobject<FocusTracker> focusTracker_;
 
   // The show/hide animation. This is defined to be non-nil if the
   // animation is running, and is always nil otherwise.  The
   // FindBarCocoaController should not be deallocated while an animation is
   // running (stopAnimation is currently called before the last tab in a
   // window is removed).
-  scoped_nsobject<NSViewAnimation> showHideAnimation_;
+  base::scoped_nsobject<NSViewAnimation> showHideAnimation_;
 
   // The horizontal-moving animation, to avoid occluding find results. This
   // is nil when the animation is not running, and is also stopped by
   // stopAnimation.
-  scoped_nsobject<NSViewAnimation> moveAnimation_;
+  base::scoped_nsobject<NSViewAnimation> moveAnimation_;
 
   // If YES, do nothing as a result of find pasteboard update notifications.
   BOOL suppressPboardUpdateActions_;

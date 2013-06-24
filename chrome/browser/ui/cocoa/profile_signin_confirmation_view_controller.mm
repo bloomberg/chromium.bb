@@ -59,7 +59,7 @@ NSRect ComputeFrame(NSAttributedString* text, CGFloat width, CGFloat height) {
 
 // Make the indicated range of characters in a text view bold.
 void MakeTextBold(NSTextField* textField, int offset, int length) {
-  scoped_nsobject<NSMutableAttributedString> text(
+  base::scoped_nsobject<NSMutableAttributedString> text(
       [[textField attributedStringValue] mutableCopy]);
   NSFont* currentFont =
       [text attribute:NSFontAttributeName
@@ -96,7 +96,7 @@ NSTextView* AddTextView(
     const string16& link,
     int offset,
     const ui::ResourceBundle::FontStyle& font_style) {
-  scoped_nsobject<HyperlinkTextView> textView(
+  base::scoped_nsobject<HyperlinkTextView> textView(
       [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
   NSFont* font = ui::ResourceBundle::GetSharedInstance().GetFont(
       font_style).GetNativeFont();

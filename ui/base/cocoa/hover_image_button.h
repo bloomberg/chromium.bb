@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "ui/base/cocoa/hover_button.h"
 #include "ui/base/ui_export.h"
 
@@ -15,9 +15,9 @@
 UI_EXPORT
 @interface HoverImageButton : HoverButton {
  @private
-  scoped_nsobject<NSImage> defaultImage_;
-  scoped_nsobject<NSImage> hoverImage_;
-  scoped_nsobject<NSImage> pressedImage_;
+  base::scoped_nsobject<NSImage> defaultImage_;
+  base::scoped_nsobject<NSImage> hoverImage_;
+  base::scoped_nsobject<NSImage> pressedImage_;
 }
 
 // Sets the default image.

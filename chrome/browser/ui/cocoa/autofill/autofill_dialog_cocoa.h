@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_COCOA_H_
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
@@ -66,7 +66,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
  private:
 
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
-  scoped_nsobject<AutofillDialogWindowController> sheet_controller_;
+  base::scoped_nsobject<AutofillDialogWindowController> sheet_controller_;
 
   // The controller |this| queries for logic and state.
   AutofillDialogController* controller_;
@@ -80,9 +80,9 @@ class AutofillDialogCocoa : public AutofillDialogView,
   content::WebContents* webContents_;  // weak.
   autofill::AutofillDialogCocoa* autofillDialog_;  // weak.
 
-  scoped_nsobject<AutofillMainContainer> mainContainer_;
-  scoped_nsobject<AutofillSignInContainer> signInContainer_;
-  scoped_nsobject<AutofillAccountChooser> accountChooser_;
+  base::scoped_nsobject<AutofillMainContainer> mainContainer_;
+  base::scoped_nsobject<AutofillSignInContainer> signInContainer_;
+  base::scoped_nsobject<AutofillAccountChooser> accountChooser_;
 }
 
 // Designated initializer. The WebContents cannot be NULL.

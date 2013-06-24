@@ -11,8 +11,8 @@ class SadTabViewTest : public CocoaTest {
  public:
   SadTabViewTest() {
     NSRect content_frame = [[test_window() contentView] frame];
-    scoped_nsobject<SadTabView> view([[SadTabView alloc]
-                                      initWithFrame:content_frame]);
+    base::scoped_nsobject<SadTabView> view(
+        [[SadTabView alloc] initWithFrame:content_frame]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
   }

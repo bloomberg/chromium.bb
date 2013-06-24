@@ -10,7 +10,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/mac/mac_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -89,7 +89,7 @@ NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia) {
   if (image_skia.isNull())
     return nil;
 
-  scoped_nsobject<NSImage> image([[NSImage alloc] init]);
+  base::scoped_nsobject<NSImage> image([[NSImage alloc] init]);
   image_skia.EnsureRepsForSupportedScaleFactors();
   std::vector<gfx::ImageSkiaRep> image_reps = image_skia.image_reps();
   for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
@@ -107,7 +107,7 @@ NSImage* NSImageFromImageSkiaWithColorSpace(const gfx::ImageSkia& image_skia,
   if (image_skia.isNull())
     return nil;
 
-  scoped_nsobject<NSImage> image([[NSImage alloc] init]);
+  base::scoped_nsobject<NSImage> image([[NSImage alloc] init]);
   image_skia.EnsureRepsForSupportedScaleFactors();
   std::vector<gfx::ImageSkiaRep> image_reps = image_skia.image_reps();
   for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();

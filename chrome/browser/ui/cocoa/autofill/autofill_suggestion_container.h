@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
 namespace autofill {
@@ -20,16 +20,16 @@ namespace autofill {
 @interface AutofillSuggestionContainer : NSViewController<AutofillLayout> {
  @private
   // The label that holds the suggestion description text.
-  scoped_nsobject<NSTextField> label_;
+  base::scoped_nsobject<NSTextField> label_;
 
   // The second (and longer) line of text that describes the suggestion.
-  scoped_nsobject<NSTextField> label2_;
+  base::scoped_nsobject<NSTextField> label2_;
 
   // The icon that comes just before |label_|.
-  scoped_nsobject<NSImageView> iconImageView_;
+  base::scoped_nsobject<NSImageView> iconImageView_;
 
   // The input set by ShowTextfield.
-  scoped_nsobject<AutofillTextField> inputField_;
+  base::scoped_nsobject<AutofillTextField> inputField_;
 
   autofill::AutofillDialogController* controller_;  // Not owned.
 }

@@ -4,7 +4,7 @@
 
 #import "ui/base/cocoa/hover_image_button.h"
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
 namespace {
@@ -13,7 +13,7 @@ class HoverImageButtonTest : public ui::CocoaTest {
  public:
   HoverImageButtonTest() {
     NSRect content_frame = [[test_window() contentView] frame];
-    scoped_nsobject<HoverImageButton> button(
+    base::scoped_nsobject<HoverImageButton> button(
         [[HoverImageButton alloc] initWithFrame:content_frame]);
     button_ = button.get();
     [[test_window() contentView] addSubview:button_];

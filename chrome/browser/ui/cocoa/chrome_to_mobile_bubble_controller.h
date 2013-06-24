@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_to_mobile_service.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
@@ -97,7 +97,7 @@ class ChromeToMobileBubbleNotificationBridge
   base::FilePath snapshotPath_;
 
   // An animation used to cycle through the "Sending..." status messages.
-  scoped_nsobject<NSAnimation> progressAnimation_;
+  base::scoped_nsobject<NSAnimation> progressAnimation_;
 }
 
 // The owner of this object is responsible for showing the bubble. It is not

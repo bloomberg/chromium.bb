@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -252,8 +252,8 @@ TEST_F(BookmarkBubbleControllerTest, TestClose) {
         GURL("http://www.google.com"));
   EXPECT_EQ(edits_, 0);
 
-  scoped_nsobject<BookmarkPulseObserver> observer([[BookmarkPulseObserver alloc]
-                                                    init]);
+  base::scoped_nsobject<BookmarkPulseObserver> observer(
+      [[BookmarkPulseObserver alloc] init]);
   EXPECT_EQ([observer notifications], 0);
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);

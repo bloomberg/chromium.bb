@@ -25,7 +25,7 @@ class FullscreenWindowTest : public CocoaTest {
 };
 
 TEST_F(FullscreenWindowTest, Basics) {
-  scoped_nsobject<FullscreenWindow> window;
+  base::scoped_nsobject<FullscreenWindow> window;
   window.reset([[FullscreenWindow alloc] init]);
 
   EXPECT_EQ([NSScreen mainScreen], [window screen]);
@@ -37,10 +37,10 @@ TEST_F(FullscreenWindowTest, Basics) {
 }
 
 TEST_F(FullscreenWindowTest, CanPerformClose) {
-  scoped_nsobject<FullscreenWindow> window;
+  base::scoped_nsobject<FullscreenWindow> window;
   window.reset([[FullscreenWindow alloc] init]);
 
-  scoped_nsobject<PerformCloseUIItem> item;
+  base::scoped_nsobject<PerformCloseUIItem> item;
   item.reset([[PerformCloseUIItem alloc] init]);
 
   EXPECT_TRUE([window validateUserInterfaceItem:item.get()]);

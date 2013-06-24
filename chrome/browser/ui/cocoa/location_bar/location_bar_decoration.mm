@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 
 const CGFloat LocationBarDecoration::kOmittedWidth = 0.0;
@@ -75,7 +75,7 @@ NSFont* LocationBarDecoration::GetFont() const {
 void LocationBarDecoration::DrawLabel(NSString* label,
                                       NSDictionary* attributes,
                                       const NSRect& frame) {
-  scoped_nsobject<NSAttributedString> str(
+  base::scoped_nsobject<NSAttributedString> str(
       [[NSAttributedString alloc] initWithString:label attributes:attributes]);
   DrawAttributedString(str, frame);
 }

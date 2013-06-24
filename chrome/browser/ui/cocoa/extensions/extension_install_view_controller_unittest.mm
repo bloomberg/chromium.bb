@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/extensions/extension_install_prompt.h"
@@ -40,11 +40,10 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalCancel) {
   permissions.push_back(UTF8ToUTF16("warning 1"));
   prompt.SetPermissions(permissions);
 
-  scoped_nsobject<ExtensionInstallViewController>
-    controller([[ExtensionInstallViewController alloc]
-                 initWithNavigator:browser()
-                          delegate:&delegate
-                            prompt:prompt]);
+  base::scoped_nsobject<ExtensionInstallViewController> controller(
+      [[ExtensionInstallViewController alloc] initWithNavigator:browser()
+                                                       delegate:&delegate
+                                                         prompt:prompt]);
 
   [controller view];  // Force nib load.
 
@@ -93,11 +92,10 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalOK) {
   permissions.push_back(UTF8ToUTF16("warning 1"));
   prompt.SetPermissions(permissions);
 
-  scoped_nsobject<ExtensionInstallViewController>
-  controller([[ExtensionInstallViewController alloc]
-               initWithNavigator:browser()
-                        delegate:&delegate
-                          prompt:prompt]);
+  base::scoped_nsobject<ExtensionInstallViewController> controller(
+      [[ExtensionInstallViewController alloc] initWithNavigator:browser()
+                                                       delegate:&delegate
+                                                         prompt:prompt]);
 
   [controller view];  // Force nib load.
   [controller ok:nil];
@@ -123,19 +121,19 @@ TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
   permissions.push_back(UTF8ToUTF16("warning 2"));
   two_warnings_prompt.SetPermissions(permissions);
 
-  scoped_nsobject<ExtensionInstallViewController>
-  controller1([[ExtensionInstallViewController alloc]
-                initWithNavigator:browser()
-                         delegate:&delegate1
-                           prompt:one_warning_prompt]);
+  base::scoped_nsobject<ExtensionInstallViewController> controller1(
+      [[ExtensionInstallViewController alloc]
+          initWithNavigator:browser()
+                   delegate:&delegate1
+                     prompt:one_warning_prompt]);
 
   [controller1 view];  // Force nib load.
 
-  scoped_nsobject<ExtensionInstallViewController>
-  controller2([[ExtensionInstallViewController alloc]
-                initWithNavigator:browser()
-                         delegate:&delegate2
-                           prompt:two_warnings_prompt]);
+  base::scoped_nsobject<ExtensionInstallViewController> controller2(
+      [[ExtensionInstallViewController alloc]
+          initWithNavigator:browser()
+                   delegate:&delegate2
+                     prompt:two_warnings_prompt]);
 
   [controller2 view];  // Force nib load.
 
@@ -158,11 +156,11 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsSkinny) {
   ExtensionInstallPrompt::Prompt no_warnings_prompt =
       chrome::BuildExtensionInstallPrompt(extension_.get());
 
-  scoped_nsobject<ExtensionInstallViewController>
-  controller([[ExtensionInstallViewController alloc]
-               initWithNavigator:browser()
-                        delegate:&delegate
-                          prompt:no_warnings_prompt]);
+  base::scoped_nsobject<ExtensionInstallViewController> controller(
+      [[ExtensionInstallViewController alloc]
+          initWithNavigator:browser()
+                   delegate:&delegate
+                     prompt:no_warnings_prompt]);
 
   [controller view];  // Force nib load.
 
@@ -202,11 +200,10 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsInline) {
   inline_prompt.set_extension(extension_.get());
   inline_prompt.set_icon(chrome::LoadInstallPromptIcon());
 
-  scoped_nsobject<ExtensionInstallViewController>
-  controller([[ExtensionInstallViewController alloc]
-               initWithNavigator:browser()
-                        delegate:&delegate
-                          prompt:inline_prompt]);
+  base::scoped_nsobject<ExtensionInstallViewController> controller(
+      [[ExtensionInstallViewController alloc] initWithNavigator:browser()
+                                                       delegate:&delegate
+                                                         prompt:inline_prompt]);
 
   [controller view];  // Force nib load.
 
@@ -265,11 +262,10 @@ TEST_F(ExtensionInstallViewControllerTest, OAuthIssues) {
   issues.push_back(issue);
   prompt.SetOAuthIssueAdvice(issues);
 
-  scoped_nsobject<ExtensionInstallViewController>
-  controller([[ExtensionInstallViewController alloc]
-               initWithNavigator:browser()
-                        delegate:&delegate
-                          prompt:prompt]);
+  base::scoped_nsobject<ExtensionInstallViewController> controller(
+      [[ExtensionInstallViewController alloc] initWithNavigator:browser()
+                                                       delegate:&delegate
+                                                         prompt:prompt]);
 
   [controller view];  // Force nib load.
   NSOutlineView* outlineView = [controller outlineView];
@@ -290,11 +286,10 @@ TEST_F(ExtensionInstallViewControllerTest, PostInstallPermissionsPrompt) {
   permissions.push_back(UTF8ToUTF16("warning 1"));
   prompt.SetPermissions(permissions);
 
-  scoped_nsobject<ExtensionInstallViewController>
-  controller([[ExtensionInstallViewController alloc]
-               initWithNavigator:browser()
-                        delegate:&delegate
-                          prompt:prompt]);
+  base::scoped_nsobject<ExtensionInstallViewController> controller(
+      [[ExtensionInstallViewController alloc] initWithNavigator:browser()
+                                                       delegate:&delegate
+                                                         prompt:prompt]);
 
   [controller view];  // Force nib load.
 

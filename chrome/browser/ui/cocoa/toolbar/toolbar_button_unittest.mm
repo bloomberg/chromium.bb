@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_button.h"
@@ -54,7 +54,7 @@ class ToolbarButtonTest : public CocoaTest {
  public:
   ToolbarButtonTest() {
     NSRect frame = NSMakeRect(0, 0, 20, 20);
-    scoped_nsobject<TestableToolbarButton> button(
+    base::scoped_nsobject<TestableToolbarButton> button(
         [[TestableToolbarButton alloc] initWithFrame:frame]);
     button_ = button.get();
 

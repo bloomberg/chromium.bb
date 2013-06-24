@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 namespace gfx {
 class ImageSkia;
@@ -50,7 +50,7 @@ class TableRowNSImageCache {
 
   // Stores strong NSImage refs for icons. If an entry is NULL, it will be
   // created in GetImageForRow().
-  scoped_nsobject<NSPointerArray> icon_images_;
+  base::scoped_nsobject<NSPointerArray> icon_images_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABLE_ROW_NSIMAGE_CACHE_H_

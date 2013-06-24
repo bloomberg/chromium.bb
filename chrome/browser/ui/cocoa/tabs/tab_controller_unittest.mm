@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
@@ -20,7 +20,7 @@
  @private
   bool selected_;
   bool closed_;
-  scoped_nsobject<TabStripDragController> dragController_;
+  base::scoped_nsobject<TabStripDragController> dragController_;
 }
 - (bool)selected;
 - (bool)closed;
@@ -101,7 +101,7 @@ class TabControllerTest : public CocoaTest {
 // Tests creating the controller, sticking it in a window, and removing it.
 TEST_F(TabControllerTest, Creation) {
   NSWindow* window = test_window();
-  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
   EXPECT_TRUE([controller tabView]);
   EXPECT_EQ([[controller view] window], window);
@@ -113,10 +113,10 @@ TEST_F(TabControllerTest, Creation) {
 // called. Mimics the user clicking on the close button in the tab.
 TEST_F(TabControllerTest, Close) {
   NSWindow* window = test_window();
-  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
-  scoped_nsobject<TabControllerTestTarget> target(
+  base::scoped_nsobject<TabControllerTestTarget> target(
       [[TabControllerTestTarget alloc] init]);
   EXPECT_FALSE([target closed]);
   [controller setTarget:target];
@@ -131,7 +131,7 @@ TEST_F(TabControllerTest, Close) {
 // Tests setting the |selected| property via code.
 TEST_F(TabControllerTest, APISelection) {
   NSWindow* window = test_window();
-  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
   EXPECT_FALSE([controller selected]);
@@ -145,7 +145,7 @@ TEST_F(TabControllerTest, APISelection) {
 TEST_F(TabControllerTest, ToolTip) {
   NSWindow* window = test_window();
 
-  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
   EXPECT_TRUE([[controller toolTip] length] == 0);
@@ -157,7 +157,7 @@ TEST_F(TabControllerTest, ToolTip) {
 // Tests setting the |loading| property via code.
 TEST_F(TabControllerTest, Loading) {
   NSWindow* window = test_window();
-  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
   EXPECT_EQ(kTabDone, [controller loadingState]);
@@ -178,7 +178,7 @@ TEST_F(TabControllerTest, UserSelection) {
 
   // Create a tab at a known location in the window that we can click on
   // to activate selection.
-  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
   NSRect frame = [[controller view] frame];
   frame.size.width = [TabController minTabWidth];
@@ -186,7 +186,7 @@ TEST_F(TabControllerTest, UserSelection) {
   [[controller view] setFrame:frame];
 
   // Set the target and action.
-  scoped_nsobject<TabControllerTestTarget> target(
+  base::scoped_nsobject<TabControllerTestTarget> target(
       [[TabControllerTestTarget alloc] init]);
   EXPECT_FALSE([target selected]);
   [controller setTarget:target];
@@ -224,7 +224,7 @@ TEST_F(TabControllerTest, UserSelection) {
 
 TEST_F(TabControllerTest, IconCapacity) {
   NSWindow* window = test_window();
-  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
   int cap = [controller iconCapacity];
   EXPECT_GE(cap, 1);
@@ -238,7 +238,7 @@ TEST_F(TabControllerTest, IconCapacity) {
 
 TEST_F(TabControllerTest, ShouldShowIcon) {
   NSWindow* window = test_window();
-  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
   int cap = [controller iconCapacity];
   EXPECT_GT(cap, 0);
@@ -251,7 +251,7 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
   EXPECT_FALSE([controller shouldShowCloseButton]);
 
   // Setting the icon when tab is at min width should not show icon (bug 18359).
-  scoped_nsobject<NSView> newIcon(
+  base::scoped_nsobject<NSView> newIcon(
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 16, 16)]);
   [controller setIconView:newIcon.get()];
   EXPECT_TRUE([newIcon isHidden]);
@@ -283,8 +283,8 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
 
 TEST_F(TabControllerTest, Menu) {
   NSWindow* window = test_window();
-  scoped_nsobject<TabController> controller([[TabController alloc] init]);
-  scoped_nsobject<TabControllerTestTarget> target(
+  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabControllerTestTarget> target(
       [[TabControllerTestTarget alloc] init]);
   [controller setTarget:target];
 
@@ -303,7 +303,7 @@ TEST_F(TabControllerTest, Menu) {
 TEST_F(TabControllerTest, TitleViewLayout) {
   NSWindow* window = test_window();
 
-  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
   NSRect tabFrame = [[controller view] frame];
   tabFrame.size.width = [TabController maxTabWidth];

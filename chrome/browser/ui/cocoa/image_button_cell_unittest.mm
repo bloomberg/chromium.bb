@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #include "grit/theme_resources.h"
@@ -13,9 +13,10 @@ class ImageButtonCellTest : public CocoaTest {
  public:
   ImageButtonCellTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 30);
-    scoped_nsobject<NSButton>view([[NSButton alloc] initWithFrame:frame]);
+    base::scoped_nsobject<NSButton> view(
+        [[NSButton alloc] initWithFrame:frame]);
     view_ = view.get();
-    scoped_nsobject<ImageButtonCell> cell(
+    base::scoped_nsobject<ImageButtonCell> cell(
         [[ImageButtonCell alloc] initTextCell:@""]);
     [view_ setCell:cell.get()];
     [[test_window() contentView] addSubview:view_];

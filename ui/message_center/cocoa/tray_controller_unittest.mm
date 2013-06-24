@@ -4,7 +4,7 @@
 
 #import "ui/message_center/cocoa/tray_controller.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/message_center/message_center.h"
@@ -32,7 +32,7 @@ class TrayControllerTest : public ui::CocoaTest {
 
  protected:
   scoped_ptr<message_center::MessageCenterTray> tray_;
-  scoped_nsobject<MCTrayController> controller_;
+  base::scoped_nsobject<MCTrayController> controller_;
 };
 
 TEST_F(TrayControllerTest, OpenLeftRight) {

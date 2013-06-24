@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -38,9 +38,12 @@ typedef CocoaTest NSViewChromeAdditionsTest;
 @end
 
 TEST_F(NSViewChromeAdditionsTest, BelowAboveView) {
-  scoped_nsobject<NSView> parent([[NSView alloc] initWithFrame:NSZeroRect]);
-  scoped_nsobject<NSView> child1([[NSView alloc] initWithFrame:NSZeroRect]);
-  scoped_nsobject<NSView> child2([[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> parent(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> child1(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> child2(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
 
   [parent addSubview:child1];
   [parent addSubview:child2];
@@ -60,9 +63,12 @@ TEST_F(NSViewChromeAdditionsTest, BelowAboveView) {
 }
 
 TEST_F(NSViewChromeAdditionsTest, EnsurePosition) {
-  scoped_nsobject<NSView> parent([[NSView alloc] initWithFrame:NSZeroRect]);
-  scoped_nsobject<NSView> child1([[NSView alloc] initWithFrame:NSZeroRect]);
-  scoped_nsobject<NSView> child2([[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> parent(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> child1(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> child2(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
 
   [parent addSubview:child1];
   [parent cr_ensureSubview:child2
@@ -81,10 +87,12 @@ TEST_F(NSViewChromeAdditionsTest, EnsurePosition) {
 
 // Verify that no view is removed or added when no change is needed.
 TEST_F(NSViewChromeAdditionsTest, EnsurePositionNoChange) {
-  scoped_nsobject<ParentView> parent(
+  base::scoped_nsobject<ParentView> parent(
       [[ParentView alloc] initWithFrame:NSZeroRect]);
-  scoped_nsobject<NSView> child1([[NSView alloc] initWithFrame:NSZeroRect]);
-  scoped_nsobject<NSView> child2([[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> child1(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> child2(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
   [parent addSubview:child1];
   [parent addSubview:child2];
 

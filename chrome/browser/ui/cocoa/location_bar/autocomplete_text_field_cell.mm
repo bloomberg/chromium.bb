@@ -547,7 +547,7 @@ size_t CalculatePositionsInFrame(
       }
 
       NSDictionary* info = [self getDictionaryForButtonDecoration:button];
-      scoped_nsobject<CrTrackingArea> area(
+      base::scoped_nsobject<CrTrackingArea> area(
           [[CrTrackingArea alloc] initWithRect:decorationFrames[i]
                                        options:NSTrackingMouseEnteredAndExited |
                                                NSTrackingActiveAlways

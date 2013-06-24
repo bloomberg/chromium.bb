@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
@@ -159,7 +159,7 @@ class NativeAppWindowCocoa : public NativeAppWindow {
   gfx::Size max_size_;
   bool resizable_;
 
-  scoped_nsobject<NativeAppWindowController> window_controller_;
+  base::scoped_nsobject<NativeAppWindowController> window_controller_;
   NSInteger attention_request_id_;  // identifier from requestUserAttention
 
   // Indicates whether system drag or custom drag should be used, depending on

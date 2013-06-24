@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -76,7 +76,7 @@ class BookmarkMenuCocoaControllerTest : public CocoaProfileTest {
   FakeBookmarkMenuController* controller() { return controller_.get(); }
 
  private:
-  scoped_nsobject<FakeBookmarkMenuController> controller_;
+  base::scoped_nsobject<FakeBookmarkMenuController> controller_;
 };
 
 TEST_F(BookmarkMenuCocoaControllerTest, TestOpenItem) {

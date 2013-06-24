@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "webkit/common/webmenuitem.h"
 
 
@@ -22,7 +22,7 @@
 @interface WebMenuRunner : NSObject {
  @private
   // The native menu control.
-  scoped_nsobject<NSMenu> menu_;
+  base::scoped_nsobject<NSMenu> menu_;
 
   // A flag set to YES if a menu item was chosen, or NO if the menu was
   // dismissed without selecting an item.

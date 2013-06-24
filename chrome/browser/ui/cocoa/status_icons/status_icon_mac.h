@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/status_icons/desktop_notification_balloon.h"
 #include "chrome/browser/status_icons/status_icon.h"
@@ -46,18 +46,18 @@ class StatusIconMac : public StatusIcon {
 
   // Getter for item_ that allows lazy initialization.
   NSStatusItem* item();
-  scoped_nsobject<NSStatusItem> item_;
+  base::scoped_nsobject<NSStatusItem> item_;
 
-  scoped_nsobject<StatusItemController> controller_;
+  base::scoped_nsobject<StatusItemController> controller_;
 
   // Notification balloon.
   DesktopNotificationBalloon notification_;
 
-  scoped_nsobject<NSString> toolTip_;
+  base::scoped_nsobject<NSString> toolTip_;
 
   // Status menu shown when right-clicking the system icon, if it has been
   // created by |UpdatePlatformContextMenu|.
-  scoped_nsobject<MenuController> menu_;
+  base::scoped_nsobject<MenuController> menu_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconMac);
 };

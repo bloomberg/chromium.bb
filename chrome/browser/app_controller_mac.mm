@@ -1226,7 +1226,7 @@ void RecordLastRunAppBundlePath() {
     [dockMenu addItem:[NSMenuItem separatorItem]];
 
   NSString* titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_WINDOW_MAC);
-  scoped_nsobject<NSMenuItem> item(
+  base::scoped_nsobject<NSMenuItem> item(
       [[NSMenuItem alloc] initWithTitle:titleStr
                                  action:@selector(commandFromDock:)
                           keyEquivalent:@""]);
@@ -1255,7 +1255,8 @@ void RecordLastRunAppBundlePath() {
       int position = 0;
       NSString* menuStr =
           l10n_util::GetNSStringWithFixup(IDS_BACKGROUND_APPS_MAC);
-      scoped_nsobject<NSMenu> appMenu([[NSMenu alloc] initWithTitle:menuStr]);
+      base::scoped_nsobject<NSMenu> appMenu(
+          [[NSMenu alloc] initWithTitle:menuStr]);
       for (extensions::ExtensionList::const_iterator cursor =
                applications.begin();
            cursor != applications.end();
@@ -1263,10 +1264,10 @@ void RecordLastRunAppBundlePath() {
         DCHECK_EQ(applications.GetPosition(*cursor), position);
         NSString* itemStr =
             base::SysUTF16ToNSString(UTF8ToUTF16((*cursor)->name()));
-        scoped_nsobject<NSMenuItem> appItem([[NSMenuItem alloc]
-            initWithTitle:itemStr
-                   action:@selector(executeApplication:)
-            keyEquivalent:@""]);
+        base::scoped_nsobject<NSMenuItem> appItem(
+            [[NSMenuItem alloc] initWithTitle:itemStr
+                                       action:@selector(executeApplication:)
+                                keyEquivalent:@""]);
         [appItem setTarget:self];
         [appItem setTag:position];
         [appMenu addItem:appItem];

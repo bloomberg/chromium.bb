@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/cocoa/tab_contents/render_view_context_menu_mac.h"
 
 #include "base/compiler_specific.h"
+#include "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_sending_event.h"
-#include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"

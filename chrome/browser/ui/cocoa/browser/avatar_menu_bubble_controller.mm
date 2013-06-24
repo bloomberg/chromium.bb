@@ -110,7 +110,7 @@ const CGFloat kManagedUserSpacing = 26.0;
   // Use an arbitrary height because it will reflect the size of the content.
   NSRect contentRect = NSMakeRect(0, 0, kBubbleMinWidth, 150);
   // Create an empty window into which content is placed.
-  scoped_nsobject<InfoBubbleWindow> window(
+  base::scoped_nsobject<InfoBubbleWindow> window(
       [[InfoBubbleWindow alloc] initWithContentRect:contentRect
                                           styleMask:NSBorderlessWindowMask
                                             backing:NSBackingStoreBuffered
@@ -302,10 +302,11 @@ const CGFloat kManagedUserSpacing = 26.0;
 }
 
 - (NSView*)configureManagedUserInformation:(CGFloat)width {
-  scoped_nsobject<NSView> container([[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> container(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
 
   // Add the limited user icon on the left side of the information TextView.
-  scoped_nsobject<NSImageView> iconView(
+  base::scoped_nsobject<NSImageView> iconView(
       [[NSImageView alloc] initWithFrame:NSMakeRect(5, 0, 16, 16)]);
   [iconView setImage:model_->GetManagedUserIcon().ToNSImage()];
   [container addSubview:iconView];
@@ -314,9 +315,9 @@ const CGFloat kManagedUserSpacing = 26.0;
       base::SysUTF16ToNSString(model_->GetManagedUserInformation());
   NSDictionary* attributes =
       @{ NSFontAttributeName : [NSFont labelFontOfSize:12] };
-  scoped_nsobject<NSAttributedString> attrString(
+  base::scoped_nsobject<NSAttributedString> attrString(
       [[NSAttributedString alloc] initWithString:info attributes:attributes]);
-  scoped_nsobject<NSTextView> label(
+  base::scoped_nsobject<NSTextView> label(
       [[NSTextView alloc] initWithFrame:NSMakeRect(
           kManagedUserSpacing, 0, width - kManagedUserSpacing - 5, 0)]);
   [[label textStorage] setAttributedString:attrString];
@@ -333,12 +334,11 @@ const CGFloat kManagedUserSpacing = 26.0;
 
 - (NSButton*)configureNewUserButton:(CGFloat)yOffset
                   updateWidthAdjust:(CGFloat*)widthAdjust {
-  scoped_nsobject<NSButton> newButton(
-      [[NSButton alloc] initWithFrame:NSMakeRect(
-          kLabelInset, yOffset, kBubbleMinWidth - kLabelInset, 16)]);
-  scoped_nsobject<HyperlinkButtonCell> buttonCell(
+  base::scoped_nsobject<NSButton> newButton([[NSButton alloc] initWithFrame:
+          NSMakeRect(kLabelInset, yOffset, kBubbleMinWidth - kLabelInset, 16)]);
+  base::scoped_nsobject<HyperlinkButtonCell> buttonCell(
       [[HyperlinkButtonCell alloc] initTextCell:
-          l10n_util::GetNSString(IDS_PROFILES_CREATE_NEW_PROFILE_LINK)]);
+              l10n_util::GetNSString(IDS_PROFILES_CREATE_NEW_PROFILE_LINK)]);
   [newButton setCell:buttonCell.get()];
   [newButton setFont:[NSFont labelFontOfSize:12.0]];
   [newButton setBezelStyle:NSRegularSquareBezelStyle];
@@ -352,12 +352,12 @@ const CGFloat kManagedUserSpacing = 26.0;
 
 - (NSButton*)configureSwitchUserButton:(CGFloat)yOffset
                      updateWidthAdjust:(CGFloat*)widthAdjust {
-  scoped_nsobject<NSButton> newButton(
+  base::scoped_nsobject<NSButton> newButton(
       [[NSButton alloc] initWithFrame:NSMakeRect(
           kManagedUserSpacing, yOffset, kBubbleMinWidth - kLabelInset, 16)]);
-  scoped_nsobject<HyperlinkButtonCell> buttonCell(
+  base::scoped_nsobject<HyperlinkButtonCell> buttonCell(
       [[HyperlinkButtonCell alloc] initTextCell:
-          l10n_util::GetNSString(IDS_PROFILES_SWITCH_PROFILE_LINK)]);
+              l10n_util::GetNSString(IDS_PROFILES_SWITCH_PROFILE_LINK)]);
   [newButton setCell:buttonCell.get()];
   [newButton setFont:[NSFont labelFontOfSize:12.0]];
   [newButton setBezelStyle:NSRegularSquareBezelStyle];

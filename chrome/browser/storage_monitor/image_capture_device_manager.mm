@@ -25,8 +25,8 @@ chrome::ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
 @interface ImageCaptureDeviceManagerImpl
     : NSObject<ICDeviceBrowserDelegate> {
  @private
-  scoped_nsobject<ICDeviceBrowser> deviceBrowser_;
-  scoped_nsobject<NSMutableArray> cameras_;
+  base::scoped_nsobject<ICDeviceBrowser> deviceBrowser_;
+  base::scoped_nsobject<NSMutableArray> cameras_;
 
   // Guaranteed to outlive this class.
   // TODO(gbillock): Update when ownership chains go up through

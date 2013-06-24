@@ -21,7 +21,7 @@
 // going away. Is responsible for cleaning itself up.
 @interface JavaScriptAppModalDialogHelper : NSObject<NSAlertDelegate> {
  @private
-  scoped_nsobject<NSAlert> alert_;
+  base::scoped_nsobject<NSAlert> alert_;
   NSTextField* textField_;  // WEAK; owned by alert_
 }
 
@@ -208,13 +208,13 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
   }
 
   if (message_has_rtl && message_text_field) {
-    scoped_nsobject<NSMutableParagraphStyle> alignment(
+    base::scoped_nsobject<NSMutableParagraphStyle> alignment(
         [[NSParagraphStyle defaultParagraphStyle] mutableCopy]);
     [alignment setAlignment:NSRightTextAlignment];
 
     NSDictionary* alignment_attributes =
         @{ NSParagraphStyleAttributeName : alignment };
-    scoped_nsobject<NSAttributedString> attr_string(
+    base::scoped_nsobject<NSAttributedString> attr_string(
         [[NSAttributedString alloc] initWithString:message_text
                                         attributes:alignment_attributes]);
 
@@ -225,7 +225,7 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
   if (informative_has_rtl && informative_text_field) {
     base::i18n::TextDirection direction =
         base::i18n::GetFirstStrongCharacterDirection(dialog_->message_text());
-    scoped_nsobject<NSMutableParagraphStyle> alignment(
+    base::scoped_nsobject<NSMutableParagraphStyle> alignment(
         [[NSParagraphStyle defaultParagraphStyle] mutableCopy]);
     [alignment setAlignment:
         (direction == base::i18n::RIGHT_TO_LEFT) ? NSRightTextAlignment
@@ -233,7 +233,7 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
 
     NSDictionary* alignment_attributes =
         @{ NSParagraphStyleAttributeName : alignment };
-    scoped_nsobject<NSAttributedString> attr_string(
+    base::scoped_nsobject<NSAttributedString> attr_string(
         [[NSAttributedString alloc] initWithString:informative_text
                                         attributes:alignment_attributes]);
 

@@ -4,7 +4,7 @@
 
 #include <AppKit/AppKit.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #import "content/common/mac/attributed_string_coder.h"
@@ -33,7 +33,7 @@ class AttributedStringCoderTest : public testing::Test {
 };
 
 TEST_F(AttributedStringCoderTest, SimpleString) {
-  scoped_nsobject<NSMutableAttributedString> attr_str(NewAttrString());
+  base::scoped_nsobject<NSMutableAttributedString> attr_str(NewAttrString());
   [attr_str addAttributes:FontAttribute(@"Helvetica", 12.5)
                     range:NSMakeRange(0, [attr_str length])];
 
@@ -42,13 +42,13 @@ TEST_F(AttributedStringCoderTest, SimpleString) {
 }
 
 TEST_F(AttributedStringCoderTest, NoAttributes) {
-  scoped_nsobject<NSAttributedString> attr_str(NewAttrString());
+  base::scoped_nsobject<NSAttributedString> attr_str(NewAttrString());
   NSAttributedString* decoded = EncodeAndDecode(attr_str.get());
   EXPECT_NSEQ(attr_str.get(), decoded);
 }
 
 TEST_F(AttributedStringCoderTest, StripColor) {
-  scoped_nsobject<NSMutableAttributedString> attr_str(NewAttrString());
+  base::scoped_nsobject<NSMutableAttributedString> attr_str(NewAttrString());
   const NSUInteger kStringLength = [attr_str length];
   [attr_str addAttribute:NSFontAttributeName
                    value:[NSFont systemFontOfSize:26]
@@ -68,7 +68,7 @@ TEST_F(AttributedStringCoderTest, StripColor) {
 }
 
 TEST_F(AttributedStringCoderTest, MultipleFonts) {
-  scoped_nsobject<NSMutableAttributedString> attr_str(NewAttrString());
+  base::scoped_nsobject<NSMutableAttributedString> attr_str(NewAttrString());
   [attr_str setAttributes:FontAttribute(@"Courier", 12)
                     range:NSMakeRange(0, 10)];
   [attr_str addAttributes:FontAttribute(@"Helvetica", 16)
@@ -82,7 +82,7 @@ TEST_F(AttributedStringCoderTest, MultipleFonts) {
 }
 
 TEST_F(AttributedStringCoderTest, NoPertinentAttributes) {
-  scoped_nsobject<NSMutableAttributedString> attr_str(NewAttrString());
+  base::scoped_nsobject<NSMutableAttributedString> attr_str(NewAttrString());
   [attr_str addAttribute:NSForegroundColorAttributeName
                    value:[NSColor blueColor]
                    range:NSMakeRange(0, 10)];
@@ -95,7 +95,7 @@ TEST_F(AttributedStringCoderTest, NoPertinentAttributes) {
 
   NSAttributedString* decoded = EncodeAndDecode(attr_str.get());
 
-  scoped_nsobject<NSAttributedString> expected(NewAttrString());
+  base::scoped_nsobject<NSAttributedString> expected(NewAttrString());
   EXPECT_NSEQ(expected.get(), decoded);
 }
 

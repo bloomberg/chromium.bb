@@ -11,8 +11,8 @@
 
 #include <vector>
 
+#import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_sending_event.h"
-#import "base/memory/scoped_nsobject.h"
 #import "base/message_loop/message_pump_mac.h"
 #include "base/synchronization/lock.h"
 

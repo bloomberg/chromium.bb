@@ -33,9 +33,9 @@ class SelectedKeywordDecoration : public BubbleDecoration {
   FRIEND_TEST_ALL_PREFIXES(SelectedKeywordDecorationTest,
                            UsesPartialKeywordIfNarrow);
 
-  scoped_nsobject<NSImage> search_image_;
-  scoped_nsobject<NSString> full_string_;
-  scoped_nsobject<NSString> partial_string_;
+  base::scoped_nsobject<NSImage> search_image_;
+  base::scoped_nsobject<NSString> full_string_;
+  base::scoped_nsobject<NSString> partial_string_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectedKeywordDecoration);
 };

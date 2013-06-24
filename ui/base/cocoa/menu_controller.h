@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "ui/base/ui_export.h"
 
@@ -25,7 +25,7 @@ UI_EXPORT
 @interface MenuController : NSObject<NSMenuDelegate> {
  @protected
   ui::MenuModel* model_;  // weak
-  scoped_nsobject<NSMenu> menu_;
+  base::scoped_nsobject<NSMenu> menu_;
   BOOL useWithPopUpButtonCell_;  // If YES, 0th item is blank
   BOOL isMenuOpen_;
 }

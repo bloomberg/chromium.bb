@@ -29,7 +29,7 @@
 @implementation MCTrayController
 
 - (id)initWithMessageCenterTray:(message_center::MessageCenterTray*)tray {
-  scoped_nsobject<MCTrayWindow> window(
+  base::scoped_nsobject<MCTrayWindow> window(
       [[MCTrayWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
                                       styleMask:NSBorderlessWindowMask |
                                                 NSNonactivatingPanelMask

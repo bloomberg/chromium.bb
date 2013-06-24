@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
@@ -75,52 +75,52 @@ enum CocoaCookieDetailsType {
   BOOL hasExpiration_;
 
   // Only set for type kCocoaCookieDetailsTypeCookie.
-  scoped_nsobject<NSString> content_;
-  scoped_nsobject<NSString> path_;
-  scoped_nsobject<NSString> sendFor_;
+  base::scoped_nsobject<NSString> content_;
+  base::scoped_nsobject<NSString> path_;
+  base::scoped_nsobject<NSString> sendFor_;
   // Stringifed dates.
-  scoped_nsobject<NSString> expires_;
+  base::scoped_nsobject<NSString> expires_;
 
   // Only set for type kCocoaCookieDetailsTypeCookie and
   // kCocoaCookieDetailsTypeTreeAppCache nodes.
-  scoped_nsobject<NSString> created_;
+  base::scoped_nsobject<NSString> created_;
 
   // Only set for types kCocoaCookieDetailsTypeCookie, and
   // kCocoaCookieDetailsTypePromptDatabase nodes.
-  scoped_nsobject<NSString> name_;
+  base::scoped_nsobject<NSString> name_;
 
   // Only set for type kCocoaCookieDetailsTypeTreeLocalStorage,
   // kCocoaCookieDetailsTypeTreeDatabase,
   // kCocoaCookieDetailsTypePromptDatabase,
   // kCocoaCookieDetailsTypeTreeIndexedDB, and
   // kCocoaCookieDetailsTypeTreeAppCache nodes.
-  scoped_nsobject<NSString> fileSize_;
+  base::scoped_nsobject<NSString> fileSize_;
 
   // Only set for types kCocoaCookieDetailsTypeTreeLocalStorage,
   // kCocoaCookieDetailsTypeTreeDatabase, and
   // kCocoaCookieDetailsTypeTreeIndexedDB nodes.
-  scoped_nsobject<NSString> lastModified_;
+  base::scoped_nsobject<NSString> lastModified_;
 
   // Only set for type kCocoaCookieDetailsTypeTreeAppCache nodes.
-  scoped_nsobject<NSString> lastAccessed_;
+  base::scoped_nsobject<NSString> lastAccessed_;
 
   // Only set for type kCocoaCookieDetailsTypeCookie,
   // kCocoaCookieDetailsTypePromptDatabase,
   // kCocoaCookieDetailsTypePromptLocalStorage, and
   // kCocoaCookieDetailsTypeTreeIndexedDB nodes.
-  scoped_nsobject<NSString> domain_;
+  base::scoped_nsobject<NSString> domain_;
 
   // Only set for type kCocoaCookieTreeNodeTypeDatabaseStorage and
   // kCocoaCookieDetailsTypePromptDatabase nodes.
-  scoped_nsobject<NSString> databaseDescription_;
+  base::scoped_nsobject<NSString> databaseDescription_;
 
   // Only set for type kCocoaCookieDetailsTypePromptLocalStorage.
-  scoped_nsobject<NSString> localStorageKey_;
-  scoped_nsobject<NSString> localStorageValue_;
+  base::scoped_nsobject<NSString> localStorageKey_;
+  base::scoped_nsobject<NSString> localStorageValue_;
 
   // Only set for type kCocoaCookieDetailsTypeTreeAppCache and
   // kCocoaCookieDetailsTypePromptAppCache.
-  scoped_nsobject<NSString> manifestURL_;
+  base::scoped_nsobject<NSString> manifestURL_;
 }
 
 @property(nonatomic, readonly) BOOL canEditExpiration;
@@ -213,7 +213,7 @@ enum CocoaCookieDetailsType {
 // |CocoaCookieDetails| object for the cookie prompt.
 @interface CookiePromptContentDetailsAdapter : NSObject {
  @private
-  scoped_nsobject<CocoaCookieDetails> details_;
+  base::scoped_nsobject<CocoaCookieDetails> details_;
 }
 
 - (CocoaCookieDetails*)details;

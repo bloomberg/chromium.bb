@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/debug/debugger.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -54,7 +54,7 @@ class FramedBrowserWindowTest : public CocoaTest {
     bounds.origin.y += 40;
 
     [frameView lockFocus];
-    scoped_nsobject<NSBitmapImageRep> bitmap(
+    base::scoped_nsobject<NSBitmapImageRep> bitmap(
         [[NSBitmapImageRep alloc] initWithFocusedViewRect:bounds]);
     [frameView unlockFocus];
 

@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
@@ -35,7 +35,7 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
   AvatarButtonController* controller() { return controller_.get(); }
 
  private:
-  scoped_nsobject<AvatarButtonController> controller_;
+  base::scoped_nsobject<AvatarButtonController> controller_;
 };
 
 TEST_F(AvatarButtonControllerTest, AddRemoveProfiles) {
@@ -89,7 +89,7 @@ TEST_F(AvatarButtonControllerTest, ManagedUserLabel) {
 
   // Build a new controller to check if it is initialized correctly for a
   // managed user profile.
-  scoped_nsobject<AvatarButtonController> controller(
+  base::scoped_nsobject<AvatarButtonController> controller(
       [[AvatarButtonController alloc] initWithBrowser:browser()]);
 
   EXPECT_TRUE([controller labelButtonView]);

@@ -162,7 +162,7 @@ private:
 // 10.6 and 10.7.
 NSImage* CreateImageWithSize(NSSize size,
                              void (^drawingHandler)(NSSize)) {
-  scoped_nsobject<NSImage> result([[NSImage alloc] initWithSize:size]);
+  base::scoped_nsobject<NSImage> result([[NSImage alloc] initWithSize:size]);
   [NSGraphicsContext saveGraphicsState];
   for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
     float scale = GetScaleFactorScale(scale_factor);
@@ -1296,7 +1296,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 
   // Make a new tab. Load the contents of this tab from the nib and associate
   // the new controller with |contents| so it can be looked up later.
-  scoped_nsobject<TabContentsController> contentsController(
+  base::scoped_nsobject<TabContentsController> contentsController(
       [[TabContentsController alloc] initWithContents:contents]);
   [tabContentsArray_ insertObject:contentsController atIndex:index];
 
@@ -1410,7 +1410,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   // Simply create a new TabContentsController for |newContents| and place it
   // into the array, replacing |oldContents|.  An ActiveTabChanged notification
   // will follow, at which point we will install the new view.
-  scoped_nsobject<TabContentsController> newController(
+  base::scoped_nsobject<TabContentsController> newController(
       [[TabContentsController alloc] initWithContents:newContents]);
 
   // Bye bye, |oldController|.
@@ -1491,9 +1491,9 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   NSView* tabView = [closingTab view];
   CAAnimation* animation = [[tabView animationForKey:@"frameOrigin"] copy];
   [animation autorelease];
-  scoped_nsobject<TabCloseAnimationDelegate> delegate(
-    [[TabCloseAnimationDelegate alloc] initWithTabStrip:self
-                                          tabController:closingTab]);
+  base::scoped_nsobject<TabCloseAnimationDelegate> delegate(
+      [[TabCloseAnimationDelegate alloc] initWithTabStrip:self
+                                            tabController:closingTab]);
   [animation setDelegate:delegate.get()];  // Retains delegate.
   NSMutableDictionary* animationDictionary =
       [NSMutableDictionary dictionaryWithDictionary:[tabView animations]];
@@ -1746,12 +1746,12 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   // Cancel any pending tab transition.
   hoverTabSelector_->CancelTabTransition();
 
-  scoped_nsobject<TabContentsController> movedTabContentsController(
+  base::scoped_nsobject<TabContentsController> movedTabContentsController(
       [[tabContentsArray_ objectAtIndex:from] retain]);
   [tabContentsArray_ removeObjectAtIndex:from];
   [tabContentsArray_ insertObject:movedTabContentsController.get()
                           atIndex:to];
-  scoped_nsobject<TabController> movedTabController(
+  base::scoped_nsobject<TabController> movedTabController(
       [[tabArray_ objectAtIndex:from] retain]);
   DCHECK([movedTabController isKindOfClass:[TabController class]]);
   [tabArray_ removeObjectAtIndex:from];

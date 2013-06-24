@@ -57,7 +57,7 @@ CGFloat WidthForResults(NSAttributedString* resultsString) {
 // Convenience for the attributes used in the right-justified info
 // cells.  Sets the background color to red if |foundMatches| is YES.
 - (NSDictionary*)resultsAttributes:(BOOL)foundMatches {
-  scoped_nsobject<NSMutableParagraphStyle> style(
+  base::scoped_nsobject<NSMutableParagraphStyle> style(
       [[NSMutableParagraphStyle alloc] init]);
   [style setAlignment:NSRightTextAlignment];
 

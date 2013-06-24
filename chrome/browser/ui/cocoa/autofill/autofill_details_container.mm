@@ -19,7 +19,7 @@
 }
 
 - (void)addSection:(autofill::DialogSection)section {
-  scoped_nsobject<AutofillSectionContainer> sectionContainer(
+  base::scoped_nsobject<AutofillSectionContainer> sectionContainer(
       [[AutofillSectionContainer alloc] initWithController:controller_
                                                 forSection:section]);
   [details_ addObject:sectionContainer];

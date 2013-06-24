@@ -317,7 +317,7 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
     [popup_ setLevel:NSNormalWindowLevel];
     // Use a flipped view to pin the matrix top the top left. This is needed
     // for animated resize.
-    scoped_nsobject<FlippedView> contentView(
+    base::scoped_nsobject<FlippedView> contentView(
         [[FlippedView alloc] initWithFrame:NSZeroRect]);
     [popup_ setContentView:contentView];
 
@@ -366,7 +366,7 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   bool animate = (NSHeight(popupFrame) < NSHeight(currentPopupFrame) &&
                   NSWidth(popupFrame) == NSWidth(currentPopupFrame));
 
-  scoped_nsobject<NSDictionary> savedAnimations;
+  base::scoped_nsobject<NSDictionary> savedAnimations;
   if (!animate) {
     // In an ideal world, running a zero-length animation would cancel any
     // running animations and set the new frame value immediately.  In practice,
@@ -583,7 +583,7 @@ void OmniboxPopupViewMac::OpenURLForRow(int row, bool force_background) {
   options |= NSTrackingActiveInActiveApp;
   options |= NSTrackingInVisibleRect;
 
-  scoped_nsobject<NSTrackingArea> trackingArea(
+  base::scoped_nsobject<NSTrackingArea> trackingArea(
       [[NSTrackingArea alloc] initWithRect:[self frame]
                                    options:options
                                      owner:self

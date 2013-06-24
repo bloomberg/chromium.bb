@@ -78,7 +78,7 @@ class OverlayableContentsControllerTest : public InProcessBrowserTest,
  protected:
   InstantOverlayModel instant_overlay_model_;
   scoped_ptr<content::WebContents> web_contents_;
-  scoped_nsobject<OverlayableContentsController> controller_;
+  base::scoped_nsobject<OverlayableContentsController> controller_;
   content::NotificationRegistrar registrar_;
   int visibility_changed_count_;
 };

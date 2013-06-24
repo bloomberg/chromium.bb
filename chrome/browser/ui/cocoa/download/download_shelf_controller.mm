@@ -300,7 +300,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
 
 - (void)addDownloadItem:(DownloadItem*)downloadItem {
   DCHECK([NSThread isMainThread]);
-  scoped_nsobject<DownloadItemController> controller(
+  base::scoped_nsobject<DownloadItemController> controller(
       [[DownloadItemController alloc] initWithDownload:downloadItem
                                                  shelf:self
                                              navigator:navigator_]);

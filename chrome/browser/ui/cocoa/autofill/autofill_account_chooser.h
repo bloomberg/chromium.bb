@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 namespace autofill {
   class AutofillDialogController;
@@ -17,9 +17,9 @@ namespace autofill {
 
 @interface AutofillAccountChooser : NSView {
  @private
-  scoped_nsobject<NSButton> link_;
-  scoped_nsobject<MenuButton> popup_;
-  scoped_nsobject<NSImageView> icon_;
+  base::scoped_nsobject<NSButton> link_;
+  base::scoped_nsobject<MenuButton> popup_;
+  base::scoped_nsobject<NSImageView> icon_;
   autofill::AutofillDialogController* controller_;  // weak.
 }
 

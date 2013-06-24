@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 
 #if __OBJC__
@@ -37,7 +37,7 @@ class JavaScriptAppModalDialogCocoa : public NativeAppModalDialog {
  private:
   scoped_ptr<JavaScriptAppModalDialog> dialog_;
 
-  scoped_nsobject<JavaScriptAppModalDialogHelper> helper_;
+  base::scoped_nsobject<JavaScriptAppModalDialogHelper> helper_;
   NSAlert* alert_; // weak, owned by |helper_|.
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialogCocoa);

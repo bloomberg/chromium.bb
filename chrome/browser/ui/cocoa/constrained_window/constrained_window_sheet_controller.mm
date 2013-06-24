@@ -25,7 +25,7 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
 // An invisible overlay window placed on top of the sheet's parent view.
 // This window blocks interaction with the underlying view.
 @interface CWSheetOverlayWindow : NSWindow {
-  scoped_nsobject<ConstrainedWindowSheetController> controller_;
+  base::scoped_nsobject<ConstrainedWindowSheetController> controller_;
 }
 @end
 
@@ -78,7 +78,7 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
   if (controller)
     return controller;
 
-  scoped_nsobject<ConstrainedWindowSheetController> new_controller(
+  base::scoped_nsobject<ConstrainedWindowSheetController> new_controller(
       [[ConstrainedWindowSheetController alloc]
           initWithParentWindow:parentWindow]);
   if (!g_sheetControllers)
@@ -140,14 +140,13 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
 
   // Create an invisible overlay window.
   NSRect rect = [self overlayWindowFrameForParentView:parentView];
-  scoped_nsobject<NSWindow> overlayWindow(
-      [[CWSheetOverlayWindow alloc] initWithContentRect:rect
-                                             controller:self]);
+  base::scoped_nsobject<NSWindow> overlayWindow(
+      [[CWSheetOverlayWindow alloc] initWithContentRect:rect controller:self]);
   [parentWindow_ addChildWindow:overlayWindow
                         ordered:NSWindowAbove];
 
   // Add an entry for the sheet.
-  scoped_nsobject<ConstrainedWindowSheetInfo> info(
+  base::scoped_nsobject<ConstrainedWindowSheetInfo> info(
       [[ConstrainedWindowSheetInfo alloc] initWithSheet:sheet
                                              parentView:parentView
                                           overlayWindow:overlayWindow]);

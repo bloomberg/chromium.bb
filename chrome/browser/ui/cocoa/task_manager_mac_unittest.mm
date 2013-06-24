@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"

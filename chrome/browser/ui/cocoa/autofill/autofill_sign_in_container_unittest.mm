@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_sign_in_container.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -60,7 +60,7 @@ class AutofillSignInContainerTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  scoped_nsobject<AutofillSignInContainer> container_;
+  base::scoped_nsobject<AutofillSignInContainer> container_;
   testing::NiceMock<autofill::MockAutofillDialogController> controller_;
   CocoaTestHelperWindow* test_window_;
 };

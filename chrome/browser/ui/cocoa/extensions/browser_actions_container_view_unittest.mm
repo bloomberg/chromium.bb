@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +21,7 @@ class BrowserActionsContainerViewTest : public CocoaTest {
         initWithFrame:NSMakeRect(0, 0, 0, kContainerHeight)]);
   }
 
-  scoped_nsobject<BrowserActionsContainerView> view_;
+  base::scoped_nsobject<BrowserActionsContainerView> view_;
 };
 
 TEST_F(BrowserActionsContainerViewTest, BasicTests) {

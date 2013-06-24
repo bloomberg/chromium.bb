@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/autofill/layout_view.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/autofill/simple_grid_layout.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -24,7 +24,7 @@ class LayoutViewTest : public ui::CocoaTest {
   }
 
  protected:
-  scoped_nsobject<LayoutView> view_;
+  base::scoped_nsobject<LayoutView> view_;
   SimpleGridLayout* layout_;  // weak, owned by view_.
 };
 
@@ -40,9 +40,9 @@ TEST_F(LayoutViewTest, setFrameInvokesLayout) {
   cs->AddColumn(0.4);
   cs->AddColumn(0.6);
   layout_->StartRow(0, 0);
-  scoped_nsobject<NSView> childView1(
+  base::scoped_nsobject<NSView> childView1(
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 0, 45)]);
-  scoped_nsobject<NSView> childView2(
+  base::scoped_nsobject<NSView> childView2(
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 20, 55)]);
   layout_->AddView(childView1);
   layout_->AddView(childView2);

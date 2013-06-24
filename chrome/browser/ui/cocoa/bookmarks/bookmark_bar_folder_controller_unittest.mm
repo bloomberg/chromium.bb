@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -129,7 +129,7 @@ void DeleteBookmark(BookmarkButton* button, Profile* profile) {
 
 class BookmarkBarFolderControllerTest : public CocoaProfileTest {
  public:
-  scoped_nsobject<BookmarkBarControllerChildFolderRedirect> bar_;
+  base::scoped_nsobject<BookmarkBarControllerChildFolderRedirect> bar_;
   const BookmarkNode* folderA_;  // Owned by model.
   const BookmarkNode* longTitleNode_;  // Owned by model.
 
@@ -217,7 +217,7 @@ class BookmarkBarFolderControllerTest : public CocoaProfileTest {
 };
 
 TEST_F(BookmarkBarFolderControllerTest, InitCreateAndDelete) {
-  scoped_nsobject<BookmarkBarFolderController> bbfc;
+  base::scoped_nsobject<BookmarkBarFolderController> bbfc;
   bbfc.reset(SimpleBookmarkBarFolderController());
 
   // Make sure none of the buttons overlap, that all are inside
@@ -251,7 +251,7 @@ TEST_F(BookmarkBarFolderControllerTest, InitCreateAndDelete) {
 // Make sure closing of the window releases the controller.
 // (e.g. valgrind shouldn't complain if we do this).
 TEST_F(BookmarkBarFolderControllerTest, ReleaseOnClose) {
-  scoped_nsobject<BookmarkBarFolderController> bbfc;
+  base::scoped_nsobject<BookmarkBarFolderController> bbfc;
   bbfc.reset(SimpleBookmarkBarFolderController());
   EXPECT_TRUE(bbfc.get());
 
@@ -264,7 +264,7 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
   EXPECT_TRUE(parentButton);
 
   // If parent is a BookmarkBarController, grow down.
-  scoped_nsobject<BookmarkBarFolderController> bbfc;
+  base::scoped_nsobject<BookmarkBarFolderController> bbfc;
   bbfc.reset([[BookmarkBarFolderController alloc]
                initWithParentButton:parentButton
                    parentController:nil
@@ -289,7 +289,7 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
   EXPECT_LT(shifted.x, pt.x);
 
   // If parent is a BookmarkBarFolderController, grow right.
-  scoped_nsobject<BookmarkBarFolderController> bbfc2;
+  base::scoped_nsobject<BookmarkBarFolderController> bbfc2;
   bbfc2.reset([[BookmarkBarFolderController alloc]
                 initWithParentButton:[[bbfc buttons] objectAtIndex:0]
                     parentController:bbfc.get()
@@ -323,7 +323,7 @@ TEST_F(BookmarkBarFolderControllerTest, PositionRightLeftRight) {
   EXPECT_TRUE(parentButton);
 
   // Open them all.
-  scoped_nsobject<NSMutableArray> folder_controller_array;
+  base::scoped_nsobject<NSMutableArray> folder_controller_array;
   folder_controller_array.reset([[NSMutableArray array] retain]);
   for (i=0; i<count; i++) {
     BookmarkBarFolderControllerNoLevel* bbfcl =
@@ -368,7 +368,7 @@ TEST_F(BookmarkBarFolderControllerTest, PositionRightLeftRight) {
 }
 
 TEST_F(BookmarkBarFolderControllerTest, DropDestination) {
-  scoped_nsobject<BookmarkBarFolderController> bbfc;
+  base::scoped_nsobject<BookmarkBarFolderController> bbfc;
   bbfc.reset(SimpleBookmarkBarFolderController());
   EXPECT_TRUE(bbfc.get());
 
@@ -404,7 +404,7 @@ TEST_F(BookmarkBarFolderControllerTest, DropDestination) {
 }
 
 TEST_F(BookmarkBarFolderControllerTest, OpenFolder) {
-  scoped_nsobject<BookmarkBarFolderController> bbfc;
+  base::scoped_nsobject<BookmarkBarFolderController> bbfc;
   bbfc.reset(SimpleBookmarkBarFolderController());
   EXPECT_TRUE(bbfc.get());
 
@@ -430,7 +430,7 @@ TEST_F(BookmarkBarFolderControllerTest, OpenFolder) {
 }
 
 TEST_F(BookmarkBarFolderControllerTest, DeleteOpenFolder) {
-  scoped_nsobject<BookmarkBarFolderController> parent_controller(
+  base::scoped_nsobject<BookmarkBarFolderController> parent_controller(
       SimpleBookmarkBarFolderController());
 
   // Open a folder.
@@ -445,7 +445,7 @@ TEST_F(BookmarkBarFolderControllerTest, DeleteOpenFolder) {
 }
 
 TEST_F(BookmarkBarFolderControllerTest, ChildFolderCallbacks) {
-  scoped_nsobject<BookmarkBarFolderControllerPong> bbfc;
+  base::scoped_nsobject<BookmarkBarFolderControllerPong> bbfc;
   bbfc.reset(SimpleBookmarkBarFolderController());
   EXPECT_TRUE(bbfc.get());
   [bar_ setChildFolderDelegate:bbfc.get()];
@@ -463,7 +463,7 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderCallbacks) {
 
 // Make sure bookmark folders have variable widths.
 TEST_F(BookmarkBarFolderControllerTest, ChildFolderWidth) {
-  scoped_nsobject<BookmarkBarFolderController> bbfc;
+  base::scoped_nsobject<BookmarkBarFolderController> bbfc;
 
   bbfc.reset(SimpleBookmarkBarFolderController());
   EXPECT_TRUE(bbfc.get());
@@ -482,7 +482,7 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderWidth) {
 // Simple scrolling tests.
 // Currently flaky due to a changed definition of the correct menu boundaries.
 TEST_F(BookmarkBarFolderControllerTest, DISABLED_SimpleScroll) {
-  scoped_nsobject<BookmarkBarFolderController> bbfc;
+  base::scoped_nsobject<BookmarkBarFolderController> bbfc;
   NSRect screenFrame = [[NSScreen mainScreen] visibleFrame];
   CGFloat screenHeight = NSHeight(screenFrame);
   int nodecount = AddLotsOfNodes();
@@ -572,7 +572,7 @@ TEST_F(BookmarkBarFolderControllerTest, DISABLED_SimpleScroll) {
 // Folder menu sizing and placement while deleting bookmarks
 // and scrolling tests.
 TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
-  scoped_nsobject<BookmarkBarFolderController> bbfc;
+  base::scoped_nsobject<BookmarkBarFolderController> bbfc;
   AddLotsOfNodes();
   bbfc.reset(SimpleBookmarkBarFolderController());
   [bbfc showWindow:bbfc.get()];
@@ -625,7 +625,7 @@ TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
 
 // Make sure that we return the correct browser window.
 TEST_F(BookmarkBarFolderControllerTest, BrowserWindow) {
-  scoped_nsobject<BookmarkBarFolderController> controller(
+  base::scoped_nsobject<BookmarkBarFolderController> controller(
       SimpleBookmarkBarFolderController());
   EXPECT_EQ([bar_ browserWindow], [controller browserWindow]);
 }
@@ -680,9 +680,9 @@ TEST_F(BookmarkBarFolderControllerTest, BrowserWindow) {
 
 class BookmarkBarFolderControllerMenuTest : public CocoaProfileTest {
  public:
-  scoped_nsobject<NSView> parent_view_;
-  scoped_nsobject<ViewResizerPong> resizeDelegate_;
-  scoped_nsobject<BookmarkBarController> bar_;
+  base::scoped_nsobject<NSView> parent_view_;
+  base::scoped_nsobject<ViewResizerPong> resizeDelegate_;
+  base::scoped_nsobject<BookmarkBarController> bar_;
 
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
@@ -1379,7 +1379,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
 
   // Pop open a folder.
   BookmarkButton* button = [bar_ buttonWithTitleEqualTo:@"2f"];
-  scoped_nsobject<BookmarkBarFolderControllerDragData> folderController;
+  base::scoped_nsobject<BookmarkBarFolderControllerDragData> folderController;
   folderController.reset([[BookmarkBarFolderControllerDragData alloc]
                           initWithParentButton:button
                               parentController:nil
@@ -1392,7 +1392,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
   // Gen up some dragging data.
   const BookmarkNode* newNode = other->GetChild(2);
   [folderController setDragDataNode:newNode];
-  scoped_nsobject<FakedDragInfo> dragInfo([[FakedDragInfo alloc] init]);
+  base::scoped_nsobject<FakedDragInfo> dragInfo([[FakedDragInfo alloc] init]);
   [dragInfo setDropLocation:[targetButton top]];
   [folderController dragBookmarkData:(id<NSDraggingInfo>)dragInfo.get()];
 
@@ -1438,7 +1438,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkDataToTrash) {
 
   // Pop open a folder.
   BookmarkButton* button = [bar_ buttonWithTitleEqualTo:@"2f"];
-  scoped_nsobject<BookmarkBarFolderControllerDragData> folderController;
+  base::scoped_nsobject<BookmarkBarFolderControllerDragData> folderController;
   folderController.reset([[BookmarkBarFolderControllerDragData alloc]
                           initWithParentButton:button
                               parentController:nil

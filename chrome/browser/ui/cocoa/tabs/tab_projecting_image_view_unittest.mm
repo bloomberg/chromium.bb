@@ -14,31 +14,31 @@ namespace {
 class TabProjectingImageViewTest : public CocoaTest {
  public:
   TabProjectingImageViewTest() {
-    scoped_nsobject<NSImage> backgroundImage(
+    base::scoped_nsobject<NSImage> backgroundImage(
         [[NSImage alloc] initWithSize:NSMakeSize(16, 16)]);
     [backgroundImage lockFocus];
     NSRectFill(NSMakeRect(0, 0, 16, 16));
     [backgroundImage unlockFocus];
 
-    scoped_nsobject<NSImage> projectorImage(
+    base::scoped_nsobject<NSImage> projectorImage(
         [[NSImage alloc] initWithSize:NSMakeSize(16, 16)]);
     [projectorImage lockFocus];
     NSRectFill(NSMakeRect(0, 0, 16, 16));
     [projectorImage unlockFocus];
 
-    scoped_nsobject<NSImage> throbImage(
+    base::scoped_nsobject<NSImage> throbImage(
         [[NSImage alloc] initWithSize:NSMakeSize(32, 32)]);
     [throbImage lockFocus];
     NSRectFill(NSMakeRect(0, 0, 32, 32));
     [throbImage unlockFocus];
 
-    scoped_nsobject<TabProjectingImageView> view([[TabProjectingImageView alloc]
-              initWithFrame:NSMakeRect(0, 0, 32, 32)
-            backgroundImage:backgroundImage
-             projectorImage:projectorImage
-                 throbImage:throbImage
-                 durationMS:20
-         animationContainer:NULL]);
+    base::scoped_nsobject<TabProjectingImageView> view(
+        [[TabProjectingImageView alloc] initWithFrame:NSMakeRect(0, 0, 32, 32)
+                                      backgroundImage:backgroundImage
+                                       projectorImage:projectorImage
+                                           throbImage:throbImage
+                                           durationMS:20
+                                   animationContainer:NULL]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
   }

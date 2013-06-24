@@ -42,7 +42,7 @@ class MockBridge : public HistoryMenuBridge {
   }
 
  private:
-  scoped_nsobject<NSMenu> menu_;
+  base::scoped_nsobject<NSMenu> menu_;
 };
 
 class HistoryMenuBridgeTest : public CocoaProfileTest {

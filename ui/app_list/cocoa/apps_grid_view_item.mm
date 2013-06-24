@@ -5,7 +5,7 @@
 #import "ui/app_list/cocoa/apps_grid_view_item.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/app_list/app_list_constants.h"
@@ -13,8 +13,8 @@
 #include "ui/app_list/app_list_item_model_observer.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
@@ -43,7 +43,7 @@ class ItemModelObserverBridge : public app_list::AppListItemModelObserver {
  private:
   AppsGridViewItem* parent_;  // Weak. Owns us.
   AppListItemModel* model_;  // Weak. Owned by AppListModel::Apps.
-  scoped_nsobject<MenuController> context_menu_controller_;
+  base::scoped_nsobject<MenuController> context_menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ItemModelObserverBridge);
 };
@@ -172,7 +172,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
 
 - (id)initWithSize:(NSSize)tileSize {
   if ((self = [super init])) {
-    scoped_nsobject<AppsGridItemButton> prototypeButton(
+    base::scoped_nsobject<AppsGridItemButton> prototypeButton(
         [[AppsGridItemButton alloc] initWithFrame:NSMakeRect(
             0, 0, tileSize.width, tileSize.height - kTileTopPadding)]);
 
@@ -183,9 +183,9 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
     [prototypeButton setButtonType:NSMomentaryChangeButton];
     [prototypeButton setBordered:NO];
 
-    scoped_nsobject<AppsGridItemBackgroundView> prototypeButtonBackground(
-        [[AppsGridItemBackgroundView alloc] initWithFrame:NSMakeRect(
-            0, 0, tileSize.width, tileSize.height)]);
+    base::scoped_nsobject<AppsGridItemBackgroundView> prototypeButtonBackground(
+        [[AppsGridItemBackgroundView alloc]
+            initWithFrame:NSMakeRect(0, 0, tileSize.width, tileSize.height)]);
     [prototypeButtonBackground addSubview:prototypeButton];
     [self setView:prototypeButtonBackground];
   }
@@ -197,7 +197,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
 }
 
 - (void)setButtonTitle:(NSString*)newTitle {
-  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
   [paragraphStyle setLineBreakMode:NSLineBreakByTruncatingTail];
   [paragraphStyle setAlignment:NSCenterTextAlignment];
@@ -209,7 +209,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
         gfx::SkColorToCalibratedNSColor(app_list::kGridTitleHoverColor) :
         gfx::SkColorToCalibratedNSColor(app_list::kGridTitleColor)
   };
-  scoped_nsobject<NSAttributedString> attributedTitle(
+  base::scoped_nsobject<NSAttributedString> attributedTitle(
       [[NSAttributedString alloc] initWithString:newTitle
                                       attributes:titleAttributes]);
   [[self button] setAttributedTitle:attributedTitle];
@@ -300,7 +300,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
     return;
   }
 
-  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   gfx::ScopedNSGraphicsContextSaveGState context;
   [shadow setShadowOffset:NSMakeSize(0, -2)];
   [shadow setShadowBlurRadius:2.0];

@@ -45,16 +45,16 @@
   // hidden, we still need to keep a 1px tall tracking area visible.  Attaching
   // to the content view allows us to do this.  |trackingArea_| can be nil if
   // not in presentation mode or during animations.
-  scoped_nsobject<NSTrackingArea> trackingArea_;
+  base::scoped_nsobject<NSTrackingArea> trackingArea_;
 
   // Pointer to the currently running animation.  Is nil if no animation is
   // running.
-  scoped_nsobject<DropdownAnimation> currentAnimation_;
+  base::scoped_nsobject<DropdownAnimation> currentAnimation_;
 
   // Timers for scheduled showing/hiding of the bar (which are always done with
   // animation).
-  scoped_nsobject<NSTimer> showTimer_;
-  scoped_nsobject<NSTimer> hideTimer_;
+  base::scoped_nsobject<NSTimer> showTimer_;
+  base::scoped_nsobject<NSTimer> hideTimer_;
 
   // Holds the current bounds of |trackingArea_|, even if |trackingArea_| is
   // currently nil.  Used to restore the tracking area when an animation

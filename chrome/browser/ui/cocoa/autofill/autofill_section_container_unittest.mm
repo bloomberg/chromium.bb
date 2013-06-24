@@ -5,15 +5,15 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/layout_view.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "grit/generated_resources.h"
-#include "testing/gtest_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -41,7 +41,7 @@ class AutofillSectionContainerTest : public ui::CocoaTest {
   }
 
  protected:
-  scoped_nsobject<AutofillSectionContainer> container_;
+  base::scoped_nsobject<AutofillSectionContainer> container_;
   testing::NiceMock<autofill::MockAutofillDialogController> controller_;
 };
 

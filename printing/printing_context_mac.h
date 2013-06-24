@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "base/memory/scoped_nsobject.h"
-#include "printing/printing_context.h"
+#include "base/mac/scoped_nsobject.h"
 #include "printing/print_job_constants.h"
+#include "printing/printing_context.h"
 
 #ifdef __OBJC__
 @class NSPrintInfo;
@@ -87,7 +87,7 @@ class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
   bool SetOutputColor(int color_mode);
 
   // The native print info object.
-  scoped_nsobject<NSPrintInfo> print_info_;
+  base::scoped_nsobject<NSPrintInfo> print_info_;
 
   // The current page's context; only valid between NewPage and PageDone call
   // pairs.

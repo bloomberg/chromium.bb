@@ -149,8 +149,8 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
   [field_ setAllowsEditingTextAttributes:YES];
 
   // Get the appropriate line height for the font that we use.
-  scoped_nsobject<NSLayoutManager>
-      layoutManager([[NSLayoutManager alloc] init]);
+  base::scoped_nsobject<NSLayoutManager> layoutManager(
+      [[NSLayoutManager alloc] init]);
   [layoutManager setUsesScreenFonts:YES];
 }
 
@@ -435,8 +435,8 @@ void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
 
   // Make a paragraph style locking in the standard line height as the maximum,
   // otherwise the baseline may shift "downwards".
-  scoped_nsobject<NSMutableParagraphStyle>
-      paragraph_style([[NSMutableParagraphStyle alloc] init]);
+  base::scoped_nsobject<NSMutableParagraphStyle> paragraph_style(
+      [[NSMutableParagraphStyle alloc] init]);
   CGFloat line_height = [[field_ cell] lineHeight];
   [paragraph_style setMaximumLineHeight:line_height];
   [paragraph_style setMinimumLineHeight:line_height];

@@ -10,7 +10,7 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -46,7 +46,7 @@ class WorkAreaWatcherObserver;
 
   // The profile menu, which appears right before the Help menu. It is only
   // available when multiple profiles is enabled.
-  scoped_nsobject<ProfileMenuController> profileMenuController_;
+  base::scoped_nsobject<ProfileMenuController> profileMenuController_;
 
   // If we're told to open URLs (in particular, via |-application:openFiles:| by
   // Launch Services) before we've launched the browser, we queue them up in

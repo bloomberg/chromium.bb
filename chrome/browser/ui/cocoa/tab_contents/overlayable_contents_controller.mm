@@ -28,7 +28,8 @@
      windowController:(BrowserWindowController*)windowController {
   if ((self = [super init])) {
     windowController_ = windowController;
-    scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
+    base::scoped_nsobject<NSView> view(
+        [[NSView alloc] initWithFrame:NSZeroRect]);
     [view setAutoresizingMask:NSViewHeightSizable | NSViewWidthSizable];
     [view setAutoresizesSubviews:NO];
     [[NSNotificationCenter defaultCenter]

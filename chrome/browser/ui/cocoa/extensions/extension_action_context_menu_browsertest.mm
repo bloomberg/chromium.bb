@@ -64,7 +64,7 @@ public:
 
 IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BasicTest) {
   SetupPageAction();
-  scoped_nsobject<ExtensionActionContextMenu> menu;
+  base::scoped_nsobject<ExtensionActionContextMenu> menu;
   menu.reset([[ExtensionActionContextMenu alloc] initWithExtension:extension_
                                                            browser:browser()
                                                    extensionAction:action_]);
@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BrowserAction) {
        new Browser(Browser::CreateParams(browser()->profile(),
                                          browser()->host_desktop_type())));
 
-  scoped_nsobject<ExtensionActionContextMenu> menu;
+  base::scoped_nsobject<ExtensionActionContextMenu> menu;
   menu.reset([[ExtensionActionContextMenu alloc]
       initWithExtension:extension_
                 browser:empty_browser
@@ -158,7 +158,7 @@ class DevToolsAttachedObserver {
 IN_PROC_BROWSER_TEST_F(
     ExtensionActionContextMenuTest, DISABLED_RunInspectPopup) {
   SetupPageAction();
-  scoped_nsobject<ExtensionActionContextMenu> menu;
+  base::scoped_nsobject<ExtensionActionContextMenu> menu;
   menu.reset([[ExtensionActionContextMenu alloc] initWithExtension:extension_
                                                            browser:browser()
                                                    extensionAction:action_]);

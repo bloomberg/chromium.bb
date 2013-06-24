@@ -6,7 +6,7 @@
 
 #define CHROME_BROWSER_UI_COCOA_CERTIFICATE_VIEWER_MAC_H_
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
@@ -21,11 +21,11 @@ namespace net {
 @interface SSLCertificateViewerCocoa : NSObject<ConstrainedWindowSheet> {
  @private
   // The corresponding list of certificates.
-  scoped_nsobject<NSArray> certificates_;
+  base::scoped_nsobject<NSArray> certificates_;
   scoped_ptr<SSLCertificateViewerCocoaBridge> observer_;
-  scoped_nsobject<SFCertificatePanel> panel_;
+  base::scoped_nsobject<SFCertificatePanel> panel_;
   scoped_ptr<ConstrainedWindowMac> constrainedWindow_;
-  scoped_nsobject<NSWindow> overlayWindow_;
+  base::scoped_nsobject<NSWindow> overlayWindow_;
   BOOL closePending_;
   // A copy of the sheet's frame used to restore on show.
   NSRect oldSheetFrame_;

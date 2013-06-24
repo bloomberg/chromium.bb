@@ -9,7 +9,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
@@ -69,9 +69,8 @@ void DrawTruncatedTitle(NSAttributedString* title, NSRect frame) {
 
   NSColor* color = [NSColor blackColor];
   NSColor* alpha_color = [color colorWithAlphaComponent:0.0];
-  scoped_nsobject<NSGradient> mask(
-      [[NSGradient alloc] initWithStartingColor:color
-                                    endingColor:alpha_color]);
+  base::scoped_nsobject<NSGradient> mask(
+      [[NSGradient alloc] initWithStartingColor:color endingColor:alpha_color]);
   // Draw the gradient mask.
   CGContextSetBlendMode(context, kCGBlendModeDestinationIn);
   [mask drawFromPoint:NSMakePoint(NSMaxX(frame) - gradient_width,
@@ -101,9 +100,8 @@ NSImage* DragImageForBookmark(NSImage* favicon, const string16& title) {
       [NSDictionary dictionaryWithObject:[NSFont systemFontOfSize:
                                            [NSFont smallSystemFontSize]]
                                   forKey:NSFontAttributeName];
-  scoped_nsobject<NSAttributedString> rich_title(
-      [[NSAttributedString alloc] initWithString:ns_title
-                                      attributes:attrs]);
+  base::scoped_nsobject<NSAttributedString> rich_title(
+      [[NSAttributedString alloc] initWithString:ns_title attributes:attrs]);
 
   // Set up sizes and locations for rendering.
   const CGFloat kIconMargin = 2.0;  // Gap between icon and text.

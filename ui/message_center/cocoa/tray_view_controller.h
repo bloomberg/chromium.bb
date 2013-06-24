@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/mac/scoped_block.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "ui/message_center/message_center_export.h"
 
 @class HoverImageButton;
@@ -40,43 +40,43 @@ MESSAGE_CENTER_EXPORT
   message_center::MessageCenter* messageCenter_;
 
   // The back button shown while the settings are open.
-  scoped_nsobject<HoverImageButton> backButton_;
+  base::scoped_nsobject<HoverImageButton> backButton_;
 
   // The "Notifications" label at the top.
-  scoped_nsobject<NSTextField> title_;
+  base::scoped_nsobject<NSTextField> title_;
 
   // The scroll view that contains all the notifications in its documentView.
-  scoped_nsobject<NSScrollView> scrollView_;
+  base::scoped_nsobject<NSScrollView> scrollView_;
 
   // The clip view that manages how scrollView_'s documentView is clipped.
-  scoped_nsobject<MCClipView> clipView_;
+  base::scoped_nsobject<MCClipView> clipView_;
 
   // Array of MCNotificationController objects, which the array owns.
-  scoped_nsobject<NSMutableArray> notifications_;
+  base::scoped_nsobject<NSMutableArray> notifications_;
 
   // Map of notification IDs to weak pointers of the view controllers in
   // |notifications_|.
   std::map<std::string, MCNotificationController*> notificationsMap_;
 
   // The pause button that enters quiet mode.
-  scoped_nsobject<HoverImageButton> pauseButton_;
+  base::scoped_nsobject<HoverImageButton> pauseButton_;
 
   // The clear all notifications button. Hidden when there are no notifications.
-  scoped_nsobject<HoverImageButton> clearAllButton_;
+  base::scoped_nsobject<HoverImageButton> clearAllButton_;
 
   // The settings button that shows the settings UI.
-  scoped_nsobject<HoverImageButton> settingsButton_;
+  base::scoped_nsobject<HoverImageButton> settingsButton_;
 
   // Array of MCNotificationController objects pending removal by the user.
   // The object is owned by the array.
-  scoped_nsobject<NSMutableArray> notificationsPendingRemoval_;
+  base::scoped_nsobject<NSMutableArray> notificationsPendingRemoval_;
 
   // Used to animate multiple notifications simultaneously when they're being
   // removed or repositioned.
-  scoped_nsobject<NSViewAnimation> animation_;
+  base::scoped_nsobject<NSViewAnimation> animation_;
 
   // The controller of the settings view. Only set while the view is open.
-  scoped_nsobject<MCSettingsController> settingsController_;
+  base::scoped_nsobject<MCSettingsController> settingsController_;
 
   // The flag which is set when the notification removal animation is still
   // in progress and the user clicks "Clear All" button. The clear-all animation
@@ -92,7 +92,7 @@ MESSAGE_CENTER_EXPORT
   std::list<MCNotificationController*> visibleNotificationsPendingClear_;
 
   // Array of NSViewAnimation objects, which the array owns.
-  scoped_nsobject<NSMutableArray> clearAllAnimations_;
+  base::scoped_nsobject<NSMutableArray> clearAllAnimations_;
 
   // The duration of the bounds animation, in the number of seconds.
   NSTimeInterval animationDuration_;

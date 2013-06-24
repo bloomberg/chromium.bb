@@ -20,7 +20,8 @@ TEST_F(ImageDecorationTest, SetGetImage) {
   EXPECT_FALSE(decoration_.GetImage());
 
   const NSSize kImageSize = NSMakeSize(20.0, 20.0);
-  scoped_nsobject<NSImage> image([[NSImage alloc] initWithSize:kImageSize]);
+  base::scoped_nsobject<NSImage> image(
+      [[NSImage alloc] initWithSize:kImageSize]);
 
   decoration_.SetImage(image);
   EXPECT_EQ(decoration_.GetImage(), image);
@@ -38,7 +39,8 @@ TEST_F(ImageDecorationTest, GetWidthForSpace) {
             LocationBarDecoration::kOmittedWidth);
 
   const NSSize kImageSize = NSMakeSize(20.0, 20.0);
-  scoped_nsobject<NSImage> image([[NSImage alloc] initWithSize:kImageSize]);
+  base::scoped_nsobject<NSImage> image(
+      [[NSImage alloc] initWithSize:kImageSize]);
 
   // Decoration takes up the space of the image.
   decoration_.SetImage(image);

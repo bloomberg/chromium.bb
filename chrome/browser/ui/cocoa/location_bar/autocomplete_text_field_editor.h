@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 
 @class AutocompleteTextField;
@@ -23,9 +23,9 @@ class AutocompleteTextFieldObserver;
   // allowing the |AutocompletTextField| to handle it (by making an empty
   // |-updateDragTypeRegistration|), since the latter results in a weird
   // start-up time regression.
-  scoped_nsobject<URLDropTargetHandler> dropHandler_;
+  base::scoped_nsobject<URLDropTargetHandler> dropHandler_;
 
-  scoped_nsobject<NSCharacterSet> forbiddenCharacters_;
+  base::scoped_nsobject<NSCharacterSet> forbiddenCharacters_;
 
   // Indicates if the field editor's interpretKeyEvents: method is being called.
   // If it's YES, then we should postpone the call to the observer's

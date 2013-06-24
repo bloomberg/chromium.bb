@@ -40,9 +40,9 @@ class MenuDelegate;
 
 @interface TabController : NSViewController<TabDraggingEventTarget> {
  @private
-  scoped_nsobject<NSView> iconView_;
-  scoped_nsobject<NSTextField> titleView_;
-  scoped_nsobject<HoverCloseButton> closeButton_;
+  base::scoped_nsobject<NSView> iconView_;
+  base::scoped_nsobject<NSTextField> titleView_;
+  base::scoped_nsobject<HoverCloseButton> closeButton_;
 
   NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
   BOOL isIconShowing_;  // last state of iconView_ in updateVisibility
@@ -60,7 +60,7 @@ class MenuDelegate;
   SEL action_;  // selector sent when tab is selected by clicking
   scoped_ptr<ui::SimpleMenuModel> contextMenuModel_;
   scoped_ptr<TabControllerInternal::MenuDelegate> contextMenuDelegate_;
-  scoped_nsobject<MenuController> contextMenuController_;
+  base::scoped_nsobject<MenuController> contextMenuController_;
 }
 
 @property(assign, nonatomic) TabLoadingState loadingState;

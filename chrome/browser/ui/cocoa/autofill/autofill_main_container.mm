@@ -35,7 +35,7 @@
 - (void)loadView {
   [self buildWindowButtonsForFrame:NSZeroRect];
 
-  scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
   [view setAutoresizesSubviews:YES];
   [view setSubviews:@[buttonContainer_]];
   [self setView:view];
@@ -77,7 +77,7 @@
   [buttonContainer_
       setAutoresizingMask:(NSViewMinXMargin | NSViewMaxYMargin)];
 
-  scoped_nsobject<NSButton> button(
+  base::scoped_nsobject<NSButton> button(
       [[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
   [button setTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)];
   [button setKeyEquivalent:kKeyEquivalentEscape];
@@ -105,7 +105,7 @@
 }
 
 - (void)layoutButtons {
-  scoped_nsobject<GTMUILocalizerAndLayoutTweaker> layoutTweaker(
+  base::scoped_nsobject<GTMUILocalizerAndLayoutTweaker> layoutTweaker(
       [[GTMUILocalizerAndLayoutTweaker alloc] init]);
   [layoutTweaker tweakUI:buttonContainer_];
 }

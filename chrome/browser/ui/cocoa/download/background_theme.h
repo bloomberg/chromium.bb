@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/base/theme_provider.h"
 
 class BackgroundTheme : public ui::ThemeProvider {
@@ -33,9 +33,9 @@ class BackgroundTheme : public ui::ThemeProvider {
 
  private:
   ui::ThemeProvider* provider_;
-  scoped_nsobject<NSGradient> buttonGradient_;
-  scoped_nsobject<NSGradient> buttonPressedGradient_;
-  scoped_nsobject<NSColor> borderColor_;
+  base::scoped_nsobject<NSGradient> buttonGradient_;
+  base::scoped_nsobject<NSGradient> buttonPressedGradient_;
+  base::scoped_nsobject<NSColor> borderColor_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_DOWNLOAD_BACKGROUND_THEME_H_

@@ -38,7 +38,7 @@ class StarDecoration : public ImageDecoration {
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
 
   // The string to show for a tooltip.
-  scoped_nsobject<NSString> tooltip_;
+  base::scoped_nsobject<NSString> tooltip_;
 
   // Whether the star icon is lit.
   bool starred_;

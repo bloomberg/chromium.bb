@@ -7,14 +7,14 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
-#import "base/memory/scoped_nsobject.h"
 
 // Represents a custom sheet. The sheet's window is shown without using the
 // system |beginSheet:...| API.
 @interface CustomConstrainedWindowSheet : NSObject<ConstrainedWindowSheet> {
  @private
-  scoped_nsobject<NSWindow> customWindow_;
+  base::scoped_nsobject<NSWindow> customWindow_;
 }
 
 - (id)initWithCustomWindow:(NSWindow*)customWindow;

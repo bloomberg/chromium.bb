@@ -96,7 +96,7 @@ using content::DownloadItem;
 @interface IndeterminateProgressTimer : NSObject {
  @private
   DownloadItemCell* cell_;
-  scoped_nsobject<NSTimer> timer_;
+  base::scoped_nsobject<NSTimer> timer_;
 }
 
 - (id)initWithDownloadItemCell:(DownloadItemCell*)cell;
@@ -621,7 +621,7 @@ using content::DownloadItem;
 
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;
 
-  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow.get() setShadowColor:[NSColor whiteColor]];
   [shadow.get() setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:0.0];

@@ -216,7 +216,7 @@ class SortHelper {
 // Adds a column which has the given string id as title. |isVisible| specifies
 // if the column is initially visible.
 - (NSTableColumn*)addColumnWithId:(int)columnId visible:(BOOL)isVisible {
-  scoped_nsobject<NSTableColumn> column([[NSTableColumn alloc]
+  base::scoped_nsobject<NSTableColumn> column([[NSTableColumn alloc]
       initWithIdentifier:[NSString stringWithFormat:@"%d", columnId]]);
 
   NSTextAlignment textAlignment =
@@ -238,9 +238,10 @@ class SortHelper {
   // The page column should by default be sorted ascending.
   BOOL ascending = columnId == IDS_TASK_MANAGER_TASK_COLUMN;
 
-  scoped_nsobject<NSSortDescriptor> sortDescriptor([[NSSortDescriptor alloc]
-      initWithKey:[NSString stringWithFormat:@"%d", columnId]
-        ascending:ascending]);
+  base::scoped_nsobject<NSSortDescriptor> sortDescriptor(
+      [[NSSortDescriptor alloc]
+          initWithKey:[NSString stringWithFormat:@"%d", columnId]
+            ascending:ascending]);
   [column.get() setSortDescriptorPrototype:sortDescriptor.get()];
 
   // Default values, only used in release builds if nobody notices the DCHECK
@@ -275,7 +276,7 @@ class SortHelper {
                                             visible:YES];
   // |nameColumn| displays an icon for every row -- this is done by an
   // NSButtonCell.
-  scoped_nsobject<NSButtonCell> nameCell(
+  base::scoped_nsobject<NSButtonCell> nameCell(
       [[NSButtonCell alloc] initTextCell:@""]);
   [nameCell.get() setImagePosition:NSImageLeft];
   [nameCell.get() setButtonType:NSSwitchButton];
@@ -310,7 +311,7 @@ class SortHelper {
 // which columns should be shown and which should be hidden (like e.g.
 // Task Manager.app's table header context menu).
 - (void)setUpTableHeaderContextMenu {
-  scoped_nsobject<NSMenu> contextMenu(
+  base::scoped_nsobject<NSMenu> contextMenu(
       [[NSMenu alloc] initWithTitle:@"Task Manager context menu"]);
   for (NSTableColumn* column in [tableView_ tableColumns]) {
     NSMenuItem* item = [contextMenu.get()

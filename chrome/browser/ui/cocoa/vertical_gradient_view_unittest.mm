@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
 
@@ -12,7 +12,7 @@ class VerticalGradientViewTest : public CocoaTest {
  public:
   VerticalGradientViewTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 27);
-    scoped_nsobject<VerticalGradientView> view(
+    base::scoped_nsobject<VerticalGradientView> view(
         [[VerticalGradientView alloc] initWithFrame:frame]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];

@@ -10,13 +10,13 @@
 class TabAudioIndicatorViewMacTest : public CocoaTest {
  protected:
   TabAudioIndicatorViewMacTest() {
-    scoped_nsobject<TabAudioIndicatorViewMac> view(
+    base::scoped_nsobject<TabAudioIndicatorViewMac> view(
         [[TabAudioIndicatorViewMac alloc]
             initWithFrame:NSMakeRect(0, 0, 16, 16)]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
 
-    scoped_nsobject<NSImage> image(
+    base::scoped_nsobject<NSImage> image(
         [[NSImage alloc] initWithSize:NSMakeSize(16, 16)]);
     [image lockFocus];
     NSRectFill(NSMakeRect(0, 0, 16, 16));

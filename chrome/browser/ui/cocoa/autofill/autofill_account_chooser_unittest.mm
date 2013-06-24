@@ -27,7 +27,7 @@ class AutofillAccountChooserTest : public ui::CocoaTest {
  }
 
  protected:
-  scoped_nsobject<AutofillAccountChooser> view_;
+  base::scoped_nsobject<AutofillAccountChooser> view_;
   testing::NiceMock<autofill::MockAutofillDialogController> controller_;
 
  private:

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/mac/mac_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -14,8 +14,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#import "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/gtest_support.h"
 
 // Main test class.
 class BrowserWindowCocoaTest : public CocoaProfileTest {
@@ -79,7 +79,7 @@ TEST_F(BrowserWindowCocoaTest, TestFullscreen) {
   // Wrap the FakeController in a scoped_nsobject instead of autoreleasing in
   // windowWillClose: because we never actually open a window in this test (so
   // windowWillClose: never gets called).
-  scoped_nsobject<FakeController> fake_controller(
+  base::scoped_nsobject<FakeController> fake_controller(
       [[FakeController alloc] init]);
   scoped_ptr<BrowserWindowCocoa> bwc(new BrowserWindowCocoa(
       browser(), static_cast<BrowserWindowController*>(fake_controller.get())));
@@ -99,7 +99,7 @@ TEST_F(BrowserWindowCocoaTest, TestFullscreenWithChrome) {
   // Wrap the FakeController in a scoped_nsobject instead of autoreleasing in
   // windowWillClose: because we never actually open a window in this test (so
   // windowWillClose: never gets called).
-  scoped_nsobject<FakeController> fake_controller(
+  base::scoped_nsobject<FakeController> fake_controller(
       [[FakeController alloc] init]);
   scoped_ptr<BrowserWindowCocoa> bwc(new BrowserWindowCocoa(
       browser(), static_cast<BrowserWindowController*>(fake_controller.get())));

@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/molokocacao/NSBezierPath+MCAdditions.h"
@@ -88,13 +88,13 @@ NSAttributedString* GetButtonAttributedString(NSString* title,
   const SkColor shadow_color[] =
       {0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF};
 
-  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow setShadowColor:
       gfx::SkColorToCalibratedNSColor(shadow_color[button_state])];
   [shadow setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:0];
 
-  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
   [paragraphStyle setAlignment:NSCenterTextAlignment];
 

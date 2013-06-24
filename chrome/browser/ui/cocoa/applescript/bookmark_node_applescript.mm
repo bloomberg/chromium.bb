@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/applescript/bookmark_node_applescript.h"
 
 #include "base/logging.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -31,7 +31,7 @@
       return nil;
     }
 
-    scoped_nsobject<NSNumber> numID(
+    base::scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc] initWithLongLong:model->next_node_id()]);
     [self setUniqueID:numID];
     [self setTempTitle:@""];
@@ -58,7 +58,7 @@
     // and this particular bookmark item/folder is never returned.
     bookmarkNode_ = aBookmarkNode;
 
-    scoped_nsobject<NSNumber>  numID(
+    base::scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc] initWithLongLong:aBookmarkNode->id()]);
     [self setUniqueID:numID];
   }
@@ -73,7 +73,7 @@
   // and this particular bookmark item/folder is never returned.
   bookmarkNode_ = aBookmarkNode;
 
-  scoped_nsobject<NSNumber> numID(
+  base::scoped_nsobject<NSNumber> numID(
       [[NSNumber alloc] initWithLongLong:aBookmarkNode->id()]);
   [self setUniqueID:numID];
 

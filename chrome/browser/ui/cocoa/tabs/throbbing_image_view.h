@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/animation/throb_animation.h"
 
@@ -23,8 +23,8 @@ enum ThrobPosition {
 
 @interface ThrobbingImageView : NSView {
  @protected
-  scoped_nsobject<NSImage> backgroundImage_;
-  scoped_nsobject<NSImage> throbImage_;
+  base::scoped_nsobject<NSImage> backgroundImage_;
+  base::scoped_nsobject<NSImage> throbImage_;
   scoped_ptr<ui::ThrobAnimation> throbAnimation_;
 
  @private

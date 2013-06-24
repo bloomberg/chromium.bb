@@ -44,7 +44,7 @@ class EVBubbleDecoration : public BubbleDecoration {
 
  private:
   // The real label.  BubbleDecoration's label may be elided.
-  scoped_nsobject<NSString> full_label_;
+  base::scoped_nsobject<NSString> full_label_;
 
   LocationIconDecoration* location_icon_;  // weak, owned by location bar.
 

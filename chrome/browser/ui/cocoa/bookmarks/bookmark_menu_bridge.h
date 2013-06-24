@@ -22,7 +22,7 @@
 
 #include <map>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #import "chrome/browser/ui/cocoa/main_menu_item.h"
 
@@ -139,7 +139,7 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
   BookmarkMenuCocoaController* controller_;  // strong
 
   // The folder image so we can use one copy for all.
-  scoped_nsobject<NSImage> folder_image_;
+  base::scoped_nsobject<NSImage> folder_image_;
 
   // In order to appropriately update items in the bookmark menu, without
   // forcing a rebuild, map the model's nodes to menu items.

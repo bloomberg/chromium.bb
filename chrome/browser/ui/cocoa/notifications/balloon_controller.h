@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 
 class Balloon;
@@ -46,7 +46,7 @@ class NotificationOptionsMenuModel;
   // The options menu that appears when "options" is pressed.
   IBOutlet HoverImageButton* optionsButton_;
   scoped_ptr<NotificationOptionsMenuModel> menuModel_;
-  scoped_nsobject<MenuController> menuController_;
+  base::scoped_nsobject<MenuController> menuController_;
 
   // The host for the renderer of the HTML contents.
   scoped_ptr<BalloonViewHost> htmlContents_;

@@ -4,10 +4,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field_cell.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -23,7 +23,7 @@ class FindBarTextFieldTest : public CocoaTest {
     // Make sure this is wide enough to play games with the cell
     // decorations.
     NSRect frame = NSMakeRect(0, 0, kWidth, 30);
-    scoped_nsobject<FindBarTextField> field(
+    base::scoped_nsobject<FindBarTextField> field(
         [[FindBarTextField alloc] initWithFrame:frame]);
     field_ = field.get();
 

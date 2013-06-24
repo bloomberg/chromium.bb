@@ -6,13 +6,13 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include <sys/xattr.h>
 #include <errno.h>
+#include <sys/xattr.h>
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/mac/app_mode_common.h"
@@ -242,8 +242,8 @@ TEST(WebAppShortcutCreatorTest, UpdateIcon) {
   base::FilePath icon_path =
       dst_path.Append("Contents").Append("Resources").Append("app.icns");
 
-  scoped_nsobject<NSImage> image([[NSImage alloc] initWithContentsOfFile:
-      base::mac::FilePathToNSString(icon_path)]);
+  base::scoped_nsobject<NSImage> image([[NSImage alloc]
+      initWithContentsOfFile:base::mac::FilePathToNSString(icon_path)]);
   EXPECT_TRUE(image);
   EXPECT_EQ(product_logo.Width(), [image size].width);
   EXPECT_EQ(product_logo.Height(), [image size].height);

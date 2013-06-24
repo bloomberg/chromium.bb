@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_applescript_utils_unittest.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_folder_applescript.h"
@@ -45,9 +45,9 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkFolder) {
   // Emulate what applescript would do when inserting a new bookmark folder.
   // Emulates a script like |set var to make new bookmark folder with
   // properties {title:"foo"}|.
-  scoped_nsobject<BookmarkFolderAppleScript> bookmarkFolder(
+  base::scoped_nsobject<BookmarkFolderAppleScript> bookmarkFolder(
       [[BookmarkFolderAppleScript alloc] init]);
-  scoped_nsobject<NSNumber> var([[bookmarkFolder.get() uniqueID] copy]);
+  base::scoped_nsobject<NSNumber> var([[bookmarkFolder.get() uniqueID] copy]);
   [bookmarkFolder.get() setTitle:@"foo"];
   [bookmarkBar_.get() insertInBookmarkFolders:bookmarkFolder.get()];
 
@@ -66,9 +66,9 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkFolderAtPosition) {
   // Emulate what applescript would do when inserting a new bookmark folder.
   // Emulates a script like |set var to make new bookmark folder with
   // properties {title:"foo"} at after bookmark folder 1|.
-  scoped_nsobject<BookmarkFolderAppleScript> bookmarkFolder(
+  base::scoped_nsobject<BookmarkFolderAppleScript> bookmarkFolder(
       [[BookmarkFolderAppleScript alloc] init]);
-  scoped_nsobject<NSNumber> var([[bookmarkFolder.get() uniqueID] copy]);
+  base::scoped_nsobject<NSNumber> var([[bookmarkFolder.get() uniqueID] copy]);
   [bookmarkFolder.get() setTitle:@"foo"];
   [bookmarkBar_.get() insertInBookmarkFolders:bookmarkFolder.get() atIndex:1];
 
@@ -119,9 +119,9 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkItem) {
   // Emulate what applescript would do when inserting a new bookmark folder.
   // Emulates a script like |set var to make new bookmark item with
   // properties {title:"Google", URL:"http://google.com"}|.
-  scoped_nsobject<BookmarkItemAppleScript> bookmarkItem(
+  base::scoped_nsobject<BookmarkItemAppleScript> bookmarkItem(
       [[BookmarkItemAppleScript alloc] init]);
-  scoped_nsobject<NSNumber> var([[bookmarkItem.get() uniqueID] copy]);
+  base::scoped_nsobject<NSNumber> var([[bookmarkItem.get() uniqueID] copy]);
   [bookmarkItem.get() setTitle:@"Google"];
   [bookmarkItem.get() setURL:@"http://google.com"];
   [bookmarkBar_.get() insertInBookmarkItems:bookmarkItem.get()];
@@ -137,7 +137,7 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkItem) {
   EXPECT_NSEQ(var.get(), [bi uniqueID]);
 
   // Test to see no bookmark item is created when no/invlid URL is entered.
-  scoped_nsobject<FakeScriptCommand> fakeScriptCommand(
+  base::scoped_nsobject<FakeScriptCommand> fakeScriptCommand(
       [[FakeScriptCommand alloc] init]);
   bookmarkItem.reset([[BookmarkItemAppleScript alloc] init]);
   [bookmarkBar_.get() insertInBookmarkItems:bookmarkItem.get()];
@@ -151,9 +151,9 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkItemAtPosition) {
   // Emulates a script like |set var to make new bookmark item with
   // properties {title:"XKCD", URL:"http://xkcd.org}
   // at after bookmark item 1|.
-  scoped_nsobject<BookmarkItemAppleScript> bookmarkItem(
+  base::scoped_nsobject<BookmarkItemAppleScript> bookmarkItem(
       [[BookmarkItemAppleScript alloc] init]);
-  scoped_nsobject<NSNumber> var([[bookmarkItem.get() uniqueID] copy]);
+  base::scoped_nsobject<NSNumber> var([[bookmarkItem.get() uniqueID] copy]);
   [bookmarkItem.get() setTitle:@"XKCD"];
   [bookmarkItem.get() setURL:@"http://xkcd.org"];
 
@@ -171,7 +171,7 @@ TEST_F(BookmarkFolderAppleScriptTest, InsertBookmarkItemAtPosition) {
   EXPECT_NSEQ(var.get(), [bi uniqueID]);
 
   // Test to see no bookmark item is created when no/invlid URL is entered.
-  scoped_nsobject<FakeScriptCommand> fakeScriptCommand(
+  base::scoped_nsobject<FakeScriptCommand> fakeScriptCommand(
       [[FakeScriptCommand alloc] init]);
   bookmarkItem.reset([[BookmarkItemAppleScript alloc] init]);
   [bookmarkBar_.get() insertInBookmarkItems:bookmarkItem.get() atIndex:1];

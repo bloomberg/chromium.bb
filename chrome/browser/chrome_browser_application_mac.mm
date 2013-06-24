@@ -9,7 +9,7 @@
 #include "base/debug/stack_trace.h"
 #import "base/logging.h"
 #import "base/mac/scoped_nsexception_enabler.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"

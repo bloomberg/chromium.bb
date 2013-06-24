@@ -44,7 +44,7 @@ void PerformClose(OneClickSigninBubbleController* controller) {
 
   // Create an empty window into which content is placed.
   NSRect viewBounds = [[viewController_ view] bounds];
-  scoped_nsobject<InfoBubbleWindow> window(
+  base::scoped_nsobject<InfoBubbleWindow> window(
       [[InfoBubbleWindow alloc] initWithContentRect:viewBounds
                                           styleMask:NSBorderlessWindowMask
                                             backing:NSBackingStoreBuffered

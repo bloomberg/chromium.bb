@@ -976,10 +976,10 @@ void AnimateCALayerOpacityFromTo(
                 showZoom:(BOOL)showZoom
                    slomo:(BOOL)slomo
        animationDelegate:(id)animationDelegate {
-  scoped_nsobject<CALayer> layer([[ThumbnailLayer alloc]
-      initWithWebContents:tile.web_contents()
-                 fullSize:tile.GetStartRectRelativeTo(
-                     tileSet_->selected_tile()).size]);
+  base::scoped_nsobject<CALayer> layer(
+      [[ThumbnailLayer alloc] initWithWebContents:tile.web_contents()
+                                         fullSize:tile.GetStartRectRelativeTo(
+                                             tileSet_->selected_tile()).size]);
   [layer setNeedsDisplay];
 
   NSTimeInterval interval =
@@ -1611,15 +1611,15 @@ void AnimateCALayerOpacityFromTo(
   tileSet_->MoveTileFromTo(from, to);
 
   // Move corresponding layers from |from| to |to|.
-  scoped_nsobject<CALayer> thumbLayer(
+  base::scoped_nsobject<CALayer> thumbLayer(
       [[allThumbnailLayers_ objectAtIndex:from] retain]);
   [allThumbnailLayers_ removeObjectAtIndex:from];
   [allThumbnailLayers_ insertObject:thumbLayer.get() atIndex:to];
-  scoped_nsobject<CALayer> faviconLayer(
+  base::scoped_nsobject<CALayer> faviconLayer(
       [[allFaviconLayers_ objectAtIndex:from] retain]);
   [allFaviconLayers_ removeObjectAtIndex:from];
   [allFaviconLayers_ insertObject:faviconLayer.get() atIndex:to];
-  scoped_nsobject<CALayer> titleLayer(
+  base::scoped_nsobject<CALayer> titleLayer(
       [[allTitleLayers_ objectAtIndex:from] retain]);
   [allTitleLayers_ removeObjectAtIndex:from];
   [allTitleLayers_ insertObject:titleLayer.get() atIndex:to];

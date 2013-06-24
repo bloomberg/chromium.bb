@@ -449,13 +449,13 @@ void DrawInstantSuggestion(NSAttributedString* mainText,
   if (![suggestText length])
     return;
 
-  scoped_nsobject<NSTextFieldCell> cell(
+  base::scoped_nsobject<NSTextFieldCell> cell(
       [[NSTextFieldCell alloc] initTextCell:@""]);
   [cell setBordered:NO];
   [cell setDrawsBackground:NO];
   [cell setEditable:NO];
 
-  scoped_nsobject<NSMutableAttributedString> combinedText(
+  base::scoped_nsobject<NSMutableAttributedString> combinedText(
       [[NSMutableAttributedString alloc] initWithAttributedString:mainText]);
   NSRange range = NSMakeRange([combinedText length], 0);
   [combinedText replaceCharactersInRange:range withString:suggestText];

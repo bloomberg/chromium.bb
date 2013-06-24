@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/web_dialog_window_controller.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
@@ -317,12 +317,12 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
   NSRect dialogRect = NSMakeRect(0, 0, dialogSize.width(), dialogSize.height());
   NSUInteger style = NSTitledWindowMask | NSClosableWindowMask |
       NSResizableWindowMask;
-  scoped_nsobject<ChromeEventProcessingWindow> window(
+  base::scoped_nsobject<ChromeEventProcessingWindow> window(
       [[ChromeEventProcessingWindow alloc]
-           initWithContentRect:dialogRect
-                     styleMask:style
-                       backing:NSBackingStoreBuffered
-                         defer:YES]);
+          initWithContentRect:dialogRect
+                    styleMask:style
+                      backing:NSBackingStoreBuffered
+                        defer:YES]);
   if (!window.get()) {
     return nil;
   }

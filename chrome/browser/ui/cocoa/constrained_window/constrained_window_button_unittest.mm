@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "base/memory/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
+#import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -19,7 +19,7 @@ class ConstrainedWindowButtonTest : public CocoaTest {
   }
 
  protected:
-  scoped_nsobject<ConstrainedWindowButton> button_;
+  base::scoped_nsobject<ConstrainedWindowButton> button_;
 };
 
 TEST_VIEW(ConstrainedWindowButtonTest, button_)

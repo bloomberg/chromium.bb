@@ -66,8 +66,7 @@ class Observer : public chrome::BrowserListObserver,
   if ((self = [super init])) {
     mainMenuItem_ = item;
 
-    scoped_nsobject<NSMenu> menu(
-        [[NSMenu alloc] initWithTitle:
+    base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:
             l10n_util::GetNSStringWithFixup(IDS_PROFILES_OPTIONS_GROUP_NAME)]);
     [mainMenuItem_ setSubmenu:menu];
 
@@ -110,7 +109,7 @@ class Observer : public chrome::BrowserListObserver,
   if (dock) {
     NSString* headerName =
         l10n_util::GetNSStringWithFixup(IDS_PROFILES_OPTIONS_GROUP_NAME);
-    scoped_nsobject<NSMenuItem> header(
+    base::scoped_nsobject<NSMenuItem> header(
         [[NSMenuItem alloc] initWithTitle:headerName
                                    action:NULL
                             keyEquivalent:@""]);
@@ -213,7 +212,7 @@ class Observer : public chrome::BrowserListObserver,
 }
 
 - (NSMenuItem*)createItemWithTitle:(NSString*)title action:(SEL)sel {
-  scoped_nsobject<NSMenuItem> item(
+  base::scoped_nsobject<NSMenuItem> item(
       [[NSMenuItem alloc] initWithTitle:title action:sel keyEquivalent:@""]);
   [item setTarget:self];
   return [item.release() autorelease];

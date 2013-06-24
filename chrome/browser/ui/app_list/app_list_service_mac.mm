@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
@@ -75,7 +75,7 @@ class AppListServiceMac : public AppListServiceImpl,
 
   AppListServiceMac() {}
 
-  scoped_nsobject<AppListWindowController> window_controller_;
+  base::scoped_nsobject<AppListWindowController> window_controller_;
 
   // App shim hosts observing when the app list is dismissed. In normal user
   // usage there should only be one. However, it can't be guaranteed, so use

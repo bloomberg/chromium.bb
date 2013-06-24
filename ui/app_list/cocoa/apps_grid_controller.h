@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #import "ui/app_list/cocoa/app_list_pager_view.h"
@@ -32,10 +32,10 @@ APP_LIST_EXPORT
   app_list::AppListViewDelegate* delegate_;  // Weak. Owned by view controller.
   scoped_ptr<app_list::AppsGridDelegateBridge> bridge_;
 
-  scoped_nsobject<AppsCollectionViewDragManager> dragManager_;
-  scoped_nsobject<NSMutableArray> pages_;
-  scoped_nsobject<NSMutableArray> items_;
-  scoped_nsobject<NSTimer> scrollWhileDraggingTimer_;
+  base::scoped_nsobject<AppsCollectionViewDragManager> dragManager_;
+  base::scoped_nsobject<NSMutableArray> pages_;
+  base::scoped_nsobject<NSMutableArray> items_;
+  base::scoped_nsobject<NSTimer> scrollWhileDraggingTimer_;
 
   id<AppsPaginationModelObserver> paginationObserver_;
 

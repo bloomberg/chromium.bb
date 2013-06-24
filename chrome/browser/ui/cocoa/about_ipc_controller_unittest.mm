@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/message_loop.h"
 #import "chrome/browser/ui/cocoa/about_ipc_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -46,15 +46,15 @@ TEST_F(AboutIPCControllerTest, TestFilter) {
                           "NPObjectHell" };
   for (size_t i = 0; i < arraysize(names); i++) {
     data.message_name = names[i];
-    scoped_nsobject<CocoaLogData> cdata([[CocoaLogData alloc]
-                                          initWithLogData:data]);
+    base::scoped_nsobject<CocoaLogData> cdata(
+        [[CocoaLogData alloc] initWithLogData:data]);
     EXPECT_FALSE([controller filterOut:cdata.get()]);
   }
 
   // Flip a checkbox, see it filtered, flip back, all is fine.
   data.message_name = "ViewMsgFoo";
-  scoped_nsobject<CocoaLogData> cdata([[CocoaLogData alloc]
-                                        initWithLogData:data]);
+  base::scoped_nsobject<CocoaLogData> cdata(
+      [[CocoaLogData alloc] initWithLogData:data]);
   [controller setDisplayViewMessages:NO];
   EXPECT_TRUE([controller filterOut:cdata.get()]);
   [controller setDisplayViewMessages:YES];

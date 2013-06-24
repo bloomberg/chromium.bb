@@ -9,7 +9,7 @@
 #include <map>
 
 #import "base/mac/cocoa_protocols.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
@@ -183,13 +183,13 @@ willAnimateFromState:(BookmarkBar::State)oldState
   std::map<int32,int64> menuTagMap_;
 
   // Our bookmark buttons, ordered from L-->R.
-  scoped_nsobject<NSMutableArray> buttons_;
+  base::scoped_nsobject<NSMutableArray> buttons_;
 
   // The folder image so we can use one copy for all buttons
-  scoped_nsobject<NSImage> folderImage_;
+  base::scoped_nsobject<NSImage> folderImage_;
 
   // The default image, so we can use one copy for all buttons.
-  scoped_nsobject<NSImage> defaultImage_;
+  base::scoped_nsobject<NSImage> defaultImage_;
 
   // If the bar is disabled, we hide it and ignore show/hide commands.
   // Set when using fullscreen mode.
@@ -206,7 +206,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   id<ViewResizer> resizeDelegate_;  // weak
 
   // Logic for dealing with a click on a bookmark folder button.
-  scoped_nsobject<BookmarkFolderTarget> folderTarget_;
+  base::scoped_nsobject<BookmarkFolderTarget> folderTarget_;
 
   // A controller for a pop-up bookmark folder window (custom menu).
   // This is not a scoped_nsobject because it owns itself (when its
@@ -224,17 +224,17 @@ willAnimateFromState:(BookmarkBar::State)oldState
   NSRect originalImportBookmarksRect_;  // Original, pre-resized field rect.
 
   // "Other bookmarks" button on the right side.
-  scoped_nsobject<BookmarkButton> otherBookmarksButton_;
+  base::scoped_nsobject<BookmarkButton> otherBookmarksButton_;
 
   // "Apps" button to the right of "Other bookmarks".
-  scoped_nsobject<BookmarkButton> appsPageShortcutButton_;
+  base::scoped_nsobject<BookmarkButton> appsPageShortcutButton_;
 
   // When doing a drag, this is folder button "hovered over" which we
   // may want to open after a short delay.  There are cases where a
   // mouse-enter can open a folder (e.g. if the menus are "active")
   // but that doesn't use this variable or need a delay so "hover" is
   // the wrong term.
-  scoped_nsobject<BookmarkButton> hoverButton_;
+  base::scoped_nsobject<BookmarkButton> hoverButton_;
 
   // We save the view width when we add bookmark buttons.  This lets
   // us avoid a rebuild until we've grown the window bigger than our
@@ -273,7 +273,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
   CGFloat insertionPos_;
 
   // Controller responsible for all bookmark context menus.
-  scoped_nsobject<BookmarkContextMenuCocoaController> contextMenuController_;
+  base::scoped_nsobject<BookmarkContextMenuCocoaController>
+      contextMenuController_;
 }
 
 @property(readonly, nonatomic) BookmarkBar::State currentState;

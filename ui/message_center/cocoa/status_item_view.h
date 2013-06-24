@@ -8,7 +8,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/mac/scoped_block.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/message_center/message_center_export.h"
 
 namespace message_center {
@@ -27,7 +27,7 @@ MESSAGE_CENTER_EXPORT
 @interface MCStatusItemView : NSView {
  @private
   // The status item.
-  scoped_nsobject<NSStatusItem> statusItem_;
+  base::scoped_nsobject<NSStatusItem> statusItem_;
 
   // Callback issued when the status item is clicked.
   base::mac::ScopedBlock<message_center::StatusItemClickedCallack> callback_;

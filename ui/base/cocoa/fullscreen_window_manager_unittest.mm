@@ -11,10 +11,9 @@
 typedef ui::CocoaTest FullscreenWindowManagerTest;
 
 TEST_F(FullscreenWindowManagerTest, EnterExit) {
-  scoped_nsobject<FullscreenWindowManager> manager(
-      [[FullscreenWindowManager alloc]
-          initWithWindow:test_window()
-           desiredScreen:[NSScreen mainScreen]]);
+  base::scoped_nsobject<FullscreenWindowManager> manager(
+      [[FullscreenWindowManager alloc] initWithWindow:test_window()
+                                        desiredScreen:[NSScreen mainScreen]]);
 
   NSApplicationPresentationOptions current_options =
       [NSApp presentationOptions];

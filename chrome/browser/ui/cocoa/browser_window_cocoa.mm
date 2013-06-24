@@ -497,13 +497,12 @@ void BrowserWindowCocoa::ShowOneClickSigninBubble(
   WebContents* web_contents =
         browser_->tab_strip_model()->GetActiveWebContents();
   if (type == ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE) {
-    scoped_nsobject<OneClickSigninBubbleController> bubble_controller(
-        [[OneClickSigninBubbleController alloc]
-            initWithBrowserWindowController:cocoa_controller()
-                                webContents:web_contents
-                               errorMessage:base::SysUTF16ToNSString(
-                                                error_message)
-                                   callback:start_sync_callback]);
+    base::scoped_nsobject<OneClickSigninBubbleController> bubble_controller([
+            [OneClickSigninBubbleController alloc]
+        initWithBrowserWindowController:cocoa_controller()
+                            webContents:web_contents
+                           errorMessage:base::SysUTF16ToNSString(error_message)
+                               callback:start_sync_callback]);
     [bubble_controller showWindow:nil];
   } else {
     // Deletes itself when the dialog closes.

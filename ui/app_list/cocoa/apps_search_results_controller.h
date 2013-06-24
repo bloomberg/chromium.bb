@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #import "ui/base/cocoa/tracking_area.h"
@@ -35,7 +35,7 @@ APP_LIST_EXPORT
 @interface AppsSearchResultsController
     : NSViewController<NSTableViewDelegate, NSTableViewDataSource> {
  @private
-  scoped_nsobject<NSTableView> tableView_;
+  base::scoped_nsobject<NSTableView> tableView_;
   ui::ScopedCrTrackingArea trackingArea_;
   NSPoint lastMouseDownInView_;
   NSInteger hoveredRowIndex_;

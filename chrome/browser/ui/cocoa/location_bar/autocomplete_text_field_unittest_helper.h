@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -17,7 +17,7 @@
 
 @interface AutocompleteTextFieldWindowTestDelegate :
     NSObject<NSWindowDelegate> {
-  scoped_nsobject<AutocompleteTextFieldEditor> editor_;
+  base::scoped_nsobject<AutocompleteTextFieldEditor> editor_;
 }
 - (id)windowWillReturnFieldEditor:(NSWindow *)sender toObject:(id)anObject;
 @end

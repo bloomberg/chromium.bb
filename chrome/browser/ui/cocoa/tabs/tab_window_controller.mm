@@ -45,7 +45,7 @@
 
 - (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip {
   NSRect contentRect = NSMakeRect(60, 229, 750, 600);
-  scoped_nsobject<FramedBrowserWindow> window(
+  base::scoped_nsobject<FramedBrowserWindow> window(
       [[FramedBrowserWindow alloc] initWithContentRect:contentRect
                                            hasTabStrip:hasTabStrip]);
   [window setReleasedWhenClosed:YES];

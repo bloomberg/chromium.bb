@@ -104,7 +104,7 @@ const float kWindowEdge = 0.7f;
     textColor = themeProvider->GetNSColor(ThemeProperties::COLOR_TAB_TEXT,
                                           true);
   NSFont* textFont = [self font];
-  scoped_nsobject<NSShadow> textShadow([[NSShadow alloc] init]);
+  base::scoped_nsobject<NSShadow> textShadow([[NSShadow alloc] init]);
   [textShadow setShadowBlurRadius:0.0f];
   [textShadow.get() setShadowColor:[textColor gtm_legibleTextColor]];
   [textShadow.get() setShadowOffset:NSMakeSize(0.0f, -1.0f)];

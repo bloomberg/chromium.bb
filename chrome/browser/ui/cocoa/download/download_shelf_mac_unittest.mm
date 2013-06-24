@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/download/download_shelf_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,7 +56,7 @@ class DownloadShelfMacTest : public CocoaProfileTest {
   }
 
  protected:
-  scoped_nsobject<FakeDownloadShelfController> shelf_controller_;
+  base::scoped_nsobject<FakeDownloadShelfController> shelf_controller_;
 };
 
 TEST_F(DownloadShelfMacTest, CreationDoesNotCallShow) {

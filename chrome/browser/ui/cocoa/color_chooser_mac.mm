@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/web_contents.h"
@@ -54,7 +54,7 @@ class ColorChooserMac : public content::ColorChooser {
   // The web contents invoking the color chooser.  No ownership because it will
   // outlive this class.
   content::WebContents* web_contents_;
-  scoped_nsobject<ColorPanelCocoa> panel_;
+  base::scoped_nsobject<ColorPanelCocoa> panel_;
 };
 
 ColorChooserMac* ColorChooserMac::current_color_chooser_ = NULL;

@@ -28,7 +28,7 @@ class HistoryOverlayControllerTest : public CocoaTest {
   }
 
  private:
-  scoped_nsobject<NSView> test_view_;
+  base::scoped_nsobject<NSView> test_view_;
 };
 
 // Tests that the controller's view gets removed from the hierarchy when the
@@ -37,7 +37,7 @@ TEST_F(HistoryOverlayControllerTest, RemovedViewWhenDeallocated) {
   NSView* content_view = [test_window() contentView];
   EXPECT_EQ(1u, [[content_view subviews] count]);
 
-  scoped_nsobject<HistoryOverlayController> controller(
+  base::scoped_nsobject<HistoryOverlayController> controller(
       [[HistoryOverlayController alloc] initForMode:kHistoryOverlayModeBack]);
   [controller showPanelForView:test_view()];
   EXPECT_EQ(2u, [[content_view subviews] count]);
@@ -49,7 +49,7 @@ TEST_F(HistoryOverlayControllerTest, RemovedViewWhenDeallocated) {
 // Tests that when the controller is |-dismiss|ed, the animation runs and then
 // is removed when the animation completes.
 TEST_F(HistoryOverlayControllerTest, DismissClearsAnimations) {
-  scoped_nsobject<HistoryOverlayController> controller(
+  base::scoped_nsobject<HistoryOverlayController> controller(
       [[HistoryOverlayController alloc] initForMode:kHistoryOverlayModeBack]);
   [controller showPanelForView:test_view()];
 

@@ -8,12 +8,12 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
-#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #import "chrome/browser/ui/cocoa/one_click_signin_view_controller.h"
+#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -54,7 +54,7 @@ class OneClickSigninBubbleControllerTest : public CocoaProfileTest {
  protected:
   base::WeakPtrFactory<OneClickSigninBubbleControllerTest> weak_ptr_factory_;
   BrowserWindow::StartSyncCallback start_sync_callback_;
-  scoped_nsobject<OneClickSigninBubbleController> controller_;
+  base::scoped_nsobject<OneClickSigninBubbleController> controller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninBubbleControllerTest);

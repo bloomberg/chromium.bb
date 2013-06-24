@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/file_version_info.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 #ifdef __OBJC__
 @class NSBundle;
@@ -45,7 +45,7 @@ class FileVersionInfoMac : public FileVersionInfo {
   // Returns the empty string if the property does not exist.
   string16 GetString16Value(CFStringRef name);
 
-  scoped_nsobject<NSBundle> bundle_;
+  base::scoped_nsobject<NSBundle> bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(FileVersionInfoMac);
 };

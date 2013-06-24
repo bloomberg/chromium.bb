@@ -30,23 +30,23 @@ enum DownloadItemMousePosition {
   // Track which part of the button the mouse is over
   DownloadItemMousePosition mousePosition_;
   int mouseInsideCount_;
-  scoped_nsobject<NSTrackingArea> trackingAreaButton_;
-  scoped_nsobject<NSTrackingArea> trackingAreaDropdown_;
+  base::scoped_nsobject<NSTrackingArea> trackingAreaButton_;
+  base::scoped_nsobject<NSTrackingArea> trackingAreaDropdown_;
 
   base::FilePath downloadPath_;  // stored unelided
   NSString* secondaryTitle_;
   NSFont* secondaryFont_;
   int percentDone_;
-  scoped_nsobject<NSAnimation> completionAnimation_;
+  base::scoped_nsobject<NSAnimation> completionAnimation_;
 
   // In degrees, for downloads with no known total size.
   int indeterminateProgressAngle_;
-  scoped_nsobject<IndeterminateProgressTimer> indeterminateProgressTimer_;
+  base::scoped_nsobject<IndeterminateProgressTimer> indeterminateProgressTimer_;
 
   BOOL isStatusTextVisible_;
   CGFloat titleY_;
   CGFloat statusAlpha_;
-  scoped_nsobject<NSAnimation> toggleStatusVisibilityAnimation_;
+  base::scoped_nsobject<NSAnimation> toggleStatusVisibilityAnimation_;
 
   scoped_ptr<ui::ThemeProvider> themeProvider_;
 }

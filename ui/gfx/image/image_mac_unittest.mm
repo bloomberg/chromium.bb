@@ -5,7 +5,7 @@
 #include <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_png_rep.h"
@@ -99,7 +99,7 @@ TEST_F(ImageMacTest, MultiResolutionNSImageToImageSkia) {
   BitmapImageRep(kWidth1x, kHeight1x, &ns_image_rep1);
   NSBitmapImageRep* ns_image_rep2;
   BitmapImageRep(kWidth2x, kHeight2x, &ns_image_rep2);
-  scoped_nsobject<NSImage> ns_image(
+  base::scoped_nsobject<NSImage> ns_image(
       [[NSImage alloc] initWithSize:NSMakeSize(kWidth1x, kHeight1x)]);
   [ns_image addRepresentation:ns_image_rep1];
   [ns_image addRepresentation:ns_image_rep2];
@@ -131,7 +131,7 @@ TEST_F(ImageMacTest, UnalignedMultiResolutionNSImageToImageSkia) {
 
   NSBitmapImageRep* ns_image_rep4;
   BitmapImageRep(kWidth4x, kHeight4x, &ns_image_rep4);
-  scoped_nsobject<NSImage> ns_image(
+  base::scoped_nsobject<NSImage> ns_image(
       [[NSImage alloc] initWithSize:NSMakeSize(kWidth1x, kHeight1x)]);
   [ns_image addRepresentation:ns_image_rep4];
 

@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
@@ -24,8 +24,8 @@ class AnimatableViewTest : public CocoaTest {
     [view_ setResizeDelegate:resizeDelegate_.get()];
   }
 
-  scoped_nsobject<ViewResizerPong> resizeDelegate_;
-  scoped_nsobject<AnimatableView> view_;
+  base::scoped_nsobject<ViewResizerPong> resizeDelegate_;
+  base::scoped_nsobject<AnimatableView> view_;
 };
 
 // Basic view tests (AddRemove, Display).

@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/devtools/devtools_window.h"
 
 @class GraySplitView;
@@ -23,7 +23,7 @@ class WebContents;
 @interface DevToolsController : NSObject<NSSplitViewDelegate> {
  @private
   // A view hosting docked devTools contents.
-  scoped_nsobject<GraySplitView> splitView_;
+  base::scoped_nsobject<GraySplitView> splitView_;
 
   DevToolsDockSide dockSide_;
 

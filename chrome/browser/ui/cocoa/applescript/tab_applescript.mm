@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -60,7 +60,7 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
     SessionID session;
     SessionID::id_type futureSessionIDOfTab = session.id() + 1;
     // Holds the SessionID that the new tab is going to get.
-    scoped_nsobject<NSNumber> numID(
+    base::scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc] initWithInt:futureSessionIDOfTab]);
     [self setUniqueID:numID];
   }
@@ -85,7 +85,7 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
     webContents_ = webContents;
     SessionTabHelper* session_tab_helper =
         SessionTabHelper::FromWebContents(webContents);
-    scoped_nsobject<NSNumber> numID(
+    base::scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc] initWithInt:session_tab_helper->session_id().id()]);
     [self setUniqueID:numID];
   }
@@ -100,7 +100,7 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
   webContents_ = webContents;
   SessionTabHelper* session_tab_helper =
       SessionTabHelper::FromWebContents(webContents);
-  scoped_nsobject<NSNumber> numID(
+  base::scoped_nsobject<NSNumber> numID(
       [[NSNumber alloc] initWithInt:session_tab_helper->session_id().id()]);
   [self setUniqueID:numID];
 

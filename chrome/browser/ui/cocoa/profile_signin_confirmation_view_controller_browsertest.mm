@@ -6,7 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
@@ -69,10 +69,10 @@ class ProfileSigninConfirmationViewControllerTest
   void OnClose() { closed_ = true; }
 
   // The window containing the dialog.
-  scoped_nsobject<NSWindow> window_;
+  base::scoped_nsobject<NSWindow> window_;
 
   // Dialog under test.
-  scoped_nsobject<ProfileSigninConfirmationViewController> controller_;
+  base::scoped_nsobject<ProfileSigninConfirmationViewController> controller_;
 
   // Visible for testing UI interactions.
   bool continued_;

@@ -5,9 +5,9 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -15,9 +15,10 @@ class HyperlinkButtonCellTest : public CocoaTest {
  public:
   HyperlinkButtonCellTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 30);
-    scoped_nsobject<NSButton> view([[NSButton alloc] initWithFrame:frame]);
+    base::scoped_nsobject<NSButton> view(
+        [[NSButton alloc] initWithFrame:frame]);
     view_ = view.get();
-    scoped_nsobject<HyperlinkButtonCell> cell(
+    base::scoped_nsobject<HyperlinkButtonCell> cell(
         [[HyperlinkButtonCell alloc] initTextCell:@"Testing"]);
     cell_ = cell.get();
     [view_ setCell:cell_];
@@ -47,7 +48,8 @@ TEST_VIEW(HyperlinkButtonCellTest, view_)
 // Tests the three designated intializers.
 TEST_F(HyperlinkButtonCellTest, Initializers) {
   TestCellCustomization(cell_);  // |-initTextFrame:|
-  scoped_nsobject<HyperlinkButtonCell> cell([[HyperlinkButtonCell alloc] init]);
+  base::scoped_nsobject<HyperlinkButtonCell> cell(
+      [[HyperlinkButtonCell alloc] init]);
   TestCellCustomization(cell.get());
 
   // Need to create a dummy archiver to test |-initWithCoder:|.

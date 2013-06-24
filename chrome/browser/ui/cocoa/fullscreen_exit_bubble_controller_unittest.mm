@@ -72,7 +72,7 @@ class FullscreenExitBubbleControllerTest : public CocoaProfileTest {
   }
 
   scoped_refptr<SiteInstance> site_instance_;
-  scoped_nsobject<FullscreenExitBubbleController> controller_;
+  base::scoped_nsobject<FullscreenExitBubbleController> controller_;
 };
 
 // http://crbug.com/103912

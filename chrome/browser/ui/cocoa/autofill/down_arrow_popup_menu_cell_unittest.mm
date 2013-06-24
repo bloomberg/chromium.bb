@@ -6,7 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -19,13 +19,13 @@ class DownArrowPopupMenuCellTest : public ui::CocoaTest {
   DownArrowPopupMenuCellTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 30);
     view_.reset([[NSButton alloc] initWithFrame:frame]);
-    scoped_nsobject<DownArrowPopupMenuCell> cell(
+    base::scoped_nsobject<DownArrowPopupMenuCell> cell(
         [[DownArrowPopupMenuCell alloc] initTextCell:@"Testing"]);
     [view_ setCell:cell.get()];
     [[test_window() contentView] addSubview:view_];  }
 
  protected:
-  scoped_nsobject<NSButton> view_;
+  base::scoped_nsobject<NSButton> view_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownArrowPopupMenuCellTest);
@@ -50,7 +50,8 @@ TEST_F(DownArrowPopupMenuCellTest, Defaults) {
   ASSERT_TRUE([cell isKindOfClass:[DownArrowPopupMenuCell class]]);
 
   NSRect rect = NSMakeRect(0, 0, 11, 17);
-  scoped_nsobject<NSImage> image([[NSImage alloc] initWithSize:rect.size]);
+  base::scoped_nsobject<NSImage> image(
+      [[NSImage alloc] initWithSize:rect.size]);
   [cell setImage:image forButtonState:image_button_cell::kDefaultState];
   [view_ setTitle:@"Testing"];
 

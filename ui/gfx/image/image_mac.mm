@@ -7,7 +7,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/size.h"
 
@@ -36,7 +36,7 @@ scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromNSImage(
   CGImageRef cg_image = [nsimage CGImageForProposedRect:NULL
                                                 context:nil
                                                   hints:nil];
-  scoped_nsobject<NSBitmapImageRep> ns_bitmap(
+  base::scoped_nsobject<NSBitmapImageRep> ns_bitmap(
       [[NSBitmapImageRep alloc] initWithCGImage:cg_image]);
   NSData* ns_data = [ns_bitmap representationUsingType:NSPNGFileType
                                             properties:nil];
@@ -55,13 +55,13 @@ NSImage* NSImageFromPNG(const std::vector<gfx::ImagePNGRep>& image_png_reps,
     return GetErrorNSImage();
   }
 
-  scoped_nsobject<NSImage> image;
+  base::scoped_nsobject<NSImage> image;
   for (size_t i = 0; i < image_png_reps.size(); ++i) {
     scoped_refptr<base::RefCountedMemory> png = image_png_reps[i].raw_data;
     CHECK(png.get());
-    scoped_nsobject<NSData> ns_data(
+    base::scoped_nsobject<NSData> ns_data(
         [[NSData alloc] initWithBytes:png->front() length:png->size()]);
-    scoped_nsobject<NSBitmapImageRep> ns_image_rep(
+    base::scoped_nsobject<NSBitmapImageRep> ns_image_rep(
         [[NSBitmapImageRep alloc] initWithData:ns_data]);
     if (!ns_image_rep) {
       LOG(ERROR) << "Unable to decode PNG at "
@@ -78,7 +78,7 @@ NSImage* NSImageFromPNG(const std::vector<gfx::ImagePNGRep>& image_png_reps,
         [[ns_image_rep colorSpace] CGColorSpace]);
     CGColorSpaceModel color_space_model = CGColorSpaceGetModel(color_space);
     if (decoded_color_space_model == color_space_model) {
-      scoped_nsobject<NSColorSpace> ns_color_space(
+      base::scoped_nsobject<NSColorSpace> ns_color_space(
           [[NSColorSpace alloc] initWithCGColorSpace:color_space]);
       NSBitmapImageRep* ns_retagged_image_rep =
           [ns_image_rep

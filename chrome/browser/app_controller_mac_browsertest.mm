@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/browser.h"
@@ -39,7 +39,7 @@ class AppControllerPlatformAppBrowserTest : public InProcessBrowserTest {
 // open then a reopen event does nothing.
 IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
                        PlatformAppReopenWithWindows) {
-  scoped_nsobject<AppController> ac([[AppController alloc] init]);
+  base::scoped_nsobject<AppController> ac([[AppController alloc] init]);
   NSUInteger old_window_count = [[NSApp windows] count];
   EXPECT_EQ(1u, native_browser_list->size());
   BOOL result = [ac applicationShouldHandleReopen:NSApp hasVisibleWindows:YES];
@@ -71,7 +71,7 @@ class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
 // Test that in web app mode a reopen event opens the app URL.
 IN_PROC_BROWSER_TEST_F(AppControllerWebAppBrowserTest,
                        WebAppReopenWithNoWindows) {
-  scoped_nsobject<AppController> ac([[AppController alloc] init]);
+  base::scoped_nsobject<AppController> ac([[AppController alloc] init]);
   EXPECT_EQ(1u, native_browser_list->size());
   BOOL result = [ac applicationShouldHandleReopen:NSApp hasVisibleWindows:NO];
 

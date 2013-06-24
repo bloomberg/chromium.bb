@@ -11,8 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/mac/cocoa_protocols.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/strings/string_util.h"
@@ -58,7 +58,7 @@ class ImageCaptureDeviceListener {
 @interface ImageCaptureDevice
     : NSObject<ICCameraDeviceDelegate, ICCameraDeviceDownloadDelegate> {
  @private
-  scoped_nsobject<ICCameraDevice> camera_;
+  base::scoped_nsobject<ICCameraDevice> camera_;
   base::WeakPtr<ImageCaptureDeviceListener> listener_;
   bool closing_;
 }

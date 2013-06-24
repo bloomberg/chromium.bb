@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
@@ -27,13 +27,14 @@ namespace autofill {
 @interface AutofillSectionContainer :
     NSViewController<AutofillLayout> {
  @private
-  scoped_nsobject<LayoutView> inputs_;
-  scoped_nsobject<MenuButton> suggestButton_;
-  scoped_nsobject<AutofillSuggestionContainer> suggestContainer_;
-  scoped_nsobject<NSTextField> label_;
-  scoped_nsobject<AutofillSectionView> view_;  // The view for the container.
+  base::scoped_nsobject<LayoutView> inputs_;
+  base::scoped_nsobject<MenuButton> suggestButton_;
+  base::scoped_nsobject<AutofillSuggestionContainer> suggestContainer_;
+  base::scoped_nsobject<NSTextField> label_;
+  base::scoped_nsobject<AutofillSectionView> view_;  // The view for the
+                                                     // container.
 
-  scoped_nsobject<MenuController> menuController_;
+  base::scoped_nsobject<MenuController> menuController_;
   autofill::DialogSection section_;
   autofill::AutofillDialogController* controller_;  // Not owned.
 }

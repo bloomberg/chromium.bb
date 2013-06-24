@@ -5,13 +5,13 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_unittest_helper.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,7 +75,7 @@ class AutocompleteTextFieldTest : public CocoaTest {
     // Make sure this is wide enough to play games with the cell
     // decorations.
     NSRect frame = NSMakeRect(0, 0, kWidth, 30);
-    scoped_nsobject<AutocompleteTextField> field(
+    base::scoped_nsobject<AutocompleteTextField> field(
         [[AutocompleteTextField alloc] initWithFrame:frame]);
     field_ = field.get();
     [field_ setStringValue:@"Test test"];
@@ -129,7 +129,8 @@ class AutocompleteTextFieldTest : public CocoaTest {
   AutocompleteTextField* field_;
   MockDecoration mock_left_decoration_;
   MockDecoration mock_right_decoration_;
-  scoped_nsobject<AutocompleteTextFieldWindowTestDelegate> window_delegate_;
+  base::scoped_nsobject<AutocompleteTextFieldWindowTestDelegate>
+      window_delegate_;
 };
 
 TEST_VIEW(AutocompleteTextFieldTest, field_);
@@ -622,9 +623,9 @@ TEST_F(AutocompleteTextFieldTest, DecorationMenu) {
 
   const CGFloat edge = NSHeight(bounds) - 4.0;
   const NSSize size = NSMakeSize(edge, edge);
-  scoped_nsobject<NSImage> image([[NSImage alloc] initWithSize:size]);
+  base::scoped_nsobject<NSImage> image([[NSImage alloc] initWithSize:size]);
 
-  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"Menu"]);
+  base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"Menu"]);
 
   mock_left_decoration_.SetVisible(true);
   mock_right_decoration_.SetVisible(true);
@@ -674,7 +675,7 @@ TEST_F(AutocompleteTextFieldTest, SetAttributedStringBaseline) {
       [NSDictionary dictionaryWithObject:font
                                   forKey:NSFontAttributeName];
   NSString* const kString = @"This is a test";
-  scoped_nsobject<NSAttributedString> attributedString(
+  base::scoped_nsobject<NSAttributedString> attributedString(
       [[NSAttributedString alloc] initWithString:kString
                                       attributes:attributes]);
 
@@ -707,7 +708,7 @@ TEST_F(AutocompleteTextFieldTest, SetAttributedStringUndo) {
       [NSDictionary dictionaryWithObject:redColor
                                   forKey:NSForegroundColorAttributeName];
   NSString* const kString = @"This is a test";
-  scoped_nsobject<NSAttributedString> attributedString(
+  base::scoped_nsobject<NSAttributedString> attributedString(
       [[NSAttributedString alloc] initWithString:kString
                                       attributes:attributes]);
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
@@ -816,7 +817,7 @@ TEST_F(AutocompleteTextFieldObserverTest, ClosePopupOnResignKey) {
   EXPECT_CALL(field_observer_, ClosePopup());
   [test_window() resignKeyWindow];
 
-  scoped_nsobject<AutocompleteTextField> pin([field_ retain]);
+  base::scoped_nsobject<AutocompleteTextField> pin([field_ retain]);
   [field_ removeFromSuperview];
   [test_window() resignKeyWindow];
 

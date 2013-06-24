@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "ui/base/cocoa/tracking_area.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
@@ -35,8 +35,8 @@ class CrTrackingAreaTest : public CocoaTest {
                 userInfo:nil]) {
   }
 
-  scoped_nsobject<TestTrackingAreaOwner> owner_;
-  scoped_nsobject<CrTrackingArea> trackingArea_;
+  base::scoped_nsobject<TestTrackingAreaOwner> owner_;
+  base::scoped_nsobject<CrTrackingArea> trackingArea_;
 };
 
 TEST_F(CrTrackingAreaTest, OwnerForwards) {

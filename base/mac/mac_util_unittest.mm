@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -125,7 +125,7 @@ TEST_F(MacUtilTest, TestExcludeFileFromBackups) {
 }
 
 TEST_F(MacUtilTest, CopyNSImageToCGImage) {
-  scoped_nsobject<NSImage> nsImage(
+  base::scoped_nsobject<NSImage> nsImage(
       [[NSImage alloc] initWithSize:NSMakeSize(20, 20)]);
   [nsImage lockFocus];
   [[NSColor redColor] set];
@@ -139,7 +139,8 @@ TEST_F(MacUtilTest, CopyNSImageToCGImage) {
 }
 
 TEST_F(MacUtilTest, NSObjectRetainRelease) {
-  scoped_nsobject<NSArray> array([[NSArray alloc] initWithObjects:@"foo", nil]);
+  base::scoped_nsobject<NSArray> array(
+      [[NSArray alloc] initWithObjects:@"foo", nil]);
   EXPECT_EQ(1U, [array retainCount]);
 
   NSObjectRetain(array);

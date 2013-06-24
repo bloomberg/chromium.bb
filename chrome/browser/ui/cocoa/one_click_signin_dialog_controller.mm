@@ -22,13 +22,12 @@ OneClickSigninDialogController::OneClickSigninDialogController(
         closeCallback:close_callback
          isSyncDialog:YES
          errorMessage:nil]);
-  scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
+  base::scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
       initWithContentRect:[[view_controller_ view] bounds]]);
   [[window contentView] addSubview:[view_controller_ view]];
 
-  scoped_nsobject<CustomConstrainedWindowSheet> sheet(
-      [[CustomConstrainedWindowSheet alloc]
-          initWithCustomWindow:window]);
+  base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+      [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
   constrained_window_.reset(new ConstrainedWindowMac(
       this, web_contents, sheet));
 }

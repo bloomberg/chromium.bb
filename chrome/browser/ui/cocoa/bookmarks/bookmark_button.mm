@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
@@ -415,10 +415,11 @@ BookmarkButton* gDraggedButton = nil; // Weak
   // if the source view is clipped. Fortunately, we don't display clipped
   // bookmark buttons.
   [self lockFocus];
-  scoped_nsobject<NSBitmapImageRep>
-      bitmap([[NSBitmapImageRep alloc] initWithFocusedViewRect:bounds]);
+  base::scoped_nsobject<NSBitmapImageRep> bitmap(
+      [[NSBitmapImageRep alloc] initWithFocusedViewRect:bounds]);
   [self unlockFocus];
-  scoped_nsobject<NSImage> image([[NSImage alloc] initWithSize:[bitmap size]]);
+  base::scoped_nsobject<NSImage> image(
+      [[NSImage alloc] initWithSize:[bitmap size]]);
   [image addRepresentation:bitmap];
 
   // Make an autoreleased |NSImage|, which will be returned, and draw into it.

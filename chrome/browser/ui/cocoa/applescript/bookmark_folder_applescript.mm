@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/applescript/bookmark_folder_applescript.h"
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -24,7 +24,7 @@
 
     if (!node->is_folder())
       continue;
-    scoped_nsobject<BookmarkFolderAppleScript> bookmarkFolder(
+    base::scoped_nsobject<BookmarkFolderAppleScript> bookmarkFolder(
         [[BookmarkFolderAppleScript alloc] initWithBookmarkNode:node]);
     [bookmarkFolder setContainer:self
                         property:AppleScript::kBookmarkFoldersProperty];
@@ -95,7 +95,7 @@
 
     if (!node->is_url())
       continue;
-    scoped_nsobject<BookmarkItemAppleScript> bookmarkItem(
+    base::scoped_nsobject<BookmarkItemAppleScript> bookmarkItem(
         [[BookmarkItemAppleScript alloc] initWithBookmarkNode:node]);
     [bookmarkItem setContainer:self
                       property:AppleScript::kBookmarkItemsProperty];

@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -123,7 +123,7 @@ class AppNotificationBridge : public content::NotificationObserver {
     // Notice that only the alphaValue Animation is replaced in case
     // superclasses set up animations.
     CAAnimation* alphaAnimation = [CABasicAnimation animation];
-    scoped_nsobject<InfoBubbleWindowCloser> delegate(
+    base::scoped_nsobject<InfoBubbleWindowCloser> delegate(
         [[InfoBubbleWindowCloser alloc] initWithWindow:self]);
     [alphaAnimation setDelegate:delegate];
     NSMutableDictionary* animations =

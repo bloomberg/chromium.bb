@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +36,7 @@ class BackgroundGradientViewTest : public CocoaTest {
  public:
   BackgroundGradientViewTest() {
     NSRect frame = NSMakeRect(0, 0, 100, 30);
-    scoped_nsobject<BackgroundGradientSubClassTest> view;
+    base::scoped_nsobject<BackgroundGradientSubClassTest> view;
     view.reset([[BackgroundGradientSubClassTest alloc] initWithFrame:frame]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];

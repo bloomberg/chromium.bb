@@ -34,7 +34,7 @@
   } else {
     // Hold a reference to our controller in case the download completes and we
     // represent a file that's auto-removed (e.g. a theme).
-    scoped_nsobject<DownloadItemController> ref([controller_ retain]);
+    base::scoped_nsobject<DownloadItemController> ref([controller_ retain]);
     [cell setHighlighted:YES];
     [[self menu] setDelegate:self];
     [NSMenu popUpContextMenu:[self menu]
@@ -46,7 +46,7 @@
 // Override to retain the controller, in case a closure is pumped that deletes
 // the DownloadItemController while the menu is open <http://crbug.com/129826>.
 - (void)rightMouseDown:(NSEvent*)event {
-  scoped_nsobject<DownloadItemController> ref([controller_ retain]);
+  base::scoped_nsobject<DownloadItemController> ref([controller_ retain]);
   [super rightMouseDown:event];
 }
 

@@ -11,7 +11,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/base/ui_export.h"
 
 UI_EXPORT extern NSString* kFindPasteboardChangedNotification;
@@ -28,7 +28,7 @@ UI_EXPORT extern NSString* kFindPasteboardChangedNotification;
 UI_EXPORT
 @interface FindPasteboard : NSObject {
  @private
-  scoped_nsobject<NSString> findText_;
+  base::scoped_nsobject<NSString> findText_;
 }
 
 // Returns the singleton instance of this class.

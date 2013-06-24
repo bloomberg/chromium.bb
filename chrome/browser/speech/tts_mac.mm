@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/singleton.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
@@ -38,7 +38,7 @@ class TtsPlatformImplMac;
 //    crash when trying to call willSpeakWord.
 @interface SingleUseSpeechSynthesizer : NSSpeechSynthesizer {
  @private
-  scoped_nsobject<NSString> utterance_;
+  base::scoped_nsobject<NSString> utterance_;
   bool didSpeak_;
 }
 
@@ -85,8 +85,8 @@ class TtsPlatformImplMac : public TtsPlatformImpl {
   TtsPlatformImplMac();
   virtual ~TtsPlatformImplMac();
 
-  scoped_nsobject<SingleUseSpeechSynthesizer> speech_synthesizer_;
-  scoped_nsobject<ChromeTtsDelegate> delegate_;
+  base::scoped_nsobject<SingleUseSpeechSynthesizer> speech_synthesizer_;
+  base::scoped_nsobject<ChromeTtsDelegate> delegate_;
   int utterance_id_;
   std::string utterance_;
   bool sent_start_event_;

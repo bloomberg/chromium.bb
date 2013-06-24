@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
@@ -40,7 +40,7 @@ class OneClickSigninDialogController : public ConstrainedWindowMacDelegate {
   void PerformClose();
 
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
-  scoped_nsobject<OneClickSigninViewController> view_controller_;
+  base::scoped_nsobject<OneClickSigninViewController> view_controller_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_ONE_CLICK_SIGNIN_DIALOG_CONTROLLER_H_

@@ -54,9 +54,9 @@
 
   // Set various alignment/language attributes. Note that many (if not most) of
   // these attributes are functional only on 10.6 and above.
-  scoped_nsobject<NSMutableDictionary> attrs(
+  base::scoped_nsobject<NSMutableDictionary> attrs(
       [[NSMutableDictionary alloc] initWithCapacity:3]);
-  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
   [paragraphStyle setAlignment:rightAligned_ ? NSRightTextAlignment
                                              : NSLeftTextAlignment];
@@ -67,10 +67,10 @@
   [attrs setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
 
   if (item.has_directional_override) {
-    scoped_nsobject<NSNumber> directionValue(
+    base::scoped_nsobject<NSNumber> directionValue(
         [[NSNumber alloc] initWithInteger:
             writingDirection + NSTextWritingDirectionOverride]);
-    scoped_nsobject<NSArray> directionArray(
+    base::scoped_nsobject<NSArray> directionArray(
         [[NSArray alloc] initWithObjects:directionValue.get(), nil]);
     [attrs setObject:directionArray forKey:NSWritingDirectionAttributeName];
   }
@@ -78,9 +78,8 @@
   [attrs setObject:[NSFont menuFontOfSize:fontSize_]
             forKey:NSFontAttributeName];
 
-  scoped_nsobject<NSAttributedString> attrTitle(
-      [[NSAttributedString alloc] initWithString:title
-                                      attributes:attrs]);
+  base::scoped_nsobject<NSAttributedString> attrTitle(
+      [[NSAttributedString alloc] initWithString:title attributes:attrs]);
   [menuItem setAttributedTitle:attrTitle];
 
   [menuItem setTag:[menu_ numberOfItems] - 1];
@@ -104,8 +103,8 @@
   // Set up the button cell, converting to NSView coordinates. The menu is
   // positioned such that the currently selected menu item appears over the
   // popup button, which is the expected Mac popup menu behavior.
-  scoped_nsobject<NSPopUpButtonCell>
-      cell([[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:NO]);
+  base::scoped_nsobject<NSPopUpButtonCell> cell(
+      [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:NO]);
   [cell setMenu:menu_];
   // We use selectItemWithTag below so if the index is out-of-bounds nothing
   // bad happens.
@@ -127,7 +126,8 @@
   // Unfortunately, instead of popping up above the passed |bounds|,
   // it pops up above the bounds of the view passed to inView:.  Use a
   // dummy view to fake this out.
-  scoped_nsobject<NSView> dummyView([[NSView alloc] initWithFrame:bounds]);
+  base::scoped_nsobject<NSView> dummyView(
+      [[NSView alloc] initWithFrame:bounds]);
   [view addSubview:dummyView];
 
   // Display the menu, and set a flag if a menu item was chosen.

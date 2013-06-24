@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/mac/scoped_nsautorelease_pool.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -53,7 +53,7 @@ class WebDragDestTest : public RenderViewHostImplTestHarness {
   }
 
   base::mac::ScopedNSAutoreleasePool pool_;
-  scoped_nsobject<WebDragDest> drag_dest_;
+  base::scoped_nsobject<WebDragDest> drag_dest_;
 };
 
 // Make sure nothing leaks.
@@ -64,7 +64,7 @@ TEST_F(WebDragDestTest, Init) {
 // Test flipping of coordinates given a point in window coordinates.
 TEST_F(WebDragDestTest, Flip) {
   NSPoint windowPoint = NSZeroPoint;
-  scoped_nsobject<NSWindow> window([[CocoaTestHelperWindow alloc] init]);
+  base::scoped_nsobject<NSWindow> window([[CocoaTestHelperWindow alloc] init]);
   NSPoint viewPoint =
       [drag_dest_ flipWindowPointToView:windowPoint
                                    view:[window contentView]];

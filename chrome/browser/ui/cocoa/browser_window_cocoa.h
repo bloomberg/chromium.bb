@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_COCOA_H_
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
@@ -169,7 +169,7 @@ class BrowserWindowCocoa :
   Browser* browser_;  // weak, owned by controller
   BrowserWindowController* controller_;  // weak, owns us
   base::WeakPtrFactory<Browser> confirm_close_factory_;
-  scoped_nsobject<NSString> pending_window_title_;
+  base::scoped_nsobject<NSString> pending_window_title_;
   ui::WindowShowState initial_show_state_;
   NSInteger attention_request_id_;  // identifier from requestUserAttention
 };

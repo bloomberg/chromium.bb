@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -49,7 +49,7 @@ bool GrabViewSnapshot(gfx::NativeView view,
   if (CGImageGetWidth(windowSnapshot) <= 0)
     return false;
 
-  scoped_nsobject<NSBitmapImageRep> rep(
+  base::scoped_nsobject<NSBitmapImageRep> rep(
       [[NSBitmapImageRep alloc] initWithCGImage:windowSnapshot]);
   NSData* data = [rep representationUsingType:NSPNGFileType properties:nil];
   const unsigned char* buf = static_cast<const unsigned char*>([data bytes]);

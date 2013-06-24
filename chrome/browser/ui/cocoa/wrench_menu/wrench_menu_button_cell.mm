@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 @implementation WrenchMenuButtonCell
@@ -26,7 +26,7 @@
   // The default state should be a subtle gray gradient.
   if (![self isHighlighted]) {
     NSColor* end = [NSColor colorWithDeviceWhite:0.922 alpha:1.0];
-    scoped_nsobject<NSGradient> gradient(
+    base::scoped_nsobject<NSGradient> gradient(
         [[NSGradient alloc] initWithStartingColor:[NSColor whiteColor]
                                       endingColor:end]);
     [gradient drawInRect:frame angle:90.0];

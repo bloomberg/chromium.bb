@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesDialogBrowserTest, Close) {
   scoped_ptr<MediaGalleriesDialogCocoa> dialog(
       static_cast<MediaGalleriesDialogCocoa*>(
           MediaGalleriesDialog::Create(&controller)));
-  scoped_nsobject<NSWindow> window([[dialog->alert_ window] retain]);
+  base::scoped_nsobject<NSWindow> window([[dialog->alert_ window] retain]);
   EXPECT_TRUE([window isVisible]);
 
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =

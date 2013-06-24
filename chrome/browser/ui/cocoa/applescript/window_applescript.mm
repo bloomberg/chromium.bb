@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
 
 #include "base/logging.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -75,7 +75,7 @@
         Browser::CreateParams(aProfile, chrome::HOST_DESKTOP_TYPE_NATIVE));
     chrome::NewTab(browser_);
     browser_->window()->Show();
-    scoped_nsobject<NSNumber> numID(
+    base::scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc] initWithInt:browser_->session_id().id()]);
     [self setUniqueID:numID];
   }
@@ -93,7 +93,7 @@
     // the applescript runtime calls appleScriptWindows in
     // BrowserCrApplication and this particular window is never returned.
     browser_ = aBrowser;
-    scoped_nsobject<NSNumber> numID(
+    base::scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc] initWithInt:browser_->session_id().id()]);
     [self setUniqueID:numID];
   }
@@ -159,7 +159,7 @@
       continue;
     }
 
-    scoped_nsobject<TabAppleScript> tab(
+    base::scoped_nsobject<TabAppleScript> tab(
         [[TabAppleScript alloc] initWithWebContents:webContents]);
     [tab setContainer:self
              property:AppleScript::kTabsProperty];

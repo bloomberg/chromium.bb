@@ -4,10 +4,10 @@
 
 #import "content/browser/web_contents/web_contents_view_mac.h"
 
-#include "base/memory/scoped_nsobject.h"
-#import "ui/base/test/ui_cocoa_test_helper.h"
+#include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "ui/base/test/ui_cocoa_test_helper.h"
 
 namespace {
 
@@ -15,8 +15,8 @@ class WebContentsViewCocoaTest : public ui::CocoaTest {
 };
 
 TEST_F(WebContentsViewCocoaTest, NonWebDragSourceTest) {
-  scoped_nsobject<WebContentsViewCocoa>
-      view([[WebContentsViewCocoa alloc] init]);
+  base::scoped_nsobject<WebContentsViewCocoa> view(
+      [[WebContentsViewCocoa alloc] init]);
 
   // Tests that |draggingSourceOperationMaskForLocal:| returns the expected mask
   // when dragging without a WebDragSource - i.e. when |startDragWithDropData:|

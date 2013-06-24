@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 namespace image_button_cell {
 
@@ -39,7 +39,7 @@ enum ButtonState {
   struct {
     // At most one of these two fields will be non-null.
     int imageId;
-    scoped_nsobject<NSImage> image;
+    base::scoped_nsobject<NSImage> image;
   } image_[image_button_cell::kButtonStateCount];
   BOOL isMouseInside_;
 }

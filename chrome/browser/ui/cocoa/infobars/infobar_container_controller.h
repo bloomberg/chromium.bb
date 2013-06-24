@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -58,10 +58,10 @@ const CGFloat kTipHeight = 12.0;
   content::WebContents* currentWebContents_;  // weak
 
   // Holds the InfoBarControllers currently owned by this container.
-  scoped_nsobject<NSMutableArray> infobarControllers_;
+  base::scoped_nsobject<NSMutableArray> infobarControllers_;
 
   // Holds InfoBarControllers when they are in the process of animating out.
-  scoped_nsobject<NSMutableSet> closingInfoBars_;
+  base::scoped_nsobject<NSMutableSet> closingInfoBars_;
 
   // Lets us registers for INFOBAR_ADDED/INFOBAR_REMOVED
   // notifications.  The actual notifications are sent to the

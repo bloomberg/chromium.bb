@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notifier_settings.h"
@@ -45,13 +45,13 @@ MESSAGE_CENTER_EXPORT
   message_center::NotifierSettingsProvider* provider_;
 
   // The "Settings" text at the top.
-  scoped_nsobject<NSTextField> settingsText_;
+  base::scoped_nsobject<NSTextField> settingsText_;
 
   // The smaller text below the "Settings" text.
-  scoped_nsobject<NSTextField> detailsText_;
+  base::scoped_nsobject<NSTextField> detailsText_;
 
   // Container for all the checkboxes.
-  scoped_nsobject<NSScrollView> scrollView_;
+  base::scoped_nsobject<NSScrollView> scrollView_;
 
   std::vector<message_center::Notifier*> notifiers_;
 }

@@ -340,12 +340,12 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 }
 
 - (void)loadAndSetView {
-  scoped_nsobject<PageContainerView> pagesContainer(
+  base::scoped_nsobject<PageContainerView> pagesContainer(
       [[PageContainerView alloc] initWithFrame:NSZeroRect]);
 
   NSRect scrollFrame = NSMakeRect(0, kGridTopPadding, kViewWidth,
                                   kViewHeight + kScrollerPadding);
-  scoped_nsobject<ScrollViewWithNoScrollbars> scrollView(
+  base::scoped_nsobject<ScrollViewWithNoScrollbars> scrollView(
       [[ScrollViewWithNoScrollbars alloc] initWithFrame:scrollFrame]);
   [scrollView setBorderType:NSNoBorder];
   [scrollView setLineScroll:kViewWidth];
@@ -499,7 +499,8 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 
 - (void)moveItemInView:(size_t)fromIndex
            toItemIndex:(size_t)toIndex {
-  scoped_nsobject<NSValue> item([[items_ objectAtIndex:fromIndex] retain]);
+  base::scoped_nsobject<NSValue> item(
+      [[items_ objectAtIndex:fromIndex] retain]);
   [items_ removeObjectAtIndex:fromIndex];
   [items_ insertObject:item
                atIndex:toIndex];

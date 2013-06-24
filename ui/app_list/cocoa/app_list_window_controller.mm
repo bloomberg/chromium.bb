@@ -29,7 +29,7 @@
 @implementation AppListWindowController;
 
 - (id)init {
-  scoped_nsobject<NSWindow> controlledWindow(
+  base::scoped_nsobject<NSWindow> controlledWindow(
       [[AppListWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
                                        styleMask:NSBorderlessWindowMask
                                          backing:NSBackingStoreBuffered

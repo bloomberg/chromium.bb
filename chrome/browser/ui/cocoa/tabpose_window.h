@@ -9,7 +9,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 
@@ -61,10 +61,10 @@ class TabStripModelObserverBridge;
 
   // Stores all preview layers. The order in here matches the order in
   // the tabstrip model.
-  scoped_nsobject<NSMutableArray> allThumbnailLayers_;
+  base::scoped_nsobject<NSMutableArray> allThumbnailLayers_;
 
-  scoped_nsobject<NSMutableArray> allFaviconLayers_;
-  scoped_nsobject<NSMutableArray> allTitleLayers_;
+  base::scoped_nsobject<NSMutableArray> allFaviconLayers_;
+  base::scoped_nsobject<NSMutableArray> allTitleLayers_;
 
   // Manages the state of all layers.
   scoped_ptr<tabpose::TileSet> tileSet_;

@@ -296,7 +296,7 @@ TEST_F(PanelCocoaTest, TitlebarViewClose) {
 TEST_F(PanelCocoaTest, MenuItems) {
   Panel* panel = CreateTestPanel("Test Panel");
 
-  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
   NSMenuItem* close_tab_menu_item = CreateMenuItem(menu, IDC_CLOSE_TAB);
   NSMenuItem* new_tab_menu_item = CreateMenuItem(menu, IDC_NEW_TAB);
   NSMenuItem* new_tab_window_item = CreateMenuItem(menu, IDC_NEW_WINDOW);

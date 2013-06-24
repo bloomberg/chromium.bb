@@ -11,7 +11,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "third_party/mach_override/mach_override.h"
 
@@ -157,7 +157,7 @@ Boolean ChromeCFBundleLoadExecutableAndReturnError(CFBundleRef bundle,
   DCHECK(g_original_underscore_cfbundle_load_executable_and_return_error);
 
   base::ScopedCFTypeRef<CFURLRef> url_cf(CFBundleCopyBundleURL(bundle));
-  scoped_nsobject<NSString> path(base::mac::CFToNSCast(
+  base::scoped_nsobject<NSString> path(base::mac::CFToNSCast(
       CFURLCopyFileSystemPath(url_cf, kCFURLPOSIXPathStyle)));
 
   NSString* bundle_id = base::mac::CFToNSCast(CFBundleGetIdentifier(bundle));

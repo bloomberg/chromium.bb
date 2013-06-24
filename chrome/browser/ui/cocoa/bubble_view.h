@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 // A view class that looks like a "bubble" with rounded corners and displays
 // text inside. Can be themed. To put flush against the sides of a window, the
@@ -33,7 +33,7 @@ enum {
 
 @interface BubbleView : NSView {
  @private
-  scoped_nsobject<NSString> content_;
+  base::scoped_nsobject<NSString> content_;
   unsigned long cornerFlags_;
   // The window from which we get the theme used to draw. In some cases,
   // it might not be the window we're in. As a result, this may or may not

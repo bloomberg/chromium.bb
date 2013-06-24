@@ -9,7 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/cocoa_protocols.h"
 #include "base/mac/foundation_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -47,7 +47,7 @@ const char kTestFileContents[] = "test";
 
 @interface MockMTPICCameraDevice : ICCameraDevice {
  @private
-  scoped_nsobject<NSMutableArray> allMediaFiles_;
+  base::scoped_nsobject<NSMutableArray> allMediaFiles_;
 }
 
 - (void)addMediaFile:(ICCameraFile*)file;
@@ -121,8 +121,8 @@ const char kTestFileContents[] = "test";
 
 @interface MockMTPICCameraFile : ICCameraFile {
  @private
-  scoped_nsobject<NSString> name_;
-  scoped_nsobject<NSDate> date_;
+  base::scoped_nsobject<NSString> name_;
+  base::scoped_nsobject<NSDate> date_;
 }
 
 - (id)init:(NSString*)name;
@@ -546,7 +546,7 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestDownload) {
   info.last_accessed = t1;
   info.creation_time = t1;
   std::string kTestFileName("filename");
-  scoped_nsobject<MockMTPICCameraFile> picture1(
+  base::scoped_nsobject<MockMTPICCameraFile> picture1(
       [[MockMTPICCameraFile alloc]
           init:base::SysUTF8ToNSString(kTestFileName)]);
   [camera_ addMediaFile:picture1];

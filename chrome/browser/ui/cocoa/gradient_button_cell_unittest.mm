@@ -4,9 +4,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/gradient_button_cell.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -20,10 +20,11 @@ class GradientButtonCellTest : public CocoaTest {
  public:
   GradientButtonCellTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 30);
-    scoped_nsobject<NSButton>view([[NSButton alloc] initWithFrame:frame]);
+    base::scoped_nsobject<NSButton> view(
+        [[NSButton alloc] initWithFrame:frame]);
     view_ = view.get();
-    scoped_nsobject<GradientButtonCell> cell([[GradientButtonCell alloc]
-                                              initTextCell:@"Testing"]);
+    base::scoped_nsobject<GradientButtonCell> cell(
+        [[GradientButtonCell alloc] initTextCell:@"Testing"]);
     [view_ setCell:cell.get()];
     [[test_window() contentView] addSubview:view_];
   }

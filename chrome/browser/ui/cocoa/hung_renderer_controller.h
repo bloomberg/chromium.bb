@@ -19,7 +19,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "base/memory/scoped_ptr.h"
 
 @class MultiKeyEquivalentButton;
@@ -46,11 +46,11 @@ class WebContents;
 
   // Backing data for |tableView_|.  Titles of each WebContents that
   // shares a renderer process with |hungContents_|.
-  scoped_nsobject<NSArray> hungTitles_;
+  base::scoped_nsobject<NSArray> hungTitles_;
 
   // Favicons of each WebContents that shares a renderer process with
   // |hungContents_|.
-  scoped_nsobject<NSArray> hungFavicons_;
+  base::scoped_nsobject<NSArray> hungFavicons_;
 }
 
 // Kills the hung renderers.

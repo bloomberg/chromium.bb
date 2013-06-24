@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -23,17 +23,17 @@
 // - (bool)verifyLayout; // For testing.
 @interface TranslateInfoBarControllerBase : InfoBarController<NSMenuDelegate> {
  @protected
-  scoped_nsobject<NSTextField> label1_;
-  scoped_nsobject<NSTextField> label2_;
-  scoped_nsobject<NSTextField> label3_;
-  scoped_nsobject<NSPopUpButton> fromLanguagePopUp_;
-  scoped_nsobject<NSPopUpButton> toLanguagePopUp_;
-  scoped_nsobject<NSPopUpButton> optionsPopUp_;
-  scoped_nsobject<NSButton> showOriginalButton_;
+  base::scoped_nsobject<NSTextField> label1_;
+  base::scoped_nsobject<NSTextField> label2_;
+  base::scoped_nsobject<NSTextField> label3_;
+  base::scoped_nsobject<NSPopUpButton> fromLanguagePopUp_;
+  base::scoped_nsobject<NSPopUpButton> toLanguagePopUp_;
+  base::scoped_nsobject<NSPopUpButton> optionsPopUp_;
+  base::scoped_nsobject<NSButton> showOriginalButton_;
   // This is the button used in the translate message infobar.  It can either be
   // a "Try Again" button, or a "Show Original" button in the case that the
   // page was translated from an unknown language.
-  scoped_nsobject<NSButton> translateMessageButton_;
+  base::scoped_nsobject<NSButton> translateMessageButton_;
 
   // In the current locale, are the "from" and "to" language popup menu
   // flipped from what they'd appear in English.

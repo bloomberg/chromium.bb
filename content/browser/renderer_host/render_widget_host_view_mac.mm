@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
-#import "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
@@ -2144,7 +2144,7 @@ void RenderWidgetHostViewMac::FrameSwapped() {
     return;
   }
 
-  scoped_nsobject<RenderWidgetHostViewCocoa> keepSelfAlive([self retain]);
+  base::scoped_nsobject<RenderWidgetHostViewCocoa> keepSelfAlive([self retain]);
 
   // Records the current marked text state, so that we can know if the marked
   // text was deleted or not after handling the key down event.
@@ -3699,8 +3699,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   const std::string& str = renderWidgetHostView_->selected_text();
   if (![types containsObject:NSStringPboardType] || str.empty()) return NO;
 
-  scoped_nsobject<NSString> text([[NSString alloc]
-                                   initWithUTF8String:str.c_str()]);
+  base::scoped_nsobject<NSString> text(
+      [[NSString alloc] initWithUTF8String:str.c_str()]);
   NSArray* toDeclare = [NSArray arrayWithObject:NSStringPboardType];
   [pboard declareTypes:toDeclare owner:nil];
   return [pboard setString:text forType:NSStringPboardType];

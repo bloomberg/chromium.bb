@@ -71,7 +71,7 @@
                         options:(NSTrackingAreaOptions)options
                           owner:(id)owner
                        userInfo:(NSDictionary*)userInfo {
-  scoped_nsobject<CrTrackingAreaOwnerProxy> ownerProxy(
+  base::scoped_nsobject<CrTrackingAreaOwnerProxy> ownerProxy(
       [[CrTrackingAreaOwnerProxy alloc] initWithOwner:owner]);
   if ((self = [super initWithRect:rect
                           options:options

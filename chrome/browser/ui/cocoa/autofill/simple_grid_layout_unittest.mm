@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/cocoa/autofill/simple_grid_layout.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -19,15 +19,15 @@ class ColumnLayout : public SimpleGridLayout {
 
 class LayoutTest : public testing::Test {
  public:
-  scoped_nsobject<NSView> CreateViewWithWidth(float width) {
+  base::scoped_nsobject<NSView> CreateViewWithWidth(float width) {
     NSRect frame = NSMakeRect(0, 0, width, 0);
-    scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:frame]);
+    base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:frame]);
     return view;
   }
 
-  scoped_nsobject<NSView> CreateViewWithHeight(float height) {
+  base::scoped_nsobject<NSView> CreateViewWithHeight(float height) {
     NSRect frame = NSMakeRect(0, 0, 0, height);
-    scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:frame]);
+    base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:frame]);
     return view;
   }
 };
@@ -107,7 +107,7 @@ TEST_F(LayoutTest, AddPaddingRow) {
   ColumnSet* cs;
   cs = layout.AddRow();
   cs->AddColumn(1.0f);
-  scoped_nsobject<NSView> view1 = CreateViewWithHeight(30.0f);
+  base::scoped_nsobject<NSView> view1 = CreateViewWithHeight(30.0f);
   layout.AddView(view1);
 
   layout.AddPaddingRow(20);
@@ -115,7 +115,7 @@ TEST_F(LayoutTest, AddPaddingRow) {
   cs = layout.AddRow();
   cs->AddColumn(1.0f);
   EXPECT_EQ(3, layout.num_rows());
-  scoped_nsobject<NSView> view2 = CreateViewWithHeight(10.0f);
+  base::scoped_nsobject<NSView> view2 = CreateViewWithHeight(10.0f);
   layout.AddView(view2);
 
   layout.SizeRowsAndColumns(0.0f);
@@ -132,17 +132,17 @@ TEST_F(LayoutTest, RowsAccomodateHeightOfAllElements) {
   layout.GetLastValidColumnSet()->AddColumn(0.6f);
   layout.GetLastValidColumnSet()->AddColumn(0.6f);
 
-  scoped_nsobject<NSView> view1 = CreateViewWithHeight(37.0f);
+  base::scoped_nsobject<NSView> view1 = CreateViewWithHeight(37.0f);
   layout.AddView(view1);
   layout.SizeRowsAndColumns(0.0f);
   EXPECT_FLOAT_EQ(37.0f, layout.GetRowHeight(0));
 
-  scoped_nsobject<NSView> view2 = CreateViewWithHeight(26.0f);
+  base::scoped_nsobject<NSView> view2 = CreateViewWithHeight(26.0f);
   layout.AddView(view2);
   layout.SizeRowsAndColumns(0.0f);
   EXPECT_FLOAT_EQ(37.0f, layout.GetRowHeight(0));
 
-  scoped_nsobject<NSView> view3 = CreateViewWithHeight(42.0f);
+  base::scoped_nsobject<NSView> view3 = CreateViewWithHeight(42.0f);
   layout.AddView(view3);
   layout.SizeRowsAndColumns(0.0f);
   EXPECT_FLOAT_EQ(42.0f, layout.GetRowHeight(0));
@@ -153,12 +153,12 @@ TEST_F(LayoutTest, SizeRowsAdjustsRowLocations) {
 
   layout.AddRow();
   layout.GetLastValidColumnSet()->AddColumn(0.6f);
-  scoped_nsobject<NSView> view1 = CreateViewWithHeight(30.0f);
+  base::scoped_nsobject<NSView> view1 = CreateViewWithHeight(30.0f);
   layout.AddView(view1);
 
   layout.AddRow();
   layout.GetLastValidColumnSet()->AddColumn(0.6f);
-  scoped_nsobject<NSView> view2 = CreateViewWithHeight(40.0f);
+  base::scoped_nsobject<NSView> view2 = CreateViewWithHeight(40.0f);
   layout.AddView(view2);
 
   layout.SizeRowsAndColumns(0.0f);
@@ -174,17 +174,17 @@ TEST_F(LayoutTest, SimpleGridLayoutAdjustsViews) {
   layout.GetLastValidColumnSet()->AddPaddingColumn(30);
   layout.GetLastValidColumnSet()->AddColumn(0.4f);
 
-  scoped_nsobject<NSView> view1 = CreateViewWithHeight(22.0f);
-  scoped_nsobject<NSView> view2 = CreateViewWithHeight(20.0f);
+  base::scoped_nsobject<NSView> view1 = CreateViewWithHeight(22.0f);
+  base::scoped_nsobject<NSView> view2 = CreateViewWithHeight(20.0f);
   layout.AddView(view1);
   layout.AddView(view2);
 
   layout.AddRow();
   layout.GetLastValidColumnSet()->AddColumn(0.6f);
-  scoped_nsobject<NSView> view3 = CreateViewWithHeight(18.0f);
+  base::scoped_nsobject<NSView> view3 = CreateViewWithHeight(18.0f);
   layout.AddView(view3);
 
-  scoped_nsobject<NSView> host_view = CreateViewWithWidth(150.0f);
+  base::scoped_nsobject<NSView> host_view = CreateViewWithWidth(150.0f);
   layout.Layout(host_view);
 
   EXPECT_FLOAT_EQ(72.0f, NSWidth([view1 frame]));
@@ -214,7 +214,7 @@ TEST_F(LayoutTest, SimpleGridLayoutHeightForWidth)
   layout.AddRow();
   layout.GetLastValidColumnSet()->AddColumn(0.6f);
 
-  scoped_nsobject<NSView> view1 = CreateViewWithHeight(22.0f);
+  base::scoped_nsobject<NSView> view1 = CreateViewWithHeight(22.0f);
   layout.AddView(view1);
   EXPECT_FLOAT_EQ(22.0f, layout.GetPreferredHeightForWidth(100.0));
 
@@ -223,7 +223,7 @@ TEST_F(LayoutTest, SimpleGridLayoutHeightForWidth)
 
   layout.AddRow();
   layout.GetLastValidColumnSet()->AddColumn(0.6f);
-  scoped_nsobject<NSView> view2 = CreateViewWithHeight(13.0f);
+  base::scoped_nsobject<NSView> view2 = CreateViewWithHeight(13.0f);
   layout.AddView(view2);
   EXPECT_FLOAT_EQ(47.0f, layout.GetPreferredHeightForWidth(100.0));
 }
@@ -308,7 +308,7 @@ TEST_F(LayoutTest, AddViewSkipsPaddingColumns) {
   layout.GetLastValidColumnSet()->AddColumn(0.4f);
 
   EXPECT_EQ(0, layout.next_column());
-  scoped_nsobject<NSView> view1 = CreateViewWithWidth(37.0f);
+  base::scoped_nsobject<NSView> view1 = CreateViewWithWidth(37.0f);
   layout.AddView(view1);
   EXPECT_EQ(2, layout.next_column());
 }
@@ -321,12 +321,12 @@ TEST_F(LayoutTest, ColumnLayoutAdjustsViews) {
   layout.GetLastValidColumnSet()->AddPaddingColumn(30);
   layout.GetLastValidColumnSet()->AddColumn(0.4f);
 
-  scoped_nsobject<NSView> view1 = CreateViewWithWidth(37.0f);
-  scoped_nsobject<NSView> view2 = CreateViewWithWidth(42.0f);
+  base::scoped_nsobject<NSView> view1 = CreateViewWithWidth(37.0f);
+  base::scoped_nsobject<NSView> view2 = CreateViewWithWidth(42.0f);
   layout.AddView(view1);
   layout.AddView(view2);
 
-  scoped_nsobject<NSView> host_view = CreateViewWithWidth(150.0f);
+  base::scoped_nsobject<NSView> host_view = CreateViewWithWidth(150.0f);
   layout.Layout(host_view);
 
   EXPECT_FLOAT_EQ(72.0f, NSWidth([view1 frame]));

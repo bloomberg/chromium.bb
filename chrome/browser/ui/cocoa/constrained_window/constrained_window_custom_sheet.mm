@@ -17,7 +17,7 @@
 }
 
 - (void)showSheetForWindow:(NSWindow*)window {
-  scoped_nsobject<NSAnimation> animation(
+  base::scoped_nsobject<NSAnimation> animation(
       [[ConstrainedWindowAnimationShow alloc] initWithWindow:customWindow_]);
   [window addChildWindow:customWindow_
                  ordered:NSWindowAbove];
@@ -29,7 +29,7 @@
 
 - (void)closeSheetWithAnimation:(BOOL)withAnimation {
   if (withAnimation) {
-    scoped_nsobject<NSAnimation> animation(
+    base::scoped_nsobject<NSAnimation> animation(
         [[ConstrainedWindowAnimationHide alloc] initWithWindow:customWindow_]);
     [animation startAnimation];
   }
@@ -47,7 +47,7 @@
 }
 
 - (void)pulseSheet {
-  scoped_nsobject<NSAnimation> animation(
+  base::scoped_nsobject<NSAnimation> animation(
       [[ConstrainedWindowAnimationPulse alloc] initWithWindow:customWindow_]);
   [animation startAnimation];
 }

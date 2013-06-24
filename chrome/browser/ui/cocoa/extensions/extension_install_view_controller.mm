@@ -314,7 +314,8 @@ void DrawBulletInFrame(NSRect frame) {
   NSImage* image = gfx::NSImageFromImageSkiaWithColorSpace(
       *skiaImage, base::mac::GetSystemColorSpace());
   NSRect frame = NSMakeRect(0, 0, skiaImage->width(), skiaImage->height());
-  scoped_nsobject<NSImageView> view([[NSImageView alloc] initWithFrame:frame]);
+  base::scoped_nsobject<NSImageView> view(
+      [[NSImageView alloc] initWithFrame:frame]);
   [view setImage:image];
 
   // Add this star after all the other ones

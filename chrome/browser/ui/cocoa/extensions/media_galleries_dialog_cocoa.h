@@ -74,22 +74,22 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   scoped_ptr<ConstrainedWindowMac> window_;
 
   // The alert that the dialog is being displayed as.
-  scoped_nsobject<ConstrainedWindowAlert> alert_;
+  base::scoped_nsobject<ConstrainedWindowAlert> alert_;
 
   // True if the user has pressed accept.
   bool accepted_;
 
   // List of checkboxes ordered from bottom to top.
-  scoped_nsobject<NSMutableArray> checkboxes_;
+  base::scoped_nsobject<NSMutableArray> checkboxes_;
 
   // Container view for checkboxes.
-  scoped_nsobject<NSView> checkbox_container_;
+  base::scoped_nsobject<NSView> checkbox_container_;
 
   // Container view for the main dialog contents.
-  scoped_nsobject<NSBox> accessory_;
+  base::scoped_nsobject<NSBox> accessory_;
 
   // An Objective-C class to route callbacks from Cocoa code.
-  scoped_nsobject<MediaGalleriesCocoaController> cocoa_controller_;
+  base::scoped_nsobject<MediaGalleriesCocoaController> cocoa_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogCocoa);
 };

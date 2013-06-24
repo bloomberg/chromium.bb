@@ -207,9 +207,8 @@
   NSRect rootFrame = NSMakeRect(0, 0,
       message_center::kNotificationPreferredImageSize,
       message_center::kNotificationIconSize);
-  scoped_nsobject<MCNotificationView> rootView(
-      [[MCNotificationView alloc] initWithController:self
-                                               frame:rootFrame]);
+  base::scoped_nsobject<MCNotificationView> rootView(
+      [[MCNotificationView alloc] initWithController:self frame:rootFrame]);
   [self configureCustomBox:rootView];
   [rootView setFillColor:gfx::SkColorToCalibratedNSColor(
       message_center::kNotificationBackgroundColor)];
@@ -346,9 +345,9 @@
     NSRect buttonFrame = frame;
     buttonFrame.origin = NSMakePoint(0, y);
     buttonFrame.size.height = message_center::kButtonHeight;
-    scoped_nsobject<NSButton> button(
+    base::scoped_nsobject<NSButton> button(
         [[NSButton alloc] initWithFrame:buttonFrame]);
-    scoped_nsobject<MCNotificationButtonCell> cell(
+    base::scoped_nsobject<MCNotificationButtonCell> cell(
         [[MCNotificationButtonCell alloc]
             initTextCell:base::SysUTF16ToNSString(buttonInfo.title)]);
     [cell setShowsBorderOnlyWhileMouseInside:YES];
@@ -366,7 +365,7 @@
     NSRect separatorFrame = frame;
     separatorFrame.origin = NSMakePoint(0, y);
     separatorFrame.size.height = 1;
-    scoped_nsobject<NSBox> separator(
+    base::scoped_nsobject<NSBox> separator(
         [[AccessibilityIgnoredBox alloc] initWithFrame:separatorFrame]);
     [self configureCustomBox:separator];
     [separator setFillColor:gfx::SkColorToCalibratedNSColor(
@@ -383,7 +382,7 @@
     imageFrame.origin = NSMakePoint(0, y);
     imageFrame.size = NSSizeFromCGSize(message_center::GetImageSizeForWidth(
         NSWidth(frame), notification->image().Size()).ToCGSize());
-    scoped_nsobject<NSImageView> imageView(
+    base::scoped_nsobject<NSImageView> imageView(
         [[NSImageView alloc] initWithFrame:imageFrame]);
     [imageView setImage:image];
     [imageView setImageScaling:NSImageScaleProportionallyUpOrDown];
@@ -440,7 +439,7 @@
   NSMutableAttributedString* formattedText =
       [[[NSMutableAttributedString alloc] initWithString:text] autorelease];
 
-  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSParagraphStyle defaultParagraphStyle] mutableCopy]);
   [paragraphStyle setLineBreakMode:NSLineBreakByTruncatingTail];
   NSDictionary* sharedAttribs = @{
@@ -481,7 +480,7 @@
   NSRect imageFrame = NSMakeRect(0, 0,
        message_center::kNotificationIconSize,
        message_center::kNotificationIconSize);
-  scoped_nsobject<NSBox> imageBox(
+  base::scoped_nsobject<NSBox> imageBox(
       [[AccessibilityIgnoredBox alloc] initWithFrame:imageFrame]);
   [self configureCustomBox:imageBox];
   [imageBox setFillColor:gfx::SkColorToCalibratedNSColor(

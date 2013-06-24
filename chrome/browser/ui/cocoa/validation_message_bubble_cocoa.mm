@@ -32,12 +32,12 @@ anchoredAt:(NSPoint)anchorPoint
   mainText:(const string16&)mainText
    subText:(const string16&)subText {
 
-  scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
-      initWithContentRect:
-          NSMakeRect(0, 0, kWindowInitialWidth, kWindowInitialHeight)
-                styleMask:NSBorderlessWindowMask
-                  backing:NSBackingStoreBuffered
-                    defer:NO]);
+  base::scoped_nsobject<InfoBubbleWindow> window(
+      [[InfoBubbleWindow alloc] initWithContentRect:
+              NSMakeRect(0, 0, kWindowInitialWidth, kWindowInitialHeight)
+                                          styleMask:NSBorderlessWindowMask
+                                            backing:NSBackingStoreBuffered
+                                              defer:NO]);
   if ((self = [super initWithWindow:window.get()
                        parentWindow:parentWindow
                          anchoredAt:anchorPoint])) {
@@ -66,7 +66,7 @@ anchoredAt:(NSPoint)anchorPoint
 
   NSImage* image = ResourceBundle::GetSharedInstance()
       .GetNativeImageNamed(IDR_INPUT_ALERT).ToNSImage();
-  scoped_nsobject<NSImageView> imageView([[NSImageView alloc]
+  base::scoped_nsobject<NSImageView> imageView([[NSImageView alloc]
       initWithFrame:NSMakeRect(0, 0, image.size.width, image.size.height)]);
   [imageView setImageFrameStyle:NSImageFrameNone];
   [imageView setImage:image];
@@ -75,7 +75,7 @@ anchoredAt:(NSPoint)anchorPoint
 
   const CGFloat textX = NSWidth([imageView frame]) + kIconTextMargin;
   NSRect textFrame = NSMakeRect(textX, 0, NSWidth(contentFrame) - textX, 0);
-  scoped_nsobject<NSTextField> text(
+  base::scoped_nsobject<NSTextField> text(
       [[NSTextField alloc] initWithFrame:textFrame]);
   [text setStringValue:base::SysUTF16ToNSString(mainText)];
   [text setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
@@ -104,7 +104,7 @@ anchoredAt:(NSPoint)anchorPoint
     NSRect subTextFrame = NSMakeRect(
         textX, NSMaxY(textFrame) + kTextVerticalMargin,
         NSWidth(textFrame), 0);
-    scoped_nsobject<NSTextField> text2(
+    base::scoped_nsobject<NSTextField> text2(
         [[NSTextField alloc] initWithFrame:subTextFrame]);
     [text2 setStringValue:base::SysUTF16ToNSString(subText)];
     [text2 setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -174,7 +174,7 @@ class ValidationMessageBubbleCocoa : public chrome::ValidationMessageBubble {
   }
 
  private:
-  scoped_nsobject<ValidationMessageBubbleController> controller_;
+  base::scoped_nsobject<ValidationMessageBubbleController> controller_;
 };
 
 }

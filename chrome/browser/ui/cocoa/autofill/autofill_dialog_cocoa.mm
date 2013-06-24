@@ -5,10 +5,9 @@
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_cocoa.h"
 
 #include "base/mac/bundle_locations.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/chrome_style.h"
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
@@ -16,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_sign_in_container.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "ui/base/cocoa/flipped_view.h"
@@ -49,7 +49,7 @@ void AutofillDialogCocoa::Show() {
   sheet_controller_.reset([[AutofillDialogWindowController alloc]
        initWithWebContents:controller_->web_contents()
             autofillDialog:this]);
-  scoped_nsobject<CustomConstrainedWindowSheet> sheet(
+  base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc]
           initWithCustomWindow:[sheet_controller_ window]]);
   constrained_window_.reset(
@@ -136,7 +136,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
       autofillDialog:(autofill::AutofillDialogCocoa*)autofillDialog {
   DCHECK(webContents);
 
-  scoped_nsobject<ConstrainedWindowCustomWindow> window(
+  base::scoped_nsobject<ConstrainedWindowCustomWindow> window(
       [[ConstrainedWindowCustomWindow alloc]
           initWithContentRect:ui::kWindowSizeDeterminedLater]);
 
@@ -169,7 +169,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     // This needs a flipped content view because otherwise the size
     // animation looks odd. However, replacing the contentView for constrained
     // windows does not work - it does custom rendering.
-    scoped_nsobject<NSView> flippedContentView(
+    base::scoped_nsobject<NSView> flippedContentView(
         [[FlippedView alloc] initWithFrame:NSZeroRect]);
     [flippedContentView setSubviews:
         @[accountChooser_, [mainContainer_ view], [signInContainer_ view]]];

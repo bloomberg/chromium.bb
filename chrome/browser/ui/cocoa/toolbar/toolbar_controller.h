@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
 #import "chrome/browser/ui/cocoa/command_observer_bridge.h"
@@ -64,14 +64,15 @@ class NotificationBridge;
   Browser* browser_;  // weak, one per window
   scoped_ptr<CommandObserverBridge> commandObserver_;
   scoped_ptr<LocationBarViewMac> locationBarView_;
-  scoped_nsobject<AutocompleteTextFieldEditor> autocompleteTextFieldEditor_;
+  base::scoped_nsobject<AutocompleteTextFieldEditor>
+      autocompleteTextFieldEditor_;
   id<ViewResizer> resizeDelegate_;  // weak
-  scoped_nsobject<BackForwardMenuController> backMenuController_;
-  scoped_nsobject<BackForwardMenuController> forwardMenuController_;
-  scoped_nsobject<BrowserActionsController> browserActionsController_;
+  base::scoped_nsobject<BackForwardMenuController> backMenuController_;
+  base::scoped_nsobject<BackForwardMenuController> forwardMenuController_;
+  base::scoped_nsobject<BrowserActionsController> browserActionsController_;
 
   // Lazily-instantiated menu controller.
-  scoped_nsobject<WrenchMenuController> wrenchMenuController_;
+  base::scoped_nsobject<WrenchMenuController> wrenchMenuController_;
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::NotificationBridge> notificationBridge_;
@@ -82,7 +83,7 @@ class NotificationBridge;
 
   // We have an extra retain in the locationBar_.
   // See comments in awakeFromNib for more info.
-  scoped_nsobject<AutocompleteTextField> locationBarRetainer_;
+  base::scoped_nsobject<AutocompleteTextField> locationBarRetainer_;
 
   // Tracking area for mouse enter/exit/moved in the toolbar.
   ui::ScopedCrTrackingArea trackingArea_;

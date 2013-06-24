@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 // This class implements an alert that has a constrained window look and feel
 // (close button on top right, WebUI style buttons, etc...).  The alert can be
@@ -15,12 +15,12 @@
 // this would be done by ConstrainedWindowSheetController.
 @interface ConstrainedWindowAlert : NSObject {
  @private
-  scoped_nsobject<NSTextField> informativeTextField_;
-  scoped_nsobject<NSTextField> messageTextField_;
-  scoped_nsobject<NSView> accessoryView_;
-  scoped_nsobject<NSMutableArray> buttons_;
-  scoped_nsobject<NSButton> closeButton_;
-  scoped_nsobject<NSWindow> window_;
+  base::scoped_nsobject<NSTextField> informativeTextField_;
+  base::scoped_nsobject<NSTextField> messageTextField_;
+  base::scoped_nsobject<NSView> accessoryView_;
+  base::scoped_nsobject<NSMutableArray> buttons_;
+  base::scoped_nsobject<NSButton> closeButton_;
+  base::scoped_nsobject<NSWindow> window_;
 }
 
 @property(nonatomic, copy) NSString* informativeText;

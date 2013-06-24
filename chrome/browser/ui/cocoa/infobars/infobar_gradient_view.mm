@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/infobars/infobar.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -42,7 +42,7 @@ const CGFloat kTipWidth = 23;
 - (void)setInfobarType:(InfoBarDelegate::Type)infobarType {
   SkColor topColor = GetInfoBarTopColor(infobarType);
   SkColor bottomColor = GetInfoBarBottomColor(infobarType);
-  scoped_nsobject<NSGradient> gradient([[NSGradient alloc]
+  base::scoped_nsobject<NSGradient> gradient([[NSGradient alloc]
       initWithStartingColor:gfx::SkColorToCalibratedNSColor(topColor)
                 endingColor:gfx::SkColorToCalibratedNSColor(bottomColor)]);
   [self setGradient:gradient];
@@ -84,7 +84,7 @@ const CGFloat kTipWidth = 23;
   [infoBarPath lineToPoint:NSMakePoint(NSMaxX(bounds), NSMaxY(bounds))];
 
   // Save off the top path of the infobar.
-  scoped_nsobject<NSBezierPath> topPath([infoBarPath copy]);
+  base::scoped_nsobject<NSBezierPath> topPath([infoBarPath copy]);
 
   [infoBarPath lineToPoint:NSMakePoint(NSMaxX(bounds), NSMinY(bounds))];
   [infoBarPath lineToPoint:NSMakePoint(NSMinX(bounds), NSMinY(bounds))];

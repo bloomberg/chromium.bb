@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -65,14 +65,14 @@ class BookmarkButtonTest : public CocoaProfileTest {
 
 // Make sure nothing leaks
 TEST_F(BookmarkButtonTest, Create) {
-  scoped_nsobject<BookmarkButton> button;
+  base::scoped_nsobject<BookmarkButton> button;
   button.reset([[BookmarkButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
 }
 
 // Test folder and empty node queries.
 TEST_F(BookmarkButtonTest, FolderAndEmptyOrNot) {
-  scoped_nsobject<BookmarkButton> button;
-  scoped_nsobject<BookmarkButtonCell> cell;
+  base::scoped_nsobject<BookmarkButton> button;
+  base::scoped_nsobject<BookmarkButtonCell> cell;
 
   button.reset([[BookmarkButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
   cell.reset([[BookmarkButtonCell alloc] initTextCell:@"hi mom"]);
@@ -107,10 +107,10 @@ TEST_F(BookmarkButtonTest, MouseEnterExitRedirect) {
       cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
                                                 NSMouseMoved,
                                                 0);
-  scoped_nsobject<BookmarkButton> button;
-  scoped_nsobject<BookmarkButtonCell> cell;
-  scoped_nsobject<FakeButtonDelegate>
-      delegate([[FakeButtonDelegate alloc] init]);
+  base::scoped_nsobject<BookmarkButton> button;
+  base::scoped_nsobject<BookmarkButtonCell> cell;
+  base::scoped_nsobject<FakeButtonDelegate> delegate(
+      [[FakeButtonDelegate alloc] init]);
   button.reset([[BookmarkButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
   cell.reset([[BookmarkButtonCell alloc] initTextCell:@"hi mom"]);
   [button setCell:cell];
@@ -130,10 +130,10 @@ TEST_F(BookmarkButtonTest, MouseEnterExitRedirect) {
 }
 
 TEST_F(BookmarkButtonTest, DragToTrash) {
-  scoped_nsobject<BookmarkButton> button;
-  scoped_nsobject<BookmarkButtonCell> cell;
-  scoped_nsobject<FakeButtonDelegate>
-      delegate([[FakeButtonDelegate alloc] init]);
+  base::scoped_nsobject<BookmarkButton> button;
+  base::scoped_nsobject<BookmarkButtonCell> cell;
+  base::scoped_nsobject<FakeButtonDelegate> delegate(
+      [[FakeButtonDelegate alloc] init]);
   button.reset([[BookmarkButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
   cell.reset([[BookmarkButtonCell alloc] initTextCell:@"hi mom"]);
   [button setCell:cell];

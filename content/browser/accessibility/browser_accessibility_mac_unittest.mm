@@ -95,8 +95,8 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
         retain]);
   }
 
-  scoped_nsobject<MockAccessibilityDelegate> delegate_;
-  scoped_nsobject<BrowserAccessibilityCocoa> accessibility_;
+  base::scoped_nsobject<MockAccessibilityDelegate> delegate_;
+  base::scoped_nsobject<BrowserAccessibilityCocoa> accessibility_;
   scoped_ptr<BrowserAccessibilityManager> manager_;
 };
 

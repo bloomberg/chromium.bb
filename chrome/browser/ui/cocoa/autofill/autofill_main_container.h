@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
@@ -25,8 +25,8 @@ namespace autofill {
 // Might dynamically add and remove other elements.
 @interface AutofillMainContainer : NSViewController<AutofillLayout> {
  @private
-  scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
-  scoped_nsobject<AutofillDetailsContainer> detailsContainer_;
+  base::scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
+  base::scoped_nsobject<AutofillDetailsContainer> detailsContainer_;
   AutofillDialogWindowController* target_;
   autofill::AutofillDialogController* controller_;  // Not owned.
 }

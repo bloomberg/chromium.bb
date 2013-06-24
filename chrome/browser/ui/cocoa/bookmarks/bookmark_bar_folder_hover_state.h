@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 
 // Hover state machine.  Encapsulates the hover state for
@@ -39,7 +39,7 @@
   // Like normal menus, hovering over a folder button causes it to
   // open.  This variable is set when a hover is initiated (but has
   // not necessarily fired yet).
-  scoped_nsobject<BookmarkButton> hoverButton_;
+  base::scoped_nsobject<BookmarkButton> hoverButton_;
 
   // We model hover state as a state machine with specific allowable
   // transitions.  |hoverState_| is the state of this machine at any

@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/callback.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
@@ -17,7 +17,7 @@
 
 // Displays the one-click signin confirmation bubble
 @interface OneClickSigninBubbleController : BaseBubbleController {
-  scoped_nsobject<OneClickSigninViewController> viewController_;
+  base::scoped_nsobject<OneClickSigninViewController> viewController_;
  @private
    IBOutlet NSTextField* messageTextField_;
 }

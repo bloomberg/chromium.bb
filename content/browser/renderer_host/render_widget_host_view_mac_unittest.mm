@@ -203,7 +203,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 
  protected:
   RenderWidgetHostViewMac* rwhv_mac_;
-  scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa_;
+  base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMacTest);
@@ -226,8 +226,8 @@ TEST_F(RenderWidgetHostViewMacTest, AcceptsFirstResponder) {
 }
 
 TEST_F(RenderWidgetHostViewMacTest, TakesFocusOnMouseDown) {
-  scoped_nsobject<CocoaTestHelperWindow>
-      window([[CocoaTestHelperWindow alloc] init]);
+  base::scoped_nsobject<CocoaTestHelperWindow> window(
+      [[CocoaTestHelperWindow alloc] init]);
   [[window contentView] addSubview:rwhv_cocoa_.get()];
 
   // Even if the RWHVCocoa disallows first responder, clicking on it gives it
@@ -658,8 +658,8 @@ TEST_F(RenderWidgetHostViewMacTest, BlurAndFocusOnSetActive) {
   RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
       RenderWidgetHostView::CreateViewForWidget(rwh));
 
-  scoped_nsobject<CocoaTestHelperWindow>
-      window([[CocoaTestHelperWindow alloc] init]);
+  base::scoped_nsobject<CocoaTestHelperWindow> window(
+      [[CocoaTestHelperWindow alloc] init]);
   [[window contentView] addSubview:view->cocoa_view()];
 
   EXPECT_CALL(*rwh, Focus());
@@ -744,8 +744,8 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
       RenderWidgetHostView::CreateViewForWidget(host));
 
   // Add a delegate to the view.
-  scoped_nsobject<MockRenderWidgetHostViewMacDelegate> view_delegate(
-    [[MockRenderWidgetHostViewMacDelegate alloc] init]);
+  base::scoped_nsobject<MockRenderWidgetHostViewMacDelegate> view_delegate(
+      [[MockRenderWidgetHostViewMacDelegate alloc] init]);
   view->SetDelegate(view_delegate.get());
 
   // Send an initial wheel event for scrolling by 3 lines.

@@ -60,7 +60,7 @@ typedef enum {
   const extensions::Extension* extension_;  // weak
   const extensions::BundleInstaller* bundle_;  // weak
   Browser* browser_;  // weak
-  scoped_nsobject<NSImage> icon_;
+  base::scoped_nsobject<NSImage> icon_;
 
   extension_installed_bubble::ExtensionType type_;
 
@@ -91,7 +91,7 @@ typedef enum {
   // text views cannot conveniently be created in IB. The xib file contains
   // a text field |promoPlaceholder_| that's replaced by this text view |promo_|
   // in -awakeFromNib.
-  scoped_nsobject<HyperlinkTextView> promo_;
+  base::scoped_nsobject<HyperlinkTextView> promo_;
   // Only shown for bundle installs.
   IBOutlet NSTextField* installedHeadingMsg_;
   IBOutlet NSTextField* installedItemsMsg_;

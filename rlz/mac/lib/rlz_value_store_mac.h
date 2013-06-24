@@ -5,9 +5,9 @@
 #ifndef RLZ_MAC_LIB_RLZ_VALUE_STORE_MAC_H_
 #define RLZ_MAC_LIB_RLZ_VALUE_STORE_MAC_H_
 
-#include "rlz/lib/rlz_value_store.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
+#include "rlz/lib/rlz_value_store.h"
 
 @class NSDictionary;
 @class NSMutableDictionary;
@@ -69,8 +69,8 @@ class RlzValueStoreMac : public RlzValueStore {
   // product p.
   NSMutableDictionary* ProductDict(Product p);
 
-  scoped_nsobject<NSMutableDictionary> dict_;
-  scoped_nsobject<NSString> plist_path_;
+  base::scoped_nsobject<NSMutableDictionary> dict_;
+  base::scoped_nsobject<NSString> plist_path_;
 
   DISALLOW_COPY_AND_ASSIGN(RlzValueStoreMac);
 };

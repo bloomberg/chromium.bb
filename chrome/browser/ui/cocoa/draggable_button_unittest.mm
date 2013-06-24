@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/draggable_button.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,8 +47,9 @@ class DraggableButtonTest : public CocoaTest {};
 
 // Make sure the basic case of "click" still works.
 TEST_F(DraggableButtonTest, DownUp) {
-  scoped_nsobject<TestableDraggableButton> button(
-      [[TestableDraggableButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
+  base::scoped_nsobject<TestableDraggableButton> button(
+      [[TestableDraggableButton alloc]
+          initWithFrame:NSMakeRect(0, 0, 500, 500)]);
   [[test_window() contentView] addSubview:button.get()];
   [button setTarget:button];
   [button setAction:@selector(trigger:)];
@@ -67,8 +68,9 @@ TEST_F(DraggableButtonTest, DownUp) {
 }
 
 TEST_F(DraggableButtonTest, DraggableHysteresis) {
-  scoped_nsobject<TestableDraggableButton> button(
-      [[TestableDraggableButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
+  base::scoped_nsobject<TestableDraggableButton> button(
+      [[TestableDraggableButton alloc]
+          initWithFrame:NSMakeRect(0, 0, 500, 500)]);
   [[test_window() contentView] addSubview:button.get()];
   NSEvent* downEvent =
       cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),
@@ -106,8 +108,9 @@ TEST_F(DraggableButtonTest, DraggableHysteresis) {
 }
 
 TEST_F(DraggableButtonTest, ResetState) {
-  scoped_nsobject<TestableDraggableButton> button(
-      [[TestableDraggableButton alloc] initWithFrame:NSMakeRect(0,0,500,500)]);
+  base::scoped_nsobject<TestableDraggableButton> button(
+      [[TestableDraggableButton alloc]
+          initWithFrame:NSMakeRect(0, 0, 500, 500)]);
   [[test_window() contentView] addSubview:button.get()];
   NSEvent* downEvent =
       cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(10,10),

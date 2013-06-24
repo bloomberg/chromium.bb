@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "ui/base/cocoa/tracking_area.h"
@@ -25,7 +25,7 @@ class Profile;
   scoped_ptr<ActionBoxMenuModel> model_;
 
   // Array of the below view controllers.
-  scoped_nsobject<NSMutableArray> items_;
+  base::scoped_nsobject<NSMutableArray> items_;
 }
 
 // Designated initializer. |point| must be in screen coordinates.

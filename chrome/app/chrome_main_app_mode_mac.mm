@@ -17,7 +17,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
@@ -81,7 +81,7 @@ class AppShimController : public IPC::Listener {
   void Close();
 
   IPC::ChannelProxy* channel_;
-  scoped_nsobject<AppShimDelegate> nsapp_delegate_;
+  base::scoped_nsobject<AppShimDelegate> nsapp_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimController);
 };

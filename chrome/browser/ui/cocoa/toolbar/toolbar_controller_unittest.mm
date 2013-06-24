@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
@@ -89,8 +89,8 @@ class ToolbarControllerTest : public CocoaProfileTest {
               [[views objectAtIndex:kHomeIndex] isEnabled] ? true : false);
   }
 
-  scoped_nsobject<ViewResizerPong> resizeDelegate_;
-  scoped_nsobject<ToolbarController> bar_;
+  base::scoped_nsobject<ViewResizerPong> resizeDelegate_;
+  base::scoped_nsobject<ToolbarController> bar_;
 };
 
 TEST_VIEW(ToolbarControllerTest, [bar_ view])
@@ -215,8 +215,8 @@ TEST_F(ToolbarControllerTest, BookmarkBubblePoint) {
 }
 
 TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
-  scoped_nsobject<HitView> view([[HitView alloc]
-                                  initWithFrame:NSMakeRect(0,0,100,100)]);
+  base::scoped_nsobject<HitView> view(
+      [[HitView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)]);
   [bar_ setView:view];
   NSEvent* event = [NSEvent mouseEventWithType:NSMouseMoved
                                       location:NSMakePoint(10,10)
@@ -233,12 +233,13 @@ TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
   EXPECT_FALSE([bar_ hoverButtonForEvent:event]);
 
   // Not yet...
-  scoped_nsobject<NSButton> button([[NSButton alloc] init]);
+  base::scoped_nsobject<NSButton> button([[NSButton alloc] init]);
   [view setHitTestReturn:button];
   EXPECT_FALSE([bar_ hoverButtonForEvent:event]);
 
   // Now!
-  scoped_nsobject<GradientButtonCell> cell([[GradientButtonCell alloc] init]);
+  base::scoped_nsobject<GradientButtonCell> cell(
+      [[GradientButtonCell alloc] init]);
   [button setCell:cell.get()];
   EXPECT_TRUE([bar_ hoverButtonForEvent:nil]);
 }

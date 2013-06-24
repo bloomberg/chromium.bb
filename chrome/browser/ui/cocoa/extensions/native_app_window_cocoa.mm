@@ -226,7 +226,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
                           NSTexturedBackgroundWindowMask;
   if (resizable_)
     style_mask |= NSResizableWindowMask;
-  scoped_nsobject<NSWindow> window;
+  base::scoped_nsobject<NSWindow> window;
   if (has_frame_) {
     window.reset([[ShellNSWindow alloc]
         initWithContentRect:cocoa_bounds
@@ -656,7 +656,7 @@ void NativeAppWindowCocoa::InstallDraggableRegionViews() {
   // Note that [webView subviews] returns the view's mutable internal array and
   // it should be copied to avoid mutating the original array while enumerating
   // it.
-  scoped_nsobject<NSArray> subviews([[webView subviews] copy]);
+  base::scoped_nsobject<NSArray> subviews([[webView subviews] copy]);
   for (NSView* subview in subviews.get())
     if ([subview isKindOfClass:[ControlRegionView class]])
       [subview removeFromSuperview];
@@ -667,7 +667,7 @@ void NativeAppWindowCocoa::InstallDraggableRegionViews() {
            system_drag_exclude_areas_.begin();
        iter != system_drag_exclude_areas_.end();
        ++iter) {
-    scoped_nsobject<NSView> controlRegion(
+    base::scoped_nsobject<NSView> controlRegion(
         [[ControlRegionView alloc] initWithAppWindow:this]);
     [controlRegion setFrame:NSMakeRect(iter->x(),
                                        webViewHeight - iter->bottom(),

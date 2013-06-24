@@ -7,7 +7,7 @@
 
 #import <AppKit/AppKit.h>
 
-#import "base/memory/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 
 @class AvatarMenuBubbleController;
@@ -36,10 +36,10 @@ class ThemeProvider;
   __weak AvatarMenuBubbleController* menuController_;
 
   // The avatar button.
-  scoped_nsobject<NSButton> button_;
+  base::scoped_nsobject<NSButton> button_;
 
   // The managed user avatar label. Only used for managed user profiles.
-  scoped_nsobject<NSButton> labelButton_;
+  base::scoped_nsobject<NSButton> labelButton_;
 }
 
 // The avatar button view.

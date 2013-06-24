@@ -37,7 +37,8 @@ NSString* const kGrowAnimationKey = @"growAnimation";
                                   0,
                                   size.width * kDraggingIconScale,
                                   size.height * kDraggingIconScale);
-    scoped_nsobject<NSView> dragView([[NSView alloc] initWithFrame:frameRect]);
+    base::scoped_nsobject<NSView> dragView(
+        [[NSView alloc] initWithFrame:frameRect]);
     [dragView setWantsLayer:YES];
     [dragView setHidden:YES];
 
@@ -65,7 +66,7 @@ NSString* const kGrowAnimationKey = @"growAnimation";
   // Take a snapshot of the grid cell without the text label and hide the cell.
   // Also remove the cell highlight on the image, added when it was clicked.
   NSButton* button = [item button];
-  scoped_nsobject<NSString> oldTitle([[item buttonTitle] retain]);
+  base::scoped_nsobject<NSString> oldTitle([[item buttonTitle] retain]);
   [item setButtonTitle:[NSString string]];
   [[button cell] setHighlighted:NO];
   NSBitmapImageRep* imageRep =
@@ -160,7 +161,7 @@ NSString* const kGrowAnimationKey = @"growAnimation";
       NSViewAnimationEndFrameKey:   [NSValue valueWithRect:targetRect]
   };
 
-  scoped_nsobject<NSViewAnimation> translate([[NSViewAnimation alloc]
+  base::scoped_nsobject<NSViewAnimation> translate([[NSViewAnimation alloc]
       initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
   [translate setDuration:kAnimationDuration];
   [translate startAnimation];

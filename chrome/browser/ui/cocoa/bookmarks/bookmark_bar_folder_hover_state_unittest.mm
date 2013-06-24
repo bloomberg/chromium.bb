@@ -19,14 +19,14 @@ class BookmarkBarFolderHoverStateTest : public CocoaTest {
 // these specific state transitions.
 TEST_F(BookmarkBarFolderHoverStateTest, HoverState) {
   base::MessageLoopForUI message_loop;
-  scoped_nsobject<BookmarkBarFolderHoverState> bbfhs;
+  base::scoped_nsobject<BookmarkBarFolderHoverState> bbfhs;
   bbfhs.reset([[BookmarkBarFolderHoverState alloc] init]);
 
   // Initial state.
   EXPECT_FALSE([bbfhs hoverButton]);
   ASSERT_EQ(kHoverStateClosed, [bbfhs hoverState]);
 
-  scoped_nsobject<BookmarkButton> button;
+  base::scoped_nsobject<BookmarkButton> button;
   button.reset([[BookmarkButton alloc] initWithFrame:NSMakeRect(0, 0, 20, 20)]);
 
   // Test transition from closed to opening.

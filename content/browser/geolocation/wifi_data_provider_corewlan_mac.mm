@@ -10,7 +10,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/sys_string_conversions.h"
 
@@ -58,8 +58,8 @@ class CoreWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data) OVERRIDE;
 
  private:
-  scoped_nsobject<NSBundle> bundle_;
-  scoped_nsobject<NSString> merge_key_;
+  base::scoped_nsobject<NSBundle> bundle_;
+  base::scoped_nsobject<NSString> merge_key_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreWlanApi);
 };

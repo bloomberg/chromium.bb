@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bubble_view.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "testing/gtest_mac.h"
@@ -12,7 +12,7 @@ class BubbleViewTest : public CocoaTest {
  public:
   BubbleViewTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 50);
-    scoped_nsobject<BubbleView> view(
+    base::scoped_nsobject<BubbleView> view(
         [[BubbleView alloc] initWithFrame:frame themeProvider:test_window()]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
@@ -27,7 +27,7 @@ TEST_VIEW(BubbleViewTest, view_);
 // Test a nil themeProvider in init.
 TEST_F(BubbleViewTest, NilThemeProvider) {
   NSRect frame = NSMakeRect(0, 0, 50, 50);
-  scoped_nsobject<BubbleView> view(
+  base::scoped_nsobject<BubbleView> view(
       [[BubbleView alloc] initWithFrame:frame themeProvider:nil]);
   [[test_window() contentView] addSubview:view.get()];
   [view display];

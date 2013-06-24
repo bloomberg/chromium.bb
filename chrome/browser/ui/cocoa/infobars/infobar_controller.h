@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 @class AnimatableView;
 @protocol InfoBarContainer;
@@ -39,7 +39,7 @@ class InfoBarService;
   // text views cannot conveniently be created in IB. The xib file contains
   // a text field |labelPlaceholder_| that's replaced by this text view |label_|
   // in -awakeFromNib.
-  scoped_nsobject<NSTextView> label_;
+  base::scoped_nsobject<NSTextView> label_;
 };
 
 // Initializes a new InfoBarController.

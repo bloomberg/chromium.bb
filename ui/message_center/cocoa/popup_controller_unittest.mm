@@ -4,7 +4,7 @@
 
 #import "ui/message_center/cocoa/popup_controller.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,7 +27,7 @@ TEST_F(PopupControllerTest, Creation) {
           message_center::RichNotificationData(),
           NULL));
 
-  scoped_nsobject<MCPopupController> controller(
+  base::scoped_nsobject<MCPopupController> controller(
       [[MCPopupController alloc] initWithNotification:notification.get()
                                         messageCenter:nil
                                       popupCollection:nil]);

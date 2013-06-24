@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -71,7 +71,7 @@ class HistoryMenuCocoaControllerTest : public CocoaProfileTest {
 };
 
 TEST_F(HistoryMenuCocoaControllerTest, OpenURLForItem) {
-  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"History"]);
+  base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"History"]);
   CreateItems(menu.get());
 
   std::map<NSMenuItem*, HistoryMenuBridge::HistoryItem*>& items =

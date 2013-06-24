@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_button_cell.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "grit/ui_resources.h"
@@ -15,7 +15,7 @@ class BookmarkBarFolderButtonCellTest : public CocoaTest {
 
 // Basic creation.
 TEST_F(BookmarkBarFolderButtonCellTest, Create) {
-  scoped_nsobject<BookmarkBarFolderButtonCell> cell;
+  base::scoped_nsobject<BookmarkBarFolderButtonCell> cell;
   cell.reset([[BookmarkBarFolderButtonCell buttonCellForNode:nil
                                                         text:nil
                                                        image:nil
@@ -25,21 +25,21 @@ TEST_F(BookmarkBarFolderButtonCellTest, Create) {
 
 TEST_F(BookmarkBarFolderButtonCellTest, FaviconPositioning) {
   NSRect frame = NSMakeRect(0, 0, 50, 30);
-  scoped_nsobject<NSButton> view([[NSButton alloc] initWithFrame:frame]);
-  scoped_nsobject<NSButton> folder_view(
+  base::scoped_nsobject<NSButton> view([[NSButton alloc] initWithFrame:frame]);
+  base::scoped_nsobject<NSButton> folder_view(
       [[NSButton alloc] initWithFrame:frame]);
 
   ASSERT_TRUE(view.get());
   ASSERT_TRUE(folder_view.get());
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  scoped_nsobject<NSImage> image(
+  base::scoped_nsobject<NSImage> image(
       rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
   ASSERT_TRUE(image.get());
 
-  scoped_nsobject<BookmarkButtonCell> cell(
+  base::scoped_nsobject<BookmarkButtonCell> cell(
       [[BookmarkButtonCell alloc] initTextCell:@"Testing"]);
-  scoped_nsobject<BookmarkBarFolderButtonCell> folder_cell(
+  base::scoped_nsobject<BookmarkBarFolderButtonCell> folder_cell(
       [[BookmarkBarFolderButtonCell buttonCellForNode:nil
                                                  text:@"Testing"
                                                 image:image

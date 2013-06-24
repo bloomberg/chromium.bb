@@ -6,7 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/toolbar/reload_button.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
@@ -29,7 +29,7 @@ class ReloadButtonTest : public CocoaTest {
  public:
   ReloadButtonTest() {
     NSRect frame = NSMakeRect(0, 0, 20, 20);
-    scoped_nsobject<ReloadButton> button(
+    base::scoped_nsobject<ReloadButton> button(
         [[ReloadButton alloc] initWithFrame:frame]);
     button_ = button.get();
 

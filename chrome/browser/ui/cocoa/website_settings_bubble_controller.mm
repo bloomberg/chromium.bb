@@ -120,13 +120,13 @@ NSColor* IdentityVerifiedTextColor() {
 
 @interface WebsiteSettingsTabSegmentedCell : NSSegmentedCell {
  @private
-  scoped_nsobject<NSImage> tabstripCenterImage_;
-  scoped_nsobject<NSImage> tabstripLeftImage_;
-  scoped_nsobject<NSImage> tabstripRightImage_;
+  base::scoped_nsobject<NSImage> tabstripCenterImage_;
+  base::scoped_nsobject<NSImage> tabstripLeftImage_;
+  base::scoped_nsobject<NSImage> tabstripRightImage_;
 
-  scoped_nsobject<NSImage> tabCenterImage_;
-  scoped_nsobject<NSImage> tabLeftImage_;
-  scoped_nsobject<NSImage> tabRightImage_;
+  base::scoped_nsobject<NSImage> tabCenterImage_;
+  base::scoped_nsobject<NSImage> tabLeftImage_;
+  base::scoped_nsobject<NSImage> tabRightImage_;
 
   // Key track of the index of segment which has keyboard focus. This is not
   // the same as the currently selected segment.
@@ -303,7 +303,7 @@ NSColor* IdentityVerifiedTextColor() {
   // Use an arbitrary height; it will be changed in performLayout.
   NSRect contentRect = NSMakeRect(0, 0, [self defaultWindowWidth], 1);
   // Create an empty window into which content is placed.
-  scoped_nsobject<InfoBubbleWindow> window(
+  base::scoped_nsobject<InfoBubbleWindow> window(
       [[InfoBubbleWindow alloc] initWithContentRect:contentRect
                                           styleMask:NSBorderlessWindowMask
                                             backing:NSBackingStoreBuffered
@@ -403,7 +403,7 @@ NSColor* IdentityVerifiedTextColor() {
 
   // Create the tab view and its two tabs.
 
-  scoped_nsobject<WebsiteSettingsTabSegmentedCell> cell(
+  base::scoped_nsobject<WebsiteSettingsTabSegmentedCell> cell(
       [[WebsiteSettingsTabSegmentedCell alloc] init]);
   CGFloat tabstripHeight = [cell cellSize].height;
   NSRect tabstripFrame = NSMakeRect(
@@ -470,11 +470,11 @@ NSColor* IdentityVerifiedTextColor() {
 // Create the contents of the Permissions tab and add it to the given tab view.
 // Returns a weak reference to the tab view item's view.
 - (NSView*)addPermissionsTabToTabView:(NSTabView*)tabView {
-  scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
+  base::scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
   [tabView_ insertTabViewItem:item.get()
                       atIndex:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
-  scoped_nsobject<NSView> contentView([[FlippedView alloc]
-      initWithFrame:[tabView_ contentRect]]);
+  base::scoped_nsobject<NSView> contentView(
+      [[FlippedView alloc] initWithFrame:[tabView_ contentRect]]);
   [contentView setAutoresizingMask:NSViewWidthSizable];
   [item setView:contentView.get()];
 
@@ -531,9 +531,9 @@ NSColor* IdentityVerifiedTextColor() {
 // Create the contents of the Connection tab and add it to the given tab view.
 // Returns a weak reference to the tab view item's view.
 - (NSView*)addConnectionTabToTabView:(NSTabView*)tabView {
-  scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
-  scoped_nsobject<NSView> contentView([[FlippedView alloc]
-      initWithFrame:[tabView_ contentRect]]);
+  base::scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
+  base::scoped_nsobject<NSView> contentView(
+      [[FlippedView alloc] initWithFrame:[tabView_ contentRect]]);
   [contentView setAutoresizingMask:NSViewWidthSizable];
 
   // Place all the text and images at the same position. The positions will be
@@ -782,8 +782,8 @@ NSColor* IdentityVerifiedTextColor() {
   // The height is arbitrary as it will be adjusted later.
   CGFloat width = NSWidth([view frame]) - point.x - kFramePadding;
   NSRect frame = NSMakeRect(point.x, point.y, width, 100);
-  scoped_nsobject<NSTextField> textField(
-     [[NSTextField alloc] initWithFrame:frame]);
+  base::scoped_nsobject<NSTextField> textField(
+      [[NSTextField alloc] initWithFrame:frame]);
   [self configureTextFieldAsLabel:textField.get()];
   [textField setStringValue:base::SysUTF16ToNSString(text)];
   NSFont* font = bold ? [NSFont boldSystemFontOfSize:fontSize]
@@ -801,7 +801,7 @@ NSColor* IdentityVerifiedTextColor() {
                           toView:(NSView*)view
                          atPoint:(NSPoint)point {
   NSRect frame = NSMakeRect(point.x, point.y, size.width, size.height);
-  scoped_nsobject<NSImageView> imageView(
+  base::scoped_nsobject<NSImageView> imageView(
       [[NSImageView alloc] initWithFrame:frame]);
   [imageView setImageFrameStyle:NSImageFrameNone];
   [view addSubview:imageView.get()];
@@ -824,8 +824,9 @@ NSColor* IdentityVerifiedTextColor() {
 - (NSButton*)addLinkButtonWithText:(NSString*)text toView:(NSView*)view {
   // Frame size is arbitrary; it will be adjusted by the layout tweaker.
   NSRect frame = NSMakeRect(kFramePadding, 0, 100, 10);
-  scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:frame]);
-  scoped_nsobject<HyperlinkButtonCell> cell(
+  base::scoped_nsobject<NSButton> button(
+      [[NSButton alloc] initWithFrame:frame]);
+  base::scoped_nsobject<HyperlinkButtonCell> cell(
       [[HyperlinkButtonCell alloc] initTextCell:text]);
   [cell setControlSize:NSSmallControlSize];
   [button setCell:cell.get()];
@@ -860,7 +861,7 @@ NSColor* IdentityVerifiedTextColor() {
                                       atPoint:(NSPoint)point {
   // Use an arbitrary width and height; it will be sized to fit.
   NSRect frame = NSMakeRect(point.x, point.y, 1, 1);
-  scoped_nsobject<NSPopUpButton> button(
+  base::scoped_nsobject<NSPopUpButton> button(
       [[NSPopUpButton alloc] initWithFrame:frame pullsDown:NO]);
   [button setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
   [button setBordered:NO];
@@ -896,7 +897,7 @@ NSColor* IdentityVerifiedTextColor() {
   [button selectItemWithTag:permissionInfo.setting];
 
   // Set the button title.
-  scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
+  base::scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
   string16 buttonTitle = WebsiteSettingsUI::PermissionActionToUIString(
       permissionInfo.setting,
       permissionInfo.default_setting,

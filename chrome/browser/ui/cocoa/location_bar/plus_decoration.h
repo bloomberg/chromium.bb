@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/location_bar/button_decoration.h"
 #include "chrome/browser/ui/toolbar/action_box_button_controller.h"
 
@@ -54,7 +54,7 @@ class PlusDecoration : public ButtonDecoration,
 
   void SetIcons(int normal_id, int hover_id, int pressed_id);
 
-  scoped_nsobject<ActionBoxMenuBubbleController> menu_controller_;
+  base::scoped_nsobject<ActionBoxMenuBubbleController> menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PlusDecoration);
 };

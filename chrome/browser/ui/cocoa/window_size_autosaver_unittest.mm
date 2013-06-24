@@ -6,7 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
@@ -69,10 +69,10 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
   {
     NSRect frame = [window_ frame];
     // Empty state, shouldn't restore:
-    scoped_nsobject<WindowSizeAutosaver> sizeSaver([[WindowSizeAutosaver alloc]
-        initWithWindow:window_
-           prefService:pref
-                  path:path_]);
+    base::scoped_nsobject<WindowSizeAutosaver> sizeSaver(
+        [[WindowSizeAutosaver alloc] initWithWindow:window_
+                                        prefService:pref
+                                               path:path_]);
     EXPECT_EQ(NSMinX(frame), NSMinX([window_ frame]));
     EXPECT_EQ(NSMinY(frame), NSMinY([window_ frame]));
     EXPECT_EQ(NSWidth(frame), NSWidth([window_ frame]));
@@ -87,10 +87,10 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
 
   {
     // Should restore last stored position, but not size.
-    scoped_nsobject<WindowSizeAutosaver> sizeSaver([[WindowSizeAutosaver alloc]
-        initWithWindow:window_
-           prefService:pref
-                  path:path_]);
+    base::scoped_nsobject<WindowSizeAutosaver> sizeSaver(
+        [[WindowSizeAutosaver alloc] initWithWindow:window_
+                                        prefService:pref
+                                               path:path_]);
     EXPECT_EQ(300, NSMinX([window_ frame]));
     EXPECT_EQ(310, NSMinY([window_ frame]));
     EXPECT_EQ(160, NSWidth([window_ frame]));
@@ -128,10 +128,10 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
   {
     NSRect frame = [window_ frame];
     // Empty state, shouldn't restore:
-    scoped_nsobject<WindowSizeAutosaver> sizeSaver([[WindowSizeAutosaver alloc]
-        initWithWindow:window_
-           prefService:pref
-                  path:path_]);
+    base::scoped_nsobject<WindowSizeAutosaver> sizeSaver(
+        [[WindowSizeAutosaver alloc] initWithWindow:window_
+                                        prefService:pref
+                                               path:path_]);
     EXPECT_EQ(NSMinX(frame), NSMinX([window_ frame]));
     EXPECT_EQ(NSMinY(frame), NSMinY([window_ frame]));
     EXPECT_EQ(NSWidth(frame), NSWidth([window_ frame]));
@@ -146,10 +146,10 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
 
   {
     // Should restore last stored size
-    scoped_nsobject<WindowSizeAutosaver> sizeSaver([[WindowSizeAutosaver alloc]
-        initWithWindow:window_
-           prefService:pref
-                  path:path_]);
+    base::scoped_nsobject<WindowSizeAutosaver> sizeSaver(
+        [[WindowSizeAutosaver alloc] initWithWindow:window_
+                                        prefService:pref
+                                               path:path_]);
     EXPECT_EQ(300, NSMinX([window_ frame]));
     EXPECT_EQ(310, NSMinY([window_ frame]));
     EXPECT_EQ(250, NSWidth([window_ frame]));
@@ -187,10 +187,10 @@ TEST_F(WindowSizeAutosaverTest, DoesNotRestoreButClearsEmptyRect) {
   {
     // Window rect shouldn't change...
     NSRect frame = [window_ frame];
-    scoped_nsobject<WindowSizeAutosaver> sizeSaver([[WindowSizeAutosaver alloc]
-        initWithWindow:window_
-           prefService:pref
-                  path:path_]);
+    base::scoped_nsobject<WindowSizeAutosaver> sizeSaver(
+        [[WindowSizeAutosaver alloc] initWithWindow:window_
+                                        prefService:pref
+                                               path:path_]);
     EXPECT_EQ(NSMinX(frame), NSMinX([window_ frame]));
     EXPECT_EQ(NSMinY(frame), NSMinY([window_ frame]));
     EXPECT_EQ(NSWidth(frame), NSWidth([window_ frame]));

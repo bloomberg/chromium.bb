@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/debug/debugger.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
@@ -75,7 +75,7 @@ class SadTabControllerTest : public ChromeRenderViewHostTestHarness {
 bool SadTabControllerTest::link_clicked_;
 
 TEST_F(SadTabControllerTest, WithTabContents) {
-  scoped_nsobject<SadTabController> controller(CreateController());
+  base::scoped_nsobject<SadTabController> controller(CreateController());
   EXPECT_TRUE(controller);
   HyperlinkTextView* help = GetHelpTextView(controller);
   EXPECT_TRUE(help);
@@ -83,14 +83,14 @@ TEST_F(SadTabControllerTest, WithTabContents) {
 
 TEST_F(SadTabControllerTest, WithoutTabContents) {
   DeleteContents();
-  scoped_nsobject<SadTabController> controller(CreateController());
+  base::scoped_nsobject<SadTabController> controller(CreateController());
   EXPECT_TRUE(controller);
   HyperlinkTextView* help = GetHelpTextView(controller);
   EXPECT_FALSE(help);
 }
 
 TEST_F(SadTabControllerTest, ClickOnLink) {
-  scoped_nsobject<SadTabController> controller(CreateController());
+  base::scoped_nsobject<SadTabController> controller(CreateController());
   HyperlinkTextView* help = GetHelpTextView(controller);
   EXPECT_TRUE(help);
   EXPECT_FALSE(link_clicked_);

@@ -57,8 +57,8 @@ TEST_F(BookmarkFolderTargetTest, StartWithNothing) {
   // Make sure we get an addNew
   [[controller expect] addNewFolderControllerWithParentButton:sender];
 
-  scoped_nsobject<BookmarkFolderTarget> target(
-    [[BookmarkFolderTarget alloc] initWithController:controller]);
+  base::scoped_nsobject<BookmarkFolderTarget> target(
+      [[BookmarkFolderTarget alloc] initWithController:controller]);
 
   [target openBookmarkFolderFromButton:sender];
   EXPECT_OCMOCK_VERIFY(controller);
@@ -82,7 +82,7 @@ TEST_F(BookmarkFolderTargetTest, ReopenSameFolder) {
   // any subfolders).
   [[controller expect] closeBookmarkFolder:controller];
 
-  scoped_nsobject<BookmarkFolderTarget> target(
+  base::scoped_nsobject<BookmarkFolderTarget> target(
       [[BookmarkFolderTarget alloc] initWithController:controller]);
 
   [target openBookmarkFolderFromButton:sender];
@@ -111,8 +111,8 @@ TEST_F(BookmarkFolderTargetTest, ReopenNotSame) {
   // close and open.
   [[controller expect] addNewFolderControllerWithParentButton:sender];
 
-  scoped_nsobject<BookmarkFolderTarget> target(
-    [[BookmarkFolderTarget alloc] initWithController:controller]);
+  base::scoped_nsobject<BookmarkFolderTarget> target(
+      [[BookmarkFolderTarget alloc] initWithController:controller]);
 
   [target openBookmarkFolderFromButton:sender];
   EXPECT_OCMOCK_VERIFY(controller);

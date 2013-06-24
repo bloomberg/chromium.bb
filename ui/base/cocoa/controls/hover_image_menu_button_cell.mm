@@ -51,7 +51,7 @@
 }
 
 - (void)setDefaultImage:(NSImage*)defaultImage {
-  scoped_nsobject<NSMenuItem> buttonMenuItem([[NSMenuItem alloc] init]);
+  base::scoped_nsobject<NSMenuItem> buttonMenuItem([[NSMenuItem alloc] init]);
   [buttonMenuItem setImage:defaultImage];
   [self setMenuItem:buttonMenuItem];
 }

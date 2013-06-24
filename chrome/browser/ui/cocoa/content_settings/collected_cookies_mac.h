@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
@@ -48,7 +48,7 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegate,
 
   scoped_ptr<ConstrainedWindowMac> window_;
 
-  scoped_nsobject<CollectedCookiesWindowController> sheet_controller_;
+  base::scoped_nsobject<CollectedCookiesWindowController> sheet_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CollectedCookiesMac);
 };
@@ -68,11 +68,11 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegate,
   scoped_ptr<CookiesTreeModel> blockedTreeModel_;
 
   // Cached array of icons.
-  scoped_nsobject<NSMutableArray> icons_;
+  base::scoped_nsobject<NSMutableArray> icons_;
 
   // Our Cocoa copy of the model.
-  scoped_nsobject<CocoaCookieTreeNode> cocoaAllowedTreeModel_;
-  scoped_nsobject<CocoaCookieTreeNode> cocoaBlockedTreeModel_;
+  base::scoped_nsobject<CocoaCookieTreeNode> cocoaAllowedTreeModel_;
+  base::scoped_nsobject<CocoaCookieTreeNode> cocoaBlockedTreeModel_;
 
   BOOL allowedCookiesButtonsEnabled_;
   BOOL blockedCookiesButtonsEnabled_;
@@ -89,9 +89,9 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegate,
   IBOutlet NSTextField* blockedCookiesText_;
   IBOutlet NSView* cookieDetailsViewPlaceholder_;
 
-  scoped_nsobject<NSViewAnimation> animation_;
+  base::scoped_nsobject<NSViewAnimation> animation_;
 
-  scoped_nsobject<CookieDetailsViewController> detailsViewController_;
+  base::scoped_nsobject<CookieDetailsViewController> detailsViewController_;
 
   content::WebContents* webContents_;  // weak
 

@@ -5,11 +5,11 @@
 #include "chrome/browser/download/download_status_updater.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/scoped_nsobject.h"
-#include "base/supports_user_data.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "content/public/browser/download_item.h"
+#include "base/supports_user_data.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
+#include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 
 // --- Private 10.8 API for showing progress ---
@@ -169,7 +169,7 @@ class CrNSProgressUserData : public base::SupportsUserData::Data {
   void setTarget(const base::FilePath& target) { target_ = target; }
 
  private:
-  scoped_nsobject<NSProgress> progress_;
+  base::scoped_nsobject<NSProgress> progress_;
   base::FilePath target_;
 };
 

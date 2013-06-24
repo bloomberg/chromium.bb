@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/infobars/infobar_utilities.h"
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 
@@ -69,10 +69,10 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
   if (tag == -1) {
     [menu addItem:[NSMenuItem separatorItem]];
   } else {
-    scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
-      initWithTitle:title
-             action:selector
-      keyEquivalent:@""]);
+    base::scoped_nsobject<NSMenuItem> item(
+        [[NSMenuItem alloc] initWithTitle:title
+                                   action:selector
+                            keyEquivalent:@""]);
     [item setTag:tag];
     [menu addItem:item];
     [item setTarget:target];

@@ -8,7 +8,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
 
 @class KeystoneObserver;
@@ -50,7 +50,7 @@ class VersionUpdaterMac : public VersionUpdater {
   bool show_promote_button_;
 
   // The observer that will receive keystone status updates.
-  scoped_nsobject<KeystoneObserver> keystone_observer_;
+  base::scoped_nsobject<KeystoneObserver> keystone_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(VersionUpdaterMac);
 };

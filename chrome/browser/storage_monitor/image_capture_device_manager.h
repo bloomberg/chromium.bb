@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #include <string>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 
 @protocol ICDeviceBrowserDelegate;
@@ -39,7 +39,7 @@ class ImageCaptureDeviceManager {
   void SetNotifications(StorageMonitor::Receiver* notifications);
 
  private:
-  scoped_nsobject<ImageCaptureDeviceManagerImpl> device_browser_;
+  base::scoped_nsobject<ImageCaptureDeviceManagerImpl> device_browser_;
 };
 
 }  // namespace chrome

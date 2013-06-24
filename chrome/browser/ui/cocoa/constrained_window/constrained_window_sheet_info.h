@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 
 @protocol ConstrainedWindowSheet;
 
@@ -16,9 +16,9 @@
 // public use.
 @interface ConstrainedWindowSheetInfo : NSObject {
  @private
-  scoped_nsprotocol<id<ConstrainedWindowSheet>> sheet_;
-  scoped_nsobject<NSView> parentView_;
-  scoped_nsobject<NSWindow> overlayWindow_;
+  base::scoped_nsprotocol<id<ConstrainedWindowSheet>> sheet_;
+  base::scoped_nsobject<NSView> parentView_;
+  base::scoped_nsobject<NSWindow> overlayWindow_;
   BOOL sheetDidShow_;
 }
 

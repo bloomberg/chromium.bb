@@ -203,7 +203,7 @@ TEST_F(TextInputClientMacTest, GetSubstring) {
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObject:[NSColor purpleColor]
                                   forKey:NSForegroundColorAttributeName];
-  scoped_nsobject<NSAttributedString> kSuccessValue(
+  base::scoped_nsobject<NSAttributedString> kSuccessValue(
       [[NSAttributedString alloc] initWithString:@"Barney is a purple dinosaur"
                                       attributes:attributes]);
 

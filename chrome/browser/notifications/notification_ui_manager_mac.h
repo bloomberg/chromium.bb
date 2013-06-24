@@ -11,7 +11,7 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
@@ -74,7 +74,7 @@ class NotificationUIManagerMac : public BalloonNotificationUIManager {
       const string16& replacement_id) const;
 
   // Cocoa class that receives callbacks from the NSUserNotificationCenter.
-  scoped_nsobject<NotificationCenterDelegate> delegate_;
+  base::scoped_nsobject<NotificationCenterDelegate> delegate_;
 
   // Maps notification_ids to ControllerNotifications. The map owns the value,
   // so it must be deleted when remvoed from the map. This is typically handled

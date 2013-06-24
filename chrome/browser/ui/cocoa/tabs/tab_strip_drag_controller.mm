@@ -108,8 +108,8 @@ const NSTimeInterval kTearDuration = 0.333;
   // When spinning the event loop, a tab can get detached, which could lead to
   // our own destruction. Keep ourselves around while spinning the loop as well
   // as the tab controller being dragged.
-  scoped_nsobject<TabStripDragController> keepAlive([self retain]);
-  scoped_nsobject<TabController> keepAliveTab([tab retain]);
+  base::scoped_nsobject<TabStripDragController> keepAlive([self retain]);
+  base::scoped_nsobject<TabController> keepAliveTab([tab retain]);
 
   // Because we move views between windows, we need to handle the event loop
   // ourselves. Ideally we should use the standard event loop.

@@ -11,7 +11,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/chrome_browser_window.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -29,7 +29,7 @@ class PanelCocoa;
  @private
   IBOutlet PanelTitlebarViewCocoa* titlebar_view_;
   scoped_ptr<PanelCocoa> windowShim_;
-  scoped_nsobject<NSString> pendingWindowTitle_;
+  base::scoped_nsobject<NSString> pendingWindowTitle_;
   NSViewAnimation* boundsAnimation_;  // Lifetime controlled manually, needs
                                       // more then just |release| to terminate.
   BOOL animateOnBoundsChange_;
@@ -42,7 +42,7 @@ class PanelCocoa;
   // window over other application windows due to panels having a higher
   // priority NSWindowLevel, so we distinguish between the two scenarios.
   BOOL activationRequestedByPanel_;
-  scoped_nsobject<NSView> overlayView_;
+  base::scoped_nsobject<NSView> overlayView_;
 }
 
 // Load the window nib and do any Cocoa-specific initialization.

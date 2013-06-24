@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/instant_types.h"
 
@@ -33,7 +33,7 @@ class WebContents;
 @interface OverlayableContentsController : NSViewController {
  @private
   // Container view for the "active" contents.
-  scoped_nsobject<NSView> activeContainer_;
+  base::scoped_nsobject<NSView> activeContainer_;
 
   // The overlay WebContents. Will be NULL if no overlay is currently showing.
   content::WebContents* overlayContents_;  // weak
@@ -50,11 +50,11 @@ class WebContents;
   BOOL drawDropShadow_;
 
   // View responsible for drawing a drop shadow.
-  scoped_nsobject<NSView> dropShadowView_;
+  base::scoped_nsobject<NSView> dropShadowView_;
 
   // View responsible for drawing a separator at the top. The separator is
   // only visible when the overlay is positioned right next to the omnibox.
-  scoped_nsobject<NSView> topSeparatorView_;
+  base::scoped_nsobject<NSView> topSeparatorView_;
 
   BrowserWindowController* windowController_;
 

@@ -8,8 +8,8 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/scoped_nsobject.h"
 
 @protocol ConstrainedWindowSheet;
 
@@ -18,9 +18,9 @@
 // A tab in this case is the |parentView| passed to |-showSheet:forParentView:|.
 @interface ConstrainedWindowSheetController : NSObject {
  @private
-  scoped_nsobject<NSMutableArray> sheets_;
-  scoped_nsobject<NSWindow> parentWindow_;
-  scoped_nsobject<NSView> activeView_;
+  base::scoped_nsobject<NSMutableArray> sheets_;
+  base::scoped_nsobject<NSWindow> parentWindow_;
+  base::scoped_nsobject<NSView> activeView_;
 }
 
 // Returns a sheet controller for |parentWindow|. If a sheet controller does not

@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
@@ -62,7 +62,7 @@ class RenderWidgetHostViewMacEditCommandHelper;
   id trackingRectOwner_;              // (not retained)
   void* trackingRectUserData_;
   NSTrackingRectTag lastToolTipTag_;
-  scoped_nsobject<NSString> toolTip_;
+  base::scoped_nsobject<NSString> toolTip_;
 
   // Is YES if there was a mouse-down as yet unbalanced with a mouse-up.
   BOOL hasOpenMouseDown_;
@@ -70,7 +70,7 @@ class RenderWidgetHostViewMacEditCommandHelper;
   NSWindow* lastWindow_;  // weak
 
   // The cursor for the page. This is passed up from the renderer.
-  scoped_nsobject<NSCursor> currentCursor_;
+  base::scoped_nsobject<NSCursor> currentCursor_;
 
   // Variables used by our implementaion of the NSTextInput protocol.
   // An input method of Mac calls the methods of this protocol not only to
@@ -84,7 +84,7 @@ class RenderWidgetHostViewMacEditCommandHelper;
   // handler which receives input-method events from the renderer.
 
   // Represents the input-method attributes supported by this object.
-  scoped_nsobject<NSArray> validAttributesForMarkedText_;
+  base::scoped_nsobject<NSArray> validAttributesForMarkedText_;
 
   // Indicates if we are currently handling a key down event.
   BOOL handlingKeyDown_;
@@ -399,8 +399,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   ui::TextInputType text_input_type_;
   bool can_compose_inline_;
 
-  scoped_nsobject<CALayer> software_layer_;
-  scoped_nsobject<CompositingIOSurfaceLayer> compositing_iosurface_layer_;
+  base::scoped_nsobject<CALayer> software_layer_;
+  base::scoped_nsobject<CompositingIOSurfaceLayer> compositing_iosurface_layer_;
   scoped_ptr<CompositingIOSurfaceMac> compositing_iosurface_;
 
   // Whether to allow overlapping views.
@@ -507,11 +507,11 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   std::string selected_text_;
 
   // The window used for popup widgets.
-  scoped_nsobject<NSWindow> popup_window_;
+  base::scoped_nsobject<NSWindow> popup_window_;
 
   // The fullscreen window used for pepper flash.
-  scoped_nsobject<NSWindow> pepper_fullscreen_window_;
-  scoped_nsobject<FullscreenWindowManager> fullscreen_window_manager_;
+  base::scoped_nsobject<NSWindow> pepper_fullscreen_window_;
+  base::scoped_nsobject<FullscreenWindowManager> fullscreen_window_manager_;
   // Our parent host view, if this is fullscreen.  NULL otherwise.
   RenderWidgetHostViewMac* fullscreen_parent_host_view_;
 

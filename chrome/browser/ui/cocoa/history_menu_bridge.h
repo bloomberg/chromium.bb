@@ -9,8 +9,8 @@
 #include <map>
 #include <vector>
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/common/cancelable_request.h"
 #import "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_service.h"
@@ -75,7 +75,7 @@ class HistoryMenuBridge : public content::NotificationObserver,
     // The URL that will be navigated to if the user selects this item.
     GURL url;
     // Favicon for the URL.
-    scoped_nsobject<NSImage> icon;
+    base::scoped_nsobject<NSImage> icon;
 
     // If the icon is being requested from the FaviconService, |icon_requested|
     // will be true and |icon_task_id| will be valid. If this is false, then
@@ -89,7 +89,7 @@ class HistoryMenuBridge : public content::NotificationObserver,
     // quickly), the NSMenu can release the item before the HistoryItem has
     // been fully deleted. If this were a weak pointer, it would result in a
     // zombie.
-    scoped_nsobject<NSMenuItem> menu_item;
+    base::scoped_nsobject<NSMenuItem> menu_item;
 
     // This ID is unique for a browser session and can be passed to the
     // TabRestoreService to re-open the closed window or tab that this
@@ -204,7 +204,7 @@ class HistoryMenuBridge : public content::NotificationObserver,
   friend class ::HistoryMenuBridgeTest;
   friend class HistoryMenuCocoaControllerTest;
 
-  scoped_nsobject<HistoryMenuCocoaController> controller_;  // strong
+  base::scoped_nsobject<HistoryMenuCocoaController> controller_;  // strong
 
   Profile* profile_;  // weak
   HistoryService* history_service_;  // weak
@@ -229,7 +229,7 @@ class HistoryMenuBridge : public content::NotificationObserver,
   bool need_recreate_;
 
   // The default favicon if a HistoryItem does not have one.
-  scoped_nsobject<NSImage> default_favicon_;
+  base::scoped_nsobject<NSImage> default_favicon_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryMenuBridge);
 };

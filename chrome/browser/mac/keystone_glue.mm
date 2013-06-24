@@ -97,9 +97,9 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
     [target_ performSelector:sel_ withObject:arg_];
   }
 
-  scoped_nsobject<id> target_;
+  base::scoped_nsobject<id> target_;
   SEL sel_;
-  scoped_nsobject<id> arg_;
+  base::scoped_nsobject<id> arg_;
 };
 
 }  // namespace

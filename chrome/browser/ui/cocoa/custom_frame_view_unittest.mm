@@ -6,7 +6,7 @@
 #include <objc/runtime.h>
 
 #include "base/mac/mac_util.h"
-#include "base/memory/scoped_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/custom_frame_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -24,7 +24,7 @@ class CustomFrameViewTest : public PlatformTest {
     view_.reset([[customFrameClass alloc] initWithFrame:frame]);
   }
 
-  scoped_nsobject<NSView> view_;
+  base::scoped_nsobject<NSView> view_;
 };
 
 //  Test to make sure our class modifications were successful.
