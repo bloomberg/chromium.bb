@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/net_log.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_request_headers.h"
@@ -157,6 +158,10 @@ class HttpProxyClientSocket : public ProxyClientSocket {
 
   std::string request_line_;
   HttpRequestHeaders request_headers_;
+
+  // Used only for redirects.
+  bool redirect_has_load_timing_info_;
+  LoadTimingInfo redirect_load_timing_info_;
 
   const BoundNetLog net_log_;
 

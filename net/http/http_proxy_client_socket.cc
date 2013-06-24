@@ -19,6 +19,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_stream_parser.h"
+#include "net/http/proxy_connect_redirect_http_stream.h"
 #include "net/socket/client_socket_handle.h"
 
 namespace net {
@@ -51,6 +52,7 @@ HttpProxyClientSocket::HttpProxyClientSocket(
       using_spdy_(using_spdy),
       protocol_negotiated_(protocol_negotiated),
       is_https_proxy_(is_https_proxy),
+      redirect_has_load_timing_info_(false),
       net_log_(transport_socket->socket()->NetLog()) {
   // Synthesize the bits of a request that we actually use.
   request_.url = request_url;
@@ -99,8 +101,8 @@ const HttpResponseInfo* HttpProxyClientSocket::GetConnectResponseInfo() const {
 }
 
 HttpStream* HttpProxyClientSocket::CreateConnectResponseStream() {
-  return new HttpBasicStream(transport_.release(),
-                             http_stream_parser_.release(), false);
+  return new ProxyConnectRedirectHttpStream(
+      redirect_has_load_timing_info_ ? &redirect_load_timing_info_ : NULL);
 }
 
 
@@ -466,8 +468,15 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
       // sanitize the response.  This still allows a rogue HTTPS proxy to
       // redirect an HTTPS site load to a similar-looking site, but no longer
       // allows it to impersonate the site the user requested.
-      if (is_https_proxy_ && SanitizeProxyRedirect(&response_, request_.url))
+      if (is_https_proxy_ && SanitizeProxyRedirect(&response_, request_.url)) {
+        bool is_connection_reused = http_stream_parser_->IsConnectionReused();
+        redirect_has_load_timing_info_ =
+            transport_->GetLoadTimingInfo(
+                is_connection_reused, &redirect_load_timing_info_);
+        transport_.reset();
+        http_stream_parser_.reset();
         return ERR_HTTPS_PROXY_TUNNEL_RESPONSE;
+      }
 
       // We're not using an HTTPS proxy, or we couldn't sanitize the redirect.
       LogBlockedTunnelResponse();

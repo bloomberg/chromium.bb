@@ -5722,6 +5722,7 @@ TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite data_writes[] = {
     CreateMockWrite(*conn.get(), 0, SYNCHRONOUS),
+    CreateMockWrite(*goaway.get(), 3, SYNCHRONOUS),
   };
 
   static const char* const kExtraHeaders[] = {

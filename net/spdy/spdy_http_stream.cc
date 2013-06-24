@@ -25,8 +25,7 @@
 
 namespace net {
 
-SpdyHttpStream::SpdyHttpStream(SpdySession* spdy_session,
-                               bool direct)
+SpdyHttpStream::SpdyHttpStream(SpdySession* spdy_session, bool direct)
     : weak_factory_(this),
       spdy_session_(spdy_session),
       stream_closed_(false),
@@ -39,13 +38,8 @@ SpdyHttpStream::SpdyHttpStream(SpdySession* spdy_session,
       request_body_buf_size_(0),
       buffered_read_callback_pending_(false),
       more_read_data_pending_(false),
-      direct_(direct) {}
-
-void SpdyHttpStream::InitializeWithExistingStream(
-    const base::WeakPtr<SpdyStream>& spdy_stream) {
-  stream_ = spdy_stream;
-  stream_->SetDelegate(this);
-  response_headers_received_ = true;
+      direct_(direct) {
+  DCHECK(spdy_session_);
 }
 
 SpdyHttpStream::~SpdyHttpStream() {

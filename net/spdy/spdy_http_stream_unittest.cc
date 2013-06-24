@@ -176,7 +176,16 @@ TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
   if (GetParam() > kProtoSPDY3)
     return;
 
-  SpdyHttpStream stream(NULL, false);
+  MockRead reads[] = {
+    MockRead(ASYNC, 0, 0)  // EOF
+  };
+
+  HostPortPair host_port_pair("www.google.com", 80);
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     kPrivacyModeDisabled);
+  EXPECT_EQ(OK, InitSession(reads, arraysize(reads), NULL, 0, host_port_pair));
+
+  SpdyHttpStream stream(session_, false);
   UploadProgress progress = stream.GetUploadProgress();
   EXPECT_EQ(0u, progress.size());
   EXPECT_EQ(0u, progress.position());

@@ -32,6 +32,7 @@ namespace net {
 
 class AddressList;
 class IPEndPoint;
+struct LoadTimingInfo;
 class SSLCertRequestInfo;
 class SSLInfo;
 class SpdySession;
@@ -324,6 +325,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
   }
 
   int response_status() const { return response_status_; }
+
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 
   // Returns true if the URL for this stream is known.
   bool HasUrl() const;

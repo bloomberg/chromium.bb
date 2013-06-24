@@ -605,6 +605,8 @@
         'http/partial_data.h',
         'http/proxy_client_socket.h',
         'http/proxy_client_socket.cc',
+        'http/proxy_connect_redirect_http_stream.h',
+        'http/proxy_connect_redirect_http_stream.cc',
         'http/transport_security_state.cc',
         'http/transport_security_state.h',
         'http/transport_security_state_static.h',

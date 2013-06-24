@@ -555,6 +555,7 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, TunnelSetupRedirect) {
 
   MockWrite spdy_writes[] = {
     CreateMockWrite(*req, 0, ASYNC),
+    CreateMockWrite(*rst, 3, ASYNC),
   };
 
   const char* const responseHeaders[] = {

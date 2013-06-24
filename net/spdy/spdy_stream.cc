@@ -125,6 +125,7 @@ SpdyStream::~SpdyStream() {
 }
 
 void SpdyStream::SetDelegate(Delegate* delegate) {
+  CHECK(!delegate_);
   CHECK(delegate);
   delegate_ = delegate;
 
@@ -657,6 +658,13 @@ GURL SpdyStream::GetUrl() const {
       (type_ == SPDY_PUSH_STREAM) ? *response_ : *request_;
   return GetUrlFromHeaderBlock(headers, GetProtocolVersion(),
                                type_ == SPDY_PUSH_STREAM);
+}
+
+bool SpdyStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
+  if (stream_id_ == 0)
+    return false;
+
+  return session_->GetLoadTimingInfo(stream_id_, load_timing_info);
 }
 
 void SpdyStream::OnGetDomainBoundCertComplete(int result) {

@@ -19,6 +19,7 @@
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/proxy_connect_redirect_http_stream.h"
 #include "net/spdy/spdy_http_utils.h"
 
 namespace net {
@@ -42,6 +43,8 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
                                  auth_handler_factory)),
       user_buffer_len_(0),
       write_buffer_len_(0),
+      was_ever_used_(false),
+      redirect_has_load_timing_info_(false),
       weak_factory_(this),
       net_log_(BoundNetLog::Make(spdy_stream->net_log().net_log(),
                                  NetLog::SOURCE_PROXY_CLIENT_SOCKET)) {
@@ -98,8 +101,8 @@ NextProto SpdyProxyClientSocket::GetProtocolNegotiated() const {
 }
 
 HttpStream* SpdyProxyClientSocket::CreateConnectResponseStream() {
-  DCHECK(response_stream_.get());
-  return response_stream_.release();
+  return new ProxyConnectRedirectHttpStream(
+      redirect_has_load_timing_info_ ? &redirect_load_timing_info_ : NULL);
 }
 
 // Sends a SYN_STREAM frame to the proxy with a CONNECT request
@@ -405,14 +408,9 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
       // Try to return a sanitized response so we can follow auth redirects.
       // If we can't, fail the tunnel connection.
       if (SanitizeProxyRedirect(&response_, request_.url)) {
-        // Immediately hand off our SpdyStream to a newly created
-        // SpdyHttpStream so that any subsequent SpdyFrames are processed in
-        // the context of the HttpStream, not the socket.
-        DCHECK(spdy_stream_.get());
-        base::WeakPtr<SpdyStream> stream = spdy_stream_;
-        spdy_stream_.reset();
-        response_stream_.reset(new SpdyHttpStream(NULL, false));
-        response_stream_->InitializeWithExistingStream(stream);
+        redirect_has_load_timing_info_ =
+            spdy_stream_->GetLoadTimingInfo(&redirect_load_timing_info_);
+        spdy_stream_->DetachDelegate();
         next_state_ = STATE_DISCONNECTED;
         return ERR_HTTPS_PROXY_TUNNEL_RESPONSE;
       } else {

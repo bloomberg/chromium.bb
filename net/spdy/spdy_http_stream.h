@@ -30,17 +30,9 @@ class UploadDataStream;
 class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
                                           public HttpStream {
  public:
-  // |spdy_session| may be NULL, but in that case some functions must
-  // not be called (see comments below).
+  // |spdy_session| must not be NULL.
   SpdyHttpStream(SpdySession* spdy_session, bool direct);
   virtual ~SpdyHttpStream();
-
-  // Initializes this SpdyHttpStream by wrapping an existing
-  // SpdyStream. In particular, this must be called instead of
-  // InitializeStream() if a NULL SpdySession was passed into the
-  // constructor.
-  void InitializeWithExistingStream(
-      const base::WeakPtr<SpdyStream>& spdy_stream);
 
   SpdyStream* stream() { return stream_.get(); }
 
@@ -49,8 +41,6 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   // HttpStream implementation.
 
-  // Must not be called if a NULL SpdySession was passed into the
-  // constructor.
   virtual int InitializeStream(const HttpRequestInfo* request_info,
                                RequestPriority priority,
                                const BoundNetLog& net_log,
