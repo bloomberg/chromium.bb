@@ -156,10 +156,6 @@ class FailureMissingImage(TestFailure):
 
 
 class FailureImageHashMismatch(TestFailure):
-    def __init__(self, diff_percent=0):
-        super(FailureImageHashMismatch, self).__init__()
-        self.diff_percent = diff_percent
-
     def message(self):
         return "image diff"
 
@@ -173,7 +169,6 @@ class FailureReftestMismatch(TestFailure):
     def __init__(self, reference_filename=None):
         super(FailureReftestMismatch, self).__init__()
         self.reference_filename = reference_filename
-        self.diff_percent = None
 
     def message(self):
         return "reference mismatch"

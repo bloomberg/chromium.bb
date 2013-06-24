@@ -239,21 +239,21 @@ class PortTestCase(unittest.TestCase):
 
     def test_diff_image__missing_both(self):
         port = self.make_port()
-        self.assertFalse(port.diff_image(None, None)[0])
-        self.assertFalse(port.diff_image(None, '')[0])
-        self.assertFalse(port.diff_image('', None)[0])
+        self.assertEqual(port.diff_image(None, None), (None, None))
+        self.assertEqual(port.diff_image(None, ''), (None, None))
+        self.assertEqual(port.diff_image('', None), (None, None))
 
-        self.assertFalse(port.diff_image('', '')[0])
+        self.assertEqual(port.diff_image('', ''), (None, None))
 
     def test_diff_image__missing_actual(self):
         port = self.make_port()
-        self.assertTrue(port.diff_image(None, 'foo')[0])
-        self.assertTrue(port.diff_image('', 'foo')[0])
+        self.assertEqual(port.diff_image(None, 'foo'), ('foo', None))
+        self.assertEqual(port.diff_image('', 'foo'), ('foo', None))
 
     def test_diff_image__missing_expected(self):
         port = self.make_port()
-        self.assertTrue(port.diff_image('foo', None)[0])
-        self.assertTrue(port.diff_image('foo', '')[0])
+        self.assertEqual(port.diff_image('foo', None), ('foo', None))
+        self.assertEqual(port.diff_image('foo', ''), ('foo', None))
 
     def test_diff_image(self):
         port = self.make_port()
@@ -266,30 +266,10 @@ class PortTestCase(unittest.TestCase):
         port._server_process_constructor = make_proc
         port.setup_test_run()
         self.assertEqual(port.diff_image('foo', 'bar'), ('', 100.0, None))
-        self.assertEqual(self.proc.cmd[1:3], ["--tolerance", "0.1"])
-
-        self.assertEqual(port.diff_image('foo', 'bar', None), ('', 100.0, None))
-        self.assertEqual(self.proc.cmd[1:3], ["--tolerance", "0.1"])
-
-        self.assertEqual(port.diff_image('foo', 'bar', 0), ('', 100.0, None))
-        self.assertEqual(self.proc.cmd[1:3], ["--tolerance", "0"])
 
         port.clean_up_test_run()
         self.assertTrue(self.proc.stopped)
         self.assertEqual(port._image_differ, None)
-
-    def test_diff_image_crashed(self):
-        port = self.make_port()
-        self.proc = None
-
-        def make_proc(port, nm, cmd, env):
-            self.proc = MockServerProcess(port, nm, cmd, env, crashed=True)
-            return self.proc
-
-        port._server_process_constructor = make_proc
-        port.setup_test_run()
-        self.assertEqual(port.diff_image('foo', 'bar'), ('', 0, 'ImageDiff crashed\n'))
-        port.clean_up_test_run()
 
     def test_check_wdiff(self):
         port = self.make_port()

@@ -52,6 +52,7 @@ from webkitpy.common import read_checksum_from_png
 from webkitpy.common.memoized import memoized
 from webkitpy.common.system import path
 from webkitpy.common.system.executive import ScriptError
+from webkitpy.common.system.path import cygpath
 from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
@@ -59,7 +60,6 @@ from webkitpy.layout_tests.models.test_configuration import TestConfiguration
 from webkitpy.layout_tests.port import config as port_config
 from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import http_lock
-from webkitpy.layout_tests.port import image_diff
 from webkitpy.layout_tests.port import server_process
 from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.servers import apache_http_server
@@ -339,24 +339,55 @@ class Port(object):
     def do_audio_results_differ(self, expected_audio, actual_audio):
         return expected_audio != actual_audio
 
-    def diff_image(self, expected_contents, actual_contents, tolerance=None):
-        """Compare two images and return a tuple of an image diff, a percentage difference (0-100), and an error string.
-
-        |tolerance| should be a percentage value (0.0 - 100.0).
-        If it is omitted, the port default tolerance value is used.
+    def diff_image(self, expected_contents, actual_contents):
+        """Compare two images and return a tuple of an image diff, and an error string.
 
         If an error occurs (like ImageDiff isn't found, or crashes, we log an error and return True (for a diff).
         """
+        # If only one of them exists, return that one.
         if not actual_contents and not expected_contents:
-            return (None, 0, None)
-        if not actual_contents or not expected_contents:
-            return (True, 0, None)
-        if not self._image_differ:
-            self._image_differ = image_diff.ImageDiffer(self)
-        self.set_option_default('tolerance', 0.1)
-        if tolerance is None:
-            tolerance = self.get_option('tolerance')
-        return self._image_differ.diff_image(expected_contents, actual_contents, tolerance)
+            return (None, None)
+        if not actual_contents:
+            return (expected_contents, None)
+        if not expected_contents:
+            return (actual_contents, None)
+
+        tempdir = self._filesystem.mkdtemp()
+
+        expected_filename = self._filesystem.join(str(tempdir), "expected.png")
+        self._filesystem.write_binary_file(expected_filename, expected_contents)
+
+        actual_filename = self._filesystem.join(str(tempdir), "actual.png")
+        self._filesystem.write_binary_file(actual_filename, actual_contents)
+
+        diff_filename = self._filesystem.join(str(tempdir), "diff.png")
+
+        # ImageDiff needs native win paths as arguments, so we need to convert them if running under cygwin.
+        native_expected_filename = self._convert_path(expected_filename)
+        native_actual_filename = self._convert_path(actual_filename)
+        native_diff_filename = self._convert_path(diff_filename)
+
+        executable = self._path_to_image_diff()
+        # Note that although we are handed 'old', 'new', image_diff wants 'new', 'old'.
+        comand = [executable, '--diff', native_actual_filename, native_expected_filename, native_diff_filename]
+
+        result = None
+        err_str = None
+        try:
+            exit_code = self._executive.run_command(comand, return_exit_code=True)
+            if exit_code == 0:
+                # The images are the same.
+                result = None
+            elif exit_code == 1:
+                result = self._filesystem.read_binary_file(native_diff_filename)
+            else:
+                err_str = "image diff returned an exit code of %s" % exit_code
+        except OSError, e:
+            err_str = 'error running image diff: %s' % str(e)
+        finally:
+            self._filesystem.rmtree(str(tempdir))
+
+        return (result, err_str or None)
 
     def diff_text(self, expected_text, actual_text, expected_filename, actual_filename):
         """Returns a string containing the diff of the two text strings
@@ -1398,6 +1429,13 @@ class Port(object):
             if symbols_string is not None:
                 return reduce(operator.add, [directories for symbol_substring, directories in self._missing_symbol_to_skipped_tests().items() if symbol_substring not in symbols_string], [])
         return []
+
+    def _convert_path(self, path):
+        """Handles filename conversion for subprocess command line args."""
+        # See note above in diff_image() for why we need this.
+        if sys.platform == 'cygwin':
+            return cygpath(path)
+        return path
 
 
 class VirtualTestSuite(object):

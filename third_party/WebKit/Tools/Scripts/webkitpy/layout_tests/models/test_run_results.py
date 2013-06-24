@@ -112,11 +112,6 @@ def _interpret_test_failures(failures):
     if test_failures.FailureMissingImage in failure_types or test_failures.FailureMissingImageHash in failure_types:
         test_dict['is_missing_image'] = True
 
-    if 'image_diff_percent' not in test_dict:
-        for failure in failures:
-            if isinstance(failure, test_failures.FailureImageHashMismatch) or isinstance(failure, test_failures.FailureReftestMismatch):
-                test_dict['image_diff_percent'] = failure.diff_percent
-
     return test_dict
 
 

@@ -418,17 +418,15 @@ class TestPort(Port):
     def default_configuration(self):
         return 'Release'
 
-    def diff_image(self, expected_contents, actual_contents, tolerance=None):
+    def diff_image(self, expected_contents, actual_contents):
         diffed = actual_contents != expected_contents
         if not actual_contents and not expected_contents:
-            return (None, 0, None)
+            return (None, None)
         if not actual_contents or not expected_contents:
-            return (True, 0, None)
-        if 'ref' in expected_contents:
-            assert tolerance == 0
+            return (True, None)
         if diffed:
-            return ("< %s\n---\n> %s\n" % (expected_contents, actual_contents), 1, None)
-        return (None, 0, None)
+            return ("< %s\n---\n> %s\n" % (expected_contents, actual_contents), None)
+        return (None, None)
 
     def layout_tests_dir(self):
         return LAYOUT_TEST_DIR

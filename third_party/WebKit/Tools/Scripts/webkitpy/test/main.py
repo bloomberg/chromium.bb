@@ -62,9 +62,9 @@ def main():
         from google.appengine.dist import use_library
         use_library('django', '1.2')
         dev_appserver.fix_sys_path()
-        tester.add_tree(os.path.join(webkit_root, 'Tools', 'QueueStatusServer'))
+        tester.add_tree(os.path.join(webkit_root, 'Tools', 'TestResultServer'))
     else:
-        _log.info('Skipping QueueStatusServer tests; the Google AppEngine Python SDK is not installed.')
+        _log.info('Skipping TestResultServer tests; the Google AppEngine Python SDK is not installed.')
 
     return not tester.run()
 

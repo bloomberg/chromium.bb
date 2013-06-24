@@ -51,14 +51,12 @@ function isFailureExpected(expected, actual)
     return isExpected;
 }
 
-function mockExpectation(expected, actual, diff_percentage)
+function mockExpectation(expected, actual)
 {
-    diff_percentage = (typeof(diff_percentage) == undefined) ? 0 : diff_percentage;
     return {
         expected: expected,
         time_ms: 1,
         actual: actual,
-        image_diff_percent: diff_percentage,
         has_stderr: false,
         is_unexpected: !isFailureExpected(expected, actual)
     };
@@ -103,10 +101,10 @@ function runTest(results, assertions, opt_localStorageValue)
     }
 }
 
-function runDefaultSingleRowTest(test, expected, actual, diff_percentage, isExpected, textResults, imageResults)
+function runDefaultSingleRowTest(test, expected, actual, isExpected, textResults, imageResults)
 {
     results = mockResults();
-    results.tests[test] = mockExpectation(expected, actual, diff_percentage);
+    results.tests[test] = mockExpectation(expected, actual);
     runSingleRowTest(results, isExpected, textResults, imageResults);
 }
 
@@ -267,23 +265,23 @@ function runTests()
         assertTrue(window.getComputedStyle(document.getElementById('results-table').parentNode, null)['display'] == 'none');
     });
 
-    runDefaultSingleRowTest('bar-skip.html', 'TEXT', 'SKIP', 0, true, '', '');
-    runDefaultSingleRowTest('bar-flaky-fail.html', 'PASS FAIL', 'TEXT', 0, true, 'expected actual diff ', '');
-    runDefaultSingleRowTest('bar-flaky-fail-unexpected.html', 'PASS TEXT', 'IMAGE', 1, false, '', 'images diff (1%) ');
-    runDefaultSingleRowTest('bar-audio.html', 'TEXT', 'AUDIO', 0, false, 'expected audio actual audio ', '');
-    runDefaultSingleRowTest('bar-image.html', 'TEXT', 'IMAGE', 1, false, '', 'images diff (1%) ');
-    runDefaultSingleRowTest('bar-image-plus-text.html', 'TEXT', 'IMAGE+TEXT', 1, false, 'expected actual diff ', 'images diff (1%) ');
+    runDefaultSingleRowTest('bar-skip.html', 'TEXT', 'SKIP', true, '', '');
+    runDefaultSingleRowTest('bar-flaky-fail.html', 'PASS FAIL', 'TEXT', true, 'expected actual diff ', '');
+    runDefaultSingleRowTest('bar-flaky-fail-unexpected.html', 'PASS TEXT', 'IMAGE', false, '', 'images diff ');
+    runDefaultSingleRowTest('bar-audio.html', 'TEXT', 'AUDIO', false, 'expected audio actual audio ', '');
+    runDefaultSingleRowTest('bar-image.html', 'TEXT', 'IMAGE', false, '', 'images diff ');
+    runDefaultSingleRowTest('bar-image-plus-text.html', 'TEXT', 'IMAGE+TEXT', false, 'expected actual diff ', 'images diff ');
 
     // test the mapping for FAIL onto only ['TEXT', 'IMAGE+TEXT', 'AUDIO']
-    runDefaultSingleRowTest('bar-image.html', 'FAIL', 'IMAGE+TEXT', 1, true, 'expected actual diff ', 'images diff (1%) ');
-    runDefaultSingleRowTest('bar-image.html', 'FAIL', 'AUDIO', 1, true, 'expected audio actual audio ', '');
-    runDefaultSingleRowTest('bar-image.html', 'FAIL', 'TEXT', 0, true, 'expected actual diff ', '');
-    runDefaultSingleRowTest('bar-image.html', 'FAIL', 'IMAGE', 1, false, '', 'images diff (1%) ');
+    runDefaultSingleRowTest('bar-image.html', 'FAIL', 'IMAGE+TEXT', true, 'expected actual diff ', 'images diff ');
+    runDefaultSingleRowTest('bar-image.html', 'FAIL', 'AUDIO', true, 'expected audio actual audio ', '');
+    runDefaultSingleRowTest('bar-image.html', 'FAIL', 'TEXT', true, 'expected actual diff ', '');
+    runDefaultSingleRowTest('bar-image.html', 'FAIL', 'IMAGE', false, '', 'images diff ');
 
     results = mockResults();
-    results.tests['bar-reftest.html'] = mockExpectation('PASS', 'IMAGE', 1);
+    results.tests['bar-reftest.html'] = mockExpectation('PASS', 'IMAGE');
     results.tests['bar-reftest.html'].reftest_type = ['=='];
-    runSingleRowTest(results, false, '', 'ref html images diff (1%) ');
+    runSingleRowTest(results, false, '', 'ref html images diff ');
 
     results = mockResults();
     results.tests['bar-reftest-mismatch.html'] = mockExpectation('PASS', 'IMAGE');
@@ -439,26 +437,26 @@ function runTests()
     shouldUseTracLinks = oldShouldUseTracLinks;
 
     results = mockResults();
-    results.tests['bar.html'] = mockExpectation('PASS', 'IMAGE', 1);
+    results.tests['bar.html'] = mockExpectation('PASS', 'IMAGE');
     runTest(results, function() {
-        assertTrue(document.querySelector('tbody td:nth-child(3)').textContent == 'images diff (1%) ');
+        assertTrue(document.querySelector('tbody td:nth-child(3)').textContent == 'images diff ');
 
         document.getElementById('toggle-images').checked = false;
         // FIXME: We shouldn't need to call updateTogglingImages. Setting checked above should call it.
         updateTogglingImages();
         // FIXME: We get extra spaces in the DOM every time we enable/disable image toggling.
-        assertTrue(document.querySelector('tbody td:nth-child(3)').textContent == 'expected actual  diff (1%) ');
+        assertTrue(document.querySelector('tbody td:nth-child(3)').textContent == 'expected actual  diff ');
         
         document.getElementById('toggle-images').checked = true;
         updateTogglingImages();
-        assertTrue(document.querySelector('tbody td:nth-child(3)').textContent == ' images   diff (1%) ');
+        assertTrue(document.querySelector('tbody td:nth-child(3)').textContent == ' images   diff ');
     });
     
     results = mockResults();
-    results.tests['reading-options-from-localstorage.html'] = mockExpectation('IMAGE+TEXT', 'IMAGE+TEXT', 1);
+    results.tests['reading-options-from-localstorage.html'] = mockExpectation('IMAGE+TEXT', 'IMAGE+TEXT');
     runTest(results, function() {
         assertTrue(window.getComputedStyle(document.querySelector('tbody'), null)['display'] != 'none');
-        assertTrue(document.querySelector('tbody td:nth-child(3)').textContent == 'expected actual  diff (1%) ');
+        assertTrue(document.querySelector('tbody td:nth-child(3)').textContent == 'expected actual  diff ');
     }, '{"toggle-images":false,"show-expected-failures":true}');
 
     function enclosingNodeWithTagNameHasClassName(node, tagName, className) {

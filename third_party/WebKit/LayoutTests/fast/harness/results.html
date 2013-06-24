@@ -551,8 +551,7 @@ function imageResultsCell(testObject, testPrefix, actual) {
                 row += resultLink(testPrefix, '-actual.png', 'actual');
             }
 
-            var diff = testObject.image_diff_percent;
-            row += resultLink(testPrefix, '-diff.png', 'diff (' + diff + '%)');
+            row += resultLink(testPrefix, '-diff.png', 'diff');
         }
     }
 

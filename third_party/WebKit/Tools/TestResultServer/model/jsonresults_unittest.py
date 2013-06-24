@@ -34,6 +34,7 @@ except ImportError:
     raise
 
 import json
+import logging
 import unittest
 
 FULL_RESULT_EXAMPLE = """ADD_RESULTS({
@@ -88,7 +89,6 @@ FULL_RESULT_EXAMPLE = """ADD_RESULTS({
             },
             "media-document-audio-repaint.html": {
                 "expected": "IMAGE",
-                "image_diff_percent": 0,
                 "actual": "IMAGE",
                 "time": 0.1
             }
@@ -175,6 +175,11 @@ class MockFile(object):
 class JsonResultsTest(unittest.TestCase):
     def setUp(self):
         self._builder = "Webkit"
+        self.old_log_level = logging.root.level
+        logging.root.setLevel(logging.ERROR)
+
+    def tearDown(self):
+        logging.root.setLevel(self.old_log_level)
 
     # Use this to get better error messages than just string compare gives.
     def assert_json_equal(self, a, b):

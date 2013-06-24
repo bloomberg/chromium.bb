@@ -32,7 +32,6 @@ import json
 import logging
 import pprint
 import unittest
-import webtest
 
 
 class BuildersHandlerTest(unittest.TestCase):

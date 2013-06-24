@@ -208,9 +208,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # Ensure the results were summarized properly.
         self.assertEqual(details.summarized_failing_results['num_regressions'], details.exit_code)
 
-        # Ensure the image diff percentage is in the results.
-        self.assertEqual(details.summarized_failing_results['tests']['failures']['expected']['image.html']['image_diff_percent'], 1)
-
         # Ensure the results were written out and displayed.
         failing_results_text = host.filesystem.read_text_file('/tmp/layout-test-results/failing_results.json')
         json_to_eval = failing_results_text.replace("ADD_RESULTS(", "").replace(");", "")
@@ -486,7 +483,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 1)
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
-        self.assertTrue(json_string.find('"text-image-checksum.html":{"expected":"PASS","image_diff_percent":1,"actual":"IMAGE+TEXT","is_unexpected":true') != -1)
+        self.assertTrue(json_string.find('"text-image-checksum.html":{"expected":"PASS","actual":"IMAGE+TEXT","is_unexpected":true') != -1)
         self.assertTrue(json_string.find('"missing_text.html":{"expected":"PASS","is_missing_text":true,"actual":"MISSING","is_unexpected":true') != -1)
         self.assertTrue(json_string.find('"num_regressions":1') != -1)
         self.assertTrue(json_string.find('"num_flaky":0') != -1)
@@ -502,7 +499,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         details, err, _ = logging_run(extra_args=args, host=host, tests_included=True)
 
         self.assertEqual(details.exit_code, 1)
-        expected_token = '"pixeldir":{"image_in_pixeldir.html":{"expected":"PASS","image_diff_percent":1,"actual":"IMAGE","is_unexpected":true'
+        expected_token = '"pixeldir":{"image_in_pixeldir.html":{"expected":"PASS","actual":"IMAGE","is_unexpected":true'
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         self.assertTrue(json_string.find(expected_token) != -1)
 
@@ -676,7 +673,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         json = parse_full_results(json_string)
         self.assertEqual(json["tests"]["failures"]["unexpected"]["text-image-checksum.html"],
-            {"expected": "PASS", "actual": "TEXT IMAGE+TEXT", "image_diff_percent": 1, "is_unexpected": True})
+            {"expected": "PASS", "actual": "TEXT IMAGE+TEXT", "is_unexpected": True})
         self.assertFalse(json["pixel_tests_enabled"])
         self.assertEqual(details.enabled_pixel_tests_in_retry, True)
 
@@ -696,33 +693,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         tests_run = get_tests_run(['http/tests/passes'])
         self.assertEqual(tests_run, sorted(tests_run))
-
-    def test_tolerance(self):
-        class ImageDiffTestPort(test.TestPort):
-            def diff_image(self, expected_contents, actual_contents, tolerance=None):
-                self.tolerance_used_for_diff_image = self._options.tolerance
-                return (True, 1, None)
-
-        def get_port_for_run(args):
-            options, parsed_args = run_webkit_tests.parse_args(args)
-            host = MockHost()
-            test_port = ImageDiffTestPort(host, options=options)
-            res = passing_run(args, port_obj=test_port, tests_included=True)
-            self.assertTrue(res)
-            return test_port
-
-        base_args = ['--pixel-tests', '--no-new-test-results', 'failures/expected/*']
-
-        # If we pass in an explicit tolerance argument, then that will be used.
-        test_port = get_port_for_run(base_args + ['--tolerance', '.1'])
-        self.assertEqual(0.1, test_port.tolerance_used_for_diff_image)
-        test_port = get_port_for_run(base_args + ['--tolerance', '0'])
-        self.assertEqual(0, test_port.tolerance_used_for_diff_image)
-
-        # Otherwise the port's default tolerance behavior (including ignoring it)
-        # should be used.
-        test_port = get_port_for_run(base_args)
-        self.assertEqual(None, test_port.tolerance_used_for_diff_image)
 
     def test_virtual(self):
         self.assertTrue(passing_run(['passes/text.html', 'passes/args.html',
@@ -851,7 +821,7 @@ class EndToEndTest(unittest.TestCase):
         self.assertTrue("multiple-both-success.html" not in json["tests"]["reftests"]["foo"])
 
         self.assertEqual(json["tests"]["reftests"]["foo"]["multiple-match-failure.html"],
-            {"expected": "PASS", "actual": "IMAGE", "reftest_type": ["=="], "image_diff_percent": 1, "is_unexpected": True})
+            {"expected": "PASS", "actual": "IMAGE", "reftest_type": ["=="], "is_unexpected": True})
         self.assertEqual(json["tests"]["reftests"]["foo"]["multiple-mismatch-failure.html"],
             {"expected": "PASS", "actual": "IMAGE", "reftest_type": ["!="], "is_unexpected": True})
         self.assertEqual(json["tests"]["reftests"]["foo"]["multiple-both-failure.html"],
