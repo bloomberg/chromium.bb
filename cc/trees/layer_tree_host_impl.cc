@@ -227,15 +227,13 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
     input_handler_client_ = NULL;
   }
 
-  if (active_tree_->root_layer()) {
-    ClearRenderSurfaces();
-    // The layer trees must be destroyed before the layer tree host. We've
-    // made a contract with our animation controllers that the registrar
-    // will outlive them, and we must make good.
-    recycle_tree_.reset();
-    pending_tree_.reset();
-    active_tree_.reset();
-  }
+  ClearRenderSurfaces();
+  // The layer trees must be destroyed before the layer tree host. We've
+  // made a contract with our animation controllers that the registrar
+  // will outlive them, and we must make good.
+  recycle_tree_.reset();
+  pending_tree_.reset();
+  active_tree_.reset();
 }
 
 void LayerTreeHostImpl::BeginCommit() {}
