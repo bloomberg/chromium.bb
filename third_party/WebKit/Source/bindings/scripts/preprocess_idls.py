@@ -74,7 +74,7 @@ def get_partial_interface_name_from_idl(file_contents):
 # http://www.w3.org/TR/WebIDL/#idl-implements-statements
 def get_implemented_interfaces_from_idl(file_contents, interface_name):
     implemented_interfaces = []
-    for match in re.finditer(r'(\w+)\s+implements\s+(\w+)\s*;', file_contents):
+    for match in re.finditer(r'^\s*(\w+)\s+implements\s+(\w+)\s*;', file_contents, re.MULTILINE):
         # identifier-A must be the current interface
         assert match.group(1) == interface_name, \
 "Identifier on the left of the 'implements' statement should be %s in %s.idl, but found %s" % (interface_name, interface_name, match.group(1))
