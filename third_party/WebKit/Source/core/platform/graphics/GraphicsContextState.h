@@ -72,7 +72,6 @@ private:
 #endif
         , m_shouldAntialias(true)
         , m_shouldSmoothFonts(true)
-        , m_shouldClampToSourceRect(true)
     {
     }
 
@@ -93,7 +92,6 @@ private:
         , m_interpolationQuality(other.m_interpolationQuality)
         , m_shouldAntialias(other.m_shouldAntialias)
         , m_shouldSmoothFonts(other.m_shouldSmoothFonts)
-        , m_shouldClampToSourceRect(other.m_shouldClampToSourceRect)
     {
         // Up the ref count of these. SkSafeRef does nothing if its argument is 0.
         SkSafeRef(m_looper);
@@ -157,7 +155,6 @@ private:
 
     bool m_shouldAntialias : 1;
     bool m_shouldSmoothFonts : 1;
-    bool m_shouldClampToSourceRect : 1;
 };
 
 } // namespace WebCore

@@ -1,16 +1,5 @@
 # See http://trac.webkit.org/wiki/TestExpectations for more information on this file.
 
-crbug.com/165711 fast/canvas/DrawImageSinglePixelStretch.html [ Failure Pass ImageOnlyFailure Timeout ]
-crbug.com/165711 fast/canvas/canvasDrawingIntoSelf.html [ Failure ImageOnlyFailure ]
-crbug.com/165711 fast/canvas/canvas-incremental-repaint.html [ Failure ImageOnlyFailure ]
-crbug.com/165711 fast/canvas/drawImage.html [ Failure ImageOnlyFailure ]
-crbug.com/165711 fast/images/paint-subrect-grid.html [ Failure ImageOnlyFailure ]
-crbug.com/165711 virtual/deferred/fast/images/paint-subrect-grid.html [ Failure ImageOnlyFailure ]
-crbug.com/165711 virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ Failure Pass ImageOnlyFailure ]
-crbug.com/165711 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Failure ImageOnlyFailure Timeout ]
-crbug.com/165711 virtual/gpu/fast/canvas/canvasDrawingIntoSelf.html [ Failure ImageOnlyFailure ]
-crbug.com/165711 virtual/gpu/fast/canvas/drawImage.html [ Failure ImageOnlyFailure ]
-
 crbug.com/237000 [ Win Linux ] virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Slow ]
 crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Pass Timeout ]
 webkit.org/b/82097 [ Debug ] editing/selection/move-by-word-visually-crash-test-5.html [ Slow ]
@@ -1070,11 +1059,8 @@ crbug.com/245611 [ Win ] fast/hidpi/image-set-without-specified-width.html [ Ima
 crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 virtual/gpu/fast/canvas/webgl/webgl-composite-modes.html [ ImageOnlyFailure Pass ]
 
-# FIXME : Uncomment once the fix for crbug.com/165711 has landed and these tests have been rebaselined
-# crbug.com/248415 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Slow ]
-# crbug.com/243243 virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ Slow ]
-
 crbug.com/248415 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-strokeRect-gradient-shadow.html [ Timeout Pass ]
+crbug.com/248415 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Timeout Pass ]
 crbug.com/248415 [ Win Debug ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/248415 [ Win Debug ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ ImageOnlyFailure Timeout Pass ]
 
@@ -1484,7 +1470,7 @@ crbug.com/248938 [ Debug ] virtual/threaded/animations/cross-fade-background-ima
 crbug.com/248938 [ Win Release ] virtual/threaded/animations/cross-fade-background-image.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/animation-direction-reverse.html [ Pass Failure Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/missing-from-to.html [ Pass Timeout ]
-crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure Timeout ]
+crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure Timeout ] 
 crbug.com/248938 virtual/threaded/animations/missing-values-last-keyframe.html [ Pass ImageOnlyFailure Timeout ]
 crbug.com/248938 [ Mac Debug ] virtual/threaded/animations/missing-from-to-transforms.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure ]
@@ -1588,6 +1574,7 @@ crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Skip ]
 crbug.com/243231 [ Mac ] animations/suspend-transform-animation.html [ ImageOnlyFailure Pass ]
 crbug.com/246143 [ Win Linux Debug ] animations/suspend-transform-animation.html [ ImageOnlyFailure Pass ]
 crbug.com/243242 [ Linux Win ] virtual/softwarecompositing/layer-creation/overlap-animation-container.html [ Failure Pass ]
+crbug.com/243243 virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ Pass Timeout ]
 webkit.org/b/106606 [ Release ] fast/canvas/webgl/context-release-upon-reload.html [ Slow ]
 crbug.com/243248 [ Mac Win ] fast/events/attempt-scroll-with-no-scrollbars.html [ Failure Pass ]
 crbug.com/243249 http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
