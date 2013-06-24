@@ -59,12 +59,12 @@ struct nested {
 };
 
 struct nested_region {
-	struct wl_resource resource;
+	struct wl_resource *resource;
 	pixman_region32_t region;
 };
 
 struct nested_surface {
-	struct wl_resource resource;
+	struct wl_resource *resource;
 	struct wl_resource *buffer_resource;
 	struct nested *nested;
 	EGLImageKHR *image;
@@ -74,7 +74,7 @@ struct nested_surface {
 };
 
 struct nested_frame_callback {
-	struct wl_resource resource;
+	struct wl_resource *resource;
 	struct wl_list link;
 };
 
@@ -95,8 +95,8 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 		wl_callback_destroy(callback);
 
 	wl_list_for_each_safe(nc, next, &nested->frame_callback_list, link) {
-		wl_callback_send_done(&nc->resource, time);
-		wl_resource_destroy(&nc->resource);
+		wl_callback_send_done(nc->resource, time);
+		wl_resource_destroy(nc->resource);
 	}
 	wl_list_init(&nested->frame_callback_list);
 
@@ -248,8 +248,7 @@ launch_client(struct nested *nested, const char *path)
 static void
 destroy_surface(struct wl_resource *resource)
 {
-	struct nested_surface *surface =
-		container_of(resource, struct nested_surface, resource);
+	struct nested_surface *surface = wl_resource_get_user_data(resource);
 
 	free(surface);
 }
@@ -326,6 +325,15 @@ surface_damage(struct wl_client *client,
 }
 
 static void
+destroy_frame_callback(struct wl_resource *resource)
+{
+	struct nested_frame_callback *callback = wl_resource_get_user_data(resource);
+
+	wl_list_remove(&callback->link);
+	free(callback);
+}
+
+static void
 surface_frame(struct wl_client *client,
 	      struct wl_resource *resource, uint32_t id)
 {
@@ -339,10 +347,11 @@ surface_frame(struct wl_client *client,
 		return;
 	}
 
-	wl_resource_init(&callback->resource, &wl_callback_interface,
-			 NULL, id, callback);
+	callback->resource =
+		wl_client_add_object(client, &wl_callback_interface,
+				     NULL, id, callback);
+	wl_resource_set_destructor(callback->resource, destroy_frame_callback);
 
-	wl_client_add_resource(client, &callback->resource);
 	wl_list_insert(nested->frame_callback_list.prev, &callback->link);
 }
 
@@ -413,11 +422,10 @@ compositor_create_surface(struct wl_client *client,
 
 	display_release_window_surface(nested->display, nested->window);
 
-	wl_resource_init(&surface->resource, &wl_surface_interface,
-			 &surface_interface, id, surface);
-	surface->resource.destroy = destroy_surface;
-
-	wl_client_add_resource(client, &surface->resource);
+	surface->resource =
+		wl_client_add_object(client, &wl_surface_interface,
+				     &surface_interface, id, surface);
+	wl_resource_set_destructor(surface->resource, destroy_surface);
 
 	wl_list_insert(nested->surface_list.prev, &surface->link);
 }
@@ -425,8 +433,7 @@ compositor_create_surface(struct wl_client *client,
 static void
 destroy_region(struct wl_resource *resource)
 {
-	struct nested_region *region =
-		container_of(resource, struct nested_region, resource);
+	struct nested_region *region = wl_resource_get_user_data(resource);
 
 	pixman_region32_fini(&region->region);
 	free(region);
@@ -478,13 +485,12 @@ compositor_create_region(struct wl_client *client,
 		return;
 	}
 
-	wl_resource_init(&region->resource, &wl_region_interface,
-			 &region_interface, id, region);
-	region->resource.destroy = destroy_region;
-
 	pixman_region32_init(&region->region);
 
-	wl_client_add_resource(client, &region->resource);
+	region->resource =
+		wl_client_add_object(client, &wl_region_interface,
+				     &region_interface, id, region);
+	wl_resource_set_destructor(region->resource, destroy_region);
 }
 
 static const struct wl_compositor_interface compositor_interface = {
