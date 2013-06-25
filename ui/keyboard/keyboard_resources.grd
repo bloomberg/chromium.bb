@@ -16,6 +16,9 @@
     <includes>
       <include name="IDR_KEYBOARD_API_ADAPTER_JS" file="resources/api_adapter.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_CONSTANTS_JS" file="resources/constants.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_ELEMENTS_ACCENT_CONTAINER" file="resources/elements/kb-accent-container.html" type="BINDATA" />
+      <include name="IDR_KEYBOARD_ELEMENTS_ACCENT_KEY" file="resources/elements/kb-accent-key.html" type="BINDATA" />
+      <include name="IDR_KEYBOARD_ELEMENTS_ACCENT_SET" file="resources/elements/kb-accent-set.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_KEY" file="resources/elements/kb-key.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_KEYBOARD" file="resources/elements/kb-keyboard.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_KEYSET" file="resources/elements/kb-keyset.html" type="BINDATA" />

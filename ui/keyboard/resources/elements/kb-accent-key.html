@@ -1,0 +1,66 @@
+<!--
+  -- Copyright 2013 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+
+<element name="kb-accent-key" attributes="char" on-pointerover="over"
+    on-pointerout="out" on-pointerup="up">
+  <template>
+    <style>
+      @host {
+        * {
+          -webkit-box-flex: 1;
+          display: -webkit-box;
+          position: relative;
+          background-position: center center;
+          background-repeat: no-repeat;
+          background-size: contain;
+        }
+      }
+      .key {
+        bottom: 0;
+        left: 0;
+        height: 1.2em;
+        margin: auto;
+        position: absolute;
+        right: 0;
+        top: 0;
+        text-align: center;
+      }
+    </style>
+    <div class="key">
+      <content></content>
+    </div>
+  </template>
+  <script>
+    /**
+     * Filter out mouse/touch movements internal to this node. When moving
+     * inside a node, the event should be filter out.
+     * @param {Node} node The accent key node which receives event.
+     * @param {event} event A pointer move event.
+     * @return {boolean} True if event is externla to node.
+     */
+    function isRelevantEvent(node, event) {
+      return !(node.compareDocumentPosition(event.relatedTarget)
+          & Node.DOCUMENT_POSITION_CONTAINED_BY);
+    };
+    Polymer.register(this, {
+      over: function(event) {
+        if (isRelevantEvent(this, event)) {
+          this.classList.add('active');
+        }
+      },
+      out: function(event) {
+        if (isRelevantEvent(this, event)) {
+          this.classList.remove('active');
+        }
+      },
+      up: function(event) {
+        var char = this.char || this.textContent;
+        insertText(char);
+        this.send('key-up', {});
+      }
+    });
+  </script>
+</element>

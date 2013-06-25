@@ -7,16 +7,16 @@
 <element name="kb-keyboard" on-key-over="keyOver" on-key-up="keyUp"
     on-key-down="keyDown" attributes="keyset rows">
   <template>
+    <style>
+      @host {
+        * {
+          position: relative;
+        }
+      }
+    </style>
     <content select="#{{keyset}}"></content>
   </template>
   <script>
-    /**
-     * The long-press delay in milliseconds before long-press handler is
-     * invoked.
-     * @type {number}
-     */
-    var LONGPRESS_DELAY_MSEC = 500;
-
     /**
      * The repeat delay in milliseconds before a key starts repeating. Use the
      * same rate as Chromebook.

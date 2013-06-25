@@ -4,7 +4,8 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-keyset" attributes="toKeyset" on-key-up="keyUp">
+<element name="kb-keyset" attributes="toKeyset" on-key-up="keyUp"
+    on-key-longpress="keyLongpress">
   <template>
     <style>
       @host {
@@ -14,11 +15,52 @@
           display: -webkit-box;
         }
       }
+      #accentContainer {
+        background-color: rgba(20, 20, 20, 0.5);
+        bottom: 0;
+        left: 0;
+        -webkit-box-flex: 1;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+      [hidden] {
+        display: none;
+      }
     </style>
     <content></content>
+    <kb-accent-container id="accentContainer" hidden touch-action="none">
+    </kb-accent-container>
   </template>
   <script>
     Polymer.register(this, {
+      keyLongpress: function(event, detail) {
+        if (detail.accents) {
+          // TODO(bshe): Figure out a better way to inject accents template.
+          if (this.firstElementChild &&
+              this.firstElementChild.nodeName == 'TEMPLATE' &&
+              this.$.accentContainer.childElementCount == 0) {
+            this.$.accentContainer.appendChild(
+                this.firstElementChild.createInstance());
+          }
+          if (this.$.accentContainer.childElementCount == 0) {
+            console.error("Accent keys for " + detail.accents +
+                " do not exist.");
+            return;
+          }
+          this.$.accentContainer.keyset = detail.accents;
+          var activeAccentKeySet = this.$.accentContainer.querySelector('#' +
+              detail.accents);
+          activeAccentKeySet.style.width = event.target.clientWidth *
+              activeAccentKeySet.childElementCount + 'px';
+          activeAccentKeySet.style.height = event.target.clientHeight + 'px';
+          activeAccentKeySet.style.top = event.target.offsetTop + 'px';
+          var leftOffset = activeAccentKeySet.offset * event.target.clientWidth;
+          activeAccentKeySet.style.left = event.target.offsetLeft - leftOffset +
+              'px';
+          this.$.accentContainer.hidden = false;
+        }
+      },
       keyUp: function(event, detail) {
         if (!detail.toKeyset)
           detail.toKeyset = this.toKeyset;

@@ -175,6 +175,10 @@ bool ImageLoader::IsComponentExtensionResource(
 #if defined(USE_AURA)
     {"keyboard/api_adapter.js", IDR_KEYBOARD_API_ADAPTER_JS},
     {"keyboard/constants.js", IDR_KEYBOARD_CONSTANTS_JS},
+    {"keyboard/elements/kb-accent-container.html",
+        IDR_KEYBOARD_ELEMENTS_ACCENT_CONTAINER},
+    {"keyboard/elements/kb-accent-key.html", IDR_KEYBOARD_ELEMENTS_ACCENT_KEY},
+    {"keyboard/elements/kb-accent-set.html", IDR_KEYBOARD_ELEMENTS_ACCENT_SET},
     {"keyboard/elements/kb-key.html", IDR_KEYBOARD_ELEMENTS_KEY},
     {"keyboard/elements/kb-keyboard.html", IDR_KEYBOARD_ELEMENTS_KEYBOARD},
     {"keyboard/elements/kb-keyset.html", IDR_KEYBOARD_ELEMENTS_KEYSET},
