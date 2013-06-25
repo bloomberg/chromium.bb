@@ -36,7 +36,7 @@ namespace WebCore {
 
 static struct CoreException {
     const char* const name;
-    const char* const description;
+    const char* const message;
     const int code;
 } coreExceptions[] = {
     { "IndexSizeError", "Index or size was negative, or greater than the allowed value.", 1 },
@@ -92,7 +92,7 @@ bool DOMCoreException::initializeDescription(ExceptionCode ec, ExceptionCodeDesc
 
     description->type = DOMCoreExceptionType;
     description->name = entry->name;
-    description->description = entry->description;
+    description->message = entry->message;
     description->code = entry->code;
 
     return true;
@@ -108,14 +108,14 @@ String DOMCoreException::getErrorName(ExceptionCode ec)
     return entry->name;
 }
 
-String DOMCoreException::getErrorDescription(ExceptionCode ec)
+String DOMCoreException::getErrorMessage(ExceptionCode ec)
 {
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
     if (!entry)
         return "Unknown error.";
 
-    return entry->description;
+    return entry->message;
 }
 
 int DOMCoreException::getLegacyErrorCode(ExceptionCode ec)

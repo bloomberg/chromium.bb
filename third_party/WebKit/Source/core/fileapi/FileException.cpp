@@ -34,7 +34,7 @@ namespace WebCore {
 
 static struct FileExceptionNameDescription {
     const char* const name;
-    const char* const description;
+    const char* const message;
 } fileExceptions[] = {
     { "NOT_FOUND_ERR", "A requested file or directory could not be found at the time an operation was processed." },
     { "SECURITY_ERR", "It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources." },
@@ -62,7 +62,7 @@ bool FileException::initializeDescription(ExceptionCode ec, ExceptionCodeDescrip
     size_t tableIndex = ec - NOT_FOUND_ERR;
 
     description->name = tableIndex < tableSize ? fileExceptions[tableIndex].name : 0;
-    description->description = tableIndex < tableSize ? fileExceptions[tableIndex].description : 0;
+    description->message = tableIndex < tableSize ? fileExceptions[tableIndex].message : 0;
 
     return true;
 }

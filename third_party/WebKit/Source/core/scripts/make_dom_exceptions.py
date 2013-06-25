@@ -53,13 +53,13 @@ struct ExceptionCodeDescription {
     explicit ExceptionCodeDescription(ExceptionCode);
 
     // |name| is the exception name, also intended for use in exception
-    // description strings; 0 if name not known; maximum length is 27
+    // toString results; 0 if name not known; maximum length is 27
     // characters.
     const char* name;
 
-    // |description| is the exception description, intended for use in
-    // exception strings. It is a more readable explanation of error.
-    const char* description;
+    // |message| is the exception message, also intended for use in
+    // exception toString results. It is a more readable explanation of error.
+    const char* message;
 
     // |code| is the numeric value of the exception within a particular type.
     int code;

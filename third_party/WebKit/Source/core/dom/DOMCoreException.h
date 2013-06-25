@@ -43,7 +43,7 @@ public:
 
     static bool initializeDescription(ExceptionCode, ExceptionCodeDescription*);
     static String getErrorName(ExceptionCode);
-    static String getErrorDescription(ExceptionCode);
+    static String getErrorMessage(ExceptionCode);
     static int getLegacyErrorCode(ExceptionCode);
 
 private:

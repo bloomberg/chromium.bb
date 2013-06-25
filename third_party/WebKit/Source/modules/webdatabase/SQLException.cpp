@@ -34,7 +34,7 @@ namespace WebCore {
 
 static struct SQLExceptionNameDescription {
     const char* const name;
-    const char* const description;
+    const char* const message;
 } sqlExceptions[] = {
     { "UNKNOWN_ERR", "The operation failed for reasons unrelated to the database." },
     { "DATABASE_ERR", "The operation failed for some reason related to the database." },
@@ -58,7 +58,7 @@ bool SQLException::initializeDescription(ExceptionCode ec, ExceptionCodeDescript
     size_t tableIndex = ec - UNKNOWN_ERR;
 
     description->name = tableIndex < tableSize ? sqlExceptions[tableIndex].name : 0;
-    description->description = tableIndex < tableSize ? sqlExceptions[tableIndex].description : 0;
+    description->message = tableIndex < tableSize ? sqlExceptions[tableIndex].message : 0;
 
     return true;
 }

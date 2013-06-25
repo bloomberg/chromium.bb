@@ -36,7 +36,7 @@ namespace WebCore {
 
 ExceptionBase::ExceptionBase(const ExceptionCodeDescription& description)
     : m_code(description.code)
-    , m_description(description.description)
+    , m_message(description.message)
 {
     if (description.name)
         m_name = description.name;
@@ -46,7 +46,7 @@ ExceptionBase::ExceptionBase(const ExceptionCodeDescription& description)
 
 String ExceptionBase::toString() const
 {
-    return m_name + ": " + message();
+    return name() + ": " + message();
 }
 
 } // namespace WebCore

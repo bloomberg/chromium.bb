@@ -55,7 +55,7 @@ public:
 
 private:
     IDBDatabaseError(unsigned short code)
-        : m_exceptionCode(code), m_message(DOMCoreException::getErrorDescription(code)) { }
+        : m_exceptionCode(code), m_message(DOMCoreException::getErrorMessage(code)) { }
     IDBDatabaseError(unsigned short code, const String& message)
         : m_exceptionCode(code), m_message(message) { }
 

@@ -48,7 +48,7 @@ public:
 
     static PassRefPtr<DOMError> create(ExceptionCode ec)
     {
-        return adoptRef(new DOMError(DOMCoreException::getErrorName(ec), DOMCoreException::getErrorDescription(ec)));
+        return adoptRef(new DOMError(DOMCoreException::getErrorName(ec), DOMCoreException::getErrorMessage(ec)));
     }
 
     static PassRefPtr<DOMError> create(ExceptionCode ec, const String& message)

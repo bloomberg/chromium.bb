@@ -68,7 +68,7 @@ v8::Handle<v8::Value> V8ThrowException::setDOMException(int ec, v8::Isolate* iso
         return v8Undefined();
 
     // Attach an Error object to the DOMException. This is then lazily used to get the stack value.
-    v8::Handle<v8::Value> error = v8::Exception::Error(v8String(description.description, isolate));
+    v8::Handle<v8::Value> error = v8::Exception::Error(v8String(description.message, isolate));
     ASSERT(!error.IsEmpty());
     ASSERT(exception->IsObject());
     exception->ToObject()->SetAccessor(v8::String::NewSymbol("stack"), domExceptionStackGetter, domExceptionStackSetter, error);
