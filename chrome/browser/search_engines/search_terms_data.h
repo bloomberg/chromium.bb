@@ -40,6 +40,10 @@ class SearchTermsData {
   // implementation returns the empty string.
   virtual std::string GetSearchClient() const;
 
+  // The client parameter passed with Google suggest requests.  This
+  // implementation returns the empty string.
+  virtual std::string GetSuggestClient() const;
+
   // Returns a string indicating whether Instant (in the visible-preview mode)
   // is enabled, suitable for adding as a query string param to the homepage
   // (instant_url) request. Returns an empty string if Instant is disabled, or
@@ -78,6 +82,7 @@ class UIThreadSearchTermsData : public SearchTermsData {
   virtual std::string GetApplicationLocale() const OVERRIDE;
   virtual string16 GetRlzParameterValue() const OVERRIDE;
   virtual std::string GetSearchClient() const OVERRIDE;
+  virtual std::string GetSuggestClient() const OVERRIDE;
   virtual std::string InstantEnabledParam() const OVERRIDE;
   virtual std::string InstantExtendedEnabledParam() const OVERRIDE;
   virtual std::string NTPIsThemedParam() const OVERRIDE;

@@ -72,6 +72,7 @@ const char kGoogleSearchFieldtrialParameter[] =
     "google:searchFieldtrialParameter";
 const char kGoogleSourceIdParameter[] = "google:sourceId";
 const char kGoogleSuggestAPIKeyParameter[] = "google:suggestAPIKeyParameter";
+const char kGoogleSuggestClient[] = "google:suggestClient";
 const char kGoogleZeroPrefixUrlParameter[] = "google:zeroPrefixUrl";
 
 // Same as kSearchTermsParameter, with no escaping.
@@ -343,6 +344,10 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
         // url.insert(i->index, used_www ? "gcx=w&" : "gcx=c&");
         break;
 
+      case GOOGLE_SUGGEST_CLIENT:
+        url.insert(i->index, search_terms_data.GetSuggestClient());
+        break;
+
       case GOOGLE_UNESCAPED_SEARCH_TERMS: {
         std::string unescaped_terms;
         base::UTF16ToCodepage(search_terms_args.search_terms,
@@ -606,6 +611,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_SEARCH_CLIENT, start));
   } else if (parameter == kGoogleSearchFieldtrialParameter) {
     replacements->push_back(Replacement(GOOGLE_SEARCH_FIELDTRIAL_GROUP, start));
+  } else if (parameter == kGoogleSuggestClient) {
+    replacements->push_back(Replacement(GOOGLE_SUGGEST_CLIENT, start));
   } else if (parameter == kGoogleZeroPrefixUrlParameter) {
     replacements->push_back(Replacement(GOOGLE_ZERO_PREFIX_URL, start));
   } else if (parameter == kGoogleSuggestAPIKeyParameter) {

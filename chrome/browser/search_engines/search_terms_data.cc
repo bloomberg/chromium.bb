@@ -74,6 +74,10 @@ std::string SearchTermsData::GetSearchClient() const {
   return std::string();
 }
 
+std::string SearchTermsData::GetSuggestClient() const {
+  return std::string();
+}
+
 std::string SearchTermsData::InstantEnabledParam() const {
   return std::string();
 }
@@ -140,6 +144,12 @@ std::string UIThreadSearchTermsData::GetSearchClient() const {
   return std::string();
 }
 #endif
+
+std::string UIThreadSearchTermsData::GetSuggestClient() const {
+  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+      BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return chrome::IsInstantExtendedAPIEnabled() ? "chrome-omni" : "chrome";
+}
 
 std::string UIThreadSearchTermsData::InstantEnabledParam() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
