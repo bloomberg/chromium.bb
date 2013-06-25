@@ -128,10 +128,10 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // processes.
   std::vector< ::Atom> GetOfferedDragOperations();
 
-  // This returns a newly allocated copy of the data we're offering in this
+  // This returns a representation of the data we're offering in this
   // drag. This is done to bypass an asynchronous roundtrip with the X11
   // server.
-  scoped_ptr<ui::SelectionFormatMap> CloneFormatMap() const;
+  ui::SelectionFormatMap GetFormatMap() const;
 
   // Handling XdndPosition can be paused while waiting for more data; this is
   // called either synchronously from OnXdndPosition, or asynchronously after

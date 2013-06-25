@@ -38,7 +38,7 @@ SelectionRequestor::~SelectionRequestor() {}
 
 bool SelectionRequestor::PerformBlockingConvertSelection(
     Atom target,
-    unsigned char** out_data,
+    scoped_refptr<base::RefCountedMemory>* out_data,
     size_t* out_data_bytes,
     size_t* out_data_items,
     Atom* out_type) {
@@ -73,11 +73,11 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
                                    out_type);
 }
 
-scoped_ptr<SelectionData> SelectionRequestor::RequestAndWaitForTypes(
+SelectionData SelectionRequestor::RequestAndWaitForTypes(
     const std::vector< ::Atom>& types) {
   for (std::vector< ::Atom>::const_iterator it = types.begin();
        it != types.end(); ++it) {
-    unsigned char* data = NULL;
+    scoped_refptr<base::RefCountedMemory> data;
     size_t data_bytes = 0;
     ::Atom type = None;
     if (PerformBlockingConvertSelection(*it,
@@ -86,13 +86,11 @@ scoped_ptr<SelectionData> SelectionRequestor::RequestAndWaitForTypes(
                                         NULL,
                                         &type) &&
         type == *it) {
-      scoped_ptr<SelectionData> data_out(new SelectionData);
-      data_out->Set(type, (char*)data, data_bytes, true);
-      return data_out.Pass();
+      return SelectionData(type, data);
     }
   }
 
-  return scoped_ptr<SelectionData>();
+  return SelectionData();
 }
 
 void SelectionRequestor::OnSelectionNotify(const XSelectionEvent& event) {

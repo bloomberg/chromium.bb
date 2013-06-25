@@ -763,7 +763,7 @@ bool PropertyExists(XID window, const std::string& property_name) {
 
 bool GetRawBytesOfProperty(XID window,
                            Atom property,
-                           unsigned char** out_data,
+                           scoped_refptr<base::RefCountedMemory>* out_data,
                            size_t* out_data_bytes,
                            size_t* out_data_items,
                            Atom* out_type) {
@@ -783,30 +783,32 @@ bool GetRawBytesOfProperty(XID window,
   if (prop_type == None)
     return false;
 
+  size_t bytes = 0;
+  // So even though we should theoretically have nbytes (and we can't
+  // pass NULL there), we need to manually calculate the byte length here
+  // because nbytes always returns zero.
+  switch (prop_format) {
+    case 8:
+      bytes = nitems;
+      break;
+    case 16:
+      bytes = sizeof(short) * nitems;
+      break;
+    case 32:
+      bytes = sizeof(long) * nitems;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  if (out_data_bytes)
+    *out_data_bytes = bytes;
+
   if (out_data)
-    *out_data = property_data;
+    *out_data = new XRefcountedMemory(property_data, bytes);
   else
     XFree(property_data);
-
-  if (out_data_bytes) {
-    // So even though we should theoretically have nbytes (and we can't
-    // pass NULL there), we need to manually calculate the byte length here
-    // because nbytes always returns zero.
-    switch (prop_format) {
-      case 8:
-        *out_data_bytes = nitems;
-        break;
-      case 16:
-        *out_data_bytes = sizeof(short) * nitems;
-        break;
-      case 32:
-        *out_data_bytes = sizeof(long) * nitems;
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
 
   if (out_data_items)
     *out_data_items = nitems;
@@ -1499,6 +1501,18 @@ void InitXKeyEventForTesting(EventType type,
   key_event.same_screen = 1;
   event->type = key_event.type;
   event->xkey = key_event;
+}
+
+const unsigned char* XRefcountedMemory::front() const {
+  return x11_data_;
+}
+
+size_t XRefcountedMemory::size() const {
+  return length_;
+}
+
+XRefcountedMemory::~XRefcountedMemory() {
+  XFree(x11_data_);
 }
 
 XScopedString::~XScopedString() {

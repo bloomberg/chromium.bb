@@ -5,6 +5,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
 
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_pump_aurax11.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,13 +41,13 @@ const char* kAtomsToCache[] = {
 
 OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11(
     ::Window x_window,
-    scoped_ptr<SelectionFormatMap> selection)
+    const SelectionFormatMap& selection)
     : x_display_(GetXDisplay()),
       x_root_window_(DefaultRootWindow(x_display_)),
       own_window_(false),
       x_window_(x_window),
       atom_cache_(x_display_, kAtomsToCache),
-      format_map_(selection.Pass()),
+      format_map_(selection),
       selection_owner_(x_display_, x_window_,
                        atom_cache_.GetAtom(kDndSelection)) {
   // We don't know all possible MIME types at compile time.
@@ -68,7 +69,7 @@ OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11()
           0,
           NULL)),
       atom_cache_(x_display_, kAtomsToCache),
-      format_map_(new SelectionFormatMap),
+      format_map_(),
       selection_owner_(x_display_, x_window_,
                        atom_cache_.GetAtom(kDndSelection)) {
   // We don't know all possible MIME types at compile time.
@@ -87,8 +88,7 @@ OSExchangeDataProviderAuraX11::~OSExchangeDataProviderAuraX11() {
 }
 
 void OSExchangeDataProviderAuraX11::TakeOwnershipOfSelection() const {
-  selection_owner_.TakeOwnershipOfSelection(
-      scoped_ptr<SelectionFormatMap>(format_map_->Clone()));
+  selection_owner_.TakeOwnershipOfSelection(format_map_);
 }
 
 void OSExchangeDataProviderAuraX11::RetrieveTargets(
@@ -96,29 +96,21 @@ void OSExchangeDataProviderAuraX11::RetrieveTargets(
   selection_owner_.RetrieveTargets(targets);
 }
 
-scoped_ptr<SelectionFormatMap>
-OSExchangeDataProviderAuraX11::CloneFormatMap() const {
-  // We clone the |selection_owner_|'s format map instead of our own in case
+SelectionFormatMap OSExchangeDataProviderAuraX11::GetFormatMap() const {
+  // We return the |selection_owner_|'s format map instead of our own in case
   // ours has been modified since TakeOwnershipOfSelection() was called.
-  return selection_owner_.selection_format_map()->Clone();
+  return selection_owner_.selection_format_map();
 }
 
 void OSExchangeDataProviderAuraX11::SetString(const string16& text_data) {
   std::string utf8 = UTF16ToUTF8(text_data);
+  scoped_refptr<base::RefCountedMemory> mem(
+      base::RefCountedString::TakeString(&utf8));
 
-  // Ownership of |data| is passed to |format_map_|.
-  size_t text_len = utf8.size();
-  char* data = new char[text_len];
-  memcpy(data, utf8.c_str(), text_len);
-
-  format_map_->Insert(
-      atom_cache_.GetAtom(Clipboard::kMimeTypeText), data, text_len);
-  format_map_->Insert(
-      atom_cache_.GetAtom(kText), data, text_len);
-  format_map_->Insert(
-      atom_cache_.GetAtom(kString), data, text_len);
-  format_map_->Insert(
-      atom_cache_.GetAtom(kUtf8String), data, text_len);
+  format_map_.Insert(atom_cache_.GetAtom(Clipboard::kMimeTypeText), mem);
+  format_map_.Insert(atom_cache_.GetAtom(kText), mem);
+  format_map_.Insert(atom_cache_.GetAtom(kString), mem);
+  format_map_.Insert(atom_cache_.GetAtom(kUtf8String), mem);
 }
 
 void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
@@ -146,9 +138,9 @@ bool OSExchangeDataProviderAuraX11::GetString(string16* result) const {
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(text_atoms, GetTargets(), &requested_types);
 
-  scoped_ptr<ui::SelectionData> data(format_map_->GetFirstOf(requested_types));
-  if (data) {
-    std::string text = data->GetText();
+  ui::SelectionData data(format_map_.GetFirstOf(requested_types));
+  if (data.IsValid()) {
+    std::string text = data.GetText();
     *result = UTF8ToUTF16(text);
     return true;
   }
@@ -162,16 +154,16 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(GURL* url,
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
-  scoped_ptr<ui::SelectionData> data(format_map_->GetFirstOf(requested_types));
-  if (data) {
+  ui::SelectionData data(format_map_.GetFirstOf(requested_types));
+  if (data.IsValid()) {
     // TODO(erg): Technically, both of these forms can accept multiple URLs,
     // but that doesn't match the assumptions of the rest of the system which
     // expect single types.
 
-    if (data->type() == atom_cache_.GetAtom(kMimeTypeMozillaURL)) {
+    if (data.GetType() == atom_cache_.GetAtom(kMimeTypeMozillaURL)) {
       // Mozilla URLs are (UTF16: URL, newline, title).
       string16 unparsed;
-      data->AssignTo(&unparsed);
+      data.AssignTo(&unparsed);
 
       std::vector<string16> tokens;
       size_t num_tokens = Tokenize(unparsed, ASCIIToUTF16("\n"), &tokens);
@@ -183,11 +175,11 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(GURL* url,
         NOTREACHED() << "Data that claimed to be a Mozilla URL has "
                      << num_tokens << " tokens instead of 2.";
       }
-    } else if (data->type() == atom_cache_.GetAtom(
+    } else if (data.GetType() == atom_cache_.GetAtom(
                    Clipboard::kMimeTypeURIList)) {
       // uri-lists are newline separated file lists in URL encoding.
       std::string unparsed;
-      data->AssignTo(&unparsed);
+      data.AssignTo(&unparsed);
 
       std::vector<std::string> tokens;
       size_t num_tokens = Tokenize(unparsed, "\n", &tokens);
@@ -265,9 +257,9 @@ bool OSExchangeDataProviderAuraX11::GetHtml(string16* html,
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
-  scoped_ptr<ui::SelectionData> data(format_map_->GetFirstOf(requested_types));
-  if (data) {
-    *html = data->GetHtml();
+  ui::SelectionData data(format_map_.GetFirstOf(requested_types));
+  if (data.IsValid()) {
+    *html = data.GetHtml();
     *base_url = GURL();
     return true;
   }
@@ -318,7 +310,7 @@ bool OSExchangeDataProviderAuraX11::GetPlainTextURL(GURL* url) const {
 }
 
 std::vector< ::Atom> OSExchangeDataProviderAuraX11::GetTargets() const {
-  return format_map_->GetTypes();
+  return format_map_.GetTypes();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

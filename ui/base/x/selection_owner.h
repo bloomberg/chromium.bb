@@ -15,11 +15,10 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "ui/base/ui_export.h"
+#include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_atom_cache.h"
 
 namespace ui {
-
-class SelectionFormatMap;
 
 // Owns a specific X11 selection on an X window.
 //
@@ -34,14 +33,14 @@ class UI_EXPORT SelectionOwner {
   ~SelectionOwner();
 
   // Returns the current selection data. Useful for fast paths.
-  SelectionFormatMap* selection_format_map() { return selection_data_.get(); }
+  const SelectionFormatMap& selection_format_map() { return format_map_; }
 
   // Retrieves a list of types we're offering.
   void RetrieveTargets(std::vector<Atom>* targets);
 
   // Attempts to take ownership of the selection. If we're successful, present
   // |data| to other windows.
-  void TakeOwnershipOfSelection(scoped_ptr<SelectionFormatMap> data);
+  void TakeOwnershipOfSelection(const SelectionFormatMap& data);
 
   // Releases the selection (if we own it) and clears any data we own.
   void Clear();
@@ -61,7 +60,7 @@ class UI_EXPORT SelectionOwner {
   ::Atom selection_name_;
 
   // The data we are currently serving.
-  scoped_ptr<SelectionFormatMap> selection_data_;
+  SelectionFormatMap format_map_;
 
   X11AtomCache atom_cache_;
 

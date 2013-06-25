@@ -40,19 +40,19 @@ SelectionOwner::~SelectionOwner() {
 
 void SelectionOwner::RetrieveTargets(std::vector<Atom>* targets) {
   targets->clear();
-  for (SelectionFormatMap::const_iterator it = selection_data_->begin();
-       it != selection_data_->end(); ++it) {
+  for (SelectionFormatMap::const_iterator it = format_map_.begin();
+       it != format_map_.end(); ++it) {
     targets->push_back(it->first);
   }
 }
 
 void SelectionOwner::TakeOwnershipOfSelection(
-    scoped_ptr<SelectionFormatMap> data) {
+    const SelectionFormatMap& data) {
   XSetSelectionOwner(x_display_, selection_name_, x_window_, CurrentTime);
 
   if (XGetSelectionOwner(x_display_, selection_name_) == x_window_) {
     // The X server agrees that we are the selection owner. Commit our data.
-    selection_data_ = data.Pass();
+    format_map_ = data;
   }
 }
 
@@ -60,7 +60,7 @@ void SelectionOwner::Clear() {
   if (XGetSelectionOwner(x_display_, selection_name_) == x_window_)
     XSetSelectionOwner(x_display_, selection_name_, None, CurrentTime);
 
-  selection_data_.reset();
+  format_map_ = SelectionFormatMap();
 }
 
 void SelectionOwner::OnSelectionRequest(const XSelectionRequestEvent& event) {
@@ -75,42 +75,39 @@ void SelectionOwner::OnSelectionRequest(const XSelectionRequestEvent& event) {
   reply.xselection.time = event.time;
 
   // Get the proper selection.
-  if (selection_data_.get()) {
-    Atom targets_atom = atom_cache_.GetAtom(kTargets);
-    if (event.target == targets_atom) {
-      // We have been asked for TARGETS. Send an atom array back with the data
-      // types we support.
-      std::vector<Atom> targets;
-      targets.push_back(targets_atom);
-      RetrieveTargets(&targets);
+  Atom targets_atom = atom_cache_.GetAtom(kTargets);
+  if (event.target == targets_atom) {
+    // We have been asked for TARGETS. Send an atom array back with the data
+    // types we support.
+    std::vector<Atom> targets;
+    targets.push_back(targets_atom);
+    RetrieveTargets(&targets);
 
-      XChangeProperty(x_display_, event.requestor, event.property, XA_ATOM, 32,
-                      PropModeReplace,
-                      reinterpret_cast<unsigned char*>(&targets.front()),
-                      targets.size());
-      reply.xselection.property = event.property;
-    } else if (event.target == atom_cache_.GetAtom(kMultiple)) {
-      // TODO(erg): Theoretically, the spec claims I'm supposed to handle the
-      // MULTIPLE case, but I haven't seen it in the wild yet.
-      NOTIMPLEMENTED();
-    } else {
-      // Try to find the data type in map.
-      SelectionFormatMap::const_iterator it =
-          selection_data_->find(event.target);
-      if (it != selection_data_->end()) {
-        XChangeProperty(x_display_, event.requestor, event.property,
-                        event.target, 8,
-                        PropModeReplace,
-                        reinterpret_cast<unsigned char*>(it->second.first),
-                        it->second.second);
-        reply.xselection.property = event.property;
-      }
-      // I would put error logging here, but GTK ignores TARGETS and spams us
-      // looking for its own internal types.
-    }
+    XChangeProperty(x_display_, event.requestor, event.property, XA_ATOM, 32,
+                    PropModeReplace,
+                    reinterpret_cast<unsigned char*>(&targets.front()),
+                    targets.size());
+    reply.xselection.property = event.property;
+  } else if (event.target == atom_cache_.GetAtom(kMultiple)) {
+    // TODO(erg): Theoretically, the spec claims I'm supposed to handle the
+    // MULTIPLE case, but I haven't seen it in the wild yet.
+    NOTIMPLEMENTED();
   } else {
-    DLOG(ERROR) << "XWindow " << x_window_ << " received a SelectionRequest "
-                << "message when we don't have data to offer.";
+    // Try to find the data type in map.
+    SelectionFormatMap::const_iterator it =
+        format_map_.find(event.target);
+    if (it != format_map_.end()) {
+      XChangeProperty(x_display_, event.requestor, event.property,
+                      event.target, 8,
+                      PropModeReplace,
+                      const_cast<unsigned char*>(
+                          reinterpret_cast<const unsigned char*>(
+                              it->second->front())),
+                      it->second->size());
+      reply.xselection.property = event.property;
+    }
+    // I would put error logging here, but GTK ignores TARGETS and spams us
+    // looking for its own internal types.
   }
 
   // Send off the reply.

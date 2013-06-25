@@ -14,6 +14,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted_memory.h"
 #include "ui/base/ui_export.h"
 #include "ui/base/x/x11_atom_cache.h"
 
@@ -39,16 +40,16 @@ class UI_EXPORT SelectionRequestor {
   // back. |out_data| is allocated with the X allocator and must be freed with
   // XFree(). |out_data_bytes| is the length in machine chars, while
   // |out_data_items| is the length in |out_type| items.
-  bool PerformBlockingConvertSelection(::Atom target,
-                                       unsigned char** out_data,
-                                       size_t* out_data_bytes,
-                                       size_t* out_data_items,
-                                       ::Atom* out_type);
+  bool PerformBlockingConvertSelection(
+      ::Atom target,
+      scoped_refptr<base::RefCountedMemory>* out_data,
+      size_t* out_data_bytes,
+      size_t* out_data_items,
+      ::Atom* out_type);
 
   // Returns the first of |types| offered by the current selection holder, or
   // returns NULL if none of those types are available.
-  scoped_ptr<SelectionData> RequestAndWaitForTypes(
-      const std::vector< ::Atom>& types);
+  SelectionData RequestAndWaitForTypes(const std::vector< ::Atom>& types);
 
   // It is our owner's responsibility to plumb X11 SelectionNotify events on
   // |xwindow_| to us.

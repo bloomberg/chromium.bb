@@ -19,6 +19,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/x/selection_owner.h"
 #include "ui/base/x/selection_requestor.h"
+#include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/vector2d.h"
@@ -35,7 +36,7 @@ class UI_EXPORT OSExchangeDataProviderAuraX11
   // |x_window| is the window the cursor is over, and |selection| is the set of
   // data being offered.
   OSExchangeDataProviderAuraX11(::Window x_window,
-                                scoped_ptr<SelectionFormatMap> selection);
+                                const SelectionFormatMap& selection);
 
   // Creates a Provider for sending drag information. This creates its own,
   // hidden X11 window to own send data.
@@ -52,7 +53,7 @@ class UI_EXPORT OSExchangeDataProviderAuraX11
   void RetrieveTargets(std::vector<Atom>* targets) const;
 
   // Makes a copy of the format map currently being offered.
-  scoped_ptr<SelectionFormatMap> CloneFormatMap() const;
+  SelectionFormatMap GetFormatMap() const;
 
   // Overridden from OSExchangeData::Provider:
   virtual void SetString(const string16& data) OVERRIDE;
@@ -119,7 +120,7 @@ class UI_EXPORT OSExchangeDataProviderAuraX11
   // A representation of data. This is either passed to us from the other
   // process, or built up through a sequence of Set*() calls. It can be passed
   // to |selection_owner_| when we take the selection.
-  scoped_ptr<SelectionFormatMap> format_map_;
+  SelectionFormatMap format_map_;
 
   // Takes a snapshot of |format_map_| and offers it to other windows.
   mutable SelectionOwner selection_owner_;

@@ -16,6 +16,7 @@
 
 #include "base/basictypes.h"
 #include "base/event_types.h"
+#include "base/memory/ref_counted_memory.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_export.h"
@@ -166,12 +167,13 @@ UI_EXPORT bool PropertyExists(XID window, const std::string& property_name);
 
 // Returns the raw bytes from a property with minimal
 // interpretation. |out_data| should be freed by XFree() after use.
-UI_EXPORT bool GetRawBytesOfProperty(XID window,
-                                     Atom property,
-                                     unsigned char** out_data,
-                                     size_t* out_data_bytes,
-                                     size_t* out_data_items,
-                                     Atom* out_type);
+UI_EXPORT bool GetRawBytesOfProperty(
+    XID window,
+    Atom property,
+    scoped_refptr<base::RefCountedMemory>* out_data,
+    size_t* out_data_bytes,
+    size_t* out_data_items,
+    Atom* out_type);
 
 // Get the value of an int, int array, atom array or string property.  On
 // success, true is returned and the value is stored in |value|.
@@ -332,6 +334,29 @@ UI_EXPORT void InitXKeyEventForTesting(EventType type,
                                        KeyboardCode key_code,
                                        int flags,
                                        XEvent* event);
+
+// Manages a piece of X11 allocated memory as a RefCountedMemory segment. This
+// object takes ownership over the passed in memory and will free it with the
+// X11 allocator when done.
+class UI_EXPORT XRefcountedMemory : public base::RefCountedMemory {
+ public:
+  XRefcountedMemory(unsigned char* x11_data, size_t length)
+      : x11_data_(length ? x11_data : NULL),
+        length_(length) {
+  }
+
+  // Overridden from RefCountedMemory:
+  virtual const unsigned char* front() const OVERRIDE;
+  virtual size_t size() const OVERRIDE;
+
+ private:
+  virtual ~XRefcountedMemory();
+
+  unsigned char* x11_data_;
+  size_t length_;
+
+  DISALLOW_COPY_AND_ASSIGN(XRefcountedMemory);
+};
 
 // Keeps track of a string returned by an X function (e.g. XGetAtomName) and
 // makes sure it's XFree'd.

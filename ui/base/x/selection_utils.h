@@ -13,6 +13,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted_memory.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_export.h"
 #include "ui/base/x/x11_atom_cache.h"
@@ -36,6 +37,16 @@ UI_EXPORT void GetAtomIntersection(const std::vector< ::Atom>& one,
                                    const std::vector< ::Atom>& two,
                                    std::vector< ::Atom>* output);
 
+// Takes the raw bytes of the string16 and copies them into |bytes|.
+UI_EXPORT void AddString16ToVector(const string16& str,
+                                   std::vector<unsigned char>* bytes);
+
+UI_EXPORT std::string RefCountedMemoryToString(
+    const scoped_refptr<base::RefCountedMemory>& memory);
+
+UI_EXPORT string16 RefCountedMemoryToString16(
+    const scoped_refptr<base::RefCountedMemory>& memory);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // Represents the selection in different data formats. Binary data passed in is
@@ -43,26 +54,23 @@ UI_EXPORT void GetAtomIntersection(const std::vector< ::Atom>& one,
 class UI_EXPORT SelectionFormatMap {
  public:
   // Our internal data store, which we only expose through iterators.
-  typedef std::map< ::Atom, std::pair<char*, size_t> > InternalMap;
-  typedef std::map< ::Atom, std::pair<char*, size_t> >::const_iterator
-      const_iterator;
+  typedef std::map< ::Atom, scoped_refptr<base::RefCountedMemory> > InternalMap;
+  typedef InternalMap::const_iterator const_iterator;
 
   SelectionFormatMap();
   ~SelectionFormatMap();
+  // Copy and assignment deliberately open.
 
   // Adds the selection in the format |atom|. Ownership of |data| is passed to
   // us.
-  void Insert(::Atom atom, char* data, size_t size);
+  void Insert(::Atom atom, const scoped_refptr<base::RefCountedMemory>& item);
 
   // Returns the first of the requested_types or NULL if missing.
-  ui::SelectionData* GetFirstOf(
+  ui::SelectionData GetFirstOf(
       const std::vector< ::Atom>& requested_types) const;
 
   // Returns all the selected types.
   std::vector< ::Atom> GetTypes() const;
-
-  // Creates a copy of the selection data.
-  scoped_ptr<SelectionFormatMap> Clone() const;
 
   // Pass through to STL map. Only allow non-mutation access.
   const_iterator begin() const { return data_.begin(); }
@@ -72,8 +80,6 @@ class UI_EXPORT SelectionFormatMap {
 
  private:
   InternalMap data_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelectionFormatMap);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -83,13 +89,16 @@ class UI_EXPORT SelectionData {
  public:
   // |atom_cache| is still owned by caller.
   SelectionData();
+  SelectionData(::Atom type,
+                const scoped_refptr<base::RefCountedMemory>& memory);
+  SelectionData(const SelectionData& rhs);
   ~SelectionData();
+  SelectionData& operator=(const SelectionData& rhs);
 
-  ::Atom type() const { return type_; }
-  char* data() const { return data_; }
-  size_t size() const { return size_; }
-
-  void Set(::Atom type, char* data, size_t size, bool owned);
+  bool IsValid() const;
+  ::Atom GetType() const;
+  const unsigned char* GetData() const;
+  size_t GetSize() const;
 
   // If |type_| is a string type, convert the data to UTF8 and return it.
   std::string GetText() const;
@@ -104,13 +113,9 @@ class UI_EXPORT SelectionData {
 
  private:
   ::Atom type_;
-  char* data_;
-  size_t size_;
-  bool owned_;
+  scoped_refptr<base::RefCountedMemory> memory_;
 
   X11AtomCache atom_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelectionData);
 };
 
 }  // namespace ui

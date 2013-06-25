@@ -159,10 +159,7 @@ class DesktopDragDropClientAuraX11::X11DragContext :
   void OnSelectionNotify(const XSelectionEvent& xselection);
 
   // Clones the fetched targets.
-  scoped_ptr<ui::SelectionFormatMap> CloneFetchedTargets() {
-    DCHECK(fetched_targets_);
-    return fetched_targets_->Clone();
-  }
+  const ui::SelectionFormatMap& fetched_targets() { return fetched_targets_; }
 
   // Reads the "XdndActionList" property from |source_window| and copies it
   // into |actions|.
@@ -196,7 +193,7 @@ class DesktopDragDropClientAuraX11::X11DragContext :
   gfx::Point screen_point_;
 
   // A SelectionFormatMap of data that we have in our process.
-  scoped_ptr<ui::SelectionFormatMap> fetched_targets_;
+  ui::SelectionFormatMap fetched_targets_;
 
   // The names of various data types offered by the other window that we
   // haven't fetched and put in |fetched_targets_| yet.
@@ -251,7 +248,7 @@ DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
     // This drag originates from an aura window within our process. This means
     // that we can shortcut the X11 server and ask the owning SelectionOwner
     // for the data it's offering.
-    fetched_targets_ = client->CloneFormatMap();
+    fetched_targets_ = client->GetFormatMap();
     unfetched_targets_.clear();
   }
 
@@ -281,7 +278,7 @@ void DesktopDragDropClientAuraX11::X11DragContext::OnStartXdndPositionMessage(
     drag_drop_client_ = client;
     waiting_to_handle_position_ = true;
 
-    fetched_targets_.reset(new ui::SelectionFormatMap);
+    fetched_targets_ = ui::SelectionFormatMap();
     RequestNextTarget();
   } else {
     client->CompleteXdndPosition(source_window, screen_point);
@@ -306,15 +303,11 @@ void DesktopDragDropClientAuraX11::X11DragContext::OnSelectionNotify(
   DCHECK(drag_drop_client_);
   DCHECK_EQ(event.property, atom_cache_->GetAtom(kChromiumDragReciever));
 
-  unsigned char* data = NULL;
-  size_t data_bytes = 0;
+  scoped_refptr<base::RefCountedMemory> data;
   ::Atom type = None;
   if (ui::GetRawBytesOfProperty(local_window_, event.property,
-                                &data, &data_bytes, NULL, &type)) {
-    char* copied_data = new char[data_bytes];
-    memcpy(copied_data, data, data_bytes);
-    fetched_targets_->Insert(event.target, copied_data, data_bytes);
-    XFree(data);
+                                &data, NULL, NULL, &type)) {
+    fetched_targets_.Insert(event.target, data);
   }
 
   if (!unfetched_targets_.empty()) {
@@ -517,7 +510,7 @@ void DesktopDragDropClientAuraX11::OnXdndDrop(
         aura::client::GetDragDropDelegate(target_window_);
     if (delegate) {
       ui::OSExchangeData data(new ui::OSExchangeDataProviderAuraX11(
-          xwindow_, target_current_context_->CloneFetchedTargets()));
+          xwindow_, target_current_context_->fetched_targets()));
 
       ui::DropTargetEvent event(data,
                                 target_window_location_,
@@ -693,7 +686,7 @@ void DesktopDragDropClientAuraX11::DragTranslate(
     return;
 
   data->reset(new OSExchangeData(new ui::OSExchangeDataProviderAuraX11(
-      xwindow_, target_current_context_->CloneFetchedTargets())));
+      xwindow_, target_current_context_->fetched_targets())));
   gfx::Point location = root_location;
   aura::Window::ConvertPointToTarget(root_window_, target_window_, &location);
 
@@ -754,10 +747,9 @@ std::vector< ::Atom> DesktopDragDropClientAuraX11::GetOfferedDragOperations() {
   return operations;
 }
 
-scoped_ptr<ui::SelectionFormatMap>
-DesktopDragDropClientAuraX11::CloneFormatMap() const {
-  return source_provider_ ? source_provider_->CloneFormatMap() :
-      scoped_ptr<ui::SelectionFormatMap>();
+ui::SelectionFormatMap DesktopDragDropClientAuraX11::GetFormatMap() const {
+  return source_provider_ ? source_provider_->GetFormatMap() :
+      ui::SelectionFormatMap();
 }
 
 void DesktopDragDropClientAuraX11::CompleteXdndPosition(
