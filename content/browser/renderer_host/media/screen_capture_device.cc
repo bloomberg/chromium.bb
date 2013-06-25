@@ -268,7 +268,7 @@ void ScreenCaptureDevice::Core::DoAllocate(int width,
 
   // Create and start frame capturer.
   if (!screen_capturer_) {
-#if defined(OS_CHROMEOS) && !defined(ARCH_CPU_ARMEL)
+#if defined(OS_CHROMEOS) && !defined(ARCH_CPU_ARMEL) && defined(USE_X11)
     // ScreenCapturerX11 polls by default, due to poor driver support for
     // DAMAGE. ChromeOS' drivers [can be patched to] support DAMAGE properly, so
     // use it. However ARM driver seems to not support this properly, so disable
