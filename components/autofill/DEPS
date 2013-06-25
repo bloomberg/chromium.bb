@@ -6,5 +6,6 @@ include_rules = [
   "+ui",
   # Autofill is a layered component; subdirectories must explicitly introduce
   # the ability to use the content layer as appropriate.
+  "-components/autofill/content",
   "-content/public/common",
 ]
