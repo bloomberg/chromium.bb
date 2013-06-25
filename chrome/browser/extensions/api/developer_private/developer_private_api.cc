@@ -624,6 +624,11 @@ bool DeveloperPrivateRestartFunction::RunImpl() {
 
   apps::AppLoadService* service = apps::AppLoadService::Get(profile());
   EXTENSION_FUNCTION_VALIDATE(!params->item_id.empty());
+  ExtensionService* extension_service = profile()->GetExtensionService();
+  // Don't restart disabled applications.
+  if (!extension_service->IsExtensionEnabled(params->item_id))
+    return false;
+
   service->RestartApplication(params->item_id);
   return true;
 }
