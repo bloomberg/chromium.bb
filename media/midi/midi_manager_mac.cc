@@ -16,6 +16,10 @@ using base::IntToString;
 using base::SysCFStringRefToUTF8;
 using std::string;
 
+// NB: System MIDI types are pointer types in 32-bit and integer types in
+// 64-bit. Therefore, the initialization is the simplest one that satisfies both
+// (if possible).
+
 namespace media {
 
 MIDIManager* MIDIManager::Create() {
@@ -23,9 +27,9 @@ MIDIManager* MIDIManager::Create() {
 }
 
 MIDIManagerMac::MIDIManagerMac()
-    : midi_client_(NULL),
-      coremidi_input_(NULL),
-      coremidi_output_(NULL),
+    : midi_client_(0),
+      coremidi_input_(0),
+      coremidi_output_(0),
       packet_list_(NULL),
       midi_packet_(NULL) {
 }
@@ -34,7 +38,7 @@ bool MIDIManagerMac::Initialize() {
   TRACE_EVENT0("midi", "MIDIManagerMac::Initialize");
 
   // CoreMIDI registration.
-  midi_client_ = NULL;
+  midi_client_ = 0;
   OSStatus result = MIDIClientCreate(
       CFSTR("Google Chrome"),
       NULL,
@@ -44,7 +48,7 @@ bool MIDIManagerMac::Initialize() {
   if (result != noErr)
     return false;
 
-  coremidi_input_ = NULL;
+  coremidi_input_ = 0;
 
   // Create input and output port.
   result = MIDIInputPortCreate(
@@ -83,7 +87,7 @@ bool MIDIManagerMac::Initialize() {
   for (int i = 0; i < source_count; ++i)  {
     // Receive from all sources.
     MIDIEndpointRef src = MIDIGetSource(i);
-    MIDIPortConnectSource(coremidi_input_, src, src);
+    MIDIPortConnectSource(coremidi_input_, src, reinterpret_cast<void*>(src));
 
     // Keep track of all sources (known as inputs in Web MIDI API terminology).
     source_map_[src] = i;
@@ -110,7 +114,11 @@ void MIDIManagerMac::ReadMidiDispatch(const MIDIPacketList* packet_list,
                                       void* read_proc_refcon,
                                       void* src_conn_refcon) {
   MIDIManagerMac* manager = static_cast<MIDIManagerMac*>(read_proc_refcon);
+#if __LP64__
+  MIDIEndpointRef source = reinterpret_cast<uintptr_t>(src_conn_refcon);
+#else
   MIDIEndpointRef source = static_cast<MIDIEndpointRef>(src_conn_refcon);
+#endif
 
   // Dispatch to class method.
   manager->ReadMidi(source, packet_list);
