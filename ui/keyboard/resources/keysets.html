@@ -7,10 +7,12 @@
 <template>
   <kb-keyset id="upper" toKeyset="lower">
     <kb-row>
-      <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key><kb-key>Q</kb-key>
-      <kb-key>W</kb-key><kb-key>E</kb-key><kb-key>R</kb-key><kb-key>T</kb-key>
-      <kb-key>Y</kb-key><kb-key>U</kb-key><kb-key>I</kb-key><kb-key>O</kb-key>
-      <kb-key>P</kb-key>
+      <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
+      <kb-key superscript="1">Q</kb-key><kb-key superscript="2">W</kb-key>
+      <kb-key superscript="3">E</kb-key><kb-key superscript="4">R</kb-key>
+      <kb-key superscript="5">T</kb-key><kb-key superscript="6">Y</kb-key>
+      <kb-key superscript="7">U</kb-key><kb-key superscript="8">I</kb-key>
+      <kb-key superscript="9">O</kb-key><kb-key superscript="0">P</kb-key>
       <kb-key class="backspace dark" char="&#x0008;" repeat align="right">backspace</kb-key>
     </kb-row>
     <kb-row>
@@ -23,8 +25,8 @@
     <kb-row>
       <kb-key class="left-shift dark" toKeyset="lower" char="Invalid" align="left">shift</kb-key>
       <kb-key>Z</kb-key><kb-key>X</kb-key><kb-key>C</kb-key><kb-key>V</kb-key>
-      <kb-key>B</kb-key><kb-key>N</kb-key><kb-key>M</kb-key><kb-key>,</kb-key>
-      <kb-key>.</kb-key>
+      <kb-key>B</kb-key><kb-key>N</kb-key><kb-key>M</kb-key>
+      <kb-key superscript="!">,</kb-key><kb-key superscript="?">.</kb-key>
       <kb-key class="right-shift dark" toKeyset="lower" char="Invalid" align="right">shift</kb-key>
     </kb-row>
     <kb-row>
@@ -38,10 +40,12 @@
 
   <kb-keyset id="lower">
     <kb-row>
-      <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key><kb-key>q</kb-key>
-      <kb-key>w</kb-key><kb-key>e</kb-key><kb-key>r</kb-key><kb-key>t</kb-key>
-      <kb-key>y</kb-key><kb-key>u</kb-key><kb-key>i</kb-key><kb-key>o</kb-key>
-      <kb-key>p</kb-key>
+      <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
+      <kb-key superscript="1">q</kb-key><kb-key superscript="2">w</kb-key>
+      <kb-key superscript="3">e</kb-key><kb-key superscript="4">r</kb-key>
+      <kb-key superscript="5">t</kb-key><kb-key superscript="6">y</kb-key>
+      <kb-key superscript="7">u</kb-key><kb-key superscript="8">i</kb-key>
+      <kb-key superscript="9">o</kb-key><kb-key superscript="0">p</kb-key>
       <kb-key class="backspace dark" char="&#x0008;" repeat align="right">backspace</kb-key>
     </kb-row>
     <kb-row>
@@ -54,8 +58,8 @@
     <kb-row>
       <kb-key class="left-shift dark" toKeyset="upper" char="Invalid" align="left">shift</kb-key>
       <kb-key>z</kb-key><kb-key>x</kb-key><kb-key>c</kb-key><kb-key>v</kb-key>
-      <kb-key>b</kb-key><kb-key>n</kb-key><kb-key>m</kb-key><kb-key>,</kb-key>
-      <kb-key>.</kb-key>
+      <kb-key>b</kb-key><kb-key>n</kb-key><kb-key>m</kb-key>
+      <kb-key superscript="!">,</kb-key><kb-key superscript="?">.</kb-key>
       <kb-key class="right-shift dark" toKeyset="upper" char="Invalid" align="right">shift</kb-key>
     </kb-row>
     <kb-row>

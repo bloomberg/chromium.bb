@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-key" attributes="toKeyset char repeat" on-pointerdown="down"
+<element name="kb-key" attributes="toKeyset char repeat superscript" on-pointerdown="down"
     on-pointerup="up">
   <template>
     <style>
@@ -29,10 +29,18 @@
         padding-left: 10px;
         padding-right: 10px;
       }
+      .superscript {
+        color: #7c7c7c;
+        font-size: 70%;
+        position: absolute;
+        right: 7%;
+        top: 5%;
+      }
     </style>
     <div id="key" class="key">
       <content></content>
     </div>
+    <div class="superscript">{{superscript}}</div>
   </template>
   <script>
     Polymer.register(this, {
