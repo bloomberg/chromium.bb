@@ -1679,7 +1679,7 @@ static void
 compositor_create_surface(struct wl_client *client,
 			  struct wl_resource *resource, uint32_t id)
 {
-	struct weston_compositor *ec = resource->data;
+	struct weston_compositor *ec = wl_resource_get_user_data(resource);
 	struct weston_surface *surface;
 
 	surface = weston_surface_create(ec);
