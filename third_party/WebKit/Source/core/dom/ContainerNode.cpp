@@ -556,15 +556,18 @@ void ContainerNode::removeChildren()
     // The container node can be removed from event handlers.
     RefPtr<ContainerNode> protect(this);
 
-    // exclude this node when looking for removed focusedNode since only children will be removed
-    document()->removeFocusedNodeOfSubtree(this, true);
-
     if (FullscreenController* fullscreen = FullscreenController::fromIfExists(document()))
         fullscreen->removeFullScreenElementOfSubtree(this, true);
 
     // Do any prep work needed before actually starting to detach
     // and remove... e.g. stop loading frames, fire unload events.
     willRemoveChildren(protect.get());
+
+    // Exclude this node when looking for removed focusedNode since only
+    // children will be removed.
+    // This must be later than willRemvoeChildren, which might change focus
+    // state of a child.
+    document()->removeFocusedNodeOfSubtree(this, true);
 
     NodeVector removedChildren;
     {

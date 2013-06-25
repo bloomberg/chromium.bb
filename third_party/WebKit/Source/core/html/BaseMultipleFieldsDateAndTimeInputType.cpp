@@ -153,6 +153,7 @@ void BaseMultipleFieldsDateAndTimeInputType::didBlurFromControl()
     // We don't need to call blur(). This function is called when control
     // lost focus.
 
+    RefPtr<HTMLInputElement> protector(element());
     // Remove focus ring by CSS "focus" pseudo class.
     element()->setFocus(false);
 }
@@ -163,6 +164,7 @@ void BaseMultipleFieldsDateAndTimeInputType::didFocusOnControl()
     // got focus.
 
     // Add focus ring by CSS "focus" pseudo class.
+    // FIXME: Setting the focus flag to non-focused element is too tricky.
     element()->setFocus(true);
 }
 
