@@ -829,10 +829,8 @@ TEST_F(AutofillDialogControllerTest, InvalidSavedEmail) {
   AutofillProfile profile(test::GetVerifiedProfile());
   profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16(".!#$%&'*+/=?^_`-@-.."));
   controller()->GetTestingManager()->AddTestingProfile(&profile);
-
-  controller()->MenuModelForSection(SECTION_EMAIL)->ActivatedAt(0);
-  EXPECT_TRUE(
-      controller()->SuggestionStateForSection(SECTION_EMAIL).text.empty());
+  EXPECT_EQ(static_cast<ui::MenuModel*>(NULL),
+            controller()->MenuModelForSection(SECTION_EMAIL));
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillCreditCards) {
