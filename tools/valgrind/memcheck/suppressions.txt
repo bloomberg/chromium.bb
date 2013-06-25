@@ -7316,6 +7316,24 @@
    fun:_ZN7content12_GLOBAL__N_139LevelDBDatabaseTest_CorruptionTest_Test8TestBodyEv
 }
 {
+   bug_253797
+   Memcheck:Uninitialized
+   fun:_ZNSt11char_traitsIcE6lengthEPKc
+   fun:_ZN4base8internal17StringPieceDetailISsEC1EPKc
+   fun:_ZN4base16BasicStringPieceISsEC1EPKc
+   fun:_ZN8autofill22AutofillQueryXmlParser13CharacterDataEPN4buzz15XmlParseContextEPKci
+   fun:_ZN4buzz9XmlParser18ExpatCharacterDataEPKci
+   fun:_ZN4buzzL21CharacterDataCallbackEPvPKci
+   obj:*libexpat.so*
+   obj:*libexpat.so*
+   obj:*libexpat.so*
+   obj:*libexpat.so*
+   fun:XML_ParseBuffer
+   fun:_ZN4buzz9XmlParser5ParseEPKcmb
+   fun:_ZN8autofill12_GLOBAL__N_126AutofillQueryXmlParserTest13ParseQueryXMLERKSsb
+   fun:_ZN8autofill12_GLOBAL__N_149AutofillQueryXmlParserTest_ParseAutofillFlow_Test8TestBodyEv
+}
+{
    bug_253832
    Memcheck:Leak
    ...
@@ -7324,4 +7342,3 @@
    fun:_ZN3net4test26QuicNetworkTransactionTest32SendRequestAndExpectQuicResponseERKSs
    fun:_ZN3net4test53QuicNetworkTransactionTest_ZeroRTTWithNoHttpRace_Test8TestBodyEv
 }
-
