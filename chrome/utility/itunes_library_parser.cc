@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_galleries/fileapi/itunes_library_parser.h"
+#include "chrome/utility/itunes_library_parser.h"
 
 #include <string>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -133,17 +134,35 @@ bool GetTrackInfoFromDict(XmlReader* reader, TrackInfo* result) {
 
 }  // namespace
 
-ITunesLibraryParser::Track::Track(uint64 id, const base::FilePath& location)
-    : id(id),
-      location(location) {
-}
-
-bool ITunesLibraryParser::Track::operator<(const Track& other) const {
-  return id < other.id;
-}
-
 ITunesLibraryParser::ITunesLibraryParser() {}
 ITunesLibraryParser::~ITunesLibraryParser() {}
+
+// static
+std::string ITunesLibraryParser::ReadITunesLibraryXmlFile(
+    const base::PlatformFile file) {
+  std::string result;
+  if (file == base::kInvalidPlatformFileValue)
+    return result;
+
+  // A "reasonable" artificial limit.
+  // TODO(vandebo): Add a UMA to figure out what common values are.
+  const int64 kMaxLibraryFileSize = 150 * 1024 * 1024;
+  base::PlatformFileInfo file_info;
+  if (!base::GetPlatformFileInfo(file, &file_info) ||
+      file_info.size > kMaxLibraryFileSize) {
+    base::ClosePlatformFile(file);
+    return result;
+  }
+
+  result.resize(file_info.size);
+  int bytes_read =
+      base::ReadPlatformFile(file, 0, string_as_array(&result), file_info.size);
+  if (bytes_read != file_info.size)
+    result.clear();
+
+  base::ClosePlatformFile(file);
+  return result;
+}
 
 bool ITunesLibraryParser::Parse(const std::string& library_xml) {
   XmlReader reader;
@@ -194,7 +213,7 @@ bool ITunesLibraryParser::Parse(const std::string& library_xml) {
     if (GetTrackInfoFromDict(&reader, &track_info) &&
         id_valid &&
         id == track_info.id) {
-      Track track(track_info.id, track_info.location);
+      parser::Track track(track_info.id, track_info.location);
       library_[track_info.artist][track_info.album].insert(track);
       track_found = true;
     } else {

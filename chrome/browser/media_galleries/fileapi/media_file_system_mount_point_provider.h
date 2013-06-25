@@ -87,8 +87,10 @@ class MediaFileSystemMountPointProvider
 
   scoped_ptr<fileapi::AsyncFileUtil> native_media_file_util_;
   scoped_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
+#if defined(OS_WIN) || defined(OS_MACOSX)
   scoped_ptr<fileapi::AsyncFileUtil> picasa_file_util_;
   scoped_ptr<fileapi::AsyncFileUtil> itunes_file_util_;
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemMountPointProvider);
 };

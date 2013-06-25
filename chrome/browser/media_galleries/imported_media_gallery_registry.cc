@@ -14,6 +14,7 @@
 #include "webkit/browser/fileapi/isolated_context.h"
 
 using base::Bind;
+using fileapi::IsolatedContext;
 
 namespace chrome {
 
@@ -34,14 +35,16 @@ std::string ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!database_path.empty());
 
-  std::string fsid =
-      fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
+  std::string fsid;
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  fsid = IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
            fileapi::kFileSystemTypePicasa,
            extension_misc::kMediaFileSystemPathPart,
            base::FilePath());
 
   if (fsid.empty())
-    return "";
+    return fsid;
 
   picasa_fsids_.insert(fsid);
 
@@ -56,6 +59,7 @@ std::string ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
     DCHECK_EQ(picasa_database_path_.value(), database_path.value());
 #endif
   }
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   return fsid;
 }
@@ -65,14 +69,16 @@ std::string ImportedMediaGalleryRegistry::RegisterITunesFilesystemOnUIThread(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!library_xml_path.empty());
 
-  std::string fsid =
-      fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
+  std::string fsid;
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  fsid = IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
            fileapi::kFileSystemTypeItunes,
            extension_misc::kMediaFileSystemPathPart,
            base::FilePath());
 
   if (fsid.empty())
-    return std::string();
+    return fsid;
 
   itunes_fsids_.insert(fsid);
 
@@ -87,6 +93,7 @@ std::string ImportedMediaGalleryRegistry::RegisterITunesFilesystemOnUIThread(
     DCHECK_EQ(itunes_xml_library_path_.value(), library_xml_path.value());
 #endif
   }
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   return fsid;
 }
@@ -95,6 +102,7 @@ bool ImportedMediaGalleryRegistry::RevokeImportedFilesystemOnUIThread(
     const std::string& fsid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
   if (picasa_fsids_.erase(fsid)) {
     if (picasa_fsids_.empty()) {
       MediaFileSystemMountPointProvider::MediaTaskRunner()->PostTask(
@@ -102,7 +110,7 @@ bool ImportedMediaGalleryRegistry::RevokeImportedFilesystemOnUIThread(
           Bind(&ImportedMediaGalleryRegistry::RevokePicasaFileSystem,
                base::Unretained(this)));
     }
-    return fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+    return IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
   }
 
   if (itunes_fsids_.erase(fsid)) {
@@ -112,12 +120,14 @@ bool ImportedMediaGalleryRegistry::RevokeImportedFilesystemOnUIThread(
           Bind(&ImportedMediaGalleryRegistry::RevokeITunesFileSystem,
                base::Unretained(this)));
     }
-    return fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+    return IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
   }
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   return false;
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // static
 picasa::PicasaDataProvider*
 ImportedMediaGalleryRegistry::PicasaDataProvider() {
@@ -133,14 +143,18 @@ ImportedMediaGalleryRegistry::ITunesDataProvider() {
   DCHECK(GetInstance()->itunes_data_provider_);
   return GetInstance()->itunes_data_provider_.get();
 }
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 ImportedMediaGalleryRegistry::ImportedMediaGalleryRegistry() {}
 
 ImportedMediaGalleryRegistry::~ImportedMediaGalleryRegistry() {
+#if defined(OS_WIN) || defined(OS_MACOSX)
   DCHECK_EQ(0U, picasa_fsids_.size());
   DCHECK_EQ(0U, itunes_fsids_.size());
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
 void ImportedMediaGalleryRegistry::RegisterPicasaFileSystem(
     const base::FilePath& database_path) {
   DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
@@ -166,5 +180,6 @@ void ImportedMediaGalleryRegistry::RevokeITunesFileSystem() {
   DCHECK(itunes_data_provider_);
   itunes_data_provider_.reset();
 }
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 }  // namespace chrome

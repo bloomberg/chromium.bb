@@ -335,8 +335,6 @@
         'common/instant_restricted_id_cache.h',
         'common/instant_types.cc',
         'common/instant_types.h',
-        'common/itunes_xml_utils.cc',
-        'common/itunes_xml_utils.h',
         'common/json_schema/json_schema_constants.cc',
         'common/json_schema/json_schema_constants.h',
         'common/json_schema/json_schema_validator.cc',
@@ -476,6 +474,14 @@
             ['include', 'common/extensions/api/spellcheck/spellcheck_handler.h',],
             ['include', 'common/extensions/api/managed_mode_private/managed_mode_handler.cc'],
             ['include', 'common/extensions/api/managed_mode_private/managed_mode_handler.h'],
+          ],
+        }],
+        ['OS=="win" or OS=="mac"', {
+          'sources': [
+            'common/itunes_library.cc',
+            'common/itunes_library.h',
+            'common/itunes_xml_utils.cc',
+            'common/itunes_xml_utils.h',
           ],
         }],
         ['OS != "ios"', {

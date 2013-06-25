@@ -42,8 +42,10 @@ class ImportedMediaGalleryRegistry {
   bool RevokeImportedFilesystemOnUIThread(const std::string& fsid);
 
   // Should be called on the MediaTaskRunner thread only.
+#if defined(OS_WIN) || defined(OS_MACOSX)
   static picasa::PicasaDataProvider* PicasaDataProvider();
   static itunes::ITunesDataProvider* ITunesDataProvider();
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ImportedMediaGalleryRegistry>;
@@ -51,6 +53,7 @@ class ImportedMediaGalleryRegistry {
   ImportedMediaGalleryRegistry();
   virtual ~ImportedMediaGalleryRegistry();
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
   void RegisterPicasaFileSystem(const base::FilePath& database_path);
   void RevokePicasaFileSystem();
 
@@ -69,6 +72,7 @@ class ImportedMediaGalleryRegistry {
   base::FilePath picasa_database_path_;
   base::FilePath itunes_xml_library_path_;
 #endif
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   DISALLOW_COPY_AND_ASSIGN(ImportedMediaGalleryRegistry);
 };

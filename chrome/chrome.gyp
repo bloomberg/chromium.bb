@@ -304,6 +304,12 @@
                 '../build/linux/system.gyp:gtk',
               ],
             }],
+            ['OS=="win" or OS=="mac"', {
+              'sources': [
+                'utility/itunes_library_parser.cc',
+                'utility/itunes_library_parser.h',
+              ],
+            }],
             ['OS=="android"', {
               'sources!': [
                 'utility/profile_import_handler.cc',

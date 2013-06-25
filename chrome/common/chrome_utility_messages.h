@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/common/extensions/update_manifest.h"
+#include "chrome/common/itunes_library.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -52,6 +53,11 @@ IPC_STRUCT_TRAITS_BEGIN(safe_browsing::zip_analyzer::Results)
   IPC_STRUCT_TRAITS_MEMBER(success)
   IPC_STRUCT_TRAITS_MEMBER(has_executable)
   IPC_STRUCT_TRAITS_MEMBER(has_archive)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(itunes::parser::Track)
+  IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(location)
 IPC_STRUCT_TRAITS_END()
 
 //------------------------------------------------------------------------------
@@ -131,6 +137,13 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseITunesPrefXml,
                      std::string /* XML to parse */)
 #endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// Tell the utility process to parse the iTunes library XML file and
+// return the parse result as well as the iTunes library as an itunes::Library.
+IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseITunesLibraryXmlFile,
+                     IPC::PlatformFileForTransit /* XML file to parse */)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 //------------------------------------------------------------------------------
 // Utility process host messages:
@@ -233,3 +246,11 @@ IPC_MESSAGE_CONTROL1(
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_GotITunesDirectory,
                      base::FilePath /* Path to iTunes library */)
 #endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// Reply after parsing the iTunes library XML file with the parser result and
+// an itunes::Library data structure.
+IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GotITunesLibrary,
+                     bool /* Parser result */,
+                     itunes::parser::Library /* iTunes library */)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)

@@ -40,6 +40,10 @@
 #include "ui/gfx/gdi_util.h"
 #endif  // defined(OS_WIN)
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#include "chrome/utility/itunes_library_parser.h"
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
 #if defined(ENABLE_PRINTING)
 #include "chrome/common/child_process_logging.h"
 #include "printing/backend/print_backend.h"
@@ -116,6 +120,11 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseITunesPrefXml,
                         OnParseITunesPrefXml)
 #endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseITunesLibraryXmlFile,
+                        OnParseITunesLibraryXmlFile)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -494,5 +503,18 @@ void ChromeContentUtilityClient::OnParseITunesPrefXml(
   ReleaseProcessIfNeeded();
 }
 #endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+void ChromeContentUtilityClient::OnParseITunesLibraryXmlFile(
+    IPC::PlatformFileForTransit itunes_library_file) {
+  itunes::ITunesLibraryParser parser;
+  base::PlatformFile file =
+      IPC::PlatformFileForTransitToPlatformFile(itunes_library_file);
+  bool result = parser.Parse(
+      itunes::ITunesLibraryParser::ReadITunesLibraryXmlFile(file));
+  Send(new ChromeUtilityHostMsg_GotITunesLibrary(result, parser.library()));
+  ReleaseProcessIfNeeded();
+}
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 }  // namespace chrome

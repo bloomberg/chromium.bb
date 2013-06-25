@@ -14,11 +14,9 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
-#include "chrome/browser/media_galleries/fileapi/itunes_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_validator_factory.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
-#include "chrome/browser/media_galleries/fileapi/picasa/picasa_file_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/blob/local_file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
@@ -34,6 +32,11 @@
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#include "chrome/browser/media_galleries/fileapi/itunes_file_util.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/picasa_file_util.h"
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 using fileapi::FileSystemContext;
 using fileapi::FileSystemURL;
@@ -56,9 +59,13 @@ MediaFileSystemMountPointProvider::MediaFileSystemMountPointProvider(
       media_copy_or_move_file_validator_factory_(new MediaFileValidatorFactory),
       native_media_file_util_(new NativeMediaFileUtil()),
       device_media_async_file_util_(
-          DeviceMediaAsyncFileUtil::Create(profile_path_)),
+          DeviceMediaAsyncFileUtil::Create(profile_path_))
+#if defined(OS_WIN) || defined(OS_MACOSX)
+      ,
       picasa_file_util_(new picasa::PicasaFileUtil()),
-      itunes_file_util_(new itunes::ItunesFileUtil()) {
+      itunes_file_util_(new itunes::ItunesFileUtil())
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+{
 }
 
 MediaFileSystemMountPointProvider::~MediaFileSystemMountPointProvider() {
@@ -86,8 +93,10 @@ bool MediaFileSystemMountPointProvider::CanHandleType(
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
     case fileapi::kFileSystemTypeDeviceMedia:
+#if defined(OS_WIN) || defined(OS_MACOSX)
     case fileapi::kFileSystemTypePicasa:
     case fileapi::kFileSystemTypeItunes:
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
       return true;
     default:
       return false;
@@ -116,12 +125,14 @@ fileapi::AsyncFileUtil* MediaFileSystemMountPointProvider::GetAsyncFileUtil(
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
       return native_media_file_util_.get();
-    case fileapi::kFileSystemTypePicasa:
-      return picasa_file_util_.get();
     case fileapi::kFileSystemTypeDeviceMedia:
       return device_media_async_file_util_.get();
+#if defined(OS_WIN) || defined(OS_MACOSX)
     case fileapi::kFileSystemTypeItunes:
       return itunes_file_util_.get();
+    case fileapi::kFileSystemTypePicasa:
+      return picasa_file_util_.get();
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
     default:
       NOTREACHED();
   }

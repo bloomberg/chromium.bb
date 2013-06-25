@@ -84,6 +84,11 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnParseITunesPrefXml(const std::string& itunes_xml_data);
 #endif  // defined(OS_WIN)
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  void OnParseITunesLibraryXmlFile(
+      IPC::PlatformFileForTransit itunes_library_file);
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
   scoped_ptr<ProfileImportHandler> import_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentUtilityClient);

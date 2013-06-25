@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "chrome/browser/media_galleries/fileapi/itunes_library_parser.h"
+#include "chrome/common/itunes_library.h"
+#include "chrome/utility/itunes_library_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define SIMPLE_HEADER()         \
@@ -30,18 +31,16 @@ namespace itunes {
 
 namespace {
 
-void CompareTrack(const ITunesLibraryParser::Track& a,
-                  const ITunesLibraryParser::Track& b) {
+void CompareTrack(const parser::Track& a, const parser::Track& b) {
   EXPECT_EQ(a.id, b.id);
   EXPECT_EQ(a.location, b.location);
 }
 
-void CompareAlbum(const ITunesLibraryParser::Album& a,
-                  const ITunesLibraryParser::Album& b) {
+void CompareAlbum(const parser::Album& a, const parser::Album& b) {
   EXPECT_EQ(a.size(), b.size());
 
-  ITunesLibraryParser::Album::const_iterator a_it;
-  ITunesLibraryParser::Album::const_iterator b_it;
+  parser::Album::const_iterator a_it;
+  parser::Album::const_iterator b_it;
   for (a_it = a.begin(), b_it = b.begin();
        a_it != a.end() && b_it != b.end();
        ++a_it, ++b_it) {
@@ -49,12 +48,11 @@ void CompareAlbum(const ITunesLibraryParser::Album& a,
   }
 }
 
-void CompareAlbums(const ITunesLibraryParser::Albums& a,
-                   const ITunesLibraryParser::Albums& b) {
+void CompareAlbums(const parser::Albums& a, const parser::Albums& b) {
   EXPECT_EQ(a.size(), b.size());
 
-  ITunesLibraryParser::Albums::const_iterator a_it;
-  ITunesLibraryParser::Albums::const_iterator b_it;
+  parser::Albums::const_iterator a_it;
+  parser::Albums::const_iterator b_it;
   for (a_it = a.begin(), b_it = b.begin();
        a_it != a.end() && b_it != b.end();
        ++a_it, ++b_it) {
@@ -63,12 +61,11 @@ void CompareAlbums(const ITunesLibraryParser::Albums& a,
   }
 }
 
-void CompareLibrary(const ITunesLibraryParser::Library& a,
-                    const ITunesLibraryParser::Library& b) {
+void CompareLibrary(const parser::Library& a, const parser::Library& b) {
   EXPECT_EQ(a.size(), b.size());
 
-  ITunesLibraryParser::Library::const_iterator a_it;
-  ITunesLibraryParser::Library::const_iterator b_it;
+  parser::Library::const_iterator a_it;
+  parser::Library::const_iterator b_it;
   for (a_it = a.begin(), b_it = b.begin();
        a_it != a.end() && b_it != b.end();
        ++a_it, ++b_it) {
@@ -93,13 +90,12 @@ class ITunesLibraryParserTest : public testing::Test {
 
   void AddExpectedTrack(uint32 id, const std::string& location,
                         const std::string& artist, const std::string& album) {
-    ITunesLibraryParser::Track track(id,
-                                     base::FilePath::FromUTF8Unsafe(location));
+    parser::Track track(id, base::FilePath::FromUTF8Unsafe(location));
     expected_library_[artist][album].insert(track);
   }
 
  private:
-  ITunesLibraryParser::Library expected_library_;
+  parser::Library expected_library_;
 
   DISALLOW_COPY_AND_ASSIGN(ITunesLibraryParserTest);
 };
