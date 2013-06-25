@@ -96,7 +96,7 @@ PassRefPtr<CSSValueList> CSSValueList::copy()
     return newList.release();
 }
 
-String CSSValueList::customCssText() const
+String CSSValueList::customCssText(CssTextFormattingFlags formattingFlag) const
 {
     StringBuilder result;
     String separator;
@@ -118,7 +118,10 @@ String CSSValueList::customCssText() const
     for (unsigned i = 0; i < size; i++) {
         if (!result.isEmpty())
             result.append(separator);
-        result.append(m_values[i]->cssText());
+        if (formattingFlag == AlwaysQuoteCSSString && m_values[i]->isPrimitiveValue())
+            result.append(toCSSPrimitiveValue(m_values[i].get())->customCssText(AlwaysQuoteCSSString));
+        else
+            result.append(m_values[i]->cssText());
     }
 
     return result.toString();

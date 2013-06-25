@@ -859,7 +859,7 @@ ALWAYS_INLINE static String formatNumber(double number, const char (&characters)
     return formatNumber(number, characters, characterCount - 1);
 }
 
-String CSSPrimitiveValue::customCssText() const
+String CSSPrimitiveValue::customCssText(CssTextFormattingFlags formattingFlag) const
 {
     // FIXME: return the original value instead of a generated one (e.g. color
     // name if it was specified) - check what spec says about this
@@ -948,7 +948,7 @@ String CSSPrimitiveValue::customCssText() const
             text = m_value.string;
             break;
         case CSS_STRING:
-            text = quoteCSSStringIfNeeded(m_value.string);
+            text = formattingFlag == AlwaysQuoteCSSString ? quoteCSSString(m_value.string) : quoteCSSStringIfNeeded(m_value.string);
             break;
         case CSS_URI:
             text = "url(" + quoteCSSURLIfNeeded(m_value.string) + ")";

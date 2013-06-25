@@ -86,6 +86,10 @@ String StylePropertySerializer::asText() const
         case CSSPropertyBackgroundRepeatY:
             repeatYPropertyIndex = n;
             continue;
+        case CSSPropertyContent:
+            if (property.value()->isValueList())
+                value = toCSSValueList(property.value())->customCssText(AlwaysQuoteCSSString);
+            break;
         case CSSPropertyBorderTopWidth:
         case CSSPropertyBorderRightWidth:
         case CSSPropertyBorderBottomWidth:
@@ -215,8 +219,10 @@ String StylePropertySerializer::asText() const
         }
 
         if (!value.isNull()) {
-            propertyID = shorthandPropertyID;
-            shorthandPropertyUsed.set(shortPropertyIndex);
+            if (shorthandPropertyID) {
+                propertyID = shorthandPropertyID;
+                shorthandPropertyUsed.set(shortPropertyIndex);
+            }
         } else
             value = property.value()->cssText();
 
