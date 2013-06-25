@@ -84,47 +84,48 @@ const float kTextBaselineShift = -1.0;
                      font:(NSFont*)font
              messageColor:(NSColor*)messageColor
                 linkColor:(NSColor*)linkColor {
+  NSMutableString* finalMessage = [NSMutableString stringWithString:message];
+  [finalMessage insertString:link atIndex:linkOffset];
+  [self setMessage:finalMessage withFont:font messageColor:messageColor];
+  if ([link length] != 0) {
+    [self addLinkRange:NSMakeRange(linkOffset, [link length])
+              withName:@""
+             linkColor:linkColor];
+  }
+}
+
+- (void)setMessage:(NSString*)message
+          withFont:(NSFont*)font
+      messageColor:(NSColor*)messageColor {
   // Create an attributes dictionary for the message and link.
-  NSMutableDictionary* attributes = [NSMutableDictionary dictionary];
-  [attributes setObject:messageColor
-                 forKey:NSForegroundColorAttributeName];
-  [attributes setObject:[NSCursor arrowCursor]
-                 forKey:NSCursorAttributeName];
-  [attributes setObject:font
-                 forKey:NSFontAttributeName];
-  [attributes setObject:[NSNumber numberWithFloat:kTextBaselineShift]
-                 forKey:NSBaselineOffsetAttributeName];
+  NSDictionary* attributes = @{
+    NSForegroundColorAttributeName : messageColor,
+    NSCursorAttributeName : [NSCursor arrowCursor],
+    NSFontAttributeName : font,
+    NSBaselineOffsetAttributeName : @(kTextBaselineShift)
+  };
 
   // Create the attributed string for the message.
-  base::scoped_nsobject<NSMutableAttributedString> attributedMessage(
+  base::scoped_nsobject<NSAttributedString> attributedMessage(
       [[NSMutableAttributedString alloc] initWithString:message
                                              attributes:attributes]);
 
-  if ([link length] != 0) {
-    // Add additional attributes to style the link text appropriately as
-    // well as linkify it.
-    [attributes setObject:linkColor
-                   forKey:NSForegroundColorAttributeName];
-    [attributes setObject:[NSNumber numberWithBool:YES]
-                   forKey:NSUnderlineStyleAttributeName];
-    [attributes setObject:[NSCursor pointingHandCursor]
-                   forKey:NSCursorAttributeName];
-    [attributes setObject:[NSNumber numberWithInt:NSSingleUnderlineStyle]
-                   forKey:NSUnderlineStyleAttributeName];
-    [attributes setObject:[NSString string]  // dummy value
-                   forKey:NSLinkAttributeName];
-
-    // Insert the link into the message at the appropriate offset.
-    base::scoped_nsobject<NSAttributedString> attributedLink(
-        [[NSAttributedString alloc] initWithString:link attributes:attributes]);
-    [attributedMessage.get() insertAttributedString:attributedLink.get()
-                                            atIndex:linkOffset];
-    // Ensure the TextView doesn't override the link style.
-    [self setLinkTextAttributes:attributes];
-  }
-
   // Update the text view with the new text.
   [[self textStorage] setAttributedString:attributedMessage];
+}
+
+- (void)addLinkRange:(NSRange)range
+            withName:(id)name
+           linkColor:(NSColor*)linkColor {
+  NSDictionary* attributes = @{
+    NSForegroundColorAttributeName : linkColor,
+    NSUnderlineStyleAttributeName : @(YES),
+    NSCursorAttributeName : [NSCursor pointingHandCursor],
+    NSLinkAttributeName : name,
+    NSUnderlineStyleAttributeName : @(NSSingleUnderlineStyle)
+  };
+
+  [[self textStorage] addAttributes:attributes range:range];
 }
 
 @end
