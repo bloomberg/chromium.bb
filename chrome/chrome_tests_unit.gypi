@@ -950,6 +950,7 @@
         'browser/media_galleries/fileapi/native_media_file_util_unittest.cc',
         'browser/media_galleries/linux/mtp_device_object_enumerator_unittest.cc',
         'browser/media_galleries/mac/mtp_device_delegate_impl_mac_unittest.mm',
+        'browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc',
         'browser/media_galleries/media_file_system_registry_unittest.cc',
         'browser/media_galleries/media_galleries_dialog_controller_mock.cc',
         'browser/media_galleries/media_galleries_dialog_controller_mock.h',

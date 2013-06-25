@@ -54,12 +54,6 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
-#if defined(OS_WIN)
-#include "chrome/browser/storage_monitor/test_portable_device_watcher_win.h"
-#include "chrome/browser/storage_monitor/test_storage_monitor_win.h"
-#include "chrome/browser/storage_monitor/test_volume_mount_watcher_win.h"
-#endif
-
 using content::BrowserThread;
 
 namespace chrome {
@@ -384,12 +378,7 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 
-// TODO(gbillock): Eliminate windows-specific code from this test.
-#if defined(OS_WIN)
-  scoped_ptr<test::TestStorageMonitorWin> monitor_;
-#else
   scoped_ptr<chrome::test::TestStorageMonitor> monitor_;
-#endif
 
   MockProfileSharedRenderProcessHostFactory rph_factory_;
 
@@ -758,18 +747,8 @@ size_t MediaFileSystemRegistryTest::GetExtensionGalleriesHostCount(
 
 void MediaFileSystemRegistryTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
-#if defined(OS_WIN)
-  test::TestPortableDeviceWatcherWin* portable_device_watcher =
-      new test::TestPortableDeviceWatcherWin;
-  test::TestVolumeMountWatcherWin* mount_watcher =
-      new test::TestVolumeMountWatcherWin;
-  portable_device_watcher->set_use_dummy_mtp_storage_info(true);
-  monitor_.reset(new test::TestStorageMonitorWin(
-      mount_watcher, portable_device_watcher));
-#else
   monitor_.reset(new test::TestStorageMonitor());
   monitor_->MarkInitialized();
-#endif
   base::RunLoop runloop;
   monitor_->EnsureInitialized(runloop.QuitClosure());
   runloop.Run();
@@ -801,9 +780,6 @@ void MediaFileSystemRegistryTest::TearDown() {
   test_user_manager_.reset();
 #endif
 
-#if defined(OS_WIN)
-  monitor_.reset();
-#endif
   ChromeRenderViewHostTestHarness::TearDown();
 }
 
@@ -925,21 +901,13 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameDefault) {
   }
 }
 
-// TODO(gbillock): Put the platform-specific parts of this test in tests
-// for those classes, not here. This test, internally, ends up creating an
-// MTP delegate. (Probably ./win/mtp_device_delegate_impl_win_unittest)
-#if !defined(OS_MACOSX)
+// TODO(gbillock): Move the remaining test into the linux directory.
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
 TEST_F(MediaFileSystemRegistryTest, GalleryMTP) {
   FSInfoMap galleries_info;
   InitForGalleriesInfoTest(&galleries_info);
 
-#if defined(OS_WIN)
-  base::FilePath location(
-      PortableDeviceWatcherWin::GetStoragePathFromStorageId(
-          test::TestPortableDeviceWatcherWin::kStorageUniqueIdA));
-#else
   base::FilePath location(FILE_PATH_LITERAL("/mtp_bogus"));
-#endif
   AttachDevice(StorageInfo::MTP_OR_PTP, "mtp_fake_id", location);
   CheckNewGalleryInfo(GetProfileState(0U), galleries_info, location,
                       true /*removable*/, true /* media device */);
