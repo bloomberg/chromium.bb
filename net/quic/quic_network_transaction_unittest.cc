@@ -579,7 +579,7 @@ TEST_F(QuicNetworkTransactionTest, DontUseAlternateProtocolForQuicHttps) {
   SendRequestAndExpectHttpResponse("hello!");
 }
 
-TEST_F(QuicNetworkTransactionTest, ZeroRTT) {
+TEST_F(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
   HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
 
   scoped_ptr<QuicEncryptedPacket> req(
@@ -606,10 +606,51 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTT) {
 
   socket_factory_.AddSocketDataProvider(&quic_data);
 
-  // TODO(rch): Ideally, we would not need this, but since we have to do a DNS
-  // lookup, it's not synchronous.  Perhaps we can configure the HostResolver
-  // to return immediately.
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
   AddHangingNonAlternateProtocolSocketData();
+
+  CreateSession();
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+  SendRequestAndExpectQuicResponse("hello!");
+}
+
+TEST_F(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
+  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+
+  scoped_ptr<QuicEncryptedPacket> req(
+      ConstructDataPacket(1, 3, true, true, 0, GetRequestString("GET", "/")));
+  scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(1, 0));
+
+  MockWrite quic_writes[] = {
+    MockWrite(SYNCHRONOUS, req->data(), req->length()),
+    MockWrite(SYNCHRONOUS, ack->data(), ack->length()),
+  };
+
+  scoped_ptr<QuicEncryptedPacket> resp(
+      ConstructDataPacket(
+          1, 3, false, true, 0, GetResponseString("200 OK", "hello!")));
+  MockRead quic_reads[] = {
+    MockRead(SYNCHRONOUS, resp->data(), resp->length()),
+    MockRead(ASYNC, OK),  // EOF
+  };
+
+  DelayedSocketData quic_data(
+      1,  // wait for one write to finish before reading.
+      quic_reads, arraysize(quic_reads),
+      quic_writes, arraysize(quic_writes));
+
+  socket_factory_.AddSocketDataProvider(&quic_data);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("www.google.com", "192.168.0.1", "");
+  HostResolver::RequestInfo info(HostPortPair("www.google.com", 80));
+  AddressList address;
+  host_resolver_.Resolve(info, &address, CompletionCallback(), NULL,
+                         net_log_.bound());
 
   CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
