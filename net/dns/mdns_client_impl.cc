@@ -501,44 +501,21 @@ MDnsTransactionImpl::~MDnsTransactionImpl() {
 bool MDnsTransactionImpl::Start() {
   DCHECK(!started_);
   started_ = true;
-  std::vector<const RecordParsed*> records;
+
   base::WeakPtr<MDnsTransactionImpl> weak_this = AsWeakPtr();
-
   if (flags_ & MDnsTransaction::QUERY_CACHE) {
-    if (client_->core()) {
-      client_->core()->QueryCache(rrtype_, name_, &records);
-      for (std::vector<const RecordParsed*>::iterator i = records.begin();
-           i != records.end() && weak_this; ++i) {
-        weak_this->TriggerCallback(MDnsTransaction::RESULT_RECORD,
-                                   records.front());
-      }
-    }
+    ServeRecordsFromCache();
+
+    if (!weak_this || !is_active()) return true;
   }
 
-  if (!weak_this) return true;
-
-  if (is_active() && (flags_ & MDnsTransaction::QUERY_NETWORK)) {
-    listener_ = client_->CreateListener(rrtype_, name_, this);
-    if (!listener_->Start()) return false;
-
-    DCHECK(client_->core());
-    if (!client_->core()->SendQuery(rrtype_, name_))
-      return false;
-
-    timeout_.Reset(base::Bind(&MDnsTransactionImpl::SignalTransactionOver,
-                              weak_this));
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        timeout_.callback(),
-        base::TimeDelta::FromSeconds(MDnsTransactionTimeoutSeconds));
-
-    return listener_.get() != NULL;
-  } else {
-    // If this is a cache only query, signal that the transaction is over
-    // immediately.
-    SignalTransactionOver();
+  if (flags_ & MDnsTransaction::QUERY_NETWORK) {
+    return QueryAndListen();
   }
 
+  // If this is a cache only query, signal that the transaction is over
+  // immediately.
+  SignalTransactionOver();
   return true;
 }
 
@@ -597,6 +574,39 @@ void MDnsTransactionImpl::SignalTransactionOver() {
   if (weak_this) {
     weak_this->Reset();
   }
+}
+
+void MDnsTransactionImpl::ServeRecordsFromCache() {
+  std::vector<const RecordParsed*> records;
+  base::WeakPtr<MDnsTransactionImpl> weak_this = AsWeakPtr();
+
+  if (client_->core()) {
+    client_->core()->QueryCache(rrtype_, name_, &records);
+    for (std::vector<const RecordParsed*>::iterator i = records.begin();
+         i != records.end() && weak_this; ++i) {
+      weak_this->TriggerCallback(MDnsTransaction::RESULT_RECORD,
+                                 records.front());
+    }
+  }
+}
+
+bool MDnsTransactionImpl::QueryAndListen() {
+  listener_ = client_->CreateListener(rrtype_, name_, this);
+  if (!listener_->Start())
+    return false;
+
+  DCHECK(client_->core());
+  if (!client_->core()->SendQuery(rrtype_, name_))
+    return false;
+
+  timeout_.Reset(base::Bind(&MDnsTransactionImpl::SignalTransactionOver,
+                            AsWeakPtr()));
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      timeout_.callback(),
+      base::TimeDelta::FromSeconds(MDnsTransactionTimeoutSeconds));
+
+  return true;
 }
 
 void MDnsTransactionImpl::OnNsecRecord(const std::string& name, unsigned type) {

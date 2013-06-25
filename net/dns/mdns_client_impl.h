@@ -269,6 +269,15 @@ class MDnsTransactionImpl : public base::SupportsWeakPtr<MDnsTransactionImpl>,
   // Signal the transactionis over and release all related resources.
   void SignalTransactionOver();
 
+  // Reads records from the cache and calls the callback for every
+  // record read.
+  void ServeRecordsFromCache();
+
+  // Send a query to the network and set up a timeout to time out the
+  // transaction. Returns false if it fails to start listening on the network
+  // or if it fails to send a query.
+  bool QueryAndListen();
+
   uint16 rrtype_;
   std::string name_;
   MDnsTransaction::ResultCallback callback_;
