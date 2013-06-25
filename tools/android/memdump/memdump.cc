@@ -48,8 +48,10 @@ struct MemoryMap {
   uint start_address;
   uint end_address;
   int private_count;
-  int app_shared_count;
   int other_shared_count;
+  // app_shared_counts[i] contains the number of pages mapped in i+2 processes
+  // (only among the processes that are being analyzed).
+  std::vector<int> app_shared_counts;
   std::vector<PageInfo> committed_pages;
 };
 
@@ -204,7 +206,7 @@ void FillPFNMaps(const std::vector<ProcessMemory>& processes_memory,
   }
 }
 
-// Sets the private_count/app_shared_count/other_shared_count fields of the
+// Sets the private_count/app_shared_counts/other_shared_count fields of the
 // provided memory maps for each process.
 void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
   std::vector<PFNMap> pfn_maps(processes_memory->size());
@@ -220,6 +222,8 @@ void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
     for (std::vector<MemoryMap>::iterator it = memory_maps->begin();
          it != memory_maps->end(); ++it) {
       MemoryMap* const memory_map = &*it;
+      const size_t processes_count = processes_memory->size();
+      memory_map->app_shared_counts.resize(processes_count - 1, 0);
       const std::vector<PageInfo>& pages = memory_map->committed_pages;
       for (std::vector<PageInfo>::const_iterator it = pages.begin();
            it != pages.end(); ++it) {
@@ -240,7 +244,7 @@ void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
         // See if the current physical page is also mapped in the other
         // processes that are being analyzed.
         int times_mapped = 0;
-        bool mapped_in_multiple_processes = false;
+        int mapped_in_processes_count = 0;
         for (std::vector<PFNMap>::const_iterator it = pfn_maps.begin();
              it != pfn_maps.end(); ++it) {
           const PFNMap& pfn_map = *it;
@@ -248,15 +252,15 @@ void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
               page_frame_number);
           if (found_it == pfn_map.end())
             continue;
-          if (times_mapped)
-            mapped_in_multiple_processes = true;
+          ++mapped_in_processes_count;
           times_mapped += found_it->second;
         }
         if (times_mapped == page_info.times_mapped) {
           // The physical page is only mapped in the processes that are being
           // analyzed.
-          if (mapped_in_multiple_processes) {
-            ++memory_map->app_shared_count;
+          if (mapped_in_processes_count > 1) {
+            // The physical page is mapped in multiple processes.
+            ++memory_map->app_shared_counts[mapped_in_processes_count - 2];
           } else {
             // The physical page is mapped multiple times in the same process.
             ++memory_map->private_count;
@@ -269,9 +273,22 @@ void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
   }
 }
 
+void AppendAppSharedField(const std::vector<int>& app_shared_counts,
+                          std::string* out) {
+  out->append("[");
+  for (std::vector<int>::const_iterator it = app_shared_counts.begin();
+       it != app_shared_counts.end(); ++it) {
+    out->append(base::IntToString(*it * PAGE_SIZE));
+    if (it + 1 != app_shared_counts.end())
+      out->append(",");
+  }
+  out->append("]");
+}
+
 void DumpProcessesMemoryMaps(
     const std::vector<ProcessMemory>& processes_memory) {
   std::string buf;
+  std::string app_shared_buf;
   for (std::vector<ProcessMemory>::const_iterator it = processes_memory.begin();
        it != processes_memory.end(); ++it) {
     const ProcessMemory& process_memory = *it;
@@ -280,12 +297,14 @@ void DumpProcessesMemoryMaps(
     for (std::vector<MemoryMap>::const_iterator it = memory_maps.begin();
          it != memory_maps.end(); ++it) {
       const MemoryMap& memory_map = *it;
+      app_shared_buf.clear();
+      AppendAppSharedField(memory_map.app_shared_counts, &app_shared_buf);
       base::SStringPrintf(
-          &buf, "%x-%x %s private=%d shared_app=%d shared_other=%d %s\n",
+          &buf, "%x-%x %s private=%d shared_app=%s shared_other=%d %s\n",
           memory_map.start_address,
           memory_map.end_address, memory_map.flags.c_str(),
           memory_map.private_count * PAGE_SIZE,
-          memory_map.app_shared_count * PAGE_SIZE,
+          app_shared_buf.c_str(),
           memory_map.other_shared_count * PAGE_SIZE,
           memory_map.name.c_str());
       std::cout << buf;
@@ -295,26 +314,32 @@ void DumpProcessesMemoryMaps(
 
 void DumpProcessesMemoryMapsInShortFormat(
     const std::vector<ProcessMemory>& processes_memory) {
-  std::string buf;
   const int KB_PER_PAGE = PAGE_SIZE >> 10;
+  std::vector<int> totals_app_shared(processes_memory.size());
+  std::string buf;
   std::cout << "pid\tprivate\t\tshared_app\tshared_other (KB)\n";
   for (std::vector<ProcessMemory>::const_iterator it = processes_memory.begin();
        it != processes_memory.end(); ++it) {
     const ProcessMemory& process_memory = *it;
-    long total_private = 0, total_app_shared = 0, total_other_shared = 0;
+    std::fill(totals_app_shared.begin(), totals_app_shared.end(), 0);
+    int total_private = 0, total_other_shared = 0;
     const std::vector<MemoryMap>& memory_maps = process_memory.memory_maps;
     for (std::vector<MemoryMap>::const_iterator it = memory_maps.begin();
          it != memory_maps.end(); ++it) {
       const MemoryMap& memory_map = *it;
       total_private += memory_map.private_count;
-      total_app_shared += memory_map.app_shared_count;
+      for (size_t i = 0; i < memory_map.app_shared_counts.size(); ++i)
+        totals_app_shared[i] += memory_map.app_shared_counts[i];
       total_other_shared += memory_map.other_shared_count;
     }
+    double total_app_shared = 0;
+    for (size_t i = 0; i < totals_app_shared.size(); ++i)
+      total_app_shared += static_cast<double>(totals_app_shared[i]) / (i + 2);
     base::SStringPrintf(
         &buf, "%d\t%d\t\t%d\t\t%d\n",
         process_memory.pid,
         total_private * KB_PER_PAGE,
-        total_app_shared * KB_PER_PAGE,
+        static_cast<int>(total_app_shared) * KB_PER_PAGE,
         total_other_shared * KB_PER_PAGE);
     std::cout << buf;
   }
@@ -371,15 +396,6 @@ int main(int argc, char** argv) {
     if (!base::StringToInt(*ptr, &pid))
       return EXIT_FAILURE;
     pids.push_back(pid);
-  }
-
-  // Currently memdump does not count pages shared by more than
-  // 2 browser and render processes correctly.
-  // Bail out early in -a mode if more than 2 pids are given to avoid
-  // confusion.
-  if (short_output && pids.size() > 2) {
-    LOG(ERROR) << "Sorry, '-a' cannot be used for more than 2 PIDs.";
-    return EXIT_FAILURE;
   }
 
   std::vector<ProcessMemory> processes_memory(pids.size());

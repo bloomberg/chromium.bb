@@ -52,7 +52,7 @@ def _CollectMemoryStats(memdump, region_filters):
         if not region_filter in mem_usage_for_regions:
           mem_usage_for_regions[region_filter] = {
               'private': 0,
-              'shared_app': 0,
+              'shared_app': 0.0,
               'shared_other': 0,
           }
     for matched_region in matched_regions:
@@ -60,7 +60,13 @@ def _CollectMemoryStats(memdump, region_filters):
       for key in mem_usage:
         for token in line.split(' '):
           if key in token:
-            mem_usage[key] += int(token.split('=')[1])
+            field = token.split('=')[1]
+            if key != 'shared_app':
+              mem_usage[key] += int(field)
+            else:  # shared_app=[\d,\d...]
+              array = eval(field)
+              for i in xrange(len(array)):
+                mem_usage[key] += float(array[i]) / (i + 2)
             break
   return processes
 
@@ -81,17 +87,12 @@ def _DumpCSV(processes_stats):
         continue
       if not v in total_map:
         total_map[v] = 0
-      total_map[v] += process[v]['private'] + (
-          process[v]['shared_app'] / len(processes_stats))
+      total_map[v] += process[v]['private'] + process[v]['shared_app']
       print ',' + k + ',' + _ConvertMemoryField(process[v]['private']) + ',' + (
           _ConvertMemoryField(process[v]['shared_app']) + ',' + (
           _ConvertMemoryField(process[v]['shared_other'])) + ',')
     print ''
 
-  if len(processes_stats) > 2:
-    print >>sys.stderr, (
-        'Total stats are not supported yet with more than two processes.')
-    return
   for (k, v) in _ENTRIES:
     if not v in total_map:
       print ',' + k + ',0,0'
