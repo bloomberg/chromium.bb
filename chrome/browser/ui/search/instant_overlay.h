@@ -81,14 +81,6 @@ class InstantOverlay : public InstantPage,
     return static_cast<InstantController*>(delegate());
   }
 
-  // Overridden from InstantPage:
-  virtual bool ShouldProcessRenderViewCreated() OVERRIDE;
-  virtual bool ShouldProcessRenderViewGone() OVERRIDE;
-  virtual bool ShouldProcessAboutToNavigateMainFrame() OVERRIDE;
-  virtual bool ShouldProcessSetSuggestions() OVERRIDE;
-  virtual bool ShouldProcessShowInstantOverlay() OVERRIDE;
-  virtual bool ShouldProcessNavigateToURL() OVERRIDE;
-
   // Overriden from InstantLoader::Delegate:
   virtual void OnSwappedContents() OVERRIDE;
   virtual void OnFocus() OVERRIDE;

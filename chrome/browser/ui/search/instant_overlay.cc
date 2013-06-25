@@ -80,30 +80,6 @@ void InstantOverlay::Update(const string16& text,
   sender()->Update(text, selection_start, selection_end, verbatim);
 }
 
-bool InstantOverlay::ShouldProcessRenderViewCreated() {
-  return true;
-}
-
-bool InstantOverlay::ShouldProcessRenderViewGone() {
-  return true;
-}
-
-bool InstantOverlay::ShouldProcessAboutToNavigateMainFrame() {
-  return true;
-}
-
-bool InstantOverlay::ShouldProcessSetSuggestions() {
-  return true;
-}
-
-bool InstantOverlay::ShouldProcessShowInstantOverlay() {
-  return true;
-}
-
-bool InstantOverlay::ShouldProcessNavigateToURL() {
-  return true;
-}
-
 void InstantOverlay::OnSwappedContents() {
   contents()->RemoveUserData(&kUserDataKey);
   SetContents(loader_.contents());
