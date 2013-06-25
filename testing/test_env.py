@@ -48,7 +48,8 @@ def enable_sandbox_if_required(env, verbose=False):
       print '  %s' % CHROME_SANDBOX_ENV
     # The variable should be removed from the environment, making
     # the variable empty silently disables the sandbox.
-    env.pop(CHROME_SANDBOX_ENV)
+    if env.get(CHROME_SANDBOX_ENV):
+      env.pop(CHROME_SANDBOX_ENV)
 
 
 def fix_python_path(cmd):
