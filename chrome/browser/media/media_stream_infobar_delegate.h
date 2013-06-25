@@ -32,6 +32,7 @@ class MediaStreamInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   friend class WebrtcBrowserTest;
+  friend class WebrtcVideoQualityBrowserTest;
 
   // MediaStreamInfoBarDelegate takes the ownership of the |controller|.
   MediaStreamInfoBarDelegate(
