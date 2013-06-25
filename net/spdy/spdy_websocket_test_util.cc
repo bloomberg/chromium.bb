@@ -19,11 +19,17 @@ static const int kDefaultExtraHeaderCount = 0;
 SpdyWebSocketTestUtil::SpdyWebSocketTestUtil(
     NextProto protocol) : spdy_util_(protocol) {}
 
+std::string SpdyWebSocketTestUtil::GetHeader(const SpdyHeaderBlock& headers,
+                                             const std::string& key) const {
+  SpdyHeaderBlock::const_iterator it = headers.find(GetHeaderKey(key));
+  return (it == headers.end()) ? "" : it->second;
+}
+
 void SpdyWebSocketTestUtil::SetHeader(
     const std::string& key,
     const std::string& value,
     SpdyHeaderBlock* headers) const {
-  (*headers)[(spdy_util_.is_spdy2() ? "" : ":") + key] = value;
+  (*headers)[GetHeaderKey(key)] = value;
 }
 
 SpdyFrame* SpdyWebSocketTestUtil::ConstructSpdyWebSocketSynStream(
@@ -144,6 +150,15 @@ SpdyFrame* SpdyWebSocketTestUtil::ConstructSpdyWebSocketDataFrame(
 SpdyFrame* SpdyWebSocketTestUtil::ConstructSpdySettings(
     const SettingsMap& settings) const {
   return spdy_util_.ConstructSpdySettings(settings);
+}
+
+SpdyMajorVersion SpdyWebSocketTestUtil::spdy_version() const {
+  return spdy_util_.spdy_version();
+}
+
+std::string SpdyWebSocketTestUtil::GetHeaderKey(
+    const std::string& key) const {
+  return (spdy_util_.is_spdy2() ? "" : ":") + key;
 }
 
 }  // namespace net

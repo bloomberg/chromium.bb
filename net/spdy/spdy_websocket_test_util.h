@@ -6,6 +6,7 @@
 #define NET_SPDY_SPDY_WEBSOCKET_TEST_UTIL_H_
 
 #include "net/base/request_priority.h"
+#include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_test_util_common.h"
 
@@ -15,8 +16,13 @@ class SpdyWebSocketTestUtil {
  public:
   explicit SpdyWebSocketTestUtil(NextProto protocol);
 
-  // Adds the given key/value pair to |headers|, tweaking it depending
-  // on SPDY version.
+  // Returns the value corresponding to the given key (passed through
+  // GetHeaderKey()), or the empty string if none exists.
+  std::string GetHeader(const SpdyHeaderBlock& headers,
+                        const std::string& key) const;
+
+  // Adds the given key/value pair to |headers|, passing the key
+  // through GetHeaderKey().
   void SetHeader(const std::string& key,
                  const std::string& value,
                  SpdyHeaderBlock* headers) const;
@@ -57,8 +63,12 @@ class SpdyWebSocketTestUtil {
 
   // Forwards to |spdy_util_|.
   SpdyFrame* ConstructSpdySettings(const SettingsMap& settings) const;
+  SpdyMajorVersion spdy_version() const;
 
  private:
+  // Modify the header key based on the SPDY version and return it.
+  std::string GetHeaderKey(const std::string& key) const;
+
   SpdyTestUtil spdy_util_;
 };
 
