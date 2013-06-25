@@ -27,7 +27,7 @@ int64_t strtoull(const char* nptr, char** endptr, int base) {
 
 Error MountHtml5Fs::Access(const Path& path, int a_mode) {
   // a_mode is unused, since all files are readable, writable and executable.
-  MountNode* node;
+  ScopedMountNode node;
   Error error = Open(path, O_RDONLY, &node);
   if (error)
     return error;
@@ -36,9 +36,10 @@ Error MountHtml5Fs::Access(const Path& path, int a_mode) {
   return 0;
 }
 
-Error MountHtml5Fs::Open(const Path& path, int mode, MountNode** out_node) {
-  *out_node = NULL;
-
+Error MountHtml5Fs::Open(const Path& path,
+                         int mode,
+                         ScopedMountNode* out_node) {
+  out_node->reset(NULL);
   Error error = BlockUntilFilesystemOpen();
   if (error)
     return error;
@@ -48,12 +49,10 @@ Error MountHtml5Fs::Open(const Path& path, int mode, MountNode** out_node) {
   if (!fileref)
     return ENOENT;
 
-  MountNodeHtml5Fs* node = new MountNodeHtml5Fs(this, fileref);
+  ScopedMountNode node(new MountNodeHtml5Fs(this, fileref));
   error = node->Init(mode);
-  if (error) {
-    node->Release();
+  if (error)
     return error;
-  }
 
   *out_node = node;
   return 0;
@@ -190,3 +189,4 @@ void MountHtml5Fs::FilesystemOpenCallback(int32_t result) {
   filesystem_open_error_ = PPErrorToErrno(result);
   pthread_cond_signal(&filesystem_open_cond_);
 }
+

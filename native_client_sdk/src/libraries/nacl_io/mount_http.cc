@@ -22,7 +22,6 @@
 #include "nacl_io/mount_node_http.h"
 #include "nacl_io/osinttypes.h"
 #include "nacl_io/osunistd.h"
-#include "sdk_util/auto_lock.h"
 
 namespace {
 
@@ -62,15 +61,12 @@ Error MountHttp::Access(const Path& path, int a_mode) {
   if (iter == node_cache_.end()) {
     // If we can't find the node in the cache, fetch it
     std::string url = MakeUrl(path);
-    MountNodeHttp* node = new MountNodeHttp(this, url, cache_content_);
+    ScopedMountNode node(new MountNodeHttp(this, url, cache_content_));
     Error error = node->Init(O_RDONLY);
-    if (error) {
-      node->Release();
+    if (error)
       return error;
-    }
 
     error = node->GetStat(NULL);
-    node->Release();
     if (error)
       return error;
   }
@@ -82,9 +78,8 @@ Error MountHttp::Access(const Path& path, int a_mode) {
   return 0;
 }
 
-Error MountHttp::Open(const Path& path, int mode, MountNode** out_node) {
-  *out_node = NULL;
-
+Error MountHttp::Open(const Path& path, int mode, ScopedMountNode* out_node) {
+  out_node->reset(NULL);
   assert(url_root_.empty() || url_root_[url_root_.length() - 1] == '/');
 
   NodeMap_t::iterator iter = node_cache_.find(path.Join());
@@ -95,34 +90,25 @@ Error MountHttp::Open(const Path& path, int mode, MountNode** out_node) {
 
   // If we can't find the node in the cache, create it
   std::string url = MakeUrl(path);
-  MountNodeHttp* node = new MountNodeHttp(this, url, cache_content_);
+  ScopedMountNode node(new MountNodeHttp(this, url, cache_content_));
   Error error = node->Init(mode);
-  if (error) {
-    node->Release();
+  if (error)
     return error;
-  }
 
   error = node->GetStat(NULL);
-  if (error) {
-    node->Release();
+  if (error)
     return error;
-  }
 
-  MountNodeDir* parent;
+  ScopedMountNode parent;
   error = FindOrCreateDir(path.Parent(), &parent);
-  if (error) {
-    node->Release();
+  if (error)
     return error;
-  }
 
   error = parent->AddChild(path.Basename(), node);
-  if (error) {
-    node->Release();
+  if (error)
     return error;
-  }
 
   node_cache_[path.Join()] = node;
-
   *out_node = node;
   return 0;
 }
@@ -267,43 +253,36 @@ Error MountHttp::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
 
 void MountHttp::Destroy() {}
 
-Error MountHttp::FindOrCreateDir(const Path& path, MountNodeDir** out_node) {
-  *out_node = NULL;
-
+Error MountHttp::FindOrCreateDir(const Path& path,
+                                 ScopedMountNode* out_node) {
+  out_node->reset(NULL);
   std::string strpath = path.Join();
   NodeMap_t::iterator iter = node_cache_.find(strpath);
   if (iter != node_cache_.end()) {
-    *out_node = static_cast<MountNodeDir*>(iter->second);
+    *out_node = iter->second;
     return 0;
   }
 
   // If the node does not exist, create it.
-  MountNodeDir* node = new MountNodeDir(this);
+  ScopedMountNode node(new MountNodeDir(this));
   Error error = node->Init(S_IREAD);
-  if (error) {
-    node->Release();
+  if (error)
     return error;
-  }
 
   // If not the root node, find the parent node and add it to the parent
   if (!path.Top()) {
-    MountNodeDir* parent;
+    ScopedMountNode parent;
     error = FindOrCreateDir(path.Parent(), &parent);
-    if (error) {
-      node->Release();
+    if (error)
       return error;
-    }
 
     error = parent->AddChild(path.Basename(), node);
-    if (error) {
-      node->Release();
+    if (error)
       return error;
-    }
   }
 
   // Add it to the node cache.
   node_cache_[strpath] = node;
-
   *out_node = node;
   return 0;
 }
@@ -364,27 +343,23 @@ Error MountHttp::ParseManifest(char* text) {
 
       Path path(name);
       std::string url = MakeUrl(path);
-      MountNodeHttp* node = new MountNodeHttp(this, url, cache_content_);
+
+      MountNodeHttp* http_node = new MountNodeHttp(this, url, cache_content_);
+      ScopedMountNode node(http_node);
+
       Error error = node->Init(mode);
-      if (error) {
-        node->Release();
+      if (error)
         return error;
-      }
+      http_node->SetCachedSize(atoi(lenstr));
 
-      node->SetCachedSize(atoi(lenstr));
-
-      MountNodeDir* dir_node;
+      ScopedMountNode dir_node;
       error = FindOrCreateDir(path.Parent(), &dir_node);
-      if (error) {
-        node->Release();
+      if (error)
         return error;
-      }
 
       error = dir_node->AddChild(path.Basename(), node);
-      if (error) {
-        node->Release();
+      if (error)
         return error;
-      }
 
       std::string pname = path.Join();
       node_cache_[pname] = node;
@@ -397,7 +372,7 @@ Error MountHttp::ParseManifest(char* text) {
 Error MountHttp::LoadManifest(const std::string& manifest_name,
                               char** out_manifest) {
   Path manifest_path(manifest_name);
-  MountNode* manifest_node = NULL;
+  ScopedMountNode manifest_node;
   *out_manifest = NULL;
 
   int error = Open(manifest_path, O_RDONLY, &manifest_node);
@@ -406,22 +381,16 @@ Error MountHttp::LoadManifest(const std::string& manifest_name,
 
   size_t size;
   error = manifest_node->GetSize(&size);
-  if (error) {
-    manifest_node->Release();
+  if (error)
     return error;
-  }
 
   char* text = new char[size + 1];
   int len;
   error = manifest_node->Read(0, text, size, &len);
-  if (error) {
-    manifest_node->Release();
+  if (error)
     return error;
-  }
 
-  manifest_node->Release();
   text[len] = 0;
-
   *out_manifest = text;
   return 0;
 }

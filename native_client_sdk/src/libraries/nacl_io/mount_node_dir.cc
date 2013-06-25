@@ -73,7 +73,8 @@ Error MountNodeDir::GetDents(size_t offs,
   return 0;
 }
 
-Error MountNodeDir::AddChild(const std::string& name, MountNode* node) {
+Error MountNodeDir::AddChild(const std::string& name,
+                             const ScopedMountNode& node) {
   AutoLock lock(&lock_);
 
   if (name.empty())
@@ -104,8 +105,9 @@ Error MountNodeDir::RemoveChild(const std::string& name) {
   return ENOENT;
 }
 
-Error MountNodeDir::FindChild(const std::string& name, MountNode** out_node) {
-  *out_node = NULL;
+Error MountNodeDir::FindChild(const std::string& name,
+                              ScopedMountNode* out_node) {
+  out_node->reset(NULL);
 
   AutoLock lock(&lock_);
   MountNodeMap_t::iterator it = map_.find(name);
@@ -131,9 +133,8 @@ void MountNodeDir::BuildCache() {
     cache_ = (struct dirent*)malloc(sizeof(struct dirent) * map_.size());
     MountNodeMap_t::iterator it = map_.begin();
     for (size_t index = 0; it != map_.end(); it++, index++) {
-      MountNode* node = it->second;
       size_t len = it->first.length();
-      cache_[index].d_ino = node->stat_.st_ino;
+      cache_[index].d_ino = it->second->stat_.st_ino;
       cache_[index].d_off = sizeof(struct dirent);
       cache_[index].d_reclen = sizeof(struct dirent);
       cache_[index].d_name[len] = 0;
@@ -141,3 +142,4 @@ void MountNodeDir::BuildCache() {
     }
   }
 }
+

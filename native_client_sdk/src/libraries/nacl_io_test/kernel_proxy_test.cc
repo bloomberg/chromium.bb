@@ -21,9 +21,14 @@
 
 #include "gtest/gtest.h"
 
+class KernelProxyFriend : public KernelProxy {
+ public:
+  Mount* RootMount() { return mounts_["/"].get(); }
+};
+
 class KernelProxyTest : public ::testing::Test {
  public:
-  KernelProxyTest() : kp_(new KernelProxy) {
+  KernelProxyTest() : kp_(new KernelProxyFriend) {
     ki_init(kp_);
     // Unmount the passthrough FS and mount a memfs.
     EXPECT_EQ(0, kp_->umount("/"));
@@ -35,9 +40,33 @@ class KernelProxyTest : public ::testing::Test {
     delete kp_;
   }
 
- private:
-  KernelProxy* kp_;
+ protected:
+  KernelProxyFriend* kp_;
 };
+
+TEST_F(KernelProxyTest, FileLeak) {
+  const size_t buffer_size = 1024;
+  char filename[128];
+  int file_num;
+  int garbage[buffer_size];
+
+  MountMem* mount = (MountMem*) kp_->RootMount();
+  ScopedMountNode root;
+
+  EXPECT_EQ(0, mount->Open(Path("/"), O_RDONLY, &root));
+  EXPECT_EQ(0, root->ChildCount());
+
+  for (file_num=0; file_num < 4096; file_num++) {
+    sprintf(filename, "/foo%i.tmp", file_num++);
+    FILE *f = fopen(filename, "w");
+    EXPECT_NE((FILE *) 0, f);
+    EXPECT_EQ(1, root->ChildCount());
+    EXPECT_EQ(buffer_size, fwrite(garbage, 1, buffer_size, f));
+    fclose(f);
+    EXPECT_EQ(0, remove(filename));
+  }
+  EXPECT_EQ(0, root->ChildCount());
+}
 
 TEST_F(KernelProxyTest, WorkingDirectory) {
   char text[1024];
@@ -151,6 +180,7 @@ TEST_F(KernelProxyTest, MemMountLseek) {
   char buffer[4];
   memset(&buffer[0], 0xfe, 4);
   EXPECT_EQ(9, ki_lseek(fd, -4, SEEK_END));
+  EXPECT_EQ(9, ki_lseek(fd, 0, SEEK_CUR));
   EXPECT_EQ(4, ki_read(fd, &buffer[0], 4));
   EXPECT_EQ(0, memcmp("\0\0\0\0", buffer, 4));
 }
@@ -283,15 +313,13 @@ class MountNodeMockMMap : public MountNode {
 class MountMockMMap : public Mount {
  public:
   virtual Error Access(const Path& path, int a_mode) { return 0; }
-
-  virtual Error Open(const Path& path, int mode, MountNode** out_node) {
-    MountNodeMockMMap* node = new MountNodeMockMMap(this);
-    *out_node = node;
+  virtual Error Open(const Path& path, int mode, ScopedMountNode* out_node) {
+    out_node->reset(new MountNodeMockMMap(this));
     return 0;
   }
 
-  virtual Error OpenResource(const Path& path, MountNode** out_node) {
-    *out_node = NULL;
+  virtual Error OpenResource(const Path& path, ScopedMountNode* out_node) {
+    out_node->reset(NULL);
     return ENOSYS;
   }
   virtual Error Unlink(const Path& path) { return ENOSYS; }
@@ -347,3 +375,4 @@ TEST_F(KernelProxyMMapTest, MMap) {
   // We don't track regions, so the mmap count hasn't changed.
   EXPECT_EQ(3, g_MMapCount);
 }
+

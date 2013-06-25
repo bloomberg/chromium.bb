@@ -9,11 +9,18 @@
 
 #include "nacl_io/error.h"
 #include "nacl_io/osstat.h"
+
 #include "sdk_util/ref_object.h"
+#include "sdk_util/scoped_ref.h"
 
 struct dirent;
 struct stat;
+
 class Mount;
+class MountNode;
+
+typedef ScopedRef<MountNode> ScopedMountNode;
+
 
 // NOTE: The KernelProxy is the only class that should be setting errno. All
 // other classes should return Error (as defined by nacl_io/error.h).
@@ -68,19 +75,21 @@ class MountNode : public RefObject {
   virtual bool IsaFile();
   virtual bool IsaTTY();
 
+  // Number of children for this node (directory)
+  virtual int ChildCount();
+
  protected:
   // Directory operations on the node are done by the Mount. The mount's lock
   // must be held while these calls are made.
 
   // Adds or removes a directory entry updating the link numbers and refcount
   // Assumes that |node| is non-NULL.
-  virtual Error AddChild(const std::string& name, MountNode* node);
+  virtual Error AddChild(const std::string& name, const ScopedMountNode& node);
   virtual Error RemoveChild(const std::string& name);
 
   // Find a child and return it without updating the refcount
   // Assumes that |out_node| is non-NULL.
-  virtual Error FindChild(const std::string& name, MountNode** out_node);
-  virtual int ChildCount();
+  virtual Error FindChild(const std::string& name, ScopedMountNode* out_node);
 
   // Update the link count
   virtual void Link();
@@ -88,6 +97,11 @@ class MountNode : public RefObject {
 
  protected:
   struct stat stat_;
+
+  // We use a pointer directly to avoid cycles in the ref count.
+  // TODO(noelallen) We should change this to it's unnecessary for the node
+  // to track it's parent.  When a node is unlinked, the mount should do
+  // any cleanup it needs.
   Mount* mount_;
 
   friend class Mount;

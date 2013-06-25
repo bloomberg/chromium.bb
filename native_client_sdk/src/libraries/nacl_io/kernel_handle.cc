@@ -13,7 +13,10 @@
 #include "nacl_io/osunistd.h"
 
 // It is only legal to construct a handle while the kernel lock is held.
-KernelHandle::KernelHandle(Mount* mnt, MountNode* node)
+KernelHandle::KernelHandle()
+    : mount_(NULL), node_(NULL), offs_(0) {}
+
+KernelHandle::KernelHandle(const ScopedMount& mnt, const ScopedMountNode& node)
     : mount_(mnt), node_(node), offs_(0) {}
 
 Error KernelHandle::Init(int open_mode) {
@@ -67,3 +70,4 @@ Error KernelHandle::Seek(off_t offset, int whence, off_t* out_offset) {
   *out_offset = offs_ = new_offset;
   return 0;
 }
+

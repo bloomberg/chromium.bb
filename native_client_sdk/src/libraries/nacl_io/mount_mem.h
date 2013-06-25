@@ -15,7 +15,6 @@ class MountMem : public Mount {
   MountMem();
 
   virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi);
-  virtual void Destroy();
 
   // The protected functions are only used internally and will not
   // acquire or release the mount's lock themselves.  The caller is
@@ -26,11 +25,11 @@ class MountMem : public Mount {
   void FreeINO(int ino);
 
   // Find a Node specified node optionally failing if type does not match.
-  virtual Error FindNode(const Path& path, int type, MountNode** out_node);
+  virtual Error FindNode(const Path& path, int type, ScopedMountNode* out_node);
 
  public:
   virtual Error Access(const Path& path, int a_mode);
-  virtual Error Open(const Path& path, int mode, MountNode** out_node);
+  virtual Error Open(const Path& path, int mode, ScopedMountNode* out_node);
   virtual Error Unlink(const Path& path);
   virtual Error Mkdir(const Path& path, int perm);
   virtual Error Rmdir(const Path& path);
@@ -43,8 +42,7 @@ private:
 
   Error RemoveInternal(const Path& path, int remove_type);
 
-  MountNode* root_;
-  size_t max_ino_;
+  ScopedMountNode root_;
 
   friend class Mount;
   DISALLOW_COPY_AND_ASSIGN(MountMem);

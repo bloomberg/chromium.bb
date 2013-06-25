@@ -49,3 +49,4 @@ PP_Instance PepperInterfaceMock::GetInstance() {
     BaseClass##Mock::~BaseClass##Mock() { \
     }
 #include "nacl_io/pepper/all_interfaces.h"
+

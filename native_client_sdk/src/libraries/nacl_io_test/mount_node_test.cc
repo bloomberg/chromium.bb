@@ -26,13 +26,13 @@ class MockMemory : public MountNodeMem {
   ~MockMemory() { s_AllocNum--; }
 
   Error Init(int mode) { return MountNodeMem::Init(mode); }
-  Error AddChild(const std::string& name, MountNode* node) {
+  Error AddChild(const std::string& name, const ScopedMountNode& node) {
     return MountNodeMem::AddChild(name, node);
   }
   Error RemoveChild(const std::string& name) {
     return MountNodeMem::RemoveChild(name);
   }
-  Error FindChild(const std::string& name, MountNode** out_node) {
+  Error FindChild(const std::string& name, ScopedMountNode* out_node) {
     return MountNodeMem::FindChild(name, out_node);
   }
   void Link() { MountNodeMem::Link(); }
@@ -49,13 +49,13 @@ class MockDir : public MountNodeDir {
   ~MockDir() { s_AllocNum--; }
 
   Error Init(int mode) { return MountNodeDir::Init(mode); }
-  Error AddChild(const std::string& name, MountNode* node) {
+  Error AddChild(const std::string& name, const ScopedMountNode& node) {
     return MountNodeDir::AddChild(name, node);
   }
   Error RemoveChild(const std::string& name) {
     return MountNodeDir::RemoveChild(name);
   }
-  Error FindChild(const std::string& name, MountNode** out_node) {
+  Error FindChild(const std::string& name, ScopedMountNode* out_node) {
     return MountNodeDir::FindChild(name, out_node);
   }
   void Link() { MountNodeDir::Link(); }
@@ -67,7 +67,7 @@ class MockDir : public MountNodeDir {
 
 TEST(MountNodeTest, File) {
   MockMemory* file = new MockMemory;
-  MountNode* result_node = NULL;
+  ScopedMountNode result_node;
   size_t result_size = 0;
   int result_bytes = 0;
 
@@ -80,7 +80,7 @@ TEST(MountNodeTest, File) {
   EXPECT_FALSE(file->IsaDir());
   EXPECT_TRUE(file->IsaFile());
   EXPECT_FALSE(file->IsaTTY());
-  EXPECT_EQ(1, file->RefCount());
+  EXPECT_EQ(0, file->RefCount());
 
   // Test IO
   char buf1[1024];
@@ -111,17 +111,17 @@ TEST(MountNodeTest, File) {
   // Directory operations should fail
   struct dirent d;
   EXPECT_EQ(ENOTDIR, file->GetDents(0, &d, sizeof(d), &result_bytes));
-  EXPECT_EQ(ENOTDIR, file->AddChild("", file));
+  EXPECT_EQ(ENOTDIR, file->AddChild("", result_node));
   EXPECT_EQ(ENOTDIR, file->RemoveChild(""));
   EXPECT_EQ(ENOTDIR, file->FindChild("", &result_node));
-  EXPECT_EQ(NULL_NODE, result_node);
+  EXPECT_EQ(NULL_NODE, result_node.get());
 
   delete file;
 }
 
 TEST(MountNodeTest, Directory) {
   MockDir* root = new MockDir();
-  MountNode* result_node = NULL;
+  ScopedMountNode result_node;
   size_t result_size = 0;
   int result_bytes = 0;
 
@@ -134,7 +134,7 @@ TEST(MountNodeTest, Directory) {
   EXPECT_TRUE(root->IsaDir());
   EXPECT_FALSE(root->IsaFile());
   EXPECT_FALSE(root->IsaTTY());
-  EXPECT_EQ(1, root->RefCount());
+  EXPECT_EQ(0, root->RefCount());
 
   // IO operations should fail
   char buf1[1024];
@@ -144,10 +144,11 @@ TEST(MountNodeTest, Directory) {
   EXPECT_EQ(EISDIR, root->Write(0, buf1, sizeof(buf1), &result_bytes));
 
   // Test directory operations
-  MockMemory* file = new MockMemory;
-  EXPECT_EQ(0, file->Init(S_IREAD | S_IWRITE));
+  MockMemory* raw_file = new MockMemory;
+  EXPECT_EQ(0, raw_file->Init(S_IREAD | S_IWRITE));
+  ScopedMountNode file(raw_file);
 
-  EXPECT_EQ(1, root->RefCount());
+  EXPECT_EQ(0, root->RefCount());
   EXPECT_EQ(1, file->RefCount());
   EXPECT_EQ(0, root->AddChild("F1", file));
   EXPECT_EQ(1, file->GetLinks());
@@ -169,14 +170,15 @@ TEST(MountNodeTest, Directory) {
   EXPECT_EQ(3, file->RefCount());
   EXPECT_EQ(EEXIST, root->AddChild("F1", file));
   EXPECT_EQ(2, file->GetLinks());
+  EXPECT_EQ(3, file->RefCount());
 
   EXPECT_EQ(2, s_AllocNum);
   EXPECT_EQ(0, root->FindChild("F1", &result_node));
-  EXPECT_NE(NULL_NODE, result_node);
+  EXPECT_NE(NULL_NODE, result_node.get());
   EXPECT_EQ(0, root->FindChild("F2", &result_node));
-  EXPECT_NE(NULL_NODE, result_node);
+  EXPECT_NE(NULL_NODE, result_node.get());
   EXPECT_EQ(ENOENT, root->FindChild("F3", &result_node));
-  EXPECT_EQ(NULL_NODE, result_node);
+  EXPECT_EQ(NULL_NODE, result_node.get());
 
   EXPECT_EQ(2, s_AllocNum);
   EXPECT_EQ(0, root->RemoveChild("F1"));
@@ -187,9 +189,7 @@ TEST(MountNodeTest, Directory) {
   EXPECT_EQ(1, file->RefCount());
   EXPECT_EQ(2, s_AllocNum);
 
-  file->Release();
+  file.reset();
   EXPECT_EQ(1, s_AllocNum);
-  root->Release();
-  EXPECT_EQ(0, s_AllocNum);
 }
 

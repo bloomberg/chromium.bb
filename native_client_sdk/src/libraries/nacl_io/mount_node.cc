@@ -133,7 +133,8 @@ bool MountNode::IsaFile() { return (stat_.st_mode & S_IFREG) != 0; }
 
 bool MountNode::IsaTTY() { return (stat_.st_mode & S_IFCHR) != 0; }
 
-Error MountNode::AddChild(const std::string& name, MountNode* node) {
+Error MountNode::AddChild(const std::string& name,
+                          const ScopedMountNode& node) {
   return ENOTDIR;
 }
 
@@ -141,8 +142,9 @@ Error MountNode::RemoveChild(const std::string& name) {
   return ENOTDIR;
 }
 
-Error MountNode::FindChild(const std::string& name, MountNode** out_node) {
-  *out_node = NULL;
+Error MountNode::FindChild(const std::string& name,
+                           ScopedMountNode* out_node) {
+  out_node->reset(NULL);
   return ENOTDIR;
 }
 
@@ -151,11 +153,10 @@ int MountNode::ChildCount() {
 }
 
 void MountNode::Link() {
-  Acquire();
   stat_.st_nlink++;
 }
 
 void MountNode::Unlink() {
   stat_.st_nlink--;
-  Release();
 }
+

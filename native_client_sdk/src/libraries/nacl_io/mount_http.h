@@ -19,10 +19,10 @@ std::string NormalizeHeaderKey(const std::string& s);
 
 class MountHttp : public Mount {
  public:
-  typedef std::map<std::string, MountNode*> NodeMap_t;
+  typedef std::map<std::string, ScopedMountNode> NodeMap_t;
 
   virtual Error Access(const Path& path, int a_mode);
-  virtual Error Open(const Path& path, int mode, MountNode** out_node);
+  virtual Error Open(const Path& path, int mode, ScopedMountNode* out_node);
   virtual Error Unlink(const Path& path);
   virtual Error Mkdir(const Path& path, int permissions);
   virtual Error Rmdir(const Path& path);
@@ -37,7 +37,7 @@ class MountHttp : public Mount {
 
   virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi);
   virtual void Destroy();
-  Error FindOrCreateDir(const Path& path, MountNodeDir** out_node);
+  Error FindOrCreateDir(const Path& path, ScopedMountNode* out_node);
   Error LoadManifest(const std::string& path, char** out_manifest);
   Error ParseManifest(char *text);
 

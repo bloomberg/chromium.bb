@@ -16,6 +16,9 @@ class MountDev;
 class MountHtml5Fs;
 class MountHttp;
 class MountMem;
+class MountNodeDir;
+
+typedef ScopedRef<MountNodeDir> ScopedMountNodeDir;
 
 class MountNodeDir : public MountNode {
  protected:
@@ -23,7 +26,7 @@ class MountNodeDir : public MountNode {
   virtual ~MountNodeDir();
 
  public:
-  typedef std::map<std::string, MountNode*> MountNodeMap_t;
+  typedef std::map<std::string, ScopedMountNode> MountNodeMap_t;
 
   virtual Error FTruncate(off_t size);
   virtual Error GetDents(size_t offs,
@@ -34,9 +37,9 @@ class MountNodeDir : public MountNode {
   virtual Error Write(size_t offs, void *buf, size_t count, int* out_bytes);
 
   // Adds a finds or adds a directory entry as an INO, updating the refcount
-  virtual Error AddChild(const std::string& name, MountNode *node);
+  virtual Error AddChild(const std::string& name, const ScopedMountNode& node);
   virtual Error RemoveChild(const std::string& name);
-  virtual Error FindChild(const std::string& name, MountNode** out_node);
+  virtual Error FindChild(const std::string& name, ScopedMountNode* out_node);
   virtual int ChildCount();
 
 

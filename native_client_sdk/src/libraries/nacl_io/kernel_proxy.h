@@ -29,7 +29,10 @@ class PepperInterface;
 // other classes should return Error (as defined by nacl_io/error.h).
 class KernelProxy : protected KernelObject {
  public:
-  typedef Error (*MountFactory_t)(int, StringMap_t&, PepperInterface*, Mount**);
+  typedef Error (*MountFactory_t)(int,
+                                  StringMap_t&,
+                                  PepperInterface*,
+                                  ScopedMount*);
   typedef std::map<std::string, std::string> StringMap_t;
   typedef std::map<std::string, MountFactory_t> MountFactoryMap_t;
 
@@ -93,7 +96,11 @@ class KernelProxy : protected KernelObject {
   virtual int link(const char* oldpath, const char* newpath);
   virtual int symlink(const char* oldpath, const char* newpath);
 
-  virtual void* mmap(void* addr, size_t length, int prot, int flags, int fd,
+  virtual void* mmap(void* addr,
+                     size_t length,
+                     int prot,
+                     int flags,
+                     int fd,
                      size_t offset);
   virtual int munmap(void* addr, size_t length);
 

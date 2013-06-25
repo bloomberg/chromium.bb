@@ -113,29 +113,28 @@ Error MountPassthrough::Access(const Path& path, int a_mode) {
   return ENOSYS;
 }
 
-Error MountPassthrough::Open(const Path& path, int mode, MountNode** out_node) {
-  *out_node = NULL;
-
+Error MountPassthrough::Open(const Path& path,
+                             int mode,
+                             ScopedMountNode* out_node) {
+  out_node->reset(NULL);
   int real_fd;
   int error = _real_open(path.Join().c_str(), mode, 0666, &real_fd);
   if (error)
     return error;
 
-  MountNodePassthrough* node = new MountNodePassthrough(this, real_fd);
-  *out_node = node;
+  out_node->reset(new MountNodePassthrough(this, real_fd));
   return 0;
 }
 
-Error MountPassthrough::OpenResource(const Path& path, MountNode** out_node) {
-  *out_node = NULL;
-
+Error MountPassthrough::OpenResource(const Path& path,
+                                     ScopedMountNode* out_node) {
   int real_fd;
+  out_node->reset(NULL);
   int error = _real_open_resource(path.Join().c_str(), &real_fd);
   if (error)
     return error;
 
-  MountNodePassthrough* node = new MountNodePassthrough(this, real_fd);
-  *out_node = node;
+  out_node->reset(new MountNodePassthrough(this, real_fd));
   return 0;
 }
 
@@ -156,3 +155,4 @@ Error MountPassthrough::Remove(const Path& path) {
   // Not implemented by NaCl.
   return ENOSYS;
 }
+

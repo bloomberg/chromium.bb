@@ -131,26 +131,27 @@ TEST_F(MountHttpTest, ParseManifest) {
   char manifest[] = "-r-- 123 /mydir/foo\n-rw- 234 /thatdir/bar\n";
   EXPECT_EQ(0, mnt_->ParseManifest(manifest));
 
-  MountNodeDir* root = NULL;
+  ScopedMountNode root;
   EXPECT_EQ(0, mnt_->FindOrCreateDir(Path("/"), &root));
-  ASSERT_NE((MountNode*)NULL, root);
+  ASSERT_NE((MountNode*)NULL, root.get());
   EXPECT_EQ(2, root->ChildCount());
 
-  MountNodeDir* dir = NULL;
+  ScopedMountNode dir;
   EXPECT_EQ(0, mnt_->FindOrCreateDir(Path("/mydir"), &dir));
-  ASSERT_NE((MountNode*)NULL, dir);
+  ASSERT_NE((MountNode*)NULL, dir.get());
   EXPECT_EQ(1, dir->ChildCount());
 
-  MountNode* node = mnt_->GetMap()["/mydir/foo"];
+  MountNode* node = mnt_->GetMap()["/mydir/foo"].get();
   EXPECT_NE((MountNode*)NULL, node);
   EXPECT_EQ(0, node->GetSize(&result_size));
   EXPECT_EQ(123, result_size);
 
   // Since these files are cached thanks to the manifest, we can open them
   // without accessing the PPAPI URL API.
-  MountNode* foo = NULL;
+  ScopedMountNode foo;
   EXPECT_EQ(0, mnt_->Open(Path("/mydir/foo"), O_RDONLY, &foo));
-  MountNode* bar = NULL;
+
+  ScopedMountNode bar;
   EXPECT_EQ(0, mnt_->Open(Path("/thatdir/bar"), O_RDWR, &bar));
 
   struct stat sfoo;
@@ -185,7 +186,7 @@ class MountHttpNodeTest : public MountHttpTest {
 
  protected:
   MountHttpMock* mnt_;
-  MountNode* node_;
+  ScopedMountNode node_;
 
   VarInterfaceMock* var_;
   URLLoaderInterfaceMock* loader_;
@@ -326,7 +327,7 @@ void MountHttpNodeTest::SetResponseBody(const char* body) {
 
 void MountHttpNodeTest::OpenNode() {
   ASSERT_EQ(0, mnt_->Open(Path(path_), O_RDONLY, &node_));
-  ASSERT_NE((MountNode*)NULL, node_);
+  ASSERT_NE((MountNode*)NULL, node_.get());
 }
 
 void MountHttpNodeTest::ResetMocks() {
@@ -338,8 +339,7 @@ void MountHttpNodeTest::ResetMocks() {
 }
 
 void MountHttpNodeTest::TearDown() {
-  if (node_)
-    mnt_->ReleaseNode(node_);
+  node_.reset();
   delete mnt_;
 }
 
@@ -607,3 +607,4 @@ TEST_F(MountHttpNodeTest, ReadPartialNoServerSupport) {
   EXPECT_EQ(sizeof(buf) - 1, result_bytes);
   EXPECT_STREQ("abcdefghi", &buf[0]);
 }
+

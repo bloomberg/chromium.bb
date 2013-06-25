@@ -246,3 +246,4 @@ TEST_F(KernelWrapTest, write) {
   EXPECT_CALL(mock, write(6789, NULL, 7891)).Times(1);
   write(6789, NULL, 7891);
 }
+

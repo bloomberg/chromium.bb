@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "nacl_io/error.h"
+#include "nacl_io/kernel_handle.h"
+#include "nacl_io/mount.h"
 #include "nacl_io/path.h"
 
-class KernelHandle;
-class Mount;
 
 // KernelObject provides basic functionality for threadsafe
 // access to kernel objects such as file descriptors and
@@ -23,8 +23,8 @@ class Mount;
 // path resolution.
 class KernelObject {
  public:
-  typedef std::vector<KernelHandle*> HandleMap_t;
-  typedef std::map<std::string, Mount*> MountMap_t;
+  typedef std::vector<ScopedKernelHandle> HandleMap_t;
+  typedef std::map<std::string, ScopedMount> MountMap_t;
 
   KernelObject();
   virtual ~KernelObject();
@@ -32,23 +32,20 @@ class KernelObject {
   // Find the mount for the given path, and acquires it.
   // Assumes |out_mount| and |out_path| are non-NULL.
   Error AcquireMountAndPath(const std::string& relpath,
-                            Mount** out_mount,
+                            ScopedMount* out_mount,
                             Path* out_path);
-  // Assumes |mnt| is non-NULL.
-  void ReleaseMount(Mount* mnt);
 
   // Convert from FD to KernelHandle, and acquire the handle.
   // Assumes |out_handle| is non-NULL.
-  Error AcquireHandle(int fd, KernelHandle** out_handle);
-  // Assumes |handle| is non-NULL.
-  void ReleaseHandle(KernelHandle* handle);
+  Error AcquireHandle(int fd, ScopedKernelHandle* out_handle);
 
   // Allocate a new fd and assign the handle to it, while
   // ref counting the handle and associated mount.
   // Assumes |handle| is non-NULL;
-  int AllocateFD(KernelHandle* handle);
+  int AllocateFD(const ScopedKernelHandle& handle);
+
   // Assumes |handle| is non-NULL;
-  void FreeAndReassignFD(int fd, KernelHandle* handle);
+  void FreeAndReassignFD(int fd, const ScopedKernelHandle& handle);
   void FreeFD(int fd);
 
  protected:

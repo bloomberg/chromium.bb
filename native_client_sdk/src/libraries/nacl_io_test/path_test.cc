@@ -256,3 +256,4 @@ TEST(PathTest, Range) {
   EXPECT_EQ("an/absolute", p.Range(1, 3));
   EXPECT_EQ("absolute", p.Range(2, 3));
 }
+

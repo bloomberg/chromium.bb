@@ -15,9 +15,11 @@
   'HEADERS': [
     {
       'FILES': [
+        'atomicops.h',
         'auto_lock.h',
         'macros.h',
         'ref_object.h',
+        'scoped_ref.h',
         'thread_pool.h',
         'thread_safe_queue.h'
       ],

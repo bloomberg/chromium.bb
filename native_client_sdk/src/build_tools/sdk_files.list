@@ -516,9 +516,11 @@ include/ppapi/utility/websocket/websocket_api.h
 [win]include/win/pthread.h
 [win]include/win/sched.h
 [win]include/win/semaphore.h
+include/sdk_util/atomicops.h
 include/sdk_util/auto_lock.h
 include/sdk_util/macros.h
 include/sdk_util/ref_object.h
+include/sdk_util/scoped_ref.h
 include/sdk_util/thread_safe_queue.h
 include/sdk_util/thread_pool.h
 lib/glibc_x86_32/Debug/libjsoncpp.a

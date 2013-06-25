@@ -201,3 +201,4 @@ Path& Path::operator =(const Path& p) {
 Path& Path::operator =(const std::string& p) {
   return Set(p);
 }
+

@@ -16,8 +16,8 @@ class MountPassthrough : public Mount {
 
  public:
   virtual Error Access(const Path& path, int a_mode);
-  virtual Error Open(const Path& path, int mode, MountNode** out_node);
-  virtual Error OpenResource(const Path& path, MountNode** out_node);
+  virtual Error Open(const Path& path, int mode, ScopedMountNode* out_node);
+  virtual Error OpenResource(const Path& path, ScopedMountNode* out_node);
   virtual Error Unlink(const Path& path);
   virtual Error Mkdir(const Path& path, int perm);
   virtual Error Rmdir(const Path& path);

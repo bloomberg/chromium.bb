@@ -271,10 +271,7 @@ Error UrandomNode::Write(size_t offs,
 }  // namespace
 
 Error MountDev::Access(const Path& path, int a_mode) {
-  MountNode* node = NULL;
-
-  AutoLock lock(&lock_);
-
+  ScopedMountNode node;
   int error = root_->FindChild(path.Join(), &node);
   if (error)
     return error;
@@ -286,23 +283,15 @@ Error MountDev::Access(const Path& path, int a_mode) {
   return 0;
 }
 
-Error MountDev::Open(const Path& path, int mode, MountNode** out_node) {
-  *out_node = NULL;
-
+Error MountDev::Open(const Path& path, int mode, ScopedMountNode* out_node) {
+  out_node->reset(NULL);
   AutoLock lock(&lock_);
 
   // Don't allow creating any files.
   if (mode & O_CREAT)
     return EINVAL;
 
-  MountNode* node = NULL;
-  int error = root_->FindChild(path.Join(), &node);
-  if (error)
-    return error;
-
-  node->Acquire();
-  *out_node = node;
-  return 0;
+  return root_->FindChild(path.Join(), out_node);
 }
 
 Error MountDev::Unlink(const Path& path) { return EINVAL; }
@@ -315,14 +304,14 @@ Error MountDev::Remove(const Path& path) { return EINVAL; }
 
 MountDev::MountDev() {}
 
-#define INITIALIZE_DEV_NODE(path, klass)          \
-  error = root_->AddChild(path, new klass(this)); \
-  if (error)                                      \
+#define INITIALIZE_DEV_NODE(path, klass)                           \
+  error = root_->AddChild(path, ScopedMountNode(new klass(this))); \
+  if (error)                                                       \
     return error;
 
-#define INITIALIZE_DEV_NODE_1(path, klass, arg)        \
-  error = root_->AddChild(path, new klass(this, arg)); \
-  if (error)                                           \
+#define INITIALIZE_DEV_NODE_1(path, klass, arg)                         \
+  error = root_->AddChild(path, ScopedMountNode(new klass(this, arg))); \
+  if (error)                                                            \
     return error;
 
 Error MountDev::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
@@ -330,7 +319,7 @@ Error MountDev::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   if (error)
     return error;
 
-  root_ = new MountNodeDir(this);
+  root_.reset(new MountNodeDir(this));
 
   INITIALIZE_DEV_NODE("/null", NullNode);
   INITIALIZE_DEV_NODE("/zero", ZeroNode);
@@ -347,8 +336,3 @@ Error MountDev::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   return 0;
 }
 
-void MountDev::Destroy() {
-  if (root_)
-    root_->Release();
-  root_ = NULL;
-}

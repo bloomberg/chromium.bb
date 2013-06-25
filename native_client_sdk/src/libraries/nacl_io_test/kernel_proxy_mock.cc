@@ -14,3 +14,4 @@ KernelProxyMock::~KernelProxyMock() {
   // unwrapped versions.
   ki_uninit();
 }
+

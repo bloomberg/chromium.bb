@@ -16,3 +16,4 @@ void nacl_io_init_ppapi(PP_Instance instance,
                         PPB_GetInterface get_interface) {
   ki_init_ppapi(NULL, instance, get_interface);
 }
+

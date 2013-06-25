@@ -172,3 +172,4 @@ int ki_munmap(void* addr, size_t length) {
 int ki_open_resource(const char* file) {
   return s_kp->open_resource(file);
 }
+

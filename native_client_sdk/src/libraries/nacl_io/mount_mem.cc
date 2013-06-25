@@ -1,4 +1,4 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The hromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -19,31 +19,27 @@
 #include "sdk_util/auto_lock.h"
 #include "sdk_util/ref_object.h"
 
-MountMem::MountMem() : root_(NULL), max_ino_(0) {}
+MountMem::MountMem() : root_(NULL) {}
 
 Error MountMem::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   Error error = Mount::Init(dev, args, ppapi);
   if (error)
     return error;
 
-  root_ = new MountNodeDir(this);
+  root_.reset(new MountNodeDir(this));
   error = root_->Init(S_IREAD | S_IWRITE);
   if (error) {
-    root_->Release();
+    root_.reset(NULL);
     return error;
   }
-
   return 0;
 }
 
-void MountMem::Destroy() {
-  if (root_)
-    root_->Release();
-  root_ = NULL;
-}
-
-Error MountMem::FindNode(const Path& path, int type, MountNode** out_node) {
-  MountNode* node = root_;
+Error MountMem::FindNode(const Path& path,
+                         int type,
+                         ScopedMountNode* out_node) {
+  out_node->reset(NULL);
+  ScopedMountNode node = root_;
 
   // If there is no root there, we have an error.
   if (node == NULL)
@@ -79,8 +75,7 @@ Error MountMem::FindNode(const Path& path, int type, MountNode** out_node) {
 }
 
 Error MountMem::Access(const Path& path, int a_mode) {
-  AutoLock lock(&lock_);
-  MountNode* node = NULL;
+  ScopedMountNode node;
   Error error = FindNode(path, 0, &node);
 
   if (error)
@@ -96,38 +91,30 @@ Error MountMem::Access(const Path& path, int a_mode) {
   return 0;
 }
 
-Error MountMem::Open(const Path& path, int mode, MountNode** out_node) {
-  AutoLock lock(&lock_);
-  MountNode* node = NULL;
-  *out_node = NULL;
+Error MountMem::Open(const Path& path, int mode, ScopedMountNode* out_node) {
+  out_node->reset(NULL);
+  ScopedMountNode node;
 
   Error error = FindNode(path, 0, &node);
-
   if (error) {
     // If the node does not exist and we can't create it, fail
     if ((mode & O_CREAT) == 0)
       return ENOENT;
 
     // Now first find the parent directory to see if we can add it
-    MountNode* parent = NULL;
+    ScopedMountNode parent;
     error = FindNode(path.Parent(), S_IFDIR, &parent);
     if (error)
       return error;
 
-    // Create it with a single reference
-    node = new MountNodeMem(this);
+    node.reset(new MountNodeMem(this));
     error = node->Init(OpenModeToPermission(mode));
-    if (error) {
-      node->Release();
+    if (error)
       return error;
-    }
 
     error = parent->AddChild(path.Basename(), node);
-    if (error) {
-      // Or if it fails, release it
-      node->Release();
+    if (error)
       return error;
-    }
 
     *out_node = node;
     return 0;
@@ -147,15 +134,11 @@ Error MountMem::Open(const Path& path, int mode, MountNode** out_node) {
   if ((obj_mode & req_mode) != req_mode)
     return EACCES;
 
-  // We opened it, so ref count it before passing it back.
-  node->Acquire();
   *out_node = node;
   return 0;
 }
 
 Error MountMem::Mkdir(const Path& path, int mode) {
-  AutoLock lock(&lock_);
-
   // We expect a Mount "absolute" path
   if (!path.IsAbsolute())
     return ENOENT;
@@ -164,12 +147,12 @@ Error MountMem::Mkdir(const Path& path, int mode) {
   if (path.Size() == 1)
     return EEXIST;
 
-  MountNode* parent = NULL;
+  ScopedMountNode parent;
   int error = FindNode(path.Parent(), S_IFDIR, &parent);
   if (error)
     return error;
 
-  MountNode* node = NULL;
+  ScopedMountNode node;
   error = parent->FindChild(path.Basename(), &node);
   if (!error)
     return EEXIST;
@@ -180,21 +163,12 @@ Error MountMem::Mkdir(const Path& path, int mode) {
   // Allocate a node, with a RefCount of 1.  If added to the parent
   // it will get ref counted again.  In either case, release the
   // recount we have on exit.
-  node = new MountNodeDir(this);
+  node.reset(new MountNodeDir(this));
   error = node->Init(S_IREAD | S_IWRITE);
-  if (error) {
-    node->Release();
+  if (error)
     return error;
-  }
 
-  error = parent->AddChild(path.Basename(), node);
-  if (error) {
-    node->Release();
-    return error;
-  }
-
-  node->Release();
-  return 0;
+  return parent->AddChild(path.Basename(), node);
 }
 
 Error MountMem::Unlink(const Path& path) {
@@ -210,7 +184,6 @@ Error MountMem::Remove(const Path& path) {
 }
 
 Error MountMem::RemoveInternal(const Path& path, int remove_type) {
-  AutoLock lock(&lock_);
   bool dir_only = remove_type == REMOVE_DIR;
   bool file_only = remove_type == REMOVE_FILE;
   bool remove_dir = (remove_type & REMOVE_DIR) != 0;
@@ -225,13 +198,13 @@ Error MountMem::RemoveInternal(const Path& path, int remove_type) {
       return EEXIST;
   }
 
-  MountNode* parent = NULL;
+  ScopedMountNode parent;
   int error = FindNode(path.Parent(), S_IFDIR, &parent);
   if (error)
     return error;
 
   // Verify we find a child which is a directory.
-  MountNode* child = NULL;
+  ScopedMountNode child;
   error = parent->FindChild(path.Basename(), &child);
   if (error)
     return error;
@@ -247,3 +220,4 @@ Error MountMem::RemoveInternal(const Path& path, int remove_type) {
 
   return parent->RemoveChild(path.Basename());
 }
+

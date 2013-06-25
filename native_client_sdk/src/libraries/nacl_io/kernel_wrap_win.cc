@@ -294,3 +294,4 @@ void kernel_wrap_init() {
 EXTERN_C_END
 
 #endif   // defined(WIN32)
+

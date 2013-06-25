@@ -100,8 +100,8 @@ class MountHtml5FsNodeTest : public MountHtml5FsTest {
   void InitNode();
 
  protected:
-  MountHtml5FsMock* mnt_;
-  MountNode* node_;
+  ScopedRef<MountHtml5FsMock> mnt_;
+  ScopedMountNode node_;
 
   FileRefInterfaceMock* fileref_;
   FileIoInterfaceMock* fileio_;
@@ -115,9 +115,7 @@ class MountHtml5FsNodeTest : public MountHtml5FsTest {
 const char MountHtml5FsNodeTest::path_[] = "/foo";
 
 MountHtml5FsNodeTest::MountHtml5FsNodeTest()
-    : mnt_(NULL),
-      node_(NULL),
-      fileref_(NULL),
+    : fileref_(NULL),
       fileio_(NULL) {
 }
 
@@ -127,10 +125,8 @@ void MountHtml5FsNodeTest::SetUp() {
 }
 
 void MountHtml5FsNodeTest::TearDown() {
-  if (mnt_) {
-    mnt_->ReleaseNode(node_);
-    delete mnt_;
-  }
+  node_.reset();
+  mnt_.reset();
 }
 
 void MountHtml5FsNodeTest::SetUpNodeExpectations(PP_FileType file_type) {
@@ -163,12 +159,12 @@ void MountHtml5FsNodeTest::SetUpNodeExpectations(PP_FileType file_type) {
 
 void MountHtml5FsNodeTest::InitFilesystem() {
   StringMap_t map;
-  mnt_ = new MountHtml5FsMock(map, ppapi_);
+  mnt_.reset(new MountHtml5FsMock(map, ppapi_));
 }
 
 void MountHtml5FsNodeTest::InitNode() {
   ASSERT_EQ(0, mnt_->Open(Path(path_), O_CREAT | O_RDWR, &node_));
-  ASSERT_NE((MountNode*)NULL, node_);
+  ASSERT_NE((MountNode*)NULL, node_.get());
 }
 
 // Node test where the filesystem is opened synchronously; that is, the
@@ -630,3 +626,4 @@ TEST_F(MountHtml5FsNodeSyncDirTest, GetDents) {
   EXPECT_EQ(sizeof(dirent), dirents[1].d_reclen);
   EXPECT_STREQ(fileref_name_cstr_2, dirents[1].d_name);
 }
+

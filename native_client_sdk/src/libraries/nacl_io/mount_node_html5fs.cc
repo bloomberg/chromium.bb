@@ -302,3 +302,4 @@ void MountNodeHtml5Fs::Destroy() {
   fileref_resource_ = 0;
   MountNode::Destroy();
 }
+

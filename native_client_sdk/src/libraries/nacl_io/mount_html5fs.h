@@ -14,7 +14,7 @@ class MountNode;
 class MountHtml5Fs : public Mount {
  public:
   virtual Error Access(const Path& path, int a_mode);
-  virtual Error Open(const Path& path, int mode, MountNode** out_node);
+  virtual Error Open(const Path& path, int mode, ScopedMountNode* out_node);
   virtual Error Unlink(const Path& path);
   virtual Error Mkdir(const Path& path, int permissions);
   virtual Error Rmdir(const Path& path);

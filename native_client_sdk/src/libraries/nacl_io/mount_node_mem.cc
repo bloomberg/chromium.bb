@@ -43,7 +43,6 @@ Error MountNodeMem::Write(size_t offs,
                           size_t count,
                           int* out_bytes) {
   *out_bytes = 0;
-
   AutoLock lock(&lock_);
 
   if (count == 0)
@@ -77,7 +76,7 @@ Error MountNodeMem::FTruncate(off_t new_size) {
   if (newdata != NULL) {
     // Zero out new space.
     if (new_size > old_size)
-      memset(newdata + old_size, 0, new_size - old_size);
+      memset(newdata + old_size, 0, need - old_size);
 
     data_ = newdata;
     capacity_ = need;
@@ -93,3 +92,4 @@ Error MountNodeMem::FTruncate(off_t new_size) {
   stat_.st_size = static_cast<off_t>(new_size);
   return EIO;
 }
+
