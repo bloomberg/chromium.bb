@@ -98,6 +98,9 @@ class CONTENT_EXPORT MIDIMessageFilter
   // Message loop on which IPC calls are driven.
   const scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
+  // Main thread's message loop.
+  scoped_refptr<base::MessageLoopProxy> main_message_loop_;
+
   // Keeps track of all MIDI clients.
   // We map client to "client id" used to track permission.
   // When access has been approved, we add the input and output ports to

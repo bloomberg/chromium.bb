@@ -1032,80 +1032,79 @@ GURL PepperPluginDelegateImpl::GetFileSystemRootUrl(
   return fs_host ? fs_host->GetRootUrl() : GURL();
 }
 
-bool PepperPluginDelegateImpl::MakeDirectory(
+void PepperPluginDelegateImpl::MakeDirectory(
     const GURL& path,
     bool recursive,
     const StatusCallback& callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->Create(
-      path, false, true, recursive, callback);
+  file_system_dispatcher->Create(path, false, true, recursive, callback);
 }
 
-bool PepperPluginDelegateImpl::Query(
+void PepperPluginDelegateImpl::Query(
     const GURL& path,
     const MetadataCallback& success_callback,
     const StatusCallback& error_callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->ReadMetadata(
+  file_system_dispatcher->ReadMetadata(
       path, success_callback, error_callback);
 }
 
-bool PepperPluginDelegateImpl::ReadDirectoryEntries(
+void PepperPluginDelegateImpl::ReadDirectoryEntries(
     const GURL& path,
     const ReadDirectoryCallback& success_callback,
     const StatusCallback& error_callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->ReadDirectory(
+  file_system_dispatcher->ReadDirectory(
       path, success_callback, error_callback);
 }
 
-bool PepperPluginDelegateImpl::Touch(
+void PepperPluginDelegateImpl::Touch(
     const GURL& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->TouchFile(path, last_access_time,
-                                           last_modified_time, callback);
+  file_system_dispatcher->TouchFile(path, last_access_time, last_modified_time,
+                                    callback);
 }
 
-bool PepperPluginDelegateImpl::SetLength(
+void PepperPluginDelegateImpl::SetLength(
     const GURL& path,
     int64_t length,
     const StatusCallback& callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->Truncate(path, length, NULL, callback);
+  file_system_dispatcher->Truncate(path, length, NULL, callback);
 }
 
-bool PepperPluginDelegateImpl::Delete(
+void PepperPluginDelegateImpl::Delete(
     const GURL& path,
     const StatusCallback& callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->Remove(path, false /* recursive */, callback);
+  file_system_dispatcher->Remove(path, false /* recursive */, callback);
 }
 
-bool PepperPluginDelegateImpl::Rename(
+void PepperPluginDelegateImpl::Rename(
     const GURL& file_path,
     const GURL& new_file_path,
     const StatusCallback& callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->Move(file_path, new_file_path, callback);
+  file_system_dispatcher->Move(file_path, new_file_path, callback);
 }
 
-bool PepperPluginDelegateImpl::ReadDirectory(
+void PepperPluginDelegateImpl::ReadDirectory(
     const GURL& directory_path,
     const ReadDirectoryCallback& success_callback,
     const StatusCallback& error_callback) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->ReadDirectory(
+  file_system_dispatcher->ReadDirectory(
       directory_path, success_callback, error_callback);
 }
 
@@ -1124,14 +1123,13 @@ void PepperPluginDelegateImpl::DidUpdateFile(const GURL& path, int64_t delta) {
   ChildThread::current()->Send(new FileSystemHostMsg_DidUpdate(path, delta));
 }
 
-bool PepperPluginDelegateImpl::AsyncOpenFileSystemURL(
+void PepperPluginDelegateImpl::AsyncOpenFileSystemURL(
     const GURL& path,
     int flags,
     const AsyncOpenFileSystemURLCallback& callback) {
-
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->OpenFile(
+  file_system_dispatcher->OpenFile(
       path, flags,
       base::Bind(&DidOpenFileSystemURL, callback),
       base::Bind(&DidFailOpenFileSystemURL, callback));

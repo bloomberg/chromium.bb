@@ -5,6 +5,7 @@
 #include "content/child/webmessageportchannel_impl.h"
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/child/child_process.h"
 #include "content/child/child_thread.h"
 #include "content/common/worker_messages.h"
@@ -18,20 +19,24 @@ using WebKit::WebString;
 
 namespace content {
 
-WebMessagePortChannelImpl::WebMessagePortChannelImpl()
+WebMessagePortChannelImpl::WebMessagePortChannelImpl(
+    base::MessageLoopProxy* child_thread_loop)
     : client_(NULL),
       route_id_(MSG_ROUTING_NONE),
-      message_port_id_(MSG_ROUTING_NONE) {
+      message_port_id_(MSG_ROUTING_NONE),
+      child_thread_loop_(child_thread_loop) {
   AddRef();
   Init();
 }
 
 WebMessagePortChannelImpl::WebMessagePortChannelImpl(
     int route_id,
-    int message_port_id)
+    int message_port_id,
+    base::MessageLoopProxy* child_thread_loop)
     : client_(NULL),
       route_id_(route_id),
-      message_port_id_(message_port_id) {
+      message_port_id_(message_port_id),
+      child_thread_loop_(child_thread_loop) {
   AddRef();
   Init();
 }
@@ -65,7 +70,7 @@ void WebMessagePortChannelImpl::destroy() {
 
   // Release the object on the main thread, since the destructor might want to
   // send an IPC, and that has to happen on the main thread.
-  ChildThread::current()->message_loop()->ReleaseSoon(FROM_HERE, this);
+  child_thread_loop_->ReleaseSoon(FROM_HERE, this);
 }
 
 void WebMessagePortChannelImpl::entangle(WebMessagePortChannel* channel) {
@@ -80,8 +85,8 @@ void WebMessagePortChannelImpl::entangle(WebMessagePortChannel* channel) {
 void WebMessagePortChannelImpl::postMessage(
     const WebString& message,
     WebMessagePortChannelArray* channels) {
-  if (base::MessageLoop::current() != ChildThread::current()->message_loop()) {
-    ChildThread::current()->message_loop()->PostTask(
+  if (!child_thread_loop_->BelongsToCurrentThread()) {
+    child_thread_loop_->PostTask(
         FROM_HERE,
         base::Bind(
             &WebMessagePortChannelImpl::postMessage, this, message, channels));
@@ -127,8 +132,8 @@ bool WebMessagePortChannelImpl::tryGetMessage(
 }
 
 void WebMessagePortChannelImpl::Init() {
-  if (base::MessageLoop::current() != ChildThread::current()->message_loop()) {
-    ChildThread::current()->message_loop()->PostTask(
+  if (!child_thread_loop_->BelongsToCurrentThread()) {
+    child_thread_loop_->PostTask(
         FROM_HERE, base::Bind(&WebMessagePortChannelImpl::Init, this));
     return;
   }
@@ -144,8 +149,8 @@ void WebMessagePortChannelImpl::Init() {
 
 void WebMessagePortChannelImpl::Entangle(
     scoped_refptr<WebMessagePortChannelImpl> channel) {
-  if (base::MessageLoop::current() != ChildThread::current()->message_loop()) {
-    ChildThread::current()->message_loop()->PostTask(
+  if (!child_thread_loop_->BelongsToCurrentThread()) {
+    child_thread_loop_->PostTask(
         FROM_HERE,
         base::Bind(&WebMessagePortChannelImpl::Entangle, this, channel));
     return;
@@ -156,8 +161,8 @@ void WebMessagePortChannelImpl::Entangle(
 }
 
 void WebMessagePortChannelImpl::QueueMessages() {
-  if (base::MessageLoop::current() != ChildThread::current()->message_loop()) {
-    ChildThread::current()->message_loop()->PostTask(
+  if (!child_thread_loop_->BelongsToCurrentThread()) {
+    child_thread_loop_->PostTask(
         FROM_HERE, base::Bind(&WebMessagePortChannelImpl::QueueMessages, this));
     return;
   }
@@ -175,9 +180,9 @@ void WebMessagePortChannelImpl::QueueMessages() {
 }
 
 void WebMessagePortChannelImpl::Send(IPC::Message* message) {
-  if (base::MessageLoop::current() != ChildThread::current()->message_loop()) {
+  if (!child_thread_loop_->BelongsToCurrentThread()) {
     DCHECK(!message->is_sync());
-    ChildThread::current()->message_loop()->PostTask(
+    child_thread_loop_->PostTask(
         FROM_HERE,
         base::Bind(&WebMessagePortChannelImpl::Send, this, message));
     return;
@@ -207,7 +212,7 @@ void WebMessagePortChannelImpl::OnMessage(
     msg.ports.resize(sent_message_port_ids.size());
     for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
       msg.ports[i] = new WebMessagePortChannelImpl(
-          new_routing_ids[i], sent_message_port_ids[i]);
+          new_routing_ids[i], sent_message_port_ids[i], child_thread_loop_);
     }
   }
 

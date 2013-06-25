@@ -147,11 +147,10 @@ bool MockPluginDelegate::AsyncOpenFile(const base::FilePath& path,
   return false;
 }
 
-bool MockPluginDelegate::AsyncOpenFileSystemURL(
+void MockPluginDelegate::AsyncOpenFileSystemURL(
     const GURL& path,
     int flags,
     const AsyncOpenFileSystemURLCallback& callback) {
-  return false;
 }
 
 bool MockPluginDelegate::IsFileSystemOpened(
@@ -172,60 +171,52 @@ GURL MockPluginDelegate::GetFileSystemRootUrl(
   return GURL();
 }
 
-bool MockPluginDelegate::MakeDirectory(
+void MockPluginDelegate::MakeDirectory(
     const GURL& path,
     bool recursive,
     const StatusCallback& callback) {
-  return false;
 }
 
-bool MockPluginDelegate::Query(
+void MockPluginDelegate::Query(
     const GURL& path,
     const MetadataCallback& success_callback,
     const StatusCallback& error_callback) {
-  return false;
 }
 
-bool MockPluginDelegate::ReadDirectoryEntries(
+void MockPluginDelegate::ReadDirectoryEntries(
     const GURL& path,
     const ReadDirectoryCallback& success_callback,
     const StatusCallback& error_callback) {
-  return false;
 }
 
-bool MockPluginDelegate::Touch(
+void MockPluginDelegate::Touch(
     const GURL& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
-  return false;
 }
 
-bool MockPluginDelegate::SetLength(
+void MockPluginDelegate::SetLength(
     const GURL& path,
     int64_t length,
     const StatusCallback& callback) {
-  return false;
 }
 
-bool MockPluginDelegate::Delete(
+void MockPluginDelegate::Delete(
     const GURL& path,
     const StatusCallback& callback) {
-  return false;
 }
 
-bool MockPluginDelegate::Rename(
+void MockPluginDelegate::Rename(
     const GURL& file_path,
     const GURL& new_file_path,
     const StatusCallback& callback) {
-  return false;
 }
 
-bool MockPluginDelegate::ReadDirectory(
+void MockPluginDelegate::ReadDirectory(
     const GURL& directory_path,
     const ReadDirectoryCallback& success_callback,
     const StatusCallback& error_callback) {
-  return false;
 }
 
 void MockPluginDelegate::QueryAvailableSpace(

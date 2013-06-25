@@ -125,17 +125,14 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
   reply_context_ = context->MakeReplyMessageContext();
-  if (!file_system_dispatcher->OpenFileSystem(
+  file_system_dispatcher->OpenFileSystem(
       GURL(plugin_instance->container()->element().document().url()).
           GetOrigin(),
       file_system_type, expected_size, true /* create */,
       base::Bind(&PepperFileSystemHost::DidOpenFileSystem,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&PepperFileSystemHost::DidFailOpenFileSystem,
-                 weak_factory_.GetWeakPtr()))) {
-    return PP_ERROR_FAILED;
-  }
-
+                 weak_factory_.GetWeakPtr()));
   return PP_OK_COMPLETIONPENDING;
 }
 

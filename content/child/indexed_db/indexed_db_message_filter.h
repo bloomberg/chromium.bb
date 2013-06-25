@@ -14,12 +14,16 @@ namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
+namespace IPC {
+class SyncMessageFilter;
+}
+
 namespace content {
 class IndexedDBDispatcher;
 
 class IndexedDBMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
-  IndexedDBMessageFilter();
+  explicit IndexedDBMessageFilter(IPC::SyncMessageFilter* sync_message_filter);
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -38,6 +42,7 @@ class IndexedDBMessageFilter : public IPC::ChannelProxy::MessageFilter {
   void OnStaleUpgradeNeeded(const IndexedDBMsg_CallbacksUpgradeNeeded_Params&);
 
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
+  scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBMessageFilter);
 };

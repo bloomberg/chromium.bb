@@ -15,8 +15,16 @@
 #include "third_party/WebKit/public/platform/WebIDBFactory.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace cc {
 class ContextProvider;
+}
+
+namespace IPC {
+class SyncMessageFilter;
 }
 
 namespace WebKit {
@@ -180,6 +188,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 
+  scoped_refptr<base::MessageLoopProxy> child_thread_loop_;
+  scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   scoped_refptr<cc::ContextProvider> shared_offscreen_context_;

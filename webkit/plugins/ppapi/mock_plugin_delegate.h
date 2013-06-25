@@ -68,7 +68,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual bool AsyncOpenFile(const base::FilePath& path,
                              int flags,
                              const AsyncOpenFileCallback& callback);
-  virtual bool AsyncOpenFileSystemURL(
+  virtual void AsyncOpenFileSystemURL(
       const GURL& path,
       int flags,
       const AsyncOpenFileSystemURLCallback& callback);
@@ -78,30 +78,30 @@ class MockPluginDelegate : public PluginDelegate {
                                               PP_Resource resource) const;
   virtual GURL GetFileSystemRootUrl(PP_Instance instance,
                                     PP_Resource resource) const;
-  virtual bool MakeDirectory(
+  virtual void MakeDirectory(
       const GURL& path,
       bool recursive,
       const StatusCallback& callback);
-  virtual bool Query(const GURL& path,
+  virtual void Query(const GURL& path,
                      const MetadataCallback& success_callback,
                      const StatusCallback& error_callback);
-  virtual bool ReadDirectoryEntries(
+  virtual void ReadDirectoryEntries(
       const GURL& path,
       const ReadDirectoryCallback& success_callback,
       const StatusCallback& error_callback);
-  virtual bool Touch(const GURL& path,
+  virtual void Touch(const GURL& path,
                      const base::Time& last_access_time,
                      const base::Time& last_modified_time,
                      const StatusCallback& callback);
-  virtual bool SetLength(const GURL& path,
+  virtual void SetLength(const GURL& path,
                          int64_t length,
                          const StatusCallback& callback);
-  virtual bool Delete(const GURL& path,
+  virtual void Delete(const GURL& path,
                       const StatusCallback& callback);
-  virtual bool Rename(const GURL& file_path,
+  virtual void Rename(const GURL& file_path,
                       const GURL& new_file_path,
                       const StatusCallback& callback);
-  virtual bool ReadDirectory(
+  virtual void ReadDirectory(
       const GURL& directory_path,
       const ReadDirectoryCallback& success_callback,
       const StatusCallback& error_callback);

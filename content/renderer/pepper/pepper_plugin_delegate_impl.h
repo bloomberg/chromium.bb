@@ -208,7 +208,7 @@ class PepperPluginDelegateImpl
   virtual bool AsyncOpenFile(const base::FilePath& path,
                              int flags,
                              const AsyncOpenFileCallback& callback) OVERRIDE;
-  virtual bool AsyncOpenFileSystemURL(
+  virtual void AsyncOpenFileSystemURL(
       const GURL& path,
       int flags,
       const AsyncOpenFileSystemURLCallback& callback) OVERRIDE;
@@ -219,35 +219,35 @@ class PepperPluginDelegateImpl
       PP_Resource resource) const OVERRIDE;
   virtual GURL GetFileSystemRootUrl(PP_Instance instance,
                                     PP_Resource resource) const OVERRIDE;
-  virtual bool MakeDirectory(
+  virtual void MakeDirectory(
       const GURL& path,
       bool recursive,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool Query(
+  virtual void Query(
       const GURL& path,
       const MetadataCallback& success_callback,
       const StatusCallback& error_callback) OVERRIDE;
-  virtual bool ReadDirectoryEntries(
+  virtual void ReadDirectoryEntries(
       const GURL& path,
       const ReadDirectoryCallback& success_callback,
       const StatusCallback& error_callback) OVERRIDE;
-  virtual bool Touch(
+  virtual void Touch(
       const GURL& path,
       const base::Time& last_access_time,
       const base::Time& last_modified_time,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool SetLength(
+  virtual void SetLength(
       const GURL& path,
       int64_t length,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool Delete(
+  virtual void Delete(
       const GURL& path,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool Rename(
+  virtual void Rename(
       const GURL& file_path,
       const GURL& new_file_path,
       const StatusCallback& callback) OVERRIDE;
-  virtual bool ReadDirectory(
+  virtual void ReadDirectory(
       const GURL& directory_path,
       const ReadDirectoryCallback& success_callback,
       const StatusCallback& error_callback) OVERRIDE;

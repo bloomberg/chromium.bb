@@ -15,7 +15,12 @@
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace content {
+class ChildThread;
 
 // This is thread safe.
 class WebMessagePortChannelImpl
@@ -23,8 +28,10 @@ class WebMessagePortChannelImpl
       public IPC::Listener,
       public base::RefCountedThreadSafe<WebMessagePortChannelImpl> {
  public:
-  WebMessagePortChannelImpl();
-  WebMessagePortChannelImpl(int route_id, int message_port_id);
+  explicit WebMessagePortChannelImpl(base::MessageLoopProxy* child_thread_loop);
+  WebMessagePortChannelImpl(int route_id,
+                            int message_port_id,
+                            base::MessageLoopProxy* child_thread_loop);
 
   // Queues received and incoming messages until there are no more in-flight
   // messages, then sends all of them to the browser process.
@@ -72,6 +79,7 @@ class WebMessagePortChannelImpl
 
   int route_id_;  // The routing id for this object.
   int message_port_id_;  // A globally unique identifier for this message port.
+  scoped_refptr<base::MessageLoopProxy> child_thread_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMessagePortChannelImpl);
 };

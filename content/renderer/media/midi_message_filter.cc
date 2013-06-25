@@ -21,6 +21,7 @@ MIDIMessageFilter::MIDIMessageFilter(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
     : channel_(NULL),
       io_message_loop_(io_message_loop),
+      main_message_loop_(base::MessageLoopProxy::current()),
       next_available_id_(0) {
 }
 
@@ -98,7 +99,8 @@ void MIDIMessageFilter::OnAccessApproved(
     MIDIPortInfoList inputs,
     MIDIPortInfoList outputs) {
   // Handle on the main JS thread.
-  ChildThread::current()->message_loop()->PostTask(FROM_HERE,
+  main_message_loop_->PostTask(
+      FROM_HERE,
       base::Bind(&MIDIMessageFilter::HandleAccessApproved, this,
                  client_id, access, success, inputs, outputs));
 }
@@ -156,7 +158,8 @@ void MIDIMessageFilter::OnDataReceived(int port,
                                        double timestamp) {
   TRACE_EVENT0("midi", "MIDIMessageFilter::OnDataReceived");
 
-  ChildThread::current()->message_loop()->PostTask(FROM_HERE,
+  main_message_loop_->PostTask(
+      FROM_HERE,
       base::Bind(&MIDIMessageFilter::HandleDataReceived, this,
                  port, data, timestamp));
 }

@@ -33,8 +33,8 @@ static base::LazyInstance<base::ThreadLocalPointer<WorkerThread> > lazy_tls =
 
 WorkerThread::WorkerThread() {
   lazy_tls.Pointer()->Set(this);
-  webkit_platform_support_.reset(
-      new WorkerWebKitPlatformSupportImpl(thread_safe_sender()));
+  webkit_platform_support_.reset(new WorkerWebKitPlatformSupportImpl(
+      thread_safe_sender(), sync_message_filter()));
   WebKit::initialize(webkit_platform_support_.get());
 
   appcache_dispatcher_.reset(
@@ -46,7 +46,8 @@ WorkerThread::WorkerThread() {
   db_message_filter_ = new DBMessageFilter();
   channel()->AddFilter(db_message_filter_.get());
 
-  indexed_db_message_filter_ = new IndexedDBMessageFilter;
+  indexed_db_message_filter_ = new IndexedDBMessageFilter(
+      sync_message_filter());
   channel()->AddFilter(indexed_db_message_filter_.get());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();

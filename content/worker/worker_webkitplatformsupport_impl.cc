@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/database_util.h"
@@ -72,8 +73,11 @@ bool WorkerWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
 //------------------------------------------------------------------------------
 
 WorkerWebKitPlatformSupportImpl::WorkerWebKitPlatformSupportImpl(
-    ThreadSafeSender* sender)
-    : thread_safe_sender_(sender) {
+    ThreadSafeSender* sender,
+    IPC::SyncMessageFilter* sync_message_filter)
+    : thread_safe_sender_(sender),
+      child_thread_loop_(base::MessageLoopProxy::current()),
+      sync_message_filter_(sync_message_filter) {
 }
 
 WorkerWebKitPlatformSupportImpl::~WorkerWebKitPlatformSupportImpl() {
@@ -129,7 +133,7 @@ bool WorkerWebKitPlatformSupportImpl::isLinkVisited(
 
 WebMessagePortChannel*
 WorkerWebKitPlatformSupportImpl::createMessagePortChannel() {
-  return new WebMessagePortChannelImpl();
+  return new WebMessagePortChannelImpl(child_thread_loop_);
 }
 
 void WorkerWebKitPlatformSupportImpl::setCookies(
@@ -171,27 +175,32 @@ void WorkerWebKitPlatformSupportImpl::dispatchStorageEvent(
 Platform::FileHandle
 WorkerWebKitPlatformSupportImpl::databaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {
-  return DatabaseUtil::DatabaseOpenFile(vfs_file_name, desired_flags);
+  return DatabaseUtil::DatabaseOpenFile(
+      vfs_file_name, desired_flags, sync_message_filter_);
 }
 
 int WorkerWebKitPlatformSupportImpl::databaseDeleteFile(
     const WebString& vfs_file_name, bool sync_dir) {
-  return DatabaseUtil::DatabaseDeleteFile(vfs_file_name, sync_dir);
+  return DatabaseUtil::DatabaseDeleteFile(
+      vfs_file_name, sync_dir, sync_message_filter_);
 }
 
 long WorkerWebKitPlatformSupportImpl::databaseGetFileAttributes(
     const WebString& vfs_file_name) {
-  return DatabaseUtil::DatabaseGetFileAttributes(vfs_file_name);
+  return DatabaseUtil::DatabaseGetFileAttributes(
+      vfs_file_name, sync_message_filter_);
 }
 
 long long WorkerWebKitPlatformSupportImpl::databaseGetFileSize(
     const WebString& vfs_file_name) {
-  return DatabaseUtil::DatabaseGetFileSize(vfs_file_name);
+  return DatabaseUtil::DatabaseGetFileSize(
+      vfs_file_name, sync_message_filter_);
 }
 
 long long WorkerWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
     const WebString& origin_identifier) {
-  return DatabaseUtil::DatabaseGetSpaceAvailable(origin_identifier);
+  return DatabaseUtil::DatabaseGetSpaceAvailable(
+      origin_identifier, sync_message_filter_);
 }
 
 WebKit::WebIDBFactory* WorkerWebKitPlatformSupportImpl::idbFactory() {

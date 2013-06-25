@@ -5,9 +5,11 @@
 #include "content/gpu/gpu_child_thread.h"
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
@@ -20,6 +22,9 @@
 namespace content {
 namespace {
 
+static base::LazyInstance<scoped_refptr<ThreadSafeSender> >
+    g_thread_safe_sender = LAZY_INSTANCE_INITIALIZER;
+
 bool GpuProcessLogMessageHandler(int severity,
                                  const char* file, int line,
                                  size_t message_start,
@@ -27,16 +32,8 @@ bool GpuProcessLogMessageHandler(int severity,
   std::string header = str.substr(0, message_start);
   std::string message = str.substr(message_start);
 
-  // If we are not on main thread in child process, send through
-  // the sync_message_filter; otherwise send directly.
-  if (base::MessageLoop::current() !=
-      ChildProcess::current()->main_thread()->message_loop()) {
-    ChildProcess::current()->main_thread()->sync_message_filter()->Send(
-        new GpuHostMsg_OnLogMessage(severity, header, message));
-  } else {
-    ChildThread::current()->Send(new GpuHostMsg_OnLogMessage(severity, header,
-        message));
-  }
+  g_thread_safe_sender.Get()->Send(new GpuHostMsg_OnLogMessage(
+      severity, header, message));
 
   return false;
 }
@@ -55,6 +52,7 @@ GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
 #if defined(OS_WIN)
   target_services_ = NULL;
 #endif
+  g_thread_safe_sender.Get() = thread_safe_sender();
 }
 
 GpuChildThread::GpuChildThread(const std::string& channel_id)
@@ -72,6 +70,7 @@ GpuChildThread::GpuChildThread(const std::string& channel_id)
   if (!gfx::GLSurface::InitializeOneOff()) {
     VLOG(1) << "gfx::GLSurface::InitializeOneOff()";
   }
+  g_thread_safe_sender.Get() = thread_safe_sender();
 }
 
 GpuChildThread::~GpuChildThread() {

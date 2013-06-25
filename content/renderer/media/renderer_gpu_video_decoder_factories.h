@@ -17,6 +17,7 @@
 #include "ui/gfx/size.h"
 
 namespace base {
+class MessageLoopProxy;
 class WaitableEvent;
 }
 
@@ -41,7 +42,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   // use.
   RendererGpuVideoDecoderFactories(
       GpuChannelHost* gpu_channel_host,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop,
+      const scoped_refptr<base::MessageLoopProxy>& compositor_message_loop,
       WebGraphicsContext3DCommandBufferImpl* wgc3dcbi);
 
   // media::GpuVideoDecoder::Factories implementation.
@@ -79,7 +80,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   // of return values and each takes a WaitableEvent* param to signal completion
   // (except for DeleteTexture, which is fire-and-forget).
   // AsyncCreateSharedMemory runs on the renderer thread and the rest run on
-  // |message_loop_|.
+  // |compositor_message_loop_|.
   // The AsyncCreateVideoDecodeAccelerator returns its output in the vda_
   // member.
   void AsyncCreateVideoDecodeAccelerator(
@@ -94,7 +95,8 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   void AsyncCreateSharedMemory(size_t size);
   void AsyncDestroyVideoDecodeAccelerator();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::MessageLoopProxy> compositor_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> main_message_loop_;
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
   base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> context_;
 

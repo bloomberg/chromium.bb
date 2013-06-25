@@ -220,12 +220,16 @@ void AddHistogramSample(void* hist, int sample) {
 class RenderThreadImpl::GpuVDAContextLostCallback
     : public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
  public:
-  GpuVDAContextLostCallback() {}
+  GpuVDAContextLostCallback()
+      : main_message_loop_(base::MessageLoopProxy::current()) {}
   virtual ~GpuVDAContextLostCallback() {}
   virtual void onContextLost() {
-    ChildThread::current()->message_loop()->PostTask(FROM_HERE, base::Bind(
+    main_message_loop_->PostTask(FROM_HERE, base::Bind(
         &RenderThreadImpl::OnGpuVDAContextLoss));
   }
+
+ private:
+  scoped_refptr<base::MessageLoopProxy> main_message_loop_;
 };
 
 class RenderThreadImpl::RendererContextProviderCommandBuffer
@@ -372,7 +376,7 @@ void RenderThreadImpl::Init() {
   midi_message_filter_ = new MIDIMessageFilter(GetIOMessageLoopProxy());
   AddFilter(midi_message_filter_.get());
 
-  AddFilter(new IndexedDBMessageFilter);
+  AddFilter(new IndexedDBMessageFilter(sync_message_filter()));
 
   GetContentClient()->renderer()->RenderThreadStarted();
 

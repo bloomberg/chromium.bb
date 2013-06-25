@@ -20,19 +20,20 @@ namespace content {
 RendererGpuVideoDecoderFactories::~RendererGpuVideoDecoderFactories() {}
 RendererGpuVideoDecoderFactories::RendererGpuVideoDecoderFactories(
     GpuChannelHost* gpu_channel_host,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    const scoped_refptr<base::MessageLoopProxy>& compositor_message_loop,
     WebGraphicsContext3DCommandBufferImpl* context)
-    : message_loop_(message_loop),
+    : compositor_message_loop_(compositor_message_loop),
+      main_message_loop_(base::MessageLoopProxy::current()),
       gpu_channel_host_(gpu_channel_host),
       aborted_waiter_(true, false),
       compositor_loop_async_waiter_(false, false),
       render_thread_async_waiter_(false, false) {
-  if (message_loop_->BelongsToCurrentThread()) {
+  if (compositor_message_loop_->BelongsToCurrentThread()) {
     AsyncGetContext(context);
     return;
   }
   // Threaded compositor requires us to wait for the context to be acquired.
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  compositor_message_loop_->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncGetContext,
       // Unretained to avoid ref/deref'ing |*this|, which is not yet stored in a
       // scoped_refptr.  Safe because the Wait() below keeps us alive until this
@@ -63,10 +64,10 @@ media::VideoDecodeAccelerator*
 RendererGpuVideoDecoderFactories::CreateVideoDecodeAccelerator(
     media::VideoCodecProfile profile,
     media::VideoDecodeAccelerator::Client* client) {
-  DCHECK(!message_loop_->BelongsToCurrentThread());
+  DCHECK(!compositor_message_loop_->BelongsToCurrentThread());
   // The VDA is returned in the vda_ member variable by the
   // AsyncCreateVideoDecodeAccelerator() function.
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  compositor_message_loop_->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncCreateVideoDecodeAccelerator,
       this, profile, client));
 
@@ -76,7 +77,7 @@ RendererGpuVideoDecoderFactories::CreateVideoDecodeAccelerator(
     // If we are aborting and the VDA is created by the
     // AsyncCreateVideoDecodeAccelerator() function later we need to ensure
     // that it is destroyed on the same thread.
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+    compositor_message_loop_->PostTask(FROM_HERE, base::Bind(
         &RendererGpuVideoDecoderFactories::AsyncDestroyVideoDecodeAccelerator,
         this));
     return NULL;
@@ -87,7 +88,7 @@ RendererGpuVideoDecoderFactories::CreateVideoDecodeAccelerator(
 void RendererGpuVideoDecoderFactories::AsyncCreateVideoDecodeAccelerator(
       media::VideoCodecProfile profile,
       media::VideoDecodeAccelerator::Client* client) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(compositor_message_loop_->BelongsToCurrentThread());
 
   if (context_.get() && context_->GetCommandBufferProxy()) {
     vda_ = gpu_channel_host_->CreateVideoDecoder(
@@ -103,8 +104,8 @@ uint32 RendererGpuVideoDecoderFactories::CreateTextures(
     uint32 texture_target) {
   uint32 sync_point = 0;
 
-  DCHECK(!message_loop_->BelongsToCurrentThread());
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  DCHECK(!compositor_message_loop_->BelongsToCurrentThread());
+  compositor_message_loop_->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncCreateTextures, this,
       count, size, texture_target, &sync_point));
 
@@ -120,7 +121,7 @@ uint32 RendererGpuVideoDecoderFactories::CreateTextures(
 void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
     int32 count, const gfx::Size& size, uint32 texture_target,
     uint32* sync_point) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(compositor_message_loop_->BelongsToCurrentThread());
   DCHECK(texture_target);
 
   if (!context_.get()) {
@@ -159,13 +160,13 @@ void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
 }
 
 void RendererGpuVideoDecoderFactories::DeleteTexture(uint32 texture_id) {
-  DCHECK(!message_loop_->BelongsToCurrentThread());
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  DCHECK(!compositor_message_loop_->BelongsToCurrentThread());
+  compositor_message_loop_->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncDeleteTexture, this, texture_id));
 }
 
 void RendererGpuVideoDecoderFactories::AsyncDeleteTexture(uint32 texture_id) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(compositor_message_loop_->BelongsToCurrentThread());
   if (!context_.get())
     return;
 
@@ -210,8 +211,8 @@ void RendererGpuVideoDecoderFactories::ReadPixels(
   // until the AsyncReadPixels() call completes.
   read_pixels_bitmap_.setPixelRef(pixels.pixelRef());
 
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!compositor_message_loop_->BelongsToCurrentThread()) {
+    compositor_message_loop_->PostTask(FROM_HERE, base::Bind(
         &RendererGpuVideoDecoderFactories::AsyncReadPixels, this,
         texture_id, texture_target, size));
     base::WaitableEvent* objects[] = {&aborted_waiter_,
@@ -226,7 +227,7 @@ void RendererGpuVideoDecoderFactories::ReadPixels(
 
 void RendererGpuVideoDecoderFactories::AsyncReadPixels(
     uint32 texture_id, uint32 texture_target, const gfx::Size& size) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(compositor_message_loop_->BelongsToCurrentThread());
   if (!context_.get()) {
     compositor_loop_async_waiter_.Signal();
     return;
@@ -260,9 +261,8 @@ void RendererGpuVideoDecoderFactories::AsyncReadPixels(
 
 base::SharedMemory* RendererGpuVideoDecoderFactories::CreateSharedMemory(
     size_t size) {
-  DCHECK_NE(base::MessageLoop::current(),
-            ChildThread::current()->message_loop());
-  ChildThread::current()->message_loop()->PostTask(FROM_HERE, base::Bind(
+  DCHECK(!main_message_loop_->BelongsToCurrentThread());
+  main_message_loop_->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncCreateSharedMemory, this,
       size));
 
@@ -284,7 +284,7 @@ void RendererGpuVideoDecoderFactories::AsyncCreateSharedMemory(size_t size) {
 
 scoped_refptr<base::MessageLoopProxy>
 RendererGpuVideoDecoderFactories::GetMessageLoop() {
-  return message_loop_;
+  return compositor_message_loop_;
 }
 
 void RendererGpuVideoDecoderFactories::Abort() {

@@ -61,66 +61,66 @@ class FileSystemDispatcher : public IPC::Listener {
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
-  bool OpenFileSystem(const GURL& origin_url,
+  void OpenFileSystem(const GURL& origin_url,
                       fileapi::FileSystemType type,
                       long long size,
                       bool create,
                       const OpenFileSystemCallback& success_callback,
                       const StatusCallback& error_callback);
-  bool DeleteFileSystem(const GURL& origin_url,
+  void DeleteFileSystem(const GURL& origin_url,
                         fileapi::FileSystemType type,
                         const StatusCallback& callback);
-  bool Move(const GURL& src_path,
+  void Move(const GURL& src_path,
             const GURL& dest_path,
             const StatusCallback& callback);
-  bool Copy(const GURL& src_path,
+  void Copy(const GURL& src_path,
             const GURL& dest_path,
             const StatusCallback& callback);
-  bool Remove(const GURL& path,
+  void Remove(const GURL& path,
               bool recursive,
               const StatusCallback& callback);
-  bool ReadMetadata(const GURL& path,
+  void ReadMetadata(const GURL& path,
                     const MetadataCallback& success_callback,
                     const StatusCallback& error_callback);
-  bool Create(const GURL& path,
+  void Create(const GURL& path,
               bool exclusive,
               bool is_directory,
               bool recursive,
               const StatusCallback& callback);
-  bool Exists(const GURL& path,
+  void Exists(const GURL& path,
               bool for_directory,
               const StatusCallback& callback);
-  bool ReadDirectory(const GURL& path,
+  void ReadDirectory(const GURL& path,
                      const ReadDirectoryCallback& success_callback,
                      const StatusCallback& error_callback);
-  bool Truncate(const GURL& path,
+  void Truncate(const GURL& path,
                 int64 offset,
                 int* request_id_out,
                 const StatusCallback& callback);
-  bool Write(const GURL& path,
+  void Write(const GURL& path,
              const GURL& blob_url,
              int64 offset,
              int* request_id_out,
              const WriteCallback& success_callback,
              const StatusCallback& error_callback);
-  bool Cancel(int request_id_to_cancel,
+  void Cancel(int request_id_to_cancel,
               const StatusCallback& callback);
-  bool TouchFile(const GURL& file_path,
+  void TouchFile(const GURL& file_path,
                  const base::Time& last_access_time,
                  const base::Time& last_modified_time,
                  const StatusCallback& callback);
 
   // This returns a raw open PlatformFile, unlike the above, which are
   // self-contained operations.
-  bool OpenFile(const GURL& file_path,
+  void OpenFile(const GURL& file_path,
                 int file_flags,  // passed to FileUtilProxy::CreateOrOpen
                 const OpenFileCallback& success_callback,
                 const StatusCallback& error_callback);
   // This must be paired with OpenFile, and called after finished using the
   // raw PlatformFile returned from OpenFile.
-  bool NotifyCloseFile(int file_open_id);
+  void NotifyCloseFile(int file_open_id);
 
-  bool CreateSnapshotFile(const GURL& file_path,
+  void CreateSnapshotFile(const GURL& file_path,
                           const CreateSnapshotFileCallback& success_callback,
                           const StatusCallback& error_callback);
 

@@ -10,6 +10,14 @@
 #include "third_party/WebKit/public/platform/WebIDBFactory.h"
 #include "third_party/WebKit/public/platform/WebMimeRegistry.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
+namespace IPC {
+class SyncMessageFilter;
+}
+
 namespace WebKit {
 class WebFileUtilities;
 }
@@ -21,7 +29,9 @@ class WebFileSystemImpl;
 class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
                                         public WebKit::WebMimeRegistry {
  public:
-  explicit WorkerWebKitPlatformSupportImpl(ThreadSafeSender* sender);
+  WorkerWebKitPlatformSupportImpl(
+      ThreadSafeSender* sender,
+      IPC::SyncMessageFilter* sync_message_filter);
   virtual ~WorkerWebKitPlatformSupportImpl();
 
   // WebKitPlatformSupport methods:
@@ -99,6 +109,8 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
   scoped_ptr<WebFileSystemImpl> web_file_system_;
   scoped_ptr<WebKit::WebIDBFactory> web_idb_factory_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  scoped_refptr<base::MessageLoopProxy> child_thread_loop_;
+  scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
 };
 
 }  // namespace content

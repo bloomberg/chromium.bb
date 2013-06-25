@@ -139,13 +139,12 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
   PPB_FileRef_Impl* file_ref = static_cast<PPB_FileRef_Impl*>(file_ref_api);
   if (file_ref->HasValidFileSystem()) {
     file_system_url_ = file_ref->GetFileSystemURL();
-    if (!plugin_delegate_->AsyncOpenFileSystemURL(
-            file_system_url_, flags,
-            base::Bind(
-                &PepperFileIOHost::ExecutePlatformOpenFileSystemURLCallback,
-                weak_factory_.GetWeakPtr(),
-                context->MakeReplyMessageContext())))
-      return PP_ERROR_FAILED;
+    plugin_delegate_->AsyncOpenFileSystemURL(
+        file_system_url_, flags,
+        base::Bind(
+            &PepperFileIOHost::ExecutePlatformOpenFileSystemURLCallback,
+            weak_factory_.GetWeakPtr(),
+            context->MakeReplyMessageContext()));
   } else {
     if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL)
       return PP_ERROR_FAILED;
@@ -196,14 +195,13 @@ int32_t PepperFileIOHost::OnHostMsgTouch(
     return PP_ERROR_FAILED;
 
   if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
-    if (!plugin_delegate_->Touch(
-            file_system_url_,
-            PPTimeToTime(last_access_time),
-            PPTimeToTime(last_modified_time),
-            base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
-                        weak_factory_.GetWeakPtr(),
-                        context->MakeReplyMessageContext())))
-      return PP_ERROR_FAILED;
+    plugin_delegate_->Touch(
+        file_system_url_,
+        PPTimeToTime(last_access_time),
+        PPTimeToTime(last_modified_time),
+        base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
+                    weak_factory_.GetWeakPtr(),
+                    context->MakeReplyMessageContext()));
     state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
     return PP_OK_COMPLETIONPENDING;
   }
@@ -308,12 +306,11 @@ int32_t PepperFileIOHost::OnHostMsgSetLength(
     return PP_ERROR_FAILED;
 
   if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
-    if (!plugin_delegate_->SetLength(
-            file_system_url_, length,
-            base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
-                       weak_factory_.GetWeakPtr(),
-                       context->MakeReplyMessageContext())))
-      return PP_ERROR_FAILED;
+    plugin_delegate_->SetLength(
+        file_system_url_, length,
+        base::Bind(&PepperFileIOHost::ExecutePlatformGeneralCallback,
+                   weak_factory_.GetWeakPtr(),
+                   context->MakeReplyMessageContext()));
   } else {
     // TODO(nhiroki): fix a failure of FileIO.SetLength for an external
     // filesystem on Mac due to sandbox restrictions (http://crbug.com/156077).

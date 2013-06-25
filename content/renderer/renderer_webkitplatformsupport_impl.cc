@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/shared_memory.h"
@@ -217,7 +218,8 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
       hyphenator_(new RendererWebKitPlatformSupportImpl::Hyphenator),
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
-      shared_worker_repository_(new WebSharedWorkerRepositoryImpl) {
+      shared_worker_repository_(new WebSharedWorkerRepositoryImpl),
+      child_thread_loop_(base::MessageLoopProxy::current()) {
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(
         new RendererWebKitPlatformSupportImpl::SandboxSupport);
@@ -226,8 +228,10 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
   }
 
   // ChildThread may not exist in some tests.
-  if (ChildThread::current())
+  if (ChildThread::current()) {
+    sync_message_filter_ = ChildThread::current()->sync_message_filter();
     thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
+  }
 }
 
 RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl() {
@@ -302,7 +306,7 @@ bool RendererWebKitPlatformSupportImpl::isLinkVisited(
 
 WebKit::WebMessagePortChannel*
 RendererWebKitPlatformSupportImpl::createMessagePortChannel() {
-  return new WebMessagePortChannelImpl();
+  return new WebMessagePortChannelImpl(child_thread_loop_);
 }
 
 void RendererWebKitPlatformSupportImpl::prefetchHostName(
@@ -674,27 +678,32 @@ RendererWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
 Platform::FileHandle
 RendererWebKitPlatformSupportImpl::databaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {
-  return DatabaseUtil::DatabaseOpenFile(vfs_file_name, desired_flags);
+  return DatabaseUtil::DatabaseOpenFile(
+      vfs_file_name, desired_flags, sync_message_filter_);
 }
 
 int RendererWebKitPlatformSupportImpl::databaseDeleteFile(
     const WebString& vfs_file_name, bool sync_dir) {
-  return DatabaseUtil::DatabaseDeleteFile(vfs_file_name, sync_dir);
+  return DatabaseUtil::DatabaseDeleteFile(
+      vfs_file_name, sync_dir, sync_message_filter_);
 }
 
 long RendererWebKitPlatformSupportImpl::databaseGetFileAttributes(
     const WebString& vfs_file_name) {
-  return DatabaseUtil::DatabaseGetFileAttributes(vfs_file_name);
+  return DatabaseUtil::DatabaseGetFileAttributes(
+      vfs_file_name, sync_message_filter_);
 }
 
 long long RendererWebKitPlatformSupportImpl::databaseGetFileSize(
     const WebString& vfs_file_name) {
-  return DatabaseUtil::DatabaseGetFileSize(vfs_file_name);
+  return DatabaseUtil::DatabaseGetFileSize(
+      vfs_file_name, sync_message_filter_);
 }
 
 long long RendererWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
     const WebString& origin_identifier) {
-  return DatabaseUtil::DatabaseGetSpaceAvailable(origin_identifier);
+  return DatabaseUtil::DatabaseGetSpaceAvailable(
+      origin_identifier, sync_message_filter_);
 }
 
 WebKit::WebSharedWorkerRepository*

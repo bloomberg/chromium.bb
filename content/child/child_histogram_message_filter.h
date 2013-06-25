@@ -16,6 +16,7 @@
 
 namespace base {
 class HistogramSamples;
+class MessageLoopProxy;
 }  // namespace base
 
 namespace content {
@@ -54,6 +55,8 @@ class ChildHistogramMessageFilter : public base::HistogramFlattener,
   void UploadAllHistograms(int sequence_number);
 
   IPC::Channel* channel_;
+
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
   // Collection of histograms to send to the browser.
   HistogramPickledList pickled_histograms_;

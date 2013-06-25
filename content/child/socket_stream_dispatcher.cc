@@ -30,11 +30,9 @@ class IPCWebSocketStreamHandleBridge
     : public webkit_glue::WebSocketStreamHandleBridge {
  public:
   IPCWebSocketStreamHandleBridge(
-      ChildThread* child_thread,
       WebKit::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate)
       : socket_id_(kNoSocketId),
-        child_thread_(child_thread),
         handle_(handle),
         delegate_(delegate) {}
 
@@ -56,14 +54,10 @@ class IPCWebSocketStreamHandleBridge
  private:
   virtual ~IPCWebSocketStreamHandleBridge();
 
-  void DoConnect(const GURL& url);
-  void DoClose();
-
   // The ID for this bridge and corresponding SocketStream instance in the
   // browser process.
   int socket_id_;
 
-  ChildThread* child_thread_;
   WebKit::WebSocketStreamHandle* handle_;
   webkit_glue::WebSocketStreamHandleDelegate* delegate_;
 
@@ -89,40 +83,46 @@ IPCWebSocketStreamHandleBridge::~IPCWebSocketStreamHandleBridge() {
   if (socket_id_ == kNoSocketId)
     return;
 
-  child_thread_->Send(new SocketStreamHostMsg_Close(socket_id_));
+  ChildThread::current()->Send(new SocketStreamHostMsg_Close(socket_id_));
   socket_id_ = kNoSocketId;
 }
 
 void IPCWebSocketStreamHandleBridge::Connect(const GURL& url) {
-  DCHECK(child_thread_);
   DVLOG(1) << "Bridge (" << this << ") Connect (url=" << url << ")";
 
-  child_thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&IPCWebSocketStreamHandleBridge::DoConnect, this, url));
+  DCHECK_EQ(socket_id_, kNoSocketId);
+  if (delegate_)
+    delegate_->WillOpenStream(handle_, url);
+
+  socket_id_ = all_bridges.Get().Add(this);
+  DCHECK_NE(socket_id_, kNoSocketId);
+  int render_view_id = MSG_ROUTING_NONE;
+  const SocketStreamHandleData* data =
+      SocketStreamHandleData::ForHandle(handle_);
+  if (data)
+    render_view_id = data->render_view_id();
+  AddRef();  // Released in OnClosed().
+  ChildThread::current()->Send(
+      new SocketStreamHostMsg_Connect(render_view_id, url, socket_id_));
+  DVLOG(1) << "Bridge #" << socket_id_ << " sent IPC Connect";
+  // TODO(ukai): timeout to OnConnected.
 }
 
-bool IPCWebSocketStreamHandleBridge::Send(
-    const std::vector<char>& data) {
+bool IPCWebSocketStreamHandleBridge::Send(const std::vector<char>& data) {
   DVLOG(1) << "Bridge #" << socket_id_ << " Send (" << data.size()
            << " bytes)";
 
-  if (child_thread_->Send(
-      new SocketStreamHostMsg_SendData(socket_id_, data))) {
-    if (delegate_)
-      delegate_->WillSendData(handle_, &data[0], data.size());
-    return true;
-  }
-  return false;
+  ChildThread::current()->Send(
+      new SocketStreamHostMsg_SendData(socket_id_, data));
+  if (delegate_)
+    delegate_->WillSendData(handle_, &data[0], data.size());
+  return true;
 }
 
 void IPCWebSocketStreamHandleBridge::Close() {
   DVLOG(1) << "Bridge #" << socket_id_ << " Close";
 
-  AddRef();  // Released in DoClose().
-  child_thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&IPCWebSocketStreamHandleBridge::DoClose, this));
+  ChildThread::current()->Send(new SocketStreamHostMsg_Close(socket_id_));
 }
 
 void IPCWebSocketStreamHandleBridge::OnConnected(int max_pending_send_allowed) {
@@ -171,35 +171,6 @@ void IPCWebSocketStreamHandleBridge::OnFailed(int error_code,
     delegate_->DidFail(handle_, error_code, ASCIIToUTF16(error_msg));
 }
 
-void IPCWebSocketStreamHandleBridge::DoConnect(const GURL& url) {
-  DCHECK(child_thread_);
-  DCHECK_EQ(socket_id_, kNoSocketId);
-  if (delegate_)
-    delegate_->WillOpenStream(handle_, url);
-
-  socket_id_ = all_bridges.Get().Add(this);
-  DCHECK_NE(socket_id_, kNoSocketId);
-  int render_view_id = MSG_ROUTING_NONE;
-  const SocketStreamHandleData* data =
-      SocketStreamHandleData::ForHandle(handle_);
-  if (data)
-    render_view_id = data->render_view_id();
-  AddRef();  // Released in OnClosed().
-  if (child_thread_->Send(
-      new SocketStreamHostMsg_Connect(render_view_id, url, socket_id_))) {
-    DVLOG(1) << "Bridge #" << socket_id_ << " sent IPC Connect";
-    // TODO(ukai): timeout to OnConnected.
-  } else {
-    DLOG(ERROR) << "Bridge #" << socket_id_ << " failed to send IPC Connect";
-    OnClosed();
-  }
-}
-
-void IPCWebSocketStreamHandleBridge::DoClose() {
-  child_thread_->Send(new SocketStreamHostMsg_Close(socket_id_));
-  Release();
-}
-
 SocketStreamDispatcher::SocketStreamDispatcher() {
 }
 
@@ -208,8 +179,7 @@ webkit_glue::WebSocketStreamHandleBridge*
 SocketStreamDispatcher::CreateBridge(
     WebKit::WebSocketStreamHandle* handle,
     webkit_glue::WebSocketStreamHandleDelegate* delegate) {
-  return new IPCWebSocketStreamHandleBridge(
-      ChildThread::current(), handle, delegate);
+  return new IPCWebSocketStreamHandleBridge(handle, delegate);
 }
 
 bool SocketStreamDispatcher::OnMessageReceived(const IPC::Message& msg) {
