@@ -56,6 +56,10 @@ class SpdyWebSocketTestUtil : public SpdyTestUtil {
   const char* GetOpcodeKey() const;
   const char* GetLengthKey() const;
   const char* GetFinKey() const;
+
+ private:
+  // Hide this function to avoid erroneous use.
+  const char* GetPathKey() const;
 };
 
 }  // namespace net

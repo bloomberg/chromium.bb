@@ -174,4 +174,10 @@ const char* SpdyWebSocketTestUtil::GetFinKey() const {
   return is_spdy2() ? "fin" : ":fin";
 }
 
+const char* SpdyWebSocketTestUtil::GetPathKey() const {
+  // Override this function to avoid erroneous use.
+  ADD_FAILURE();
+  return "";
+}
+
 }  // namespace net

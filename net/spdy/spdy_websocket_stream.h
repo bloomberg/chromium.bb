@@ -82,10 +82,8 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
   virtual void OnClose(int status) OVERRIDE;
 
  private:
-  friend class SpdyWebSocketStreamSpdy2Test;
-  friend class SpdyWebSocketStreamSpdy3Test;
-  FRIEND_TEST_ALL_PREFIXES(SpdyWebSocketStreamSpdy2Test, Basic);
-  FRIEND_TEST_ALL_PREFIXES(SpdyWebSocketStreamSpdy3Test, Basic);
+  friend class SpdyWebSocketStreamTest;
+  FRIEND_TEST_ALL_PREFIXES(SpdyWebSocketStreamTest, Basic);
 
   void OnSpdyStreamCreated(int status);
 

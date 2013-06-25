@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -161,7 +161,9 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
 
 }  // namespace
 
-class SpdyWebSocketStreamSpdy2Test : public testing::Test {
+class SpdyWebSocketStreamTest
+    : public ::testing::Test,
+      public ::testing::WithParamInterface<NextProto> {
  public:
   OrderedSocketData* data() { return data_.get(); }
 
@@ -184,15 +186,15 @@ class SpdyWebSocketStreamSpdy2Test : public testing::Test {
   }
 
  protected:
-  SpdyWebSocketStreamSpdy2Test()
-      : spdy_util_(kProtoSPDY2),
+  SpdyWebSocketStreamTest()
+      : spdy_util_(GetParam()),
         spdy_settings_id_to_set_(SETTINGS_MAX_CONCURRENT_STREAMS),
         spdy_settings_flags_to_set_(SETTINGS_FLAG_PLEASE_PERSIST),
         spdy_settings_value_to_set_(1),
-        session_deps_(kProtoSPDY2),
+        session_deps_(GetParam()),
         stream_id_(0),
         created_stream_id_(0) {}
-  virtual ~SpdyWebSocketStreamSpdy2Test() {}
+  virtual ~SpdyWebSocketStreamTest() {}
 
   virtual void SetUp() {
     host_port_pair_.set_host("example.com");
@@ -273,11 +275,11 @@ class SpdyWebSocketStreamSpdy2Test : public testing::Test {
 
   void SendRequest() {
     scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
-    (*headers)["path"] = "/echo";
-    (*headers)["host"] = "example.com";
-    (*headers)["version"] = "WebSocket/13";
-    (*headers)["scheme"] = "ws";
-    (*headers)["origin"] = "http://example.com/wsdemo";
+    (*headers)[spdy_util_.GetWebSocketPathKey()] = "/echo";
+    (*headers)[spdy_util_.GetHostKey()] = "example.com";
+    (*headers)[spdy_util_.GetVersionKey()] = "WebSocket/13";
+    (*headers)[spdy_util_.GetSchemeKey()] = "ws";
+    (*headers)[spdy_util_.GetOriginKey()] = "http://example.com/wsdemo";
 
     websocket_stream_->SendRequest(headers.Pass());
   }
@@ -310,16 +312,27 @@ class SpdyWebSocketStreamSpdy2Test : public testing::Test {
   static const size_t kClosingFrameLength;
 };
 
+INSTANTIATE_TEST_CASE_P(
+    NextProto,
+    SpdyWebSocketStreamTest,
+    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2));
+
 // TODO(toyoshim): Replace old framing data to new one, then use HEADERS and
 // data frames.
-const char SpdyWebSocketStreamSpdy2Test::kMessageFrame[] = "\x81\x05hello";
-const char SpdyWebSocketStreamSpdy2Test::kClosingFrame[] = "\x88\0";
-const size_t SpdyWebSocketStreamSpdy2Test::kMessageFrameLength =
-    arraysize(SpdyWebSocketStreamSpdy2Test::kMessageFrame) - 1;
-const size_t SpdyWebSocketStreamSpdy2Test::kClosingFrameLength =
-    arraysize(SpdyWebSocketStreamSpdy2Test::kClosingFrame) - 1;
+const char SpdyWebSocketStreamTest::kMessageFrame[] = "\x81\x05hello";
+const char SpdyWebSocketStreamTest::kClosingFrame[] = "\x88\0";
+const size_t SpdyWebSocketStreamTest::kMessageFrameLength =
+    arraysize(SpdyWebSocketStreamTest::kMessageFrame) - 1;
+const size_t SpdyWebSocketStreamTest::kClosingFrameLength =
+    arraysize(SpdyWebSocketStreamTest::kClosingFrame) - 1;
 
-TEST_F(SpdyWebSocketStreamSpdy2Test, Basic) {
+// TODO(akalin): Don't early-exit in the tests below for values >
+// kProtoSPDY3.
+
+TEST_P(SpdyWebSocketStreamTest, Basic) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   Prepare(1);
   MockWrite writes[] = {
     CreateMockWrite(*request_frame_.get(), 1),
@@ -340,10 +353,10 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, Basic) {
 
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
-      base::Bind(&SpdyWebSocketStreamSpdy2Test::DoSendHelloFrame,
+      base::Bind(&SpdyWebSocketStreamTest::DoSendHelloFrame,
                  base::Unretained(this)));
   delegate.SetOnReceivedData(
-      base::Bind(&SpdyWebSocketStreamSpdy2Test::DoSendClosingFrame,
+      base::Bind(&SpdyWebSocketStreamTest::DoSendClosingFrame,
                  base::Unretained(this)));
 
   websocket_stream_.reset(new SpdyWebSocketStream(session_.get(), &delegate));
@@ -395,7 +408,10 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, Basic) {
   EXPECT_TRUE(data()->at_write_eof());
 }
 
-TEST_F(SpdyWebSocketStreamSpdy2Test, DestructionBeforeClose) {
+TEST_P(SpdyWebSocketStreamTest, DestructionBeforeClose) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   Prepare(1);
   MockWrite writes[] = {
     CreateMockWrite(*request_frame_.get(), 1),
@@ -413,10 +429,10 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, DestructionBeforeClose) {
 
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
-      base::Bind(&SpdyWebSocketStreamSpdy2Test::DoSendHelloFrame,
+      base::Bind(&SpdyWebSocketStreamTest::DoSendHelloFrame,
                  base::Unretained(this)));
   delegate.SetOnReceivedData(
-      base::Bind(&SpdyWebSocketStreamSpdy2Test::DoSync,
+      base::Bind(&SpdyWebSocketStreamTest::DoSync,
                  base::Unretained(this)));
 
   websocket_stream_.reset(new SpdyWebSocketStream(session_.get(), &delegate));
@@ -457,7 +473,10 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, DestructionBeforeClose) {
   EXPECT_TRUE(data()->at_write_eof());
 }
 
-TEST_F(SpdyWebSocketStreamSpdy2Test, DestructionAfterExplicitClose) {
+TEST_P(SpdyWebSocketStreamTest, DestructionAfterExplicitClose) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   Prepare(1);
   MockWrite writes[] = {
     CreateMockWrite(*request_frame_.get(), 1),
@@ -476,10 +495,10 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, DestructionAfterExplicitClose) {
 
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
-      base::Bind(&SpdyWebSocketStreamSpdy2Test::DoSendHelloFrame,
+      base::Bind(&SpdyWebSocketStreamTest::DoSendHelloFrame,
                  base::Unretained(this)));
   delegate.SetOnReceivedData(
-      base::Bind(&SpdyWebSocketStreamSpdy2Test::DoClose,
+      base::Bind(&SpdyWebSocketStreamTest::DoClose,
                  base::Unretained(this)));
 
   websocket_stream_.reset(new SpdyWebSocketStream(session_.get(), &delegate));
@@ -518,7 +537,10 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, DestructionAfterExplicitClose) {
       spdy_session_key_));
 }
 
-TEST_F(SpdyWebSocketStreamSpdy2Test, IOPending) {
+TEST_P(SpdyWebSocketStreamTest, IOPending) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   Prepare(1);
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(spdy_settings_to_send_));
@@ -557,13 +579,13 @@ TEST_F(SpdyWebSocketStreamSpdy2Test, IOPending) {
   // Create a WebSocketStream under test.
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnCreated(
-      base::Bind(&SpdyWebSocketStreamSpdy2Test::DoSync,
+      base::Bind(&SpdyWebSocketStreamTest::DoSync,
                  base::Unretained(this)));
   delegate.SetOnReceivedHeader(
-      base::Bind(&SpdyWebSocketStreamSpdy2Test::DoSendHelloFrame,
+      base::Bind(&SpdyWebSocketStreamTest::DoSendHelloFrame,
                  base::Unretained(this)));
   delegate.SetOnReceivedData(
-      base::Bind(&SpdyWebSocketStreamSpdy2Test::DoSendClosingFrame,
+      base::Bind(&SpdyWebSocketStreamTest::DoSendClosingFrame,
                  base::Unretained(this)));
 
   websocket_stream_.reset(new SpdyWebSocketStream(session_.get(), &delegate));

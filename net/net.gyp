@@ -1786,8 +1786,7 @@
         'spdy/spdy_test_util_spdy2.h',
         'spdy/spdy_test_utils.cc',
         'spdy/spdy_test_utils.h',
-        'spdy/spdy_websocket_stream_spdy2_unittest.cc',
-        'spdy/spdy_websocket_stream_spdy3_unittest.cc',
+        'spdy/spdy_websocket_stream_unittest.cc',
         'spdy/spdy_websocket_test_util.cc',
         'spdy/spdy_websocket_test_util.h',
         'spdy/spdy_write_queue_unittest.cc',
@@ -1922,7 +1921,7 @@
             'sources/': [
               ['exclude', '^socket_stream/'],
               ['exclude', '^websockets/'],
-              ['exclude', '^spdy/spdy_websocket_stream_spdy._unittest\\.cc$'],
+              ['exclude', '^spdy/spdy_websocket_stream_unittest\\.cc$'],
             ],
         }],
         [ 'disable_ftp_support==1', {
