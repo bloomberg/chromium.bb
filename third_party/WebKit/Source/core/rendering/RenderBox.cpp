@@ -2521,8 +2521,11 @@ LayoutUnit RenderBox::computeContentAndScrollbarLogicalHeightUsing(const Length&
 {
     // FIXME(cbiesinger): The css-sizing spec is considering changing what min-content/max-content should resolve to.
     // If that happens, this code will have to change.
-    if (height.isIntrinsic())
+    if (height.isIntrinsic()) {
+        if (intrinsicContentHeight == -1)
+            return -1; // Intrinsic height isn't available.
         return computeIntrinsicLogicalContentHeightUsing(height, intrinsicContentHeight, borderAndPaddingLogicalHeight());
+    }
     if (height.isFixed())
         return height.value();
     if (height.isPercent())
