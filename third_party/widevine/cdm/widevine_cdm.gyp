@@ -112,6 +112,13 @@
     {
       'target_name': 'widevine_cdm_binaries',
       'type': 'none',
+      'conditions': [
+        [ 'OS=="mac"', {
+          'xcode_settings': {
+            'COPY_PHASE_STRIP': 'NO',
+          }
+        }],
+      ],
       'copies': [{
         # TODO(ddorwin): Do we need a sub-directory? We either need a
         # sub-directory or to rename manifest.json before we can copy it.
