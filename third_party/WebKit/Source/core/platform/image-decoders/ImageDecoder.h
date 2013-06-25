@@ -175,21 +175,43 @@ namespace WebCore {
             return  (fixed * v) >> fixPointShift;
         }
 
+        inline void setRGB(PixelData* dest, unsigned r, unsigned g, unsigned b)
+        {
+            *dest = SkPackARGB32NoCheck(255, r, g, b);
+        }
+
         inline void setRGBA(PixelData* dest, unsigned r, unsigned g, unsigned b, unsigned a)
         {
-            if (m_premultiplyAlpha && a < 255) {
-                if (!a) {
-                    *dest = 0;
-                    return;
-                }
+            if (m_premultiplyAlpha)
+                setRGBAPremultiply(dest, r, g, b, a);
+            else
+                setRGBARaw(dest, r, g, b, a);
+        }
 
+        inline void setRGBAPremultiply(PixelData* dest, unsigned r, unsigned g, unsigned b, unsigned a)
+        {
+            ASSERT(m_premultiplyAlpha);
+
+            if (!a) {
+                *dest = 0;
+                return;
+            }
+            if (a < 255) {
                 unsigned alphaMult = a * fixPointMult;
                 r = fixPointUnsignedMultiply(r, alphaMult);
                 g = fixPointUnsignedMultiply(g, alphaMult);
                 b = fixPointUnsignedMultiply(b, alphaMult);
             }
+
             // Call the "NoCheck" version since we may deliberately pass non-premultiplied
             // values, and we don't want an assert.
+            *dest = SkPackARGB32NoCheck(a, r, g, b);
+        }
+
+        inline void setRGBARaw(PixelData* dest, unsigned r, unsigned g, unsigned b, unsigned a)
+        {
+            ASSERT(!m_premultiplyAlpha);
+
             *dest = SkPackARGB32NoCheck(a, r, g, b);
         }
 

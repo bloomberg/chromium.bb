@@ -489,18 +489,31 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
 
     // Write the decoded row pixels to the frame buffer.
     ImageFrame::PixelData* address = buffer.getAddr(0, y);
-    bool nonTrivialAlpha = false;
+    unsigned alphaMask = 255;
     int width = size().width();
 
+    // Do not merge the loops below. They are hand rolled for each case for maximal performance.
     png_bytep pixel = row;
-    for (int x = 0; x < width; ++x, pixel += colorChannels) {
-        unsigned alpha = hasAlpha ? pixel[3] : 255;
-        buffer.setRGBA(address++, pixel[0], pixel[1], pixel[2], alpha);
-        nonTrivialAlpha |= alpha < 255;
+    if (hasAlpha) {
+        if (buffer.premultiplyAlpha()) {
+            for (int x = 0; x < width; ++x, pixel += 4) {
+                buffer.setRGBAPremultiply(address + x, pixel[0], pixel[1], pixel[2], pixel[3]);
+                alphaMask &= pixel[3];
+            }
+        } else {
+            for (int x = 0; x < width; ++x, pixel += 4) {
+                buffer.setRGBARaw(address + x, pixel[0], pixel[1], pixel[2], pixel[3]);
+                alphaMask &= pixel[3];
+            }
+        }
+    } else {
+        for (int x = 0; x < width; ++x, pixel += 3)
+            buffer.setRGB(address + x, pixel[0], pixel[1], pixel[2]);
     }
 
-    if (nonTrivialAlpha && !buffer.hasAlpha())
-        buffer.setHasAlpha(nonTrivialAlpha);
+    bool hasNonTrivialAlpha = alphaMask != 255;
+    if (!buffer.hasAlpha())
+        buffer.setHasAlpha(hasNonTrivialAlpha);
 }
 
 void PNGImageDecoder::pngComplete()
