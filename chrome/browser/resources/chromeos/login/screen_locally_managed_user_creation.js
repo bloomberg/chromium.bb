@@ -8,8 +8,6 @@
 
 login.createScreen('LocallyManagedUserCreationScreen',
                    'managed-user-creation', function() {
-  var UserImagesGrid = options.UserImagesGrid;
-
   var ManagerPod = cr.ui.define(function() {
     var node = $('managed-user-creation-manager-template').cloneNode(true);
     node.removeAttribute('id');
@@ -209,8 +207,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
       'showStatusError',
       'showTutorialPage',
       'showUsernamePage',
-      'setDefaultImages',
-      'setCameraPresent',
     ],
 
     lastVerifiedName_: null,
@@ -246,6 +242,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
                                 passwordField.focus();
                               },
                               this.clearUserNameError_.bind(this));
+
       this.configureTextInput(passwordField,
                               this.updateNextButtonForUser_.bind(this),
                               this.validIfNotEmpty_.bind(this),
@@ -265,53 +262,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
         creationScreen.handleErrorButtonPressed_();
         e.stopPropagation();
       });
-
-      /*
-      TODO(antrim) : this is an explicit code duplications with UserImageScreen.
-      It should be removed by issue 251179.
-      */
-      var imageGrid = this.getScreenElement('image-grid');
-      UserImagesGrid.decorate(imageGrid);
-
-      // Preview image will track the selected item's URL.
-      var previewElement = this.getScreenElement('image-preview');
-      previewElement.oncontextmenu = function(e) { e.preventDefault(); };
-
-      imageGrid.previewElement = previewElement;
-      imageGrid.selectionType = 'default';
-
-      imageGrid.addEventListener('select',
-                                 this.handleSelect_.bind(this));
-      imageGrid.addEventListener('phototaken',
-                                 this.handlePhotoTaken_.bind(this));
-      imageGrid.addEventListener('photoupdated',
-                                 this.handlePhotoUpdated_.bind(this));
-
-      // Set the title for camera item in the grid.
-      imageGrid.setCameraTitles(
-          loadTimeData.getString('takePhoto'),
-          loadTimeData.getString('photoFromCamera'));
-
-      this.getScreenElement('take-photo').addEventListener(
-          'click', this.handleTakePhoto_.bind(this));
-      this.getScreenElement('discard-photo').addEventListener(
-          'click', this.handleDiscardPhoto_.bind(this));
-
-      // Toggle 'animation' class for the duration of WebKit transition.
-      this.getScreenElement('flip-photo').addEventListener(
-          'click', function(e) {
-            previewElement.classList.add('animation');
-            imageGrid.flipPhoto = !imageGrid.flipPhoto;
-          });
-      this.getScreenElement('image-stream-crop').addEventListener(
-          'webkitTransitionEnd', function(e) {
-            previewElement.classList.remove('animation');
-          });
-      this.getScreenElement('image-preview-img').addEventListener(
-          'webkitTransitionEnd', function(e) {
-            previewElement.classList.remove('animation');
-          });
-      chrome.send('supervisedUserGetImages');
     },
 
     buttonIds: [],
@@ -596,7 +546,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
           24, 4);
       $('managed-user-creation-password').classList.add('password-error');
       $('managed-user-creation-password').focus();
-      this.disabled = false;
+
       this.setButtonDisabledStatus('next', true);
     },
 
@@ -695,17 +645,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
         this.getScreenButton(pageButtons[visiblePage]).focus();
 
       this.currentPage_ = visiblePage;
-
-      if (visiblePage == 'username') {
-        var imageGrid = this.getScreenElement('image-grid');
-        // select some image.
-        var selected = this.imagesData_[
-            Math.floor(Math.random() * this.imagesData_.length)];
-        imageGrid.selectedItemUrl = selected.url;
-        chrome.send('supervisedUserSelectImage',
-                    [selected.url, 'default']);
-        this.getScreenElement('image-grid').redraw();
-      }
     },
 
     setButtonDisabledStatus: function(buttonName, status) {
@@ -771,8 +710,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
       if (data['managers']) {
         this.loadManagers(data['managers']);
       }
-      var imageGrid = this.getScreenElement('image-grid');
-      imageGrid.updateAndFocus();
     },
 
     /**
@@ -780,7 +717,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
      */
     onBeforeHide: function() {
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
-      this.getScreenElement('image-grid').stopCamera();
     },
 
     /**
@@ -905,89 +841,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
     showManagerPasswordError: function() {
       this.disabled = false;
       this.showSelectedManagerPasswordError_();
-    },
-
-    /*
-    TODO(antrim) : this is an explicit code duplications with UserImageScreen.
-    It should be removed by issue 251179.
-    */
-    /**
-     * Currently selected user image index (take photo button is with zero
-     * index).
-     * @type {number}
-     */
-    selectedUserImage_: -1,
-    imagesData: [],
-
-    setDefaultImages: function(imagesData) {
-      var imageGrid = this.getScreenElement('image-grid');
-      for (var i = 0, data; data = imagesData[i]; i++) {
-        var item = imageGrid.addItem(data.url, data.title);
-        item.type = 'default';
-        item.author = data.author || '';
-        item.website = data.website || '';
-      }
-      this.imagesData_ = imagesData;
-    },
-
-    /**
-     * Handles selection change.
-     * @param {cr.Event} e Selection change event.
-     * @private
-     */
-    handleSelect_: function(e) {
-      var imageGrid = this.getScreenElement('image-grid');
-      if (!(imageGrid.selectionType == 'camera' && imageGrid.cameraLive)) {
-        chrome.send('supervisedUserSelectImage',
-                    [imageGrid.selectedItemUrl, imageGrid.selectionType]);
-      }
-      // Start/stop camera on (de)selection.
-      if (!imageGrid.inProgramSelection &&
-          imageGrid.selectionType != e.oldSelectionType) {
-        if (imageGrid.selectionType == 'camera') {
-          // Programmatic selection of camera item is done in
-          // startCamera callback where streaming is started by itself.
-          imageGrid.startCamera(
-              function() {
-                // Start capture if camera is still the selected item.
-                return imageGrid.selectedItem == imageGrid.cameraImage;
-              });
-        } else {
-          imageGrid.stopCamera();
-        }
-      }
-    },
-
-    /**
-     * Handle photo capture from the live camera stream.
-     */
-    handleTakePhoto_: function(e) {
-      this.getScreenElement('image-grid').takePhoto();
-    },
-
-    handlePhotoTaken_: function(e) {
-      chrome.send('supervisedUserPhotoTaken', [e.dataURL]);
-    },
-
-    /**
-     * Handle photo updated event.
-     * @param {cr.Event} e Event with 'dataURL' property containing a data URL.
-     */
-    handlePhotoUpdated_: function(e) {
-      chrome.send('supervisedUserPhotoTaken', [e.dataURL]);
-    },
-
-    /**
-     * Handle discarding the captured photo.
-     */
-    handleDiscardPhoto_: function(e) {
-      var imageGrid = this.getScreenElement('image-grid');
-      imageGrid.discardPhoto();
-    },
-
-    setCameraPresent: function(present) {
-      this.getScreenElement('image-grid').cameraPresent = present;
-    },
+    }
   };
 });
 

@@ -12,9 +12,7 @@
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
-#include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h"
-#include "ui/gfx/image/image_skia.h"
 
 class Profile;
 
@@ -27,7 +25,6 @@ class LocallyManagedUserCreationScreen
     : public WizardScreen,
       public LocallyManagedUserCreationScreenHandler::Delegate,
       public LocallyManagedUserCreationController::StatusConsumer,
-      public ImageDecoder::Delegate,
       public NetworkPortalDetector::Observer {
  public:
   LocallyManagedUserCreationScreen(
@@ -76,6 +73,7 @@ class LocallyManagedUserCreationScreen
       const std::string& manager_password) OVERRIDE;
   virtual void AbortFlow() OVERRIDE;
   virtual void FinishFlow() OVERRIDE;
+  virtual void SelectPicture() OVERRIDE;
 
   // LocallyManagedUserController::StatusConsumer overrides.
   virtual void OnCreationError(
@@ -87,37 +85,13 @@ class LocallyManagedUserCreationScreen
   virtual void OnPortalDetectionCompleted(
           const NetworkState* network,
           const NetworkPortalDetector::CaptivePortalState& state) OVERRIDE;
-
-  // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
-  // It should be removed by issue 251179.
-
-  // LocallyManagedUserCreationScreenHandler::Delegate (image) implementation:
-  virtual void CheckCameraPresence() OVERRIDE;
-  virtual void OnPhotoTaken(const std::string& raw_data) OVERRIDE;
-  virtual void OnImageSelected(const std::string& image_url,
-                               const std::string& image_type) OVERRIDE;
-  virtual void OnImageAccepted() OVERRIDE;
-  // ImageDecoder::Delegate overrides:
-  virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image) OVERRIDE;
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
-
  private:
-  void ApplyPicture();
-  void OnCameraPresenceCheckDone();
-
-  base::WeakPtrFactory<LocallyManagedUserCreationScreen> weak_factory_;
   LocallyManagedUserCreationScreenHandler* actor_;
 
   scoped_ptr<LocallyManagedUserCreationController> controller_;
 
   bool on_error_screen_;
   bool on_image_screen_;
-
-  gfx::ImageSkia user_photo_;
-  scoped_refptr<ImageDecoder> image_decoder_;
-  bool apply_photo_after_decoding_;
-  int selected_image_;
 
   DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationScreen);
 };
