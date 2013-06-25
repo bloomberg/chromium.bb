@@ -328,7 +328,8 @@ TEST_F(DialRegistryTest, TestNetworkEventConnectionRestored) {
       .Times(1);
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_first_device_))
       .Times(1);
-  EXPECT_CALL(mock_observer_, OnDialError(DialRegistry::DIAL_CELLULAR_NETWORK))
+  EXPECT_CALL(mock_observer_,
+              OnDialError(DialRegistry::DIAL_NETWORK_DISCONNECTED))
       .Times(1);
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_))
       .Times(2);
@@ -342,7 +343,7 @@ TEST_F(DialRegistryTest, TestNetworkEventConnectionRestored) {
   registry_->OnDeviceDiscovered(NULL, first_device_);
   registry_->OnDiscoveryFinished(NULL);
 
-  registry_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_3G);
+  registry_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_NONE);
 
   registry_->OnDiscoveryRequest(NULL);
   registry_->OnDiscoveryFinished(NULL);

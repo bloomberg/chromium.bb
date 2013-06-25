@@ -301,17 +301,10 @@ void DialRegistry::OnNetworkChanged(
     NetworkChangeNotifier::ConnectionType type) {
   switch (type) {
     case NetworkChangeNotifier::CONNECTION_NONE:
-    case NetworkChangeNotifier::CONNECTION_2G:
-    case NetworkChangeNotifier::CONNECTION_3G:
-    case NetworkChangeNotifier::CONNECTION_4G:
       if (dial_.get()) {
         DVLOG(1) << "Lost connection, shutting down discovery and clearing"
                  << " list.";
-
-        if (NetworkChangeNotifier::IsConnectionCellular(type))
-          dial_api_->OnDialError(DIAL_CELLULAR_NETWORK);
-        else
-          dial_api_->OnDialError(DIAL_NETWORK_DISCONNECTED);
+        dial_api_->OnDialError(DIAL_NETWORK_DISCONNECTED);
 
         StopPeriodicDiscovery();
         // TODO(justinlin): As an optimization, we can probably keep our device
@@ -321,16 +314,16 @@ void DialRegistry::OnNetworkChanged(
         MaybeSendEvent();
       }
       break;
-    case NetworkChangeNotifier::CONNECTION_UNKNOWN:
+    case NetworkChangeNotifier::CONNECTION_2G:
+    case NetworkChangeNotifier::CONNECTION_3G:
+    case NetworkChangeNotifier::CONNECTION_4G:
     case NetworkChangeNotifier::CONNECTION_ETHERNET:
     case NetworkChangeNotifier::CONNECTION_WIFI:
+    case NetworkChangeNotifier::CONNECTION_UNKNOWN:
       if (!dial_.get()) {
         DVLOG(1) << "Connection detected, restarting discovery.";
         StartPeriodicDiscovery();
       }
-      break;
-    default:
-      NOTREACHED();
       break;
   }
 }

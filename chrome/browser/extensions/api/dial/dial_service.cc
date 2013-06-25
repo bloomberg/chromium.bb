@@ -24,6 +24,11 @@
 #include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#if defined(OS_CHROMEOS)
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
+#endif
 
 using base::Time;
 using base::TimeDelta;
@@ -170,16 +175,50 @@ void DialServiceImpl::StartDiscovery() {
   if (socket_.get())
     return;
 
+#if defined(OS_CHROMEOS)
+  // The ChromeOS specific version of getting network interfaces does not
+  // require trampolining to another thread, and contains additional interface
+  // information such as interface types (i.e. wifi vs cellular).
+  BindSocketAndSendRequest(GetBestBindAddressChromeOS());
+#else
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
       &GetNetworkListOnFileThread,
       base::MessageLoopProxy::current(), base::Bind(
           &DialServiceImpl::SendNetworkList, AsWeakPtr())));
+#endif
 }
+
+#if defined(OS_CHROMEOS)
+IPAddressNumber DialServiceImpl::GetBestBindAddressChromeOS() {
+  std::string connection_types[] =
+      {flimflam::kTypeWifi, flimflam::kTypeEthernet};
+  for (uint i = 0; i < arraysize(connection_types); ++i) {
+    IPAddressNumber bind_ip_address;
+    const chromeos::NetworkState* state =
+        chromeos::NetworkHandler::Get()->network_state_handler()->
+            ConnectedNetworkByType(connection_types[i]);
+    if (state &&
+        net::ParseIPLiteralToNumber(state->ip_address(), &bind_ip_address)) {
+      DCHECK(bind_ip_address.size() == net::kIPv4AddressSize);
+      DVLOG(1) << "Found " << state->type() << ", " << state->name() << ":"
+               << state->ip_address();
+      return bind_ip_address;
+    }
+  }
+  return IPAddressNumber();
+}
+#endif
 
 bool DialServiceImpl::BindSocketAndSendRequest(
       const IPAddressNumber& bind_ip_address) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!socket_.get());
+
+  if (bind_ip_address.size() == 0) {
+    DVLOG(1) << "Could not find a valid interface to bind.";
+    FinishDiscovery();
+    return false;
+  }
 
   net::RandIntCallback rand_cb = base::Bind(&base::RandInt);
   socket_.reset(new UDPSocket(net::DatagramSocket::RANDOM_BIND,
@@ -393,7 +432,7 @@ bool DialServiceImpl::ParseResponse(const std::string& response,
 
 void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const NetworkInterface* interface = NULL;
+  IPAddressNumber bind_ip_address;
   // Returns the first IPv4 address found.  If there is a need for discovery
   // across multiple networks, we could manage multiple sockets.
 
@@ -403,17 +442,12 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
     DVLOG(1) << "Found " << iter->name << ", "
              << net::IPAddressToString(iter->address);
     if (iter->address.size() == net::kIPv4AddressSize) {
-      interface = &*iter;
+      bind_ip_address = (*iter).address;
       break;
     }
   }
 
-  if (interface == NULL) {
-    DVLOG(1) << "Could not find a valid interface to bind.";
-    FinishDiscovery();
-  } else {
-    BindSocketAndSendRequest(interface->address);
-  }
+  BindSocketAndSendRequest(bind_ip_address);
 }
 
 void DialServiceImpl::FinishDiscovery() {
