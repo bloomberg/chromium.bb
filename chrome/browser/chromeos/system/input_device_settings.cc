@@ -14,6 +14,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
+#include "base/process.h"
 #include "base/process_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -23,6 +24,7 @@ namespace chromeos {
 namespace system {
 
 namespace {
+
 const char kTpControl[] = "/opt/google/touchpad/tpcontrol";
 const char kMouseControl[] = "/opt/google/mouse/mousecontrol";
 
@@ -43,9 +45,9 @@ void ExecuteScriptOnFileThread(const std::vector<std::string>& argv) {
   if (!ScriptExists(script))
     return;
 
-  base::LaunchOptions options;
-  options.wait = true;
-  base::LaunchProcess(CommandLine(argv), options, NULL);
+  base::ProcessHandle handle;
+  base::LaunchProcess(CommandLine(argv), base::LaunchOptions(), &handle);
+  base::EnsureProcessGetsReaped(handle);
 }
 
 void ExecuteScript(int argc, ...) {
