@@ -889,7 +889,7 @@ bool WebMediaPlayerAndroid::RetrieveGeometryChange(gfx::RectF* rect) {
 // UMA_HISTOGRAM_COUNTS. The reason that we cannot use those macros directly is
 // that UMA_* macros require the names to be constant throughout the process'
 // lifetime.
-static void EmeUMAHistogramEnumeration(const std::string& key_system,
+static void EmeUMAHistogramEnumeration(const WebKit::WebString& key_system,
                                        const std::string& method,
                                        int sample,
                                        int boundary_value) {
@@ -899,7 +899,7 @@ static void EmeUMAHistogramEnumeration(const std::string& key_system,
       base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
 }
 
-static void EmeUMAHistogramCounts(const std::string& key_system,
+static void EmeUMAHistogramCounts(const WebKit::WebString& key_system,
                                   const std::string& method,
                                   int sample) {
   // Use the same parameters as UMA_HISTOGRAM_COUNTS.
@@ -940,7 +940,7 @@ static void ReportMediaKeyExceptionToUMA(
   MediaKeyException result_id = MediaKeyExceptionForUMA(e);
   DCHECK_NE(result_id, kUnknownResultId) << e;
   EmeUMAHistogramEnumeration(
-      key_system.utf8(), method, result_id, kMaxMediaKeyException);
+      key_system, method, result_id, kMaxMediaKeyException);
 }
 
 WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::generateKeyRequest(
@@ -1050,7 +1050,7 @@ WebMediaPlayerAndroid::CancelKeyRequestInternal(
 }
 
 void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
-  EmeUMAHistogramCounts(current_key_system_.utf8(), "KeyAdded", 1);
+  EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
 
   if (media_source_delegate_)
     media_source_delegate_->NotifyKeyAdded(current_key_system_.utf8());
@@ -1061,7 +1061,7 @@ void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
 void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
                                        media::MediaKeys::KeyError error_code,
                                        int system_code) {
-  EmeUMAHistogramEnumeration(current_key_system_.utf8(), "KeyError",
+  EmeUMAHistogramEnumeration(current_key_system_, "KeyError",
                              error_code, media::MediaKeys::kMaxKeyError);
 
   client_->keyError(

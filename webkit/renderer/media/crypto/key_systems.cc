@@ -142,12 +142,8 @@ bool IsSupportedKeySystemWithMediaMimeType(
       mime_type, codecs, key_system);
 }
 
-std::string KeySystemNameForUMA(const std::string& key_system) {
-  return KeySystemNameForUMAGeneric(key_system);
-}
-
 std::string KeySystemNameForUMA(const WebKit::WebString& key_system) {
-  return KeySystemNameForUMAGeneric(std::string(key_system.utf8().data()));
+  return KeySystemNameForUMAInternal(key_system);
 }
 
 bool CanUseAesDecryptor(const std::string& key_system) {

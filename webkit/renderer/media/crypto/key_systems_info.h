@@ -9,6 +9,10 @@
 
 #include "base/basictypes.h"
 
+namespace WebKit {
+class WebString;
+}
+
 namespace webkit_media {
 
 struct MediaFormatAndKeySystem {
@@ -61,7 +65,7 @@ bool IsCanPlayTypeSuppressed(const std::string& key_system);
 // Returns the name that UMA will use for the given |key_system|.
 // This function can be called frequently. Hence this function should be
 // implemented not to impact performance.
-std::string KeySystemNameForUMAGeneric(const std::string& key_system);
+std::string KeySystemNameForUMAInternal(const WebKit::WebString& key_system);
 
 // Returns whether built-in AesDecryptor can be used for the given |key_system|.
 bool CanUseBuiltInAesDecryptor(const std::string& key_system);

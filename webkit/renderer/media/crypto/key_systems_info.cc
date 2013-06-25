@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "webkit/renderer/media/crypto/key_systems_info.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
@@ -144,7 +145,7 @@ bool IsCanPlayTypeSuppressed(const std::string& key_system) {
   return false;
 }
 
-std::string KeySystemNameForUMAGeneric(const std::string& key_system) {
+std::string KeySystemNameForUMAInternal(const WebKit::WebString& key_system) {
   if (key_system == kClearKeyKeySystem)
     return "ClearKey";
 #if defined(WIDEVINE_CDM_AVAILABLE)

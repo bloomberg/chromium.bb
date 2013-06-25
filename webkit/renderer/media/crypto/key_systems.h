@@ -28,7 +28,6 @@ bool IsSupportedKeySystemWithMediaMimeType(
     const std::string& key_system);
 
 // Returns a name for |key_system| suitable to UMA logging.
-std::string KeySystemNameForUMA(const std::string& key_system);
 std::string KeySystemNameForUMA(const WebKit::WebString& key_system);
 
 // Returns whether AesDecryptor can be used for the given |key_system|.

@@ -620,7 +620,7 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
 // UMA_HISTOGRAM_COUNTS. The reason that we cannot use those macros directly is
 // that UMA_* macros require the names to be constant throughout the process'
 // lifetime.
-static void EmeUMAHistogramEnumeration(const std::string& key_system,
+static void EmeUMAHistogramEnumeration(const WebKit::WebString& key_system,
                                        const std::string& method,
                                        int sample,
                                        int boundary_value) {
@@ -630,7 +630,7 @@ static void EmeUMAHistogramEnumeration(const std::string& key_system,
       base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
 }
 
-static void EmeUMAHistogramCounts(const std::string& key_system,
+static void EmeUMAHistogramCounts(const WebKit::WebString& key_system,
                                   const std::string& method,
                                   int sample) {
   // Use the same parameters as UMA_HISTOGRAM_COUNTS.
@@ -671,7 +671,7 @@ static void ReportMediaKeyExceptionToUMA(
   MediaKeyException result_id = MediaKeyExceptionForUMA(e);
   DCHECK_NE(result_id, kUnknownResultId) << e;
   EmeUMAHistogramEnumeration(
-      key_system.utf8(), method, result_id, kMaxMediaKeyException);
+      key_system, method, result_id, kMaxMediaKeyException);
 }
 
 WebMediaPlayer::MediaKeyException
@@ -844,7 +844,7 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   SetNetworkState(PipelineErrorToNetworkState(error));
 
   if (error == media::PIPELINE_ERROR_DECRYPT)
-    EmeUMAHistogramCounts(current_key_system_.utf8(), "DecryptError", 1);
+    EmeUMAHistogramCounts(current_key_system_, "DecryptError", 1);
 
   // Repaint to trigger UI update.
   Repaint();
@@ -887,7 +887,7 @@ void WebMediaPlayerImpl::OnDemuxerOpened(
 
 void WebMediaPlayerImpl::OnKeyAdded(const std::string& session_id) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  EmeUMAHistogramCounts(current_key_system_.utf8(), "KeyAdded", 1);
+  EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
   GetClient()->keyAdded(current_key_system_,
                         WebString::fromUTF8(session_id));
 }
@@ -936,7 +936,7 @@ void WebMediaPlayerImpl::OnKeyError(const std::string& session_id,
                                     int system_code) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  EmeUMAHistogramEnumeration(current_key_system_.utf8(), "KeyError",
+  EmeUMAHistogramEnumeration(current_key_system_, "KeyError",
                              error_code, media::MediaKeys::kMaxKeyError);
 
   GetClient()->keyError(
