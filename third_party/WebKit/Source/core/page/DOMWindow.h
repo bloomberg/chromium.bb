@@ -107,9 +107,6 @@ namespace WebCore {
 
         unsigned pendingUnloadEventListeners() const;
 
-        static bool dispatchAllPendingBeforeUnloadEvents();
-        static void dispatchAllPendingUnloadEvents();
-
         static FloatRect adjustWindowRect(Page*, const FloatRect& pendingChanges);
 
         bool allowPopUp(); // Call on first window, not target window.

@@ -227,77 +227,9 @@ static bool allowsBeforeUnloadListeners(DOMWindow* window)
     return frame == page->mainFrame();
 }
 
-bool DOMWindow::dispatchAllPendingBeforeUnloadEvents()
-{
-    DOMWindowSet& set = windowsWithBeforeUnloadEventListeners();
-    if (set.isEmpty())
-        return true;
-
-    static bool alreadyDispatched = false;
-    ASSERT(!alreadyDispatched);
-    if (alreadyDispatched)
-        return true;
-
-    Vector<RefPtr<DOMWindow> > windows;
-    DOMWindowSet::iterator end = set.end();
-    for (DOMWindowSet::iterator it = set.begin(); it != end; ++it)
-        windows.append(it->key);
-
-    size_t size = windows.size();
-    for (size_t i = 0; i < size; ++i) {
-        DOMWindow* window = windows[i].get();
-        if (!set.contains(window))
-            continue;
-
-        Frame* frame = window->frame();
-        if (!frame)
-            continue;
-
-        if (!frame->loader()->shouldClose())
-            return false;
-    }
-
-    enableSuddenTermination();
-
-    alreadyDispatched = true;
-
-    return true;
-}
-
 unsigned DOMWindow::pendingUnloadEventListeners() const
 {
     return windowsWithUnloadEventListeners().count(const_cast<DOMWindow*>(this));
-}
-
-void DOMWindow::dispatchAllPendingUnloadEvents()
-{
-    DOMWindowSet& set = windowsWithUnloadEventListeners();
-    if (set.isEmpty())
-        return;
-
-    static bool alreadyDispatched = false;
-    ASSERT(!alreadyDispatched);
-    if (alreadyDispatched)
-        return;
-
-    Vector<RefPtr<DOMWindow> > windows;
-    DOMWindowSet::iterator end = set.end();
-    for (DOMWindowSet::iterator it = set.begin(); it != end; ++it)
-        windows.append(it->key);
-
-    size_t size = windows.size();
-    for (size_t i = 0; i < size; ++i) {
-        DOMWindow* window = windows[i].get();
-        if (!set.contains(window))
-            continue;
-
-        window->dispatchEvent(PageTransitionEvent::create(eventNames().pagehideEvent, false), window->document());
-        window->dispatchEvent(Event::create(eventNames().unloadEvent, false, false), window->document());
-    }
-
-    enableSuddenTermination();
-
-    alreadyDispatched = true;
 }
 
 // This function:
