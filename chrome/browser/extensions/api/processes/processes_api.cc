@@ -87,7 +87,6 @@ void SetProcessType(base::DictionaryValue* result,
     case task_manager::Resource::GPU:
       type = keys::kProcessTypeGPU;
       break;
-    case task_manager::Resource::PROFILE_IMPORT:
     case task_manager::Resource::ZYGOTE:
     case task_manager::Resource::SANDBOX_HELPER:
     case task_manager::Resource::UNKNOWN:

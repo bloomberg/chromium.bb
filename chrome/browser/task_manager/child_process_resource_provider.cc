@@ -135,8 +135,6 @@ Resource::Type ChildProcessResource::GetType() const {
       return Resource::SANDBOX_HELPER;
     case content::PROCESS_TYPE_GPU:
       return Resource::GPU;
-    case PROCESS_TYPE_PROFILE_IMPORT:
-      return Resource::PROFILE_IMPORT;
     case PROCESS_TYPE_NACL_LOADER:
     case PROCESS_TYPE_NACL_BROKER:
       return Resource::NACL;
@@ -185,8 +183,6 @@ string16 ChildProcessResource::GetLocalizedTitle() const {
     case content::PROCESS_TYPE_PPAPI_BROKER:
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PLUGIN_BROKER_PREFIX,
                                         title);
-    case PROCESS_TYPE_PROFILE_IMPORT:
-      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX);
     case PROCESS_TYPE_NACL_BROKER:
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NACL_BROKER_PREFIX);
     case PROCESS_TYPE_NACL_LOADER:

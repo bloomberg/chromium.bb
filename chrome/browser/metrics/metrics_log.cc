@@ -165,8 +165,6 @@ ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
       return ProfilerEventProto::TrackedObject::PPAPI_PLUGIN;
     case content::PROCESS_TYPE_PPAPI_BROKER:
       return ProfilerEventProto::TrackedObject::PPAPI_BROKER;
-    case PROCESS_TYPE_PROFILE_IMPORT:
-      return ProfilerEventProto::TrackedObject::PROFILE_IMPORT;
     case PROCESS_TYPE_NACL_LOADER:
       return ProfilerEventProto::TrackedObject::NACL_LOADER;
     case PROCESS_TYPE_NACL_BROKER:

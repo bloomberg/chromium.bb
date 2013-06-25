@@ -474,8 +474,6 @@ gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
 
 std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
   switch (type) {
-    case PROCESS_TYPE_PROFILE_IMPORT:
-      return "Profile Import helper";
     case PROCESS_TYPE_NACL_LOADER:
       return "Native Client module";
     case PROCESS_TYPE_NACL_BROKER:

@@ -29,7 +29,6 @@ int GetWebResourceCount(const TaskManagerModel* model) {
         type == task_manager::Resource::NACL ||
         type == task_manager::Resource::GPU ||
         type == task_manager::Resource::UTILITY ||
-        type == task_manager::Resource::PROFILE_IMPORT ||
         type == task_manager::Resource::ZYGOTE ||
         type == task_manager::Resource::SANDBOX_HELPER) {
       continue;
