@@ -56,7 +56,6 @@ class DesktopRootWindowHost;
 class InputMethod;
 class NativeWidget;
 class NonClientFrameView;
-class ScopedEvent;
 class View;
 class WidgetDelegate;
 class WidgetObserver;
@@ -609,12 +608,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns true if the widget has capture.
   bool HasCapture();
 
-  // Returns the current event being processed. If there are multiple events
-  // being processed at the same time (e.g. one event triggers another event),
-  // then the most recent event is returned. Returns NULL if no event is being
-  // processed.
-  const ui::Event* GetCurrentEvent();
-
   // Invoked when the tooltip text changes for the specified views.
   void TooltipTextChanged(View* view);
 
@@ -713,7 +706,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
  private:
   friend class NativeTextfieldViewsTest;
   friend class NativeComboboxViewsTest;
-  friend class ScopedEvent;
 
   // Returns whether capture should be released on mouse release.
   virtual bool ShouldReleaseCaptureOnMouseReleased() const;
@@ -773,9 +765,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Valid for the lifetime of RunShellDrag(), indicates the view the drag
   // started from.
   View* dragged_view_;
-
-  // The event stack.
-  std::stack<ScopedEvent*> event_stack_;
 
   // See class documentation for Widget above for a note about ownership.
   InitParams::Ownership ownership_;

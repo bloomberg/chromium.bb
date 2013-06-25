@@ -64,36 +64,6 @@ NativeWidget* CreateNativeWidget(NativeWidget* native_widget,
 
 }  // namespace
 
-// This class is used to keep track of the event a Widget is processing, and
-// restore any previously active event afterwards.
-class ScopedEvent {
- public:
-  ScopedEvent(Widget* widget, const ui::Event& event)
-      : widget_(widget),
-        event_(&event) {
-    widget->event_stack_.push(this);
-  }
-
-  ~ScopedEvent() {
-    if (widget_)
-      widget_->event_stack_.pop();
-  }
-
-  void reset() {
-    widget_ = NULL;
-  }
-
-  const ui::Event* event() {
-    return event_;
-  }
-
- private:
-  Widget* widget_;
-  const ui::Event* event_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedEvent);
-};
-
 // A default implementation of WidgetDelegate, used by Widget when no
 // WidgetDelegate is supplied.
 class DefaultWidgetDelegate : public WidgetDelegate {
@@ -189,7 +159,6 @@ Widget::Widget()
       widget_delegate_(NULL),
       non_client_view_(NULL),
       dragged_view_(NULL),
-      event_stack_(),
       ownership_(InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       is_secondary_widget_(true),
       frame_type_(FRAME_TYPE_DEFAULT),
@@ -208,11 +177,6 @@ Widget::Widget()
 }
 
 Widget::~Widget() {
-  while (!event_stack_.empty()) {
-    event_stack_.top()->reset();
-    event_stack_.pop();
-  }
-
   DestroyRootView();
   if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET) {
     delete native_widget_;
@@ -927,10 +891,6 @@ bool Widget::HasCapture() {
   return native_widget_->HasCapture();
 }
 
-const ui::Event* Widget::GetCurrentEvent() {
-  return event_stack_.empty() ? NULL : event_stack_.top()->event();
-}
-
 void Widget::TooltipTextChanged(View* view) {
   TooltipManager* manager = native_widget_private()->GetTooltipManager();
   if (manager)
@@ -1121,7 +1081,6 @@ int Widget::GetNonClientComponent(const gfx::Point& point) {
 }
 
 void Widget::OnKeyEvent(ui::KeyEvent* event) {
-  ScopedEvent scoped(this, *event);
   static_cast<internal::RootView*>(GetRootView())->
       DispatchKeyEvent(event);
 }
@@ -1130,7 +1089,6 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
   if (!IsMouseEventsEnabled())
     return;
 
-  ScopedEvent scoped(this, *event);
   View* root_view = GetRootView();
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED: {
@@ -1204,19 +1162,16 @@ void Widget::OnMouseCaptureLost() {
 }
 
 void Widget::OnTouchEvent(ui::TouchEvent* event) {
-  ScopedEvent scoped(this, *event);
   static_cast<internal::RootView*>(GetRootView())->
       DispatchTouchEvent(event);
 }
 
 void Widget::OnScrollEvent(ui::ScrollEvent* event) {
-  ScopedEvent scoped(this, *event);
   static_cast<internal::RootView*>(GetRootView())->
       DispatchScrollEvent(event);
 }
 
 void Widget::OnGestureEvent(ui::GestureEvent* event) {
-  ScopedEvent scoped(this, *event);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       is_touch_down_ = true;
