@@ -724,6 +724,7 @@ const char kErrorEapRemoteTlsFailed[] = "eap-remote-tls-failed";
 
 // IPConfig property names.
 const char kSearchDomainsProperty[] = "SearchDomains";
+const char kWebProxyAutoDiscoveryUrlProperty[] = "WebProxyAutoDiscoveryUrl";
 
 // Manager property names.
 const char kDefaultServiceProperty[] = "DefaultService";
