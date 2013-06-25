@@ -331,6 +331,11 @@ void MediaSourceDelegate::OnDemuxerInitDone(
     media::PipelineStatus status) {
   DVLOG(1) << "MediaSourceDelegate::OnDemuxerInitDone(" << status << ") : "
            << player_id_;
+  // It is possible that this function is called after Destroy(). As a result,
+  // we need to check whether the |demuxer_| is NULL before we proceed.
+  if (!demuxer_)
+    return;
+
   if (status != media::PIPELINE_OK) {
     OnDemuxerError(status);
     return;
@@ -373,7 +378,6 @@ bool MediaSourceDelegate::CanNotifyDemuxerReady() {
 }
 
 void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
-  DCHECK(demuxer_);
   MediaPlayerHostMsg_DemuxerReady_Params params;
   DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
   if (audio_stream) {
