@@ -289,6 +289,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
         Restart to update
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_RESTART_AND_POWERWASH_UPDATE" desc="The label used in the tray popup to notify that the user should restart and powerwash to get system updates.">
+        Restart and Powerwash to update
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_BRIGHTNESS" desc="The accessible text for the brightness slider.">
         Brightness

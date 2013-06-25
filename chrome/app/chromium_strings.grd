@@ -724,6 +724,11 @@ For Chromium, processes used to display diagnostics information (such as this "a
           Nearly up-to-date! Restart your device to finish updating.
         </message>
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH" desc="Status label: Channel was successfully switched on Chromium OS">
+          Channel changed. Restart your device to apply changes.
+        </message>
+      </if>
       <if expr="not pp_ifdef('chromeos')">
         <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Chromium)">
           Chromium is up to date.
@@ -742,6 +747,11 @@ For Chromium, processes used to display diagnostics information (such as this "a
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Chromium OS">
           Updating your device...
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_UPDATING_CHANNEL_SWITCH" desc="Status label: Updating Chromium OS to a specified channel">
+          Updating your device to <ph name="CHANNEL_NAME">$1<ex>stable</ex></ph> channel...
         </message>
       </if>
 

@@ -648,6 +648,11 @@ For Google Chrome, processes used to display diagnostics information (such as th
           Nearly up-to-date! Restart your device to finish updating.
         </message>
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH" desc="Status label: Channel was successfully switched on Chrome OS">
+          Channel changed. Restart your device to apply changes.
+        </message>
+      </if>
       <if expr="not pp_ifdef('chromeos')">
         <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Google Chrome)">
           Google Chrome is up to date.
@@ -666,6 +671,11 @@ For Google Chrome, processes used to display diagnostics information (such as th
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Chrome OS">
           Updating your device...
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_UPDATING_CHANNEL_SWITCH" desc="Status label: Updating Chrome OS to a specified channel">
+          Updating your device to <ph name="CHANNEL_NAME">$1<ex>stable</ex></ph> channel...
         </message>
       </if>
 
