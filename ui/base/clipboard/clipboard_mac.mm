@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#import "base/mac/scoped_nsexception_enabler.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -343,8 +344,12 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
 
-  base::scoped_nsobject<NSImage> image(
-      [[NSImage alloc] initWithPasteboard:GetPasteboard()]);
+  // If the pasteboard's image data is not to its liking, the guts of NSImage
+  // may throw, and that exception will leak. Prevent a crash in that case;
+  // a blank image is better.
+  base::scoped_nsobject<NSImage> image(base::mac::RunBlockIgnoringExceptions(^{
+      return [[NSImage alloc] initWithPasteboard:GetPasteboard()];
+  }));
   if (!image.get())
     return SkBitmap();
 
