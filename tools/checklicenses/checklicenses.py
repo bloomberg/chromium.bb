@@ -52,35 +52,33 @@ WHITELISTED_LICENSES = [
     'BSD-like MIT/X11 (BSD like)',
 
     'BSL (v1.0)',
+    'GPL (v2) LGPL (v2.1 or later)',
     'GPL (v2 or later) with Bison parser exception',
     'GPL (v2 or later) with libtool exception',
     'GPL (v3 or later) with Bison parser exception',
     'GPL with Bison parser exception',
     'ISC',
-    'LGPL',
+    'LGPL (unversioned/unknown version)',
     'LGPL (v2)',
     'LGPL (v2 or later)',
     'LGPL (v2.1)',
-    'LGPL (v3 or later)',
-
-    # TODO(phajdan.jr): Make licensecheck convert that comma to a dot.
-    'LGPL (v2,1 or later)',
-
     'LGPL (v2.1 or later)',
+    'LGPL (v3 or later)',
+    'MIT/X11 (BSD like)',
     'MPL (v1.0) LGPL (v2 or later)',
     'MPL (v1.1)',
+    'MPL (v1.1) BSD (3 clause) GPL (v2) LGPL (v2.1 or later)',
+    'MPL (v1.1) BSD (3 clause) LGPL (v2.1 or later)',
     'MPL (v1.1) BSD-like',
     'MPL (v1.1) BSD-like GPL (unversioned/unknown version)',
-    'MPL (v1.1,) BSD (3 clause) GPL (unversioned/unknown version) '
-        'LGPL (v2.1 or later)',
+    'MPL (v1.1) BSD-like GPL (v2) LGPL (v2.1 or later)',
+    'MPL (v1.1) GPL (v2)',
+    'MPL (v1.1) GPL (v2) LGPL (v2 or later)',
+    'MPL (v1.1) GPL (v2) LGPL (v2.1 or later)',
     'MPL (v1.1) GPL (unversioned/unknown version)',
+    'MPL (v1.1) LGPL (v2 or later)',
+    'MPL (v1.1) LGPL (v2.1 or later)',
     'MPL (v2.0)',
-
-    # TODO(phajdan.jr): Make licensecheck not print the comma after 1.1.
-    'MPL (v1.1,) GPL (unversioned/unknown version) LGPL (v2 or later)',
-    'MPL (v1.1,) GPL (unversioned/unknown version) LGPL (v2.1 or later)',
-
-    'MIT/X11 (BSD like)',
     'Ms-PL',
     'Public domain',
     'Public domain BSD',

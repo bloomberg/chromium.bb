@@ -171,8 +171,9 @@ my $default_check_regex = '\.(c(c|pp|xx)?|h(h|pp|xx)?|f(77|90)?|p(l|m)|xs|sh|php
 
 my $modified_conf_msg;
 
-my ($opt_verbose, $opt_lines, $opt_noconf, $opt_ignore_regex, $opt_check_regex)
-  = ('', '', '', '', '');
+my ($opt_verbose, $opt_lines, $opt_noconf) = ('', '', '');
+my $opt_ignore_regex = $default_ignore_regex;
+my $opt_check_regex = $default_check_regex;
 my $opt_recursive = 0;
 my $opt_copyright = 0;
 my $opt_machine = 0;
@@ -238,8 +239,6 @@ GetOptions("help|h" => \$opt_help,
     or die "Usage: $progname [options] filelist\nRun $progname --help for more details\n";
 
 $opt_lines = $def_lines if $opt_lines !~ /^[1-9][0-9]*$/;
-$opt_ignore_regex = $default_ignore_regex if ! length $opt_ignore_regex;
-$opt_check_regex = $default_check_regex if ! length $opt_check_regex;
 
 if ($opt_noconf) {
     fatal "--no-conf is only acceptable as the first command-line option!";
@@ -432,17 +431,22 @@ sub parselicense($) {
     my ($licensetext) = @_;
 
     my $gplver = "";
+    my $lgplver = "";
     my $extrainfo = "";
     my $license = "";
 
-    if ($licensetext =~ /version ([^, ]+?)[.,]? (?:\(?only\)?.? )?(?:of the GNU (Affero )?(Lesser |Library )?General Public License )?(as )?published by the Free Software Foundation/i or
-	$licensetext =~ /GNU (?:Affero )?(?:Lesser |Library )?General Public License (?:as )?published by the Free Software Foundation; version ([^, ]+?)[.,]? /i) {
-
-	$gplver = " (v$1)";
-    } elsif ($licensetext =~ /GNU (?:Affero )?(?:Lesser |Library )?General Public License, version (\d+(?:\.\d+)?)[ \.]/) {
+    if ($licensetext =~ /version ([^, ]+?)[.,]? (?:\(?only\)?.? )?(?:of the GNU (Affero )?General Public License )?(as )?published by the Free Software Foundation/i or
+	$licensetext =~ /GNU (?:Affero )?General Public License (?:as )?published by the Free Software Foundation; version ([^, ]+?)[.,]? /i or
+	$licensetext =~ /GNU (?:Affero )?General Public License,? [Vv]ersion (\d+(?:\.\d+)?)[ \.]/) {
 	$gplver = " (v$1)";
     } elsif ($licensetext =~ /either version ([^ ]+)(?: of the License)?, or \(at your option\) any later version/) {
 	$gplver = " (v$1 or later)";
+    }
+
+    if ($licensetext =~ /version ([^, ]+?)[.,]? (?:or later|or any later version) (?:of the GNU (?:Lesser |Library )General Public License )(as )?published by the Free Software Foundation/i or
+	$licensetext =~ /GNU (?:Lesser |Library )General Public License (?:(?:as )?published by the Free Software Foundation;)?,? (?:either )?[Vv]ersion ([^, ]+?)(?: of the license)?[.,]? (?:or later|or (?:\(at your option\) )?any later version)/i or
+	$licensetext =~ /GNU (?:Lesser |Library )General Public License(?: \(LGPL\))?,? [Vv]ersion (\d+(?:\.\d+)?)[ \.]/) {
+	$lgplver = " (v$1 or later)";
     }
 
     if ($licensetext =~ /permission (?:is (also granted|given))? to link (the code of )?this program with (any edition of )?(Qt|the Qt library)/i) {
@@ -453,17 +457,26 @@ sub parselicense($) {
 	$license = "GENERATED FILE";
     }
 
-    if ($licensetext =~ /is (free software.? you can redistribute it and\/or modify it|licensed) under the terms of (version [^ ]+ of )?the (GNU (Library |Lesser )General Public License|LGPL)/i) {
-	$license = "LGPL$gplver$extrainfo $license";
+    if ($licensetext =~ /is (free software.? you can redistribute it and\/or modify it|licensed) under the terms of (version [^ ]+ of )?the (GNU (Library |Lesser )General Public License|LGPL)/i or
+        $licensetext =~ /(is distributed|may be used).*terms.*LGPL/) {
+        if ($lgplver) {
+	    $license = "LGPL$lgplver$extrainfo $license";
+        } else {
+	    $license = "LGPL (unversioned/unknown version) $license";
+        }
     }
 
     if ($licensetext =~ /is free software.? you (can|may) redistribute it and\/or modify it under the terms of (?:version [^ ]+ (?:\(?only\)? )?of )?the GNU General Public License/i) {
 	$license = "GPL$gplver$extrainfo $license";
     } elsif ($licensetext =~ /is distributed under the terms of the GNU General Public License,/
-	and length $gplver) {
+	and $gplver) {
 	$license = "GPL$gplver$extrainfo $license";
-    } elsif ($licensetext =~ /is distributed.*terms.*GPL/) {
-	$license = "GPL (unversioned/unknown version) $license";
+    } elsif ($licensetext =~ /is distributed.*terms.*[^L]GPL/) {
+        if ($gplver) {
+	    $license = "GPL$gplver$extrainfo $license";
+        } else {
+	    $license = "GPL (unversioned/unknown version) $license";
+        }
     }
 
     if ($licensetext =~ /This file is part of the .*Qt GUI Toolkit. This file may be distributed under the terms of the Q Public License as defined/) {
@@ -512,7 +525,7 @@ sub parselicense($) {
         $license = "BSD-like $license";
     }
 
-    if ($licensetext =~ /Mozilla Public License( Version|, v.) ([^ ]+[^. ])/) {
+    if ($licensetext =~ /Mozilla Public License( Version|, v.) ([^ ]+[^., ]),?/) {
 	$license = "MPL (v$2) $license";
     }
 
@@ -609,7 +622,7 @@ sub parselicense($) {
         $license = $license . "Khronos Group";
     }
 
-    $license = "UNKNOWN" if (!length($license));
+    $license = "UNKNOWN" unless $license;
 
     # Remove trailing spaces.
     $license =~ s/\s+$//;
