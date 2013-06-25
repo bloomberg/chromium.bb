@@ -4,6 +4,7 @@
 
 #include "content/child/webblobregistry_impl.h"
 
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
@@ -14,7 +15,6 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThreadSafeData.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/blob/blob_data.h"
 
 using WebKit::WebBlobData;
@@ -83,7 +83,7 @@ void WebBlobRegistryImpl::registerBlobURL(
       case WebBlobData::Item::TypeFile:
         if (data_item.length) {
           item.SetToFilePathRange(
-              webkit_base::WebStringToFilePath(data_item.filePath),
+              base::FilePath::FromUTF16Unsafe(data_item.filePath),
               static_cast<uint64>(data_item.offset),
               static_cast<uint64>(data_item.length),
               base::Time::FromDoubleT(data_item.expectedModificationTime));

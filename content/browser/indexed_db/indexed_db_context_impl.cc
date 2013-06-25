@@ -21,7 +21,6 @@
 #include "content/public/browser/indexed_db_info.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/special_storage_policy.h"

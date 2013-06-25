@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
+#include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -200,7 +201,6 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "v8/include/v8.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/common/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
@@ -2247,7 +2247,7 @@ bool RenderViewImpl::enumerateChosenDirectory(
   return Send(new ViewHostMsg_EnumerateDirectory(
       routing_id_,
       id,
-      webkit_base::WebStringToFilePath(path)));
+      base::FilePath::FromUTF16Unsafe(path)));
 }
 
 void RenderViewImpl::initializeHelperPluginWebFrame(
@@ -2376,7 +2376,7 @@ bool RenderViewImpl::runFileChooser(
     ipc_params.mode = FileChooserParams::Open;
   ipc_params.title = params.title;
   ipc_params.default_file_name =
-      webkit_base::WebStringToFilePath(params.initialValue);
+      base::FilePath::FromUTF16Unsafe(params.initialValue);
   ipc_params.accept_types.reserve(params.acceptTypes.size());
   for (size_t i = 0; i < params.acceptTypes.size(); ++i)
     ipc_params.accept_types.push_back(params.acceptTypes[i]);
@@ -5424,7 +5424,7 @@ void RenderViewImpl::OnEnumerateDirectoryResponse(
 
   WebVector<WebString> ws_file_names(paths.size());
   for (size_t i = 0; i < paths.size(); ++i)
-    ws_file_names[i] = webkit_base::FilePathToWebString(paths[i]);
+    ws_file_names[i] = paths[i].AsUTF16Unsafe();
 
   enumeration_completions_[id]->didChooseFile(ws_file_names);
   enumeration_completions_.erase(id);
@@ -5442,9 +5442,9 @@ void RenderViewImpl::OnFileChooserResponse(
       files.size());
   for (size_t i = 0; i < files.size(); ++i) {
     WebFileChooserCompletion::SelectedFileInfo selected_file;
-    selected_file.path = webkit_base::FilePathToWebString(files[i].local_path);
-    selected_file.displayName = webkit_base::FilePathStringToWebString(
-        files[i].display_name);
+    selected_file.path = files[i].local_path.AsUTF16Unsafe();
+    selected_file.displayName =
+        base::FilePath(files[i].display_name).AsUTF16Unsafe();
     selected_files[i] = selected_file;
   }
 
@@ -5616,15 +5616,14 @@ void RenderViewImpl::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
   // Convert std::vector of GURLs to WebVector<WebURL>
   WebVector<WebURL> weburl_links(links);
 
-  // Convert std::vector of std::strings to WebVector<WebString>
+  // Convert std::vector of base::FilePath to WebVector<WebString>
   WebVector<WebString> webstring_paths(local_paths.size());
   for (size_t i = 0; i < local_paths.size(); i++)
-    webstring_paths[i] = webkit_base::FilePathToWebString(local_paths[i]);
+    webstring_paths[i] = local_paths[i].AsUTF16Unsafe();
 
   WebPageSerializer::serialize(webview()->mainFrame(), true, this, weburl_links,
                                webstring_paths,
-                               webkit_base::FilePathToWebString(
-                                   local_directory_name));
+                               local_directory_name.AsUTF16Unsafe());
 }
 
 void RenderViewImpl::OnShouldClose() {

@@ -55,7 +55,6 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/gpu/webgraphicscontext3d_provider_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
@@ -483,7 +482,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeForExtension(
   std::string mime_type;
   RenderThread::Get()->Send(
       new MimeRegistryMsg_GetMimeTypeFromExtension(
-          webkit_base::WebStringToFilePathString(file_extension), &mime_type));
+          base::FilePath::FromUTF16Unsafe(file_extension).value(), &mime_type));
   return ASCIIToUTF16(mime_type);
 }
 
@@ -496,7 +495,7 @@ WebString RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeFromFile(
   // these calls over to the browser process.
   std::string mime_type;
   RenderThread::Get()->Send(new MimeRegistryMsg_GetMimeTypeFromFile(
-      base::FilePath(webkit_base::WebStringToFilePathString(file_path)),
+      base::FilePath::FromUTF16Unsafe(file_path),
       &mime_type));
   return ASCIIToUTF16(mime_type);
 }
@@ -513,7 +512,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::preferredExtensionForMIMEType(
   RenderThread::Get()->Send(
       new MimeRegistryMsg_GetPreferredExtensionForMimeType(
           UTF16ToASCII(mime_type), &file_extension));
-  return webkit_base::FilePathStringToWebString(file_extension);
+  return base::FilePath(file_extension).AsUTF16Unsafe();
 }
 
 //------------------------------------------------------------------------------
@@ -524,7 +523,7 @@ bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
   base::PlatformFileInfo file_info;
   base::PlatformFileError status;
   if (!SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileInfo(
-           webkit_base::WebStringToFilePath(path), &file_info, &status)) ||
+           base::FilePath::FromUTF16Unsafe(path), &file_info, &status)) ||
       status != base::PLATFORM_FILE_OK) {
     return false;
   }
@@ -538,7 +537,7 @@ base::PlatformFile RendererWebKitPlatformSupportImpl::FileUtilities::openFile(
     int mode) {
   IPC::PlatformFileForTransit handle = IPC::InvalidPlatformFileForTransit();
   SendSyncMessageFromAnyThread(new FileUtilitiesMsg_OpenFile(
-      webkit_base::WebStringToFilePath(path), mode, &handle));
+      base::FilePath::FromUTF16Unsafe(path), mode, &handle));
   return IPC::PlatformFileForTransitToPlatformFile(handle);
 }
 

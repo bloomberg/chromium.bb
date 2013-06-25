@@ -4,12 +4,12 @@
 
 #include "content/browser/indexed_db/webidbfactory_impl.h"
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
-#include "webkit/base/file_path_string_conversions.h"
 
 using WebKit::WebString;
 
@@ -26,7 +26,7 @@ void WebIDBFactoryImpl::getDatabaseNames(IndexedDBCallbacksBase* callbacks,
   idb_factory_backend_->GetDatabaseNames(
       IndexedDBCallbacksWrapper::Create(callbacks),
       database_identifier,
-      webkit_base::WebStringToFilePath(data_dir));
+      base::FilePath::FromUTF16Unsafe(data_dir));
 }
 
 void WebIDBFactoryImpl::open(const WebString& name,
@@ -48,7 +48,7 @@ void WebIDBFactoryImpl::open(const WebString& name,
                              callbacks_proxy.get(),
                              database_callbacks_proxy.get(),
                              database_identifier,
-                             webkit_base::WebStringToFilePath(data_dir));
+                             base::FilePath::FromUTF16Unsafe(data_dir));
 }
 
 void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
@@ -59,7 +59,7 @@ void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
       name,
       IndexedDBCallbacksWrapper::Create(callbacks),
       database_identifier,
-      webkit_base::WebStringToFilePath(data_dir));
+      base::FilePath::FromUTF16Unsafe(data_dir));
 }
 
 }  // namespace WebKit

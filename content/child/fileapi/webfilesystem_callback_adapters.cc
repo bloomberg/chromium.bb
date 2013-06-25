@@ -14,7 +14,6 @@
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/fileapi/directory_entry.h"
 #include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/glue/webkit_glue.h"
@@ -50,7 +49,7 @@ void CreateSnapshotFileCallbackAdapter(
     const base::FilePath& platform_path) {
   WebFileInfo web_file_info;
   webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
-  web_file_info.platformPath = webkit_base::FilePathToWebString(platform_path);
+  web_file_info.platformPath = platform_path.AsUTF16Unsafe();
   callbacks->didCreateSnapshotFile(web_file_info);
 }
 
@@ -61,7 +60,7 @@ void ReadDirectoryCallbackAdapater(
   WebVector<WebFileSystemEntry> file_system_entries(entries.size());
   for (size_t i = 0; i < entries.size(); i++) {
     file_system_entries[i].name =
-        webkit_base::FilePathStringToWebString(entries[i].name);
+        base::FilePath(entries[i].name).AsUTF16Unsafe();
     file_system_entries[i].isDirectory = entries[i].is_directory;
   }
   callbacks->didReadDirectory(file_system_entries, has_more);

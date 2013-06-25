@@ -9,7 +9,6 @@
 #include "base/sys_info.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "webkit/base/file_path_string_conversions.h"
 
 namespace content {
 
@@ -95,14 +94,14 @@ void BrowserWebKitPlatformSupportImpl::getPluginList(bool refresh,
 
 int BrowserWebKitPlatformSupportImpl::databaseDeleteFile(
     const WebKit::WebString& vfs_file_name, bool sync_dir) {
-  const base::FilePath path = webkit_base::WebStringToFilePath(vfs_file_name);
+  const base::FilePath& path = base::FilePath::FromUTF16Unsafe(vfs_file_name);
   return file_util::Delete(path, false) ? 0 : 1;
 }
 
 long long BrowserWebKitPlatformSupportImpl::availableDiskSpaceInBytes(
     const WebKit::WebString& fileName) {
   return base::SysInfo::AmountOfFreeDiskSpace(
-      webkit_base::WebStringToFilePath(fileName));
+      base::FilePath::FromUTF16Unsafe(fileName));
 }
 
 }  // namespace content

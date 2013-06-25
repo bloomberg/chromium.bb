@@ -34,7 +34,6 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "webkit/base/file_path_string_conversions.h"
 
 using WebKit::WebCString;
 using WebKit::WebData;
@@ -273,8 +272,8 @@ class DomSerializerTests : public ContentBrowserTest,
     // Add input file URl to links_.
     links_.assign(&page_url,1);
     // Add dummy file path to local_path_.
-    WebString file_path = webkit_base::FilePathStringToWebString(
-        FILE_PATH_LITERAL("c:\\dummy.htm"));
+    WebString file_path =
+        base::FilePath(FILE_PATH_LITERAL("c:\\dummy.htm")).AsUTF16Unsafe();
     local_paths_.assign(&file_path, 1);
     // Start serializing DOM.
     bool result = WebPageSerializer::serialize(web_frame,
@@ -282,7 +281,7 @@ class DomSerializerTests : public ContentBrowserTest,
        static_cast<WebPageSerializerClient*>(this),
        links_,
        local_paths_,
-       webkit_base::FilePathToWebString(local_directory_name_));
+       local_directory_name_.AsUTF16Unsafe());
     ASSERT_TRUE(result);
     ASSERT_TRUE(serialized_);
   }

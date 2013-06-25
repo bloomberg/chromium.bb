@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/debug/debugger.h"
+#include "base/files/file_path.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -58,7 +59,6 @@
 #include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/gfx/rect.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/renderer/media/webmediaplayer_impl.h"
@@ -235,7 +235,7 @@ WebString WebKitTestRunner::registerIsolatedFileSystem(
     const WebKit::WebVector<WebKit::WebString>& absolute_filenames) {
   std::vector<base::FilePath> files;
   for (size_t i = 0; i < absolute_filenames.size(); ++i)
-    files.push_back(webkit_base::WebStringToFilePath(absolute_filenames[i]));
+    files.push_back(base::FilePath::FromUTF16Unsafe(absolute_filenames[i]));
   std::string filesystem_id;
   Send(new ShellViewHostMsg_RegisterIsolatedFileSystem(
       routing_id(), files, &filesystem_id));
@@ -250,18 +250,14 @@ long long WebKitTestRunner::getCurrentTimeInMillisecond() {
 
 WebString WebKitTestRunner::getAbsoluteWebStringFromUTF8Path(
     const std::string& utf8_path) {
-#if defined(OS_WIN)
-  base::FilePath path(UTF8ToWide(utf8_path));
-#else
-  base::FilePath path(base::SysWideToNativeMB(base::SysUTF8ToWide(utf8_path)));
-#endif
+  base::FilePath path = base::FilePath::FromUTF8Unsafe(utf8_path);
   if (!path.IsAbsolute()) {
     GURL base_url =
         net::FilePathToFileURL(test_config_.current_working_directory.Append(
             FILE_PATH_LITERAL("foo")));
     net::FileURLToFilePath(base_url.Resolve(utf8_path), &path);
   }
-  return webkit_base::FilePathToWebString(path);
+  return path.AsUTF16Unsafe();
 }
 
 WebURL WebKitTestRunner::localFileToDataURL(const WebURL& file_url) {

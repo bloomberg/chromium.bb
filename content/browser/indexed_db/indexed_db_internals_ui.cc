@@ -25,7 +25,6 @@
 #include "grit/content_resources.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/zlib/google/zip.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/database/database_identifier.h"
 
 namespace content {
