@@ -382,8 +382,10 @@ cr.define('options', function() {
       }
 
       // Set focus to the grid, unless focus is on the OK button.
-      if (!document.activeElement || document.activeElement.tagName != 'BUTTON')
+      if ((!document.activeElement ||
+           document.activeElement.tagName != 'BUTTON') && imageUrl) {
         this.focus();
+      }
     },
 
     /**
