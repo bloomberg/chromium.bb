@@ -1,9 +1,9 @@
 # Copyright (C) 2010 Google Inc. All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
-# 
+#
 #     * Redistributions of source code must retain the above copyright
 # notice, this list of conditions and the following disclaimer.
 #     * Redistributions in binary form must reproduce the above
@@ -13,7 +13,7 @@
 #     * Neither the name of Google Inc. nor the names of its
 # contributors may be used to endorse or promote products derived from
 # this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -28,7 +28,6 @@
 
 # FIXME: Is this the right way to do this?
 from webkitpy.tool.steps.addsvnmimetypeforpng import AddSvnMimetypeForPng
-from webkitpy.tool.steps.applywatchlist import ApplyWatchList
 from webkitpy.tool.steps.checkstyle import CheckStyle
 from webkitpy.tool.steps.cleanworkingdirectory import CleanWorkingDirectory
 from webkitpy.tool.steps.commit import Commit
@@ -40,7 +39,6 @@ from webkitpy.tool.steps.haslanded import HasLanded
 from webkitpy.tool.steps.obsoletepatches import ObsoletePatches
 from webkitpy.tool.steps.options import Options
 from webkitpy.tool.steps.postdiff import PostDiff
-from webkitpy.tool.steps.postdiffforcommit import PostDiffForCommit
 from webkitpy.tool.steps.promptforbugortitle import PromptForBugOrTitle
 from webkitpy.tool.steps.reopenbugafterrollout import ReopenBugAfterRollout
 from webkitpy.tool.steps.revertrevision import RevertRevision

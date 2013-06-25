@@ -34,10 +34,9 @@ import sys
 from webkitpy.common.checkout import Checkout
 from webkitpy.common.checkout.scm.detection import SCMDetector
 from webkitpy.common.memoized import memoized
-from webkitpy.common.net import bugzilla, buildbot, web
+from webkitpy.common.net import buildbot, web
 from webkitpy.common.net.buildbot.chromiumbuildbot import ChromiumBuildBot
 from webkitpy.common.system.systemhost import SystemHost
-from webkitpy.common.watchlist.watchlistloader import WatchListLoader
 from webkitpy.layout_tests.port.factory import PortFactory
 
 
@@ -54,7 +53,6 @@ class Host(SystemHost):
         self._checkout = None
 
         # Everything below this line is WebKit-specific and belongs on a higher-level object.
-        self.bugs = bugzilla.Bugzilla()
         self.buildbot = buildbot.BuildBot()
 
         # FIXME: Unfortunately Port objects are currently the central-dispatch objects of the NRWT world.
@@ -146,7 +144,3 @@ class Host(SystemHost):
     @memoized
     def chromium_buildbot(self):
         return ChromiumBuildBot()
-
-    @memoized
-    def watch_list(self):
-        return WatchListLoader(self.filesystem).load()

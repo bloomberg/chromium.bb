@@ -29,7 +29,6 @@
 import StringIO
 
 from webkitpy.common.config import urls
-from webkitpy.common.checkout.commitinfo import CommitInfo
 from webkitpy.common.checkout.scm import CommitMessage
 from webkitpy.common.checkout.deps import DEPS
 from webkitpy.common.memoized import memoized
@@ -37,7 +36,6 @@ from webkitpy.common.system.executive import ScriptError
 
 
 # This class represents the WebKit-specific parts of the checkout.
-# FIXME: Move a bunch of ChangeLog-specific processing from SCM to this object.
 # NOTE: All paths returned from this class should be absolute.
 class Checkout(object):
     def __init__(self, scm, executive=None, filesystem=None):
@@ -46,31 +44,13 @@ class Checkout(object):
         self._executive = executive or self._scm._executive
         self._filesystem = filesystem or self._scm._filesystem
 
-    def is_path_to_changelog(self, path):
-        return False
-
-    @memoized
-    def commit_info_for_revision(self, revision):
-        return None
-
     def _modified_files_matching_predicate(self, git_commit, predicate, changed_files=None):
         # SCM returns paths relative to scm.checkout_root
-        # Callers  may expect absolute paths, so this method returns absolute
-        # paths.
+        # Callers (especially those using the ChangeLog class) may
+        # expect absolute paths, so this method returns absolute paths.
         if not changed_files:
             changed_files = self._scm.changed_files(git_commit)
         return filter(predicate, map(self._scm.absolute_path, changed_files))
-
-    def modified_changelogs(self, git_commit, changed_files=None):
-        return []
-
-    def modified_non_changelogs(self, git_commit, changed_files=None):
-        return self._modified_files_matching_predicate(git_commit, lambda path: not self.is_path_to_changelog(path), changed_files=changed_files)
-
-    def commit_message_for_this_commit(self, git_commit, changed_files=None, return_stderr=False):
-        # FIXME: Delete this and callers.
-        raise ScriptError(message="Found no modified ChangeLogs, cannot create a commit message.\n"
-                          "All changes require a ChangeLog.  See:\n %s" % urls.contribution_guidelines)
 
     def recent_commit_infos_for_files(self, paths):
         revisions = set(sum(map(self._scm.revisions_changing_file, paths), []))

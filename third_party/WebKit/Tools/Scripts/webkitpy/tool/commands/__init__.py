@@ -1,7 +1,5 @@
 # Required for Python to search this directory for module files
 
-from webkitpy.tool.commands.applywatchlistlocal import ApplyWatchListLocal
-from webkitpy.tool.commands.chromechannels import ChromeChannels
 from webkitpy.tool.commands.commitannouncer import CommitAnnouncerCommand
 from webkitpy.tool.commands.download import *
 from webkitpy.tool.commands.flakytests import FlakyTests

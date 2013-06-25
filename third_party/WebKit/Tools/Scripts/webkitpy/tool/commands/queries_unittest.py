@@ -30,7 +30,6 @@
 import unittest2 as unittest
 
 from webkitpy.common.system.outputcapture import OutputCapture
-from webkitpy.common.net.bugzilla import Bugzilla
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.thirdparty.mock import Mock
 from webkitpy.layout_tests.port.test import TestPort
@@ -64,98 +63,9 @@ class MockPortFactory(object):
 
 
 class QueryCommandsTest(CommandsTest):
-    def test_bugs_to_commit(self):
-        expected_logs = "Warning, attachment 10001 on bug 50000 has invalid committer (non-committer@example.com)\n"
-        self.assert_execute_outputs(BugsToCommit(), None, "50000\n50003\n", expected_logs=expected_logs)
-
-    def test_patches_in_commit_queue(self):
-        expected_stdout = "http://example.com/10000\nhttp://example.com/10002\n"
-        expected_logs = "Warning, attachment 10001 on bug 50000 has invalid committer (non-committer@example.com)\nPatches in commit queue:\n"
-        self.assert_execute_outputs(PatchesInCommitQueue(), None, expected_stdout, expected_logs=expected_logs)
-
-    def test_patches_to_commit_queue(self):
-        expected_stdout = "http://example.com/10003&action=edit\n"
-        expected_logs = "10000 already has cq=+\n10001 already has cq=+\n10004 committer = \"Eric Seidel\" <eric@webkit.org>\n"
-        options = Mock()
-        options.bugs = False
-        self.assert_execute_outputs(PatchesToCommitQueue(), None, expected_stdout, expected_logs=expected_logs, options=options)
-
-        expected_stdout = "http://example.com/50003\n"
-        options.bugs = True
-        self.assert_execute_outputs(PatchesToCommitQueue(), None, expected_stdout, expected_logs=expected_logs, options=options)
-
-    def test_patches_to_review(self):
-        options = Mock()
-
-        # When no cc_email is provided, we use the Bugzilla username by default.
-        # The MockBugzilla will fake the authentication using username@webkit.org
-        # as login and it should match the username at the report header.
-        options.cc_email = None
-        options.include_cq_denied = False
-        options.all = False
-        expected_stdout = \
-            "Bugs with attachments pending review that has username@webkit.org in the CC list:\n" \
-            "http://webkit.org/b/bugid   Description (age in days)\n" \
-            "Total: 0\n"
-        expected_stderr = ""
-        self.assert_execute_outputs(PatchesToReview(), None, expected_stdout, expected_stderr, options=options)
-
-        options.cc_email = "abarth@webkit.org"
-        options.include_cq_denied = True
-        options.all = False
-        expected_stdout = \
-            "Bugs with attachments pending review that has abarth@webkit.org in the CC list:\n" \
-            "http://webkit.org/b/bugid   Description (age in days)\n" \
-            "http://webkit.org/b/50001   Bug with a patch needing review. (0)\n" \
-            "Total: 1\n"
-        expected_stderr = ""
-        self.assert_execute_outputs(PatchesToReview(), None, expected_stdout, expected_stderr, options=options)
-
-        options.cc_email = None
-        options.include_cq_denied = True
-        options.all = True
-        expected_stdout = \
-            "Bugs with attachments pending review:\n" \
-            "http://webkit.org/b/bugid   Description (age in days)\n" \
-            "http://webkit.org/b/50001   Bug with a patch needing review. (0)\n" \
-            "Total: 1\n"
-        self.assert_execute_outputs(PatchesToReview(), None, expected_stdout, expected_stderr, options=options)
-
-        options.cc_email = None
-        options.include_cq_denied = False
-        options.all = True
-        expected_stdout = \
-            "Bugs with attachments pending review:\n" \
-            "http://webkit.org/b/bugid   Description (age in days)\n" \
-            "Total: 0\n"
-        self.assert_execute_outputs(PatchesToReview(), None, expected_stdout, expected_stderr, options=options)
-
-        options.cc_email = "invalid_email@example.com"
-        options.all = False
-        options.include_cq_denied = True
-        expected_stdout = \
-            "Bugs with attachments pending review that has invalid_email@example.com in the CC list:\n" \
-            "http://webkit.org/b/bugid   Description (age in days)\n" \
-            "Total: 0\n"
-        self.assert_execute_outputs(PatchesToReview(), None, expected_stdout, expected_stderr, options=options)
-
     def test_tree_status(self):
         expected_stdout = "ok   : Builder1\nok   : Builder2\n"
         self.assert_execute_outputs(TreeStatus(), None, expected_stdout)
-
-
-class FailureReasonTest(unittest.TestCase):
-    def test_blame_line_for_revision(self):
-        tool = MockTool()
-        command = FailureReason()
-        command.bind_to_tool(tool)
-        # This is an artificial example, mostly to test the CommitInfo lookup failure case.
-        self.assertEqual(command._blame_line_for_revision(0), "FAILED to fetch CommitInfo for r0, likely missing ChangeLog")
-
-        def raising_mock(self):
-            raise Exception("MESSAGE")
-        tool.checkout().commit_info_for_revision = raising_mock
-        self.assertEqual(command._blame_line_for_revision(0), "FAILED to fetch CommitInfo for r0, exception: MESSAGE")
 
 
 class PrintExpectationsTest(unittest.TestCase):

@@ -28,11 +28,9 @@
 
 from webkitpy.common.checkout.checkout_mock import MockCheckout
 from webkitpy.common.checkout.scm.scm_mock import MockSCM
-from webkitpy.common.net.bugzilla.bugzilla_mock import MockBugzilla
 from webkitpy.common.net.buildbot.buildbot_mock import MockBuildBot
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.systemhost_mock import MockSystemHost
-from webkitpy.common.watchlist.watchlist_mock import MockWatchList
 
 # New-style ports need to move down into webkitpy.common.
 from webkitpy.layout_tests.port.factory import PortFactory
@@ -51,15 +49,12 @@ class MockHost(MockSystemHost):
         # object doesn't either. This has caused at least one bug (see bug 89498).
         if initialize_scm_by_default:
             self.initialize_scm()
-        self.bugs = MockBugzilla()
         self.buildbot = MockBuildBot()
         self._chromium_buildbot = MockBuildBot()
 
         # Note: We're using a real PortFactory here.  Tests which don't wish to depend
         # on the list of known ports should override this with a MockPortFactory.
         self.port_factory = PortFactory(self)
-
-        self._watch_list = MockWatchList()
 
     def initialize_scm(self, patch_directories=None):
         self._scm = MockSCM(filesystem=self.filesystem, executive=self.executive)
@@ -75,7 +70,3 @@ class MockHost(MockSystemHost):
 
     def chromium_buildbot(self):
         return self._chromium_buildbot
-
-    def watch_list(self):
-        return self._watch_list
-

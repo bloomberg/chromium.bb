@@ -356,6 +356,7 @@ class CheckerDispatcherSkipTest(unittest.TestCase):
     def test_should_skip_without_warning__false(self):
         """Test should_skip_without_warning() for False return values."""
         paths = ['foo.txt',
+                 os.path.join('LayoutTests', 'TestExpectations'),
         ]
 
         for path in paths:

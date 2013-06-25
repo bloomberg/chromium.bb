@@ -46,8 +46,6 @@ import shutil
 
 from datetime import date
 from webkitpy.common.checkout.checkout import Checkout
-from webkitpy.common.config.committers import Committer  # FIXME: This should not be needed
-from webkitpy.common.net.bugzilla import Attachment # FIXME: This should not be needed
 from webkitpy.common.system.executive import Executive, ScriptError
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.outputcapture import OutputCapture
