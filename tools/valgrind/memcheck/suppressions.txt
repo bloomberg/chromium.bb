@@ -7315,3 +7315,13 @@
    fun:_ZN7content15LevelDBDatabase4OpenERKN4base8FilePathEPKNS_17LevelDBComparatorEPb
    fun:_ZN7content12_GLOBAL__N_139LevelDBDatabaseTest_CorruptionTest_Test8TestBodyEv
 }
+{
+   bug_253832
+   Memcheck:Leak
+   ...
+   fun:_ZN3net22HttpNetworkTransaction5StartEPKNS_15HttpRequestInfoERKN4base8CallbackIFviEEERKNS_11BoundNetLogE
+   fun:_ZN3net4test26QuicNetworkTransactionTest14RunTransactionEPNS_22HttpNetworkTransactionE
+   fun:_ZN3net4test26QuicNetworkTransactionTest32SendRequestAndExpectQuicResponseERKSs
+   fun:_ZN3net4test53QuicNetworkTransactionTest_ZeroRTTWithNoHttpRace_Test8TestBodyEv
+}
+
