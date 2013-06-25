@@ -96,6 +96,8 @@
         'browser/android/crash_dump_manager.h',
         'browser/android/dev_tools_server.cc',
         'browser/android/dev_tools_server.h',
+        'browser/android/favicon_helper.cc',
+        'browser/android/favicon_helper.h',
         'browser/android/google_location_settings_helper.h',
         'browser/android/infobar_stubs.cc',
         'browser/android/intent_helper.cc',
@@ -3079,7 +3081,7 @@
             ['exclude', '^browser/hang_monitor/'],
           ],
           'conditions': [
-            ['use_aura==1',{
+            ['use_aura==1', {
               'dependencies': [
                 '../build/linux/system.gyp:dbus',
                 '../build/linux/system.gyp:fontconfig',
@@ -3287,6 +3289,7 @@
             'android/java/src/org/chromium/chrome/browser/ContentViewUtil.java',
             'android/java/src/org/chromium/chrome/browser/DevToolsServer.java',
             'android/java/src/org/chromium/chrome/browser/database/SQLiteCursor.java',
+            'android/java/src/org/chromium/chrome/browser/favicon/FaviconHelper.java',
             'android/java/src/org/chromium/chrome/browser/IntentHelper.java',
             'android/java/src/org/chromium/chrome/browser/JavascriptAppModalDialog.java',
             'android/java/src/org/chromium/chrome/browser/NavigationPopup.java',
