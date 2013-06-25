@@ -995,7 +995,10 @@ void Widget::EnableInactiveRendering() {
 }
 
 void Widget::OnNativeWidgetActivationChanged(bool active) {
-  if (!active)
+  // On windows we may end up here before we've completed initialization (from
+  // an WM_NCACTIVATE). If that happens the WidgetDelegate likely doesn't know
+  // the Widget and will crash attempting to access it.
+  if (!active && native_widget_initialized_)
     SaveWindowPlacement();
 
   FOR_EACH_OBSERVER(WidgetObserver, observers_,
@@ -1103,7 +1106,7 @@ void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
   // On Linux Aura, we can get here during Init() because of the
   // SetInitialBounds call.
   if (native_widget_initialized_)
-  GetRootView()->Paint(canvas);
+    GetRootView()->Paint(canvas);
 }
 
 int Widget::GetNonClientComponent(const gfx::Point& point) {
