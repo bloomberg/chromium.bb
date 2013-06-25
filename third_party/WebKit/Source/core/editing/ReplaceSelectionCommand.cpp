@@ -637,6 +637,9 @@ void ReplaceSelectionCommand::moveNodeOutOfAncestor(PassRefPtr<Node> prpNode, Pa
     RefPtr<Node> node = prpNode;
     RefPtr<Node> ancestor = prpAncestor;
 
+    if (!ancestor->parentNode()->rendererIsEditable())
+        return;
+
     VisiblePosition positionAtEndOfNode = lastPositionInOrAfterNode(node.get());
     VisiblePosition lastPositionInParagraph = lastPositionInNode(ancestor.get());
     if (positionAtEndOfNode == lastPositionInParagraph) {
