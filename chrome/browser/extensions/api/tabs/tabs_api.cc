@@ -1732,8 +1732,8 @@ bool TabsCaptureVisibleTabFunction::RunImpl() {
   image_quality_ = kDefaultQuality;  // Default quality setting.
 
   if (params->options.get()) {
-    image_format_ = params->options->format;
-    EXTENSION_FUNCTION_VALIDATE(image_format_ != FormatEnum::FORMAT_NONE);
+    if (params->options->format != FormatEnum::FORMAT_NONE)
+      image_format_ = params->options->format;
 
     if (params->options->quality.get())
       image_quality_ = *params->options->quality;
