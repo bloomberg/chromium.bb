@@ -4,11 +4,95 @@
 
 #include "content/public/common/page_state.h"
 
+#include "base/files/file_path.h"
+#include "base/strings/utf_string_conversions.h"
+#include "content/common/page_state_serialization.h"
+
 namespace content {
+namespace {
+
+base::NullableString16 ToNullableString16(const std::string& utf8) {
+  return base::NullableString16(UTF8ToUTF16(utf8), false);
+}
+
+base::FilePath ToFilePath(const base::NullableString16& s) {
+  return base::FilePath::FromUTF16Unsafe(s.string());
+}
+
+void ToFilePathVector(const std::vector<base::NullableString16>& input,
+                      std::vector<base::FilePath>* output) {
+  output->clear();
+  output->reserve(input.size());
+  for (size_t i = 0; i < input.size(); ++i)
+    output->push_back(ToFilePath(input[i]));
+}
+
+PageState ToPageState(const ExplodedPageState& state) {
+  std::string encoded_data;
+  if (!EncodePageState(state, &encoded_data))
+    return PageState();
+
+  return PageState::CreateFromEncodedData(encoded_data);
+}
+
+void RecursivelyRemovePasswordData(ExplodedFrameState* state) {
+  if (state->http_body.contains_passwords)
+    state->http_body = ExplodedHttpBody();
+}
+
+void RecursivelyRemoveScrollOffset(ExplodedFrameState* state) {
+  state->scroll_offset = gfx::Point();
+}
+
+}  // namespace
 
 // static
 PageState PageState::CreateFromEncodedData(const std::string& data) {
   return PageState(data);
+}
+
+// static
+PageState PageState::CreateFromURL(const GURL& url) {
+  ExplodedPageState state;
+
+  state.top.url_string = state.top.original_url_string =
+      ToNullableString16(url.possibly_invalid_spec());
+
+  return ToPageState(state);
+}
+
+// static
+PageState PageState::CreateForTesting(
+    const GURL& url,
+    bool body_contains_password_data,
+    const char* optional_body_data,
+    const base::FilePath* optional_body_file_path) {
+  ExplodedPageState state;
+
+  state.top.url_string = state.top.original_url_string =
+      ToNullableString16(url.possibly_invalid_spec());
+
+  if (optional_body_data || optional_body_file_path) {
+    state.top.http_body.is_null = false;
+    if (optional_body_data) {
+      ExplodedHttpBodyElement element;
+      element.type = WebKit::WebHTTPBody::Element::TypeData;
+      element.data = optional_body_data;
+      state.top.http_body.elements.push_back(element);
+    }
+    if (optional_body_file_path) {
+      ExplodedHttpBodyElement element;
+      element.type = WebKit::WebHTTPBody::Element::TypeFile;
+      element.file_path =
+          ToNullableString16(optional_body_file_path->AsUTF8Unsafe());
+      state.top.http_body.elements.push_back(element);
+      state.referenced_files.push_back(element.file_path);
+    }
+    state.top.http_body.contains_passwords =
+        body_contains_password_data;
+  }
+
+  return ToPageState(state);
 }
 
 PageState::PageState() {
@@ -24,6 +108,36 @@ bool PageState::Equals(const PageState& other) const {
 
 const std::string& PageState::ToEncodedData() const {
   return data_;
+}
+
+std::vector<base::FilePath> PageState::GetReferencedFiles() const {
+  std::vector<base::FilePath> results;
+
+  ExplodedPageState state;
+  if (DecodePageState(data_, &state))
+    ToFilePathVector(state.referenced_files, &results);
+
+  return results;
+}
+
+PageState PageState::RemovePasswordData() const {
+  ExplodedPageState state;
+  if (!DecodePageState(data_, &state))
+    return PageState();  // Oops!
+
+  RecursivelyRemovePasswordData(&state.top);
+
+  return ToPageState(state);
+}
+
+PageState PageState::RemoveScrollOffset() const {
+  ExplodedPageState state;
+  if (!DecodePageState(data_, &state))
+    return PageState();  // Oops!
+
+  RecursivelyRemoveScrollOffset(&state.top);
+
+  return ToPageState(state);
 }
 
 PageState::PageState(const std::string& data)

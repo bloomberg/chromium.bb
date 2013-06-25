@@ -275,8 +275,6 @@
       'sources': [
         'ftp_directory_listing_response_delegate.cc',
         'ftp_directory_listing_response_delegate.h',
-        'glue_serialize_deprecated.cc',
-        'glue_serialize_deprecated.h',
         'image_decoder.cc',
         'image_decoder.h',
         'network_list_observer.h',

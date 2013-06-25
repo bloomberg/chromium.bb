@@ -108,6 +108,7 @@ def _GetDataFilesForTestSuite(test_suite_basename):
   elif test_suite_basename == 'content_unittests':
     return [
         'content/test/data/gpu/webgl_conformance_test_expectations.txt',
+        'content/test/data/page_state/',
         'net/data/ssl/certificates/',
         'third_party/hyphen/hyph_en_US.dic',
         'webkit/data/dom_storage/webcore_test_database.localstorage',
