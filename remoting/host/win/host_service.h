@@ -13,7 +13,6 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/win/message_window.h"
 #include "remoting/host/win/wts_terminal_monitor.h"
 
 class CommandLine;
@@ -28,8 +27,7 @@ class AutoThreadTaskRunner;
 class DaemonProcess;
 class WtsTerminalObserver;
 
-class HostService : public base::win::MessageWindow::Delegate,
-                    public WtsTerminalMonitor {
+class HostService : public WtsTerminalMonitor {
  public:
   static HostService* GetInstance();
 
@@ -71,12 +69,11 @@ class HostService : public base::win::MessageWindow::Delegate,
   // Stops and deletes |daemon_process_|.
   void StopDaemonProcess();
 
-  // base::win::MessageWindow::Delegate interface.
-  virtual bool HandleMessage(HWND hwnd,
-                             UINT message,
-                             WPARAM wparam,
-                             LPARAM lparam,
-                             LRESULT* result) OVERRIDE;
+  // Handles WM_WTSSESSION_CHANGE messages.
+  bool HandleMessage(UINT message,
+                     WPARAM wparam,
+                     LPARAM lparam,
+                     LRESULT* result);
 
   static BOOL WINAPI ConsoleControlHandler(DWORD event);
 

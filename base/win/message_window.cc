@@ -36,10 +36,23 @@ MessageWindow::~MessageWindow() {
   }
 }
 
-bool MessageWindow::Create(Delegate* delegate, const wchar_t* window_name) {
+bool MessageWindow::Create(const MessageCallback& message_callback) {
+  return DoCreate(message_callback, NULL);
+}
+
+bool MessageWindow::CreateNamed(const MessageCallback& message_callback,
+                                const string16& window_name) {
+  return DoCreate(message_callback, window_name.c_str());
+}
+
+bool MessageWindow::DoCreate(const MessageCallback& message_callback,
+                           const wchar_t* window_name) {
   DCHECK(CalledOnValidThread());
   DCHECK(!atom_);
+  DCHECK(message_callback_.is_null());
   DCHECK(!window_);
+
+  message_callback_ = message_callback;
 
   // Register a separate window class for each instance of |MessageWindow|.
   string16 class_name = base::StringPrintf(kClassNameFormat, this);
@@ -66,7 +79,7 @@ bool MessageWindow::Create(Delegate* delegate, const wchar_t* window_name) {
   }
 
   window_ = CreateWindow(MAKEINTATOM(atom_), window_name, 0, 0, 0, 0, 0,
-                         HWND_MESSAGE, 0, instance, delegate);
+                         HWND_MESSAGE, 0, instance, this);
   if (!window_) {
     LOG_GETLASTERROR(ERROR) << "Failed to create a message-only window";
     return false;
@@ -80,24 +93,28 @@ LRESULT CALLBACK MessageWindow::WindowProc(HWND hwnd,
                                            UINT message,
                                            WPARAM wparam,
                                            LPARAM lparam) {
-  Delegate* delegate = reinterpret_cast<Delegate*>(
+  MessageWindow* self = reinterpret_cast<MessageWindow*>(
       GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
   switch (message) {
-    // Set up the delegate before handling WM_CREATE.
+    // Set up the self before handling WM_CREATE.
     case WM_CREATE: {
       CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lparam);
-      delegate = reinterpret_cast<Delegate*>(cs->lpCreateParams);
+      self = reinterpret_cast<MessageWindow*>(cs->lpCreateParams);
 
-      // Store pointer to the delegate to the window's user data.
+      // Make |hwnd| available to the message handler. At this point the control
+      // hasn't returned from CreateWindow() yet.
+      self->window_ = hwnd;
+
+      // Store pointer to the self to the window's user data.
       SetLastError(ERROR_SUCCESS);
       LONG_PTR result = SetWindowLongPtr(
-          hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(delegate));
+          hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
       CHECK(result != 0 || GetLastError() == ERROR_SUCCESS);
       break;
     }
 
-    // Clear the pointer to stop calling the delegate once WM_DESTROY is
+    // Clear the pointer to stop calling the self once WM_DESTROY is
     // received.
     case WM_DESTROY: {
       SetLastError(ERROR_SUCCESS);
@@ -108,9 +125,9 @@ LRESULT CALLBACK MessageWindow::WindowProc(HWND hwnd,
   }
 
   // Handle the message.
-  if (delegate) {
+  if (self) {
     LRESULT message_result;
-    if (delegate->HandleMessage(hwnd, message, wparam, lparam, &message_result))
+    if (self->message_callback_.Run(message, wparam, lparam, &message_result))
       return message_result;
   }
 

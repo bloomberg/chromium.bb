@@ -36,8 +36,7 @@ class LocalInputMonitorWin : public base::NonThreadSafe,
 
  private:
   // The actual implementation resides in LocalInputMonitorWin::Core class.
-  class Core : public base::RefCountedThreadSafe<Core>,
-               public base::win::MessageWindow::Delegate {
+  class Core : public base::RefCountedThreadSafe<Core> {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
          scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
@@ -56,12 +55,11 @@ class LocalInputMonitorWin : public base::NonThreadSafe,
     // Handles WM_INPUT messages.
     LRESULT OnInput(HRAWINPUT input_handle);
 
-    // base::win::MessageWindow::Delegate interface.
-    virtual bool HandleMessage(HWND hwnd,
-                               UINT message,
-                               WPARAM wparam,
-                               LPARAM lparam,
-                               LRESULT* result) OVERRIDE;
+    // Handles messages received by |window_|.
+    bool HandleMessage(UINT message,
+                       WPARAM wparam,
+                       LPARAM lparam,
+                       LRESULT* result);
 
     // Task runner on which public methods of this class must be called.
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
@@ -128,7 +126,8 @@ void LocalInputMonitorWin::Core::StartOnUiThread() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   window_.reset(new base::win::MessageWindow());
-  if (!window_->Create(this, NULL)) {
+  if (!window_->Create(base::Bind(&Core::HandleMessage,
+                                  base::Unretained(this)))) {
     LOG_GETLASTERROR(ERROR) << "Failed to create the raw input window";
     window_.reset();
 
@@ -206,7 +205,7 @@ LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
 }
 
 bool LocalInputMonitorWin::Core::HandleMessage(
-    HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result) {
+    UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result) {
   switch (message) {
     case WM_CREATE: {
       // Register to receive raw mouse input.
@@ -214,7 +213,7 @@ bool LocalInputMonitorWin::Core::HandleMessage(
       device.dwFlags = RIDEV_INPUTSINK;
       device.usUsagePage = kGenericDesktopPage;
       device.usUsage = kMouseUsage;
-      device.hwndTarget = hwnd;
+      device.hwndTarget = window_->hwnd();
       if (RegisterRawInputDevices(&device, 1, sizeof(device))) {
         *result = 0;
       } else {

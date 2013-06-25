@@ -9,7 +9,9 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/strings/string16.h"
 #include "base/threading/non_thread_safe.h"
 
 namespace base {
@@ -18,35 +20,41 @@ namespace win {
 // Implements a message-only window.
 class BASE_EXPORT MessageWindow : public base::NonThreadSafe {
  public:
-  // Handles incoming window messages.
-  class BASE_EXPORT Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    virtual bool HandleMessage(HWND hwnd,
-                               UINT message,
-                               WPARAM wparam,
-                               LPARAM lparam,
-                               LRESULT* result) = 0;
-  };
+  // Implement this callback to handle messages received by the message window.
+  // If the callback returns |false|, the first four parameters are passed to
+  // DefWindowProc(). Otherwise, |*result| is returned by the window procedure.
+  typedef base::Callback<bool(UINT message,
+                              WPARAM wparam,
+                              LPARAM lparam,
+                              LRESULT* result)> MessageCallback;
 
   MessageWindow();
   ~MessageWindow();
 
-  // Creates a message-only window. The incoming messages will be handled by
-  // |delegate|. |delegate| must outlive |this|. |window_name| is optional and
-  // can be NULL.
-  bool Create(Delegate* delegate, const wchar_t* window_name);
+  // Creates a message-only window. The incoming messages will be passed by
+  // |message_callback|. |message_callback| must outlive |this|.
+  bool Create(const MessageCallback& message_callback);
+
+  // Same as Create() but assigns the name to the created window.
+  bool CreateNamed(const MessageCallback& message_callback,
+                   const string16& window_name);
 
   HWND hwnd() const { return window_; }
 
  private:
+  // Contains the actual window creation code.
+  bool DoCreate(const MessageCallback& message_callback,
+                const wchar_t* window_name);
+
   // Invoked by the OS to process incoming window messages.
   static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wparam,
                                      LPARAM lparam);
 
   // Atom representing the registered window class.
   ATOM atom_;
+
+  // Invoked to handle messages received by the window.
+  MessageCallback message_callback_;
 
   // Handle of the input window.
   HWND window_;

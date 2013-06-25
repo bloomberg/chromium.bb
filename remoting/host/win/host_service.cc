@@ -21,6 +21,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "base/win/message_window.h"
 #include "base/win/scoped_com_initializer.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/scoped_sc_handle_win.h"
@@ -321,7 +322,8 @@ int HostService::RunInConsole() {
 
   // Create a window for receiving session change notifications.
   base::win::MessageWindow window;
-  if (!window.Create(this, NULL)) {
+  if (!window.Create(base::Bind(&HostService::HandleMessage,
+                                base::Unretained(this)))) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to create the session notification window";
     goto cleanup;
@@ -362,7 +364,7 @@ void HostService::StopDaemonProcess() {
 }
 
 bool HostService::HandleMessage(
-    HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result) {
+    UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result) {
   if (message == WM_WTSSESSION_CHANGE) {
     OnSessionChange(wparam, lparam);
     *result = 0;

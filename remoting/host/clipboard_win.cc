@@ -16,7 +16,6 @@
 #include "base/win/message_window.h"
 #include "base/win/scoped_hglobal.h"
 #include "base/win/windows_version.h"
-#include "base/win/wrapped_window_proc.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/event.pb.h"
@@ -100,8 +99,7 @@ typedef BOOL (WINAPI RemoveClipboardFormatListenerFn)(HWND);
 
 namespace remoting {
 
-class ClipboardWin : public Clipboard,
-                     public base::win::MessageWindow::Delegate {
+class ClipboardWin : public Clipboard {
  public:
   ClipboardWin();
 
@@ -114,12 +112,11 @@ class ClipboardWin : public Clipboard,
  private:
   void OnClipboardUpdate();
 
-  // base::win::MessageWindow::Delegate interface.
-  virtual bool HandleMessage(HWND hwnd,
-                             UINT message,
-                             WPARAM wparam,
-                             LPARAM lparam,
-                             LRESULT* result) OVERRIDE;
+  // Handles messages received by |window_|.
+  bool HandleMessage(UINT message,
+                     WPARAM wparam,
+                     LPARAM lparam,
+                     LRESULT* result);
 
   scoped_ptr<protocol::ClipboardStub> client_clipboard_;
   AddClipboardFormatListenerFn* add_clipboard_format_listener_;
@@ -163,7 +160,8 @@ void ClipboardWin::Start(
   }
 
   window_.reset(new base::win::MessageWindow());
-  if (!window_->Create(this, NULL)) {
+  if (!window_->Create(base::Bind(&ClipboardWin::HandleMessage,
+                                  base::Unretained(this)))) {
     LOG(ERROR) << "Couldn't create clipboard window.";
     window_.reset();
     return;
@@ -264,7 +262,7 @@ void ClipboardWin::OnClipboardUpdate() {
 }
 
 bool ClipboardWin::HandleMessage(
-    HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result) {
+    UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result) {
   if (message == WM_CLIPBOARDUPDATE) {
     OnClipboardUpdate();
     *result = 0;
