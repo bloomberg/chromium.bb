@@ -284,6 +284,7 @@
         'browser/download/file_metadata_unittest_linux.cc',
         'browser/download/rate_estimator_unittest.cc',
         'browser/download/save_package_unittest.cc',
+        'browser/fileapi/fileapi_message_filter_unittest.cc',
         'browser/gamepad/gamepad_provider_unittest.cc',
         'browser/gamepad/gamepad_test_helpers.cc',
         'browser/gamepad/gamepad_test_helpers.h',

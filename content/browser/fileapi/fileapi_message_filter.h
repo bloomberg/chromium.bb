@@ -15,6 +15,7 @@
 #include "base/id_map.h"
 #include "base/platform_file.h"
 #include "base/shared_memory.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/common/blob/blob_data.h"
@@ -46,7 +47,7 @@ class ShareableFileReference;
 namespace content {
 class ChromeBlobStorageContext;
 
-class FileAPIMessageFilter : public BrowserMessageFilter {
+class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
  public:
   // Used by the renderer process host on the UI thread.
   FileAPIMessageFilter(
