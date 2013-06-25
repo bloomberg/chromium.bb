@@ -38,8 +38,8 @@ class StorageArea;
 
 class StorageNamespace : public RefCounted<StorageNamespace> {
 public:
-    static PassRefPtr<StorageNamespace> localStorageNamespace(unsigned quota);
-    static PassRefPtr<StorageNamespace> sessionStorageNamespace(Page*, unsigned quota);
+    static PassRefPtr<StorageNamespace> localStorageNamespace();
+    static PassRefPtr<StorageNamespace> sessionStorageNamespace(Page*);
 
     virtual ~StorageNamespace() { }
     virtual PassRefPtr<StorageArea> storageArea(PassRefPtr<SecurityOrigin>) = 0;

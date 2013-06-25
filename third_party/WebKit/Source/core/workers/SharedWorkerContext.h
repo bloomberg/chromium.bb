@@ -42,7 +42,7 @@ namespace WebCore {
     class SharedWorkerContext : public WorkerContext {
     public:
         typedef WorkerContext Base;
-        static PassRefPtr<SharedWorkerContext> create(const String& name, const KURL&, const String& userAgent, PassOwnPtr<GroupSettings>, SharedWorkerThread*, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType);
+        static PassRefPtr<SharedWorkerContext> create(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType);
         virtual ~SharedWorkerContext();
 
         virtual bool isSharedWorkerContext() const OVERRIDE { return true; }
@@ -57,7 +57,7 @@ namespace WebCore {
         SharedWorkerThread* thread();
 
     private:
-        SharedWorkerContext(const String& name, const KURL&, const String& userAgent, PassOwnPtr<GroupSettings>, SharedWorkerThread*);
+        SharedWorkerContext(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*);
         virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, PassRefPtr<ScriptCallStack>) OVERRIDE;
 
         String m_name;

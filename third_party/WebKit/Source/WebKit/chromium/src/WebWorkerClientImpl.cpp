@@ -43,7 +43,6 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
-#include "core/page/GroupSettings.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
 #include "core/workers/DedicatedWorkerThread.h"

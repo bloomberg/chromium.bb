@@ -34,7 +34,6 @@
 #include "core/dom/EventTarget.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/GroupSettings.h"
 #include "core/workers/WorkerEventQueue.h"
 #include <wtf/Assertions.h>
 #include <wtf/HashMap.h>
@@ -68,7 +67,6 @@ namespace WebCore {
         const KURL& url() const { return m_url; }
         KURL completeURL(const String&) const;
 
-        const GroupSettings* groupSettings() { return m_groupSettings.get(); }
         virtual String userAgent(const KURL&) const;
 
         virtual void disableEval(const String& errorMessage) OVERRIDE;
@@ -136,7 +134,7 @@ namespace WebCore {
         double timeOrigin() const { return m_timeOrigin; }
 
     protected:
-        WorkerContext(const KURL&, const String& userAgent, PassOwnPtr<GroupSettings>, WorkerThread*, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin);
+        WorkerContext(const KURL&, const String& userAgent, WorkerThread*, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin);
         void applyContentSecurityPolicyFromString(const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType);
 
         virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, PassRefPtr<ScriptCallStack>) OVERRIDE;
@@ -161,7 +159,6 @@ namespace WebCore {
 
         KURL m_url;
         String m_userAgent;
-        OwnPtr<GroupSettings> m_groupSettings;
 
         mutable RefPtr<WorkerLocation> m_location;
         mutable RefPtr<WorkerNavigator> m_navigator;

@@ -41,15 +41,15 @@
 
 namespace WebCore {
 
-PassRefPtr<StorageNamespace> StorageNamespace::localStorageNamespace(unsigned quota)
+PassRefPtr<StorageNamespace> StorageNamespace::localStorageNamespace()
 {
-    return adoptRef(new StorageNamespaceProxy(WebKit::Platform::current()->createLocalStorageNamespace("", quota), LocalStorage));
+    return adoptRef(new StorageNamespaceProxy(WebKit::Platform::current()->createLocalStorageNamespace(), LocalStorage));
 }
 
-PassRefPtr<StorageNamespace> StorageNamespace::sessionStorageNamespace(Page* page, unsigned quota)
+PassRefPtr<StorageNamespace> StorageNamespace::sessionStorageNamespace(Page* page)
 {
     WebKit::WebViewClient* webViewClient = static_cast<WebKit::WebViewImpl*>(page->chrome().client()->webView())->client();
-    return adoptRef(new StorageNamespaceProxy(webViewClient->createSessionStorageNamespace(quota), SessionStorage));
+    return adoptRef(new StorageNamespaceProxy(webViewClient->createSessionStorageNamespace(), SessionStorage));
 }
 
 // FIXME: storageNamespace argument should be a PassOwnPtr.

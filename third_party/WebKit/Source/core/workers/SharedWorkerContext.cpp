@@ -49,15 +49,15 @@ PassRefPtr<MessageEvent> createConnectEvent(PassRefPtr<MessagePort> port)
 }
 
 // static
-PassRefPtr<SharedWorkerContext> SharedWorkerContext::create(const String& name, const KURL& url, const String& userAgent, PassOwnPtr<GroupSettings> settings, SharedWorkerThread* thread, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType)
+PassRefPtr<SharedWorkerContext> SharedWorkerContext::create(const String& name, const KURL& url, const String& userAgent, SharedWorkerThread* thread, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType)
 {
-    RefPtr<SharedWorkerContext> context = adoptRef(new SharedWorkerContext(name, url, userAgent, settings, thread));
+    RefPtr<SharedWorkerContext> context = adoptRef(new SharedWorkerContext(name, url, userAgent, thread));
     context->applyContentSecurityPolicyFromString(contentSecurityPolicy, contentSecurityPolicyType);
     return context.release();
 }
 
-SharedWorkerContext::SharedWorkerContext(const String& name, const KURL& url, const String& userAgent, PassOwnPtr<GroupSettings> settings, SharedWorkerThread* thread)
-    : WorkerContext(url, userAgent, settings, thread, 0, monotonicallyIncreasingTime())
+SharedWorkerContext::SharedWorkerContext(const String& name, const KURL& url, const String& userAgent, SharedWorkerThread* thread)
+    : WorkerContext(url, userAgent, thread, 0, monotonicallyIncreasingTime())
     , m_name(name)
 {
     ScriptWrappable::init(this);

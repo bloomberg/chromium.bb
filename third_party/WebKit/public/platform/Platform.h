@@ -188,7 +188,9 @@ public:
 
     // DOM Storage --------------------------------------------------
 
-    // Return a LocalStorage namespace that corresponds to the following path.
+    // Return a LocalStorage namespace
+    virtual WebStorageNamespace* createLocalStorageNamespace() { return createLocalStorageNamespace(WebString(), 0); }
+    // FIXME: Remove the argument-taking version once its override is removed from Chromium; the arguments are unused.
     virtual WebStorageNamespace* createLocalStorageNamespace(const WebString& path, unsigned quota) { return 0; }
 
 

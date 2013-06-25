@@ -47,11 +47,26 @@ class WebIDBFactory {
 public:
     virtual ~WebIDBFactory() { }
 
-    virtual void getDatabaseNames(WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir) { }
+    // FIXME: Remove the dataDir-taking version once its override is removed from Chromium; the argument is unused.
+    virtual void getDatabaseNames(WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void getDatabaseNames(WebIDBCallbacks* callbacks, const WebString& databaseIdentifier)
+    {
+        getDatabaseNames(callbacks, databaseIdentifier, WebString());
+    }
 
+    // FIXME: Remove the dataDir-taking version once its override is removed from Chromium; the argument is unused.
     virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks* callbacks, WebIDBDatabaseCallbacks* databaseCallbacks, const WebString& databaseIdentifier, const WebString& dataDir) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks* callbacks, WebIDBDatabaseCallbacks* databaseCallbacks, const WebString& databaseIdentifier)
+    {
+        open(name, version, transactionId, callbacks, databaseCallbacks, databaseIdentifier, WebString());
+    }
 
+    // FIXME: Remove the dataDir-taking version once its override is removed from Chromium; the argument is unused.
     virtual void deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebString& databaseIdentifier)
+    {
+        deleteDatabase(name, callbacks, databaseIdentifier, WebString());
+    }
 };
 
 } // namespace WebKit

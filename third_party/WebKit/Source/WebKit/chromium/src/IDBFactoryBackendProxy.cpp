@@ -141,17 +141,17 @@ bool IDBFactoryBackendProxy::allowIndexedDB(ScriptExecutionContext* context, con
     return allowed;
 }
 
-void IDBFactoryBackendProxy::getDatabaseNames(PassRefPtr<IDBCallbacks> prpCallbacks, const String& databaseIdentifier, ScriptExecutionContext* context, const String& dataDir)
+void IDBFactoryBackendProxy::getDatabaseNames(PassRefPtr<IDBCallbacks> prpCallbacks, const String& databaseIdentifier, ScriptExecutionContext* context)
 {
     RefPtr<IDBCallbacks> callbacks(prpCallbacks);
     WebSecurityOrigin origin(context->securityOrigin());
     if (!allowIndexedDB(context, "Database Listing", origin, callbacks))
         return;
 
-    m_webIDBFactory->getDatabaseNames(new WebIDBCallbacksImpl(callbacks), databaseIdentifier, dataDir);
+    m_webIDBFactory->getDatabaseNames(new WebIDBCallbacksImpl(callbacks), databaseIdentifier);
 }
 
-void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBCallbacks> prpCallbacks, PassRefPtr<IDBDatabaseCallbacks> prpDatabaseCallbacks, const String& databaseIdentifier, ScriptExecutionContext* context, const String& dataDir)
+void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBCallbacks> prpCallbacks, PassRefPtr<IDBDatabaseCallbacks> prpDatabaseCallbacks, const String& databaseIdentifier, ScriptExecutionContext* context)
 {
     RefPtr<IDBCallbacks> callbacks(prpCallbacks);
     RefPtr<IDBDatabaseCallbacks> databaseCallbacks(prpDatabaseCallbacks);
@@ -159,17 +159,17 @@ void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t t
     if (!allowIndexedDB(context, name, origin, callbacks))
         return;
 
-    m_webIDBFactory->open(name, version, transactionId, new WebIDBCallbacksImpl(callbacks), new WebIDBDatabaseCallbacksImpl(databaseCallbacks), databaseIdentifier, dataDir);
+    m_webIDBFactory->open(name, version, transactionId, new WebIDBCallbacksImpl(callbacks), new WebIDBDatabaseCallbacksImpl(databaseCallbacks), databaseIdentifier);
 }
 
-void IDBFactoryBackendProxy::deleteDatabase(const String& name, PassRefPtr<IDBCallbacks> prpCallbacks, const String& databaseIdentifier, ScriptExecutionContext* context, const String& dataDir)
+void IDBFactoryBackendProxy::deleteDatabase(const String& name, PassRefPtr<IDBCallbacks> prpCallbacks, const String& databaseIdentifier, ScriptExecutionContext* context)
 {
     RefPtr<IDBCallbacks> callbacks(prpCallbacks);
     WebSecurityOrigin origin(context->securityOrigin());
     if (!allowIndexedDB(context, name, origin, callbacks))
         return;
 
-    m_webIDBFactory->deleteDatabase(name, new WebIDBCallbacksImpl(callbacks), databaseIdentifier, dataDir);
+    m_webIDBFactory->deleteDatabase(name, new WebIDBCallbacksImpl(callbacks), databaseIdentifier);
 }
 
 } // namespace WebKit

@@ -120,6 +120,8 @@ public:
         const WebPopupMenuInfo&, WebExternalPopupMenuClient*) { return 0; }
 
     // Create a session storage namespace object associated with this WebView.
+    virtual WebStorageNamespace* createSessionStorageNamespace() { return createSessionStorageNamespace(0); }
+    // FIXME: Remove the argument-taking version once its override is removed from Chromium; the argument is unused.
     virtual WebStorageNamespace* createSessionStorageNamespace(unsigned quota) { return 0; }
 
 

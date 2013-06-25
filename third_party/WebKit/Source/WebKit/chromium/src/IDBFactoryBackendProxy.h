@@ -46,9 +46,9 @@ public:
     static PassRefPtr<WebCore::IDBFactoryBackendInterface> create();
     virtual ~IDBFactoryBackendProxy();
 
-    virtual void getDatabaseNames(PassRefPtr<WebCore::IDBCallbacks>, const String& databaseIdentifier, WebCore::ScriptExecutionContext*, const String& dataDir);
-    virtual void open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<WebCore::IDBCallbacks>, PassRefPtr<WebCore::IDBDatabaseCallbacks>, const String& databaseIdentifier, WebCore::ScriptExecutionContext*, const String& dataDir);
-    virtual void deleteDatabase(const String& name, PassRefPtr<WebCore::IDBCallbacks>, const String& databaseIdentifier, WebCore::ScriptExecutionContext*, const String& dataDir);
+    virtual void getDatabaseNames(PassRefPtr<WebCore::IDBCallbacks>, const String& databaseIdentifier, WebCore::ScriptExecutionContext*) OVERRIDE;
+    virtual void open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<WebCore::IDBCallbacks>, PassRefPtr<WebCore::IDBDatabaseCallbacks>, const String& databaseIdentifier, WebCore::ScriptExecutionContext*) OVERRIDE;
+    virtual void deleteDatabase(const String& name, PassRefPtr<WebCore::IDBCallbacks>, const String& databaseIdentifier, WebCore::ScriptExecutionContext*) OVERRIDE;
 
 private:
     IDBFactoryBackendProxy();

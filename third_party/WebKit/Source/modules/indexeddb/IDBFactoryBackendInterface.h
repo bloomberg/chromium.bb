@@ -50,9 +50,9 @@ public:
     static PassRefPtr<IDBFactoryBackendInterface> create();
     virtual ~IDBFactoryBackendInterface() { }
 
-    virtual void getDatabaseNames(PassRefPtr<IDBCallbacks>, const String& databaseIdentifier, ScriptExecutionContext*, const String& dataDir) = 0;
-    virtual void open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBCallbacks>, PassRefPtr<IDBDatabaseCallbacks>, const String& databaseIdentifier, ScriptExecutionContext*, const String& dataDir) = 0;
-    virtual void deleteDatabase(const String& name, PassRefPtr<IDBCallbacks>, const String& databaseIdentifier, ScriptExecutionContext*, const String& dataDir) = 0;
+    virtual void getDatabaseNames(PassRefPtr<IDBCallbacks>, const String& databaseIdentifier, ScriptExecutionContext*) = 0;
+    virtual void open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBCallbacks>, PassRefPtr<IDBDatabaseCallbacks>, const String& databaseIdentifier, ScriptExecutionContext*) = 0;
+    virtual void deleteDatabase(const String& name, PassRefPtr<IDBCallbacks>, const String& databaseIdentifier, ScriptExecutionContext*) = 0;
 };
 
 } // namespace WebCore

@@ -53,7 +53,6 @@
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/GroupSettings.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
 #include "core/workers/SharedWorkerContext.h"
@@ -367,12 +366,7 @@ void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString&
 {
     initializeLoader(url);
     WorkerThreadStartMode startMode = m_pauseWorkerContextOnStart ? PauseWorkerContextOnStart : DontPauseWorkerContextOnStart;
-    ASSERT(m_loadingDocument->isDocument());
-    Document* document = static_cast<Document*>(m_loadingDocument.get());
-    GroupSettings* settings = 0;
-    if (document->page())
-        settings = document->page()->group().groupSettings();
-    setWorkerThread(SharedWorkerThread::create(name, url, userAgent, settings,
+    setWorkerThread(SharedWorkerThread::create(name, url, userAgent,
                                                sourceCode, *this, *this, startMode, contentSecurityPolicy,
                                                static_cast<WebCore::ContentSecurityPolicy::HeaderType>(policyType)));
 

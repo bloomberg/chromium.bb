@@ -1160,7 +1160,6 @@
             'page/FrameDestructionObserver.h',
             'page/FrameTree.cpp',
             'page/FrameView.cpp',
-            'page/GroupSettings.cpp',
             'page/History.cpp',
             'page/History.h',
             'page/LayoutMilestones.h',

@@ -611,11 +611,8 @@ void Page::visitedStateChanged(PageGroup* group, LinkHash linkHash)
 
 StorageNamespace* Page::sessionStorage(bool optionalCreate)
 {
-    if (!m_sessionStorage && optionalCreate) {
-        // FIXME: the quota value here is not needed or used in blink, crbug/230987
-        const unsigned int kBogusQuota = UINT_MAX;
-        m_sessionStorage = StorageNamespace::sessionStorageNamespace(this, kBogusQuota);
-    }
+    if (!m_sessionStorage && optionalCreate)
+        m_sessionStorage = StorageNamespace::sessionStorageNamespace(this);
     return m_sessionStorage.get();
 }
 

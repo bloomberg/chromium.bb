@@ -82,10 +82,9 @@ public:
     virtual bool isCleanupTask() const { return true; }
 };
 
-WorkerContext::WorkerContext(const KURL& url, const String& userAgent, PassOwnPtr<GroupSettings> settings, WorkerThread* thread, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin)
+WorkerContext::WorkerContext(const KURL& url, const String& userAgent, WorkerThread* thread, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin)
     : m_url(url)
     , m_userAgent(userAgent)
-    , m_groupSettings(settings)
     , m_script(adoptPtr(new WorkerScriptController(this)))
     , m_thread(thread)
     , m_workerInspectorController(adoptPtr(new WorkerInspectorController(this)))

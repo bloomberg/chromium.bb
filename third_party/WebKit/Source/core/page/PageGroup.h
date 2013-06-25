@@ -37,7 +37,6 @@
 namespace WebCore {
 
     class KURL;
-    class GroupSettings;
     class Page;
     class SecurityOrigin;
     class StorageNamespace;
@@ -69,8 +68,6 @@ namespace WebCore {
 
         const UserStyleSheetVector& userStyleSheets() const { return m_userStyleSheets; }
 
-        GroupSettings* groupSettings() const { return m_groupSettings.get(); }
-
     private:
         PageGroup();
 
@@ -79,7 +76,6 @@ namespace WebCore {
         HashSet<Page*> m_pages;
         RefPtr<StorageNamespace> m_localStorage;
         UserStyleSheetVector m_userStyleSheets;
-        OwnPtr<GroupSettings> m_groupSettings;
     };
 
 } // namespace WebCore
