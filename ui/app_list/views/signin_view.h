@@ -21,16 +21,12 @@ namespace app_list {
 class SigninDelegate;
 
 // The SigninView is shown in the app list when the user needs to sign in.
-// It just shows a webview, which is prepared for signin by the signin delegate.
 class SigninView : public views::View,
                    public views::ButtonListener,
                    public views::LinkListener {
  public:
   SigninView(SigninDelegate* delegate, int width);
   virtual ~SigninView();
-
-  // Show the signin UI and begins the signin process.
-  void BeginSignin();
 
  private:
   // views::ButtonListener overrides:
