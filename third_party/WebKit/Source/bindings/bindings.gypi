@@ -77,8 +77,6 @@
             'v8/V8BindingMacros.h',
             'v8/V8Callback.cpp',
             'v8/V8Callback.h',
-            'v8/V8Collection.cpp',
-            'v8/V8Collection.h',
             'v8/V8CustomElementCallback.cpp',
             'v8/V8CustomElementCallback.h',
             'v8/V8DOMActivityLogger.h',

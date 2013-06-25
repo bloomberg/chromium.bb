@@ -3211,7 +3211,7 @@ sub GenerateImplementationIndexedPropertyAccessors
         $code .= $indexedSetterFunction ? ", ${implClassName}V8Internal::indexedPropertySetterCallback" : ", 0";
         $code .= ", 0"; # IndexedPropertyQuery -- not being used at the moment.
         $code .= $indexedDeleterFunction ? ", ${implClassName}V8Internal::indexedPropertyDeleterCallback" : ", 0";
-        $code .= ", nodeCollectionIndexedPropertyEnumerator<${implClassName}>" if $indexedEnumeratorFunction;
+        $code .= ", indexedPropertyEnumerator<${implClassName}>" if $indexedEnumeratorFunction;
         $code .= ");\n";
     }
 
@@ -3226,7 +3226,6 @@ sub GenerateImplementationIndexedPropertyGetter
     my $v8ClassName = GetV8ClassName($interface);
     my $methodName = GetImplName($indexedGetterFunction);
 
-    AddToImplIncludes("bindings/v8/V8Collection.h");
     my $returnType = $indexedGetterFunction->type;
     my $nativeType = GetNativeType($returnType);
     my $nativeValue = "element";
@@ -3323,7 +3322,6 @@ sub GenerateImplementationIndexedPropertySetter
     my $v8ClassName = GetV8ClassName($interface);
     my $methodName = GetImplName($indexedSetterFunction);
 
-    AddToImplIncludes("bindings/v8/V8Collection.h");
     my $type = $indexedSetterFunction->parameters->[1]->type;
     my $raisesExceptions = $indexedSetterFunction->extendedAttributes->{"RaisesException"};
     my $treatNullAs = $indexedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
@@ -3572,7 +3570,6 @@ sub GenerateImplementationNamedPropertyGetter
     my $v8ClassName = GetV8ClassName($interface);
     my $methodName = GetImplName($namedGetterFunction);
 
-    AddToImplIncludes("bindings/v8/V8Collection.h");
     my $returnType = $namedGetterFunction->type;
     my $isNull = GenerateIsNullExpression($returnType, "element");
     my $nativeValue = "element";
@@ -3653,7 +3650,6 @@ sub GenerateImplementationNamedPropertySetter
     my $v8ClassName = GetV8ClassName($interface);
     my $methodName = GetImplName($namedSetterFunction);
 
-    AddToImplIncludes("bindings/v8/V8Collection.h");
     my $raisesExceptions = $namedSetterFunction->extendedAttributes->{"RaisesException"};
     my $treatNullAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
     my $treatUndefinedAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatUndefinedAs"};

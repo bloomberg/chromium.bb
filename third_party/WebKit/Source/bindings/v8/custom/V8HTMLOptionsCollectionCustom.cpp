@@ -40,8 +40,8 @@
 #include "V8Node.h"
 #include "V8NodeList.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8Collection.h"
 #include "bindings/v8/custom/V8HTMLSelectElementCustom.h"
+#include "core/html/HTMLSelectElement.h"
 
 namespace WebCore {
 

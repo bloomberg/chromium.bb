@@ -546,6 +546,20 @@ namespace WebCore {
         return DOMWrapperWorld::isolatedWorld(context);
     }
 
+    // FIXME: This will be soon embedded in the generated code.
+    template<class Collection> static void indexedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
+    {
+        Collection* collection = reinterpret_cast<Collection*>(info.Holder()->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+        int length = collection->length();
+        v8::Handle<v8::Array> properties = v8::Array::New(length);
+        for (int i = 0; i < length; ++i) {
+            // FIXME: Do we need to check that the item function returns a non-null value for this index?
+            v8::Handle<v8::Integer> integer = v8::Integer::New(i, info.GetIsolate());
+            properties->Set(integer, integer);
+        }
+        v8SetReturnValue(info, properties);
+    }
+
     // If the current context causes out of memory, JavaScript setting
     // is disabled and it returns true.
     bool handleOutOfMemory();
