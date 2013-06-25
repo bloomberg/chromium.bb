@@ -130,7 +130,8 @@ remoting.setMode = function(mode) {
                                  remoting.onVisibilityChanged, false);
     // TODO(jamiewalch): crbug.com/252796: Remove this once crbug.com/240772
     // is fixed.
-    document.body.parentNode.classList.remove('no-scroll');
+    var htmlNode = /** @type {HTMLElement} */ (document.body.parentNode);
+    htmlNode.classList.remove('no-scroll');
   }
 };
 

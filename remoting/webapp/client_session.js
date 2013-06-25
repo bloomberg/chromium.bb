@@ -655,10 +655,11 @@ remoting.ClientSession.prototype.setScreenMode_ =
 
   // TODO(jamiewalch): crbug.com/252796: Remove this once crbug.com/240772
   // is fixed.
+  var htmlNode = /** @type {HTMLElement} */ (document.body.parentNode);
   if (this.shrinkToFit_) {
-    document.body.parentNode.classList.add('no-scroll');
+    htmlNode.classList.add('no-scroll');
   } else {
-    document.body.parentNode.classList.remove('no-scroll');
+    htmlNode.classList.remove('no-scroll');
   }
 }
 
