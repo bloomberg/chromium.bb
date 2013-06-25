@@ -121,8 +121,8 @@ class UI_EXPORT CanvasSkiaPaint : public Canvas {
     // This will bring the canvas into the screen coordinate system for the
     // dirty rect
     canvas->translate(
-        SkScalarRoundToInt(-ps_.rcPaint.left/ui::win::GetDeviceScaleFactor()),
-        SkScalarRoundToInt(-ps_.rcPaint.top/ui::win::GetDeviceScaleFactor()));
+        -ps_.rcPaint.left/ui::win::GetDeviceScaleFactor(),
+        -ps_.rcPaint.top/ui::win::GetDeviceScaleFactor());
   }
 
   // If true, this canvas was created for a BeginPaint.
