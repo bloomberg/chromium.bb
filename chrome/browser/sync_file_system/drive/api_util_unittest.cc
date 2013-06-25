@@ -5,7 +5,7 @@
 #include "chrome/browser/sync_file_system/drive/api_util.h"
 
 #include "base/location.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -16,8 +16,8 @@
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -251,7 +251,7 @@ class FakeDriveUploader : public DriveUploaderInterface {
 
 class APIUtilTest : public testing::Test {
  public:
-  APIUtilTest() : ui_thread_(content::BrowserThread::UI, &message_loop_),
+  APIUtilTest() : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
                   fake_drive_service_(NULL),
                   fake_drive_uploader_(NULL) {}
 
@@ -278,14 +278,14 @@ class APIUtilTest : public testing::Test {
         fake_drive_service_->GetRootResourceId(),
         APIUtil::GetSyncRootDirectoryName(),
         base::Bind(&DidAddNewDirectory, &sync_root_resource_id_));
-    message_loop()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     ASSERT_TRUE(!sync_root_resource_id_.empty());
     fake_drive_service()->RemoveResourceFromDirectory(
         fake_drive_service_->GetRootResourceId(),
         sync_root_resource_id_,
         base::Bind(&DidRemoveResourceFromDirectory));
-    message_loop()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void SetUpOriginRootDirectory() {
@@ -294,7 +294,7 @@ class APIUtilTest : public testing::Test {
         GetSyncRootResourceId(),
         kOriginDirectoryName,
         base::Bind(&DidAddNewDirectory, &origin_root_resource_id_));
-    message_loop()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void SetUpFile(const std::string& content_data,
@@ -311,7 +311,7 @@ class APIUtilTest : public testing::Test {
         title,
         false,  // shared_with_me
         base::Bind(&DidAddNewFile, resource_id_out, file_md5_out));
-    message_loop()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   std::string GetSyncRootResourceId() {
@@ -334,8 +334,6 @@ class APIUtilTest : public testing::Test {
     return fake_drive_uploader_;
   }
 
-  base::MessageLoop* message_loop() { return &message_loop_; }
-
   void TestGetSyncRoot();
   void TestCreateSyncRoot();
   void TestCreateSyncRoot_Conflict();
@@ -356,8 +354,7 @@ class APIUtilTest : public testing::Test {
   void TestCreateDirectory();
 
  private:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   std::string sync_root_resource_id_;
   std::string origin_root_resource_id_;
@@ -448,7 +445,7 @@ void APIUtilTest::TestGetSyncRoot() {
   std::string resource_id;
   api_util()->GetDriveDirectoryForSyncRoot(
       base::Bind(&DidGetResourceID, &done, &error, &resource_id));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -463,7 +460,7 @@ void APIUtilTest::TestCreateSyncRoot() {
   std::string resource_id;
   api_util()->GetDriveDirectoryForSyncRoot(
       base::Bind(&DidGetResourceID, &done, &error, &resource_id));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CREATED, error);
@@ -476,7 +473,7 @@ void APIUtilTest::TestCreateSyncRoot() {
                  FROM_HERE,
                  resource_id,
                  google_apis::ENTRY_KIND_FOLDER));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void APIUtilTest::TestCreateSyncRoot_Conflict() {
@@ -489,7 +486,7 @@ void APIUtilTest::TestCreateSyncRoot_Conflict() {
   std::string resource_id;
   api_util()->GetDriveDirectoryForSyncRoot(
       base::Bind(&DidGetResourceID, &done, &error, &resource_id));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -503,7 +500,7 @@ void APIUtilTest::TestCreateSyncRoot_Conflict() {
                  FROM_HERE,
                  resource_id,
                  google_apis::ENTRY_KIND_FOLDER));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void APIUtilTest::TestGetOriginDirectory() {
@@ -517,7 +514,7 @@ void APIUtilTest::TestGetOriginDirectory() {
       GetSyncRootResourceId(),
       GURL(kOrigin),
       base::Bind(&DidGetResourceID, &done, &error, &resource_id));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -534,7 +531,7 @@ void APIUtilTest::TestCreateOriginDirectory() {
       GetSyncRootResourceId(),
       GURL(kOrigin),
       base::Bind(&DidGetResourceID, &done, &error, &resource_id));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CREATED, error);
@@ -547,7 +544,7 @@ void APIUtilTest::TestCreateOriginDirectory() {
                  FROM_HERE,
                  resource_id,
                  google_apis::ENTRY_KIND_FOLDER));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void APIUtilTest::TestCreateOriginDirectory_Conflict() {
@@ -561,7 +558,7 @@ void APIUtilTest::TestCreateOriginDirectory_Conflict() {
       GetSyncRootResourceId(),
       GURL(kOrigin),
       base::Bind(&DidGetResourceID, &done, &error, &resource_id));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -575,7 +572,7 @@ void APIUtilTest::TestCreateOriginDirectory_Conflict() {
                  FROM_HERE,
                  resource_id,
                  google_apis::ENTRY_KIND_FOLDER));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void APIUtilTest::TestGetLargestChangeStamp() {
@@ -587,7 +584,7 @@ void APIUtilTest::TestGetLargestChangeStamp() {
   int64 largest_changestamp = -1;
   api_util()->GetLargestChangeStamp(base::Bind(
       &DidGetLargestChangeStamp, &done, &error, &largest_changestamp));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -615,7 +612,7 @@ void APIUtilTest::TestListFiles() {
   api_util()->ListFiles(
       GetOriginRootResourceId(),
       base::Bind(&DidGetResourceList, &done, &error, &document_feed));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -630,7 +627,7 @@ void APIUtilTest::TestListFiles() {
 
   api_util()->ContinueListing(
       feed_url, base::Bind(&DidGetResourceList, &done, &error, &document_feed));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -661,7 +658,7 @@ void APIUtilTest::TestListChanges() {
   api_util()->ListFiles(
       GetOriginRootResourceId(),
       base::Bind(&DidGetResourceList, &done, &error, &document_feed));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -673,7 +670,7 @@ void APIUtilTest::TestListChanges() {
   api_util()->ListChanges(
       kStartChangestamp,
       base::Bind(&DidGetResourceList, &done, &error, &document_feed));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // There should be 3 files which have changestamp #6+.
   EXPECT_TRUE(done);
@@ -704,7 +701,7 @@ void APIUtilTest::TestDownloadFile() {
       "",  // local_file_md5
       kOutputFilePath,
       base::Bind(&DidDownloadFile, &done, &downloaded_file_md5, &error));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(file_md5, downloaded_file_md5);
@@ -737,7 +734,7 @@ void APIUtilTest::TestDownloadFileInNotModified() {
       file_md5,
       kOutputFilePath,
       base::Bind(&DidDownloadFile, &done, &downloaded_file_md5, &error));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_NOT_MODIFIED, error);
@@ -760,7 +757,7 @@ void APIUtilTest::TestUploadNewFile() {
       kLocalFilePath,
       kFileTitle,
       base::Bind(&DidUploadFile, &done, &error, &resource_id));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CREATED, error);
@@ -773,7 +770,7 @@ void APIUtilTest::TestUploadNewFile() {
                  FROM_HERE,
                  resource_id,
                  google_apis::ENTRY_KIND_FILE));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void APIUtilTest::TestUploadNewFile_ConflictWithFile() {
@@ -793,7 +790,7 @@ void APIUtilTest::TestUploadNewFile_ConflictWithFile() {
       kLocalFilePath,
       kFileTitle,
       base::Bind(&DidUploadFile, &done, &error, &resource_id));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // HTTP_CONFLICT error must be returned with empty resource_id.
   EXPECT_TRUE(done);
@@ -808,7 +805,7 @@ void APIUtilTest::TestUploadNewFile_ConflictWithFile() {
                  FROM_HERE,
                  resource_id,
                  google_apis::ENTRY_KIND_FILE));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void APIUtilTest::TestUploadExistingFile() {
@@ -830,7 +827,7 @@ void APIUtilTest::TestUploadExistingFile() {
       file_md5,
       kLocalFilePath,
       base::Bind(&DidUploadFile, &done, &error, &resource_id));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -843,7 +840,7 @@ void APIUtilTest::TestUploadExistingFile() {
                  FROM_HERE,
                  file_resource_id,
                  google_apis::ENTRY_KIND_FILE));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void APIUtilTest::TestUploadExistingFileInConflict() {
@@ -869,7 +866,7 @@ void APIUtilTest::TestUploadExistingFileInConflict() {
       kExpectedRemoteFileMD5,
       kLocalFilePath,
       base::Bind(&DidUploadFile, &done, &error, &resource_id));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CONFLICT, error);
@@ -883,7 +880,7 @@ void APIUtilTest::TestUploadExistingFileInConflict() {
                  FROM_HERE,
                  file_resource_id,
                  google_apis::ENTRY_KIND_FILE));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void APIUtilTest::TestDeleteFile() {
@@ -902,7 +899,7 @@ void APIUtilTest::TestDeleteFile() {
   api_util()->DeleteFile(file_resource_id,
                          file_md5,
                          base::Bind(&DidDeleteFile, &done, &error));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
@@ -911,7 +908,7 @@ void APIUtilTest::TestDeleteFile() {
       kFileTitle,
       GetOriginRootResourceId(),
       base::Bind(&VerifyFileDeletion, FROM_HERE));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void APIUtilTest::TestDeleteFileInConflict() {
@@ -933,7 +930,7 @@ void APIUtilTest::TestDeleteFileInConflict() {
   api_util()->DeleteFile(file_resource_id,
                          kExpectedRemoteFileMD5,
                          base::Bind(&DidDeleteFile, &done, &error));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CONFLICT, error);
@@ -946,7 +943,7 @@ void APIUtilTest::TestDeleteFileInConflict() {
                  FROM_HERE,
                  file_resource_id,
                  google_apis::ENTRY_KIND_FILE));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void APIUtilTest::TestCreateDirectory() {
@@ -962,7 +959,7 @@ void APIUtilTest::TestCreateDirectory() {
       GetOriginRootResourceId(),
       kDirectoryTitle,
       base::Bind(&DidGetResourceID, &done, &error, &resource_id));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CREATED, error);
@@ -975,7 +972,7 @@ void APIUtilTest::TestCreateDirectory() {
                  FROM_HERE,
                  resource_id,
                  google_apis::ENTRY_KIND_FOLDER));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(APIUtilTest, GetSyncRoot) {

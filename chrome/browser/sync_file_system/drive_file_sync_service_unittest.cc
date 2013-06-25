@@ -4,12 +4,14 @@
 
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/sync_file_system/drive/fake_api_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
@@ -41,8 +43,7 @@ void ExpectOkStatus(SyncStatusCode status) {
 class DriveFileSyncServiceTest : public testing::Test {
  public:
   DriveFileSyncServiceTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         fake_api_util_(NULL),
         metadata_store_(NULL) {}
 
@@ -56,7 +57,7 @@ class DriveFileSyncServiceTest : public testing::Test {
         base_dir_, base::MessageLoopProxy::current().get());
     bool done = false;
     metadata_store_->Initialize(base::Bind(&DidInitialize, &done));
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     metadata_store_->SetSyncRootDirectory(kSyncRootResourceId);
     EXPECT_TRUE(done);
 
@@ -65,14 +66,14 @@ class DriveFileSyncServiceTest : public testing::Test {
         base_dir_,
         scoped_ptr<drive::APIUtilInterface>(fake_api_util_),
         scoped_ptr<DriveMetadataStore>(metadata_store_)).Pass();
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
     metadata_store_ = NULL;
     fake_api_util_ = NULL;
     sync_service_.reset();
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     base_dir_ = base::FilePath();
     RevokeSyncableFileSystem();
@@ -82,7 +83,6 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop* message_loop() { return &message_loop_; }
   drive::FakeAPIUtil* fake_api_util() { return fake_api_util_; }
   DriveMetadataStore* metadata_store() { return metadata_store_; }
   DriveFileSyncService* sync_service() { return sync_service_.get(); }
@@ -135,9 +135,7 @@ class DriveFileSyncServiceTest : public testing::Test {
 
  private:
   base::ScopedTempDir scoped_base_dir_;
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   TestingProfile profile_;
   base::FilePath base_dir_;
@@ -171,7 +169,7 @@ TEST_F(DriveFileSyncServiceTest, UninstallOrigin) {
   sync_service()->UninstallOrigin(
       origin_gurl,
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(done);
 
   // Assert the App's origin folder was marked as deleted.
@@ -193,7 +191,7 @@ TEST_F(DriveFileSyncServiceTest, UninstallOriginWithoutOriginDirectory) {
   sync_service()->UninstallOrigin(
       origin_gurl,
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(done);
 
   // Assert the App's origin folder does not exist.
@@ -214,7 +212,7 @@ TEST_F(DriveFileSyncServiceTest, DisableOriginForTrackingChangesPendingOrigin) {
   // Pending origins that are disabled are dropped and do not go to disabled.
   sync_service()->DisableOriginForTrackingChanges(origin,
                                                   base::Bind(&ExpectOkStatus));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   ASSERT_TRUE(VerifyOriginStatusCount(0u, 0u, 0u));
 }
 
@@ -228,7 +226,7 @@ TEST_F(DriveFileSyncServiceTest,
 
   sync_service()->DisableOriginForTrackingChanges(origin,
                                                   base::Bind(&ExpectOkStatus));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   ASSERT_TRUE(VerifyOriginStatusCount(0u, 0u, 1u));
 }
 
@@ -245,7 +243,7 @@ TEST_F(DriveFileSyncServiceTest, EnableOriginForTrackingChanges) {
   // origins > 0.
   sync_service()->EnableOriginForTrackingChanges(origin,
                                                  base::Bind(&ExpectOkStatus));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   ASSERT_TRUE(VerifyOriginStatusCount(0u, 1u, 0u));
 }
 

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
@@ -27,6 +27,7 @@
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/id_util.h"
 #include "net/base/escape.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -187,8 +188,7 @@ class MockFileStatusObserver: public FileStatusObserver {
 class DriveFileSyncServiceFakeTest : public testing::Test {
  public:
   DriveFileSyncServiceFakeTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         fake_drive_service_(NULL) {
   }
 
@@ -221,7 +221,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
 
     bool done = false;
     metadata_store_->Initialize(base::Bind(&DidInitialize, &done));
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_TRUE(done);
 
     fake_drive_service_->LoadResourceListForWapi(
@@ -239,7 +239,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     sync_service_->AddFileStatusObserver(&mock_file_status_observer_);
     sync_service_->SetRemoteChangeProcessor(mock_remote_processor());
     sync_service_->SetSyncEnabled(enabled);
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -255,7 +255,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
 
     extension_service_ = NULL;
     profile_.reset();
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void SetSyncEnabled(bool enabled) {
@@ -282,7 +282,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
   void UpdateRegisteredOrigins() {
     sync_service_->UpdateRegisteredOrigins();
     // Wait for completion of uninstalling origin.
-    message_loop()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void VerifySizeOfRegisteredOrigins(size_t b_size,
@@ -317,7 +317,6 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     return &mock_remote_processor_;
   }
 
-  base::MessageLoop* message_loop() { return &message_loop_; }
   DriveFileSyncService* sync_service() { return sync_service_.get(); }
   std::map<GURL, std::string>* pending_batch_sync_origins() {
     return &(sync_service()->pending_batch_sync_origins_);
@@ -352,7 +351,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
 
     sync_service_->ProcessRemoteChange(
         base::Bind(&DidProcessRemoteChange, &actual_status, &actual_url));
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     EXPECT_EQ(expected_status, actual_status);
     EXPECT_EQ(expected_url, actual_url);
@@ -366,7 +365,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
         resource_id,
         base::Bind(&DriveFileSyncServiceFakeTest::DidGetEntryForRemoteChange,
                    base::Unretained(this), origin, &done));
-    message_loop()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     return done;
   }
 
@@ -378,7 +377,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
     ASSERT_TRUE(entry);
     *done_out = sync_service_->AppendRemoteChange(origin, *entry, 12345);
-    message_loop()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   bool AppendIncrementalRemoteChange(
@@ -406,7 +405,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
         fake_drive_service()->GetRootResourceId(),
         sync_root_resource_id_,
         base::Bind(&DidRemoveResourceFromDirectory));
-    message_loop()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     metadata_store()->SetSyncRootDirectory(sync_root_resource_id_);
   }
@@ -431,7 +430,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
         parent_resource_id,
         directory_name,
         base::Bind(&DidAddNewResource, &resource_id));
-    message_loop()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_TRUE(!resource_id.empty());
     return resource_id;
   }
@@ -447,7 +446,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
         title,
         false,  // shared_with_me
         base::Bind(&DidAddNewResource, &resource_id));
-    message_loop()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     EXPECT_TRUE(!resource_id.empty());
     return resource_id;
@@ -466,9 +465,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
   void TestRemoteChange_Folder();
 
  private:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir base_dir_;
   scoped_ptr<TestingProfile> profile_;
@@ -507,7 +504,7 @@ void DriveFileSyncServiceFakeTest::TestRegisterNewOrigin() {
   sync_service()->RegisterOriginForTrackingChanges(
       ExtensionNameToGURL(kExtensionName1),
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(done);
 
   VerifySizeOfRegisteredOrigins(0u, 1u, 0u);
@@ -529,7 +526,7 @@ void DriveFileSyncServiceFakeTest::TestRegisterExistingOrigin() {
   sync_service()->RegisterOriginForTrackingChanges(
       ExtensionNameToGURL(kExtensionName1),
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(done);
 
   // The origin should be registered as an incremental sync origin.
@@ -551,7 +548,7 @@ void DriveFileSyncServiceFakeTest::TestRegisterOriginWithSyncDisabled() {
   sync_service()->RegisterOriginForTrackingChanges(
       ExtensionNameToGURL(kExtensionName1),
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(done);
 
   // We must not have started batch sync for the newly registered origin,
@@ -574,7 +571,7 @@ void DriveFileSyncServiceFakeTest::TestUnregisterOrigin() {
   sync_service()->UnregisterOriginForTrackingChanges(
       ExtensionNameToGURL(kExtensionName1),
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
-  message_loop()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(done);
 
   VerifySizeOfRegisteredOrigins(0u, 1u, 0u);
