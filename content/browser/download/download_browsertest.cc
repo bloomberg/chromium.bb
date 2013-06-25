@@ -1130,7 +1130,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
     // Starting continuation
     {DownloadItem::IN_PROGRESS, GetSafeBufferChunk()},
     // Server precondition fail.
-    {DownloadItem::INTERRUPTED, GetSafeBufferChunk()},
+    {DownloadItem::INTERRUPTED, 0},
     // Notification of successful restart.
     {DownloadItem::IN_PROGRESS, 0},
     // Completion.
@@ -1227,8 +1227,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithDeletedFile) {
     // Starting continuation
     {DownloadItem::IN_PROGRESS, GetSafeBufferChunk()},
     // Error because file isn't there.
-    {DownloadItem::INTERRUPTED, GetSafeBufferChunk()},
-    // Restart
+    {DownloadItem::INTERRUPTED, 0},
+    // Restart.
     {DownloadItem::IN_PROGRESS, 0},
     // Completion.
     {DownloadItem::COMPLETE, GetSafeBufferChunk() * 3},
