@@ -18,10 +18,8 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_protocol.h"
-#include "net/spdy/spdy_test_util_spdy2.h"
+#include "net/spdy/spdy_test_util_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using namespace net::test_spdy2;
 
 namespace net {
 
@@ -40,14 +38,30 @@ enum HttpProxyType {
   SPDY
 };
 
+struct HttpProxyClientSocketPoolTestParams {
+  HttpProxyClientSocketPoolTestParams()
+      : proxy_type(HTTP),
+        protocol(kProtoSPDY2) {}
+
+  HttpProxyClientSocketPoolTestParams(
+      HttpProxyType proxy_type,
+      NextProto protocol)
+      : proxy_type(proxy_type),
+        protocol(protocol) {}
+
+  HttpProxyType proxy_type;
+  NextProto protocol;
+};
+
 typedef ::testing::TestWithParam<HttpProxyType> TestWithHttpParam;
 
 }  // namespace
 
-class HttpProxyClientSocketPoolSpdy2Test : public TestWithHttpParam {
+class HttpProxyClientSocketPoolTest
+    : public ::testing::TestWithParam<HttpProxyClientSocketPoolTestParams> {
  protected:
-  HttpProxyClientSocketPoolSpdy2Test()
-      : session_deps_(kProtoSPDY2),
+  HttpProxyClientSocketPoolTest()
+      : session_deps_(GetParam().protocol),
         ssl_config_(),
         ignored_transport_socket_params_(
             new TransportSocketParams(HostPortPair("proxy", 80),
@@ -88,7 +102,7 @@ class HttpProxyClientSocketPoolSpdy2Test : public TestWithHttpParam {
                          BoundNetLog().net_log()),
         session_(CreateNetworkSession()),
         http_proxy_histograms_("HttpProxyUnitTest"),
-        spdy_util_(kProtoSPDY2),
+        spdy_util_(GetParam().protocol),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
               &http_proxy_histograms_,
@@ -97,13 +111,13 @@ class HttpProxyClientSocketPoolSpdy2Test : public TestWithHttpParam {
               &ssl_socket_pool_,
               NULL) {}
 
-  virtual ~HttpProxyClientSocketPoolSpdy2Test() {
+  virtual ~HttpProxyClientSocketPoolTest() {
   }
 
   void AddAuthToCache() {
     const base::string16 kFoo(ASCIIToUTF16("foo"));
     const base::string16 kBar(ASCIIToUTF16("bar"));
-    GURL proxy_url(GetParam() == HTTP ? "http://proxy" : "https://proxy:80");
+    GURL proxy_url(GetParam().proxy_type == HTTP ? "http://proxy" : "https://proxy:80");
     session_->http_auth_cache()->Add(proxy_url,
                                      "MyRealm1",
                                      HttpAuth::AUTH_SCHEME_BASIC,
@@ -113,13 +127,13 @@ class HttpProxyClientSocketPoolSpdy2Test : public TestWithHttpParam {
   }
 
   scoped_refptr<TransportSocketParams> GetTcpParams() {
-    if (GetParam() != HTTP)
+    if (GetParam().proxy_type != HTTP)
       return scoped_refptr<TransportSocketParams>();
     return ignored_transport_socket_params_;
   }
 
   scoped_refptr<SSLSocketParams> GetSslParams() {
-    if (GetParam() == HTTP)
+    if (GetParam().proxy_type == HTTP)
       return scoped_refptr<SSLSocketParams>();
     return ignored_ssl_socket_params_;
   }
@@ -155,7 +169,7 @@ class HttpProxyClientSocketPoolSpdy2Test : public TestWithHttpParam {
                   MockWrite* writes, size_t writes_count,
                   MockRead* spdy_reads, size_t spdy_reads_count,
                   MockWrite* spdy_writes, size_t spdy_writes_count) {
-    if (GetParam() == SPDY) {
+    if (GetParam().proxy_type == SPDY) {
       data_.reset(new DeterministicSocketData(spdy_reads, spdy_reads_count,
                                               spdy_writes, spdy_writes_count));
     } else {
@@ -168,9 +182,9 @@ class HttpProxyClientSocketPoolSpdy2Test : public TestWithHttpParam {
 
     socket_factory().AddSocketDataProvider(data_.get());
 
-    if (GetParam() != HTTP) {
+    if (GetParam().proxy_type != HTTP) {
       ssl_data_.reset(new SSLSocketDataProvider(SYNCHRONOUS, OK));
-      if (GetParam() == SPDY) {
+      if (GetParam().proxy_type == SPDY) {
         InitializeSpdySsl();
       }
       socket_factory().AddSSLSocketDataProvider(ssl_data_.get());
@@ -178,7 +192,7 @@ class HttpProxyClientSocketPoolSpdy2Test : public TestWithHttpParam {
   }
 
   void InitializeSpdySsl() {
-    ssl_data_->SetNextProto(kProtoSPDY2);
+    ssl_data_->SetNextProto(GetParam().protocol);
   }
 
   HttpNetworkSession* CreateNetworkSession() {
@@ -214,11 +228,30 @@ class HttpProxyClientSocketPoolSpdy2Test : public TestWithHttpParam {
 //-----------------------------------------------------------------------------
 // All tests are run with three different proxy types: HTTP, HTTPS (non-SPDY)
 // and SPDY.
-INSTANTIATE_TEST_CASE_P(HttpProxyClientSocketPoolSpdy2Tests,
-                        HttpProxyClientSocketPoolSpdy2Test,
-                        ::testing::Values(HTTP, HTTPS, SPDY));
+//
+// TODO(akalin): Use ::testing::Combine() when we are able to use
+// <tr1/tuple>.
+INSTANTIATE_TEST_CASE_P(
+    HttpProxyClientSocketPoolTests,
+    HttpProxyClientSocketPoolTest,
+    ::testing::Values(
+        HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY2),
+        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY2),
+        HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY2),
+        HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY3),
+        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY3),
+        HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY3),
+        HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY31),
+        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY31),
+        HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY31),
+        HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY4a2),
+        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY4a2),
+        HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY4a2)));
 
-TEST_P(HttpProxyClientSocketPoolSpdy2Test, NoTunnel) {
+// TODO(akalin): Don't early-exit in the tests below for protocols >
+// kProtoSPDY3.
+
+TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
   Initialize(NULL, 0, NULL, 0, NULL, 0, NULL, 0);
 
   int rv = handle_.Init("a", GetNoTunnelParams(), LOW, CompletionCallback(),
@@ -231,7 +264,10 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, NoTunnel) {
   EXPECT_TRUE(tunnel_socket->IsConnected());
 }
 
-TEST_P(HttpProxyClientSocketPoolSpdy2Test, NeedAuth) {
+TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
+  if (GetParam().protocol > kProtoSPDY3)
+    return;
+
   MockWrite writes[] = {
     MockWrite(ASYNC, 0, "CONNECT www.google.com:443 HTTP/1.1\r\n"
               "Host: www.google.com\r\n"
@@ -252,9 +288,9 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, NeedAuth) {
     CreateMockWrite(*req, 0, ASYNC),
     CreateMockWrite(*rst, 2, ASYNC),
   };
-  static const char* const kAuthChallenge[] = {
-    "status", "407 Proxy Authentication Required",
-    "version", "HTTP/1.1",
+  const char* const kAuthChallenge[] = {
+    spdy_util_.GetStatusKey(), "407 Proxy Authentication Required",
+    spdy_util_.GetVersionKey(), "HTTP/1.1",
     "proxy-authenticate", "Basic realm=\"MyRealm1\"",
   };
   scoped_ptr<SpdyFrame> resp(
@@ -284,14 +320,14 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, NeedAuth) {
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
 
-  data_->RunFor(GetParam() == SPDY ? 2 : 4);
+  data_->RunFor(GetParam().proxy_type == SPDY ? 2 : 4);
   rv = callback_.WaitForResult();
   EXPECT_EQ(ERR_PROXY_AUTH_REQUESTED, rv);
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
   ProxyClientSocket* tunnel_socket =
       static_cast<ProxyClientSocket*>(handle_.socket());
-  if (GetParam() == SPDY) {
+  if (GetParam().proxy_type == SPDY) {
     EXPECT_TRUE(tunnel_socket->IsConnected());
     EXPECT_TRUE(tunnel_socket->IsUsingSpdy());
   } else {
@@ -301,10 +337,10 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, NeedAuth) {
   }
 }
 
-TEST_P(HttpProxyClientSocketPoolSpdy2Test, HaveAuth) {
+TEST_P(HttpProxyClientSocketPoolTest, HaveAuth) {
   // It's pretty much impossible to make the SPDY case behave synchronously
   // so we skip this test for SPDY
-  if (GetParam() == SPDY)
+  if (GetParam().proxy_type == SPDY)
     return;
   MockWrite writes[] = {
     MockWrite(SYNCHRONOUS, 0,
@@ -331,7 +367,10 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, HaveAuth) {
   EXPECT_TRUE(tunnel_socket->IsConnected());
 }
 
-TEST_P(HttpProxyClientSocketPoolSpdy2Test, AsyncHaveAuth) {
+TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
+  if (GetParam().protocol > kProtoSPDY3)
+    return;
+
   MockWrite writes[] = {
     MockWrite(ASYNC, 0, "CONNECT www.google.com:443 HTTP/1.1\r\n"
               "Host: www.google.com\r\n"
@@ -347,7 +386,7 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, AsyncHaveAuth) {
   MockWrite spdy_writes[] = {
     CreateMockWrite(*req, 0, ASYNC)
   };
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead spdy_reads[] = {
     CreateMockRead(*resp, 1, ASYNC),
     MockRead(ASYNC, 0, 2)
@@ -373,8 +412,8 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, AsyncHaveAuth) {
   EXPECT_TRUE(tunnel_socket->IsConnected());
 }
 
-TEST_P(HttpProxyClientSocketPoolSpdy2Test, TCPError) {
-  if (GetParam() == SPDY) return;
+TEST_P(HttpProxyClientSocketPoolTest, TCPError) {
+  if (GetParam().proxy_type == SPDY) return;
   data_.reset(new DeterministicSocketData(NULL, 0, NULL, 0));
   data_->set_connect_data(MockConnect(ASYNC, ERR_CONNECTION_CLOSED));
 
@@ -392,15 +431,15 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, TCPError) {
   EXPECT_FALSE(handle_.socket());
 }
 
-TEST_P(HttpProxyClientSocketPoolSpdy2Test, SSLError) {
-  if (GetParam() == HTTP) return;
+TEST_P(HttpProxyClientSocketPoolTest, SSLError) {
+  if (GetParam().proxy_type == HTTP) return;
   data_.reset(new DeterministicSocketData(NULL, 0, NULL, 0));
   data_->set_connect_data(MockConnect(ASYNC, OK));
   socket_factory().AddSocketDataProvider(data_.get());
 
   ssl_data_.reset(new SSLSocketDataProvider(ASYNC,
                                             ERR_CERT_AUTHORITY_INVALID));
-  if (GetParam() == SPDY) {
+  if (GetParam().proxy_type == SPDY) {
     InitializeSpdySsl();
   }
   socket_factory().AddSSLSocketDataProvider(ssl_data_.get());
@@ -417,15 +456,15 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, SSLError) {
   EXPECT_FALSE(handle_.socket());
 }
 
-TEST_P(HttpProxyClientSocketPoolSpdy2Test, SslClientAuth) {
-  if (GetParam() == HTTP) return;
+TEST_P(HttpProxyClientSocketPoolTest, SslClientAuth) {
+  if (GetParam().proxy_type == HTTP) return;
   data_.reset(new DeterministicSocketData(NULL, 0, NULL, 0));
   data_->set_connect_data(MockConnect(ASYNC, OK));
   socket_factory().AddSocketDataProvider(data_.get());
 
   ssl_data_.reset(new SSLSocketDataProvider(ASYNC,
                                             ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
-  if (GetParam() == SPDY) {
+  if (GetParam().proxy_type == SPDY) {
     InitializeSpdySsl();
   }
   socket_factory().AddSSLSocketDataProvider(ssl_data_.get());
@@ -442,7 +481,10 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, SslClientAuth) {
   EXPECT_FALSE(handle_.socket());
 }
 
-TEST_P(HttpProxyClientSocketPoolSpdy2Test, TunnelUnexpectedClose) {
+TEST_P(HttpProxyClientSocketPoolTest, TunnelUnexpectedClose) {
+  if (GetParam().protocol > kProtoSPDY3)
+    return;
+
   MockWrite writes[] = {
     MockWrite(ASYNC, 0,
               "CONNECT www.google.com:443 HTTP/1.1\r\n"
@@ -475,7 +517,7 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, TunnelUnexpectedClose) {
   EXPECT_FALSE(handle_.socket());
 
   data_->RunFor(3);
-  if (GetParam() == SPDY) {
+  if (GetParam().proxy_type == SPDY) {
     // SPDY cannot process a headers block unless it's complete and so it
     // returns ERR_CONNECTION_CLOSED in this case.
     EXPECT_EQ(ERR_CONNECTION_CLOSED, callback_.WaitForResult());
@@ -486,7 +528,10 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, TunnelUnexpectedClose) {
   EXPECT_FALSE(handle_.socket());
 }
 
-TEST_P(HttpProxyClientSocketPoolSpdy2Test, TunnelSetupError) {
+TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupError) {
+  if (GetParam().protocol > kProtoSPDY3)
+    return;
+
   MockWrite writes[] = {
     MockWrite(ASYNC, 0,
               "CONNECT www.google.com:443 HTTP/1.1\r\n"
@@ -505,7 +550,7 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, TunnelSetupError) {
     CreateMockWrite(*req, 0, ASYNC),
     CreateMockWrite(*rst, 2, ASYNC),
   };
-  scoped_ptr<SpdyFrame> resp(ConstructSpdySynReplyError(1));
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdySynReplyError(1));
   MockRead spdy_reads[] = {
     CreateMockRead(*resp, 1, ASYNC),
     MockRead(ASYNC, 0, 3),
@@ -531,7 +576,10 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, TunnelSetupError) {
   EXPECT_FALSE(handle_.socket());
 }
 
-TEST_P(HttpProxyClientSocketPoolSpdy2Test, TunnelSetupRedirect) {
+TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
+  if (GetParam().protocol > kProtoSPDY3)
+    return;
+
   const std::string redirectTarget = "https://foo.google.com/";
 
   const std::string responseText = "HTTP/1.1 302 Found\r\n"
@@ -564,9 +612,10 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, TunnelSetupRedirect) {
   };
   const int responseHeadersSize = arraysize(responseHeaders) / 2;
   scoped_ptr<SpdyFrame> resp(
-      ConstructSpdySynReplyError("302 Found",
-                                 responseHeaders, responseHeadersSize,
-                                 1));
+      spdy_util_.ConstructSpdySynReplyError(
+          "302 Found",
+          responseHeaders, responseHeadersSize,
+          1));
   MockRead spdy_reads[] = {
     CreateMockRead(*resp, 1, ASYNC),
     MockRead(ASYNC, 0, 2),
@@ -587,7 +636,7 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, TunnelSetupRedirect) {
 
   rv = callback_.WaitForResult();
 
-  if (GetParam() == HTTP) {
+  if (GetParam().proxy_type == HTTP) {
     // We don't trust 302 responses to CONNECT from HTTP proxies.
     EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, rv);
     EXPECT_FALSE(handle_.is_initialized());
