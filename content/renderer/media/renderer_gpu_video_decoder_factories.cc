@@ -176,12 +176,12 @@ void RendererGpuVideoDecoderFactories::AsyncDeleteTexture(uint32 texture_id) {
 }
 
 void RendererGpuVideoDecoderFactories::WaitSyncPoint(uint32 sync_point) {
-  if (message_loop_->BelongsToCurrentThread()) {
+  if (compositor_message_loop_->BelongsToCurrentThread()) {
     AsyncWaitSyncPoint(sync_point);
     return;
   }
 
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  compositor_message_loop_->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncWaitSyncPoint,
       this,
       sync_point));
@@ -191,7 +191,7 @@ void RendererGpuVideoDecoderFactories::WaitSyncPoint(uint32 sync_point) {
 }
 
 void RendererGpuVideoDecoderFactories::AsyncWaitSyncPoint(uint32 sync_point) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(compositor_message_loop_->BelongsToCurrentThread());
   if (!context_) {
     compositor_loop_async_waiter_.Signal();
     return;
