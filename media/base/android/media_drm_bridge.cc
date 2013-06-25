@@ -15,6 +15,125 @@ using base::android::ScopedJavaLocalRef;
 
 namespace media {
 
+static uint32 ReadUint32(const uint8_t* data) {
+  uint32 value = 0;
+  for (int i = 0; i < 4; ++i)
+    value = (value << 8) | data[i];
+  return value;
+}
+
+static uint64 ReadUint64(const uint8_t* data) {
+  uint64 value = 0;
+  for (int i = 0; i < 8; ++i)
+    value = (value << 8) | data[i];
+  return value;
+}
+
+// The structure of an ISO CENC Protection System Specific Header (PSSH) box is
+// as follows. (See ISO/IEC FDIS 23001-7:2011(E).)
+// Note: ISO boxes use big-endian values.
+//
+// PSSH {
+//   uint32 Size
+//   uint32 Type
+//   uint64 LargeSize  # Field is only present if value(Size) == 1.
+//   uint32 VersionAndFlags
+//   uint8[16] SystemId
+//   uint32 DataSize
+//   uint8[DataSize] Data
+// }
+static const int kBoxHeaderSize = 8;  // Box's header contains Size and Type.
+static const int kBoxLargeSizeSize = 8;
+static const int kPsshVersionFlagSize = 4;
+static const int kPsshSystemIdSize = 16;
+static const int kPsshDataSizeSize = 4;
+static const uint32 kTencType = 0x74656e63;
+static const uint32 kPsshType = 0x70737368;
+
+// Tries to find a PSSH box whose "SystemId" is |uuid| in |data|, parses the
+// "Data" of the box and put it in |pssh_data|. Returns true if such a box is
+// found and successfully parsed. Returns false otherwise.
+// Notes:
+// 1, If multiple PSSH boxes are found,the "Data" of the first matching PSSH box
+// will be set in |pssh_data|.
+// 2, Only PSSH and TENC boxes are allowed in |data|. TENC boxes are skipped.
+static bool GetPsshData(const uint8* data, int data_size,
+                        const std::vector<uint8>& uuid,
+                        std::vector<uint8>* pssh_data) {
+  const uint8* cur = data;
+  const uint8* data_end = data + data_size;
+  int bytes_left = data_size;
+
+  while (bytes_left > 0) {
+    const uint8* box_head = cur;
+
+    if (bytes_left < kBoxHeaderSize)
+      return false;
+
+    uint64_t box_size = ReadUint32(cur);
+    uint32 type = ReadUint32(cur + 4);
+    cur += kBoxHeaderSize;
+    bytes_left -= kBoxHeaderSize;
+
+    if (box_size == 1) {  // LargeSize is present.
+      if (bytes_left < kBoxLargeSizeSize)
+        return false;
+
+      box_size = ReadUint64(cur);
+      cur += kBoxLargeSizeSize;
+      bytes_left -= kBoxLargeSizeSize;
+    } else if (box_size == 0) {
+      box_size = bytes_left + kBoxHeaderSize;
+    }
+
+    const uint8* box_end = box_head + box_size;
+    if (data_end < box_end)
+      return false;
+
+    if (type == kTencType) {
+      // Skip 'tenc' box.
+      cur = box_end;
+      bytes_left = data_end - cur;
+      continue;
+    } else if (type != kPsshType) {
+      return false;
+    }
+
+    const int kPsshBoxMinimumSize =
+        kPsshVersionFlagSize + kPsshSystemIdSize + kPsshDataSizeSize;
+    if (box_end < cur + kPsshBoxMinimumSize)
+      return false;
+
+    uint32 version_and_flags = ReadUint32(cur);
+    cur += kPsshVersionFlagSize;
+    bytes_left -= kPsshVersionFlagSize;
+    if (version_and_flags != 0)
+      return false;
+
+    DCHECK_GE(bytes_left, kPsshSystemIdSize);
+    if (!std::equal(uuid.begin(), uuid.end(), cur)) {
+      cur = box_end;
+      bytes_left = data_end - cur;
+      continue;
+    }
+
+    cur += kPsshSystemIdSize;
+    bytes_left -= kPsshSystemIdSize;
+
+    uint32 data_size = ReadUint32(cur);
+    cur += kPsshDataSizeSize;
+    bytes_left -= kPsshDataSizeSize;
+
+    if (box_end < cur + data_size)
+      return false;
+
+    pssh_data->assign(cur, cur + data_size);
+    return true;
+  }
+
+  return false;
+}
+
 // static
 bool MediaDrmBridge::IsAvailable() {
   return false;
@@ -42,6 +161,10 @@ MediaDrmBridge::~MediaDrmBridge() {}
 bool MediaDrmBridge::GenerateKeyRequest(const std::string& type,
                                         const uint8* init_data,
                                         int init_data_length) {
+  std::vector<uint8> pssh_data;
+  if (!GetPsshData(init_data, init_data_length, uuid_, &pssh_data))
+    return false;
+
   NOTIMPLEMENTED();
   return false;
 }
