@@ -29,8 +29,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/page_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebData.h"
-#include "third_party/WebKit/public/platform/WebHTTPBody.h"
 
 using content::NavigationEntry;
 using sessions::SerializedNavigationEntry;

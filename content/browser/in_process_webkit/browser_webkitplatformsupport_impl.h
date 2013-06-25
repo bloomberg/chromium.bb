@@ -25,19 +25,12 @@ class BrowserWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl {
                                              size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
   virtual WebKit::WebMessagePortChannel* createMessagePortChannel();
-  virtual void setCookies(const WebKit::WebURL& url,
-                          const WebKit::WebURL& first_party_for_cookies,
-                          const WebKit::WebString& value);
-  virtual WebKit::WebString cookies(
-      const WebKit::WebURL& url,
-      const WebKit::WebURL& first_party_for_cookies);
   virtual void prefetchHostName(const WebKit::WebString&);
   virtual WebKit::WebString defaultLocale();
   virtual WebKit::WebThemeEngine* themeEngine();
   virtual WebKit::WebURLLoader* createURLLoader();
   virtual WebKit::WebSocketStreamHandle* createSocketStreamHandle();
   virtual void getPluginList(bool refresh, WebKit::WebPluginListBuilder*);
-  virtual WebKit::WebData loadResource(const char* name);
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
   virtual long long availableDiskSpaceInBytes(

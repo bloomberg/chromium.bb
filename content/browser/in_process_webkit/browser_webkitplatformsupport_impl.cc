@@ -8,9 +8,7 @@
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
-#include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
 #include "webkit/base/file_path_string_conversions.h"
 
 namespace content {
@@ -64,20 +62,6 @@ BrowserWebKitPlatformSupportImpl::createMessagePortChannel() {
   return NULL;
 }
 
-void BrowserWebKitPlatformSupportImpl::setCookies(
-    const WebKit::WebURL& url,
-    const WebKit::WebURL& first_party_for_cookies,
-    const WebKit::WebString& value) {
-  NOTREACHED();
-}
-
-WebKit::WebString BrowserWebKitPlatformSupportImpl::cookies(
-    const WebKit::WebURL& url,
-    const WebKit::WebURL& first_party_for_cookies) {
-  NOTREACHED();
-  return WebKit::WebString();
-}
-
 void BrowserWebKitPlatformSupportImpl::prefetchHostName(
     const WebKit::WebString&) {
   NOTREACHED();
@@ -107,12 +91,6 @@ BrowserWebKitPlatformSupportImpl::createSocketStreamHandle() {
 void BrowserWebKitPlatformSupportImpl::getPluginList(bool refresh,
     WebKit::WebPluginListBuilder* builder) {
   NOTREACHED();
-}
-
-WebKit::WebData BrowserWebKitPlatformSupportImpl::loadResource(
-    const char* name) {
-  NOTREACHED();
-  return WebKit::WebData();
 }
 
 int BrowserWebKitPlatformSupportImpl::databaseDeleteFile(
