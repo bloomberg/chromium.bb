@@ -69,6 +69,10 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
 SearchTabHelper::~SearchTabHelper() {
 }
 
+void SearchTabHelper::InitForPreloadedNTP() {
+  UpdateMode(true, true);
+}
+
 void SearchTabHelper::OmniboxEditModelChanged(bool user_input_in_progress,
                                               bool cancelling,
                                               bool popup_is_open,
@@ -82,14 +86,14 @@ void SearchTabHelper::OmniboxEditModelChanged(bool user_input_in_progress,
   if (!user_input_in_progress && !cancelling)
     return;
 
-  UpdateMode(false);
+  UpdateMode(false, false);
 }
 
 void SearchTabHelper::NavigationEntryUpdated() {
   if (!is_search_enabled_)
     return;
 
-  UpdateMode(false);
+  UpdateMode(false, false);
 }
 
 void SearchTabHelper::InstantSupportChanged(bool instant_support) {
@@ -114,7 +118,7 @@ void SearchTabHelper::Observe(
   if (!load_details->is_main_frame)
     return;
 
-  UpdateMode(true);
+  UpdateMode(true, false);
 
   // Already determined the instant support state for this page, do not reset
   // the instant support state.
@@ -182,10 +186,10 @@ void SearchTabHelper::DidFinishLoad(
     DetermineIfPageSupportsInstant();
 }
 
-void SearchTabHelper::UpdateMode(bool update_origin) {
+void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {
   SearchMode::Type type = SearchMode::MODE_DEFAULT;
   SearchMode::Origin origin = SearchMode::ORIGIN_DEFAULT;
-  if (IsNTP(web_contents_)) {
+  if (IsNTP(web_contents_) || is_preloaded_ntp) {
     type = SearchMode::MODE_NTP;
     origin = SearchMode::ORIGIN_NTP;
   } else if (IsSearchResults(web_contents_)) {

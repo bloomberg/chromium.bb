@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/search/instant_ntp.h"
 
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
@@ -22,6 +23,7 @@ void InstantNTP::InitContents(Profile* profile,
                               const base::Closure& on_stale_callback) {
   loader_.Init(GURL(instant_url()), profile, active_tab, on_stale_callback);
   SetContents(loader_.contents());
+  SearchTabHelper::FromWebContents(contents())->InitForPreloadedNTP();
   loader_.Load();
 }
 

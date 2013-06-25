@@ -37,6 +37,9 @@ class SearchTabHelper : public content::NotificationObserver,
     return &model_;
   }
 
+  // Sets up the initial state correctly for a preloaded NTP.
+  void InitForPreloadedNTP();
+
   // Invoked when the OmniboxEditModel changes state in some way that might
   // affect the search mode.
   void OmniboxEditModelChanged(bool user_input_in_progress,
@@ -88,8 +91,10 @@ class SearchTabHelper : public content::NotificationObserver,
 
   // Sets the mode of the model based on the current URL of web_contents().
   // Only updates the origin part of the mode if |update_origin| is true,
-  // otherwise keeps the current origin.
-  void UpdateMode(bool update_origin);
+  // otherwise keeps the current origin. If |is_preloaded_ntp| is true, the mode
+  // is set to NTP regardless of the current URL; this is used to ensure that
+  // InstantController can bind InstantTab to new tab pages immediately.
+  void UpdateMode(bool update_origin, bool is_preloaded_ntp);
 
   // Tells the renderer to determine if the page supports the Instant API, which
   // results in a call to OnInstantSupportDetermined() when the reply
