@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <GLES2/gl2extchromium.h>
 #include <math.h>
 #include <stdio.h>
 #include <string>

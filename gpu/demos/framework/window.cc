@@ -71,7 +71,7 @@ bool Window::CreateRenderContext(gfx::AcceleratedWidget hwnd) {
   {
     TransferBufferManager* manager = new TransferBufferManager();
     transfer_buffer_manager_.reset(manager);
-    EXPECT_TRUE(manager->Initialize());
+    manager->Initialize();
   }
   command_buffer_.reset(
       new CommandBufferService(transfer_buffer_manager_.get()));
@@ -80,7 +80,7 @@ bool Window::CreateRenderContext(gfx::AcceleratedWidget hwnd) {
   }
 
   scoped_refptr<gpu::gles2::ContextGroup> group(new gpu::gles2::ContextGroup(
-      NULL, NULL, true));
+      NULL, NULL, NULL, true));
 
   decoder_.reset(gpu::gles2::GLES2Decoder::Create(group.get()));
   if (!decoder_.get())
@@ -133,7 +133,8 @@ bool Window::CreateRenderContext(gfx::AcceleratedWidget hwnd) {
       NULL,
       transfer_buffer_.get(),
       false,
-      true));
+      true,
+      NULL));
 
   ::gles2::SetGLContext(gles2_implementation_.get());
 
