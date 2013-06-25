@@ -55,10 +55,10 @@ TEST_F(PhoneNumberDetectorTest, FindAndFormatNumber) {
   EXPECT_EQ("+16174263000",
             FindAndFormatNumber("hello 617-426-3000 blah", "us"));
   EXPECT_EQ("", FindAndFormatNumber("hello 617-426-3000 blah", "gb"));
-  EXPECT_EQ("+442076174426",
+  EXPECT_EQ("02076174426",
             FindAndFormatNumber("<div>020-7617-4426</div>", "gb"));
   EXPECT_EQ("", FindAndFormatNumber("<div>020-7617-4426</div>", "fr"));
-  EXPECT_EQ("+33238966888", FindAndFormatNumber("Tel:02.38.96.68.88", "fr"));
+  EXPECT_EQ("0238966888", FindAndFormatNumber("Tel:02.38.96.68.88", "fr"));
   EXPECT_EQ("+18008662453",
             FindAndFormatNumber("You can call this number:1-800-866-2453 for"
                                 "more information", "us"));

@@ -19,7 +19,7 @@ vars = {
   "gtm_revision": "608",
 
   "libjingle_revision": "347",
-  "libphonenumber_revision": "456",
+  "libphonenumber_revision": "584",
   "libvpx_revision": "208227",
   "lss_revision": "20",
 

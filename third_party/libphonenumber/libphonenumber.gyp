@@ -5,9 +5,6 @@
 {
   'target_defaults': {
     'include_dirs': [
-      '../..',  # add it first, so src/base headers are used instead of the ones
-                # brought with the library as cc files would be taken from the
-                # main chrome tree as well.
       'src',
       'src/test',
       # The libphonenumber source (and test code) expects the
@@ -16,9 +13,20 @@
       '<(SHARED_INTERMEDIATE_DIR)/protoc_out/third_party/libphonenumber',
     ],
     'defines': [
-      'USE_HASH_MAP=1',
-      'USE_GOOGLE_BASE=1',
-      'USE_ICU_REGEXP=1',
+      'I18N_PHONENUMBERS_USE_ICU_REGEXP=1',
+    ],
+    'conditions': [
+      # libphonenumber can only be thread-safe on POSIX platforms. This is ok
+      # since Android is the only Chromium port that requires thread-safety.
+      # It uses the PhoneNumberUtil singleton in renderer threads as opposed to
+      # other platforms that only use it in the browser process (on a single
+      # thread). Note that any unsafe use of the library would be caught by a
+      # DCHECK.
+      ['OS != "android"', {
+        'defines': [
+          'I18N_PHONENUMBERS_NO_THREAD_SAFETY=1',
+        ],
+      }],
     ],
   },
   'includes': [
@@ -30,14 +38,13 @@
     'target_name': 'libphonenumber_without_metadata',
     'type': 'static_library',
     'dependencies': [
-      '../../base/base.gyp:base',
-      '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       '../icu/icu.gyp:icui18n',
       '../icu/icu.gyp:icuuc',
       '../protobuf/protobuf.gyp:protobuf_lite',
     ],
     'sources': [
       'src/phonenumbers/asyoutypeformatter.cc',
+      'src/phonenumbers/base/strings/string_piece.cc',
       'src/phonenumbers/default_logger.cc',
       'src/phonenumbers/logger.cc',
       'src/phonenumbers/phonenumber.cc',
@@ -64,6 +71,16 @@
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)/protoc_out/third_party/libphonenumber',
         'src',
+      ],
+      'defines': [
+        'I18N_PHONENUMBERS_USE_ICU_REGEXP=1',
+      ],
+      'conditions': [
+        ['OS != "android"', {
+          'defines': [
+            'I18N_PHONENUMBERS_NO_THREAD_SAFETY=1',
+          ],
+        }],
       ],
     },
     'conditions': [
@@ -108,7 +125,6 @@
     'dependencies': [
       '../icu/icu.gyp:icui18n',
       '../icu/icu.gyp:icuuc',
-      '../../base/base.gyp:base',
       '../../base/base.gyp:run_all_unittests',
       '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       '../../testing/gmock.gyp:gmock',

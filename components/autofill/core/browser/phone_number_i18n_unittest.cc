@@ -324,13 +324,13 @@ TEST(PhoneNumberI18NTest, ConstructPhoneNumber) {
                                    ASCIIToUTF16("2345678901"),
                                    "DE",
                                    &number));
-  EXPECT_EQ(number, ASCIIToUTF16("+49 2423/45678901"));
+  EXPECT_EQ(number, ASCIIToUTF16("+49 2423 45678901"));
   EXPECT_TRUE(ConstructPhoneNumber(base::string16(),
                                    ASCIIToUTF16("024"),
                                    ASCIIToUTF16("2345678901"),
                                    "DE",
                                    &number));
-  EXPECT_EQ(number, ASCIIToUTF16("02423/45678901"));
+  EXPECT_EQ(number, ASCIIToUTF16("02423 45678901"));
 }
 
 TEST(PhoneNumberI18NTest, PhoneNumbersMatch) {
