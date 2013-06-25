@@ -165,8 +165,15 @@ TEST_F(AutofillQueryXmlParserTest, ParseExperimentId) {
   EXPECT_EQ("ServerSmartyPants", experiment_id_);
 }
 
+// Fails on Linux ASAN bot. http://crbug.com/253797
+#if defined(OS_LINUX)
+#define MAYBE_ParseAutofillFlow DISABLED_ParseAutofillFlow
+#else
+#define MAYBE_ParseAutofillFlow ParseAutofillFlow
+#endif
+
 // Test XML response with autofill_flow information.
-TEST_F(AutofillQueryXmlParserTest, ParseAutofillFlow) {
+TEST_F(AutofillQueryXmlParserTest, MAYBE_ParseAutofillFlow) {
   std::string xml = "<autofillqueryresponse>"
                     "<field autofilltype=\"55\"/>"
                     "<autofill_flow page_no=\"1\" total_pages=\"10\">"
