@@ -32,18 +32,16 @@ class IndexedDBInternalsUI : public WebUIController {
  private:
   typedef std::vector<scoped_refptr<IndexedDBContext> > ContextList;
   void GetAllOrigins(const base::ListValue* args);
-  void GetAllOriginsOnWebkitThread(
-      const scoped_ptr<ContextList> contexts,
-      const scoped_ptr<std::vector<base::FilePath> > context_paths);
+  void GetAllOriginsOnIndexedDBThread(
+      scoped_refptr<IndexedDBContext> context,
+      const base::FilePath& context_path);
   void OnOriginsReady(scoped_ptr<std::vector<IndexedDBInfo> > origins,
                       const base::FilePath& path);
 
-  static void AddContextFromStoragePartition(ContextList* contexts,
-                                             std::vector<base::FilePath>* paths,
-                                             StoragePartition* partition);
+ void AddContextFromStoragePartition(StoragePartition* partition);
 
   void DownloadOriginData(const base::ListValue* args);
-  void DownloadOriginDataOnWebkitThread(
+  void DownloadOriginDataOnIndexedDBThread(
       const base::FilePath& partition_path,
       const scoped_refptr<IndexedDBContextImpl> context,
       const GURL& origin_url);

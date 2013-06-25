@@ -4,7 +4,9 @@
 
 #include "content/browser/storage_partition_impl.h"
 
+#include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/public/browser/browser_context.h"
@@ -224,12 +226,19 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   scoped_refptr<DOMStorageContextImpl> dom_storage_context =
       new DOMStorageContextImpl(path, context->GetSpecialStoragePolicy());
 
+  // BrowserMainLoop may not be initialized in unit tests. Tests will
+  // need to inject their own task runner into the IndexedDBContext.
+  base::SequencedTaskRunner* idb_task_runner =
+      BrowserThread::CurrentlyOn(BrowserThread::UI) &&
+              BrowserMainLoop::GetInstance()
+          ? BrowserMainLoop::GetInstance()->indexed_db_thread()->
+                message_loop_proxy()
+          : NULL;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context =
       new IndexedDBContextImpl(path,
                                context->GetSpecialStoragePolicy(),
                                quota_manager->proxy(),
-                               BrowserThread::GetMessageLoopProxyForThread(
-                                   BrowserThread::WEBKIT_DEPRECATED).get());
+                               idb_task_runner);
 
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(quota_manager->proxy());

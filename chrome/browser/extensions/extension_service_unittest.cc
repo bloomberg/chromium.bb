@@ -4007,6 +4007,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   IndexedDBContext* idb_context =
       BrowserContext::GetDefaultStoragePartition(profile_.get())->
           GetIndexedDBContext();
+  idb_context->SetTaskRunnerForTesting(
+      base::MessageLoop::current()->message_loop_proxy());
   base::FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
   EXPECT_TRUE(file_util::DirectoryExists(idb_path));
@@ -4122,6 +4124,8 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   IndexedDBContext* idb_context =
       BrowserContext::GetDefaultStoragePartition(profile_.get())->
           GetIndexedDBContext();
+  idb_context->SetTaskRunnerForTesting(
+      base::MessageLoop::current()->message_loop_proxy());
   base::FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
   EXPECT_TRUE(file_util::DirectoryExists(idb_path));

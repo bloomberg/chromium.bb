@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/webidbfactory_impl.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "googleurl/src/gurl.h"
@@ -22,7 +23,7 @@ class GURL;
 
 namespace base {
 class FilePath;
-class MessageLoopProxy;
+class SequencedTaskRunner;
 }
 
 namespace quota {
@@ -41,7 +42,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   IndexedDBContextImpl(const base::FilePath& data_path,
                        quota::SpecialStoragePolicy* special_storage_policy,
                        quota::QuotaManagerProxy* quota_manager_proxy,
-                       base::MessageLoopProxy* webkit_thread_loop);
+                       base::SequencedTaskRunner* task_runner);
 
   WebIDBFactoryImpl* GetIDBFactory();
 
@@ -52,6 +53,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void SetForceKeepSessionState() { force_keep_session_state_ = true; }
 
   // IndexedDBContext implementation:
+  virtual base::TaskRunner* TaskRunner() const OVERRIDE;
   virtual std::vector<GURL> GetAllOrigins() OVERRIDE;
   virtual std::vector<IndexedDBInfo> GetAllOriginsInfo() OVERRIDE;
   virtual int64 GetOriginDiskUsage(const GURL& origin_url) OVERRIDE;
@@ -59,6 +61,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
   virtual void DeleteForOrigin(const GURL& origin_url) OVERRIDE;
   virtual base::FilePath GetFilePathForTesting(
       const std::string& origin_id) const OVERRIDE;
+  virtual void SetTaskRunnerForTesting(
+      base::SequencedTaskRunner* task_runner) OVERRIDE;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
   void ConnectionOpened(const GURL& origin_url, WebIDBDatabaseImpl* db);
@@ -113,6 +117,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void RemoveFromOriginSet(const GURL& origin_url) {
     GetOriginSet()->erase(origin_url);
   }
+
   // Only for testing.
   void ResetCaches();
 
@@ -122,6 +127,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   bool force_keep_session_state_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
+  base::SequencedTaskRunner* task_runner_;
   scoped_ptr<std::set<GURL> > origin_set_;
   OriginToSizeMap origin_size_map_;
   OriginToSizeMap space_available_map_;

@@ -48,8 +48,9 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
-  virtual void OverrideThreadForMessage(const IPC::Message& message,
-                                        BrowserThread::ID* thread) OVERRIDE;
+  virtual void OnDestruct() const OVERRIDE;
+  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+      const IPC::Message& message) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -73,6 +74,10 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   int64 RendererTransactionId(int64 host_transaction_id);
 
  private:
+  // Friends to enable OnDestruct() delegation.
+  friend class BrowserThread;
+  friend class base::DeleteHelper<IndexedDBDispatcherHost>;
+
   virtual ~IndexedDBDispatcherHost();
 
   // Message processing. Most of the work is delegated to the dispatcher hosts
@@ -189,7 +194,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
 
-  // Only access on WebKit thread.
+  // Only access on IndexedDB thread.
   scoped_ptr<DatabaseDispatcherHost> database_dispatcher_host_;
   scoped_ptr<CursorDispatcherHost> cursor_dispatcher_host_;
 

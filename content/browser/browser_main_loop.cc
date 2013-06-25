@@ -601,6 +601,11 @@ void BrowserMainLoop::CreateThreads() {
 
   }
 
+#if !defined(OS_IOS)
+  indexed_db_thread_.reset(new base::Thread("IndexedDB"));
+  indexed_db_thread_->Start();
+#endif
+
   BrowserThreadsStarted();
 
   if (parts_) {
@@ -748,6 +753,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       NOTREACHED();
     }
   }
+
+#if !defined(OS_IOS)
+  indexed_db_thread_.reset();
+#endif
 
   // Close the blocking I/O pool after the other threads. Other threads such
   // as the I/O thread may need to schedule work like closing files or flushing

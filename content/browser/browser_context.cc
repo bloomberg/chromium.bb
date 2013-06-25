@@ -82,7 +82,7 @@ void SaveSessionStateOnIOThread(
   appcache_service->set_force_keep_session_state();
 }
 
-void SaveSessionStateOnWebkitThread(
+void SaveSessionStateOnIndexedDBThread(
     scoped_refptr<IndexedDBContextImpl> indexed_db_context) {
   indexed_db_context->SetForceKeepSessionState();
 }
@@ -238,13 +238,15 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
           storage_partition->GetDOMStorageContext());
   dom_storage_context_impl->SetForceKeepSessionState();
 
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
-    IndexedDBContextImpl* indexed_db = static_cast<IndexedDBContextImpl*>(
+  IndexedDBContextImpl* indexed_db_context_impl =
+      static_cast<IndexedDBContextImpl*>(
         storage_partition->GetIndexedDBContext());
-    BrowserThread::PostTask(
-        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-        base::Bind(&SaveSessionStateOnWebkitThread,
-                   make_scoped_refptr(indexed_db)));
+  // No task runner in unit tests.
+  if (indexed_db_context_impl->TaskRunner()) {
+    indexed_db_context_impl->TaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&SaveSessionStateOnIndexedDBThread,
+                   make_scoped_refptr(indexed_db_context_impl)));
   }
 }
 

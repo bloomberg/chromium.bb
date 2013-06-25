@@ -11,6 +11,7 @@
 #include "base/process_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/thread_test_helper.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -71,11 +72,11 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
     EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
   }
 
-  scoped_refptr<IndexedDBContext> GetContext() {
+  IndexedDBContextImpl* GetContext() {
     StoragePartition* partition =
         BrowserContext::GetDefaultStoragePartition(
             shell()->web_contents()->GetBrowserContext());
-    return partition->GetIndexedDBContext();
+    return static_cast<IndexedDBContextImpl*>(partition->GetIndexedDBContext());
   };
 
   void SetQuota(int quotaKilobytes) {
@@ -102,14 +103,16 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
   }
 
   virtual int64 RequestDiskUsage() {
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-        base::Bind(&IndexedDBContext::GetOriginDiskUsage, GetContext(),
-            GURL("file:///")), base::Bind(
-                &IndexedDBBrowserTest::DidGetDiskUsage, this));
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(BrowserThread::GetMessageLoopProxyForThread(
-            BrowserThread::WEBKIT_DEPRECATED).get()));
+    PostTaskAndReplyWithResult(
+        GetContext()->TaskRunner(),
+        FROM_HERE,
+        base::Bind(&IndexedDBContext::GetOriginDiskUsage,
+                   GetContext(),
+                   GURL("file:///")),
+        base::Bind(&IndexedDBBrowserTest::DidGetDiskUsage, this));
+    scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
+        BrowserMainLoop::GetInstance()->indexed_db_thread()
+            ->message_loop_proxy()));
     EXPECT_TRUE(helper->Run());
     // Wait for DidGetDiskUsage to be called.
     base::MessageLoop::current()->RunUntilIdle();
@@ -228,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed,
 static void CopyLevelDBToProfile(Shell* shell,
                                  scoped_refptr<IndexedDBContext> context,
                                  const std::string& test_directory) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
   base::FilePath leveldb_dir(FILE_PATH_LITERAL("file__0.indexeddb.leveldb"));
   base::FilePath test_data_dir =
       GetTestFilePath("indexeddb", test_directory.c_str()).Append(leveldb_dir);
@@ -248,14 +251,14 @@ static void CopyLevelDBToProfile(Shell* shell,
 class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
  public:
   virtual void SetUpOnMainThread() OVERRIDE {
-    scoped_refptr<IndexedDBContext> context = GetContext();
-    BrowserThread::PostTask(
-        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-        base::Bind(&CopyLevelDBToProfile, shell(), context,
-                   EnclosingLevelDBDir()));
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(BrowserThread::GetMessageLoopProxyForThread(
-            BrowserThread::WEBKIT_DEPRECATED).get()));
+    scoped_refptr<IndexedDBContextImpl> context = GetContext();
+    context->TaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &CopyLevelDBToProfile, shell(), context, EnclosingLevelDBDir()));
+    scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
+        BrowserMainLoop::GetInstance()->indexed_db_thread()
+            ->message_loop_proxy()));
     ASSERT_TRUE(helper->Run());
   }
 

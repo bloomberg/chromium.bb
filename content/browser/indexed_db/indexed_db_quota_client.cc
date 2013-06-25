@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_util.h"
@@ -19,22 +18,22 @@ using webkit_database::DatabaseUtil;
 namespace content {
 namespace {
 
-quota::QuotaStatusCode DeleteOriginDataOnWebKitThread(
+quota::QuotaStatusCode DeleteOriginDataOnIndexedDBThread(
     IndexedDBContextImpl* context,
     const GURL& origin) {
   context->DeleteForOrigin(origin);
   return quota::kQuotaStatusOk;
 }
 
-int64 GetOriginUsageOnWebKitThread(IndexedDBContextImpl* context,
+int64 GetOriginUsageOnIndexedDBThread(IndexedDBContextImpl* context,
                                    const GURL& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
   return context->GetOriginDiskUsage(origin);
 }
 
-void GetAllOriginsOnWebKitThread(IndexedDBContextImpl* context,
+void GetAllOriginsOnIndexedDBThread(IndexedDBContextImpl* context,
                                  std::set<GURL>* origins_to_return) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
   std::vector<GURL> all_origins = context->GetAllOrigins();
   origins_to_return->insert(all_origins.begin(), all_origins.end());
 }
@@ -45,10 +44,10 @@ void DidGetOrigins(const IndexedDBQuotaClient::GetOriginsCallback& callback,
   callback.Run(*origins);
 }
 
-void GetOriginsForHostOnWebKitThread(IndexedDBContextImpl* context,
+void GetOriginsForHostOnIndexedDBThread(IndexedDBContextImpl* context,
                                      const std::string& host,
                                      std::set<GURL>* origins_to_return) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
   std::vector<GURL> all_origins = context->GetAllOrigins();
   for (std::vector<GURL>::const_iterator iter = all_origins.begin();
        iter != all_origins.end();
@@ -63,10 +62,8 @@ void GetOriginsForHostOnWebKitThread(IndexedDBContextImpl* context,
 // IndexedDBQuotaClient --------------------------------------------------------
 
 IndexedDBQuotaClient::IndexedDBQuotaClient(
-    base::MessageLoopProxy* webkit_thread_message_loop,
     IndexedDBContextImpl* indexed_db_context)
-    : webkit_thread_message_loop_(webkit_thread_message_loop),
-      indexed_db_context_(indexed_db_context) {}
+    : indexed_db_context_(indexed_db_context) {}
 
 IndexedDBQuotaClient::~IndexedDBQuotaClient() {}
 
@@ -86,11 +83,17 @@ void IndexedDBQuotaClient::GetOriginUsage(const GURL& origin_url,
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      webkit_thread_message_loop_.get(),
+  // No task runner means unit test; no cleanup necessary.
+  if (!indexed_db_context_->TaskRunner()) {
+    callback.Run(0);
+    return;
+  }
+
+   base::PostTaskAndReplyWithResult(
+      indexed_db_context_->TaskRunner(),
       FROM_HERE,
       base::Bind(
-          &GetOriginUsageOnWebKitThread, indexed_db_context_, origin_url),
+          &GetOriginUsageOnIndexedDBThread, indexed_db_context_, origin_url),
       callback);
 }
 
@@ -106,10 +109,16 @@ void IndexedDBQuotaClient::GetOriginsForType(
     return;
   }
 
+  // No task runner means unit test; no cleanup necessary.
+  if (!indexed_db_context_->TaskRunner()) {
+    callback.Run(std::set<GURL>());
+    return;
+  }
+
   std::set<GURL>* origins_to_return = new std::set<GURL>();
-  webkit_thread_message_loop_->PostTaskAndReply(
+  indexed_db_context_->TaskRunner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GetAllOriginsOnWebKitThread,
+      base::Bind(&GetAllOriginsOnIndexedDBThread,
                  indexed_db_context_,
                  base::Unretained(origins_to_return)),
       base::Bind(&DidGetOrigins, callback, base::Owned(origins_to_return)));
@@ -128,10 +137,16 @@ void IndexedDBQuotaClient::GetOriginsForHost(
     return;
   }
 
+  // No task runner means unit test; no cleanup necessary.
+  if (!indexed_db_context_->TaskRunner()) {
+    callback.Run(std::set<GURL>());
+    return;
+  }
+
   std::set<GURL>* origins_to_return = new std::set<GURL>();
-  webkit_thread_message_loop_->PostTaskAndReply(
+  indexed_db_context_->TaskRunner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GetOriginsForHostOnWebKitThread,
+      base::Bind(&GetOriginsForHostOnIndexedDBThread,
                  indexed_db_context_,
                  host,
                  base::Unretained(origins_to_return)),
@@ -146,10 +161,17 @@ void IndexedDBQuotaClient::DeleteOriginData(const GURL& origin,
     return;
   }
 
+  // No task runner means unit test; no cleanup necessary.
+  if (!indexed_db_context_->TaskRunner()) {
+    callback.Run(quota::kQuotaStatusOk);
+    return;
+  }
+
   base::PostTaskAndReplyWithResult(
-      webkit_thread_message_loop_.get(),
+      indexed_db_context_->TaskRunner(),
       FROM_HERE,
-      base::Bind(&DeleteOriginDataOnWebKitThread, indexed_db_context_, origin),
+      base::Bind(
+          &DeleteOriginDataOnIndexedDBThread, indexed_db_context_, origin),
       callback);
 }
 

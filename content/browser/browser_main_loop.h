@@ -48,7 +48,7 @@ class DeviceMonitorMac;
 
 // Implements the main browser loop stages called from BrowserMainRunner.
 // See comments in browser_main_parts.h for additional info.
-class BrowserMainLoop {
+class CONTENT_EXPORT BrowserMainLoop {
  public:
   // Returns the current instance. This is used to get access to the getters
   // that return objects which are owned by this class.
@@ -83,6 +83,7 @@ class BrowserMainLoop {
     return media_stream_manager_.get();
   }
   media::MIDIManager* midi_manager() const { return midi_manager_.get(); }
+  base::Thread* indexed_db_thread() const { return indexed_db_thread_.get(); }
 
  private:
   class MemoryObserver;
@@ -143,6 +144,7 @@ class BrowserMainLoop {
   scoped_ptr<BrowserProcessSubThread> process_launcher_thread_;
   scoped_ptr<BrowserProcessSubThread> cache_thread_;
   scoped_ptr<BrowserProcessSubThread> io_thread_;
+  scoped_ptr<base::Thread> indexed_db_thread_;
   scoped_ptr<MemoryObserver> memory_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);

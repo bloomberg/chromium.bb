@@ -39,7 +39,7 @@ class BrowsingDataIndexedDBHelper
   virtual void StartFetching(
       const base::Callback<void(const std::list<content::IndexedDBInfo>&)>&
           callback) = 0;
-  // Requests a single indexed database to be deleted in the WEBKIT thread.
+  // Requests a single indexed database to be deleted in the IndexedDB thread.
   virtual void DeleteIndexedDB(const GURL& origin) = 0;
 
  protected:
@@ -100,15 +100,8 @@ class CannedBrowsingDataIndexedDBHelper
   virtual ~CannedBrowsingDataIndexedDBHelper();
 
   // Convert the pending indexed db info to indexed db info objects.
-  void ConvertPendingInfoInWebKitThread();
+  void ConvertPendingInfo();
 
-  void NotifyInUIThread();
-
-  // Lock to protect access to pending_indexed_db_info_;
-  mutable base::Lock lock_;
-
-  // Access to |pending_indexed_db_info_| is protected by |lock_| since it can
-  // be accessed on the UI and on the WEBKIT thread.
   std::set<PendingIndexedDBInfo> pending_indexed_db_info_;
 
   // Access to |indexed_db_info_| is triggered indirectly via the UI thread and

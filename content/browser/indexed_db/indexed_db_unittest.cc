@@ -4,6 +4,8 @@
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
@@ -20,17 +22,30 @@ namespace content {
 
 class IndexedDBTest : public testing::Test {
  public:
+  const GURL kNormalOrigin;
+  const GURL kSessionOnlyOrigin;
+
   IndexedDBTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
-        webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_),
+      : kNormalOrigin("http://normal/"),
+        kSessionOnlyOrigin("http://session-only/"),
+        message_loop_(base::MessageLoop::TYPE_IO),
+        task_runner_(new base::TestSimpleTaskRunner),
+        special_storage_policy_(new quota::MockSpecialStoragePolicy),
         file_thread_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {}
+        io_thread_(BrowserThread::IO, &message_loop_) {
+    special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin);
+  }
 
  protected:
+  void FlushIndexedDBTaskRunner() {
+    task_runner_->RunUntilIdle();
+  }
+
   base::MessageLoop message_loop_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
 
  private:
-  BrowserThreadImpl webkit_thread_;
   BrowserThreadImpl file_thread_;
   BrowserThreadImpl io_thread_;
 };
@@ -42,26 +57,14 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   base::FilePath normal_path;
   base::FilePath session_only_path;
 
-  // Create the scope which will ensure we run the destructor of the webkit
-  // context which should trigger the clean up.
+  // Create the scope which will ensure we run the destructor of the context
+  // which should trigger the clean up.
   {
-    TestBrowserContext browser_context;
-
-    const GURL kNormalOrigin("http://normal/");
-    const GURL kSessionOnlyOrigin("http://session-only/");
-    scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
-        new quota::MockSpecialStoragePolicy;
-    special_storage_policy->AddSessionOnly(kSessionOnlyOrigin);
-
-    // Create some indexedDB paths.
-    // With the levelDB backend, these are directories.
-    IndexedDBContextImpl* idb_context = static_cast<IndexedDBContextImpl*>(
-        BrowserContext::GetDefaultStoragePartition(&browser_context)
-            ->GetIndexedDBContext());
-
-    // Override the storage policy with our own.
-    idb_context->special_storage_policy_ = special_storage_policy;
-    idb_context->set_data_path_for_testing(temp_dir.path());
+    scoped_refptr<IndexedDBContextImpl> idb_context =
+        new IndexedDBContextImpl(temp_dir.path(),
+                                 special_storage_policy_,
+                                 NULL,
+                                 task_runner_);
 
     normal_path = idb_context->GetFilePathForTesting(
         webkit_database::GetIdentifierFromOrigin(kNormalOrigin));
@@ -69,9 +72,11 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
         webkit_database::GetIdentifierFromOrigin(kSessionOnlyOrigin));
     ASSERT_TRUE(file_util::CreateDirectory(normal_path));
     ASSERT_TRUE(file_util::CreateDirectory(session_only_path));
+    FlushIndexedDBTaskRunner();
     message_loop_.RunUntilIdle();
   }
 
+  FlushIndexedDBTaskRunner();
   message_loop_.RunUntilIdle();
 
   EXPECT_TRUE(file_util::DirectoryExists(normal_path));
@@ -85,26 +90,15 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   base::FilePath normal_path;
   base::FilePath session_only_path;
 
-  // Create the scope which will ensure we run the destructor of the webkit
-  // context.
+  // Create the scope which will ensure we run the destructor of the context.
   {
-    TestBrowserContext browser_context;
-
-    const GURL kNormalOrigin("http://normal/");
-    const GURL kSessionOnlyOrigin("http://session-only/");
-    scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy =
-        new quota::MockSpecialStoragePolicy;
-    special_storage_policy->AddSessionOnly(kSessionOnlyOrigin);
-
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
-    IndexedDBContextImpl* idb_context = static_cast<IndexedDBContextImpl*>(
-        BrowserContext::GetDefaultStoragePartition(&browser_context)
-            ->GetIndexedDBContext());
-
-    // Override the storage policy with our own.
-    idb_context->special_storage_policy_ = special_storage_policy;
-    idb_context->set_data_path_for_testing(temp_dir.path());
+    scoped_refptr<IndexedDBContextImpl> idb_context =
+        new IndexedDBContextImpl(temp_dir.path(),
+                                 special_storage_policy_,
+                                 NULL,
+                                 task_runner_);
 
     // Save session state. This should bypass the destruction-time deletion.
     idb_context->SetForceKeepSessionState();
@@ -153,19 +147,17 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
   base::FilePath test_path;
 
-  // Create the scope which will ensure we run the destructor of the webkit
-  // context.
+  // Create the scope which will ensure we run the destructor of the context.
   {
     TestBrowserContext browser_context;
 
     const GURL kTestOrigin("http://test/");
 
-    IndexedDBContextImpl* idb_context = static_cast<IndexedDBContextImpl*>(
-        BrowserContext::GetDefaultStoragePartition(&browser_context)
-            ->GetIndexedDBContext());
-
-    idb_context->quota_manager_proxy_ = NULL;
-    idb_context->set_data_path_for_testing(temp_dir.path());
+    scoped_refptr<IndexedDBContextImpl> idb_context =
+        new IndexedDBContextImpl(temp_dir.path(),
+                                 special_storage_policy_,
+                                 NULL,
+                                 task_runner_);
 
     test_path = idb_context->GetFilePathForTesting(
         webkit_database::GetIdentifierFromOrigin(kTestOrigin));
@@ -174,14 +166,33 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
     const bool kExpectForceClose = true;
 
     MockWebIDBDatabase connection1(kExpectForceClose);
-    idb_context->ConnectionOpened(kTestOrigin, &connection1);
+    idb_context->TaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&IndexedDBContextImpl::ConnectionOpened,
+                   idb_context,
+                   kTestOrigin,
+                   &connection1));
 
     MockWebIDBDatabase connection2(!kExpectForceClose);
-    idb_context->ConnectionOpened(kTestOrigin, &connection2);
-    idb_context->ConnectionClosed(kTestOrigin, &connection2);
+    idb_context->TaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&IndexedDBContextImpl::ConnectionOpened,
+                   idb_context,
+                   kTestOrigin,
+                   &connection2));
+    idb_context->TaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&IndexedDBContextImpl::ConnectionClosed,
+                   idb_context,
+                   kTestOrigin,
+                   &connection2));
 
-    idb_context->DeleteForOrigin(kTestOrigin);
-
+    idb_context->TaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&IndexedDBContextImpl::DeleteForOrigin,
+                   idb_context,
+                   kTestOrigin));
+    FlushIndexedDBTaskRunner();
     message_loop_.RunUntilIdle();
   }
 
