@@ -921,6 +921,11 @@ void AutofillDialogControllerImpl::PrepareDetailInputsForSection(
 
   if (view_)
     view_->UpdateSection(section);
+
+  // If a suggestion is forced into edit mode, update the view to show the
+  // errors.
+  if (view_ && wrapper && IsEditingExistingData(section))
+    view_->UpdateForErrors();
 }
 
 const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(

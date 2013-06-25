@@ -1866,6 +1866,10 @@ TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
 
 // Tests that user is prompted when using instrument with minimal address.
 TEST_F(AutofillDialogControllerTest, UpgradeMinimalAddress) {
+  // A minimal address being selected should trigger error validation in the
+  // view. Called once for each incomplete suggestion.
+  EXPECT_CALL(*controller()->GetView(), UpdateForErrors()).Times(2);
+
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentWithIdAndAddress(
       "id", wallet::GetTestMinimalAddress()));
