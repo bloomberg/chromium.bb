@@ -108,8 +108,7 @@ void MemoryInternalsProxy::OnDetailsAvailable(const ProcessData& browser) {
     info->SetString("type",
                     ProcessMemoryInformation::GetFullTypeNameInEnglish(
                         iter->process_type, iter->renderer_type));
-    info->SetInteger("memory_private",
-                     iter->working_set.priv + iter->committed.priv);
+    info->SetInteger("memory_private", iter->working_set.priv);
     base::ListValue* titles = new ListValue();
     info->Set("titles", titles);
     for (size_t i = 0; i < iter->titles.size(); ++i)
