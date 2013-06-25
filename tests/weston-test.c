@@ -95,7 +95,8 @@ move_surface(struct wl_client *client, struct wl_resource *resource,
 	     struct wl_resource *surface_resource,
 	     int32_t x, int32_t y)
 {
-	struct weston_surface *surface = surface_resource->data;
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
 	struct weston_test_surface *test_surface;
 
 	surface->configure = test_surface_configure;
@@ -108,7 +109,7 @@ move_surface(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	test_surface->surface = surface;
-	test_surface->test = resource->data;
+	test_surface->test = wl_resource_get_user_data(resource);
 	test_surface->x = x;
 	test_surface->y = y;
 }
@@ -117,7 +118,7 @@ static void
 move_pointer(struct wl_client *client, struct wl_resource *resource,
 	     int32_t x, int32_t y)
 {
-	struct weston_test *test = resource->data;
+	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat = get_seat(test);
 	struct weston_pointer *pointer = seat->pointer;
 
@@ -134,7 +135,7 @@ static void
 send_button(struct wl_client *client, struct wl_resource *resource,
 	    int32_t button, uint32_t state)
 {
-	struct weston_test *test = resource->data;
+	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat = get_seat(test);
 
 	test->compositor->focus = 1;
@@ -147,8 +148,8 @@ activate_surface(struct wl_client *client, struct wl_resource *resource,
 		 struct wl_resource *surface_resource)
 {
 	struct weston_surface *surface = surface_resource ?
-					surface_resource->data : NULL;
-	struct weston_test *test = resource->data;
+		wl_resource_get_user_data(surface_resource) : NULL;
+	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat;
 
 	seat = get_seat(test);
@@ -168,7 +169,7 @@ static void
 send_key(struct wl_client *client, struct wl_resource *resource,
 	 uint32_t key, enum wl_keyboard_key_state state)
 {
-	struct weston_test *test = resource->data;
+	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat = get_seat(test);
 
 	test->compositor->focus = 1;
