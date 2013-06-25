@@ -18,6 +18,47 @@
 using base::TimeDelta;
 using base::TimeTicks;
 
+namespace {
+
+// Returns the executable name of the current Chrome browser process.
+const base::FilePath::CharType* GetRunningBrowserExecutableName() {
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kEnableChromiumBranding))
+    return chrome::kBrowserProcessExecutableNameChromium;
+  return chrome::kBrowserProcessExecutableName;
+}
+
+// Returns the executable name of the current Chrome helper process.
+std::vector<base::FilePath::StringType> GetRunningHelperExecutableNames() {
+  base::FilePath::StringType name;
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kEnableChromiumBranding)) {
+    name = chrome::kHelperProcessExecutableNameChromium;
+  } else {
+    name = chrome::kHelperProcessExecutableName;
+  }
+
+  std::vector<base::FilePath::StringType> names;
+  names.push_back(name);
+
+#if defined(OS_MACOSX)
+  // The helper might show up as these different flavors depending on the
+  // executable flags required.
+  for (const char* const* suffix = chrome::kHelperFlavorSuffixes;
+       *suffix;
+       ++suffix) {
+    std::string flavor_name(name);
+    flavor_name.append(1, ' ');
+    flavor_name.append(*suffix);
+    names.push_back(flavor_name);
+  }
+#endif
+
+  return names;
+}
+
+}  // namespace
+
 void TerminateAllChromeProcesses(const ChromeProcessList& process_pids) {
   ChromeProcessList::const_iterator it;
   for (it = process_pids.begin(); it != process_pids.end(); ++it) {
@@ -50,41 +91,6 @@ class ChildProcessFilter : public base::ProcessFilter {
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessFilter);
 };
-
-const base::FilePath::CharType* GetRunningBrowserExecutableName() {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kEnableChromiumBranding))
-    return chrome::kBrowserProcessExecutableNameChromium;
-  return chrome::kBrowserProcessExecutableName;
-}
-
-std::vector<base::FilePath::StringType> GetRunningHelperExecutableNames() {
-  base::FilePath::StringType name;
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kEnableChromiumBranding)) {
-    name = chrome::kHelperProcessExecutableNameChromium;
-  } else {
-    name = chrome::kHelperProcessExecutableName;
-  }
-
-  std::vector<base::FilePath::StringType> names;
-  names.push_back(name);
-
-#if defined(OS_MACOSX)
-  // The helper might show up as these different flavors depending on the
-  // executable flags required.
-  for (const char* const* suffix = chrome::kHelperFlavorSuffixes;
-       *suffix;
-       ++suffix) {
-    std::string flavor_name(name);
-    flavor_name.append(1, ' ');
-    flavor_name.append(*suffix);
-    names.push_back(flavor_name);
-  }
-#endif
-
-  return names;
-}
 
 ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
   const base::FilePath::CharType* executable_name =

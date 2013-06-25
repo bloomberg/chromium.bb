@@ -15,8 +15,6 @@ extern const char kAlsoEmitSuccessLogs[];
 extern const char kExtraChromeFlags[];
 extern const char kEnableChromiumBranding[];
 extern const char kEnableErrorDialogs[];
-extern const char kPageCyclerIterations[];
-extern const char kTestingChannel[];
 
 #if defined(OS_WIN) && defined(USE_AURA)
 extern const char kAshBrowserTests[];

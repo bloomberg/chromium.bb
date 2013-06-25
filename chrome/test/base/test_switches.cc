@@ -18,13 +18,6 @@ const char kEnableChromiumBranding[] = "enable-chromium-branding";
 // Enable displaying error dialogs (for debugging).
 const char kEnableErrorDialogs[] = "enable-errdialogs";
 
-// Number of iterations that page cycler tests will run.
-const char kPageCyclerIterations[] = "page-cycler-iterations";
-
-// Name of channel used to connect to Chrome
-// when using the named testing interface.
-const char kTestingChannel[] = "testing-channel";
-
 #if defined(OS_WIN) && defined(USE_AURA)
 // Force browser tests to run in Ash/Metro on Windows 8.
 const char kAshBrowserTests[] = "ash-browsertests";
