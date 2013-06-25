@@ -149,16 +149,20 @@ function extension_testSearch(nextTest)
 
     function onPanelCreated(panel)
     {
-        panel.onSearch.addListener(function(action, queryString) {
+        var callback = function(action, queryString)
+        {
             output("Panel searched:");
             dumpObject(Array.prototype.slice.call(arguments));
             callbackCount++;
-            if (callbackCount === 2)
+            if (callbackCount === 2) {
                 nextTest();
-        });
+                panel.onSearch.removeListener(callback);
+            }
+        };
+        panel.onSearch.addListener(callback);
 
         extension_showPanel("extension");
-        evaluateOnFrontend("WebInspector.searchController._performSearch('hello', true, false, true); reply()");
+        evaluateOnFrontend("WebInspector.searchController.showSearchField(); WebInspector.searchController._performSearch('hello', true, false);");
     }
     var basePath = location.pathname.replace(/\/[^/]*$/, "/");
     webInspector.panels.create("Test Panel", basePath + "extension-panel.png", basePath + "non-existent.html", onPanelCreated);
