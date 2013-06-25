@@ -18,6 +18,7 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.TimeoutException;
@@ -26,6 +27,8 @@ import java.util.concurrent.TimeoutException;
  * Tests for certain edge cases related to integrating with the Android view system.
  */
 public class AndroidViewIntegrationTest extends AwTestBase {
+    final int CONTENT_SIZE_CHANGE_STABILITY_TIMEOUT_MS = 1000;
+
     private static class OnContentSizeChangedHelper extends CallbackHelper {
         private int mWidth;
         private int mHeight;
@@ -116,6 +119,17 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         });
     }
 
+    private int getRootLayoutWidthOnMainThread() throws Exception {
+        final AtomicReference<Integer> width = new AtomicReference<Integer>();
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                width.set(Integer.valueOf(getActivity().getRootLayoutWidth()));
+            }
+        });
+        return width.get();
+    }
+
     /**
      * This checks for issues related to loading content into a 0x0 view.
      *
@@ -188,5 +202,88 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         mOnPageScaleChangedHelper.waitForCallback(pageScaleChangeCallCount);
         mOnContentSizeChangedHelper.waitForCallback(contentSizeChangeCallCount);
         assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
+    }
+
+    private String makeHtmlPageOfSize(int widthCss, int heightCss) {
+        return CommonResources.makeHtmlPageFrom(
+            "<style type=\"text/css\">" +
+                "body { margin:0px; padding:0px; } " +
+                "div { " +
+                   "width:" + widthCss + "px; " +
+                   "height:" + heightCss + "px; " +
+                   "background-color: red; " +
+                 "} " +
+            "</style>", "<div/>");
+    }
+
+    private void waitForContentSizeToChangeTo(OnContentSizeChangedHelper helper, int callCount,
+            int widthCss, int heightCss) throws Exception {
+        final int maxSizeChangeNotificationsToWaitFor = 5;
+        for (int i = 1; i <= maxSizeChangeNotificationsToWaitFor; i++) {
+            helper.waitForCallback(callCount, i);
+            if ((heightCss == -1 || helper.getHeight() == heightCss) &&
+                    (widthCss == -1 || helper.getWidth() == widthCss)) {
+                break;
+            }
+            // This means that we hit the max number of iterations but the expected contents size
+            // wasn't reached.
+            assertTrue(i != maxSizeChangeNotificationsToWaitFor);
+        }
+    }
+
+    private void loadPageOfSizeAndWaitForSizeChange(AwContents awContents,
+            OnContentSizeChangedHelper helper, int widthCss, int heightCss) throws Exception {
+
+        final String htmlData = makeHtmlPageOfSize(widthCss, heightCss);
+        final int contentSizeChangeCallCount = helper.getCallCount();
+        loadDataAsync(awContents, htmlData, "text/html", false);
+
+        waitForContentSizeToChangeTo(helper, contentSizeChangeCallCount, widthCss, heightCss);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testPreferredSizeUpdateWhenDetached() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView = createDetachedTestContainerViewOnMainSync(
+                contentsClient);
+        assertZeroHeight(testContainerView);
+
+        final int contentWidthCss = 142;
+        final int contentHeightCss = 180;
+
+        loadPageOfSizeAndWaitForSizeChange(testContainerView.getAwContents(),
+                mOnContentSizeChangedHelper, contentWidthCss, contentHeightCss);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testViewSizedCorrectlyInWrapContentMode() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView = createCustomTestContainerViewOnMainSync(
+                contentsClient, View.VISIBLE);
+        assertZeroHeight(testContainerView);
+
+        final double deviceDIPScale =
+            DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
+
+        final int contentWidthCss = 142;
+        final int contentHeightCss = 180;
+
+        // In wrap-content mode the AwLayoutSizer will size the view to be as wide as the parent
+        // view.
+        final int expectedWidthCss = (int) (getRootLayoutWidthOnMainThread() / deviceDIPScale);
+        final int expectedHeightCss = contentHeightCss;
+
+        loadPageOfSizeAndWaitForSizeChange(testContainerView.getAwContents(),
+                mOnContentSizeChangedHelper, expectedWidthCss, expectedHeightCss);
+
+        // This is to make sure that there are no more pending size change notifications. Ideally
+        // we'd assert that the renderer is idle (has no pending layout passes) but that would
+        // require quite a bit of plumbing, so we just wait a bit and make sure the size hadn't
+        // changed.
+        Thread.sleep(CONTENT_SIZE_CHANGE_STABILITY_TIMEOUT_MS);
+        assertEquals(expectedWidthCss, mOnContentSizeChangedHelper.getWidth());
+        assertEquals(expectedHeightCss, mOnContentSizeChangedHelper.getHeight());
     }
 }

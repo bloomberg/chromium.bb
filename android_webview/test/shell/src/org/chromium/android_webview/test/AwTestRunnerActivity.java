@@ -44,6 +44,10 @@ public class AwTestRunnerActivity extends Activity {
         setContentView(mLinearLayout);
     }
 
+    public int getRootLayoutWidth() {
+        return mLinearLayout.getWidth();
+    }
+
     /**
      * Adds a view to the main linear layout.
      */
