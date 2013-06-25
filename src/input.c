@@ -40,7 +40,6 @@ empty_region(pixman_region32_t *region)
 static void unbind_resource(struct wl_resource *resource)
 {
 	wl_list_remove(wl_resource_get_link(resource));
-	free(resource);
 }
 
 void

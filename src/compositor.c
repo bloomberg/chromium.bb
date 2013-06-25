@@ -2206,8 +2206,6 @@ subsurface_resource_destroy(struct wl_resource *resource)
 
 	if (sub)
 		weston_subsurface_destroy(sub);
-
-	free(resource);
 }
 
 static void

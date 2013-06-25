@@ -533,8 +533,6 @@ unbind_keyboard(struct wl_resource *resource)
 
 	input_method_context_end_keyboard_grab(context);
 	context->keyboard = NULL;
-
-	free(resource);
 }
 
 static void
@@ -746,8 +744,6 @@ unbind_input_method(struct wl_resource *resource)
 	input_method->context = NULL;
 
 	text_backend->input_method.binding = NULL;
-
-	free(resource);
 }
 
 static void
