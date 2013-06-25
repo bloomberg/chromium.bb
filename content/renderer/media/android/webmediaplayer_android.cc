@@ -139,12 +139,11 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 #if defined(ENABLE_PEPPER_CDMS)
         client,
         frame,
-#endif  // defined(ENABLE_PEPPER_CDMS)
-#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
+#else
         // TODO(xhwang): Use media_keys_id when MediaKeys are separated from
         // WebMediaPlayer.
         scoped_ptr<media::MediaKeys>(new ProxyMediaKeys(proxy_, player_id_)),
-#endif // defined(OS_ANDROID) && !defined(GOOGLE_TV)
+#endif // defined(ENABLE_PEPPER_CDMS)
         base::Bind(&WebMediaPlayerAndroid::OnKeyAdded, base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::OnKeyError, base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::OnKeyMessage,

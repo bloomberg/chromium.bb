@@ -44,8 +44,13 @@ static scoped_refptr<webkit::ppapi::PluginInstance> CreateHelperPlugin(
   return ppapi_plugin->instance();
 }
 
+void DestroyHelperPluginForClient(
+    WebKit::WebMediaPlayerClient* web_media_player_client) {
+  web_media_player_client->closeHelperPlugin();
+}
+
 void ProxyDecryptor::DestroyHelperPlugin() {
-  web_media_player_client_->closeHelperPlugin();
+  DestroyHelperPluginForClient(web_media_player_client_);
 }
 
 #endif  // defined(ENABLE_PEPPER_CDMS)
@@ -54,9 +59,9 @@ ProxyDecryptor::ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
     WebKit::WebMediaPlayerClient* web_media_player_client,
     WebKit::WebFrame* web_frame,
-#elif defined(OS_ANDROID) && !defined(GOOGLE_TV)
+#elif defined(OS_ANDROID)
     scoped_ptr<media::MediaKeys> media_keys,
-#endif
+#endif  // defined(ENABLE_PEPPER_CDMS)
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
     const media::KeyMessageCB& key_message_cb)
@@ -64,9 +69,9 @@ ProxyDecryptor::ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
       web_media_player_client_(web_media_player_client),
       web_frame_(web_frame),
-#elif defined(OS_ANDROID) && !defined(GOOGLE_TV)
-      media_keys_(media_keys.Pass()),
-#endif
+#elif defined(OS_ANDROID)
+    media_keys_(media_keys.Pass()),
+#endif  // defined(ENABLE_PEPPER_CDMS)
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb) {
@@ -149,31 +154,35 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
-scoped_ptr<media::MediaKeys> ProxyDecryptor::CreatePpapiDecryptor(
-    const std::string& key_system) {
-  DCHECK(web_media_player_client_);
-  DCHECK(web_frame_);
+scoped_ptr<media::MediaKeys>
+ContentDecryptionModuleFactory::CreatePpapiDecryptor(
+    const std::string& key_system,
+    const media::KeyAddedCB& key_added_cb,
+    const media::KeyErrorCB& key_error_cb,
+    const media::KeyMessageCB& key_message_cb,
+    const base::Closure& destroy_plugin_cb,
+    WebKit::WebMediaPlayerClient* web_media_player_client,
+    WebKit::WebFrame* web_frame) {
+  DCHECK(web_media_player_client);
+  DCHECK(web_frame);
 
   std::string plugin_type = GetPepperType(key_system);
   DCHECK(!plugin_type.empty());
   const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance =
-      CreateHelperPlugin(plugin_type, web_media_player_client_, web_frame_);
+      CreateHelperPlugin(plugin_type, web_media_player_client, web_frame);
   if (!plugin_instance.get()) {
-    DVLOG(1) << "ProxyDecryptor: plugin instance creation failed.";
+    DLOG(ERROR) << "ProxyDecryptor: plugin instance creation failed.";
     return scoped_ptr<media::MediaKeys>();
   }
 
   scoped_ptr<webkit_media::PpapiDecryptor> decryptor = PpapiDecryptor::Create(
       key_system,
       plugin_instance,
-      base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::DestroyHelperPlugin,
-                 weak_ptr_factory_.GetWeakPtr()));
+      key_added_cb, key_error_cb, key_message_cb,
+      destroy_plugin_cb);
 
   if (!decryptor)
-    DestroyHelperPlugin();
+    DestroyHelperPluginForClient(web_media_player_client);
   // Else the new object will call destroy_plugin_cb to destroy Helper Plugin.
 
   return scoped_ptr<media::MediaKeys>(decryptor.Pass());
@@ -182,21 +191,52 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreatePpapiDecryptor(
 
 scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
     const std::string& key_system) {
+  return ContentDecryptionModuleFactory::Create(
+      key_system,
+#if defined(ENABLE_PEPPER_CDMS)
+      web_media_player_client_,
+      web_frame_,
+      base::Bind(&ProxyDecryptor::DestroyHelperPlugin,
+                 weak_ptr_factory_.GetWeakPtr()),
+#elif defined(OS_ANDROID)
+      media_keys_.Pass(),
+#endif  // defined(ENABLE_PEPPER_CDMS)
+      base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()));
+}
+
+scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
+    const std::string& key_system,
+#if defined(ENABLE_PEPPER_CDMS)
+    WebKit::WebMediaPlayerClient* web_media_player_client,
+    WebKit::WebFrame* web_frame,
+    const base::Closure& destroy_plugin_cb,
+#elif defined(OS_ANDROID)
+    scoped_ptr<media::MediaKeys> media_keys,
+#endif  // defined(ENABLE_PEPPER_CDMS)
+    const media::KeyAddedCB& key_added_cb,
+    const media::KeyErrorCB& key_error_cb,
+    const media::KeyMessageCB& key_message_cb) {
   if (CanUseAesDecryptor(key_system)) {
-    return scoped_ptr<media::MediaKeys>(new media::AesDecryptor(
-        base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr())
-        ));
+    return scoped_ptr<media::MediaKeys>(
+        new media::AesDecryptor(key_added_cb, key_error_cb, key_message_cb));
   }
 
 #if defined(ENABLE_PEPPER_CDMS)
-  return CreatePpapiDecryptor(key_system);
-#elif defined(OS_ANDROID) && !defined(GOOGLE_TV)
-  return media_keys_.Pass();
+  // TODO(ddorwin): Remove when the WD API implementation supports loading
+  // Pepper-based CDMs: http://crbug.com/250049
+  if (!web_media_player_client)
+    return scoped_ptr<media::MediaKeys>();
+
+  return CreatePpapiDecryptor(
+      key_system, key_added_cb, key_error_cb, key_message_cb,
+      destroy_plugin_cb, web_media_player_client, web_frame);
+#elif defined(OS_ANDROID)
+  return media_keys.Pass();
 #else
   return scoped_ptr<media::MediaKeys>();
-#endif
+#endif  // defined(ENABLE_PEPPER_CDMS)
 }
 
 void ProxyDecryptor::KeyAdded(const std::string& session_id) {
