@@ -147,14 +147,20 @@ ScrollBar.prototype.onMouseMove_ = function(event) {
   }
   var clientSize = this.getClientHeight();
   var totalSize = this.getTotalHeight();
+  // TODO(hirono): Fix the geometric calculation.  crbug.com/253779
   var buttonSize = Math.max(50, clientSize / totalSize * clientSize);
-
   var buttonPosition = this.buttonPressedPosition_ +
       (event.screenY - this.buttonPressedEvent_.screenY);
   // Ensures the scrollbar is in the view.
   buttonPosition =
       Math.max(0, Math.min(buttonPosition, clientSize - buttonSize));
-  var scrollPosition = totalSize * (buttonPosition / clientSize);
+  var scrollPosition;
+  if (clientSize > buttonSize) {
+    scrollPosition = Math.max(totalSize - clientSize, 0) *
+        buttonPosition / (clientSize - buttonSize);
+  } else {
+    scrollPosition = 0;
+  }
 
   this.scrollTop_ = scrollPosition;
   this.view_.scrollTop = scrollPosition;
@@ -191,8 +197,13 @@ ScrollBar.prototype.redraw_ = function() {
   var hidden = totalSize <= clientSize;
 
   var buttonSize = Math.max(50, clientSize / totalSize * clientSize);
-  var buttonPosition = scrollPosition / (totalSize - clientSize) *
-      (clientSize - buttonSize);
+  var buttonPosition;
+  if (clientSize - buttonSize > 0) {
+    buttonPosition = scrollPosition / (totalSize - clientSize) *
+        (clientSize - buttonSize);
+  } else {
+    buttonPosition = 0;
+  }
   var buttonTop = buttonPosition + clientTop;
 
   var time = Date.now();

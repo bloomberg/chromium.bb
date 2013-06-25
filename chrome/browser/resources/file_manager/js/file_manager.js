@@ -1560,11 +1560,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.onPreviewPanelVisibilityChanged_ = function(visible) {
     var panelHeight = visible ? this.getPreviewPanelHeight_() : 0;
-
-    if (this.listType_ == FileManager.ListType.THUMBNAIL)
-      this.grid_.setBottomMarginForPanel(panelHeight);
-    else
-      this.table_.setBottomMarginForPanel(panelHeight);
+    this.grid_.setBottomMarginForPanel(panelHeight);
+    this.table_.setBottomMarginForPanel(panelHeight);
     this.directoryTree_.setBottomMarginForPanel(panelHeight);
   };
 
