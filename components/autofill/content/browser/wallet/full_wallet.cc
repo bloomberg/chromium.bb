@@ -15,6 +15,7 @@ namespace {
 const size_t kPanSize = 16;
 const size_t kBinSize = 6;
 const size_t kCvnSize = 3;
+const size_t kEncryptedRestSize = 12;
 
 }  // anonymous namespace
 
@@ -223,9 +224,13 @@ bool FullWallet::operator!=(const FullWallet& other) const {
 }
 
 void FullWallet::DecryptCardInfo() {
-  // base::HexStringToBytes expects an even length string.
-  if (encrypted_rest_.size() % 2 != 0)
+  // |encrypted_rest_| must be of length |kEncryptedRestSize| in order for
+  // decryption to succeed and the server will not pad it with zeros.
+  while (encrypted_rest_.size() < kEncryptedRestSize) {
     encrypted_rest_ = '0' + encrypted_rest_;
+  }
+
+  DCHECK_EQ(kEncryptedRestSize, encrypted_rest_.size());
 
   std::vector<uint8> operating_data;
   // Convert |encrypted_rest_| to bytes so we can decrypt it with |otp|.

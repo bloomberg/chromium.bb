@@ -439,7 +439,7 @@ TEST_F(FullWalletTest, CreateFullWallet) {
   EXPECT_EQ(full_wallet, *FullWallet::CreateFullWallet(*dict));
 }
 
-TEST_F(FullWalletTest, EvenRestDecryptionTest) {
+TEST_F(FullWalletTest, RestLengthCorrectDecryptionTest) {
   std::vector<RequiredAction> required_actions;
   FullWallet full_wallet(12,
                          2012,
@@ -457,21 +457,21 @@ TEST_F(FullWalletTest, EvenRestDecryptionTest) {
             full_wallet.GetInfo(CREDIT_CARD_VERIFICATION_CODE));
 }
 
-TEST_F(FullWalletTest, OddRestDecryptionTest) {
+TEST_F(FullWalletTest, RestLengthUnderDecryptionTest) {
   std::vector<RequiredAction> required_actions;
   FullWallet full_wallet(12,
                          2012,
                          "528512",
-                         "1a068673eb0",
+                         "4c567667e6",
                          GetTestAddress(),
                          GetTestShippingAddress(),
                          required_actions);
   std::vector<uint8> one_time_pad;
-  EXPECT_TRUE(base::HexStringToBytes("075DA779F98B", &one_time_pad));
+  EXPECT_TRUE(base::HexStringToBytes("063AD35324BF", &one_time_pad));
   full_wallet.set_one_time_pad(one_time_pad);
-  EXPECT_EQ(ASCIIToUTF16("5285127687171393"),
+  EXPECT_EQ(ASCIIToUTF16("5285127106109719"),
             full_wallet.GetInfo(CREDIT_CARD_NUMBER));
-  EXPECT_EQ(ASCIIToUTF16("339"),
+  EXPECT_EQ(ASCIIToUTF16("385"),
             full_wallet.GetInfo(CREDIT_CARD_VERIFICATION_CODE));
 }
 

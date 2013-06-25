@@ -68,8 +68,8 @@ class FullWallet {
   friend scoped_ptr<FullWallet> GetTestFullWallet();
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, CreateFullWallet);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, CreateFullWalletWithRequiredActions);
-  FRIEND_TEST_ALL_PREFIXES(FullWalletTest, EvenRestDecryptionTest);
-  FRIEND_TEST_ALL_PREFIXES(FullWalletTest, OddRestDecryptionTest);
+  FRIEND_TEST_ALL_PREFIXES(FullWalletTest, RestLengthCorrectDecryptionTest);
+  FRIEND_TEST_ALL_PREFIXES(FullWalletTest, RestLengthUnderDecryptionTest);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, GetCreditCardInfo);
   FullWallet(int expiration_month,
              int expiration_year,
