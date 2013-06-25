@@ -147,6 +147,8 @@ const SuddenMotionSensor::SensorDescriptor
   // - MacBookAir4,2 (13" MacBook Air, mid 2011)
   // - MacBookAir5,1 (11" MacBook Air, mid 2012)
   // - MacBookAir5,2 (13" MacBook Air, mid 2012)
+  // - MacBookAir6,1 (11" MacBook Air, mid 2013)
+  // - MacBookAir6,2 (13" MacBook Air, mid 2013)
   // have no accelerometer sensors.
 
   // Tested by crc on a 15" MacBook Pro.
