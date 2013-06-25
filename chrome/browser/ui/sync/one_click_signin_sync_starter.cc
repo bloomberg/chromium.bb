@@ -48,10 +48,12 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     const std::string& password,
     StartSyncMode start_mode,
     bool force_same_tab_navigation,
-    ConfirmationRequired confirmation_required)
+    ConfirmationRequired confirmation_required,
+    SyncPromoUI::Source source)
     : start_mode_(start_mode),
       force_same_tab_navigation_(force_same_tab_navigation),
       confirmation_required_(confirmation_required),
+      source_(source),
       weak_pointer_factory_(this) {
   DCHECK(profile);
   BrowserList::AddObserver(this);
@@ -312,6 +314,16 @@ void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
     StartSyncMode response) {
   if (response == UNDO_SYNC) {
     CancelSigninAndDelete();
+    // If this was not an interstitial signin, (i.e. it was a SAML signin)
+    // then the browser page is now blank and should redirect to the NTP.
+    if (source_ != SyncPromoUI::SOURCE_UNKNOWN) {
+      EnsureBrowser();
+      chrome::NavigateParams params(browser_, GURL(chrome::kChromeUINewTabURL),
+                                    content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+      params.disposition = CURRENT_TAB;
+      params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+      chrome::Navigate(&params);
+    }
   } else {
     // If the user clicked the "Advanced" link in the confirmation dialog, then
     // override the current start_mode_ to bring up the advanced sync settings.

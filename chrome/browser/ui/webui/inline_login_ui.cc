@@ -13,6 +13,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
+#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -131,7 +132,8 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
         UTF16ToASCII(email), UTF16ToASCII(password),
         OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
         true /* force_same_tab_navigation */,
-        OneClickSigninSyncStarter::NO_CONFIRMATION);
+        OneClickSigninSyncStarter::NO_CONFIRMATION,
+        SyncPromoUI::SOURCE_UNKNOWN);
     web_ui()->CallJavascriptFunction("inline.login.closeDialog");
 #endif
   }

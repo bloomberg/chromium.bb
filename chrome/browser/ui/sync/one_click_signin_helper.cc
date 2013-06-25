@@ -229,20 +229,12 @@ void StartSync(const StartSyncArgs& args,
     return;
   }
 
-  // If we are giving the user the option to configure sync, then that will
-  // suffice as a confirmation.
-  OneClickSigninSyncStarter::ConfirmationRequired confirmation =
-      args.confirmation_required;
-  if (start_mode == OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST &&
-      confirmation == OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN) {
-    confirmation = OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
-  }
-
   // The starter deletes itself once its done.
   new OneClickSigninSyncStarter(args.profile, args.browser, args.session_index,
                                 args.email, args.password, start_mode,
                                 args.force_same_tab_navigation,
-                                confirmation);
+                                args.confirmation_required,
+                                args.source);
 
   int action = one_click_signin::HISTOGRAM_MAX;
   switch (args.auto_accept) {
@@ -1150,12 +1142,12 @@ void OneClickSigninHelper::DidStopLoading(
       LogOneClickHistogramValue(one_click_signin::HISTOGRAM_ACCEPTED);
       LogOneClickHistogramValue(one_click_signin::HISTOGRAM_WITH_ADVANCED);
       SigninManager::DisableOneClickSignIn(profile);
-      // Don't bother displaying an extra confirmation (even in the SAML case)
-      // since the user will get prompted to setup sync anyway.
+      // Display the extra confirmation (even in the SAML case) in case this
+      // was an untrusted renderer.
       StartSync(
           StartSyncArgs(profile, browser, auto_accept_, session_index_, email_,
                         password_, false /* force_same_tab_navigation */,
-                        false /* confirmation_required */, source_),
+                        true /* confirmation_required */, source_),
           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
       break;
     case AUTO_ACCEPT_EXPLICIT: {
