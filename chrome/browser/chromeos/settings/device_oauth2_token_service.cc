@@ -236,10 +236,12 @@ void DeviceOAuth2TokenService::OnValidationComplete(
   refresh_token_is_valid_ = refresh_token_is_valid;
   std::set<ValidatingConsumer*>::iterator iter = pending_validators_->find(
       validator);
-  if (iter != pending_validators_->end())
+  if (iter != pending_validators_->end()) {
+    delete *iter;
     pending_validators_->erase(iter);
-  else
+  } else {
     LOG(ERROR) << "OnValidationComplete called for unknown validator";
+  }
 }
 
 // static
