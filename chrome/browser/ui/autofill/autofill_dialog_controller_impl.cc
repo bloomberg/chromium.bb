@@ -1570,30 +1570,10 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
     CurrentNotifications() {
   std::vector<DialogNotification> notifications;
 
-  if (account_chooser_model_.HadWalletError()) {
-    // TODO(dbeam): figure out a way to dismiss this error after a while.
+  if (IsPayingWithWallet() && !wallet::IsUsingProd()) {
     notifications.push_back(DialogNotification(
-        DialogNotification::WALLET_ERROR,
-        l10n_util::GetStringFUTF16(
-            IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET,
-            account_chooser_model_.wallet_error_message())));
-  } else if (should_show_wallet_promo_) {
-    if (IsPayingWithWallet() && HasCompleteWallet()) {
-      notifications.push_back(DialogNotification(
-          DialogNotification::EXPLANATORY_MESSAGE,
-          l10n_util::GetStringUTF16(
-              IDS_AUTOFILL_DIALOG_DETAILS_FROM_WALLET)));
-    } else if ((IsPayingWithWallet() && !HasCompleteWallet()) ||
-               has_shown_wallet_usage_confirmation_) {
-      DialogNotification notification(
-          DialogNotification::WALLET_USAGE_CONFIRMATION,
-          l10n_util::GetStringUTF16(
-              IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET));
-      notification.set_checked(account_chooser_model_.WalletIsSelected());
-      notification.set_interactive(!is_submitting_);
-      notifications.push_back(notification);
-      has_shown_wallet_usage_confirmation_ = true;
-    }
+        DialogNotification::DEVELOPER_WARNING,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_NOT_PROD_WARNING)));
   }
 
   if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
@@ -1607,6 +1587,15 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
         DialogNotification::SECURITY_WARNING,
         l10n_util::GetStringFUTF16(IDS_AUTOFILL_DIALOG_SITE_WARNING,
                                    UTF8ToUTF16(source_url_.host()))));
+  }
+
+  if (account_chooser_model_.HadWalletError()) {
+    // TODO(dbeam): figure out a way to dismiss this error after a while.
+    notifications.push_back(DialogNotification(
+        DialogNotification::WALLET_ERROR,
+        l10n_util::GetStringFUTF16(
+            IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET,
+            account_chooser_model_.wallet_error_message())));
   }
 
   if (IsSubmitPausedOn(wallet::VERIFY_CVV)) {
@@ -1634,16 +1623,30 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
         ASCIIToUTF16("Could not save Wallet data")));
   }
 
-  if (IsPayingWithWallet() && !wallet::IsUsingProd()) {
-    notifications.push_back(DialogNotification(
-        DialogNotification::DEVELOPER_WARNING,
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_NOT_PROD_WARNING)));
-  }
-
   if (choose_another_instrument_or_address_) {
     notifications.push_back(DialogNotification(
         DialogNotification::REQUIRED_ACTION,
         ASCIIToUTF16("We need more information to complete your purchase.")));
+  }
+
+  if (should_show_wallet_promo_ && ShouldShowDetailArea() &&
+      notifications.empty()) {
+    if (IsPayingWithWallet() && HasCompleteWallet()) {
+      notifications.push_back(DialogNotification(
+          DialogNotification::EXPLANATORY_MESSAGE,
+          l10n_util::GetStringUTF16(
+              IDS_AUTOFILL_DIALOG_DETAILS_FROM_WALLET)));
+    } else if ((IsPayingWithWallet() && !HasCompleteWallet()) ||
+               has_shown_wallet_usage_confirmation_) {
+      DialogNotification notification(
+          DialogNotification::WALLET_USAGE_CONFIRMATION,
+          l10n_util::GetStringUTF16(
+              IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET));
+      notification.set_checked(account_chooser_model_.WalletIsSelected());
+      notification.set_interactive(!is_submitting_);
+      notifications.push_back(notification);
+      has_shown_wallet_usage_confirmation_ = true;
+    }
   }
 
   return notifications;

@@ -302,6 +302,12 @@ class TestAutofillDialogController
     open_tab_url_ = url;
   }
 
+  // Whether the information input in this dialog will be securely transmitted
+  // to the requesting site.
+  virtual bool TransmissionWillBeSecure() const OVERRIDE {
+    return true;
+  }
+
  private:
   // To specify our own metric logger.
   virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE {
@@ -1601,6 +1607,8 @@ TEST_F(AutofillDialogControllerTest, WalletServerSideValidationUnrecoverable) {
 // where Chrome got the user's data (i.e. "Got details from Wallet") or promote
 // saving details into Wallet (i.e. "[x] Save details to Wallet").
 TEST_F(AutofillDialogControllerTest, WalletBanners) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kWalletServiceUseProd);
   PrefService* prefs = controller()->profile()->GetPrefs();
   ASSERT_FALSE(prefs->GetBoolean(::prefs::kAutofillDialogHasPaidWithWallet));
 
@@ -1706,13 +1714,25 @@ TEST_F(AutofillDialogControllerTest, OnAutocheckoutError) {
 }
 
 TEST_F(AutofillDialogControllerTest, OnAutocheckoutSuccess) {
-  SwitchToAutofill();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kWalletServiceUseProd);
   controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
 
-  // We also have to simulate CC inputs to keep the controller happy.
-  FillCreditCardInputs();
+  // Sign in a user with a completed account.
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
 
-  controller()->OnAccept();
+  // Full account; should show "Details from Wallet" message.
+  EXPECT_EQ(1U, NotificationsOfType(
+      DialogNotification::EXPLANATORY_MESSAGE).size());
+  EXPECT_EQ(0U, NotificationsOfType(
+      DialogNotification::WALLET_USAGE_CONFIRMATION).size());
+
+  AcceptAndLoadFakeFingerprint();
+  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+
+  EXPECT_EQ(0U, NotificationsOfType(
+      DialogNotification::EXPLANATORY_MESSAGE).size());
+
   controller()->OnAutocheckoutSuccess();
 
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
@@ -1721,6 +1741,8 @@ TEST_F(AutofillDialogControllerTest, OnAutocheckoutSuccess) {
       DialogNotification::AUTOCHECKOUT_SUCCESS).size());
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::AUTOCHECKOUT_ERROR).size());
+  EXPECT_EQ(0U, NotificationsOfType(
+      DialogNotification::EXPLANATORY_MESSAGE).size());
 }
 
 TEST_F(AutofillDialogControllerTest, ViewCancelDoesntSetPref) {
