@@ -79,7 +79,7 @@ std::string ConvertForDisplayInternal(const std::string& input) {
 // Pretty prints encapsulated JSON and truncates long strings for display.
 std::string ConvertForDisplay(const std::string& input) {
   std::string display = ConvertForDisplayInternal(input);
-  char remove_chars[] = {'\r'};
+  char remove_chars[] = {'\r', '\0'};
   RemoveChars(display, remove_chars, &display);
   return display;
 }
