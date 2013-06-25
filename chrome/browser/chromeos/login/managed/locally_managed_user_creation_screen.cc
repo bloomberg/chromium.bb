@@ -5,14 +5,20 @@
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 
 #include "base/values.h"
+#include "chrome/browser/chromeos/camera_detector.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/user_image.h"
+#include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/network/network_state.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 
@@ -51,9 +57,13 @@ LocallyManagedUserCreationScreen::LocallyManagedUserCreationScreen(
     ScreenObserver* observer,
     LocallyManagedUserCreationScreenHandler* actor)
     : WizardScreen(observer),
+      weak_factory_(this),
       actor_(actor),
       on_error_screen_(false),
-      on_image_screen_(false) {
+      on_image_screen_(false),
+      image_decoder_(NULL),
+      apply_photo_after_decoding_(false),
+      selected_image_(0) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);
@@ -62,6 +72,8 @@ LocallyManagedUserCreationScreen::LocallyManagedUserCreationScreen(
 LocallyManagedUserCreationScreen::~LocallyManagedUserCreationScreen() {
   if (actor_)
     actor_->SetDelegate(NULL);
+  if (image_decoder_.get())
+    image_decoder_->set_delegate(NULL);
 }
 
 void LocallyManagedUserCreationScreen::PrepareToShow() {
@@ -221,27 +233,104 @@ void LocallyManagedUserCreationScreen::OnCreationError(
     actor_->ShowErrorPage(title, message, button);
 }
 
-void LocallyManagedUserCreationScreen::SelectPicture() {
-  on_image_screen_ = true;
-  WizardController::default_controller()->
-      EnableUserImageScreenReturnToPreviousHack();
-  DictionaryValue* params = new DictionaryValue();
-  params->SetBoolean("profile_picture_enabled", false);
-  params->SetString("user_id", controller_->GetManagedUserId());
-
-  WizardController::default_controller()->
-      AdvanceToScreenWithParams(WizardController::kUserImageScreenName, params);
-}
-
-void LocallyManagedUserCreationScreen::OnCreationSuccess() {
-  SelectPicture();
-}
-
 void LocallyManagedUserCreationScreen::OnCreationTimeout() {
   if (actor_) {
     actor_->ShowStatusMessage(false /* error */, l10n_util::GetStringUTF16(
         IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_TIMEOUT_MESSAGE));
   }
+}
+
+// TODO(antrim) : this is an explicit code duplications with UserImageScreen.
+// It should be removed by issue 251179.
+
+void LocallyManagedUserCreationScreen::ApplyPicture() {
+  UserManager* user_manager = UserManager::Get();
+  UserImageManager* image_manager = user_manager->GetUserImageManager();
+  std::string user_id = controller_->GetManagedUserId();
+  switch (selected_image_) {
+    case User::kExternalImageIndex:
+      // Photo decoding may not have been finished yet.
+      if (user_photo_.isNull()) {
+        apply_photo_after_decoding_ = true;
+        return;
+      }
+      image_manager->
+          SaveUserImage(user_id, UserImage::CreateAndEncode(user_photo_));
+      break;
+    case User::kProfileImageIndex:
+      NOTREACHED() << "Supervised users have no profile pictures";
+      break;
+    default:
+      DCHECK(selected_image_ >= 0 && selected_image_ < kDefaultImagesCount);
+      image_manager->SaveUserDefaultImageIndex(user_id, selected_image_);
+      break;
+  }
+  // Proceed to tutorial.
+  actor_->ShowTutorialPage();
+}
+
+void LocallyManagedUserCreationScreen::OnCreationSuccess() {
+  ApplyPicture();
+}
+
+void LocallyManagedUserCreationScreen::CheckCameraPresence() {
+  CameraDetector::StartPresenceCheck(
+      base::Bind(&LocallyManagedUserCreationScreen::OnCameraPresenceCheckDone,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void LocallyManagedUserCreationScreen::OnCameraPresenceCheckDone() {
+  if (actor_) {
+    actor_->SetCameraPresent(
+        CameraDetector::camera_presence() == CameraDetector::kCameraPresent);
+  }
+}
+
+void LocallyManagedUserCreationScreen::OnPhotoTaken(
+    const std::string& raw_data) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  user_photo_ = gfx::ImageSkia();
+  if (image_decoder_.get())
+    image_decoder_->set_delegate(NULL);
+  image_decoder_ = new ImageDecoder(this, raw_data,
+                                    ImageDecoder::DEFAULT_CODEC);
+  scoped_refptr<base::MessageLoopProxy> task_runner =
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI);
+  image_decoder_->Start(task_runner);
+}
+
+void LocallyManagedUserCreationScreen::OnImageDecoded(
+    const ImageDecoder* decoder,
+    const SkBitmap& decoded_image) {
+  DCHECK_EQ(image_decoder_.get(), decoder);
+  user_photo_ = gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
+  if (apply_photo_after_decoding_)
+    ApplyPicture();
+}
+
+void LocallyManagedUserCreationScreen::OnDecodeImageFailed(
+    const ImageDecoder* decoder) {
+  NOTREACHED() << "Failed to decode PNG image from WebUI";
+}
+
+void LocallyManagedUserCreationScreen::OnImageSelected(
+    const std::string& image_type,
+    const std::string& image_url) {
+  if (image_url.empty())
+    return;
+  int user_image_index = User::kInvalidImageIndex;
+  if (image_type == "default" &&
+      IsDefaultImageUrl(image_url, &user_image_index)) {
+    selected_image_ = user_image_index;
+  } else if (image_type == "camera") {
+    selected_image_ = User::kExternalImageIndex;
+  } else {
+    NOTREACHED() << "Unexpected image type: " << image_type;
+  }
+}
+
+void LocallyManagedUserCreationScreen::OnImageAccepted() {
 }
 
 }  // namespace chromeos
