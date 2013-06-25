@@ -10,7 +10,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"
-#include "webkit/renderer/media/crypto/key_systems.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
@@ -90,12 +89,25 @@ class EncryptedMediaTest : public testing::WithParamInterface<const char*>,
     base::FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL("#CDM#0.1.0.0;"));
 #if defined(OS_WIN)
-    pepper_plugin.append(ASCIIToWide(webkit_media::GetPepperType(key_system)));
+    pepper_plugin.append(ASCIIToWide(GetPepperType(key_system)));
 #else
-    pepper_plugin.append(webkit_media::GetPepperType(key_system));
+    pepper_plugin.append(GetPepperType(key_system));
 #endif
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                      pepper_plugin);
+  }
+
+  // Adapted from key_systems.cc.
+  std::string GetPepperType(const std::string& key_system) {
+    if (key_system == kExternalClearKeyKeySystem)
+      return "application/x-ppapi-clearkey-cdm";
+#if defined(WIDEVINE_CDM_AVAILABLE)
+    if (key_system == kWidevineKeySystem)
+      return "application/x-ppapi-widevine-cdm";
+#endif  // WIDEVINE_CDM_AVAILABLE
+
+    NOTREACHED();
+    return "";
   }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 };
