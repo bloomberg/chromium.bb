@@ -18,7 +18,7 @@ SafeITunesPrefParserWin::SafeITunesPrefParserWin(
     const ParserCallback& callback)
     : unsafe_xml_(unsafe_xml),
       callback_(callback),
-      callback_called_(false) {
+      parser_state_(INITIAL_STATE) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!callback_.is_null());
 }
@@ -36,20 +36,24 @@ SafeITunesPrefParserWin::~SafeITunesPrefParserWin() {
 
 void SafeITunesPrefParserWin::StartWorkOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(INITIAL_STATE, parser_state_);
+
   UtilityProcessHost* host =
       UtilityProcessHost::Create(this, base::MessageLoopProxy::current());
   host->EnableZygote();
   host->Send(new ChromeUtilityMsg_ParseITunesPrefXml(unsafe_xml_));
+  parser_state_ = STARTED_PARSING_STATE;
 }
 
 void SafeITunesPrefParserWin::OnGotITunesDirectory(
     const base::FilePath& library_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (callback_called_)
+
+  if (parser_state_ != STARTED_PARSING_STATE)
     return;
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(callback_, library_file));
-  callback_called_ = true;
+  parser_state_ = FINISHED_PARSING_STATE;
 }
 
 void SafeITunesPrefParserWin::OnProcessCrashed(int exit_code) {

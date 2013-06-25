@@ -36,11 +36,19 @@ class SafeITunesPrefParserWin : public content::UtilityProcessHostClient {
   void Start();
 
  private:
+  enum ParserState {
+    INITIAL_STATE,
+    STARTED_PARSING_STATE,
+    FINISHED_PARSING_STATE,
+  };
+
   // Private because content::UtilityProcessHostClient is ref-counted.
   virtual ~SafeITunesPrefParserWin();
 
   void StartWorkOnIOThread();
 
+  // Handles the results from OnProcessCrashed() and OnMessageReceived() on
+  // the IO thread.
   void OnGotITunesDirectory(const base::FilePath& library_file);
 
   // UtilityProcessHostClient implementation.
@@ -50,8 +58,9 @@ class SafeITunesPrefParserWin : public content::UtilityProcessHostClient {
   const std::string unsafe_xml_;
   const ParserCallback callback_;
 
+  // Verifies the messages from the utility process came at the right time.
   // Initialized on the FILE thread, but only accessed on the IO thread.
-  bool callback_called_;
+  ParserState parser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeITunesPrefParserWin);
 };

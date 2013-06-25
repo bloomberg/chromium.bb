@@ -21,7 +21,7 @@ SafeITunesLibraryParser::SafeITunesLibraryParser(
     const ParserCallback& callback)
     : itunes_library_file_(itunes_library_file),
       callback_(callback),
-      callback_called_(false) {}
+      parser_state_(INITIAL_STATE) {}
 
 void SafeITunesLibraryParser::Start() {
   DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
@@ -36,7 +36,10 @@ void SafeITunesLibraryParser::Start() {
   if (itunes_library_platform_file_ == base::kInvalidPlatformFileValue) {
     VLOG(1) << "Could not open iTunes library XML file: "
             << itunes_library_file_.value();
-    DoParserCallback(false /* failed */, parser::Library());
+    callback_.Run(false /* failed */, parser::Library());
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&SafeITunesLibraryParser::OnOpenLibraryFileFailed, this));
     return;
   }
 
@@ -49,6 +52,8 @@ SafeITunesLibraryParser::~SafeITunesLibraryParser() {}
 
 void SafeITunesLibraryParser::StartProcessOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(INITIAL_STATE, parser_state_);
+
   base::MessageLoopProxy* message_loop_proxy =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get();
   utility_process_host_ =
@@ -56,10 +61,14 @@ void SafeITunesLibraryParser::StartProcessOnIOThread() {
   // Wait for the startup notification before sending the main IPC to the
   // utility process, so that we can dup the file handle.
   utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);
+  parser_state_ = PINGED_UTILITY_PROCESS_STATE;
 }
 
 void SafeITunesLibraryParser::OnUtilityProcessStarted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (parser_state_ != PINGED_UTILITY_PROCESS_STATE)
+    return;
+
   if (utility_process_host_->GetData().handle == base::kNullProcessHandle)
     DLOG(ERROR) << "Child process handle is null";
   utility_process_host_->Send(
@@ -68,24 +77,25 @@ void SafeITunesLibraryParser::OnUtilityProcessStarted() {
               itunes_library_platform_file_,
               utility_process_host_->GetData().handle,
               true /* close_source_handle */)));
+  parser_state_ = STARTED_PARSING_STATE;
 }
 
 void SafeITunesLibraryParser::OnGotITunesLibrary(
     bool result, const parser::Library& library) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (parser_state_ != STARTED_PARSING_STATE)
+    return;
+
   MediaFileSystemMountPointProvider::MediaTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&SafeITunesLibraryParser::DoParserCallback,
-                 this, result, library));
+      base::Bind(callback_, result, library));
+  parser_state_ = FINISHED_PARSING_STATE;
 }
 
-void SafeITunesLibraryParser::DoParserCallback(
-    bool result, const parser::Library& library) {
-  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
-  if (callback_called_)
-    return;
-  callback_.Run(result, library);
-  callback_called_ = true;
+void SafeITunesLibraryParser::OnOpenLibraryFileFailed() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  parser_state_ = FINISHED_PARSING_STATE;
 }
 
 void SafeITunesLibraryParser::OnProcessCrashed(int exit_code) {

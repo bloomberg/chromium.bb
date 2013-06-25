@@ -42,6 +42,13 @@ class SafeITunesLibraryParser : public content::UtilityProcessHostClient {
   void Start();
 
  private:
+  enum ParserState {
+    INITIAL_STATE,
+    PINGED_UTILITY_PROCESS_STATE,
+    STARTED_PARSING_STATE,
+    FINISHED_PARSING_STATE,
+  };
+
   // content::UtilityProcessHostClient is ref-counted.
   virtual ~SafeITunesLibraryParser();
 
@@ -57,8 +64,9 @@ class SafeITunesLibraryParser : public content::UtilityProcessHostClient {
   // Runs on the IO thread.
   void OnGotITunesLibrary(bool result, const parser::Library& library);
 
-  // Runs the ParserCallback on the Media Task Runner.
-  void DoParserCallback(bool result, const parser::Library& library);
+  // Sets |parser_state_| in case the library XML file cannot be opened.
+  // Runs on the IO thread.
+  void OnOpenLibraryFileFailed();
 
   // UtilityProcessHostClient implementation.
   // Runs on the IO thread.
@@ -76,7 +84,11 @@ class SafeITunesLibraryParser : public content::UtilityProcessHostClient {
 
   // Only accessed on the Media Task Runner.
   const ParserCallback callback_;
-  bool callback_called_;
+
+  // Verifies the messages from the utility process came at the right time.
+  // Initialized on the Media Task Runner, but only accessed on the IO thread.
+  ParserState parser_state_;
+
 
   DISALLOW_COPY_AND_ASSIGN(SafeITunesLibraryParser);
 };
