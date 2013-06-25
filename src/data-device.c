@@ -502,7 +502,7 @@ destroy_data_source(struct wl_resource *resource)
 
 	wl_array_release(&source->mime_types);
 
-	source->resource = NULL;
+	free(source);
 }
 
 static void
