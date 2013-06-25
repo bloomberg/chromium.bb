@@ -335,7 +335,12 @@ class MockIDBFactory : public IndexedDBFactory {
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
       const WebSecurityOrigin& origin,
       const base::FilePath& data_directory) {
-    return OpenBackingStore(origin.databaseIdentifier(), data_directory);
+    WebKit::WebIDBCallbacks::DataLoss data_loss =
+        WebKit::WebIDBCallbacks::DataLossNone;
+    scoped_refptr<IndexedDBBackingStore> backing_store = OpenBackingStore(
+        origin.databaseIdentifier(), data_directory, &data_loss);
+    EXPECT_EQ(WebKit::WebIDBCallbacks::DataLossNone, data_loss);
+    return backing_store;
   }
 
  private:

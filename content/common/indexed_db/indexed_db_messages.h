@@ -24,6 +24,9 @@ IPC_ENUM_TRAITS(WebKit::WebIDBCursor::Direction)
 IPC_ENUM_TRAITS(WebKit::WebIDBDatabase::PutMode)
 IPC_ENUM_TRAITS(WebKit::WebIDBDatabase::TaskType)
 
+IPC_ENUM_TRAITS_MAX_VALUE(WebKit::WebIDBCallbacks::DataLoss,
+                          WebKit::WebIDBCallbacks::DataLossTotal)
+
 // Used to enumerate indexed databases.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryGetDatabaseNames_Params)
   // The response should have these ids.
@@ -287,6 +290,7 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksUpgradeNeeded_Params)
   IPC_STRUCT_MEMBER(int32, ipc_database_callbacks_id)
   IPC_STRUCT_MEMBER(int32, ipc_database_id)
   IPC_STRUCT_MEMBER(int64, old_version)
+  IPC_STRUCT_MEMBER(WebKit::WebIDBCallbacks::DataLoss, data_loss)
   IPC_STRUCT_MEMBER(IndexedDBDatabaseMetadata, idb_metadata)
 IPC_STRUCT_END()
 

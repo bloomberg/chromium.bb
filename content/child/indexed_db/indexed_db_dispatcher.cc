@@ -637,7 +637,10 @@ void IndexedDBDispatcher::OnUpgradeNeeded(
   databases_[p.ipc_database_id] = new RendererWebIDBDatabaseImpl(
       p.ipc_database_id, p.ipc_database_callbacks_id);
   callbacks->onUpgradeNeeded(
-      p.old_version, databases_[p.ipc_database_id], metadata);
+      p.old_version,
+      databases_[p.ipc_database_id],
+      metadata,
+      static_cast<WebIDBCallbacks::DataLoss>(p.data_loss));
 }
 
 void IndexedDBDispatcher::OnError(int32 ipc_thread_id,

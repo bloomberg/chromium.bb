@@ -11,7 +11,9 @@ function test() {
 }
 
 var gotUpgradeNeeded = false;
-function upgradeNeeded() {
+function upgradeNeeded(evt) {
+  event = evt;
+  shouldBe("event.dataLoss", "'total'");
   gotUpgradeNeeded = true;
 }
 

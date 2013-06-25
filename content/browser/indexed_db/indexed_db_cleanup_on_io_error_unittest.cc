@@ -65,10 +65,13 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
   const base::FilePath path = temp_directory.path();
   string16 dummy_file_identifier;
   MockLevelDBFactory mock_leveldb_factory;
+  WebKit::WebIDBCallbacks::DataLoss data_loss =
+      WebKit::WebIDBCallbacks::DataLossNone;
   scoped_refptr<IndexedDBBackingStore> backing_store =
       IndexedDBBackingStore::Open(origin.databaseIdentifier(),
                                   path,
                                   dummy_file_identifier,
+                                  &data_loss,
                                   &mock_leveldb_factory);
 }
 

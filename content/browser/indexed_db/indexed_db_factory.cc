@@ -55,8 +55,10 @@ void IndexedDBFactory::GetDatabaseNames(
     const string16& database_identifier,
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::GetDatabaseNames");
+  // TODO(dgrogan): Plumb data_loss back to script eventually?
+  WebKit::WebIDBCallbacks::DataLoss data_loss;
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      OpenBackingStore(database_identifier, data_directory);
+      OpenBackingStore(database_identifier, data_directory, &data_loss);
   if (!backing_store.get()) {
     callbacks->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -86,8 +88,11 @@ void IndexedDBFactory::DeleteDatabase(
     return;
   }
 
+
+  // TODO(dgrogan): Plumb data_loss back to script eventually?
+  WebKit::WebIDBCallbacks::DataLoss data_loss;
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      OpenBackingStore(database_identifier, data_directory);
+      OpenBackingStore(database_identifier, data_directory, &data_loss);
   if (!backing_store.get()) {
     callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -113,7 +118,8 @@ void IndexedDBFactory::DeleteDatabase(
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
     const string16& database_identifier,
-    const base::FilePath& data_directory) {
+    const base::FilePath& data_directory,
+    WebKit::WebIDBCallbacks::DataLoss* data_loss) {
   const string16 file_identifier = ComputeFileIdentifier(database_identifier);
   const bool open_in_memory = data_directory.empty();
 
@@ -127,7 +133,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
     backing_store = IndexedDBBackingStore::OpenInMemory(file_identifier);
   } else {
     backing_store = IndexedDBBackingStore::Open(
-        database_identifier, data_directory, file_identifier);
+        database_identifier, data_directory, file_identifier, data_loss);
   }
 
   if (backing_store.get()) {
@@ -162,9 +168,11 @@ void IndexedDBFactory::Open(
   scoped_refptr<IndexedDBDatabase> database_backend;
   IndexedDBDatabaseMap::iterator it =
       database_backend_map_.find(unique_identifier);
+  WebKit::WebIDBCallbacks::DataLoss data_loss =
+      WebKit::WebIDBCallbacks::DataLossNone;
   if (it == database_backend_map_.end()) {
     scoped_refptr<IndexedDBBackingStore> backing_store =
-        OpenBackingStore(database_identifier, data_directory);
+        OpenBackingStore(database_identifier, data_directory, &data_loss);
     if (!backing_store.get()) {
       callbacks->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -189,7 +197,7 @@ void IndexedDBFactory::Open(
   }
 
   database_backend->OpenConnection(
-      callbacks, database_callbacks, transaction_id, version);
+      callbacks, database_callbacks, transaction_id, version, data_loss);
 }
 
 }  // namespace content

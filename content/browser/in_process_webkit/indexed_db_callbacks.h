@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -31,7 +32,8 @@ class IndexedDBCallbacksBase {
                          const IndexedDBDatabaseMetadata& metadata);
   virtual void onUpgradeNeeded(long long old_version,
                                WebIDBDatabaseImpl* database,
-                               const IndexedDBDatabaseMetadata&);
+                               const IndexedDBDatabaseMetadata&,
+                               WebKit::WebIDBCallbacks::DataLoss data_loss);
   virtual void onSuccess(WebIDBCursorImpl* idb_object,
                          const IndexedDBKey& key,
                          const IndexedDBKey& primaryKey,
@@ -89,7 +91,9 @@ class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
                          const IndexedDBDatabaseMetadata& metadata) OVERRIDE;
   virtual void onUpgradeNeeded(long long old_version,
                                WebIDBDatabaseImpl* database,
-                               const IndexedDBDatabaseMetadata&) OVERRIDE;
+                               const IndexedDBDatabaseMetadata&,
+                               WebKit::WebIDBCallbacks::DataLoss data_loss)
+      OVERRIDE;
 
  private:
   int64 host_transaction_id_;

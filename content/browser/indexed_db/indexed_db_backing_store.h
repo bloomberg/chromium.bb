@@ -20,6 +20,7 @@
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
+#include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
 
 namespace content {
 
@@ -44,11 +45,13 @@ class CONTENT_EXPORT IndexedDBBackingStore
   static scoped_refptr<IndexedDBBackingStore> Open(
       const string16& database_identifier,
       const base::FilePath& path_base,
-      const string16& file_identifier);
+      const string16& file_identifier,
+      WebKit::WebIDBCallbacks::DataLoss* data_loss);
   static scoped_refptr<IndexedDBBackingStore> Open(
       const string16& database_identifier,
       const base::FilePath& path_base,
       const string16& file_identifier,
+      WebKit::WebIDBCallbacks::DataLoss* data_loss,
       LevelDBFactory* factory);
   static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
       const string16& identifier);

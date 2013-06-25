@@ -64,12 +64,14 @@ class IndexedDBDatabase::VersionChangeOperation
       int64 transaction_id,
       int64 version,
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks)
+      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+      WebKit::WebIDBCallbacks::DataLoss data_loss)
       : database_(database),
         transaction_id_(transaction_id),
         version_(version),
         callbacks_(callbacks),
-        database_callbacks_(database_callbacks) {}
+        database_callbacks_(database_callbacks),
+        data_loss_(data_loss) {}
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
  private:
@@ -78,6 +80,7 @@ class IndexedDBDatabase::VersionChangeOperation
   int64 version_;
   scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
   scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks_;
+  WebKit::WebIDBCallbacks::DataLoss data_loss_;
 };
 
 class CreateObjectStoreAbortOperation : public IndexedDBTransaction::Operation {
@@ -1394,7 +1397,8 @@ void IndexedDBDatabase::VersionChangeOperation::Perform(
   DCHECK(!database_->pending_second_half_open_);
   database_->pending_second_half_open_.reset(new PendingOpenCall(
       callbacks_, database_callbacks_, transaction_id_, version_));
-  callbacks_->OnUpgradeNeeded(old_version, database_, database_->metadata());
+  callbacks_->OnUpgradeNeeded(
+      old_version, database_, database_->metadata(), data_loss_);
 }
 
 void IndexedDBDatabase::TransactionStarted(IndexedDBTransaction* transaction) {
@@ -1536,11 +1540,27 @@ void IndexedDBDatabase::OpenConnection(
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
     int64 transaction_id,
     int64 version) {
+  const WebKit::WebIDBCallbacks::DataLoss kDataLoss =
+      WebKit::WebIDBCallbacks::DataLossNone;
+  OpenConnection(
+      callbacks, database_callbacks, transaction_id, version, kDataLoss);
+}
+
+void IndexedDBDatabase::OpenConnection(
+    scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+    int64 transaction_id,
+    int64 version,
+    WebKit::WebIDBCallbacks::DataLoss data_loss) {
   DCHECK(backing_store_.get());
 
   // TODO(jsbell): Should have a priority queue so that higher version
   // requests are processed first. http://crbug.com/225850
   if (IsOpenConnectionBlocked()) {
+    // The backing store only detects data loss when it is first opened. The
+    // presence of existing connections means we didn't even check for data loss
+    // so there'd better not be any.
+    DCHECK_NE(WebKit::WebIDBCallbacks::DataLossTotal, data_loss);
     pending_open_calls_.push_back(new PendingOpenCall(
         callbacks, database_callbacks, transaction_id, version));
     return;
@@ -1597,7 +1617,7 @@ void IndexedDBDatabase::OpenConnection(
   if (version > metadata_.int_version) {
     database_callbacks_set_.insert(database_callbacks);
     RunVersionChangeTransaction(
-        callbacks, database_callbacks, transaction_id, version);
+        callbacks, database_callbacks, transaction_id, version, data_loss);
     return;
   }
   if (version < metadata_.int_version) {
@@ -1617,11 +1637,13 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
     int64 transaction_id,
-    int64 requested_version) {
+    int64 requested_version,
+    WebKit::WebIDBCallbacks::DataLoss data_loss) {
 
   DCHECK(callbacks.get());
   DCHECK(database_callbacks_set_.has(database_callbacks));
   if (ConnectionCount() > 1) {
+    DCHECK_NE(WebKit::WebIDBCallbacks::DataLossTotal, data_loss);
     // Front end ensures the event is not fired at connections that have
     // close_pending set.
     for (DatabaseCallbacksSet::const_iterator it =
@@ -1641,8 +1663,11 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
         callbacks, database_callbacks, transaction_id, requested_version));
     return;
   }
-  RunVersionChangeTransactionFinal(
-      callbacks, database_callbacks, transaction_id, requested_version);
+  RunVersionChangeTransactionFinal(callbacks,
+                                   database_callbacks,
+                                   transaction_id,
+                                   requested_version,
+                                   data_loss);
 }
 
 void IndexedDBDatabase::RunVersionChangeTransactionFinal(
@@ -1650,6 +1675,21 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
     int64 transaction_id,
     int64 requested_version) {
+  const WebKit::WebIDBCallbacks::DataLoss kDataLoss =
+      WebKit::WebIDBCallbacks::DataLossNone;
+  RunVersionChangeTransactionFinal(callbacks,
+                                   database_callbacks,
+                                   transaction_id,
+                                   requested_version,
+                                   kDataLoss);
+}
+
+void IndexedDBDatabase::RunVersionChangeTransactionFinal(
+    scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+    int64 transaction_id,
+    int64 requested_version,
+    WebKit::WebIDBCallbacks::DataLoss data_loss) {
 
   std::vector<int64> object_store_ids;
   CreateTransaction(transaction_id,
@@ -1664,7 +1704,8 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
                                  transaction_id,
                                  requested_version,
                                  callbacks,
-                                 database_callbacks),
+                                 database_callbacks,
+                                 data_loss),
       new VersionChangeAbortOperation(
           this, metadata_.version, metadata_.int_version));
 

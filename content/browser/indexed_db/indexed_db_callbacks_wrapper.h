@@ -15,6 +15,7 @@
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
+#include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
 
 namespace content {
 class IndexedDBCallbacksBase;
@@ -74,7 +75,8 @@ class CONTENT_EXPORT IndexedDBCallbacksWrapper
   virtual void OnUpgradeNeeded(
       int64 old_version,
       scoped_refptr<IndexedDBDatabase> db,
-      const content::IndexedDBDatabaseMetadata& metadata);
+      const content::IndexedDBDatabaseMetadata& metadata,
+      WebKit::WebIDBCallbacks::DataLoss data_loss);
   virtual void OnSuccess(scoped_refptr<IndexedDBDatabase> db,
                          const content::IndexedDBDatabaseMetadata& metadata);
   virtual void SetDatabaseCallbacks(

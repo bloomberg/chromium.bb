@@ -12,6 +12,8 @@
 
 namespace content {
 
+using WebKit::WebIDBCallbacks;
+
 IndexedDBCallbacksWrapper::IndexedDBCallbacksWrapper(
     IndexedDBCallbacksBase* callbacks)
     : callbacks_(callbacks), did_complete_(false), did_create_proxy_(false) {}
@@ -100,13 +102,15 @@ void IndexedDBCallbacksWrapper::OnBlocked(int64 existing_version) {
 void IndexedDBCallbacksWrapper::OnUpgradeNeeded(
     int64 old_version,
     scoped_refptr<IndexedDBDatabase> database,
-    const IndexedDBDatabaseMetadata& metadata) {
+    const IndexedDBDatabaseMetadata& metadata,
+    WebIDBCallbacks::DataLoss data_loss) {
   DCHECK(callbacks_);
   did_create_proxy_ = true;
   callbacks_->onUpgradeNeeded(
       old_version,
       new WebIDBDatabaseImpl(database, database_callbacks_),
-      metadata);
+      metadata,
+      data_loss);
   database_callbacks_ = NULL;
 }
 

@@ -13,6 +13,7 @@
 #include "webkit/browser/quota/quota_manager.h"
 
 using WebKit::WebData;
+using WebKit::WebIDBCallbacks;
 using WebKit::WebString;
 
 namespace content {
@@ -51,9 +52,11 @@ void IndexedDBCallbacksBase::onSuccess(
   NOTREACHED();
 }
 
-void IndexedDBCallbacksBase::onUpgradeNeeded(long long old_version,
-                                             WebIDBDatabaseImpl* database,
-                                             const IndexedDBDatabaseMetadata&) {
+void IndexedDBCallbacksBase::onUpgradeNeeded(
+    long long old_version,
+    WebIDBDatabaseImpl* database,
+    const IndexedDBDatabaseMetadata& /*metadata*/,
+    WebKit::WebIDBCallbacks::DataLoss data_loss) {
   NOTREACHED();
 }
 
@@ -133,7 +136,8 @@ void IndexedDBCallbacksDatabase::onSuccess(
 void IndexedDBCallbacksDatabase::onUpgradeNeeded(
     long long old_version,
     WebIDBDatabaseImpl* database,
-    const IndexedDBDatabaseMetadata& metadata) {
+    const IndexedDBDatabaseMetadata& metadata,
+    WebIDBCallbacks::DataLoss data_loss) {
   dispatcher_host()->RegisterTransactionId(host_transaction_id_, origin_url_);
   int32 ipc_database_id =
       dispatcher_host()->Add(database, ipc_thread_id(), origin_url_);
@@ -145,6 +149,7 @@ void IndexedDBCallbacksDatabase::onUpgradeNeeded(
   params.ipc_database_callbacks_id = ipc_database_callbacks_id_;
   params.old_version = old_version;
   params.idb_metadata = IndexedDBDispatcherHost::ConvertMetadata(metadata);
+  params.data_loss = data_loss;
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksUpgradeNeeded(params));
 }
 

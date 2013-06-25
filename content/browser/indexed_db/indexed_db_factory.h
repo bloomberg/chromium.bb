@@ -57,7 +57,8 @@ class CONTENT_EXPORT IndexedDBFactory
 
   scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
       const string16& database_identifier,
-      const base::FilePath& data_directory);
+      const base::FilePath& data_directory,
+      WebKit::WebIDBCallbacks::DataLoss* data_loss);
 
  private:
   typedef std::map<string16, scoped_refptr<IndexedDBDatabase> >

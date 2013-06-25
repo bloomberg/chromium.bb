@@ -34,6 +34,7 @@ include_rules = [
   "-third_party/WebKit",
   "+third_party/WebKit/public/platform/WebGamepads.h",
   "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
+  "+third_party/WebKit/public/platform/WebIDBCallbacks.h",
   "+third_party/WebKit/public/platform/WebIDBDatabase.h",
   "+third_party/WebKit/public/platform/WebIDBDatabaseException.h",
   "+third_party/WebKit/public/platform/WebIDBKeyPath.h",

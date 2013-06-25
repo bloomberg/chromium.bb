@@ -68,6 +68,12 @@ class CONTENT_EXPORT IndexedDBDatabase
       scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
       int64 transaction_id,
       int64 version);
+  void OpenConnection(
+      scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+      int64 transaction_id,
+      int64 version,
+      WebKit::WebIDBCallbacks::DataLoss data_loss);
   void DeleteDatabase(scoped_refptr<IndexedDBCallbacksWrapper> callbacks);
   const IndexedDBDatabaseMetadata& metadata() const { return metadata_; }
 
@@ -164,12 +170,19 @@ class CONTENT_EXPORT IndexedDBDatabase
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
       scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
       int64 transaction_id,
-      int64 requested_version);
+      int64 requested_version,
+      WebKit::WebIDBCallbacks::DataLoss data_loss);
   void RunVersionChangeTransactionFinal(
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
       scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
       int64 transaction_id,
       int64 requested_version);
+  void RunVersionChangeTransactionFinal(
+      scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+      int64 transaction_id,
+      int64 requested_version,
+      WebKit::WebIDBCallbacks::DataLoss data_loss);
   size_t ConnectionCount() const;
   void ProcessPendingCalls();
 

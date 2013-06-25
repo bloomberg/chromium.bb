@@ -421,19 +421,26 @@ enum IndexedDBLevelDBBackingStoreOpenResult {
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const string16& database_identifier,
     const base::FilePath& path_base,
-    const string16& file_identifier) {
+    const string16& file_identifier,
+    WebKit::WebIDBCallbacks::DataLoss* data_loss) {
+  *data_loss = WebKit::WebIDBCallbacks::DataLossNone;
   DefaultLevelDBFactory leveldb_factory;
-  return IndexedDBBackingStore::Open(
-      database_identifier, path_base, file_identifier, &leveldb_factory);
+  return IndexedDBBackingStore::Open(database_identifier,
+                                     path_base,
+                                     file_identifier,
+                                     data_loss,
+                                     &leveldb_factory);
 }
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const string16& database_identifier,
     const base::FilePath& path_base,
     const string16& file_identifier,
+    WebKit::WebIDBCallbacks::DataLoss* data_loss,
     LevelDBFactory* leveldb_factory) {
   IDB_TRACE("IndexedDBBackingStore::Open");
   DCHECK(!path_base.empty());
+  *data_loss = WebKit::WebIDBCallbacks::DataLossNone;
 
   scoped_ptr<LevelDBComparator> comparator(new Comparator());
   scoped_ptr<LevelDBDatabase> db;
@@ -548,6 +555,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     return scoped_refptr<IndexedDBBackingStore>();
   } else {
     LOG(ERROR) << "IndexedDB backing store open failed, attempting cleanup";
+    *data_loss = WebKit::WebIDBCallbacks::DataLossTotal;
     bool success = leveldb_factory->DestroyLevelDB(file_path);
     if (!success) {
       LOG(ERROR) << "IndexedDB backing store cleanup failed";
