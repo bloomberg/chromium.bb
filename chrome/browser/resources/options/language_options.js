@@ -58,7 +58,8 @@ cr.define('options', function() {
    * @type {string}
    * @const
    */
-  var TRANSLATE_LANGUAGE_BLACKLIST_PREF = 'translate_language_blacklist';
+  var TRANSLATE_BLOCKED_LANGUAGES_PREF =
+      'translate_blocked_languages';
 
   /**
    * The preference key that is a string that describes the spell check
@@ -127,7 +128,7 @@ cr.define('options', function() {
      * @type {Array}
      * @private
      */
-    translateLanguageBlacklist_: [],
+    translateBlockedLanguages_: [],
 
     /**
      * The list of the languages supported by Translate server
@@ -186,8 +187,8 @@ cr.define('options', function() {
           this.handleDontTranslateCheckboxClick_.bind(this));
 
       Preferences.getInstance().addEventListener(
-          TRANSLATE_LANGUAGE_BLACKLIST_PREF,
-          this.handleTranslateLanguageBlacklistPrefChange_.bind(this));
+          TRANSLATE_BLOCKED_LANGUAGES_PREF,
+          this.handleTranslateBlockedLanguagesPrefChange_.bind(this));
       Preferences.getInstance().addEventListener(SPELL_CHECK_DICTIONARY_PREF,
           this.handleSpellCheckDictionaryPrefChange_.bind(this));
       this.translateSupportedLanguages_ =
@@ -670,8 +671,8 @@ cr.define('options', function() {
       }
 
       var checkbox = $('dont-translate-in-this-language');
-      var blacklist = this.translateLanguageBlacklist_;
-      var checked = blacklist.indexOf(convertedLangCode) != -1;
+      var blockedLanguages = this.translateBlockedLanguages_;
+      var checked = blockedLanguages.indexOf(convertedLangCode) != -1;
       checkbox.checked = checked;
     },
 
@@ -782,18 +783,19 @@ cr.define('options', function() {
       var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
 
       var langCode = this.convertLangCodeForTranslation_(selectedLanguageCode);
-      var blacklist = this.translateLanguageBlacklist_;
-      if (checked && blacklist.indexOf(langCode) == -1) {
-        blacklist.push(langCode);
-      } else if (!checked && blacklist.indexOf(langCode) != -1) {
-        blacklist = blacklist.filter(function(blacklistedLangCode) {
-          return blacklistedLangCode != langCode;
-        });
+      var blockedLanguages = this.translateBlockedLanguages_;
+      if (checked && blockedLanguages.indexOf(langCode) == -1) {
+        blockedLanguages.push(langCode);
+      } else if (!checked && blockedLanguages.indexOf(langCode) != -1) {
+        blockedLanguages =
+            blockedLanguages.filter(function(langCodeNotTranslated) {
+              return langCodeNotTranslated != langCode;
+            });
       }
-      this.translateLanguageBlacklist_ = blacklist;
+      this.translateBlockedLanguages_ = blockedLanguages;
 
-      Preferences.setListPref(TRANSLATE_LANGUAGE_BLACKLIST_PREF,
-                              this.translateLanguageBlacklist_, true);
+      Preferences.setListPref(TRANSLATE_BLOCKED_LANGUAGES_PREF,
+                              this.translateBlockedLanguages_, true);
     },
 
     /**
@@ -862,14 +864,14 @@ cr.define('options', function() {
      },
 
     /**
-     * Handles translateLanguageBlacklistPref change.
+     * Handles translateBlockedLanguagesPref change.
      * @param {Event} e Change event.
      * @private
      */
-    handleTranslateLanguageBlacklistPrefChange_: function(e) {
+    handleTranslateBlockedLanguagesPrefChange_: function(e) {
       var languageOptionsList = $('language-options-list');
       var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
-      this.translateLanguageBlacklist_ = e.value.value;
+      this.translateBlockedLanguages_ = e.value.value;
 
       this.updateDontTranslateCheckbox_(selectedLanguageCode);
     },

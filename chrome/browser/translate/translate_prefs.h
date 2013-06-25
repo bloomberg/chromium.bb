@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_PREFS_H_
 
 #include <string>
+#include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "googleurl/src/gurl.h"
 
 class PrefService;
@@ -28,12 +30,13 @@ class TranslatePrefs {
   static const char kPrefTranslateWhitelists[];
   static const char kPrefTranslateDeniedCount[];
   static const char kPrefTranslateAcceptedCount[];
+  static const char kPrefTranslateBlockedLanguages[];
 
   explicit TranslatePrefs(PrefService* user_prefs);
 
-  bool IsLanguageBlacklisted(const std::string& original_language) const;
-  void BlacklistLanguage(const std::string& original_language);
-  void RemoveLanguageFromBlacklist(const std::string& original_language);
+  bool IsBlockedLanguage(const std::string& original_language) const;
+  void BlockLanguage(const std::string& original_language);
+  void UnblockLanguage(const std::string& original_language);
 
   bool IsSiteBlacklisted(const std::string& site) const;
   void BlacklistSite(const std::string& site);
@@ -79,6 +82,15 @@ class TranslatePrefs {
   static void MigrateUserPrefs(PrefService* user_prefs);
 
  private:
+  friend class TranslatePrefsTest;
+  FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, CreateBlockedLanguages);
+
+  // Merges two language sets to migrate to the language setting UI.
+  static void CreateBlockedLanguages(
+      std::vector<std::string>* blocked_languages,
+      const std::vector<std::string>& blacklisted_languages,
+      const std::vector<std::string>& accept_languages);
+
   bool IsValueBlacklisted(const char* pref_id, const std::string& value) const;
   void BlacklistValue(const char* pref_id, const std::string& value);
   void RemoveValueFromBlacklist(const char* pref_id, const std::string& value);

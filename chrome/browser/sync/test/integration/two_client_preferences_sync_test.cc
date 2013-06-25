@@ -401,18 +401,18 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
 
   TranslatePrefs translate_client0_prefs(GetPrefs(0));
   TranslatePrefs translate_client1_prefs(GetPrefs(1));
-  ASSERT_FALSE(translate_client0_prefs.IsLanguageBlacklisted("fr"));
-  translate_client0_prefs.BlacklistLanguage("fr");
-  ASSERT_TRUE(translate_client0_prefs.IsLanguageBlacklisted("fr"));
+  ASSERT_FALSE(translate_client0_prefs.IsBlockedLanguage("fr"));
+  translate_client0_prefs.BlockLanguage("fr");
+  ASSERT_TRUE(translate_client0_prefs.IsBlockedLanguage("fr"));
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(translate_client1_prefs.IsLanguageBlacklisted("fr"));
+  ASSERT_TRUE(translate_client1_prefs.IsBlockedLanguage("fr"));
 
-  translate_client0_prefs.RemoveLanguageFromBlacklist("fr");
-  ASSERT_FALSE(translate_client0_prefs.IsLanguageBlacklisted("fr"));
+  translate_client0_prefs.UnblockLanguage("fr");
+  ASSERT_FALSE(translate_client0_prefs.IsBlockedLanguage("fr"));
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_FALSE(translate_client1_prefs.IsLanguageBlacklisted("fr"));
+  ASSERT_FALSE(translate_client1_prefs.IsBlockedLanguage("fr"));
 }
 
 // TCM ID - 7307195.

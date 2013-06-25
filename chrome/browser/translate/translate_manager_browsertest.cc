@@ -1085,11 +1085,11 @@ TEST_F(TranslateManagerBrowserTest, NeverTranslateLanguagePref) {
   registrar.Add(TranslatePrefs::kPrefTranslateLanguageBlacklist,
                 pref_callback_);
   TranslatePrefs translate_prefs(prefs);
-  EXPECT_FALSE(translate_prefs.IsLanguageBlacklisted("fr"));
+  EXPECT_FALSE(translate_prefs.IsBlockedLanguage("fr"));
   EXPECT_TRUE(translate_prefs.CanTranslateLanguage(profile, "fr"));
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateLanguageBlacklist);
-  translate_prefs.BlacklistLanguage("fr");
-  EXPECT_TRUE(translate_prefs.IsLanguageBlacklisted("fr"));
+  translate_prefs.BlockLanguage("fr");
+  EXPECT_TRUE(translate_prefs.IsBlockedLanguage("fr"));
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(url.host()));
   EXPECT_FALSE(translate_prefs.CanTranslateLanguage(profile, "fr"));
 
@@ -1104,8 +1104,8 @@ TEST_F(TranslateManagerBrowserTest, NeverTranslateLanguagePref) {
 
   // Remove the language from the blacklist.
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateLanguageBlacklist);
-  translate_prefs.RemoveLanguageFromBlacklist("fr");
-  EXPECT_FALSE(translate_prefs.IsLanguageBlacklisted("fr"));
+  translate_prefs.UnblockLanguage("fr");
+  EXPECT_FALSE(translate_prefs.IsBlockedLanguage("fr"));
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(url.host()));
   EXPECT_TRUE(translate_prefs.CanTranslateLanguage(profile, "fr"));
 
@@ -1230,9 +1230,9 @@ TEST_F(TranslateManagerBrowserTest, ContextMenu) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   TranslatePrefs translate_prefs(profile->GetPrefs());
-  translate_prefs.BlacklistLanguage("fr");
+  translate_prefs.BlockLanguage("fr");
   translate_prefs.BlacklistSite(url.host());
-  EXPECT_TRUE(translate_prefs.IsLanguageBlacklisted("fr"));
+  EXPECT_TRUE(translate_prefs.IsBlockedLanguage("fr"));
   EXPECT_TRUE(translate_prefs.IsSiteBlacklisted(url.host()));
 
   // Simulate navigating to a page in French. The translate menu should show but
@@ -1269,7 +1269,7 @@ TEST_F(TranslateManagerBrowserTest, ContextMenu) {
   process()->sink().ClearMessages();
 
   // This should also have reverted the blacklisting of this site and language.
-  EXPECT_FALSE(translate_prefs.IsLanguageBlacklisted("fr"));
+  EXPECT_FALSE(translate_prefs.IsBlockedLanguage("fr"));
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(url.host()));
 
   // Let's simulate the page being translated.
@@ -1409,7 +1409,7 @@ TEST_F(TranslateManagerBrowserTest, BeforeTranslateExtraButtons) {
   }
   // Simulate the user pressing "Never translate French".
   infobar->NeverTranslatePageLanguage();
-  EXPECT_TRUE(translate_prefs.IsLanguageBlacklisted("de"));
+  EXPECT_TRUE(translate_prefs.IsBlockedLanguage("de"));
   // No translation should have occured and the infobar should be gone.
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   process()->sink().ClearMessages();

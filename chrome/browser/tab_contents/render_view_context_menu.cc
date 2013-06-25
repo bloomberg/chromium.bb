@@ -1781,7 +1781,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       // Since the user decided to translate for that language and site, clears
       // any preferences for not translating them.
       TranslatePrefs prefs(profile_->GetPrefs());
-      prefs.RemoveLanguageFromBlacklist(original_lang);
+      prefs.UnblockLanguage(original_lang);
       prefs.RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
       TranslateManager::GetInstance()->TranslatePage(
           source_web_contents_, original_lang, target_lang);

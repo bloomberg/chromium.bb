@@ -146,10 +146,10 @@ bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
 
 void TranslateInfoBarDelegate::ToggleTranslatableLanguageByPrefs() {
   const std::string& original_lang = original_language_code();
-  if (prefs_.IsLanguageBlacklisted(original_lang)) {
-    prefs_.RemoveLanguageFromBlacklist(original_lang);
+  if (prefs_.IsBlockedLanguage(original_lang)) {
+    prefs_.UnblockLanguage(original_lang);
   } else {
-    prefs_.BlacklistLanguage(original_lang);
+    prefs_.BlockLanguage(original_lang);
     RemoveSelf();
   }
 }
@@ -196,8 +196,8 @@ void TranslateInfoBarDelegate::AlwaysTranslatePageLanguage() {
 
 void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
   std::string original_lang = original_language_code();
-  DCHECK(!prefs_.IsLanguageBlacklisted(original_lang));
-  prefs_.BlacklistLanguage(original_lang);
+  DCHECK(!prefs_.IsBlockedLanguage(original_lang));
+  prefs_.BlockLanguage(original_lang);
   RemoveSelf();
 }
 
