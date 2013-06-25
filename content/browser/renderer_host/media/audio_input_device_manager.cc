@@ -13,6 +13,7 @@
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
+#include "media/base/scoped_histogram_timer.h"
 
 namespace content {
 
@@ -118,6 +119,8 @@ bool AudioInputDeviceManager::ShouldUseFakeDevice() const {
 
 void AudioInputDeviceManager::EnumerateOnDeviceThread(
     MediaStreamType stream_type) {
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Media.AudioInputDeviceManager.EnumerateOnDeviceThreadTime");
   DCHECK(IsOnDeviceThread());
 
   media::AudioDeviceNames device_names;
@@ -161,6 +164,8 @@ void AudioInputDeviceManager::EnumerateOnDeviceThread(
 
 void AudioInputDeviceManager::OpenOnDeviceThread(
     int session_id, const StreamDeviceInfo& info) {
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Media.AudioInputDeviceManager.OpenOnDeviceThreadTime");
   DCHECK(IsOnDeviceThread());
 
   StreamDeviceInfo out(info.device.type, info.device.name, info.device.id,

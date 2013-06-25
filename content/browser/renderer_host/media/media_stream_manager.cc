@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
@@ -149,7 +148,7 @@ MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
 
 MediaStreamManager::~MediaStreamManager() {
   DCHECK(requests_.empty());
-  DCHECK(!device_thread_.get());
+  DCHECK(!device_loop_);
   DCHECK(!io_loop_);
 }
 
@@ -586,22 +585,15 @@ void MediaStreamManager::HandleRequest(const std::string& label) {
 
 void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (device_thread_)
+  if (device_loop_)
     return;
-
-  device_thread_.reset(new base::Thread("MediaStreamDeviceThread"));
-#if defined(OS_WIN)
-  device_thread_->init_com_with_mta(true);
-#endif
-  CHECK(device_thread_->Start());
+  device_loop_ = audio_manager_->GetMessageLoop();
 
   audio_input_device_manager_ = new AudioInputDeviceManager(audio_manager_);
-  audio_input_device_manager_->Register(
-      this, device_thread_->message_loop_proxy().get());
+  audio_input_device_manager_->Register(this, device_loop_);
 
   video_capture_manager_ = new VideoCaptureManager();
-  video_capture_manager_->Register(this,
-                                   device_thread_->message_loop_proxy().get());
+  video_capture_manager_->Register(this, device_loop_);
 
   // We want to be notified of IO message loop destruction to delete the thread
   // and the device managers.
@@ -945,12 +937,12 @@ void MediaStreamManager::UseFakeUI(scoped_ptr<FakeMediaStreamUIProxy> fake_ui) {
 void MediaStreamManager::WillDestroyCurrentMessageLoop() {
   DCHECK_EQ(base::MessageLoop::current(), io_loop_);
   DCHECK(requests_.empty());
-  if (device_thread_) {
+  if (device_loop_) {
     StopMonitoring();
 
     video_capture_manager_->Unregister();
     audio_input_device_manager_->Unregister();
-    device_thread_.reset();
+    device_loop_ = NULL;
   }
 
   audio_input_device_manager_ = NULL;

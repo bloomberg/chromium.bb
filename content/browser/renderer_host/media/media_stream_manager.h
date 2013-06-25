@@ -35,10 +35,6 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/common/content_export.h"
 
-namespace base {
-class Thread;
-}
-
 namespace media {
 class AudioManager;
 }
@@ -207,7 +203,7 @@ class CONTENT_EXPORT MediaStreamManager
   void StopMonitoring();
 
   // Device thread shared by VideoCaptureManager and AudioInputDeviceManager.
-  scoped_ptr<base::Thread> device_thread_;
+  scoped_refptr<base::MessageLoopProxy> device_loop_;
 
   media::AudioManager* const audio_manager_;  // not owned
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;

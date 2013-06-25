@@ -3662,6 +3662,10 @@ other types of suffix sets.
   <summary>Measures the time taken for AudioInputController::</summary>
 </histogram>
 
+<histogram name="Media.AudioInputDeviceManager" units="ms">
+  <summary>Measures the time taken for AudioInputDeviceManager::</summary>
+</histogram>
+
 <histogram name="Media.AudioOutputController" units="ms">
   <summary>Measures the time taken for AudioOutputController::</summary>
 </histogram>
@@ -4092,6 +4096,10 @@ other types of suffix sets.
   <summary>
     Error codes reported by video decode using VA-API hardware video decoder.
   </summary>
+</histogram>
+
+<histogram name="Media.VideoCaptureManager" units="ms">
+  <summary>Measures the time taken for VideoCaptureManager::</summary>
 </histogram>
 
 <histogram name="Media.VideoCodec" enum="VideoCodec">
@@ -18870,6 +18878,14 @@ other types of suffix sets.
   <affected-histogram name="Media.AudioInputController"/>
 </fieldtrial>
 
+<fieldtrial name="MediaAudioInputDeviceManagerTime" separator=".">
+  <group name="OpenOnDeviceThreadTime"
+      label="Measures the time taken for OpenOnDeviceThread()."/>
+  <group name="EnumerateOnDeviceThreadTime"
+      label="Measures the time taken for EnumerateOnDeviceThread()."/>
+  <affected-histogram name="Media.AudioInputDeviceManager"/>
+</fieldtrial>
+
 <fieldtrial name="MediaAudioOutputControllerTime" separator=".">
   <group name="CloseTime" label="Measures the time taken for DoClose()."/>
   <group name="CreateTime" label="Measures the time taken for DoCreate()."/>
@@ -18880,6 +18896,16 @@ other types of suffix sets.
       label="Measures the time taken for DoPlay(). Technically only the
              worker method AudioOutputController::PollAndStartIfDataReady()."/>
   <affected-histogram name="Media.AudioOutputController"/>
+</fieldtrial>
+
+<fieldtrial name="MediaVideoCaptureManagerTime" separator=".">
+  <group name="OnEnumerateDevicesTime"
+      label="Measures the time taken for OnEnumerateDevices()."/>
+  <group name="OnOpenTime" label="Measures the time taken for OnOpen()."/>
+  <group name="OnCloseTime" label="Measures the time taken for OnClose()."/>
+  <group name="OnStartTime" label="Measures the time taken for OnStart()."/>
+  <group name="OnStopTime" label="Measures the time taken for OnStop()."/>
+  <affected-histogram name="Media.VideoCaptureManager"/>
 </fieldtrial>
 
 <fieldtrial name="NetConnectivity" separator=".">

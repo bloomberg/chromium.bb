@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
+#include "media/base/scoped_histogram_timer.h"
 #include "media/video/capture/fake_video_capture_device.h"
 #include "media/video/capture/video_capture_device.h"
 
@@ -129,6 +130,8 @@ void VideoCaptureManager::UseFakeDevice() {
 }
 
 void VideoCaptureManager::OnEnumerateDevices(MediaStreamType stream_type) {
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Media.VideoCaptureManager.OnEnumerateDevicesTime");
   DCHECK(IsOnDeviceThread());
 
   media::VideoCaptureDevice::Names device_names;
@@ -147,6 +150,7 @@ void VideoCaptureManager::OnEnumerateDevices(MediaStreamType stream_type) {
 
 void VideoCaptureManager::OnOpen(int capture_session_id,
                                  const StreamDeviceInfo& device) {
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.OnOpenTime");
   DCHECK(IsOnDeviceThread());
   DCHECK(devices_.find(capture_session_id) == devices_.end());
   DVLOG(1) << "VideoCaptureManager::OnOpen, id " << capture_session_id;
@@ -210,6 +214,7 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
 }
 
 void VideoCaptureManager::OnClose(int capture_session_id) {
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.OnCloseTime");
   DCHECK(IsOnDeviceThread());
   DVLOG(1) << "VideoCaptureManager::OnClose, id " << capture_session_id;
 
@@ -247,6 +252,7 @@ void VideoCaptureManager::OnClose(int capture_session_id) {
 void VideoCaptureManager::OnStart(
     const media::VideoCaptureParams capture_params,
     media::VideoCaptureDevice::EventHandler* video_capture_receiver) {
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.OnStartTime");
   DCHECK(IsOnDeviceThread());
   DCHECK(video_capture_receiver != NULL);
   DVLOG(1) << "VideoCaptureManager::OnStart, (" << capture_params.width
@@ -278,6 +284,7 @@ void VideoCaptureManager::OnStart(
 void VideoCaptureManager::OnStop(
     const media::VideoCaptureSessionId capture_session_id,
     base::Closure stopped_cb) {
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.OnStopTime");
   DCHECK(IsOnDeviceThread());
   DVLOG(1) << "VideoCaptureManager::OnStop, id " << capture_session_id;
 

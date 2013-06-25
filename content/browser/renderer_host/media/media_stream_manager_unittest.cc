@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_manager_base.h"
 #if defined(OS_ANDROID)
 #include "media/audio/android/audio_manager_android.h"
@@ -62,26 +64,9 @@ class MockAudioManager : public AudioManagerPlatform {
 
 class MediaStreamManagerTest : public ::testing::Test {
  public:
-  MediaStreamManagerTest() {}
-
-  MOCK_METHOD1(Response, void(int index));
-  void ResponseCallback(int index,
-                        const MediaStreamDevices& devices,
-                        scoped_ptr<MediaStreamUIProxy> ui_proxy) {
-    Response(index);
-    message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
-  }
-
-  void WaitForResult() { message_loop_->Run(); }
-
- protected:
-  virtual void SetUp() {
-    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
-    ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
-                                           message_loop_.get()));
-    io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
-                                           message_loop_.get()));
-
+  MediaStreamManagerTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        message_loop_(base::MessageLoopProxy::current()) {
     // Create our own MediaStreamManager.
     audio_manager_.reset(new MockAudioManager());
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
@@ -90,13 +75,17 @@ class MediaStreamManagerTest : public ::testing::Test {
     media_stream_manager_->UseFakeDevice();
   }
 
-  virtual void TearDown() {
-    message_loop_->RunUntilIdle();
+  virtual ~MediaStreamManagerTest() {}
 
-    // Delete the IO message loop to clean up the MediaStreamManager.
-    message_loop_.reset();
+  MOCK_METHOD1(Response, void(int index));
+  void ResponseCallback(int index,
+                        const MediaStreamDevices& devices,
+                        scoped_ptr<MediaStreamUIProxy> ui_proxy) {
+    Response(index);
+    message_loop_->PostTask(FROM_HERE, run_loop_.QuitClosure());
   }
 
+ protected:
   std::string MakeMediaAccessRequest(int index) {
     const int render_process_id = 1;
     const int render_view_id = 1;
@@ -113,11 +102,11 @@ class MediaStreamManagerTest : public ::testing::Test {
                                                          callback);
   }
 
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<BrowserThreadImpl> ui_thread_;
-  scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  base::RunLoop run_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManagerTest);
@@ -128,7 +117,7 @@ TEST_F(MediaStreamManagerTest, MakeMediaAccessRequest) {
 
   // Expecting the callback will be triggered and quit the test.
   EXPECT_CALL(*this, Response(0));
-  WaitForResult();
+  run_loop_.Run();
 }
 
 TEST_F(MediaStreamManagerTest, MakeAndCancelMediaAccessRequest) {
@@ -162,7 +151,7 @@ TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {
   // value of labels.
   EXPECT_CALL(*this, Response(0));
   EXPECT_CALL(*this, Response(1));
-  WaitForResult();
+  run_loop_.Run();
 }
 
 TEST_F(MediaStreamManagerTest, MakeAndCancelMultipleRequests) {
@@ -173,7 +162,7 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMultipleRequests) {
   // Expecting the callback from the second request will be triggered and
   // quit the test.
   EXPECT_CALL(*this, Response(1));
-  WaitForResult();
+  run_loop_.Run();
 }
 
 }  // namespace content
