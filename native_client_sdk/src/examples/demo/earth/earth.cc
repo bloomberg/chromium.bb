@@ -29,7 +29,6 @@
 #include <string>
 
 #include "sdk_util/macros.h"
-#include "sdk_util/string_parse.h"
 #include "sdk_util/thread_pool.h"
 
 // Global properties used to setup Earth demo.
