@@ -32,8 +32,12 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -57,6 +61,8 @@
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/policy/policy_domain_descriptor.h"
+#include "chrome/browser/policy/policy_schema.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest.h"
@@ -266,11 +272,17 @@ class DeviceLocalAccountPolicyStatusProvider
 #endif
 
 // The JavaScript message handler for the chrome://policy page.
-class PolicyUIHandler : public content::WebUIMessageHandler,
+class PolicyUIHandler : public content::NotificationObserver,
+                        public content::WebUIMessageHandler,
                         public policy::PolicyService::Observer {
  public:
   PolicyUIHandler();
   virtual ~PolicyUIHandler();
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // content::WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
@@ -318,6 +330,8 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // the platform (Chrome OS / desktop) and type of policy that is in effect.
   scoped_ptr<CloudPolicyStatusProvider> user_status_provider_;
   scoped_ptr<CloudPolicyStatusProvider> device_status_provider_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyUIHandler);
 };
@@ -491,6 +505,13 @@ void PolicyUIHandler::RegisterMessages() {
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::NotificationService::AllSources());
+
   web_ui()->RegisterMessageCallback(
       "initialized",
       base::Bind(&PolicyUIHandler::HandleInitialized, base::Unretained(this)));
@@ -498,6 +519,15 @@ void PolicyUIHandler::RegisterMessages() {
       "reloadPolicies",
       base::Bind(&PolicyUIHandler::HandleReloadPolicies,
                  base::Unretained(this)));
+}
+
+void PolicyUIHandler::Observe(int type,
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_EXTENSION_LOADED ||
+         type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
+  SendPolicyNames();
+  SendPolicyValues();
 }
 
 void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
@@ -508,60 +538,90 @@ void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
 
 void PolicyUIHandler::SendPolicyNames() const {
   base::DictionaryValue names;
+
+  // Add Chrome policy names.
+  base::DictionaryValue* chrome_policy_names = new base::DictionaryValue;
   const policy::PolicyDefinitionList* list =
       policy::GetChromePolicyDefinitionList();
   for (const policy::PolicyDefinitionList::Entry* entry = list->begin;
        entry != list->end; ++entry) {
-    names.SetBoolean(entry->name, true);
+    chrome_policy_names->SetBoolean(entry->name, true);
   }
+  names.Set("chromePolicyNames", chrome_policy_names);
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Add extension policy names.
+  base::DictionaryValue* extension_policy_names = new base::DictionaryValue;
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()));
+  const ExtensionSet* extensions =
+      extension_system->extension_service()->extensions();
+  scoped_refptr<const policy::PolicyDomainDescriptor> policy_domain_descriptor;
+  policy_domain_descriptor = GetPolicyService()->
+      GetPolicyDomainDescriptor(policy::POLICY_DOMAIN_EXTENSIONS);
+  const policy::PolicyDomainDescriptor::SchemaMap& schema_map =
+      policy_domain_descriptor->components();
+
+  for (ExtensionSet::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
+    const extensions::Extension* extension = *it;
+    if (extension->location() == extensions::Manifest::COMPONENT)
+      continue;
+    base::DictionaryValue* extension_value = new base::DictionaryValue;
+    extension_value->SetString("name", extension->name());
+    policy::PolicyDomainDescriptor::SchemaMap::const_iterator schema =
+        schema_map.find(extension->id());
+    base::DictionaryValue* policy_names = new base::DictionaryValue;
+    if (schema != schema_map.end()) {
+      // Get policy names from the extension's policy schema.
+      // Store in a map, not an array, for faster lookup on JS side.
+      const policy::PolicySchemaMap* policies = schema->second->GetProperties();
+      policy::PolicySchemaMap::const_iterator it_policies;
+      for (it_policies = policies->begin(); it_policies != policies->end();
+           it_policies++) {
+        policy_names->SetBoolean(it_policies->first, true);
+      }
+    }
+    extension_value->Set("policyNames", policy_names);
+    extension_policy_names->Set(extension->id(), extension_value);
+  }
+  names.Set("extensionPolicyNames", extension_policy_names);
+#endif
+
   web_ui()->CallJavascriptFunction("policy.Page.setPolicyNames", names);
 }
 
 void PolicyUIHandler::SendPolicyValues() const {
   base::DictionaryValue all_policies;
 
-  // Add chrome policies.
+  // Add Chrome policy values.
   base::DictionaryValue* chrome_policies = new base::DictionaryValue;
   GetChromePolicyValues(chrome_policies);
   all_policies.Set("chromePolicies", chrome_policies);
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  // Get extensions.
+  // Add extension policy values.
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()));
   const ExtensionSet* extensions =
       extension_system->extension_service()->extensions();
-
-  // Add policies for each extension.
   base::DictionaryValue* extension_values = new base::DictionaryValue;
+
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     const extensions::Extension* extension = *it;
-
-    // Skip this extension if it's a component extension.
     if (extension->location() == extensions::Manifest::COMPONENT)
       continue;
-
-    base::DictionaryValue* extension_value = new base::DictionaryValue;
-
-    // Add name.
-    extension_value->SetString("name", extension->name());
-
-    // Add policies.
     base::DictionaryValue* extension_policies = new base::DictionaryValue;
     policy::PolicyNamespace policy_namespace = policy::PolicyNamespace(
         policy::POLICY_DOMAIN_EXTENSIONS, extension->id());
     policy::PolicyErrorMap empty_error_map;
     GetPolicyValues(GetPolicyService()->GetPolicies(policy_namespace),
                     &empty_error_map, extension_policies);
-    extension_value->Set("policies", extension_policies);
-
-    // Add entry to the dictionary.
-    extension_values->Set(extension->id(), extension_value);
+    extension_values->Set(extension->id(), extension_policies);
   }
   all_policies.Set("extensionPolicies", extension_values);
 #endif
-
   web_ui()->CallJavascriptFunction("policy.Page.setPolicyValues", all_policies);
 }
 
