@@ -203,6 +203,7 @@ void JobScheduler::CancelJob(JobID job_id) {
       base::Callback<void(google_apis::GDataErrorCode)> callback =
           job->abort_callback;
       queue_[GetJobQueueType(job->job_info.job_type)]->Remove(job_id);
+      NotifyJobDone(job->job_info, google_apis::GDATA_CANCELLED);
       job_map_.Remove(job_id);
       callback.Run(google_apis::GDATA_CANCELLED);
     }
@@ -827,7 +828,7 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
   } else {
     NotifyJobDone(*job_info, error);
     // The job has finished, no retry will happen in the scheduler. Now we can
-    // remove the job info from the map. This is the only place of the removal.
+    // remove the job info from the map.
     job_map_.Remove(job_id);
 
     ResetThrottleAndContinueJobLoop(queue_type);
