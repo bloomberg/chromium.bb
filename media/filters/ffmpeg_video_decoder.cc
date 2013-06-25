@@ -204,8 +204,12 @@ void FFmpegVideoDecoder::Stop(const base::Closure& closure) {
   if (state_ == kUninitialized)
     return;
 
-  if (!read_cb_.is_null())
+  if (!read_cb_.is_null()) {
     base::ResetAndReturn(&read_cb_).Run(kOk, NULL);
+    // Reset is pending only when read is pending.
+    if (!reset_cb_.is_null())
+      base::ResetAndReturn(&reset_cb_).Run();
+  }
 
   ReleaseFFmpegResources();
   state_ = kUninitialized;

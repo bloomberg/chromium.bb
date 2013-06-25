@@ -195,17 +195,19 @@ void VpxVideoDecoder::Reset(const base::Closure& closure) {
 
 void VpxVideoDecoder::Stop(const base::Closure& closure) {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  base::ScopedClosureRunner runner(BindToCurrentLoop(closure));
 
-  if (state_ == kUninitialized) {
-    closure.Run();
+  if (state_ == kUninitialized)
     return;
+
+  if (!read_cb_.is_null()) {
+    base::ResetAndReturn(&read_cb_).Run(kOk, NULL);
+    // Reset is pending only when read is pending.
+    if (!reset_cb_.is_null())
+      base::ResetAndReturn(&reset_cb_).Run();
   }
 
-  if (!read_cb_.is_null())
-    base::ResetAndReturn(&read_cb_).Run(kOk, NULL);
-
   state_ = kUninitialized;
-  closure.Run();
 }
 
 void VpxVideoDecoder::ReadFromDemuxerStream() {

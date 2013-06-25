@@ -510,6 +510,25 @@ TEST_F(FFmpegVideoDecoderTest, Stop_DuringPendingRead) {
   read_cb.Run(DemuxerStream::kOk, i_frame_buffer_);
 }
 
+// Test stopping when there is a pending read on the demuxer.
+TEST_F(FFmpegVideoDecoderTest, Stop_DuringPendingReadAndReset) {
+  Initialize();
+
+  // Request a read on the decoder and ensure the demuxer has been called.
+  DemuxerStream::ReadCB read_cb;
+  EXPECT_CALL(*demuxer_, Read(_))
+      .WillOnce(SaveArg<0>(&read_cb));
+  decoder_->Read(read_cb_);
+  ASSERT_FALSE(read_cb.is_null());
+
+  Reset();
+
+  EXPECT_CALL(*this, FrameReady(VideoDecoder::kOk, IsNull()));
+  Stop();
+
+  read_cb.Run(DemuxerStream::kOk, i_frame_buffer_);
+}
+
 // Test aborted read on the demuxer stream.
 TEST_F(FFmpegVideoDecoderTest, DemuxerRead_Aborted) {
   Initialize();
