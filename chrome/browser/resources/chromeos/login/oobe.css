@@ -37,7 +37,8 @@ button.custom-appearance:not(.button-restricted):not(.button-fancy) {
   color: buttontext !important;
 }
 
-button.custom-appearance:focus {
+/* ':focus' used twice to increase specificity. */
+button.custom-appearance:focus:focus {
   border-color: rgb(77, 144, 254);
 }
 
@@ -48,6 +49,7 @@ button:not(.custom-appearance) {
 button.button-fancy {
   min-width: 72px !important;
 }
+
 button.button-blue {
   background-image: -webkit-linear-gradient(rgb(93, 154, 255),
                                             rgb(93, 154, 255) 38%,
