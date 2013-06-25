@@ -994,16 +994,14 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
 
 
 void SigninScreenHandler::UpdateAuthParams(DictionaryValue* params) {
+  if (!delegate_)
+    return;
+
   UpdateAuthParamsFromSettings(params, CrosSettings::Get());
 
-  // TODO(nkostylev): Allow locally managed user creation only if:
+  // Allow locally managed user creation only if:
   // 1. Enterprise managed device > is allowed by policy.
   // 2. Consumer device > owner exists.
-  // g_browser_process->browser_policy_connector()->IsEnterpriseManaged()
-  // const UserList& users = delegate_->GetUsers();
-  // bool single_user = users.size() == 1;
-  // chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
-
   bool managed_users_allowed =
       UserManager::Get()->AreLocallyManagedUsersAllowed();
   bool managed_users_can_create = false;
