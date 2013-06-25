@@ -28,7 +28,7 @@ const char kLocallyManagedUserCreationScreen[] =
 namespace chromeos {
 
 LocallyManagedUserCreationScreenHandler::
-    LocallyManagedUserCreationScreenHandler() {}
+    LocallyManagedUserCreationScreenHandler() : delegate_(NULL) {}
 
 LocallyManagedUserCreationScreenHandler::
     ~LocallyManagedUserCreationScreenHandler() {}
