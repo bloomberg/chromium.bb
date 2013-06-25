@@ -44,7 +44,11 @@ bool X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
       break;
     }
     case ButtonRelease: {
-      delegate_->OnMouseReleased();
+      if (xev->xbutton.button == Button1) {
+        // Assume that drags are being done with the left mouse button. Only
+        // break the drag if the left mouse button was released.
+        delegate_->OnMouseReleased();
+      }
       break;
     }
   }
