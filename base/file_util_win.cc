@@ -419,6 +419,9 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
     }
     DLOG(WARNING) << "CreateDirectory(" << full_path_str << "), "
                   << "conflicts with existing file.";
+    if (error) {
+      *error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    }
     return false;
   }
 
@@ -429,10 +432,16 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
   // directories starting with the highest-level missing parent.
   FilePath parent_path(full_path.DirName());
   if (parent_path.value() == full_path.value()) {
+    if (error) {
+      *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    }
     return false;
   }
   if (!CreateDirectoryAndGetError(parent_path, error)) {
     DLOG(WARNING) << "Failed to create one of the parent directories.";
+    if (error) {
+      DCHECK(*error != base::PLATFORM_FILE_OK);
+    }
     return false;
   }
 
