@@ -4,8 +4,10 @@
 
 #include "net/spdy/buffered_spdy_framer.h"
 
-#include "net/spdy/spdy_test_util_common.h"
+#include "net/spdy/spdy_test_util_spdy2.h"
 #include "testing/platform_test.h"
+
+using namespace net::test_spdy2;
 
 namespace net {
 
@@ -13,8 +15,8 @@ namespace {
 
 class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
  public:
-  explicit TestBufferedSpdyVisitor(SpdyMajorVersion spdy_version)
-      : buffered_spdy_framer_(spdy_version, true),
+  TestBufferedSpdyVisitor()
+      : buffered_spdy_framer_(SPDY2, true),
         error_count_(0),
         setting_count_(0),
         syn_frame_count_(0),
@@ -152,9 +154,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
 
 }  // namespace
 
-class BufferedSpdyFramerTest
-    : public PlatformTest,
-      public ::testing::WithParamInterface<NextProto> {
+class BufferedSpdyFramerSpdy2Test : public PlatformTest {
  protected:
   // Returns true if the two header blocks have equivalent content.
   bool CompareHeaderBlocks(const SpdyHeaderBlock* expected,
@@ -182,19 +182,10 @@ class BufferedSpdyFramerTest
     }
     return true;
   }
-
-  SpdyMajorVersion spdy_version() {
-    return SpdyVersionFromNextProto(GetParam());
-  }
 };
 
-INSTANTIATE_TEST_CASE_P(
-    NextProto,
-    BufferedSpdyFramerTest,
-    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2));
-
-TEST_P(BufferedSpdyFramerTest, OnSetting) {
-  SpdyFramer framer(spdy_version());
+TEST_F(BufferedSpdyFramerSpdy2Test, OnSetting) {
+  SpdyFramer framer(SPDY2);
   SettingsMap settings;
   settings[SETTINGS_UPLOAD_BANDWIDTH] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 0x00000002);
@@ -202,7 +193,7 @@ TEST_P(BufferedSpdyFramerTest, OnSetting) {
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 0x00000003);
 
   scoped_ptr<SpdyFrame> control_frame(framer.CreateSettings(settings));
-  TestBufferedSpdyVisitor visitor(spdy_version());
+  TestBufferedSpdyVisitor visitor;
 
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
@@ -211,11 +202,11 @@ TEST_P(BufferedSpdyFramerTest, OnSetting) {
   EXPECT_EQ(2, visitor.setting_count_);
 }
 
-TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
+TEST_F(BufferedSpdyFramerSpdy2Test, ReadSynStreamHeaderBlock) {
   SpdyHeaderBlock headers;
   headers["aa"] = "vv";
   headers["bb"] = "ww";
-  BufferedSpdyFramer framer(spdy_version(), true);
+  BufferedSpdyFramer framer(SPDY2, true);
   scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynStream(1,                        // stream_id
                              0,                        // associated_stream_id
@@ -226,7 +217,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
                              &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
-  TestBufferedSpdyVisitor visitor(spdy_version());
+  TestBufferedSpdyVisitor visitor;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame.get()->data()),
       control_frame.get()->size());
@@ -237,11 +228,11 @@ TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
   EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
 }
 
-TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
+TEST_F(BufferedSpdyFramerSpdy2Test, ReadSynReplyHeaderBlock) {
   SpdyHeaderBlock headers;
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
-  BufferedSpdyFramer framer(spdy_version(), true);
+  BufferedSpdyFramer framer(SPDY2, true);
   scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynReply(1,                        // stream_id
                             CONTROL_FLAG_NONE,
@@ -249,7 +240,7 @@ TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
                             &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
-  TestBufferedSpdyVisitor visitor(spdy_version());
+  TestBufferedSpdyVisitor visitor;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame.get()->data()),
       control_frame.get()->size());
@@ -260,11 +251,11 @@ TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
   EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
 }
 
-TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
+TEST_F(BufferedSpdyFramerSpdy2Test, ReadHeadersHeaderBlock) {
   SpdyHeaderBlock headers;
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
-  BufferedSpdyFramer framer(spdy_version(), true);
+  BufferedSpdyFramer framer(SPDY2, true);
   scoped_ptr<SpdyFrame> control_frame(
       framer.CreateHeaders(1,                        // stream_id
                            CONTROL_FLAG_NONE,
@@ -272,7 +263,7 @@ TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
                            &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
-  TestBufferedSpdyVisitor visitor(spdy_version());
+  TestBufferedSpdyVisitor visitor;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame.get()->data()),
       control_frame.get()->size());
@@ -282,5 +273,4 @@ TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
   EXPECT_EQ(1, visitor.headers_frame_count_);
   EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
 }
-
 }  // namespace net

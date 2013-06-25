@@ -33,6 +33,14 @@ class HostResolver;
 class HttpServerProperties;
 class SpdySession;
 
+namespace test_spdy2 {
+class SpdySessionPoolPeer;
+}  // namespace test_spdy
+
+namespace test_spdy3 {
+class SpdySessionPoolPeer;
+}  // namespace test_spdy
+
 // This is a very simple pool for open SpdySessions.
 class NET_EXPORT SpdySessionPool
     : public NetworkChangeNotifier::IPAddressObserver,
@@ -132,6 +140,14 @@ class NET_EXPORT SpdySessionPool
   virtual void OnCertTrustChanged(const X509Certificate* cert) OVERRIDE;
 
  private:
+  friend class SpdySessionPoolPeer;  // For testing.
+  friend class SpdyNetworkTransactionSpdy2Test;  // For testing.
+  friend class SpdyNetworkTransactionSpdy3Test;  // For testing.
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy2Test,
+                           WindowUpdateOverflow);
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy3Test,
+                           WindowUpdateOverflow);
+
   typedef std::list<scoped_refptr<SpdySession> > SpdySessionList;
   typedef std::map<SpdySessionKey, SpdySessionList*> SpdySessionsMap;
   typedef std::map<IPEndPoint, SpdySessionKey> SpdyAliasMap;
