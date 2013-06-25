@@ -42,7 +42,7 @@ public class ChildProcessLauncher {
     // classes and PrivilegedProcessClassX declared in this package, and defined as services in the
     // embedding application's manifest file.
     // (See {@link ChildProcessService} for more details on defining the services.)
-    /* package */ static final int MAX_REGISTERED_SANDBOXED_SERVICES = 6;
+    /* package */ static final int MAX_REGISTERED_SANDBOXED_SERVICES = 13;
     /* package */ static final int MAX_REGISTERED_PRIVILEGED_SERVICES = 3;
 
     private static class ChildConnectionAllocator {
