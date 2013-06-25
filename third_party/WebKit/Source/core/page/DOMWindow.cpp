@@ -336,18 +336,18 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
 
     m_document = document;
 
-    if (m_document) {
-        m_document->setDOMWindow(this);
-        if (!m_document->attached())
-            m_document->attach();
-        m_document->updateViewportArguments();
-    }
+    if (!m_document)
+        return;
+
+    m_document->setDOMWindow(this);
+    if (!m_document->attached())
+        m_document->attach();
 
     if (!m_frame)
         return;
 
-    if (m_document)
-        m_frame->script()->updateDocument();
+    m_frame->script()->updateDocument();
+    m_document->updateViewportArguments();
 
     if (m_frame->page() && m_frame->view()) {
         if (ScrollingCoordinator* scrollingCoordinator = m_frame->page()->scrollingCoordinator()) {
@@ -361,7 +361,7 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
 
     if (m_frame->page() && m_frame->page()->mainFrame() == m_frame) {
         m_frame->page()->mainFrame()->notifyChromeClientWheelEventHandlerCountChanged();
-        if (m_document && m_document->hasTouchEventHandlers())
+        if (m_document->hasTouchEventHandlers())
             m_frame->page()->chrome().client()->needTouchEvents(true);
     }
 }
