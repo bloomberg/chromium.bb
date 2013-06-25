@@ -310,7 +310,17 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 }
 
-TEST_F(RendererAccessibilityTest, AccessibilityMessagesQueueWhileSwappedOut) {
+// http://crbug.com/253537
+#if defined(OS_ANDROID)
+#define MAYBE_AccessibilityMessagesQueueWhileSwappedOut \
+        DISABLED_AccessibilityMessagesQueueWhileSwappedOut
+#else
+#define MAYBE_AccessibilityMessagesQueueWhileSwappedOut \
+        AccessibilityMessagesQueueWhileSwappedOut
+#endif
+
+TEST_F(RendererAccessibilityTest,
+       MAYBE_AccessibilityMessagesQueueWhileSwappedOut) {
   std::string html =
       "<body>"
       "  <p>Hello, world.</p>"

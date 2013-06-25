@@ -221,6 +221,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                                   jint player_id,
                                   jobject jsurface);
   void DetachExternalVideoSurface(JNIEnv* env, jobject obj, jint player_id);
+  void SetAccessibilityEnabled(JNIEnv* env, jobject obj, bool enabled);
 
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
