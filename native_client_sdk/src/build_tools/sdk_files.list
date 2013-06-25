@@ -362,6 +362,7 @@ include/ppapi/c/ppb_messaging.h
 include/ppapi/c/ppb_mouse_cursor.h
 include/ppapi/c/ppb_mouse_lock.h
 include/ppapi/c/ppb_net_address.h
+include/ppapi/c/ppb_network_proxy.h
 include/ppapi/c/pp_bool.h
 include/ppapi/c/ppb_opengles2.h
 include/ppapi/c/ppb_tcp_socket.h
@@ -462,6 +463,7 @@ include/ppapi/cpp/module_impl.h
 include/ppapi/cpp/mouse_cursor.h
 include/ppapi/cpp/mouse_lock.h
 include/ppapi/cpp/net_address.h
+include/ppapi/cpp/network_proxy.h
 include/ppapi/cpp/output_traits.h
 include/ppapi/cpp/pass_ref.h
 include/ppapi/c/ppp_graphics_3d.h
@@ -753,6 +755,7 @@ src/ppapi_cpp/module.cc
 src/ppapi_cpp/mouse_cursor.cc
 src/ppapi_cpp/mouse_lock.cc
 src/ppapi_cpp/net_address.cc
+src/ppapi_cpp/network_proxy.cc
 src/ppapi_cpp/paint_aggregator.cc
 src/ppapi_cpp/paint_manager.cc
 src/ppapi_cpp/ppp_entrypoints.cc

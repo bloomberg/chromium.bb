@@ -4,8 +4,8 @@
 
 #include "ppapi/tests/test_network_proxy.h"
 
-#include "ppapi/cpp/dev/network_proxy_dev.h"
 #include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/network_proxy.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/testing_instance.h"
 

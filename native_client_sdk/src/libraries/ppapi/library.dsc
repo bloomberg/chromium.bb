@@ -40,6 +40,7 @@
         'ppb_mouse_cursor.h',
         'ppb_mouse_lock.h',
         'ppb_net_address.h',
+        'ppb_network_proxy.h',
         'pp_bool.h',
         'ppb_opengles2.h',
         'ppb_tcp_socket.h',

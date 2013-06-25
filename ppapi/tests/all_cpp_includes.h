@@ -50,6 +50,7 @@
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/mouse_lock.h"
 #include "ppapi/cpp/net_address.h"
+#include "ppapi/cpp/network_proxy.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/private/content_decryptor_private.h"
 #include "ppapi/cpp/private/flash_font_file.h"

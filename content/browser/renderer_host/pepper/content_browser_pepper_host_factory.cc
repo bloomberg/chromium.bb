@@ -64,6 +64,10 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
       return scoped_ptr<ResourceHost>(new PepperGamepadHost(
           host_, instance, params.pp_resource()));
     }
+    case PpapiHostMsg_NetworkProxy_Create::ID: {
+      return scoped_ptr<ResourceHost>(new PepperNetworkProxyHost(
+          host_, instance, params.pp_resource()));
+    }
     case PpapiHostMsg_HostResolver_Create::ID: {
       scoped_refptr<ResourceMessageFilter> host_resolver(
           new PepperHostResolverMessageFilter(host_, instance, false));
@@ -93,16 +97,12 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   // Dev interfaces.
   if (GetPermissions().HasPermission(ppapi::PERMISSION_DEV)) {
     switch (message.type()) {
-      case PpapiHostMsg_NetworkProxy_Create::ID: {
-        return scoped_ptr<ResourceHost>(new PepperNetworkProxyHost(
-            host_, instance, params.pp_resource()));
-      }
       case PpapiHostMsg_Printing_Create::ID: {
-         scoped_ptr<PepperPrintSettingsManager> manager(
-             new PepperPrintSettingsManagerImpl());
-         return scoped_ptr<ResourceHost>(new PepperPrintingHost(
-             host_->GetPpapiHost(), instance,
-             params.pp_resource(), manager.Pass()));
+        scoped_ptr<PepperPrintSettingsManager> manager(
+            new PepperPrintSettingsManagerImpl());
+        return scoped_ptr<ResourceHost>(new PepperPrintingHost(
+            host_->GetPpapiHost(), instance,
+            params.pp_resource(), manager.Pass()));
       }
       case PpapiHostMsg_TrueTypeFontSingleton_Create::ID: {
         return scoped_ptr<ResourceHost>(new PepperTrueTypeFontListHost(
