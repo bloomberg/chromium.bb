@@ -74,8 +74,7 @@ class NET_EXPORT SocketStreamJob
   virtual void DetachDelegate();
 
  protected:
-  friend class WebSocketJobSpdy2Test;
-  friend class WebSocketJobSpdy3Test;
+  friend class WebSocketJobTest;
   friend class base::RefCountedThreadSafe<SocketStreamJob>;
   virtual ~SocketStreamJob();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string_util.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -34,8 +34,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-using namespace net::test_spdy2;
 
 namespace net {
 
@@ -261,11 +259,11 @@ class MockURLRequestContext : public URLRequestContext {
 
 class MockHttpTransactionFactory : public HttpTransactionFactory {
  public:
-  explicit MockHttpTransactionFactory(OrderedSocketData* data) {
+  MockHttpTransactionFactory(NextProto next_proto, OrderedSocketData* data) {
     data_ = data;
     MockConnect connect_data(SYNCHRONOUS, OK);
     data_->set_connect_data(connect_data);
-    session_deps_.reset(new SpdySessionDependencies(kProtoSPDY2));
+    session_deps_.reset(new SpdySessionDependencies(next_proto));
     session_deps_->socket_factory->AddSocketDataProvider(data_);
     http_session_ =
         SpdySessionDependencies::SpdyCreateSession(session_deps_.get());
@@ -328,9 +326,10 @@ class MockHttpTransactionFactory : public HttpTransactionFactory {
 
 }  // namespace
 
-class WebSocketJobSpdy2Test : public PlatformTest {
+class WebSocketJobTest : public PlatformTest,
+                         public ::testing::WithParamInterface<NextProto> {
  public:
-  WebSocketJobSpdy2Test() : spdy_util_(kProtoSPDY2) {}
+  WebSocketJobTest() : spdy_util_(GetParam()) {}
 
   virtual void SetUp() OVERRIDE {
     stream_type_ = STREAM_INVALID;
@@ -384,7 +383,8 @@ class WebSocketJobSpdy2Test : public PlatformTest {
 
     if (stream_type == STREAM_SOCKET || stream_type == STREAM_SPDY_WEBSOCKET) {
       if (stream_type == STREAM_SPDY_WEBSOCKET) {
-        http_factory_.reset(new MockHttpTransactionFactory(data_.get()));
+        http_factory_.reset(
+            new MockHttpTransactionFactory(GetParam(), data_.get()));
         context_->set_http_transaction_factory(http_factory_.get());
       }
 
@@ -487,7 +487,7 @@ class WebSocketJobSpdy2Test : public PlatformTest {
   static const size_t kDataWorldLength;
 };
 
-const char WebSocketJobSpdy2Test::kHandshakeRequestWithoutCookie[] =
+const char WebSocketJobTest::kHandshakeRequestWithoutCookie[] =
     "GET /demo HTTP/1.1\r\n"
     "Host: example.com\r\n"
     "Upgrade: WebSocket\r\n"
@@ -498,7 +498,7 @@ const char WebSocketJobSpdy2Test::kHandshakeRequestWithoutCookie[] =
     "Sec-WebSocket-Version: 13\r\n"
     "\r\n";
 
-const char WebSocketJobSpdy2Test::kHandshakeRequestWithCookie[] =
+const char WebSocketJobTest::kHandshakeRequestWithCookie[] =
     "GET /demo HTTP/1.1\r\n"
     "Host: example.com\r\n"
     "Upgrade: WebSocket\r\n"
@@ -510,7 +510,7 @@ const char WebSocketJobSpdy2Test::kHandshakeRequestWithCookie[] =
     "Cookie: WK-test=1\r\n"
     "\r\n";
 
-const char WebSocketJobSpdy2Test::kHandshakeRequestWithFilteredCookie[] =
+const char WebSocketJobTest::kHandshakeRequestWithFilteredCookie[] =
     "GET /demo HTTP/1.1\r\n"
     "Host: example.com\r\n"
     "Upgrade: WebSocket\r\n"
@@ -522,7 +522,7 @@ const char WebSocketJobSpdy2Test::kHandshakeRequestWithFilteredCookie[] =
     "Cookie: CR-test=1; CR-test-httponly=1\r\n"
     "\r\n";
 
-const char WebSocketJobSpdy2Test::kHandshakeResponseWithoutCookie[] =
+const char WebSocketJobTest::kHandshakeResponseWithoutCookie[] =
     "HTTP/1.1 101 Switching Protocols\r\n"
     "Upgrade: websocket\r\n"
     "Connection: Upgrade\r\n"
@@ -530,7 +530,7 @@ const char WebSocketJobSpdy2Test::kHandshakeResponseWithoutCookie[] =
     "Sec-WebSocket-Protocol: sample\r\n"
     "\r\n";
 
-const char WebSocketJobSpdy2Test::kHandshakeResponseWithCookie[] =
+const char WebSocketJobTest::kHandshakeResponseWithCookie[] =
     "HTTP/1.1 101 Switching Protocols\r\n"
     "Upgrade: websocket\r\n"
     "Connection: Upgrade\r\n"
@@ -539,40 +539,26 @@ const char WebSocketJobSpdy2Test::kHandshakeResponseWithCookie[] =
     "Set-Cookie: CR-set-test=1\r\n"
     "\r\n";
 
-const char WebSocketJobSpdy2Test::kDataHello[] = "Hello, ";
+const char WebSocketJobTest::kDataHello[] = "Hello, ";
 
-const char WebSocketJobSpdy2Test::kDataWorld[] = "World!\n";
+const char WebSocketJobTest::kDataWorld[] = "World!\n";
 
-const char* const WebSocketJobSpdy2Test::kHandshakeRequestForSpdy[] = {
-  "path", "/demo",
-  "version", "WebSocket/13",
-  "scheme", "ws",
-  "host", "example.com",
-  "origin", "http://example.com",
-  "sec-websocket-protocol", "sample"
-};
-
-const char* const WebSocketJobSpdy2Test::kHandshakeResponseForSpdy[] = {
-  "status", "101 Switching Protocols",
-  "sec-websocket-protocol", "sample"
-};
-
-const size_t WebSocketJobSpdy2Test::kHandshakeRequestWithoutCookieLength =
+const size_t WebSocketJobTest::kHandshakeRequestWithoutCookieLength =
     arraysize(kHandshakeRequestWithoutCookie) - 1;
-const size_t WebSocketJobSpdy2Test::kHandshakeRequestWithCookieLength =
+const size_t WebSocketJobTest::kHandshakeRequestWithCookieLength =
     arraysize(kHandshakeRequestWithCookie) - 1;
-const size_t WebSocketJobSpdy2Test::kHandshakeRequestWithFilteredCookieLength =
+const size_t WebSocketJobTest::kHandshakeRequestWithFilteredCookieLength =
     arraysize(kHandshakeRequestWithFilteredCookie) - 1;
-const size_t WebSocketJobSpdy2Test::kHandshakeResponseWithoutCookieLength =
+const size_t WebSocketJobTest::kHandshakeResponseWithoutCookieLength =
     arraysize(kHandshakeResponseWithoutCookie) - 1;
-const size_t WebSocketJobSpdy2Test::kHandshakeResponseWithCookieLength =
+const size_t WebSocketJobTest::kHandshakeResponseWithCookieLength =
     arraysize(kHandshakeResponseWithCookie) - 1;
-const size_t WebSocketJobSpdy2Test::kDataHelloLength =
+const size_t WebSocketJobTest::kDataHelloLength =
     arraysize(kDataHello) - 1;
-const size_t WebSocketJobSpdy2Test::kDataWorldLength =
+const size_t WebSocketJobTest::kDataWorldLength =
     arraysize(kDataWorld) - 1;
 
-void WebSocketJobSpdy2Test::TestSimpleHandshake() {
+void WebSocketJobTest::TestSimpleHandshake() {
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
   InitWebSocketJob(url, &delegate, STREAM_MOCK_SOCKET);
@@ -595,7 +581,7 @@ void WebSocketJobSpdy2Test::TestSimpleHandshake() {
   CloseWebSocketJob();
 }
 
-void WebSocketJobSpdy2Test::TestSlowHandshake() {
+void WebSocketJobTest::TestSlowHandshake() {
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
   InitWebSocketJob(url, &delegate, STREAM_MOCK_SOCKET);
@@ -629,7 +615,15 @@ void WebSocketJobSpdy2Test::TestSlowHandshake() {
   CloseWebSocketJob();
 }
 
-TEST_F(WebSocketJobSpdy2Test, DelayedCookies) {
+INSTANTIATE_TEST_CASE_P(
+    NextProto,
+    WebSocketJobTest,
+    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2));
+
+// TODO(akalin): Don't early-exit in the tests below for values >
+// kProtoSPDY3.
+
+TEST_P(WebSocketJobTest, DelayedCookies) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   GURL url("ws://example.com/demo");
   GURL cookieUrl("http://example.com/demo");
@@ -670,7 +664,7 @@ TEST_F(WebSocketJobSpdy2Test, DelayedCookies) {
   CloseWebSocketJob();
 }
 
-void WebSocketJobSpdy2Test::TestHandshakeWithCookie() {
+void WebSocketJobTest::TestHandshakeWithCookie() {
   GURL url("ws://example.com/demo");
   GURL cookieUrl("http://example.com/demo");
   CookieOptions cookie_options;
@@ -713,7 +707,7 @@ void WebSocketJobSpdy2Test::TestHandshakeWithCookie() {
   CloseWebSocketJob();
 }
 
-void WebSocketJobSpdy2Test::TestHandshakeWithCookieButNotAllowed() {
+void WebSocketJobTest::TestHandshakeWithCookieButNotAllowed() {
   GURL url("ws://example.com/demo");
   GURL cookieUrl("http://example.com/demo");
   CookieOptions cookie_options;
@@ -753,7 +747,7 @@ void WebSocketJobSpdy2Test::TestHandshakeWithCookieButNotAllowed() {
   CloseWebSocketJob();
 }
 
-void WebSocketJobSpdy2Test::TestHSTSUpgrade() {
+void WebSocketJobTest::TestHSTSUpgrade() {
   GURL url("ws://upgrademe.com/");
   MockSocketStreamDelegate delegate;
   scoped_refptr<SocketStreamJob> job =
@@ -771,7 +765,7 @@ void WebSocketJobSpdy2Test::TestHSTSUpgrade() {
   job->DetachDelegate();
 }
 
-void WebSocketJobSpdy2Test::TestInvalidSendData() {
+void WebSocketJobTest::TestInvalidSendData() {
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
   InitWebSocketJob(url, &delegate, STREAM_MOCK_SOCKET);
@@ -802,7 +796,7 @@ void WebSocketJobSpdy2Test::TestInvalidSendData() {
 // packets in comparison with the MockWrite array and emulating in-coming
 // packets with MockRead array.
 
-void WebSocketJobSpdy2Test::TestConnectByWebSocket(
+void WebSocketJobTest::TestConnectByWebSocket(
     ThrottlingOption throttling) {
   // This is a test for verifying cooperation between WebSocketJob and
   // SocketStream. If |throttling| was |THROTTLING_OFF|, it test basic
@@ -834,17 +828,17 @@ void WebSocketJobSpdy2Test::TestConnectByWebSocket(
 
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
-  WebSocketJobSpdy2Test* test = this;
+  WebSocketJobTest* test = this;
   if (throttling == THROTTLING_ON)
     delegate.SetOnStartOpenConnection(
-        base::Bind(&WebSocketJobSpdy2Test::DoSync, base::Unretained(test)));
+        base::Bind(&WebSocketJobTest::DoSync, base::Unretained(test)));
   delegate.SetOnConnected(
-      base::Bind(&WebSocketJobSpdy2Test::DoSendRequest,
+      base::Bind(&WebSocketJobTest::DoSendRequest,
                  base::Unretained(test)));
   delegate.SetOnReceivedData(
-      base::Bind(&WebSocketJobSpdy2Test::DoSendData, base::Unretained(test)));
+      base::Bind(&WebSocketJobTest::DoSendData, base::Unretained(test)));
   delegate.SetOnClose(
-      base::Bind(&WebSocketJobSpdy2Test::DoSync, base::Unretained(test)));
+      base::Bind(&WebSocketJobTest::DoSync, base::Unretained(test)));
   InitWebSocketJob(url, &delegate, STREAM_SOCKET);
 
   scoped_refptr<WebSocketJob> block_websocket;
@@ -875,7 +869,7 @@ void WebSocketJobSpdy2Test::TestConnectByWebSocket(
   EXPECT_EQ(WebSocketJob::CLOSED, GetWebSocketJobState());
 }
 
-void WebSocketJobSpdy2Test::TestConnectBySpdy(
+void WebSocketJobTest::TestConnectBySpdy(
     SpdyOption spdy, ThrottlingOption throttling) {
   // This is a test for verifying cooperation between WebSocketJob and
   // SocketStream in the situation we have SPDY session to the server. If
@@ -904,17 +898,30 @@ void WebSocketJobSpdy2Test::TestConnectBySpdy(
     MockRead(SYNCHRONOUS, 0, 5)  // EOF
   };
 
+  scoped_ptr<SpdyHeaderBlock> request_headers(new SpdyHeaderBlock());
+  spdy_util_.SetHeader("path", "/demo", request_headers.get());
+  spdy_util_.SetHeader("version", "WebSocket/13", request_headers.get());
+  spdy_util_.SetHeader("scheme", "ws", request_headers.get());
+  spdy_util_.SetHeader("host", "example.com", request_headers.get());
+  spdy_util_.SetHeader("origin", "http://example.com", request_headers.get());
+  spdy_util_.SetHeader("sec-websocket-protocol", "sample",
+                       request_headers.get());
+
+  scoped_ptr<SpdyHeaderBlock> response_headers(new SpdyHeaderBlock());
+  spdy_util_.SetHeader("status", "101 Switching Protocols",
+                       response_headers.get());
+  spdy_util_.SetHeader("sec-websocket-protocol", "sample",
+                       response_headers.get());
+
   const SpdyStreamId kStreamId = 1;
   scoped_ptr<SpdyFrame> request_frame(
       spdy_util_.ConstructSpdyWebSocketHandshakeRequestFrame(
-          kHandshakeRequestForSpdy,
-          arraysize(kHandshakeRequestForSpdy) / 2,
+          request_headers.Pass(),
           kStreamId,
           MEDIUM));
   scoped_ptr<SpdyFrame> response_frame(
       spdy_util_.ConstructSpdyWebSocketHandshakeResponseFrame(
-          kHandshakeResponseForSpdy,
-          arraysize(kHandshakeResponseForSpdy) / 2,
+          response_headers.Pass(),
           kStreamId,
           MEDIUM));
   scoped_ptr<SpdyFrame> data_hello_frame(
@@ -950,17 +957,17 @@ void WebSocketJobSpdy2Test::TestConnectBySpdy(
 
   GURL url("ws://example.com/demo");
   MockSocketStreamDelegate delegate;
-  WebSocketJobSpdy2Test* test = this;
+  WebSocketJobTest* test = this;
   if (throttling == THROTTLING_ON)
     delegate.SetOnStartOpenConnection(
-        base::Bind(&WebSocketJobSpdy2Test::DoSync, base::Unretained(test)));
+        base::Bind(&WebSocketJobTest::DoSync, base::Unretained(test)));
   delegate.SetOnConnected(
-      base::Bind(&WebSocketJobSpdy2Test::DoSendRequest,
+      base::Bind(&WebSocketJobTest::DoSendRequest,
                  base::Unretained(test)));
   delegate.SetOnReceivedData(
-      base::Bind(&WebSocketJobSpdy2Test::DoSendData, base::Unretained(test)));
+      base::Bind(&WebSocketJobTest::DoSendData, base::Unretained(test)));
   delegate.SetOnClose(
-      base::Bind(&WebSocketJobSpdy2Test::DoSync, base::Unretained(test)));
+      base::Bind(&WebSocketJobTest::DoSync, base::Unretained(test)));
   InitWebSocketJob(url, &delegate, STREAM_SPDY_WEBSOCKET);
 
   scoped_refptr<WebSocketJob> block_websocket;
@@ -992,102 +999,114 @@ void WebSocketJobSpdy2Test::TestConnectBySpdy(
 }
 
 // Execute tests in both spdy-disabled mode and spdy-enabled mode.
-TEST_F(WebSocketJobSpdy2Test, SimpleHandshake) {
+TEST_P(WebSocketJobTest, SimpleHandshake) {
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestSimpleHandshake();
 }
 
-TEST_F(WebSocketJobSpdy2Test, SlowHandshake) {
+TEST_P(WebSocketJobTest, SlowHandshake) {
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestSlowHandshake();
 }
 
-TEST_F(WebSocketJobSpdy2Test, HandshakeWithCookie) {
+TEST_P(WebSocketJobTest, HandshakeWithCookie) {
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestHandshakeWithCookie();
 }
 
-TEST_F(WebSocketJobSpdy2Test, HandshakeWithCookieButNotAllowed) {
+TEST_P(WebSocketJobTest, HandshakeWithCookieButNotAllowed) {
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestHandshakeWithCookieButNotAllowed();
 }
 
-TEST_F(WebSocketJobSpdy2Test, HSTSUpgrade) {
+TEST_P(WebSocketJobTest, HSTSUpgrade) {
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestHSTSUpgrade();
 }
 
-TEST_F(WebSocketJobSpdy2Test, InvalidSendData) {
+TEST_P(WebSocketJobTest, InvalidSendData) {
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestInvalidSendData();
 }
 
-TEST_F(WebSocketJobSpdy2Test, SimpleHandshakeSpdyEnabled) {
+TEST_P(WebSocketJobTest, SimpleHandshakeSpdyEnabled) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestSimpleHandshake();
 }
 
-TEST_F(WebSocketJobSpdy2Test, SlowHandshakeSpdyEnabled) {
+TEST_P(WebSocketJobTest, SlowHandshakeSpdyEnabled) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestSlowHandshake();
 }
 
-TEST_F(WebSocketJobSpdy2Test, HandshakeWithCookieSpdyEnabled) {
+TEST_P(WebSocketJobTest, HandshakeWithCookieSpdyEnabled) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestHandshakeWithCookie();
 }
 
-TEST_F(WebSocketJobSpdy2Test, HandshakeWithCookieButNotAllowedSpdyEnabled) {
+TEST_P(WebSocketJobTest, HandshakeWithCookieButNotAllowedSpdyEnabled) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestHandshakeWithCookieButNotAllowed();
 }
 
-TEST_F(WebSocketJobSpdy2Test, HSTSUpgradeSpdyEnabled) {
+TEST_P(WebSocketJobTest, HSTSUpgradeSpdyEnabled) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestHSTSUpgrade();
 }
 
-TEST_F(WebSocketJobSpdy2Test, InvalidSendDataSpdyEnabled) {
+TEST_P(WebSocketJobTest, InvalidSendDataSpdyEnabled) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestInvalidSendData();
 }
 
-TEST_F(WebSocketJobSpdy2Test, ConnectByWebSocket) {
+TEST_P(WebSocketJobTest, ConnectByWebSocket) {
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestConnectByWebSocket(THROTTLING_OFF);
 }
 
-TEST_F(WebSocketJobSpdy2Test, ConnectByWebSocketSpdyEnabled) {
+TEST_P(WebSocketJobTest, ConnectByWebSocketSpdyEnabled) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestConnectByWebSocket(THROTTLING_OFF);
 }
 
-TEST_F(WebSocketJobSpdy2Test, ConnectBySpdy) {
+TEST_P(WebSocketJobTest, ConnectBySpdy) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestConnectBySpdy(SPDY_OFF, THROTTLING_OFF);
 }
 
-TEST_F(WebSocketJobSpdy2Test, ConnectBySpdySpdyEnabled) {
+TEST_P(WebSocketJobTest, ConnectBySpdySpdyEnabled) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestConnectBySpdy(SPDY_ON, THROTTLING_OFF);
 }
 
-TEST_F(WebSocketJobSpdy2Test, ThrottlingWebSocket) {
+TEST_P(WebSocketJobTest, ThrottlingWebSocket) {
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestConnectByWebSocket(THROTTLING_ON);
 }
 
-TEST_F(WebSocketJobSpdy2Test, ThrottlingWebSocketSpdyEnabled) {
+TEST_P(WebSocketJobTest, ThrottlingWebSocketSpdyEnabled) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestConnectByWebSocket(THROTTLING_ON);
 }
 
-TEST_F(WebSocketJobSpdy2Test, ThrottlingSpdy) {
+TEST_P(WebSocketJobTest, ThrottlingSpdy) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestConnectBySpdy(SPDY_OFF, THROTTLING_ON);
 }
 
-TEST_F(WebSocketJobSpdy2Test, ThrottlingSpdySpdyEnabled) {
+TEST_P(WebSocketJobTest, ThrottlingSpdySpdyEnabled) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestConnectBySpdy(SPDY_ON, THROTTLING_ON);
 }

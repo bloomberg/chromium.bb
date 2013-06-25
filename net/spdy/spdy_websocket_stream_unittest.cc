@@ -275,12 +275,11 @@ class SpdyWebSocketStreamTest
 
   void SendRequest() {
     scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
-    (*headers)[spdy_util_.GetWebSocketPathKey()] = "/echo";
-    (*headers)[spdy_util_.GetHostKey()] = "example.com";
-    (*headers)[spdy_util_.GetVersionKey()] = "WebSocket/13";
-    (*headers)[spdy_util_.GetSchemeKey()] = "ws";
-    (*headers)[spdy_util_.GetOriginKey()] = "http://example.com/wsdemo";
-
+    spdy_util_.SetHeader("path", "/echo", headers.get());
+    spdy_util_.SetHeader("host", "example.com", headers.get());
+    spdy_util_.SetHeader("version", "WebSocket/13", headers.get());
+    spdy_util_.SetHeader("scheme", "ws", headers.get());
+    spdy_util_.SetHeader("origin", "http://example.com/wsdemo", headers.get());
     websocket_stream_->SendRequest(headers.Pass());
   }
 

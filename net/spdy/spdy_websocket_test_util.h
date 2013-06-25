@@ -11,9 +11,15 @@
 
 namespace net {
 
-class SpdyWebSocketTestUtil : public SpdyTestUtil {
+class SpdyWebSocketTestUtil {
  public:
   explicit SpdyWebSocketTestUtil(NextProto protocol);
+
+  // Adds the given key/value pair to |headers|, tweaking it depending
+  // on SPDY version.
+  void SetHeader(const std::string& key,
+                 const std::string& value,
+                 SpdyHeaderBlock* headers) const;
 
   // Constructs a standard SPDY SYN_STREAM frame for WebSocket over
   // SPDY opening handshake.
@@ -28,15 +34,13 @@ class SpdyWebSocketTestUtil : public SpdyTestUtil {
 
   // Constructs a WebSocket over SPDY handshake request packet.
   SpdyFrame* ConstructSpdyWebSocketHandshakeRequestFrame(
-      const char* const headers[],
-      int header_count,
+      scoped_ptr<SpdyHeaderBlock> headers,
       SpdyStreamId stream_id,
       RequestPriority request_priority);
 
   // Constructs a WebSocket over SPDY handshake response packet.
   SpdyFrame* ConstructSpdyWebSocketHandshakeResponseFrame(
-      const char* const headers[],
-      int header_count,
+      scoped_ptr<SpdyHeaderBlock> headers,
       SpdyStreamId stream_id,
       RequestPriority request_priority);
 
@@ -51,15 +55,11 @@ class SpdyWebSocketTestUtil : public SpdyTestUtil {
                                              SpdyStreamId stream_id,
                                              bool fin);
 
-  const char* GetWebSocketPathKey() const;
-  const char* GetOriginKey() const;
-  const char* GetOpcodeKey() const;
-  const char* GetLengthKey() const;
-  const char* GetFinKey() const;
+  // Forwards to |spdy_util_|.
+  SpdyFrame* ConstructSpdySettings(const SettingsMap& settings) const;
 
  private:
-  // Hide this function to avoid erroneous use.
-  const char* GetPathKey() const;
+  SpdyTestUtil spdy_util_;
 };
 
 }  // namespace net
