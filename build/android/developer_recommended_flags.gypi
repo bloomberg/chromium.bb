@@ -37,10 +37,15 @@
     # with each device attached. This greatly reduces the time required for incremental builds.
     #
     # This comes with some caveats:
-    #   Only works with a single device connected.
+    #   Only works with a single device connected (it will print a warning if
+    #     zero or multiple devices are attached).
     #   Some actions are always run (i.e. ninja will never say "no work to do").
-    #   Native libraries are not packaged in the APK (you can not manually install the APK)
     'gyp_managed_install%': 1,
+
+    # With gyp_managed_install, we do not necessarily need a standalone APK.
+    # When create_standalone_apk is set to 1, we will build a standalone APK
+    # anyway. For even faster builds, you can set create_standalone_apk to 0.
+    'create_standalone_apk%': 1,
 
     # Set clang to 1 to use the clang compiler. Clang has much (much, much) better warning/error
     # messages than gcc.

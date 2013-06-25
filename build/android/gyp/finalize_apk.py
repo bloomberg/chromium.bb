@@ -11,23 +11,22 @@ import optparse
 import os
 import shutil
 import sys
+import tempfile
 
 from util import build_utils
 
 def SignApk(keystore_path, unsigned_path, signed_path):
-  intermediate_path = unsigned_path + '.copy'
-  shutil.copy(unsigned_path, intermediate_path)
+  shutil.copy(unsigned_path, signed_path)
   sign_cmd = [
       'jarsigner',
       '-sigalg', 'MD5withRSA',
       '-digestalg', 'SHA1',
       '-keystore', keystore_path,
       '-storepass', 'chromium',
-      intermediate_path,
+      signed_path,
       'chromiumdebugkey',
     ]
   build_utils.CheckCallDie(sign_cmd)
-  shutil.move(intermediate_path, signed_path)
 
 
 def AlignApk(android_sdk_root, unaligned_path, final_path):
@@ -55,9 +54,10 @@ def main(argv):
 
   options, _ = parser.parse_args()
 
-  signed_apk_path = options.unsigned_apk_path + '.signed.apk'
-  SignApk(options.keystore_path, options.unsigned_apk_path, signed_apk_path)
-  AlignApk(options.android_sdk_root, signed_apk_path, options.final_apk_path)
+  with tempfile.NamedTemporaryFile() as intermediate_file:
+    signed_apk_path = intermediate_file.name
+    SignApk(options.keystore_path, options.unsigned_apk_path, signed_apk_path)
+    AlignApk(options.android_sdk_root, signed_apk_path, options.final_apk_path)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

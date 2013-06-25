@@ -60,7 +60,6 @@
     'app_manifest_version_code%': '<(android_app_version_code)',
     'proguard_enabled%': 'false',
     'proguard_flags_paths%': ['<(DEPTH)/build/android/empty_proguard.flags'],
-    'native_lib_target%': '',
     'jar_name': 'chromium_apk_<(_target_name).jar',
     'resource_dir%':'<(DEPTH)/build/android/ant/empty/res',
     'R_package%':'',
@@ -102,16 +101,25 @@
     'link_stamp': '<(intermediate_dir)/link.stamp',
     'package_resources_stamp': '<(intermediate_dir)/package_resources.stamp',
     'codegen_input_paths': [],
-    'keystore_path': '<(DEPTH)/build/android/ant/chromium-debug.keystore',
     'unsigned_apk_path': '<(intermediate_dir)/<(apk_name)-unsigned.apk',
     'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
+    'incomplete_apk_path': '<(intermediate_dir)/<(apk_name)-incomplete.apk',
     'source_dir': '<(java_in_dir)/src',
     'apk_install_record': '<(intermediate_dir)/apk_install.record.stamp',
     'device_intermediate_dir': '/data/local/tmp/chromium/<(_target_name)/<(CONFIGURATION_NAME)',
     'symlink_script_host_path': '<(intermediate_dir)/create_symlinks.sh',
     'symlink_script_device_path': '<(device_intermediate_dir)/create_symlinks.sh',
+    'create_standalone_apk%': 1,
     'variables': {
+      'variables': {
+        'native_lib_target%': '',
+      },
       'conditions': [
+        ['gyp_managed_install == 1 and native_lib_target != ""', {
+          'unsigned_standalone_apk_path': '<(intermediate_dir)/<(apk_name)-standalone-unsigned.apk',
+        }, {
+          'unsigned_standalone_apk_path': '<(unsigned_apk_path)',
+        }],
         ['gyp_managed_install == 1', {
           'apk_package_native_libs_dir': '<(intermediate_dir)/libs.managed',
         }, {
@@ -119,7 +127,9 @@
         }],
       ],
     },
+    'native_lib_target%': '',
     'apk_package_native_libs_dir': '<(apk_package_native_libs_dir)',
+    'unsigned_standalone_apk_path': '<(unsigned_standalone_apk_path)',
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -230,7 +240,8 @@
       'conditions': [
         ['gyp_managed_install == 1', {
           'variables': {
-            'libraries_source_dir': '<(intermediate_dir)/lib.stripped/<(android_app_abi)',
+            'libraries_top_dir': '<(intermediate_dir)/lib.stripped',
+            'libraries_source_dir': '<(libraries_top_dir)/lib/<(android_app_abi)',
             'device_library_dir': '<(device_intermediate_dir)/lib.stripped',
           },
           'dependencies': [
@@ -258,10 +269,29 @@
                 '--script-host-path=<(symlink_script_host_path)',
                 '--script-device-path=<(symlink_script_device_path)',
                 '--target-dir=<(device_library_dir)',
-                '--apk=<(final_apk_path)',
+                '--apk=<(incomplete_apk_path)',
                 '--stamp=<(link_stamp)',
               ],
             },
+          ],
+          'conditions': [
+            ['create_standalone_apk == 1', {
+              'actions': [
+                {
+                  'action_name': 'create standalone APK',
+                  'variables': {
+                    'inputs': [
+                      '<(ordered_libraries_file)',
+                      '<(strip_stamp)',
+                    ],
+                    'input_apk_path': '<(unsigned_apk_path)',
+                    'output_apk_path': '<(unsigned_standalone_apk_path)',
+                    'libraries_top_dir%': '<(libraries_top_dir)',
+                  },
+                  'includes': [ 'android/create_standalone_apk_action.gypi' ],
+                },
+              ],
+            }],
           ],
         }, {
           # gyp_managed_install != 1
@@ -272,6 +302,18 @@
         }],
       ],
     }], # native_lib_target != ''
+    ['gyp_managed_install == 0 or create_standalone_apk == 1', {
+      'actions': [
+        {
+          'action_name': 'finalize standalone apk',
+          'variables': {
+            'input_apk_path': '<(unsigned_standalone_apk_path)',
+            'output_apk_path': '<(final_apk_path)',
+          },
+          'includes': [ 'android/finalize_apk_action.gypi']
+        },
+      ],
+    }],
     ['java_strings_grd != ""', {
       'variables': {
         'res_grit_dir': '<(SHARED_INTERMEDIATE_DIR)/<(package_name)_apk/res_grit',
@@ -298,12 +340,20 @@
     ['gyp_managed_install == 1', {
       'actions': [
         {
+          'action_name': 'finalize incomplete apk',
+          'variables': {
+            'input_apk_path': '<(unsigned_apk_path)',
+            'output_apk_path': '<(incomplete_apk_path)',
+          },
+          'includes': [ 'android/finalize_apk_action.gypi']
+        },
+        {
           'action_name': 'apk_install_<(_target_name)',
           'message': 'Installing <(apk_name).apk',
           'inputs': [
             '<(DEPTH)/build/android/gyp/util/build_utils.py',
             '<(DEPTH)/build/android/gyp/apk_install.py',
-            '<(final_apk_path)',
+            '<(incomplete_apk_path)',
           ],
           'outputs': [
             '<(apk_install_record)',
@@ -316,7 +366,7 @@
           'action': [
             'python', '<(DEPTH)/build/android/gyp/apk_install.py',
             '--android-sdk-tools=<(android_sdk_tools)',
-            '--apk-path=<(final_apk_path)',
+            '--apk-path=<(incomplete_apk_path)',
             '--install-record=<(apk_install_record)'
           ],
         },
@@ -582,28 +632,6 @@
         # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
         '-DTHIS_IS_IGNORED=>!(echo \'>(_inputs)\' | md5sum)',
       ]
-    },
-    {
-      'action_name': 'finalize_apk',
-      'message': 'Signing/aligning <(_target_name) APK.',
-      'inputs': [
-        '<(DEPTH)/build/android/gyp/util/build_utils.py',
-        '<(DEPTH)/build/android/gyp/finalize_apk.py',
-        '<(unsigned_apk_path)',
-      ],
-      'outputs': [
-        '<(final_apk_path)',
-      ],
-      'action': [
-        'python', '<(DEPTH)/build/android/gyp/finalize_apk.py',
-        '--android-sdk-root=<(android_sdk_root)',
-        '--unsigned-apk-path=<(unsigned_apk_path)',
-        '--final-apk-path=<(final_apk_path)',
-        '--keystore-path=<(keystore_path)',
-
-        # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
-        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
-      ],
     },
   ],
 }
