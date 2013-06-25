@@ -41,7 +41,6 @@ follow these steps to get your extension using it.
   "name": "My extension",
   ...
   <b>"plugins": [
-    { "path": "content_plugin.dll", "public": true },
     { "path": "extension_plugin.dll" }
   ]</b>,
   ...
@@ -53,7 +52,11 @@ follow these steps to get your extension using it.
     The "public" property specifies whether
     your plugin can be accessed by regular web pages;
     the default is false,
-    meaning only your extension can load the plugin.
+    meaning only your extension can load the plugin. Add
+    <code>"public": true</code> to make your plugin accessible on
+    regular web pages and content scripts. But
+    <a href="#security-considerations">be careful</a> - any
+    web page will then be able to call into your plugin.
     </p>
    </li>
 
