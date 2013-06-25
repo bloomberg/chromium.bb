@@ -109,50 +109,6 @@ class PortTest(unittest.TestCase):
         self.assertEqual(port.pretty_patch_text("patch.txt"),
                          port._pretty_patch_error_html)
 
-    def integration_test_run_wdiff(self):
-        executive = Executive()
-        # This may fail on some systems.  We could ask the port
-        # object for the wdiff path, but since we don't know what
-        # port object to use, this is sufficient for now.
-        try:
-            wdiff_path = executive.run_command(["which", "wdiff"]).rstrip()
-        except Exception, e:
-            wdiff_path = None
-
-        port = self.make_port(executive=executive)
-        port._path_to_wdiff = lambda: wdiff_path
-
-        if wdiff_path:
-            # "with tempfile.NamedTemporaryFile() as actual" does not seem to work in Python 2.5
-            actual = self._file_with_contents(u"foo")
-            expected = self._file_with_contents(u"bar")
-            wdiff = port._run_wdiff(actual.name, expected.name)
-            expected_wdiff = "<head><style>.del { background: #faa; } .add { background: #afa; }</style></head><pre><span class=del>foo</span><span class=add>bar</span></pre>"
-            self.assertEqual(wdiff, expected_wdiff)
-            # Running the full wdiff_text method should give the same result.
-            port._wdiff_available = True  # In case it's somehow already disabled.
-            wdiff = port.wdiff_text(actual.name, expected.name)
-            self.assertEqual(wdiff, expected_wdiff)
-            # wdiff should still be available after running wdiff_text with a valid diff.
-            self.assertTrue(port._wdiff_available)
-            actual.close()
-            expected.close()
-
-            # Bogus paths should raise a script error.
-            self.assertRaises(ScriptError, port._run_wdiff, "/does/not/exist", "/does/not/exist2")
-            self.assertRaises(ScriptError, port.wdiff_text, "/does/not/exist", "/does/not/exist2")
-            # wdiff will still be available after running wdiff_text with invalid paths.
-            self.assertTrue(port._wdiff_available)
-
-        # If wdiff does not exist _run_wdiff should throw an OSError.
-        port._path_to_wdiff = lambda: "/invalid/path/to/wdiff"
-        self.assertRaises(OSError, port._run_wdiff, "foo", "bar")
-
-        # wdiff_text should not throw an error if wdiff does not exist.
-        self.assertEqual(port.wdiff_text("foo", "bar"), "")
-        # However wdiff should not be available after running wdiff_text if wdiff is missing.
-        self.assertFalse(port._wdiff_available)
-
     def test_wdiff_text(self):
         port = self.make_port()
         port.wdiff_available = lambda: True

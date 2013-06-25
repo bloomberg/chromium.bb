@@ -55,26 +55,6 @@ class ManagerTest(unittest.TestCase):
         manager = get_manager()
         self.assertTrue(manager.needs_servers(['http/tests/misc']))
 
-    def integration_test_needs_servers(self):
-        def get_manager():
-            host = MockHost()
-            port = host.port_factory.get()
-            manager = Manager(port, options=MockOptions(test_list=None, http=True, max_locked_shards=1), printer=Mock())
-            return manager
-
-        manager = get_manager()
-        self.assertFalse(manager.needs_servers(['fast/html']))
-
-        manager = get_manager()
-        self.assertTrue(manager.needs_servers(['http/tests/mime']))
-
-        if sys.platform == 'win32':
-            manager = get_manager()
-            self.assertFalse(manager.needs_servers(['fast\\html']))
-
-            manager = get_manager()
-            self.assertTrue(manager.needs_servers(['http\\tests\\mime']))
-
     def test_servers_started(self):
         def get_manager(port):
             manager = Manager(port, options=MockOptions(http=True, max_locked_shards=1), printer=Mock())

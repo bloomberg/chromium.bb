@@ -136,107 +136,6 @@ class PortTestCase(unittest.TestCase):
             finally:
                 test_socket.close()
 
-    def integration_test_http_lock(self):
-        port = self.make_port()
-        # Only checking that no exception is raised.
-        port.acquire_http_lock()
-        port.release_http_lock()
-
-    def integration_test_check_sys_deps(self):
-        port = self.make_port()
-        # Only checking that no exception is raised.
-        port.check_sys_deps(True)
-
-    def integration_test_helper(self):
-        port = self.make_port()
-        # Only checking that no exception is raised.
-        port.start_helper()
-        port.stop_helper()
-
-    def integration_test_http_server__normal(self):
-        port = self.make_port()
-        self.assert_servers_are_down('localhost', self.HTTP_PORTS)
-        port.start_http_server()
-        self.assert_servers_are_up('localhost', self.HTTP_PORTS)
-        port.stop_http_server()
-        self.assert_servers_are_down('localhost', self.HTTP_PORTS)
-
-    def integration_test_http_server__fails(self):
-        port = self.make_port()
-        # Test that if a port isn't available, the call fails.
-        for port_number in self.HTTP_PORTS:
-            test_socket = socket.socket()
-            try:
-                try:
-                    test_socket.bind(('localhost', port_number))
-                except socket.error, e:
-                    if e.errno in (errno.EADDRINUSE, errno.EALREADY):
-                        self.fail('could not bind to port %d' % port_number)
-                    raise
-                try:
-                    port.start_http_server()
-                    self.fail('should not have been able to start the server while bound to %d' % port_number)
-                except http_server_base.ServerError, e:
-                    pass
-            finally:
-                port.stop_http_server()
-                test_socket.close()
-
-        # Test that calling start() twice fails.
-        try:
-            port.start_http_server()
-            self.assertRaises(AssertionError, port.start_http_server)
-        finally:
-            port.stop_http_server()
-
-    def integration_test_http_server__two_servers(self):
-        # Test that calling start() on two different ports causes the
-        # first port to be treated as stale and killed.
-        port = self.make_port()
-        # Test that if a port isn't available, the call fails.
-        port.start_http_server()
-        new_port = self.make_port()
-        try:
-            new_port.start_http_server()
-
-            # Check that the first server was killed.
-            self.assertFalse(port._executive.check_running_pid(port._http_server._pid))
-
-            # Check that there is something running.
-            self.assert_servers_are_up('localhost', self.HTTP_PORTS)
-
-            # Test that calling stop() on a killed server is harmless.
-            port.stop_http_server()
-        finally:
-            port.stop_http_server()
-            new_port.stop_http_server()
-
-            # Test that calling stop() twice is harmless.
-            new_port.stop_http_server()
-
-    def integration_test_image_diff(self):
-        port = self.make_port()
-        # FIXME: This test will never run since we are using MockFileSystem for these tests!?!?
-        if not port.check_image_diff():
-            # The port hasn't been built - don't run the tests.
-            return
-
-        dir = port.layout_tests_dir()
-        file1 = port._filesystem.join(dir, 'fast', 'css', 'button_center.png')
-        contents1 = port._filesystem.read_binary_file(file1)
-        file2 = port._filesystem.join(dir, 'fast', 'css',
-                                      'remove-shorthand-expected.png')
-        contents2 = port._filesystem.read_binary_file(file2)
-        tmpfd, tmpfile = port._filesystem.open_binary_tempfile('')
-        tmpfd.close()
-
-        self.assertFalse(port.diff_image(contents1, contents1)[0])
-        self.assertTrue(port.diff_image(contents1, contents2)[0])
-
-        self.assertTrue(port.diff_image(contents1, contents2, tmpfile)[0])
-
-        port._filesystem.remove(tmpfile)
-
     def test_diff_image__missing_both(self):
         port = self.make_port()
         self.assertEqual(port.diff_image(None, None), (None, None))
@@ -275,63 +174,6 @@ class PortTestCase(unittest.TestCase):
         port = self.make_port()
         port.check_wdiff()
 
-    def integration_test_websocket_server__normal(self):
-        port = self.make_port()
-        self.assert_servers_are_down('localhost', self.WEBSOCKET_PORTS)
-        port.start_websocket_server()
-        self.assert_servers_are_up('localhost', self.WEBSOCKET_PORTS)
-        port.stop_websocket_server()
-        self.assert_servers_are_down('localhost', self.WEBSOCKET_PORTS)
-
-    def integration_test_websocket_server__fails(self):
-        port = self.make_port()
-
-        # Test that start() fails if a port isn't available.
-        for port_number in self.WEBSOCKET_PORTS:
-            test_socket = socket.socket()
-            try:
-                test_socket.bind(('localhost', port_number))
-                try:
-                    port.start_websocket_server()
-                    self.fail('should not have been able to start the server while bound to %d' % port_number)
-                except http_server_base.ServerError, e:
-                    pass
-            finally:
-                port.stop_websocket_server()
-                test_socket.close()
-
-        # Test that calling start() twice fails.
-        try:
-            port.start_websocket_server()
-            self.assertRaises(AssertionError, port.start_websocket_server)
-        finally:
-            port.stop_websocket_server()
-
-    def integration_test_websocket_server__two_servers(self):
-        port = self.make_port()
-
-        # Test that calling start() on two different ports causes the
-        # first port to be treated as stale and killed.
-        port.start_websocket_server()
-        new_port = self.make_port()
-        try:
-            new_port.start_websocket_server()
-
-            # Check that the first server was killed.
-            self.assertFalse(port._executive.check_running_pid(port._websocket_server._pid))
-
-            # Check that there is something running.
-            self.assert_servers_are_up('localhost', self.WEBSOCKET_PORTS)
-
-            # Test that calling stop() on a killed server is harmless.
-            port.stop_websocket_server()
-        finally:
-            port.stop_websocket_server()
-            new_port.stop_websocket_server()
-
-            # Test that calling stop() twice is harmless.
-            new_port.stop_websocket_server()
-
     def test_test_configuration(self):
         port = self.make_port()
         self.assertTrue(port.test_configuration())
@@ -340,27 +182,6 @@ class PortTestCase(unittest.TestCase):
         port = self.make_port()
         self.assertTrue(len(port.all_test_configurations()) > 0)
         self.assertTrue(port.test_configuration() in port.all_test_configurations(), "%s not in %s" % (port.test_configuration(), port.all_test_configurations()))
-
-    def integration_test_http_server__loop(self):
-        port = self.make_port()
-
-        i = 0
-        while i < 10:
-            self.assert_servers_are_down('localhost', self.HTTP_PORTS)
-            port.start_http_server()
-
-            # We sleep in between alternating runs to ensure that this
-            # test handles both back-to-back starts and stops and
-            # starts and stops separated by a delay.
-            if i % 2:
-                time.sleep(0.1)
-
-            self.assert_servers_are_up('localhost', self.HTTP_PORTS)
-            port.stop_http_server()
-            if i % 2:
-                time.sleep(0.1)
-
-            i += 1
 
     def test_get_crash_log(self):
         port = self.make_port()

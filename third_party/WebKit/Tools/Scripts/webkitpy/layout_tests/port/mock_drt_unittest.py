@@ -65,27 +65,6 @@ class MockDRTPortTest(port_testcase.PortTestCase):
     def test_uses_apache(self):
         pass
 
-    def integration_test_http_lock(self):
-        pass
-
-    def integration_test_start_helper(self):
-        pass
-
-    def integration_test_http_server__normal(self):
-        pass
-
-    def integration_test_http_server__fails(self):
-        pass
-
-    def integration_test_websocket_server__normal(self):
-        pass
-
-    def integration_test_websocket_server__fails(self):
-        pass
-
-    def integration_test_helper(self):
-        pass
-
     def test_get_crash_log(self):
         pass
 
