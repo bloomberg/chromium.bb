@@ -780,7 +780,9 @@ class PatchSeries(object):
       applied.append(change)
       if hasattr(change, 'url'):
         project = os.path.basename(change.project)
-        s = '%s | %s | %s' % (project, change.owner, change.gerrit_number)
+        gerrit_number = cros_patch.FormatGerritNumber(
+            change.gerrit_number, force_internal=change.internal)
+        s = '%s | %s | %s' % (project, change.owner, gerrit_number)
         cros_build_lib.PrintBuildbotLink(s, change.url)
 
     logging.debug('Done investigating changes.  Applied %s',
