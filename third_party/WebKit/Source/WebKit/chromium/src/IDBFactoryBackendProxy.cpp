@@ -46,6 +46,7 @@
 #include "WorkerAllowMainThreadBridgeBase.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
@@ -136,7 +137,7 @@ bool IDBFactoryBackendProxy::allowIndexedDB(ScriptExecutionContext* context, con
     }
 
     if (!allowed)
-        callbacks->onError(WebIDBDatabaseError(IDBDatabaseException::UnknownError, "The user denied permission to access the database."));
+        callbacks->onError(WebIDBDatabaseError(UnknownError, "The user denied permission to access the database."));
 
     return allowed;
 }

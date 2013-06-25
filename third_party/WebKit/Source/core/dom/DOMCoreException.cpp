@@ -39,29 +39,41 @@ static struct CoreException {
     const char* const description;
     const int code;
 } coreExceptions[] = {
-    { "IndexSizeError", "Index or size was negative, or greater than the allowed value.", IndexSizeErrorLegacyCode },
-    { "HierarchyRequestError", "A Node was inserted somewhere it doesn't belong.", HierarchyRequestErrorLegacyCode },
-    { "WrongDocumentError", "A Node was used in a different document than the one that created it (that doesn't support it).", WrongDocumentErrorLegacyCode },
-    { "InvalidCharacterError", "An invalid or illegal character was specified, such as in an XML name.", InvalidCharacterErrorLegacyCode },
-    { "NoModificationAllowedError", "An attempt was made to modify an object where modifications are not allowed.", NoModificationAllowedErrorLegacyCode },
-    { "NotFoundError", "An attempt was made to reference a Node in a context where it does not exist.", NotFoundErrorLegacyCode },
-    { "NotSupportedError", "The implementation did not support the requested type of object or operation.", NotSupportedErrorLegacyCode },
-    { "InUseAttributeError", "An attempt was made to add an attribute that is already in use elsewhere.", InuseAttributeErrorLegacyCode },
-    { "InvalidStateError", "An attempt was made to use an object that is not, or is no longer, usable.", InvalidStateErrorLegacyCode },
-    { "SyntaxError", "An invalid or illegal string was specified.", SyntaxErrorLegacyCode },
-    { "InvalidModificationError", "An attempt was made to modify the type of the underlying object.", InvalidModificationErrorLegacyCode },
-    { "NamespaceError", "An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.", NamespaceErrorLegacyCode },
-    { "InvalidAccessError", "A parameter or an operation was not supported by the underlying object.", InvalidAccessErrorLegacyCode },
-    { "TypeMismatchError", "The type of an object was incompatible with the expected type of the parameter associated to the object.", TypeMismatchErrorLegacyCode },
-    { "SecurityError", "An attempt was made to break through the security policy of the user agent.", SecurityErrorLegacyCode },
-    // FIXME: Couldn't find a description in the HTML/DOM specifications for NETWORKERR, ABORTERR, URLMISMATCHERR, and QUOTAEXCEEDEDERR
-    { "NetworkError", "A network error occurred.", NetworkErrorLegacyCode },
-    { "AbortError", "The user aborted a request.", AbortErrorLegacyCode },
-    { "URLMismatchError", "A worker global scope represented an absolute URL that is not equal to the resulting absolute URL.", UrlMismatchErrorLegacyCode },
-    { "QuotaExceededError", "An attempt was made to add something to storage that exceeded the quota.", QuotaExceededErrorLegacyCode },
-    { "TimeoutError", "A timeout occurred.", TimeoutErrorLegacyCode },
-    { "InvalidNodeTypeError", "The supplied node is invalid or has an invalid ancestor for this operation.", InvalidNodeTypeErrorLegacyCode },
-    { "DataCloneError", "An object could not be cloned.", DataCloneErrorLegacyCode }
+    { "IndexSizeError", "Index or size was negative, or greater than the allowed value.", 1 },
+    { "HierarchyRequestError", "A Node was inserted somewhere it doesn't belong.", 3 },
+    { "WrongDocumentError", "A Node was used in a different document than the one that created it (that doesn't support it).", 4 },
+    { "InvalidCharacterError", "An invalid or illegal character was specified, such as in an XML name.", 5 },
+    { "NoModificationAllowedError", "An attempt was made to modify an object where modifications are not allowed.", 7 },
+    { "NotFoundError", "An attempt was made to reference a Node in a context where it does not exist.", 8 },
+    { "NotSupportedError", "The implementation did not support the requested type of object or operation.", 9 },
+    { "InUseAttributeError", "An attempt was made to add an attribute that is already in use elsewhere.", 10 },
+    { "InvalidStateError", "An attempt was made to use an object that is not, or is no longer, usable.", 11 },
+    { "SyntaxError", "An invalid or illegal string was specified.", 12 },
+    { "InvalidModificationError", "An attempt was made to modify the type of the underlying object.", 13 },
+    { "NamespaceError", "An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.", 14 },
+    { "InvalidAccessError", "A parameter or an operation was not supported by the underlying object.", 15 },
+    { "TypeMismatchError", "The type of an object was incompatible with the expected type of the parameter associated to the object.", 17 },
+    { "SecurityError", "An attempt was made to break through the security policy of the user agent.", 18 },
+    { "NetworkError", "A network error occurred.", 19 },
+    { "AbortError", "The user aborted a request.", 20 },
+    { "URLMismatchError", "A worker global scope represented an absolute URL that is not equal to the resulting absolute URL.", 21 },
+    { "QuotaExceededError", "An attempt was made to add something to storage that exceeded the quota.", 22 },
+    { "TimeoutError", "A timeout occurred.", 23 },
+    { "InvalidNodeTypeError", "The supplied node is invalid or has an invalid ancestor for this operation.", 24 },
+    { "DataCloneError", "An object could not be cloned.", 25 },
+
+    // These are IDB-specific errors.
+    // FIXME: NotFoundError is duplicated to have a more specific error message.
+    // https://code.google.com/p/chromium/issues/detail?id=252233
+    { "NotFoundError", "An operation failed because the requested database object could not be found.", 8 },
+
+    // More IDB-specific errors.
+    { "UnknownError", "An unknown error occurred within Indexed Database.", 0 },
+    { "ConstraintError", "A mutation operation in the transaction failed because a constraint was not satisfied.", 0 },
+    { "DataError", "The data provided does not meet requirements.", 0 },
+    { "TransactionInactiveError", "A request was placed against a transaction which is either currently not active, or which is finished.", 0 },
+    { "ReadOnlyError", "A write operation was attempted in a read-only transaction.", 0 },
+    { "VersionError", "An attempt was made to open a database using a lower version than the existing version.", 0 },
 };
 
 static const CoreException* getErrorEntry(ExceptionCode ec)
@@ -84,6 +96,26 @@ bool DOMCoreException::initializeDescription(ExceptionCode ec, ExceptionCodeDesc
     description->code = entry->code;
 
     return true;
+}
+
+String DOMCoreException::getErrorName(ExceptionCode ec)
+{
+    const CoreException* entry = getErrorEntry(ec);
+    ASSERT(entry);
+    if (!entry)
+        return "UnknownError";
+
+    return entry->name;
+}
+
+String DOMCoreException::getErrorDescription(ExceptionCode ec)
+{
+    const CoreException* entry = getErrorEntry(ec);
+    ASSERT(entry);
+    if (!entry)
+        return "Unknown error.";
+
+    return entry->description;
 }
 
 int DOMCoreException::getLegacyErrorCode(ExceptionCode ec)

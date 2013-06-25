@@ -36,7 +36,6 @@
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBDatabaseError.h"
-#include "modules/indexeddb/IDBDatabaseException.h"
 #include "modules/indexeddb/IDBEventDispatcher.h"
 #include "modules/indexeddb/IDBHistograms.h"
 #include "modules/indexeddb/IDBIndex.h"
@@ -176,26 +175,26 @@ PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, co
     IDB_TRACE("IDBDatabase::createObjectStore");
     HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBCreateObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return 0;
     }
     if (!m_versionChangeTransaction->isActive()) {
-        ec = IDBDatabaseException::TransactionInactiveError;
+        ec = TransactionInactiveError;
         return 0;
     }
 
     if (containsObjectStore(name)) {
-        ec = IDBDatabaseException::ConstraintError;
+        ec = ConstraintError;
         return 0;
     }
 
     if (!keyPath.isNull() && !keyPath.isValid()) {
-        ec = IDBDatabaseException::SyntaxError;
+        ec = SYNTAX_ERR;
         return 0;
     }
 
     if (autoIncrement && ((keyPath.type() == IDBKeyPath::StringType && keyPath.string().isEmpty()) || keyPath.type() == IDBKeyPath::ArrayType)) {
-        ec = IDBDatabaseException::InvalidAccessError;
+        ec = INVALID_ACCESS_ERR;
         return 0;
     }
 
@@ -216,17 +215,18 @@ void IDBDatabase::deleteObjectStore(const String& name, ExceptionCode& ec)
     IDB_TRACE("IDBDatabase::deleteObjectStore");
     HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return;
     }
     if (!m_versionChangeTransaction->isActive()) {
-        ec = IDBDatabaseException::TransactionInactiveError;
+        ec = TransactionInactiveError;
         return;
     }
 
     int64_t objectStoreId = findObjectStoreId(name);
     if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
-        ec = IDBDatabaseException::NotFoundError;
+        // FIXME: Should use (NotFoundError, "...").
+        ec = IDBNotFoundError;
         return;
     }
 
@@ -240,7 +240,7 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* cont
     IDB_TRACE("IDBDatabase::transaction");
     HistogramSupport::histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
     if (!scope.size()) {
-        ec = IDBDatabaseException::InvalidAccessError;
+        ec = INVALID_ACCESS_ERR;
         return 0;
     }
 
@@ -249,7 +249,7 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* cont
         return 0;
 
     if (m_versionChangeTransaction || m_closePending) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return 0;
     }
 
@@ -257,7 +257,8 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ScriptExecutionContext* cont
     for (size_t i = 0; i < scope.size(); ++i) {
         int64_t objectStoreId = findObjectStoreId(scope[i]);
         if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
-            ec = IDBDatabaseException::NotFoundError;
+            // FIXME: Should use (NotFoundError, "...").
+            ec = IDBNotFoundError;
             return 0;
         }
         objectStoreIds.append(objectStoreId);

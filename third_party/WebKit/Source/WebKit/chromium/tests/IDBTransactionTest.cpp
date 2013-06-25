@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "modules/indexeddb/IDBTransaction.h"
 
 #include "FrameTestHelpers.h"
@@ -38,6 +37,7 @@
 #include "WebView.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
@@ -147,7 +147,7 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
     // This will generate an abort() call to the back end which is dropped by the fake proxy,
     // so an explicit onAbort call is made.
     scriptExecutionContext()->stopActiveDOMObjects();
-    transaction->onAbort(IDBDatabaseError::create(IDBDatabaseException::AbortError, "Aborted"));
+    transaction->onAbort(IDBDatabaseError::create(ABORT_ERR, "Aborted"));
 
     EXPECT_EQ(1, transaction->refCount());
 }

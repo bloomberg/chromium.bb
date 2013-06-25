@@ -26,8 +26,8 @@
 #include "config.h"
 #include "modules/indexeddb/IDBIndex.h"
 
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "modules/indexeddb/IDBDatabaseException.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBObjectStore.h"
@@ -59,11 +59,11 @@ PassRefPtr<IDBRequest> IDBIndex::openCursor(ScriptExecutionContext* context, Pas
 {
     IDB_TRACE("IDBIndex::openCursor");
     if (isDeleted()) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return 0;
     }
     if (!m_transaction->isActive()) {
-        ec = IDBDatabaseException::TransactionInactiveError;
+        ec = TransactionInactiveError;
         return 0;
     }
     IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, ec);
@@ -89,11 +89,11 @@ PassRefPtr<IDBRequest> IDBIndex::count(ScriptExecutionContext* context, PassRefP
 {
     IDB_TRACE("IDBIndex::count");
     if (isDeleted()) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return 0;
     }
     if (!m_transaction->isActive()) {
-        ec = IDBDatabaseException::TransactionInactiveError;
+        ec = TransactionInactiveError;
         return 0;
     }
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
@@ -114,11 +114,11 @@ PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ScriptExecutionContext* context, 
 {
     IDB_TRACE("IDBIndex::openKeyCursor");
     if (isDeleted()) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return 0;
     }
     if (!m_transaction->isActive()) {
-        ec = IDBDatabaseException::TransactionInactiveError;
+        ec = TransactionInactiveError;
         return 0;
     }
     IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, ec);
@@ -153,15 +153,15 @@ PassRefPtr<IDBRequest> IDBIndex::get(ScriptExecutionContext* context, PassRefPtr
 {
     IDB_TRACE("IDBIndex::get");
     if (isDeleted()) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return 0;
     }
     if (!m_transaction->isActive()) {
-        ec = IDBDatabaseException::TransactionInactiveError;
+        ec = TransactionInactiveError;
         return 0;
     }
     if (!keyRange) {
-        ec = IDBDatabaseException::DataError;
+        ec = DataError;
         return 0;
     }
 
@@ -184,15 +184,15 @@ PassRefPtr<IDBRequest> IDBIndex::getKey(ScriptExecutionContext* context, PassRef
 {
     IDB_TRACE("IDBIndex::getKey");
     if (isDeleted()) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return 0;
     }
     if (!m_transaction->isActive()) {
-        ec = IDBDatabaseException::TransactionInactiveError;
+        ec = TransactionInactiveError;
         return 0;
     }
     if (!keyRange) {
-        ec = IDBDatabaseException::DataError;
+        ec = DataError;
         return 0;
     }
 

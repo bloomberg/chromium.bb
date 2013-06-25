@@ -34,40 +34,6 @@
 
 namespace WebCore {
 
-// FIXME: This should be private once IDBDatabaseException is gone.
-enum {
-    IndexSizeErrorLegacyCode = 1,
-    HierarchyRequestErrorLegacyCode = 3,
-    WrongDocumentErrorLegacyCode = 4,
-    InvalidCharacterErrorLegacyCode = 5,
-    NoModificationAllowedErrorLegacyCode = 7,
-    NotFoundErrorLegacyCode = 8,
-    NotSupportedErrorLegacyCode = 9,
-    InuseAttributeErrorLegacyCode = 10, // Historical. Only used in setAttributeNode etc which have been removed from the DOM specs.
-
-    // Introduced in DOM Level 2:
-    InvalidStateErrorLegacyCode = 11,
-    SyntaxErrorLegacyCode = 12,
-    InvalidModificationErrorLegacyCode = 13,
-    NamespaceErrorLegacyCode = 14,
-    InvalidAccessErrorLegacyCode = 15,
-
-    // Introduced in DOM Level 3:
-    TypeMismatchErrorLegacyCode = 17, // Historical; use TypeError instead
-
-    // XMLHttpRequest extension:
-    SecurityErrorLegacyCode = 18,
-
-    // Others introduced in HTML5:
-    NetworkErrorLegacyCode = 19,
-    AbortErrorLegacyCode = 20,
-    UrlMismatchErrorLegacyCode = 21,
-    QuotaExceededErrorLegacyCode = 22,
-    TimeoutErrorLegacyCode = 23,
-    InvalidNodeTypeErrorLegacyCode = 24,
-    DataCloneErrorLegacyCode = 25
-};
-
 class DOMCoreException : public ExceptionBase, public ScriptWrappable {
 public:
     static PassRefPtr<DOMCoreException> create(const ExceptionCodeDescription& description)
@@ -76,6 +42,8 @@ public:
     }
 
     static bool initializeDescription(ExceptionCode, ExceptionCodeDescription*);
+    static String getErrorName(ExceptionCode);
+    static String getErrorDescription(ExceptionCode);
     static int getLegacyErrorCode(ExceptionCode);
 
 private:

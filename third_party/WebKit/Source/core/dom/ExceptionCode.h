@@ -34,6 +34,7 @@ namespace WebCore {
     // Some of these are considered historical since they have been
     // changed or removed from the specifications.
     enum {
+        // FIXME: Rename these to use CamelCase matching the exception name.
         INDEX_SIZE_ERR = 1,
         HIERARCHY_REQUEST_ERR,
         WRONG_DOCUMENT_ERR,
@@ -65,9 +66,18 @@ namespace WebCore {
         INVALID_NODE_TYPE_ERR,
         DATA_CLONE_ERR,
 
+        // These are IDB-specific.
+        IDBNotFoundError,
+        UnknownError,
+        ConstraintError,
+        DataError,
+        TransactionInactiveError,
+        ReadOnlyError,
+        VersionError,
+
         // WebIDL exception types, handled by the binding layer.
         // FIXME: Add GeneralError, EvalError, etc. when implemented in the bindings.
-        TypeError = 105,
+        TypeError,
     };
 
 } // namespace WebCore

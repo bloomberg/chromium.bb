@@ -82,8 +82,6 @@ IMPLEMENTATION_TEMPLATE = """%(license)s
 
 %(includes)s
 
-#include "modules/indexeddb/IDBDatabaseException.h"
-
 namespace WebCore {
 
 ExceptionCodeDescription::ExceptionCodeDescription(ExceptionCode ec)
@@ -91,13 +89,6 @@ ExceptionCodeDescription::ExceptionCodeDescription(ExceptionCode ec)
     ASSERT(ec);
 
 %(description_initalizations)s
-
-    // FIXME: This special case for IDB is undesirable. It is the first usage
-    // of "new style" DOMExceptions where there is no IDL type, but there are
-    // API-specific exception names and/or messages. Consider refactoring back
-    // into the code generator when a common pattern emerges.
-    if (IDBDatabaseException::initializeDescription(ec, this))
-        return;
 
     if (DOMCoreException::initializeDescription(ec, this))
         return;

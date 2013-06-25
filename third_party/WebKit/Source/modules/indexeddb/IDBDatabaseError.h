@@ -26,7 +26,8 @@
 #ifndef IDBDatabaseError_h
 #define IDBDatabaseError_h
 
-#include "modules/indexeddb/IDBDatabaseException.h"
+#include "core/dom/DOMCoreException.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -35,34 +36,30 @@ namespace WebCore {
 
 class IDBDatabaseError : public RefCounted<IDBDatabaseError> {
 public:
-    static PassRefPtr<IDBDatabaseError> create(unsigned short code)
+    static PassRefPtr<IDBDatabaseError> create(ExceptionCode ec)
     {
-        ASSERT(code >= IDBDatabaseException::IDBDatabaseExceptionOffset);
-        ASSERT(code < IDBDatabaseException::IDBDatabaseExceptionMax);
-        return adoptRef(new IDBDatabaseError(code));
+        return adoptRef(new IDBDatabaseError(ec));
     }
 
-    static PassRefPtr<IDBDatabaseError> create(unsigned short code, const String& message)
+    static PassRefPtr<IDBDatabaseError> create(ExceptionCode ec, const String& message)
     {
-        ASSERT_WITH_MESSAGE(code >= IDBDatabaseException::IDBDatabaseExceptionOffset, "%d >= %d", code, IDBDatabaseException::IDBDatabaseExceptionOffset);
-        ASSERT(code < IDBDatabaseException::IDBDatabaseExceptionMax);
-        return adoptRef(new IDBDatabaseError(code, message));
+        return adoptRef(new IDBDatabaseError(ec, message));
     }
 
     ~IDBDatabaseError() { }
 
-    unsigned short code() const { return IDBDatabaseException::getLegacyErrorCode(m_code); }
-    unsigned short idbCode() const { return m_code; }
+    unsigned short code() const { return DOMCoreException::getLegacyErrorCode(m_exceptionCode); }
+    ExceptionCode exceptionCode() const { return m_exceptionCode; }
     const String& message() const { return m_message; }
-    const String name() const { return IDBDatabaseException::getErrorName(m_code); };
+    const String name() const { return DOMCoreException::getErrorName(m_exceptionCode); };
 
 private:
     IDBDatabaseError(unsigned short code)
-        : m_code(code), m_message(IDBDatabaseException::getErrorDescription(code)) { }
+        : m_exceptionCode(code), m_message(DOMCoreException::getErrorDescription(code)) { }
     IDBDatabaseError(unsigned short code, const String& message)
-        : m_code(code), m_message(message) { }
+        : m_exceptionCode(code), m_message(message) { }
 
-    const unsigned short m_code;
+    const ExceptionCode m_exceptionCode;
     const String m_message;
 };
 

@@ -60,7 +60,7 @@ void WebIDBDatabaseError::reset()
 
 unsigned short WebIDBDatabaseError::code() const
 {
-    return m_private->idbCode();
+    return m_private->exceptionCode();
 }
 
 WebString WebIDBDatabaseError::message() const

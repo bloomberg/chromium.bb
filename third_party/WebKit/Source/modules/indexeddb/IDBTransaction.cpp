@@ -27,11 +27,11 @@
 #include "modules/indexeddb/IDBTransaction.h"
 
 #include "core/dom/EventQueue.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBDatabaseException.h"
 #include "modules/indexeddb/IDBEventDispatcher.h"
 #include "modules/indexeddb/IDBIndex.h"
 #include "modules/indexeddb/IDBObjectStore.h"
@@ -138,7 +138,7 @@ void IDBTransaction::setError(PassRefPtr<DOMError> error)
 PassRefPtr<IDBObjectStore> IDBTransaction::objectStore(const String& name, ExceptionCode& ec)
 {
     if (m_state == Finished) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return 0;
     }
 
@@ -147,14 +147,16 @@ PassRefPtr<IDBObjectStore> IDBTransaction::objectStore(const String& name, Excep
         return it->value;
 
     if (!isVersionChange() && !m_objectStoreNames.contains(name)) {
-        ec = IDBDatabaseException::NotFoundError;
+        // FIXME: Should use (NotFoundError, "...").
+        ec = IDBNotFoundError;
         return 0;
     }
 
     int64_t objectStoreId = m_database->findObjectStoreId(name);
     if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
         ASSERT(isVersionChange());
-        ec = IDBDatabaseException::NotFoundError;
+        // FIXME: Should use (NotFoundError, "...").
+        ec = IDBNotFoundError;
         return 0;
     }
 
@@ -203,7 +205,7 @@ void IDBTransaction::setActive(bool active)
 void IDBTransaction::abort(ExceptionCode& ec)
 {
     if (m_state == Finishing || m_state == Finished) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return;
     }
 

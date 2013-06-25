@@ -26,6 +26,7 @@
 #include "config.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
 
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
@@ -150,7 +151,7 @@ bool IDBOpenDBRequest::dispatchEvent(PassRefPtr<Event> event)
     // an "error" event should be fired instead.
     if (event->type() == eventNames().successEvent && m_result->type() == IDBAny::IDBDatabaseType && m_result->idbDatabase()->isClosePending()) {
         m_result.clear();
-        onError(IDBDatabaseError::create(IDBDatabaseException::AbortError, "The connection was closed."));
+        onError(IDBDatabaseError::create(ABORT_ERR, "The connection was closed."));
         return false;
     }
 

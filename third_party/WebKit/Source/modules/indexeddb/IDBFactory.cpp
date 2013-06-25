@@ -41,7 +41,6 @@
 #include "core/workers/WorkerThread.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
-#include "modules/indexeddb/IDBDatabaseException.h"
 #include "modules/indexeddb/IDBFactoryBackendInterface.h"
 #include "modules/indexeddb/IDBHistograms.h"
 #include "modules/indexeddb/IDBKey.h"
@@ -158,7 +157,7 @@ short IDBFactory::cmp(ScriptExecutionContext* context, const ScriptValue& firstV
     ASSERT(second);
 
     if (!first->isValid() || !second->isValid()) {
-        ec = IDBDatabaseException::DataError;
+        ec = DataError;
         return 0;
     }
 

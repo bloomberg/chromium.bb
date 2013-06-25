@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-
 #include "modules/indexeddb/IDBRequest.h"
 
 #include "FrameTestHelpers.h"
@@ -34,6 +33,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
@@ -91,7 +91,7 @@ TEST_F(IDBRequestTest, EventsAfterStopping)
     scriptExecutionContext()->stopActiveDOMObjects();
 
     // Ensure none of the following raise assertions in stopped state:
-    request->onError(IDBDatabaseError::create(IDBDatabaseException::AbortError, "Description goes here."));
+    request->onError(IDBDatabaseError::create(ABORT_ERR, "Description goes here."));
     request->onSuccess(Vector<String>());
     request->onSuccess(PassRefPtr<IDBCursorBackendInterface>(), IDBKey::createInvalid(), IDBKey::createInvalid(), 0);
     request->onSuccess(IDBKey::createInvalid());
@@ -116,7 +116,7 @@ TEST_F(IDBRequestTest, AbortErrorAfterAbort)
 
     // Now simulate the back end having fired an abort error at the request to clear up any intermediaries.
     // Ensure an assertion is not raised.
-    request->onError(IDBDatabaseError::create(IDBDatabaseException::AbortError, "Description goes here."));
+    request->onError(IDBDatabaseError::create(ABORT_ERR, "Description goes here."));
 }
 
 class MockIDBDatabaseBackendInterface : public IDBDatabaseBackendInterface {

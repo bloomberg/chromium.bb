@@ -27,6 +27,7 @@
 #include "modules/indexeddb/IDBCursor.h"
 
 #include "bindings/v8/IDBBindingUtilities.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "modules/indexeddb/IDBAny.h"
@@ -125,15 +126,15 @@ PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value,
     IDB_TRACE("IDBCursor::update");
 
     if (!m_gotValue || isKeyCursor() || isDeleted()) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return 0;
     }
     if (!m_transaction->isActive()) {
-        ec = IDBDatabaseException::TransactionInactiveError;
+        ec = TransactionInactiveError;
         return 0;
     }
     if (m_transaction->isReadOnly()) {
-        ec = IDBDatabaseException::ReadOnlyError;
+        ec = ReadOnlyError;
         return 0;
     }
 
@@ -143,7 +144,7 @@ PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value,
     if (usesInLineKeys) {
         RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(m_request->requestState(), value, keyPath);
         if (!keyPathKey || !keyPathKey->isEqual(m_currentPrimaryKey.get())) {
-            ec = IDBDatabaseException::DataError;
+            ec = DataError;
             return 0;
         }
     }
@@ -156,12 +157,12 @@ void IDBCursor::advance(unsigned long count, ExceptionCode& ec)
     ec = 0;
     IDB_TRACE("IDBCursor::advance");
     if (!m_gotValue || isDeleted()) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return;
     }
 
     if (!m_transaction->isActive()) {
-        ec = IDBDatabaseException::TransactionInactiveError;
+        ec = TransactionInactiveError;
         return;
     }
 
@@ -187,17 +188,17 @@ void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, ExceptionCode& ec)
     ec = 0;
     IDB_TRACE("IDBCursor::continue");
     if (key && !key->isValid()) {
-        ec = IDBDatabaseException::DataError;
+        ec = DataError;
         return;
     }
 
     if (!m_transaction->isActive()) {
-        ec = IDBDatabaseException::TransactionInactiveError;
+        ec = TransactionInactiveError;
         return;
     }
 
     if (!m_gotValue || isDeleted()) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return;
     }
 
@@ -205,12 +206,12 @@ void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, ExceptionCode& ec)
         ASSERT(m_currentKey);
         if (m_direction == IndexedDB::CursorNext || m_direction == IndexedDB::CursorNextNoDuplicate) {
             if (!m_currentKey->isLessThan(key.get())) {
-                ec = IDBDatabaseException::DataError;
+                ec = DataError;
                 return;
             }
         } else {
             if (!key->isLessThan(m_currentKey.get())) {
-                ec = IDBDatabaseException::DataError;
+                ec = DataError;
                 return;
             }
         }
@@ -228,16 +229,16 @@ PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ScriptExecutionContext* context
     ec = 0;
     IDB_TRACE("IDBCursor::delete");
     if (!m_transaction->isActive()) {
-        ec = IDBDatabaseException::TransactionInactiveError;
+        ec = TransactionInactiveError;
         return 0;
     }
     if (m_transaction->isReadOnly()) {
-        ec = IDBDatabaseException::ReadOnlyError;
+        ec = ReadOnlyError;
         return 0;
     }
 
     if (!m_gotValue || isKeyCursor() || isDeleted()) {
-        ec = IDBDatabaseException::InvalidStateError;
+        ec = INVALID_STATE_ERR;
         return 0;
     }
 

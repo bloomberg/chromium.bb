@@ -28,7 +28,7 @@
 
 #include "bindings/v8/DOMRequestState.h"
 #include "bindings/v8/IDBBindingUtilities.h"
-#include "modules/indexeddb/IDBDatabaseException.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/indexeddb/IDBKey.h"
 
 namespace WebCore {
@@ -64,7 +64,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::only(PassRefPtr<IDBKey> prpKey, ExceptionCo
 {
     RefPtr<IDBKey> key = prpKey;
     if (!key || !key->isValid()) {
-        ec = IDBDatabaseException::DataError;
+        ec = DataError;
         return 0;
     }
 
@@ -76,7 +76,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::only(ScriptExecutionContext* context, const
     DOMRequestState requestState(context);
     RefPtr<IDBKey> key = scriptValueToIDBKey(&requestState, keyValue);
     if (!key || !key->isValid()) {
-        ec = IDBDatabaseException::DataError;
+        ec = DataError;
         return 0;
     }
 
@@ -88,7 +88,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::lowerBound(ScriptExecutionContext* context,
     DOMRequestState requestState(context);
     RefPtr<IDBKey> bound = scriptValueToIDBKey(&requestState, boundValue);
     if (!bound || !bound->isValid()) {
-        ec = IDBDatabaseException::DataError;
+        ec = DataError;
         return 0;
     }
 
@@ -100,7 +100,7 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::upperBound(ScriptExecutionContext* context,
     DOMRequestState requestState(context);
     RefPtr<IDBKey> bound = scriptValueToIDBKey(&requestState, boundValue);
     if (!bound || !bound->isValid()) {
-        ec = IDBDatabaseException::DataError;
+        ec = DataError;
         return 0;
     }
 
@@ -114,15 +114,15 @@ PassRefPtr<IDBKeyRange> IDBKeyRange::bound(ScriptExecutionContext* context, cons
     RefPtr<IDBKey> upper = scriptValueToIDBKey(&requestState, upperValue);
 
     if (!lower || !lower->isValid() || !upper || !upper->isValid()) {
-        ec = IDBDatabaseException::DataError;
+        ec = DataError;
         return 0;
     }
     if (upper->isLessThan(lower.get())) {
-        ec = IDBDatabaseException::DataError;
+        ec = DataError;
         return 0;
     }
     if (upper->isEqual(lower.get()) && (lowerOpen || upperOpen)) {
-        ec = IDBDatabaseException::DataError;
+        ec = DataError;
         return 0;
     }
 
