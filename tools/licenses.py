@@ -235,39 +235,6 @@ SPECIAL_CASES = {
     },
 }
 
-
-# List of paths we know are broken. It is temporary to prevent adding new
-# libraries without info while the existing cases are fixed.
-#
-# DO NOT ADD NEW ENTRIES - instead make your library pass the check.
-#
-# TODO(phajdan.jr): Get this down to zero, http://crbug.com/39240 .
-KNOWN_BROKEN_PATHS = [
-    'native_client',
-    'sandbox/linux/seccomp-legacy',
-    'third_party/accessibility-developer-tools',
-    'third_party/amd',
-    'third_party/bidichecker',
-    'third_party/cros_dbus_cplusplus',
-    'third_party/gles2_conform',
-    'third_party/guava',
-    'third_party/icon_family',
-    'third_party/jsr-305',
-    'third_party/leveldatabase',
-    'third_party/libexif',
-    'third_party/platformsdk_win8',
-    'third_party/pymox',
-    'third_party/safe_browsing',
-    'third_party/snappy',
-    'third_party/yasm',
-    'tools/cc-frame-viewer/third_party/gl-matrix',
-    'tools/cc-frame-viewer/third_party/py-chrome-app',
-    'tools/page_cycler/acid3',
-    'v8',
-    'v8/strongtalk',
-]
-
-
 # Special value for 'License File' field used to indicate that the license file
 # should not be used in about:credits.
 NOT_SHIPPED = "NOT_SHIPPED"
@@ -460,14 +427,11 @@ def GenerateCredits():
     entry_template = open(os.path.join(root, 'chrome', 'browser', 'resources',
                                        'about_credits_entry.tmpl'), 'rb').read()
     entries = []
-    errors = []
     for path in sorted(third_party_dirs):
         try:
             metadata = ParseDir(path, root)
-        except LicenseError, e:
-            # TODO(phajdan.jr): Make this always fatal (http://crbug.com/39240).
-            if path.replace('\\', '/') not in KNOWN_BROKEN_PATHS:
-                errors.append((path, e.args[0]))
+        except LicenseError:
+            # TODO(phajdan.jr): Convert to fatal error (http://crbug.com/39240).
             continue
         if metadata['License File'] == NOT_SHIPPED:
             continue
@@ -481,11 +445,6 @@ def GenerateCredits():
             required_text = open(metadata['Required Text'], 'rb').read()
             env["license_unescaped"] = required_text
         entries.append(EvaluateTemplate(entry_template, env))
-
-    if errors:
-        for path, error in sorted(errors):
-            print path + ": " + error
-        return False
 
     file_template = open(os.path.join(root, 'chrome', 'browser', 'resources',
                                       'about_credits.tmpl'), 'rb').read()
