@@ -258,11 +258,6 @@ std::vector<string16> BookmarkIndex::ExtractQueryWords(const string16& query) {
 
 void BookmarkIndex::RegisterNode(const string16& term,
                                  const BookmarkNode* node) {
-  if (std::find(index_[term].begin(), index_[term].end(), node) !=
-      index_[term].end()) {
-    // We've already added node for term.
-    return;
-  }
   index_[term].insert(node);
 }
 
