@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,10 +35,17 @@ public class AutofillListAdapter extends ArrayAdapter<AutofillSuggestion> {
                     (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             layout = inflater.inflate(R.layout.autofill_text, null);
         }
-        TextView nameView = (TextView) layout.findViewById(R.id.autofill_name);
-        nameView.setText(getItem(position).mName);
         TextView labelView = (TextView) layout.findViewById(R.id.autofill_label);
         labelView.setText(getItem(position).mLabel);
+
+        TextView sublabelView = (TextView) layout.findViewById(R.id.autofill_sublabel);
+        CharSequence sublabel = getItem(position).mSublabel;
+        if (TextUtils.isEmpty(sublabel)) {
+            sublabelView.setVisibility(View.GONE);
+        } else {
+            sublabelView.setText(sublabel);
+            sublabelView.setVisibility(View.VISIBLE);
+        }
 
         return layout;
     }

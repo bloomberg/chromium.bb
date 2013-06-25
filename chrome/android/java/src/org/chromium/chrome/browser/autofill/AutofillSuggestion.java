@@ -8,9 +8,9 @@ package org.chromium.chrome.browser.autofill;
  * Autofill suggestion container used to store information needed for each Autofill popup entry.
  */
 public class AutofillSuggestion {
-    public final String mName;
-    public final String mLabel;
-    public final int mUniqueId;
+    final String mLabel;
+    final String mSublabel;
+    final int mUniqueId;
 
     /**
      * Constructs a Autofill suggestion container.
@@ -19,8 +19,8 @@ public class AutofillSuggestion {
      * @param uniqueId The unique id used to identify the Autofill suggestion.
      */
     public AutofillSuggestion(String name, String label, int uniqueId) {
-        mName = name;
-        mLabel = label;
+        mLabel = name;
+        mSublabel = label;
         mUniqueId = uniqueId;
     }
 }

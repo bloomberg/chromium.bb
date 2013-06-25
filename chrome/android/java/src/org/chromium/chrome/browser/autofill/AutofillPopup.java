@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill;
 import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -35,7 +36,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
     private static final int ITEM_ID_PASSWORD_ENTRY = -2;
     private static final int ITEM_ID_DATA_LIST_ENTRY = -6;
 
-    private static final int TEXT_PADDING_DP = 40;
+    private static final int TEXT_PADDING_DP = 30;
 
     private final AutofillPopupDelegate mAutofillCallback;
     private final Context mContext;
@@ -45,8 +46,8 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
     private float mAnchorHeight;
     private float mAnchorX;
     private float mAnchorY;
-    private Paint mNameViewPaint;
     private Paint mLabelViewPaint;
+    private Paint mSublabelViewPaint;
     private OnLayoutChangeListener mLayoutChangeListener;
 
     /**
@@ -73,7 +74,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
      */
     public AutofillPopup(Context context, ViewAndroidDelegate viewAndroidDelegate,
             AutofillPopupDelegate autofillCallback) {
-        super(context);
+        super(context, null, 0, R.style.AutofillPopupWindow);
         mContext = context;
         mViewAndroidDelegate = viewAndroidDelegate ;
         mAutofillCallback = autofillCallback;
@@ -94,6 +95,13 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
 
         mAnchorView.addOnLayoutChangeListener(mLayoutChangeListener);
         setAnchorView(mAnchorView);
+    }
+
+    @Override
+    public void show() {
+        // An ugly hack to keep the popup from expanding on top of the keyboard.
+        setInputMethodMode(INPUT_METHOD_NEEDED);
+        super.show();
     }
 
     /**
@@ -131,7 +139,8 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
         }
         setAdapter(new AutofillListAdapter(mContext, cleanedData));
         // Once the mAnchorRect is resized and placed correctly, it will show the Autofill popup.
-        mAnchorWidth = Math.max(getDesiredWidth(suggestions), mAnchorWidth);
+        mAnchorWidth = Math.max(getDesiredWidth(cleanedData), mAnchorWidth);
+
         mViewAndroidDelegate.setAnchorViewPosition(mAnchorView, mAnchorX, mAnchorY, mAnchorWidth,
                 mAnchorHeight);
     }
@@ -158,35 +167,35 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
      * @param data Autofill suggestion data.
      * @return The popup window width in DIP.
      */
-    private float getDesiredWidth(AutofillSuggestion[] data) {
-        if (mNameViewPaint == null || mLabelViewPaint == null) {
+    private float getDesiredWidth(ArrayList<AutofillSuggestion> data) {
+        if (mLabelViewPaint == null || mSublabelViewPaint == null) {
             LayoutInflater inflater =
                     (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View layout = inflater.inflate(R.layout.autofill_text, null);
-            TextView nameView = (TextView) layout.findViewById(R.id.autofill_name);
-            mNameViewPaint = nameView.getPaint();
             TextView labelView = (TextView) layout.findViewById(R.id.autofill_label);
             mLabelViewPaint = labelView.getPaint();
+            TextView sublabelView = (TextView) layout.findViewById(R.id.autofill_sublabel);
+            mSublabelViewPaint = sublabelView.getPaint();
         }
 
         float maxTextWidth = 0;
         Rect bounds = new Rect();
-        for (int i = 0; i < data.length; ++i) {
+        for (int i = 0; i < data.size(); ++i) {
             bounds.setEmpty();
-            String name = data[i].mName;
-            float width = 0;
-            if (name.length() > 0) {
-                mNameViewPaint.getTextBounds(name, 0, name.length(), bounds);
-            }
-            width += bounds.width();
-
-            bounds.setEmpty();
-            String label = data[i].mLabel;
-            if (label.length() > 0) {
+            String label = data.get(i).mLabel;
+            if (!TextUtils.isEmpty(label)) {
                 mLabelViewPaint.getTextBounds(label, 0, label.length(), bounds);
             }
-            width += bounds.width();
-            maxTextWidth = Math.max(width, maxTextWidth);
+            float labelWidth = bounds.width();
+
+            bounds.setEmpty();
+            String sublabel = data.get(i).mSublabel;
+            if (!TextUtils.isEmpty(sublabel)) {
+                mSublabelViewPaint.getTextBounds(sublabel, 0, sublabel.length(), bounds);
+            }
+
+            float localMax = Math.max(labelWidth, bounds.width());
+            maxTextWidth = Math.max(maxTextWidth, localMax);
         }
         // Scale it down to make it unscaled by screen density.
         maxTextWidth = maxTextWidth / mContext.getResources().getDisplayMetrics().density;

@@ -81,14 +81,14 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
     /**
      * @param array AutofillSuggestion array that should get a new suggestion added.
      * @param index Index in the array where to place a new suggestion.
-     * @param name Name of the suggestion.
-     * @param label Label of the suggestion.
+     * @param label First line of the suggestion.
+     * @param sublabel Second line of the suggestion.
      * @param uniqueId Unique suggestion id.
      */
     @CalledByNative
     private static void addToAutofillSuggestionArray(AutofillSuggestion[] array, int index,
-            String name, String label, int uniqueId) {
-        array[index] = new AutofillSuggestion(name, label, uniqueId);
+            String label, String sublabel, int uniqueId) {
+        array[index] = new AutofillSuggestion(label, sublabel, uniqueId);
     }
 
     private native void nativeRequestHide(int nativeAutofillPopupViewAndroid);
