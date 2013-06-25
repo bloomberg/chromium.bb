@@ -264,9 +264,9 @@ surface_attach(struct wl_client *client,
 	       struct wl_resource *resource,
 	       struct wl_resource *buffer_resource, int32_t sx, int32_t sy)
 {
-	struct nested_surface *surface = resource->data;
+	struct nested_surface *surface = wl_resource_get_user_data(resource);
 	struct nested *nested = surface->nested;
-	struct wl_buffer *buffer = buffer_resource->data;
+	struct wl_buffer *buffer = wl_resource_get_user_data(buffer_resource);
 	EGLint format, width, height;
 	cairo_device_t *device;
 
@@ -338,7 +338,7 @@ surface_frame(struct wl_client *client,
 	      struct wl_resource *resource, uint32_t id)
 {
 	struct nested_frame_callback *callback;
-	struct nested_surface *surface = resource->data;
+	struct nested_surface *surface = wl_resource_get_user_data(resource);
 	struct nested *nested = surface->nested;
 
 	callback = malloc(sizeof *callback);
@@ -398,7 +398,7 @@ static void
 compositor_create_surface(struct wl_client *client,
 			  struct wl_resource *resource, uint32_t id)
 {
-	struct nested *nested = resource->data;
+	struct nested *nested = wl_resource_get_user_data(resource);
 	struct nested_surface *surface;
 	
 	surface = malloc(sizeof *surface);
@@ -449,7 +449,7 @@ static void
 region_add(struct wl_client *client, struct wl_resource *resource,
 	   int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct nested_region *region = resource->data;
+	struct nested_region *region = wl_resource_get_user_data(resource);
 
 	pixman_region32_union_rect(&region->region, &region->region,
 				   x, y, width, height);
@@ -459,7 +459,7 @@ static void
 region_subtract(struct wl_client *client, struct wl_resource *resource,
 		int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct nested_region *region = resource->data;
+	struct nested_region *region = wl_resource_get_user_data(resource);
 	pixman_region32_t rect;
 
 	pixman_region32_init_rect(&rect, x, y, width, height);
