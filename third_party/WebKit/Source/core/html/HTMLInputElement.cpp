@@ -497,9 +497,9 @@ void HTMLInputElement::updateType()
     }
 
     if (wasAttached) {
-        attach();
+        lazyAttach();
         if (document()->focusedNode() == this)
-            updateFocusAppearance(true);
+            document()->updateFocusAppearanceSoon(true /* restore selection */);
     }
 
     if (ElementShadow* elementShadow = shadowOfParentForDistribution(this))
