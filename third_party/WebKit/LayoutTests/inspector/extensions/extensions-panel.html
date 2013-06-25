@@ -162,7 +162,16 @@ function extension_testSearch(nextTest)
         panel.onSearch.addListener(callback);
 
         extension_showPanel("extension");
-        evaluateOnFrontend("WebInspector.searchController.showSearchField(); WebInspector.searchController._performSearch('hello', true, false);");
+        
+        function performSearch(query)
+        {
+            WebInspector.searchController.showSearchField();
+            WebInspector.searchController._searchInputElement.value = query;
+            WebInspector.searchController._performSearch(true, true);
+            WebInspector.searchController.cancelSearch();
+        }
+
+        evaluateOnFrontend(performSearch.toString() + " performSearch(\"hello\");");
     }
     var basePath = location.pathname.replace(/\/[^/]*$/, "/");
     webInspector.panels.create("Test Panel", basePath + "extension-panel.png", basePath + "non-existent.html", onPanelCreated);
