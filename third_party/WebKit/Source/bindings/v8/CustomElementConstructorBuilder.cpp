@@ -43,8 +43,8 @@
 #include "bindings/v8/V8CustomElementCallback.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8PerContextData.h"
+#include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/CustomElementDefinition.h"
-#include "core/dom/CustomElementRegistry.h"
 #include "core/dom/Document.h"
 #include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
@@ -277,7 +277,7 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& ar
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, maybeType);
 
     ExceptionCode ec = 0;
-    CustomElementRegistry::CallbackDeliveryScope deliveryScope;
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     RefPtr<Element> element = document->createElementNS(namespaceURI, name, maybeType->IsNull() ? nullAtom : type, ec);
     if (ec) {
         setDOMException(ec, isolate);

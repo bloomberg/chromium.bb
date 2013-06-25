@@ -29,13 +29,12 @@
  */
 
 #include "config.h"
-
 #include "core/dom/CustomElementRegistry.h"
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
 #include "bindings/v8/CustomElementConstructorBuilder.h"
-#include "bindings/v8/CustomElementHelpers.h"
+#include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -43,16 +42,6 @@
 #include "core/svg/SVGElement.h"
 
 namespace WebCore {
-
-CustomElementInvocation::CustomElementInvocation(PassRefPtr<CustomElementCallback> callback, PassRefPtr<Element> element)
-    : m_callback(callback)
-    , m_element(element)
-{
-}
-
-CustomElementInvocation::~CustomElementInvocation()
-{
-}
 
 void setTypeExtension(Element* element, const AtomicString& typeExtension)
 {
@@ -64,11 +53,6 @@ void setTypeExtension(Element* element, const AtomicString& typeExtension)
 CustomElementRegistry::CustomElementRegistry(Document* document)
     : ContextLifecycleObserver(document)
 {
-}
-
-CustomElementRegistry::~CustomElementRegistry()
-{
-    deactivate();
 }
 
 static inline bool nameIncludesHyphen(const AtomicString& name)
@@ -154,7 +138,7 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
     for (CustomElementUpgradeCandidateMap::ElementSet::iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
         (*it)->setNeedsStyleRecalc(); // :unresolved has changed
 
-        enqueueReadyCallback(lifecycleCallbacks.get(), *it);
+        CustomElementCallbackDispatcher::instance().enqueueReadyCallback(lifecycleCallbacks.get(), *it);
     }
 }
 
@@ -239,13 +223,13 @@ void CustomElementRegistry::didGiveTypeExtension(Element* element, const AtomicS
         // extension element will be unresolved in perpetuity.
         didCreateUnresolvedElement(CustomElementDefinition::TypeExtension, type, element);
     } else {
-        enqueueReadyCallback(definition->callback(), element);
+        CustomElementCallbackDispatcher::instance().enqueueReadyCallback(definition->callback(), element);
     }
 }
 
 void CustomElementRegistry::didCreateCustomTagElement(CustomElementDefinition* definition, Element* element)
 {
-    enqueueReadyCallback(definition->callback(), element);
+    CustomElementCallbackDispatcher::instance().enqueueReadyCallback(definition->callback(), element);
 }
 
 void CustomElementRegistry::didCreateUnresolvedElement(CustomElementDefinition::CustomElementKind kind, const AtomicString& type, Element* element)
@@ -259,54 +243,9 @@ void CustomElementRegistry::customElementWasDestroyed(Element* element)
     m_candidates.remove(element);
 }
 
-void CustomElementRegistry::enqueueReadyCallback(CustomElementCallback* callback, Element* element)
-{
-    if (!callback->hasReady())
-        return;
-
-    bool wasInactive = m_invocations.isEmpty();
-    m_invocations.append(CustomElementInvocation(callback, element));
-    if (wasInactive)
-        activeCustomElementRegistries().add(this);
-}
-
-void CustomElementRegistry::deactivate()
-{
-    ASSERT(m_invocations.isEmpty());
-    if (activeCustomElementRegistries().contains(this))
-        activeCustomElementRegistries().remove(this);
-}
-
 inline Document* CustomElementRegistry::document() const
 {
     return toDocument(m_scriptExecutionContext);
-}
-
-void CustomElementRegistry::deliverLifecycleCallbacks()
-{
-    ASSERT(!m_invocations.isEmpty());
-
-    if (!m_invocations.isEmpty()) {
-        Vector<CustomElementInvocation> invocations;
-        m_invocations.swap(invocations);
-
-        for (Vector<CustomElementInvocation>::iterator it = invocations.begin(); it != invocations.end(); ++it)
-            it->callback()->ready(it->element());
-    }
-
-    ASSERT(m_invocations.isEmpty());
-    deactivate();
-}
-
-void CustomElementRegistry::deliverAllLifecycleCallbacks()
-{
-    while (!activeCustomElementRegistries().isEmpty()) {
-        Vector<RefPtr<CustomElementRegistry> > registries;
-        copyToVector(activeCustomElementRegistries(), registries);
-        activeCustomElementRegistries().clear();
-        for (size_t i = 0; i < registries.size(); ++i)
-            registries[i]->deliverLifecycleCallbacks();
-    }
 }
 
 }

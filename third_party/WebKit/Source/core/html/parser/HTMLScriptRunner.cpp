@@ -27,11 +27,10 @@
 #include "core/html/parser/HTMLScriptRunner.h"
 
 #include "bindings/v8/ScriptSourceCode.h"
-#include "core/dom/CustomElementRegistry.h"
 #include "core/dom/Element.h"
 #include "core/dom/Event.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
-#include "core/dom/MutationObserver.h"
+#include "core/dom/Microtask.h"
 #include "core/dom/ScriptElement.h"
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLScriptRunnerHost.h"
@@ -126,10 +125,8 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
     if (pendingScript.cachedScript() && pendingScript.watchingForLoad())
         stopWatchingForLoad(pendingScript);
 
-    if (!isExecutingScript()) {
-        CustomElementRegistry::deliverAllLifecycleCallbacks();
-        MutationObserver::deliverAllMutations();
-    }
+    if (!isExecutingScript())
+        Microtask::performCheckpoint();
 
     // Clear the pending script before possible rentrancy from executeScript()
     RefPtr<Element> element = pendingScript.releaseElementAndClear();
@@ -292,10 +289,8 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
         // every script element, even if it's not ready to execute yet. There's
         // unfortuantely no obvious way to tell if prepareScript is going to
         // execute the script from out here.
-        if (!isExecutingScript()) {
-            CustomElementRegistry::deliverAllLifecycleCallbacks();
-            MutationObserver::deliverAllMutations();
-        }
+        if (!isExecutingScript())
+            Microtask::performCheckpoint();
 
         InsertionPointRecord insertionPointRecord(m_host->inputStream());
         NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);

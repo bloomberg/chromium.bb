@@ -31,8 +31,7 @@
 #include "config.h"
 #include "bindings/v8/V8RecursionScope.h"
 
-#include "core/dom/CustomElementRegistry.h"
-#include "core/dom/MutationObserver.h"
+#include "core/dom/Microtask.h"
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 
 namespace WebCore {
@@ -45,10 +44,8 @@ void V8RecursionScope::didLeaveScriptContext()
     // set to true, but the flag becomes false when control returns to the event loop.
     IDBPendingTransactionMonitor::deactivateNewTransactions();
 
-    if (m_isDocumentContext) {
-        MutationObserver::deliverAllMutations();
-        CustomElementRegistry::deliverAllLifecycleCallbacks();
-    }
+    if (m_isDocumentContext)
+        Microtask::performCheckpoint();
 }
 
 } // namespace WebCore

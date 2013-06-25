@@ -38,8 +38,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8RecursionScope.h"
 #include "core/Init.h"
-#include "core/dom/CustomElementRegistry.h"
-#include "core/dom/MutationObserver.h"
+#include "core/dom/Microtask.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
@@ -70,8 +69,7 @@ public:
     virtual void willProcessTask() { }
     virtual void didProcessTask()
     {
-        WebCore::CustomElementRegistry::deliverAllLifecycleCallbacks();
-        WebCore::MutationObserver::deliverAllMutations();
+        WebCore::Microtask::performCheckpoint();
     }
 };
 
