@@ -1059,6 +1059,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
     Enable Guest browsing
   </message>
+  <message name="IDS_OPTIONS_ACCOUNTS_ENABLE_SUPERVISED_USERS" desc="In the Users settings dialog, the text on the checkbox to allow creation and sign-in of supervised users.">
+    Enable supervised users
+  </message>
   <message name="IDS_OPTIONS_ACCOUNTS_USE_WHITELIST_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to restrict allowed user to a whitelist.">
     Restrict sign-in to the following users:
   </message>
