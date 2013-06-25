@@ -43,6 +43,16 @@ class FakeVideoDecoderTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
+  void EnterPendingInitState() {
+    decoder_->HoldNextInit();
+    Initialize();
+  }
+
+  void SatisfyInit() {
+    decoder_->SatisfyInit();
+    message_loop_.RunUntilIdle();
+  }
+
   // Callback for VideoDecoder::Read().
   void FrameReady(VideoDecoder::Status status,
                   const scoped_refptr<VideoFrame>& frame) {
@@ -349,6 +359,13 @@ TEST_F(FakeVideoDecoderTest, Stop) {
   ReadOneFrame();
   ExpectReadResult(OK);
   StopAndExpect(OK);
+}
+
+TEST_F(FakeVideoDecoderTest, Stop_DuringPendingInitialization) {
+  EnterPendingInitState();
+  EnterPendingStopState();
+  SatisfyInit();
+  SatisfyStop();
 }
 
 TEST_F(FakeVideoDecoderTest, Stop_DuringPendingDemuxerRead) {

@@ -298,6 +298,11 @@ void VideoFrameStream::OnDecoderReinitialized(PipelineStatus status) {
 
   DCHECK(!read_cb_.is_null());
 
+  if (!stop_cb_.is_null()) {
+    base::ResetAndReturn(&read_cb_).Run(VideoDecoder::kOk, NULL);
+    return;
+  }
+
   if (state_ == STATE_ERROR) {
     base::ResetAndReturn(&read_cb_).Run(VideoDecoder::kDecodeError, NULL);
     return;

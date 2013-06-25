@@ -77,8 +77,8 @@ void FakeVideoDecoder::Stop(const base::Closure& closure) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   stop_cb_.SetCallback(BindToCurrentLoop(closure));
 
-  // Defer the reset if a read and/or a reset is pending.
-  if (!read_cb_.IsNull() || !reset_cb_.IsNull())
+  // Defer the stop if an init, a read or a reset is pending.
+  if (!init_cb_.IsNull() || !read_cb_.IsNull() || !reset_cb_.IsNull())
     return;
 
   DoStop();
