@@ -61,8 +61,7 @@ DomStorageDatabase::~DomStorageDatabase() {
   if (known_to_be_empty_ && !file_path_.empty()) {
     // Delete the db and any lingering journal file from disk.
     Close();
-    file_util::Delete(file_path_, false);
-    file_util::Delete(GetJournalFilePath(file_path_), false);
+    sql::Connection::Delete(file_path_);
   }
 }
 
@@ -268,8 +267,9 @@ bool DomStorageDatabase::DeleteFileAndRecreate() {
 
   // If it's not a directory and we can delete the file, try and open it again.
   if (!file_util::DirectoryExists(file_path_) &&
-      file_util::Delete(file_path_, false))
+      sql::Connection::Delete(file_path_)) {
     return LazyOpen(true);
+  }
 
   failed_to_open_ = true;
   return false;

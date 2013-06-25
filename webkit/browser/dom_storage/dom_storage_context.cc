@@ -310,13 +310,9 @@ void DomStorageContext::ClearSessionOnlyOrigins() {
       if (!special_storage_policy_->IsStorageSessionOnly(origin))
         continue;
 
-      const bool kNotRecursive = false;
       base::FilePath database_file_path = localstorage_directory_.Append(
           DomStorageArea::DatabaseFileNameFromOrigin(origin));
-      file_util::Delete(database_file_path, kNotRecursive);
-      file_util::Delete(
-          DomStorageDatabase::GetJournalFilePath(database_file_path),
-          kNotRecursive);
+      sql::Connection::Delete(database_file_path);
     }
   }
   if (session_storage_database_.get()) {

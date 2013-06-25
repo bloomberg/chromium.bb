@@ -26,9 +26,7 @@ bool LocalStorageDatabaseAdapter::CommitChanges(
 }
 
 void LocalStorageDatabaseAdapter::DeleteFiles() {
-  file_util::Delete(db_->file_path(), false);
-  file_util::Delete(
-      DomStorageDatabase::GetJournalFilePath(db_->file_path()), false);
+  sql::Connection::Delete(db_->file_path());
 }
 
 void LocalStorageDatabaseAdapter::Reset() {

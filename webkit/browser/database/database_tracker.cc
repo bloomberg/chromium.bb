@@ -358,13 +358,8 @@ bool DatabaseTracker::DeleteClosedDatabase(
 
   // Try to delete the file on the hard drive.
   base::FilePath db_file = GetFullDBFilePath(origin_identifier, database_name);
-  if (file_util::PathExists(db_file) && !file_util::Delete(db_file, false))
+  if (!sql::Connection::Delete(db_file))
     return false;
-
-  // Also delete any orphaned journal file.
-  DCHECK(db_file.Extension().empty());
-  file_util::Delete(db_file.InsertBeforeExtensionASCII(
-      DatabaseUtil::kJournalFileSuffix), false);
 
   if (quota_manager_proxy_.get() && db_file_size)
     quota_manager_proxy_->NotifyStorageModified(

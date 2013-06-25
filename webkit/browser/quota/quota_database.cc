@@ -558,11 +558,7 @@ bool QuotaDatabase::ResetSchema() {
   db_.reset();
   meta_table_.reset();
 
-  if (!file_util::Delete(db_file_path_, true))
-    return false;
-
-  // Make sure the steps above actually deleted things.
-  if (file_util::PathExists(db_file_path_))
+  if (!sql::Connection::Delete(db_file_path_))
     return false;
 
   // So we can't go recursive.
