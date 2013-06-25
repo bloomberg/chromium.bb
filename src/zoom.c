@@ -28,7 +28,6 @@
 #include "text-cursor-position-server-protocol.h"
 
 struct text_cursor_position {
-	struct wl_object base;
 	struct weston_compositor *ec;
 	struct wl_global *global;
 	struct wl_listener destroy_listener;
@@ -77,9 +76,6 @@ text_cursor_position_notifier_create(struct weston_compositor *ec)
 	if (text_cursor_position == NULL)
 		return;
 
-	text_cursor_position->base.interface = &text_cursor_position_interface;
-	text_cursor_position->base.implementation =
-		(void(**)(void)) &text_cursor_position_implementation;
 	text_cursor_position->ec = ec;
 
 	text_cursor_position->global = wl_display_add_global(ec->wl_display,

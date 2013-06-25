@@ -36,7 +36,6 @@
 #include "../wcap/wcap-decode.h"
 
 struct screenshooter {
-	struct wl_object base;
 	struct weston_compositor *ec;
 	struct wl_global *global;
 	struct wl_client *client;
@@ -570,9 +569,6 @@ screenshooter_create(struct weston_compositor *ec)
 	if (shooter == NULL)
 		return;
 
-	shooter->base.interface = &screenshooter_interface;
-	shooter->base.implementation =
-		(void(**)(void)) &screenshooter_implementation;
 	shooter->ec = ec;
 	shooter->client = NULL;
 
