@@ -128,8 +128,6 @@
 
 #define half      d0.f32
 
-HALF:   .float  0.5
-
     @// Allocate stack memory required by the function
 
     @// Write function header
@@ -299,9 +297,7 @@ finalComplexToRealFixup:
         @// Process 4 elements at a time. E.g: F(1),F(2) and F(N/2-2),F(N/2-1)
         @// since both of them require Z(1),Z(2) and Z(N/2-2),Z(N/2-1)
 
-
-        LDR     t0, =HALF
-        VLD1    half[0], [t0]
+        VMOV    half, #0.5
 
 evenOddButterflyLoop:
 

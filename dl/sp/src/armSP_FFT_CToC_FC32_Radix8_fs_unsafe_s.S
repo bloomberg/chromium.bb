@@ -173,19 +173,15 @@
 #define dT0     D14.F32
 #define dT1     D15.F32
 
-@// Define constants
-        @ sqrt(1/2)
-ONEBYSQRT2:     .float  0.7071067811865476e0
-
-
         .MACRO FFTSTAGE scaled, inverse, name
 
         @// Define stack arguments
 
         @// Update pSubFFTSize and pSubFFTNum regs
         @// subFFTSize = 1 for the first stage
+        MOVW    t0, 0x04f3               @// Low half word of sqrt(1/2).
         MOV     subFFTSize,#8
-        LDR     t0,=ONEBYSQRT2
+        MOVT    t0, 0x3f35               @// High half word of sqrt(1/2).
 
         @// Note: setCount = subFFTNum/8 (reuse the grpSize reg for setCount)
         LSR     grpSize,subFFTNum,#3
@@ -285,7 +281,7 @@ radix8fsGrpZeroSetLoop\name :
         @// finish first stage of 8 point FFT
 
         VSUB    qU7,qX3,qX7
-        VLD1    dT0[0], [t0]
+        VMOV    dT0[0], t0
 
         @// finish second stage of 8 point FFT
 

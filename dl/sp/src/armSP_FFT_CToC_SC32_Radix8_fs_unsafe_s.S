@@ -187,18 +187,16 @@
 #define dT0	D14.S32             
 #define dT1	D15.S32
 
-@// Define constants
-	.set ONEBYSQRT2, 0x5A82799A        @// Q31 format
-    
-
         .MACRO FFTSTAGE scaled, inverse, name
         
         @// Define stack arguments
         
         @// Update pSubFFTSize and pSubFFTNum regs
-        MOV     subFFTSize,#8                               @// subFFTSize = 1 for the first stage
-        LDR     t0,=ONEBYSQRT2                              @// t0=(1/sqrt(2)) as Q31 value 
-        
+        MOVW    t0, 0x799A               @// Low half word of 1/sqrt(2) in Q31.
+        MOV     subFFTSize,#8
+        MOVT    t0, 0x5A82               @// High half word of 1/sqrt(2) in Q31.
+
+
         @// Note: setCount = subFFTNum/8 (reuse the grpSize reg for setCount)
         LSR     grpSize,subFFTNum,#3  
         MOV     subFFTNum,grpSize
