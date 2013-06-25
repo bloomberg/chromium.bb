@@ -6,4 +6,6 @@ EXTRA_DIST =					\
 	text.xml				\
 	input-method.xml			\
 	workspaces.xml				\
+	subsurface.xml				\
+	text-cursor-position.xml		\
 	wayland-test.xml
