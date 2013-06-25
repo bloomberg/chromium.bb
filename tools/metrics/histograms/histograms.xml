@@ -4211,6 +4211,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Mouse.Sensitivity.Changed" enum="PointerSensitivity">
+  <summary>Tracks mouse sensitivity setting.</summary>
+</histogram>
+
+<histogram name="Mouse.Sensitivity.Started" enum="PointerSensitivity">
+  <summary>Tracks mouse sensitivity setting on startup.</summary>
+</histogram>
+
 <histogram name="MouseEventPrefetch.MouseDownDuration_Click" units="ms">
   <summary>
     Measures the time elapsed between when the user mousedown-ed a link and when
