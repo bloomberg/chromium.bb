@@ -69,7 +69,7 @@ void OnNoMemory() {
 }  // namespace
 
 #if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
-    !defined(THREAD_SANITIZER)
+    !defined(THREAD_SANITIZER) && !defined(LEAK_SANITIZER)
 
 #if defined(LIBC_GLIBC) && !defined(USE_TCMALLOC)
 
