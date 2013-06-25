@@ -7,6 +7,7 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/aura/active_desktop_monitor.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
@@ -20,7 +21,27 @@
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/ash_init.h"
+#if defined(OS_WIN)
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
+#endif  // defined(OS_WIN)
+#endif  // defined(USE_ASH)
+
+namespace {
+
+// Returns the desktop this process was initially launched in.
+chrome::HostDesktopType GetInitialDesktop() {
+#if defined(OS_WIN) && defined(USE_ASH)
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kViewerConnect) ||
+      command_line->HasSwitch(switches::kViewerLaunchViaAppId)) {
+    return chrome::HOST_DESKTOP_TYPE_ASH;
+  }
 #endif
+  return chrome::HOST_DESKTOP_TYPE_NATIVE;
+}
+
+}  // namespace
 
 ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura() {
 }
@@ -31,7 +52,7 @@ ChromeBrowserMainExtraPartsAura::~ChromeBrowserMainExtraPartsAura() {
 void ChromeBrowserMainExtraPartsAura::ToolkitInitialized() {
 #if !defined(OS_CHROMEOS)
 #if defined(USE_ASH)
-  active_desktop_monitor_.reset(new ActiveDesktopMonitor);
+  active_desktop_monitor_.reset(new ActiveDesktopMonitor(GetInitialDesktop()));
   if (!chrome::ShouldOpenAshOnStartup())
 #endif
   {

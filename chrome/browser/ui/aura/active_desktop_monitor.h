@@ -14,7 +14,9 @@
 // RootWindowHost activations.
 class ActiveDesktopMonitor : public aura::EnvObserver {
  public:
-  ActiveDesktopMonitor();
+  // Constructs an ActiveDesktopMonitor which initially uses |initial_desktop|
+  // as the |last_activated_desktop_| until a root window is activated.
+  explicit ActiveDesktopMonitor(chrome::HostDesktopType initial_desktop);
   virtual ~ActiveDesktopMonitor();
 
   // Returns the host desktop type of the most-recently activated

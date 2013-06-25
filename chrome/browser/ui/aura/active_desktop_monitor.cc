@@ -16,8 +16,9 @@
 // static
 ActiveDesktopMonitor* ActiveDesktopMonitor::g_instance_ = NULL;
 
-ActiveDesktopMonitor::ActiveDesktopMonitor()
-    : last_activated_desktop_(chrome::HOST_DESKTOP_TYPE_NATIVE) {
+ActiveDesktopMonitor::ActiveDesktopMonitor(
+    chrome::HostDesktopType initial_desktop)
+    : last_activated_desktop_(initial_desktop) {
   DCHECK(!g_instance_);
   g_instance_ = this;
   aura::Env::GetInstance()->AddObserver(this);
