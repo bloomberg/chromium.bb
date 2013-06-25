@@ -313,9 +313,9 @@ deps_os = {
     'win':
     {
         'src/chrome/tools/test/reference_build/chrome_win':
-            Var('git_url') + '/chromium/reference_builds/chrome_win.git@38a346604619ded06915c0b60c4229421effc1e4',
+            Var('git_url') + '/chromium/reference_builds/chrome_win.git@9dc219619d7ec297d70881167987057c74953081',
         'src/chrome_frame/tools/test/reference_build/chrome_win':
-            Var('git_url') + '/chromium/reference_builds/chrome_win.git@b9f52667918a74977cb85eefd4e967150f852fbc',
+            Var('git_url') + '/chromium/reference_builds/chrome_win.git@66c68f08ba18a17887f8f727a21d9106ab4b6c02',
         'src/third_party/bison':
             Var('git_url') + '/chromium/deps/bison.git@083c9a45e4affdd5464ee2b224c2df649c6e26c3',
         'src/third_party/cygwin':
