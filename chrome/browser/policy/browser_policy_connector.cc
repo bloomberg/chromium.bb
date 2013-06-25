@@ -207,6 +207,22 @@ void BrowserPolicyConnector::Init(
           base::MessageLoop::current()->message_loop_proxy()));
   policy_statistics_collector_->Initialize();
 
+#if defined(OS_CHROMEOS)
+  if (command_line->HasSwitch(
+          chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
+    network_configuration_updater_.reset(
+        new NetworkConfigurationUpdaterImpl(
+            GetPolicyService(),
+            make_scoped_ptr(new chromeos::CertificateHandler)));
+  } else {
+    network_configuration_updater_.reset(
+        new NetworkConfigurationUpdaterImplCros(
+            GetPolicyService(),
+            chromeos::CrosLibrary::Get()->GetNetworkLibrary(),
+            make_scoped_ptr(new chromeos::CertificateHandler)));
+  }
+#endif
+
   is_initialized_ = true;
 }
 
@@ -332,30 +348,9 @@ AppPackUpdater* BrowserPolicyConnector::GetAppPackUpdater() {
   return app_pack_updater_.get();
 }
 
-NetworkConfigurationUpdater*
-    BrowserPolicyConnector::GetNetworkConfigurationUpdater() {
-  if (!network_configuration_updater_) {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(
-            chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
-      network_configuration_updater_.reset(
-          new NetworkConfigurationUpdaterImpl(
-              GetPolicyService(),
-              make_scoped_ptr(new chromeos::CertificateHandler)));
-    } else {
-      network_configuration_updater_.reset(
-          new NetworkConfigurationUpdaterImplCros(
-              GetPolicyService(),
-              chromeos::CrosLibrary::Get()->GetNetworkLibrary(),
-              make_scoped_ptr(new chromeos::CertificateHandler)));
-    }
-  }
-  return network_configuration_updater_.get();
-}
-
 net::CertTrustAnchorProvider*
-    BrowserPolicyConnector::GetCertTrustAnchorProvider() {
-  return GetNetworkConfigurationUpdater()->GetCertTrustAnchorProvider();
+BrowserPolicyConnector::GetCertTrustAnchorProvider() {
+  return network_configuration_updater()->GetCertTrustAnchorProvider();
 }
 
 void BrowserPolicyConnector::SetUserPolicyDelegate(

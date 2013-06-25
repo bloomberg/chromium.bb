@@ -111,7 +111,9 @@ class BrowserPolicyConnector {
 #if defined(OS_CHROMEOS)
   AppPackUpdater* GetAppPackUpdater();
 
-  NetworkConfigurationUpdater* GetNetworkConfigurationUpdater();
+  NetworkConfigurationUpdater* network_configuration_updater() {
+    return network_configuration_updater_.get();
+  }
 
   net::CertTrustAnchorProvider* GetCertTrustAnchorProvider();
 

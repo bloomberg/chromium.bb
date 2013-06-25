@@ -132,9 +132,7 @@ void ProfilePolicyConnector::Shutdown() {
     BrowserPolicyConnector* connector =
         g_browser_process->browser_policy_connector();
     connector->SetUserPolicyDelegate(NULL);
-    NetworkConfigurationUpdater* network_updater =
-        connector->GetNetworkConfigurationUpdater();
-    network_updater->UnsetUserPolicyService();
+    connector->network_configuration_updater()->UnsetUserPolicyService();
   }
   if (special_user_policy_provider_)
     special_user_policy_provider_->Shutdown();
@@ -175,12 +173,9 @@ void ProfilePolicyConnector::InitializeNetworkConfigurationUpdater(
   // TODO(joaodasilva): create the NetworkConfigurationUpdater for user ONC
   // here, after splitting that class into an instance for device policy and
   // another per profile for user policy.
-  BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  NetworkConfigurationUpdater* network_updater =
-      connector->GetNetworkConfigurationUpdater();
-  network_updater->SetUserPolicyService(
-      is_managed, hashed_username, policy_service());
+  g_browser_process->browser_policy_connector()->
+      network_configuration_updater()->SetUserPolicyService(
+          is_managed, hashed_username, policy_service());
 }
 #endif
 

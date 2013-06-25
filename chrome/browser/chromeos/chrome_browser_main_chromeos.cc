@@ -631,11 +631,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     UserManager::Get()->RestoreActiveSessions();
   }
 
-  // Make sure the NetworkConfigurationUpdater is ready so that it pushes ONC
-  // configuration before login.
-  g_browser_process->browser_policy_connector()->
-      GetNetworkConfigurationUpdater();
-
   // Start loading the machine statistics. Note: if we start loading machine
   // statistics early in PreEarlyInitialization() then the crossystem tool
   // sometimes hangs for unknown reasons, see http://crbug.com/167671.
