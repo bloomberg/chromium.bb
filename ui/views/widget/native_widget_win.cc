@@ -85,6 +85,8 @@ const int kDragFrameWindowAlpha = 200;
 NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
+      drag_frame_saved_window_style_(0),
+      drag_frame_saved_window_ex_style_(0),
       has_non_client_view_(false),
       message_handler_(new HWNDMessageHandler(this)) {
 }
