@@ -327,7 +327,7 @@ class ChromiumPort(Port):
             # FIXME: investigate using LLVM_SYMBOLIZER_PATH here to reduce the overhead.
             asan_filter_path = self.path_from_chromium_base('tools', 'valgrind', 'asan', 'asan_symbolize.py')
             if self._filesystem.exists(asan_filter_path):
-                output = self._executive.run_command(['flock', asan_filter_path], input=stderr, decode_output=False)
+                output = self._executive.run_command(['flock', sys.executable, asan_filter_path], input=stderr, decode_output=False)
                 stderr = self._executive.run_command(['c++filt'], input=output, decode_output=False)
 
         return super(ChromiumPort, self)._get_crash_log(name, pid, stdout, stderr, newer_than)
