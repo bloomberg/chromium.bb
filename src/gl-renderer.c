@@ -1241,8 +1241,10 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 				    (struct wl_buffer *)buffer->resource,
 				    EGL_TEXTURE_FORMAT, &format)) {
 		buffer->legacy_buffer = (struct wl_buffer *)buffer->resource;
-		buffer->width = buffer->legacy_buffer->width;
-		buffer->height = buffer->legacy_buffer->height;
+		gr->query_buffer(gr->egl_display, buffer->legacy_buffer,
+				 EGL_WIDTH, &buffer->width);
+		gr->query_buffer(gr->egl_display, buffer->legacy_buffer,
+				 EGL_HEIGHT, &buffer->height);
 
 		for (i = 0; i < gs->num_images; i++)
 			gr->destroy_image(gr->egl_display, gs->images[i]);
