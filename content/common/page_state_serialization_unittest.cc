@@ -396,9 +396,13 @@ TEST_F(PageStateSerializationTest, DumpExpectedPageStateForBackwardsCompat) {
   fclose(fp);
 }
 
+#if !defined(OS_ANDROID)
+// TODO(darin): Re-enable for Android once this test accounts for systems with
+//              a device scale factor not equal to 2.
 TEST_F(PageStateSerializationTest, BackwardsCompat_v11) {
   TestBackwardsCompat(11);
 }
+#endif
 
 TEST_F(PageStateSerializationTest, BackwardsCompat_v12) {
   TestBackwardsCompat(12);
