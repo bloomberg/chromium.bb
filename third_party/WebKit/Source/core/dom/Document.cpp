@@ -3115,11 +3115,6 @@ void Document::setActiveElement(PassRefPtr<Element> newActiveElement)
     m_activeElement = newActiveElement;
 }
 
-void Document::focusedNodeRemoved()
-{
-    setFocusedNode(0);
-}
-
 void Document::removeFocusedNodeOfSubtree(Node* node, bool amongChildrenOnly)
 {
     if (!m_focusedNode)
@@ -3136,7 +3131,7 @@ void Document::removeFocusedNodeOfSubtree(Node* node, bool amongChildrenOnly)
         nodeInSubtree = (focusedNode == node) || focusedNode->isDescendantOf(node);
 
     if (nodeInSubtree)
-        document()->focusedNodeRemoved();
+        setFocusedNode(0);
 }
 
 void Document::hoveredNodeDetached(Node* node)
