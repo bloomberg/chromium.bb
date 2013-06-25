@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/history/top_sites_database.h"
@@ -137,7 +136,7 @@ void TopSitesBackend::SetPageThumbnailOnDBThread(const MostVisitedURL& url,
 void TopSitesBackend::ResetDatabaseOnDBThread(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   db_.reset(NULL);
-  file_util::Delete(db_path_, false);
+  sql::Connection::Delete(db_path_);
   db_.reset(new TopSitesDatabase());
   InitDBOnDBThread(db_path_);
 }

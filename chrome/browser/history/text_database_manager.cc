@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -415,7 +414,7 @@ void TextDatabaseManager::DeleteAll() {
   for (DBIdentSet::iterator i = present_databases_.begin();
        i != present_databases_.end(); ++i) {
     base::FilePath file_name = dir_.Append(TextDatabase::IDToFileName(*i));
-    file_util::Delete(file_name, false);
+    sql::Connection::Delete(file_name);
   }
 }
 

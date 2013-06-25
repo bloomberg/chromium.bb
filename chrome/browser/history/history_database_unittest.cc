@@ -20,7 +20,7 @@ TEST(HistoryDatabaseTest, DropBookmarks) {
 
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("DropBookmarks.db");
-  file_util::Delete(db_file, false);
+  sql::Connection::Delete(db_file);
 
   // Copy db file over that contains starred URLs.
   base::FilePath old_history_path;

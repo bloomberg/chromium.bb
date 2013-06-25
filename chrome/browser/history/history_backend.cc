@@ -14,7 +14,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
@@ -252,7 +251,7 @@ HistoryBackend::~HistoryBackend() {
   }
 
 #if defined(OS_ANDROID)
-  file_util::Delete(GetAndroidCacheFileName(), false);
+  sql::Connection::Delete(GetAndroidCacheFileName());
 #endif
 }
 
@@ -714,7 +713,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
     // See needs_version_17_migration() decl for more. In this case, we want
     // to delete the archived database and need to do so before we try to
     // open the file. We can ignore any error (maybe the file doesn't exist).
-    file_util::Delete(archived_name, false);
+    sql::Connection::Delete(archived_name);
   }
   archived_db_.reset(new ArchivedDatabase());
   if (!archived_db_->Init(archived_name)) {
@@ -2994,7 +2993,7 @@ void HistoryBackend::DeleteAllHistory() {
     // Close the database and delete the file.
     archived_db_.reset();
     base::FilePath archived_file_name = GetArchivedFileName();
-    file_util::Delete(archived_file_name, false);
+    sql::Connection::Delete(archived_file_name);
 
     // Now re-initialize the database (which may fail).
     archived_db_.reset(new ArchivedDatabase());
@@ -3023,7 +3022,7 @@ bool HistoryBackend::ClearAllThumbnailHistory(URLRows* kept_urls) {
     // error opening it. In this case, we just try to blow it away to try to
     // fix the error if it exists. This may fail, in which case either the
     // file doesn't exist or there's no more we can do.
-    file_util::Delete(GetThumbnailFileName(), false);
+    sql::Connection::Delete(GetThumbnailFileName());
     return true;
   }
 

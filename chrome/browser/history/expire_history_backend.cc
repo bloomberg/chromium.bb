@@ -762,7 +762,7 @@ void ExpireHistoryBackend::DoExpireHistoryIndexFiles() {
        file = file_enumerator.Next()) {
     TextDatabase::DBIdent file_id = TextDatabase::FileNameToID(file);
     if (file_id < cutoff_id)
-      file_util::Delete(file, false);
+      sql::Connection::Delete(file);
   }
 }
 

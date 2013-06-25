@@ -1198,8 +1198,8 @@ TEST_F(TopSitesImplTest, CreateTopSitesThenHistory) {
 
   // Remove the TopSites file. This forces TopSites to wait until history loads
   // before TopSites is considered loaded.
-  file_util::Delete(profile()->GetPath().Append(chrome::kTopSitesFilename),
-                    false);
+  sql::Connection::Delete(
+      profile()->GetPath().Append(chrome::kTopSitesFilename));
 
   // Create TopSites, but not History.
   profile()->CreateTopSites();

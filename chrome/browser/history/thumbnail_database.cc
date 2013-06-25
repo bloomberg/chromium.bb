@@ -1248,7 +1248,7 @@ bool ThumbnailDatabase::RenameAndDropThumbnails(
   if (OpenDatabase(&db_, new_db_file) != sql::INIT_OK)
     return false;
 
-  file_util::Delete(old_db_file, false);
+  sql::Connection::Delete(old_db_file);
 
   meta_table_.Reset();
   if (!meta_table_.Init(&db_, kCurrentVersionNumber, kCompatibleVersionNumber))

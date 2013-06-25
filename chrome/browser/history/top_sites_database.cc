@@ -43,9 +43,7 @@ bool TopSitesDatabase::Init(const base::FilePath& db_name) {
     // the entries as they are no longer applicable, but it's safest to just
     // remove the file and start over.
     db_.reset(NULL);
-    if (!file_util::Delete(db_name, false) &&
-        !file_util::Delete(db_name, false)) {
-      // Try to delete twice. If we can't, fail.
+    if (!sql::Connection::Delete(db_name)) {
       LOG(ERROR) << "unable to delete old TopSites file";
       return false;
     }

@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
@@ -106,7 +105,7 @@ class TextDatabaseTest : public PlatformTest {
     TextDatabase* db = new TextDatabase(temp_dir_.path(), id, allow_create);
 
     if (delete_file)
-      file_util::Delete(db->file_name(), false);
+      sql::Connection::Delete(db->file_name());
 
     if (!db->Init()) {
       delete db;
