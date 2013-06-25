@@ -7,7 +7,6 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_pump_mac.h"
 
 // Nested event loops can pump IPC messages, including

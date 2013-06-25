@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/mac/scoped_nsobject.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 
 @class AutofillPopupViewCocoa;

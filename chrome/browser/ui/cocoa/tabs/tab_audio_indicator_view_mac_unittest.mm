@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_audio_indicator_view_mac.h"
 
 #include "base/message_loop.h"
+#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 
 class TabAudioIndicatorViewMacTest : public CocoaTest {

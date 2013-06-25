@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/menu_button.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/clickhold_button_cell.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 

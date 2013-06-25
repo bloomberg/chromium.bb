@@ -7,7 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/chrome_browser_window.h"
 
 // Offsets from the top/left of the window frame to the top of the window

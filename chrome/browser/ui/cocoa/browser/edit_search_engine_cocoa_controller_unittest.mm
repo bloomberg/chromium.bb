@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h"
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"

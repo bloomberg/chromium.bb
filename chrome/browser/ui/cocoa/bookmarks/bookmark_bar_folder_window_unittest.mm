@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"

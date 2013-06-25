@@ -4,8 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 
-#include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"

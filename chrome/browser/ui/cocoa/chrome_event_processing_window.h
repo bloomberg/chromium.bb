@@ -7,7 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac/scoped_nsobject.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 
 // Override NSWindow to access unhandled keyboard events (for command

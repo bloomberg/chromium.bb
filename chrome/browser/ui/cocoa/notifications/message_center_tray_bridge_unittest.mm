@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/notifications/message_center_tray_bridge.h"
 
-#include "base/mac/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"

@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/validation_message_bubble_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"

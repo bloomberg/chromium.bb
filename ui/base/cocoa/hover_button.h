@@ -7,7 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/mac/scoped_nsobject.h"
 #import "ui/base/cocoa/tracking_area.h"
 #import "ui/base/ui_export.h"
 

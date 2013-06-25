@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 
-#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
 #include "testing/gtest_mac.h"

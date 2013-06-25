@@ -5,7 +5,6 @@
 #include <Carbon/Carbon.h>
 
 #include "base/debug/debugger.h"
-#include "base/mac/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"

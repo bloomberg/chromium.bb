@@ -7,17 +7,12 @@
 #include <cmath>
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
-
-namespace {
 
 // Code taken from <http://codereview.chromium.org/180036/diff/3001/3004>.
 // TODO(viettrungluu): Do we want common, standard code for drag hysteresis?
 const CGFloat kWebDragStartHysteresisX = 5.0;
 const CGFloat kWebDragStartHysteresisY = 5.0;
 const CGFloat kDragExpirationTimeout = 0.45;
-
-}
 
 // Private /////////////////////////////////////////////////////////////////////
 

@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/mac/scoped_nsobject.h"
 
 static const float kAnimationIntervalSeconds = 0.03;  // 30ms, same as windows
 

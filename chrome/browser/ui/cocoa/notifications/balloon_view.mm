@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
-#include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/notifications/balloon_controller.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 

@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_FOLDER_WINDOW_H_
 
 #import <Cocoa/Cocoa.h>
-#include "base/mac/scoped_nsobject.h"
-
 
 // Window for a bookmark folder "menu".  This menu pops up when you
 // click on a bookmark button that represents a folder of bookmarks.
@@ -26,6 +24,5 @@
 // Scroll view that contains the main view (where the buttons go).
 @interface BookmarkBarFolderWindowScrollView : NSScrollView
 @end
-
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_FOLDER_WINDOW_H_
