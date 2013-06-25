@@ -206,7 +206,7 @@ size_t CalculatePositionsInFrame(
 }
 
 - (CGFloat)lineHeight {
-  return 16;
+  return 17;
 }
 
 - (void)clearDecorations {
