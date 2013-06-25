@@ -91,7 +91,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   bool RemoveWord(const std::string& word);
 
   // Returns true if the dictionary contains |word|. Otherwise returns false.
-  bool HasWord(const std::string& word);
+  bool HasWord(const std::string& word) const;
 
   // Adds |observer| to be notified of dictionary events and changes.
   void AddObserver(Observer* observer);

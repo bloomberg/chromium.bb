@@ -18,7 +18,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class SpellCheckMarker;
-class SpellingServiceFeedbackTest;
 struct SpellCheckResult;
 
 namespace net {
@@ -57,6 +56,10 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
   // misspelling identified by |hash| to string |correction|, which is not in
   // the list of suggestions.
   void ManuallyCorrected(uint32 hash, const string16& correction);
+
+  // Records that user has the misspelling in the custom dictionary. The user
+  // will never see the spellcheck suggestions for the misspelling.
+  void RecordInDictionary(uint32 hash);
 
   // Receives document markers for renderer with process ID |render_process_id|
   // when the renderer responds to a RequestDocumentMarkers() call. Finalizes

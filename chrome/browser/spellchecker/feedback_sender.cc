@@ -155,6 +155,8 @@ FeedbackSender::~FeedbackSender() {
 
 void FeedbackSender::SelectedSuggestion(uint32 hash, int suggestion_index) {
   Misspelling* misspelling = feedback_.GetMisspelling(hash);
+  // GetMisspelling() returns null for flushed feedback. Feedback is flushed
+  // when the session expires every |kSessionHours| hours.
   if (!misspelling)
     return;
   misspelling->action.type = SpellcheckAction::TYPE_SELECT;
@@ -164,6 +166,8 @@ void FeedbackSender::SelectedSuggestion(uint32 hash, int suggestion_index) {
 
 void FeedbackSender::AddedToDictionary(uint32 hash) {
   Misspelling* misspelling = feedback_.GetMisspelling(hash);
+  // GetMisspelling() returns null for flushed feedback. Feedback is flushed
+  // when the session expires every |kSessionHours| hours.
   if (!misspelling)
     return;
   misspelling->action.type = SpellcheckAction::TYPE_ADD_TO_DICT;
@@ -181,8 +185,19 @@ void FeedbackSender::AddedToDictionary(uint32 hash) {
   }
 }
 
+void FeedbackSender::RecordInDictionary(uint32 hash) {
+  Misspelling* misspelling = feedback_.GetMisspelling(hash);
+  // GetMisspelling() returns null for flushed feedback. Feedback is flushed
+  // when the session expires every |kSessionHours| hours.
+  if (!misspelling)
+    return;
+  misspelling->action.type = SpellcheckAction::TYPE_IN_DICTIONARY;
+}
+
 void FeedbackSender::IgnoredSuggestions(uint32 hash) {
   Misspelling* misspelling = feedback_.GetMisspelling(hash);
+  // GetMisspelling() returns null for flushed feedback. Feedback is flushed
+  // when the session expires every |kSessionHours| hours.
   if (!misspelling)
     return;
   misspelling->action.type = SpellcheckAction::TYPE_PENDING_IGNORE;
@@ -192,6 +207,8 @@ void FeedbackSender::IgnoredSuggestions(uint32 hash) {
 void FeedbackSender::ManuallyCorrected(uint32 hash,
                                        const string16& correction) {
   Misspelling* misspelling = feedback_.GetMisspelling(hash);
+  // GetMisspelling() returns null for flushed feedback. Feedback is flushed
+  // when the session expires every |kSessionHours| hours.
   if (!misspelling)
     return;
   misspelling->action.type = SpellcheckAction::TYPE_MANUALLY_CORRECTED;

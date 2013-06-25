@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_message_filter.h"
 
 class SpellCheckMarker;
+class SpellcheckService;
 struct SpellCheckResult;
 
 // A message filter implementation that receives spell checker requests from
@@ -27,6 +28,8 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
                                  bool* message_was_ok) OVERRIDE;
 
  private:
+  friend class TestingSpellCheckMessageFilter;
+
   virtual ~SpellCheckMessageFilter();
 
   void OnSpellCheckerRequestDictionary();
@@ -60,6 +63,9 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
       int identifier,
       const std::vector<SpellCheckMarker>& markers);
 #endif
+
+  // Can be overridden for testing.
+  virtual SpellcheckService* GetSpellcheckService() const;
 
   int render_process_id_;
 

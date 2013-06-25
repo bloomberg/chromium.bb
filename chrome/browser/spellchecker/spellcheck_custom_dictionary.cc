@@ -261,7 +261,7 @@ bool SpellcheckCustomDictionary::RemoveWord(const std::string& word) {
   return result == VALID_CHANGE;
 }
 
-bool SpellcheckCustomDictionary::HasWord(const std::string& word) {
+bool SpellcheckCustomDictionary::HasWord(const std::string& word) const {
   return !!words_.count(word);
 }
 

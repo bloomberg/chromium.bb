@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
@@ -87,23 +88,18 @@ void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {
 
 void SpellCheckMessageFilter::OnNotifyChecked(const string16& word,
                                               bool misspelled) {
-  content::RenderProcessHost* host =
-      content::RenderProcessHost::FromID(render_process_id_);
-  if (!host)
-    return;  // Teardown.
-  // Delegates to SpellCheckHost which tracks the stats of our spellchecker.
-  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  SpellcheckService* spellcheck_service =
-      SpellcheckServiceFactory::GetForProfile(profile);
-  DCHECK(spellcheck_service);
-  if (spellcheck_service->GetMetrics())
-    spellcheck_service->GetMetrics()->RecordCheckedWordStats(word, misspelled);
+  SpellcheckService* spellcheck = GetSpellcheckService();
+  // Spellcheck service may not be available for a renderer process that is
+  // shutting down.
+  if (!spellcheck)
+    return;
+  if (spellcheck->GetMetrics())
+    spellcheck->GetMetrics()->RecordCheckedWordStats(word, misspelled);
 }
 
 void SpellCheckMessageFilter::OnRespondDocumentMarkers(
     const std::vector<uint32>& markers) {
-  SpellcheckService* spellcheck =
-      SpellcheckServiceFactory::GetForRenderProcessId(render_process_id_);
+  SpellcheckService* spellcheck = GetSpellcheckService();
   // Spellcheck service may not be available for a renderer process that is
   // shutting down.
   if (!spellcheck)
@@ -137,12 +133,34 @@ void SpellCheckMessageFilter::OnTextCheckComplete(
     bool success,
     const string16& text,
     const std::vector<SpellCheckResult>& results) {
-  SpellcheckService* spellcheck =
-      SpellcheckServiceFactory::GetForRenderProcessId(render_process_id_);
-  DCHECK(spellcheck);
+  SpellcheckService* spellcheck = GetSpellcheckService();
+  // Spellcheck service may not be available for a renderer process that is
+  // shutting down.
+  if (!spellcheck)
+    return;
   std::vector<SpellCheckResult> results_copy = results;
   spellcheck->GetFeedbackSender()->OnSpellcheckResults(
       &results_copy, render_process_id_, text, markers);
+
+  // Erase custom dictionary words from the spellcheck results and record
+  // in-dictionary feedback.
+  std::vector<SpellCheckResult>::iterator write_iter;
+  std::vector<SpellCheckResult>::iterator iter;
+  std::string text_copy = UTF16ToUTF8(text);
+  for (iter = write_iter = results_copy.begin();
+       iter != results_copy.end();
+       ++iter) {
+    if (spellcheck->GetCustomDictionary()->HasWord(
+            text_copy.substr(iter->location, iter->length))) {
+      spellcheck->GetFeedbackSender()->RecordInDictionary(iter->hash);
+    } else {
+      if (write_iter != iter)
+        *write_iter = *iter;
+      ++write_iter;
+    }
+  }
+  results_copy.erase(write_iter, results_copy.end());
+
   Send(new SpellCheckMsg_RespondSpellingService(
       route_id, identifier, success, text, results_copy));
 }
@@ -171,3 +189,7 @@ void SpellCheckMessageFilter::CallSpellingService(
                markers));
 }
 #endif
+
+SpellcheckService* SpellCheckMessageFilter::GetSpellcheckService() const {
+  return SpellcheckServiceFactory::GetForRenderProcessId(render_process_id_);
+}
