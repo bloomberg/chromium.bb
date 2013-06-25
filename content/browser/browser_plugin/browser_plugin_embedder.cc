@@ -179,10 +179,6 @@ void BrowserPluginEmbedder::OnAttach(
 
 
   if (guest) {
-    // On attachment, GuestWebContentsAttached needs to be called first to make
-    // the BrowserPlugin to guest association prior to resource loads to allow
-    // APIs to intercept and associate resource loads with a particular
-    // BrowserPlugin.
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         web_contents(),
@@ -196,15 +192,13 @@ void BrowserPluginEmbedder::OnAttach(
   guest = GetBrowserPluginGuestManager()->CreateGuest(
       web_contents()->GetSiteInstance(), instance_id, params);
   if (guest) {
-    guest->Initialize(static_cast<WebContentsImpl*>(web_contents()), params);
-    // On creation, GuestWebContentsAttached cannot be called until after
-    // initialization because there is no process to send a message to until
-    // the guest is initialized.
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         web_contents(),
         params.browser_plugin_instance_id,
         extra_params);
+
+    guest->Initialize(static_cast<WebContentsImpl*>(web_contents()), params);
   }
 }
 

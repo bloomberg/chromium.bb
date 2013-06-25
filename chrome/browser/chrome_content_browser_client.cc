@@ -710,9 +710,6 @@ void ChromeContentBrowserClient::GuestWebContentsAttached(
       GetExtensionOrAppByURL(ExtensionURLInfo(url));
   if (!extension)
     return;
-  std::vector<ExtensionMsg_Loaded_Params> extensions;
-  extensions.push_back(ExtensionMsg_Loaded_Params(extension));
-  guest_web_contents->Send(new ExtensionMsg_Loaded(extensions));
   new WebViewGuest(guest_web_contents,
                    embedder_web_contents,
                    extension->id(),
