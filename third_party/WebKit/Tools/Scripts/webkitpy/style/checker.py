@@ -37,7 +37,6 @@ import sys
 
 from checkers.common import categories as CommonCategories
 from checkers.common import CarriageReturnChecker
-from checkers.changelog import ChangeLogChecker
 from checkers.cpp import CppChecker
 from checkers.cmake import CMakeChecker
 from checkers.jsonchecker import JSONChecker
@@ -373,7 +372,6 @@ def _all_categories():
     categories = CommonCategories.union(CppChecker.categories)
     categories = categories.union(JSONChecker.categories)
     categories = categories.union(TestExpectationsChecker.categories)
-    categories = categories.union(ChangeLogChecker.categories)
     categories = categories.union(PNGChecker.categories)
 
     # FIXME: Consider adding all of the pep8 categories.  Since they
@@ -563,9 +561,7 @@ class CheckerDispatcher(object):
         # FIXME: Figure out a good way to avoid having to add special logic
         #        for this special case.
         basename = os.path.basename(file_path)
-        if basename.startswith('ChangeLog'):
-            return False
-        elif basename == 'TestExpectations':
+        if basename == 'TestExpectations':
             return False
         for skipped_file in _SKIPPED_FILES_WITHOUT_WARNING:
             if self._should_skip_file_path(file_path, skipped_file):
@@ -615,10 +611,7 @@ class CheckerDispatcher(object):
         if file_type == FileType.NONE:
             checker = None
         elif file_type == FileType.CHANGELOG:
-            should_line_be_checked = None
-            if handle_style_error:
-                should_line_be_checked = handle_style_error.should_line_be_checked
-            checker = ChangeLogChecker(file_path, handle_style_error, should_line_be_checked)
+            checker = None
         elif file_type == FileType.CPP:
             file_extension = self._file_extension(file_path)
             checker = CppChecker(file_path, file_extension,

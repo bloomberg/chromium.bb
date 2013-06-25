@@ -31,7 +31,6 @@ import logging
 
 from webkitpy.tool import steps
 
-from webkitpy.common.checkout.changelog import ChangeLog
 from webkitpy.common.config import urls
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.tool.commands.abstractsequencedcommand import AbstractSequencedCommand
