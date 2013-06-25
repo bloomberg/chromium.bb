@@ -1,10 +1,10 @@
 vars = {
   "pnacl_binutils_rev": "be24de8cf82956c0b6e9856630f32429005752ae",
-  "pnacl_llvm_rev": "f0392b56ec11466992bac898e12144a32b843077",
+  "pnacl_llvm_rev": "838d8e9753498212ca9587dd0d5b3ddebe824068",
   "pnacl_gcc_rev": "e09efac3663fa23abf48941d4844e1876659b7c4",
 
   "glibc_rev": "ef989bae60d93e2906847b367becbd0e7f27679f",
-  "newlib_rev": "5feee65e182c08a7e89fbffc3223c57e4335420f",
+  "newlib_rev": "ea41247df4c25e3cfacc56d28755424b81a563da",
   "pnacl_llvm_testsuite_rev": "0d6d7c909e6f7cc83e2b85c11332e9347b73dfb9",
   "compiler_rt_rev": "cad11a9ea0008d18125e81beafc27271ee71926e",
   # clang_rev should be the first clang commit after the llvm commit from
