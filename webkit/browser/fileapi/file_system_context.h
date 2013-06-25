@@ -293,7 +293,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   // Regular mount point providers.
   scoped_ptr<SandboxMountPointProvider> sandbox_provider_;
   scoped_ptr<IsolatedMountPointProvider> isolated_provider_;
-  scoped_ptr<ExternalFileSystemMountPointProvider> external_provider_;
 
   // Additional mount point providers.
   ScopedVector<FileSystemMountPointProvider> additional_providers_;

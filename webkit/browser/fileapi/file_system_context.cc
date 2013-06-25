@@ -98,8 +98,8 @@ FileSystemContext::FileSystemContext(
           external_mount_points,
           ExternalMountPoints::GetSystemInstance());
   cros_mount_provider->AddSystemMountPoints();
-  external_provider_.reset(cros_mount_provider);
-  RegisterMountPointProvider(external_provider_.get());
+  additional_providers_.push_back(cros_mount_provider);
+  DCHECK(cros_mount_provider->CanHandleType(kFileSystemTypeExternal));
 #endif
 
   for (ScopedVector<FileSystemMountPointProvider>::const_iterator iter =
@@ -227,7 +227,8 @@ void FileSystemContext::GetFileSystemTypes(
 
 ExternalFileSystemMountPointProvider*
 FileSystemContext::external_provider() const {
-  return external_provider_.get();
+  return static_cast<ExternalFileSystemMountPointProvider*>(
+      GetMountPointProvider(kFileSystemTypeExternal));
 }
 
 void FileSystemContext::OpenFileSystem(
