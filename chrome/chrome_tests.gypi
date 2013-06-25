@@ -3401,5 +3401,21 @@
         },
       ],
     }],
+    [ 'enable_mdns == 1', {
+      'targets': [{
+          'target_name': 'service_discovery_sniffer',
+          'type': 'executable',
+          'dependencies': [
+            '../net/net.gyp:net',
+            'browser',
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+          ],
+          'sources': [
+            'browser/local_discovery/service_discovery_sniffer.h',
+            'browser/local_discovery/service_discovery_sniffer.cc',
+          ],
+        }]
+    }],
   ],  # 'conditions'
 }
