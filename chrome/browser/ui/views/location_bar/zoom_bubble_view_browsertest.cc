@@ -43,20 +43,10 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, MAYBE_NonImmersiveFullscreen) {
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
 
   // The zoom bubble should be anchored when not in fullscreen.
-  ZoomBubbleView::ShowBubble(web_contents, false);
+  ZoomBubbleView::ShowBubble(web_contents, true);
   ASSERT_TRUE(ZoomBubbleView::IsShowing());
   const ZoomBubbleView* zoom_bubble = ZoomBubbleView::GetZoomBubbleForTest();
   EXPECT_TRUE(zoom_bubble->anchor_view());
-
-#if defined(OS_CHROMEOS)
-  // Switching to tab fullscreen while having the zoom bubble open triggers a
-  // DCHECK in WorkspaceManager::ReparentWindow() during the test but not in
-  // when running chrome.
-  // TODO(pkotwicz): Investigate DCHECK.
-  ZoomBubbleView::CloseBubble();
-  // The zoom bubble is deleted on a task.
-  content::RunAllPendingInMessageLoop();
-#endif
 
   // Entering fullscreen should close the bubble. (We enter into tab fullscreen
   // here because tab fullscreen is non-immersive even when
@@ -76,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, MAYBE_NonImmersiveFullscreen) {
 
   // The bubble should not be anchored when it is shown in non-immersive
   // fullscreen.
-  ZoomBubbleView::ShowBubble(web_contents, false);
+  ZoomBubbleView::ShowBubble(web_contents, true);
   ASSERT_TRUE(ZoomBubbleView::IsShowing());
   zoom_bubble = ZoomBubbleView::GetZoomBubbleForTest();
   EXPECT_FALSE(zoom_bubble->anchor_view());
@@ -133,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 
   // The zoom bubble should be anchored when it is shown in immersive fullscreen
   // and the top-of-window views are revealed.
-  ZoomBubbleView::ShowBubble(web_contents, false);
+  ZoomBubbleView::ShowBubble(web_contents, true);
   ASSERT_TRUE(ZoomBubbleView::IsShowing());
   zoom_bubble = ZoomBubbleView::GetZoomBubbleForTest();
   EXPECT_TRUE(zoom_bubble->anchor_view());
