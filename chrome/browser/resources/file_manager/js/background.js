@@ -315,8 +315,12 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         // The isFocused() method should always be available, but in case
         // Files.app's failed on some error, wrap it with try catch.
         try {
-          if (appWindows[key].contentWindow.isFocused())
-            return key;
+          if (appWindows[key].contentWindow.isFocused()) {
+            if (opt_callback)
+              opt_callback(key);
+            onTaskCompleted();
+            return;
+          }
         } catch (e) {
           console.error(e.message);
         }
