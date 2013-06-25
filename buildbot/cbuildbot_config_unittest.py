@@ -7,6 +7,7 @@
 """Unittests for config.  Needs to be run inside of chroot for mox."""
 
 import json
+import mock
 import os
 import subprocess
 import sys
@@ -441,6 +442,42 @@ class FindFullTest(cros_test_lib.TestCase):
       external, internal = cbuildbot_config.FindFullConfigsForBoard(b)
       AtMostOneConfig(b, 'external', external)
       AtMostOneConfig(b, 'internal', internal)
+
+
+class OverrideForTrybotTest(cros_test_lib.TestCase):
+  """Test config override functionality."""
+
+  def _testWithOptions(self, **kwargs):
+    mock_options = mock.Mock()
+    for k, v in kwargs.iteritems():
+      mock_options.setattr(k, v)
+
+    for config in cbuildbot_config.config.itervalues():
+      cbuildbot_config.OverrideConfigForTrybot(config, mock_options)
+
+  def testLocalTrybot(self):
+    """Override each config for local trybot."""
+    self._testWithOptions(remote_trybot=False, hw_test=False)
+
+  def testRemoteTrybot(self):
+    """Override each config for remote trybot."""
+    self._testWithOptions(remote_trybot=True, hw_test=False)
+
+  def testRemoteHWTest(self):
+    """Override each config for remote trybot + hwtests."""
+    self._testWithOptions(remote_trybot=True, hw_test=True)
+
+  def testChromeInternalOverride(self):
+    """Verify that we are not using official Chrome for local trybots."""
+    mock_options = mock.Mock()
+    mock_options.remote_trybot = False
+    mock_options.hw_test = False
+    old = cbuildbot_config.config['mario-paladin']
+    new = cbuildbot_config.OverrideConfigForTrybot(old, mock_options)
+    self.assertTrue(constants.USE_CHROME_INTERNAL in old['useflags'])
+    self.assertTrue(constants.USE_CHROME_PDF in old['useflags'])
+    self.assertFalse(constants.USE_CHROME_INTERNAL in new['useflags'])
+    self.assertFalse(constants.USE_CHROME_PDF in new['useflags'])
 
 
 if __name__ == '__main__':

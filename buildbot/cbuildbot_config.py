@@ -66,11 +66,14 @@ def OverrideConfigForTrybot(build_config, options):
     if my_config['internal']:
       my_config['overlays'] = constants.BOTH_OVERLAYS
 
-    # Most users don't have access to the pdf repository so disable pdf.
+    # Most users don't have access to the pdf repository so disable pdf along
+    # with all other official_chrome useflags, so that we use the external
+    # chromium prebuilts.
     useflags = my_config['useflags']
-    if (not options.remote_trybot and useflags and
-        constants.USE_CHROME_PDF in useflags):
-      useflags.remove(constants.USE_CHROME_PDF)
+    if not options.remote_trybot and useflags:
+      for chrome_use in official_chrome['useflags']:
+        if chrome_use in useflags:
+          useflags.remove(chrome_use)
 
     # Use the local manifest which only requires elevated access if it's really
     # needed to build.
