@@ -66,6 +66,7 @@ const char kLocalOnlyFlagName[] = "local_only";
 const char kPreloadLocalOnlyNTPFlagName[] = "preload_local_only_ntp";
 const char kUseRemoteNTPOnStartupFlagName[] = "use_remote_ntp_on_startup";
 const char kShowNtpFlagName[] = "show_ntp";
+const char kRecentTabsOnNTPFlagName[] = "show_recent_tabs";
 
 // Constants for the field trial name and group prefix.
 const char kInstantExtendedFieldTrialName[] = "InstantExtended";
@@ -563,6 +564,18 @@ bool ShouldShowInstantNTP() {
     return GetBoolValueForFlagWithDefault(kShowNtpFlagName, true, flags);
   }
   return true;
+}
+
+bool ShouldShowRecentTabsOnNTP() {
+  FieldTrialFlags flags;
+  if (GetFieldTrialInfo(
+          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+          &flags, NULL)) {
+    return GetBoolValueForFlagWithDefault(
+        kRecentTabsOnNTPFlagName, false, flags);
+  }
+
+  return false;
 }
 
 bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {

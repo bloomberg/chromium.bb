@@ -154,6 +154,10 @@ bool ShouldPreloadLocalOnlyNTP();
 // Returns true if the Instant NTP should be shown and false if not.
 bool ShouldShowInstantNTP();
 
+// Returns true if the recent tabs link should be shown on the local NTP in
+// field trials.
+bool ShouldShowRecentTabsOnNTP();
+
 // Returns true if |my_url| matches |other_url|.
 bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url);
 

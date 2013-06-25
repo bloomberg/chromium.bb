@@ -12,9 +12,7 @@ body {
 }
 
 #ntp-contents {
-  position: absolute;
   text-align: -webkit-center;
-  width: 100%;
 }
 
 .non-google-page #ntp-contents {
@@ -313,7 +311,8 @@ body.rtl .mv-page .mv-x {
 }
 
 #mv-notice-links span:hover,
-#mv-notice-links span:focus {
+#mv-notice-links span:focus,
+#recent-tabs:hover {
   text-decoration: underline;
 }
 
@@ -338,13 +337,34 @@ body.rtl .mv-page .mv-x {
   bottom: 0;
   color: #fff;
   cursor: default;
+  display: inline-block;
   font-size: 13px;
-  position: absolute;
-  right: 13px;
+  position: fixed;
+  right: 8px;
   text-align: left;
   z-index: -1;
 }
 
-#attribution img {
-  display: block;
+body.rtl #attribution {
+  text-align: right;
+}
+
+#recent-tabs {
+  background: #fff;
+  border: 1px solid #c0c0c0;
+  border-radius: 2px;
+  bottom: 0;
+  color: rgb(17, 85, 204);
+  cursor: pointer;
+  font-family: Arial;
+  font-size: 14px;
+  opacity: 0.9;
+  padding: 3px;
+  position: fixed;
+  right: 8px;
+}
+
+body.rtl #attribution,body.rtl #recent-tabs {
+  left: 8px;
+  right: auto;
 }

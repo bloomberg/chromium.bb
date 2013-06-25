@@ -53,12 +53,14 @@ var CLASSES = {
  */
 var IDS = {
   ATTRIBUTION: 'attribution',
+  ATTRIBUTION_TEXT: 'attribution-text',
   FAKEBOX: 'fakebox',
   LOGO: 'logo',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
   NTP_CONTENTS: 'ntp-contents',
+  RECENT_TABS: 'recent-tabs',
   RESTORE_ALL_LINK: 'mv-restore',
   TILES: 'mv-tiles',
   UNDO_LINK: 'mv-undo'
@@ -85,6 +87,24 @@ var NTP_DISPOSE_STATE = {
   NONE: 0,  // Preserve the NTP appearance and functionality
   DISABLE_FAKEBOX: 1,
   HIDE_FAKEBOX_AND_LOGO: 2
+};
+
+
+/**
+ * The JavaScript button event value for a middle click.
+ * @type {number}
+ * @const
+ */
+var MIDDLE_MOUSE_BUTTON = 1;
+
+
+/**
+ * Possible behaviors for navigateContentWindow.
+ * @enum {number}
+ */
+var WindowOpenDisposition = {
+  CURRENT_TAB: 1,
+  NEW_BACKGROUND_TAB: 2
 };
 
 
@@ -863,6 +883,19 @@ function isGooglePage() {
 
 
 /**
+ * Extract the desired navigation behavior from a click button.
+ * @param {number} button The Event#button property of a click event.
+ * @return {WindowOpenDisposition} The desired behavior for
+ *     navigateContentWindow.
+ */
+function getDispositionFromClickButton(button) {
+  if (button == MIDDLE_MOUSE_BUTTON)
+    return WindowOpenDisposition.NEW_BACKGROUND_TAB;
+  return WindowOpenDisposition.CURRENT_TAB;
+}
+
+
+/**
  * Prepares the New Tab Page by adding listeners, rendering the current
  * theme, the most visited pages section, and Google-specific elements for a
  * Google-provided page.
@@ -895,6 +928,19 @@ function init() {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }
 
+  var recentTabsText = templateData.recentTabs;
+  if (recentTabsText) {
+    var recentTabsLink = document.createElement('span');
+    recentTabsLink.id = IDS.RECENT_TABS;
+    recentTabsLink.addEventListener('click', function(event) {
+      ntpApiHandle.navigateContentWindow(
+          'chrome://history', getDispositionFromClickButton(event.button));
+    });
+    recentTabsLink.textContent = recentTabsText;
+    ntpContents.appendChild(recentTabsLink);
+    // Move the attribution up to prevent it from overlapping.
+    attribution.style.bottom = '28px';
+  }
 
   var notificationMessage = $(IDS.NOTIFICATION_MESSAGE);
   notificationMessage.textContent = templateData.thumbnailRemovedNotification;
@@ -906,7 +952,7 @@ function init() {
   restoreAllLink.addEventListener('click', onRestoreAll);
   registerKeyHandler(restoreAllLink, KEYCODE.ENTER, onUndo);
   restoreAllLink.textContent = templateData.restoreThumbnailsShort;
-  attribution.textContent = templateData.attributionIntro;
+  $(IDS.ATTRIBUTION_TEXT).textContent = templateData.attributionIntro;
 
   var notificationCloseButton = $(IDS.NOTIFICATION_CLOSE_BUTTON);
   notificationCloseButton.addEventListener('click', hideNotification);

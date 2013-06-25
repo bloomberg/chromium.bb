@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
@@ -71,6 +72,8 @@ void AddString(base::DictionaryValue* dictionary,
 // Returns a JS dictionary of translated strings for the local NTP.
 std::string GetTranslatedStrings() {
   base::DictionaryValue translated_strings;
+  if (chrome::ShouldShowRecentTabsOnNTP())
+    AddString(&translated_strings, "recentTabs", IDS_RECENT_TABS_MENU);
   AddString(&translated_strings, "thumbnailRemovedNotification",
             IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION);
   AddString(&translated_strings, "removeThumbnailTooltip",
