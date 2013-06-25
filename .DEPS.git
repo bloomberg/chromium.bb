@@ -68,11 +68,11 @@ deps = {
     'src/third_party/libjpeg_turbo':
         Var('git_url') + '/chromium/deps/libjpeg_turbo.git@82ce8a6d4ebe12a177c0c3597192f2b4f09e81c3',
     'src/third_party/libphonenumber/src/phonenumbers':
-        Var('git_url') + '/external/libphonenumber/cpp/src/phonenumbers.git@a6eef04c15f45d5916ee3429d24665c49148b99b',
+        Var('git_url') + '/external/libphonenumber/cpp/src/phonenumbers.git@c636308f0ab6fb1af7589eaf0917103dc22fa61e',
     'src/third_party/libphonenumber/src/resources':
-        Var('git_url') + '/external/libphonenumber/resources.git@4e9022bbb030ae3c7e8b647a5fd0b39a87e613ae',
+        Var('git_url') + '/external/libphonenumber/resources.git@ba3bf9736e48fc0616bb26b1823feeb58a09de54',
     'src/third_party/libphonenumber/src/test':
-        Var('git_url') + '/external/libphonenumber/cpp/test.git@db7f8bd462a209bbe81a0989e2f4387e74636ec5',
+        Var('git_url') + '/external/libphonenumber/cpp/test.git@e2bb3065e131fa719af112b6aa55177769cd2428',
     'src/third_party/libsrtp':
         Var('git_url') + '/chromium/deps/libsrtp.git@e151e5175dd9067c64365884b36e85f9832ae36d',
     'src/third_party/libvpx':
