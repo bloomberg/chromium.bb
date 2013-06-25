@@ -539,6 +539,7 @@ void BubbleGtk::Observe(int type,
 }
 
 void BubbleGtk::StopGrabbingInput() {
+  UngrabPointerAndKeyboard();
   if (!grab_input_)
     return;
   grab_input_ = false;
@@ -596,6 +597,12 @@ void BubbleGtk::GrabPointerAndKeyboard() {
                   << keyboard_grab_status << ")";
     }
   }
+}
+
+void BubbleGtk::UngrabPointerAndKeyboard() {
+  gdk_pointer_ungrab(GDK_CURRENT_TIME);
+  if (grab_input_)
+    gdk_keyboard_ungrab(GDK_CURRENT_TIME);
 }
 
 gboolean BubbleGtk::OnGtkAccelerator(GtkAccelGroup* group,

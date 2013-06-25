@@ -172,6 +172,11 @@ class BubbleGtk : public content::NotificationObserver {
   // sure that we have the input focus.
   void GrabPointerAndKeyboard();
 
+  // Ungrab (in the X sense) the pointer and keyboard.  This is needed to make
+  // sure that we release the input focus, e.g. when an extension popup
+  // is inspected by the DevTools.
+  void UngrabPointerAndKeyboard();
+
   CHROMEG_CALLBACK_3(BubbleGtk, gboolean, OnGtkAccelerator, GtkAccelGroup*,
                      GObject*, guint, GdkModifierType);
 
