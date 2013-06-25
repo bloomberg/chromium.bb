@@ -5,54 +5,86 @@
 // TODO(courage): documentation.
 namespace identity {
 
-  [nodoc] dictionary TokenDetails {
-    // Whether to prompt the user to log in or grant scope permissions (if they
-    // have not already done so). Default is false.
+  dictionary TokenDetails {
+    // Fetching a token may require the user to sign-in to Chrome, or
+    // approve the application's requested scopes. If the interactive
+    // flag is <code>true</code>, <code>getAuthToken</code> will
+    // prompt the user as necessary. When the flag is
+    // <code>false</code> or ommitted, <code>getAuthToken</code> will
+    // return failure any time a prompt would be required.
     boolean? interactive;
   };
 
-  [nodoc] dictionary InvalidTokenDetails {
+  dictionary InvalidTokenDetails {
     // The specific token that should be removed from the cache.
     DOMString token;
   };
 
-  [nodoc] dictionary WebAuthFlowDetails {
+  dictionary WebAuthFlowDetails {
     // The URL that initiates the auth flow.
     DOMString url;
 
-    // Whether to launch auth flow in interactive mode. Default is false.
+    // Whether to launch auth flow in interactive mode.
+    //
+    // Since some auth flows may immediately redirect to a result URL,
+    // <code>launchWebAuthFlow</code> hides its web view until the
+    // first navigation either redirects to the final URL, or finishes
+    // loading a page meant to be displayed.
+    //
+    // If the interactive flag is <code>true</code>, the window will
+    // be displayed when a page load completes. If the flag is
+    // <code>false</code> or ommitted, <code>launchWebAuthFlow</code>
+    // will return with an error if the initial navigation does not
+    // complete the flow.
     boolean? interactive;
   };
 
-  [nodoc] callback GetAuthTokenCallback = void (optional DOMString token);
-  [nodoc] callback InvalidateAuthTokenCallback = void ();
-  [nodoc] callback LaunchWebAuthFlowCallback = void (optional DOMString responseUrl);
+  callback GetAuthTokenCallback = void (optional DOMString token);
+  callback InvalidateAuthTokenCallback = void ();
+  callback LaunchWebAuthFlowCallback = void (optional DOMString responseUrl);
 
   interface Functions {
-    // Gets an OAuth2 access token as specified by the manifest.
+    // Gets an OAuth2 access token using the client ID and scopes
+    // specified in the <a
+    // href="app_identity.html#update_manifest"><code>oauth2</code>
+    // section of manifest.json</a>.
+    //
+    // The Identity API caches access tokens in memory, so it's ok to
+    // call <code>getAuthToken</code> any time a token is
+    // required. The token cache automatically handles expiration.
     //
     // |details| : Token options.
     // |callback| : Called with an OAuth2 access token as specified by the
     // manifest, or undefined if there was an error.
-    [nodoc] static void getAuthToken(optional TokenDetails details,
-                                     GetAuthTokenCallback callback);
+    static void getAuthToken(optional TokenDetails details,
+                             GetAuthTokenCallback callback);
 
     // Removes an OAuth2 access token from the Identity API's token cache.
-    // When an access token is discovered to be invalid, it should be
-    // passed to removeCachedAuthToken to remove it from the cache. The
-    // app may then retrieve a fresh token with getAuthToken.
+    //
+    // If an access token is discovered to be invalid, it should be
+    // passed to removeCachedAuthToken to remove it from the
+    // cache. The app may then retrieve a fresh token with
+    // <code>getAuthToken</code>.
     //
     // |details| : Token information.
     // |callback| : Called when the token has been removed from the cache.
-    [nodoc] static void removeCachedAuthToken(
+    static void removeCachedAuthToken(
         InvalidTokenDetails details, InvalidateAuthTokenCallback callback);
 
     // Starts an auth flow at the specified URL.
     //
+    // This method enables auth flows with non-Google identity
+    // providers by launching a web view and navigating it to the
+    // first URL in the provider's auth flow. When the provider
+    // redirects to a URL matching the pattern
+    // <code>https://&lt;app-id&gt;.chromiumapp.org/*</code>, the
+    // window will close, and the final redirect URL will be passed to
+    // the <var>callback</var> function.
+    //
     // |details| : WebAuth flow options.
     // |callback| : Called with the URL redirected back to your application.
-    [nodoc] static void launchWebAuthFlow(WebAuthFlowDetails details,
-                                          LaunchWebAuthFlowCallback callback);
+    static void launchWebAuthFlow(WebAuthFlowDetails details,
+                                  LaunchWebAuthFlowCallback callback);
   }
   ;
 };

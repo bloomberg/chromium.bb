@@ -8,7 +8,7 @@ they don’t load over HTTP and can’t perform redirects or set cookies.
 </p>
 
 <p>
-Use the <a href="experimental.identity.html">Chrome Identity API</a>
+Use the <a href="identity.html">Chrome Identity API</a>
 to authenticate users:
 the <code>getAuthToken</code> for users logged into their Google Account and
 the <code>launchWebAuthFlow</code> for users logged into a non-Google account.
@@ -61,16 +61,13 @@ Here are the five steps you need to complete:
 <h3 id="add_permissions">Add permissions and upload app</h3>
 
 <p>
-The identity API is still experimental.
-You need to make sure the experimental
-and identity permissions are in your manifest.
-You can then upload your app to the apps and extensions management page
-(see <a href="publish_app.html">Publish</a>).
+You need to make sure the identity permission is in your manifest.
+You can then upload your app to the apps and extensions management
+page (see <a href="publish_app.html">Publish</a>).
 </p>
 
 <pre>
 "permissions": [
-  "experimental",
   "identity"
  ]
 </pre>
@@ -154,7 +151,7 @@ You are now ready to get the auth token:
 </p>
 
 <pre>
-chrome.experimental.identity.getAuthToken(function(token) { })
+chrome.identity.getAuthToken(function(token) { })
 </pre>
 
 <h2 id="non">Non-Google account authentication</h2>
@@ -210,7 +207,7 @@ To get the token:
 </p>
 
 <pre>
-chrome.experimental.identity.launchWebAuthFlow(
+chrome.identity.launchWebAuthFlow(
   {‘url’: ‘&lt;url-to-do-auth>’, ‘interactive’: true},
   function(redirect_url) { // Extract token from redirect_url });
 </pre>
