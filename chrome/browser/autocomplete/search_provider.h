@@ -184,13 +184,20 @@ class SearchProvider : public AutocompleteProvider,
   //           highly fragmented SearchProvider logic for each Result type.
   class Result {
    public:
-    Result(bool from_keyword_provider, int relevance);
+    Result(bool from_keyword_provider,
+           int relevance,
+           bool relevance_from_server);
     virtual ~Result();
 
     bool from_keyword_provider() const { return from_keyword_provider_; }
 
     int relevance() const { return relevance_; }
     void set_relevance(int relevance) { relevance_ = relevance; }
+
+    bool relevance_from_server() const { return relevance_from_server_; }
+    void set_relevance_from_server(bool relevance_from_server) {
+      relevance_from_server_ = relevance_from_server;
+    }
 
     // Returns if this result is inlineable against the current input |input|.
     // Non-inlineable results are stale.
@@ -209,13 +216,22 @@ class SearchProvider : public AutocompleteProvider,
 
     // The relevance score.
     int relevance_;
+
+   private:
+    // Whether this result's relevance score was fully or partly calculated
+    // based on server information, and thus is assumed to be more accurate.
+    // This is ultimately used in
+    // SearchProvider::ConvertResultsToAutocompleteMatches(), see comments
+    // there.
+    bool relevance_from_server_;
   };
 
   class SuggestResult : public Result {
    public:
     SuggestResult(const string16& suggestion,
                   bool from_keyword_provider,
-                  int relevance);
+                  int relevance,
+                  bool relevance_from_server);
     virtual ~SuggestResult();
 
     const string16& suggestion() const { return suggestion_; }
@@ -239,7 +255,8 @@ class SearchProvider : public AutocompleteProvider,
                      const GURL& url,
                      const string16& description,
                      bool from_keyword_provider,
-                     int relevance);
+                     int relevance,
+                     bool relevance_from_server);
     virtual ~NavigationResult();
 
     const GURL& url() const { return url_; }
@@ -281,8 +298,7 @@ class SearchProvider : public AutocompleteProvider,
     ~Results();
 
     // Clears |suggest_results| and |navigation_results| and resets
-    // |has_suggested_relevance| and |verbatim_relevance| to default
-    // values (false and -1 (implies unset), respectively).
+    // |verbatim_relevance| to -1 (implies unset).
     void Clear();
 
     // Returns whether any of the results (including verbatim) have
@@ -294,9 +310,6 @@ class SearchProvider : public AutocompleteProvider,
 
     // Navigational suggestions sorted by relevance score.
     NavigationResults navigation_results;
-
-    // Flag indicating server supplied relevance score.
-    bool has_suggested_relevance;
 
     // The server supplied verbatim relevance scores. Negative values
     // indicate that there is no suggested score; a value of 0
@@ -394,9 +407,10 @@ class SearchProvider : public AutocompleteProvider,
   void UpdateMatches();
 
   // Converts an appropriate number of navigation results in
-  // |navigation_results| to matches and adds them to |matches_|.
+  // |navigation_results| to matches and adds them to |matches|.
   void AddNavigationResultsToMatches(
-      const NavigationResults& navigation_results);
+      const NavigationResults& navigation_results,
+      ACMatches* matches);
 
   // Adds a match for each result in |results| to |map|. |is_keyword| indicates
   // whether the results correspond to the keyword provider or default provider.
@@ -416,8 +430,10 @@ class SearchProvider : public AutocompleteProvider,
   void AddSuggestResultsToMap(const SuggestResults& results, MatchMap* map);
 
   // Gets the relevance score for the verbatim result.  This value may be
-  // provided by the suggest server or calculated locally.
-  int GetVerbatimRelevance() const;
+  // provided by the suggest server or calculated locally; if
+  // |relevance_from_server| is non-NULL, it will be set to indicate which of
+  // those is true.
+  int GetVerbatimRelevance(bool* relevance_from_server) const;
 
   // Calculates the relevance score for the verbatim result from the
   // default search engine.  This version takes into account context:
@@ -432,10 +448,11 @@ class SearchProvider : public AutocompleteProvider,
   int CalculateRelevanceForVerbatimIgnoringKeywordModeState() const;
 
   // Gets the relevance score for the keyword verbatim result.
+  // |relevance_from_server| is handled as in GetVerbatimRelevance().
   // TODO(mpearson): Refactor so this duplication isn't necesary or
   // restructure so one static function takes all the parameters it needs
   // (rather than looking at internal state).
-  int GetKeywordVerbatimRelevance() const;
+  int GetKeywordVerbatimRelevance(bool* relevance_from_server) const;
 
   // |time| is the time at which this query was last seen.  |is_keyword|
   // indicates whether the results correspond to the keyword provider or default
@@ -451,6 +468,7 @@ class SearchProvider : public AutocompleteProvider,
   void AddMatchToMap(const string16& query_string,
                      const string16& input_text,
                      int relevance,
+                     bool relevance_from_server,
                      AutocompleteMatch::Type type,
                      int accepted_suggestion,
                      bool is_keyword,
@@ -475,6 +493,13 @@ class SearchProvider : public AutocompleteProvider,
   // The amount of time to wait before sending a new suggest request after the
   // previous one.  Non-const because some unittests modify this value.
   static int kMinimumTimeBetweenSuggestQueriesMs;
+
+  // We annotate our AutocompleteMatches with whether their relevance scores
+  // were server-provided using this key in the |additional_info| field.
+  static const char kRelevanceFromServerKey[];
+  // These are the values we record with the above key.
+  static const char kTrue[];
+  static const char kFalse[];
 
   // Maintains the TemplateURLs used.
   Providers providers_;

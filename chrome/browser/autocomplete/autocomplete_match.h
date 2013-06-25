@@ -214,6 +214,10 @@ struct AutocompleteMatch {
   void RecordAdditionalInfo(const std::string& property,
                             const base::Time& value);
 
+  // Returns the value recorded for |property| in the |additional_info|
+  // dictionary.  Returns the empty string if no such value exists.
+  std::string GetAdditionalInfo(const std::string& property) const;
+
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
   // no provider (or memory of the user's selection).

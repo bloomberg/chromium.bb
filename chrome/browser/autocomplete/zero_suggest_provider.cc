@@ -285,11 +285,11 @@ void ZeroSuggestProvider::FillResults(
         if (descriptions != NULL)
           descriptions->GetString(index, &title);
         navigation_results->push_back(SearchProvider::NavigationResult(
-            *this, url, title, false, relevance));
+            *this, url, title, false, relevance, relevances != NULL));
       }
     } else {
       suggest_results->push_back(SearchProvider::SuggestResult(
-          result, false, relevance));
+          result, false, relevance, relevances != NULL));
     }
   }
 }

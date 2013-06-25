@@ -436,6 +436,12 @@ void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
                        UTF16ToUTF8(base::TimeFormatShortDateAndTime(value)));
 }
 
+std::string AutocompleteMatch::GetAdditionalInfo(
+    const std::string& property) const {
+  AdditionalInfo::const_iterator i(additional_info.find(property));
+  return (i == additional_info.end()) ? std::string() : i->second;
+}
+
 #ifndef NDEBUG
 void AutocompleteMatch::Validate() const {
   ValidateClassifications(contents, contents_class);

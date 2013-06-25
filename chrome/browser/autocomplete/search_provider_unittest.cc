@@ -1204,6 +1204,7 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
     const std::string description = "for input with json=" + cases[i].json;
     const ACMatches& matches = provider_->matches();
     // The top match must inline and score as highly as calculated verbatim.
+    ASSERT_FALSE(matches.empty());
     EXPECT_NE(string16::npos, matches[0].inline_autocomplete_offset) <<
         description;
     EXPECT_GE(matches[0].relevance, 1300) << description;
@@ -1567,20 +1568,20 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         { "k a", false },
         { kNotApplicable, false } } },
     // Check when there is neither verbatim nor a query suggestion that,
-    // because we can demote navsuggestions below a query suggestion,
+    // because we can't demote navsuggestions below a query suggestion,
     // we abandon suggested relevance scores entirely.  One consequence is
     // that this means we restore the keyword verbatim match.  Note
     // that in this case of abandoning suggested relevance scores, we still
-    // keep the navsuggestions in the same order, and continue to allow multiple
-    // navsuggestions to appear.
+    // keep the navsuggestions in the same order, but we revert to only allowing
+    // one navigation to appear because the scores are completely local.
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
         "\"google:verbatimrelevance\":0,"
         "\"google:suggestrelevance\":[9998, 9999]}]",
       { { "a", true },
         { "a2.com", false },
-        { "a1.com", false },
         { "k a", false },
+        { kNotApplicable, false },
         { kNotApplicable, false } } },
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
@@ -1588,8 +1589,8 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
         "\"google:suggestrelevance\":[9999, 9998]}]",
       { { "a", true },
         { "a1.com", false },
-        { "a2.com", false },
         { "k a", false },
+        { kNotApplicable, false },
         { kNotApplicable, false } } },
     // More checks that everything works when it's not necessary to demote.
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\", \"a3\"],[],[],"
@@ -1636,6 +1637,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     const std::string description = "for input with json=" + cases[i].json;
     const ACMatches& matches = provider_->matches();
     // The top match must inline and score as highly as calculated verbatim.
+    ASSERT_FALSE(matches.empty());
     EXPECT_NE(string16::npos, matches[0].inline_autocomplete_offset) <<
         description;
     EXPECT_GE(matches[0].relevance, 1300) << description;
@@ -1651,6 +1653,116 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     // Ensure that no expected matches are missing.
     for (; j < ARRAYSIZE_UNSAFE(cases[i].matches); ++j)
       EXPECT_EQ(kNotApplicable, cases[i].matches[j].contents) <<
+          "Case # " << i << " " << description;
+  }
+}
+
+TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
+  // Enable Instant Extended in order to allow an increased number of
+  // suggestions.  Unfortunately this requires us to call FinalizeInstantQuery()
+  // every time, and also means we'll clamp non-verbatim results to score below
+  // the verbatim result (see http://crbug.com/251493 ).
+  chrome::EnableInstantExtendedAPIForTesting();
+
+  // We hardcode the string "term1" below, so ensure that the search term that
+  // got added to history already is that string.
+  ASSERT_EQ(ASCIIToUTF16("term1"), term1_);
+  string16 term = term1_.substr(0, term1_.length() - 1);
+
+  AddSearchToHistory(default_t_url_, term + ASCIIToUTF16("2"), 2);
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+
+  struct {
+    const string16 input;
+    const std::string json;
+    const std::string matches[6];
+  } cases[] = {
+    // The verbatim result is always first because of the clamping mentioned
+    // above.  The history results are in alphabetical order because they score
+    // the same and thus are pulled out of the MatchMap in the order of their
+    // map keys.
+    { term,
+      "[\"term\",[\"a1\", \"a2\", \"a3\"],[],[],"
+       "{\"google:suggesttype\":[\"QUERY\", \"QUERY\", \"QUERY\"],"
+        "\"google:suggestrelevance\":[1, 2, 3]}]",
+      { "term", "term1", "term2", "a3", "a2", "a1" } },
+    // Because we already have three suggestions by the time we see the history
+    // results, they don't get returned.
+    { term,
+      "[\"term\",[\"a1\", \"a2\", \"a3\"],[],[],"
+       "{\"google:suggesttype\":[\"QUERY\", \"QUERY\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":1350,"
+        "\"google:suggestrelevance\":[1340, 1330, 1320]}]",
+      { "term", "a1", "a2", "a3", kNotApplicable, kNotApplicable } },
+    // If we only have two suggestions, we have room for a history result.
+    { term,
+      "[\"term\",[\"a1\", \"a2\"],[],[],"
+       "{\"google:suggesttype\":[\"QUERY\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":1350,"
+        "\"google:suggestrelevance\":[1330, 1310]}]",
+      { "term", "a1", "a2", "term1", kNotApplicable, kNotApplicable } },
+    // If we have more than three suggestions, they should all be returned as
+    // long as we have enough total space for them.
+    { term,
+      "[\"term\",[\"a1\", \"a2\", \"a3\", \"a4\"],[],[],"
+       "{\"google:suggesttype\":[\"QUERY\", \"QUERY\", \"QUERY\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":1350,"
+        "\"google:suggestrelevance\":[1340, 1330, 1320, 1310]}]",
+      { "term", "a1", "a2", "a3", "a4", kNotApplicable } },
+    { term,
+      "[\"term\",[\"a1\", \"a2\", \"a3\", \"a4\", \"a5\", \"a6\"],[],[],"
+       "{\"google:suggesttype\":[\"QUERY\", \"QUERY\", \"QUERY\", \"QUERY\","
+                                "\"QUERY\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":1350,"
+        "\"google:suggestrelevance\":[1340, 1330, 1320, 1310, 1300, 1290]}]",
+      { "term", "a1", "a2", "a3", "a4", "a5" } },
+    { term,
+      "[\"term\",[\"a1\", \"a2\", \"a3\", \"a4\"],[],[],"
+       "{\"google:suggesttype\":[\"QUERY\", \"QUERY\", \"QUERY\", \"QUERY\"],"
+        "\"google:verbatimrelevance\":1350,"
+        "\"google:suggestrelevance\":[1330, 1310, 1290, 1270]}]",
+      { "term", "a1", "a2", "term1", "a3", "a4" } },
+    // When the input looks like a URL, we disallow having a query as the
+    // highest-ranking result.  If the query was provided by a suggestion, we
+    // reset the suggest scores to enforce this (see
+    // SearchProvider::UpdateMatches()).  Even if we reset the suggest scores,
+    // however, we should still allow navsuggestions to be treated as
+    // server-provided.
+    { ASCIIToUTF16("a.com"),
+      "[\"a.com\",[\"a1\", \"a2\", \"a.com/1\", \"a.com/2\"],[],[],"
+       "{\"google:suggesttype\":[\"QUERY\", \"QUERY\", \"NAVIGATION\","
+                                "\"NAVIGATION\"],"
+        // A verbatim query for URL-like input scores 850, so the navigation
+        // scores here should bracket it.
+        "\"google:suggestrelevance\":[9999, 9998, 900, 800]}]",
+      { "a.com/1", "a.com", "a.com/2", "a1", kNotApplicable, kNotApplicable } },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+    QueryForInput(cases[i].input, false, false);
+    provider_->FinalizeInstantQuery(string16(), InstantSuggestion());
+    net::TestURLFetcher* fetcher = WaitUntilURLFetcherIsReady(
+        SearchProvider::kDefaultProviderURLFetcherID);
+    ASSERT_TRUE(fetcher);
+    fetcher->set_response_code(200);
+    fetcher->SetResponseString(cases[i].json);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    RunTillProviderDone();
+
+    const std::string description = "for input with json=" + cases[i].json;
+    const ACMatches& matches = provider_->matches();
+
+    // Ensure no extra matches are present.
+    ASSERT_LE(matches.size(), 6U);
+
+    size_t j = 0;
+    // Ensure that the returned matches equal the expectations.
+    for (; j < matches.size(); ++j)
+      EXPECT_EQ(ASCIIToUTF16(cases[i].matches[j]),
+                matches[j].contents) << description;
+    // Ensure that no expected matches are missing.
+    for (; j < ARRAYSIZE_UNSAFE(cases[i].matches); ++j)
+      EXPECT_EQ(kNotApplicable, cases[i].matches[j]) <<
           "Case # " << i << " " << description;
   }
 }
@@ -1929,7 +2041,8 @@ TEST_F(SearchProviderTest, NavigationInline) {
     QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
     AutocompleteMatch match(
         provider_->NavigationToMatch(SearchProvider::NavigationResult(
-            *provider_.get(), GURL(cases[i].url), string16(), false, 0)));
+            *provider_.get(), GURL(cases[i].url), string16(), false, 0,
+            false)));
     EXPECT_EQ(cases[i].inline_offset, match.inline_autocomplete_offset);
     EXPECT_EQ(ASCIIToUTF16(cases[i].fill_into_edit), match.fill_into_edit);
   }
@@ -1940,7 +2053,7 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
   const string16 input(ASCIIToUTF16("ht"));
   const string16 url(ASCIIToUTF16("http://a.com"));
   const SearchProvider::NavigationResult result(
-      *provider_.get(), GURL(url), string16(), false, 0);
+      *provider_.get(), GURL(url), string16(), false, 0, false);
 
   // Check the offset and strings when inline autocompletion is allowed.
   QueryForInput(input, false, false);
@@ -1962,7 +2075,8 @@ TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   QueryForInput(ASCIIToUTF16("w"), false, false);
   AutocompleteMatch match(
       provider_->NavigationToMatch(SearchProvider::NavigationResult(
-          *provider_.get(), GURL("http://www.wow.com"), string16(), false, 0)));
+          *provider_.get(), GURL("http://www.wow.com"), string16(), false, 0,
+          false)));
   EXPECT_EQ(5U, match.inline_autocomplete_offset);
   EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.fill_into_edit);
   EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.contents);
@@ -2124,11 +2238,12 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
         provider_->default_results_.navigation_results.push_back(
             SearchProvider::NavigationResult(
                 *provider_.get(), GURL(suggestion), string16(), false,
-                cases[i].results[j].relevance));
+                cases[i].results[j].relevance, false));
       } else {
         provider_->default_results_.suggest_results.push_back(
             SearchProvider::SuggestResult(ASCIIToUTF16(suggestion), false,
-                                          cases[i].results[j].relevance));
+                                          cases[i].results[j].relevance,
+                                          false));
       }
     }
 
