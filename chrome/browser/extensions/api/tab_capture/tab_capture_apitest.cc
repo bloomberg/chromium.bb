@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ActiveTabPermission) {
 #elif defined(USE_AURA) || defined(OS_MACOSX)
 // These don't always fire fullscreen events when run in tests. Tested manually.
 #define MAYBE_FullscreenEvents DISABLED_FullscreenEvents
-#elif defined(OS_LINUX) && defined(NDEBUG)
+#elif defined(OS_LINUX)
 // Flaky to get out of fullscreen in tests. Tested manually.
 #define MAYBE_FullscreenEvents DISABLED_FullscreenEvents
 #else
