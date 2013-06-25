@@ -12,3 +12,5 @@ PepperGamepadHostTest.WaitForReply
 WebContentsVideoCaptureDeviceTest.*
 # crbug.com/167045
 ContentViewPopupZoomerTest.testPopupZoomerShowsUp
+# crbug.com/254034
+PageStateSerializationTest.BackwardsCompat_v11
