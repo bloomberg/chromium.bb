@@ -59,7 +59,7 @@ class FakeDriveServiceTest : public testing::Test {
   // Returns true if the resource identified by |resource_id| exists.
   bool Exists(const std::string& resource_id) {
     scoped_ptr<ResourceEntry> resource_entry = FindEntry(resource_id);
-    return resource_entry;
+    return resource_entry && !resource_entry->deleted();
   }
 
   // Adds a new directory at |parent_resource_id| with the given name.
@@ -272,6 +272,31 @@ TEST_F(FakeDriveServiceTest, Search_Offline) {
   EXPECT_FALSE(resource_list);
 }
 
+TEST_F(FakeDriveServiceTest, Search_Deleted) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.DeleteResource("file:2_file_resource_id",
+                               std::string(),  // etag
+                               test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(HTTP_SUCCESS, error);
+
+  error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.Search(
+      "File",  // search_query
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Do some sanity check. There are 4 entries that contain "File" in their
+  // titles and one of them is deleted.
+  EXPECT_EQ(3U, resource_list->entries().size());
+}
+
 TEST_F(FakeDriveServiceTest, SearchByTitle) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
@@ -393,6 +418,43 @@ TEST_F(FakeDriveServiceTest, GetChangeList_Offline) {
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_list);
+}
+
+TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+  // Load the account_metadata.json as well to add the largest changestamp
+  // (654321) to the existing entries.
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+  // Add a new directory in the root directory. The new directory will have
+  // the changestamp of 654322.
+  ASSERT_TRUE(Exists("file:2_file_resource_id"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.DeleteResource("file:2_file_resource_id",
+                               std::string(),  // etag
+                               test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(HTTP_SUCCESS, error);
+  ASSERT_FALSE(Exists("file:2_file_resource_id"));
+
+  // Get the resource list newer than 654321.
+  error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetChangeList(
+      654321 + 1,  // start_changestamp
+      test_util::CreateCopyResultCallback(&error, &resource_list));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // The result should only contain the newly created directory.
+  ASSERT_EQ(1U, resource_list->entries().size());
+  const ResourceEntry& entry = *resource_list->entries()[0];
+  EXPECT_EQ("file:2_file_resource_id", entry.resource_id());
+  EXPECT_TRUE(entry.deleted());
+  EXPECT_EQ(1, fake_service_.change_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetAllResourceList) {
@@ -753,6 +815,14 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   // Resource "file:2_file_resource_id" should be gone now.
+  EXPECT_FALSE(Exists("file:2_file_resource_id"));
+
+  error = GDATA_OTHER_ERROR;
+  fake_service_.DeleteResource("file:2_file_resource_id",
+                               std::string(),  // etag
+                               test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
   EXPECT_FALSE(Exists("file:2_file_resource_id"));
 }
 

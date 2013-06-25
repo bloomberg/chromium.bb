@@ -35,6 +35,7 @@ using google_apis::EntryActionCallback;
 using google_apis::GDataErrorCode;
 using google_apis::GDATA_FILE_ERROR;
 using google_apis::GDATA_NO_CONNECTION;
+using google_apis::GDATA_OTHER_ERROR;
 using google_apis::GetAboutResourceCallback;
 using google_apis::GetAppListCallback;
 using google_apis::GetContentCallback;
@@ -528,16 +529,21 @@ CancelCallback FakeDriveService::DeleteResource(
       if (entries->GetDictionary(i, &entry) &&
           entry->GetString("gd$resourceId.$t", &current_resource_id) &&
           resource_id == current_resource_id) {
-        entries->Remove(i, NULL);
+        GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+        if (entry->HasKey("gd$deleted")) {
+          error = HTTP_NOT_FOUND;
+        } else {
+          entry->Set("gd$deleted", new DictionaryValue);
+          AddNewChangestampAndETag(entry);
+          error = HTTP_SUCCESS;
+        }
         base::MessageLoop::current()->PostTask(
-            FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
+            FROM_HERE, base::Bind(callback, error));
         return CancelCallback();
       }
     }
   }
 
-  // TODO(satorux): Add support for returning "deleted" entries in
-  // changelists from GetResourceList().
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
   return CancelCallback();
@@ -1411,6 +1417,11 @@ void FakeDriveService::GetResourceListInternal(
     // See https://developers.google.com/google-apps/documents-list/
     // #retrieving_all_changes_since_a_given_changestamp
     if (start_changestamp > 0 && entry->changestamp() < start_changestamp)
+      should_exclude = true;
+
+    // If the caller requests other list than change list by specifying
+    // zero-|start_changestamp|, exclude deleted entry from the result.
+    if (!start_changestamp && entry->deleted())
       should_exclude = true;
 
     // The entry matched the criteria for inclusion.
