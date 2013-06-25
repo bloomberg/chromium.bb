@@ -36,4 +36,7 @@
   gestures_log(GESTURES_LOG_ERROR, "ERROR:%s:%d:" format "\n", \
                __FILE__, __LINE__, ## __VA_ARGS__)
 
+#define MTStatLog(tag, timestamp) \
+  gestures_log(GESTURES_LOG_INFO, "%f:MTStat:%s\n", (timestamp), (tag))
+
 #endif  // GESTURES_LOGGING_H__
