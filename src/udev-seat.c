@@ -115,6 +115,11 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 
 	wl_list_insert(seat->devices_list.prev, &device->link);
 
+	if (seat->base.output && seat->base.pointer)
+		weston_pointer_clamp(seat->base.pointer,
+				     &seat->base.pointer->x,
+				     &seat->base.pointer->y);
+
 	return 0;
 }
 

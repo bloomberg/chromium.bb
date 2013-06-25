@@ -1728,6 +1728,25 @@ parse_transform(const char *transform, const char *output_name)
 	return WL_OUTPUT_TRANSFORM_NORMAL;
 }
 
+static void
+setup_output_seat_constraint(struct drm_compositor *ec,
+			     struct weston_output *output,
+			     const char *s)
+{
+	if (strcmp(s, "") != 0) {
+		struct udev_seat *seat;
+
+		seat = udev_seat_get_named(&ec->base, s);
+		if (seat)
+			seat->base.output = output;
+
+		if (seat && seat->base.pointer)
+			weston_pointer_clamp(seat->base.pointer,
+					     &seat->base.pointer->x,
+					     &seat->base.pointer->y);
+	}
+}
+
 static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
@@ -1794,6 +1813,10 @@ create_output_for_connector(struct drm_compositor *ec,
 	weston_config_section_get_int(section, "scale", &scale, 1);
 	weston_config_section_get_string(section, "transform", &s, "normal");
 	transform = parse_transform(s, output->base.name);
+	free(s);
+
+	weston_config_section_get_string(section, "seat", &s, "");
+	setup_output_seat_constraint(ec, &output->base, s);
 	free(s);
 
 	output->crtc_id = resources->crtcs[i];

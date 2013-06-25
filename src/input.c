@@ -574,6 +574,8 @@ weston_pointer_clamp(struct weston_pointer *pointer, wl_fixed_t *fx, wl_fixed_t 
 	old_y = wl_fixed_to_int(pointer->y);
 
 	wl_list_for_each(output, &ec->output_list, link) {
+		if (pointer->seat->output && pointer->seat->output != output)
+			continue;
 		if (pixman_region32_contains_point(&output->region,
 						   x, y, NULL))
 			valid = 1;
@@ -582,7 +584,10 @@ weston_pointer_clamp(struct weston_pointer *pointer, wl_fixed_t *fx, wl_fixed_t 
 			prev = output;
 	}
 
-	if (!valid) {
+	if (!prev)
+		prev = pointer->seat->output;
+
+	if (prev && !valid) {
 		if (x < prev->x)
 			*fx = wl_fixed_from_int(prev->x);
 		else if (x >= prev->x + prev->width)

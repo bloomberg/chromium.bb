@@ -437,6 +437,8 @@ struct weston_seat {
 	struct weston_keyboard *keyboard;
 	struct weston_touch *touch;
 
+	struct weston_output *output; /* constraint */
+
 	struct wl_signal destroy_signal;
 
 	struct weston_compositor *compositor;
