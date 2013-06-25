@@ -19,6 +19,7 @@ class VIEWS_EXPORT OverlayScrollBar : public BaseScrollBar {
  protected:
   // BaseScrollBar overrides:
   virtual gfx::Rect GetTrackBounds() const OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // ScrollBar overrides:
   virtual int GetLayoutSize() const OVERRIDE;

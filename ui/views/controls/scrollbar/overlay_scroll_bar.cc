@@ -62,10 +62,15 @@ gfx::Size OverlayScrollBarThumb::GetPreferredSize() {
 void OverlayScrollBarThumb::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect local_bounds(GetLocalBounds());
   SkPaint paint;
-  int alpha = (GetState() == CustomButton::STATE_HOVERED ||
-               GetState() == CustomButton::STATE_PRESSED) ?
-      kThumbHoverAlpha : kThumbDefaultAlpha;
-  alpha *= animation_opacity_;
+  int alpha = kThumbDefaultAlpha * animation_opacity_;
+  if (GetState() == CustomButton::STATE_HOVERED) {
+    alpha = kThumbHoverAlpha * animation_opacity_;
+  } else if(GetState() == CustomButton::STATE_PRESSED) {
+    // If we are in pressed state, no need to worry about animation,
+    // just display the deeper color.
+    alpha = kThumbHoverAlpha;
+  }
+
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(SkColorSetARGB(alpha, 0, 0, 0));
   canvas->DrawRoundRect(local_bounds, kThumbCornerRadius, paint);
@@ -117,6 +122,22 @@ void OverlayScrollBar::OnMouseEnteredScrollView(const ui::MouseEvent& event) {
 
 void OverlayScrollBar::OnMouseExitedScrollView(const ui::MouseEvent& event) {
   animation_.Hide();
+}
+
+void OverlayScrollBar::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      animation_.Show();
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
+    case ui::ET_GESTURE_END:
+      animation_.Hide();
+      break;
+    default:
+      break;
+  }
+  BaseScrollBar::OnGestureEvent(event);
 }
 
 gfx::Size OverlayScrollBar::GetPreferredSize() {
