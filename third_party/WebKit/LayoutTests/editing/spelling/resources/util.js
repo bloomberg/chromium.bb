@@ -5,16 +5,14 @@ function log(msg)
 
 function verifySpellTest(nretry)
 {
-    if (!nretry) {
-        log("FAIL Spellcheck timed out");
-        finishJSTest()
-        return;
-    }
-    if (!internals.markerCountForNode(destination.childNodes[0], "spelling")) {
+    var node = destination;
+    if (destination.childNodes.length > 0)
+        node = destination.childNodes[0];
+    if (nretry && !internals.markerCountForNode(node, "spelling")) {
         window.setTimeout(function() { verifySpellTest(nretry - 1); }, 0);
         return;
     }
-    testFunctionCallback(destination.childNodes[0]);
+    testFunctionCallback(node);
     finishJSTest()
 }
 

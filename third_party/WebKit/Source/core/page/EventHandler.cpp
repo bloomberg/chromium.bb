@@ -429,14 +429,15 @@ void EventHandler::selectClosestMisspellingFromHitTestResult(const HitTestResult
 
     if (innerNode && innerNode->renderer()) {
         VisiblePosition pos(innerNode->renderer()->positionForPoint(result.localPoint()));
+        Position start = pos.deepEquivalent();
+        Position end = pos.deepEquivalent();
         if (pos.isNotNull()) {
-            RefPtr<Range> range = makeRange(pos, pos);
             Vector<DocumentMarker*> markers = innerNode->document()->markers()->markersInRange(
-                range.get(), DocumentMarker::Spelling | DocumentMarker::Grammar);
+                makeRange(pos, pos).get(), DocumentMarker::Spelling | DocumentMarker::Grammar);
             if (markers.size() == 1) {
-                range->setStart(innerNode, markers[0]->startOffset());
-                range->setEnd(innerNode, markers[0]->endOffset());
-                newSelection = VisibleSelection(range.get());
+                start.moveToOffset(markers[0]->startOffset());
+                end.moveToOffset(markers[0]->endOffset());
+                newSelection = VisibleSelection(start, end);
             }
         }
 
