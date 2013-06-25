@@ -858,15 +858,15 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
 
 bool PrintWebViewHelper::GetPrintFrame(WebKit::WebFrame** frame) {
   DCHECK(frame);
-  DCHECK(render_view()->GetWebView());
-  if (!render_view()->GetWebView())
+  WebKit::WebView* webView = render_view()->GetWebView();
+  DCHECK(webView);
+  if (!webView)
     return false;
 
   // If the user has selected text in the currently focused frame we print
   // only that frame (this makes print selection work for multiple frames).
-  *frame = render_view()->GetWebView()->focusedFrame()->hasSelection() ?
-      render_view()->GetWebView()->focusedFrame() :
-      render_view()->GetWebView()->mainFrame();
+  WebKit::WebFrame* focusedFrame = webView->focusedFrame();
+  *frame = focusedFrame->hasSelection() ? focusedFrame : webView->mainFrame();
   return true;
 }
 
