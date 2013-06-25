@@ -145,7 +145,7 @@ do_package() {
     --define "_binary_payload w9.bzdio" \
     --define "__os_install_post  %{nil}" \
     "${SPEC}"
-  PKGNAME="${PACKAGE}-${CHANNEL}-${VERSION}-${REVISION}"
+  PKGNAME="${PACKAGE}-${CHANNEL}-${VERSION}-${PACKAGE_RELEASE}"
   mv "$RPMBUILD_DIR/RPMS/$ARCHITECTURE/${PKGNAME}.${ARCHITECTURE}.rpm" \
      "${OUTPUTDIR}"
   # Make sure the package is world-readable, otherwise it causes problems when

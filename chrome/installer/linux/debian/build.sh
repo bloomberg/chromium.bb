@@ -224,7 +224,7 @@ fi
 source ${BUILDDIR}/installer/common/installer.include
 
 get_version_info
-VERSIONFULL="${VERSION}-r${REVISION}"
+VERSIONFULL="${VERSION}-${PACKAGE_RELEASE}"
 
 if [ "$CHROMIUM_BUILD" = "_google_chrome" ]; then
   source "${BUILDDIR}/installer/common/google-chrome.info"

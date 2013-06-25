@@ -9,7 +9,7 @@ Summary         : @@MENUNAME@@
 License         : Multiple, see @@PRODUCTURL@@
 Name            : @@PACKAGE@@-@@CHANNEL@@
 Version         : @@VERSION@@
-Release         : @@REVISION@@
+Release         : @@PACKAGE_RELEASE@@
 Group           : Applications/Internet
 Vendor          : @@COMPANY_FULLNAME@@
 Url             : @@PRODUCTURL@@
