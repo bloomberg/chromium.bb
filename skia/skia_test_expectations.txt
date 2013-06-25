@@ -48,16 +48,6 @@
 #
 # START OVERRIDES HERE
 
-# Skia r9262 (don't overclamp cubics (see skbug.com/1316)) changed
-# the way curves are drawn. The changes to this image are imperceptible
-crbug.com/243726 svg/as-background-image/svg-as-background-6.html [ ImageOnlyFailure ]
-
-# Skia's roll to r9450 caused some changes to the layout tests
-# In particular, the change to rendering some large fonts using paths
-# altered an svg test
-crbug.com/247306 svg/custom/use-referencing-nonexisting-symbol.svg [ Failure ImageOnlyFailure ]
-crbug.com/247306 [ Linux ] fast/text/international/spaces-combined-in-vertical-text.html [ Failure ]
-
 # With the Skia DEPS roll to r9631 (https://codereview.chromium.org/17078006/)
 # some layout test images changed. This is most likely due to r9605 
 # (https://code.google.com/p/skia/source/detail?r=9605)
@@ -65,22 +55,7 @@ crbug.com/250525 css3/filters/custom/custom-filter-nonseparable-blend-mode-color
 crbug.com/250525 css3/filters/custom/custom-filter-nonseparable-blend-mode-hue.html [ ImageOnlyFailure Crash ]
 crbug.com/250525 css3/filters/custom/custom-filter-nonseparable-blend-mode-luminosity.html [ ImageOnlyFailure Crash ]
 crbug.com/250525 css3/filters/custom/custom-filter-nonseparable-blend-mode-saturation.html [ ImageOnlyFailure Crash ]
-crbug.com/250525 svg/W3C-SVG-1.1/masking-intro-01-f.svg [ ImageOnlyFailure ]
-crbug.com/250525 svg/css/circle-in-mask-with-shadow.svg [ ImageOnlyFailure ]
 crbug.com/250525 svg/custom/grayscale-gradient-mask-2.svg [ ImageOnlyFailure ]
-crbug.com/250525 svg/custom/mask-colorspace.svg [ ImageOnlyFailure ]
-crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-dom-baseFrequency-attr.html [ ImageOnlyFailure ]
-crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-dom-numOctaves-attr.html [ ImageOnlyFailure ]
-crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-dom-seed-attr.html [ ImageOnlyFailure ]
-crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-dom-stitchTiles-attr.html [ ImageOnlyFailure ]
-crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-dom-type-attr.html [ ImageOnlyFailure ]
-crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-svgdom-baseFrequency-prop.html [ ImageOnlyFailure ]
-crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-svgdom-numOctaves-prop.html [ ImageOnlyFailure ]
-crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-svgdom-seed-prop.html [ ImageOnlyFailure ]
-crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-svgdom-stitchTiles-prop.html [ ImageOnlyFailure ]
-crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-svgdom-type-prop.html [ ImageOnlyFailure ]
-crbug.com/250525 svg/filters/filter-clip.svg [ ImageOnlyFailure ]
-crbug.com/250525 svg/W3C-SVG-1.1/filters-turb-01-f.svg [ ImageOnlyFailure ]
 crbug.com/250525 svg/W3C-SVG-1.1/filters-turb-02-f.svg [ ImageOnlyFailure ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
