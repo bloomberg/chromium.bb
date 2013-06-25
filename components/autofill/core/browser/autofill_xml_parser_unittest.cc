@@ -165,8 +165,8 @@ TEST_F(AutofillQueryXmlParserTest, ParseExperimentId) {
   EXPECT_EQ("ServerSmartyPants", experiment_id_);
 }
 
-// Fails on Linux ASAN bot. http://crbug.com/253797
-#if defined(OS_LINUX)
+// Fails on ASAN bot. http://crbug.com/253797
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_ParseAutofillFlow DISABLED_ParseAutofillFlow
 #else
 #define MAYBE_ParseAutofillFlow ParseAutofillFlow
