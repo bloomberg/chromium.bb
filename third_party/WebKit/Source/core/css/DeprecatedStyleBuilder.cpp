@@ -1282,82 +1282,6 @@ public:
     static PropertyHandler createHandler() { return PropertyHandler(&applyInheritValue, &applyInitialValue, &applyValue); }
 };
 
-template <typename T,
-          T (CSSAnimationData::*getterFunction)() const,
-          void (CSSAnimationData::*setterFunction)(T),
-          bool (CSSAnimationData::*testFunction)() const,
-          void (CSSAnimationData::*clearFunction)(),
-          T (*initialFunction)(),
-          void (CSSToStyleMap::*mapFunction)(CSSAnimationData*, CSSValue*),
-          CSSAnimationDataList* (RenderStyle::*animationGetterFunction)(),
-          const CSSAnimationDataList* (RenderStyle::*immutableAnimationGetterFunction)() const>
-class ApplyPropertyAnimation {
-public:
-    static void setValue(CSSAnimationData* animation, T value) { (animation->*setterFunction)(value); }
-    static T value(const CSSAnimationData* animation) { return (animation->*getterFunction)(); }
-    static bool test(const CSSAnimationData* animation) { return (animation->*testFunction)(); }
-    static void clear(CSSAnimationData* animation) { (animation->*clearFunction)(); }
-    static T initial() { return (*initialFunction)(); }
-    static void map(StyleResolver* styleResolver, CSSAnimationData* animation, CSSValue* value) { (styleResolver->styleMap()->*mapFunction)(animation, value); }
-    static CSSAnimationDataList* accessAnimations(RenderStyle* style) { return (style->*animationGetterFunction)(); }
-    static const CSSAnimationDataList* animations(RenderStyle* style) { return (style->*immutableAnimationGetterFunction)(); }
-
-    static void applyInheritValue(CSSPropertyID, StyleResolver* styleResolver)
-    {
-        CSSAnimationDataList* list = accessAnimations(styleResolver->style());
-        const CSSAnimationDataList* parentList = animations(styleResolver->parentStyle());
-        size_t i = 0, parentSize = parentList ? parentList->size() : 0;
-        for ( ; i < parentSize && test(parentList->animation(i)); ++i) {
-            if (list->size() <= i)
-                list->append(CSSAnimationData::create());
-            setValue(list->animation(i), value(parentList->animation(i)));
-            list->animation(i)->setAnimationMode(parentList->animation(i)->animationMode());
-        }
-
-        /* Reset any remaining animations to not have the property set. */
-        for ( ; i < list->size(); ++i)
-            clear(list->animation(i));
-    }
-
-    static void applyInitialValue(CSSPropertyID propertyID, StyleResolver* styleResolver)
-    {
-        CSSAnimationDataList* list = accessAnimations(styleResolver->style());
-        if (list->isEmpty())
-            list->append(CSSAnimationData::create());
-        setValue(list->animation(0), initial());
-        if (propertyID == CSSPropertyWebkitTransitionProperty)
-            list->animation(0)->setAnimationMode(CSSAnimationData::AnimateAll);
-        for (size_t i = 1; i < list->size(); ++i)
-            clear(list->animation(i));
-    }
-
-    static void applyValue(CSSPropertyID, StyleResolver* styleResolver, CSSValue* value)
-    {
-        CSSAnimationDataList* list = accessAnimations(styleResolver->style());
-        size_t childIndex = 0;
-        if (value->isValueList()) {
-            /* Walk each value and put it into an animation, creating new animations as needed. */
-            for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
-                if (childIndex <= list->size())
-                    list->append(CSSAnimationData::create());
-                map(styleResolver, list->animation(childIndex), i.value());
-                ++childIndex;
-            }
-        } else {
-            if (list->isEmpty())
-                list->append(CSSAnimationData::create());
-            map(styleResolver, list->animation(childIndex), value);
-            childIndex = 1;
-        }
-        for ( ; childIndex < list->size(); ++childIndex) {
-            /* Reset all remaining animations to not have the property set. */
-            clear(list->animation(childIndex));
-        }
-    }
-
-    static PropertyHandler createHandler() { return PropertyHandler(&applyInheritValue, &applyInitialValue, &applyValue); }
-};
-
 class ApplyPropertyOutlineStyle {
 public:
     static void applyInheritValue(CSSPropertyID propertyID, StyleResolver* styleResolver)
@@ -1671,14 +1595,6 @@ DeprecatedStyleBuilder::DeprecatedStyleBuilder()
     setPropertyHandler(CSSPropertyTextIndent, ApplyPropertyTextIndent::createHandler());
     setPropertyHandler(CSSPropertyTextRendering, ApplyPropertyFont<TextRenderingMode, &FontDescription::textRenderingMode, &FontDescription::setTextRenderingMode, AutoTextRendering>::createHandler());
     setPropertyHandler(CSSPropertyVerticalAlign, ApplyPropertyVerticalAlign::createHandler());
-    setPropertyHandler(CSSPropertyWebkitAnimationDelay, ApplyPropertyAnimation<double, &CSSAnimationData::delay, &CSSAnimationData::setDelay, &CSSAnimationData::isDelaySet, &CSSAnimationData::clearDelay, &CSSAnimationData::initialAnimationDelay, &CSSToStyleMap::mapAnimationDelay, &RenderStyle::accessAnimations, &RenderStyle::animations>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitAnimationDirection, ApplyPropertyAnimation<CSSAnimationData::AnimationDirection, &CSSAnimationData::direction, &CSSAnimationData::setDirection, &CSSAnimationData::isDirectionSet, &CSSAnimationData::clearDirection, &CSSAnimationData::initialAnimationDirection, &CSSToStyleMap::mapAnimationDirection, &RenderStyle::accessAnimations, &RenderStyle::animations>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitAnimationDuration, ApplyPropertyAnimation<double, &CSSAnimationData::duration, &CSSAnimationData::setDuration, &CSSAnimationData::isDurationSet, &CSSAnimationData::clearDuration, &CSSAnimationData::initialAnimationDuration, &CSSToStyleMap::mapAnimationDuration, &RenderStyle::accessAnimations, &RenderStyle::animations>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitAnimationFillMode, ApplyPropertyAnimation<unsigned, &CSSAnimationData::fillMode, &CSSAnimationData::setFillMode, &CSSAnimationData::isFillModeSet, &CSSAnimationData::clearFillMode, &CSSAnimationData::initialAnimationFillMode, &CSSToStyleMap::mapAnimationFillMode, &RenderStyle::accessAnimations, &RenderStyle::animations>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitAnimationIterationCount, ApplyPropertyAnimation<double, &CSSAnimationData::iterationCount, &CSSAnimationData::setIterationCount, &CSSAnimationData::isIterationCountSet, &CSSAnimationData::clearIterationCount, &CSSAnimationData::initialAnimationIterationCount, &CSSToStyleMap::mapAnimationIterationCount, &RenderStyle::accessAnimations, &RenderStyle::animations>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitAnimationName, ApplyPropertyAnimation<const String&, &CSSAnimationData::name, &CSSAnimationData::setName, &CSSAnimationData::isNameSet, &CSSAnimationData::clearName, &CSSAnimationData::initialAnimationName, &CSSToStyleMap::mapAnimationName, &RenderStyle::accessAnimations, &RenderStyle::animations>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitAnimationPlayState, ApplyPropertyAnimation<EAnimPlayState, &CSSAnimationData::playState, &CSSAnimationData::setPlayState, &CSSAnimationData::isPlayStateSet, &CSSAnimationData::clearPlayState, &CSSAnimationData::initialAnimationPlayState, &CSSToStyleMap::mapAnimationPlayState, &RenderStyle::accessAnimations, &RenderStyle::animations>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitAnimationTimingFunction, ApplyPropertyAnimation<const PassRefPtr<TimingFunction>, &CSSAnimationData::timingFunction, &CSSAnimationData::setTimingFunction, &CSSAnimationData::isTimingFunctionSet, &CSSAnimationData::clearTimingFunction, &CSSAnimationData::initialAnimationTimingFunction, &CSSToStyleMap::mapAnimationTimingFunction, &RenderStyle::accessAnimations, &RenderStyle::animations>::createHandler());
     setPropertyHandler(CSSPropertyWebkitAspectRatio, ApplyPropertyAspectRatio::createHandler());
     setPropertyHandler(CSSPropertyWebkitBorderHorizontalSpacing, ApplyPropertyComputeLength<short, &RenderStyle::horizontalBorderSpacing, &RenderStyle::setHorizontalBorderSpacing, &RenderStyle::initialHorizontalBorderSpacing>::createHandler());
     setPropertyHandler(CSSPropertyWebkitBorderVerticalSpacing, ApplyPropertyComputeLength<short, &RenderStyle::verticalBorderSpacing, &RenderStyle::setVerticalBorderSpacing, &RenderStyle::initialVerticalBorderSpacing>::createHandler());
@@ -1695,10 +1611,6 @@ DeprecatedStyleBuilder::DeprecatedStyleBuilder()
     setPropertyHandler(CSSPropertyWebkitPerspectiveOrigin, ApplyPropertyExpanding<SuppressValue, CSSPropertyWebkitPerspectiveOriginX, CSSPropertyWebkitPerspectiveOriginY>::createHandler());
     setPropertyHandler(CSSPropertyWebkitTextEmphasisStyle, ApplyPropertyTextEmphasisStyle::createHandler());
     setPropertyHandler(CSSPropertyWebkitTransformOriginZ, ApplyPropertyComputeLength<float, &RenderStyle::transformOriginZ, &RenderStyle::setTransformOriginZ, &RenderStyle::initialTransformOriginZ>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitTransitionDelay, ApplyPropertyAnimation<double, &CSSAnimationData::delay, &CSSAnimationData::setDelay, &CSSAnimationData::isDelaySet, &CSSAnimationData::clearDelay, &CSSAnimationData::initialAnimationDelay, &CSSToStyleMap::mapAnimationDelay, &RenderStyle::accessTransitions, &RenderStyle::transitions>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitTransitionDuration, ApplyPropertyAnimation<double, &CSSAnimationData::duration, &CSSAnimationData::setDuration, &CSSAnimationData::isDurationSet, &CSSAnimationData::clearDuration, &CSSAnimationData::initialAnimationDuration, &CSSToStyleMap::mapAnimationDuration, &RenderStyle::accessTransitions, &RenderStyle::transitions>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitTransitionProperty, ApplyPropertyAnimation<CSSPropertyID, &CSSAnimationData::property, &CSSAnimationData::setProperty, &CSSAnimationData::isPropertySet, &CSSAnimationData::clearProperty, &CSSAnimationData::initialAnimationProperty, &CSSToStyleMap::mapAnimationProperty, &RenderStyle::accessTransitions, &RenderStyle::transitions>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitTransitionTimingFunction, ApplyPropertyAnimation<const PassRefPtr<TimingFunction>, &CSSAnimationData::timingFunction, &CSSAnimationData::setTimingFunction, &CSSAnimationData::isTimingFunctionSet, &CSSAnimationData::clearTimingFunction, &CSSAnimationData::initialAnimationTimingFunction, &CSSToStyleMap::mapAnimationTimingFunction, &RenderStyle::accessTransitions, &RenderStyle::transitions>::createHandler());
     setPropertyHandler(CSSPropertyWebkitClipPath, ApplyPropertyClipPath<&RenderStyle::clipPath, &RenderStyle::setClipPath, &RenderStyle::initialClipPath>::createHandler());
     setPropertyHandler(CSSPropertyWebkitShapeInside, ApplyPropertyShape<&RenderStyle::shapeInside, &RenderStyle::setShapeInside, &RenderStyle::initialShapeInside>::createHandler());
     setPropertyHandler(CSSPropertyWebkitShapeOutside, ApplyPropertyShape<&RenderStyle::shapeOutside, &RenderStyle::setShapeOutside, &RenderStyle::initialShapeOutside>::createHandler());

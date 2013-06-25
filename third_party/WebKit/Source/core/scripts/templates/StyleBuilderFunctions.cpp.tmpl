@@ -1,4 +1,4 @@
-{% from "macros.tmpl" import wrap_with_condition -%}
+{% from "macros.tmpl" import lower_first, wrap_with_condition -%}
 
 {#
     This file is for property handlers which use the templating engine to
@@ -32,6 +32,75 @@ void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolv
 {%- endmacro %}
 
 namespace WebCore {
+
+{%- macro apply_animation(property_id, attribute, animation) %}
+{{ apply_initial(property_id) }}
+{
+    CSSAnimationDataList* list = styleResolver->style()->access{{animation}}();
+    if (list->isEmpty())
+        list->append(CSSAnimationData::create());
+    list->animation(0)->set{{attribute}}(CSSAnimationData::initialAnimation{{attribute}}());
+    {%- if property_id == "CSSPropertyWebkitTransitionProperty" %}
+        list->animation(0)->setAnimationMode(CSSAnimationData::AnimateAll);
+    {%- endif %}
+    for (size_t i = 1; i < list->size(); ++i)
+        list->animation(i)->clear{{attribute}}();
+}
+
+{{ apply_inherit(property_id) }}
+{
+    CSSAnimationDataList* list = styleResolver->style()->access{{animation}}();
+    const CSSAnimationDataList* parentList = styleResolver->parentStyle()->{{animation|lower}}();
+    size_t i = 0, parentSize = parentList ? parentList->size() : 0;
+    for ( ; i < parentSize && parentList->animation(i)->is{{attribute}}Set(); ++i) {
+        if (list->size() <= i)
+            list->append(CSSAnimationData::create());
+        list->animation(i)->set{{attribute}}(parentList->animation(i)->{{lower_first(attribute)}}());
+        list->animation(i)->setAnimationMode(parentList->animation(i)->animationMode());
+    }
+
+    // Reset any remaining animations to not have the property set.
+    for ( ; i < list->size(); ++i)
+        list->animation(i)->clear{{attribute}}();
+}
+
+{{ apply_value(property_id) }}
+{
+    CSSAnimationDataList* list = styleResolver->style()->access{{animation}}();
+    size_t childIndex = 0;
+    if (value->isValueList()) {
+        // Walk each value and put it into an animation, creating new animations as needed.
+        for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
+            if (childIndex <= list->size())
+                list->append(CSSAnimationData::create());
+            styleResolver->styleMap()->mapAnimation{{attribute}}(list->animation(childIndex), i.value());
+            ++childIndex;
+        }
+    } else {
+        if (list->isEmpty())
+            list->append(CSSAnimationData::create());
+        styleResolver->styleMap()->mapAnimation{{attribute}}(list->animation(childIndex), value);
+        childIndex = 1;
+    }
+    for ( ; childIndex < list->size(); ++childIndex) {
+        // Reset all remaining animations to not have the property set.
+        list->animation(childIndex)->clear{{attribute}}();
+    }
+}
+{%- endmacro %}
+
+{{ apply_animation("CSSPropertyWebkitAnimationDelay", "Delay", "Animations") }}
+{{ apply_animation("CSSPropertyWebkitAnimationDirection", "Direction", "Animations") }}
+{{ apply_animation("CSSPropertyWebkitAnimationDuration", "Duration", "Animations") }}
+{{ apply_animation("CSSPropertyWebkitAnimationFillMode", "FillMode", "Animations") }}
+{{ apply_animation("CSSPropertyWebkitAnimationIterationCount", "IterationCount", "Animations") }}
+{{ apply_animation("CSSPropertyWebkitAnimationName", "Name", "Animations") }}
+{{ apply_animation("CSSPropertyWebkitAnimationPlayState", "PlayState", "Animations") }}
+{{ apply_animation("CSSPropertyWebkitAnimationTimingFunction", "TimingFunction", "Animations") }}
+{{ apply_animation("CSSPropertyWebkitTransitionDelay", "Delay", "Transitions") }}
+{{ apply_animation("CSSPropertyWebkitTransitionDuration", "Duration", "Transitions") }}
+{{ apply_animation("CSSPropertyWebkitTransitionProperty", "Property", "Transitions") }}
+{{ apply_animation("CSSPropertyWebkitTransitionTimingFunction", "TimingFunction", "Transitions") }}
 
 {%- macro apply_auto(property_id, auto_getter=none, auto_setter=none, auto_identity="CSSValueAuto", compute_length=false) %}
 {%- set property = properties[property_id] %}
@@ -174,7 +243,7 @@ namespace WebCore {
             currChild = new FillLayer({{fill_layer_type}});
             prevChild->setNext(currChild);
         }
-        currChild->set{{fill_type}}(currParent->{{(fill_type[0]|lower) + fill_type[1:]}}());
+        currChild->set{{fill_type}}(currParent->{{lower_first(fill_type)}}());
         prevChild = currChild;
         currChild = prevChild->next();
         currParent = currParent->next();

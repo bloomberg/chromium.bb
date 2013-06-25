@@ -83,6 +83,14 @@ z-index type_name=int, custom_all
 -webkit-align-content
 -webkit-align-items
 -webkit-align-self type_name=EAlignItems
+-webkit-animation-delay custom_all
+-webkit-animation-direction custom_all
+-webkit-animation-duration custom_all
+-webkit-animation-fillMode custom_all
+-webkit-animation-iteration-count custom_all
+-webkit-animation-name custom_all
+-webkit-animation-play-state custom_all
+-webkit-animation-timing-function custom_all
 -webkit-appearance type_name=ControlPart
 -webkit-backface-visibility
 -webkit-background-clip use_handlers_for=CSSPropertyBackgroundClip
@@ -170,6 +178,10 @@ z-index type_name=int, custom_all
 -webkit-transform-origin-x apply_type=length
 -webkit-transform-origin-y apply_type=length
 -webkit-transform-style name_for_methods=TransformStyle3D
+-webkit-transition-delay custom_all
+-webkit-transition-duration custom_all
+-webkit-transition-property custom_all
+-webkit-transition-timing-function custom_all
 -webkit-user-drag
 -webkit-user-modify
 -webkit-user-select
