@@ -33,9 +33,10 @@ TEST_VIEW(AutofillMainContainerTest, [container_ view])
 
 TEST_F(AutofillMainContainerTest, SubViews) {
   bool hasButtons = false;
+  bool hasTextView = false;
 
   // Should have account chooser, button strip, and details section.
-  EXPECT_EQ(2U, [[[container_ view] subviews] count]);
+  EXPECT_EQ(3U, [[[container_ view] subviews] count]);
   for (NSView* view in [[container_ view] subviews]) {
     NSArray* subviews = [view subviews];
     if ([subviews count] == 2) {
@@ -44,8 +45,11 @@ TEST_F(AutofillMainContainerTest, SubViews) {
       EXPECT_TRUE(
           [[subviews objectAtIndex:1] isKindOfClass:[NSButton class]]);
       hasButtons = true;
+    } else if ([view isKindOfClass:[NSTextView class]]) {
+      hasTextView = true;
     }
   }
 
   EXPECT_TRUE(hasButtons);
+  EXPECT_TRUE(hasTextView);
 }

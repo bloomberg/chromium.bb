@@ -15,6 +15,7 @@
 @class AutofillDialogWindowController;
 @class AutofillSectionContainer;
 @class GTMWidthBasedTweaker;
+@class HyperlinkTextView;
 
 namespace autofill {
   class AutofillDialogController;
@@ -23,12 +24,17 @@ namespace autofill {
 // NSViewController for the main portion of the autofill dialog. Contains
 // account chooser, details for current payment instruments, OK/Cancel.
 // Might dynamically add and remove other elements.
-@interface AutofillMainContainer : NSViewController<AutofillLayout> {
+@interface AutofillMainContainer : NSViewController<AutofillLayout,
+                                                    NSTextViewDelegate> {
  @private
   base::scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
   base::scoped_nsobject<AutofillDetailsContainer> detailsContainer_;
+  base::scoped_nsobject<HyperlinkTextView> legalDocumentsView_;
   AutofillDialogWindowController* target_;
   autofill::AutofillDialogController* controller_;  // Not owned.
+
+  NSSize legalDocumentsSize_;  // Preferred size for legal documents.
+  BOOL legalDocumentsSizeDirty_;  // Dirty marker for preferred size.
 }
 
 @property(assign, nonatomic) AutofillDialogWindowController* target;
@@ -41,6 +47,9 @@ namespace autofill {
 
 // Called when the controller-maintained suggestions model has changed.
 - (void)modelChanged;
+
+// Called when the legal documents text might need to be refreshed.
+- (void)updateLegalDocuments;
 
 @end
 

@@ -14,6 +14,9 @@ const CGFloat kAroundTextPadding = 4;
 // Spacing between buttons.
 const CGFloat kButtonGap = 6;
 
+// Vertical spacing between legal text and details section.
+const int kVerticalSpacing = 8;
+
 }  // namespace
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_CONSTANTS__H_

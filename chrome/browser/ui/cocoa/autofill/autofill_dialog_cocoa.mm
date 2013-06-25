@@ -209,10 +209,6 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 }
 
 - (void)performLayout {
-  // Don't animate when we first show the window.
-  BOOL shouldAnimate =
-      !NSEqualRects(ui::kWindowSizeDeterminedLater, [[self window] frame]);
-
   NSRect contentRect = NSZeroRect;
   contentRect.size = [self preferredSize];
   NSRect clientRect = NSInsetRect(
@@ -234,7 +230,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   }
 
   NSRect frameRect = [[self window] frameRectForContentRect:contentRect];
-  [[self window] setFrame:frameRect display:YES animate:shouldAnimate];
+  [[self window] setFrame:frameRect display:YES];
 }
 
 - (IBAction)accept:(id)sender {
@@ -250,6 +246,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 - (void)updateAccountChooser {
   [accountChooser_ update];
+  [mainContainer_ updateLegalDocuments];
 }
 
 - (void)updateSection:(autofill::DialogSection)section {
