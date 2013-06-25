@@ -176,13 +176,15 @@ class GpuChannel : public IPC::Listener,
 #if defined(OS_ANDROID)
   // Register the StreamTextureProxy class with the gpu process so that all
   // the callbacks will be correctly forwarded to the renderer.
-  void OnRegisterStreamTextureProxy(
-      int32 stream_id, const gfx::Size& initial_size, int32* route_id);
+  void OnRegisterStreamTextureProxy(int32 stream_id, int32* route_id);
 
   // Create a java surface texture object and send it to the renderer process
   // through binder thread.
   void OnEstablishStreamTexture(
       int32 stream_id, int32 primary_id, int32 secondary_id);
+
+  // Set the size of StreamTexture.
+  void OnSetStreamTextureSize(int32 stream_id, const gfx::Size& size);
 #endif
 
   // Collect rendering stats.

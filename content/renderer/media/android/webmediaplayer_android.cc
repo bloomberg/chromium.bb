@@ -435,6 +435,19 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   if (!texture_id_)
     return false;
 
+  // For hidden video element (with style "display:none"), ensure the texture
+  // size is set.
+  if (cached_stream_texture_size_.width != natural_size_.width ||
+      cached_stream_texture_size_.height != natural_size_.height) {
+    stream_texture_factory_->SetStreamTextureSize(
+        stream_id_, gfx::Size(natural_size_.width, natural_size_.height));
+    cached_stream_texture_size_ = natural_size_;
+  }
+
+  // Ensure the target of texture is set before copyTextureCHROMIUM, otherwise
+  // an invalid texture target may be used for copy texture.
+  web_graphics_context->bindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id_);
+
   // The video is stored in an unmultiplied format, so premultiply if
   // necessary.
   web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
@@ -451,6 +464,8 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
   web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
                                     false);
+
+  web_graphics_context->bindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
   return true;
 }
 
@@ -799,9 +814,10 @@ scoped_refptr<media::VideoFrame> WebMediaPlayerAndroid::GetCurrentFrame() {
   if (!stream_texture_proxy_initialized_ && stream_texture_proxy_ &&
       stream_id_ && !needs_external_surface_) {
     gfx::Size natural_size = current_frame_->natural_size();
-    stream_texture_proxy_->BindToCurrentThread(
-        stream_id_, natural_size.width(), natural_size.height());
+    stream_texture_proxy_->BindToCurrentThread(stream_id_);
+    stream_texture_factory_->SetStreamTextureSize(stream_id_, natural_size);
     stream_texture_proxy_initialized_ = true;
+    cached_stream_texture_size_ = natural_size;
   }
   return current_frame_;
 }

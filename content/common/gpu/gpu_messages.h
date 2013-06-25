@@ -450,9 +450,8 @@ IPC_MESSAGE_CONTROL1(GpuChannelMsg_GenerateMailboxNamesReply,
 #if defined(OS_ANDROID)
 // Register the StreamTextureProxy class with the GPU process, so that
 // the renderer process will get notified whenever a frame becomes available.
-IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_RegisterStreamTextureProxy,
+IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_RegisterStreamTextureProxy,
                             int32, /* stream_id */
-                            gfx::Size, /* initial_size */
                             int /* route_id */)
 
 // Tells the GPU process create and send the java surface texture object to
@@ -461,6 +460,12 @@ IPC_MESSAGE_CONTROL3(GpuChannelMsg_EstablishStreamTexture,
                      int32, /* stream_id */
                      int32, /* primary_id */
                      int32 /* secondary_id */)
+
+// Tells the GPU process to set the size of StreamTexture from the given
+// stream Id.
+IPC_MESSAGE_CONTROL2(GpuChannelMsg_SetStreamTextureSize,
+                     int32, /* stream_id */
+                     gfx::Size /* size */)
 #endif
 
 // Tells the GPU process to collect rendering stats.

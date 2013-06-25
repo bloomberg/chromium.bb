@@ -293,6 +293,9 @@ class WebMediaPlayerAndroid
   // Size of the video.
   WebKit::WebSize natural_size_;
 
+  // Size that has been sent to StreamTexture.
+  WebKit::WebSize cached_stream_texture_size_;
+
   // The video frame object used for rendering by the compositor.
   scoped_refptr<media::VideoFrame> current_frame_;
 

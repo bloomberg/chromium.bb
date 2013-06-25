@@ -763,6 +763,8 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                         OnRegisterStreamTextureProxy)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_EstablishStreamTexture,
                         OnEstablishStreamTexture)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_SetStreamTextureSize,
+                        OnSetStreamTextureSize)
 #endif
     IPC_MESSAGE_HANDLER(
         GpuChannelMsg_CollectRenderingStatsForSurface,
@@ -900,19 +902,23 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 
 #if defined(OS_ANDROID)
 void GpuChannel::OnRegisterStreamTextureProxy(
-    int32 stream_id,  const gfx::Size& initial_size, int32* route_id) {
+    int32 stream_id, int32* route_id) {
   // Note that route_id is only used for notifications sent out from here.
   // StreamTextureManager owns all texture objects and for incoming messages
   // it finds the correct object based on stream_id.
   *route_id = GenerateRouteID();
-  stream_texture_manager_->RegisterStreamTextureProxy(
-      stream_id, initial_size, *route_id);
+  stream_texture_manager_->RegisterStreamTextureProxy(stream_id, *route_id);
 }
 
 void GpuChannel::OnEstablishStreamTexture(
     int32 stream_id, int32 primary_id, int32 secondary_id) {
   stream_texture_manager_->EstablishStreamTexture(
       stream_id, primary_id, secondary_id);
+}
+
+void GpuChannel::OnSetStreamTextureSize(
+    int32 stream_id, const gfx::Size& size) {
+  stream_texture_manager_->SetStreamTextureSize(stream_id, size);
 }
 #endif
 

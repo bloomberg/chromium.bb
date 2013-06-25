@@ -25,11 +25,10 @@ StreamTextureHost::~StreamTextureHost() {
     channel_->RemoveRoute(route_id_);
 }
 
-bool StreamTextureHost::Initialize(
-    int stream_id, const gfx::Size& initial_size) {
+bool StreamTextureHost::Initialize(int32 stream_id) {
   if (channel_.get() && stream_id) {
     if (channel_->Send(new GpuChannelMsg_RegisterStreamTextureProxy(
-      stream_id, initial_size, &route_id_))) {
+      stream_id, &route_id_))) {
       stream_id_ = stream_id;
       channel_->AddRoute(route_id_, weak_ptr_factory_.GetWeakPtr());
     }

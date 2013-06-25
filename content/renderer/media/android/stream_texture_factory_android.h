@@ -24,7 +24,7 @@ class StreamTextureProxy : public StreamTextureHost::Listener {
 
   // Initialize and bind to the current thread, which becomes the thread that
   // a connected client will receive callbacks on.
-  void BindToCurrentThread(int stream_id, int width, int height);
+  void BindToCurrentThread(int32 stream_id);
 
   bool IsBoundToThread() { return loop_.get() != NULL; }
 
@@ -71,13 +71,16 @@ class StreamTextureFactory {
   // object for the given stream_id. After the the surface is created,
   // it will be passed back to the WebMediaPlayerAndroid object identified by
   // the player_id.
-  void EstablishPeer(int stream_id, int player_id);
+  void EstablishPeer(int32 stream_id, int player_id);
 
   // Create the streamTexture and return the stream Id and set the texture id.
   unsigned CreateStreamTexture(unsigned* texture_id);
 
   // Destroy the streamTexture for the given texture Id.
   void DestroyStreamTexture(unsigned texture_id);
+
+  // Set the streamTexture size for the given stream Id.
+  void SetStreamTextureSize(int32 texture_id, const gfx::Size& size);
 
  private:
   WebKit::WebGraphicsContext3D* context_;

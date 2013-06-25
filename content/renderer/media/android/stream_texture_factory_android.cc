@@ -31,11 +31,9 @@ void StreamTextureProxy::SetClient(cc::VideoFrameProvider::Client* client) {
   client_ = client;
 }
 
-void StreamTextureProxy::BindToCurrentThread(int stream_id,
-                                             int width,
-                                             int height) {
+void StreamTextureProxy::BindToCurrentThread(int stream_id) {
   loop_ = base::MessageLoopProxy::current();
-  host_->Initialize(stream_id, gfx::Size(width, height));
+  host_->Initialize(stream_id);
 }
 
 void StreamTextureProxy::OnFrameAvailable() {
@@ -67,7 +65,7 @@ StreamTextureProxy* StreamTextureFactory::CreateProxy() {
   return new StreamTextureProxy(host);
 }
 
-void StreamTextureFactory::EstablishPeer(int stream_id, int player_id) {
+void StreamTextureFactory::EstablishPeer(int32 stream_id, int player_id) {
   DCHECK(channel_.get());
   channel_->Send(
       new GpuChannelMsg_EstablishStreamTexture(stream_id, view_id_, player_id));
@@ -89,6 +87,11 @@ void StreamTextureFactory::DestroyStreamTexture(unsigned texture_id) {
     context_->deleteTexture(texture_id);
     context_->flush();
   }
+}
+
+void StreamTextureFactory::SetStreamTextureSize(
+    int32 stream_id, const gfx::Size& size) {
+  channel_->Send(new GpuChannelMsg_SetStreamTextureSize(stream_id, size));
 }
 
 }  // namespace content

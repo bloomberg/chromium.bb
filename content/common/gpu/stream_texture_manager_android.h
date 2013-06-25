@@ -36,10 +36,10 @@ class StreamTextureManagerAndroid : public gpu::StreamTextureManager {
   virtual gpu::StreamTexture* LookupStreamTexture(uint32 service_id) OVERRIDE;
 
   // Methods invoked from GpuChannel.
-  void RegisterStreamTextureProxy(
-      int32 stream_id, const gfx::Size& initial_size, int32 route_id);
+  void RegisterStreamTextureProxy(int32 stream_id, int32 route_id);
   void EstablishStreamTexture(
       int32 stream_id, int32 primary_id, int32 secondary_id);
+  void SetStreamTextureSize(int32 stream_id, const gfx::Size& size);
 
   // Send new transform matrix.
   void SendMatrixChanged(int route_id,

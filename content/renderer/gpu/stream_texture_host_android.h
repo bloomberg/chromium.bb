@@ -26,7 +26,7 @@ class StreamTextureHost : public IPC::Listener {
   explicit StreamTextureHost(GpuChannelHost* channel);
   virtual ~StreamTextureHost();
 
-  bool Initialize(int stream_id, const gfx::Size& initial_size);
+  bool Initialize(int32 stream_id);
 
   // Listener class that is listening to the stream texture updates. It is
   // implemented by StreamTextureProxyImpl.

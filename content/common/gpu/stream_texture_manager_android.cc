@@ -103,7 +103,7 @@ void StreamTextureManagerAndroid::SendMatrixChanged(
 }
 
 void StreamTextureManagerAndroid::RegisterStreamTextureProxy(
-    int32 stream_id, const gfx::Size& initial_size, int32 route_id) {
+    int32 stream_id, int32 route_id) {
   StreamTextureAndroid* stream_texture = textures_.Lookup(stream_id);
   if (stream_texture) {
     // TODO(sievers): Post from binder thread to IO thread directly.
@@ -118,9 +118,6 @@ void StreamTextureManagerAndroid::RegisterStreamTextureProxy(
     stream_texture->set_matrix_changed_callback(matrix_cb);
     stream_texture->surface_texture_bridge()->SetFrameAvailableCallback(
         frame_cb);
-    stream_texture->surface_texture_bridge()->SetDefaultBufferSize(
-        initial_size.width(), initial_size.height());
-    stream_texture->SetSize(initial_size);
   }
 }
 
@@ -136,6 +133,13 @@ void StreamTextureManagerAndroid::EstablishStreamTexture(
         primary_id,
         secondary_id);
   }
+}
+
+void StreamTextureManagerAndroid::SetStreamTextureSize(
+    int32 stream_id, const gfx::Size& size) {
+  StreamTextureAndroid* stream_texture = textures_.Lookup(stream_id);
+  if (stream_texture)
+    stream_texture->SetSize(size);
 }
 
 }  // namespace content
