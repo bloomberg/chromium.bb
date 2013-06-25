@@ -225,6 +225,7 @@ void PixelBufferRasterWorkerPool::CheckForCompletedUploads() {
       shutdown_ || client()->ShouldForceTasksRequiredForActivationToComplete();
 
   if (should_force_some_uploads_to_complete) {
+    TaskDeque tasks_with_uploads_to_force;
     TaskDeque::iterator it = tasks_with_pending_upload_.begin();
     while (it != tasks_with_pending_upload_.end()) {
       internal::RasterWorkerPoolTask* task = *it;
@@ -233,15 +234,22 @@ void PixelBufferRasterWorkerPool::CheckForCompletedUploads() {
       // Force all uploads required for activation to complete.
       // During shutdown, force all pending uploads to complete.
       if (shutdown_ || IsRasterTaskRequiredForActivation(task)) {
-        resource_provider()->ForceSetPixelsToComplete(task->resource()->id());
-        has_performed_uploads_since_last_flush_ = true;
-
+        tasks_with_uploads_to_force.push_back(task);
         tasks_with_completed_uploads.push_back(task);
         it = tasks_with_pending_upload_.erase(it);
         continue;
       }
 
       ++it;
+    }
+
+    // Force uploads in reverse order. Since forcing can cause a wait on
+    // all previous uploads, we would rather wait only once downstream.
+    for (TaskDeque::reverse_iterator it = tasks_with_uploads_to_force.rbegin();
+         it != tasks_with_uploads_to_force.rend();
+         ++it) {
+      resource_provider()->ForceSetPixelsToComplete((*it)->resource()->id());
+      has_performed_uploads_since_last_flush_ = true;
     }
   }
 
