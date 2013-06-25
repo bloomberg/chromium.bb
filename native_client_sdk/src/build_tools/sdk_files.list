@@ -114,6 +114,17 @@ examples/demo/drive/Makefile
 examples/demo/drive/manifest.json
 [win]examples/demo/make.bat
 examples/demo/Makefile
+examples/demo/earth/background.js
+examples/demo/earth/common.js
+examples/demo/earth/example.js
+examples/demo/earth/icon128.png
+examples/demo/earth/index.html
+examples/demo/earth/Makefile
+[win]examples/demo/earth/make.bat
+examples/demo/earth/manifest.json
+examples/demo/earth/earth.cc
+examples/demo/earth/earth.jpg
+examples/demo/earth/earthnight.jpg
 [win]examples/demo/flock/make.bat
 examples/demo/flock/Makefile
 examples/demo/flock/background.js
