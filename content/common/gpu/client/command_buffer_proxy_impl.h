@@ -114,6 +114,11 @@ class CommandBufferProxyImpl
   bool SignalSyncPoint(uint32 sync_point,
                        const base::Closure& callback);
 
+  // Makes this command buffer invoke a task when a query is completed, or
+  // the command buffer that inserted that sync point is destroyed or the
+  // query was deleted. Should be invoked after endQuery.
+  bool SignalQuery(unsigned query, const base::Closure& callback);
+
   // Generates n unique mailbox names that can be used with
   // GL_texture_mailbox_CHROMIUM. Unlike genMailboxCHROMIUM, this IPC is
   // handled only on the GPU process' IO thread, and so is not effectively

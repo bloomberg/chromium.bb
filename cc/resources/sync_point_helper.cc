@@ -34,4 +34,15 @@ void SyncPointHelper::SignalSyncPoint(
   context3d->signalSyncPoint(sync_point, callback_class);
 }
 
+void SyncPointHelper::SignalQuery(
+    WebKit::WebGraphicsContext3D* context3d,
+    WebKit::WebGLId query,
+    const base::Closure& closure) {
+  SignalSyncPointCallbackClass* callback_class =
+      new SignalSyncPointCallbackClass(closure);
+
+  // Pass ownership of the CallbackClass to WebGraphicsContext3D.
+  context3d->signalQuery(query, callback_class);
+}
+
 }  // namespace cc

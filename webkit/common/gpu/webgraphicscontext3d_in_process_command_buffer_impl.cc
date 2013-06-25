@@ -22,6 +22,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
@@ -55,13 +56,18 @@ using gpu::TransferBuffer;
 using gpu::TransferBufferManager;
 using gpu::TransferBufferManagerInterface;
 
+namespace {
+typedef WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback
+    WebGraphicsSyncPointCallback;
+}
+
 namespace webkit {
 namespace gpu {
 namespace {
 class ImageFactoryInProcess;
 }
 
-class GLInProcessContext {
+class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
  public:
   // These are the same error codes as used by EGL.
   enum Error {
@@ -146,14 +152,15 @@ class GLInProcessContext {
   void LoseContext(uint32 current, uint32 other);
 
   void SetSignalSyncPointCallback(
-      scoped_ptr<
-        WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback> callback);
+      scoped_ptr<WebGraphicsSyncPointCallback> callback);
 
   CommandBufferService* GetCommandBufferService();
 
   ::gpu::gles2::GLES2Decoder* GetDecoder();
 
   void OnResizeView(gfx::Size size, float scale_factor);
+
+  void signalQuery(unsigned query, WebGraphicsSyncPointCallback* callback);
 
  private:
   explicit GLInProcessContext(bool share_resources);
@@ -172,6 +179,10 @@ class GLInProcessContext {
 
   scoped_refptr<ImageFactoryInProcess> GetImageFactory();
 
+  void PollQueryCallbacks();
+  void CallQueryCallback(size_t index);
+
+
   base::Closure context_lost_callback_;
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<CommandBufferService> command_buffer_;
@@ -183,11 +194,22 @@ class GLInProcessContext {
   scoped_ptr<TransferBuffer> transfer_buffer_;
   scoped_ptr<GLES2Implementation> gles2_implementation_;
   scoped_refptr<ImageFactoryInProcess> image_factory_;
-  scoped_ptr<WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback>
-      signal_sync_point_callback_;
+  scoped_ptr<WebGraphicsSyncPointCallback> signal_sync_point_callback_;
   Error last_error_;
   bool share_resources_;
   bool context_lost_;
+
+  struct QueryCallback {
+    QueryCallback(unsigned query_,
+                  WebGraphicsSyncPointCallback* callback_)
+        : query(query_),
+          callback(callback_) {
+    }
+    unsigned query;
+    linked_ptr<WebGraphicsSyncPointCallback> callback;
+  };
+
+  std::vector<QueryCallback> query_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(GLInProcessContext);
 };
@@ -366,9 +388,7 @@ void ImageFactoryInProcess::DeleteGpuMemoryBuffer(unsigned int image_id) {
 
 }  // namespace
 
-static void CallAndDestroy(
-    scoped_ptr<
-      WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback> callback) {
+static void CallAndDestroy(scoped_ptr<WebGraphicsSyncPointCallback> callback) {
   callback->onSyncPointReached();
 }
 
@@ -468,8 +488,7 @@ void GLInProcessContext::LoseContext(uint32 current, uint32 other) {
 }
 
 void GLInProcessContext::SetSignalSyncPointCallback(
-    scoped_ptr<
-      WebKit::WebGraphicsContext3D::WebGraphicsSyncPointCallback> callback) {
+    scoped_ptr<WebGraphicsSyncPointCallback> callback) {
   signal_sync_point_callback_ = callback.Pass();
 }
 
@@ -724,6 +743,10 @@ bool GLInProcessContext::Initialize(
 }
 
 void GLInProcessContext::Destroy() {
+  while (!query_callbacks_.empty()) {
+    CallQueryCallback(0);
+  }
+
   bool context_lost = IsCommandBufferContextLost();
 
   if (gles2_implementation_) {
@@ -1965,6 +1988,54 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::signalSyncPoint(
   context_->SetSignalSyncPointCallback(make_scoped_ptr(callback));
   // Stick something in the command buffer.
   shallowFlushCHROMIUM();
+}
+
+void GLInProcessContext::CallQueryCallback(size_t index) {
+  DCHECK_LT(index, query_callbacks_.size());
+  QueryCallback query_callback = query_callbacks_[index];
+  query_callbacks_[index] = query_callbacks_.back();
+  query_callback.callback->onSyncPointReached();
+}
+
+void GLInProcessContext::PollQueryCallbacks() {
+  for (size_t i = 0; i < query_callbacks_.size();) {
+    unsigned query = query_callbacks_[i].query;
+    GLuint param = 0;
+    GLES2Implementation* gl = GetImplementation();
+    if (gl->IsQueryEXT(query)) {
+      gl->GetQueryObjectuivEXT(query, GL_QUERY_RESULT_AVAILABLE_EXT, &param);
+    } else {
+      param = 1;
+    }
+    if (param) {
+      CallQueryCallback(i);
+    } else {
+      i++;
+    }
+  }
+  if (!query_callbacks_.empty()) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&GLInProcessContext::PollQueryCallbacks,
+                   this->AsWeakPtr()),
+        base::TimeDelta::FromMilliseconds(5));
+  }
+}
+
+void GLInProcessContext::signalQuery(
+    unsigned query,
+    WebGraphicsSyncPointCallback* callback) {
+  query_callbacks_.push_back(QueryCallback(query, callback));
+  // If size > 1, there is already a poll callback pending.
+  if (query_callbacks_.size() == 1) {
+    PollQueryCallbacks();
+  }
+}
+
+void WebGraphicsContext3DInProcessCommandBufferImpl::signalQuery(
+    unsigned query,
+    WebGraphicsSyncPointCallback* callback) {
+  context_->signalQuery(query, callback);
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::loseContextCHROMIUM(

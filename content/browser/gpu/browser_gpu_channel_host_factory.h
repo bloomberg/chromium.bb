@@ -14,7 +14,8 @@
 
 namespace content {
 
-class BrowserGpuChannelHostFactory : public GpuChannelHostFactory {
+class CONTENT_EXPORT BrowserGpuChannelHostFactory
+    : public GpuChannelHostFactory {
  public:
   static void Initialize();
   static void Terminate();

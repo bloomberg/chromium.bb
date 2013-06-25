@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "googleurl/src/gurl.h"
@@ -115,10 +116,11 @@ class WebGraphicsContext3DCommandBufferImpl
 
   // Create & initialize a WebGraphicsContext3DCommandBufferImpl.  Return NULL
   // on any failure.
-  static WebGraphicsContext3DCommandBufferImpl* CreateOffscreenContext(
-      GpuChannelHostFactory* factory,
-      const WebGraphicsContext3D::Attributes& attributes,
-      const GURL& active_url);
+  static CONTENT_EXPORT WebGraphicsContext3DCommandBufferImpl*
+      CreateOffscreenContext(
+          GpuChannelHostFactory* factory,
+          const WebGraphicsContext3D::Attributes& attributes,
+          const GURL& active_url);
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
@@ -135,6 +137,8 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void waitSyncPoint(unsigned int sync_point);
   virtual void signalSyncPoint(unsigned sync_point,
                                WebGraphicsSyncPointCallback* callback);
+  virtual void signalQuery(unsigned query,
+                           WebGraphicsSyncPointCallback* callback);
 
   virtual void reshape(int width, int height);
   virtual void reshapeWithScaleFactor(

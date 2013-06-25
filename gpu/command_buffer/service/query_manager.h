@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_QUERY_MANAGER_H_
 
 #include <deque>
+#include <vector>
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
@@ -67,6 +68,8 @@ class GPU_EXPORT QueryManager {
 
     virtual void Destroy(bool have_context) = 0;
 
+    void AddCallback(base::Closure callback);
+
    protected:
     virtual ~Query();
 
@@ -119,6 +122,8 @@ class GPU_EXPORT QueryManager {
     friend class QueryManagerTest;
     friend class base::RefCounted<Query>;
 
+    void RunCallbacks();
+
     // The manager that owns this Query.
     QueryManager* manager_;
 
@@ -137,6 +142,9 @@ class GPU_EXPORT QueryManager {
 
     // True if deleted.
     bool deleted_;
+
+    // List of callbacks to run when result is available.
+    std::vector<base::Closure> callbacks_;
   };
 
   QueryManager(

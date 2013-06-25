@@ -432,7 +432,26 @@ QueryManager::Query::Query(
   manager_->StartTracking(this);
 }
 
+void QueryManager::Query::RunCallbacks() {
+  for (size_t i = 0; i < callbacks_.size(); i++) {
+    callbacks_[i].Run();
+  }
+  callbacks_.clear();
+}
+
+void QueryManager::Query::AddCallback(base::Closure callback) {
+  if (pending_) {
+    callbacks_.push_back(callback);
+  } else {
+    callback.Run();
+  }
+}
+
 QueryManager::Query::~Query() {
+  // The query is getting deleted, either by the client or
+  // because the context was lost. Call any outstanding
+  // callbacks to avoid leaks.
+  RunCallbacks();
   if (manager_) {
     manager_->StopTracking(this);
     manager_ = NULL;
@@ -466,6 +485,7 @@ bool QueryManager::ProcessPendingQueries() {
     if (query->pending()) {
       break;
     }
+    query->RunCallbacks();
     pending_queries_.pop_front();
   }
 
@@ -485,6 +505,7 @@ bool QueryManager::ProcessPendingTransferQueries() {
     if (query->pending()) {
       break;
     }
+    query->RunCallbacks();
     pending_transfer_queries_.pop_front();
   }
 
@@ -562,5 +583,3 @@ bool QueryManager::EndQuery(Query* query, uint32 submit_count) {
 
 }  // namespace gles2
 }  // namespace gpu
-
-

@@ -434,6 +434,32 @@ bool CommandBufferProxyImpl::SignalSyncPoint(uint32 sync_point,
   return true;
 }
 
+bool CommandBufferProxyImpl::SignalQuery(unsigned query,
+                                         const base::Closure& callback) {
+  if (last_state_.error != gpu::error::kNoError) {
+    return false;
+  }
+
+  // Signal identifiers are hidden, so nobody outside of this class will see
+  // them. (And thus, they cannot save them.) The IDs themselves only last
+  // until the callback is invoked, which will happen as soon as the GPU
+  // catches upwith the command buffer.
+  // A malicious caller trying to create a collision by making next_signal_id
+  // would have to make calls at an astounding rate (300B/s) and even if they
+  // could do that, all they would do is to prevent some callbacks from getting
+  // called, leading to stalled threads and/or memory leaks.
+  uint32 signal_id = next_signal_id_++;
+  if (!Send(new GpuCommandBufferMsg_SignalQuery(route_id_,
+                                                query,
+                                                signal_id))) {
+    return false;
+  }
+
+  signal_tasks_.insert(std::make_pair(signal_id, callback));
+
+  return true;
+}
+
 
 bool CommandBufferProxyImpl::GenerateMailboxNames(
     unsigned num,

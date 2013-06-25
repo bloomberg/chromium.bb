@@ -29,6 +29,7 @@
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/query_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_switches.h"
 
@@ -210,6 +211,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnRetireSyncPoint)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncPoint,
                         OnSignalSyncPoint)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalQuery,
+                        OnSignalQuery)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SendClientManagedMemoryStats,
                         OnReceivedClientManagedMemoryStats)
     IPC_MESSAGE_HANDLER(
@@ -813,6 +816,26 @@ void GpuCommandBufferStub::OnSignalSyncPoint(uint32 sync_point, uint32 id) {
 void GpuCommandBufferStub::OnSignalSyncPointAck(uint32 id) {
   Send(new GpuCommandBufferMsg_SignalSyncPointAck(route_id_, id));
 }
+
+void GpuCommandBufferStub::OnSignalQuery(uint32 query_id, uint32 id) {
+  if (decoder_) {
+    gpu::gles2::QueryManager* query_manager = decoder_->GetQueryManager();
+    if (query_manager) {
+      gpu::gles2::QueryManager::Query* query =
+          query_manager->GetQuery(query_id);
+      if (query) {
+        query->AddCallback(
+          base::Bind(&GpuCommandBufferStub::OnSignalSyncPointAck,
+                     this->AsWeakPtr(),
+                     id));
+        return;
+      }
+    }
+  }
+  // Something went wrong, run callback immediately.
+  OnSignalSyncPointAck(id);
+}
+
 
 void GpuCommandBufferStub::OnReceivedClientManagedMemoryStats(
     const GpuManagedMemoryStats& stats) {

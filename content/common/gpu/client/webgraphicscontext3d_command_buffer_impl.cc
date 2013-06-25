@@ -1541,6 +1541,20 @@ void WebGraphicsContext3DCommandBufferImpl::signalSyncPoint(
       base::Bind(&SignalSyncPointCallback, base::Passed(&own_callback)));
 }
 
+void WebGraphicsContext3DCommandBufferImpl::signalQuery(
+    unsigned query,
+    WebGraphicsSyncPointCallback* callback) {
+  // Take ownership of the callback.
+  scoped_ptr<WebGraphicsSyncPointCallback> own_callback(callback);
+  // Flush any pending commands to make sure that the the query
+  // has actually been created/started before we try to attach
+  // a callback to it.
+  gl_->Flush();
+  command_buffer_->SignalQuery(
+      query,
+      base::Bind(&SignalSyncPointCallback, base::Passed(&own_callback)));
+}
+
 void WebGraphicsContext3DCommandBufferImpl::genMailboxCHROMIUM(
     WGC3Dbyte* name) {
   std::vector<gpu::Mailbox> names;
