@@ -21,9 +21,11 @@ function mainElement()
 
 function getDimensions()
 {
+    if (!window.internals)
+        return "Internals is required";
     return JSON.stringify({
-        width: document.width,
-        height: document.height,
+        width: internals.unscaledViewportRect().width,
+        height: internals.unscaledViewportRect().height,
         mainWidth: mainElement().offsetWidth,
         mainHeight: mainElement().offsetHeight,
         innerWidth: window.innerWidth,

@@ -36,10 +36,8 @@
 
     [DeprecateAs=DocumentClear] void clear();
 
-    readonly attribute long width;
-    readonly attribute long height;
-             [TreatNullAs=NullString] attribute DOMString dir;
-             [TreatNullAs=NullString] attribute DOMString designMode;
+    [TreatNullAs=NullString] attribute DOMString dir;
+    [TreatNullAs=NullString] attribute DOMString designMode;
     readonly attribute DOMString compatMode;
 
     readonly attribute Element activeElement;

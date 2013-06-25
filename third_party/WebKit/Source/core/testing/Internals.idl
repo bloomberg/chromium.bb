@@ -85,6 +85,8 @@
     [RaisesException] void setEnableMockPagePopup(boolean enabled);
     readonly attribute PagePopupController pagePopupController;
 
+    [RaisesException] ClientRect unscaledViewportRect();
+
     [RaisesException] ClientRect absoluteCaretBounds();
 
     [RaisesException] ClientRect boundingBox(Element element);

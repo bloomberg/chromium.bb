@@ -40,9 +40,6 @@ public:
     }
     virtual ~HTMLDocument();
 
-    int width();
-    int height();
-
     String dir();
     void setDir(const String&);
 
