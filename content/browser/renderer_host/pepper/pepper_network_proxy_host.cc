@@ -5,10 +5,12 @@
 #include "content/browser/renderer_host/pepper/pepper_network_proxy_host.h"
 
 #include "base/bind.h"
+#include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
+#include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/socket_permission_request.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_info.h"
 #include "net/url_request/url_request_context.h"
@@ -20,39 +22,25 @@
 
 namespace content {
 
-namespace {
-
-scoped_refptr<net::URLRequestContextGetter>
-GetURLRequestContextGetterOnUIThread(int render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  scoped_refptr<net::URLRequestContextGetter> context_getter;
-  RenderProcessHost* render_process_host =
-      RenderProcessHost::FromID(render_process_id);
-  if (render_process_host && render_process_host->GetBrowserContext()) {
-    context_getter = render_process_host->GetBrowserContext()->
-        GetRequestContextForRenderProcess(render_process_id);
-  }
-  return context_getter;
-}
-
-}  // namespace
-
-PepperNetworkProxyHost::PepperNetworkProxyHost(BrowserPpapiHost* host,
+PepperNetworkProxyHost::PepperNetworkProxyHost(BrowserPpapiHostImpl* host,
                                                PP_Instance instance,
                                                PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       proxy_service_(NULL),
-      waiting_for_proxy_service_(true),
+      is_allowed_(false),
+      waiting_for_ui_thread_data_(true),
       weak_factory_(this) {
-  int render_process_id(0), render_view_id_unused(0);
+  int render_process_id(0), render_view_id(0);
   host->GetRenderViewIDsForInstance(instance,
                                     &render_process_id,
-                                    &render_view_id_unused);
+                                    &render_view_id);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&GetURLRequestContextGetterOnUIThread, render_process_id),
-      base::Bind(&PepperNetworkProxyHost::DidGetURLRequestContextGetter,
+      base::Bind(&GetUIThreadDataOnUIThread,
+                 render_process_id,
+                 render_view_id,
+                 host->external_plugin()),
+      base::Bind(&PepperNetworkProxyHost::DidGetUIThreadData,
                  weak_factory_.GetWeakPtr()));
 }
 
@@ -67,11 +55,50 @@ PepperNetworkProxyHost::~PepperNetworkProxyHost() {
   }
 }
 
-void PepperNetworkProxyHost::DidGetURLRequestContextGetter(
-    scoped_refptr<net::URLRequestContextGetter> context_getter) {
-  if (context_getter->GetURLRequestContext())
-    proxy_service_ = context_getter->GetURLRequestContext()->proxy_service();
-  waiting_for_proxy_service_ = false;
+PepperNetworkProxyHost::UIThreadData::UIThreadData()
+    : is_allowed(false) {
+}
+
+PepperNetworkProxyHost::UIThreadData::~UIThreadData() {
+}
+
+// static
+PepperNetworkProxyHost::UIThreadData
+PepperNetworkProxyHost::GetUIThreadDataOnUIThread(int render_process_id,
+                                                  int render_view_id,
+                                                  bool is_external_plugin) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  PepperNetworkProxyHost::UIThreadData result;
+  RenderProcessHost* render_process_host =
+      RenderProcessHost::FromID(render_process_id);
+  if (render_process_host && render_process_host->GetBrowserContext()) {
+    result.context_getter = render_process_host->GetBrowserContext()->
+        GetRequestContextForRenderProcess(render_process_id);
+  }
+
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(render_process_id, render_view_id);
+  if (render_view_host) {
+    SocketPermissionRequest request(
+        content::SocketPermissionRequest::RESOLVE_PROXY, std::string(), 0);
+    result.is_allowed = pepper_socket_utils::CanUseSocketAPIs(
+        is_external_plugin,
+        false /* is_private_api */,
+        request,
+        render_view_host);
+  }
+  return result;
+}
+
+void PepperNetworkProxyHost::DidGetUIThreadData(
+    const UIThreadData& ui_thread_data) {
+  is_allowed_ = ui_thread_data.is_allowed;
+  if (ui_thread_data.context_getter &&
+      ui_thread_data.context_getter->GetURLRequestContext()) {
+    proxy_service_ =
+        ui_thread_data.context_getter->GetURLRequestContext()->proxy_service();
+  }
+  waiting_for_ui_thread_data_ = false;
   if (!proxy_service_) {
     DLOG_IF(WARNING, proxy_service_)
         << "Failed to find a ProxyService for Pepper plugin.";
@@ -98,19 +125,22 @@ int32_t PepperNetworkProxyHost::OnMsgGetProxyForURL(
     unsent_requests_.push(request);
     TryToSendUnsentRequests();
   } else {
-    SendFailureReply(PP_ERROR_BADARGUMENT, context->MakeReplyMessageContext());
+    SendFailureReply(PP_ERROR_BADARGUMENT,
+                     context->MakeReplyMessageContext());
   }
   return PP_OK_COMPLETIONPENDING;
 }
 
 void PepperNetworkProxyHost::TryToSendUnsentRequests() {
-  if (waiting_for_proxy_service_)
+  if (waiting_for_ui_thread_data_)
     return;
 
   while (!unsent_requests_.empty()) {
     const UnsentRequest& request = unsent_requests_.front();
     if (!proxy_service_) {
       SendFailureReply(PP_ERROR_FAILED, request.reply_context);
+    } else if (!is_allowed_) {
+      SendFailureReply(PP_ERROR_NOACCESS, request.reply_context);
     } else {
       // Everything looks valid, so try to resolve the proxy.
       net::ProxyInfo* proxy_info = new net::ProxyInfo;
@@ -142,8 +172,10 @@ void PepperNetworkProxyHost::OnResolveProxyCompleted(
   pending_requests_.pop();
 
   if (result != net::OK) {
-    // TODO(dmichael): Add appropriate error codes to yzshen's conversion
-    //                 function, and call that function here.
+    // Currently, the only proxy-specific error we could get is
+    // MANDATORY_PROXY_CONFIGURATION_FAILED. There's really no action a plugin
+    // can take in this case, so there's no need to distinguish it from other
+    // failures.
     context.params.set_result(PP_ERROR_FAILED);
   }
   host()->SendReply(context,

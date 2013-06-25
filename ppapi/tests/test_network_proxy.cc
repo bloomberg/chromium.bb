@@ -59,7 +59,6 @@ std::string TestNetworkProxy::TestGetProxyForURL() {
                                        pp::Var("this isn't a url"),
                                        callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
-  // TODO(dmichael): Use bad address when it's available.
   ASSERT_EQ(PP_ERROR_BADARGUMENT, callback.result());
   // TODO(dmichael): Add this check below when crbug.com/250046 is fixed.
   // ASSERT_TRUE(callback.output().is_undefined());

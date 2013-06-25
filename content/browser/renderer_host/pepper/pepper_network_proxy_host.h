@@ -28,22 +28,31 @@ struct ReplyMessageContext;
 
 namespace content {
 
-class BrowserPpapiHost;
+class BrowserPpapiHostImpl;
 
-// The host for PPB_NetworkProxy. This class runs exclusively on the IO thread.
+// The host for PPB_NetworkProxy. This class lives on the IO thread.
 class CONTENT_EXPORT PepperNetworkProxyHost : public ppapi::host::ResourceHost {
  public:
-  PepperNetworkProxyHost(BrowserPpapiHost* host,
+  PepperNetworkProxyHost(BrowserPpapiHostImpl* host,
                          PP_Instance instance,
                          PP_Resource resource);
 
   virtual ~PepperNetworkProxyHost();
 
  private:
-  // We retrieve the appropriate URLRequestContextGetter on the UI thread
-  // and pass it to this function, which uses it to retrieve proxy_service_.
-  void DidGetURLRequestContextGetter(
-      scoped_refptr<net::URLRequestContextGetter> context_getter);
+  // We retrieve the appropriate URLRequestContextGetter and whether this API
+  // is allowed for the instance on the UI thread and pass those to
+  // DidGetUIThreadData, which sets allowed_ and proxy_service_.
+  struct UIThreadData {
+    UIThreadData();
+    ~UIThreadData();
+    bool is_allowed;
+    scoped_refptr<net::URLRequestContextGetter> context_getter;
+  };
+  static UIThreadData GetUIThreadDataOnUIThread(int render_process_id,
+                                                int render_view_id,
+                                                bool is_external_plugin);
+  void DidGetUIThreadData(const UIThreadData&);
 
   // ResourceHost implementation.
   virtual int32_t OnResourceMessageReceived(
@@ -62,8 +71,15 @@ class CONTENT_EXPORT PepperNetworkProxyHost : public ppapi::host::ResourceHost {
   void SendFailureReply(int32_t error,
                         ppapi::host::ReplyMessageContext context);
 
+  // The following two members are invalid until we get some information from
+  // the UI thread. However, these are only ever set or accessed on the IO
+  // thread.
   net::ProxyService* proxy_service_;
-  bool waiting_for_proxy_service_;
+  bool is_allowed_;
+
+  // True initially, but set to false once the values for proxy_service_ and
+  // is_allowed_ have been set.
+  bool waiting_for_ui_thread_data_;
 
   // We have to get the URLRequestContextGetter from the UI thread before we
   // can retrieve proxy_service_. If we receive any calls for GetProxyForURL
