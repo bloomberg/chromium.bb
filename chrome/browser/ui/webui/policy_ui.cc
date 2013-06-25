@@ -64,6 +64,7 @@
 #include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/browser/policy/policy_schema.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest.h"
 #endif
@@ -565,7 +566,9 @@ void PolicyUIHandler::SendPolicyNames() const {
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     const extensions::Extension* extension = *it;
-    if (extension->location() == extensions::Manifest::COMPONENT)
+    // Skip this extension if it's not an enterprise extension.
+    if (!extension->manifest()->HasPath(
+        extension_manifest_keys::kStorageManagedSchema))
       continue;
     base::DictionaryValue* extension_value = new base::DictionaryValue;
     extension_value->SetString("name", extension->name());
@@ -610,7 +613,9 @@ void PolicyUIHandler::SendPolicyValues() const {
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
     const extensions::Extension* extension = *it;
-    if (extension->location() == extensions::Manifest::COMPONENT)
+    // Skip this extension if it's not an enterprise extension.
+    if (!extension->manifest()->HasPath(
+        extension_manifest_keys::kStorageManagedSchema))
       continue;
     base::DictionaryValue* extension_policies = new base::DictionaryValue;
     policy::PolicyNamespace policy_namespace = policy::PolicyNamespace(
