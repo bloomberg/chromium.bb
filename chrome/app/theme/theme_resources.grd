@@ -759,6 +759,10 @@
         <structure type="chrome_scaled_image" name="IDR_STOP_H" file="common/browser_stop_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_STOP_P" file="common/browser_stop_pressed.png" />
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_SUPERVISED_ILLUSTRATION_START" file="cros/supervised_illustration_start.png" />
+        <structure type="chrome_scaled_image" name="IDR_SUPERVISED_ILLUSTRATION_DONE" file="cros/supervised_illsutration_done.png" />
+      </if>
       <if expr="not pp_ifdef('toolkit_views') and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT" file="tab_active_left.png" />
