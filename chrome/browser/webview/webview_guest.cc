@@ -6,7 +6,9 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/webview/webview_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -16,14 +18,10 @@
 
 using content::WebContents;
 
-namespace keys = webview_constants;
-
-namespace chrome {
-
 namespace {
 
 typedef std::map<std::pair<int, int>, WebViewGuest*> WebViewGuestMap;
-static base::LazyInstance<WebViewGuestMap> webview_guest_map =
+base::LazyInstance<WebViewGuestMap> webview_guest_map =
     LAZY_INSTANCE_INITIALIZER;
 
 void RemoveWebViewEventListenersOnIOThread(
@@ -53,9 +51,6 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
       webview_instance_id_(webview_instance_id),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)) {
-  std::string api_name;
-  DCHECK(args.GetString(keys::kAttributeApi, &api_name));
-  DCHECK_EQ("webview", api_name);
   std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
   webview_guest_map.Get().insert(std::make_pair(key, this));
 
@@ -74,6 +69,35 @@ WebViewGuest* WebViewGuest::From(int embedder_process_id,
 WebViewGuest::~WebViewGuest() {
   std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
   webview_guest_map.Get().erase(key);
+}
+
+void WebViewGuest::DispatchEvent(const std::string& event_name,
+                                 scoped_ptr<DictionaryValue> event) {
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents()->GetBrowserContext());
+
+  extensions::EventFilteringInfo info;
+  info.SetURL(GURL());
+  info.SetInstanceID(guest_instance_id_);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(event.release());
+
+  extensions::EventRouter::DispatchEvent(
+      embedder_web_contents_, profile, extension_id_,
+      event_name, args.Pass(),
+      extensions::EventRouter::USER_GESTURE_UNKNOWN, info);
+}
+
+void WebViewGuest::DidCommitProvisionalLoadForFrame(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& url,
+    content::PageTransition transition_type,
+    content::RenderViewHost* render_view_host) {
+  scoped_ptr<DictionaryValue> event(new DictionaryValue());
+  event->SetString(webview::kUrl, url.spec());
+  event->SetBoolean(webview::kIsTopLevel, is_main_frame);
+  DispatchEvent(webview::kEventLoadCommit, event.Pass());
 }
 
 void WebViewGuest::WebContentsDestroyed(WebContents* web_contents) {
@@ -118,5 +142,3 @@ void WebViewGuest::RemoveWebViewFromExtensionRendererState(
           web_contents->GetRenderProcessHost()->GetID(),
           web_contents->GetRoutingID()));
 }
-
-}  // namespace chrome

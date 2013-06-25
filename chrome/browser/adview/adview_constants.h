@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Constants used for the WebView API.
+// Constants used for the adview API.
 
-#ifndef CHROME_BROWSER_WEBVIEW_WEBVIEW_CONSTANTS_H_
-#define CHROME_BROWSER_WEBVIEW_WEBVIEW_CONSTANTS_H_
+#ifndef CHROME_BROWSER_ADVIEW_ADVIEW_CONSTANTS_H_
+#define CHROME_BROWSER_ADVIEW_ADVIEW_CONSTANTS_H_
 
-namespace webview {
+namespace adview {
 
 // Events.
 extern const char kEventLoadCommit[];
@@ -19,7 +19,7 @@ extern const char kUrl[];
 // Attributes.
 extern const char kAttributeApi[];
 
-}  // namespace webview
+}  // namespace adview
 
-#endif  // CHROME_BROWSER_WEBVIEW_WEBVIEW_CONSTANTS_H_
+#endif  // CHROME_BROWSER_ADVIEW_ADVIEW_CONSTANTS_H_
 

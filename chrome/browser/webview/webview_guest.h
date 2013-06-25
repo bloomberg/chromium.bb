@@ -13,8 +13,6 @@ namespace extensions {
 class ScriptExecutor;
 }  // namespace extensions
 
-namespace chrome {
-
 // A WebViewGuest is a WebContentsObserver on the guest WebContents of a
 // <webview> tag. It provides the browser-side implementation of the <webview>
 // API and manages the lifetime of <webview> extension events. WebViewGuest is
@@ -48,6 +46,16 @@ class WebViewGuest : public content::WebContentsObserver {
 
  private:
   virtual ~WebViewGuest();
+
+  void DispatchEvent(const std::string& event_name,
+                     scoped_ptr<DictionaryValue> event);
+
+  virtual void DidCommitProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& url,
+      content::PageTransition transition_type,
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;
 
@@ -74,7 +82,5 @@ class WebViewGuest : public content::WebContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_WEBVIEW_WEBVIEW_GUEST_H_

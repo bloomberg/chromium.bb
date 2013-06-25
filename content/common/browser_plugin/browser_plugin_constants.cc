@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,9 @@ const char kMethodInternalAttachWindowTo[] = "-internal-attachWindowTo";
 const char kMethodInternalPersistObject[] = "-internal-persistObject";
 const char kMethodInternalSetPermission[] = "-internal-setPermission";
 
+// Internal events.
+const char kEventInternalAttached[] = "attached";
+
 // Attributes.
 const char kAttributeApi[] = "api";
 const char kAttributeAutoSize[] = "autosize";
@@ -43,7 +46,6 @@ const char kEventConsoleMessage[] = "consolemessage";
 const char kEventContentLoad[] = "contentload";
 const char kEventExit[] = "exit";
 const char kEventLoadAbort[] = "loadabort";
-const char kEventLoadCommit[] = "loadcommit";
 const char kEventLoadRedirect[] = "loadredirect";
 const char kEventLoadStart[] = "loadstart";
 const char kEventLoadStop[] = "loadstop";

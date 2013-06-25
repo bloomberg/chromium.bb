@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1126,29 +1126,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStop) {
 
   string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadCommit) {
-  const char* kEmbedderURL = "/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, std::string());
-
-  const string16 expected_title = ASCIIToUTF16(
-      base::StringPrintf("loadCommit:%s", kHTMLForGuest));
-  content::TitleWatcher title_watcher(
-      test_embedder()->web_contents(), expected_title);
-  // Renavigate the guest to |kHTMLForGuest|.
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh,
-                        base::StringPrintf("SetSrc('%s');", kHTMLForGuest));
-
-  string16 actual_title = title_watcher.WaitAndGetTitle();
-  EXPECT_EQ(expected_title, actual_title);
-  scoped_ptr<base::Value> is_top_level =
-      content::ExecuteScriptAndGetValue(rvh, "commitIsTopLevel");
-  bool top_level_bool = false;
-  EXPECT_TRUE(is_top_level->GetAsBoolean(&top_level_bool));
-  EXPECT_EQ(true, top_level_bool);
 }
 
 // This test verifies that if a browser plugin is hidden before navigation,

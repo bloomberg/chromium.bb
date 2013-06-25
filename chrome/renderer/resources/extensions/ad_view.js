@@ -10,6 +10,7 @@
 // TODO(rpaquay): This file is currently very similar to "web_view.js". Do we
 //                want to refactor to extract common pieces?
 
+var eventBindings = require('event_bindings');
 var process = requireNative('process');
 var watchForTag = require('tagWatcher').watchForTag;
 
@@ -73,6 +74,13 @@ var AD_VIEW_EVENTS = {
   'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
 };
 
+var createEvent = function(name) {
+  var eventOpts = {supportsListeners: true, supportsFilters: true};
+  return new eventBindings.Event(name, undefined, eventOpts);
+};
+
+var AdviewLoadCommitEvent = createEvent('adview.onLoadCommit');
+
 /**
  * List of supported ad-networks.
  *
@@ -124,8 +132,7 @@ function AdView(adviewNode) {
 AdView.prototype.createBrowserPluginNode_ = function() {
   var browserPluginNode = document.createElement('object');
   browserPluginNode.type = 'application/browser-plugin';
-  // TODO(fsamuel): Change this to 'adview' once AdViewGuest is ready.
-  browserPluginNode.setAttribute('api', 'webview');
+  browserPluginNode.setAttribute('api', 'adview');
   // The <object> node fills in the <adview> container.
   browserPluginNode.style.width = '100%';
   browserPluginNode.style.height = '100%';
@@ -432,6 +439,21 @@ AdView.prototype.handleSrcMutation = function(mutation) {
  * @private
  */
 AdView.prototype.setupAdviewNodeEvents_ = function() {
+  var adviewNode = this.adviewNode_;
+  // TODO(fsamuel): Generalize this further as we add more events.
+  var onAttached = function(e) {
+    var detail = e.detail ? JSON.parse(e.detail) : {};
+    AdviewLoadCommitEvent.addListener(function(event) {
+      var adviewEvent = new Event('loadcommit', {bubbles: true});
+      var attribs = AD_VIEW_EVENTS['loadcommit'];
+      $Array.forEach(attribs, function(attribName) {
+        adviewEvent[attribName] = event[attribName];
+      });
+      adviewNode.dispatchEvent(adviewEvent);
+    }, {instanceId: detail.windowId});
+  };
+  this.browserPluginNode_.addEventListener('-internal-attached', onAttached);
+
   for (var eventName in AD_VIEW_EVENTS) {
     this.setupEvent_(eventName, AD_VIEW_EVENTS[eventName]);
   }

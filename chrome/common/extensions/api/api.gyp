@@ -21,6 +21,7 @@
         'schema_files': [
           'alarms.idl',
           'activity_log_private.json',
+          'adview.json',
           'app_current_window_internal.idl',
           'app_runtime.idl',
           'app_window.idl',

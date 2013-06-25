@@ -8,6 +8,7 @@
 // are hidden via Shadow DOM.
 
 var watchForTag = require('tagWatcher').watchForTag;
+var eventBindings = require('event_bindings');
 
 /** @type {Array.<string>} */
 var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autosize', 'minheight',
@@ -42,6 +43,13 @@ var WEB_VIEW_EVENTS = {
   'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
   'unresponsive' : ['processId']
 };
+
+var createEvent = function(name) {
+  var eventOpts = {supportsListeners: true, supportsFilters: true};
+  return new eventBindings.Event(name, undefined, eventOpts);
+};
+
+var loadCommitEvent = createEvent('webview.onLoadCommit');
 
 // The <webview> tags we wish to watch for (watchForTag) does not belong to the
 // current scope's "document" reference. We need to wait until the document
@@ -266,6 +274,21 @@ WebView.prototype.handleBrowserPluginAttributeMutation_ = function(mutation) {
  * @private
  */
 WebView.prototype.setupWebviewNodeEvents_ = function() {
+  var webviewNode = this.webviewNode_;
+  // TODO(fsamuel): Generalize this further as we add more events.
+  var onAttached = function(e) {
+    var detail = e.detail ? JSON.parse(e.detail) : {};
+    loadCommitEvent.addListener(function(event) {
+      var webviewEvent = new Event('loadcommit', {bubbles: true});
+      var attribs = WEB_VIEW_EVENTS['loadcommit'];
+      $Array.forEach(attribs, function(attribName) {
+        webviewEvent[attribName] = event[attribName];
+      });
+      webviewNode.dispatchEvent(webviewEvent);
+    }, {instanceId: detail.windowId});
+  };
+  this.browserPluginNode_.addEventListener('-internal-attached', onAttached);
+
   for (var eventName in WEB_VIEW_EVENTS) {
     this.setupEvent_(eventName, WEB_VIEW_EVENTS[eventName]);
   }

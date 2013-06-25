@@ -52,7 +52,7 @@ bool WebviewExecuteCodeFunction::CanExecuteScriptOnPage() {
 }
 
 extensions::ScriptExecutor* WebviewExecuteCodeFunction::GetScriptExecutor() {
-  chrome::WebViewGuest* guest = chrome::WebViewGuest::From(
+  WebViewGuest* guest = WebViewGuest::From(
       render_view_host()->GetProcess()->GetID(), guest_instance_id_);
   if (!guest)
     return NULL;

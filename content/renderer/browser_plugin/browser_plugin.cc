@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -420,6 +420,11 @@ void BrowserPlugin::Attach(int guest_instance_id) {
   guest_instance_id_ = guest_instance_id;
   browser_plugin_manager()->AddBrowserPlugin(guest_instance_id, this);
 
+  std::map<std::string, base::Value*> props;
+  props[browser_plugin::kWindowID] =
+      new base::FundamentalValue(guest_instance_id);
+  TriggerEvent(browser_plugin::kEventInternalAttached, &props);
+
   BrowserPluginHostMsg_Attach_Params attach_params;
   attach_params.browser_plugin_instance_id = instance_id_;
   attach_params.focused = ShouldGuestBeFocused();
@@ -583,12 +588,6 @@ void BrowserPlugin::OnLoadCommit(
 
   current_nav_entry_index_ = params.current_entry_index;
   nav_entry_count_ = params.entry_count;
-
-  std::map<std::string, base::Value*> props;
-  props[browser_plugin::kURL] = new base::StringValue(params.url.spec());
-  props[browser_plugin::kIsTopLevel] =
-      new base::FundamentalValue(params.is_top_level);
-  TriggerEvent(browser_plugin::kEventLoadCommit, &props);
 }
 
 void BrowserPlugin::OnLoadHandlerCalled(int guest_instance_id) {

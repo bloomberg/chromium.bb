@@ -10,6 +10,10 @@
     "dependencies": ["permission:activityLogPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "adview": {
+    "dependencies": ["permission:adview"],
+    "contexts": ["blessed_extension"]
+  },
   "alarms": {
     "dependencies": ["permission:alarms"],
     "contexts": ["blessed_extension"]

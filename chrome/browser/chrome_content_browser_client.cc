@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/app/breakpad_mac.h"
+#include "chrome/browser/adview/adview_guest.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
@@ -84,6 +85,7 @@
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
 #include "chrome/browser/validation_message_message_filter.h"
+#include "chrome/browser/webview/webview_constants.h"
 #include "chrome/browser/webview/webview_guest.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
@@ -710,11 +712,28 @@ void ChromeContentBrowserClient::GuestWebContentsAttached(
       GetExtensionOrAppByURL(ExtensionURLInfo(url));
   if (!extension)
     return;
-  new WebViewGuest(guest_web_contents,
-                   embedder_web_contents,
-                   extension->id(),
-                   browser_plugin_instance_id,
-                   extra_params);
+
+  std::string api_type;
+  extra_params.GetString(webview::kAttributeApi, &api_type);
+
+  // WebViewGuest and AdViewGuest's lifetimes iare tied to their associated
+  // guest WebContents' lifetime. When the guest WebContents is destroyed, so is
+  // the attached WebViewGuest or AdViewGuest.
+  if (api_type == "adview") {
+    new AdViewGuest(guest_web_contents,
+                    embedder_web_contents,
+                    extension->id(),
+                    browser_plugin_instance_id,
+                    extra_params);
+  } else if (api_type == "webview") {
+    new WebViewGuest(guest_web_contents,
+                     embedder_web_contents,
+                     extension->id(),
+                     browser_plugin_instance_id,
+                     extra_params);
+  } else {
+    NOTREACHED();
+  }
 }
 
 void ChromeContentBrowserClient::RenderProcessHostCreated(

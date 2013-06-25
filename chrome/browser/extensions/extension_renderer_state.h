@@ -12,9 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 
-namespace chrome {
 class WebViewGuest;
-}  // namespace chrome
 
 // This class keeps track of renderer state for use on the IO thread. All
 // methods should be called on the IO thread except for Init and Shutdown.
@@ -48,7 +46,7 @@ class ExtensionRendererState {
   class RenderViewHostObserver;
   class TabObserver;
   friend class TabObserver;
-  friend class chrome::WebViewGuest;
+  friend class WebViewGuest;
   friend struct DefaultSingletonTraits<ExtensionRendererState>;
 
   typedef std::pair<int, int> RenderId;
