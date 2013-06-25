@@ -166,7 +166,7 @@ void UserImageScreen::SetProfilePictureEnabled(bool profile_picture_enabled) {
 }
 
 void UserImageScreen::SetUserID(const std::string& user_id) {
-  DCHECK(!user_id_.empty());
+  DCHECK(!user_id.empty());
   user_id_ = user_id;
 }
 
