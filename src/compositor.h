@@ -345,6 +345,9 @@ weston_pointer_start_grab(struct weston_pointer *pointer,
 			  struct weston_pointer_grab *grab);
 void
 weston_pointer_end_grab(struct weston_pointer *pointer);
+void
+weston_pointer_clamp(struct weston_pointer *pointer,
+			    wl_fixed_t *fx, wl_fixed_t *fy);
 
 struct weston_keyboard *
 weston_keyboard_create(void);

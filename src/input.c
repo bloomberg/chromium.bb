@@ -561,17 +561,17 @@ weston_touch_end_grab(struct weston_touch *touch)
 	touch->grab = &touch->default_grab;
 }
 
-static void
-clip_pointer_motion(struct weston_seat *seat, wl_fixed_t *fx, wl_fixed_t *fy)
+WL_EXPORT void
+weston_pointer_clamp(struct weston_pointer *pointer, wl_fixed_t *fx, wl_fixed_t *fy)
 {
-	struct weston_compositor *ec = seat->compositor;
+	struct weston_compositor *ec = pointer->seat->compositor;
 	struct weston_output *output, *prev = NULL;
 	int x, y, old_x, old_y, valid = 0;
 
 	x = wl_fixed_to_int(*fx);
 	y = wl_fixed_to_int(*fy);
-	old_x = wl_fixed_to_int(seat->pointer->x);
-	old_y = wl_fixed_to_int(seat->pointer->y);
+	old_x = wl_fixed_to_int(pointer->x);
+	old_y = wl_fixed_to_int(pointer->y);
 
 	wl_list_for_each(output, &ec->output_list, link) {
 		if (pixman_region32_contains_point(&output->region,
@@ -605,7 +605,7 @@ move_pointer(struct weston_seat *seat, wl_fixed_t x, wl_fixed_t y)
 	struct weston_output *output;
 	int32_t ix, iy;
 
-	clip_pointer_motion(seat, &x, &y);
+	weston_pointer_clamp (pointer, &x, &y);
 
 	pointer->x = x;
 	pointer->y = y;
