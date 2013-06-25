@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 
 class BookmarkModel;
@@ -75,28 +74,6 @@ void GetBookmarksContainingText(BookmarkModel* model,
 bool DoesBookmarkContainText(const BookmarkNode* node,
                              const string16& text,
                              const std::string& languages);
-
-// Modifies a bookmark node (assuming that there's no magic that needs to be
-// done regarding moving from one folder to another).  If a new node is
-// explicitly being added, returns a pointer to the new node that was created.
-// Otherwise the return value is identically |node|.
-const BookmarkNode* ApplyEditsWithNoFolderChange(
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    const BookmarkEditor::EditDetails& details,
-    const string16& new_title,
-    const GURL& new_url);
-
-// Modifies a bookmark node assuming that the parent of the node may have
-// changed and the node will need to be removed and reinserted.  If a new node
-// is explicitly being added, returns a pointer to the new node that was
-// created.  Otherwise the return value is identically |node|.
-const BookmarkNode* ApplyEditsWithPossibleFolderChange(
-    BookmarkModel* model,
-    const BookmarkNode* new_parent,
-    const BookmarkEditor::EditDetails& details,
-    const string16& new_title,
-    const GURL& new_url);
 
 // Register user preferences for Bookmarks Bar.
 void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);

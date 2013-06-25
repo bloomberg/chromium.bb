@@ -6,7 +6,6 @@
 
 #include "base/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -155,44 +154,6 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
 
   // Now we shouldn't be able to paste from the clipboard.
   EXPECT_FALSE(CanPasteFromClipboard(model.bookmark_bar_node()));
-}
-
-TEST_F(BookmarkUtilsTest, ApplyEditsWithNoFolderChange) {
-  BookmarkModel model(NULL);
-  const BookmarkNode* bookmarkbar = model.bookmark_bar_node();
-  model.AddURL(bookmarkbar, 0, ASCIIToUTF16("url0"), GURL("chrome://newtab"));
-  model.AddURL(bookmarkbar, 1, ASCIIToUTF16("url1"), GURL("chrome://newtab"));
-
-  {
-    BookmarkEditor::EditDetails detail(
-        BookmarkEditor::EditDetails::AddFolder(bookmarkbar, 1));
-    ApplyEditsWithNoFolderChange(&model,
-                                 bookmarkbar,
-                                 detail,
-                                 ASCIIToUTF16("folder0"),
-                                 GURL(std::string()));
-    EXPECT_EQ(ASCIIToUTF16("folder0"), bookmarkbar->GetChild(1)->GetTitle());
-  }
-  {
-    BookmarkEditor::EditDetails detail(
-        BookmarkEditor::EditDetails::AddFolder(bookmarkbar, -1));
-    ApplyEditsWithNoFolderChange(&model,
-                                 bookmarkbar,
-                                 detail,
-                                 ASCIIToUTF16("folder1"),
-                                 GURL(std::string()));
-    EXPECT_EQ(ASCIIToUTF16("folder1"), bookmarkbar->GetChild(3)->GetTitle());
-  }
-  {
-    BookmarkEditor::EditDetails detail(
-        BookmarkEditor::EditDetails::AddFolder(bookmarkbar, 10));
-    ApplyEditsWithNoFolderChange(&model,
-                                 bookmarkbar,
-                                 detail,
-                                 ASCIIToUTF16("folder2"),
-                                 GURL(std::string()));
-    EXPECT_EQ(ASCIIToUTF16("folder2"), bookmarkbar->GetChild(4)->GetTitle());
-  }
 }
 
 TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {

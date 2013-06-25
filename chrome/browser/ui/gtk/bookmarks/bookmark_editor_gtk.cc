@@ -549,7 +549,7 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
   if (!show_tree_ || !selected_parent) {
     // TODO: this is wrong. Just because there is no selection doesn't mean new
     // folders weren't added.
-    bookmark_utils::ApplyEditsWithNoFolderChange(
+    BookmarkEditor::ApplyEditsWithNoFolderChange(
         bb_model_, parent_, details_, new_title, new_url);
     return;
   }
@@ -572,7 +572,7 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
     return;
   }
 
-  bookmark_utils::ApplyEditsWithPossibleFolderChange(
+  BookmarkEditor::ApplyEditsWithPossibleFolderChange(
       bb_model_, new_parent, details_, new_title, new_url);
 
   // Remove the folders that were removed. This has to be done after all the

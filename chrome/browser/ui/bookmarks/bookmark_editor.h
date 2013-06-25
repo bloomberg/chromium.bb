@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_EDITOR_H_
-#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_EDITOR_H_
+#ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_EDITOR_H_
+#define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_EDITOR_H_
 
 #include <utility>
 #include <vector>
@@ -102,6 +102,28 @@ class BookmarkEditor {
                    Profile* profile,
                    const EditDetails& details,
                    Configuration configuration);
+
+  // Modifies a bookmark node (assuming that there's no magic that needs to be
+  // done regarding moving from one folder to another).  If a new node is
+  // explicitly being added, returns a pointer to the new node that was created.
+  // Otherwise the return value is identically |node|.
+  static const BookmarkNode* ApplyEditsWithNoFolderChange(
+      BookmarkModel* model,
+      const BookmarkNode* parent,
+      const EditDetails& details,
+      const base::string16& new_title,
+      const GURL& new_url);
+
+  // Modifies a bookmark node assuming that the parent of the node may have
+  // changed and the node will need to be removed and reinserted.  If a new node
+  // is explicitly being added, returns a pointer to the new node that was
+  // created.  Otherwise the return value is identically |node|.
+  static const BookmarkNode* ApplyEditsWithPossibleFolderChange(
+      BookmarkModel* model,
+      const BookmarkNode* new_parent,
+      const EditDetails& details,
+      const base::string16& new_title,
+      const GURL& new_url);
 };
 
-#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_EDITOR_H_
+#endif  // CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_EDITOR_H_

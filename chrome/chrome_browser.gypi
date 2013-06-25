@@ -235,8 +235,6 @@
         'browser/bookmarks/base_bookmark_model_observer.h',
         'browser/bookmarks/bookmark_codec.cc',
         'browser/bookmarks/bookmark_codec.h',
-        'browser/bookmarks/bookmark_editor.cc',
-        'browser/bookmarks/bookmark_editor.h',
         'browser/bookmarks/bookmark_expanded_state_tracker.cc',
         'browser/bookmarks/bookmark_expanded_state_tracker.h',
         'browser/bookmarks/bookmark_html_reader.cc',

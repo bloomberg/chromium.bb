@@ -1322,6 +1322,7 @@
         'browser/ui/autofill/mock_autofill_dialog_controller.cc',
         'browser/ui/autofill/mock_autofill_dialog_controller.h',
         'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
+        'browser/ui/bookmarks/bookmark_editor_unittest.cc',
         'browser/ui/bookmarks/bookmark_prompt_controller_unittest.cc',
         'browser/ui/bookmarks/bookmark_ui_utils_unittest.cc',
         'browser/ui/bookmarks/bookmark_unittest.cc',

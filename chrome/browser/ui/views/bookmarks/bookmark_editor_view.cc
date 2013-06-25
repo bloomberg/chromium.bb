@@ -547,7 +547,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
   string16 new_title(title_tf_->text());
 
   if (!show_tree_) {
-    bookmark_utils::ApplyEditsWithNoFolderChange(
+    BookmarkEditor::ApplyEditsWithNoFolderChange(
         bb_model_, parent_, details_, new_title, new_url);
     return;
   }
@@ -557,7 +557,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
   ApplyNameChangesAndCreateNewFolders(
       bb_model_->root_node(), tree_model_->GetRoot(), parent, &new_parent);
 
-  bookmark_utils::ApplyEditsWithPossibleFolderChange(
+  BookmarkEditor::ApplyEditsWithPossibleFolderChange(
       bb_model_, new_parent, details_, new_title, new_url);
 
   BookmarkExpandedStateTracker::Nodes expanded_nodes;

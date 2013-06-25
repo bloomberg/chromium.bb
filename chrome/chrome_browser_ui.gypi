@@ -314,6 +314,8 @@
         'browser/ui/bookmarks/bookmark_context_menu_controller.h',
         'browser/ui/bookmarks/bookmark_drag_drop.cc',
         'browser/ui/bookmarks/bookmark_drag_drop.h',
+        'browser/ui/bookmarks/bookmark_editor.cc',
+        'browser/ui/bookmarks/bookmark_editor.h',
         'browser/ui/bookmarks/bookmark_prompt_controller.cc',
         'browser/ui/bookmarks/bookmark_prompt_controller.h',
         'browser/ui/bookmarks/bookmark_tab_helper.cc',
