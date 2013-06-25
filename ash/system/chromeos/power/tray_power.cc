@@ -458,7 +458,9 @@ bool TrayPower::UpdateNotificationState(
     const chromeos::PowerSupplyStatus& status) {
   if (!status.battery_is_present ||
       status.is_calculating_battery_time ||
-      status.battery_state == PowerSupplyStatus::CHARGING) {
+      status.battery_state == PowerSupplyStatus::CHARGING ||
+      status.battery_state ==
+          PowerSupplyStatus::NEITHER_CHARGING_NOR_DISCHARGING) {
     notification_state_ = NOTIFICATION_NONE;
     return false;
   }
