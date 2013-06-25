@@ -288,7 +288,6 @@
           'memory/ref_counted_memory.cc',
           'memory/ref_counted_memory.h',
           'memory/scoped_handle.h',
-          'memory/scoped_nsobject.h',
           'memory/scoped_open_process.h',
           'memory/scoped_policy.h',
           'memory/scoped_ptr.h',
