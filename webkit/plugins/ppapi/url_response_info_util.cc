@@ -4,12 +4,12 @@
 
 #include "webkit/plugins/ppapi/url_response_info_util.h"
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -66,7 +66,7 @@ bool IsRedirect(int32_t status) {
     scoped_refptr<PPB_FileRef_Impl> file_ref(
         PPB_FileRef_Impl::CreateExternal(
             pp_instance,
-            webkit_base::WebStringToFilePath(file_path),
+            base::FilePath::FromUTF16Unsafe(file_path),
             std::string()));
     data.body_as_file_ref = file_ref->GetCreateInfo();
     file_ref->GetReference();  // The returned data has one ref for the plugin.

@@ -45,7 +45,6 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/child/webthread_impl.h"
 #include "webkit/common/gpu/test_context_provider_factory.h"
@@ -667,10 +666,8 @@ WebURL GetDevToolsPathAsURL() {
 WebKit::WebString RegisterIsolatedFileSystem(
     const WebKit::WebVector<WebKit::WebString>& filenames) {
   fileapi::IsolatedContext::FileInfoSet files;
-  for (size_t i = 0; i < filenames.size(); ++i) {
-    base::FilePath path = webkit_base::WebStringToFilePath(filenames[i]);
-    files.AddPath(path, NULL);
-  }
+  for (size_t i = 0; i < filenames.size(); ++i)
+    files.AddPath(base::FilePath::FromUTF16Unsafe(filenames[i]), NULL);
   std::string filesystemId =
       fileapi::IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
   return UTF8ToUTF16(filesystemId);

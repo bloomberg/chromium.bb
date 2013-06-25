@@ -29,7 +29,6 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/glue/ftp_directory_listing_response_delegate.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/glue/resource_loader_bridge.h"
@@ -202,8 +201,7 @@ void PopulateURLResponse(
   response->setRemotePort(info.socket_address.port());
   response->setConnectionID(info.load_timing.socket_log_id);
   response->setConnectionReused(info.load_timing.socket_reused);
-  response->setDownloadFilePath(
-      webkit_base::FilePathToWebString(info.download_file_path));
+  response->setDownloadFilePath(info.download_file_path.AsUTF16Unsafe());
   WebURLResponseExtraDataImpl* extra_data =
       new WebURLResponseExtraDataImpl(info.npn_negotiated_protocol);
   response->setExtraData(extra_data);
@@ -525,11 +523,11 @@ void WebURLLoaderImpl::Context::Start(
         case WebHTTPBody::Element::TypeFile:
           if (element.fileLength == -1) {
             request_body->AppendFileRange(
-                webkit_base::WebStringToFilePath(element.filePath),
+                base::FilePath::FromUTF16Unsafe(element.filePath),
                 0, kuint64max, base::Time());
           } else {
             request_body->AppendFileRange(
-                webkit_base::WebStringToFilePath(element.filePath),
+                base::FilePath::FromUTF16Unsafe(element.filePath),
                 static_cast<uint64>(element.fileStart),
                 static_cast<uint64>(element.fileLength),
                 base::Time::FromDoubleT(element.modificationTime));

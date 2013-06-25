@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/browser/dom_storage/dom_storage_namespace.h"
 #include "webkit/browser/dom_storage/dom_storage_task_runner.h"

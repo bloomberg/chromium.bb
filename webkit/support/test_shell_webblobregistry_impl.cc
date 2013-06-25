@@ -5,11 +5,11 @@
 #include "webkit/support/test_shell_webblobregistry_impl.h"
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/browser/blob/blob_storage_controller.h"
 #include "webkit/common/blob/blob_data.h"
 
@@ -39,7 +39,7 @@ BlobData* NewBlobData(const WebBlobData& data) {
       case WebBlobData::Item::TypeFile:
         if (item.length) {
           blob->AppendFile(
-              webkit_base::WebStringToFilePath(item.filePath),
+              base::FilePath::FromUTF16Unsafe(item.filePath),
               static_cast<uint64>(item.offset),
               static_cast<uint64>(item.length),
               base::Time::FromDoubleT(item.expectedModificationTime));

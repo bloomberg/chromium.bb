@@ -4,12 +4,12 @@
 
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 
+#include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "webkit/base/file_path_string_conversions.h"
 
 using WebKit::WebString;
 using WebKit::WebMimeRegistry;
@@ -74,24 +74,24 @@ WebString SimpleWebMimeRegistryImpl::mimeTypeForExtension(
     const WebString& file_extension) {
   std::string mime_type;
   net::GetMimeTypeFromExtension(
-      webkit_base::WebStringToFilePathString(file_extension), &mime_type);
-  return ASCIIToUTF16(mime_type);
+      base::FilePath::FromUTF16Unsafe(file_extension).value(), &mime_type);
+  return WebString::fromUTF8(mime_type);
 }
 
 WebString SimpleWebMimeRegistryImpl::wellKnownMimeTypeForExtension(
     const WebString& file_extension) {
   std::string mime_type;
   net::GetWellKnownMimeTypeFromExtension(
-      webkit_base::WebStringToFilePathString(file_extension), &mime_type);
-  return ASCIIToUTF16(mime_type);
+      base::FilePath::FromUTF16Unsafe(file_extension).value(), &mime_type);
+  return WebString::fromUTF8(mime_type);
 }
 
 WebString SimpleWebMimeRegistryImpl::mimeTypeFromFile(
     const WebString& file_path) {
   std::string mime_type;
-  net::GetMimeTypeFromFile(webkit_base::WebStringToFilePath(file_path),
+  net::GetMimeTypeFromFile(base::FilePath::FromUTF16Unsafe(file_path),
                            &mime_type);
-  return ASCIIToUTF16(mime_type);
+  return WebString::fromUTF8(mime_type);
 }
 
 WebString SimpleWebMimeRegistryImpl::preferredExtensionForMIMEType(
@@ -99,7 +99,7 @@ WebString SimpleWebMimeRegistryImpl::preferredExtensionForMIMEType(
   base::FilePath::StringType file_extension;
   net::GetPreferredExtensionForMimeType(ToASCIIOrEmpty(mime_type),
                                         &file_extension);
-  return webkit_base::FilePathStringToWebString(file_extension);
+  return base::FilePath(file_extension).AsUTF16Unsafe();
 }
 
 }  // namespace webkit_glue

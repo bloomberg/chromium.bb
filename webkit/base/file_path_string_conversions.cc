@@ -4,36 +4,26 @@
 
 #include "webkit/base/file_path_string_conversions.h"
 
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace webkit_base {
 
 base::FilePath::StringType WebStringToFilePathString(
     const WebKit::WebString& str) {
-#if defined(OS_POSIX)
-  return base::SysWideToNativeMB(UTF16ToWideHack(str));
-#elif defined(OS_WIN)
-  return UTF16ToWideHack(str);
-#endif
+  return base::FilePath::FromUTF16Unsafe(str).value();
 }
 
 WebKit::WebString FilePathStringToWebString(
     const base::FilePath::StringType& str) {
-#if defined(OS_POSIX)
-  return WideToUTF16Hack(base::SysNativeMBToWide(str));
-#elif defined(OS_WIN)
-  return WideToUTF16Hack(str);
-#endif
+  return base::FilePath(str).AsUTF16Unsafe();
 }
 
 base::FilePath WebStringToFilePath(const WebKit::WebString& str) {
-  return base::FilePath(WebStringToFilePathString(str));
+  return base::FilePath::FromUTF16Unsafe(str);
 }
 
 WebKit::WebString FilePathToWebString(const base::FilePath& file_path) {
-  return FilePathStringToWebString(file_path.value());
+  return file_path.AsUTF16Unsafe();
 }
 
 }  // namespace webkit_base

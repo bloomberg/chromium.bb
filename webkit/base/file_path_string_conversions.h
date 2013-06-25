@@ -14,11 +14,15 @@ class WebString;
 
 namespace webkit_base {
 
+// DEPRECATED
+// Use FilePath::{As,From}UTF16Unsafe instead.
+
 WEBKIT_BASE_EXPORT base::FilePath::StringType WebStringToFilePathString(
     const WebKit::WebString& str);
 WEBKIT_BASE_EXPORT WebKit::WebString FilePathStringToWebString(
     const base::FilePath::StringType& str);
-WEBKIT_BASE_EXPORT base::FilePath WebStringToFilePath(const WebKit::WebString& str);
+WEBKIT_BASE_EXPORT base::FilePath WebStringToFilePath(
+    const WebKit::WebString& str);
 WEBKIT_BASE_EXPORT WebKit::WebString FilePathToWebString(
     const base::FilePath& file_path);
 

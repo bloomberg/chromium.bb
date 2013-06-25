@@ -10,6 +10,7 @@
 
 #include "base/allocator/allocator_extension.h"
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
@@ -42,7 +43,6 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "ui/base/layout.h"
-#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
@@ -397,7 +397,7 @@ void WebKitPlatformSupportImpl::getPluginList(bool refresh,
 
     builder->addPlugin(
         plugin.name, plugin.desc,
-        webkit_base::FilePathStringToWebString(plugin.path.BaseName().value()));
+        plugin.path.BaseName().AsUTF16Unsafe());
 
     for (size_t j = 0; j < plugin.mime_types.size(); ++j) {
       const webkit::WebPluginMimeType& mime_type = plugin.mime_types[j];
