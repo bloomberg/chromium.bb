@@ -310,7 +310,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
   layout->AddView(header_);
 
   layout->AddPaddingRow(1, kHeaderMarginBottom);
-  tabbed_pane_ = new views::TabbedPane();
+  tabbed_pane_ = new views::TabbedPane(false);
   layout->StartRow(1, content_column);
   layout->AddView(tabbed_pane_);
   // Tabs must be added after the tabbed_pane_ was added to the views

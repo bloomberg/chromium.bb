@@ -23,7 +23,9 @@ class VIEWS_EXPORT TabbedPane : public View {
   // Internal class name.
   static const char kViewClassName[];
 
-  TabbedPane();
+  // |draw_border| indicates whether the tabbed pane should draw a border
+  // around its boundary or not.
+  explicit TabbedPane(bool draw_border);
   virtual ~TabbedPane();
 
   TabbedPaneListener* listener() const { return listener_; }
@@ -58,6 +60,8 @@ class VIEWS_EXPORT TabbedPane : public View {
   virtual const char* GetClassName() const OVERRIDE;
 
  private:
+   friend class TabStrip;
+
    // Get the Tab (the tabstrip view, not its content) at the valid |index|.
    Tab* GetTabAt(int index);
 

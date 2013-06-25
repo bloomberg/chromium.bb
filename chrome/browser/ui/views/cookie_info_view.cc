@@ -25,6 +25,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace {
 
@@ -184,9 +185,6 @@ void CookieInfoView::Init() {
 #else
   SkColor border_color = color_utils::GetSysSkColor(COLOR_3DSHADOW);
 #endif
-  views::Border* border = views::Border::CreateSolidBorder(
-      kCookieInfoViewBorderSize, border_color);
-  set_border(border);
 
   name_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NAME_LABEL));
@@ -217,10 +215,17 @@ void CookieInfoView::Init() {
   using views::ColumnSet;
 
   GridLayout* layout = new GridLayout(this);
-  layout->SetInsets(kCookieInfoViewInsetSize,
-                    kCookieInfoViewInsetSize,
-                    kCookieInfoViewInsetSize,
-                    kCookieInfoViewInsetSize);
+  if (views::DialogDelegate::UseNewStyle()) {
+    layout->SetInsets(
+        0, views::kButtonHEdgeMarginNew, 0, views::kButtonHEdgeMarginNew);
+  } else {
+    set_border(views::Border::CreateSolidBorder(kCookieInfoViewBorderSize,
+                                                border_color));
+    layout->SetInsets(kCookieInfoViewInsetSize,
+                      kCookieInfoViewInsetSize,
+                      kCookieInfoViewInsetSize,
+                      kCookieInfoViewInsetSize);
+  }
   SetLayoutManager(layout);
 
   int three_column_layout_id = 0;

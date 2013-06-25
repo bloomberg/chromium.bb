@@ -17,14 +17,11 @@
 namespace {
 
 // TODO(markusheintz|msw): Use NativeTheme colors.
-const SkColor kTabTitleColor_Inactive = SkColorSetRGB(0x66, 0x66, 0x66);
-const SkColor kTabTitleColor_Active = SkColorSetRGB(0x20, 0x20, 0x20);
-const SkColor kTabTitleColor_Pressed = SkColorSetRGB(0x33, 0x33, 0x33);
-const SkColor kTabTitleColor_Hovered = SkColorSetRGB(0x22, 0x22, 0x22);
-const SkColor kTabBackgroundColor = SK_ColorWHITE;
-const SkColor kTabBorderColor = SkColorSetRGB(0xCC, 0xCC, 0xCC);
+const SkColor kTabTitleColor_Inactive = SkColorSetRGB(0x64, 0x64, 0x64);
+const SkColor kTabTitleColor_Active = SK_ColorBLACK;
+const SkColor kTabTitleColor_Hovered = SK_ColorBLACK;
+const SkColor kTabBorderColor = SkColorSetRGB(0xC8, 0xC8, 0xC8);
 const SkScalar kTabBorderThickness = 1.0f;
-const SkScalar kTabBorderRadius = 2.0f;
 
 }  // namespace
 
@@ -53,14 +50,21 @@ class Tab : public View {
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
-  void SetTitleColor(SkColor color);
-  void PaintTabBorder(gfx::Canvas* canvas);
+  enum TabState {
+    TAB_INACTIVE,
+    TAB_ACTIVE,
+    TAB_PRESSED,
+    TAB_HOVERED,
+  };
+
+  void SetState(TabState tab_state);
 
   TabbedPane* tabbed_pane_;
   Label* title_;
+  gfx::Size preferred_title_size_;
+  TabState tab_state_;
   // The content view associated with this tab.
   View* contents_;
 
@@ -70,7 +74,7 @@ class Tab : public View {
 // The tab strip shown above the tab contents.
 class TabStrip : public View {
  public:
-  TabStrip();
+  explicit TabStrip(TabbedPane* tabbed_pane);
   virtual ~TabStrip();
 
   // Overridden from View:
@@ -79,14 +83,20 @@ class TabStrip : public View {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
+  TabbedPane* tabbed_pane_;
+
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
 
 Tab::Tab(TabbedPane* tabbed_pane, const string16& title, View* contents)
     : tabbed_pane_(tabbed_pane),
       title_(new Label(title, gfx::Font().DeriveFont(0, gfx::Font::BOLD))),
+      tab_state_(TAB_ACTIVE),
       contents_(contents) {
-  SetTitleColor(kTabTitleColor_Inactive);
+  // Calculate this now while the font is guaranteed to be bold.
+  preferred_title_size_ = title_->GetPreferredSize();
+
+  SetState(TAB_INACTIVE);
   AddChildView(title_);
 }
 
@@ -94,44 +104,43 @@ Tab::~Tab() {}
 
 void Tab::SetSelected(bool selected) {
   contents_->SetVisible(selected);
-  SetTitleColor(selected ? kTabTitleColor_Active : kTabTitleColor_Inactive);
+  SetState(selected ? TAB_ACTIVE : TAB_INACTIVE);
 }
 
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
-  SetTitleColor(kTabTitleColor_Pressed);
+  SetState(TAB_PRESSED);
   return true;
 }
 
 void Tab::OnMouseReleased(const ui::MouseEvent& event) {
-  SetTitleColor(selected() ? kTabTitleColor_Active : kTabTitleColor_Hovered);
+  SetState(selected() ? TAB_ACTIVE : TAB_HOVERED);
   if (GetLocalBounds().Contains(event.location()))
     tabbed_pane_->SelectTab(this);
 }
 
 void Tab::OnMouseCaptureLost() {
-  SetTitleColor(kTabTitleColor_Inactive);
+  SetState(TAB_INACTIVE);
 }
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
-  SetTitleColor(selected() ? kTabTitleColor_Active : kTabTitleColor_Hovered);
+  SetState(selected() ? TAB_ACTIVE : TAB_HOVERED);
 }
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
-  SetTitleColor(selected() ? kTabTitleColor_Active : kTabTitleColor_Inactive);
+  SetState(selected() ? TAB_ACTIVE : TAB_INACTIVE);
 }
 
 void Tab::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
-      SetTitleColor(kTabTitleColor_Pressed);
+      SetState(TAB_PRESSED);
       break;
     case ui::ET_GESTURE_TAP:
       // SelectTab also sets the right tab color.
       tabbed_pane_->SelectTab(this);
       break;
     case ui::ET_GESTURE_TAP_CANCEL:
-      SetTitleColor(selected() ?
-          kTabTitleColor_Active : kTabTitleColor_Inactive);
+      SetState(selected() ? TAB_ACTIVE : TAB_INACTIVE);
       break;
     default:
       break;
@@ -140,8 +149,8 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 gfx::Size Tab::GetPreferredSize() {
-  gfx::Size size(title_->GetPreferredSize());
-  size.Enlarge(30, 10);
+  gfx::Size size(preferred_title_size_);
+  size.Enlarge(21, 9);
   const int kTabMinWidth = 54;
   if (size.width() < kTabMinWidth)
     size.set_width(kTabMinWidth);
@@ -150,55 +159,37 @@ gfx::Size Tab::GetPreferredSize() {
 
 void Tab::Layout() {
   gfx::Rect bounds = GetLocalBounds();
-  bounds.ClampToCenteredSize(title_->GetPreferredSize());
+  bounds.Inset(0, 1, 0, 0);
+  bounds.ClampToCenteredSize(preferred_title_size_);
   title_->SetBoundsRect(bounds);
 }
 
-void Tab::OnPaint(gfx::Canvas* canvas) {
-  if (selected()) {
-    canvas->DrawColor(kTabBackgroundColor);
-    PaintTabBorder(canvas);
-  }
-  View::OnPaint(canvas);
-}
+void Tab::SetState(TabState tab_state) {
+  if (tab_state == tab_state_)
+    return;
+  tab_state_ = tab_state;
 
-void Tab::SetTitleColor(SkColor color) {
-  title_->SetEnabledColor(color);
+  switch (tab_state) {
+    case TAB_INACTIVE:
+      title_->SetEnabledColor(kTabTitleColor_Inactive);
+      title_->SetFont(gfx::Font());
+      break;
+    case TAB_ACTIVE:
+      title_->SetEnabledColor(kTabTitleColor_Active);
+      title_->SetFont(gfx::Font().DeriveFont(0, gfx::Font::BOLD));
+      break;
+    case TAB_PRESSED:
+      // No visual distinction for pressed state.
+      break;
+    case TAB_HOVERED:
+      title_->SetEnabledColor(kTabTitleColor_Hovered);
+      title_->SetFont(gfx::Font());
+      break;
+  }
   SchedulePaint();
 }
 
-void Tab::PaintTabBorder(gfx::Canvas* canvas) {
-  SkPath path;
-  // Clip the bottom of the border by extending its rect height beyond the tab.
-  const int tab_height = height() + kTabBorderThickness;
-  SkRect bounds = { 0, 0, SkIntToScalar(width()), SkIntToScalar(tab_height) };
-  SkScalar radii[8] = { kTabBorderRadius, kTabBorderRadius,
-                        kTabBorderRadius, kTabBorderRadius,
-                        0, 0,
-                        0, 0 };
-  path.addRoundRect(bounds, radii, SkPath::kCW_Direction);
-
-  SkPaint paint;
-  paint.setAntiAlias(true);
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setColor(kTabBorderColor);
-  paint.setStrokeWidth(kTabBorderThickness * 2);
-  canvas->DrawPath(path, paint);
-}
-
-TabStrip::TabStrip() {
-  const int kCount = 4;
-  // This gradient is designed to mach WebUI tabbed panes.
-  SkColor colors[kCount] = {
-      SkColorSetRGB(0xff, 0xff, 0xff),
-      SkColorSetRGB(0xff, 0xff, 0xff),
-      SkColorSetRGB(0xfa, 0xfa, 0xfa),
-      SkColorSetRGB(0xf2, 0xf2, 0xf2)
-  };
-  SkScalar pos[kCount] = { 0.0f, 0.6f, 0.8f, 1.0f };
-  set_background(Background::CreateVerticalMultiColorGradientBackground(
-      colors, pos, kCount));
-}
+TabStrip::TabStrip(TabbedPane* tabbed_pane) : tabbed_pane_(tabbed_pane) {}
 
 TabStrip::~TabStrip() {}
 
@@ -213,7 +204,7 @@ gfx::Size TabStrip::GetPreferredSize() {
 }
 
 void TabStrip::Layout() {
-  const int kTabOffset = 18;
+  const int kTabOffset = 9;
   int x = kTabOffset;  // Layout tabs with an offset to the tabstrip border.
   for (int i = 0; i < child_count(); ++i) {
     gfx::Size ps = child_at(i)->GetPreferredSize();
@@ -229,19 +220,49 @@ void TabStrip::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setColor(kTabBorderColor);
   paint.setStrokeWidth(kTabBorderThickness);
-  SkScalar line_y = SkIntToScalar(height()) - kTabBorderThickness;
-  SkScalar line_width = SkIntToScalar(width());
-  canvas->sk_canvas()->drawLine(0, line_y, line_width, line_y, paint);
+  SkScalar line_y = SkIntToScalar(height()) - (kTabBorderThickness / 2);
+  SkScalar line_end = SkIntToScalar(width());
+  int selected_tab_index = tabbed_pane_->selected_tab_index();
+  if (selected_tab_index >= 0) {
+    Tab* selected_tab = tabbed_pane_->GetTabAt(selected_tab_index);
+    SkPath path;
+    SkScalar tab_height =
+        SkIntToScalar(selected_tab->height()) - kTabBorderThickness;
+    SkScalar tab_width =
+        SkIntToScalar(selected_tab->width()) - kTabBorderThickness;
+    SkScalar tab_start = SkIntToScalar(selected_tab->x());
+    path.moveTo(0, line_y);
+    path.rLineTo(tab_start, 0);
+    path.rLineTo(0, -tab_height);
+    path.rLineTo(tab_width, 0);
+    path.rLineTo(0, tab_height);
+    path.lineTo(line_end, line_y);
+
+    SkPaint paint;
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setColor(kTabBorderColor);
+    paint.setStrokeWidth(kTabBorderThickness);
+    canvas->DrawPath(path, paint);
+  } else {
+    canvas->sk_canvas()->drawLine(0, line_y, line_end, line_y, paint);
+  }
 }
 
-TabbedPane::TabbedPane()
+TabbedPane::TabbedPane(bool draw_border)
   : listener_(NULL),
-    tab_strip_(new TabStrip()),
+    tab_strip_(new TabStrip(this)),
     contents_(new View()),
     selected_tab_index_(-1) {
   set_focusable(true);
   AddChildView(tab_strip_);
   AddChildView(contents_);
+  if (draw_border) {
+    contents_->set_border(Border::CreateSolidSidedBorder(0,
+                                                         kTabBorderThickness,
+                                                         kTabBorderThickness,
+                                                         kTabBorderThickness,
+                                                         kTabBorderColor));
+  }
 }
 
 TabbedPane::~TabbedPane() {}

@@ -45,6 +45,7 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_delegate.h"
 
 using web_modal::WebContentsModalDialogManager;
 
@@ -310,11 +311,13 @@ void CollectedCookiesViews::Init() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_layout_id);
-  views::TabbedPane* tabbed_pane = new views::TabbedPane();
-  // This color matches tabbed_pane.cc's kTabBorderColor.
-  const SkColor border_color = SkColorSetRGB(0xCC, 0xCC, 0xCC);
-  // TODO(msw): Remove border and expand bounds in new dialog style.
-  tabbed_pane->set_border(views::Border::CreateSolidBorder(1, border_color));
+  views::TabbedPane* tabbed_pane = NULL;
+  if (DialogDelegate::UseNewStyle()) {
+    tabbed_pane = new views::TabbedPane(false);
+    layout->SetInsets(gfx::Insets());
+  } else {
+    tabbed_pane = new views::TabbedPane(true);
+  }
 
   layout->AddView(tabbed_pane);
   // NOTE: Panes must be added after |tabbed_pane| has been added to its parent.
