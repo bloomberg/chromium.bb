@@ -39,9 +39,20 @@ function endToEndVideoTest() {
       video.addEventListener("error", chrome.test.fail);
       var canvas = document.createElement("canvas");
 
-      function updateFillColor() {
+      function updateTestDocument() {
         document.body.style.backgroundColor =
             "rgb(" + colors[curColorIdx] + ")";
+
+        // Important: Blink the testing message so that the capture pipeline
+        // will observe drawing updates and continue to produce video frames.
+        var message = document.getElementById("message");
+        if (!message.blinkInterval) {
+          message.innerHTML = "Testing...";
+          message.blinkInterval = setInterval(function toggleVisibility() {
+            message.style.visibility =
+                message.style.visibility == "hidden" ? "visible" : "hidden";
+          }, 500);
+        }
       }
 
       function checkVideoForFillColor(event) {
@@ -70,7 +81,7 @@ function endToEndVideoTest() {
           // consider the test successful.
           if (curColorIdx + 1 < colors.length) {
             ++curColorIdx;
-            updateFillColor();
+            updateTestDocument();
           } else {
             video.removeEventListener("timeupdate", checkVideoForFillColor);
             chrome.test.succeed();
@@ -83,7 +94,7 @@ function endToEndVideoTest() {
       video.play();
 
       // Kick it off.
-      updateFillColor();
+      updateTestDocument();
       video.addEventListener("timeupdate", checkVideoForFillColor);
     }
   );
