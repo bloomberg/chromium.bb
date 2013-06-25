@@ -122,6 +122,9 @@ extern const char kOnRestarted[];
 // FeedbackPrivate
 extern const char kOnFeedbackRequested[];
 
+// DeveloperPrivate.
+extern const char kDeveloperPrivateOnItemStateChanged[];
+
 }  // namespace event_names
 
 }  // namespace extensions

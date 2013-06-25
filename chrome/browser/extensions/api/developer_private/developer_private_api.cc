@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/api/developer_private/developer_private_api_factory.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -47,6 +48,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
@@ -66,6 +68,8 @@
 using content::RenderViewHost;
 
 namespace extensions {
+
+namespace events = event_names;
 
 namespace {
 
@@ -105,6 +109,13 @@ const Extension* GetExtensionByPath(const ExtensionSet* extensions,
   return NULL;
 }
 
+std::string GetExtensionID(const RenderViewHost* render_view_host) {
+  if (!render_view_host->GetSiteInstance())
+    return std::string();
+
+  return render_view_host->GetSiteInstance()->GetSiteURL().host();
+}
+
 }  // namespace
 
 namespace AllowFileAccess = api::developer_private::AllowFileAccess;
@@ -121,23 +132,87 @@ DeveloperPrivateAPI* DeveloperPrivateAPI::Get(Profile* profile) {
   return DeveloperPrivateAPIFactory::GetForProfile(profile);
 }
 
-DeveloperPrivateAPI::DeveloperPrivateAPI(Profile* profile) {
+DeveloperPrivateAPI::DeveloperPrivateAPI(Profile* profile) : profile_(profile) {
   RegisterNotifications();
 }
 
+DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
+: profile_(profile) {
+  int types[] = {
+    chrome::NOTIFICATION_EXTENSION_INSTALLED,
+    chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+    chrome::NOTIFICATION_EXTENSION_LOADED,
+    chrome::NOTIFICATION_EXTENSION_UNLOADED,
+    chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
+    chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED
+  };
 
-void DeveloperPrivateAPI::Observe(
+  CHECK(registrar_.IsEmpty());
+  for (size_t i = 0; i < arraysize(types); ++i) {
+    registrar_.Add(this,
+                   types[i],
+                   content::Source<Profile>(profile_));
+  }
+}
+
+
+DeveloperPrivateEventRouter::~DeveloperPrivateEventRouter() {}
+
+void DeveloperPrivateEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  const char* event_name = NULL;
+  Profile* profile = content::Source<Profile>(source).ptr();
+  CHECK(profile);
+  CHECK(profile_->IsSameProfile(profile));
+  developer::EventData event_data;
+  std::string extension_id;
+  const Extension* extension = NULL;
+
   switch (type) {
-    // TODO(grv): Listen to other notifications and expose them
-    // as events in API.
-    case chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED:
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+      event_data.event_type = developer::EVENT_TYPE_INSTALLED;
+      extension =
+          content::Details<const InstalledExtensionInfo>(details)->extension;
+      break;
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
+      event_data.event_type = developer::EVENT_TYPE_UNINSTALLED;
+      extension = content::Details<const Extension>(details).ptr();
+      break;
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
+      event_data.event_type = developer::EVENT_TYPE_LOADED;
+      extension = content::Details<const Extension>(details).ptr();
+      break;
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+      event_data.event_type = developer::EVENT_TYPE_UNLOADED;
+      extension =
+          content::Details<const UnloadedExtensionInfo>(details)->extension;
+      break;
+    case chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED:
+      event_data.event_type = developer::EVENT_TYPE_VIEW_UNREGISTERED;
+      event_data.item_id = GetExtensionID(
+          content::Details<const RenderViewHost>(details).ptr());
+      break;
+    case chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED:
+      event_data.event_type = developer::EVENT_TYPE_VIEW_REGISTERED;
+      event_data.item_id = GetExtensionID(
+          content::Details<const RenderViewHost>(details).ptr());
       break;
     default:
       NOTREACHED();
+      return;
   }
+
+  if (extension)
+    event_data.item_id = extension->id();
+
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(event_data.ToValue().release());
+
+  event_name = events::kDeveloperPrivateOnItemStateChanged;
+  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 }
 
 void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
@@ -145,14 +220,27 @@ void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
 }
 
 void DeveloperPrivateAPI::RegisterNotifications() {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
-                 content::NotificationService::AllBrowserContextsAndSources());
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+      this, events::kDeveloperPrivateOnItemStateChanged);
 }
 
 DeveloperPrivateAPI::~DeveloperPrivateAPI() {}
 
 void DeveloperPrivateAPI::Shutdown() {}
+
+void DeveloperPrivateAPI::OnListenerAdded(
+    const EventListenerInfo& details) {
+  if (!developer_private_event_router_)
+    developer_private_event_router_.reset(
+        new DeveloperPrivateEventRouter(profile_));
+}
+
+void DeveloperPrivateAPI::OnListenerRemoved(
+    const EventListenerInfo& details) {
+  if (!ExtensionSystem::Get(profile_)->event_router()->HasEventListener(
+          event_names::kDeveloperPrivateOnItemStateChanged))
+    developer_private_event_router_.reset(NULL);
+}
 
 namespace api {
 

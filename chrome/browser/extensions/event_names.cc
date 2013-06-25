@@ -103,6 +103,9 @@ const char kOnRestarted[] = "app.runtime.onRestarted";
 
 const char kOnFeedbackRequested[] = "feedbackPrivate.onFeedbackRequested";
 
+const char kDeveloperPrivateOnItemStateChanged[] =
+    "developerPrivate.onItemStateChanged";
+
 }  // namespace event_names
 
 }  // namespace extensions

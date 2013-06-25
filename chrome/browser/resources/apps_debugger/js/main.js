@@ -24,3 +24,7 @@ chrome.management.onInstalled.addListener(function(info) {
 chrome.management.onUninstalled.addListener(function() {
   ItemList.loadItemsInfo();
 });
+
+chrome.developerPrivate.onItemStateChanged.addListener(function(response) {
+  ItemList.loadItemsInfo();
+});
