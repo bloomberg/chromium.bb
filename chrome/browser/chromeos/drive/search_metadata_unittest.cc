@@ -558,28 +558,6 @@ TEST(SearchMetadataSimpleTest, FindAndHighlight_IgnoreCase) {
   EXPECT_EQ("<b>HeLLo</b>", highlighted_text);
 }
 
-TEST(SearchMetadataSimpleTest, FindAndHighlight_IgnoreCaseNonASCII) {
-  std::string highlighted_text;
-
-  // Case and accent ignorance in Greek. Find "socra" in "Socra'tes".
-  EXPECT_TRUE(FindAndHighlight(
-      "\xCE\xA3\xCF\x89\xCE\xBA\xCF\x81\xCE\xAC\xCF\x84\xCE\xB7\xCF\x82",
-      "\xCF\x83\xCF\x89\xCE\xBA\xCF\x81\xCE\xB1", &highlighted_text));
-  EXPECT_EQ(
-      "<b>\xCE\xA3\xCF\x89\xCE\xBA\xCF\x81\xCE\xAC</b>\xCF\x84\xCE\xB7\xCF\x82",
-      highlighted_text);
-
-  // In Japanese characters.
-  // Find Hiragana "pi" + "(small)ya" in Katakana "hi" + semi-voiced-mark + "ya"
-  EXPECT_TRUE(FindAndHighlight(
-      "\xE3\x81\xB2\xE3\x82\x9A\xE3\x82\x83\xE3\x83\xBC",
-      "\xE3\x83\x94\xE3\x83\xA4",
-      &highlighted_text));
-  EXPECT_EQ(
-      "<b>\xE3\x81\xB2\xE3\x82\x9A\xE3\x82\x83</b>\xE3\x83\xBC",
-      highlighted_text);
-}
-
 TEST(SearchMetadataSimpleTest, FindAndHighlight_MetaChars) {
   std::string highlighted_text;
   EXPECT_TRUE(FindAndHighlight("<hello>", "hello", &highlighted_text));

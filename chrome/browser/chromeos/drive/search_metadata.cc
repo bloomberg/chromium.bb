@@ -8,8 +8,7 @@
 #include <queue>
 
 #include "base/bind.h"
-#include "base/i18n/string_search.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -219,22 +218,21 @@ bool FindAndHighlight(const std::string& text,
   if (query.empty())
     return true;
 
-  string16 text16 = base::UTF8ToUTF16(text);
-  string16 query16 = base::UTF8ToUTF16(query);
-  size_t match_start = 0;
-  size_t match_length = 0;
-  if (!base::i18n::StringSearchIgnoringCaseAndAccents(
-      query16, text16, &match_start, &match_length)) {
+  // TODO(kinaba): Should support non-ASCII characters.
+  std::string lower_text = StringToLowerASCII(text);
+  std::string lower_query = StringToLowerASCII(query);
+  std::string::size_type match_start = lower_text.find(lower_query);
+  if (match_start == std::string::npos)
     return false;
-  }
-  string16 pre = text16.substr(0, match_start);
-  string16 match = text16.substr(match_start, match_length);
-  string16 post = text16.substr(match_start + match_length);
-  highlighted_text->append(net::EscapeForHTML(UTF16ToUTF8(pre)));
+
+  std::string pre = text.substr(0, match_start);
+  std::string match = text.substr(match_start, query.size());
+  std::string post = text.substr(match_start + query.size());
+  highlighted_text->append(net::EscapeForHTML(pre));
   highlighted_text->append("<b>");
-  highlighted_text->append(net::EscapeForHTML(UTF16ToUTF8(match)));
+  highlighted_text->append(net::EscapeForHTML(match));
   highlighted_text->append("</b>");
-  highlighted_text->append(net::EscapeForHTML(UTF16ToUTF8(post)));
+  highlighted_text->append(net::EscapeForHTML(post));
   return true;
 }
 
