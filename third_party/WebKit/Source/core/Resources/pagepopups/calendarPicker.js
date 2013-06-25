@@ -3011,7 +3011,7 @@ function DayCell() {
     this.element.classList.add(DayCell.ClassNameDayCell);
     this.element.style.width = DayCell.Width + "px";
     this.element.style.height = DayCell.Height + "px";
-    this.element.style.lineHeight = (DayCell.Height - DayCell.BorderWidth * 2) + "px";
+    this.element.style.lineHeight = (DayCell.Height - DayCell.PaddingSize * 2) + "px";
     /**
      * @type {?Day}
      */
@@ -3022,7 +3022,7 @@ DayCell.prototype = Object.create(ListCell.prototype);
 
 DayCell.Width = 34;
 DayCell.Height = hasInaccuratePointingDevice() ? 34 : 20;
-DayCell.BorderWidth = 1;
+DayCell.PaddingSize = 1;
 DayCell.ClassNameDayCell = "day-cell";
 DayCell.ClassNameHighlighted = "highlighted";
 DayCell.ClassNameDisabled = "disabled";
@@ -3107,8 +3107,9 @@ DayCell.prototype.reset = function(day) {
 function WeekNumberCell() {
     ListCell.call(this);
     this.element.classList.add(WeekNumberCell.ClassNameWeekNumberCell);
-    this.element.style.width = (WeekNumberCell.Width - WeekNumberCell.RightBorderWidth) + "px";
+    this.element.style.width = (WeekNumberCell.Width - WeekNumberCell.SeparatorWidth) + "px";
     this.element.style.height = WeekNumberCell.Height + "px";
+    this.element.style.lineHeight = (WeekNumberCell.Height - WeekNumberCell.PaddingSize * 2) + "px";
     /**
      * @type {?Week}
      */
@@ -3119,7 +3120,8 @@ WeekNumberCell.prototype = Object.create(ListCell.prototype);
 
 WeekNumberCell.Width = 48;
 WeekNumberCell.Height = DayCell.Height;
-WeekNumberCell.RightBorderWidth = 1;
+WeekNumberCell.SeparatorWidth = 1;
+WeekNumberCell.PaddingSize = 1;
 WeekNumberCell.ClassNameWeekNumberCell = "week-number-cell";
 WeekNumberCell.ClassNameHighlighted = "highlighted";
 WeekNumberCell.ClassNameDisabled = "disabled";
