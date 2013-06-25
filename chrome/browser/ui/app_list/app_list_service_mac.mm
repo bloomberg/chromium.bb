@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <ApplicationServices/ApplicationServices.h>
+#import <Cocoa/Cocoa.h>
+
 #include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -361,25 +364,52 @@ DockLocation DockLocationInDisplay(const gfx::Display& display) {
   return DockLocationOtherDisplay;
 }
 
+// If |work_area_edge| is too close to the |screen_edge| (e.g. autohide dock),
+// adjust |anchor| away from the edge by a constant amount to reduce overlap and
+// ensure the dock icon can still be clicked to dismiss the app list.
+int AdjustPointForDynamicDock(int anchor, int screen_edge, int work_area_edge) {
+  const int kAutohideDockThreshold = 10;
+  const int kExtraDistance = 50;  // A dock with 40 items is about this size.
+  if (abs(work_area_edge - screen_edge) > kAutohideDockThreshold)
+    return anchor;
+
+  return anchor +
+      (screen_edge < work_area_edge ? kExtraDistance : -kExtraDistance);
+}
+
 NSPoint GetAppListWindowOrigin(NSWindow* window) {
   gfx::Screen* const screen = gfx::Screen::GetScreenFor([window contentView]);
+  // Ensure y coordinates are flipped back into AppKit's coordinate system.
+  const CGFloat max_y = NSMaxY([[[NSScreen screens] objectAtIndex:0] frame]);
+  if (!CGCursorIsVisible()) {
+    // If Chrome is the active application, display on the same display as
+    // Chrome's keyWindow since this will catch activations triggered, e.g, via
+    // WebStore install. If another application is active, OSX doesn't provide a
+    // reliable way to get the display in use. Fall back to the primary display
+    // since it has the menu bar and is likely to be correct, e.g., for
+    // activations from Spotlight.
+    const gfx::NativeView key_view = [[NSApp keyWindow] contentView];
+    const gfx::Rect work_area = key_view && [NSApp isActive] ?
+        screen->GetDisplayNearestWindow(key_view).work_area() :
+        screen->GetPrimaryDisplay().work_area();
+    return NSMakePoint(work_area.x(), max_y - work_area.bottom());
+  }
+
   gfx::Point anchor = screen->GetCursorScreenPoint();
   const gfx::Display display = screen->GetDisplayNearestPoint(anchor);
   const DockLocation dock_location = DockLocationInDisplay(display);
   const gfx::Rect display_bounds = display.bounds();
 
-  // Ensure y coordinates are flipped back into AppKit's coordinate system.
-  const CGFloat max_y = NSMaxY([[[NSScreen screens] objectAtIndex:0] frame]);
   if (dock_location == DockLocationOtherDisplay) {
     // Just display at the bottom-left of the display the cursor is on.
-    return NSMakePoint(display_bounds.x(),
-                       max_y - display_bounds.bottom());
+    return NSMakePoint(display_bounds.x(), max_y - display_bounds.bottom());
   }
 
   // Anchor the center of the window in a region that prevents the window
   // showing outside of the work area.
   const NSSize window_size = [window frame].size;
-  gfx::Rect anchor_area = display.work_area();
+  const gfx::Rect work_area = display.work_area();
+  gfx::Rect anchor_area = work_area;
   anchor_area.Inset(window_size.width / 2, window_size.height / 2);
   anchor.SetToMax(anchor_area.origin());
   anchor.SetToMin(anchor_area.bottom_right());
@@ -387,13 +417,16 @@ NSPoint GetAppListWindowOrigin(NSWindow* window) {
   // Move anchor to the dock, keeping the other axis aligned with the cursor.
   switch (dock_location) {
     case DockLocationBottom:
-      anchor.set_y(anchor_area.bottom());
+      anchor.set_y(AdjustPointForDynamicDock(
+          anchor_area.bottom(), display_bounds.bottom(), work_area.bottom()));
       break;
     case DockLocationLeft:
-      anchor.set_x(anchor_area.x());
+      anchor.set_x(AdjustPointForDynamicDock(
+          anchor_area.x(), display_bounds.x(), work_area.x()));
       break;
     case DockLocationRight:
-      anchor.set_x(anchor_area.right());
+      anchor.set_x(AdjustPointForDynamicDock(
+          anchor_area.right(), display_bounds.right(), work_area.right()));
       break;
     default:
       NOTREACHED();

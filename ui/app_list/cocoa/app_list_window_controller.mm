@@ -38,6 +38,7 @@
   [controlledWindow setBackgroundColor:[NSColor clearColor]];
   [controlledWindow setOpaque:NO];
   [controlledWindow setHasShadow:YES];
+  [controlledWindow setLevel:NSDockWindowLevel];
 
   if ((self = [super initWithWindow:controlledWindow])) {
     appListViewController_.reset([[AppListViewController alloc] init]);
