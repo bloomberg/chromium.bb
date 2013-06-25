@@ -386,46 +386,6 @@ class AutocheckoutStepProgressView : public views::View {
 
 }  // namespace
 
-// AutofillDialogViews::SizeLimitedScrollView ----------------------------------
-
-AutofillDialogViews::SizeLimitedScrollView::SizeLimitedScrollView(
-    views::View* scroll_contents)
-    : max_height_(-1) {
-  set_hide_horizontal_scrollbar(true);
-  SetContents(scroll_contents);
-}
-
-AutofillDialogViews::SizeLimitedScrollView::~SizeLimitedScrollView() {}
-
-void AutofillDialogViews::SizeLimitedScrollView::Layout() {
-  contents()->SizeToPreferredSize();
-  ScrollView::Layout();
-}
-
-gfx::Size AutofillDialogViews::SizeLimitedScrollView::GetPreferredSize() {
-  gfx::Size size = contents()->GetPreferredSize();
-  if (contents()->visible()) {
-    if (max_height_ >= 0 && max_height_ < size.height())
-      size.set_height(max_height_);
-  } else {
-    // When we hide detailed steps we want to remove the excess vertical
-    // space left in their absence, but keep the width so that the dialog
-    // doesn't appear too 'elastic' in its dimensions.
-    size.set_height(0);
-  }
-
-  return size;
-}
-
-void AutofillDialogViews::SizeLimitedScrollView::SetMaximumHeight(
-    int max_height) {
-  int old_max = max_height_;
-  max_height_ = max_height;
-
-  if (max_height_ < height() || old_max <= height())
-    PreferredSizeChanged();
-}
-
 // AutofillDialogViews::ErrorBubble --------------------------------------------
 
 AutofillDialogViews::ErrorBubble::ErrorBubble(views::View* anchor,
@@ -641,51 +601,6 @@ void AutofillDialogViews::AccountChooser::LinkClicked(views::Link* source,
   controller_->SignInLinkClicked();
 }
 
-// AutofillDialogViews::ShieldableContentsView ---------------------------------
-
-AutofillDialogViews::ShieldableContentsView::ShieldableContentsView()
-    : contents_(new views::View),
-      contents_shield_(new views::Label) {
-  contents_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
-                           views::kRelatedControlVerticalSpacing));
-  contents_shield_->SetVisible(false);
-  contents_shield_->set_background(views::Background::CreateSolidBackground(
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_DialogBackground)));
-  contents_shield_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont).DeriveFont(15));
-
-  AddChildView(contents_);
-  AddChildView(contents_shield_);
-}
-
-AutofillDialogViews::ShieldableContentsView::~ShieldableContentsView() {}
-
-void AutofillDialogViews::ShieldableContentsView::AddToContents(
-    views::View* view) {
-  contents_->AddChildView(view);
-}
-
-void AutofillDialogViews::ShieldableContentsView::ObscureContents(
-    const base::string16& message) {
-  if (message == contents_shield_->text())
-    return;
-
-  contents_shield_->SetVisible(!message.empty());
-  contents_shield_->SetText(message);
-  SchedulePaint();
-}
-
-void AutofillDialogViews::ShieldableContentsView::Layout() {
-  contents_->SetBoundsRect(bounds());
-  contents_shield_->SetBoundsRect(bounds());
-}
-
-gfx::Size AutofillDialogViews::ShieldableContentsView::GetPreferredSize() {
-  return contents_->GetPreferredSize();
-}
-
 // AutofillDialogViews::NotificationArea ---------------------------------------
 
 AutofillDialogViews::NotificationArea::NotificationArea(
@@ -786,13 +701,6 @@ void AutofillDialogViews::OnWidgetClosing(views::Widget* widget) {
 
 void AutofillDialogViews::OnWidgetBoundsChanged(views::Widget* widget,
                                                 const gfx::Rect& new_bounds) {
-  int non_scrollable_height = window_->GetContentsView()->bounds().height() -
-      scrollable_area_->bounds().height();
-  int browser_window_height = widget->GetContentsView()->bounds().height();
-
-  scrollable_area_->SetMaximumHeight(
-      std::max(kMinimumContentsHeight,
-               (browser_window_height - non_scrollable_height) * 8 / 10));
   ContentsPreferredSizeChanged();
 }
 
@@ -1034,13 +942,12 @@ AutofillDialogView* AutofillDialogView::Create(
 AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
     : controller_(controller),
       window_(NULL),
-      contents_(NULL),
       notification_area_(NULL),
       account_chooser_(NULL),
       sign_in_webview_(NULL),
-      main_container_(NULL),
       scrollable_area_(NULL),
       details_container_(NULL),
+      loading_shield_(NULL),
       overlay_view_(NULL),
       button_strip_extra_view_(NULL),
       save_in_chrome_checkbox_(NULL),
@@ -1103,7 +1010,6 @@ void AutofillDialogViews::Show() {
       views::Widget::GetTopLevelWidgetForNativeView(
           controller_->web_contents()->GetView()->GetNativeView());
   observer_.Add(browser_widget);
-  OnWidgetBoundsChanged(browser_widget, gfx::Rect());
 }
 
 void AutofillDialogViews::Hide() {
@@ -1115,8 +1021,13 @@ void AutofillDialogViews::UpdateAccountChooser() {
   account_chooser_->Update();
   // TODO(estade): replace this with a better loading image/animation.
   // See http://crbug.com/230932
-  main_container_->ObscureContents(controller_->ShouldShowSpinner() ?
+  string16 new_loading_message = (controller_->ShouldShowSpinner() ?
       ASCIIToUTF16("Loading...") : base::string16());
+  if (new_loading_message != loading_shield_->text()) {
+    loading_shield_->SetText(new_loading_message);
+    loading_shield_->SetVisible(!new_loading_message.empty());
+    Layout();
+  }
 
   // Update legal documents for the account.
   if (footnote_view_) {
@@ -1154,7 +1065,7 @@ void AutofillDialogViews::UpdateButtonStrip() {
 }
 
 void AutofillDialogViews::UpdateDetailArea() {
-  details_container_->SetVisible(controller_->ShouldShowDetailArea());
+  scrollable_area_->SetVisible(controller_->ShouldShowDetailArea());
   ContentsPreferredSizeChanged();
 }
 
@@ -1229,7 +1140,6 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
 
   sign_in_webview_->LoadInitialURL(wallet::GetSignInUrl());
 
-  main_container_->SetVisible(false);
   sign_in_webview_->SetVisible(true);
   UpdateButtonStrip();
   ContentsPreferredSizeChanged();
@@ -1238,7 +1148,6 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
 
 void AutofillDialogViews::HideSignIn() {
   sign_in_webview_->SetVisible(false);
-  main_container_->SetVisible(true);
   UpdateButtonStrip();
   ContentsPreferredSizeChanged();
 }
@@ -1338,6 +1247,87 @@ bool AutofillDialogViews::CanHandleAccelerators() const {
   return true;
 }
 
+void AutofillDialogViews::Layout() {
+  gfx::Rect content_bounds = GetContentsBounds();
+  if (sign_in_webview_->visible()) {
+    sign_in_webview_->SetBoundsRect(content_bounds);
+    return;
+  }
+
+  const int x = content_bounds.x();
+  const int y = content_bounds.y();
+  const int w = content_bounds.width();
+  // Layout notification area at top of dialog.
+  int notification_height = notification_area_->GetHeightForWidth(w);
+  notification_area_->SetBounds(x, y, w, notification_height);
+
+  // Layout Autocheckout steps at bottom of dialog.
+  int steps_height = autocheckout_steps_area_->GetHeightForWidth(w);
+  autocheckout_steps_area_->SetBounds(x, content_bounds.bottom() - steps_height,
+                                      w, steps_height);
+
+  // The rest (the |scrollable_area_|) takes up whatever's left.
+  if (scrollable_area_->visible()) {
+    int scroll_y = y;
+    if (notification_height > 0)
+      scroll_y += notification_height + views::kRelatedControlVerticalSpacing;
+
+    int scroll_bottom = content_bounds.bottom();
+    if (steps_height > 0)
+      scroll_bottom -= steps_height + views::kRelatedControlVerticalSpacing;
+
+    scrollable_area_->contents()->SizeToPreferredSize();
+    scrollable_area_->SetBounds(x, scroll_y, w, scroll_bottom - scroll_y);
+  }
+
+  if (loading_shield_->visible())
+    loading_shield_->SetBoundsRect(bounds());
+
+  if (error_bubble_)
+    error_bubble_->UpdatePosition();
+}
+
+gfx::Size AutofillDialogViews::GetPreferredSize() {
+  gfx::Insets insets = GetInsets();
+  if (sign_in_webview_->visible()) {
+    gfx::Size size = static_cast<views::View*>(sign_in_webview_)->
+        GetPreferredSize();
+    return gfx::Size(size.width() - insets.width(),
+                     size.height() - insets.height());
+  }
+
+  int base_height = insets.height();
+  int notification_height = notification_area_->GetPreferredSize().height();
+  if (notification_height > 0)
+    base_height += notification_height + views::kRelatedControlVerticalSpacing;
+
+  int steps_height = autocheckout_steps_area_->GetPreferredSize().height();
+  if (steps_height > 0)
+    base_height += steps_height + views::kRelatedControlVerticalSpacing;
+
+  // When the scroll area isn't visible, it still sets the width but doesn't
+  // factor into height.
+  gfx::Size scroll_size = scrollable_area_->contents()->GetPreferredSize();
+  int width = scroll_size.width() + insets.width();
+  if (!scrollable_area_->visible())
+    return gfx::Size(width, base_height);
+
+  // Show as much of the scroll view as is possible without going past the
+  // bottom of the browser window.
+  views::Widget* widget =
+      views::Widget::GetTopLevelWidgetForNativeView(
+          controller_->web_contents()->GetView()->GetNativeView());
+  int browser_window_height =
+      widget ? widget->GetContentsView()->bounds().height() : INT_MAX;
+  const int kWindowDecorationHeight = 200;
+  int height = base_height + std::min(
+      scroll_size.height(),
+      std::max(kMinimumContentsHeight,
+               browser_window_height - base_height - kWindowDecorationHeight));
+
+  return gfx::Size(width, height);
+}
+
 string16 AutofillDialogViews::GetWindowTitle() const {
   return controller_->DialogTitle();
 }
@@ -1350,18 +1340,6 @@ void AutofillDialogViews::DeleteDelegate() {
   window_ = NULL;
   // |this| belongs to |controller_|.
   controller_->ViewClosed();
-}
-
-views::Widget* AutofillDialogViews::GetWidget() {
-  return contents_->GetWidget();
-}
-
-const views::Widget* AutofillDialogViews::GetWidget() const {
-  return contents_->GetWidget();
-}
-
-views::View* AutofillDialogViews::GetContentsView() {
-  return contents_;
 }
 
 int AutofillDialogViews::GetDialogButtons() const {
@@ -1561,33 +1539,34 @@ void AutofillDialogViews::InitChildViews() {
   button_strip_extra_view_->AddChildView(autocheckout_progress_bar_view_);
   autocheckout_progress_bar_view_->SetVisible(false);
 
-  contents_ = new views::View();
-  contents_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  contents_->AddChildView(CreateMainContainer());
-  sign_in_webview_ = new views::WebView(controller_->profile());
-  sign_in_webview_->SetVisible(false);
-  contents_->AddChildView(sign_in_webview_);
-  sign_in_delegate_.reset(
-      new AutofillDialogSignInDelegate(this,
-                                       sign_in_webview_->GetWebContents()));
-}
-
-views::View* AutofillDialogViews::CreateMainContainer() {
-  main_container_ = new ShieldableContentsView();
-
   account_chooser_ = new AccountChooser(controller_);
   notification_area_ = new NotificationArea(controller_);
   notification_area_->set_arrow_centering_anchor(account_chooser_->AsWeakPtr());
-  main_container_->AddToContents(notification_area_);
+  AddChildView(notification_area_);
 
-  scrollable_area_ = new SizeLimitedScrollView(CreateDetailsContainer());
-  main_container_->AddToContents(scrollable_area_);
+  scrollable_area_ = new views::ScrollView();
+  scrollable_area_->set_hide_horizontal_scrollbar(true);
+  scrollable_area_->SetContents(CreateDetailsContainer());
+  AddChildView(scrollable_area_);
 
   autocheckout_steps_area_ = new AutocheckoutStepsArea();
-  main_container_->AddToContents(autocheckout_steps_area_);
+  AddChildView(autocheckout_steps_area_);
 
-  return main_container_;
+  loading_shield_ = new views::Label();
+  loading_shield_->SetVisible(false);
+  loading_shield_->set_background(views::Background::CreateSolidBackground(
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_DialogBackground)));
+  loading_shield_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont).DeriveFont(15));
+  AddChildView(loading_shield_);
+
+  sign_in_webview_ = new views::WebView(controller_->profile());
+  sign_in_webview_->SetVisible(false);
+  AddChildView(sign_in_webview_);
+  sign_in_delegate_.reset(
+      new AutofillDialogSignInDelegate(this,
+                                       sign_in_webview_->GetWebContents()));
 }
 
 views::View* AutofillDialogViews::CreateDetailsContainer() {
@@ -2030,10 +2009,7 @@ void AutofillDialogViews::ContentsPreferredSizeChanged() {
     GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
     // If the above line does not cause the dialog's size to change, |contents_|
     // may not be laid out. This will trigger a layout only if it's needed.
-    contents_->SetBoundsRect(contents_->bounds());
-
-    if (error_bubble_)
-      error_bubble_->UpdatePosition();
+    SetBoundsRect(bounds());
   }
 }
 

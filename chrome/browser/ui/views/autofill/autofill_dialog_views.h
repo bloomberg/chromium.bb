@@ -63,14 +63,13 @@ struct DetailInput;
 // imperative autocomplete API call.
 class AutofillDialogViews : public AutofillDialogView,
                             public TestableAutofillDialogView,
-                            public views::DialogDelegate,
+                            public views::DialogDelegateView,
                             public views::WidgetObserver,
                             public views::ButtonListener,
                             public views::TextfieldController,
                             public views::FocusChangeListener,
                             public views::ComboboxListener,
-                            public views::StyledLabelListener,
-                            public ui::AcceleratorTarget {
+                            public views::StyledLabelListener {
  public:
   explicit AutofillDialogViews(AutofillDialogController* controller);
   virtual ~AutofillDialogViews();
@@ -114,13 +113,14 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool CanHandleAccelerators() const OVERRIDE;
 
+  // views::View implementation.
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+
   // views::DialogDelegate implementation:
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
   virtual views::View* CreateOverlayView() OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
@@ -164,26 +164,6 @@ class AutofillDialogViews : public AutofillDialogView,
       OVERRIDE;
 
  private:
-  // A view that contains a single child view, and adds a vertical scrollbar
-  // after a certain maximum height is reached.
-  class SizeLimitedScrollView : public views::ScrollView {
-   public:
-    explicit SizeLimitedScrollView(views::View* scroll_contents);
-    virtual ~SizeLimitedScrollView();
-
-    // views::View implementation.
-    virtual void Layout() OVERRIDE;
-    virtual gfx::Size GetPreferredSize() OVERRIDE;
-
-    // Sets the maximum height for the viewport.
-    void SetMaximumHeight(int max_height);
-
-   private:
-    int max_height_;
-
-    DISALLOW_COPY_AND_ASSIGN(SizeLimitedScrollView);
-  };
-
   // A class that creates and manages a widget for error messages.
   class ErrorBubble : public views::WidgetObserver {
    public:
@@ -289,35 +269,6 @@ class AutofillDialogViews : public AutofillDialogView,
     scoped_ptr<views::MenuRunner> menu_runner_;
 
     DISALLOW_COPY_AND_ASSIGN(AccountChooser);
-  };
-
-  // A view to contain the main contents of the dialog, including the
-  // notifications and account details.
-  class ShieldableContentsView : public views::View {
-   public:
-    ShieldableContentsView();
-    virtual ~ShieldableContentsView();
-
-    // Adds |view| as a child of |contents_|.
-    void AddToContents(views::View* view);
-
-    // Hides |contents_| behind a shield that displays |message|.
-    void ObscureContents(const base::string16& message);
-
-    // views::View implementation.
-    virtual void Layout() OVERRIDE;
-    virtual gfx::Size GetPreferredSize() OVERRIDE;
-
-   private:
-    // The contents which can be shielded. This view sets the size of |this| and
-    // will always be sized to fill |this|.
-    views::View* contents_;
-
-    // Only visible when there's a message to display. Sits on top of
-    // |contents_|.
-    views::Label* contents_shield_;
-
-    DISALLOW_COPY_AND_ASSIGN(ShieldableContentsView);
   };
 
   // An area for notifications. Some notifications point at the account chooser.
@@ -587,9 +538,6 @@ class AutofillDialogViews : public AutofillDialogView,
   // dialog is closing.
   views::Widget* window_;
 
-  // The top-level View for the dialog. Owned by the constrained window.
-  views::View* contents_;
-
   // A DialogSection-keyed map of the DetailGroup structs.
   DetailGroupMap detail_groups_;
 
@@ -606,14 +554,14 @@ class AutofillDialogViews : public AutofillDialogView,
   // sign-in.
   views::WebView* sign_in_webview_;
 
-  // View to host everything that isn't related to sign-in.
-  ShieldableContentsView* main_container_;
-
   // View that wraps |details_container_| and makes it scroll vertically.
-  SizeLimitedScrollView* scrollable_area_;
+  views::ScrollView* scrollable_area_;
 
   // View to host details sections.
   views::View* details_container_;
+
+  // A view that overlays |this| (for "loading..." messages).
+  views::Label* loading_shield_;
 
   // The view that completely overlays the dialog (used for the splash page).
   views::View* overlay_view_;
