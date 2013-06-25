@@ -46,7 +46,6 @@
 #include "sync/js/js_reply_handler.h"
 #include "sync/js/js_test_util.h"
 #include "sync/notifier/fake_invalidation_handler.h"
-#include "sync/notifier/fake_invalidator.h"
 #include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidator.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
@@ -789,14 +788,12 @@ class SyncManagerTest : public testing::Test,
   };
 
   SyncManagerTest()
-      : fake_invalidator_(NULL),
-        sync_manager_("Test sync manager") {
+      : sync_manager_("Test sync manager") {
     switches_.encryption_method =
         InternalComponentsFactory::ENCRYPTION_KEYSTORE;
   }
 
   virtual ~SyncManagerTest() {
-    EXPECT_FALSE(fake_invalidator_);
   }
 
   // Test implementation.
@@ -806,8 +803,6 @@ class SyncManagerTest : public testing::Test,
     SyncCredentials credentials;
     credentials.email = "foo@bar.com";
     credentials.sync_token = "sometoken";
-
-    fake_invalidator_ = new FakeInvalidator();
 
     sync_manager_.AddObserver(&manager_observer_);
     EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _, _)).
@@ -831,7 +826,6 @@ class SyncManagerTest : public testing::Test,
         &extensions_activity_monitor_,
         this,
         credentials,
-        scoped_ptr<Invalidator>(fake_invalidator_),
         "fake_invalidator_client_id",
         std::string(),
         std::string(),  // bootstrap tokens
@@ -851,17 +845,11 @@ class SyncManagerTest : public testing::Test,
           sync_manager_.GetUserShare(), i->first);
     }
     PumpLoop();
-
-    EXPECT_TRUE(fake_invalidator_->IsHandlerRegistered(&sync_manager_));
   }
 
   void TearDown() {
     sync_manager_.RemoveObserver(&manager_observer_);
     sync_manager_.ShutdownOnSyncThread();
-    // We can't assert that |sync_manager_| isn't registered with
-    // |fake_invalidator_| anymore because |fake_invalidator_| is now
-    // destroyed.
-    fake_invalidator_ = NULL;
     PumpLoop();
   }
 
@@ -1027,36 +1015,12 @@ class SyncManagerTest : public testing::Test,
  protected:
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
-  FakeInvalidator* fake_invalidator_;
   SyncManagerImpl sync_manager_;
   WeakHandle<JsBackend> js_backend_;
   StrictMock<SyncManagerObserverMock> manager_observer_;
   StrictMock<SyncEncryptionHandlerObserverMock> encryption_observer_;
   InternalComponentsFactory::Switches switches_;
 };
-
-TEST_F(SyncManagerTest, UpdateEnabledTypes) {
-  ModelSafeRoutingInfo routes;
-  GetModelSafeRoutingInfo(&routes);
-  const ModelTypeSet enabled_types = GetRoutingInfoTypes(routes);
-  sync_manager_.UpdateEnabledTypes(enabled_types);
-  EXPECT_EQ(ModelTypeSetToObjectIdSet(enabled_types),
-            fake_invalidator_->GetRegisteredIds(&sync_manager_));
-}
-
-TEST_F(SyncManagerTest, RegisterInvalidationHandler) {
-  FakeInvalidationHandler fake_handler;
-  sync_manager_.RegisterInvalidationHandler(&fake_handler);
-  EXPECT_TRUE(fake_invalidator_->IsHandlerRegistered(&fake_handler));
-
-  const ObjectIdSet& ids =
-      ModelTypeSetToObjectIdSet(ModelTypeSet(BOOKMARKS, PREFERENCES));
-  sync_manager_.UpdateRegisteredInvalidationIds(&fake_handler, ids);
-  EXPECT_EQ(ids, fake_invalidator_->GetRegisteredIds(&fake_handler));
-
-  sync_manager_.UnregisterInvalidationHandler(&fake_handler);
-  EXPECT_FALSE(fake_invalidator_->IsHandlerRegistered(&fake_handler));
-}
 
 TEST_F(SyncManagerTest, ProcessJsMessage) {
   const JsArgList kNoArgs;
@@ -1362,14 +1326,6 @@ TEST_F(SyncManagerTest, OnInvalidatorStateChangeJsEvents) {
   base::DictionaryValue auth_error_details;
   auth_error_details.SetString("status", "CONNECTION_AUTH_ERROR");
 
-  EXPECT_CALL(manager_observer_,
-              OnConnectionStatusChange(CONNECTION_AUTH_ERROR));
-
-  EXPECT_CALL(
-      event_handler,
-      HandleJsEvent("onConnectionStatusChange",
-                    HasDetailsAsDictionary(auth_error_details)));
-
   EXPECT_CALL(event_handler,
               HandleJsEvent("onNotificationStateChange",
                             HasDetailsAsDictionary(enabled_details)));
@@ -1405,22 +1361,6 @@ TEST_F(SyncManagerTest, OnInvalidatorStateChangeJsEvents) {
   SimulateInvalidatorStateChangeForTest(INVALIDATIONS_ENABLED);
   SimulateInvalidatorStateChangeForTest(INVALIDATION_CREDENTIALS_REJECTED);
   SimulateInvalidatorStateChangeForTest(TRANSIENT_INVALIDATION_ERROR);
-
-  // Should trigger the replies.
-  PumpLoop();
-}
-
-// Simulate the invalidator's credentials being rejected.  That should
-// also clear the sync token.
-TEST_F(SyncManagerTest, OnInvalidatorStateChangeCredentialsRejected) {
-  EXPECT_CALL(manager_observer_,
-              OnConnectionStatusChange(CONNECTION_AUTH_ERROR));
-
-  EXPECT_FALSE(sync_manager_.GetHasInvalidAuthTokenForTest());
-
-  SimulateInvalidatorStateChangeForTest(INVALIDATION_CREDENTIALS_REJECTED);
-
-  EXPECT_TRUE(sync_manager_.GetHasInvalidAuthTokenForTest());
 
   // Should trigger the replies.
   PumpLoop();

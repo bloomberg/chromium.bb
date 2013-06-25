@@ -1,13 +1,13 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/invalidation_frontend_test_template.h"
+#include "chrome/browser/invalidation/invalidation_service_test_template.h"
 
 namespace internal {
 
 BoundFakeInvalidationHandler::BoundFakeInvalidationHandler(
-    const invalidation::InvalidationFrontend& invalidator)
+    const invalidation::InvalidationService& invalidator)
     : invalidator_(invalidator),
       last_retrieved_state_(syncer::DEFAULT_INVALIDATION_ERROR) {}
 
@@ -24,4 +24,4 @@ void BoundFakeInvalidationHandler::OnInvalidatorStateChange(
   last_retrieved_state_ = invalidator_.GetInvalidatorState();
 }
 
-}
+}  // namespace internal

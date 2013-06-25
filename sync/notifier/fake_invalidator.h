@@ -39,15 +39,12 @@ class FakeInvalidator : public Invalidator {
   virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
  private:
   InvalidatorRegistrar registrar_;
   std::string state_;
   std::string email_;
   std::string token_;
-  ObjectIdInvalidationMap last_sent_invalidation_map_;
 };
 
 }  // namespace syncer

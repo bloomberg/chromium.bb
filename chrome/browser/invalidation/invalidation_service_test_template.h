@@ -1,37 +1,37 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This class defines tests that implementations of InvalidationFrontend should
+// This class defines tests that implementations of InvalidationService should
 // pass in order to be conformant.  Here's how you use it to test your
 // implementation.
 //
-// Say your class is called MyInvalidationFrontend.  Then you need to define a
-// class called MyInvalidationFrontendTestDelegate in
+// Say your class is called MyInvalidationService.  Then you need to define a
+// class called MyInvalidationServiceTestDelegate in
 // my_invalidation_frontend_unittest.cc like this:
 //
-//   class MyInvalidationFrontendTestDelegate {
+//   class MyInvalidationServiceTestDelegate {
 //    public:
-//     MyInvalidationFrontendTestDelegate() ...
+//     MyInvalidationServiceTestDelegate() ...
 //
-//     ~MyInvalidationFrontendTestDelegate() {
+//     ~MyInvalidationServiceTestDelegate() {
 //       // DestroyInvalidator() may not be explicitly called by tests.
 //       DestroyInvalidator();
 //     }
 //
-//     // Create the InvalidationFrontend implementation with the given params.
-//     void CreateInvalidationFrontend() {
+//     // Create the InvalidationService implementation with the given params.
+//     void CreateInvalidationService() {
 //       ...
 //     }
 //
-//     // Should return the InvalidationFrontend implementation.  Only called
+//     // Should return the InvalidationService implementation.  Only called
 //     // after CreateInvalidator and before DestroyInvalidator.
-//     MyInvalidationFrontend* GetInvalidationFrontend() {
+//     MyInvalidationService* GetInvalidationService() {
 //       ...
 //     }
 //
-//     // Destroy the InvalidationFrontend implementation.
-//     void DestroyInvalidationFrontend() {
+//     // Destroy the InvalidationService implementation.
+//     void DestroyInvalidationService() {
 //       ...
 //     }
 //
@@ -39,14 +39,14 @@
 //     // the call are visible on the current thread.
 //
 //     // Should cause OnInvalidatorStateChange() to be called on all
-//     // observers of the InvalidationFrontend implementation with the given
+//     // observers of the InvalidationService implementation with the given
 //     // parameters.
 //     void TriggerOnInvalidatorStateChange(InvalidatorState state) {
 //       ...
 //     }
 //
 //     // Should cause OnIncomingInvalidation() to be called on all
-//     // observers of the InvalidationFrontend implementation with the given
+//     // observers of the InvalidationService implementation with the given
 //     // parameters.
 //     void TriggerOnIncomingInvalidation(
 //         const ObjectIdInvalidationMap& invalidation_map) {
@@ -54,7 +54,7 @@
 //     }
 //   };
 //
-// The InvalidationFrontendTest test harness will have a member variable of
+// The InvalidationServiceTest test harness will have a member variable of
 // this delegate type and will call its functions in the various
 // tests.
 //
@@ -62,18 +62,18 @@
 // following statement to my_sync_notifier_unittest.cc:
 //
 //   INSTANTIATE_TYPED_TEST_CASE_P(
-//       MyInvalidationFrontend,
-//       InvalidationFrontendTest,
+//       MyInvalidationService,
+//       InvalidationServiceTest,
 //       MyInvalidatorTestDelegate);
 //
 // Easy!
 
-#ifndef CHROME_BROWSER_INVALIDATION_INVALIDATION_FRONTEND_TEST_TEMPLATE_H_
-#define CHROME_BROWSER_INVALIDATION_INVALIDATION_FRONTEND_TEST_TEMPLATE_H_
+#ifndef CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_TEST_TEMPLATE_H_
+#define CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_TEST_TEMPLATE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/invalidation/invalidation_frontend.h"
+#include "chrome/browser/invalidation/invalidation_service.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "sync/notifier/fake_invalidation_handler.h"
@@ -82,22 +82,22 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 template <typename InvalidatorTestDelegate>
-class InvalidationFrontendTest : public testing::Test {
+class InvalidationServiceTest : public testing::Test {
  protected:
   // Note: The IDs defined below must be valid.  Otherwise they won't make it
   // through the round-trip to ModelTypeInvalidationMap and back that the
   // AndroidInvalidation test requires.
-  InvalidationFrontendTest()
+  InvalidationServiceTest()
       : id1(ipc::invalidation::ObjectSource::CHROME_SYNC, "BOOKMARK"),
         id2(ipc::invalidation::ObjectSource::CHROME_SYNC, "PREFERENCE"),
         id3(ipc::invalidation::ObjectSource::CHROME_SYNC, "AUTOFILL"),
         id4(ipc::invalidation::ObjectSource::CHROME_SYNC, "EXPERIMENTS") {
   }
 
-  invalidation::InvalidationFrontend*
-  CreateAndInitializeInvalidationFrontend() {
-    this->delegate_.CreateInvalidationFrontend();
-    return this->delegate_.GetInvalidationFrontend();
+  invalidation::InvalidationService*
+  CreateAndInitializeInvalidationService() {
+    this->delegate_.CreateInvalidationService();
+    return this->delegate_.GetInvalidationService();
   }
 
   InvalidatorTestDelegate delegate_;
@@ -108,15 +108,15 @@ class InvalidationFrontendTest : public testing::Test {
   const invalidation::ObjectId id4;
 };
 
-TYPED_TEST_CASE_P(InvalidationFrontendTest);
+TYPED_TEST_CASE_P(InvalidationServiceTest);
 
 // Initialize the invalidator, register a handler, register some IDs for that
 // handler, and then unregister the handler, dispatching invalidations in
 // between.  The handler should only see invalidations when its registered and
 // its IDs are registered.
-TYPED_TEST_P(InvalidationFrontendTest, Basic) {
-  invalidation::InvalidationFrontend* const invalidator =
-      this->CreateAndInitializeInvalidationFrontend();
+TYPED_TEST_P(InvalidationServiceTest, Basic) {
+  invalidation::InvalidationService* const invalidator =
+      this->CreateAndInitializeInvalidationService();
 
   syncer::FakeInvalidationHandler handler;
 
@@ -166,8 +166,8 @@ TYPED_TEST_P(InvalidationFrontendTest, Basic) {
             handler.GetInvalidatorState());
 
   this->delegate_.TriggerOnInvalidatorStateChange(
-      syncer::INVALIDATION_CREDENTIALS_REJECTED);
-  EXPECT_EQ(syncer::INVALIDATION_CREDENTIALS_REJECTED,
+      syncer::INVALIDATIONS_ENABLED);
+  EXPECT_EQ(syncer::INVALIDATIONS_ENABLED,
             handler.GetInvalidatorState());
 
   invalidator->UnregisterInvalidationHandler(&handler);
@@ -182,9 +182,9 @@ TYPED_TEST_P(InvalidationFrontendTest, Basic) {
 // dispatch some invalidations and invalidations.  Handlers that are registered
 // should get invalidations, and the ones that have registered IDs should
 // receive invalidations for those IDs.
-TYPED_TEST_P(InvalidationFrontendTest, MultipleHandlers) {
-  invalidation::InvalidationFrontend* const invalidator =
-      this->CreateAndInitializeInvalidationFrontend();
+TYPED_TEST_P(InvalidationServiceTest, MultipleHandlers) {
+  invalidation::InvalidationService* const invalidator =
+      this->CreateAndInitializeInvalidationService();
 
   syncer::FakeInvalidationHandler handler1;
   syncer::FakeInvalidationHandler handler2;
@@ -270,9 +270,9 @@ TYPED_TEST_P(InvalidationFrontendTest, MultipleHandlers) {
 
 // Make sure that passing an empty set to UpdateRegisteredInvalidationIds clears
 // the corresponding entries for the handler.
-TYPED_TEST_P(InvalidationFrontendTest, EmptySetUnregisters) {
-  invalidation::InvalidationFrontend* const invalidator =
-      this->CreateAndInitializeInvalidationFrontend();
+TYPED_TEST_P(InvalidationServiceTest, EmptySetUnregisters) {
+  invalidation::InvalidationService* const invalidator =
+      this->CreateAndInitializeInvalidationService();
 
   syncer::FakeInvalidationHandler handler1;
 
@@ -329,12 +329,12 @@ TYPED_TEST_P(InvalidationFrontendTest, EmptySetUnregisters) {
 namespace internal {
 
 // A FakeInvalidationHandler that is "bound" to a specific
-// InvalidationFrontend.  This is for cross-referencing state information with
-// the bound InvalidationFrontend.
+// InvalidationService.  This is for cross-referencing state information with
+// the bound InvalidationService.
 class BoundFakeInvalidationHandler : public syncer::FakeInvalidationHandler {
  public:
   explicit BoundFakeInvalidationHandler(
-      const invalidation::InvalidationFrontend& invalidator);
+      const invalidation::InvalidationService& invalidator);
   virtual ~BoundFakeInvalidationHandler();
 
   // Returns the last return value of GetInvalidatorState() on the
@@ -347,7 +347,7 @@ class BoundFakeInvalidationHandler : public syncer::FakeInvalidationHandler {
       syncer::InvalidatorState state) OVERRIDE;
 
  private:
-  const invalidation::InvalidationFrontend& invalidator_;
+  const invalidation::InvalidationService& invalidator_;
   syncer::InvalidatorState last_retrieved_state_;
 
   DISALLOW_COPY_AND_ASSIGN(BoundFakeInvalidationHandler);
@@ -355,9 +355,9 @@ class BoundFakeInvalidationHandler : public syncer::FakeInvalidationHandler {
 
 }  // namespace internal
 
-TYPED_TEST_P(InvalidationFrontendTest, GetInvalidatorStateAlwaysCurrent) {
-  invalidation::InvalidationFrontend* const invalidator =
-      this->CreateAndInitializeInvalidationFrontend();
+TYPED_TEST_P(InvalidationServiceTest, GetInvalidatorStateAlwaysCurrent) {
+  invalidation::InvalidationService* const invalidator =
+      this->CreateAndInitializeInvalidationService();
 
   internal::BoundFakeInvalidationHandler handler(*invalidator);
   invalidator->RegisterInvalidationHandler(&handler);
@@ -377,8 +377,8 @@ TYPED_TEST_P(InvalidationFrontendTest, GetInvalidatorStateAlwaysCurrent) {
   invalidator->UnregisterInvalidationHandler(&handler);
 }
 
-REGISTER_TYPED_TEST_CASE_P(InvalidationFrontendTest,
+REGISTER_TYPED_TEST_CASE_P(InvalidationServiceTest,
                            Basic, MultipleHandlers, EmptySetUnregisters,
                            GetInvalidatorStateAlwaysCurrent);
 
-#endif  // CHROME_BROWSER_INVALIDATION_INVALIDATION_FRONTEND_TEST_TEMPLATE_H_
+#endif  // CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_TEST_TEMPLATE_H_

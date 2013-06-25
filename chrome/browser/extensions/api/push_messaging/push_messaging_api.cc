@@ -19,11 +19,11 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
+#include "chrome/browser/invalidation/invalidation_service.h"
+#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/push_messaging.h"
@@ -302,17 +302,18 @@ PushMessagingAPI::GetFactoryInstance() {
 void PushMessagingAPI::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile_);
+  invalidation::InvalidationService* invalidation_service =
+      invalidation::InvalidationServiceFactory::GetForProfile(profile_);
   // This may be NULL; for example, for the ChromeOS guest user. In these cases,
   // just return without setting up anything, since it won't work anyway.
-  if (!pss)
+  if (!invalidation_service)
     return;
 
   if (!event_router_)
     event_router_.reset(new PushMessagingEventRouter(profile_));
   if (!handler_) {
     handler_.reset(new PushMessagingInvalidationHandler(
-        pss, event_router_.get()));
+        invalidation_service, event_router_.get()));
   }
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
@@ -351,7 +352,7 @@ void PushMessagingAPI::SetMapperForTest(
 template <>
 void ProfileKeyedAPIFactory<PushMessagingAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionSystemFactory::GetInstance());
-  DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(invalidation::InvalidationServiceFactory::GetInstance());
 }
 
 }  // namespace extensions

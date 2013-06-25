@@ -10,18 +10,22 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
+#include "chrome/browser/invalidation/fake_invalidation_service.h"
+#include "chrome/browser/invalidation/invalidation_service.h"
+#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "google/cacheinvalidation/types.pb.h"
+#include "sync/notifier/fake_invalidator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
+
+using invalidation::InvalidationServiceFactory;
 
 namespace extensions {
 
@@ -52,8 +56,32 @@ MockInvalidationMapper::~MockInvalidationMapper() {}
 
 class PushMessagingApiTest : public ExtensionApiTest {
  public:
+  PushMessagingApiTest()
+      : fake_invalidation_service_(NULL) {
+  }
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
+  }
+
+  virtual void SetUp() OVERRIDE {
+    InvalidationServiceFactory::GetInstance()->
+        SetBuildOnlyFakeInvalidatorsForTest(true);
+    ExtensionApiTest::SetUp();
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionApiTest::SetUpOnMainThread();
+    fake_invalidation_service_ =
+        static_cast<invalidation::FakeInvalidationService*>(
+            InvalidationServiceFactory::GetInstance()->GetForProfile(
+                profile()));
+  }
+
+  void EmitInvalidation(
+      const invalidation::ObjectId& object_id,
+      const std::string& payload) {
+    fake_invalidation_service_->EmitInvalidationForTest(object_id, payload);
   }
 
   PushMessagingAPI* GetAPI() {
@@ -63,6 +91,8 @@ class PushMessagingApiTest : public ExtensionApiTest {
   PushMessagingEventRouter* GetEventRouter() {
     return PushMessagingAPI::Get(profile())->GetEventRouterForTest();
   }
+
+  invalidation::FakeInvalidationService* fake_invalidation_service_;
 };
 
 IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, EventDispatch) {
@@ -92,18 +122,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, ReceivesPush) {
   ui_test_utils::NavigateToURL(
       browser(), extension->GetResourceURL("event_dispatch.html"));
 
-  ProfileSyncService* pss =
-      ProfileSyncServiceFactory::GetForProfile(profile());
-  ASSERT_TRUE(pss);
-
   // PushMessagingInvalidationHandler suppresses the initial invalidation on
   // each subchannel at install, so trigger the suppressions first.
   for (int i = 0; i < 3; ++i) {
-    pss->EmitInvalidationForTest(
+    EmitInvalidation(
         ExtensionAndSubchannelToObjectId(extension->id(), i), std::string());
   }
 
-  pss->EmitInvalidationForTest(
+  EmitInvalidation(
       ExtensionAndSubchannelToObjectId(extension->id(), 1), "payload");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

@@ -57,8 +57,6 @@ class SYNC_EXPORT_PRIVATE NonBlockingInvalidator
   virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
   // InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;

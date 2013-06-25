@@ -356,7 +356,6 @@ extern const char kSyncAllowInsecureXmppConnection[];
 extern const char kSyncInvalidateXmppLogin[];
 extern const char kSyncKeystoreEncryption[];
 extern const char kSyncShortInitialRetryOverride[];
-extern const char kSyncNotificationMethod[];
 extern const char kSyncNotificationHostPort[];
 extern const char kSyncServiceURL[];
 extern const char kSyncTabFavicons[];

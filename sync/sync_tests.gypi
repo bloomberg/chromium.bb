@@ -328,9 +328,6 @@
         'include_dirs': [
           '..',
         ],
-        'sources': [
-          'notifier/invalidator_factory_unittest.cc',
-        ],
         'conditions': [
           ['OS != "android"', {
             'sources': [

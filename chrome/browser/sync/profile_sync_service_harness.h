@@ -18,6 +18,10 @@
 
 class Profile;
 
+namespace invalidation {
+class P2PInvalidationService;
+}
+
 namespace browser_sync {
 namespace sessions {
 class SyncSessionSnapshot;
@@ -33,16 +37,18 @@ class ProfileSyncServiceHarness
     : public ProfileSyncServiceObserver,
       public browser_sync::MigrationObserver {
  public:
-  ProfileSyncServiceHarness(Profile* profile,
-                            const std::string& username,
-                            const std::string& password);
+  static ProfileSyncServiceHarness* Create(
+      Profile* profile,
+      const std::string& username,
+      const std::string& password);
+
+  static ProfileSyncServiceHarness* CreateForIntegrationTest(
+      Profile* profile,
+      const std::string& username,
+      const std::string& password,
+      invalidation::P2PInvalidationService* invalidation_service);
 
   virtual ~ProfileSyncServiceHarness();
-
-  // Creates a ProfileSyncServiceHarness object and attaches it to |profile|, a
-  // profile that is assumed to have been signed into sync in the past. Caller
-  // takes ownership.
-  static ProfileSyncServiceHarness* CreateAndAttach(Profile* profile);
 
   // Sets the GAIA credentials with which to sign in to sync.
   void SetCredentials(const std::string& username, const std::string& password);
@@ -62,6 +68,7 @@ class ProfileSyncServiceHarness
 
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
+  virtual void OnSyncCycleCompleted() OVERRIDE;
 
   // MigrationObserver implementation.
   virtual void OnMigrationStateChange() OVERRIDE;
@@ -270,6 +277,12 @@ class ProfileSyncServiceHarness
     NUMBER_OF_STATES,
   };
 
+  ProfileSyncServiceHarness(
+      Profile* profile,
+      const std::string& username,
+      const std::string& password,
+      invalidation::P2PInvalidationService* invalidation_service);
+
   // Listen to migration events if the migrator has been initialized
   // and we're not already listening.  Returns true if we started
   // listening.
@@ -333,6 +346,9 @@ class ProfileSyncServiceHarness
 
   // ProfileSyncService object associated with |profile_|.
   ProfileSyncService* service_;
+
+  // P2PInvalidationService associated with |profile_|.
+  invalidation::P2PInvalidationService* p2p_invalidation_service_;
 
   // The harness of the client whose update progress marker we're expecting
   // eventually match.

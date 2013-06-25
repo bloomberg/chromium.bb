@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/sync/glue/backend_data_type_configurer.h"
 #include "chrome/browser/sync/glue/chrome_extensions_activity_monitor.h"
 #include "content/public/browser/notification_observer.h"
@@ -30,7 +31,6 @@
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_handler.h"
-#include "sync/notifier/invalidator_factory.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
 
@@ -44,14 +44,10 @@ namespace syncer {
 class SyncManagerFactory;
 }
 
-namespace invalidation {
-class InvalidatorStorage;
-}
-
 namespace browser_sync {
 
-class AndroidInvalidatorBridge;
 class ChangeProcessor;
+class InvalidatorStorage;
 class SyncBackendRegistrar;
 class SyncPrefs;
 class SyncedDeviceTracker;
@@ -62,7 +58,7 @@ struct Experiments;
 // activity.
 // NOTE: All methods will be invoked by a SyncBackendHost on the same thread
 // used to create that SyncBackendHost.
-class SyncFrontend : public syncer::InvalidationHandler {
+class SyncFrontend {
  public:
   SyncFrontend() {}
 
@@ -153,7 +149,8 @@ class SyncFrontend : public syncer::InvalidationHandler {
 // that the SyncFrontend is only accessed on the UI loop.
 class SyncBackendHost
     : public BackendDataTypeConfigurer,
-      public content::NotificationObserver {
+      public content::NotificationObserver,
+      public syncer::InvalidationHandler {
  public:
   typedef syncer::SyncStatus Status;
 
@@ -164,10 +161,7 @@ class SyncBackendHost
   SyncBackendHost(
       const std::string& name,
       Profile* profile,
-      const base::WeakPtr<SyncPrefs>& sync_prefs,
-      // TODO(tim): Temporary, remove when bug 124137 finished.
-      const base::WeakPtr<invalidation::InvalidatorStorage>&
-          invalidator_storage);
+      const base::WeakPtr<SyncPrefs>& sync_prefs);
 
   // For testing.
   // TODO(skrul): Extract an interface so this is not needed.
@@ -193,14 +187,6 @@ class SyncBackendHost
 
   // Called on |frontend_loop| to update SyncCredentials.
   virtual void UpdateCredentials(const syncer::SyncCredentials& credentials);
-
-  // Registers the underlying frontend for the given IDs to the underlying
-  // notifier.  This lasts until StopSyncingForShutdown() is called.
-  void UpdateRegisteredInvalidationIds(const syncer::ObjectIdSet& ids);
-
-  // Forwards an invalidation acknowledgement to the underlying notifier.
-  void AcknowledgeInvalidation(const invalidation::ObjectId& id,
-                               const syncer::AckHandle& ack_handle);
 
   // This starts the SyncerThread running a Syncer object to communicate with
   // sync servers.  Until this is called, no changes will leave or enter this
@@ -325,8 +311,7 @@ class SyncBackendHost
         const GURL& service_url,
         MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
         const syncer::SyncCredentials& credentials,
-        AndroidInvalidatorBridge* android_invalidator_bridge,
-        syncer::InvalidatorFactory* invalidator_factory,
+        const std::string& invalidator_client_id,
         syncer::SyncManagerFactory* sync_manager_factory,
         bool delete_sync_data_folder,
         const std::string& restored_key_for_bootstrapping,
@@ -335,8 +320,7 @@ class SyncBackendHost
         syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
         syncer::ReportUnrecoverableErrorFunction
             report_unrecoverable_error_function,
-        bool use_oauth2_token,
-        bool create_invalidator);
+        bool use_oauth2_token);
     ~DoInitializeOptions();
 
     base::MessageLoop* sync_loop;
@@ -349,8 +333,7 @@ class SyncBackendHost
     // Overridden by tests.
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn;
     syncer::SyncCredentials credentials;
-    AndroidInvalidatorBridge* const android_invalidator_bridge;
-    syncer::InvalidatorFactory* const invalidator_factory;
+    const std::string invalidator_client_id;
     syncer::SyncManagerFactory* const sync_manager_factory;
     std::string lsid;
     bool delete_sync_data_folder;
@@ -361,7 +344,6 @@ class SyncBackendHost
     syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function;
     bool use_oauth2_token;
-    bool create_invalidator;
   };
 
   // Allows tests to perform alternate core initialization work.
@@ -383,6 +365,7 @@ class SyncBackendHost
 
   // Called when the syncer has finished performing a configuration.
   void FinishConfigureDataTypesOnFrontendLoop(
+      const syncer::ModelTypeSet enabled_types,
       const syncer::ModelTypeSet succeeded_configuration_types,
       const syncer::ModelTypeSet failed_configuration_types,
       const base::Callback<void(syncer::ModelTypeSet,
@@ -515,6 +498,12 @@ class SyncBackendHost
     const content::NotificationSource& source,
     const content::NotificationDetails& details) OVERRIDE;
 
+  // InvalidationHandler implementation.
+  virtual void OnInvalidatorStateChange(
+      syncer::InvalidatorState state) OVERRIDE;
+  virtual void OnIncomingInvalidation(
+      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
+
   // Handles stopping the core's SyncManager, accounting for whether
   // initialization is done yet.
   void StopSyncManagerForShutdown(const base::Closure& closure);
@@ -541,10 +530,6 @@ class SyncBackendHost
   InitializationState initialization_state_;
 
   const base::WeakPtr<SyncPrefs> sync_prefs_;
-
-  scoped_ptr<AndroidInvalidatorBridge> android_invalidator_bridge_;
-
-  syncer::InvalidatorFactory invalidator_factory_;
 
   ChromeExtensionsActivityMonitor extensions_activity_monitor_;
 
@@ -582,6 +567,8 @@ class SyncBackendHost
   // HandleInitializationCompletedOnFrontendLoop.
   syncer::WeakHandle<syncer::JsBackend> js_backend_;
   syncer::WeakHandle<syncer::DataTypeDebugInfoListener> debug_info_listener_;
+
+  invalidation::InvalidationService* invalidator_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };

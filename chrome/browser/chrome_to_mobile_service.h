@@ -201,9 +201,9 @@ class ChromeToMobileService : public BrowserContextKeyedService,
 
   Profile* profile_;
 
-  // Sync invalidation service state. Chrome To Mobile requires this service to
-  // to keep the mobile device list up to date and prevent page send failures.
-  bool sync_invalidation_enabled_;
+  // Invalidation service state. Chrome To Mobile requires this service to keep
+  // the mobile device list up to date and prevent page send failures.
+  bool invalidation_enabled_;
 
   // Used to recieve TokenService notifications for GaiaOAuth2LoginRefreshToken.
   content::NotificationRegistrar registrar_;
