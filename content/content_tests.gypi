@@ -969,8 +969,11 @@
                 'renderer/pepper/pepper_file_chooser_host_unittest.cc',
                 'renderer/pepper/pepper_graphics_2d_host_unittest.cc',
               ],
-            }, {  # enable_plugins==1
+            }],
+            ['enable_pepper_cdms==1', {
               'dependencies': [
+                # Runtime dependencies.
+                '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
                 '../webkit/support/webkit_support.gyp:clearkeycdmadapter',
               ],
             }],
