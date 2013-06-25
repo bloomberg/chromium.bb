@@ -32,7 +32,7 @@
 #define WebWorkerClientImpl_h
 
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/workers/WorkerContextProxy.h"
+#include "core/workers/WorkerGlobalScopeProxy.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerMessagingProxy.h"
 #include "core/workers/WorkerObjectProxy.h"
@@ -49,7 +49,7 @@ namespace WebKit {
 class WebWorker;
 class WebFrameImpl;
 
-// This class provides chromium implementation for WorkerContextProxy, WorkerObjectProxy amd WorkerLoaderProxy
+// This class provides chromium implementation for WorkerGlobalScopeProxy, WorkerObjectProxy amd WorkerLoaderProxy
 // for in-proc dedicated workers. It also acts as a bridge for workers to chromium implementation of file systems,
 // databases and other related functionality.
 //
@@ -57,19 +57,19 @@ class WebFrameImpl;
 //
 // It is imperative that this class inherit from WorkerMessagingProxy rather than delegate to an instance of
 // WorkerMessagingProxy, because that class tracks and reports its activity to outside callers, and manages
-// its own lifetime, via calls to workerObjectDestroyed, workerContextDestroyed, workerContextClosed, etc. It
+// its own lifetime, via calls to workerObjectDestroyed, workerGlobalScopeDestroyed, workerGlobalScopeClosed, etc. It
 // is basically impossible to correctly manage the lifetime of this class separately from WorkerMessagingProxy.
 class WebWorkerClientImpl : public WebCore::WorkerMessagingProxy
                           , public WebWorkerBase
                           , public WebCommonWorkerClient {
 public:
-    // WebCore::WorkerContextProxy Factory.
-    static WebCore::WorkerContextProxy* createWorkerContextProxy(WebCore::Worker*);
+    // WebCore::WorkerGlobalScopeProxy Factory.
+    static WebCore::WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(WebCore::Worker*);
 
-    // WebCore::WorkerContextProxy methods:
+    // WebCore::WorkerGlobalScopeProxy methods:
     // These are called on the thread that created the worker.  In the renderer
     // process, this will be the main WebKit thread.
-    virtual void terminateWorkerContext() OVERRIDE;
+    virtual void terminateWorkerGlobalScope() OVERRIDE;
 
     // WebCore::WorkerLoaderProxy methods
     virtual WebWorkerBase* toWebWorkerBase() OVERRIDE;

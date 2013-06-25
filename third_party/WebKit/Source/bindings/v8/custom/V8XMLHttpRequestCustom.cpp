@@ -43,7 +43,7 @@
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Frame.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "wtf/ArrayBuffer.h"
 

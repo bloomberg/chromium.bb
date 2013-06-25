@@ -81,13 +81,13 @@ public:
     virtual void updateInspectorStateCookie(const WTF::String&);
     virtual void confirmMessageFromWorkerObject(bool);
     virtual void reportPendingActivity(bool);
-    virtual void workerContextClosed();
-    virtual void workerContextDestroyed();
+    virtual void workerGlobalScopeClosed();
+    virtual void workerGlobalScopeDestroyed();
     virtual WebView* view() const { return m_webView; }
 
     // WebCore::WorkerLoaderProxy methods:
     virtual void postTaskToLoader(PassOwnPtr<WebCore::ScriptExecutionContext::Task>);
-    virtual bool postTaskForModeToWorkerContext(
+    virtual bool postTaskForModeToWorkerGlobalScope(
         PassOwnPtr<WebCore::ScriptExecutionContext::Task>, const WTF::String& mode);
     virtual WebWorkerBase* toWebWorkerBase() OVERRIDE;
 
@@ -163,10 +163,10 @@ private:
         WebCore::ScriptExecutionContext*,
         WebSharedWorkerImpl* thisPtr,
         bool hasPendingActivity);
-    static void workerContextClosedTask(
+    static void workerGlobalScopeClosedTask(
         WebCore::ScriptExecutionContext*,
         WebSharedWorkerImpl* thisPtr);
-    static void workerContextDestroyedTask(
+    static void workerGlobalScopeDestroyedTask(
         WebCore::ScriptExecutionContext*,
         WebSharedWorkerImpl* thisPtr);
 

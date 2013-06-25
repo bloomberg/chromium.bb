@@ -45,7 +45,7 @@ class InspectorFrontend;
 class InstrumentingAgents;
 class JSONArray;
 class ScriptDebugServer;
-class WorkerContext;
+class WorkerGlobalScope;
 
 typedef String ErrorString;
 

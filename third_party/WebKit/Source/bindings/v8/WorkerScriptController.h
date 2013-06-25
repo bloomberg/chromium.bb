@@ -42,10 +42,10 @@ namespace WebCore {
 
     class ScriptSourceCode;
     class ScriptValue;
-    class WorkerContext;
+    class WorkerGlobalScope;
 
-    struct WorkerContextExecutionState {
-        WorkerContextExecutionState()
+    struct WorkerGlobalScopeExecutionState {
+        WorkerGlobalScopeExecutionState()
             : hadException(false)
             , lineNumber(0)
         {
@@ -60,10 +60,10 @@ namespace WebCore {
 
     class WorkerScriptController {
     public:
-        WorkerScriptController(WorkerContext*);
+        WorkerScriptController(WorkerGlobalScope*);
         ~WorkerScriptController();
 
-        WorkerContext* workerContext() { return m_workerContext; }
+        WorkerGlobalScope* workerGlobalScope() { return m_workerGlobalScope; }
 
         void evaluate(const ScriptSourceCode&, ScriptValue* = 0);
 
@@ -88,7 +88,7 @@ namespace WebCore {
         static WorkerScriptController* controllerForContext();
 
         // Evaluate a script file in the current execution environment.
-        ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerContextExecutionState*);
+        ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerGlobalScopeExecutionState*);
 
         // Returns a local handle of the context.
         v8::Local<v8::Context> context() { return m_context.newLocal(v8::Isolate::GetCurrent()); }
@@ -103,7 +103,7 @@ namespace WebCore {
         bool initializeContextIfNeeded();
         void disposeContext();
 
-        WorkerContext* m_workerContext;
+        WorkerGlobalScope* m_workerGlobalScope;
         v8::Isolate* m_isolate;
         ScopedPersistent<v8::Context> m_context;
         OwnPtr<V8PerContextData> m_perContextData;

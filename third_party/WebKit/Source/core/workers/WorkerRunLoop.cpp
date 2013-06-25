@@ -36,7 +36,7 @@
 #include "core/platform/SharedTimer.h"
 #include "core/platform/ThreadGlobalData.h"
 #include "core/platform/ThreadTimers.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include <wtf/CurrentTime.h>
 
@@ -127,7 +127,7 @@ private:
     WorkerRunLoop& m_runLoop;
 };
 
-void WorkerRunLoop::run(WorkerContext* context)
+void WorkerRunLoop::run(WorkerGlobalScope* context)
 {
     RunLoopSetup setup(*this);
     ModePredicate modePredicate(defaultMode());
@@ -138,7 +138,7 @@ void WorkerRunLoop::run(WorkerContext* context)
     runCleanupTasks(context);
 }
 
-MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerContext* context, const String& mode, WaitMode waitMode)
+MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, const String& mode, WaitMode waitMode)
 {
     RunLoopSetup setup(*this);
     ModePredicate modePredicate(mode);
@@ -146,7 +146,7 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerContext* context, const St
     return result;
 }
 
-MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerContext* context, const ModePredicate& predicate, WaitMode waitMode)
+MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, const ModePredicate& predicate, WaitMode waitMode)
 {
     ASSERT(context);
     ASSERT(context->thread());
@@ -183,7 +183,7 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerContext* context, const Mo
     return result;
 }
 
-void WorkerRunLoop::runCleanupTasks(WorkerContext* context)
+void WorkerRunLoop::runCleanupTasks(WorkerGlobalScope* context)
 {
     ASSERT(context);
     ASSERT(context->thread());
@@ -243,8 +243,8 @@ PassOwnPtr<WorkerRunLoop::Task> WorkerRunLoop::Task::create(PassOwnPtr<ScriptExe
 
 void WorkerRunLoop::Task::performTask(const WorkerRunLoop& runLoop, ScriptExecutionContext* context)
 {
-    WorkerContext* workerContext = static_cast<WorkerContext *>(context);
-    if ((!workerContext->isClosing() && !runLoop.terminated()) || m_task->isCleanupTask())
+    WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(context);
+    if ((!workerGlobalScope->isClosing() && !runLoop.terminated()) || m_task->isCleanupTask())
         m_task->performTask(context);
 }
 

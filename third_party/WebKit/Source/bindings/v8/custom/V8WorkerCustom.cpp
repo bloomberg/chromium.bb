@@ -39,7 +39,7 @@
 #include "bindings/v8/V8Utilities.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "wtf/ArrayBuffer.h"
 
 namespace WebCore {

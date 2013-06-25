@@ -36,7 +36,7 @@
 #include "WebStorageQuotaCallbacksImpl.h"
 #include "WebWorkerBase.h"
 #include "core/dom/CrossThreadTask.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "wtf/MainThread.h"
 
@@ -90,22 +90,22 @@ private:
 // FIXME: Replace WebFrame parameter in queryStorageUsageAndQuota() with WebString and move the method to Platform so that we can remove all these complexity for Worker."
 // Observes the worker context. By keeping this separate, it is easier to verify
 // that it only gets deleted on the worker context thread which is verified by ~Observer.
-class WorkerStorageQuotaContextObserver : public WebCore::WorkerContext::Observer {
+class WorkerStorageQuotaContextObserver : public WebCore::WorkerGlobalScope::Observer {
 public:
-    static PassOwnPtr<WorkerStorageQuotaContextObserver> create(WorkerContext* context, PassRefPtr<WorkerStorageQuotaCallbacksBridge> bridge)
+    static PassOwnPtr<WorkerStorageQuotaContextObserver> create(WorkerGlobalScope* context, PassRefPtr<WorkerStorageQuotaCallbacksBridge> bridge)
     {
         return adoptPtr(new WorkerStorageQuotaContextObserver(context, bridge));
     }
 
-    // WorkerContext::Observer method.
+    // WorkerGlobalScope::Observer method.
     virtual void notifyStop()
     {
         m_bridge->stop();
     }
 
 private:
-    WorkerStorageQuotaContextObserver(WorkerContext* context, PassRefPtr<WorkerStorageQuotaCallbacksBridge> bridge)
-        : WebCore::WorkerContext::Observer(context)
+    WorkerStorageQuotaContextObserver(WorkerGlobalScope* context, PassRefPtr<WorkerStorageQuotaCallbacksBridge> bridge)
+        : WebCore::WorkerGlobalScope::Observer(context)
         , m_bridge(bridge)
     {
     }
@@ -115,7 +115,7 @@ private:
 
 void WorkerStorageQuotaCallbacksBridge::stop()
 {
-    ASSERT(m_workerContext->isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
     {
         MutexLocker locker(m_loaderProxyMutex);
         m_workerLoaderProxy = 0;
@@ -129,24 +129,24 @@ void WorkerStorageQuotaCallbacksBridge::stop()
 
 void WorkerStorageQuotaCallbacksBridge::cleanUpAfterCallback()
 {
-    ASSERT(m_workerContext->isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
 
     m_callbacksOnWorkerThread = 0;
-    if (m_workerContextObserver) {
-        WorkerStorageQuotaContextObserver* observer = m_workerContextObserver;
-        m_workerContextObserver = 0;
+    if (m_workerGlobalScopeObserver) {
+        WorkerStorageQuotaContextObserver* observer = m_workerGlobalScopeObserver;
+        m_workerGlobalScopeObserver = 0;
         // The next line may delete this.
         delete observer;
     }
 }
 
-WorkerStorageQuotaCallbacksBridge::WorkerStorageQuotaCallbacksBridge(WebCore::WorkerLoaderProxy* workerLoaderProxy, WebCore::ScriptExecutionContext* workerContext, WebStorageQuotaCallbacksImpl* callbacks)
+WorkerStorageQuotaCallbacksBridge::WorkerStorageQuotaCallbacksBridge(WebCore::WorkerLoaderProxy* workerLoaderProxy, WebCore::ScriptExecutionContext* workerGlobalScope, WebStorageQuotaCallbacksImpl* callbacks)
     : m_workerLoaderProxy(workerLoaderProxy)
-    , m_workerContext(workerContext)
-    , m_workerContextObserver(WorkerStorageQuotaContextObserver::create(static_cast<WorkerContext*>(m_workerContext), this).leakPtr())
+    , m_workerGlobalScope(workerGlobalScope)
+    , m_workerGlobalScopeObserver(WorkerStorageQuotaContextObserver::create(static_cast<WorkerGlobalScope*>(m_workerGlobalScope), this).leakPtr())
     , m_callbacksOnWorkerThread(callbacks)
 {
-    ASSERT(m_workerContext->isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
 }
 
 WorkerStorageQuotaCallbacksBridge::~WorkerStorageQuotaCallbacksBridge()
@@ -199,8 +199,8 @@ void WorkerStorageQuotaCallbacksBridge::runTaskOnWorkerThread(WebCore::ScriptExe
     ASSERT(bridge);
     if (!bridge->m_callbacksOnWorkerThread)
         return;
-    ASSERT(bridge->m_workerContext);
-    ASSERT(bridge->m_workerContext->isContextThread());
+    ASSERT(bridge->m_workerGlobalScope);
+    ASSERT(bridge->m_workerGlobalScope->isContextThread());
     ASSERT(taskToRun);
     taskToRun->performTask(scriptExecutionContext);
 
@@ -213,7 +213,7 @@ void WorkerStorageQuotaCallbacksBridge::runTaskOnWorkerThread(WebCore::ScriptExe
 void WorkerStorageQuotaCallbacksBridge::dispatchTaskToMainThread(PassOwnPtr<WebCore::ScriptExecutionContext::Task> task)
 {
     ASSERT(m_workerLoaderProxy);
-    ASSERT(m_workerContext->isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
     WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&runTaskOnMainThread, RefPtr<WorkerStorageQuotaCallbacksBridge>(this).release(), task));
 }
 
@@ -224,7 +224,7 @@ void WorkerStorageQuotaCallbacksBridge::mayPostTaskToWorker(PassOwnPtr<ScriptExe
 
     MutexLocker locker(m_loaderProxyMutex);
     if (m_workerLoaderProxy)
-        m_workerLoaderProxy->postTaskForModeToWorkerContext(createCallbackTask(&runTaskOnWorkerThread, this, task), mode);
+        m_workerLoaderProxy->postTaskForModeToWorkerGlobalScope(createCallbackTask(&runTaskOnWorkerThread, this, task), mode);
 }
 
 } // namespace WebCore

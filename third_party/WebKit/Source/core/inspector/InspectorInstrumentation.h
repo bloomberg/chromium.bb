@@ -95,8 +95,8 @@ class StyleResolver;
 class StyleRule;
 class StyleSheet;
 class ThreadableLoaderClient;
-class WorkerContext;
-class WorkerContextProxy;
+class WorkerGlobalScope;
+class WorkerGlobalScopeProxy;
 class XMLHttpRequest;
 
 #define FAST_RETURN_IF_NO_FRONTENDS(value) if (!hasFrontends()) return value;
@@ -144,7 +144,7 @@ InstrumentingAgents* instrumentingAgentsForDocument(Document*);
 InstrumentingAgents* instrumentingAgentsForRenderObject(RenderObject*);
 InstrumentingAgents* instrumentingAgentsForElement(Element*);
 
-InstrumentingAgents* instrumentingAgentsForWorkerContext(WorkerContext*);
+InstrumentingAgents* instrumentingAgentsForWorkerGlobalScope(WorkerGlobalScope*);
 InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ScriptExecutionContext*);
 
 }  // namespace InspectorInstrumentation
@@ -205,7 +205,7 @@ bool cssErrorFilter(const CSSParserString& content, int propertyId, int errorTyp
 
 InstrumentingAgents* instrumentationForPage(Page*);
 
-InstrumentingAgents* instrumentationForWorkerContext(WorkerContext*);
+InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope*);
 
 } // namespace WebCore
 

@@ -36,7 +36,7 @@
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
 #include "core/platform/HistogramSupport.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/indexeddb/IDBDatabase.h"
@@ -66,7 +66,7 @@ IDBFactory::~IDBFactory()
 
 static bool isContextValid(ScriptExecutionContext* context)
 {
-    ASSERT(context->isDocument() || context->isWorkerContext());
+    ASSERT(context->isDocument() || context->isWorkerGlobalScope());
     if (context->isDocument()) {
         Document* document = toDocument(context);
         return document->frame() && document->page();

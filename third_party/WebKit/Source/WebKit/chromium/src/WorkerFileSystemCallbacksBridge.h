@@ -77,9 +77,9 @@ public:
 
     void stop();
 
-    static PassRefPtr<WorkerFileSystemCallbacksBridge> create(WebCore::WorkerLoaderProxy* workerLoaderProxy, WebCore::ScriptExecutionContext* workerContext, WebFileSystemCallbacksImpl* callbacks)
+    static PassRefPtr<WorkerFileSystemCallbacksBridge> create(WebCore::WorkerLoaderProxy* workerLoaderProxy, WebCore::ScriptExecutionContext* workerGlobalScope, WebFileSystemCallbacksImpl* callbacks)
     {
-        return adoptRef(new WorkerFileSystemCallbacksBridge(workerLoaderProxy, workerContext, callbacks));
+        return adoptRef(new WorkerFileSystemCallbacksBridge(workerLoaderProxy, workerGlobalScope, callbacks));
     }
 
     // Methods that create an instance and post an initial request task to the main thread. They must be called on the worker thread.
@@ -142,10 +142,10 @@ private:
     Mutex m_loaderProxyMutex;
     WebCore::WorkerLoaderProxy* m_workerLoaderProxy;
 
-    WebCore::ScriptExecutionContext* m_workerContext;
+    WebCore::ScriptExecutionContext* m_workerGlobalScope;
 
-    // Must be deleted on the WorkerContext thread.
-    WorkerFileSystemContextObserver* m_workerContextObserver;
+    // Must be deleted on the WorkerGlobalScope thread.
+    WorkerFileSystemContextObserver* m_workerGlobalScopeObserver;
 
     // This is self-destructed and must be fired on the worker thread.
     WebFileSystemCallbacksImpl* m_callbacksOnWorkerThread;

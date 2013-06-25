@@ -44,7 +44,7 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/cache/CachedResourceInitiatorInfo.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 
 namespace WebCore {
 
@@ -207,17 +207,17 @@ InstrumentingAgents* instrumentingAgentsForRenderObject(RenderObject* renderer)
     return instrumentingAgentsForFrame(renderer->frame());
 }
 
-InstrumentingAgents* instrumentingAgentsForWorkerContext(WorkerContext* workerContext)
+InstrumentingAgents* instrumentingAgentsForWorkerGlobalScope(WorkerGlobalScope* workerGlobalScope)
 {
-    if (!workerContext)
+    if (!workerGlobalScope)
         return 0;
-    return instrumentationForWorkerContext(workerContext);
+    return instrumentationForWorkerGlobalScope(workerGlobalScope);
 }
 
 InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ScriptExecutionContext* context)
 {
-    if (context->isWorkerContext())
-        return instrumentationForWorkerContext(static_cast<WorkerContext*>(context));
+    if (context->isWorkerGlobalScope())
+        return instrumentationForWorkerGlobalScope(static_cast<WorkerGlobalScope*>(context));
     return 0;
 }
 
@@ -252,9 +252,9 @@ InstrumentingAgents* instrumentationForPage(Page* page)
     return 0;
 }
 
-InstrumentingAgents* instrumentationForWorkerContext(WorkerContext* workerContext)
+InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope* workerGlobalScope)
 {
-    if (WorkerInspectorController* controller = workerContext->workerInspectorController())
+    if (WorkerInspectorController* controller = workerGlobalScope->workerInspectorController())
         return controller->m_instrumentingAgents.get();
     return 0;
 }

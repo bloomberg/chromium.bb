@@ -32,7 +32,7 @@
 #define WorkerFileWriterCallbacksBridge_h
 
 #include "WebFileWriterClient.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/WebFileError.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -78,16 +78,16 @@ class WebWorkerBase;
 // should call postShutdownToMainThread before dropping its reference to the
 // bridge. This ensures that the WebFileWriter will be cleared on the main
 // thread and that no further calls to the WebFileWriterClient will be made.
-class WorkerFileWriterCallbacksBridge : public ThreadSafeRefCounted<WorkerFileWriterCallbacksBridge>, public WebCore::WorkerContext::Observer, public WebFileWriterClient {
+class WorkerFileWriterCallbacksBridge : public ThreadSafeRefCounted<WorkerFileWriterCallbacksBridge>, public WebCore::WorkerGlobalScope::Observer, public WebFileWriterClient {
 public:
     ~WorkerFileWriterCallbacksBridge();
 
-    // WorkerContext::Observer method.
+    // WorkerGlobalScope::Observer method.
     virtual void notifyStop();
 
-    static PassRefPtr<WorkerFileWriterCallbacksBridge> create(const WebCore::KURL& path, WebCore::WorkerLoaderProxy* proxy, WebCore::ScriptExecutionContext* workerContext, WebCore::AsyncFileWriterClient* client)
+    static PassRefPtr<WorkerFileWriterCallbacksBridge> create(const WebCore::KURL& path, WebCore::WorkerLoaderProxy* proxy, WebCore::ScriptExecutionContext* workerGlobalScope, WebCore::AsyncFileWriterClient* client)
     {
-        return adoptRef(new WorkerFileWriterCallbacksBridge(path, proxy, workerContext, client));
+        return adoptRef(new WorkerFileWriterCallbacksBridge(path, proxy, workerGlobalScope, client));
     }
 
     // Methods that create an instance and post an initial request task to the main thread. They must be called on the worker thread.
@@ -142,7 +142,7 @@ private:
     Mutex m_loaderProxyMutex;
 
     // Used on the context thread, only to check that we're running on the context thread.
-    WebCore::ScriptExecutionContext* m_workerContext;
+    WebCore::ScriptExecutionContext* m_workerGlobalScope;
 
     // Created and destroyed from the main thread.
     OwnPtr<WebKit::WebFileWriter> m_writer;
@@ -156,7 +156,7 @@ private:
     // Used by waitForOperationToComplete.
     bool m_operationInProgress;
 
-    // Used by postTaskForModeToWorkerContext and runInMode.
+    // Used by postTaskForModeToWorkerGlobalScope and runInMode.
     String m_mode;
 };
 

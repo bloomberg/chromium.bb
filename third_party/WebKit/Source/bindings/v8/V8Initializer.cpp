@@ -140,7 +140,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
 {
     static bool isReportingException = false;
     // Exceptions that occur in error handler should be ignored since in that case
-    // WorkerContext::reportException will send the exception to the worker object.
+    // WorkerGlobalScope::reportException will send the exception to the worker object.
     if (isReportingException)
         return;
     isReportingException = true;

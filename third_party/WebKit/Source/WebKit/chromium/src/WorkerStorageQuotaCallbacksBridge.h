@@ -72,9 +72,9 @@ public:
 
     void stop();
 
-    static PassRefPtr<WorkerStorageQuotaCallbacksBridge> create(WebCore::WorkerLoaderProxy* workerLoaderProxy, WebCore::ScriptExecutionContext* workerContext, WebStorageQuotaCallbacksImpl* callbacks)
+    static PassRefPtr<WorkerStorageQuotaCallbacksBridge> create(WebCore::WorkerLoaderProxy* workerLoaderProxy, WebCore::ScriptExecutionContext* workerGlobalScope, WebStorageQuotaCallbacksImpl* callbacks)
     {
-        return adoptRef(new WorkerStorageQuotaCallbacksBridge(workerLoaderProxy, workerContext, callbacks));
+        return adoptRef(new WorkerStorageQuotaCallbacksBridge(workerLoaderProxy, workerGlobalScope, callbacks));
     }
 
     // Entry method to post QueryUsageAndQuota task to main thread.
@@ -106,10 +106,10 @@ private:
     Mutex m_loaderProxyMutex;
     WebCore::WorkerLoaderProxy* m_workerLoaderProxy;
 
-    WebCore::ScriptExecutionContext* m_workerContext;
+    WebCore::ScriptExecutionContext* m_workerGlobalScope;
 
-    // Must be deleted on the WorkerContext thread.
-    WorkerStorageQuotaContextObserver* m_workerContextObserver;
+    // Must be deleted on the WorkerGlobalScope thread.
+    WorkerStorageQuotaContextObserver* m_workerGlobalScopeObserver;
 
     // This is self-destructed and must be fired on the worker thread.
     WebStorageQuotaCallbacksImpl* m_callbacksOnWorkerThread;

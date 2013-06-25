@@ -254,7 +254,7 @@ void SharedWorkerRepository::documentDetached(Document* document)
         repository->documentDetached(getId(document));
 
     // Stop the creation of any pending SharedWorkers for this context.
-    // FIXME: Need a way to invoke this for WorkerContexts as well when we support for nested workers.
+    // FIXME: Need a way to invoke this for WorkerGlobalScopes as well when we support for nested workers.
     SharedWorkerScriptLoader::stopAllLoadersForContext(document);
 }
 

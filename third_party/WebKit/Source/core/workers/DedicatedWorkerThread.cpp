@@ -32,7 +32,7 @@
 
 #include "core/workers/DedicatedWorkerThread.h"
 
-#include "core/workers/DedicatedWorkerContext.h"
+#include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerObjectProxy.h"
 
 namespace WebCore {
@@ -53,15 +53,15 @@ DedicatedWorkerThread::~DedicatedWorkerThread()
 {
 }
 
-PassRefPtr<WorkerContext> DedicatedWorkerThread::createWorkerContext(const KURL& url, const String& userAgent, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassRefPtr<SecurityOrigin> topOrigin)
+PassRefPtr<WorkerGlobalScope> DedicatedWorkerThread::createWorkerGlobalScope(const KURL& url, const String& userAgent, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassRefPtr<SecurityOrigin> topOrigin)
 {
-    return DedicatedWorkerContext::create(url, userAgent, this, contentSecurityPolicy, contentSecurityPolicyType, topOrigin, m_timeOrigin);
+    return DedicatedWorkerGlobalScope::create(url, userAgent, this, contentSecurityPolicy, contentSecurityPolicyType, topOrigin, m_timeOrigin);
 }
 
 void DedicatedWorkerThread::runEventLoop()
 {
     // Notify the parent object of our current active state before calling the superclass to run the event loop.
-    m_workerObjectProxy.reportPendingActivity(workerContext()->hasPendingActivity());
+    m_workerObjectProxy.reportPendingActivity(workerGlobalScope()->hasPendingActivity());
     WorkerThread::runEventLoop();
 }
 

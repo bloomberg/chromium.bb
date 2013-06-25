@@ -42,7 +42,7 @@ class DOMWindow;
 class DOMWrapperWorld;
 class Frame;
 class ScriptExecutionContext;
-class WorkerContext;
+class WorkerGlobalScope;
 
 class ScriptState {
     WTF_MAKE_NONCOPYABLE(ScriptState);
@@ -123,7 +123,7 @@ private:
 
 ScriptState* mainWorldScriptState(Frame*);
 
-ScriptState* scriptStateFromWorkerContext(WorkerContext*);
+ScriptState* scriptStateFromWorkerGlobalScope(WorkerGlobalScope*);
 
 }
 

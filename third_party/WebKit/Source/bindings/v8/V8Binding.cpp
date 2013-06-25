@@ -34,7 +34,7 @@
 #include "V8DOMStringList.h"
 #include "V8Element.h"
 #include "V8Window.h"
-#include "V8WorkerContext.h"
+#include "V8WorkerGlobalScope.h"
 #include "V8XPathNSResolver.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8NodeFilterCondition.h"
@@ -52,7 +52,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
@@ -400,9 +400,9 @@ ScriptExecutionContext* toScriptExecutionContext(v8::Handle<v8::Context> context
     windowWrapper = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), IsolatedWorld));
     if (!windowWrapper.IsEmpty())
         return V8Window::toNative(windowWrapper)->scriptExecutionContext();
-    v8::Handle<v8::Object> workerWrapper = global->FindInstanceInPrototypeChain(V8WorkerContext::GetTemplate(context->GetIsolate(), WorkerWorld));
+    v8::Handle<v8::Object> workerWrapper = global->FindInstanceInPrototypeChain(V8WorkerGlobalScope::GetTemplate(context->GetIsolate(), WorkerWorld));
     if (!workerWrapper.IsEmpty())
-        return V8WorkerContext::toNative(workerWrapper)->scriptExecutionContext();
+        return V8WorkerGlobalScope::toNative(workerWrapper)->scriptExecutionContext();
     // FIXME: Is this line of code reachable?
     return 0;
 }
@@ -446,9 +446,9 @@ v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, DOMWrapperWo
         ASSERT(world);
         if (Frame* frame = toDocument(context)->frame())
             return frame->script()->windowShell(world)->context();
-    } else if (context->isWorkerContext()) {
+    } else if (context->isWorkerGlobalScope()) {
         ASSERT(!world);
-        if (WorkerScriptController* script = static_cast<WorkerContext*>(context)->script())
+        if (WorkerScriptController* script = static_cast<WorkerGlobalScope*>(context)->script())
             return script->context();
     }
     return v8::Local<v8::Context>();

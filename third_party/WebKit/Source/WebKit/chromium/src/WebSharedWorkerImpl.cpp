@@ -55,9 +55,9 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "core/workers/SharedWorkerContext.h"
+#include "core/workers/SharedWorkerGlobalScope.h"
 #include "core/workers/SharedWorkerThread.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/webdatabase/DatabaseTask.h"
@@ -278,13 +278,13 @@ void WebSharedWorkerImpl::reportPendingActivityTask(ScriptExecutionContext* cont
     thisPtr->client()->reportPendingActivity(hasPendingActivity);
 }
 
-void WebSharedWorkerImpl::workerContextClosed()
+void WebSharedWorkerImpl::workerGlobalScopeClosed()
 {
-    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&workerContextClosedTask,
+    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&workerGlobalScopeClosedTask,
                                             AllowCrossThreadAccess(this)));
 }
 
-void WebSharedWorkerImpl::workerContextClosedTask(ScriptExecutionContext* context,
+void WebSharedWorkerImpl::workerGlobalScopeClosedTask(ScriptExecutionContext* context,
                                                   WebSharedWorkerImpl* thisPtr)
 {
     if (thisPtr->client())
@@ -293,13 +293,13 @@ void WebSharedWorkerImpl::workerContextClosedTask(ScriptExecutionContext* contex
     thisPtr->stopWorkerThread();
 }
 
-void WebSharedWorkerImpl::workerContextDestroyed()
+void WebSharedWorkerImpl::workerGlobalScopeDestroyed()
 {
-    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&workerContextDestroyedTask,
+    WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&workerGlobalScopeDestroyedTask,
                                                                AllowCrossThreadAccess(this)));
 }
 
-void WebSharedWorkerImpl::workerContextDestroyedTask(ScriptExecutionContext* context,
+void WebSharedWorkerImpl::workerGlobalScopeDestroyedTask(ScriptExecutionContext* context,
                                                      WebSharedWorkerImpl* thisPtr)
 {
     if (thisPtr->client())
@@ -316,7 +316,7 @@ void WebSharedWorkerImpl::postTaskToLoader(PassOwnPtr<ScriptExecutionContext::Ta
     m_loadingDocument->postTask(task);
 }
 
-bool WebSharedWorkerImpl::postTaskForModeToWorkerContext(
+bool WebSharedWorkerImpl::postTaskForModeToWorkerGlobalScope(
     PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode)
 {
     m_workerThread->runLoop().postTaskForMode(task, mode);
@@ -356,16 +356,16 @@ void WebSharedWorkerImpl::connectTask(ScriptExecutionContext* context, PassOwnPt
     // Wrap the passed-in channel in a MessagePort, and send it off via a connect event.
     RefPtr<MessagePort> port = MessagePort::create(*context);
     port->entangle(channel);
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerContext());
-    WorkerContext* workerContext = static_cast<WorkerContext*>(context);
-    ASSERT_WITH_SECURITY_IMPLICATION(workerContext->isSharedWorkerContext());
-    workerContext->dispatchEvent(createConnectEvent(port));
+    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
+    WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(context);
+    ASSERT_WITH_SECURITY_IMPLICATION(workerGlobalScope->isSharedWorkerGlobalScope());
+    workerGlobalScope->dispatchEvent(createConnectEvent(port));
 }
 
 void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString& name, const WebString& userAgent, const WebString& sourceCode, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType policyType, long long)
 {
     initializeLoader(url);
-    WorkerThreadStartMode startMode = m_pauseWorkerContextOnStart ? PauseWorkerContextOnStart : DontPauseWorkerContextOnStart;
+    WorkerThreadStartMode startMode = m_pauseWorkerContextOnStart ? PauseWorkerGlobalScopeOnStart : DontPauseWorkerGlobalScopeOnStart;
     setWorkerThread(SharedWorkerThread::create(name, url, userAgent,
                                                sourceCode, *this, *this, startMode, contentSecurityPolicy,
                                                static_cast<WebCore::ContentSecurityPolicy::HeaderType>(policyType)));
@@ -390,8 +390,8 @@ void WebSharedWorkerImpl::pauseWorkerContextOnStart()
 
 static void resumeWorkerContextTask(ScriptExecutionContext* context, bool)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerContext());
-    static_cast<WorkerContext*>(context)->workerInspectorController()->resume();
+    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
+    static_cast<WorkerGlobalScope*>(context)->workerInspectorController()->resume();
 }
 
 void WebSharedWorkerImpl::resumeWorkerContext()
@@ -403,8 +403,8 @@ void WebSharedWorkerImpl::resumeWorkerContext()
 
 static void connectToWorkerContextInspectorTask(ScriptExecutionContext* context, bool)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerContext());
-    static_cast<WorkerContext*>(context)->workerInspectorController()->connectFrontend();
+    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
+    static_cast<WorkerGlobalScope*>(context)->workerInspectorController()->connectFrontend();
 }
 
 void WebSharedWorkerImpl::attachDevTools()
@@ -414,8 +414,8 @@ void WebSharedWorkerImpl::attachDevTools()
 
 static void reconnectToWorkerContextInspectorTask(ScriptExecutionContext* context, const String& savedState)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerContext());
-    WorkerInspectorController* ic = static_cast<WorkerContext*>(context)->workerInspectorController();
+    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
+    WorkerInspectorController* ic = static_cast<WorkerGlobalScope*>(context)->workerInspectorController();
     ic->restoreInspectorStateFromCookie(savedState);
     ic->resume();
 }
@@ -427,8 +427,8 @@ void WebSharedWorkerImpl::reattachDevTools(const WebString& savedState)
 
 static void disconnectFromWorkerContextInspectorTask(ScriptExecutionContext* context, bool)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerContext());
-    static_cast<WorkerContext*>(context)->workerInspectorController()->disconnectFrontend();
+    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
+    static_cast<WorkerGlobalScope*>(context)->workerInspectorController()->disconnectFrontend();
 }
 
 void WebSharedWorkerImpl::detachDevTools()
@@ -438,8 +438,8 @@ void WebSharedWorkerImpl::detachDevTools()
 
 static void dispatchOnInspectorBackendTask(ScriptExecutionContext* context, const String& message)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerContext());
-    static_cast<WorkerContext*>(context)->workerInspectorController()->dispatchMessageFromFrontend(message);
+    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
+    static_cast<WorkerGlobalScope*>(context)->workerInspectorController()->dispatchMessageFromFrontend(message);
 }
 
 void WebSharedWorkerImpl::dispatchDevToolsMessage(const WebString& message)

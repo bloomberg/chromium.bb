@@ -46,7 +46,7 @@ namespace WebCore {
 
 class AsyncFileSystemCallbacks;
 class ScriptExecutionContext;
-class WorkerContext;
+class WorkerGlobalScope;
 class WorkerLoaderProxy;
 
 class WorkerAsyncFileSystemChromium : public AsyncFileSystemChromium {
@@ -81,7 +81,7 @@ private:
 
     ScriptExecutionContext* m_scriptExecutionContext;
     WorkerLoaderProxy* m_workerLoaderProxy;
-    WorkerContext* m_workerContext;
+    WorkerGlobalScope* m_workerGlobalScope;
     RefPtr<WebKit::WorkerFileSystemCallbacksBridge> m_bridgeForCurrentOperation;
     String m_modeForCurrentOperation;
     FileSystemSynchronousType m_synchronousType;

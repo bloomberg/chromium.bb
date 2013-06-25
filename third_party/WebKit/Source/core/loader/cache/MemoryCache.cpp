@@ -35,7 +35,7 @@
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/network/ResourceHandle.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "weborigin/SecurityOrigin.h"
@@ -514,9 +514,9 @@ void MemoryCache::adjustSize(bool live, int delta)
 
 void MemoryCache::removeURLFromCache(ScriptExecutionContext* context, const KURL& url)
 {
-    if (context->isWorkerContext()) {
-        WorkerContext* workerContext = static_cast<WorkerContext*>(context);
-        workerContext->thread()->workerLoaderProxy().postTaskToLoader(createCallbackTask(&removeURLFromCacheInternal, url));
+    if (context->isWorkerGlobalScope()) {
+        WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(context);
+        workerGlobalScope->thread()->workerLoaderProxy().postTaskToLoader(createCallbackTask(&removeURLFromCacheInternal, url));
         return;
     }
     removeURLFromCacheInternal(context, url);

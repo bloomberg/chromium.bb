@@ -111,7 +111,7 @@
        'outputs': [
          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
          '<(SHARED_INTERMEDIATE_DIR)/WindowConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/WorkerContextConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/WorkerGlobalScopeConstructors.idl',
        ],
        'msvs_cygwin_shell': 0,
        'action': [
@@ -124,7 +124,7 @@
          '--window-constructors-file',
          '<(SHARED_INTERMEDIATE_DIR)/WindowConstructors.idl',
          '--workercontext-constructors-file',
-         '<(SHARED_INTERMEDIATE_DIR)/WorkerContextConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/WorkerGlobalScopeConstructors.idl',
          '<@(write_file_only_if_changed)',
        ],
        'message': 'Resolving partial interfaces dependencies in all IDL files',
@@ -172,7 +172,7 @@
           '../core/scripts/preprocessor.pm',
           '<!@pymod_do_main(supplemental_idl_files <@(idl_files))',
           '<(SHARED_INTERMEDIATE_DIR)/WindowConstructors.idl',
-          '<(SHARED_INTERMEDIATE_DIR)/WorkerContextConstructors.idl',
+          '<(SHARED_INTERMEDIATE_DIR)/WorkerGlobalScopeConstructors.idl',
         ],
         'outputs': [
           # FIXME:  The .cpp file should be in webkit/bindings once

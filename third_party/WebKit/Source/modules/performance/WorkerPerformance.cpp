@@ -31,8 +31,8 @@
 #include "config.h"
 #include "modules/performance/WorkerPerformance.h"
 
-#include "core/workers/DedicatedWorkerContext.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/DedicatedWorkerGlobalScope.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {
@@ -50,9 +50,9 @@ double WorkerPerformance::now() const
 {
     ScriptExecutionContext* context = scriptExecutionContext();
     ASSERT(context);
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerContext());
-    WorkerContext* workerContext = static_cast<WorkerContext*>(context);
-    return 1000.0 * (monotonicallyIncreasingTime() - workerContext->timeOrigin());
+    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
+    WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(context);
+    return 1000.0 * (monotonicallyIncreasingTime() - workerGlobalScope->timeOrigin());
 }
 
 } // namespace WebCore

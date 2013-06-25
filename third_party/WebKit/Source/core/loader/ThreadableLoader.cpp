@@ -35,7 +35,7 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/WorkerThreadableLoader.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerRunLoop.h"
 
 namespace WebCore {
@@ -45,8 +45,8 @@ PassRefPtr<ThreadableLoader> ThreadableLoader::create(ScriptExecutionContext* co
     ASSERT(client);
     ASSERT(context);
 
-    if (context->isWorkerContext())
-        return WorkerThreadableLoader::create(static_cast<WorkerContext*>(context), client, WorkerRunLoop::defaultMode(), request, options);
+    if (context->isWorkerGlobalScope())
+        return WorkerThreadableLoader::create(static_cast<WorkerGlobalScope*>(context), client, WorkerRunLoop::defaultMode(), request, options);
 
     return DocumentThreadableLoader::create(toDocument(context), client, request, options);
 }
@@ -55,8 +55,8 @@ void ThreadableLoader::loadResourceSynchronously(ScriptExecutionContext* context
 {
     ASSERT(context);
 
-    if (context->isWorkerContext()) {
-        WorkerThreadableLoader::loadResourceSynchronously(static_cast<WorkerContext*>(context), request, client, options);
+    if (context->isWorkerGlobalScope()) {
+        WorkerThreadableLoader::loadResourceSynchronously(static_cast<WorkerGlobalScope*>(context), request, client, options);
         return;
     }
 

@@ -35,7 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/Settings.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
@@ -54,12 +54,12 @@ PassRefPtr<WebSocketChannel> WebSocketChannel::create(ScriptExecutionContext* co
     ASSERT(context);
     ASSERT(client);
 
-    if (context->isWorkerContext()) {
-        WorkerContext* workerContext = static_cast<WorkerContext*>(context);
-        WorkerRunLoop& runLoop = workerContext->thread()->runLoop();
+    if (context->isWorkerGlobalScope()) {
+        WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(context);
+        WorkerRunLoop& runLoop = workerGlobalScope->thread()->runLoop();
         String mode = webSocketChannelMode;
         mode.append(String::number(runLoop.createUniqueId()));
-        return WorkerThreadableWebSocketChannel::create(workerContext, client, mode);
+        return WorkerThreadableWebSocketChannel::create(workerGlobalScope, client, mode);
     }
 
     Document* document = toDocument(context);

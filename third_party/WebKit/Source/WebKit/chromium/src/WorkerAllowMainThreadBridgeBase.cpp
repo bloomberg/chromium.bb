@@ -37,14 +37,14 @@ namespace {
 
 // Observes the worker context and notifies the bridge. This is kept
 // separate from the bridge so that it's destroyed correctly by ~Observer.
-class WorkerContextObserver : public WebCore::WorkerContext::Observer {
+class WorkerGlobalScopeObserver : public WebCore::WorkerGlobalScope::Observer {
 public:
-    static PassOwnPtr<WorkerContextObserver> create(WebCore::WorkerContext* context, PassRefPtr<WebKit::WorkerAllowMainThreadBridgeBase> bridge)
+    static PassOwnPtr<WorkerGlobalScopeObserver> create(WebCore::WorkerGlobalScope* context, PassRefPtr<WebKit::WorkerAllowMainThreadBridgeBase> bridge)
     {
-        return adoptPtr(new WorkerContextObserver(context, bridge));
+        return adoptPtr(new WorkerGlobalScopeObserver(context, bridge));
     }
 
-    // WorkerContext::Observer method.
+    // WorkerGlobalScope::Observer method.
     virtual void notifyStop()
     {
         if (!m_bridge)
@@ -53,8 +53,8 @@ public:
     }
 
 private:
-    WorkerContextObserver(WebCore::WorkerContext* context, PassRefPtr<WebKit::WorkerAllowMainThreadBridgeBase> bridge)
-        : WebCore::WorkerContext::Observer(context)
+    WorkerGlobalScopeObserver(WebCore::WorkerGlobalScope* context, PassRefPtr<WebKit::WorkerAllowMainThreadBridgeBase> bridge)
+        : WebCore::WorkerGlobalScope::Observer(context)
         , m_bridge(bridge)
     {
     }
@@ -66,9 +66,9 @@ private:
 
 namespace WebKit {
 
-WorkerAllowMainThreadBridgeBase::WorkerAllowMainThreadBridgeBase(WebCore::WorkerContext* workerContext, WebWorkerBase* webWorkerBase)
+WorkerAllowMainThreadBridgeBase::WorkerAllowMainThreadBridgeBase(WebCore::WorkerGlobalScope* workerGlobalScope, WebWorkerBase* webWorkerBase)
     : m_webWorkerBase(webWorkerBase)
-    , m_workerContextObserver(WorkerContextObserver::create(workerContext, this).leakPtr())
+    , m_workerGlobalScopeObserver(WorkerGlobalScopeObserver::create(workerGlobalScope, this).leakPtr())
 {
 }
 
@@ -91,7 +91,7 @@ void WorkerAllowMainThreadBridgeBase::allowTask(WebCore::ScriptExecutionContext*
     if (!commonClient)
         return;
     bool allow = bridge->allowOnMainThread(commonClient, params.get());
-    bridge->m_webWorkerBase->workerLoaderProxy()->postTaskForModeToWorkerContext(
+    bridge->m_webWorkerBase->workerLoaderProxy()->postTaskForModeToWorkerGlobalScope(
         createCallbackTask(&didComplete, bridge, allow), params->m_mode.isolatedCopy());
 }
 

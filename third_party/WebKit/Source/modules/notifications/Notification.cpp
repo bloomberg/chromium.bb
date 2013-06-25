@@ -44,7 +44,7 @@
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "modules/notifications/DOMWindowNotifications.h"
 #include "modules/notifications/NotificationCenter.h"
 #include "modules/notifications/NotificationClient.h"

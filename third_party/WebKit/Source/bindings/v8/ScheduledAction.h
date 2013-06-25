@@ -41,7 +41,7 @@ namespace WebCore {
 
 class Frame;
 class ScriptExecutionContext;
-class WorkerContext;
+class WorkerGlobalScope;
 
 class ScheduledAction {
     WTF_MAKE_NONCOPYABLE(ScheduledAction);
@@ -54,7 +54,7 @@ public:
 
 private:
     void execute(Frame*);
-    void execute(WorkerContext*);
+    void execute(WorkerGlobalScope*);
     void createLocalHandlesForArgs(Vector<v8::Handle<v8::Value> >* handles);
 
     ScopedPersistent<v8::Context> m_context;

@@ -37,7 +37,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/page/DOMTimer.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "wtf/MainThread.h"
@@ -133,7 +133,7 @@ void ScriptExecutionContext::createdMessagePort(MessagePort* port)
 {
     ASSERT(port);
     ASSERT((isDocument() && isMainThread())
-        || (isWorkerContext() && static_cast<WorkerContext*>(this)->thread()->isCurrentThread()));
+        || (isWorkerGlobalScope() && static_cast<WorkerGlobalScope*>(this)->thread()->isCurrentThread()));
 
     m_messagePorts.add(port);
 }
@@ -142,7 +142,7 @@ void ScriptExecutionContext::destroyedMessagePort(MessagePort* port)
 {
     ASSERT(port);
     ASSERT((isDocument() && isMainThread())
-        || (isWorkerContext() && static_cast<WorkerContext*>(this)->thread()->isCurrentThread()));
+        || (isWorkerGlobalScope() && static_cast<WorkerGlobalScope*>(this)->thread()->isCurrentThread()));
 
     m_messagePorts.remove(port);
 }

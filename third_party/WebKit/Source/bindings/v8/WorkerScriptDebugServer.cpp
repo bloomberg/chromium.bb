@@ -34,7 +34,7 @@
 #include "bindings/v8/V8ScriptRunner.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include <v8.h>
 #include "wtf/MessageQueue.h"
@@ -42,10 +42,10 @@
 
 namespace WebCore {
 
-WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerContext* workerContext, const String& mode)
+WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerGlobalScope* workerGlobalScope, const String& mode)
     : ScriptDebugServer(v8::Isolate::GetCurrent())
     , m_listener(0)
-    , m_workerContext(workerContext)
+    , m_workerGlobalScope(workerGlobalScope)
     , m_debuggerTaskMode(mode)
 {
     ASSERT(m_isolate);
@@ -98,7 +98,7 @@ void WorkerScriptDebugServer::runMessageLoopOnPause(v8::Handle<v8::Context>)
 {
     MessageQueueWaitResult result;
     do {
-        result = m_workerContext->thread()->runLoop().runInMode(m_workerContext, m_debuggerTaskMode);
+        result = m_workerGlobalScope->thread()->runLoop().runInMode(m_workerGlobalScope, m_debuggerTaskMode);
     // Keep waiting until execution is resumed.
     } while (result == MessageQueueMessageReceived && isPaused());
     

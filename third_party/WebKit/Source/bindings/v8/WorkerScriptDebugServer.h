@@ -39,13 +39,13 @@ class Isolate;
 
 namespace WebCore {
 
-class WorkerContext;
+class WorkerGlobalScope;
 class WorkerThread;
 
 class WorkerScriptDebugServer : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(WorkerScriptDebugServer);
 public:
-    WorkerScriptDebugServer(WorkerContext*, const String&);
+    WorkerScriptDebugServer(WorkerGlobalScope*, const String&);
     ~WorkerScriptDebugServer() { }
 
     void addListener(ScriptDebugListener*);
@@ -58,9 +58,9 @@ private:
     virtual void runMessageLoopOnPause(v8::Handle<v8::Context>);
     virtual void quitMessageLoopOnPause();
 
-    typedef HashMap<WorkerContext*, ScriptDebugListener*> ListenersMap;
+    typedef HashMap<WorkerGlobalScope*, ScriptDebugListener*> ListenersMap;
     ScriptDebugListener* m_listener;
-    WorkerContext* m_workerContext;
+    WorkerGlobalScope* m_workerGlobalScope;
     String m_debuggerTaskMode;
 };
 

@@ -40,7 +40,7 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/Frame.h"
 #include "core/platform/chromium/TraceEvent.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 
 namespace WebCore {
@@ -79,8 +79,8 @@ void ScheduledAction::execute(ScriptExecutionContext* context)
             return;
         execute(frame);
     } else {
-        ASSERT(context->isWorkerContext());
-        execute(static_cast<WorkerContext*>(context));
+        ASSERT(context->isWorkerGlobalScope());
+        execute(static_cast<WorkerGlobalScope*>(context));
     }
 }
 
@@ -105,7 +105,7 @@ void ScheduledAction::execute(Frame* frame)
     // The frame might be invalid at this point because JavaScript could have released it.
 }
 
-void ScheduledAction::execute(WorkerContext* worker)
+void ScheduledAction::execute(WorkerGlobalScope* worker)
 {
     ASSERT(worker->thread()->isCurrentThread());
     v8::HandleScope handleScope(m_isolate);

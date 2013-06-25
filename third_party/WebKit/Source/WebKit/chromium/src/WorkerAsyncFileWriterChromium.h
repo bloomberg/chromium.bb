@@ -51,7 +51,7 @@ namespace WebCore {
 class AsyncFileSystem;
 class AsyncFileWriterClient;
 class Blob;
-class WorkerContext;
+class WorkerGlobalScope;
 
 class WorkerAsyncFileWriterChromium : public AsyncFileWriter {
 public:
@@ -60,9 +60,9 @@ public:
         Synchronous,
     };
 
-    static PassOwnPtr<WorkerAsyncFileWriterChromium> create(WebKit::WebFileSystem* webFileSystem, const WebKit::WebURL& path, WorkerContext* workerContext, AsyncFileWriterClient* client, WriterType type)
+    static PassOwnPtr<WorkerAsyncFileWriterChromium> create(WebKit::WebFileSystem* webFileSystem, const WebKit::WebURL& path, WorkerGlobalScope* workerGlobalScope, AsyncFileWriterClient* client, WriterType type)
     {
-        return adoptPtr(new WorkerAsyncFileWriterChromium(webFileSystem, path, workerContext, client, type));
+        return adoptPtr(new WorkerAsyncFileWriterChromium(webFileSystem, path, workerGlobalScope, client, type));
     }
     ~WorkerAsyncFileWriterChromium();
     
@@ -75,7 +75,7 @@ public:
 
 private:
 
-    WorkerAsyncFileWriterChromium(WebKit::WebFileSystem*, const WebKit::WebURL& path, WorkerContext*, AsyncFileWriterClient*, WriterType);
+    WorkerAsyncFileWriterChromium(WebKit::WebFileSystem*, const WebKit::WebURL& path, WorkerGlobalScope*, AsyncFileWriterClient*, WriterType);
     RefPtr<WebKit::WorkerFileWriterCallbacksBridge> m_bridge;
 };
 

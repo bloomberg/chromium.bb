@@ -198,7 +198,7 @@ bool DatabaseContext::allowDatabaseAccess() const
         Document* document = toDocument(m_scriptExecutionContext);
         return document->page();
     }
-    ASSERT(m_scriptExecutionContext->isWorkerContext());
+    ASSERT(m_scriptExecutionContext->isWorkerGlobalScope());
     // allowDatabaseAccess is not yet implemented for workers.
     return true;
 }

@@ -31,17 +31,17 @@
 #include "WebWorkerBase.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/platform/CrossThreadCopier.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 
 namespace WebKit {
 
 // Base class for worker thread bridges. This class adds an observer to
-// WorkerContext so that it doesn't try to use deleted pointers when
-// WorkerContext is destroyed.
+// WorkerGlobalScope so that it doesn't try to use deleted pointers when
+// WorkerGlobalScope is destroyed.
 class WorkerAllowMainThreadBridgeBase : public ThreadSafeRefCounted<WorkerAllowMainThreadBridgeBase> {
     WTF_MAKE_NONCOPYABLE(WorkerAllowMainThreadBridgeBase);
 public:
-    WorkerAllowMainThreadBridgeBase(WebCore::WorkerContext*, WebWorkerBase*);
+    WorkerAllowMainThreadBridgeBase(WebCore::WorkerGlobalScope*, WebWorkerBase*);
 
     virtual ~WorkerAllowMainThreadBridgeBase()
     {
@@ -86,7 +86,7 @@ private:
 
     Mutex m_mutex;
     WebWorkerBase* m_webWorkerBase;
-    WebCore::WorkerContext::Observer* m_workerContextObserver;
+    WebCore::WorkerGlobalScope::Observer* m_workerGlobalScopeObserver;
     bool m_result;
 };
 

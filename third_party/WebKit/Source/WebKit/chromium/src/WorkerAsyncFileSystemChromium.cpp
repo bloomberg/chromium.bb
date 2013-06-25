@@ -41,7 +41,7 @@
 #include "core/platform/FileMetadata.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/NotImplemented.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "public/platform/WebFileSystem.h"
 #include <wtf/text/CString.h>
@@ -54,12 +54,12 @@ static const char fileSystemOperationsMode[] = "fileSystemOperationsMode";
 
 WorkerAsyncFileSystemChromium::WorkerAsyncFileSystemChromium(ScriptExecutionContext* context, FileSystemSynchronousType synchronousType)
     : m_scriptExecutionContext(context)
-    , m_workerContext(static_cast<WorkerContext*>(context))
+    , m_workerGlobalScope(static_cast<WorkerGlobalScope*>(context))
     , m_synchronousType(synchronousType)
 {
-    ASSERT(m_scriptExecutionContext->isWorkerContext());
+    ASSERT(m_scriptExecutionContext->isWorkerGlobalScope());
 
-    m_workerLoaderProxy = &m_workerContext->thread()->workerLoaderProxy();
+    m_workerLoaderProxy = &m_workerGlobalScope->thread()->workerLoaderProxy();
 }
 
 WorkerAsyncFileSystemChromium::~WorkerAsyncFileSystemChromium()
@@ -72,7 +72,7 @@ bool WorkerAsyncFileSystemChromium::waitForOperationToComplete()
         return false;
 
     RefPtr<WorkerFileSystemCallbacksBridge> bridge = m_bridgeForCurrentOperation.release();
-    if (m_workerContext->thread()->runLoop().runInMode(m_workerContext, m_modeForCurrentOperation) == MessageQueueTerminated) {
+    if (m_workerGlobalScope->thread()->runLoop().runInMode(m_workerGlobalScope, m_modeForCurrentOperation) == MessageQueueTerminated) {
         bridge->stop();
         return false;
     }
@@ -131,9 +131,9 @@ void WorkerAsyncFileSystemChromium::readDirectory(const KURL& path, PassOwnPtr<A
 
 class WorkerFileWriterHelperCallbacks : public AsyncFileSystemCallbacks {
 public:
-    static PassOwnPtr<WorkerFileWriterHelperCallbacks> create(AsyncFileWriterClient* client, const WebURL& path, WebKit::WebFileSystem* webFileSystem, PassOwnPtr<WebCore::AsyncFileSystemCallbacks> callbacks, WorkerContext* workerContext)
+    static PassOwnPtr<WorkerFileWriterHelperCallbacks> create(AsyncFileWriterClient* client, const WebURL& path, WebKit::WebFileSystem* webFileSystem, PassOwnPtr<WebCore::AsyncFileSystemCallbacks> callbacks, WorkerGlobalScope* workerGlobalScope)
     {
-        return adoptPtr(new WorkerFileWriterHelperCallbacks(client, path, webFileSystem, callbacks, workerContext));
+        return adoptPtr(new WorkerFileWriterHelperCallbacks(client, path, webFileSystem, callbacks, workerGlobalScope));
     }
 
     virtual void didReadMetadata(const FileMetadata& metadata)
@@ -142,7 +142,7 @@ public:
         if (metadata.type != FileMetadata::TypeFile || metadata.length < 0)
             m_callbacks->didFail(WebKit::WebFileErrorInvalidState);
         else {
-            OwnPtr<WorkerAsyncFileWriterChromium> asyncFileWriterChromium = WorkerAsyncFileWriterChromium::create(m_webFileSystem, m_path, m_workerContext, m_client, WorkerAsyncFileWriterChromium::Asynchronous);
+            OwnPtr<WorkerAsyncFileWriterChromium> asyncFileWriterChromium = WorkerAsyncFileWriterChromium::create(m_webFileSystem, m_path, m_workerGlobalScope, m_client, WorkerAsyncFileWriterChromium::Asynchronous);
             m_callbacks->didCreateFileWriter(asyncFileWriterChromium.release(), metadata.length);
         }
     }
@@ -154,12 +154,12 @@ public:
     }
 
 private:
-    WorkerFileWriterHelperCallbacks(AsyncFileWriterClient* client, const WebURL& path, WebKit::WebFileSystem* webFileSystem, PassOwnPtr<WebCore::AsyncFileSystemCallbacks> callbacks, WorkerContext* workerContext)
+    WorkerFileWriterHelperCallbacks(AsyncFileWriterClient* client, const WebURL& path, WebKit::WebFileSystem* webFileSystem, PassOwnPtr<WebCore::AsyncFileSystemCallbacks> callbacks, WorkerGlobalScope* workerGlobalScope)
         : m_client(client)
         , m_path(path)
         , m_webFileSystem(webFileSystem)
         , m_callbacks(callbacks)
-        , m_workerContext(workerContext)
+        , m_workerGlobalScope(workerGlobalScope)
     {
     }
 
@@ -167,12 +167,12 @@ private:
     WebURL m_path;
     WebKit::WebFileSystem* m_webFileSystem;
     OwnPtr<WebCore::AsyncFileSystemCallbacks> m_callbacks;
-    WorkerContext* m_workerContext;
+    WorkerGlobalScope* m_workerGlobalScope;
 };
 
 void WorkerAsyncFileSystemChromium::createWriter(AsyncFileWriterClient* client, const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
-    createWorkerFileSystemCallbacksBridge(WorkerFileWriterHelperCallbacks::create(client, path, m_webFileSystem, callbacks, m_workerContext))->postReadMetadataToMainThread(m_webFileSystem, path, m_modeForCurrentOperation);
+    createWorkerFileSystemCallbacksBridge(WorkerFileWriterHelperCallbacks::create(client, path, m_webFileSystem, callbacks, m_workerGlobalScope))->postReadMetadataToMainThread(m_webFileSystem, path, m_modeForCurrentOperation);
 }
 
 void WorkerAsyncFileSystemChromium::createSnapshotFileAndReadMetadata(const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
@@ -185,7 +185,7 @@ PassRefPtr<WorkerFileSystemCallbacksBridge> WorkerAsyncFileSystemChromium::creat
     ASSERT_UNUSED(m_synchronousType, m_synchronousType == AsynchronousFileSystem || !m_bridgeForCurrentOperation);
 
     m_modeForCurrentOperation = fileSystemOperationsMode;
-    m_modeForCurrentOperation.append(String::number(m_workerContext->thread()->runLoop().createUniqueId()));
+    m_modeForCurrentOperation.append(String::number(m_workerGlobalScope->thread()->runLoop().createUniqueId()));
 
     m_bridgeForCurrentOperation = WorkerFileSystemCallbacksBridge::create(m_workerLoaderProxy, m_scriptExecutionContext, new WebKit::WebFileSystemCallbacksImpl(callbacks));
     return m_bridgeForCurrentOperation;

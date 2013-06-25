@@ -32,7 +32,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessageEvent.h"
 #include "core/page/DOMWindow.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
@@ -162,7 +162,7 @@ void MessagePort::dispatchMessages()
     while (m_entangledChannel && m_entangledChannel->tryGetMessageFromRemote(message, channels)) {
 
         // close() in Worker onmessage handler should prevent next message from dispatching.
-        if (m_scriptExecutionContext->isWorkerContext() && static_cast<WorkerContext*>(m_scriptExecutionContext)->isClosing())
+        if (m_scriptExecutionContext->isWorkerGlobalScope() && static_cast<WorkerGlobalScope*>(m_scriptExecutionContext)->isClosing())
             return;
 
         OwnPtr<MessagePortArray> ports = MessagePort::entanglePorts(*m_scriptExecutionContext, channels.release());

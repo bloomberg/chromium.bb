@@ -33,7 +33,7 @@
 
 #include "V8Window.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8WorkerContextEventListener.h"
+#include "bindings/v8/V8WorkerGlobalScopeEventListener.h"
 
 namespace WebCore {
 
@@ -46,7 +46,7 @@ PassRefPtr<EventListener> V8EventListenerList::getEventListener(v8::Local<v8::Va
         return V8EventListenerList::findWrapper(value, isAttribute);
     if (V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::info))
         return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute);
-    return V8EventListenerList::findOrCreateWrapper<V8WorkerContextEventListener>(value, isAttribute);
+    return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute);
 }
 
 } // namespace WebCore

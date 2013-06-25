@@ -49,7 +49,7 @@ class InstrumentingAgents;
 class Page;
 class ScriptCallStack;
 class ScriptProfile;
-class WorkerContext;
+class WorkerGlobalScope;
 
 typedef String ErrorString;
 

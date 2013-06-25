@@ -47,14 +47,14 @@ class InspectorFrontendChannel;
 class InspectorState;
 class InspectorStateClient;
 class InstrumentingAgents;
-class WorkerContext;
+class WorkerGlobalScope;
 class WorkerScriptDebugServer;
 
 class WorkerInspectorController {
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    WorkerInspectorController(WorkerContext*);
+    WorkerInspectorController(WorkerGlobalScope*);
     ~WorkerInspectorController();
 
     bool hasFrontend() const { return m_frontend; }
@@ -65,9 +65,9 @@ public:
     void resume();
 
 private:
-    friend InstrumentingAgents* instrumentationForWorkerContext(WorkerContext*);
+    friend InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope*);
 
-    WorkerContext* m_workerContext;
+    WorkerGlobalScope* m_workerGlobalScope;
     OwnPtr<InspectorStateClient> m_stateClient;
     OwnPtr<InspectorCompositeState> m_state;
     RefPtr<InstrumentingAgents> m_instrumentingAgents;

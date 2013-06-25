@@ -36,21 +36,21 @@
 
 namespace WebCore {
 
-class WorkerContext;
+class WorkerGlobalScope;
 class WorkerThread;
 
 class WorkerDebuggerAgent : public InspectorDebuggerAgent {
     WTF_MAKE_NONCOPYABLE(WorkerDebuggerAgent);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<WorkerDebuggerAgent> create(InstrumentingAgents*, InspectorCompositeState*, WorkerScriptDebugServer*, WorkerContext*, InjectedScriptManager*);
+    static PassOwnPtr<WorkerDebuggerAgent> create(InstrumentingAgents*, InspectorCompositeState*, WorkerScriptDebugServer*, WorkerGlobalScope*, InjectedScriptManager*);
     virtual ~WorkerDebuggerAgent();
 
     static const char* debuggerTaskMode;
     static void interruptAndDispatchInspectorCommands(WorkerThread*);
 
 private:
-    WorkerDebuggerAgent(InstrumentingAgents*, InspectorCompositeState*, WorkerScriptDebugServer*, WorkerContext*, InjectedScriptManager*);
+    WorkerDebuggerAgent(InstrumentingAgents*, InspectorCompositeState*, WorkerScriptDebugServer*, WorkerGlobalScope*, InjectedScriptManager*);
 
     virtual void startListeningScriptDebugServer();
     virtual void stopListeningScriptDebugServer();
@@ -61,7 +61,7 @@ private:
     virtual void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL);
 
     WorkerScriptDebugServer* m_scriptDebugServer;
-    WorkerContext* m_inspectedWorkerContext;
+    WorkerGlobalScope* m_inspectedWorkerGlobalScope;
 };
 
 } // namespace WebCore

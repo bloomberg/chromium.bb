@@ -39,7 +39,7 @@
 namespace WebCore {
 
     class AudioContext;
-    class DedicatedWorkerContext;
+    class DedicatedWorkerGlobalScope;
     class DOMApplicationCache;
     class DOMWindow;
     class Event;
@@ -63,7 +63,7 @@ namespace WebCore {
     class ScriptExecutionContext;
     class ScriptProcessorNode;
     class SharedWorker;
-    class SharedWorkerContext;
+    class SharedWorkerGlobalScope;
     class TextTrack;
     class TextTrackCue;
     class WebSocket;

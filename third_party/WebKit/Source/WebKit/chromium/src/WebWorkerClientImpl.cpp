@@ -47,7 +47,7 @@
 #include "core/page/PageGroup.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/Worker.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerMessagingProxy.h"
 #include <wtf/Threading.h>
 
@@ -69,7 +69,7 @@ namespace WebKit {
 // Chromium-specific decorator of WorkerMessagingProxy.
 
 // static
-WorkerContextProxy* WebWorkerClientImpl::createWorkerContextProxy(Worker* worker)
+WorkerGlobalScopeProxy* WebWorkerClientImpl::createWorkerGlobalScopeProxy(Worker* worker)
 {
     if (worker->scriptExecutionContext()->isDocument()) {
         Document* document = static_cast<Document*>(worker->scriptExecutionContext());
@@ -81,10 +81,10 @@ WorkerContextProxy* WebWorkerClientImpl::createWorkerContextProxy(Worker* worker
     return 0;
 }
 
-void WebWorkerClientImpl::terminateWorkerContext()
+void WebWorkerClientImpl::terminateWorkerGlobalScope()
 {
     m_webFrame = 0;
-    WebCore::WorkerMessagingProxy::terminateWorkerContext();
+    WebCore::WorkerMessagingProxy::terminateWorkerGlobalScope();
 }
 
 WebWorkerBase* WebWorkerClientImpl::toWebWorkerBase()

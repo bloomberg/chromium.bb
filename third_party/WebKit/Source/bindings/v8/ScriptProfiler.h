@@ -47,7 +47,7 @@ class WrappedNodeVisitor;
 class Page;
 class ScriptObject;
 class ScriptValue;
-class WorkerContext;
+class WorkerGlobalScope;
 
 class ScriptProfiler {
     WTF_MAKE_NONCOPYABLE(ScriptProfiler);

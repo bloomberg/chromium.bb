@@ -41,7 +41,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/Frame.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include <v8.h>
 #include "wtf/ArrayBuffer.h"
 
@@ -152,7 +152,7 @@ void transferHiddenDependency(v8::Handle<v8::Object> object, EventListener* oldV
 ScriptExecutionContext* getScriptExecutionContext()
 {
     if (WorkerScriptController* controller = WorkerScriptController::controllerForContext())
-        return controller->workerContext();
+        return controller->workerGlobalScope();
 
     return currentDocument();
 }

@@ -36,7 +36,7 @@
 #include "modules/notifications/NotificationCenter.h"
 
 #include "core/dom/Document.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "modules/notifications/NotificationClient.h"
 #include "weborigin/SecurityOrigin.h"
 

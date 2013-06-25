@@ -14,9 +14,9 @@ core/page/EventSource
 core/page/Performance
 core/page/Window implementedAs=DOMWindow
 core/svg/SVGElementInstance
-core/workers/DedicatedWorkerContext
+core/workers/DedicatedWorkerGlobalScope
 core/workers/SharedWorker
-core/workers/SharedWorkerContext
+core/workers/SharedWorkerGlobalScope
 core/workers/Worker
 core/xml/XMLHttpRequest
 core/xml/XMLHttpRequestUpload

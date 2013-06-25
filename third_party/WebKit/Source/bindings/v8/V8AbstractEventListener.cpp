@@ -42,7 +42,7 @@
 #include "core/dom/EventNames.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/page/Frame.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 
 namespace WebCore {
 
@@ -135,8 +135,8 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
             event->target()->uncaughtExceptionInEventHandler();
 
         if (!tryCatch.CanContinue()) { // Result of TerminateExecution().
-            if (context->isWorkerContext())
-                static_cast<WorkerContext*>(context)->script()->forbidExecution();
+            if (context->isWorkerGlobalScope())
+                static_cast<WorkerGlobalScope*>(context)->script()->forbidExecution();
             return;
         }
         tryCatch.Reset();

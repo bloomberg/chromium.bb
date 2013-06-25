@@ -41,7 +41,7 @@
 #include "WorkerFileSystemCallbacksBridge.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileSystemCallback.h"
@@ -77,14 +77,14 @@ static const char openFileSystemMode[] = "openFileSystemMode";
 // call back to the worker context.
 class AllowFileSystemMainThreadBridge : public WorkerAllowMainThreadBridgeBase {
 public:
-    static PassRefPtr<AllowFileSystemMainThreadBridge> create(WebCore::WorkerContext* workerContext, WebWorkerBase* webWorkerBase, const String& mode)
+    static PassRefPtr<AllowFileSystemMainThreadBridge> create(WebCore::WorkerGlobalScope* workerGlobalScope, WebWorkerBase* webWorkerBase, const String& mode)
     {
-        return adoptRef(new AllowFileSystemMainThreadBridge(workerContext, webWorkerBase, mode));
+        return adoptRef(new AllowFileSystemMainThreadBridge(workerGlobalScope, webWorkerBase, mode));
     }
 
 private:
-    AllowFileSystemMainThreadBridge(WebCore::WorkerContext* workerContext, WebWorkerBase* webWorkerBase, const String& mode)
-        : WorkerAllowMainThreadBridgeBase(workerContext, webWorkerBase)
+    AllowFileSystemMainThreadBridge(WebCore::WorkerGlobalScope* workerGlobalScope, WebWorkerBase* webWorkerBase, const String& mode)
+        : WorkerAllowMainThreadBridgeBase(workerGlobalScope, webWorkerBase)
     {
         postTaskToMainThread(adoptPtr(new AllowParams(mode)));
     }
@@ -99,8 +99,8 @@ private:
 bool allowFileSystemForWorker()
 {
     WorkerScriptController* controller = WorkerScriptController::controllerForContext();
-    WorkerContext* workerContext = controller->workerContext();
-    WebCore::WorkerThread* workerThread = workerContext->thread();
+    WorkerGlobalScope* workerGlobalScope = controller->workerGlobalScope();
+    WebCore::WorkerThread* workerThread = workerGlobalScope->thread();
     WorkerRunLoop& runLoop = workerThread->runLoop();
     WebCore::WorkerLoaderProxy* workerLoaderProxy = &workerThread->workerLoaderProxy();
 
@@ -108,10 +108,10 @@ bool allowFileSystemForWorker()
     String mode = allowFileSystemMode;
     mode.append(String::number(runLoop.createUniqueId()));
 
-    RefPtr<AllowFileSystemMainThreadBridge> bridge = AllowFileSystemMainThreadBridge::create(workerContext, workerLoaderProxy->toWebWorkerBase(), mode);
+    RefPtr<AllowFileSystemMainThreadBridge> bridge = AllowFileSystemMainThreadBridge::create(workerGlobalScope, workerLoaderProxy->toWebWorkerBase(), mode);
 
     // Either the bridge returns, or the queue gets terminated.
-    if (runLoop.runInMode(workerContext, mode) == MessageQueueTerminated) {
+    if (runLoop.runInMode(workerGlobalScope, mode) == MessageQueueTerminated) {
         bridge->cancel();
         return false;
     }
@@ -122,8 +122,8 @@ bool allowFileSystemForWorker()
 void openFileSystemForWorker(WebCommonWorkerClient* commonClient, WebFileSystemType type, long long size, bool create, WebFileSystemCallbacksImpl* callbacks, FileSystemSynchronousType synchronousType)
 {
     WorkerScriptController* controller = WorkerScriptController::controllerForContext();
-    WorkerContext* workerContext = controller->workerContext();
-    WebCore::WorkerThread* workerThread = workerContext->thread();
+    WorkerGlobalScope* workerGlobalScope = controller->workerGlobalScope();
+    WebCore::WorkerThread* workerThread = workerGlobalScope->thread();
     WorkerRunLoop& runLoop = workerThread->runLoop();
     WebCore::WorkerLoaderProxy* workerLoaderProxy =  &workerThread->workerLoaderProxy();
 
@@ -131,11 +131,11 @@ void openFileSystemForWorker(WebCommonWorkerClient* commonClient, WebFileSystemT
     String mode = openFileSystemMode;
     mode.append(String::number(runLoop.createUniqueId()));
 
-    RefPtr<WorkerFileSystemCallbacksBridge> bridge = WorkerFileSystemCallbacksBridge::create(workerLoaderProxy, workerContext, callbacks);
+    RefPtr<WorkerFileSystemCallbacksBridge> bridge = WorkerFileSystemCallbacksBridge::create(workerLoaderProxy, workerGlobalScope, callbacks);
     bridge->postOpenFileSystemToMainThread(commonClient, type, size, create, mode);
 
     if (synchronousType == SynchronousFileSystem) {
-        if (runLoop.runInMode(workerContext, mode) == MessageQueueTerminated)
+        if (runLoop.runInMode(workerGlobalScope, mode) == MessageQueueTerminated)
             bridge->stop();
     }
 }
@@ -165,8 +165,8 @@ static void openFileSystemHelper(ScriptExecutionContext* context, FileSystemType
         else
             webFrame->client()->openFileSystem(webFrame, static_cast<WebFileSystemType>(type), size, create == CreateIfNotPresent, new WebFileSystemCallbacksImpl(callbacks));
     } else {
-        WorkerContext* workerContext = static_cast<WorkerContext*>(context);
-        WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerContext->thread()->workerLoaderProxy().toWebWorkerBase());
+        WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(context);
+        WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerGlobalScope->thread()->workerLoaderProxy().toWebWorkerBase());
         if (!allowFileSystemForWorker())
             allowed = false;
         else

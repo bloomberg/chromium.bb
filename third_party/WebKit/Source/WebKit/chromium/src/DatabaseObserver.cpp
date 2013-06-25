@@ -46,7 +46,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/CrossThreadCopier.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
@@ -62,9 +62,9 @@ static const char allowDatabaseMode[] = "allowDatabaseMode";
 // call back to the worker context.
 class AllowDatabaseMainThreadBridge : public WorkerAllowMainThreadBridgeBase {
 public:
-    static PassRefPtr<AllowDatabaseMainThreadBridge> create(WebCore::WorkerContext* workerContext, WebWorkerBase* webWorkerBase, const String& mode, WebFrame* frame, const String& name, const String& displayName, unsigned long estimatedSize)
+    static PassRefPtr<AllowDatabaseMainThreadBridge> create(WebCore::WorkerGlobalScope* workerGlobalScope, WebWorkerBase* webWorkerBase, const String& mode, WebFrame* frame, const String& name, const String& displayName, unsigned long estimatedSize)
     {
-        return adoptRef(new AllowDatabaseMainThreadBridge(workerContext, webWorkerBase, mode, frame, name, displayName, estimatedSize));
+        return adoptRef(new AllowDatabaseMainThreadBridge(workerGlobalScope, webWorkerBase, mode, frame, name, displayName, estimatedSize));
     }
 
 private:
@@ -85,8 +85,8 @@ private:
         unsigned long m_estimatedSize;
     };
 
-    AllowDatabaseMainThreadBridge(WebCore::WorkerContext* workerContext, WebWorkerBase* webWorkerBase, const String& mode, WebFrame* frame, const String& name, const String& displayName, unsigned long estimatedSize)
-        : WorkerAllowMainThreadBridgeBase(workerContext, webWorkerBase)
+    AllowDatabaseMainThreadBridge(WebCore::WorkerGlobalScope* workerGlobalScope, WebWorkerBase* webWorkerBase, const String& mode, WebFrame* frame, const String& name, const String& displayName, unsigned long estimatedSize)
+        : WorkerAllowMainThreadBridgeBase(workerGlobalScope, webWorkerBase)
     {
         postTaskToMainThread(
             adoptPtr(new AllowDatabaseParams(mode, frame, name, displayName, estimatedSize)));
@@ -104,8 +104,8 @@ private:
 bool allowDatabaseForWorker(WebFrame* frame, const WebString& name, const WebString& displayName, unsigned long estimatedSize)
 {
     WebCore::WorkerScriptController* controller = WebCore::WorkerScriptController::controllerForContext();
-    WebCore::WorkerContext* workerContext = controller->workerContext();
-    WebCore::WorkerThread* workerThread = workerContext->thread();
+    WebCore::WorkerGlobalScope* workerGlobalScope = controller->workerGlobalScope();
+    WebCore::WorkerThread* workerThread = workerGlobalScope->thread();
     WebCore::WorkerRunLoop& runLoop = workerThread->runLoop();
     WebCore::WorkerLoaderProxy* workerLoaderProxy = &workerThread->workerLoaderProxy();
 
@@ -113,10 +113,10 @@ bool allowDatabaseForWorker(WebFrame* frame, const WebString& name, const WebStr
     String mode = allowDatabaseMode;
     mode.append(String::number(runLoop.createUniqueId()));
 
-    RefPtr<AllowDatabaseMainThreadBridge> bridge = AllowDatabaseMainThreadBridge::create(workerContext, workerLoaderProxy->toWebWorkerBase(), mode, frame, name, displayName, estimatedSize);
+    RefPtr<AllowDatabaseMainThreadBridge> bridge = AllowDatabaseMainThreadBridge::create(workerGlobalScope, workerLoaderProxy->toWebWorkerBase(), mode, frame, name, displayName, estimatedSize);
 
     // Either the bridge returns, or the queue gets terminated.
-    if (runLoop.runInMode(workerContext, mode) == MessageQueueTerminated) {
+    if (runLoop.runInMode(workerGlobalScope, mode) == MessageQueueTerminated) {
         bridge->cancel();
         return false;
     }
@@ -131,7 +131,7 @@ namespace WebCore {
 bool DatabaseObserver::canEstablishDatabase(ScriptExecutionContext* scriptExecutionContext, const String& name, const String& displayName, unsigned long estimatedSize)
 {
     ASSERT(scriptExecutionContext->isContextThread());
-    ASSERT(scriptExecutionContext->isDocument() || scriptExecutionContext->isWorkerContext());
+    ASSERT(scriptExecutionContext->isDocument() || scriptExecutionContext->isWorkerGlobalScope());
     if (scriptExecutionContext->isDocument()) {
         Document* document = static_cast<Document*>(scriptExecutionContext);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
@@ -143,8 +143,8 @@ bool DatabaseObserver::canEstablishDatabase(ScriptExecutionContext* scriptExecut
         if (webView->permissionClient())
             return webView->permissionClient()->allowDatabase(webFrame, name, displayName, estimatedSize);
     } else {
-        WorkerContext* workerContext = static_cast<WorkerContext*>(scriptExecutionContext);
-        WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerContext->thread()->workerLoaderProxy().toWebWorkerBase());
+        WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(scriptExecutionContext);
+        WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerGlobalScope->thread()->workerLoaderProxy().toWebWorkerBase());
         WebView* view = webWorker->view();
         if (!view)
             return false;

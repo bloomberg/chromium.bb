@@ -47,10 +47,10 @@ namespace WebCore {
         virtual void postMessageToPageInspector(const String&) = 0;
         virtual void updateInspectorStateCookie(const String&) = 0;
         // Invoked when close() is invoked on the worker context.
-        virtual void workerContextClosed() = 0;
+        virtual void workerGlobalScopeClosed() = 0;
 
         // Invoked when the thread has stopped.
-        virtual void workerContextDestroyed() = 0;
+        virtual void workerGlobalScopeDestroyed() = 0;
     };
 
 } // namespace WebCore

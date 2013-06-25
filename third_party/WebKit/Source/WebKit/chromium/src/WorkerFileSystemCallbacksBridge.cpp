@@ -37,7 +37,7 @@
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/platform/network/BlobData.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "public/platform/WebFileInfo.h"
@@ -154,22 +154,22 @@ private:
 
 // Observes the worker context. By keeping this separate, it is easier to verify
 // that it only gets deleted on the worker context thread which is verified by ~Observer.
-class WorkerFileSystemContextObserver : public WebCore::WorkerContext::Observer {
+class WorkerFileSystemContextObserver : public WebCore::WorkerGlobalScope::Observer {
 public:
-    static PassOwnPtr<WorkerFileSystemContextObserver> create(WorkerContext* context, PassRefPtr<WorkerFileSystemCallbacksBridge> bridge)
+    static PassOwnPtr<WorkerFileSystemContextObserver> create(WorkerGlobalScope* context, PassRefPtr<WorkerFileSystemCallbacksBridge> bridge)
     {
         return adoptPtr(new WorkerFileSystemContextObserver(context, bridge));
     }
 
-    // WorkerContext::Observer method.
+    // WorkerGlobalScope::Observer method.
     virtual void notifyStop()
     {
         m_bridge->stop();
     }
 
 private:
-    WorkerFileSystemContextObserver(WorkerContext* context, PassRefPtr<WorkerFileSystemCallbacksBridge> bridge)
-        : WebCore::WorkerContext::Observer(context)
+    WorkerFileSystemContextObserver(WorkerGlobalScope* context, PassRefPtr<WorkerFileSystemCallbacksBridge> bridge)
+        : WebCore::WorkerGlobalScope::Observer(context)
         , m_bridge(bridge)
     {
     }
@@ -179,7 +179,7 @@ private:
 
 void WorkerFileSystemCallbacksBridge::stop()
 {
-    ASSERT(m_workerContext->isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
     {
         MutexLocker locker(m_loaderProxyMutex);
         m_workerLoaderProxy = 0;
@@ -193,12 +193,12 @@ void WorkerFileSystemCallbacksBridge::stop()
 
 void WorkerFileSystemCallbacksBridge::cleanUpAfterCallback()
 {
-    ASSERT(m_workerContext->isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
 
     m_callbacksOnWorkerThread = 0;
-    if (m_workerContextObserver) {
-        WorkerFileSystemContextObserver* observer = m_workerContextObserver;
-        m_workerContextObserver = 0;
+    if (m_workerGlobalScopeObserver) {
+        WorkerFileSystemContextObserver* observer = m_workerGlobalScopeObserver;
+        m_workerGlobalScopeObserver = 0;
         // The next line may delete this.
         delete observer;
     }
@@ -407,11 +407,11 @@ void WorkerFileSystemCallbacksBridge::didReadDirectoryOnMainThread(const WebVect
 
 WorkerFileSystemCallbacksBridge::WorkerFileSystemCallbacksBridge(WebCore::WorkerLoaderProxy* workerLoaderProxy, ScriptExecutionContext* scriptExecutionContext, WebFileSystemCallbacksImpl* callbacks)
     : m_workerLoaderProxy(workerLoaderProxy)
-    , m_workerContext(scriptExecutionContext)
-    , m_workerContextObserver(WorkerFileSystemContextObserver::create(static_cast<WorkerContext*>(m_workerContext), this).leakPtr())
+    , m_workerGlobalScope(scriptExecutionContext)
+    , m_workerGlobalScopeObserver(WorkerFileSystemContextObserver::create(static_cast<WorkerGlobalScope*>(m_workerGlobalScope), this).leakPtr())
     , m_callbacksOnWorkerThread(callbacks)
 {
-    ASSERT(m_workerContext->isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
 }
 
 WorkerFileSystemCallbacksBridge::~WorkerFileSystemCallbacksBridge()
@@ -460,7 +460,7 @@ void WorkerFileSystemCallbacksBridge::runTaskOnWorkerThread(WebCore::ScriptExecu
 {
     if (!bridge->m_callbacksOnWorkerThread)
         return;
-    ASSERT(bridge->m_workerContext->isContextThread());
+    ASSERT(bridge->m_workerGlobalScope->isContextThread());
     taskToRun->performTask(scriptExecutionContext);
 
     // taskToRun does the callback.
@@ -472,7 +472,7 @@ void WorkerFileSystemCallbacksBridge::runTaskOnWorkerThread(WebCore::ScriptExecu
 void WorkerFileSystemCallbacksBridge::dispatchTaskToMainThread(PassOwnPtr<WebCore::ScriptExecutionContext::Task> task)
 {
     ASSERT(m_workerLoaderProxy);
-    ASSERT(m_workerContext->isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
     WebWorkerBase::dispatchTaskToMainThread(createCallbackTask(&runTaskOnMainThread, RefPtr<WorkerFileSystemCallbacksBridge>(this).release(), task));
 }
 
@@ -483,7 +483,7 @@ void WorkerFileSystemCallbacksBridge::mayPostTaskToWorker(PassOwnPtr<ScriptExecu
 
     MutexLocker locker(m_loaderProxyMutex);
     if (m_workerLoaderProxy)
-        m_workerLoaderProxy->postTaskForModeToWorkerContext(createCallbackTask(&runTaskOnWorkerThread, this, task), mode);
+        m_workerLoaderProxy->postTaskForModeToWorkerGlobalScope(createCallbackTask(&runTaskOnWorkerThread, this, task), mode);
 }
 
 } // namespace WebCore

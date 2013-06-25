@@ -188,9 +188,9 @@ def parse_idl_files(idl_files, window_constructors_filename, workercontext_const
     generate_global_constructors_partial_interface("Window", window_constructors_filename, window_constructor_attributes_list)
     if 'Window' in interface_name_to_idl_file:
         supplemental_dependencies[window_constructors_filename] = ['Window']
-    generate_global_constructors_partial_interface("WorkerContext", workercontext_constructors_filename, workercontext_constructor_attributes_list)
-    if 'WorkerContext' in interface_name_to_idl_file:
-        supplemental_dependencies[workercontext_constructors_filename] = ['WorkerContext']
+    generate_global_constructors_partial_interface("WorkerGlobalScope", workercontext_constructors_filename, workercontext_constructor_attributes_list)
+    if 'WorkerGlobalScope' in interface_name_to_idl_file:
+        supplemental_dependencies[workercontext_constructors_filename] = ['WorkerGlobalScope']
 
     # Resolve partial interfaces dependencies
     for idl_file, base_files in supplemental_dependencies.iteritems():

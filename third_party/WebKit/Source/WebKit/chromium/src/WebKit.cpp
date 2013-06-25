@@ -46,7 +46,7 @@
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
-#include "core/workers/WorkerContextProxy.h"
+#include "core/workers/WorkerGlobalScopeProxy.h"
 #include "wtf/Assertions.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/CurrentTime.h"
@@ -163,7 +163,7 @@ void initializeWithoutV8(Platform* platform)
 
     WebCore::MediaPlayer::setMediaEngineCreateFunction(WebKit::WebMediaPlayerClientImpl::create);
 
-    WebCore::WorkerContextProxy::setCreateDelegate(WebWorkerClientImpl::createWorkerContextProxy);
+    WebCore::WorkerGlobalScopeProxy::setCreateDelegate(WebWorkerClientImpl::createWorkerGlobalScopeProxy);
 }
 
 

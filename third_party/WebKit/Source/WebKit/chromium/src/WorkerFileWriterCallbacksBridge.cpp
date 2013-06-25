@@ -34,7 +34,7 @@
 #include "WebFileWriter.h"
 #include "WebWorkerBase.h"
 #include "core/dom/CrossThreadTask.h"
-#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/filesystem/AsyncFileWriterClient.h"
@@ -50,7 +50,7 @@ namespace WebKit {
 
 void WorkerFileWriterCallbacksBridge::notifyStop()
 {
-    ASSERT(m_workerContext->isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
     m_clientOnWorkerThread = 0;
     {
         MutexLocker locker(m_loaderProxyMutex);
@@ -82,7 +82,7 @@ void WorkerFileWriterCallbacksBridge::postAbortToMainThread()
 
 void WorkerFileWriterCallbacksBridge::postShutdownToMainThread(PassRefPtr<WorkerFileWriterCallbacksBridge> bridge)
 {
-    ASSERT(m_workerContext->isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
     m_clientOnWorkerThread = 0;
     dispatchTaskToMainThread(createCallbackTask(&shutdownOnMainThread, bridge));
 }
@@ -132,16 +132,16 @@ void WorkerFileWriterCallbacksBridge::didTruncate()
 static const char fileWriterOperationsMode[] = "fileWriterOperationsMode";
 
 WorkerFileWriterCallbacksBridge::WorkerFileWriterCallbacksBridge(const KURL& path, WorkerLoaderProxy* proxy, ScriptExecutionContext* scriptExecutionContext, AsyncFileWriterClient* client)
-    : WorkerContext::Observer(static_cast<WorkerContext*>(scriptExecutionContext))
+    : WorkerGlobalScope::Observer(static_cast<WorkerGlobalScope*>(scriptExecutionContext))
     , m_proxy(proxy)
-    , m_workerContext(scriptExecutionContext)
+    , m_workerGlobalScope(scriptExecutionContext)
     , m_clientOnWorkerThread(client)
     , m_writerDeleted(false)
     , m_operationInProgress(false)
 {
-    ASSERT(m_workerContext->isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
     m_mode = fileWriterOperationsMode;
-    m_mode.append(String::number(static_cast<WorkerContext*>(scriptExecutionContext)->thread()->runLoop().createUniqueId()));
+    m_mode.append(String::number(static_cast<WorkerGlobalScope*>(scriptExecutionContext)->thread()->runLoop().createUniqueId()));
     postInitToMainThread(path);
 }
 
@@ -160,7 +160,7 @@ WorkerFileWriterCallbacksBridge::~WorkerFileWriterCallbacksBridge()
 // We know m_clientOnWorkerThread is still valid because it is only cleared on the context thread, and because we check in runTaskOnWorkerThread before calling any of these methods.
 void WorkerFileWriterCallbacksBridge::didWriteOnWorkerThread(ScriptExecutionContext*, PassRefPtr<WorkerFileWriterCallbacksBridge> bridge, long long length, bool complete)
 {
-    ASSERT(bridge->m_workerContext->isContextThread());
+    ASSERT(bridge->m_workerGlobalScope->isContextThread());
     ASSERT(bridge->m_operationInProgress);
     if (complete)
         bridge->m_operationInProgress = false;
@@ -169,7 +169,7 @@ void WorkerFileWriterCallbacksBridge::didWriteOnWorkerThread(ScriptExecutionCont
 
 void WorkerFileWriterCallbacksBridge::didFailOnWorkerThread(ScriptExecutionContext*, PassRefPtr<WorkerFileWriterCallbacksBridge> bridge, WebFileError error)
 {
-    ASSERT(bridge->m_workerContext->isContextThread());
+    ASSERT(bridge->m_workerGlobalScope->isContextThread());
     ASSERT(bridge->m_operationInProgress);
     bridge->m_operationInProgress = false;
     bridge->m_clientOnWorkerThread->didFail(static_cast<FileError::ErrorCode>(error));
@@ -177,7 +177,7 @@ void WorkerFileWriterCallbacksBridge::didFailOnWorkerThread(ScriptExecutionConte
 
 void WorkerFileWriterCallbacksBridge::didTruncateOnWorkerThread(ScriptExecutionContext*, PassRefPtr<WorkerFileWriterCallbacksBridge> bridge)
 {
-    ASSERT(bridge->m_workerContext->isContextThread());
+    ASSERT(bridge->m_workerGlobalScope->isContextThread());
     ASSERT(bridge->m_operationInProgress);
     bridge->m_operationInProgress = false;
     bridge->m_clientOnWorkerThread->didTruncate();
@@ -192,14 +192,14 @@ void WorkerFileWriterCallbacksBridge::runTaskOnMainThread(ScriptExecutionContext
 
 void WorkerFileWriterCallbacksBridge::runTaskOnWorkerThread(ScriptExecutionContext* scriptExecutionContext, PassRefPtr<WorkerFileWriterCallbacksBridge> bridge, PassOwnPtr<ScriptExecutionContext::Task> taskToRun)
 {
-    ASSERT(bridge->m_workerContext->isContextThread());
+    ASSERT(bridge->m_workerGlobalScope->isContextThread());
     if (bridge->m_clientOnWorkerThread)
         taskToRun->performTask(scriptExecutionContext);
 }
 
 void WorkerFileWriterCallbacksBridge::dispatchTaskToMainThread(PassOwnPtr<ScriptExecutionContext::Task> task)
 {
-    ASSERT(m_workerContext->isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
     WebWorkerBase::dispatchTaskToMainThread(
         createCallbackTask(&runTaskOnMainThread, this, task));
 }
@@ -210,14 +210,14 @@ void WorkerFileWriterCallbacksBridge::dispatchTaskToWorkerThread(PassOwnPtr<Scri
 
     MutexLocker locker(m_loaderProxyMutex);
     if (m_proxy)
-        m_proxy->postTaskForModeToWorkerContext(
+        m_proxy->postTaskForModeToWorkerGlobalScope(
             createCallbackTask(&runTaskOnWorkerThread, this, task), m_mode);
 }
 
 bool WorkerFileWriterCallbacksBridge::waitForOperationToComplete()
 {
     while (m_operationInProgress) {
-        WorkerContext* context = static_cast<WorkerContext*>(m_workerContext);
+        WorkerGlobalScope* context = static_cast<WorkerGlobalScope*>(m_workerGlobalScope);
         if (context->thread()->runLoop().runInMode(context, m_mode) == MessageQueueTerminated)
             return false;
     }
