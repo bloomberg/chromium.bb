@@ -3522,15 +3522,19 @@ PassRefPtr<StyleImage> StyleResolver::loadPendingImage(StylePendingImage* pendin
 
 void StyleResolver::loadPendingShapeImage(ShapeValue* shapeValue)
 {
-    DEFINE_STATIC_LOCAL(ResourceLoaderOptions, options, (SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, DoSecurityCheck, CheckContentSecurityPolicy, RestrictToSameOrigin));
+    if (!shapeValue)
+        return;
 
     StyleImage* image = shapeValue->image();
-    if (!image)
+    if (!image || !image->isPendingImage())
         return;
 
     StylePendingImage* pendingImage = static_cast<StylePendingImage*>(image);
     CSSImageValue* cssImageValue =  pendingImage->cssImageValue();
     CachedResourceLoader* cachedResourceLoader = m_state.document()->cachedResourceLoader();
+
+    ResourceLoaderOptions options = CachedResourceLoader::defaultCachedResourceOptions();
+    options.requestOriginPolicy = RestrictToSameOrigin;
 
     shapeValue->setImage(cssImageValue->cachedImage(cachedResourceLoader, options));
 }
