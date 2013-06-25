@@ -1848,23 +1848,6 @@ Bug(schenney) fast/text/line-break-between-text-nodes-latin1.html [ Pass Failure
 
 crbug.com/248832 [ XP ] virtual/softwarecompositing/reflections/nested-reflection-anchor-point.html [ ImageOnlyFailure ]
 
-crbug.com/242761 [ MountainLion ] editing/deleting/delete-at-paragraph-boundaries-004.html [ Failure ]
-crbug.com/242761 [ Lion MountainLion ] editing/deleting/delete-at-paragraph-boundaries-010.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/deleting/delete-block-merge-contents-006.html [ Failure ]
-crbug.com/242761 [ Lion MountainLion ] editing/deleting/delete-block-merge-contents-023.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/deleting/delete-br-008.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/deleting/delete-line-016.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/deleting/merge-no-br.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/execCommand/4747450.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/execCommand/5136770.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/execCommand/5190926.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/pasteboard/displaced-generic-placeholder.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/pasteboard/merge-after-delete-2.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/pasteboard/paste-text-008.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/style/create-block-for-style-003.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/style/create-block-for-style-004.html [ Failure ]
-crbug.com/242761 [ MountainLion ] editing/style/create-block-for-style-010.html [ Failure ]
-
 crbug.com/251079 [ Debug ] fast/parser/fragment-parser.html [ Pass Timeout ]
 
 crbug.com/251091 [ Mac ] http/tests/xmlviewer/dumpAsText/xmlviewer.xml [ Pass Crash ]
