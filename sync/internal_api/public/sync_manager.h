@@ -23,7 +23,7 @@
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/invalidation_handler.h"
+#include "sync/notifier/invalidation_util.h"
 #include "sync/protocol/sync_protocol_error.h"
 
 namespace sync_pb {
@@ -39,6 +39,8 @@ struct Experiments;
 class ExtensionsActivityMonitor;
 class HttpPostProviderFactory;
 class InternalComponentsFactory;
+class InvalidationHandler;
+class Invalidator;
 class JsBackend;
 class JsEventHandler;
 class SyncEncryptionHandler;
@@ -73,7 +75,7 @@ struct SyncCredentials {
 //
 // Unless stated otherwise, all methods of SyncManager should be called on the
 // same thread.
-class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
+class SYNC_EXPORT SyncManager {
  public:
   // An interface the embedding application implements to be notified
   // on change events.  Note that these methods may be called on *any*
@@ -313,6 +315,7 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
       ExtensionsActivityMonitor* extensions_activity_monitor,
       ChangeDelegate* change_delegate,
       const SyncCredentials& credentials,
+      scoped_ptr<Invalidator> invalidator,
       const std::string& invalidator_client_id,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
@@ -341,6 +344,27 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
   // Update tokens that we're using in Sync. Email must stay the same.
   virtual void UpdateCredentials(const SyncCredentials& credentials) = 0;
 
+  // Called when the user disables or enables a sync type.
+  virtual void UpdateEnabledTypes(ModelTypeSet enabled_types) = 0;
+
+  // Forwards to the underlying invalidator (see comments in invalidator.h).
+  virtual void RegisterInvalidationHandler(
+      InvalidationHandler* handler) = 0;
+
+  // Forwards to the underlying notifier (see comments in invalidator.h).
+  virtual void UpdateRegisteredInvalidationIds(
+      InvalidationHandler* handler,
+      const ObjectIdSet& ids) = 0;
+
+  // Forwards to the underlying notifier (see comments in invalidator.h).
+  virtual void UnregisterInvalidationHandler(
+      InvalidationHandler* handler) = 0;
+
+  // Forwards to the underlying notifier (see comments in invalidator.h).
+  virtual void AcknowledgeInvalidation(
+      const invalidation::ObjectId& id,
+      const syncer::AckHandle& ack_handle) = 0;
+
   // Put the syncer in normal mode ready to perform nudges and polls.
   virtual void StartSyncingNormally(
       const ModelSafeRoutingInfo& routing_info) = 0;
@@ -367,13 +391,6 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) = 0;
-
-  // Inform the syncer of a change in the invalidator's state.
-  virtual void OnInvalidatorStateChange(InvalidatorState state) = 0;
-
-  // Inform the syncer that its cached information about a type is obsolete.
-  virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) = 0;
 
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before

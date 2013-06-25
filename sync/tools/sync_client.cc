@@ -17,7 +17,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/rand_util.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
 #include "jingle/notifier/base/notification_method.h"
@@ -41,7 +40,8 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/notifier/invalidation_state_tracker.h"
-#include "sync/notifier/non_blocking_invalidator.h"
+#include "sync/notifier/invalidator.h"
+#include "sync/notifier/invalidator_factory.h"
 #include "sync/test/fake_encryptor.h"
 #include "sync/tools/null_invalidation_state_tracker.h"
 
@@ -215,12 +215,13 @@ notifier::NotifierOptions ParseNotifierOptions(
   LOG_IF(INFO, notifier_options.allow_insecure_connection)
       << "Allowing insecure XMPP connections.";
 
-  return notifier_options;
-}
+  if (command_line.HasSwitch(kNotificationMethodSwitch)) {
+    notifier_options.notification_method =
+        notifier::StringToNotificationMethod(
+            command_line.GetSwitchValueASCII(kNotificationMethodSwitch));
+  }
 
-void StubNetworkTimeUpdateCallback(const base::Time&,
-                                   const base::TimeDelta&,
-                                   const base::TimeDelta&) {
+  return notifier_options;
 }
 
 int SyncClientMain(int argc, char* argv[]) {
@@ -249,6 +250,7 @@ int SyncClientMain(int argc, char* argv[]) {
   if (credentials.email.empty() || credentials.sync_token.empty()) {
     std::printf("Usage: %s --%s=foo@bar.com --%s=token\n"
                 "[--%s=host:port] [--%s] [--%s]\n"
+                "[--%s=(server|p2p)]\n\n"
                 "Run chrome and set a breakpoint on\n"
                 "syncer::SyncManagerImpl::UpdateCredentials() "
                 "after logging into\n"
@@ -256,7 +258,8 @@ int SyncClientMain(int argc, char* argv[]) {
                 argv[0],
                 kEmailSwitch, kTokenSwitch, kXmppHostPortSwitch,
                 kXmppTrySslTcpFirstSwitch,
-                kXmppAllowInsecureConnectionSwitch);
+                kXmppAllowInsecureConnectionSwitch,
+                kNotificationMethodSwitch);
     return -1;
   }
 
@@ -269,49 +272,18 @@ int SyncClientMain(int argc, char* argv[]) {
       new MyTestURLRequestContextGetter(io_thread.message_loop_proxy());
   const notifier::NotifierOptions& notifier_options =
       ParseNotifierOptions(command_line, context_getter);
-  const char kClientInfo[] = "standalone_sync_client";
-  std::string invalidator_id = base::RandBytesAsString(8);
+  const char kClientInfo[] = "sync_listen_notifications";
   NullInvalidationStateTracker null_invalidation_state_tracker;
-  scoped_ptr<Invalidator> invalidator(new NonBlockingInvalidator(
-      notifier_options,
-      invalidator_id,
-      null_invalidation_state_tracker.GetAllInvalidationStates(),
-      null_invalidation_state_tracker.GetBootstrapData(),
-      WeakHandle<InvalidationStateTracker>(
-          null_invalidation_state_tracker.AsWeakPtr()),
-      kClientInfo));
+  InvalidatorFactory invalidator_factory(
+      notifier_options, kClientInfo,
+      null_invalidation_state_tracker.AsWeakPtr());
 
   // Set up database directory for the syncer.
   base::ScopedTempDir database_dir;
   CHECK(database_dir.CreateUniqueTempDir());
 
-  // Developers often add types to ModelTypeSet::All() before the server
-  // supports them.  We need to be explicit about which types we want here.
-  ModelTypeSet model_types;
-  model_types.Put(BOOKMARKS);
-  model_types.Put(PREFERENCES);
-  model_types.Put(PASSWORDS);
-  model_types.Put(AUTOFILL);
-  model_types.Put(THEMES);
-  model_types.Put(TYPED_URLS);
-  model_types.Put(EXTENSIONS);
-  model_types.Put(NIGORI);
-  model_types.Put(SEARCH_ENGINES);
-  model_types.Put(SESSIONS);
-  model_types.Put(APPS);
-  model_types.Put(AUTOFILL_PROFILE);
-  model_types.Put(APP_SETTINGS);
-  model_types.Put(EXTENSION_SETTINGS);
-  model_types.Put(APP_NOTIFICATIONS);
-  model_types.Put(HISTORY_DELETE_DIRECTIVES);
-  model_types.Put(SYNCED_NOTIFICATIONS);
-  model_types.Put(DEVICE_INFO);
-  model_types.Put(EXPERIMENTS);
-  model_types.Put(PRIORITY_PREFERENCES);
-  model_types.Put(DICTIONARY);
-  model_types.Put(FAVICON_IMAGES);
-  model_types.Put(FAVICON_TRACKING);
-
+  // Set up model type parameters.
+  const ModelTypeSet model_types = ModelTypeSet::All();
   ModelSafeRoutingInfo routing_info;
   for (ModelTypeSet::Iterator it = model_types.First();
        it.Good(); it.Inc()) {
@@ -335,10 +307,8 @@ int SyncClientMain(int argc, char* argv[]) {
   const char kUserAgent[] = "sync_client";
   // TODO(akalin): Replace this with just the context getter once
   // HttpPostProviderFactory is removed.
-  scoped_ptr<HttpPostProviderFactory> post_factory(
-      new HttpBridgeFactory(context_getter,
-                            kUserAgent,
-                            base::Bind(&StubNetworkTimeUpdateCallback)));
+  scoped_ptr<HttpPostProviderFactory> post_factory(new HttpBridgeFactory(
+      context_getter.get(), kUserAgent, NetworkTimeUpdateCallback()));
   // Used only when committing bookmarks, so it's okay to leave this
   // as NULL.
   ExtensionsActivityMonitor* extensions_activity_monitor = NULL;
@@ -363,7 +333,9 @@ int SyncClientMain(int argc, char* argv[]) {
                     extensions_activity_monitor,
                     &change_delegate,
                     credentials,
-                    invalidator_id,
+                    scoped_ptr<Invalidator>(
+                        invalidator_factory.CreateInvalidator()),
+                    invalidator_factory.GetInvalidatorClientId(),
                     kRestoredKeyForBootstrapping,
                     kRestoredKeystoreKeyForBootstrapping,
                     scoped_ptr<InternalComponentsFactory>(
@@ -373,10 +345,7 @@ int SyncClientMain(int argc, char* argv[]) {
                     &LogUnrecoverableErrorContext, false);
   // TODO(akalin): Avoid passing in model parameters multiple times by
   // organizing handling of model types.
-  invalidator->UpdateCredentials(credentials.email, credentials.sync_token);
-  invalidator->RegisterHandler(sync_manager.get());
-  invalidator->UpdateRegisteredIds(
-      sync_manager.get(), ModelTypeSetToObjectIdSet(model_types));
+  sync_manager->UpdateEnabledTypes(model_types);
   sync_manager->StartSyncingNormally(routing_info);
 
   sync_loop.Run();

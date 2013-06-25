@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/invalidation/invalidation_service.h"
+#include "chrome/browser/invalidation/invalidation_frontend.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "sync/notifier/object_id_invalidation_map.h"
 
@@ -23,7 +23,8 @@ namespace invalidation {
 // only in tests, where we're unable to connect to a real invalidations server.
 class P2PInvalidationService
     : public base::NonThreadSafe,
-      public InvalidationService {
+      public BrowserContextKeyedService,
+      public InvalidationFrontend {
  public:
   explicit P2PInvalidationService(Profile* profile);
   virtual ~P2PInvalidationService();
@@ -31,7 +32,7 @@ class P2PInvalidationService
   // Overrides BrowserContextKeyedService method.
   virtual void Shutdown() OVERRIDE;
 
-  // InvalidationService implementation.
+  // InvalidationFrontend implementation.
   // It is an error to have registered handlers when Shutdown() is called.
   virtual void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) OVERRIDE;
@@ -44,7 +45,7 @@ class P2PInvalidationService
       const invalidation::ObjectId& id,
       const syncer::AckHandle& ack_handle) OVERRIDE;
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
-  virtual std::string GetInvalidatorClientId() const OVERRIDE;
+  virtual std::string GetInvalidatorClientId() const;
 
   void UpdateCredentials(const std::string& username,
                          const std::string& password);

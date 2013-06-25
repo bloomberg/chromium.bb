@@ -27,6 +27,11 @@ const std::string& FakeInvalidator::GetCredentialsToken() const {
   return token_;
 }
 
+const ObjectIdInvalidationMap&
+FakeInvalidator::GetLastSentInvalidationMap() const {
+  return last_sent_invalidation_map_;
+}
+
 void FakeInvalidator::EmitOnInvalidatorStateChange(InvalidatorState state) {
   registrar_.UpdateInvalidatorState(state);
 }
@@ -62,6 +67,11 @@ void FakeInvalidator::UpdateCredentials(
     const std::string& email, const std::string& token) {
   email_ = email;
   token_ = token;
+}
+
+void FakeInvalidator::SendInvalidation(
+    const ObjectIdInvalidationMap& invalidation_map) {
+  last_sent_invalidation_map_ = invalidation_map;
 }
 
 }  // namespace syncer

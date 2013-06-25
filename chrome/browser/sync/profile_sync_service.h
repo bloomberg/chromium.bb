@@ -19,6 +19,8 @@
 #include "base/strings/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/invalidation/invalidation_frontend.h"
+#include "chrome/browser/invalidation/invalidator_storage.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
@@ -63,6 +65,7 @@ namespace sessions { class SyncSessionSnapshot; }
 
 namespace syncer {
 class BaseTransaction;
+class InvalidatorRegistrar;
 struct SyncCredentials;
 struct UserShare;
 }
@@ -162,6 +165,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                            public syncer::UnrecoverableErrorHandler,
                            public content::NotificationObserver,
                            public BrowserContextKeyedService,
+                           public invalidation::InvalidationFrontend,
                            public browser_sync::DataTypeEncryptionHandler,
                            public OAuth2TokenService::Consumer {
  public:
@@ -283,6 +287,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Disables sync for user. Use ShowLoginDialog to enable.
   virtual void DisableForUser();
+
+  // syncer::InvalidationHandler implementation (via SyncFrontend).
+  virtual void OnInvalidatorStateChange(
+      syncer::InvalidatorState state) OVERRIDE;
+  virtual void OnIncomingInvalidation(
+      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
   // SyncFrontend implementation.
   virtual void OnBackendInitialized(
@@ -590,6 +600,21 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // The set of currently enabled sync experiments.
   const syncer::Experiments& current_experiments() const;
 
+  // InvalidationFrontend implementation.  It is an error to have
+  // registered handlers when Shutdown() is called.
+  virtual void RegisterInvalidationHandler(
+      syncer::InvalidationHandler* handler) OVERRIDE;
+  virtual void UpdateRegisteredInvalidationIds(
+      syncer::InvalidationHandler* handler,
+      const syncer::ObjectIdSet& ids) OVERRIDE;
+  virtual void UnregisterInvalidationHandler(
+      syncer::InvalidationHandler* handler) OVERRIDE;
+  virtual void AcknowledgeInvalidation(
+      const invalidation::ObjectId& id,
+      const syncer::AckHandle& ack_handle) OVERRIDE;
+
+  virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
+
   // OAuth2TokenService::Consumer implementation
   virtual void OnGetTokenSuccess(
       const OAuth2TokenService::Request* request,
@@ -602,6 +627,11 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // BrowserContextKeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   virtual void Shutdown() OVERRIDE;
+
+  // Simulate an incoming notification for the given id and payload.
+  void EmitInvalidationForTest(
+      const invalidation::ObjectId& id,
+      const std::string& payload);
 
   // Called when a datatype (SyncableService) has a need for sync to start
   // ASAP, presumably because a local change event has occurred but we're
@@ -673,6 +703,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
     ERROR_REASON_ACTIONABLE_ERROR,
     ERROR_REASON_LIMIT
   };
+  typedef std::vector<std::pair<invalidation::ObjectId,
+                                syncer::AckHandle> > AckHandleReplayQueue;
   friend class ProfileSyncServicePasswordTest;
   friend class SyncTest;
   friend class TestProfileSyncService;
@@ -719,7 +751,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void UpdateLastSyncedTime();
 
   void NotifyObservers();
-  void NotifySyncCycleCompleted();
 
   void ClearStaleErrors();
 
@@ -769,6 +800,11 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                                     bool delete_sync_database,
                                     UnrecoverableErrorReason reason);
 
+  // Must be called every time |backend_initialized_| or
+  // |invalidator_state_| is changed (but only if
+  // |invalidator_registrar_| is not NULL).
+  void UpdateInvalidatorRegistrarState();
+
   // Returns the username (in form of an email address) that should be used in
   // the credentials.
   std::string GetEffectiveUsername();
@@ -782,6 +818,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // The class that handles getting, setting, and persisting sync
   // preferences.
   browser_sync::SyncPrefs sync_prefs_;
+
+  // TODO(tim): Move this to InvalidationService, once it exists. Bug 124137.
+  invalidation::InvalidatorStorage invalidator_storage_;
 
   // TODO(ncarter): Put this in a profile, once there is UI for it.
   // This specifies where to find the sync server.
@@ -902,6 +941,18 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Factory the backend will use to build the SyncManager.
   syncer::SyncManagerFactory sync_manager_factory_;
+
+  // Holds the current invalidator state as updated by
+  // OnInvalidatorStateChange().  Note that this is different from the
+  // state known by |invalidator_registrar_| (See
+  // UpdateInvalidatorState()).
+  syncer::InvalidatorState invalidator_state_;
+
+  // Dispatches invalidations to handlers.  Set in Initialize() and
+  // unset in Shutdown().
+  scoped_ptr<syncer::InvalidatorRegistrar> invalidator_registrar_;
+  // Queues any acknowledgements received while the backend is uninitialized.
+  AckHandleReplayQueue ack_replay_queue_;
 
   // Sync's internal debug info listener. Used to record datatype configuration
   // and association information.

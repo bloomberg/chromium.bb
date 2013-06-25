@@ -16,11 +16,6 @@ class ProfileSyncServiceObserver {
   // - The sync servers are unavailable at this time.
   // - Credentials are now in flight for authentication.
   virtual void OnStateChanged() = 0;
-
-  // If a client wishes to handle sync cycle completed events in a special way,
-  // they can use this function.  By default, it re-routes to OnStateChanged().
-  virtual void OnSyncCycleCompleted();
-
  protected:
   virtual ~ProfileSyncServiceObserver() { }
 };

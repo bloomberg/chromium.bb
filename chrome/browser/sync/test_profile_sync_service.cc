@@ -36,6 +36,7 @@ namespace browser_sync {
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     Profile* profile,
     const base::WeakPtr<SyncPrefs>& sync_prefs,
+    const base::WeakPtr<invalidation::InvalidatorStorage>& invalidator_storage,
     syncer::TestIdFactory& id_factory,
     base::Closure& callback,
     bool set_initial_sync_ended_on_init,
@@ -43,7 +44,7 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     bool fail_initial_download,
     syncer::StorageOption storage_option)
     : browser_sync::SyncBackendHost(
-        profile->GetDebugName(), profile, sync_prefs),
+        profile->GetDebugName(), profile, sync_prefs, invalidator_storage),
       weak_ptr_factory_(this),
       id_factory_(id_factory),
       callback_(callback),
@@ -115,12 +116,7 @@ void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
   if (fail_initial_download_)
     failed_configuration_types = to_download;
 
-  // The first parameter there should be the set of enabled types.  That's not
-  // something we have access to from this strange test harness.  We'll just
-  // send back the list of newly configured types instead and hope it doesn't
-  // break anything.
   FinishConfigureDataTypesOnFrontendLoop(
-      syncer::Difference(to_download, failed_configuration_types),
       syncer::Difference(to_download, failed_configuration_types),
       failed_configuration_types,
       ready_task);
@@ -181,6 +177,16 @@ void SyncBackendHostForProfileSyncTest
     initial_download_closure_.Run();
     initial_download_closure_.Reset();
   }
+}
+
+void SyncBackendHostForProfileSyncTest::EmitOnInvalidatorStateChange(
+    syncer::InvalidatorState state) {
+  frontend()->OnInvalidatorStateChange(state);
+}
+
+void SyncBackendHostForProfileSyncTest::EmitOnIncomingInvalidation(
+    const syncer::ObjectIdInvalidationMap& invalidation_map) {
+  frontend()->OnIncomingInvalidation(invalidation_map);
 }
 
 void SyncBackendHostForProfileSyncTest::ContinueInitialization(
@@ -305,6 +311,7 @@ void TestProfileSyncService::CreateBackend() {
   backend_.reset(new browser_sync::SyncBackendHostForProfileSyncTest(
       profile(),
       sync_prefs_.AsWeakPtr(),
+      invalidator_storage_.AsWeakPtr(),
       id_factory_,
       callback_,
       set_initial_sync_ended_on_init_,

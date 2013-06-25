@@ -15,7 +15,7 @@
 #include "sync/notifier/invalidation_handler.h"
 
 namespace invalidation {
-class InvalidationService;
+class InvalidationFrontend;
 }
 
 namespace extensions {
@@ -32,7 +32,7 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
   // |extension_ids| is the set of extension IDs for which push messaging is
   // enabled.
   PushMessagingInvalidationHandler(
-      invalidation::InvalidationService* service,
+      invalidation::InvalidationFrontend* service,
       PushMessagingInvalidationHandlerDelegate* delegate);
   virtual ~PushMessagingInvalidationHandler();
 
@@ -56,7 +56,7 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
   void UpdateRegistrations();
 
   base::ThreadChecker thread_checker_;
-  invalidation::InvalidationService* const service_;
+  invalidation::InvalidationFrontend* const service_;
   std::set<std::string> registered_extensions_;
   syncer::ObjectIdSet suppressed_ids_;
   PushMessagingInvalidationHandlerDelegate* const delegate_;

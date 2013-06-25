@@ -227,6 +227,13 @@ void NonBlockingInvalidator::UpdateCredentials(const std::string& email,
   }
 }
 
+void NonBlockingInvalidator::SendInvalidation(
+    const ObjectIdInvalidationMap& invalidation_map) {
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  // InvalidationNotifier doesn't implement SendInvalidation(), so no
+  // need to forward on the call.
+}
+
 void NonBlockingInvalidator::OnInvalidatorStateChange(InvalidatorState state) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   registrar_.UpdateInvalidatorState(state);

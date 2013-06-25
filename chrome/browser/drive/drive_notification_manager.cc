@@ -6,9 +6,9 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
-#include "chrome/browser/invalidation/invalidation_service.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "google/cacheinvalidation/types.pb.h"
 
 namespace drive {
@@ -42,16 +42,15 @@ DriveNotificationManager::~DriveNotificationManager() {}
 
 void DriveNotificationManager::Shutdown() {
   // Unregister for Drive notifications.
-  invalidation::InvalidationService* invalidation_service =
-      invalidation::InvalidationServiceFactory::GetForProfile(profile_);
-  if (!invalidation_service || !push_notification_registered_) {
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (!profile_sync_service || !push_notification_registered_) {
     return;
   }
 
-  // We unregister the handler without updating unregistering our IDs on
-  // purpose.  See the class comment on the InvalidationService interface for
-  // more information.
-  invalidation_service->UnregisterInvalidationHandler(this);
+  profile_sync_service->UpdateRegisteredInvalidationIds(
+      this, syncer::ObjectIdSet());
+  profile_sync_service->UnregisterInvalidationHandler(this);
 }
 
 void DriveNotificationManager::OnInvalidatorStateChange(
@@ -77,10 +76,9 @@ void DriveNotificationManager::OnIncomingInvalidation(
 
   // TODO(dcheng): Only acknowledge the invalidation once the fetch has
   // completed. http://crbug.com/156843
-  invalidation::InvalidationService* invalidation_service =
-      invalidation::InvalidationServiceFactory::GetForProfile(profile_);
-  DCHECK(invalidation_service);
-  invalidation_service->AcknowledgeInvalidation(
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  profile_sync_service->AcknowledgeInvalidation(
       invalidation_map.begin()->first,
       invalidation_map.begin()->second.ack_handle);
 
@@ -130,19 +128,19 @@ void DriveNotificationManager::NotifyObserversToUpdate(
 void DriveNotificationManager::RegisterDriveNotifications() {
   DCHECK(!push_notification_enabled_);
 
-  invalidation::InvalidationService* invalidation_service =
-      invalidation::InvalidationServiceFactory::GetForProfile(profile_);
-  if (!invalidation_service)
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (!profile_sync_service)
     return;
 
-  invalidation_service->RegisterInvalidationHandler(this);
+  profile_sync_service->RegisterInvalidationHandler(this);
   syncer::ObjectIdSet ids;
   ids.insert(invalidation::ObjectId(
       ipc::invalidation::ObjectSource::COSMO_CHANGELOG,
       kDriveInvalidationObjectId));
-  invalidation_service->UpdateRegisteredInvalidationIds(this, ids);
+  profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
   push_notification_registered_ = true;
-  OnInvalidatorStateChange(invalidation_service->GetInvalidatorState());
+  OnInvalidatorStateChange(profile_sync_service->GetInvalidatorState());
 
   UMA_HISTOGRAM_BOOLEAN("Drive.PushNotificationRegistered",
                         push_notification_registered_);

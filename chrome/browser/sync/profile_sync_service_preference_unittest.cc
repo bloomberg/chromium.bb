@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -125,8 +124,6 @@ class ProfileSyncServicePreferenceTest
     AbstractProfileSyncServiceTest::SetUp();
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
-    invalidation::InvalidationServiceFactory::GetInstance()->
-        SetBuildOnlyFakeInvalidatorsForTest(true);
     prefs_ = profile_->GetTestingPrefService();
 
     prefs_->registry()->RegisterStringPref(

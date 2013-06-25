@@ -1347,6 +1347,9 @@ const char kSyncKeystoreEncryption[]        = "sync-keystore-encryption";
 const char kSyncShortInitialRetryOverride[] =
     "sync-short-initial-retry-override";
 
+// Overrides the default notification method for sync.
+const char kSyncNotificationMethod[]        = "sync-notification-method";
+
 // Overrides the default host:port used for sync notifications.
 const char kSyncNotificationHostPort[]      = "sync-notification-host-port";
 

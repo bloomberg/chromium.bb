@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
@@ -27,6 +26,10 @@
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"
+#include "sync/notifier/fake_invalidation_handler.h"
+#include "sync/notifier/invalidator.h"
+#include "sync/notifier/invalidator_test_template.h"
+#include "sync/notifier/object_id_invalidation_map_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,8 +64,6 @@ class ProfileSyncServiceTestHarness {
     io_thread_.StartIOThread();
     profile.reset(new TestingProfile());
     profile->CreateRequestContext();
-    invalidation::InvalidationServiceFactory::GetInstance()->
-        SetBuildOnlyFakeInvalidatorsForTest(true);
   }
 
   void TearDown() {
@@ -356,7 +357,7 @@ TEST_F(ProfileSyncServiceTest, JsControllerProcessJsMessageBasic) {
   StrictMock<syncer::MockJsReplyHandler> reply_handler;
 
   ListValue arg_list1;
-  arg_list1.Append(Value::CreateStringValue("INVALIDATIONS_ENABLED"));
+  arg_list1.Append(Value::CreateStringValue("TRANSIENT_INVALIDATION_ERROR"));
   syncer::JsArgList args1(&arg_list1);
   EXPECT_CALL(reply_handler,
               HandleJsReply("getNotificationState", HasArgs(args1)));
@@ -380,7 +381,7 @@ TEST_F(ProfileSyncServiceTest,
   StrictMock<syncer::MockJsReplyHandler> reply_handler;
 
   ListValue arg_list1;
-  arg_list1.Append(Value::CreateStringValue("INVALIDATIONS_ENABLED"));
+  arg_list1.Append(Value::CreateStringValue("TRANSIENT_INVALIDATION_ERROR"));
   syncer::JsArgList args1(&arg_list1);
   EXPECT_CALL(reply_handler,
               HandleJsReply("getNotificationState", HasArgs(args1)));
@@ -466,5 +467,178 @@ TEST_F(ProfileSyncServiceTest, FailToDownloadControlTypes) {
   EXPECT_FALSE(harness_.service->sync_initialized());
 }
 
+// Register a handler with the ProfileSyncService, and disable and
+// reenable sync.  The handler should get notified of the state
+// changes.
+// Flaky on all platforms. http://crbug.com/154491
+TEST_F(ProfileSyncServiceTest, DISABLED_DisableInvalidationsOnStop) {
+  harness_.StartSyncServiceAndSetInitialSyncEnded(
+      true, true, true, true, syncer::STORAGE_IN_MEMORY);
+
+  syncer::FakeInvalidationHandler handler;
+  harness_.service->RegisterInvalidationHandler(&handler);
+
+  SyncBackendHostForProfileSyncTest* const backend =
+      harness_.service->GetBackendForTest();
+
+  backend->EmitOnInvalidatorStateChange(syncer::INVALIDATIONS_ENABLED);
+  EXPECT_EQ(syncer::INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
+
+  harness_.service->StopAndSuppress();
+  EXPECT_EQ(syncer::TRANSIENT_INVALIDATION_ERROR,
+            handler.GetInvalidatorState());
+
+  harness_.service->UnsuppressAndStart();
+  EXPECT_EQ(syncer::INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
+
+  harness_.service->UnregisterInvalidationHandler(&handler);
+}
+
+// Register for some IDs with the ProfileSyncService, restart sync,
+// and trigger some invalidation messages.  They should still be
+// received by the handler.
+TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
+  harness_.StartSyncService();
+
+  syncer::ObjectIdSet ids;
+  ids.insert(invalidation::ObjectId(3, "id3"));
+  const syncer::ObjectIdInvalidationMap& states =
+      syncer::ObjectIdSetToInvalidationMap(ids, "payload");
+
+  syncer::FakeInvalidationHandler handler;
+
+  harness_.service->RegisterInvalidationHandler(&handler);
+  harness_.service->UpdateRegisteredInvalidationIds(&handler, ids);
+
+  harness_.service->StopAndSuppress();
+  harness_.service->UnsuppressAndStart();
+
+  SyncBackendHostForProfileSyncTest* const backend =
+      harness_.service->GetBackendForTest();
+
+  backend->EmitOnInvalidatorStateChange(syncer::INVALIDATIONS_ENABLED);
+  EXPECT_EQ(syncer::INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
+
+  backend->EmitOnIncomingInvalidation(states);
+  EXPECT_THAT(states, Eq(handler.GetLastInvalidationMap()));
+
+  backend->EmitOnInvalidatorStateChange(syncer::TRANSIENT_INVALIDATION_ERROR);
+  EXPECT_EQ(syncer::TRANSIENT_INVALIDATION_ERROR,
+            handler.GetInvalidatorState());
+
+  harness_.service->UnregisterInvalidationHandler(&handler);
+}
+
+// Thin Invalidator wrapper around ProfileSyncService.
+class ProfileSyncServiceInvalidator : public syncer::Invalidator {
+ public:
+  explicit ProfileSyncServiceInvalidator(ProfileSyncService* service)
+      : service_(service) {}
+
+  virtual ~ProfileSyncServiceInvalidator() {}
+
+  // Invalidator implementation.
+  virtual void RegisterHandler(syncer::InvalidationHandler* handler) OVERRIDE {
+    service_->RegisterInvalidationHandler(handler);
+  }
+
+  virtual void UpdateRegisteredIds(syncer::InvalidationHandler* handler,
+                                   const syncer::ObjectIdSet& ids) OVERRIDE {
+    service_->UpdateRegisteredInvalidationIds(handler, ids);
+  }
+
+  virtual void UnregisterHandler(
+      syncer::InvalidationHandler* handler) OVERRIDE {
+    service_->UnregisterInvalidationHandler(handler);
+  }
+
+  virtual void Acknowledge(const invalidation::ObjectId& id,
+                           const syncer::AckHandle& ack_handle) OVERRIDE {
+    // Do nothing.
+  }
+
+  virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE {
+    return service_->GetInvalidatorState();
+  }
+
+  virtual void UpdateCredentials(
+      const std::string& email, const std::string& token) OVERRIDE {
+    // Do nothing.
+  }
+
+  virtual void SendInvalidation(
+      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE {
+    // Do nothing.
+  }
+
+ private:
+  ProfileSyncService* const service_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceInvalidator);
+};
+
 }  // namespace
+
+
+// ProfileSyncServiceInvalidatorTestDelegate has to be visible from
+// the syncer namespace (where InvalidatorTest lives).
+class ProfileSyncServiceInvalidatorTestDelegate {
+ public:
+  ProfileSyncServiceInvalidatorTestDelegate() {}
+
+  ~ProfileSyncServiceInvalidatorTestDelegate() {
+    DestroyInvalidator();
+  }
+
+  void CreateInvalidator(
+      const std::string& invalidation_client_id,
+      const std::string& initial_state,
+      const base::WeakPtr<syncer::InvalidationStateTracker>&
+          invalidation_state_tracker) {
+    DCHECK(!invalidator_.get());
+    harness_.SetUp();
+    harness_.StartSyncService();
+    invalidator_.reset(
+        new ProfileSyncServiceInvalidator(harness_.service.get()));
+  }
+
+  ProfileSyncServiceInvalidator* GetInvalidator() {
+    return invalidator_.get();
+  }
+
+  void DestroyInvalidator() {
+    invalidator_.reset();
+    harness_.TearDown();
+  }
+
+  void WaitForInvalidator() {
+    // Do nothing.
+  }
+
+  void TriggerOnInvalidatorStateChange(syncer::InvalidatorState state) {
+    harness_.service->GetBackendForTest()->EmitOnInvalidatorStateChange(state);
+  }
+
+  void TriggerOnIncomingInvalidation(
+      const syncer::ObjectIdInvalidationMap& invalidation_map) {
+    harness_.service->GetBackendForTest()->EmitOnIncomingInvalidation(
+        invalidation_map);
+  }
+
+ private:
+  ProfileSyncServiceTestHarness harness_;
+  scoped_ptr<ProfileSyncServiceInvalidator> invalidator_;
+};
+
 }  // namespace browser_sync
+
+namespace syncer {
+namespace {
+
+// ProfileSyncService should behave just like an invalidator.
+INSTANTIATE_TYPED_TEST_CASE_P(
+    ProfileSyncServiceInvalidatorTest, InvalidatorTest,
+    ::browser_sync::ProfileSyncServiceInvalidatorTestDelegate);
+
+}  // namespace
+}  // namespace syncer

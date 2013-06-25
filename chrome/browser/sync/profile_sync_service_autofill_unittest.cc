@@ -565,7 +565,7 @@ class ProfileSyncServiceAutofillTest
     AbstractAutofillFactory* factory = GetFactory(type);
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(profile_.get());
-    signin->SetAuthenticatedUsername("test_user@gmail.com");
+    signin->SetAuthenticatedUsername("test_user");
     sync_service_ = static_cast<TestProfileSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), &TestProfileSyncService::BuildAutoStartAsyncInit));

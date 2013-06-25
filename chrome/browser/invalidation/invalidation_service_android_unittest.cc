@@ -4,8 +4,8 @@
 
 #include "chrome/browser/invalidation/invalidation_service_android.h"
 
+#include "chrome/browser/invalidation/invalidation_frontend_test_template.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
-#include "chrome/browser/invalidation/invalidation_service_test_template.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
@@ -18,20 +18,20 @@ class InvalidationServiceAndroidTestDelegate {
   InvalidationServiceAndroidTestDelegate() { }
 
   ~InvalidationServiceAndroidTestDelegate() {
-    DestroyInvalidationService();
+    DestroyInvalidationFrontend();
   }
 
-  void CreateInvalidationService() {
+  void CreateInvalidationFrontend() {
     profile_.reset(new TestingProfile());
     invalidation_service_android_.reset(
         new InvalidationServiceAndroid(profile_.get()));
   }
 
-  InvalidationService* GetInvalidationService() {
+  InvalidationFrontend* GetInvalidationFrontend() {
     return invalidation_service_android_.get();
   }
 
-  void DestroyInvalidationService() {
+  void DestroyInvalidationFrontend() {
     invalidation_service_android_->Shutdown();
   }
 
@@ -55,7 +55,7 @@ class InvalidationServiceAndroidTestDelegate {
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(
-    AndroidInvalidationServiceTest, InvalidationServiceTest,
+    AndroidInvalidationServiceTest, InvalidationFrontendTest,
     InvalidationServiceAndroidTestDelegate);
 
 }  // namespace invalidation

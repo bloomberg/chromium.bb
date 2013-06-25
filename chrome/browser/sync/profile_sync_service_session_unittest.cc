@@ -16,7 +16,6 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -206,8 +205,6 @@ class ProfileSyncServiceSessionTest
     // Don't want the profile to create a real ProfileSyncService.
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(profile,
                                                                 NULL);
-    invalidation::InvalidationServiceFactory::GetInstance()->
-        SetBuildOnlyFakeInvalidatorsForTest(profile);
     return profile;
   }
 

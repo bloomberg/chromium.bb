@@ -21,8 +21,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
-#include "chrome/browser/invalidation/p2p_invalidation_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -62,7 +60,6 @@
 #include "sync/protocol/sync.pb.h"
 
 using content::BrowserThread;
-using invalidation::InvalidationServiceFactory;
 
 namespace switches {
 const char kPasswordFileForTest[] = "password-file-for-test";
@@ -199,6 +196,11 @@ void SyncTest::SetUpCommandLine(CommandLine* cl) {
 }
 
 void SyncTest::AddTestSwitches(CommandLine* cl) {
+  // TODO(rsimha): Until we implement a fake Tango server against which tests
+  // can run, we need to set the --sync-notification-method to "p2p".
+  if (!cl->HasSwitch(switches::kSyncNotificationMethod))
+    cl->AppendSwitchASCII(switches::kSyncNotificationMethod, "p2p");
+
   // Disable non-essential access of external network resources.
   if (!cl->HasSwitch(switches::kDisableBackgroundNetworking))
     cl->AppendSwitch(switches::kDisableBackgroundNetworking);
@@ -304,22 +306,14 @@ void SyncTest::InitializeInstance(int index) {
   EXPECT_FALSE(GetBrowser(index) == NULL) << "Could not create Browser "
                                           << index << ".";
 
-  invalidation::P2PInvalidationService* p2p_invalidation_service =
-      InvalidationServiceFactory::GetInstance()->
-          BuildAndUseP2PInvalidationServiceForTest(GetProfile(index));
-  p2p_invalidation_service->UpdateCredentials(username_, password_);
-
   // Make sure the ProfileSyncService has been created before creating the
   // ProfileSyncServiceHarness - some tests expect the ProfileSyncService to
   // already exist.
   ProfileSyncServiceFactory::GetForProfile(GetProfile(index));
 
-  clients_[index] =
-      ProfileSyncServiceHarness::CreateForIntegrationTest(
-          GetProfile(index),
-          username_,
-          password_,
-          p2p_invalidation_service);
+  clients_[index] = new ProfileSyncServiceHarness(GetProfile(index),
+                                                  username_,
+                                                  password_);
   EXPECT_FALSE(GetClient(index) == NULL) << "Could not create Client "
                                          << index << ".";
 

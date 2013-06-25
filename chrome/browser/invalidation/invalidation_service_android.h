@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/invalidation/invalidation_service.h"
+#include "chrome/browser/invalidation/invalidation_frontend.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -24,7 +24,8 @@ namespace invalidation {
 // around Android's invalidations service.
 class InvalidationServiceAndroid
     : public base::NonThreadSafe,
-      public InvalidationService,
+      public BrowserContextKeyedService,
+      public InvalidationFrontend,
       public content::NotificationObserver {
  public:
   explicit InvalidationServiceAndroid(Profile* profile);
@@ -46,7 +47,7 @@ class InvalidationServiceAndroid
       const invalidation::ObjectId& id,
       const syncer::AckHandle& ack_handle) OVERRIDE;
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
-  virtual std::string GetInvalidatorClientId() const OVERRIDE;
+  virtual std::string GetInvalidatorClientId() const;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

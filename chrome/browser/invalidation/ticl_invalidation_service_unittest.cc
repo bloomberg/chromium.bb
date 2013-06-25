@@ -4,8 +4,8 @@
 
 #include "chrome/browser/invalidation/ticl_invalidation_service.h"
 
+#include "chrome/browser/invalidation/invalidation_frontend_test_template.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
-#include "chrome/browser/invalidation/invalidation_service_test_template.h"
 #include "chrome/test/base/testing_profile.h"
 #include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/fake_invalidator.h"
@@ -19,22 +19,22 @@ class TiclInvalidationServiceTestDelegate {
   TiclInvalidationServiceTestDelegate() { }
 
   ~TiclInvalidationServiceTestDelegate() {
-    DestroyInvalidationService();
+    DestroyInvalidationFrontend();
   }
 
-  void CreateInvalidationService() {
+  void CreateInvalidationFrontend() {
     fake_invalidator_ = new syncer::FakeInvalidator();
     profile_.reset(new TestingProfile());
     invalidation_service_.reset(
-        new TiclInvalidationService(NULL, NULL, NULL, profile_.get()));
+        new TiclInvalidationService(NULL, NULL, profile_.get()));
     invalidation_service_->InitForTest(fake_invalidator_);
   }
 
-  InvalidationService* GetInvalidationService() {
+  InvalidationFrontend* GetInvalidationFrontend() {
     return invalidation_service_.get();
   }
 
-  void DestroyInvalidationService() {
+  void DestroyInvalidationFrontend() {
     invalidation_service_->Shutdown();
   }
 
@@ -53,7 +53,7 @@ class TiclInvalidationServiceTestDelegate {
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(
-    TiclInvalidationServiceTest, InvalidationServiceTest,
+    TiclInvalidationServiceTest, InvalidationFrontendTest,
     TiclInvalidationServiceTestDelegate);
 
 }  // namespace invalidation

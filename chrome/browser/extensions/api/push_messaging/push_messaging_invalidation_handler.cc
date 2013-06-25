@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
-#include "chrome/browser/invalidation/invalidation_service.h"
+#include "chrome/browser/invalidation/invalidation_frontend.h"
 #include "chrome/common/extensions/extension.h"
 #include "google/cacheinvalidation/types.pb.h"
 
@@ -78,7 +78,7 @@ bool ObjectIdToExtensionAndSubchannel(const invalidation::ObjectId& object_id,
 }  // namespace
 
 PushMessagingInvalidationHandler::PushMessagingInvalidationHandler(
-    invalidation::InvalidationService* service,
+    invalidation::InvalidationFrontend* service,
     PushMessagingInvalidationHandlerDelegate* delegate)
     : service_(service),
       delegate_(delegate) {

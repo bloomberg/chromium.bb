@@ -33,6 +33,7 @@
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
+#include "chrome/browser/invalidation/invalidator_storage.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
@@ -302,6 +303,7 @@ void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   HostContentSettingsMap::RegisterUserPrefs(registry);
   IncognitoModePrefs::RegisterUserPrefs(registry);
   InstantUI::RegisterUserPrefs(registry);
+  invalidation::InvalidatorStorage::RegisterUserPrefs(registry);
   MediaCaptureDevicesDispatcher::RegisterUserPrefs(registry);
   MediaStreamDevicesController::RegisterUserPrefs(registry);
   NetPrefObserver::RegisterUserPrefs(registry);

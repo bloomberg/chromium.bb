@@ -9,21 +9,14 @@
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace syncer {
 class Invalidator;
 }
 
+class InvalidationFrontend;
 class Profile;
 
 namespace invalidation {
-
-class InvalidationService;
-class P2PInvalidationService;
-class FakeInvalidationService;
 
 // A BrowserContextKeyedServiceFactory to construct InvalidationServices.  The
 // implementation of the InvalidationService may be completely different on
@@ -32,18 +25,16 @@ class FakeInvalidationService;
 // on invalidations.
 class InvalidationServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static InvalidationService* GetForProfile(Profile* profile);
+  // TODO(rlarocque): Re-enable this once InvalidationFrontend can extend
+  // BrowserContextKeyedService.
+  // static InvalidationFrontend* GetForProfile(Profile* profile);
 
   static InvalidationServiceFactory* GetInstance();
 
-  // A helper function to set this factory to return FakeInvalidationServices
-  // instead of the default InvalidationService objects.
-  void SetBuildOnlyFakeInvalidatorsForTest(bool test_mode_enabled);
-
-  // These helper functions to set the factory to build a test-only type of
-  // invalidator and return the instance immeidately.
-  P2PInvalidationService* BuildAndUseP2PInvalidationServiceForTest(
-      content::BrowserContext* context);
+  static BrowserContextKeyedService* BuildP2PInvalidationServiceFor(
+      Profile* profile);
+  static BrowserContextKeyedService* BuildTestServiceInstanceFor(
+      Profile* profile);
 
  private:
   friend struct DefaultSingletonTraits<InvalidationServiceFactory>;
@@ -53,12 +44,10 @@ class InvalidationServiceFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const OVERRIDE;
-  virtual void RegisterUserPrefs(
-      user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
-
-  // If true, this factory will return only FakeInvalidationService instances.
-  bool build_fake_invalidators_;
+      content::BrowserContext* profile) const OVERRIDE;
+  // TODO(rlarocque): Use this class, not InvalidatorStorage, to register
+  // for user prefs.
+  // virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidationServiceFactory);
 };

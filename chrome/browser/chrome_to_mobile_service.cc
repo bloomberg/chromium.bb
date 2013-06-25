@@ -15,12 +15,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
-#include "chrome/browser/invalidation/invalidation_service.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -261,24 +261,23 @@ void ChromeToMobileService::RegisterUserPrefs(
 ChromeToMobileService::ChromeToMobileService(Profile* profile)
     : weak_ptr_factory_(this),
       profile_(profile),
-      invalidation_enabled_(false) {
+      sync_invalidation_enabled_(false) {
   // TODO(msw): Unit tests do not provide profiles; see http://crbug.com/122183
-
-  invalidation::InvalidationService* invalidation_service = profile_ ?
-      invalidation::InvalidationServiceFactory::GetForProfile(profile_) : NULL;
-  if (invalidation_service) {
+  ProfileSyncService* profile_sync_service =
+      profile_ ? ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
+  if (profile_sync_service) {
     CloudPrintURL cloud_print_url(profile_);
     cloud_print_url_ = cloud_print_url.GetCloudPrintServiceURL();
-    invalidation_enabled_ =
-        (invalidation_service->GetInvalidatorState() ==
+    sync_invalidation_enabled_ =
+        (profile_sync_service->GetInvalidatorState() ==
          syncer::INVALIDATIONS_ENABLED);
     // Register for cloud print device list invalidation notifications.
-    invalidation_service->RegisterInvalidationHandler(this);
+    profile_sync_service->RegisterInvalidationHandler(this);
     syncer::ObjectIdSet ids;
     ids.insert(invalidation::ObjectId(
         ipc::invalidation::ObjectSource::CHROME_COMPONENTS,
         kSyncInvalidationObjectIdChromeToMobileDeviceList));
-    invalidation_service->UpdateRegisteredInvalidationIds(this, ids);
+    profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
   }
 }
 
@@ -293,7 +292,7 @@ bool ChromeToMobileService::HasMobiles() const {
 }
 
 const base::ListValue* ChromeToMobileService::GetMobiles() const {
-  return invalidation_enabled_ ?
+  return sync_invalidation_enabled_ ?
       profile_->GetPrefs()->GetList(prefs::kChromeToMobileDeviceList) : NULL;
 }
 
@@ -385,10 +384,10 @@ void ChromeToMobileService::LearnMore(Browser* browser) const {
 void ChromeToMobileService::Shutdown() {
   // TODO(msw): Unit tests do not provide profiles; see http://crbug.com/122183
   // Unregister for cloud print device list invalidation notifications.
-  invalidation::InvalidationService* invalidation_service = profile_ ?
-      invalidation::InvalidationServiceFactory::GetForProfile(profile_) : NULL;
-  if (invalidation_service)
-    invalidation_service->UnregisterInvalidationHandler(this);
+  ProfileSyncService* profile_sync_service =
+      profile_ ? ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
+  if (profile_sync_service)
+    profile_sync_service->UnregisterInvalidationHandler(this);
 }
 
 void ChromeToMobileService::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -473,7 +472,7 @@ void ChromeToMobileService::OnGetTokenFailure(
 
 void ChromeToMobileService::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
-  invalidation_enabled_ = (state == syncer::INVALIDATIONS_ENABLED);
+  sync_invalidation_enabled_ = (state == syncer::INVALIDATIONS_ENABLED);
 }
 
 void ChromeToMobileService::OnIncomingInvalidation(
@@ -483,12 +482,12 @@ void ChromeToMobileService::OnIncomingInvalidation(
       ipc::invalidation::ObjectSource::CHROME_COMPONENTS,
       kSyncInvalidationObjectIdChromeToMobileDeviceList)));
   // TODO(msw): Unit tests do not provide profiles; see http://crbug.com/122183
-  invalidation::InvalidationService* invalidation_service = profile_ ?
-      invalidation::InvalidationServiceFactory::GetForProfile(profile_) : NULL;
-  if (invalidation_service) {
+  ProfileSyncService* profile_sync_service =
+      profile_ ? ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
+  if (profile_sync_service) {
     // TODO(dcheng): Only acknowledge the invalidation once the device search
     // has finished. http://crbug.com/156843.
-    invalidation_service->AcknowledgeInvalidation(
+    profile_sync_service->AcknowledgeInvalidation(
         invalidation_map.begin()->first,
         invalidation_map.begin()->second.ack_handle);
   }

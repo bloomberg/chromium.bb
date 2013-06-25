@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/rand_util.h"
 #include "base/threading/thread.h"
 #include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/notifier_options.h"
@@ -28,7 +27,7 @@
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator.h"
-#include "sync/notifier/non_blocking_invalidator.h"
+#include "sync/notifier/invalidator_factory.h"
 #include "sync/tools/null_invalidation_state_tracker.h"
 
 #if defined(OS_MACOSX)
@@ -135,6 +134,12 @@ notifier::NotifierOptions ParseNotifierOptions(
   LOG_IF(INFO, notifier_options.allow_insecure_connection)
       << "Allowing insecure XMPP connections.";
 
+  if (command_line.HasSwitch(kNotificationMethodSwitch)) {
+    notifier_options.notification_method =
+        notifier::StringToNotificationMethod(
+            command_line.GetSwitchValueASCII(kNotificationMethodSwitch));
+  }
+
   return notifier_options;
 }
 
@@ -164,13 +169,15 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
   if (email.empty() || token.empty()) {
     std::printf("Usage: %s --%s=foo@bar.com --%s=token\n"
                 "[--%s=host:port] [--%s] [--%s]\n"
+                "[--%s=(server|p2p)]\n\n"
                 "Run chrome and set a breakpoint on\n"
                 "syncer::SyncManagerImpl::UpdateCredentials() "
                 "after logging into\n"
                 "sync to get the token to pass into this utility.\n",
                 argv[0],
                 kEmailSwitch, kTokenSwitch, kHostPortSwitch,
-                kTrySslTcpFirstSwitch, kAllowInsecureConnectionSwitch);
+                kTrySslTcpFirstSwitch, kAllowInsecureConnectionSwitch,
+                kNotificationMethodSwitch);
     return -1;
   }
 
@@ -184,16 +191,11 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
           new MyTestURLRequestContextGetter(io_thread.message_loop_proxy()));
   const char kClientInfo[] = "sync_listen_notifications";
   NullInvalidationStateTracker null_invalidation_state_tracker;
+  InvalidatorFactory invalidator_factory(
+      notifier_options, kClientInfo,
+      null_invalidation_state_tracker.AsWeakPtr());
   scoped_ptr<Invalidator> invalidator(
-      new NonBlockingInvalidator(
-          notifier_options,
-          base::RandBytesAsString(8),
-          null_invalidation_state_tracker.GetAllInvalidationStates(),
-          null_invalidation_state_tracker.GetBootstrapData(),
-          WeakHandle<InvalidationStateTracker>(
-              null_invalidation_state_tracker.AsWeakPtr()),
-          kClientInfo));
-
+      invalidator_factory.CreateInvalidator());
   NotificationPrinter notification_printer;
 
   invalidator->UpdateCredentials(email, token);

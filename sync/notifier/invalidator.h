@@ -83,6 +83,13 @@ class SYNC_EXPORT Invalidator {
   // once.
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) = 0;
+
+  // This is here only to support the old p2p notification implementation,
+  // which is still used by sync integration tests.
+  // TODO(akalin): Remove this once we move the integration tests off p2p
+  // notifications.
+  virtual void SendInvalidation(
+      const ObjectIdInvalidationMap& invalidation_map) = 0;
 };
 }  // namespace syncer
 

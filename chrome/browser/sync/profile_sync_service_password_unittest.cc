@@ -13,7 +13,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
-#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/password_manager/mock_password_store.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -156,8 +155,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     AbstractProfileSyncServiceTest::SetUp();
     profile_.reset(new ProfileMock);
     profile_->CreateRequestContext();
-    invalidation::InvalidationServiceFactory::GetInstance()->
-        SetBuildOnlyFakeInvalidatorsForTest(true);
     password_store_ = static_cast<MockPasswordStore*>(
         PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), MockPasswordStore::Build).get());
@@ -190,7 +187,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     if (!sync_service_) {
       SigninManagerBase* signin =
           SigninManagerFactory::GetForProfile(profile_.get());
-      signin->SetAuthenticatedUsername("test_user@gmail.com");
+      signin->SetAuthenticatedUsername("test_user");
       token_service_ = static_cast<TokenService*>(
           TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
               profile_.get(), BuildTokenService));

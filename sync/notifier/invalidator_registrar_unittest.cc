@@ -57,6 +57,11 @@ class RegistrarInvalidator : public Invalidator {
     // Do nothing.
   }
 
+  virtual void SendInvalidation(
+      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE {
+    // Do nothing.
+  }
+
  private:
   InvalidatorRegistrar registrar_;
 

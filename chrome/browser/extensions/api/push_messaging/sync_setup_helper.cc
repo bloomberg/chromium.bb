@@ -29,8 +29,7 @@ SyncSetupHelper::~SyncSetupHelper() {}
 
 bool SyncSetupHelper::InitializeSync(Profile* profile) {
   profile_ = profile;
-  client_.reset(
-      ProfileSyncServiceHarness::Create(profile_, username_, password_));
+  client_.reset(new ProfileSyncServiceHarness(profile_, username_, password_));
 
   if (client_->service()->IsSyncEnabledAndLoggedIn())
     return true;
