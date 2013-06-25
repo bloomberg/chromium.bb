@@ -90,7 +90,8 @@ GURL MediaPlayerAndroid::GetFirstPartyForCookies() {
 }
 
 void MediaPlayerAndroid::SetDrmBridge(MediaDrmBridge* drm_bridge) {
-  NOTREACHED() << "Unexpected SetDrmBridge() call";
+  // Not all players support DrmBridge. Do nothing by default.
+  return;
 }
 
 }  // namespace media

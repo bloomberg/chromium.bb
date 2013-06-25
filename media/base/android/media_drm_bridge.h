@@ -15,6 +15,8 @@
 
 namespace media {
 
+class MediaPlayerManager;
+
 // This class provides DRM services for android EME implementation.
 // TODO(qinmin): implement all the functions in this class.
 class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
@@ -24,7 +26,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // Returns a MediaDrmBridge instance if |uuid| is supported, or a NULL
   // pointer otherwise.
   static MediaDrmBridge* Create(int media_keys_id,
-                                const std::vector<uint8>& uuid);
+                                const std::vector<uint8>& uuid,
+                                MediaPlayerManager* manager);
 
   // Checks whether DRM is available.
   static bool IsAvailable();
@@ -47,20 +50,23 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
                     jbyteArray message, jstring destination_url);
 
   // Methods to create and release a MediaCrypto object.
-  base::android::ScopedJavaLocalRef<jobject> CreateMediaCrypto(
-      const std::string& session_id);
-  void ReleaseMediaCrypto(const std::string& session_id);
+  base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
 
   int media_keys_id() const { return media_keys_id_; }
 
  private:
-  MediaDrmBridge(int media_keys_id, const std::vector<uint8>& uuid);
+  MediaDrmBridge(int media_keys_id,
+                 const std::vector<uint8>& uuid,
+                 MediaPlayerManager* manager);
 
   // Id of the MediaKeys object.
   int media_keys_id_;
 
   // UUID of the key system.
   std::vector<uint8> uuid_;
+
+  // Non-owned pointer.
+  MediaPlayerManager* manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDrmBridge);
 };

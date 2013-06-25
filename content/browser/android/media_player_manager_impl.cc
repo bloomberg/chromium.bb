@@ -439,7 +439,10 @@ void MediaPlayerManagerImpl::OnMediaSeekRequestAck(
 
 void MediaPlayerManagerImpl::OnInitializeCDM(int media_keys_id,
                                              const std::vector<uint8>& uuid) {
-  // TODO(qinmin/xhwang): Create a MediaDrmBridge.
+  AddDrmBridge(media_keys_id, uuid);
+  // In EME v0.1b MediaKeys lives in the media element. So the |media_keys_id|
+  // is the same as the |player_id|.
+  OnSetMediaKeys(media_keys_id, media_keys_id);
 }
 
 void MediaPlayerManagerImpl::OnGenerateKeyRequest(
@@ -447,9 +450,8 @@ void MediaPlayerManagerImpl::OnGenerateKeyRequest(
     const std::string& type,
     const std::vector<uint8>& init_data) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
-  if (drm_bridge) {
+  if (drm_bridge)
     drm_bridge->GenerateKeyRequest(type, &init_data[0], init_data.size());
-  }
 }
 
 void MediaPlayerManagerImpl::OnAddKey(int media_keys_id,
@@ -495,7 +497,7 @@ void MediaPlayerManagerImpl::RemovePlayer(int player_id) {
 void MediaPlayerManagerImpl::AddDrmBridge(int media_keys_id,
                                           const std::vector<uint8>& uuid) {
   DCHECK(!GetDrmBridge(media_keys_id));
-  drm_bridges_.push_back(MediaDrmBridge::Create(media_keys_id, uuid));
+  drm_bridges_.push_back(MediaDrmBridge::Create(media_keys_id, uuid, this));
 }
 
 void MediaPlayerManagerImpl::RemoveDrmBridge(int media_keys_id) {
@@ -510,11 +512,11 @@ void MediaPlayerManagerImpl::RemoveDrmBridge(int media_keys_id) {
 
 void MediaPlayerManagerImpl::OnSetMediaKeys(int player_id, int media_keys_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (!player)
-    return;
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
-  if (!drm_bridge)
+  if (!player || !drm_bridge) {
+    NOTREACHED() << "OnSetMediaKeys(): Player and MediaKeys must be present.";
     return;
+  }
   // TODO(qinmin): add the logic to decide whether we should create the
   // fullscreen surface for EME lv1.
   player->SetDrmBridge(drm_bridge);

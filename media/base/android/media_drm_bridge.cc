@@ -4,8 +4,13 @@
 
 #include "media/base/android/media_drm_bridge.h"
 
+#include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "media/base/android/media_player_manager.h"
 
+using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaByteArrayToByteVector;
 using base::android::ScopedJavaLocalRef;
 
 namespace media {
@@ -16,18 +21,19 @@ bool MediaDrmBridge::IsAvailable() {
 }
 
 MediaDrmBridge* MediaDrmBridge::Create(int media_keys_id,
-                                       const std::vector<uint8>& uuid) {
+                                       const std::vector<uint8>& uuid,
+                                       MediaPlayerManager* manager) {
   if (!IsAvailable())
     return NULL;
 
   // TODO(qinmin): check whether the uuid is valid.
-  return new MediaDrmBridge(media_keys_id, uuid);
+  return new MediaDrmBridge(media_keys_id, uuid, manager);
 }
 
-MediaDrmBridge::MediaDrmBridge(
-    int media_keys_id, const std::vector<uint8>& uuid)
-    : media_keys_id_(media_keys_id),
-      uuid_(uuid) {
+MediaDrmBridge::MediaDrmBridge(int media_keys_id,
+                               const std::vector<uint8>& uuid,
+                               MediaPlayerManager* manager)
+    : media_keys_id_(media_keys_id), uuid_(uuid), manager_(manager) {
   // TODO(qinmin): pass the uuid to DRM engine.
 }
 
@@ -50,25 +56,32 @@ void MediaDrmBridge::AddKey(const uint8* key, int key_length,
   NOTIMPLEMENTED();
 }
 
-ScopedJavaLocalRef<jobject> MediaDrmBridge::CreateMediaCrypto(
-    const std::string& session_id) {
+ScopedJavaLocalRef<jobject> MediaDrmBridge::GetMediaCrypto() {
   NOTIMPLEMENTED();
   return ScopedJavaLocalRef<jobject>();
 }
 
-void MediaDrmBridge::ReleaseMediaCrypto(const std::string& session_id) {
-  NOTIMPLEMENTED();
+void MediaDrmBridge::OnKeyMessage(JNIEnv* env,
+                                  jobject j_media_drm,
+                                  jstring j_session_id,
+                                  jbyteArray j_message,
+                                  jstring j_destination_url) {
+  std::string session_id = ConvertJavaStringToUTF8(env, j_session_id);
+  std::vector<uint8> message;
+  JavaByteArrayToByteVector(env, j_message, &message);
+  std::string message_string(message.begin(), message.end());
+  std::string destination_url = ConvertJavaStringToUTF8(env, j_destination_url);
+
+  manager_->OnKeyMessage(
+      media_keys_id_, session_id, message_string, destination_url);
 }
 
-void MediaDrmBridge::OnKeyMessage(
-    JNIEnv* env, jobject j_media_drm, jstring session_id, jbyteArray message,
-    jstring destination_url) {
-  NOTIMPLEMENTED();
-}
-
-void MediaDrmBridge::OnDrmEvent(
-    JNIEnv* env, jobject j_media_drm, jstring session_id, jint event,
-    jint extra, jstring data) {
+void MediaDrmBridge::OnDrmEvent(JNIEnv* env,
+                                jobject j_media_drm,
+                                jstring session_id,
+                                jint event,
+                                jint extra,
+                                jstring data) {
   NOTIMPLEMENTED();
 }
 
