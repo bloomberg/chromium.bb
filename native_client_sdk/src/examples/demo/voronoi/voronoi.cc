@@ -493,19 +493,19 @@ bool Voronoi::HandleInputEvent(const pp::InputEvent& event) {
 // Handle messages sent from Javascript.
 void Voronoi::HandleMessage(const pp::Var& var) {
   if (var.is_dictionary()) {
-    pp::VarDictionary dictionary = pp::VarDictionary(var);
+    pp::VarDictionary dictionary(var);
     std::string message = dictionary.Get("message").AsString();
     if (message == "run_benchmark" && !benchmarking_)
       StartBenchmark();
     else if (message == "draw_points")
-      draw_points_ = dictionary.Get(pp::Var("value")).AsBool();
+      draw_points_ = dictionary.Get("value").AsBool();
     else if (message == "draw_interiors")
-      draw_interiors_ = dictionary.Get(pp::Var("value")).AsBool();
+      draw_interiors_ = dictionary.Get("value").AsBool();
     else if (message == "set_points") {
-      int num_points = dictionary.Get(pp::Var("value")).AsInt();
+      int num_points = dictionary.Get("value").AsInt();
       point_count_ = std::min(kMaxPointCount, std::max(0, num_points));
     } else if (message == "set_threads") {
-      int thread_count = dictionary.Get(pp::Var("value")).AsInt();
+      int thread_count = dictionary.Get("value").AsInt();
       delete workers_;
       workers_ = new ThreadPool(thread_count);
     }
@@ -515,8 +515,8 @@ void Voronoi::HandleMessage(const pp::Var& var) {
 // PostUpdateMessage() helper function for sendimg small messages to JS.
 void Voronoi::PostUpdateMessage(const char* message_name, double value) {
   pp::VarDictionary message;
-  message.Set(pp::Var("message"), pp::Var(message_name));
-  message.Set(pp::Var("value"), pp::Var(value));
+  message.Set("message", message_name);
+  message.Set("value", value);
   PostMessage(message);
 }
 
