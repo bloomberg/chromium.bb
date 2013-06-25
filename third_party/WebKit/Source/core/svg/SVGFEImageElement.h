@@ -28,7 +28,6 @@
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "core/svg/SVGLangSpace.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/graphics/filters/SVGFEImage.h"
 
@@ -36,7 +35,6 @@ namespace WebCore {
 
 class SVGFEImageElement FINAL : public SVGFilterPrimitiveStandardAttributes,
                                 public SVGURIReference,
-                                public SVGLangSpace,
                                 public SVGExternalResourcesRequired,
                                 public CachedImageClient {
 public:

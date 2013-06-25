@@ -24,7 +24,6 @@
  */
 
 interface SVGPolylineElement : SVGStyledElement,
-                               SVGLangSpace,
                                SVGTransformable {
     readonly attribute SVGPointList points;
     readonly attribute SVGPointList animatedPoints;

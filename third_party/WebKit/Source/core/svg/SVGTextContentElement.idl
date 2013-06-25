@@ -23,8 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGTextContentElement : SVGStyledElement,
-                                  SVGLangSpace {
+interface SVGTextContentElement : SVGStyledElement {
     // lengthAdjust Types
     const unsigned short LENGTHADJUST_UNKNOWN          = 0;
     const unsigned short LENGTHADJUST_SPACING          = 1;

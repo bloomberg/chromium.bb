@@ -24,7 +24,6 @@
  */
 
 interface SVGFEImageElement : SVGStyledElement,
-                              SVGLangSpace,
                               SVGFilterPrimitiveStandardAttributes {
     readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
 };

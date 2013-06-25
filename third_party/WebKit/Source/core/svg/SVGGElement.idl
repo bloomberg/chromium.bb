@@ -24,7 +24,6 @@
  */
 
 interface SVGGElement : SVGStyledElement,
-                        SVGLangSpace,
                         SVGTransformable {
 };
 

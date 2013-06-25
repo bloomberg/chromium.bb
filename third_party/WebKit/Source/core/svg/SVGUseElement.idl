@@ -24,7 +24,6 @@
  */
 
 interface SVGUseElement : SVGStyledElement,
-                          SVGLangSpace,
                           SVGTransformable {
     readonly attribute SVGAnimatedLength   x;
     readonly attribute SVGAnimatedLength   y;

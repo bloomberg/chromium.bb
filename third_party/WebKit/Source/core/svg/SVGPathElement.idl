@@ -25,7 +25,6 @@
  */
 
 interface SVGPathElement : SVGStyledElement,
-                           SVGLangSpace,
                            SVGTransformable {
     readonly attribute SVGAnimatedNumber pathLength;
 

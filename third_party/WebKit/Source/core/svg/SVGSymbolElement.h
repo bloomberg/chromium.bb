@@ -26,13 +26,11 @@
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGFitToViewBox.h"
-#include "core/svg/SVGLangSpace.h"
 #include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 
 class SVGSymbolElement FINAL : public SVGStyledElement,
-                               public SVGLangSpace,
                                public SVGExternalResourcesRequired,
                                public SVGFitToViewBox {
 public:

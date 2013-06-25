@@ -24,7 +24,6 @@
 // TODO: Fix SVGSVGElement inheritance (css::DocumentCSS)! 
 // TODO: no events::DocumentEvent available!
 interface SVGSVGElement : SVGStyledElement,
-                          SVGLangSpace,
                           SVGTransformable {
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;

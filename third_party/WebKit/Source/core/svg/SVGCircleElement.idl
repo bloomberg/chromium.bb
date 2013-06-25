@@ -25,7 +25,6 @@
  */
 
 interface SVGCircleElement : SVGStyledElement,
-                             SVGLangSpace,
                              SVGTransformable {
     readonly attribute SVGAnimatedLength cx;
     readonly attribute SVGAnimatedLength cy;

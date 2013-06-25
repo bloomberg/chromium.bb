@@ -26,7 +26,6 @@
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGImageLoader.h"
-#include "core/svg/SVGLangSpace.h"
 #include "core/svg/SVGStyledTransformableElement.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/SVGURIReference.h"
@@ -35,7 +34,6 @@ namespace WebCore {
 
 class SVGImageElement FINAL : public SVGStyledTransformableElement,
                               public SVGTests,
-                              public SVGLangSpace,
                               public SVGExternalResourcesRequired,
                               public SVGURIReference {
 public:

@@ -24,7 +24,6 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
-#include "core/svg/SVGLangSpace.h"
 #include "core/svg/SVGStyledTransformableElement.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/SVGUnitTypes.h"
@@ -35,7 +34,6 @@ class RenderObject;
 
 class SVGClipPathElement FINAL : public SVGStyledTransformableElement,
                                  public SVGTests,
-                                 public SVGLangSpace,
                                  public SVGExternalResourcesRequired {
 public:
     static PassRefPtr<SVGClipPathElement> create(const QualifiedName&, Document*);

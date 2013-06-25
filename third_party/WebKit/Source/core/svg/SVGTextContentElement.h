@@ -25,7 +25,6 @@
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
-#include "core/svg/SVGLangSpace.h"
 #include "core/svg/SVGStyledElement.h"
 #include "core/svg/SVGTests.h"
 
@@ -68,7 +67,6 @@ struct SVGPropertyTraits<SVGLengthAdjustType> {
 
 class SVGTextContentElement : public SVGStyledElement,
                               public SVGTests,
-                              public SVGLangSpace,
                               public SVGExternalResourcesRequired {
 public:
     // Forward declare enumerations in the W3C naming scheme, for IDL generation.

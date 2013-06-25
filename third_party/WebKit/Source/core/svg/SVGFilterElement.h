@@ -29,7 +29,6 @@
 #include "core/svg/SVGAnimatedInteger.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
-#include "core/svg/SVGLangSpace.h"
 #include "core/svg/SVGStyledElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/SVGUnitTypes.h"
@@ -38,7 +37,6 @@ namespace WebCore {
 
 class SVGFilterElement FINAL : public SVGStyledElement,
                                public SVGURIReference,
-                               public SVGLangSpace,
                                public SVGExternalResourcesRequired {
 public:
     static PassRefPtr<SVGFilterElement> create(const QualifiedName&, Document*);

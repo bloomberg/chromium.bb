@@ -24,6 +24,7 @@
 
 #include "core/dom/Element.h"
 #include "core/platform/Timer.h"
+#include "core/svg/SVGLangSpace.h"
 #include "core/svg/SVGLocatable.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
@@ -41,7 +42,7 @@ class SVGElementInstance;
 class SVGElementRareData;
 class SVGSVGElement;
 
-class SVGElement : public Element {
+class SVGElement : public Element, public SVGLangSpace {
 public:
     static PassRefPtr<SVGElement> create(const QualifiedName&, Document*);
     virtual ~SVGElement();
