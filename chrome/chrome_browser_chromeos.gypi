@@ -715,6 +715,8 @@
         'browser/chromeos/settings/device_settings_provider.h',
         'browser/chromeos/settings/device_settings_service.cc',
         'browser/chromeos/settings/device_settings_service.h',
+        'browser/chromeos/settings/owner_flags_storage.cc',
+        'browser/chromeos/settings/owner_flags_storage.h',
         'browser/chromeos/settings/owner_key_util.cc',
         'browser/chromeos/settings/owner_key_util.h',
         'browser/chromeos/settings/session_manager_operation.cc',

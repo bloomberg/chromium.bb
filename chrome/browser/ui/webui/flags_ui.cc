@@ -36,6 +36,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/owner_flags_storage.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #endif
 
@@ -98,8 +99,9 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 // The handler for Javascript messages for the about:flags page.
 class FlagsDOMHandler : public WebUIMessageHandler {
  public:
-  explicit FlagsDOMHandler(PrefService* prefs, about_flags::FlagAccess access)
-      : flags_storage_(prefs), access_(access) {}
+  FlagsDOMHandler(about_flags::FlagsStorage* flags_storage,
+                  about_flags::FlagAccess access)
+      : flags_storage_(flags_storage), access_(access) {}
   virtual ~FlagsDOMHandler() {}
 
   // WebUIMessageHandler implementation.
@@ -118,7 +120,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
   void HandleResetAllFlags(const ListValue* args);
 
  private:
-  about_flags::PrefServiceFlagsStorage flags_storage_;
+  scoped_ptr<about_flags::FlagsStorage> flags_storage_;
   about_flags::FlagAccess access_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsDOMHandler);
@@ -142,7 +144,7 @@ void FlagsDOMHandler::RegisterMessages() {
 void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
   scoped_ptr<ListValue> supported_experiments(new ListValue);
   scoped_ptr<ListValue> unsupported_experiments(new ListValue);
-  about_flags::GetFlagsExperimentsData(&flags_storage_,
+  about_flags::GetFlagsExperimentsData(flags_storage_.get(),
                                        access_,
                                        supported_experiments.get(),
                                        unsupported_experiments.get());
@@ -177,7 +179,7 @@ void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
     return;
 
   about_flags::SetExperimentEnabled(
-      &flags_storage_,
+      flags_storage_.get(),
       experiment_internal_name,
       enable_str == "true");
 }
@@ -187,7 +189,7 @@ void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
 }
 
 void FlagsDOMHandler::HandleResetAllFlags(const ListValue* args) {
-  about_flags::ResetAllFlags(&flags_storage_);
+  about_flags::ResetAllFlags(flags_storage_.get());
 }
 
 }  // namespace
@@ -209,7 +211,8 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
                  weak_factory_.GetWeakPtr(), profile));
 #else
   web_ui->AddMessageHandler(
-      new FlagsDOMHandler(g_browser_process->local_state(),
+      new FlagsDOMHandler(new about_flags::PrefServiceFlagsStorage(
+                              g_browser_process->local_state()),
                           about_flags::kOwnerAccessToFlags));
 
   // Set up the about:flags source.
@@ -245,18 +248,17 @@ void FlagsUI::FinishInitialization(
     bool current_user_is_owner) {
   // On Chrome OS the owner can set system wide flags and other users can only
   // set flags for their own session.
-  if (!current_user_is_owner) {
+  if (current_user_is_owner) {
     web_ui()->AddMessageHandler(
-        new FlagsDOMHandler(profile->GetPrefs(),
-                            about_flags::kGeneralAccessFlagsOnly));
+        new FlagsDOMHandler(new chromeos::about_flags::OwnerFlagsStorage(
+                                profile->GetPrefs(),
+                                chromeos::CrosSettings::Get()),
+                            about_flags::kOwnerAccessToFlags));
   } else {
     web_ui()->AddMessageHandler(
-        new FlagsDOMHandler(g_browser_process->local_state(),
-                            about_flags::kOwnerAccessToFlags));
-    // If the owner managed to set the flags pref on his own profile clear it
-    // because it will never be accessible anymore.
-    if (profile->GetPrefs()->HasPrefPath(prefs::kEnabledLabsExperiments))
-      profile->GetPrefs()->ClearPref(prefs::kEnabledLabsExperiments);
+        new FlagsDOMHandler(new about_flags::PrefServiceFlagsStorage(
+                                profile->GetPrefs()),
+                            about_flags::kGeneralAccessFlagsOnly));
   }
 
   // Set up the about:flags source.

@@ -834,10 +834,13 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   chrome::UMABrowsingActivityObserver::Init();
 #endif
 
+#if !defined(OS_CHROMEOS)
   // Convert active labs into switches. This needs to be done before
   // ResourceBundle::InitSharedInstanceWithLocale as some loaded resources are
   // affected by experiment flags (--touch-optimized-ui in particular). Not
   // needed on Android as there aren't experimental flags.
+  // On ChromeOS system level flags are applied from the device settings from
+  // the session manager.
   {
     TRACE_EVENT0("startup",
         "ChromeBrowserMainParts::PreCreateThreadsImpl:ConvertFlags");
@@ -846,6 +849,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     about_flags::ConvertFlagsToSwitches(&flags_storage_,
                                         CommandLine::ForCurrentProcess());
   }
+#endif
 
   local_state_->UpdateCommandLinePrefStore(
       new CommandLinePrefStore(CommandLine::ForCurrentProcess()));
