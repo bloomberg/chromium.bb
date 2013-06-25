@@ -18,12 +18,9 @@ namespace gfx {
 class Rect;
 }
 
-namespace WebKit {
-class WebFilterOperations;
-}
-
 namespace cc {
 
+class FilterOperations;
 class LayerImpl;
 class RenderSurfaceImpl;
 
@@ -43,7 +40,7 @@ class CC_EXPORT DamageTracker {
       bool target_surface_property_changed_only_from_descendant,
       gfx::Rect target_surface_content_rect,
       LayerImpl* target_surface_mask_layer,
-      const WebKit::WebFilterOperations& filters,
+      const FilterOperations& filters,
       SkImageFilter* filter);
 
   gfx::RectF current_damage_rect() { return current_damage_rect_; }

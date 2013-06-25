@@ -21,9 +21,9 @@
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/paint_properties.h"
 #include "cc/layers/render_surface.h"
+#include "cc/output/filter_operations.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "skia/ext/refptr.h"
-#include "third_party/WebKit/public/platform/WebFilterOperations.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect.h"
@@ -118,8 +118,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool OpacityIsAnimating() const;
   virtual bool OpacityCanAnimateOnImplThread() const;
 
-  void SetFilters(const WebKit::WebFilterOperations& filters);
-  const WebKit::WebFilterOperations& filters() const { return filters_; }
+  void SetFilters(const FilterOperations& filters);
+  const FilterOperations& filters() const { return filters_; }
 
   void SetFilter(const skia::RefPtr<SkImageFilter>& filter);
   skia::RefPtr<SkImageFilter> filter() const { return filter_; }
@@ -127,8 +127,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // Background filters are filters applied to what is behind this layer, when
   // they are viewed through non-opaque regions in this layer. They are used
   // through the WebLayer interface, and are not exposed to HTML.
-  void SetBackgroundFilters(const WebKit::WebFilterOperations& filters);
-  const WebKit::WebFilterOperations& background_filters() const {
+  void SetBackgroundFilters(const FilterOperations& filters);
+  const FilterOperations& background_filters() const {
     return background_filters_;
   }
 
@@ -462,8 +462,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   CompositingReasons compositing_reasons_;
   float opacity_;
   skia::RefPtr<SkImageFilter> filter_;
-  WebKit::WebFilterOperations filters_;
-  WebKit::WebFilterOperations background_filters_;
+  FilterOperations filters_;
+  FilterOperations background_filters_;
   float anchor_point_z_;
   bool is_container_for_fixed_position_layers_;
   LayerPositionConstraint position_constraint_;

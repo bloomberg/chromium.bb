@@ -229,7 +229,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::FinishedRenderTarget(
   if (finished_target->mask_layer() ||
       !SurfaceOpacityKnown(surface) ||
       surface->draw_opacity() < 1 ||
-      finished_target->filters().hasFilterThatAffectsOpacity() ||
+      finished_target->filters().HasFilterThatAffectsOpacity() ||
       finished_target->filter()) {
     stack_.back().occlusion_from_outside_target.Clear();
     stack_.back().occlusion_from_inside_target.Clear();
@@ -258,8 +258,8 @@ static void ReduceOcclusionBelowSurface(LayerType* contributing_layer,
     return;
 
   int outset_top, outset_right, outset_bottom, outset_left;
-  contributing_layer->background_filters().getOutsets(
-      outset_top, outset_right, outset_bottom, outset_left);
+  contributing_layer->background_filters().GetOutsets(
+      &outset_top, &outset_right, &outset_bottom, &outset_left);
 
   // The filter can move pixels from outside of the clip, so allow affected_area
   // to expand outside the clip.
@@ -338,7 +338,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::LeaveToRenderTarget(
 
   gfx::Rect unoccluded_surface_rect;
   gfx::Rect unoccluded_replica_rect;
-  if (old_target->background_filters().hasFilterThatMovesPixels()) {
+  if (old_target->background_filters().HasFilterThatMovesPixels()) {
     unoccluded_surface_rect = UnoccludedContributingSurfaceContentRect(
         old_target, false, old_surface->content_rect(), NULL);
     if (old_target->has_replica()) {
@@ -371,7 +371,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::LeaveToRenderTarget(
     }
   }
 
-  if (!old_target->background_filters().hasFilterThatMovesPixels())
+  if (!old_target->background_filters().HasFilterThatMovesPixels())
     return;
 
   ReduceOcclusionBelowSurface(old_target,

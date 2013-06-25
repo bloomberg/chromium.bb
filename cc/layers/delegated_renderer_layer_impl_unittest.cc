@@ -553,9 +553,9 @@ class DelegatedRendererLayerImplTestTransform
         0,  // mask_resource_id
         child_pass_rect,  // contents_changed_since_last_frame
         gfx::RectF(),  // mask_uv_rect
-        WebKit::WebFilterOperations(),  // filters
+        FilterOperations(),  // filters
         skia::RefPtr<SkImageFilter>(),  // filter
-        WebKit::WebFilterOperations());  // background_filters
+        FilterOperations());  // background_filters
     quad_sink.Append(render_pass_quad.PassAs<DrawQuad>(), &data);
 
     scoped_ptr<SolidColorDrawQuad> color_quad;
@@ -955,9 +955,9 @@ class DelegatedRendererLayerImplTestClip
         0,  // mask_resource_id
         child_pass_rect,  // contents_changed_since_last_frame
         gfx::RectF(),  // mask_uv_rect
-        WebKit::WebFilterOperations(),  // filters
+        FilterOperations(),  // filters
         skia::RefPtr<SkImageFilter>(),  // filter
-        WebKit::WebFilterOperations());  // background_filters
+        FilterOperations());  // background_filters
     quad_sink.Append(render_pass_quad.PassAs<DrawQuad>(), &data);
 
     scoped_ptr<SolidColorDrawQuad> color_quad;

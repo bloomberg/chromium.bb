@@ -37,9 +37,9 @@ void RenderPassDrawQuad::SetNew(
     ResourceProvider::ResourceId mask_resource_id,
     gfx::Rect contents_changed_since_last_frame,
     gfx::RectF mask_uv_rect,
-    const WebKit::WebFilterOperations& filters,
+    const FilterOperations& filters,
     skia::RefPtr<SkImageFilter> filter,
-    const WebKit::WebFilterOperations& background_filters) {
+    const FilterOperations& background_filters) {
   DCHECK_GT(render_pass_id.layer_id, 0);
   DCHECK_GE(render_pass_id.index, 0);
 
@@ -63,9 +63,9 @@ void RenderPassDrawQuad::SetAll(
     ResourceProvider::ResourceId mask_resource_id,
     gfx::Rect contents_changed_since_last_frame,
     gfx::RectF mask_uv_rect,
-    const WebKit::WebFilterOperations& filters,
+    const FilterOperations& filters,
     skia::RefPtr<SkImageFilter> filter,
-    const WebKit::WebFilterOperations& background_filters) {
+    const FilterOperations& background_filters) {
   DCHECK_GT(render_pass_id.layer_id, 0);
   DCHECK_GE(render_pass_id.index, 0);
 

@@ -85,8 +85,8 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
       gfx::Transform(), output_rect.size(), output_rect, output_rect, false, 1);
   scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
   quad->SetNew(shared_state, output_rect, contributing_pass->id, false, 0,
-               output_rect, gfx::RectF(), WebKit::WebFilterOperations(),
-               skia::RefPtr<SkImageFilter>(), WebKit::WebFilterOperations());
+               output_rect, gfx::RectF(), FilterOperations(),
+               skia::RefPtr<SkImageFilter>(), FilterOperations());
   quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
 }
 
@@ -106,8 +106,8 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
   scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
   quad->SetNew(shared_state, output_rect, contributing_pass->id, false,
                mask_resource_id, output_rect, gfx::RectF(),
-               WebKit::WebFilterOperations(),
-               filter, WebKit::WebFilterOperations());
+               FilterOperations(),
+               filter, FilterOperations());
   quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
 }
 

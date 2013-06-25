@@ -10,9 +10,9 @@
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
+#include "cc/output/filter_operations.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "third_party/WebKit/public/platform/WebFilterOperations.h"
 
 namespace cc {
 
@@ -27,16 +27,16 @@ DamageTracker::DamageTracker()
 DamageTracker::~DamageTracker() {}
 
 static inline void ExpandRectWithFilters(
-    gfx::RectF* rect, const WebKit::WebFilterOperations& filters) {
+    gfx::RectF* rect, const FilterOperations& filters) {
   int top, right, bottom, left;
-  filters.getOutsets(top, right, bottom, left);
+  filters.GetOutsets(&top, &right, &bottom, &left);
   rect->Inset(-left, -top, -right, -bottom);
 }
 
 static inline void ExpandDamageRectInsideRectWithFilters(
     gfx::RectF* damage_rect,
     const gfx::RectF& pre_filter_rect,
-    const WebKit::WebFilterOperations& filters) {
+    const FilterOperations& filters) {
   gfx::RectF expanded_damage_rect = *damage_rect;
   ExpandRectWithFilters(&expanded_damage_rect, filters);
   gfx::RectF filter_rect = pre_filter_rect;
@@ -52,7 +52,7 @@ void DamageTracker::UpdateDamageTrackingState(
     bool target_surface_property_changed_only_from_descendant,
     gfx::Rect target_surface_content_rect,
     LayerImpl* target_surface_mask_layer,
-    const WebKit::WebFilterOperations& filters,
+    const FilterOperations& filters,
     SkImageFilter* filter) {
   //
   // This function computes the "damage rect" of a target surface, and updates
@@ -143,7 +143,7 @@ void DamageTracker::UpdateDamageTrackingState(
     damage_rect_for_this_update.Union(damage_from_surface_mask);
     damage_rect_for_this_update.Union(damage_from_leftover_rects);
 
-    if (filters.hasFilterThatMovesPixels()) {
+    if (filters.HasFilterThatMovesPixels()) {
       ExpandRectWithFilters(&damage_rect_for_this_update, filters);
     } else if (filter) {
       // TODO(senorblanco):  Once SkImageFilter reports its outsets, use
@@ -390,7 +390,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
   // those pixels from the surface with only the contents of layers below this
   // one in them. This means we need to redraw any pixels in the surface being
   // used for the blur in this layer this frame.
-  if (layer->background_filters().hasFilterThatMovesPixels()) {
+  if (layer->background_filters().HasFilterThatMovesPixels()) {
     ExpandDamageRectInsideRectWithFilters(target_damage_rect,
                                           surface_rect_in_target_space,
                                           layer->background_filters());

@@ -16,6 +16,7 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "webkit/renderer/compositor_bindings/web_animation_impl.h"
+#include "webkit/renderer/compositor_bindings/web_filter_operations_impl.h"
 
 using cc::Animation;
 using cc::Layer;
@@ -155,11 +156,24 @@ WebColor WebLayerImpl::backgroundColor() const {
 }
 
 void WebLayerImpl::setFilters(const WebFilterOperations& filters) {
-  layer_->SetFilters(filters);
+#if WEB_FILTER_OPERATIONS_IS_VIRTUAL
+  const WebFilterOperationsImpl& filters_impl =
+      static_cast<const WebFilterOperationsImpl&>(filters);
+  layer_->SetFilters(filters_impl.AsFilterOperations());
+#else
+  layer_->SetFilters(ConvertWebFilterOperationsToFilterOperations(filters));
+#endif
 }
 
 void WebLayerImpl::setBackgroundFilters(const WebFilterOperations& filters) {
-  layer_->SetBackgroundFilters(filters);
+#if WEB_FILTER_OPERATIONS_IS_VIRTUAL
+  const WebFilterOperationsImpl& filters_impl =
+      static_cast<const WebFilterOperationsImpl&>(filters);
+  layer_->SetBackgroundFilters(filters_impl.AsFilterOperations());
+#else
+  layer_->SetBackgroundFilters(
+      ConvertWebFilterOperationsToFilterOperations(filters));
+#endif
 }
 
 void WebLayerImpl::setFilter(SkImageFilter* filter) {

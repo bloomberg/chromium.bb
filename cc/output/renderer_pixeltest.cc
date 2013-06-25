@@ -87,9 +87,9 @@ scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
                0,             // mask_resource_id
                rect,          // contents_changed_since_last_frame
                gfx::RectF(),  // mask_uv_rect
-               WebKit::WebFilterOperations(),   // foreground filters
+               FilterOperations(),   // foreground filters
                skia::RefPtr<SkImageFilter>(),   // foreground filter
-               WebKit::WebFilterOperations());  // background filters
+               FilterOperations());  // background filters
 
   return quad.PassAs<DrawQuad>();
 }
@@ -416,9 +416,9 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
                            0,
                            pass_rect,
                            gfx::RectF(),
-                           WebKit::WebFilterOperations(),
+                           FilterOperations(),
                            filter,
-                           WebKit::WebFilterOperations());
+                           FilterOperations());
 
   root_pass->quad_list.push_back(render_pass_quad.PassAs<DrawQuad>());
 
@@ -518,9 +518,9 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
                            0,
                            pass_rect,
                            gfx::RectF(),
-                           WebKit::WebFilterOperations(),
+                           FilterOperations(),
                            filter,
-                           WebKit::WebFilterOperations());
+                           FilterOperations());
 
   root_pass->quad_list.push_back(render_pass_quad.PassAs<DrawQuad>());
   RenderPassList pass_list;
@@ -717,7 +717,7 @@ class RendererPixelTestWithBackgroundFilter
           0,  // mask_resource_id
           filter_pass_content_rect_,  // contents_changed_since_last_frame
           gfx::RectF(),  // mask_uv_rect
-          WebKit::WebFilterOperations(),  // filters
+          FilterOperations(),  // filters
           skia::RefPtr<SkImageFilter>(),  // filter
           this->background_filters_);
       root_pass->quad_list.push_back(filter_pass_quad.PassAs<DrawQuad>());
@@ -779,7 +779,7 @@ class RendererPixelTestWithBackgroundFilter
   }
 
   RenderPassList pass_list_;
-  WebKit::WebFilterOperations background_filters_;
+  FilterOperations background_filters_;
   gfx::Transform filter_pass_to_target_transform_;
   gfx::Rect filter_pass_content_rect_;
 };
@@ -794,8 +794,8 @@ GLRendererPixelTestWithBackgroundFilter;
 
 // TODO(skaslev): The software renderer does not support filters yet.
 TEST_F(GLRendererPixelTestWithBackgroundFilter, InvertFilter) {
-  this->background_filters_.append(
-      WebKit::WebFilterOperation::createInvertFilter(1.f));
+  this->background_filters_.Append(
+      FilterOperation::CreateInvertFilter(1.f));
 
   this->filter_pass_content_rect_ = gfx::Rect(this->device_viewport_size_);
   this->filter_pass_content_rect_.Inset(12, 14, 16, 18);

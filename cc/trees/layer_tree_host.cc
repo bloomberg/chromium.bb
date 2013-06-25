@@ -866,7 +866,7 @@ size_t LayerTreeHost::CalculateMemoryForRenderSurfaces(
                                   GL_RGBA);
     contents_texture_bytes += bytes;
 
-    if (render_surface_layer->background_filters().isEmpty())
+    if (render_surface_layer->background_filters().IsEmpty())
       continue;
 
     if (bytes > max_background_texture_bytes)

@@ -7,9 +7,9 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "cc/output/filter_operation.h"
+#include "cc/output/filter_operations.h"
 #include "skia/ext/refptr.h"
-#include "third_party/WebKit/public/platform/WebFilterOperation.h"
-#include "third_party/WebKit/public/platform/WebFilterOperations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
@@ -184,45 +184,45 @@ bool MatrixNeedsClamping(SkScalar matrix[20]) {
       || ComponentNeedsClamping(matrix+15);
 }
 
-bool GetColorMatrix(const WebKit::WebFilterOperation& op, SkScalar matrix[20]) {
+bool GetColorMatrix(const FilterOperation& op, SkScalar matrix[20]) {
   switch (op.type()) {
-    case WebKit::WebFilterOperation::FilterTypeBrightness: {
+    case FilterOperation::BRIGHTNESS: {
       GetBrightnessMatrix(op.amount(), matrix);
       return true;
     }
-    case WebKit::WebFilterOperation::FilterTypeSaturatingBrightness: {
+    case FilterOperation::SATURATING_BRIGHTNESS: {
       GetSaturatingBrightnessMatrix(op.amount(), matrix);
       return true;
     }
-    case WebKit::WebFilterOperation::FilterTypeContrast: {
+    case FilterOperation::CONTRAST: {
       GetContrastMatrix(op.amount(), matrix);
       return true;
     }
-    case WebKit::WebFilterOperation::FilterTypeGrayscale: {
+    case FilterOperation::GRAYSCALE: {
       GetGrayscaleMatrix(1.f - op.amount(), matrix);
       return true;
     }
-    case WebKit::WebFilterOperation::FilterTypeSepia: {
+    case FilterOperation::SEPIA: {
       GetSepiaMatrix(1.f - op.amount(), matrix);
       return true;
     }
-    case WebKit::WebFilterOperation::FilterTypeSaturate: {
+    case FilterOperation::SATURATE: {
       GetSaturateMatrix(op.amount(), matrix);
       return true;
     }
-    case WebKit::WebFilterOperation::FilterTypeHueRotate: {
+    case FilterOperation::HUE_ROTATE: {
       GetHueRotateMatrix(op.amount(), matrix);
       return true;
     }
-    case WebKit::WebFilterOperation::FilterTypeInvert: {
+    case FilterOperation::INVERT: {
       GetInvertMatrix(op.amount(), matrix);
       return true;
     }
-    case WebKit::WebFilterOperation::FilterTypeOpacity: {
+    case FilterOperation::OPACITY: {
       GetOpacityMatrix(op.amount(), matrix);
       return true;
     }
-    case WebKit::WebFilterOperation::FilterTypeColorMatrix: {
+    case FilterOperation::COLOR_MATRIX: {
       memcpy(matrix, op.matrix(), sizeof(SkScalar[20]));
       return true;
     }
@@ -311,14 +311,14 @@ class FilterBufferState {
 
 }  // namespace
 
-WebKit::WebFilterOperations RenderSurfaceFilters::Optimize(
-    const WebKit::WebFilterOperations& filters) {
-  WebKit::WebFilterOperations new_list;
+FilterOperations RenderSurfaceFilters::Optimize(
+    const FilterOperations& filters) {
+  FilterOperations new_list;
 
   SkScalar accumulated_color_matrix[20];
   bool have_accumulated_color_matrix = false;
   for (unsigned i = 0; i < filters.size(); ++i) {
-    const WebKit::WebFilterOperation& op = filters.at(i);
+    const FilterOperation& op = filters.at(i);
 
     // If the filter is a color matrix, we may be able to combine it with
     // following Filter(s) that also are color matrices.
@@ -344,53 +344,53 @@ WebKit::WebFilterOperations RenderSurfaceFilters::Optimize(
     }
 
     if (have_accumulated_color_matrix) {
-      new_list.append(WebKit::WebFilterOperation::createColorMatrixFilter(
+      new_list.Append(FilterOperation::CreateColorMatrixFilter(
           accumulated_color_matrix));
     }
     have_accumulated_color_matrix = false;
 
     switch (op.type()) {
-      case WebKit::WebFilterOperation::FilterTypeBlur:
-      case WebKit::WebFilterOperation::FilterTypeDropShadow:
-      case WebKit::WebFilterOperation::FilterTypeZoom:
-        new_list.append(op);
+      case FilterOperation::BLUR:
+      case FilterOperation::DROP_SHADOW:
+      case FilterOperation::ZOOM:
+        new_list.Append(op);
         break;
-      case WebKit::WebFilterOperation::FilterTypeBrightness:
-      case WebKit::WebFilterOperation::FilterTypeSaturatingBrightness:
-      case WebKit::WebFilterOperation::FilterTypeContrast:
-      case WebKit::WebFilterOperation::FilterTypeGrayscale:
-      case WebKit::WebFilterOperation::FilterTypeSepia:
-      case WebKit::WebFilterOperation::FilterTypeSaturate:
-      case WebKit::WebFilterOperation::FilterTypeHueRotate:
-      case WebKit::WebFilterOperation::FilterTypeInvert:
-      case WebKit::WebFilterOperation::FilterTypeOpacity:
-      case WebKit::WebFilterOperation::FilterTypeColorMatrix:
+      case FilterOperation::BRIGHTNESS:
+      case FilterOperation::SATURATING_BRIGHTNESS:
+      case FilterOperation::CONTRAST:
+      case FilterOperation::GRAYSCALE:
+      case FilterOperation::SEPIA:
+      case FilterOperation::SATURATE:
+      case FilterOperation::HUE_ROTATE:
+      case FilterOperation::INVERT:
+      case FilterOperation::OPACITY:
+      case FilterOperation::COLOR_MATRIX:
         break;
     }
   }
   if (have_accumulated_color_matrix) {
-    new_list.append(WebKit::WebFilterOperation::createColorMatrixFilter(
+    new_list.Append(FilterOperation::CreateColorMatrixFilter(
         accumulated_color_matrix));
   }
   return new_list;
 }
 
-SkBitmap RenderSurfaceFilters::Apply(const WebKit::WebFilterOperations& filters,
+SkBitmap RenderSurfaceFilters::Apply(const FilterOperations& filters,
                                      unsigned texture_id,
                                      gfx::SizeF size,
                                      GrContext* gr_context) {
   DCHECK(gr_context);
 
-  WebKit::WebFilterOperations optimized_filters = Optimize(filters);
+  FilterOperations optimized_filters = Optimize(filters);
   FilterBufferState state(gr_context, size, texture_id);
   if (!state.Init(optimized_filters.size()))
     return SkBitmap();
 
   for (unsigned i = 0; i < optimized_filters.size(); ++i) {
-    const WebKit::WebFilterOperation& op = optimized_filters.at(i);
+    const FilterOperation& op = optimized_filters.at(i);
     SkCanvas* canvas = state.Canvas();
     switch (op.type()) {
-      case WebKit::WebFilterOperation::FilterTypeColorMatrix: {
+      case FilterOperation::COLOR_MATRIX: {
         SkPaint paint;
         skia::RefPtr<SkColorMatrixFilter> filter =
             skia::AdoptRef(new SkColorMatrixFilter(op.matrix()));
@@ -398,7 +398,7 @@ SkBitmap RenderSurfaceFilters::Apply(const WebKit::WebFilterOperations& filters,
         canvas->drawBitmap(state.Source(), 0, 0, &paint);
         break;
       }
-      case WebKit::WebFilterOperation::FilterTypeBlur: {
+      case FilterOperation::BLUR: {
         float std_deviation = op.amount();
         skia::RefPtr<SkImageFilter> filter =
             skia::AdoptRef(new SkBlurImageFilter(std_deviation, std_deviation));
@@ -407,25 +407,25 @@ SkBitmap RenderSurfaceFilters::Apply(const WebKit::WebFilterOperations& filters,
         canvas->drawSprite(state.Source(), 0, 0, &paint);
         break;
       }
-      case WebKit::WebFilterOperation::FilterTypeDropShadow: {
+      case FilterOperation::DROP_SHADOW: {
         skia::RefPtr<SkImageFilter> blur_filter =
             skia::AdoptRef(new SkBlurImageFilter(op.amount(), op.amount()));
         skia::RefPtr<SkColorFilter> color_filter =
             skia::AdoptRef(SkColorFilter::CreateModeFilter(
-                op.dropShadowColor(), SkXfermode::kSrcIn_Mode));
+                op.drop_shadow_color(), SkXfermode::kSrcIn_Mode));
         SkPaint paint;
         paint.setImageFilter(blur_filter.get());
         paint.setColorFilter(color_filter.get());
         paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
         canvas->saveLayer(NULL, &paint);
         canvas->drawBitmap(state.Source(),
-                           op.dropShadowOffset().x,
-                           op.dropShadowOffset().y);
+                           op.drop_shadow_offset().x(),
+                           op.drop_shadow_offset().y());
         canvas->restore();
         canvas->drawBitmap(state.Source(), 0, 0);
         break;
       }
-      case WebKit::WebFilterOperation::FilterTypeZoom: {
+      case FilterOperation::ZOOM: {
         SkPaint paint;
         int width = state.Source().width();
         int height = state.Source().height();
@@ -436,22 +436,22 @@ SkBitmap RenderSurfaceFilters::Apply(const WebKit::WebFilterOperations& filters,
                     (height - (height / op.amount())) / 2.f,
                     width / op.amount(),
                     height / op.amount()),
-                op.zoomInset()));
+                op.zoom_inset()));
         paint.setImageFilter(zoom_filter.get());
         canvas->saveLayer(NULL, &paint);
         canvas->drawBitmap(state.Source(), 0, 0);
         canvas->restore();
         break;
       }
-      case WebKit::WebFilterOperation::FilterTypeBrightness:
-      case WebKit::WebFilterOperation::FilterTypeSaturatingBrightness:
-      case WebKit::WebFilterOperation::FilterTypeContrast:
-      case WebKit::WebFilterOperation::FilterTypeGrayscale:
-      case WebKit::WebFilterOperation::FilterTypeSepia:
-      case WebKit::WebFilterOperation::FilterTypeSaturate:
-      case WebKit::WebFilterOperation::FilterTypeHueRotate:
-      case WebKit::WebFilterOperation::FilterTypeInvert:
-      case WebKit::WebFilterOperation::FilterTypeOpacity:
+      case FilterOperation::BRIGHTNESS:
+      case FilterOperation::SATURATING_BRIGHTNESS:
+      case FilterOperation::CONTRAST:
+      case FilterOperation::GRAYSCALE:
+      case FilterOperation::SEPIA:
+      case FilterOperation::SATURATE:
+      case FilterOperation::HUE_ROTATE:
+      case FilterOperation::INVERT:
+      case FilterOperation::OPACITY:
         NOTREACHED();
         break;
     }

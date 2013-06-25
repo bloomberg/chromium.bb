@@ -9,6 +9,8 @@
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/output/filter_operation.h"
+#include "cc/output/filter_operations.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -18,8 +20,6 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebFilterOperation.h"
-#include "third_party/WebKit/public/platform/WebFilterOperations.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -1621,16 +1621,16 @@ class OcclusionTrackerTestFilters : public OcclusionTrackerTest<Types> {
                                  gfx::Size(500, 500),
                                  true);
 
-    WebKit::WebFilterOperations filters;
-    filters.append(WebKit::WebFilterOperation::createBlurFilter(10.f));
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(10.f));
     blur_layer->SetFilters(filters);
 
-    filters.clear();
-    filters.append(WebKit::WebFilterOperation::createGrayscaleFilter(0.5f));
+    filters.Clear();
+    filters.Append(FilterOperation::CreateGrayscaleFilter(0.5f));
     opaque_layer->SetFilters(filters);
 
-    filters.clear();
-    filters.append(WebKit::WebFilterOperation::createOpacityFilter(0.5f));
+    filters.Clear();
+    filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
     opacity_layer->SetFilters(filters);
 
     this->CalcDrawEtc(parent);
@@ -3571,13 +3571,14 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
                                  true);
 
     // Filters make the layer own a surface.
-    WebKit::WebFilterOperations filters;
-    filters.append(WebKit::WebFilterOperation::createBlurFilter(10.f));
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(10.f));
     filtered_surface->SetBackgroundFilters(filters);
 
     // Save the distance of influence for the blur effect.
     int outset_top, outset_right, outset_bottom, outset_left;
-    filters.getOutsets(outset_top, outset_right, outset_bottom, outset_left);
+    filters.GetOutsets(
+        &outset_top, &outset_right, &outset_bottom, &outset_left);
 
     this->CalcDrawEtc(parent);
 
@@ -3754,14 +3755,15 @@ class OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice
                                  true);
 
     // Filters make the layers own surfaces.
-    WebKit::WebFilterOperations filters;
-    filters.append(WebKit::WebFilterOperation::createBlurFilter(1.f));
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(1.f));
     filtered_surface1->SetBackgroundFilters(filters);
     filtered_surface2->SetBackgroundFilters(filters);
 
     // Save the distance of influence for the blur effect.
     int outset_top, outset_right, outset_bottom, outset_left;
-    filters.getOutsets(outset_top, outset_right, outset_bottom, outset_left);
+    filters.GetOutsets(
+        &outset_top, &outset_right, &outset_bottom, &outset_left);
 
     this->CalcDrawEtc(root);
 
@@ -3861,13 +3863,14 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip
 
     // Filters make the layer own a surface. This filter is large enough that it
     // goes outside the bottom of the clipping_surface.
-    WebKit::WebFilterOperations filters;
-    filters.append(WebKit::WebFilterOperation::createBlurFilter(12.f));
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(12.f));
     filtered_surface->SetBackgroundFilters(filters);
 
     // Save the distance of influence for the blur effect.
     int outset_top, outset_right, outset_bottom, outset_left;
-    filters.getOutsets(outset_top, outset_right, outset_bottom, outset_left);
+    filters.GetOutsets(
+        &outset_top, &outset_right, &outset_bottom, &outset_left);
 
     this->CalcDrawEtc(parent);
 
@@ -4071,8 +4074,8 @@ class OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter
                              gfx::Size());
 
     // Filters make the layer own a surface.
-    WebKit::WebFilterOperations filters;
-    filters.append(WebKit::WebFilterOperation::createBlurFilter(3.f));
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(3.f));
     filtered_surface->SetBackgroundFilters(filters);
 
     this->CalcDrawEtc(parent);
@@ -4150,8 +4153,8 @@ class OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded
                                  true);
 
     // Filters make the layer own a surface.
-    WebKit::WebFilterOperations filters;
-    filters.append(WebKit::WebFilterOperation::createBlurFilter(3.f));
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(3.f));
     filtered_surface->SetBackgroundFilters(filters);
 
     this->CalcDrawEtc(parent);
@@ -4254,13 +4257,14 @@ class OcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded
                                  true);
 
     // Filters make the layer own a surface.
-    WebKit::WebFilterOperations filters;
-    filters.append(WebKit::WebFilterOperation::createBlurFilter(3.f));
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(3.f));
     filtered_surface->SetBackgroundFilters(filters);
 
     // Save the distance of influence for the blur effect.
     int outset_top, outset_right, outset_bottom, outset_left;
-    filters.getOutsets(outset_top, outset_right, outset_bottom, outset_left);
+    filters.GetOutsets(
+        &outset_top, &outset_right, &outset_bottom, &outset_left);
 
     this->CalcDrawEtc(parent);
 

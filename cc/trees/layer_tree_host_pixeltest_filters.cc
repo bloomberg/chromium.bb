@@ -26,8 +26,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlur) {
   background->AddChild(green);
   background->AddChild(blur);
 
-  WebKit::WebFilterOperations filters;
-  filters.append(WebKit::WebFilterOperation::createBlurFilter(2));
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(2.f));
   blur->SetBackgroundFilters(filters);
 
   RunPixelTest(GL_WITH_BITMAP,
@@ -51,8 +51,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
   background->AddChild(green_border);
   background->AddChild(blur);
 
-  WebKit::WebFilterOperations filters;
-  filters.append(WebKit::WebFilterOperation::createBlurFilter(5));
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(5.f));
   blur->SetBackgroundFilters(filters);
 
   RunPixelTest(GL_WITH_BITMAP,
@@ -89,8 +89,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOffAxis) {
   blur_transform.Translate(-60.0, -60.0);
   blur->SetTransform(blur_transform);
 
-  WebKit::WebFilterOperations filters;
-  filters.append(WebKit::WebFilterOperation::createBlurFilter(2));
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(2.f));
   blur->SetBackgroundFilters(filters);
 
 #if defined(OS_WIN)

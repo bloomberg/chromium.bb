@@ -3,8 +3,6 @@
 # Compositor out of WebKit.
 include_rules = [
   "+cc",
-  "+third_party/WebKit/public/platform/WebFilterOperation.h",
-  "+third_party/WebKit/public/platform/WebFilterOperations.h",
   "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
   "+third_party/WebKit/public/platform/WebString.h",
   "+webkit/common/gpu",

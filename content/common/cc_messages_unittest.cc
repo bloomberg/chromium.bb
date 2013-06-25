@@ -14,6 +14,8 @@ using cc::CheckerboardDrawQuad;
 using cc::DelegatedFrameData;
 using cc::DebugBorderDrawQuad;
 using cc::DrawQuad;
+using cc::FilterOperation;
+using cc::FilterOperations;
 using cc::IOSurfaceDrawQuad;
 using cc::PictureDrawQuad;
 using cc::RenderPass;
@@ -28,8 +30,6 @@ using cc::StreamVideoDrawQuad;
 using cc::VideoLayerImpl;
 using cc::YUVVideoDrawQuad;
 using gfx::Transform;
-using WebKit::WebFilterOperation;
-using WebKit::WebFilterOperations;
 
 namespace content {
 namespace {
@@ -220,12 +220,12 @@ TEST_F(CCMessagesTest, AllQuads) {
   ResourceProvider::ResourceId arbitrary_resourceid3 = 23;
   ResourceProvider::ResourceId arbitrary_resourceid4 = 16;
 
-  WebFilterOperations arbitrary_filters1;
-  arbitrary_filters1.append(WebFilterOperation::createGrayscaleFilter(
+  FilterOperations arbitrary_filters1;
+  arbitrary_filters1.Append(FilterOperation::CreateGrayscaleFilter(
       arbitrary_float1));
 
-  WebFilterOperations arbitrary_filters2;
-  arbitrary_filters2.append(WebFilterOperation::createBrightnessFilter(
+  FilterOperations arbitrary_filters2;
+  arbitrary_filters2.Append(FilterOperation::CreateBrightnessFilter(
       arbitrary_float2));
 
   // TODO(danakj): filter is not serialized.

@@ -4892,9 +4892,9 @@ static void ConfigureRenderPassTestData(const char* test_script,
                      1,
                      contents_changed_rect,
                      gfx::RectF(0.f, 0.f, 1.f, 1.f),
-                     WebKit::WebFilterOperations(),
+                     FilterOperations(),
                      skia::RefPtr<SkImageFilter>(),
-                     WebKit::WebFilterOperations());
+                     FilterOperations());
         render_pass->AppendQuad(quad.PassAs<DrawQuad>());
       }
     }

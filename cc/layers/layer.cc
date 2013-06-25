@@ -111,7 +111,7 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (host && layer_animation_controller_->has_any_animation())
     host->SetNeedsCommit();
   if (host &&
-      (!filters_.isEmpty() || !background_filters_.isEmpty() || filter_))
+      (!filters_.IsEmpty() || !background_filters_.IsEmpty() || filter_))
     layer_tree_host_->set_needs_filter_context();
 }
 
@@ -421,14 +421,14 @@ void Layer::SetReplicaLayer(Layer* layer) {
   SetNeedsFullTreeSync();
 }
 
-void Layer::SetFilters(const WebKit::WebFilterOperations& filters) {
+void Layer::SetFilters(const FilterOperations& filters) {
   DCHECK(IsPropertyChangeAllowed());
   if (filters_ == filters)
     return;
   DCHECK(!filter_);
   filters_ = filters;
   SetNeedsCommit();
-  if (!filters.isEmpty() && layer_tree_host_)
+  if (!filters.IsEmpty() && layer_tree_host_)
     layer_tree_host_->set_needs_filter_context();
 }
 
@@ -436,20 +436,20 @@ void Layer::SetFilter(const skia::RefPtr<SkImageFilter>& filter) {
   DCHECK(IsPropertyChangeAllowed());
   if (filter_.get() == filter.get())
     return;
-  DCHECK(filters_.isEmpty());
+  DCHECK(filters_.IsEmpty());
   filter_ = filter;
   SetNeedsCommit();
   if (filter && layer_tree_host_)
     layer_tree_host_->set_needs_filter_context();
 }
 
-void Layer::SetBackgroundFilters(const WebKit::WebFilterOperations& filters) {
+void Layer::SetBackgroundFilters(const FilterOperations& filters) {
   DCHECK(IsPropertyChangeAllowed());
   if (background_filters_ == filters)
     return;
   background_filters_ = filters;
   SetNeedsCommit();
-  if (!filters.isEmpty() && layer_tree_host_)
+  if (!filters.IsEmpty() && layer_tree_host_)
     layer_tree_host_->set_needs_filter_context();
 }
 

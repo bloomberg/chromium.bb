@@ -349,8 +349,8 @@ class LayerTreeHostOcclusionTestOcclusionOpacityFilter
     child_transform.Rotate(90.0);
     child_transform.Translate(-250.0, -250.0);
 
-    WebKit::WebFilterOperations filters;
-    filters.append(WebKit::WebFilterOperation::createOpacityFilter(0.5));
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
 
     // If the child layer has a filter that changes alpha values, and is below
     // child2, then child2 should contribute to occlusion on everything,
@@ -393,8 +393,8 @@ class LayerTreeHostOcclusionTestOcclusionBlurFilter
     child_transform.Rotate(90.0);
     child_transform.Translate(-250.0, -250.0);
 
-    WebKit::WebFilterOperations filters;
-    filters.append(WebKit::WebFilterOperation::createBlurFilter(10));
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(10.f));
 
     // If the child layer has a filter that moves pixels/changes alpha, and is
     // below child2, then child should not inherit occlusion from outside its

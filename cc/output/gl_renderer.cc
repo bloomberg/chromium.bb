@@ -441,9 +441,9 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
 }
 
 static inline SkBitmap ApplyFilters(GLRenderer* renderer,
-                                    const WebKit::WebFilterOperations& filters,
+                                    const FilterOperations& filters,
                                     ScopedResource* source_texture_resource) {
-  if (filters.isEmpty())
+  if (filters.IsEmpty())
     return SkBitmap();
 
   ContextProvider* offscreen_contexts =
@@ -589,8 +589,8 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   // FIXME: When this algorithm changes, update
   // LayerTreeHost::PrioritizeTextures() accordingly.
 
-  const WebKit::WebFilterOperations& filters = quad->background_filters;
-  DCHECK(!filters.isEmpty());
+  const FilterOperations& filters = quad->background_filters;
+  DCHECK(!filters.IsEmpty());
 
   // FIXME: We only allow background filters on an opaque render surface because
   // other surfaces may contain translucent pixels, and the contents behind
@@ -605,7 +605,7 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
       contents_device_transform, SharedGeometryQuad().BoundingBox()));
 
   int top, right, bottom, left;
-  filters.getOutsets(top, right, bottom, left);
+  filters.GetOutsets(&top, &right, &bottom, &left);
   window_rect.Inset(-left, -top, -right, -bottom);
 
   window_rect.Intersect(
@@ -704,7 +704,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     return;
 
   scoped_ptr<ScopedResource> background_texture;
-  if (!quad->background_filters.isEmpty()) {
+  if (!quad->background_filters.IsEmpty()) {
     // The pixels from the filtered background should completely replace the
     // current pixel values.
     bool disable_blending = blend_enabled();

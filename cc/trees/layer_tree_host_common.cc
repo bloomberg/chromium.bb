@@ -319,7 +319,7 @@ static bool SubtreeShouldRenderToSeparateSurface(
   }
 
   // If the layer uses a CSS filter.
-  if (!layer->filters().isEmpty() || !layer->background_filters().isEmpty() ||
+  if (!layer->filters().IsEmpty() || !layer->background_filters().IsEmpty() ||
       layer->filter()) {
     DCHECK(!is_root);
     return true;
@@ -1206,7 +1206,7 @@ static void CalculateDrawPropertiesInternal(
 
     // TODO(senorblanco): make this smarter for the SkImageFilter case (check
     // for pixel-moving filters)
-    if (layer->filters().hasFilterThatMovesPixels() || layer->filter())
+    if (layer->filters().HasFilterThatMovesPixels() || layer->filter())
       nearest_ancestor_that_moves_pixels = render_surface;
 
     // The render surface clip rect is expressed in the space where this surface

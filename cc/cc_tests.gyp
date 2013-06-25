@@ -38,6 +38,7 @@
       'layers/tiled_layer_impl_unittest.cc',
       'layers/tiled_layer_unittest.cc',
       'output/delegating_renderer_unittest.cc',
+      'output/filter_operations_unittest.cc',
       'output/gl_renderer_unittest.cc',
       'output/output_surface_unittest.cc',
       'output/renderer_pixeltest.cc',

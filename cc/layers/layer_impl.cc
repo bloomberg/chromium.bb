@@ -657,7 +657,7 @@ SkColor LayerImpl::SafeOpaqueBackgroundColor() const {
   return color;
 }
 
-void LayerImpl::SetFilters(const WebKit::WebFilterOperations& filters) {
+void LayerImpl::SetFilters(const FilterOperations& filters) {
   if (filters_ == filters)
     return;
 
@@ -667,7 +667,7 @@ void LayerImpl::SetFilters(const WebKit::WebFilterOperations& filters) {
 }
 
 void LayerImpl::SetBackgroundFilters(
-    const WebKit::WebFilterOperations& filters) {
+    const FilterOperations& filters) {
   if (background_filters_ == filters)
     return;
 
@@ -679,7 +679,7 @@ void LayerImpl::SetFilter(const skia::RefPtr<SkImageFilter>& filter) {
   if (filter_.get() == filter.get())
     return;
 
-  DCHECK(filters_.isEmpty());
+  DCHECK(filters_.IsEmpty());
   filter_ = filter;
   NoteLayerPropertyChangedForSubtree();
 }

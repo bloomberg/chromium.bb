@@ -8,10 +8,10 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/filter_operations.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/resource_provider.h"
-#include "third_party/WebKit/public/platform/WebFilterOperations.h"
 
 namespace cc {
 
@@ -27,9 +27,9 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               ResourceProvider::ResourceId mask_resource_id,
               gfx::Rect contents_changed_since_last_frame,
               gfx::RectF mask_uv_rect,
-              const WebKit::WebFilterOperations& filters,
+              const FilterOperations& filters,
               skia::RefPtr<SkImageFilter> filter,
-              const WebKit::WebFilterOperations& background_filters);
+              const FilterOperations& background_filters);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               gfx::Rect rect,
@@ -41,9 +41,9 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               ResourceProvider::ResourceId mask_resource_id,
               gfx::Rect contents_changed_since_last_frame,
               gfx::RectF mask_uv_rect,
-              const WebKit::WebFilterOperations& filters,
+              const FilterOperations& filters,
               skia::RefPtr<SkImageFilter> filter,
-              const WebKit::WebFilterOperations& background_filters);
+              const FilterOperations& background_filters);
 
   scoped_ptr<RenderPassDrawQuad> Copy(
       const SharedQuadState* copied_shared_quad_state,
@@ -57,13 +57,13 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
 
   // Deprecated post-processing filters, applied to the pixels in the render
   // pass' texture.
-  WebKit::WebFilterOperations filters;
+  FilterOperations filters;
   // Post-processing filter applied to the pixels in the render pass' texture.
   skia::RefPtr<SkImageFilter> filter;
 
   // Post-processing filters, applied to the pixels showing through the
   // background of the render pass, from behind it.
-  WebKit::WebFilterOperations background_filters;
+  FilterOperations background_filters;
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
       OVERRIDE;

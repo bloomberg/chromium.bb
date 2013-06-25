@@ -5,103 +5,103 @@
 #include "content/common/cc_messages.h"
 
 #include "cc/output/compositor_frame.h"
+#include "cc/output/filter_operations.h"
 #include "content/public/common/common_param_traits.h"
-#include "third_party/WebKit/public/platform/WebFilterOperations.h"
 #include "ui/gfx/transform.h"
 
 namespace IPC {
 
-void ParamTraits<WebKit::WebFilterOperation>::Write(
+void ParamTraits<cc::FilterOperation>::Write(
     Message* m, const param_type& p) {
   WriteParam(m, p.type());
   switch (p.type()) {
-    case WebKit::WebFilterOperation::FilterTypeGrayscale:
-    case WebKit::WebFilterOperation::FilterTypeSepia:
-    case WebKit::WebFilterOperation::FilterTypeSaturate:
-    case WebKit::WebFilterOperation::FilterTypeHueRotate:
-    case WebKit::WebFilterOperation::FilterTypeInvert:
-    case WebKit::WebFilterOperation::FilterTypeBrightness:
-    case WebKit::WebFilterOperation::FilterTypeSaturatingBrightness:
-    case WebKit::WebFilterOperation::FilterTypeContrast:
-    case WebKit::WebFilterOperation::FilterTypeOpacity:
-    case WebKit::WebFilterOperation::FilterTypeBlur:
+    case cc::FilterOperation::GRAYSCALE:
+    case cc::FilterOperation::SEPIA:
+    case cc::FilterOperation::SATURATE:
+    case cc::FilterOperation::HUE_ROTATE:
+    case cc::FilterOperation::INVERT:
+    case cc::FilterOperation::BRIGHTNESS:
+    case cc::FilterOperation::SATURATING_BRIGHTNESS:
+    case cc::FilterOperation::CONTRAST:
+    case cc::FilterOperation::OPACITY:
+    case cc::FilterOperation::BLUR:
       WriteParam(m, p.amount());
       break;
-    case WebKit::WebFilterOperation::FilterTypeDropShadow:
-      WriteParam(m, p.dropShadowOffset());
+    case cc::FilterOperation::DROP_SHADOW:
+      WriteParam(m, p.drop_shadow_offset());
       WriteParam(m, p.amount());
-      WriteParam(m, p.dropShadowColor());
+      WriteParam(m, p.drop_shadow_color());
       break;
-    case WebKit::WebFilterOperation::FilterTypeColorMatrix:
+    case cc::FilterOperation::COLOR_MATRIX:
       for (int i = 0; i < 20; ++i)
         WriteParam(m, p.matrix()[i]);
       break;
-    case WebKit::WebFilterOperation::FilterTypeZoom:
+    case cc::FilterOperation::ZOOM:
       WriteParam(m, p.amount());
-      WriteParam(m, p.zoomInset());
+      WriteParam(m, p.zoom_inset());
       break;
   }
 }
 
-bool ParamTraits<WebKit::WebFilterOperation>::Read(
+bool ParamTraits<cc::FilterOperation>::Read(
     const Message* m, PickleIterator* iter, param_type* r) {
-  WebKit::WebFilterOperation::FilterType type;
+  cc::FilterOperation::FilterType type;
   float amount;
-  WebKit::WebPoint dropShadowOffset;
-  WebKit::WebColor dropShadowColor;
+  gfx::Point drop_shadow_offset;
+  SkColor drop_shadow_color;
   SkScalar matrix[20];
   int zoom_inset;
 
   if (!ReadParam(m, iter, &type))
     return false;
-  r->setType(type);
+  r->set_type(type);
 
   bool success = false;
   switch (type) {
-    case WebKit::WebFilterOperation::FilterTypeGrayscale:
-    case WebKit::WebFilterOperation::FilterTypeSepia:
-    case WebKit::WebFilterOperation::FilterTypeSaturate:
-    case WebKit::WebFilterOperation::FilterTypeHueRotate:
-    case WebKit::WebFilterOperation::FilterTypeInvert:
-    case WebKit::WebFilterOperation::FilterTypeBrightness:
-    case WebKit::WebFilterOperation::FilterTypeSaturatingBrightness:
-    case WebKit::WebFilterOperation::FilterTypeContrast:
-    case WebKit::WebFilterOperation::FilterTypeOpacity:
-    case WebKit::WebFilterOperation::FilterTypeBlur:
+    case cc::FilterOperation::GRAYSCALE:
+    case cc::FilterOperation::SEPIA:
+    case cc::FilterOperation::SATURATE:
+    case cc::FilterOperation::HUE_ROTATE:
+    case cc::FilterOperation::INVERT:
+    case cc::FilterOperation::BRIGHTNESS:
+    case cc::FilterOperation::SATURATING_BRIGHTNESS:
+    case cc::FilterOperation::CONTRAST:
+    case cc::FilterOperation::OPACITY:
+    case cc::FilterOperation::BLUR:
       if (ReadParam(m, iter, &amount)) {
-        r->setAmount(amount);
+        r->set_amount(amount);
         success = true;
       }
       break;
-    case WebKit::WebFilterOperation::FilterTypeDropShadow:
-      if (ReadParam(m, iter, &dropShadowOffset) &&
+    case cc::FilterOperation::DROP_SHADOW:
+      if (ReadParam(m, iter, &drop_shadow_offset) &&
           ReadParam(m, iter, &amount) &&
-          ReadParam(m, iter, &dropShadowColor)) {
-        r->setDropShadowOffset(dropShadowOffset);
-        r->setAmount(amount);
-        r->setDropShadowColor(dropShadowColor);
+          ReadParam(m, iter, &drop_shadow_color)) {
+        r->set_drop_shadow_offset(drop_shadow_offset);
+        r->set_amount(amount);
+        r->set_drop_shadow_color(drop_shadow_color);
         success = true;
       }
       break;
-    case WebKit::WebFilterOperation::FilterTypeColorMatrix: {
+    case cc::FilterOperation::COLOR_MATRIX: {
       int i;
       for (i = 0; i < 20; ++i) {
         if (!ReadParam(m, iter, &matrix[i]))
           break;
       }
       if (i == 20) {
-        r->setMatrix(matrix);
+        r->set_matrix(matrix);
         success = true;
       }
       break;
     }
-    case WebKit::WebFilterOperation::FilterTypeZoom:
+    case cc::FilterOperation::ZOOM:
       if (ReadParam(m, iter, &amount) &&
           ReadParam(m, iter, &zoom_inset) &&
           amount >= 0.f &&
           zoom_inset >= 0) {
-        r->setAmount(amount);
-        r->setZoomInset(zoom_inset);
+        r->set_amount(amount);
+        r->set_zoom_inset(zoom_inset);
         success = true;
       }
       break;
@@ -109,49 +109,49 @@ bool ParamTraits<WebKit::WebFilterOperation>::Read(
   return success;
 }
 
-void ParamTraits<WebKit::WebFilterOperation>::Log(
+void ParamTraits<cc::FilterOperation>::Log(
     const param_type& p, std::string* l) {
   l->append("(");
   LogParam(static_cast<unsigned>(p.type()), l);
   l->append(", ");
 
   switch (p.type()) {
-    case WebKit::WebFilterOperation::FilterTypeGrayscale:
-    case WebKit::WebFilterOperation::FilterTypeSepia:
-    case WebKit::WebFilterOperation::FilterTypeSaturate:
-    case WebKit::WebFilterOperation::FilterTypeHueRotate:
-    case WebKit::WebFilterOperation::FilterTypeInvert:
-    case WebKit::WebFilterOperation::FilterTypeBrightness:
-    case WebKit::WebFilterOperation::FilterTypeSaturatingBrightness:
-    case WebKit::WebFilterOperation::FilterTypeContrast:
-    case WebKit::WebFilterOperation::FilterTypeOpacity:
-    case WebKit::WebFilterOperation::FilterTypeBlur:
+    case cc::FilterOperation::GRAYSCALE:
+    case cc::FilterOperation::SEPIA:
+    case cc::FilterOperation::SATURATE:
+    case cc::FilterOperation::HUE_ROTATE:
+    case cc::FilterOperation::INVERT:
+    case cc::FilterOperation::BRIGHTNESS:
+    case cc::FilterOperation::SATURATING_BRIGHTNESS:
+    case cc::FilterOperation::CONTRAST:
+    case cc::FilterOperation::OPACITY:
+    case cc::FilterOperation::BLUR:
       LogParam(p.amount(), l);
       break;
-    case WebKit::WebFilterOperation::FilterTypeDropShadow:
-      LogParam(p.dropShadowOffset(), l);
+    case cc::FilterOperation::DROP_SHADOW:
+      LogParam(p.drop_shadow_offset(), l);
       l->append(", ");
       LogParam(p.amount(), l);
       l->append(", ");
-      LogParam(p.dropShadowColor(), l);
+      LogParam(p.drop_shadow_color(), l);
       break;
-    case WebKit::WebFilterOperation::FilterTypeColorMatrix:
+    case cc::FilterOperation::COLOR_MATRIX:
       for (int i = 0; i < 20; ++i) {
         if (i)
           l->append(", ");
         LogParam(p.matrix()[i], l);
       }
       break;
-    case WebKit::WebFilterOperation::FilterTypeZoom:
+    case cc::FilterOperation::ZOOM:
       LogParam(p.amount(), l);
       l->append(", ");
-      LogParam(p.zoomInset(), l);
+      LogParam(p.zoom_inset(), l);
       break;
   }
   l->append(")");
 }
 
-void ParamTraits<WebKit::WebFilterOperations>::Write(
+void ParamTraits<cc::FilterOperations>::Write(
     Message* m, const param_type& p) {
   WriteParam(m, p.size());
   for (std::size_t i = 0; i < p.size(); ++i) {
@@ -159,23 +159,22 @@ void ParamTraits<WebKit::WebFilterOperations>::Write(
   }
 }
 
-bool ParamTraits<WebKit::WebFilterOperations>::Read(
+bool ParamTraits<cc::FilterOperations>::Read(
     const Message* m, PickleIterator* iter, param_type* r) {
   size_t count;
   if (!ReadParam(m, iter, &count))
     return false;
 
   for (std::size_t i = 0; i < count; ++i) {
-    WebKit::WebFilterOperation op =
-        WebKit::WebFilterOperation::createEmptyFilter();
+    cc::FilterOperation op = cc::FilterOperation::CreateEmptyFilter();
     if (!ReadParam(m, iter, &op))
       return false;
-    r->append(op);
+    r->Append(op);
   }
   return true;
 }
 
-void ParamTraits<WebKit::WebFilterOperations>::Log(
+void ParamTraits<cc::FilterOperations>::Log(
     const param_type& p, std::string* l) {
   l->append("(");
   for (std::size_t i = 0; i < p.size(); ++i) {

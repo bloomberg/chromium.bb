@@ -4,6 +4,8 @@
 
 #include "cc/layers/layer_impl.h"
 
+#include "cc/output/filter_operation.h"
+#include "cc/output/filter_operations.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -11,12 +13,7 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebFilterOperation.h"
-#include "third_party/WebKit/public/platform/WebFilterOperations.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
-
-using WebKit::WebFilterOperation;
-using WebKit::WebFilterOperations;
 
 namespace cc {
 namespace {
@@ -100,8 +97,8 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   SkColor arbitrary_color = SkColorSetRGB(10, 20, 30);
   gfx::Transform arbitrary_transform;
   arbitrary_transform.Scale3d(0.1, 0.2, 0.3);
-  WebFilterOperations arbitrary_filters;
-  arbitrary_filters.append(WebFilterOperation::createOpacityFilter(0.5f));
+  FilterOperations arbitrary_filters;
+  arbitrary_filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
   skia::RefPtr<SkImageFilter> arbitrary_filter =
       skia::AdoptRef(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
@@ -116,7 +113,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetAnchorPoint(arbitrary_point_f));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetAnchorPointZ(arbitrary_number));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(arbitrary_filters));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(WebFilterOperations()));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(FilterOperations()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilter(arbitrary_filter));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       root->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 4)));
@@ -213,15 +210,15 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   SkColor arbitrary_color = SkColorSetRGB(10, 20, 30);
   gfx::Transform arbitrary_transform;
   arbitrary_transform.Scale3d(0.1, 0.2, 0.3);
-  WebFilterOperations arbitrary_filters;
-  arbitrary_filters.append(WebFilterOperation::createOpacityFilter(0.5f));
+  FilterOperations arbitrary_filters;
+  arbitrary_filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
   skia::RefPtr<SkImageFilter> arbitrary_filter =
       skia::AdoptRef(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
   // Related filter functions.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(WebFilterOperations()));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(FilterOperations()));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilter(arbitrary_filter));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilter(arbitrary_filter));
 

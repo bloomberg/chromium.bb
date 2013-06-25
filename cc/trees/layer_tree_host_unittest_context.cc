@@ -15,6 +15,7 @@
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/layers/video_layer.h"
 #include "cc/layers/video_layer_impl.h"
+#include "cc/output/filter_operations.h"
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_content_layer_impl.h"
@@ -34,7 +35,6 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/media.h"
-#include "third_party/WebKit/public/platform/WebFilterOperations.h"
 
 using media::VideoFrame;
 using WebKit::WebGraphicsContext3D;
@@ -419,8 +419,8 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
     if (use_surface_) {
       content_->SetForceRenderSurface(true);
       // Filters require us to create an offscreen context.
-      WebKit::WebFilterOperations filters;
-      filters.append(WebKit::WebFilterOperation::createGrayscaleFilter(0.5f));
+      FilterOperations filters;
+      filters.Append(FilterOperation::CreateGrayscaleFilter(0.5f));
       content_->SetFilters(filters);
       content_->SetBackgroundFilters(filters);
     }
@@ -550,8 +550,8 @@ class LayerTreeHostContextTestOffscreenContextFails
     content_->SetIsDrawable(true);
     content_->SetForceRenderSurface(true);
     // Filters require us to create an offscreen context.
-    WebKit::WebFilterOperations filters;
-    filters.append(WebKit::WebFilterOperation::createGrayscaleFilter(0.5f));
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateGrayscaleFilter(0.5f));
     content_->SetFilters(filters);
     content_->SetBackgroundFilters(filters);
 

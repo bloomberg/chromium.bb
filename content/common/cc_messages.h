@@ -7,6 +7,7 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
+#include "cc/output/filter_operation.h"
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
@@ -24,7 +25,6 @@
 #include "content/common/content_export.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/platform/WebFilterOperation.h"
 
 #ifndef CONTENT_COMMON_CC_MESSAGES_H_
 #define CONTENT_COMMON_CC_MESSAGES_H_
@@ -33,23 +33,23 @@ namespace gfx {
 class Transform;
 }
 
-namespace WebKit {
-class WebFilterOperations;
+namespace cc {
+class FilterOperations;
 }
 
 namespace IPC {
 
 template <>
-struct ParamTraits<WebKit::WebFilterOperation> {
-  typedef WebKit::WebFilterOperation param_type;
+struct ParamTraits<cc::FilterOperation> {
+  typedef cc::FilterOperation param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template <>
-struct ParamTraits<WebKit::WebFilterOperations> {
-  typedef WebKit::WebFilterOperations param_type;
+struct ParamTraits<cc::FilterOperations> {
+  typedef cc::FilterOperations param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
@@ -107,7 +107,7 @@ struct CONTENT_EXPORT ParamTraits<cc::DelegatedFrameData> {
 
 IPC_ENUM_TRAITS(cc::DrawQuad::Material)
 IPC_ENUM_TRAITS(cc::IOSurfaceDrawQuad::Orientation)
-IPC_ENUM_TRAITS(WebKit::WebFilterOperation::FilterType)
+IPC_ENUM_TRAITS(cc::FilterOperation::FilterType)
 
 IPC_STRUCT_TRAITS_BEGIN(cc::RenderPass::Id)
   IPC_STRUCT_TRAITS_MEMBER(layer_id)
