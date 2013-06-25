@@ -356,7 +356,7 @@ void AudioRendererImpl::DecodedAudioReady(
 
 bool AudioRendererImpl::HandleSplicerBuffer(
     const scoped_refptr<DataBuffer>& buffer) {
-  if (buffer->IsEndOfStream()) {
+  if (buffer->end_of_stream()) {
     received_end_of_stream_ = true;
 
     // Transition to kPlaying if we are currently handling an underflow since
@@ -370,7 +370,7 @@ bool AudioRendererImpl::HandleSplicerBuffer(
       NOTREACHED();
       return false;
     case kPaused:
-      if (!buffer->IsEndOfStream())
+      if (!buffer->end_of_stream())
         algorithm_->EnqueueBuffer(buffer);
       DCHECK(!pending_read_);
       base::ResetAndReturn(&pause_cb_).Run();
@@ -379,7 +379,7 @@ bool AudioRendererImpl::HandleSplicerBuffer(
       if (IsBeforePrerollTime(buffer))
         return true;
 
-      if (!buffer->IsEndOfStream()) {
+      if (!buffer->end_of_stream()) {
         algorithm_->EnqueueBuffer(buffer);
         if (!algorithm_->IsQueueFull())
           return false;
@@ -390,7 +390,7 @@ bool AudioRendererImpl::HandleSplicerBuffer(
     case kPlaying:
     case kUnderflow:
     case kRebuffering:
-      if (!buffer->IsEndOfStream())
+      if (!buffer->end_of_stream())
         algorithm_->EnqueueBuffer(buffer);
       return false;
     case kStopped:
@@ -455,8 +455,8 @@ void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
 
 bool AudioRendererImpl::IsBeforePrerollTime(
     const scoped_refptr<DataBuffer>& buffer) {
-  return (state_ == kPrerolling) && buffer.get() && !buffer->IsEndOfStream() &&
-         (buffer->GetTimestamp() + buffer->GetDuration()) < preroll_timestamp_;
+  return (state_ == kPrerolling) && buffer.get() && !buffer->end_of_stream() &&
+         (buffer->timestamp() + buffer->duration()) < preroll_timestamp_;
 }
 
 int AudioRendererImpl::Render(AudioBus* audio_bus,

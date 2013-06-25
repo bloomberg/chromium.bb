@@ -29,12 +29,12 @@ class AudioSplicerTest : public ::testing::Test {
 
   scoped_refptr<DataBuffer> GetNextInputBuffer(uint8 value, int size) {
     scoped_refptr<DataBuffer> buffer = new DataBuffer(size);
-    buffer->SetDataSize(size);
-    memset(buffer->GetWritableData(), value, buffer->GetDataSize());
-    buffer->SetTimestamp(input_timestamp_helper_.GetTimestamp());
-    buffer->SetDuration(
-        input_timestamp_helper_.GetDuration(buffer->GetDataSize()));
-    input_timestamp_helper_.AddBytes(buffer->GetDataSize());
+    buffer->set_data_size(size);
+    memset(buffer->writable_data(), value, buffer->data_size());
+    buffer->set_timestamp(input_timestamp_helper_.GetTimestamp());
+    buffer->set_duration(
+        input_timestamp_helper_.GetDuration(buffer->data_size()));
+    input_timestamp_helper_.AddBytes(buffer->data_size());
     return buffer;
   }
 
@@ -63,9 +63,9 @@ TEST_F(AudioSplicerTest, PassThru) {
 
   scoped_refptr<DataBuffer> output_1 = splicer_.GetNextBuffer();
   EXPECT_FALSE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_1->GetTimestamp(), output_1->GetTimestamp());
-  EXPECT_EQ(input_1->GetDuration(), output_1->GetDuration());
-  EXPECT_EQ(input_1->GetDataSize(), output_1->GetDataSize());
+  EXPECT_EQ(input_1->timestamp(), output_1->timestamp());
+  EXPECT_EQ(input_1->duration(), output_1->duration());
+  EXPECT_EQ(input_1->data_size(), output_1->data_size());
 
   // Test that multiple buffers can be queued in the splicer.
   scoped_refptr<DataBuffer> input_2 = GetNextInputBuffer(2);
@@ -76,15 +76,15 @@ TEST_F(AudioSplicerTest, PassThru) {
 
   scoped_refptr<DataBuffer> output_2 = splicer_.GetNextBuffer();
   EXPECT_TRUE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_2->GetTimestamp(), output_2->GetTimestamp());
-  EXPECT_EQ(input_2->GetDuration(), output_2->GetDuration());
-  EXPECT_EQ(input_2->GetDataSize(), output_2->GetDataSize());
+  EXPECT_EQ(input_2->timestamp(), output_2->timestamp());
+  EXPECT_EQ(input_2->duration(), output_2->duration());
+  EXPECT_EQ(input_2->data_size(), output_2->data_size());
 
   scoped_refptr<DataBuffer> output_3 = splicer_.GetNextBuffer();
   EXPECT_FALSE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_3->GetTimestamp(), output_3->GetTimestamp());
-  EXPECT_EQ(input_3->GetDuration(), output_3->GetDuration());
-  EXPECT_EQ(input_3->GetDataSize(), output_3->GetDataSize());
+  EXPECT_EQ(input_3->timestamp(), output_3->timestamp());
+  EXPECT_EQ(input_3->duration(), output_3->duration());
+  EXPECT_EQ(input_3->data_size(), output_3->data_size());
 }
 
 TEST_F(AudioSplicerTest, Reset) {
@@ -108,16 +108,16 @@ TEST_F(AudioSplicerTest, Reset) {
 
   scoped_refptr<DataBuffer> output_2 = splicer_.GetNextBuffer();
   EXPECT_FALSE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_2->GetTimestamp(), output_2->GetTimestamp());
-  EXPECT_EQ(input_2->GetDuration(), output_2->GetDuration());
-  EXPECT_EQ(input_2->GetDataSize(), output_2->GetDataSize());
+  EXPECT_EQ(input_2->timestamp(), output_2->timestamp());
+  EXPECT_EQ(input_2->duration(), output_2->duration());
+  EXPECT_EQ(input_2->data_size(), output_2->data_size());
 }
 
 TEST_F(AudioSplicerTest, EndOfStream) {
   scoped_refptr<DataBuffer> input_1 = GetNextInputBuffer(1);
   scoped_refptr<DataBuffer> input_2 = DataBuffer::CreateEOSBuffer();
   scoped_refptr<DataBuffer> input_3 = GetNextInputBuffer(2);
-  EXPECT_TRUE(input_2->IsEndOfStream());
+  EXPECT_TRUE(input_2->end_of_stream());
 
   EXPECT_TRUE(splicer_.AddInput(input_1));
   EXPECT_TRUE(splicer_.AddInput(input_2));
@@ -126,20 +126,20 @@ TEST_F(AudioSplicerTest, EndOfStream) {
   scoped_refptr<DataBuffer> output_1 = splicer_.GetNextBuffer();
   scoped_refptr<DataBuffer> output_2 = splicer_.GetNextBuffer();
   EXPECT_FALSE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_1->GetTimestamp(), output_1->GetTimestamp());
-  EXPECT_EQ(input_1->GetDuration(), output_1->GetDuration());
-  EXPECT_EQ(input_1->GetDataSize(), output_1->GetDataSize());
+  EXPECT_EQ(input_1->timestamp(), output_1->timestamp());
+  EXPECT_EQ(input_1->duration(), output_1->duration());
+  EXPECT_EQ(input_1->data_size(), output_1->data_size());
 
-  EXPECT_TRUE(output_2->IsEndOfStream());
+  EXPECT_TRUE(output_2->end_of_stream());
 
   // Verify that buffers can be added again after Reset().
   splicer_.Reset();
   EXPECT_TRUE(splicer_.AddInput(input_3));
   scoped_refptr<DataBuffer> output_3 = splicer_.GetNextBuffer();
   EXPECT_FALSE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_3->GetTimestamp(), output_3->GetTimestamp());
-  EXPECT_EQ(input_3->GetDuration(), output_3->GetDuration());
-  EXPECT_EQ(input_3->GetDataSize(), output_3->GetDataSize());
+  EXPECT_EQ(input_3->timestamp(), output_3->timestamp());
+  EXPECT_EQ(input_3->duration(), output_3->duration());
+  EXPECT_EQ(input_3->data_size(), output_3->data_size());
 }
 
 
@@ -172,26 +172,26 @@ TEST_F(AudioSplicerTest, GapInsertion) {
   EXPECT_FALSE(splicer_.HasNextBuffer());
 
   // Verify that the first input buffer passed through unmodified.
-  EXPECT_EQ(input_1->GetTimestamp(), output_1->GetTimestamp());
-  EXPECT_EQ(input_1->GetDuration(), output_1->GetDuration());
-  EXPECT_EQ(input_1->GetDataSize(), output_1->GetDataSize());
-  EXPECT_TRUE(VerifyData(output_1->GetData(), output_1->GetDataSize(), 1));
+  EXPECT_EQ(input_1->timestamp(), output_1->timestamp());
+  EXPECT_EQ(input_1->duration(), output_1->duration());
+  EXPECT_EQ(input_1->data_size(), output_1->data_size());
+  EXPECT_TRUE(VerifyData(output_1->data(), output_1->data_size(), 1));
 
   // Verify the contents of the gap buffer.
   base::TimeDelta gap_timestamp =
-      input_1->GetTimestamp() + input_1->GetDuration();
-  base::TimeDelta gap_duration = input_2->GetTimestamp() - gap_timestamp;
+      input_1->timestamp() + input_1->duration();
+  base::TimeDelta gap_duration = input_2->timestamp() - gap_timestamp;
   EXPECT_GT(gap_duration, base::TimeDelta());
-  EXPECT_EQ(gap_timestamp, output_2->GetTimestamp());
-  EXPECT_EQ(gap_duration, output_2->GetDuration());
-  EXPECT_EQ(kGapSize, output_2->GetDataSize());
-  EXPECT_TRUE(VerifyData(output_2->GetData(), output_2->GetDataSize(), 0));
+  EXPECT_EQ(gap_timestamp, output_2->timestamp());
+  EXPECT_EQ(gap_duration, output_2->duration());
+  EXPECT_EQ(kGapSize, output_2->data_size());
+  EXPECT_TRUE(VerifyData(output_2->data(), output_2->data_size(), 0));
 
   // Verify that the second input buffer passed through unmodified.
-  EXPECT_EQ(input_2->GetTimestamp(), output_3->GetTimestamp());
-  EXPECT_EQ(input_2->GetDuration(), output_3->GetDuration());
-  EXPECT_EQ(input_2->GetDataSize(), output_3->GetDataSize());
-  EXPECT_TRUE(VerifyData(output_3->GetData(), output_3->GetDataSize(), 2));
+  EXPECT_EQ(input_2->timestamp(), output_3->timestamp());
+  EXPECT_EQ(input_2->duration(), output_3->duration());
+  EXPECT_EQ(input_2->data_size(), output_3->data_size());
+  EXPECT_TRUE(VerifyData(output_3->data(), output_3->data_size(), 2));
 }
 
 
@@ -213,10 +213,10 @@ TEST_F(AudioSplicerTest, GapTooLarge) {
   scoped_refptr<DataBuffer> output_1 = splicer_.GetNextBuffer();
 
   // Verify that the first input buffer passed through unmodified.
-  EXPECT_EQ(input_1->GetTimestamp(), output_1->GetTimestamp());
-  EXPECT_EQ(input_1->GetDuration(), output_1->GetDuration());
-  EXPECT_EQ(input_1->GetDataSize(), output_1->GetDataSize());
-  EXPECT_TRUE(VerifyData(output_1->GetData(), output_1->GetDataSize(), 1));
+  EXPECT_EQ(input_1->timestamp(), output_1->timestamp());
+  EXPECT_EQ(input_1->duration(), output_1->duration());
+  EXPECT_EQ(input_1->data_size(), output_1->data_size());
+  EXPECT_TRUE(VerifyData(output_1->data(), output_1->data_size(), 1));
 
   // Verify that the second buffer is not available.
   EXPECT_FALSE(splicer_.HasNextBuffer());
@@ -224,7 +224,7 @@ TEST_F(AudioSplicerTest, GapTooLarge) {
   // Reset the timestamp helper so it can generate a buffer that is
   // right after |input_1|.
   input_timestamp_helper_.SetBaseTimestamp(
-      input_1->GetTimestamp() + input_1->GetDuration());
+      input_1->timestamp() + input_1->duration());
 
   // Verify that valid buffers are still accepted.
   scoped_refptr<DataBuffer> input_3 = GetNextInputBuffer(3);
@@ -232,10 +232,10 @@ TEST_F(AudioSplicerTest, GapTooLarge) {
   EXPECT_TRUE(splicer_.HasNextBuffer());
   scoped_refptr<DataBuffer> output_2 = splicer_.GetNextBuffer();
   EXPECT_FALSE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_3->GetTimestamp(), output_2->GetTimestamp());
-  EXPECT_EQ(input_3->GetDuration(), output_2->GetDuration());
-  EXPECT_EQ(input_3->GetDataSize(), output_2->GetDataSize());
-  EXPECT_TRUE(VerifyData(output_2->GetData(), output_2->GetDataSize(), 3));
+  EXPECT_EQ(input_3->timestamp(), output_2->timestamp());
+  EXPECT_EQ(input_3->duration(), output_2->duration());
+  EXPECT_EQ(input_3->data_size(), output_2->data_size());
+  EXPECT_TRUE(VerifyData(output_2->data(), output_2->data_size(), 3));
 }
 
 
@@ -251,7 +251,7 @@ TEST_F(AudioSplicerTest, BufferAddedBeforeBase) {
   input_timestamp_helper_.SetBaseTimestamp(base::TimeDelta::FromSeconds(0));
   scoped_refptr<DataBuffer> input_2 = GetNextInputBuffer(1);
 
-  EXPECT_GT(input_1->GetTimestamp(), input_2->GetTimestamp());
+  EXPECT_GT(input_1->timestamp(), input_2->timestamp());
   EXPECT_TRUE(splicer_.AddInput(input_1));
   EXPECT_FALSE(splicer_.AddInput(input_2));
 }
@@ -273,9 +273,9 @@ TEST_F(AudioSplicerTest, PartialOverlap) {
 
   // Reset timestamp helper so that the next buffer will have a
   // timestamp that starts in the middle of |input_1|.
-  const int kOverlapSize = input_1->GetDataSize() / 4;
-  input_timestamp_helper_.SetBaseTimestamp(input_1->GetTimestamp());
-  input_timestamp_helper_.AddBytes(input_1->GetDataSize() - kOverlapSize);
+  const int kOverlapSize = input_1->data_size() / 4;
+  input_timestamp_helper_.SetBaseTimestamp(input_1->timestamp());
+  input_timestamp_helper_.AddBytes(input_1->data_size() - kOverlapSize);
 
   scoped_refptr<DataBuffer> input_2 = GetNextInputBuffer(2);
 
@@ -288,22 +288,22 @@ TEST_F(AudioSplicerTest, PartialOverlap) {
   EXPECT_FALSE(splicer_.HasNextBuffer());
 
   // Verify that the first input buffer passed through unmodified.
-  EXPECT_EQ(input_1->GetTimestamp(), output_1->GetTimestamp());
-  EXPECT_EQ(input_1->GetDuration(), output_1->GetDuration());
-  EXPECT_EQ(input_1->GetDataSize(), output_1->GetDataSize());
-  EXPECT_TRUE(VerifyData(output_1->GetData(), output_1->GetDataSize(), 1));
+  EXPECT_EQ(input_1->timestamp(), output_1->timestamp());
+  EXPECT_EQ(input_1->duration(), output_1->duration());
+  EXPECT_EQ(input_1->data_size(), output_1->data_size());
+  EXPECT_TRUE(VerifyData(output_1->data(), output_1->data_size(), 1));
 
 
   // Verify that the second input buffer was truncated to only contain
   // the samples that are after the end of |input_1|.
   base::TimeDelta expected_timestamp =
-      input_1->GetTimestamp() + input_1->GetDuration();
+      input_1->timestamp() + input_1->duration();
   base::TimeDelta expected_duration =
-      (input_2->GetTimestamp() + input_2->GetDuration()) - expected_timestamp;
-  EXPECT_EQ(expected_timestamp, output_2->GetTimestamp());
-  EXPECT_EQ(expected_duration, output_2->GetDuration());
-  EXPECT_EQ(input_2->GetDataSize() - kOverlapSize, output_2->GetDataSize());
-  EXPECT_TRUE(VerifyData(output_2->GetData(), output_2->GetDataSize(), 2));
+      (input_2->timestamp() + input_2->duration()) - expected_timestamp;
+  EXPECT_EQ(expected_timestamp, output_2->timestamp());
+  EXPECT_EQ(expected_duration, output_2->duration());
+  EXPECT_EQ(input_2->data_size() - kOverlapSize, output_2->data_size());
+  EXPECT_TRUE(VerifyData(output_2->data(), output_2->data_size(), 2));
 }
 
 
@@ -327,17 +327,17 @@ TEST_F(AudioSplicerTest, DropBuffer) {
 
   // Reset timestamp helper so that the next buffer will have a
   // timestamp that starts in the middle of |input_1|.
-  const int kOverlapOffset = input_1->GetDataSize() / 2;
-  const int kOverlapSize = input_1->GetDataSize() / 4;
-  input_timestamp_helper_.SetBaseTimestamp(input_1->GetTimestamp());
+  const int kOverlapOffset = input_1->data_size() / 2;
+  const int kOverlapSize = input_1->data_size() / 4;
+  input_timestamp_helper_.SetBaseTimestamp(input_1->timestamp());
   input_timestamp_helper_.AddBytes(kOverlapOffset);
 
   scoped_refptr<DataBuffer> input_2 = GetNextInputBuffer(2, kOverlapSize);
 
   // Reset the timestamp helper so the next buffer will be right after
   // |input_1|.
-  input_timestamp_helper_.SetBaseTimestamp(input_1->GetTimestamp());
-  input_timestamp_helper_.AddBytes(input_1->GetDataSize());
+  input_timestamp_helper_.SetBaseTimestamp(input_1->timestamp());
+  input_timestamp_helper_.AddBytes(input_1->data_size());
   scoped_refptr<DataBuffer> input_3 = GetNextInputBuffer(3);
 
   EXPECT_TRUE(splicer_.AddInput(input_1));
@@ -350,17 +350,17 @@ TEST_F(AudioSplicerTest, DropBuffer) {
   EXPECT_FALSE(splicer_.HasNextBuffer());
 
   // Verify that the first input buffer passed through unmodified.
-  EXPECT_EQ(input_1->GetTimestamp(), output_1->GetTimestamp());
-  EXPECT_EQ(input_1->GetDuration(), output_1->GetDuration());
-  EXPECT_EQ(input_1->GetDataSize(), output_1->GetDataSize());
-  EXPECT_TRUE(VerifyData(output_1->GetData(), output_1->GetDataSize(), 1));
+  EXPECT_EQ(input_1->timestamp(), output_1->timestamp());
+  EXPECT_EQ(input_1->duration(), output_1->duration());
+  EXPECT_EQ(input_1->data_size(), output_1->data_size());
+  EXPECT_TRUE(VerifyData(output_1->data(), output_1->data_size(), 1));
 
   // Verify that the second output buffer only contains
   // the samples that are in |input_3|.
-  EXPECT_EQ(input_3->GetTimestamp(), output_2->GetTimestamp());
-  EXPECT_EQ(input_3->GetDuration(), output_2->GetDuration());
-  EXPECT_EQ(input_3->GetDataSize(), output_2->GetDataSize());
-  EXPECT_TRUE(VerifyData(output_2->GetData(), output_2->GetDataSize(), 3));
+  EXPECT_EQ(input_3->timestamp(), output_2->timestamp());
+  EXPECT_EQ(input_3->duration(), output_2->duration());
+  EXPECT_EQ(input_3->data_size(), output_2->data_size());
+  EXPECT_TRUE(VerifyData(output_2->data(), output_2->data_size(), 3));
 }
 
 }  // namespace media

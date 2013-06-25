@@ -513,11 +513,11 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
   // sufficient amount.
   if (fifo_->forward_bytes() >= requested_size_bytes_) {
     // Read from FIFO into temporary data buffer.
-    fifo_->Read(data_->GetWritableData(), requested_size_bytes_);
+    fifo_->Read(data_->writable_data(), requested_size_bytes_);
 
     // Deliver data packet, delay estimation and volume level to the user.
     sink_->OnData(this,
-                  data_->GetData(),
+                  data_->data(),
                   requested_size_bytes_,
                   capture_delay_bytes,
                   normalized_volume);

@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_DATA_BUFFER_H_
 #define MEDIA_BASE_DATA_BUFFER_H_
 
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -18,7 +19,7 @@ namespace media {
 // Unlike DecoderBuffer, allocations are assumed to be allocated with the
 // default memory allocator (i.e., new uint8[]).
 //
-// NOTE: It is illegal to call any method when IsEndOfStream() is true.
+// NOTE: It is illegal to call any method when end_of_stream() is true.
 class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
  public:
   // Allocates buffer of size |buffer_size| >= 0.
@@ -34,27 +35,56 @@ class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
 
   // Create a DataBuffer indicating we've reached end of stream.
   //
-  // Calling any method other than IsEndOfStream() on the resulting buffer
+  // Calling any method other than end_of_stream() on the resulting buffer
   // is disallowed.
   static scoped_refptr<DataBuffer> CreateEOSBuffer();
 
-  base::TimeDelta GetTimestamp() const;
-  void SetTimestamp(const base::TimeDelta& timestamp);
+  base::TimeDelta timestamp() const {
+    DCHECK(!end_of_stream());
+    return timestamp_;
+  }
 
-  base::TimeDelta GetDuration() const;
-  void SetDuration(const base::TimeDelta& duration);
+  void set_timestamp(const base::TimeDelta& timestamp) {
+    DCHECK(!end_of_stream());
+    timestamp_ = timestamp;
+  }
 
-  const uint8* GetData() const;
-  uint8* GetWritableData();
+  base::TimeDelta duration() const {
+    DCHECK(!end_of_stream());
+    return duration_;
+  }
+
+  void set_duration(const base::TimeDelta& duration) {
+    DCHECK(!end_of_stream());
+    duration_ = duration;
+  }
+
+  const uint8* data() const {
+    DCHECK(!end_of_stream());
+    return data_.get();
+  }
+
+  uint8* writable_data() {
+    DCHECK(!end_of_stream());
+    return data_.get();
+  }
 
   // The size of valid data in bytes.
   //
   // Setting this value beyond the buffer size is disallowed.
-  int GetDataSize() const;
-  void SetDataSize(int data_size);
+  int data_size() const {
+    DCHECK(!end_of_stream());
+    return data_size_;
+  }
+
+  void set_data_size(int data_size) {
+    DCHECK(!end_of_stream());
+    CHECK_LE(data_size, buffer_size_);
+    data_size_ = data_size;
+  }
 
   // If there's no data in this buffer, it represents end of stream.
-  bool IsEndOfStream() const;
+  bool end_of_stream() const { return data_ == NULL; }
 
  protected:
   friend class base::RefCountedThreadSafe<DataBuffer>;

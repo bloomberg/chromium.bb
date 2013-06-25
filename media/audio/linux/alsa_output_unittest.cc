@@ -142,7 +142,7 @@ class AlsaPcmOutputStreamTest : public testing::Test {
   void InitBuffer(AlsaPcmOutputStream* test_stream) {
     DCHECK(test_stream);
     packet_ = new media::DataBuffer(kTestPacketSize);
-    packet_->SetDataSize(kTestPacketSize);
+    packet_->set_data_size(kTestPacketSize);
     test_stream->buffer_.reset(new media::SeekableBuffer(0, kTestPacketSize));
     test_stream->buffer_->Append(packet_.get());
   }
@@ -491,25 +491,25 @@ TEST_F(AlsaPcmOutputStreamTest, WritePacket_NormalPacket) {
   test_stream->TransitionTo(AlsaPcmOutputStream::kIsPlaying);
 
   // Write a little less than half the data.
-  int written = packet_->GetDataSize() / kTestBytesPerFrame / 2 - 1;
+  int written = packet_->data_size() / kTestBytesPerFrame / 2 - 1;
   EXPECT_CALL(mock_alsa_wrapper_, PcmAvailUpdate(kFakeHandle))
         .WillOnce(Return(written));
-  EXPECT_CALL(mock_alsa_wrapper_, PcmWritei(kFakeHandle, packet_->GetData(), _))
+  EXPECT_CALL(mock_alsa_wrapper_, PcmWritei(kFakeHandle, packet_->data(), _))
       .WillOnce(Return(written));
 
   test_stream->WritePacket();
 
   ASSERT_EQ(test_stream->buffer_->forward_bytes(),
-            packet_->GetDataSize() - written * kTestBytesPerFrame);
+            packet_->data_size() - written * kTestBytesPerFrame);
 
   // Write the rest.
   EXPECT_CALL(mock_alsa_wrapper_, PcmAvailUpdate(kFakeHandle))
       .WillOnce(Return(kTestFramesPerPacket - written));
   EXPECT_CALL(mock_alsa_wrapper_,
               PcmWritei(kFakeHandle,
-                        packet_->GetData() + written * kTestBytesPerFrame,
+                        packet_->data() + written * kTestBytesPerFrame,
                         _))
-      .WillOnce(Return(packet_->GetDataSize() / kTestBytesPerFrame - written));
+      .WillOnce(Return(packet_->data_size() / kTestBytesPerFrame - written));
   test_stream->WritePacket();
   EXPECT_EQ(0, test_stream->buffer_->forward_bytes());
 
@@ -548,7 +548,7 @@ TEST_F(AlsaPcmOutputStreamTest, WritePacket_WriteFails) {
 
   test_stream->WritePacket();
 
-  ASSERT_EQ(test_stream->buffer_->forward_bytes(), packet_->GetDataSize());
+  ASSERT_EQ(test_stream->buffer_->forward_bytes(), packet_->data_size());
 
   // Fail the next write, and see that stop_stream_ is set.
   EXPECT_CALL(mock_alsa_wrapper_, PcmAvailUpdate(kFakeHandle))
@@ -560,7 +560,7 @@ TEST_F(AlsaPcmOutputStreamTest, WritePacket_WriteFails) {
   EXPECT_CALL(mock_alsa_wrapper_, StrError(kTestFailedErrno))
       .WillOnce(Return(kDummyMessage));
   test_stream->WritePacket();
-  EXPECT_EQ(test_stream->buffer_->forward_bytes(), packet_->GetDataSize());
+  EXPECT_EQ(test_stream->buffer_->forward_bytes(), packet_->data_size());
   EXPECT_TRUE(test_stream->stop_stream_);
 
   // Now close it and test that everything was released.

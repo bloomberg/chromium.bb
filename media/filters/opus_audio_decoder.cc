@@ -551,8 +551,8 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
     // Copy the audio samples into an output buffer.
     *output_buffer = DataBuffer::CopyFrom(
         decoded_audio_data, decoded_audio_size);
-    (*output_buffer)->SetTimestamp(output_timestamp_helper_->GetTimestamp());
-    (*output_buffer)->SetDuration(
+    (*output_buffer)->set_timestamp(output_timestamp_helper_->GetTimestamp());
+    (*output_buffer)->set_duration(
         output_timestamp_helper_->GetDuration(decoded_audio_size));
     output_timestamp_helper_->AddBytes(decoded_audio_size);
   }

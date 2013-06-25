@@ -458,20 +458,20 @@ void DecryptingAudioDecoder::EnqueueFrames(
       ++iter) {
     scoped_refptr<DataBuffer>& frame = *iter;
 
-    DCHECK(!frame->IsEndOfStream()) << "EOS frame returned.";
-    DCHECK_GT(frame->GetDataSize(), 0) << "Empty frame returned.";
+    DCHECK(!frame->end_of_stream()) << "EOS frame returned.";
+    DCHECK_GT(frame->data_size(), 0) << "Empty frame returned.";
 
     base::TimeDelta cur_timestamp = output_timestamp_base_ +
         NumberOfSamplesToDuration(total_samples_decoded_);
-    if (IsOutOfSync(cur_timestamp, frame->GetTimestamp())) {
+    if (IsOutOfSync(cur_timestamp, frame->timestamp())) {
       DVLOG(1)  << "Timestamp returned by the decoder ("
-                << frame->GetTimestamp().InMilliseconds() << " ms)"
+                << frame->timestamp().InMilliseconds() << " ms)"
                 << " does not match the input timestamp and number of samples"
                 << " decoded (" << cur_timestamp.InMilliseconds() << " ms).";
     }
-    frame->SetTimestamp(cur_timestamp);
+    frame->set_timestamp(cur_timestamp);
 
-    int frame_size = frame->GetDataSize();
+    int frame_size = frame->data_size();
     DCHECK_EQ(frame_size % bytes_per_sample_, 0) <<
         "Decoder didn't output full samples";
     int samples_decoded = frame_size / bytes_per_sample_;
@@ -480,7 +480,7 @@ void DecryptingAudioDecoder::EnqueueFrames(
     base::TimeDelta next_timestamp = output_timestamp_base_ +
         NumberOfSamplesToDuration(total_samples_decoded_);
     base::TimeDelta duration = next_timestamp - cur_timestamp;
-    frame->SetDuration(duration);
+    frame->set_duration(duration);
   }
 }
 

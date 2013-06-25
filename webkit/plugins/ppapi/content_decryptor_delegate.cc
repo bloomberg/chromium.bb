@@ -167,7 +167,7 @@ bool DeserializeAudioFrames(PP_Resource audio_frames,
 
     scoped_refptr<media::DataBuffer> frame =
         media::DataBuffer::CopyFrom(cur, frame_size);
-    frame->SetTimestamp(base::TimeDelta::FromMicroseconds(timestamp));
+    frame->set_timestamp(base::TimeDelta::FromMicroseconds(timestamp));
     frames->push_back(frame);
 
     cur += frame_size;

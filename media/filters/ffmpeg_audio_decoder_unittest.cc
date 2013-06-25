@@ -96,14 +96,14 @@ class FFmpegAudioDecoderTest : public testing::Test {
 
   void ExpectDecodedAudio(size_t i, int64 timestamp, int64 duration) {
     EXPECT_LT(i, decoded_audio_.size());
-    EXPECT_EQ(timestamp, decoded_audio_[i]->GetTimestamp().InMicroseconds());
-    EXPECT_EQ(duration, decoded_audio_[i]->GetDuration().InMicroseconds());
-    EXPECT_FALSE(decoded_audio_[i]->IsEndOfStream());
+    EXPECT_EQ(timestamp, decoded_audio_[i]->timestamp().InMicroseconds());
+    EXPECT_EQ(duration, decoded_audio_[i]->duration().InMicroseconds());
+    EXPECT_FALSE(decoded_audio_[i]->end_of_stream());
   }
 
   void ExpectEndOfStream(size_t i) {
     EXPECT_LT(i, decoded_audio_.size());
-    EXPECT_TRUE(decoded_audio_[i]->IsEndOfStream());
+    EXPECT_TRUE(decoded_audio_[i]->end_of_stream());
   }
 
   base::MessageLoop message_loop_;

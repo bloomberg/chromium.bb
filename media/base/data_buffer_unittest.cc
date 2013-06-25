@@ -12,19 +12,19 @@ TEST(DataBufferTest, Constructor_ZeroSize) {
   // Zero-sized buffers are valid. In practice they aren't used very much but it
   // eliminates clients from worrying about null data pointers.
   scoped_refptr<DataBuffer> buffer = new DataBuffer(0);
-  EXPECT_TRUE(buffer->GetData());
-  EXPECT_TRUE(buffer->GetWritableData());
-  EXPECT_EQ(0, buffer->GetDataSize());
-  EXPECT_FALSE(buffer->IsEndOfStream());
+  EXPECT_TRUE(buffer->data());
+  EXPECT_TRUE(buffer->writable_data());
+  EXPECT_EQ(0, buffer->data_size());
+  EXPECT_FALSE(buffer->end_of_stream());
 }
 
 TEST(DataBufferTest, Constructor_NonZeroSize) {
   // Buffer size should be set.
   scoped_refptr<DataBuffer> buffer = new DataBuffer(10);
-  EXPECT_TRUE(buffer->GetData());
-  EXPECT_TRUE(buffer->GetWritableData());
-  EXPECT_EQ(0, buffer->GetDataSize());
-  EXPECT_FALSE(buffer->IsEndOfStream());
+  EXPECT_TRUE(buffer->data());
+  EXPECT_TRUE(buffer->writable_data());
+  EXPECT_EQ(0, buffer->data_size());
+  EXPECT_FALSE(buffer->end_of_stream());
 }
 
 TEST(DataBufferTest, Constructor_ScopedArray) {
@@ -34,11 +34,11 @@ TEST(DataBufferTest, Constructor_ScopedArray) {
   const uint8* kData = data.get();
 
   scoped_refptr<DataBuffer> buffer = new DataBuffer(data.Pass(), kSize);
-  EXPECT_TRUE(buffer->GetData());
-  EXPECT_TRUE(buffer->GetWritableData());
-  EXPECT_EQ(kData, buffer->GetData());
-  EXPECT_EQ(kSize, buffer->GetDataSize());
-  EXPECT_FALSE(buffer->IsEndOfStream());
+  EXPECT_TRUE(buffer->data());
+  EXPECT_TRUE(buffer->writable_data());
+  EXPECT_EQ(kData, buffer->data());
+  EXPECT_EQ(kSize, buffer->data_size());
+  EXPECT_FALSE(buffer->end_of_stream());
 }
 
 TEST(DataBufferTest, CopyFrom) {
@@ -47,18 +47,18 @@ TEST(DataBufferTest, CopyFrom) {
 
   scoped_refptr<DataBuffer> buffer =
       DataBuffer::CopyFrom(kTestData, kTestDataSize);
-  EXPECT_EQ(kTestDataSize, buffer->GetDataSize());
-  EXPECT_FALSE(buffer->IsEndOfStream());
+  EXPECT_EQ(kTestDataSize, buffer->data_size());
+  EXPECT_FALSE(buffer->end_of_stream());
 
   // Ensure we are copying the data, not just pointing to the original data.
-  EXPECT_EQ(0, memcmp(buffer->GetData(), kTestData, kTestDataSize));
-  buffer->GetWritableData()[0] = 0xFF;
-  EXPECT_NE(0, memcmp(buffer->GetData(), kTestData, kTestDataSize));
+  EXPECT_EQ(0, memcmp(buffer->data(), kTestData, kTestDataSize));
+  buffer->writable_data()[0] = 0xFF;
+  EXPECT_NE(0, memcmp(buffer->data(), kTestData, kTestDataSize));
 }
 
 TEST(DataBufferTest, CreateEOSBuffer) {
   scoped_refptr<DataBuffer> buffer = DataBuffer::CreateEOSBuffer();
-  EXPECT_TRUE(buffer->IsEndOfStream());
+  EXPECT_TRUE(buffer->end_of_stream());
 }
 
 TEST(DataBufferTest, Timestamp) {
@@ -67,13 +67,13 @@ TEST(DataBufferTest, Timestamp) {
   const base::TimeDelta kTimestampB = base::TimeDelta::FromMicroseconds(1234);
 
   scoped_refptr<DataBuffer> buffer = new DataBuffer(0);
-  EXPECT_TRUE(buffer->GetTimestamp() == kZero);
+  EXPECT_TRUE(buffer->timestamp() == kZero);
 
-  buffer->SetTimestamp(kTimestampA);
-  EXPECT_TRUE(buffer->GetTimestamp() == kTimestampA);
+  buffer->set_timestamp(kTimestampA);
+  EXPECT_TRUE(buffer->timestamp() == kTimestampA);
 
-  buffer->SetTimestamp(kTimestampB);
-  EXPECT_TRUE(buffer->GetTimestamp() == kTimestampB);
+  buffer->set_timestamp(kTimestampB);
+  EXPECT_TRUE(buffer->timestamp() == kTimestampB);
 }
 
 TEST(DataBufferTest, Duration) {
@@ -82,13 +82,13 @@ TEST(DataBufferTest, Duration) {
   const base::TimeDelta kDurationB = base::TimeDelta::FromMicroseconds(1234);
 
   scoped_refptr<DataBuffer> buffer = new DataBuffer(0);
-  EXPECT_TRUE(buffer->GetDuration() == kZero);
+  EXPECT_TRUE(buffer->duration() == kZero);
 
-  buffer->SetDuration(kDurationA);
-  EXPECT_TRUE(buffer->GetDuration() == kDurationA);
+  buffer->set_duration(kDurationA);
+  EXPECT_TRUE(buffer->duration() == kDurationA);
 
-  buffer->SetDuration(kDurationB);
-  EXPECT_TRUE(buffer->GetDuration() == kDurationB);
+  buffer->set_duration(kDurationB);
+  EXPECT_TRUE(buffer->duration() == kDurationB);
 }
 
 TEST(DataBufferTest, ReadingWriting) {
@@ -101,22 +101,22 @@ TEST(DataBufferTest, ReadingWriting) {
   scoped_refptr<DataBuffer> buffer(new DataBuffer(kDataSize));
   ASSERT_TRUE(buffer.get());
 
-  uint8* data = buffer->GetWritableData();
+  uint8* data = buffer->writable_data();
   ASSERT_TRUE(data);
   memcpy(data, kData, kDataSize);
-  buffer->SetDataSize(kDataSize);
-  const uint8* read_only_data = buffer->GetData();
+  buffer->set_data_size(kDataSize);
+  const uint8* read_only_data = buffer->data();
   ASSERT_EQ(data, read_only_data);
   ASSERT_EQ(0, memcmp(read_only_data, kData, kDataSize));
-  EXPECT_FALSE(buffer->IsEndOfStream());
+  EXPECT_FALSE(buffer->end_of_stream());
 
   scoped_refptr<DataBuffer> buffer2(new DataBuffer(kNewDataSize + 10));
-  data = buffer2->GetWritableData();
+  data = buffer2->writable_data();
   ASSERT_TRUE(data);
   memcpy(data, kNewData, kNewDataSize);
-  buffer2->SetDataSize(kNewDataSize);
-  read_only_data = buffer2->GetData();
-  EXPECT_EQ(kNewDataSize, buffer2->GetDataSize());
+  buffer2->set_data_size(kNewDataSize);
+  read_only_data = buffer2->data();
+  EXPECT_EQ(kNewDataSize, buffer2->data_size());
   ASSERT_EQ(data, read_only_data);
   EXPECT_EQ(0, memcmp(read_only_data, kNewData, kNewDataSize));
 }

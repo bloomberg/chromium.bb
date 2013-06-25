@@ -194,11 +194,11 @@ class AudioRendererImplTest : public ::testing::Test {
     CHECK(!read_cb_.is_null());
 
     scoped_refptr<DataBuffer> buffer = new DataBuffer(size);
-    buffer->SetDataSize(size);
-    memset(buffer->GetWritableData(), kPlayingAudio, buffer->GetDataSize());
-    buffer->SetTimestamp(next_timestamp_->GetTimestamp());
-    buffer->SetDuration(next_timestamp_->GetDuration(buffer->GetDataSize()));
-    next_timestamp_->AddBytes(buffer->GetDataSize());
+    buffer->set_data_size(size);
+    memset(buffer->writable_data(), kPlayingAudio, buffer->data_size());
+    buffer->set_timestamp(next_timestamp_->GetTimestamp());
+    buffer->set_duration(next_timestamp_->GetDuration(buffer->data_size()));
+    next_timestamp_->AddBytes(buffer->data_size());
 
     DeliverBuffer(AudioDecoder::kOk, buffer);
   }

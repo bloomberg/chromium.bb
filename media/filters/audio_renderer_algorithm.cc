@@ -393,7 +393,7 @@ base::TimeDelta AudioRendererAlgorithm::GetTime() {
 
 void AudioRendererAlgorithm::EnqueueBuffer(
     const scoped_refptr<DataBuffer>& buffer_in) {
-  DCHECK(!buffer_in->IsEndOfStream());
+  DCHECK(!buffer_in->end_of_stream());
   audio_buffer_.Append(buffer_in);
 }
 

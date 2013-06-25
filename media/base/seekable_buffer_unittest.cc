@@ -233,13 +233,13 @@ TEST_F(SeekableBufferTest, GetCurrentChunk) {
 
   buffer_.Append(buffer.get());
   EXPECT_TRUE(buffer_.GetCurrentChunk(&data, &size));
-  EXPECT_EQ(data, buffer->GetData());
-  EXPECT_EQ(size, buffer->GetDataSize());
+  EXPECT_EQ(data, buffer->data());
+  EXPECT_EQ(size, buffer->data_size());
 
   buffer_.Seek(kSeekSize);
   EXPECT_TRUE(buffer_.GetCurrentChunk(&data, &size));
-  EXPECT_EQ(data, buffer->GetData() + kSeekSize);
-  EXPECT_EQ(size, buffer->GetDataSize() - kSeekSize);
+  EXPECT_EQ(data, buffer->data() + kSeekSize);
+  EXPECT_EQ(size, buffer->data_size() - kSeekSize);
 }
 
 TEST_F(SeekableBufferTest, SeekForward) {
@@ -331,9 +331,9 @@ TEST_F(SeekableBufferTest, GetTime) {
   scoped_refptr<DataBuffer> buffer = DataBuffer::CopyFrom(data_, kWriteSize);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    buffer->SetTimestamp(base::TimeDelta::FromMicroseconds(
+    buffer->set_timestamp(base::TimeDelta::FromMicroseconds(
         tests[i].first_time_useconds));
-    buffer->SetDuration(base::TimeDelta::FromMicroseconds(
+    buffer->set_duration(base::TimeDelta::FromMicroseconds(
         tests[i].duration_useconds));
     buffer_.Append(buffer.get());
     EXPECT_TRUE(buffer_.Seek(tests[i].consume_bytes));

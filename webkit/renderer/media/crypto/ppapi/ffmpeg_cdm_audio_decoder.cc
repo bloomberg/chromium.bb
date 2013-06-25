@@ -337,12 +337,12 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
         }
 
         output = new media::DataBuffer(decoded_audio_size);
-        output->SetDataSize(decoded_audio_size);
+        output->set_data_size(decoded_audio_size);
 
         DCHECK_EQ(frames_to_interleave, converter_bus_->frames() - skip_frames);
         converter_bus_->ToInterleavedPartial(
             skip_frames, frames_to_interleave, bits_per_channel_ / 8,
-            output->GetWritableData());
+            output->writable_data());
       } else {
         output = media::DataBuffer::CopyFrom(
             av_frame_->extended_data[0] + start_sample * bytes_per_frame_,
@@ -355,11 +355,11 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
 
       // Serialize the audio samples into |serialized_audio_frames_|.
       SerializeInt64(output_timestamp.InMicroseconds());
-      SerializeInt64(output->GetDataSize());
+      SerializeInt64(output->data_size());
       serialized_audio_frames_.insert(
           serialized_audio_frames_.end(),
-          output->GetData(),
-          output->GetData() + output->GetDataSize());
+          output->data(),
+          output->data() + output->data_size());
     }
   } while (packet.size > 0);
 

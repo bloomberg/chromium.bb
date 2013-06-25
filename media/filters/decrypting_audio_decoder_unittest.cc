@@ -63,7 +63,7 @@ ACTION_P2(ResetAndRunCallback, callback, param) {
 }
 
 MATCHER(IsEndOfStream, "end of stream") {
-  return (arg->IsEndOfStream());
+  return (arg->end_of_stream());
 }
 
 }  // namespace
@@ -83,7 +83,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
         end_of_stream_frame_(DataBuffer::CreateEOSBuffer()),
         decoded_frame_list_() {
     scoped_refptr<DataBuffer> data_buffer = new DataBuffer(kFakeAudioFrameSize);
-    data_buffer->SetDataSize(kFakeAudioFrameSize);
+    data_buffer->set_data_size(kFakeAudioFrameSize);
     // |decoded_frame_| contains random data.
     decoded_frame_ = data_buffer;
     decoded_frame_list_.push_back(decoded_frame_);
@@ -122,7 +122,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
       const scoped_refptr<DataBuffer>& audio_frame) {
     if (status != AudioDecoder::kOk)
       EXPECT_CALL(*this, FrameReady(status, IsNull()));
-    else if (audio_frame->IsEndOfStream())
+    else if (audio_frame->end_of_stream())
       EXPECT_CALL(*this, FrameReady(status, IsEndOfStream()));
     else
       EXPECT_CALL(*this, FrameReady(status, audio_frame));
@@ -322,9 +322,9 @@ TEST_F(DecryptingAudioDecoderTest, DecryptAndDecode_MultipleFrames) {
   Initialize();
 
   scoped_refptr<DataBuffer> frame_a = new DataBuffer(kFakeAudioFrameSize);
-  frame_a->SetDataSize(kFakeAudioFrameSize);
+  frame_a->set_data_size(kFakeAudioFrameSize);
   scoped_refptr<DataBuffer> frame_b = new DataBuffer(kFakeAudioFrameSize);
-  frame_b->SetDataSize(kFakeAudioFrameSize);
+  frame_b->set_data_size(kFakeAudioFrameSize);
   decoded_frame_list_.push_back(frame_a);
   decoded_frame_list_.push_back(frame_b);
 
