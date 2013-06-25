@@ -66,17 +66,10 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 	if (!seat_name)
 		seat_name = default_seat_name;
 
-	wl_list_for_each(seat, &c->seat_list, base.link) {
-		if (strcmp(seat->base.seat_name, seat_name) == 0)
-			goto seat_found;
-	}
+	seat = udev_seat_get_named(c, seat_name);
 
-	seat = udev_seat_create(c, seat_name);
-
-	if (!seat)
+	if (seat == NULL)
 		return -1;
-
-seat_found:
 
 	/* Use non-blocking mode so that we can loop on read on
 	 * evdev_device_data() until all events on the fd are
@@ -349,4 +342,22 @@ udev_seat_destroy(struct udev_seat *seat)
 {
 	weston_seat_release(&seat->base);
 	free(seat);
+}
+
+struct udev_seat *
+udev_seat_get_named(struct weston_compositor *c, const char *seat_name)
+{
+	struct udev_seat *seat;
+
+	wl_list_for_each(seat, &c->seat_list, base.link) {
+		if (strcmp(seat->base.seat_name, seat_name) == 0)
+			return seat;
+	}
+
+	seat = udev_seat_create(c, seat_name);
+
+	if (!seat)
+		return NULL;
+
+	return seat;
 }

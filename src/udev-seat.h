@@ -48,4 +48,6 @@ int udev_input_init(struct udev_input *input,
 		    const char *seat_id);
 void udev_input_destroy(struct udev_input *input);
 
+struct udev_seat *udev_seat_get_named(struct weston_compositor *c,
+				      const char *seat_name);
 #endif
