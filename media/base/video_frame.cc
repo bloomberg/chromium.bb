@@ -64,7 +64,7 @@ bool VideoFrame::IsValidConfig(VideoFrame::Format format,
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
-    uint32 texture_id,
+    const scoped_refptr<MailboxHolder>& mailbox_holder,
     uint32 texture_target,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
@@ -74,10 +74,11 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
     const base::Closure& no_longer_needed_cb) {
   scoped_refptr<VideoFrame> frame(new VideoFrame(
       NATIVE_TEXTURE, coded_size, visible_rect, natural_size, timestamp));
-  frame->texture_id_ = texture_id;
+  frame->texture_mailbox_holder_ = mailbox_holder;
   frame->texture_target_ = texture_target;
   frame->read_pixels_cb_ = read_pixels_cb;
   frame->no_longer_needed_cb_ = no_longer_needed_cb;
+
   return frame;
 }
 
@@ -266,7 +267,6 @@ VideoFrame::VideoFrame(VideoFrame::Format format,
       coded_size_(coded_size),
       visible_rect_(visible_rect),
       natural_size_(natural_size),
-      texture_id_(0),
       texture_target_(0),
       timestamp_(timestamp) {
   memset(&strides_, 0, sizeof(strides_));
@@ -340,9 +340,10 @@ uint8* VideoFrame::data(size_t plane) const {
   return data_[plane];
 }
 
-uint32 VideoFrame::texture_id() const {
+const scoped_refptr<VideoFrame::MailboxHolder>& VideoFrame::texture_mailbox()
+    const {
   DCHECK_EQ(format_, NATIVE_TEXTURE);
-  return texture_id_;
+  return texture_mailbox_holder_;
 }
 
 uint32 VideoFrame::texture_target() const {
@@ -364,6 +365,19 @@ void VideoFrame::HashFrameForTesting(base::MD5Context* context) {
           row_bytes(plane)));
     }
   }
+}
+
+VideoFrame::MailboxHolder::MailboxHolder(
+    const gpu::Mailbox& mailbox,
+    unsigned sync_point,
+    const TextureNoLongerNeededCallback& release_callback)
+    : mailbox_(mailbox),
+      sync_point_(sync_point),
+      release_callback_(release_callback) {}
+
+VideoFrame::MailboxHolder::~MailboxHolder() {
+  if (!release_callback_.is_null())
+    release_callback_.Run(sync_point_);
 }
 
 }  // namespace media

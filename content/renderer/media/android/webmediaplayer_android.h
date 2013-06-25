@@ -17,6 +17,7 @@
 #include "content/renderer/media/android/media_info_loader.h"
 #include "content/renderer/media/android/media_source_delegate.h"
 #include "content/renderer/media/android/stream_texture_factory_android.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_keys.h"
@@ -334,6 +335,11 @@ class WebMediaPlayerAndroid
 
   // GL texture ID allocated to the video.
   unsigned int texture_id_;
+
+  // GL texture mailbox for texture_id_ to provide in the VideoFrame, and sync
+  // point for when the mailbox was produced.
+  gpu::Mailbox texture_mailbox_;
+  unsigned int texture_mailbox_sync_point_;
 
   // Stream texture ID allocated to the video.
   unsigned int stream_id_;

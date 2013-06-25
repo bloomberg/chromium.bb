@@ -96,25 +96,30 @@ void RendererGpuVideoDecoderFactories::AsyncCreateVideoDecodeAccelerator(
   compositor_loop_async_waiter_.Signal();
 }
 
-bool RendererGpuVideoDecoderFactories::CreateTextures(
+uint32 RendererGpuVideoDecoderFactories::CreateTextures(
     int32 count, const gfx::Size& size,
     std::vector<uint32>* texture_ids,
+    std::vector<gpu::Mailbox>* texture_mailboxes,
     uint32 texture_target) {
+  uint32 sync_point = 0;
+
   DCHECK(!message_loop_->BelongsToCurrentThread());
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncCreateTextures, this,
-      count, size, texture_target));
+      count, size, texture_target, &sync_point));
 
   base::WaitableEvent* objects[] = {&aborted_waiter_,
                                     &compositor_loop_async_waiter_};
   if (base::WaitableEvent::WaitMany(objects, arraysize(objects)) == 0)
-    return false;
+    return 0;
   texture_ids->swap(created_textures_);
-  return true;
+  texture_mailboxes->swap(created_texture_mailboxes_);
+  return sync_point;
 }
 
 void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
-    int32 count, const gfx::Size& size, uint32 texture_target) {
+    int32 count, const gfx::Size& size, uint32 texture_target,
+    uint32* sync_point) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(texture_target);
 
@@ -124,6 +129,7 @@ void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
   }
   gpu::gles2::GLES2Implementation* gles2 = context_->GetImplementation();
   created_textures_.resize(count);
+  created_texture_mailboxes_.resize(count);
   gles2->GenTextures(count, &created_textures_[0]);
   for (int i = 0; i < count; ++i) {
     gles2->ActiveTexture(GL_TEXTURE0);
@@ -137,12 +143,18 @@ void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
       gles2->TexImage2D(texture_target, 0, GL_RGBA, size.width(), size.height(),
                         0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     }
+    gles2->GenMailboxCHROMIUM(created_texture_mailboxes_[i].name);
+    gles2->ProduceTextureCHROMIUM(texture_target,
+                                  created_texture_mailboxes_[i].name);
   }
+
   // We need a glFlush here to guarantee the decoder (in the GPU process) can
   // use the texture ids we return here.  Since textures are expected to be
   // reused, this should not be unacceptably expensive.
   gles2->Flush();
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
+
+  *sync_point = gles2->InsertSyncPointCHROMIUM();
   compositor_loop_async_waiter_.Signal();
 }
 
@@ -160,6 +172,33 @@ void RendererGpuVideoDecoderFactories::AsyncDeleteTexture(uint32 texture_id) {
   gpu::gles2::GLES2Implementation* gles2 = context_->GetImplementation();
   gles2->DeleteTextures(1, &texture_id);
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
+}
+
+void RendererGpuVideoDecoderFactories::WaitSyncPoint(uint32 sync_point) {
+  if (message_loop_->BelongsToCurrentThread()) {
+    AsyncWaitSyncPoint(sync_point);
+    return;
+  }
+
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+      &RendererGpuVideoDecoderFactories::AsyncWaitSyncPoint,
+      this,
+      sync_point));
+  base::WaitableEvent* objects[] = {&aborted_waiter_,
+                                    &compositor_loop_async_waiter_};
+  base::WaitableEvent::WaitMany(objects, arraysize(objects));
+}
+
+void RendererGpuVideoDecoderFactories::AsyncWaitSyncPoint(uint32 sync_point) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  if (!context_) {
+    compositor_loop_async_waiter_.Signal();
+    return;
+  }
+
+  gpu::gles2::GLES2Implementation* gles2 = context_->GetImplementation();
+  gles2->WaitSyncPointCHROMIUM(sync_point);
+  compositor_loop_async_waiter_.Signal();
 }
 
 void RendererGpuVideoDecoderFactories::ReadPixels(

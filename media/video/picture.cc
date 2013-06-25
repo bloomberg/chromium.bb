@@ -12,6 +12,16 @@ PictureBuffer::PictureBuffer(int32 id, gfx::Size size, uint32 texture_id)
       texture_id_(texture_id) {
 }
 
+PictureBuffer::PictureBuffer(int32 id,
+                             gfx::Size size,
+                             uint32 texture_id,
+                             const gpu::Mailbox& texture_mailbox)
+    : id_(id),
+      size_(size),
+      texture_id_(texture_id),
+      texture_mailbox_(texture_mailbox) {
+}
+
 Picture::Picture(int32 picture_buffer_id, int32 bitstream_buffer_id)
     : picture_buffer_id_(picture_buffer_id),
       bitstream_buffer_id_(bitstream_buffer_id) {

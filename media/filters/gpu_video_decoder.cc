@@ -495,13 +495,20 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
 
   std::vector<uint32> texture_ids;
+  std::vector<gpu::Mailbox> texture_mailboxes;
   decoder_texture_target_ = texture_target;
-  if (!factories_->CreateTextures(
-      count, size, &texture_ids, decoder_texture_target_)) {
+  // Discards the sync point returned here since PictureReady will imply that
+  // the produce has already happened, and the texture is ready for use.
+  if (!factories_->CreateTextures(count,
+                                  size,
+                                  &texture_ids,
+                                  &texture_mailboxes,
+                                  decoder_texture_target_)) {
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
   DCHECK_EQ(count, texture_ids.size());
+  DCHECK_EQ(count, texture_mailboxes.size());
 
   if (!vda_)
     return;
@@ -509,7 +516,7 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,
   std::vector<PictureBuffer> picture_buffers;
   for (size_t i = 0; i < texture_ids.size(); ++i) {
     picture_buffers.push_back(PictureBuffer(
-        next_picture_buffer_id_++, size, texture_ids[i]));
+        next_picture_buffer_id_++, size, texture_ids[i], texture_mailboxes[i]));
     bool inserted = assigned_picture_buffers_.insert(std::make_pair(
         picture_buffers.back().id(), picture_buffers.back())).second;
     DCHECK(inserted);
@@ -570,16 +577,22 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   GetBufferData(picture.bitstream_buffer_id(), &timestamp, &visible_rect,
                 &natural_size);
   DCHECK(decoder_texture_target_);
+
   scoped_refptr<VideoFrame> frame(
       VideoFrame::WrapNativeTexture(
-          pb.texture_id(), decoder_texture_target_, pb.size(), visible_rect,
+          new VideoFrame::MailboxHolder(
+              pb.texture_mailbox(),
+              0,  // sync_point
+              BindToCurrentLoop(base::Bind(
+                  &GpuVideoDecoder::ReusePictureBuffer, weak_this_,
+                  picture.picture_buffer_id()))),
+          decoder_texture_target_,
+          pb.size(), visible_rect,
           natural_size, timestamp,
           base::Bind(&Factories::ReadPixels, factories_, pb.texture_id(),
                      decoder_texture_target_,
                      gfx::Size(visible_rect.width(), visible_rect.height())),
-          BindToCurrentLoop(base::Bind(
-              &GpuVideoDecoder::ReusePictureBuffer, weak_this_,
-              picture.picture_buffer_id()))));
+          base::Closure()));
   CHECK_GT(available_pictures_, 0);
   --available_pictures_;
   bool inserted =
@@ -610,7 +623,8 @@ void GpuVideoDecoder::EnqueueFrameAndTriggerFrameDelivery(
   ready_video_frames_.pop_front();
 }
 
-void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
+void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id,
+                                         uint32 sync_point) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
 
   if (!vda_)
@@ -632,6 +646,8 @@ void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
     dismissed_picture_buffers_.erase(it);
     return;
   }
+
+  factories_->WaitSyncPoint(sync_point);
 
   ++available_pictures_;
 

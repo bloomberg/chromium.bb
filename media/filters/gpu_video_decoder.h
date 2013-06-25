@@ -47,10 +47,13 @@ class MEDIA_EXPORT GpuVideoDecoder
         VideoCodecProfile, VideoDecodeAccelerator::Client*) = 0;
 
     // Allocate & delete native textures.
-    virtual bool CreateTextures(int32 count, const gfx::Size& size,
-                                std::vector<uint32>* texture_ids,
-                                uint32 texture_target) = 0;
+    virtual uint32 CreateTextures(int32 count, const gfx::Size& size,
+                                  std::vector<uint32>* texture_ids,
+                                  std::vector<gpu::Mailbox>* texture_mailboxes,
+                                  uint32 texture_target) = 0;
     virtual void DeleteTexture(uint32 texture_id) = 0;
+
+    virtual void WaitSyncPoint(uint32 sync_point) = 0;
 
     // Read pixels from a native texture and store into |pixels| as RGBA.
     virtual void ReadPixels(uint32 texture_id, uint32 texture_target,
@@ -132,7 +135,7 @@ class MEDIA_EXPORT GpuVideoDecoder
       const scoped_refptr<VideoFrame>& frame);
 
   // Indicate the picture buffer can be reused by the decoder.
-  void ReusePictureBuffer(int64 picture_buffer_id);
+  void ReusePictureBuffer(int64 picture_buffer_id, uint32 sync_point);
 
   void RecordBufferData(
       const BitstreamBuffer& bitstream_buffer, const DecoderBuffer& buffer);

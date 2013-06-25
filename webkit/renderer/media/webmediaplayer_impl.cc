@@ -589,30 +589,49 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     base::AutoLock auto_lock(lock_);
     video_frame = current_frame_;
   }
-  if (video_frame.get() &&
-      video_frame->format() == media::VideoFrame::NATIVE_TEXTURE &&
-      video_frame->texture_target() == GL_TEXTURE_2D) {
-    uint32 source_texture = video_frame->texture_id();
-    // The video is stored in a unmultiplied format, so premultiply
-    // if necessary.
-    web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
-        premultiply_alpha);
-    // Application itself needs to take care of setting the right flip_y
-    // value down to get the expected result.
-    // flip_y==true means to reverse the video orientation while
-    // flip_y==false means to keep the intrinsic orientation.
-    web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
-    web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D,
-        source_texture, texture, level, internal_format, type);
-    web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
-    web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
-        false);
-    // The flush() operation is not necessary here. It is kept since the
-    // performance will be better when it is added than not.
-    web_graphics_context->flush();
-    return true;
-  }
-  return false;
+
+  if (!video_frame.get())
+    return false;
+  if (video_frame->format() != media::VideoFrame::NATIVE_TEXTURE)
+    return false;
+  if (video_frame->texture_target() != GL_TEXTURE_2D)
+    return false;
+
+  scoped_refptr<media::VideoFrame::MailboxHolder> mailbox_holder =
+      video_frame->texture_mailbox();
+
+  uint32 source_texture = web_graphics_context->createTexture();
+
+  web_graphics_context->waitSyncPoint(mailbox_holder->sync_point());
+  web_graphics_context->bindTexture(GL_TEXTURE_2D, source_texture);
+  web_graphics_context->consumeTextureCHROMIUM(GL_TEXTURE_2D,
+                                               mailbox_holder->mailbox().name);
+
+  // The video is stored in a unmultiplied format, so premultiply
+  // if necessary.
+  web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
+                                    premultiply_alpha);
+  // Application itself needs to take care of setting the right flip_y
+  // value down to get the expected result.
+  // flip_y==true means to reverse the video orientation while
+  // flip_y==false means to keep the intrinsic orientation.
+  web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
+  web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D,
+                                            source_texture,
+                                            texture,
+                                            level,
+                                            internal_format,
+                                            type);
+  web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
+  web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
+                                    false);
+
+  web_graphics_context->deleteTexture(source_texture);
+
+  // The flush() operation is not necessary here. It is kept since the
+  // performance will be better when it is added than not.
+  web_graphics_context->flush();
+  return true;
 }
 
 // Helper functions to report media EME related stats to UMA. They follow the

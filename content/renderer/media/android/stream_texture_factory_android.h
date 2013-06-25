@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/video_frame_provider.h"
 #include "content/renderer/gpu/stream_texture_host_android.h"
+#include "gpu/command_buffer/common/mailbox.h"
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -73,10 +74,18 @@ class StreamTextureFactory {
   // the player_id.
   void EstablishPeer(int32 stream_id, int player_id);
 
-  // Create the streamTexture and return the stream Id and set the texture id.
-  unsigned CreateStreamTexture(unsigned* texture_id);
+  // Create the streamTexture and return the stream Id and create a client-side
+  // texture id to refer to the streamTexture. The texture id is produced into
+  // a mailbox so it can be used to ship in a VideoFrame, with a sync point for
+  // when the mailbox can be accessed.
+  unsigned CreateStreamTexture(
+      unsigned texture_target,
+      unsigned* texture_id,
+      gpu::Mailbox* texture_mailbox,
+      unsigned* texture_mailbox_sync_point);
 
-  // Destroy the streamTexture for the given texture Id.
+  // Destroy the streamTexture for the given texture id, as well as the
+  // client side texture.
   void DestroyStreamTexture(unsigned texture_id);
 
   // Set the streamTexture size for the given stream Id.

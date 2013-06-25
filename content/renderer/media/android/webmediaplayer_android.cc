@@ -83,6 +83,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       manager_(manager),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
+      texture_id_(0),
+      texture_mailbox_sync_point_(0),
+      stream_id_(0),
       is_playing_(false),
       needs_establish_peer_(true),
       stream_texture_proxy_initialized_(false),
@@ -128,7 +131,11 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   if (stream_texture_factory_) {
     stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
     if (needs_establish_peer_) {
-      stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
+      stream_id_ = stream_texture_factory_->CreateStreamTexture(
+          kGLTextureExternalOES,
+          &texture_id_,
+          &texture_mailbox_,
+          &texture_mailbox_sync_point_);
       ReallocateVideoFrame();
     }
   }
@@ -790,7 +797,11 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
 #endif
   } else if (texture_id_) {
     current_frame_ = VideoFrame::WrapNativeTexture(
-        texture_id_, kGLTextureExternalOES, natural_size_,
+        new VideoFrame::MailboxHolder(
+            texture_mailbox_,
+            texture_mailbox_sync_point_,
+            VideoFrame::MailboxHolder::TextureNoLongerNeededCallback()),
+        kGLTextureExternalOES, natural_size_,
         gfx::Rect(natural_size_), natural_size_, base::TimeDelta(),
         VideoFrame::ReadPixelsCB(),
         base::Closure());
@@ -833,7 +844,13 @@ void WebMediaPlayerAndroid::EstablishSurfaceTexturePeer() {
     stream_texture_factory_->DestroyStreamTexture(texture_id_);
     stream_id_ = 0;
     texture_id_ = 0;
-    stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
+    texture_mailbox_ = gpu::Mailbox();
+    texture_mailbox_sync_point_ = 0;
+    stream_id_ = stream_texture_factory_->CreateStreamTexture(
+        kGLTextureExternalOES,
+        &texture_id_,
+        &texture_mailbox_,
+        &texture_mailbox_sync_point_);
     ReallocateVideoFrame();
     stream_texture_proxy_initialized_ = false;
   }

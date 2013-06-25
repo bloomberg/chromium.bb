@@ -6,6 +6,7 @@
 #define MEDIA_VIDEO_PICTURE_H_
 
 #include "base/basictypes.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/size.h"
 
@@ -16,6 +17,10 @@ namespace media {
 class MEDIA_EXPORT PictureBuffer {
  public:
   PictureBuffer(int32 id, gfx::Size size, uint32 texture_id);
+  PictureBuffer(int32 id,
+                gfx::Size size,
+                uint32 texture_id,
+                const gpu::Mailbox& texture_mailbox);
 
   // Returns the client-specified id of the buffer.
   int32 id() const {
@@ -34,10 +39,15 @@ class MEDIA_EXPORT PictureBuffer {
     return texture_id_;
   }
 
+  const gpu::Mailbox& texture_mailbox() const {
+    return texture_mailbox_;
+  }
+
  private:
   int32 id_;
   gfx::Size size_;
   uint32 texture_id_;
+  gpu::Mailbox texture_mailbox_;
 };
 
 // A decoded picture frame.

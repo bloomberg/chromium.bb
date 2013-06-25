@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/layers/video_frame_provider.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -48,6 +49,8 @@ class SurfaceTextureTransportClient : public cc::VideoFrameProvider {
   ANativeWindow* window_;
   scoped_refptr<media::VideoFrame> video_frame_;
   uint32 texture_id_;
+  gpu::Mailbox texture_mailbox_;
+  uint32 texture_mailbox_sync_point_;
   int surface_id_;
   base::WeakPtrFactory<SurfaceTextureTransportClient> weak_factory_;
 

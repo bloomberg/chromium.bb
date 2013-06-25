@@ -1141,23 +1141,19 @@ class LayerTreeHostContextTestDontUseLostResources
     video_color_->SetIsDrawable(true);
     root_->AddChild(video_color_);
 
-    if (!delegating_renderer()) {
-      // TODO(danakj): Hardware video decode can not be transported.
-      // crbug.com/179729
-      scoped_refptr<VideoLayer> video_hw_ = VideoLayer::Create(
-          &hw_frame_provider_);
-      video_hw_->SetBounds(gfx::Size(10, 10));
-      video_hw_->SetAnchorPoint(gfx::PointF());
-      video_hw_->SetIsDrawable(true);
-      root_->AddChild(video_hw_);
+    scoped_refptr<VideoLayer> video_hw_ = VideoLayer::Create(
+        &hw_frame_provider_);
+    video_hw_->SetBounds(gfx::Size(10, 10));
+    video_hw_->SetAnchorPoint(gfx::PointF());
+    video_hw_->SetIsDrawable(true);
+    root_->AddChild(video_hw_);
 
-      scoped_refptr<VideoLayer> video_scaled_hw_ = VideoLayer::Create(
-          &scaled_hw_frame_provider_);
-      video_scaled_hw_->SetBounds(gfx::Size(10, 10));
-      video_scaled_hw_->SetAnchorPoint(gfx::PointF());
-      video_scaled_hw_->SetIsDrawable(true);
-      root_->AddChild(video_scaled_hw_);
-    }
+    scoped_refptr<VideoLayer> video_scaled_hw_ = VideoLayer::Create(
+        &scaled_hw_frame_provider_);
+    video_scaled_hw_->SetBounds(gfx::Size(10, 10));
+    video_scaled_hw_->SetAnchorPoint(gfx::PointF());
+    video_scaled_hw_->SetIsDrawable(true);
+    root_->AddChild(video_scaled_hw_);
 
     if (!delegating_renderer()) {
       // TODO(danakj): IOSurface layer can not be transported. crbug.com/239335
@@ -1240,17 +1236,28 @@ class LayerTreeHostContextTestDontUseLostResources
           ResourceProvider::TextureUsageAny);
       ResourceProvider::ScopedWriteLockGL lock(resource_provider, texture);
 
+      gpu::Mailbox mailbox;
+      resource_provider->GraphicsContext3D()->genMailboxCHROMIUM(mailbox.name);
+      unsigned sync_point =
+          resource_provider->GraphicsContext3D()->insertSyncPoint();
+
       color_video_frame_ = VideoFrame::CreateColorFrame(
           gfx::Size(4, 4), 0x80, 0x80, 0x80, base::TimeDelta());
       hw_video_frame_ = VideoFrame::WrapNativeTexture(
-          lock.texture_id(),
+          new VideoFrame::MailboxHolder(
+              mailbox,
+              sync_point,
+              VideoFrame::MailboxHolder::TextureNoLongerNeededCallback()),
           GL_TEXTURE_2D,
           gfx::Size(4, 4), gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4),
           base::TimeDelta(),
           VideoFrame::ReadPixelsCB(),
           base::Closure());
       scaled_hw_video_frame_ = VideoFrame::WrapNativeTexture(
-          lock.texture_id(),
+          new VideoFrame::MailboxHolder(
+              mailbox,
+              sync_point,
+              VideoFrame::MailboxHolder::TextureNoLongerNeededCallback()),
           GL_TEXTURE_2D,
           gfx::Size(4, 4), gfx::Rect(0, 0, 3, 2), gfx::Size(4, 4),
           base::TimeDelta(),

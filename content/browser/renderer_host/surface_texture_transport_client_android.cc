@@ -48,6 +48,7 @@ class SurfaceRefAndroid : public GpuSurfaceTracker::SurfaceRef {
 SurfaceTextureTransportClient::SurfaceTextureTransportClient()
     : window_(NULL),
       texture_id_(0),
+      texture_mailbox_sync_point_(0),
       surface_id_(0),
       weak_factory_(this) {
 }
@@ -104,11 +105,20 @@ scoped_refptr<media::VideoFrame> SurfaceTextureTransportClient::
     context->bindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id_);
     context->flush();
     surface_texture_->AttachToGLContext();
+
+    context->genMailboxCHROMIUM(texture_mailbox_.name);
+    context->produceTextureCHROMIUM(kGLTextureExternalOES,
+                                    texture_mailbox_.name);
+    texture_mailbox_sync_point_ = context->insertSyncPoint();
   }
   if (!video_frame_.get()) {
     const gfx::Size size = video_layer_->bounds();
     video_frame_ = media::VideoFrame::WrapNativeTexture(
-        texture_id_, kGLTextureExternalOES,
+        new media::VideoFrame::MailboxHolder(
+            texture_mailbox_,
+            texture_mailbox_sync_point_,
+            media::VideoFrame::MailboxHolder::TextureNoLongerNeededCallback()),
+        kGLTextureExternalOES,
         size,
         gfx::Rect(gfx::Point(), size),
         size,

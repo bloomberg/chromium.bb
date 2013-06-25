@@ -37,8 +37,7 @@ scoped_ptr<VideoLayerImpl> VideoLayerImpl::Create(
 
 VideoLayerImpl::VideoLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
-      frame_(NULL),
-      hardware_resource_(0) {}
+      frame_(NULL) {}
 
 VideoLayerImpl::~VideoLayerImpl() {
   if (!provider_client_impl_->Stopped()) {
@@ -96,12 +95,8 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
   if (!updater_)
     updater_.reset(new VideoResourceUpdater(resource_provider));
 
-  VideoFrameExternalResources external_resources;
-  if (frame_->format() == media::VideoFrame::NATIVE_TEXTURE)
-    external_resources = updater_->CreateForHardwarePlanes(frame_);
-  else
-    external_resources = updater_->CreateForSoftwarePlanes(frame_);
-
+  VideoFrameExternalResources external_resources =
+      updater_->CreateExternalResourcesFromVideoFrame(frame_);
   frame_resource_type_ = external_resources.type;
 
   if (external_resources.type ==
@@ -109,13 +104,6 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
     software_resources_ = external_resources.software_resources;
     software_release_callback_ =
         external_resources.software_release_callback;
-    return true;
-  }
-
-  if (external_resources.hardware_resource) {
-    hardware_resource_ = external_resources.hardware_resource;
-    hardware_release_callback_ =
-        external_resources.hardware_release_callback;
     return true;
   }
 
@@ -191,11 +179,9 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       break;
     }
     case VideoFrameExternalResources::RGB_RESOURCE: {
-      if (!hardware_resource_) {
-        DCHECK_EQ(frame_resources_.size(), 1u);
-        if (frame_resources_.size() < 1u)
-          break;
-      }
+      DCHECK_EQ(frame_resources_.size(), 1u);
+      if (frame_resources_.size() < 1u)
+        break;
       bool premultiplied_alpha = true;
       gfx::PointF uv_top_left(0.f, 0.f);
       gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
@@ -205,8 +191,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       texture_quad->SetNew(shared_quad_state,
                            quad_rect,
                            opaque_rect,
-                           hardware_resource_ ? hardware_resource_
-                                              : frame_resources_[0],
+                           frame_resources_[0],
                            premultiplied_alpha,
                            uv_top_left,
                            uv_bottom_right,
@@ -216,11 +201,9 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       break;
     }
     case VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE: {
-      if (!hardware_resource_) {
-        DCHECK_EQ(frame_resources_.size(), 1u);
-        if (frame_resources_.size() < 1u)
-          break;
-      }
+      DCHECK_EQ(frame_resources_.size(), 1u);
+      if (frame_resources_.size() < 1u)
+        break;
       gfx::Transform transform(
           provider_client_impl_->stream_texture_matrix());
       transform.Scale(tex_width_scale, tex_height_scale);
@@ -229,19 +212,16 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       stream_video_quad->SetNew(shared_quad_state,
                                 quad_rect,
                                 opaque_rect,
-                                hardware_resource_ ? hardware_resource_
-                                                   : frame_resources_[0],
+                                frame_resources_[0],
                                 transform);
       quad_sink->Append(stream_video_quad.PassAs<DrawQuad>(),
                         append_quads_data);
       break;
     }
     case VideoFrameExternalResources::IO_SURFACE: {
-      if (!hardware_resource_) {
-        DCHECK_EQ(frame_resources_.size(), 1u);
-        if (frame_resources_.size() < 1u)
-          break;
-      }
+      DCHECK_EQ(frame_resources_.size(), 1u);
+      if (frame_resources_.size() < 1u)
+        break;
       gfx::Size visible_size(visible_rect.width(), visible_rect.height());
       scoped_ptr<IOSurfaceDrawQuad> io_surface_quad =
           IOSurfaceDrawQuad::Create();
@@ -249,8 +229,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                               quad_rect,
                               opaque_rect,
                               visible_size,
-                              hardware_resource_ ? hardware_resource_
-                                                 : frame_resources_[0],
+                              frame_resources_[0],
                               IOSurfaceDrawQuad::UNFLIPPED);
       quad_sink->Append(io_surface_quad.PassAs<DrawQuad>(),
                         append_quads_data);
@@ -296,10 +275,6 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
 
     software_resources_.clear();
     software_release_callback_.Reset();
-  } else if (hardware_resource_) {
-    hardware_release_callback_.Run(0, false);
-    hardware_resource_ = 0;
-    hardware_release_callback_.Reset();
   } else {
     for (size_t i = 0; i < frame_resources_.size(); ++i)
       resource_provider->DeleteResource(frame_resources_[i]);

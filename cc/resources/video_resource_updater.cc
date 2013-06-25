@@ -19,8 +19,7 @@ const unsigned kRGBResourceFormat = GL_RGBA;
 
 namespace cc {
 
-VideoFrameExternalResources::VideoFrameExternalResources()
-    : type(NONE), hardware_resource(0) {}
+VideoFrameExternalResources::VideoFrameExternalResources() : type(NONE) {}
 
 VideoFrameExternalResources::~VideoFrameExternalResources() {}
 
@@ -40,6 +39,18 @@ void VideoResourceUpdater::DeleteResource(unsigned resource_id) {
   all_resources_.erase(std::remove(all_resources_.begin(),
                                    all_resources_.end(),
                                    resource_id));
+}
+
+VideoFrameExternalResources VideoResourceUpdater::
+    CreateExternalResourcesFromVideoFrame(
+        const scoped_refptr<media::VideoFrame>& video_frame) {
+  if (!VerifyFrame(video_frame))
+    return VideoFrameExternalResources();
+
+  if (video_frame->format() == media::VideoFrame::NATIVE_TEXTURE)
+    return CreateForHardwarePlanes(video_frame);
+  else
+    return CreateForSoftwarePlanes(video_frame);
 }
 
 bool VideoResourceUpdater::VerifyFrame(
@@ -108,9 +119,6 @@ static gfx::Size SoftwarePlaneDimension(
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     const scoped_refptr<media::VideoFrame>& video_frame) {
-  if (!VerifyFrame(video_frame))
-    return VideoFrameExternalResources();
-
   media::VideoFrame::Format input_frame_format = video_frame->format();
 
 #if defined(GOOGLE_TV)
@@ -308,11 +316,15 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   return external_resources;
 }
 
+static void ReturnTexture(
+    scoped_refptr<media::VideoFrame::MailboxHolder> mailbox_holder,
+    unsigned sync_point,
+    bool lost_resource) {
+  mailbox_holder->Return(sync_point);
+}
+
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     const scoped_refptr<media::VideoFrame>& video_frame) {
-  if (!VerifyFrame(video_frame))
-    return VideoFrameExternalResources();
-
   media::VideoFrame::Format frame_format = video_frame->format();
 
   DCHECK_EQ(frame_format, media::VideoFrame::NATIVE_TEXTURE);
@@ -341,33 +353,18 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       return VideoFrameExternalResources();
   }
 
-  external_resources.hardware_resource =
-      resource_provider_->CreateResourceFromExternalTexture(
-          video_frame->texture_target(),
-          video_frame->texture_id());
-  if (external_resources.hardware_resource)
-    all_resources_.push_back(external_resources.hardware_resource);
+  scoped_refptr<media::VideoFrame::MailboxHolder> mailbox_holder =
+      video_frame->texture_mailbox();
 
   TextureMailbox::ReleaseCallback callback_to_return_resource =
-      base::Bind(&ReturnTexture,
-                 AsWeakPtr(),
-                 external_resources.hardware_resource);
-  external_resources.hardware_release_callback = callback_to_return_resource;
+      base::Bind(&ReturnTexture, mailbox_holder);
+
+  external_resources.mailboxes.push_back(
+      TextureMailbox(mailbox_holder->mailbox(),
+                     callback_to_return_resource,
+                     video_frame->texture_target(),
+                     mailbox_holder->sync_point()));
   return external_resources;
-}
-
-// static
-void VideoResourceUpdater::ReturnTexture(
-    base::WeakPtr<VideoResourceUpdater> updater,
-    unsigned resource_id,
-    unsigned sync_point,
-    bool lost_resource) {
-  if (!updater.get()) {
-    // Resource was already deleted.
-    return;
-  }
-
-  updater->DeleteResource(resource_id);
 }
 
 // static

@@ -48,10 +48,15 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   virtual media::VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
       media::VideoCodecProfile profile,
       media::VideoDecodeAccelerator::Client* client) OVERRIDE;
-  virtual bool CreateTextures(int32 count, const gfx::Size& size,
-                              std::vector<uint32>* texture_ids,
-                              uint32 texture_target) OVERRIDE;
+  // Creates textures and produces them into mailboxes. Returns a sync point to
+  // wait on before using the mailboxes, or 0 on failure.
+  virtual uint32 CreateTextures(
+      int32 count, const gfx::Size& size,
+      std::vector<uint32>* texture_ids,
+      std::vector<gpu::Mailbox>* texture_mailboxes,
+      uint32 texture_target) OVERRIDE;
   virtual void DeleteTexture(uint32 texture_id) OVERRIDE;
+  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE;
   virtual void ReadPixels(uint32 texture_id,
                           uint32 texture_target,
                           const gfx::Size& size,
@@ -81,8 +86,9 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
       media::VideoCodecProfile profile,
       media::VideoDecodeAccelerator::Client* client);
   void AsyncCreateTextures(int32 count, const gfx::Size& size,
-                           uint32 texture_target);
+                           uint32 texture_target, uint32* sync_point);
   void AsyncDeleteTexture(uint32 texture_id);
+  void AsyncWaitSyncPoint(uint32 sync_point);
   void AsyncReadPixels(uint32 texture_id, uint32 texture_target,
                        const gfx::Size& size);
   void AsyncCreateSharedMemory(size_t size);
@@ -116,6 +122,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
 
   // Textures returned by the CreateTexture() function.
   std::vector<uint32> created_textures_;
+  std::vector<gpu::Mailbox> created_texture_mailboxes_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(RendererGpuVideoDecoderFactories);
 };

@@ -455,6 +455,7 @@
         ['OS!="ios"', {
           'dependencies': [
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../gpu/gpu.gyp:command_buffer_common',
             'shared_memory_support',
           ],
         }],
@@ -986,6 +987,7 @@
         }],
         ['OS!="ios"', {
           'dependencies': [
+            '../gpu/gpu.gyp:command_buffer_common',
             'shared_memory_support',
           ],
         }],
