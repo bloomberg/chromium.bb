@@ -1,0 +1,12 @@
+{
+  "name": "com.google.chrome.remote_desktop",
+  "description": "Chrome Remote Desktop Host",
+  "type": "stdio",
+  "path": "NATIVE_MESSAGING_HOST_PATH",
+  "allowed_origins": [
+    "chrome-extension://ljacajndfccfgnfohlgkdphmbnpkjflk/",
+    "chrome-extension://gbchcmhmhahfdphkhkmpfmihenigjmpp/",
+    "chrome-extension://kgngmbheleoaphbjbaiobfdepmghbfah/",
+    "chrome-extension://odkaodonbgfohohmklejpjiejmcipmib/"
+  ]
+}

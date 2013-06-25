@@ -775,6 +775,7 @@
               '<!(echo <(deb_filename) | sed -e "s/.deb$/.changes/")',
               '<(PRODUCT_DIR)/remoting_me2me_host.debug',
               '<(PRODUCT_DIR)/remoting_start_host.debug',
+              '<(PRODUCT_DIR)/remoting_native_messaging_host.debug',
             ]
           },
           'targets': [
@@ -810,6 +811,7 @@
               'dependencies': [
                 'remoting_me2me_host',
                 'remoting_start_host',
+                'remoting_native_messaging_host',
               ],
               'actions': [
                 {
