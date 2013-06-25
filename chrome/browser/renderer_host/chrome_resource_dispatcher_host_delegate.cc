@@ -207,8 +207,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
     const std::string& method,
     const GURL& url,
     ResourceType::Type resource_type,
-    content::ResourceContext* resource_context,
-    const content::Referrer& referrer) {
+    content::ResourceContext* resource_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Handle a PREFETCH resource type. If prefetch is disabled, squelch the

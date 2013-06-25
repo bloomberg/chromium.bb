@@ -23,6 +23,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -46,6 +47,7 @@ void BeginDownload(
       resource_context->GetRequestContext()->CreateRequest(url, NULL));
   net::Error error = rdh->BeginDownload(
       request.Pass(),
+      content::Referrer(),
       false,  // is_content_initiated
       resource_context,
       render_process_host_id,

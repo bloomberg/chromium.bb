@@ -89,7 +89,6 @@
 #include "webkit/common/appcache/appcache_interfaces.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/glue/resource_request_body.h"
-#include "webkit/glue/webkit_glue.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -155,10 +154,28 @@ void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
   }
 }
 
-GURL MaybeStripReferrer(const GURL& possible_referrer) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoReferrers))
-    return GURL();
-  return possible_referrer;
+void SetReferrerForRequest(net::URLRequest* request, const Referrer& referrer) {
+  if (!referrer.url.is_valid() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoReferrers)) {
+    request->SetReferrer(std::string());
+  } else {
+    request->SetReferrer(referrer.url.spec());
+  }
+
+  net::URLRequest::ReferrerPolicy net_referrer_policy =
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+  switch (referrer.policy) {
+    case WebKit::WebReferrerPolicyDefault:
+      net_referrer_policy =
+          net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+      break;
+    case WebKit::WebReferrerPolicyAlways:
+    case WebKit::WebReferrerPolicyNever:
+    case WebKit::WebReferrerPolicyOrigin:
+      net_referrer_policy = net::URLRequest::NEVER_CLEAR_REFERRER;
+      break;
+  }
+  request->set_referrer_policy(net_referrer_policy);
 }
 
 // Consults the RendererSecurity policy to determine whether the
@@ -450,6 +467,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
 
 net::Error ResourceDispatcherHostImpl::BeginDownload(
     scoped_ptr<net::URLRequest> request,
+    const Referrer& referrer,
     bool is_content_initiated,
     ResourceContext* context,
     int child_id,
@@ -469,7 +487,8 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
   base::debug::Alias(url_buf);
   CHECK(ContainsKey(active_resource_contexts_, context));
 
-  request->SetReferrer(MaybeStripReferrer(GURL(request->referrer())).spec());
+  SetReferrerForRequest(request.get(), referrer);
+
   int extra_load_flags = net::LOAD_IS_DOWNLOAD;
   if (prefer_cache) {
     // If there is upload data attached, only retrieve from cache because there
@@ -950,8 +969,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
     return;
   }
 
-  const Referrer referrer(MaybeStripReferrer(request_data.referrer),
-                          request_data.referrer_policy);
+  const Referrer referrer(request_data.referrer, request_data.referrer_policy);
 
   // Allow the observer to block/handle the request.
   if (delegate_ && !delegate_->ShouldBeginRequest(child_id,
@@ -959,8 +977,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
                                                   request_data.method,
                                                   request_data.url,
                                                   request_data.resource_type,
-                                                  resource_context,
-                                                  referrer)) {
+                                                  resource_context)) {
     AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
     return;
   }
@@ -992,9 +1009,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
     request->set_method(request_data.method);
     request->set_first_party_for_cookies(request_data.first_party_for_cookies);
-    request->SetReferrer(referrer.url.spec());
-    webkit_glue::ConfigureURLRequestForReferrerPolicy(request,
-                                                      referrer.policy);
+    SetReferrerForRequest(request, referrer);
+
     net::HttpRequestHeaders headers;
     headers.AddHeadersFromString(request_data.headers);
     request->SetExtraRequestHeaders(headers);
@@ -1276,9 +1292,8 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
   scoped_ptr<net::URLRequest> request(
       request_context->CreateRequest(url, NULL));
   request->set_method("GET");
-  request->SetReferrer(MaybeStripReferrer(referrer.url).spec());
-  webkit_glue::ConfigureURLRequestForReferrerPolicy(request.get(),
-                                                    referrer.policy);
+  SetReferrerForRequest(request.get(), referrer);
+
   // So far, for saving page, we need fetch content from cache, in the
   // future, maybe we can use a configuration to configure this behavior.
   request->set_load_flags(net::LOAD_PREFERRING_CACHE);

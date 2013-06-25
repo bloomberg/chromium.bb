@@ -19,6 +19,7 @@ class DownloadItem;
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
 struct DownloadSaveInfo;
+struct Referrer;
 
 class CONTENT_EXPORT ResourceDispatcherHost {
  public:
@@ -48,6 +49,7 @@ class CONTENT_EXPORT ResourceDispatcherHost {
   // DownloadItem; otherwise an error code will be returned.
   virtual net::Error BeginDownload(
       scoped_ptr<net::URLRequest> request,
+      const Referrer& referrer,
       bool is_content_initiated,
       ResourceContext* context,
       int child_id,

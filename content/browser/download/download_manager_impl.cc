@@ -43,7 +43,6 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request_context.h"
-#include "webkit/glue/webkit_glue.h"
 
 namespace content {
 namespace {
@@ -57,10 +56,6 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
   scoped_ptr<net::URLRequest> request(
       params->resource_context()->GetRequestContext()->CreateRequest(
           params->url(), NULL));
-  if (params->referrer().url.is_valid())
-    request->SetReferrer(params->referrer().url.spec());
-  webkit_glue::ConfigureURLRequestForReferrerPolicy(
-      request.get(), params->referrer().policy);
   request->set_load_flags(request->load_flags() | params->load_flags());
   request->set_method(params->method());
   if (!params->post_body().empty()) {
@@ -126,6 +121,7 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
 
   ResourceDispatcherHost::Get()->BeginDownload(
       request.Pass(),
+      params->referrer(),
       params->content_initiated(),
       params->resource_context(),
       params->render_process_host_id(),

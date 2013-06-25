@@ -14,8 +14,7 @@ bool ResourceDispatcherHostDelegate::ShouldBeginRequest(
     const std::string& method,
     const GURL& url,
     ResourceType::Type resource_type,
-    ResourceContext* resource_context,
-    const Referrer& referrer) {
+    ResourceContext* resource_context) {
   return true;
 }
 

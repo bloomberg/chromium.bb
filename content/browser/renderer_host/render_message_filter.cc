@@ -63,7 +63,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 #include "ui/gfx/color_profile.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -828,12 +827,10 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
   save_info->suggested_name = suggested_name;
   scoped_ptr<net::URLRequest> request(
       resource_context_->GetRequestContext()->CreateRequest(url, NULL));
-  request->SetReferrer(referrer.url.spec());
-  webkit_glue::ConfigureURLRequestForReferrerPolicy(
-      request.get(), referrer.policy);
   RecordDownloadSource(INITIATED_BY_RENDERER);
   resource_dispatcher_host_->BeginDownload(
       request.Pass(),
+      referrer,
       true,  // is_content_initiated
       resource_context_,
       render_process_id_,

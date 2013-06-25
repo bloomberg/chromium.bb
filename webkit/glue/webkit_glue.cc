@@ -28,7 +28,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "net/base/escape.h"
-#include "net/url_request/url_request.h"
 #include "skia/ext/platform_canvas.h"
 #if defined(OS_MACOSX)
 #include "skia/ext/skia_utils_mac.h"
@@ -172,25 +171,6 @@ std::string GetInspectorProtocolVersion() {
 bool IsInspectorProtocolVersionSupported(const std::string& version) {
   return WebDevToolsAgent::supportsInspectorProtocolVersion(
       WebString::fromUTF8(version));
-}
-
-void ConfigureURLRequestForReferrerPolicy(
-    net::URLRequest* request, WebKit::WebReferrerPolicy referrer_policy) {
-  net::URLRequest::ReferrerPolicy net_referrer_policy =
-      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-  switch (referrer_policy) {
-    case WebKit::WebReferrerPolicyDefault:
-      net_referrer_policy =
-          net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-      break;
-
-    case WebKit::WebReferrerPolicyAlways:
-    case WebKit::WebReferrerPolicyNever:
-    case WebKit::WebReferrerPolicyOrigin:
-      net_referrer_policy = net::URLRequest::NEVER_CLEAR_REFERRER;
-      break;
-  }
-  request->set_referrer_policy(net_referrer_policy);
 }
 
 COMPILE_ASSERT(std::numeric_limits<double>::has_quiet_NaN, has_quiet_NaN);

@@ -52,8 +52,7 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
       const std::string& method,
       const GURL& url,
       ResourceType::Type resource_type,
-      ResourceContext* resource_context,
-      const Referrer& referrer);
+      ResourceContext* resource_context);
 
   // Called after ShouldBeginRequest to allow the embedder to add resource
   // throttles.
