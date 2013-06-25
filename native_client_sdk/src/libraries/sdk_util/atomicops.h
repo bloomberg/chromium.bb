@@ -22,13 +22,21 @@ inline Atomic32 AtomicAddFetch(volatile Atomic32* ptr, Atomic32 value) {
 }
 
 #else
+
+#include <windows.h>
+
+/* Undefine many Windows.h macros that we almost certainly do not want. */
+#undef min
+#undef max
+#undef PostMessage
+#undef interface
+
 typedef long Atomic32;
-inline void MemoryBarrier() {
-  __ReadWriteBarrier();
-}
+
+/* Windows.h already defines a MemoryBarrier macro. */
 
 inline Atomic32 AtomicAddFetch(volatile Atomic32* ptr, Atomic32 value) {
-  return __InterlockedAdd(ptr, value);
+  return InterlockedExchangeAdd(ptr, value);
 }
 #endif
 

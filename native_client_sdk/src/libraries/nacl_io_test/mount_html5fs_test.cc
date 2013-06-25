@@ -38,9 +38,7 @@ class MountHtml5FsMock : public MountHtml5Fs {
     Init(1, map, ppapi);
   }
 
-  ~MountHtml5FsMock() {
-    Destroy();
-  }
+  ~MountHtml5FsMock() {}
 };
 
 class MountHtml5FsTest : public ::testing::Test {
@@ -313,7 +311,7 @@ TEST_F(MountHtml5FsTest, FilesystemType) {
   StringMap_t map;
   map["type"] = "PERSISTENT";
   map["expected_size"] = "100";
-  MountHtml5FsMock mnt(map, ppapi_);
+  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
 }
 
 TEST_F(MountHtml5FsTest, Access) {
@@ -346,9 +344,9 @@ TEST_F(MountHtml5FsTest, Access) {
   EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource));
 
   StringMap_t map;
-  MountHtml5FsMock mnt(map, ppapi_);
+  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
 
-  ASSERT_EQ(0, mnt.Access(Path(path), R_OK | W_OK | X_OK));
+  ASSERT_EQ(0, mnt->Access(Path(path), R_OK | W_OK | X_OK));
 }
 
 TEST_F(MountHtml5FsTest, AccessFileNotFound) {
@@ -382,9 +380,9 @@ TEST_F(MountHtml5FsTest, AccessFileNotFound) {
   EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource));
 
   StringMap_t map;
-  MountHtml5FsMock mnt(map, ppapi_);
+  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
 
-  ASSERT_EQ(ENOENT, mnt.Access(Path(path), F_OK));
+  ASSERT_EQ(ENOENT, mnt->Access(Path(path), F_OK));
 }
 
 TEST_F(MountHtml5FsTest, Mkdir) {
@@ -403,10 +401,10 @@ TEST_F(MountHtml5FsTest, Mkdir) {
   EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource));
 
   StringMap_t map;
-  MountHtml5FsMock mnt(map, ppapi_);
+  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
 
   const int permissions = 0;  // unused.
-  int32_t result = mnt.Mkdir(Path(path), permissions);
+  int32_t result = mnt->Mkdir(Path(path), permissions);
   ASSERT_EQ(0, result);
 }
 
@@ -426,9 +424,9 @@ TEST_F(MountHtml5FsTest, Remove) {
   EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource));
 
   StringMap_t map;
-  MountHtml5FsMock mnt(map, ppapi_);
+  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
 
-  int32_t result = mnt.Remove(Path(path));
+  int32_t result = mnt->Remove(Path(path));
   ASSERT_EQ(0, result);
 }
 

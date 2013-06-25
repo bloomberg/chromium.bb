@@ -36,7 +36,12 @@ template<class T> class ScopedRef : public ScopedRefBase {
   ScopedRef(const ScopedRef& ptr) { reset(ptr.get()); }
   explicit ScopedRef(T* ptr) { reset(ptr); }
 
-  template<typename U> ScopedRef<T>& operator=(const ScopedRef<U>& ptr) {
+  ScopedRef& operator=(const ScopedRef& ptr) {
+    reset(ptr.get());
+    return *this;
+  }
+
+  template<typename U> ScopedRef& operator=(const ScopedRef<U>& ptr) {
     reset(ptr.get());
     return *this;
   }
