@@ -213,7 +213,8 @@ bool OmniboxEditModel::UpdatePermanentText(const string16& new_permanent_text) {
   string16 instant_suggestion = view_->GetInstantSuggestion();
   const bool visibly_changed_permanent_text =
       (permanent_text_ != new_permanent_text) &&
-      (!user_input_in_progress_ || !has_focus()) &&
+      (!has_focus() ||
+       (!user_input_in_progress_ && !popup_model()->IsOpen())) &&
       (instant_suggestion.empty() ||
        new_permanent_text != user_text_ + instant_suggestion);
 
@@ -818,7 +819,6 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
     // the actual underlying current URL, e.g. if we're on the NTP and the
     // |permanent_text_| is empty.
     autocomplete_controller()->StartZeroSuggest(delegate_->GetURL(),
-                                                user_text_,
                                                 permanent_text_);
   }
 
@@ -893,26 +893,8 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
 }
 
 void OmniboxEditModel::OnControlKeyChanged(bool pressed) {
-  // Don't change anything unless the key state is actually toggling.
-  if (pressed == (control_key_state_ == UP)) {
-    ControlKeyState old_state = control_key_state_;
-    control_key_state_ = pressed ? DOWN_WITHOUT_CHANGE : UP;
-    if ((control_key_state_ == DOWN_WITHOUT_CHANGE) && has_temporary_text_) {
-      // Arrowing down and then hitting control accepts the temporary text as
-      // the input text.
-      InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
-      has_temporary_text_ = false;
-      is_temporary_text_set_by_instant_ = false;
-      selected_instant_autocomplete_match_index_ = OmniboxPopupModel::kNoMatch;
-      is_instant_temporary_text_a_search_query_ = false;
-    }
-    if ((old_state != DOWN_WITH_CHANGE) && popup_model()->IsOpen()) {
-      // Autocomplete history provider results may change, so refresh the
-      // popup.  This will force user_input_in_progress_ to true, but if the
-      // popup is open, that should have already been the case.
-      view_->UpdatePopup();
-    }
-  }
+  // TODO(beaudoin): Remove this function entirely and all the code that calls
+  // it.
 }
 
 void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
@@ -1002,6 +984,7 @@ void OmniboxEditModel::OnPopupDataChanged(
   bool call_controller_onchanged = true;
   inline_autocomplete_text_ = text;
 
+  string16 user_text = user_input_in_progress_ ? user_text_ : permanent_text_;
   if (keyword_state_changed && KeywordIsSelected()) {
     // If we reach here, the user most likely entered keyword mode by inserting
     // a space between a keyword name and a search string (as pressing space or
@@ -1018,11 +1001,11 @@ void OmniboxEditModel::OnPopupDataChanged(
     // temporary text back to a default match that's a keyword search, but in
     // that case the RevertTemporaryText() call below will reset the caret or
     // selection correctly so the caret positioning we do here won't matter.
-    view_->SetWindowTextAndCaretPos(DisplayTextFromUserText(user_text_), 0,
+    view_->SetWindowTextAndCaretPos(DisplayTextFromUserText(user_text), 0,
                                                             false, false);
   } else if (view_->OnInlineAutocompleteTextMaybeChanged(
-             DisplayTextFromUserText(user_text_ + inline_autocomplete_text_),
-             DisplayTextFromUserText(user_text_).length())) {
+             DisplayTextFromUserText(user_text + inline_autocomplete_text_),
+             DisplayTextFromUserText(user_text).length())) {
     call_controller_onchanged = false;
   }
 

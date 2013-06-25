@@ -80,13 +80,6 @@ ZeroSuggestProvider* ZeroSuggestProvider::Create(
 
 void ZeroSuggestProvider::Start(const AutocompleteInput& input,
                                 bool /*minimal_changes*/) {
-  CheckIfTextModfied(input.text());
-  // Clear results only if the user text was modified.
-  Stop(user_text_modified_);
-  ConvertResultsToAutocompleteMatches(input.text(), false);
-  // listener_->OnProviderUpdate() does not need to be called because this
-  // function is only called in the synchronous pass when a user has performed
-  // an action (such as typing a character in the omnobox).
 }
 
 void ZeroSuggestProvider::Stop(bool clear_cached_results) {
@@ -125,6 +118,7 @@ void ZeroSuggestProvider::ResetSession() {
   // |field_trial_triggered_in_session_| unchanged and set
   // |field_trial_triggered_| to false since zero suggest is inactive now.
   field_trial_triggered_ = false;
+  Stop(true);
 }
 
 void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -150,13 +144,12 @@ void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   done_ = true;
 
   if (have_results) {
-    ConvertResultsToAutocompleteMatches(original_user_text_, true);
+    ConvertResultsToAutocompleteMatches();
     listener_->OnProviderUpdate(true);
   }
 }
 
 void ZeroSuggestProvider::StartZeroSuggest(const GURL& url,
-                                           const string16& user_text,
                                            const string16& permanent_text) {
   Stop(true);
   field_trial_triggered_ = false;
@@ -165,11 +158,9 @@ void ZeroSuggestProvider::StartZeroSuggest(const GURL& url,
     return;
   verbatim_relevance_ = kDefaultVerbatimZeroSuggestRelevance;
   done_ = false;
-  original_user_text_ = user_text;
   permanent_text_ = permanent_text;
   current_query_ = url.spec();
   current_url_match_ = MatchForCurrentURL();
-  user_text_modified_ = false;
   // TODO(jered): Consider adding locally-sourced zero-suggestions here too.
   // These may be useful on the NTP or more relevant to the user than server
   // suggestions, if based on local browsing history.
@@ -182,7 +173,6 @@ ZeroSuggestProvider::ZeroSuggestProvider(
     : AutocompleteProvider(listener, profile,
           AutocompleteProvider::TYPE_ZERO_SUGGEST),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
-      user_text_modified_(false),
       have_pending_request_(false),
       verbatim_relevance_(kDefaultVerbatimZeroSuggestRelevance),
       field_trial_triggered_(false),
@@ -367,7 +357,12 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
   AutocompleteMatch::ClassifyLocationInString(string16::npos, 0,
       match.contents.length(), ACMatchClassification::URL,
       &match.contents_class);
-  match.description = navigation.description();
+
+  match.description =
+      AutocompleteMatch::SanitizeString(navigation.description());
+  AutocompleteMatch::ClassifyLocationInString(string16::npos, 0,
+      match.description.length(), ACMatchClassification::NONE,
+      &match.description_class);
   return match;
 }
 
@@ -414,11 +409,6 @@ void ZeroSuggestProvider::Run() {
   LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_SENT);
 }
 
-void ZeroSuggestProvider::CheckIfTextModfied(const string16& user_text) {
-  if (!user_text.empty() && user_text != permanent_text_)
-    user_text_modified_ = true;
-}
-
 void ZeroSuggestProvider::ParseSuggestResults(const Value& root_val) {
   SearchProvider::SuggestResults suggest_results;
   FillResults(root_val, &verbatim_relevance_,
@@ -431,8 +421,7 @@ void ZeroSuggestProvider::ParseSuggestResults(const Value& root_val) {
                          &query_matches_map_);
 }
 
-void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches(
-    string16 user_text, bool update_histograms) {
+void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   matches_.clear();
 
   const TemplateURL* default_provider =
@@ -444,21 +433,15 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches(
   const int num_query_results = query_matches_map_.size();
   const int num_nav_results = navigation_results_.size();
   const int num_results = num_query_results + num_nav_results;
-  if (update_histograms) {
-    UMA_HISTOGRAM_COUNTS("ZeroSuggest.QueryResults", num_query_results);
-    UMA_HISTOGRAM_COUNTS("ZeroSuggest.URLResults",  num_nav_results);
-    UMA_HISTOGRAM_COUNTS("ZeroSuggest.AllResults", num_results);
-  }
+  UMA_HISTOGRAM_COUNTS("ZeroSuggest.QueryResults", num_query_results);
+  UMA_HISTOGRAM_COUNTS("ZeroSuggest.URLResults",  num_nav_results);
+  UMA_HISTOGRAM_COUNTS("ZeroSuggest.AllResults", num_results);
 
-  if (num_results == 0 || user_text_modified_)
+  if (num_results == 0)
     return;
 
   // TODO(jered): Rip this out once the first match is decoupled from the
   // current typing in the omnibox.
-  // If the user text is empty, we can autocomplete to the URL.  Otherwise,
-  // don't modify the omnibox text.
-  current_url_match_.inline_autocomplete_offset = user_text.empty() ?
-      0 : string16::npos;
   matches_.push_back(current_url_match_);
 
   for (SearchProvider::MatchMap::const_iterator it(query_matches_map_.begin());
@@ -479,6 +462,7 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
       HistoryURLProvider::SuggestExactInput(this, input,
                                             !HasHTTPScheme(input.text())));
   match.is_history_what_you_typed_match = false;
+  match.inline_autocomplete_offset = string16::npos;
 
   // The placeholder suggestion for the current URL has high relevance so
   // that it is in the first suggestion slot and inline autocompleted. It
