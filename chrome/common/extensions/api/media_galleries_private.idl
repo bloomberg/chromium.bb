@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This is a private API for M23. This will be superceded by the
-// systeminfo.storage API in M24.
-// This API's description needs to be updated. Issue:
-// https://code.google.com/p/chromium/issues/detail?id=252048
+// This is a private API since M23. This will be superceded by the
+// systeminfo.storage API in the future.
+// See http://crbug.com/166950 and http://crbug.com/177605.
 namespace mediaGalleriesPrivate {
   // A dictionary that describes an attached device.
   [inline_doc] dictionary DeviceAttachmentDetails {
