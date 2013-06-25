@@ -302,7 +302,7 @@ void SyncTest::InitializeInstance(int index) {
                                           << index << ".";
 
   browsers_[index] = new Browser(Browser::CreateParams(
-      GetProfile(index), chrome::HOST_DESKTOP_TYPE_NATIVE));
+      GetProfile(index), chrome::GetActiveDesktop()));
   EXPECT_FALSE(GetBrowser(index) == NULL) << "Could not create Browser "
                                           << index << ".";
 

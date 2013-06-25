@@ -374,7 +374,7 @@ class PerformanceMonitorSessionRestoreBrowserTest
     content::TestNavigationObserver restore_observer(NULL, expected_tab_count);
     restore_observer.StartWatchingNewWebContents();
     ui_test_utils::BrowserAddedObserver window_observer;
-    chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+    chrome::NewEmptyWindow(profile, chrome::GetActiveDesktop());
     Browser* new_browser = window_observer.WaitForSingleNewBrowser();
     restore_observer.Wait();
     g_browser_process->ReleaseModule();

@@ -127,7 +127,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     profile_->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
 
     Browser::CreateParams native_params(profile_.get(),
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
+                                        chrome::GetActiveDesktop());
     browser_.reset(
         chrome::CreateBrowserWithTestWindowForParams(&native_params));
 

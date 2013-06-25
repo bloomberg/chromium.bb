@@ -73,7 +73,7 @@ class BrowserFixture {
  public:
   BrowserFixture(FakeManagedMode* managed_mode,
                  TestingProfile* profile) {
-    Browser::CreateParams params(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+    Browser::CreateParams params(profile, chrome::GetActiveDesktop());
     params.window = &window_;
     browser_.reset(new Browser(params));
   }

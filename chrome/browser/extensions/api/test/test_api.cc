@@ -98,7 +98,7 @@ bool TestCreateIncognitoTabFunction::RunImpl() {
       CreateIncognitoTab::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   chrome::OpenURLOffTheRecord(profile(), GURL(params->url),
-                              chrome::HOST_DESKTOP_TYPE_NATIVE);
+                              chrome::GetActiveDesktop());
   return true;
 }
 

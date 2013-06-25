@@ -12,8 +12,9 @@ class Browser;
 namespace chrome {
 
 // A value that specifies what desktop environment hosts a particular piece of
-// UI. Please take a look at the following document for details on choosing the
-// right HostDesktopType:
+// UI. You should almost never manually hardcode one of these enums manually,
+// please refer to the following document for details on getting the right
+// HostDesktopType:
 // http://sites.google.com/a/chromium.org/dev/developers/design-documents/aura/multi-desktop
 enum HostDesktopType {
   HOST_DESKTOP_TYPE_FIRST = 0,
@@ -37,6 +38,9 @@ HostDesktopType GetHostDesktopTypeForNativeWindow(
 
 // Returns the type of host desktop most likely to be in use.  This is the one
 // most recently activated by the user.
+// You should almost never use this outside of tests, please refer to the
+// following document for details on getting the right HostDesktopType:
+// http://sites.google.com/a/chromium.org/dev/developers/design-documents/aura/multi-desktop
 HostDesktopType GetActiveDesktop();
 
 }  // namespace chrome

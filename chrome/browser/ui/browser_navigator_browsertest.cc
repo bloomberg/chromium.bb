@@ -79,7 +79,7 @@ chrome::NavigateParams BrowserNavigatorTest::MakeNavigateParams(
 Browser* BrowserNavigatorTest::CreateEmptyBrowserForType(Browser::Type type,
                                                          Profile* profile) {
   Browser* browser = new Browser(
-      Browser::CreateParams(type, profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
+      Browser::CreateParams(type, profile, chrome::GetActiveDesktop()));
   chrome::AddBlankTabAt(browser, -1, true);
   return browser;
 }
@@ -89,7 +89,7 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Browser::Type type,
   Browser* browser = new Browser(
       Browser::CreateParams::CreateForApp(
           Browser::TYPE_POPUP, "Test", gfx::Rect(), profile,
-          chrome::HOST_DESKTOP_TYPE_NATIVE));
+          chrome::GetActiveDesktop()));
   chrome::AddBlankTabAt(browser, -1, true);
   return browser;
 }

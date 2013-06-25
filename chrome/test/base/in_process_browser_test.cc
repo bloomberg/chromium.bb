@@ -195,6 +195,10 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
   if (command_line->HasSwitch(switches::kAshBrowserTests)) {
     command_line->AppendSwitchNative(switches::kViewerLaunchViaAppId,
                                      win8::test::kDefaultTestAppUserModelId);
+    // Ash already launches with a single browser opened, add kSilentLaunch to
+    // make sure StartupBrowserCreator doesn't attempt to launch a browser on
+    // the native desktop on startup.
+    command_line->AppendSwitch(switches::kSilentLaunch);
   }
 #endif
 
@@ -275,7 +279,7 @@ bool InProcessBrowserTest::SetUpUserDataDirectory() {
 // finish loading and shows the browser.
 Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
   Browser* browser = new Browser(
-      Browser::CreateParams(profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
+      Browser::CreateParams(profile, chrome::GetActiveDesktop()));
   AddBlankTabAndShow(browser);
   return browser;
 }
@@ -284,7 +288,7 @@ Browser* InProcessBrowserTest::CreateIncognitoBrowser() {
   // Create a new browser with using the incognito profile.
   Browser* incognito = new Browser(
       Browser::CreateParams(browser()->profile()->GetOffTheRecordProfile(),
-                            chrome::HOST_DESKTOP_TYPE_NATIVE));
+                            chrome::GetActiveDesktop()));
   AddBlankTabAndShow(incognito);
   return incognito;
 }
@@ -292,7 +296,7 @@ Browser* InProcessBrowserTest::CreateIncognitoBrowser() {
 Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
   Browser* browser =
       new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile,
-                  chrome::HOST_DESKTOP_TYPE_NATIVE));
+                  chrome::GetActiveDesktop()));
   AddBlankTabAndShow(browser);
   return browser;
 }
@@ -303,7 +307,7 @@ Browser* InProcessBrowserTest::CreateBrowserForApp(
   Browser* browser = new Browser(
       Browser::CreateParams::CreateForApp(
           Browser::TYPE_POPUP, app_name, gfx::Rect(), profile,
-          chrome::HOST_DESKTOP_TYPE_NATIVE));
+          chrome::GetActiveDesktop()));
   AddBlankTabAndShow(browser);
   return browser;
 }
@@ -359,11 +363,10 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   autorelease_pool_->Recycle();
 #endif
 
-  // Browser tests do not support multi-desktop for now.
-  const BrowserList* native_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
-  if (!native_browser_list->empty()) {
-    browser_ = native_browser_list->get(0);
+  const BrowserList* active_browser_list =
+      BrowserList::GetInstance(chrome::GetActiveDesktop());
+  if (!active_browser_list->empty()) {
+    browser_ = active_browser_list->get(0);
 #if defined(USE_ASH)
     // There are cases where windows get created maximized by default.
     if (browser_->window()->IsMaximized())
@@ -402,7 +405,12 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   content::RunAllPendingInMessageLoop();
 
   QuitBrowsers();
-  CHECK(native_browser_list->empty());
+  // All BrowserLists should be empty at this point.
+  for (chrome::HostDesktopType t = chrome::HOST_DESKTOP_TYPE_FIRST;
+       t < chrome::HOST_DESKTOP_TYPE_COUNT;
+       t = static_cast<chrome::HostDesktopType>(t + 1)) {
+    CHECK(BrowserList::GetInstance(t)->empty()) << t;
+  }
 }
 
 void InProcessBrowserTest::QuitBrowsers() {

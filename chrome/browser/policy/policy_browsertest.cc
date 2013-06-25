@@ -1499,9 +1499,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   // Verifies that incognito windows can't be opened when disabled by policy.
 
-  // Only test this on the native desktop.
   const BrowserList* native_browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+      BrowserList::GetInstance(chrome::GetActiveDesktop());
 
   // Disable incognito via policy and verify that incognito windows can't be
   // opened.

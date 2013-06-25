@@ -609,8 +609,7 @@ IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
 
   // Open a second browser window at about:blank.
   ui_test_utils::BrowserAddedObserver browser_added_observer;
-  chrome::NewEmptyWindow(browser()->profile(),
-                         chrome::HOST_DESKTOP_TYPE_NATIVE);
+  chrome::NewEmptyWindow(browser()->profile(), chrome::GetActiveDesktop());
   Browser* second_window = browser_added_observer.WaitForSingleNewBrowser();
   ui_test_utils::NavigateToURL(second_window, GURL("about:blank"));
 
@@ -1888,7 +1887,7 @@ IN_PROC_BROWSER_TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
   ui_test_utils::BrowserAddedObserver browser_added_observer;
-  chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+  chrome::NewEmptyWindow(profile, chrome::GetActiveDesktop());
   browser_added_observer.WaitForSingleNewBrowser();
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());

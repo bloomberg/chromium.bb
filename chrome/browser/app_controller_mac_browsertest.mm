@@ -23,7 +23,7 @@ class AppControllerPlatformAppBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerPlatformAppBrowserTest()
       : native_browser_list(BrowserList::GetInstance(
-                                chrome::HOST_DESKTOP_TYPE_NATIVE)) {
+                                chrome::GetActiveDesktop())) {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -53,7 +53,7 @@ class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerWebAppBrowserTest()
       : native_browser_list(BrowserList::GetInstance(
-                                chrome::HOST_DESKTOP_TYPE_NATIVE)) {
+                                chrome::GetActiveDesktop())) {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {

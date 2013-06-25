@@ -96,5 +96,5 @@ void CocoaProfileTest::CloseBrowserWindow() {
 
 Browser* CocoaProfileTest::CreateBrowser() {
   return new Browser(Browser::CreateParams(profile(),
-                                           chrome::HOST_DESKTOP_TYPE_NATIVE));
+                                           chrome::GetActiveDesktop()));
 }

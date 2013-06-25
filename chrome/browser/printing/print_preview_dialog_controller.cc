@@ -402,7 +402,7 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
     // create the popup on the native desktop.
     Browser* current_browser = new Browser(
         Browser::CreateParams(Browser::TYPE_POPUP, profile,
-                              chrome::HOST_DESKTOP_TYPE_NATIVE));
+                              chrome::GetActiveDesktop()));
     if (!current_browser) {
       NOTREACHED() << "Failed to create popup browser window";
       return NULL;

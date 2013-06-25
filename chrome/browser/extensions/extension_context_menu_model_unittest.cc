@@ -39,8 +39,7 @@ TEST_F(ExtensionContextMenuModelTest, PolicyDisablesItems) {
   service_->AddExtension(extension.get());
 
   // Create a Browser for the ExtensionContextMenuModel to use.
-  Browser::CreateParams params(profile_.get(),
-                               chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams params(profile_.get(), chrome::GetActiveDesktop());
   TestBrowserWindow test_window;
   params.window = &test_window;
   Browser browser(params);

@@ -42,7 +42,7 @@ class BookmarkBarGtkUnittest : public testing::Test {
     ui_test_utils::WaitForBookmarkModelToLoad(model_);
 
     Browser::CreateParams native_params(profile_.get(),
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
+                                        chrome::GetActiveDesktop());
     browser_.reset(
         chrome::CreateBrowserWithTestWindowForParams(&native_params));
     origin_provider_.reset(new EmptyTabstripOriginProvider);

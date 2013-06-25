@@ -1139,10 +1139,10 @@ IN_PROC_BROWSER_TEST_F(
       NEW_WINDOW,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
 
-  const BrowserList* native_browser_list = BrowserList::GetInstance(
-      chrome::HOST_DESKTOP_TYPE_NATIVE);
-  ASSERT_EQ(2u, native_browser_list->size());
-  set_browser(native_browser_list->get(1));
+  const BrowserList* browser_list = BrowserList::GetInstance(
+      chrome::GetActiveDesktop());
+  ASSERT_EQ(2u, browser_list->size());
+  set_browser(browser_list->get(1));
 
   FocusOmniboxAndWaitForInstantNTPSupport();
 

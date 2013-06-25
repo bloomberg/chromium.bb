@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, WebViewLayout) {
 // Verify that the dev tools undocked window is layed out correctly.
 IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, UndockedOffset) {
   BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+      BrowserList::GetInstance(chrome::GetActiveDesktop());
   EXPECT_EQ(1u, browser_list->size());
   SetDockSide(DEVTOOLS_DOCK_SIDE_UNDOCKED);
   EXPECT_EQ(2u, browser_list->size());

@@ -301,8 +301,7 @@ TEST_F(BrowserCommandControllerTest,
   profile1->SetOffTheRecordProfile(profile2);
 
   // Create a new browser based on the off the record profile.
-  Browser::CreateParams profile_params(profile2,
-                                       chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams profile_params(profile2, chrome::GetActiveDesktop());
   scoped_ptr<Browser> browser2(
       chrome::CreateBrowserWithTestWindowForParams(&profile_params));
 

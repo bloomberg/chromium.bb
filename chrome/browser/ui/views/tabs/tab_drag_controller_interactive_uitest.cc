@@ -1324,7 +1324,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
       second_root).work_area();
   work_area.Inset(20,20,20,60);
   Browser::CreateParams params(browser()->profile(),
-                               chrome::HOST_DESKTOP_TYPE_NATIVE);
+                               browser()->host_desktop_type());
   params.initial_show_state = ui::SHOW_STATE_NORMAL;
   params.initial_bounds = work_area;
   Browser* browser2 = new Browser(params);

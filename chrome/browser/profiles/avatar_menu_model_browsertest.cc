@@ -30,7 +30,7 @@ IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SignOut) {
   AvatarMenuModel model(&cache, NULL, browser());
 
   BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+      BrowserList::GetInstance(chrome::GetActiveDesktop());
   EXPECT_EQ(1U, browser_list->size());
   content::WindowedNotificationObserver window_close_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,

@@ -475,8 +475,7 @@ TEST_F(ProfileManagerTest, LastOpenedProfiles) {
   ASSERT_EQ(0U, last_opened_profiles.size());
 
   // Create a browser for profile1.
-  Browser::CreateParams profile1_params(profile1,
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams profile1_params(profile1, chrome::GetActiveDesktop());
   scoped_ptr<Browser> browser1a(
       chrome::CreateBrowserWithTestWindowForParams(&profile1_params));
 
@@ -485,8 +484,7 @@ TEST_F(ProfileManagerTest, LastOpenedProfiles) {
   EXPECT_EQ(profile1, last_opened_profiles[0]);
 
   // And for profile2.
-  Browser::CreateParams profile2_params(profile2,
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams profile2_params(profile2, chrome::GetActiveDesktop());
   scoped_ptr<Browser> browser2(
       chrome::CreateBrowserWithTestWindowForParams(&profile2_params));
 
@@ -539,14 +537,12 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesAtShutdown) {
   ASSERT_TRUE(profile2);
 
   // Create a browser for profile1.
-  Browser::CreateParams profile1_params(profile1,
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams profile1_params(profile1, chrome::GetActiveDesktop());
   scoped_ptr<Browser> browser1(
       chrome::CreateBrowserWithTestWindowForParams(&profile1_params));
 
   // And for profile2.
-  Browser::CreateParams profile2_params(profile2,
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams profile2_params(profile2, chrome::GetActiveDesktop());
   scoped_ptr<Browser> browser2(
       chrome::CreateBrowserWithTestWindowForParams(&profile2_params));
 
@@ -598,8 +594,7 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
   ASSERT_EQ(0U, last_opened_profiles.size());
 
   // Create a browser for profile1.
-  Browser::CreateParams profile1_params(profile1,
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams profile1_params(profile1, chrome::GetActiveDesktop());
   scoped_ptr<Browser> browser1(
       chrome::CreateBrowserWithTestWindowForParams(&profile1_params));
 
@@ -608,8 +603,7 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
   EXPECT_EQ(profile1, last_opened_profiles[0]);
 
   // And for profile2.
-  Browser::CreateParams profile2_params(profile2,
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser::CreateParams profile2_params(profile2, chrome::GetActiveDesktop());
   scoped_ptr<Browser> browser2a(
       chrome::CreateBrowserWithTestWindowForParams(&profile2_params));
 

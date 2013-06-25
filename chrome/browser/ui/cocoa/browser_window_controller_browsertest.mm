@@ -574,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
   chrome::OpenAppShortcutWindow(
       browser()->profile(), GURL("about:blank"), initial_bounds);
   Browser* popup_browser = BrowserList::GetInstance(
-      chrome::HOST_DESKTOP_TYPE_NATIVE)->GetLastActive();
+      chrome::GetActiveDesktop())->GetLastActive();
   NSWindow* popupWindow = popup_browser->window()->GetNativeWindow();
   BrowserWindowController* popupController =
       [BrowserWindowController browserWindowControllerForWindow:popupWindow];

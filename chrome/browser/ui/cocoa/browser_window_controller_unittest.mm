@@ -140,7 +140,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   // popup_browser will be owned by its window.
   Browser* popup_browser(new Browser(
       Browser::CreateParams(Browser::TYPE_POPUP, profile(),
-                            chrome::HOST_DESKTOP_TYPE_NATIVE)));
+                            chrome::GetActiveDesktop())));
   NSWindow *cocoaWindow = popup_browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
       static_cast<BrowserWindowController*>([cocoaWindow windowController]);
@@ -155,7 +155,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
 TEST_F(BrowserWindowControllerTest, TestSetBounds) {
   // Create a normal browser with bounds smaller than the minimum.
   Browser::CreateParams params(Browser::TYPE_TABBED, profile(),
-                               chrome::HOST_DESKTOP_TYPE_NATIVE);
+                               chrome::GetActiveDesktop());
   params.initial_bounds = gfx::Rect(0, 0, 50, 50);
   Browser* browser = new Browser(params);
   NSWindow *cocoaWindow = browser->window()->GetNativeWindow();
@@ -181,7 +181,7 @@ TEST_F(BrowserWindowControllerTest, TestSetBounds) {
 TEST_F(BrowserWindowControllerTest, TestSetBoundsPopup) {
   // Create a popup with bounds smaller than the minimum.
   Browser::CreateParams params(Browser::TYPE_POPUP, profile(),
-                               chrome::HOST_DESKTOP_TYPE_NATIVE);
+                               chrome::GetActiveDesktop());
   params.initial_bounds = gfx::Rect(0, 0, 50, 50);
   Browser* browser = new Browser(params);
   NSWindow *cocoaWindow = browser->window()->GetNativeWindow();
@@ -228,7 +228,7 @@ TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
   incognito_profile->set_off_the_record(true);
   scoped_ptr<Browser> browser(
       new Browser(Browser::CreateParams(incognito_profile.get(),
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE));
+                                        chrome::GetActiveDesktop()));
   controller_.reset([[BrowserWindowController alloc]
                               initWithBrowser:browser.get()
                                 takeOwnership:NO]);
