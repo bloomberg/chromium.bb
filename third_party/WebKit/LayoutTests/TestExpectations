@@ -1177,11 +1177,6 @@ crbug.com/239549 inspector-protocol/heap-profiler/heap-snapshot-with-detached-do
 
 webkit.org/b/110247 [ Debug ] fast/workers/storage/interrupt-database.html [ Crash Pass Slow ]
 
-# This test is quite large, and can time out on win debug builds.
-crbug.com/245836 [ Win Debug ] compositing/overflow/automatically-opt-into-composited-scrolling.html [ Pass Timeout ]
-crbug.com/245836 [ Win Debug ] virtual/gpu/compositedscrolling/overflow/automatically-opt-into-composited-scrolling.html [ Pass Timeout ]
-crbug.com/245836 [ Win Debug ] virtual/softwarecompositing/overflow/automatically-opt-into-composited-scrolling.html [ Pass Timeout ]
-
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 crbug.com/225184 inspector/elements/highlight-node-scaled.html [ Failure Timeout ]
@@ -1797,7 +1792,6 @@ crbug.com/247979 [ Win7 Debug ] inspector/elements/edit-dom-actions.html [ Timeo
 crbug.com/247981 [ Win7 Debug ] inspector/profiler/heap-snapshot-get-profile-crash.html [ Pass Crash ]
 crbug.com/247982 [ Win7 Debug ] virtual/deferred/fast/images/exif-orientation-css.html [ ImageOnlyFailure Pass ]
 crbug.com/247982 [ Win7 Debug ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
-crbug.com/247984 [ Win7 Debug ] virtual/gpu/compositedscrolling/overflow/build-paint-order-lists.html [ Timeout Pass ]
 crbug.com/247984 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-image.html [ Timeout Pass ]
 crbug.com/247984 [ Win7 ] virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ Timeout Pass ]
 webkit.org/b/60109 [ Release ] inspector/elements/edit-dom-actions.html [ Slow ]
@@ -1807,8 +1801,6 @@ crbug.com/248065 [ Linux ] svg/text/foreignObject-text-clipping-bug.xml [ Pass I
 crbug.com/248067 fast/workers/shared-worker-storagequota-query-usage.html [ Pass Failure ]
 crbug.com/248067 [ Release ] fast/workers/worker-storagequota-query-usage.html [ Pass Failure ]
 crbug.com/248071 [ Mac Debug ] webaudio/audiochannelmerger-basic.html [ Pass Failure ]
-crbug.com/248078 [ Win7 Debug ] virtual/softwarecompositing/overflow/build-paint-order-lists.html [ Slow ]
-crbug.com/248078 [ Win7 Debug ] compositing/overflow/build-paint-order-lists.html [ Slow ]
 crbug.com/248078 [ Win ] compositing/culling/filter-occlusion-blur.html [ Slow ]
 crbug.com/248078 [ Win ] compositing/tiny-layer-rotated.html [ Slow ]
 crbug.com/248081 [ Win7 ] css3/calc/simple-calcs.html [ Slow ]

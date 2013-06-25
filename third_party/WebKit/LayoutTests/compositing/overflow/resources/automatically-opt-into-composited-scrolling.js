@@ -12,9 +12,6 @@ function write(str)
 
 function didOptIn(element)
 {
-  // Force a synchronous style recalc and layout.
-  document.body.offsetTop;
-
   var nonFastScrollableRects = window.internals.nonFastScrollableRects(document);
   var elementBoundingBox = window.internals.boundingBox(element);
 
@@ -32,8 +29,6 @@ function didOptIn(element)
 function getStackingOrder(element)
 {
   var divElements = [];
-  // Force a synchronous style recalc and layout.
-  document.body.offsetTop;
 
   var stackingOrder = window.internals.nodesFromRect(document, 100, 75, 200, 200, 200, 200, false, false, false);
 
@@ -164,7 +159,59 @@ function permuteWithFixedOrdering(testPermutation, siblingIndex, containerIndex,
   }
 }
 
-function permute(testPermutation)
+function testOptInPermutation(count, ordering, hasPositionedAncestor, containerIsPositioned)
+{
+  if (!window.internals)
+    return;
+
+  var container = document.getElementById('container');
+  var containerOptedIn = didOptIn(container);
+
+  window.internals.setNeedsCompositedScrolling(container,
+      window.internals.COMPOSITED_SCROLLING_ALWAYS_OFF);
+
+  var oldStackingOrder = getStackingOrder(container);
+
+  window.internals.setNeedsCompositedScrolling(container,
+      window.internals.COMPOSITED_SCROLLING_ALWAYS_ON);
+
+  var newStackingOrder = getStackingOrder(container);
+
+  window.internals.setNeedsCompositedScrolling(container,
+      window.internals.DO_NOT_FORCE_COMPOSITED_SCROLLING);
+
+  var shouldOptIn = oldStackingOrder.length === newStackingOrder.length;
+  for (var i = 0; i < oldStackingOrder.length; ++i) {
+    if (oldStackingOrder[i] !== newStackingOrder[i]) {
+      shouldOptIn = false;
+      break;
+    }
+  }
+
+  if (shouldOptIn !== containerOptedIn) {
+    if (shouldOptIn)
+      write("FAIL - should've automatically opted in but didn't " + count);
+    else
+      write('FAIL - automatically opted in and changed stacking order ' + count);
+
+    var additionalFailureInfo = "\tOrdering:";
+    for(var i = 0; i < ordering.length; ++i) {
+      additionalFailureInfo += " " + ordering[i].id + " (z-index: " + ordering[i].style.zIndex + ")";
+      if(i < ordering.length - 1)
+        additionalFailureInfo += ",";
+    }
+
+    additionalFailureInfo += "\n\thasPositionedAncestor: " + hasPositionedAncestor + "; containerIsPositioned: " + containerIsPositioned;
+    write(additionalFailureInfo);
+  } else {
+    if (shouldOptIn)
+      write("PASS iteration " + count + ": opted in, since doing so does not change the stacking order.");
+    else
+      write("PASS iteration " + count + ": did not opt in, since doing so would change the stacking order.");
+  }
+}
+
+function runPermutationSet(testPermutation, siblingIndex)
 {
   var ancestor = document.getElementById('ancestor');
   var predecessor = document.getElementById('predecessor');
@@ -173,20 +220,24 @@ function permute(testPermutation)
   var firstChild = document.getElementById('firstChild');
   var secondChild = document.getElementById('secondChild');
 
-  var indices = [ 0, 1, 2, 3 ];
-  for (var siblingIndex = 0; siblingIndex < indices.length; ++siblingIndex) {
-    var siblingIndices = indices.slice(0);
-    siblingIndices.splice(siblingIndex, 1);
-    for (var containerSubindex = 0; containerSubindex < siblingIndices.length; ++containerSubindex) {
-      var containerIndices = siblingIndices.slice(0);
-      var containerIndex = containerIndices[containerSubindex];
-      containerIndices.splice(containerSubindex, 1);
-      var firstChildIndex = containerIndices[0];
-      var secondChildIndex = containerIndices[1];
+  write('Testing permutation set ' + siblingIndex + ' - this means that the "sibling" will be placed at the index ' + siblingIndex + ' of the paint order.')
 
-      permuteWithFixedOrdering(testPermutation, siblingIndex, containerIndex, firstChildIndex, secondChildIndex, 1);
-      permuteWithFixedOrdering(testPermutation, siblingIndex, containerIndex, firstChildIndex, secondChildIndex, 2);
-      permuteWithFixedOrdering(testPermutation, siblingIndex, containerIndex, firstChildIndex, secondChildIndex, 3);
-    }
+  var indices = [ 0, 1, 2, 3 ];
+  var siblingIndices = indices.slice(0);
+  siblingIndices.splice(siblingIndex, 1);
+  for (var containerSubindex = 0; containerSubindex < siblingIndices.length; ++containerSubindex) {
+    var containerIndices = siblingIndices.slice(0);
+    var containerIndex = containerIndices[containerSubindex];
+    containerIndices.splice(containerSubindex, 1);
+    var firstChildIndex = containerIndices[0];
+    var secondChildIndex = containerIndices[1];
+
+    permuteWithFixedOrdering(testPermutation, siblingIndex, containerIndex, firstChildIndex, secondChildIndex, 1);
+    permuteWithFixedOrdering(testPermutation, siblingIndex, containerIndex, firstChildIndex, secondChildIndex, 2);
+    permuteWithFixedOrdering(testPermutation, siblingIndex, containerIndex, firstChildIndex, secondChildIndex, 3);
   }
 } // function doTest
+
+function runOptInPermutationSet(permutationSet) {
+  runPermutationSet(testOptInPermutation, permutationSet);
+}
