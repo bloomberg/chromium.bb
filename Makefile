@@ -192,6 +192,7 @@ setup-in-place:
 	ln -sf $(SRC)/$(SONAME) $(SRC)/in-place/$(SONAME:$(OBJDIR)/%.0=%)
 	ln -sf $(SRC)/$(SONAME) $(SRC)/in-place/$(SONAME:$(OBJDIR)/%=%)
 
+in-place: CXXFLAGS+=-DGESTURES_LARGE_LOGGING_BUFFER
 in-place: $(SONAME)
 
 clean-in-place: clean

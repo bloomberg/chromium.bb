@@ -200,7 +200,11 @@ class ActivityLog {
   // Encode user-configurable properties
   ::Value* EncodePropRegistry();
 
+#ifdef GESTURES_LARGE_LOGGING_BUFFER
+  static const size_t kBufferSize = 65536;
+#else
   static const size_t kBufferSize = 8192;
+#endif
 
   Entry buffer_[kBufferSize];
   size_t head_idx_;
