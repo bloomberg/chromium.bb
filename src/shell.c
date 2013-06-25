@@ -1006,7 +1006,6 @@ static void
 unbind_resource(struct wl_resource *resource)
 {
 	wl_list_remove(wl_resource_get_link(resource));
-	free(resource);
 }
 
 static void
@@ -3614,7 +3613,6 @@ unbind_desktop_shell(struct wl_resource *resource)
 
 	shell->child.desktop_shell = NULL;
 	shell->prepare_event_sent = false;
-	free(resource);
 }
 
 static void
@@ -3693,7 +3691,6 @@ unbind_screensaver(struct wl_resource *resource)
 	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 
 	shell->screensaver.binding = NULL;
-	free(resource);
 }
 
 static void
@@ -3916,7 +3913,6 @@ unbind_input_panel(struct wl_resource *resource)
 	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 
 	shell->input_panel.binding = NULL;
-	free(resource);
 }
 
 static void

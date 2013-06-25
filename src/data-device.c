@@ -555,7 +555,6 @@ create_data_source(struct wl_client *client,
 static void unbind_data_device(struct wl_resource *resource)
 {
 	wl_list_remove(wl_resource_get_link(resource));
-	free(resource);
 }
 
 static void
