@@ -17,6 +17,7 @@
 #include <map>
 
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
@@ -101,7 +102,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   void OnAllocateInstanceID(int request_id);
   void OnAttach(int instance_id,
-                const BrowserPluginHostMsg_Attach_Params& params);
+                const BrowserPluginHostMsg_Attach_Params& params,
+                const base::DictionaryValue& extra_params);
   void OnPluginAtPositionResponse(int instance_id,
                                   int request_id,
                                   const gfx::Point& position);

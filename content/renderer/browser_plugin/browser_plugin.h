@@ -66,6 +66,8 @@ class CONTENT_EXPORT BrowserPlugin :
   std::string GetSrcAttribute() const;
   // Parse the src attribute value of the BrowserPlugin instance.
   bool ParseSrcAttribute(std::string* error_message);
+  // Get the Api attribute value.
+  std::string GetApiAttribute() const;
   // Get the autosize attribute value.
   bool GetAutoSizeAttribute() const;
   // Parses the autosize attribute value.

@@ -124,6 +124,8 @@ function AdView(adviewNode) {
 AdView.prototype.createBrowserPluginNode_ = function() {
   var browserPluginNode = document.createElement('object');
   browserPluginNode.type = 'application/browser-plugin';
+  // TODO(fsamuel): Change this to 'adview' once AdViewGuest is ready.
+  browserPluginNode.setAttribute('api', 'webview');
   // The <object> node fills in the <adview> container.
   browserPluginNode.style.width = '100%';
   browserPluginNode.style.height = '100%';

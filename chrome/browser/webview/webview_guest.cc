@@ -8,12 +8,15 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/script_executor.h"
+#include "chrome/browser/webview/webview_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
+
+namespace keys = webview_constants;
 
 namespace chrome {
 
@@ -38,7 +41,8 @@ void RemoveWebViewEventListenersOnIOThread(
 WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
                            WebContents* embedder_web_contents,
                            const std::string& extension_id,
-                           int webview_instance_id)
+                           int webview_instance_id,
+                           const base::DictionaryValue& args)
     : WebContentsObserver(guest_web_contents),
       embedder_web_contents_(embedder_web_contents),
       extension_id_(extension_id),
@@ -49,6 +53,9 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
       webview_instance_id_(webview_instance_id),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)) {
+  std::string api_name;
+  DCHECK(args.GetString(keys::kAttributeApi, &api_name));
+  DCHECK_EQ("webview", api_name);
   std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
   webview_guest_map.Get().insert(std::make_pair(key, this));
 

@@ -27,6 +27,7 @@ extern const char kMethodInternalPersistObject[];
 extern const char kMethodInternalSetPermission[];
 
 // Attributes.
+extern const char kAttributeApi[];
 extern const char kAttributeAutoSize[];
 extern const char kAttributeContentWindow[];
 extern const char kAttributeMaxHeight[];

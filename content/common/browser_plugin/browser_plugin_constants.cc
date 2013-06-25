@@ -26,6 +26,7 @@ const char kMethodInternalPersistObject[] = "-internal-persistObject";
 const char kMethodInternalSetPermission[] = "-internal-setPermission";
 
 // Attributes.
+const char kAttributeApi[] = "api";
 const char kAttributeAutoSize[] = "autosize";
 const char kAttributeContentWindow[] = "contentWindow";
 const char kAttributeMaxHeight[] = "maxheight";

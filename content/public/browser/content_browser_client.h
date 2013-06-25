@@ -34,6 +34,7 @@ class GURL;
 struct WebPreferences;
 
 namespace base {
+class DictionaryValue;
 class FilePath;
 }
 namespace crypto {
@@ -132,10 +133,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Notifies that a guest WebContents has been attached to a BrowserPlugin.
   // A guest is attached to a BrowserPlugin when the guest has acquired an
   // embedder WebContents. This happens on initial navigation or when a new
-  // window is attached to a BrowserPlugin.
-  virtual void GuestWebContentsAttached(WebContents* guest_web_contents,
-                                        WebContents* embedder_web_contents,
-                                        int browser_plugin_instance_id) {}
+  // window is attached to a BrowserPlugin. |extra_params| are params sent
+  // from javascript.
+  virtual void GuestWebContentsAttached(
+      WebContents* guest_web_contents,
+      WebContents* embedder_web_contents,
+      int browser_plugin_instance_id,
+      const base::DictionaryValue& extra_params) {}
 
   // Notifies that a RenderProcessHost has been created. This is called before
   // the content layer adds its own BrowserMessageFilters, so that the

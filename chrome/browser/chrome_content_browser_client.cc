@@ -697,7 +697,8 @@ static bool IsExtensionActivityLogEnabledForProfile(Profile* profile) {
 void ChromeContentBrowserClient::GuestWebContentsAttached(
     WebContents* guest_web_contents,
     WebContents* embedder_web_contents,
-    int browser_plugin_instance_id) {
+    int browser_plugin_instance_id,
+    const base::DictionaryValue& extra_params) {
   Profile* profile = Profile::FromBrowserContext(
       embedder_web_contents->GetBrowserContext());
   ExtensionService* service =
@@ -715,7 +716,8 @@ void ChromeContentBrowserClient::GuestWebContentsAttached(
   new WebViewGuest(guest_web_contents,
                    embedder_web_contents,
                    extension->id(),
-                   browser_plugin_instance_id);
+                   browser_plugin_instance_id,
+                   extra_params);
 }
 
 void ChromeContentBrowserClient::RenderProcessHostCreated(

@@ -4,6 +4,7 @@
 
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 
+#include "base/values.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/browser_plugin_guest_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
@@ -166,7 +167,8 @@ void BrowserPluginEmbedder::OnAllocateInstanceID(int request_id) {
 
 void BrowserPluginEmbedder::OnAttach(
     int instance_id,
-    const BrowserPluginHostMsg_Attach_Params& params) {
+    const BrowserPluginHostMsg_Attach_Params& params,
+    const base::DictionaryValue& extra_params) {
   if (!GetBrowserPluginGuestManager()->CanEmbedderAccessInstanceIDMaybeKill(
           web_contents()->GetRenderProcessHost()->GetID(), instance_id))
     return;
@@ -184,7 +186,8 @@ void BrowserPluginEmbedder::OnAttach(
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         web_contents(),
-        params.browser_plugin_instance_id);
+        params.browser_plugin_instance_id,
+        extra_params);
 
     guest->Attach(static_cast<WebContentsImpl*>(web_contents()), params);
     return;
@@ -200,7 +203,8 @@ void BrowserPluginEmbedder::OnAttach(
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         web_contents(),
-        params.browser_plugin_instance_id);
+        params.browser_plugin_instance_id,
+        extra_params);
   }
 }
 

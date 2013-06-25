@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
+#include "base/pickle.h"
 #include "content/public/common/content_constants.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager_factory.h"
@@ -163,7 +164,14 @@ MockBrowserPlugin* BrowserPluginTest::GetCurrentPluginWithAttachParams(
   if (!msg)
     return NULL;
 
-  BrowserPluginHostMsg_Attach::Read(msg, &instance_id, params);
+  PickleIterator iter(*msg);
+  if (!iter.ReadInt(&instance_id))
+    return NULL;
+
+  if (!IPC::ParamTraits<BrowserPluginHostMsg_Attach_Params>::Read(
+      msg, &iter, params))
+    return NULL;
+
   return static_cast<MockBrowserPlugin*>(
       browser_plugin_manager()->GetBrowserPlugin(instance_id));
 }

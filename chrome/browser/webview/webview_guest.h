@@ -27,7 +27,8 @@ class WebViewGuest : public content::WebContentsObserver {
   WebViewGuest(content::WebContents* guest_web_contents,
                content::WebContents* embedder_web_contents,
                const std::string& extension_id,
-               int webview_instance_id);
+               int webview_instance_id,
+               const base::DictionaryValue& args);
 
   static WebViewGuest* From(int embedder_process_id, int instance_id);
 
@@ -70,7 +71,6 @@ class WebViewGuest : public content::WebContentsObserver {
   ObserverList<extensions::TabHelper::ScriptExecutionObserver>
       script_observers_;
   scoped_ptr<extensions::ScriptExecutor> script_executor_;
-
 
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };

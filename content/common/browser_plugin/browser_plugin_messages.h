@@ -168,9 +168,10 @@ IPC_MESSAGE_ROUTED3(
 // |params| is the state of the BrowserPlugin taking ownership of
 // the guest. If a guest doesn't already exist with the given |instance_id|,
 // a new one will be created.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_Attach,
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_Attach,
                     int /* instance_id */,
-                    BrowserPluginHostMsg_Attach_Params /* params */)
+                    BrowserPluginHostMsg_Attach_Params /* params */,
+                    base::DictionaryValue /* extra_params */)
 
 // Tells the browser process to terminate the guest associated with the
 // browser plugin associated with the provided |instance_id|.
