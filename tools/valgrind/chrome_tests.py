@@ -355,8 +355,8 @@ class ChromeTests:
   # Valgrind timeouts are in seconds.
   BROWSER_VALGRIND_ARGS = ["--timeout=50000", "--trace_children", "--indirect"]
   # Browser test timeouts are in milliseconds.
-  BROWSER_TEST_ARGS = ["--ui-test-action-timeout=200000",
-                       "--ui-test-action-max-timeout=400000",
+  BROWSER_TEST_ARGS = ["--ui-test-action-timeout=400000",
+                       "--ui-test-action-max-timeout=800000",
                        "--no-sandbox"]
 
   def TestAutomatedUI(self):
