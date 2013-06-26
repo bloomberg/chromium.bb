@@ -99,7 +99,7 @@ MessageCenterNotificationManager::GetAllIdsByProfileAndSourceOrigin(
   for (NotificationMap::iterator iter = profile_notifications_.begin();
        iter != profile_notifications_.end(); iter++) {
     if ((*iter).second->notification().origin_url() == source &&
-        profile->IsSameProfile((*iter).second->profile())) {
+        profile == (*iter).second->profile()) {
       notification_ids.insert(iter->first);
     }
   }
@@ -130,7 +130,7 @@ bool MessageCenterNotificationManager::CancelAllByProfile(Profile* profile) {
   for (NotificationMap::iterator loopiter = profile_notifications_.begin();
        loopiter != profile_notifications_.end(); ) {
     NotificationMap::iterator curiter = loopiter++;
-    if (profile->IsSameProfile((*curiter).second->profile())) {
+    if (profile == (*curiter).second->profile()) {
       message_center_->RemoveNotification(curiter->first, /* by_user */ false);
       removed = true;
     }
@@ -180,7 +180,7 @@ bool MessageCenterNotificationManager::UpdateNotification(
     ProfileNotification* old_notification = (*iter).second;
     if (old_notification->notification().replace_id() == replace_id &&
         old_notification->notification().origin_url() == origin_url &&
-        old_notification->profile()->IsSameProfile(profile)) {
+        old_notification->profile() == profile) {
       std::string old_id =
           old_notification->notification().notification_id();
       DCHECK(message_center_->HasNotification(old_id));
