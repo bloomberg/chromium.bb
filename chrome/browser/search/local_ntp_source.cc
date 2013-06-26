@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -138,6 +139,8 @@ std::string LocalNtpSource::GetMimeType(
 bool LocalNtpSource::ShouldServiceRequest(
     const net::URLRequest* request) const {
   DCHECK(request->url().host() == chrome::kChromeSearchLocalNtpHost);
+  if (!InstantIOContext::ShouldServiceRequest(request))
+    return false;
 
   if (request->url().SchemeIs(chrome::kChromeSearchScheme)) {
     DCHECK(StartsWithASCII(request->url().path(), "/", true));
