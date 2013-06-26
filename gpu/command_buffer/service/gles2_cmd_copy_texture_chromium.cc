@@ -218,6 +218,17 @@ ProgramId GetProgram(
 
 namespace gpu {
 
+CopyTextureCHROMIUMResourceManager::CopyTextureCHROMIUMResourceManager()
+  : initialized_(false),
+    buffer_id_(0),
+    framebuffer_(0) {
+  for (int i = 0; i < kNumPrograms; ++i) {
+    programs_[i] = 0;
+    matrix_handle_[i] = 0;
+    sampler_locations_[i] = 0;
+  }
+}
+
 void CopyTextureCHROMIUMResourceManager::Initialize(
     const gles2::GLES2Decoder* decoder) {
   COMPILE_ASSERT(
@@ -299,8 +310,10 @@ void CopyTextureCHROMIUMResourceManager::Destroy() {
 
   glDeleteFramebuffersEXT(1, &framebuffer_);
 
-  for (int program = 0; program < kNumPrograms; ++program)
-    glDeleteProgram(programs_[program]);
+  for (int program = 0; program < kNumPrograms; ++program) {
+    if (programs_[program])
+      glDeleteProgram(programs_[program]);
+  }
 
   glDeleteBuffersARB(1, &buffer_id_);
 }

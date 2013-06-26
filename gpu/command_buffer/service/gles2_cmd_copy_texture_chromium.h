@@ -20,7 +20,7 @@ class GLES2Decoder;
 // via a blit to a framebuffer object.
 class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
  public:
-  CopyTextureCHROMIUMResourceManager() : initialized_(false) {}
+  CopyTextureCHROMIUMResourceManager();
 
   void Initialize(const gles2::GLES2Decoder* decoder);
   void Destroy();
