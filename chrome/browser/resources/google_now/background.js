@@ -153,7 +153,9 @@ var DiagnosticEvent = {
   DISMISS_REQUEST_SUCCESS: 4,
   LOCATION_REQUEST: 5,
   LOCATION_UPDATE: 6,
-  EVENTS_TOTAL: 7  // EVENTS_TOTAL is not an event; all new events need to be
+  EXTENSION_START: 7,
+  SHOW_WELCOME_TOAST: 8,
+  EVENTS_TOTAL: 9  // EVENTS_TOTAL is not an event; all new events need to be
                    // added before it.
 };
 
@@ -674,6 +676,7 @@ function startPollingCards() {
  * Initializes the event page on install or on browser startup.
  */
 function initialize() {
+  recordEvent(DiagnosticEvent.EXTENSION_START);
   storage.get('toastState', function(items) {
     // The toast state might be undefined (e.g. not in storage yet) if this is
     // the first time ever being prompted.
@@ -693,6 +696,7 @@ function initialize() {
  * Google Now cards.
  */
 function showWelcomeToast() {
+  recordEvent(DiagnosticEvent.SHOW_WELCOME_TOAST);
   // TODO(zturner): Localize this once the component extension localization
   // api is complete.
   // TODO(zturner): Add icons.
