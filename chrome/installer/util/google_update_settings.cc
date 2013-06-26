@@ -39,9 +39,6 @@ const GoogleUpdateSettings::UpdatePolicy kGoogleUpdateDefaultUpdatePolicy =
 #endif
 
 bool ReadGoogleUpdateStrKey(const wchar_t* const name, std::wstring* value) {
-  // The registry functions below will end up going to disk.  Do this on another
-  // thread to avoid slowing the IO thread.  http://crbug.com/62121
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring reg_path = dist->GetStateKey();
   RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ);
@@ -107,10 +104,6 @@ bool GetChromeChannelInternal(bool system_install,
   if (dist->GetChromeChannel(channel)) {
     return true;
   }
-
-  // The registry functions below will end up going to disk.  Do this on another
-  // thread to avoid slowing the IO thread.  http://crbug.com/62121
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   string16 reg_path = dist->GetStateKey();
