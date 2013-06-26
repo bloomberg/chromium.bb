@@ -558,8 +558,6 @@
                 '../../..',
             ],
             'sources': [
-                '../../core/platform/chromium/support/WebFilterOperation.cpp',
-                '../../core/platform/chromium/support/WebFilterOperations.cpp',
                 '../../core/platform/chromium/support/WebCString.cpp',
                 '../../core/platform/chromium/support/WebString.cpp',
                 'src/WebCommon.cpp',

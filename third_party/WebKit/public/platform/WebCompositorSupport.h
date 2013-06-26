@@ -39,6 +39,7 @@ class WebContentLayer;
 class WebContentLayerClient;
 class WebExternalTextureLayer;
 class WebExternalTextureLayerClient;
+class WebFilterOperations;
 class WebFloatAnimationCurve;
 class WebGraphicsContext3D;
 class WebImageLayer;
@@ -86,6 +87,7 @@ public:
 
     virtual WebTransformOperations* createTransformOperations() { return 0; }
 
+    virtual WebFilterOperations* createFilterOperations() { return 0; }
 
 protected:
     virtual ~WebCompositorSupport() { }

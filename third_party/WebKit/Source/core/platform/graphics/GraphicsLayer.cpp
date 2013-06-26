@@ -56,7 +56,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebAnimation.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebFilterOperation.h"
 #include "public/platform/WebFilterOperations.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
@@ -70,7 +69,6 @@
 
 using WebKit::Platform;
 using WebKit::WebAnimation;
-using WebKit::WebFilterOperation;
 using WebKit::WebFilterOperations;
 using WebKit::WebLayer;
 using WebKit::WebPoint;
@@ -1230,16 +1228,16 @@ static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperati
             float amount = static_cast<const BasicColorMatrixFilterOperation*>(&op)->amount();
             switch (op.getOperationType()) {
             case FilterOperation::GRAYSCALE:
-                webFilters.append(WebFilterOperation::createGrayscaleFilter(amount));
+                webFilters.appendGrayscaleFilter(amount);
                 break;
             case FilterOperation::SEPIA:
-                webFilters.append(WebFilterOperation::createSepiaFilter(amount));
+                webFilters.appendSepiaFilter(amount);
                 break;
             case FilterOperation::SATURATE:
-                webFilters.append(WebFilterOperation::createSaturateFilter(amount));
+                webFilters.appendSaturateFilter(amount);
                 break;
             case FilterOperation::HUE_ROTATE:
-                webFilters.append(WebFilterOperation::createHueRotateFilter(amount));
+                webFilters.appendHueRotateFilter(amount);
                 break;
             default:
                 ASSERT_NOT_REACHED();
@@ -1253,16 +1251,16 @@ static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperati
             float amount = static_cast<const BasicComponentTransferFilterOperation*>(&op)->amount();
             switch (op.getOperationType()) {
             case FilterOperation::INVERT:
-                webFilters.append(WebFilterOperation::createInvertFilter(amount));
+                webFilters.appendInvertFilter(amount);
                 break;
             case FilterOperation::OPACITY:
-                webFilters.append(WebFilterOperation::createOpacityFilter(amount));
+                webFilters.appendOpacityFilter(amount);
                 break;
             case FilterOperation::BRIGHTNESS:
-                webFilters.append(WebFilterOperation::createBrightnessFilter(amount));
+                webFilters.appendBrightnessFilter(amount);
                 break;
             case FilterOperation::CONTRAST:
-                webFilters.append(WebFilterOperation::createContrastFilter(amount));
+                webFilters.appendContrastFilter(amount);
                 break;
             default:
                 ASSERT_NOT_REACHED();
@@ -1271,12 +1269,12 @@ static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperati
         }
         case FilterOperation::BLUR: {
             float pixelRadius = static_cast<const BlurFilterOperation*>(&op)->stdDeviation().getFloatValue();
-            webFilters.append(WebFilterOperation::createBlurFilter(pixelRadius));
+            webFilters.appendBlurFilter(pixelRadius);
             break;
         }
         case FilterOperation::DROP_SHADOW: {
             const DropShadowFilterOperation& dropShadowOp = *static_cast<const DropShadowFilterOperation*>(&op);
-            webFilters.append(WebFilterOperation::createDropShadowFilter(WebPoint(dropShadowOp.x(), dropShadowOp.y()), dropShadowOp.stdDeviation(), dropShadowOp.color().rgb()));
+            webFilters.appendDropShadowFilter(WebPoint(dropShadowOp.x(), dropShadowOp.y()), dropShadowOp.stdDeviation(), dropShadowOp.color().rgb());
             break;
         }
         case FilterOperation::CUSTOM:
@@ -1308,15 +1306,16 @@ bool GraphicsLayer::setFilters(const FilterOperations& filters)
         SkAutoTUnref<SkImageFilter> imageFilter(builder.build(filters));
         m_layer->layer()->setFilter(imageFilter);
     } else {
-        WebFilterOperations webFilters;
-        if (!copyWebCoreFilterOperationsToWebFilterOperations(filters, webFilters)) {
+        OwnPtr<WebFilterOperations> webFilters = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
+        if (!copyWebCoreFilterOperationsToWebFilterOperations(filters, *webFilters)) {
             // Make sure the filters are removed from the platform layer, as they are
             // going to fallback to software mode.
-            m_layer->layer()->setFilters(WebFilterOperations());
+            webFilters->clear();
+            m_layer->layer()->setFilters(*webFilters);
             m_filters = FilterOperations();
             return false;
         }
-        m_layer->layer()->setFilters(webFilters);
+        m_layer->layer()->setFilters(*webFilters);
     }
 
     m_filters = filters;
@@ -1325,10 +1324,10 @@ bool GraphicsLayer::setFilters(const FilterOperations& filters)
 
 void GraphicsLayer::setBackgroundFilters(const FilterOperations& filters)
 {
-    WebFilterOperations webFilters;
-    if (!copyWebCoreFilterOperationsToWebFilterOperations(filters, webFilters))
+    OwnPtr<WebFilterOperations> webFilters = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
+    if (!copyWebCoreFilterOperationsToWebFilterOperations(filters, *webFilters))
         return;
-    m_layer->layer()->setBackgroundFilters(webFilters);
+    m_layer->layer()->setBackgroundFilters(*webFilters);
 }
 
 void GraphicsLayer::setLinkHighlight(LinkHighlightClient* linkHighlight)

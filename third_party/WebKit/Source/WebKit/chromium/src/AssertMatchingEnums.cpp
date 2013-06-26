@@ -38,7 +38,6 @@
 #include "public/platform/WebFileError.h"
 #include "public/platform/WebFileInfo.h"
 #include "public/platform/WebFileSystem.h"
-#include "public/platform/WebFilterOperation.h"
 #include "public/platform/WebIDBCursor.h"
 #include "public/platform/WebIDBDatabase.h"
 #include "public/platform/WebIDBDatabaseException.h"

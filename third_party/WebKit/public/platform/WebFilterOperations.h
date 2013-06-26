@@ -26,63 +26,36 @@
 #ifndef WebFilterOperations_h
 #define WebFilterOperations_h
 
-#include "WebCommon.h"
-#include "WebFilterOperation.h"
-#include "WebPrivateOwnPtr.h"
+#include "SkScalar.h"
+#include "WebColor.h"
+#include "WebPoint.h"
+
+#define WEB_FILTER_OPERATIONS_IS_VIRTUAL 1
 
 namespace WebKit {
-
-class WebFilterOperationsPrivate;
 
 // An ordered list of filter operations.
 class WebFilterOperations {
 public:
-    WebFilterOperations() { initialize(); }
-    WebFilterOperations(const WebFilterOperations& other)
-    {
-        initialize();
-        assign(other);
-    }
-    WebFilterOperations& operator=(const WebFilterOperations& other)
-    {
-        assign(other);
-        return *this;
-    }
-    ~WebFilterOperations() { destroy(); }
+    virtual ~WebFilterOperations() { }
 
-    BLINK_COMMON_EXPORT void assign(const WebFilterOperations&);
-    BLINK_COMMON_EXPORT bool equals(const WebFilterOperations&) const;
+    virtual void appendGrayscaleFilter(float amount) = 0;
+    virtual void appendSepiaFilter(float amount) = 0;
+    virtual void appendSaturateFilter(float amount) = 0;
+    virtual void appendHueRotateFilter(float amount) = 0;
+    virtual void appendInvertFilter(float amount) = 0;
+    virtual void appendBrightnessFilter(float amount) = 0;
+    virtual void appendContrastFilter(float amount) = 0;
+    virtual void appendOpacityFilter(float amount)= 0;
+    virtual void appendBlurFilter(float amount) = 0;
+    virtual void appendDropShadowFilter(WebPoint offset, float stdDeviation, WebColor) = 0;
+    virtual void appendColorMatrixFilter(SkScalar matrix[20]) = 0;
+    virtual void appendZoomFilter(float amount, int inset) = 0;
+    virtual void appendSaturatingBrightnessFilter(float amount) = 0;
 
-    BLINK_COMMON_EXPORT void append(const WebFilterOperation&);
-
-    // Removes all filter operations.
-    BLINK_COMMON_EXPORT void clear();
-    BLINK_COMMON_EXPORT bool isEmpty() const;
-
-    BLINK_COMMON_EXPORT void getOutsets(int& top, int& right, int& bottom, int& left) const;
-    BLINK_COMMON_EXPORT bool hasFilterThatMovesPixels() const;
-    BLINK_COMMON_EXPORT bool hasFilterThatAffectsOpacity() const;
-
-    BLINK_COMMON_EXPORT size_t size() const;
-    BLINK_COMMON_EXPORT WebFilterOperation at(size_t) const;
-
-private:
-    BLINK_COMMON_EXPORT void initialize();
-    BLINK_COMMON_EXPORT void destroy();
-
-    WebPrivateOwnPtr<WebFilterOperationsPrivate> m_private;
+    virtual void clear() = 0;
 };
 
-inline bool operator==(const WebFilterOperations& a, const WebFilterOperations& b)
-{
-    return a.equals(b);
-}
+} // namespace WebKit
 
-inline bool operator!=(const WebFilterOperations& a, const WebFilterOperations& b)
-{
-    return !(a == b);
-}
-
-}
-
-#endif
+#endif // WebFilterOperations_h
