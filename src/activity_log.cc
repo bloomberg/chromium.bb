@@ -25,6 +25,8 @@
 #define VCSID "Unknown"
 #endif  // VCSID
 
+#define QUINTTAP_COUNT 5  /* BTN_TOOL_QUINTTAP - Five fingers on trackpad */
+
 using base::FundamentalValue;
 using std::set;
 using std::string;
@@ -37,8 +39,21 @@ ActivityLog::ActivityLog(PropRegistry* prop_reg)
 
 void ActivityLog::SetHardwareProperties(const HardwareProperties& hwprops) {
   hwprops_ = hwprops;
-  max_fingers_ = std::min<size_t>(hwprops.max_finger_cnt,
-                                  hwprops.max_touch_cnt);
+
+  // For old devices(such as mario, alex, zgb..), the reporting touch count
+  // or 'max_touch_cnt' will be less than number of slots or 'max_finger_cnt'
+  // they support. As kernel evdev drivers do not have a bitset to report
+  // touch count greater than five (bitset for five-fingers gesture is
+  // BTN_TOOL_QUINTAP), we respect 'max_finger_cnt' than 'max_touch_cnt'
+  // reported from kernel driver as the 'max_fingers_' instead.
+  if (hwprops.max_touch_cnt < QUINTTAP_COUNT) {
+    max_fingers_ = std::min<size_t>(hwprops.max_finger_cnt,
+                                    hwprops.max_touch_cnt);
+  } else {
+    max_fingers_ = std::max<size_t>(hwprops.max_finger_cnt,
+                                    hwprops.max_touch_cnt);
+  }
+
   finger_states_.reset(new FingerState[kBufferSize * max_fingers_]);
 }
 
