@@ -42,6 +42,21 @@ crbug.com/24182 [ Win Debug ] fast/filesystem/workers/file-writer-events-shared-
 crbug.com/24182 [ XP ] fast/filesystem/workers/file-writer-events.html [ Timeout Pass ]
 crbug.com/24182 [ Debug ] fast/filesystem/workers/file-writer-empty-blob.html [ Timeout Pass ]
 
+# Indexdb tests failing after Chromium r208777
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/basics-shared-workers.html
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/basics-workers.html
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/cursor-advance-workers.html
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/deletedatabase-delayed-by-open-and-versionchange-workers.html
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/dont-commit-on-blocked.html
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/factory-basics-workers.html
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/index-basics-workers.html
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/objectstore-basics-workers.html
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/open-twice-workers.html
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/pending-activity-workers.html
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/pending-version-change-on-exit.html
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/pending-version-change-stuck-works-with-terminate.html
+crbug.com/254647 [ Linux Mac Win ] storage/indexeddb/transaction-complete-workers.html
+
 webkit.org/b/106606 [ Debug ] fast/canvas/webgl/context-release-upon-reload.html [ Slow ]
 crbug.com/250818 [ Win Debug ] virtual/gpu/fast/canvas/webgl/canvas-test.html [ Slow ]
 webkit.org/b/109400 [ Win ] http/tests/css/css-image-loading.html [ Pass Timeout ]
