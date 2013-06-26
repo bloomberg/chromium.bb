@@ -1864,6 +1864,8 @@ static void Pnacl_M28_PPB_Testing_Dev_SetMinimumArrayBufferSizeForShmem(PP_Insta
 
 /* Not generating wrapper methods for PPB_Trace_Event_Dev_0_1 */
 
+/* Not generating wrapper methods for PPB_Trace_Event_Dev_0_2 */
+
 /* Begin wrapper methods for PPB_TrueTypeFont_Dev_0_1 */
 
 static int32_t Pnacl_M26_PPB_TrueTypeFont_Dev_GetFontFamilies(PP_Instance instance, struct PP_ArrayOutput* output, struct PP_CompletionCallback* callback) {
@@ -4255,6 +4257,8 @@ struct PPB_Testing_Dev_0_92 Pnacl_Wrappers_PPB_Testing_Dev_0_92 = {
 /* Not generating wrapper interface for PPB_TextInput_Dev_0_2 */
 
 /* Not generating wrapper interface for PPB_Trace_Event_Dev_0_1 */
+
+/* Not generating wrapper interface for PPB_Trace_Event_Dev_0_2 */
 
 struct PPB_TrueTypeFont_Dev_0_1 Pnacl_Wrappers_PPB_TrueTypeFont_Dev_0_1 = {
     .GetFontFamilies = (int32_t (*)(PP_Instance instance, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M26_PPB_TrueTypeFont_Dev_GetFontFamilies,

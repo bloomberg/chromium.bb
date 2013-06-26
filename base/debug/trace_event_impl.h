@@ -391,7 +391,7 @@ class BASE_EXPORT TraceLog {
   // into the event; see "Memory scoping note" and TRACE_EVENT_COPY_XXX above.
   void AddTraceEvent(char phase,
                      const unsigned char* category_group_enabled,
-                     const char* category_group,
+                     const char* name,
                      unsigned long long id,
                      int num_args,
                      const char** arg_names,
