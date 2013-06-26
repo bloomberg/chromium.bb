@@ -506,6 +506,12 @@
   'WEBRTC_APPRTC': {
     'all': [
       'webrtc_apprtc_call',
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
+      # crbug.com/254412
+      '-webrtc_apprtc_call.WebrtcApprtcCallTest.testApprtcTabToTabCall',
+      '-webrtc_apprtc_call.WebrtcApprtcCallTest.testApprtcLoopbackCall',
     ],
   },
 
