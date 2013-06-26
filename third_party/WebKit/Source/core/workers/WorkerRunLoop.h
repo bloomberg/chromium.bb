@@ -89,14 +89,10 @@ namespace WebCore {
         // This should only be called when the context is closed or loop has been terminated.
         void runCleanupTasks(WorkerGlobalScope*);
 
-        void idleNotification(double idlenessInterval);
-
         MessageQueue<Task> m_messageQueue;
         OwnPtr<WorkerSharedTimer> m_sharedTimer;
         int m_nestedCount;
         unsigned long m_uniqueId;
-        double m_currentIdleIntervalInSeconds;
-        double m_nextIdleNotificationTime;
     };
 
 } // namespace WebCore

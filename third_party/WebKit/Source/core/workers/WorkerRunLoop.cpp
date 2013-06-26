@@ -29,14 +29,13 @@
  */
  
 #include "config.h"
-#include "core/workers/WorkerRunLoop.h"
 
-#include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/SharedTimer.h"
 #include "core/platform/ThreadGlobalData.h"
 #include "core/platform/ThreadTimers.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"
 #include <wtf/CurrentTime.h>
 
@@ -91,8 +90,6 @@ WorkerRunLoop::WorkerRunLoop()
     : m_sharedTimer(adoptPtr(new WorkerSharedTimer))
     , m_nestedCount(0)
     , m_uniqueId(0)
-    , m_currentIdleIntervalInSeconds(30)
-    , m_nextIdleNotificationTime(currentTime() + m_currentIdleIntervalInSeconds)
 {
 }
 
@@ -153,14 +150,8 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, cons
     ASSERT(context->thread()->isCurrentThread());
 
     double absoluteTime = 0.0;
-    if (waitMode == WaitForMessage) {
+    if (waitMode == WaitForMessage)
         absoluteTime = (predicate.isDefaultMode() && m_sharedTimer->isActive()) ? m_sharedTimer->fireTime() : MessageQueue<Task>::infiniteTime();
-        if (m_messageQueue.isEmpty()) {
-            idleNotification(absoluteTime - currentTime());
-            if (absoluteTime > m_nextIdleNotificationTime)
-                absoluteTime = m_nextIdleNotificationTime;
-        }
-    }
     MessageQueueWaitResult result;
     OwnPtr<WorkerRunLoop::Task> task = m_messageQueue.waitForMessageFilteredWithTimeout(result, predicate, absoluteTime);
 
@@ -175,7 +166,7 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, cons
         break;
 
     case MessageQueueTimeout:
-        if (!context->isClosing() && currentTime() >= m_sharedTimer->fireTime())
+        if (!context->isClosing())
             m_sharedTimer->fire();
         break;
     }
@@ -216,24 +207,6 @@ void WorkerRunLoop::postTaskAndTerminate(PassOwnPtr<ScriptExecutionContext::Task
 void WorkerRunLoop::postTaskForMode(PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode)
 {
     m_messageQueue.append(Task::create(task, mode.isolatedCopy()));
-}
-
-void WorkerRunLoop::idleNotification(double idleInterval)
-{
-    const double minIdleInterval = 0.5;
-    if (idleInterval < minIdleInterval)
-        return;
-
-    double now = currentTime();
-    if (now < m_nextIdleNotificationTime)
-        return;
-
-    // Use the upcoming timeout interval as a hint of work amount script engine can do.
-    // Let one millisecond corresponds to one permille.
-    int permilleOfWorkToDo = idleInterval < 1.0 ? static_cast<int>(idleInterval * 1000) : 1000;
-    bool noWorkLeft = WorkerScriptController::controllerForContext()->idleNotification(permilleOfWorkToDo);
-    m_currentIdleIntervalInSeconds = noWorkLeft ? 30 : 3;
-    m_nextIdleNotificationTime = now + m_currentIdleIntervalInSeconds;
 }
 
 PassOwnPtr<WorkerRunLoop::Task> WorkerRunLoop::Task::create(PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode)
