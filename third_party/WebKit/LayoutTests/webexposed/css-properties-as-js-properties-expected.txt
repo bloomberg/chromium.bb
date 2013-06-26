@@ -1,5 +1,8 @@
 This test (crudely) documents Blink's web-exposed CSS properties.  All changes to this list should go through Blink's feature review process: http://www.chromium.org/blink#new-features
 
+alignContent
+alignItems
+alignSelf
 alignmentBaseline
 background
 backgroundAttachment
@@ -77,6 +80,13 @@ fill
 fillOpacity
 fillRule
 filter
+flex
+flexBasis
+flexDirection
+flexFlow
+flexGrow
+flexShrink
+flexWrap
 float
 floodColor
 floodOpacity
@@ -103,6 +113,7 @@ gridRows
 gridStart
 height
 imageRendering
+justifyContent
 kerning
 left
 length
@@ -132,6 +143,7 @@ minWidth
 minZoom
 mixBlendMode
 opacity
+order
 orientation
 orphans
 outline
@@ -210,9 +222,6 @@ userZoom
 vectorEffect
 verticalAlign
 visibility
-webkitAlignContent
-webkitAlignItems
-webkitAlignSelf
 webkitAnimation
 webkitAnimationDelay
 webkitAnimationDirection
@@ -278,13 +287,6 @@ webkitColumnSpan
 webkitColumnWidth
 webkitColumns
 webkitFilter
-webkitFlex
-webkitFlexBasis
-webkitFlexDirection
-webkitFlexFlow
-webkitFlexGrow
-webkitFlexShrink
-webkitFlexWrap
 webkitFlowFrom
 webkitFlowInto
 webkitFontFeatureSettings
@@ -298,7 +300,6 @@ webkitHyphenateLimitAfter
 webkitHyphenateLimitBefore
 webkitHyphenateLimitLines
 webkitHyphens
-webkitJustifyContent
 webkitLineAlign
 webkitLineBoxContain
 webkitLineBreak
@@ -345,7 +346,6 @@ webkitMaxLogicalHeight
 webkitMaxLogicalWidth
 webkitMinLogicalHeight
 webkitMinLogicalWidth
-webkitOrder
 webkitPaddingAfter
 webkitPaddingBefore
 webkitPaddingEnd

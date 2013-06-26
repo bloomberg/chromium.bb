@@ -340,12 +340,14 @@ table-cell
 table-caption
 -webkit-box
 -webkit-inline-box
--webkit-flex
--webkit-inline-flex
+flex
+inline-flex
 grid
 inline-grid
 lazy-block
 //none
+-webkit-flex
+-webkit-inline-flex
 //
 // CSS_PROP_CURSOR:
 // The order here must match the order of the ECursor enum in RenderStyleConstants.h.

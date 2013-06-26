@@ -244,15 +244,15 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitColumnSpan,
     CSSPropertyWebkitColumnWidth,
     CSSPropertyWebkitFilter,
-    CSSPropertyWebkitAlignContent,
-    CSSPropertyWebkitAlignItems,
-    CSSPropertyWebkitAlignSelf,
-    CSSPropertyWebkitFlexBasis,
-    CSSPropertyWebkitFlexGrow,
-    CSSPropertyWebkitFlexShrink,
-    CSSPropertyWebkitFlexDirection,
-    CSSPropertyWebkitFlexWrap,
-    CSSPropertyWebkitJustifyContent,
+    CSSPropertyAlignContent,
+    CSSPropertyAlignItems,
+    CSSPropertyAlignSelf,
+    CSSPropertyFlexBasis,
+    CSSPropertyFlexGrow,
+    CSSPropertyFlexShrink,
+    CSSPropertyFlexDirection,
+    CSSPropertyFlexWrap,
+    CSSPropertyJustifyContent,
     CSSPropertyWebkitFontKerning,
     CSSPropertyWebkitFontSmoothing,
     CSSPropertyWebkitFontVariantLigatures,
@@ -297,7 +297,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitMaskPosition,
     CSSPropertyWebkitMaskRepeat,
     CSSPropertyWebkitMaskSize,
-    CSSPropertyWebkitOrder,
+    CSSPropertyOrder,
     CSSPropertyWebkitPerspective,
     CSSPropertyWebkitPerspectiveOrigin,
     CSSPropertyWebkitPrintColorAdjust,
@@ -1864,11 +1864,11 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->display());
         case CSSPropertyEmptyCells:
             return cssValuePool().createValue(style->emptyCells());
-        case CSSPropertyWebkitAlignContent:
+        case CSSPropertyAlignContent:
             return cssValuePool().createValue(style->alignContent());
-        case CSSPropertyWebkitAlignItems:
+        case CSSPropertyAlignItems:
             return cssValuePool().createValue(style->alignItems());
-        case CSSPropertyWebkitAlignSelf:
+        case CSSPropertyAlignSelf:
             if (style->alignSelf() == AlignAuto) {
                 Node* parent = styledNode->parentNode();
                 if (parent && parent->computedStyle())
@@ -1876,23 +1876,23 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 return cssValuePool().createValue(AlignStretch);
             }
             return cssValuePool().createValue(style->alignSelf());
-        case CSSPropertyWebkitFlex:
-            return getCSSPropertyValuesForShorthandProperties(webkitFlexShorthand());
-        case CSSPropertyWebkitFlexBasis:
+        case CSSPropertyFlex:
+            return getCSSPropertyValuesForShorthandProperties(flexShorthand());
+        case CSSPropertyFlexBasis:
             return cssValuePool().createValue(style->flexBasis());
-        case CSSPropertyWebkitFlexDirection:
+        case CSSPropertyFlexDirection:
             return cssValuePool().createValue(style->flexDirection());
-        case CSSPropertyWebkitFlexFlow:
-            return getCSSPropertyValuesForShorthandProperties(webkitFlexFlowShorthand());
-        case CSSPropertyWebkitFlexGrow:
+        case CSSPropertyFlexFlow:
+            return getCSSPropertyValuesForShorthandProperties(flexFlowShorthand());
+        case CSSPropertyFlexGrow:
             return cssValuePool().createValue(style->flexGrow());
-        case CSSPropertyWebkitFlexShrink:
+        case CSSPropertyFlexShrink:
             return cssValuePool().createValue(style->flexShrink());
-        case CSSPropertyWebkitFlexWrap:
+        case CSSPropertyFlexWrap:
             return cssValuePool().createValue(style->flexWrap());
-        case CSSPropertyWebkitJustifyContent:
+        case CSSPropertyJustifyContent:
             return cssValuePool().createValue(style->justifyContent());
-        case CSSPropertyWebkitOrder:
+        case CSSPropertyOrder:
             return cssValuePool().createValue(style->order(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyFloat:
             if (style->display() != NONE && style->hasOutOfFlowPosition())

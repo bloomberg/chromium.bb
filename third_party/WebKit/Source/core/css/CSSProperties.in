@@ -2,6 +2,9 @@
 //   should use this for make_css_property_names.py
 // Note: Mandatory blank line to skip parameter parsing phase
 
+align-content
+align-items
+align-self type_name=EAlignItems
 background-attachment custom_all
 background-blend-mode custom_all
 background-clip custom_all
@@ -28,9 +31,15 @@ caption-side
 clear
 color custom_all
 empty-cells type_name=EEmptyCell
+flex-basis apply_type=length, use_auto
+flex-direction
+flex-grow type_name=float
+flex-shrink type_name=float
+flex-wrap
 float type_name=EFloat, name_for_methods=Floating
 grid-auto-flow type_name=GridAutoFlow
 height apply_type=length, initial=initialSize, use_auto, use_intrinsic
+justify-content
 image-rendering
 left apply_type=length, initial=initialOffset, use_auto
 list-style-position
@@ -45,6 +54,7 @@ min-height apply_type=length, initial=initialMinSize, use_auto, use_intrinsic, u
 min-width apply_type=length, initial=initialMinSize, use_auto, use_intrinsic
 mix-blend-mode type_name=BlendMode, name_for_methods=BlendMode
 opacity type_name=float
+order type_name=int
 orphans type_name=short, custom_all
 outline-color custom_all
 overflow-wrap
@@ -80,9 +90,6 @@ word-wrap name_for_methods=OverflowWrap
 zoom custom_all
 z-index type_name=int, custom_all
 
--webkit-align-content
--webkit-align-items
--webkit-align-self type_name=EAlignItems
 -webkit-animation-delay custom_all
 -webkit-animation-direction custom_all
 -webkit-animation-duration custom_all
@@ -119,11 +126,6 @@ z-index type_name=int, custom_all
 -webkit-column-rule-style type_name=EBorderStyle, initial=initialBorderStyle
 -webkit-column-span type_name=ColumnSpan
 -webkit-column-width type_name=float, custom_all
--webkit-flex-basis apply_type=length, use_auto
--webkit-flex-direction
--webkit-flex-grow type_name=float
--webkit-flex-shrink type_name=float
--webkit-flex-wrap
 -webkit-flow-from type_name=const AtomicString&, name_for_methods=RegionThread, custom_value
 -webkit-flow-into type_name=const AtomicString&, name_for_methods=FlowThread, custom_value
 -webkit-highlight type_name=const AtomicString&, custom_value
@@ -132,7 +134,6 @@ z-index type_name=int, custom_all
 -webkit-hyphenate-limit-before type_name=short, name_for_methods=HyphenationLimitBefore, custom_value
 -webkit-hyphenate-limit-lines type_name=short, name_for_methods=HyphenationLimitLines, custom_value
 -webkit-hyphens type_name=Hyphens
--webkit-justify-content
 -webkit-line-align type_name=LineAlign
 -webkit-line-break type_name=LineBreak
 -webkit-line-clamp type_name=LineClampValue
@@ -156,7 +157,6 @@ z-index type_name=int, custom_all
 -webkit-mask-repeat-x custom_all
 -webkit-mask-repeat-y custom_all
 -webkit-mask-size custom_all
--webkit-order type_name=int
 -webkit-perspective-origin-x apply_type=length
 -webkit-perspective-origin-y apply_type=length
 -webkit-print-color-adjust type_name=PrintColorAdjust

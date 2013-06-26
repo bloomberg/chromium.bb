@@ -265,17 +265,28 @@ z-index
 -webkit-columns
 -webkit-box-decoration-break
 -webkit-filter
--webkit-align-content
--webkit-align-items
--webkit-align-self
--webkit-flex
--webkit-flex-basis
--webkit-flex-direction
--webkit-flex-flow
--webkit-flex-grow
--webkit-flex-shrink
--webkit-flex-wrap
--webkit-justify-content
+align-content
+-webkit-align-content alias_for=align-content
+align-items
+-webkit-align-items alias_for=align-items
+align-self
+-webkit-align-self alias_for=align-self
+flex
+-webkit-flex alias_for=flex
+flex-basis
+-webkit-flex-basis alias_for=flex-basis
+flex-direction
+-webkit-flex-direction alias_for=flex-direction
+flex-flow
+-webkit-flex-flow alias_for=flex-flow
+flex-grow
+-webkit-flex-grow alias_for=flex-grow
+flex-shrink
+-webkit-flex-shrink alias_for=flex-shrink
+flex-wrap
+-webkit-flex-wrap alias_for=flex-wrap
+justify-content
+-webkit-justify-content alias_for=justify-content
 -webkit-font-size-delta
 grid-auto-columns
 grid-auto-rows
@@ -341,7 +352,8 @@ grid-area
 -webkit-max-logical-height
 -webkit-min-logical-width
 -webkit-min-logical-height
--webkit-order
+order
+-webkit-order alias_for=order
 -webkit-padding-after
 -webkit-padding-before
 -webkit-padding-end

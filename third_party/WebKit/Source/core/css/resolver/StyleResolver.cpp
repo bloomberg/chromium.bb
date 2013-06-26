@@ -2629,8 +2629,8 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWebkitBorderRadius:
     case CSSPropertyWebkitColumns:
     case CSSPropertyWebkitColumnRule:
-    case CSSPropertyWebkitFlex:
-    case CSSPropertyWebkitFlexFlow:
+    case CSSPropertyFlex:
+    case CSSPropertyFlexFlow:
     case CSSPropertyGridColumn:
     case CSSPropertyGridRow:
     case CSSPropertyGridArea:
@@ -3165,16 +3165,16 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWebkitColumnRuleWidth:
     case CSSPropertyWebkitColumnSpan:
     case CSSPropertyWebkitColumnWidth:
-    case CSSPropertyWebkitAlignContent:
-    case CSSPropertyWebkitAlignItems:
-    case CSSPropertyWebkitAlignSelf:
-    case CSSPropertyWebkitFlexBasis:
-    case CSSPropertyWebkitFlexDirection:
-    case CSSPropertyWebkitFlexGrow:
-    case CSSPropertyWebkitFlexShrink:
-    case CSSPropertyWebkitFlexWrap:
-    case CSSPropertyWebkitJustifyContent:
-    case CSSPropertyWebkitOrder:
+    case CSSPropertyAlignContent:
+    case CSSPropertyAlignItems:
+    case CSSPropertyAlignSelf:
+    case CSSPropertyFlexBasis:
+    case CSSPropertyFlexDirection:
+    case CSSPropertyFlexGrow:
+    case CSSPropertyFlexShrink:
+    case CSSPropertyFlexWrap:
+    case CSSPropertyJustifyContent:
+    case CSSPropertyOrder:
     case CSSPropertyWebkitFlowFrom:
     case CSSPropertyWebkitFlowInto:
     case CSSPropertyWebkitFontKerning:

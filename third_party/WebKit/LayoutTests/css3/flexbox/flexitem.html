@@ -1,23 +1,20 @@
 <!DOCTYPE html>
 <html>
+<link href="resources/flexbox.css" rel="stylesheet">
 <style>
 .flexbox {
     width: 600px;
-    display: -webkit-flex;
     background-color: #aaa;
     position: relative;
     min-height: 10px;
 }
 .flexbox > * {
-    -webkit-flex: 1 0 0;
+    flex: 1 0 0;
     margin: 0;
     border: 0;
     padding: 0;
     font-size: 12px;
     min-width: 0;
-}
-.column {
-    -webkit-flex-direction: column;
 }
 </style>
 <script src="../../resources/check-layout.js"></script>
@@ -46,32 +43,32 @@
 </div>
 
 <div class="flexbox">
-  <img data-expected-display="block" data-expected-width="200" style="-webkit-flex: 1 0 auto;" src="../images/resources/blue-100.png">
-  <img data-expected-display="block" data-expected-width="200" data-expected-height="100" style="-webkit-flex: 2 0 0;" src="doesnotexist.png">
-  <img data-expected-display="block" data-expected-width="200" data-expected-height="100" style="-webkit-flex: 2 0 0;" src="doesnotexist.png" alt="placeholder text">
+  <img data-expected-display="block" data-expected-width="200" style="flex: 1 0 auto;" src="../images/resources/blue-100.png">
+  <img data-expected-display="block" data-expected-width="200" data-expected-height="100" style="flex: 2 0 0;" src="doesnotexist.png">
+  <img data-expected-display="block" data-expected-width="200" data-expected-height="100" style="flex: 2 0 0;" src="doesnotexist.png" alt="placeholder text">
 </div>
 
 <div class="flexbox">
-  <svg data-expected-display="block" data-expected-width="100" style="-webkit-flex: 1 0 auto; width: 100px; height: 100px">
+  <svg data-expected-display="block" data-expected-width="100" style="flex: 1 0 auto; width: 100px; height: 100px">
     <circle cx="50" cy="50" r="50" fill="blue">
     </circle>
   </svg>
-  <svg data-expected-display="block" data-expected-width="500" style="-webkit-flex: 1 1 auto; height: 100px">
+  <svg data-expected-display="block" data-expected-width="500" style="flex: 1 1 auto; height: 100px">
     <circle cx="50" cy="50" r="50" fill="green">
     </circle>
   </svg>
 </div>
 
 <div class="flexbox">
-  <span data-expected-display="block" data-expected-width="200" style="-webkit-flex: 2 0 0"></span>
-  <button data-expected-display="block" data-expected-width="100" style="-webkit-flex: 1 0 0">button</button>
-  <span data-expected-display="block" data-expected-width="300" style="-webkit-flex: 2 2 100px"></span>
+  <span data-expected-display="block" data-expected-width="200" style="flex: 2 0 0"></span>
+  <button data-expected-display="block" data-expected-width="100" style="flex: 1 0 0">button</button>
+  <span data-expected-display="block" data-expected-width="300" style="flex: 2 2 100px"></span>
 </div>
 
 <div class="flexbox" style="width: 700px">
   <div data-expected-display="block" data-expected-width="100" style="display: inline-block;"></div>
   <div data-expected-display="-webkit-box" data-expected-width="100" style="display: -webkit-inline-box;"></div>
-  <div data-expected-display="-webkit-flex" data-expected-width="100" style="display: -webkit-inline-flex;"></div>
+  <div data-expected-display="flex" data-expected-width="100" style="display: inline-flex;"></div>
   <div data-expected-display="block" data-expected-width="100" style="display: table-cell"></div>
   <div data-expected-display="block" data-expected-width="100" style="display: compact"></div>
   <div data-expected-display="block" data-expected-width="100" style="display: run-in"></div>
