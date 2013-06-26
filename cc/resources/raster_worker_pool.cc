@@ -17,6 +17,25 @@ namespace cc {
 
 namespace {
 
+scoped_ptr<base::Value> RasterModeAsValue(RasterMode raster_mode) {
+  switch (raster_mode) {
+    case HIGH_QUALITY_NO_LCD_RASTER_MODE:
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("HIGH_QUALITY_NO_LCD_RASTER_MODE"));
+    case HIGH_QUALITY_RASTER_MODE:
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("HIGH_QUALITY_RASTER_MODE"));
+    case LOW_QUALITY_RASTER_MODE:
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("LOW_QUALITY_RASTER_MODE"));
+    case NUM_RASTER_MODES:
+    default:
+      NOTREACHED() << "Unrecognized RasterMode value " << raster_mode;
+      return scoped_ptr<base::Value>(
+          base::Value::CreateStringValue("<unknown RasterMode value>"));
+  }
+}
+
 class DisableLCDTextFilter : public SkDrawFilter {
  public:
   // SkDrawFilter interface.
@@ -80,9 +99,14 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   }
 
   bool RunRasterOnThread(SkDevice* device, unsigned thread_index) {
-    TRACE_EVENT1(
-        "cc", "RasterWorkerPoolTaskImpl::RunRasterOnThread",
-        "metadata", TracedValue::FromValue(metadata_.AsValue().release()));
+    TRACE_EVENT2(
+        "cc",
+        "RasterWorkerPoolTaskImpl::RunRasterOnThread",
+        "metadata",
+        TracedValue::FromValue(metadata_.AsValue().release()),
+        "raster_mode",
+        TracedValue::FromValue(RasterModeAsValue(raster_mode_).release()));
+
     devtools_instrumentation::ScopedLayerTask raster_task(
         devtools_instrumentation::kRasterTask, metadata_.layer_id);
 

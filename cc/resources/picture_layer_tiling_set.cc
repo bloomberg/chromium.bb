@@ -58,9 +58,9 @@ void PictureLayerTilingSet::AddTilingsToMatchScales(
   tilings_.sort(LargestToSmallestScaleFunctor());
 }
 
-void PictureLayerTilingSet::DestroyAndRecreateTilesWithText() {
+void PictureLayerTilingSet::SetCanUseLCDText(bool can_use_lcd_text) {
   for (size_t i = 0; i < tilings_.size(); ++i)
-    tilings_[i]->DestroyAndRecreateTilesWithText();
+    tilings_[i]->SetCanUseLCDText(can_use_lcd_text);
 }
 
 PictureLayerTiling* PictureLayerTilingSet::AddTiling(float contents_scale) {

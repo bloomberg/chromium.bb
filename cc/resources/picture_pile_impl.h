@@ -21,10 +21,9 @@ struct RenderingStats;
 
 class CC_EXPORT PicturePileImpl : public PicturePileBase {
  public:
-  static scoped_refptr<PicturePileImpl> Create(bool enable_lcd_text);
+  static scoped_refptr<PicturePileImpl> Create();
   static scoped_refptr<PicturePileImpl> CreateFromOther(
-      const PicturePileBase* other,
-      bool enable_lcd_text);
+      const PicturePileBase* other);
 
   // Get paint-safe version of this picture for a specific thread.
   PicturePileImpl* GetCloneForDrawingOnThread(unsigned thread_index) const;
@@ -111,16 +110,12 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   void DidBeginTracing();
 
-  bool can_use_lcd_text() const {
-    return enable_lcd_text_;
-  }
-
  protected:
   friend class PicturePile;
   friend class PixelRefIterator;
 
-  explicit PicturePileImpl(bool enable_lcd_text);
-  PicturePileImpl(const PicturePileBase* other, bool enable_lcd_text);
+  PicturePileImpl();
+  explicit PicturePileImpl(const PicturePileBase* other);
   virtual ~PicturePileImpl();
 
  private:
@@ -144,8 +139,6 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       gfx::Rect canvas_rect,
       float contents_scale,
       RasterStats* raster_stats);
-
-  bool enable_lcd_text_;
 
   // Once instantiated, |clones_for_drawing_| can't be modified.  This
   // guarantees thread-safe access during the life time of a PicturePileImpl

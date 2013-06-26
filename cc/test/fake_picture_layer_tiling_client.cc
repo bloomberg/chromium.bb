@@ -12,8 +12,7 @@ namespace cc {
 
 class FakeInfinitePicturePileImpl : public PicturePileImpl {
  public:
-  FakeInfinitePicturePileImpl()
-      : PicturePileImpl(false) {
+  FakeInfinitePicturePileImpl() {
     gfx::Size size(std::numeric_limits<int>::max(),
                    std::numeric_limits<int>::max());
     Resize(size);
@@ -45,7 +44,8 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
                   gfx::Rect(),
                   1,
                   0,
-                  0);
+                  0,
+                  true);
 }
 
 void FakePictureLayerTilingClient::SetTileSize(gfx::Size tile_size) {
@@ -64,12 +64,6 @@ const Region* FakePictureLayerTilingClient::GetInvalidation() {
 const PictureLayerTiling* FakePictureLayerTilingClient::GetTwinTiling(
       const PictureLayerTiling* tiling) {
   return twin_tiling_;
-}
-
-bool FakePictureLayerTilingClient::TileMayHaveLCDText(Tile* tile) {
-  if (text_rect_.IsEmpty())
-    return false;
-  return tile->content_rect().Intersects(text_rect_);
 }
 
 }  // namespace cc

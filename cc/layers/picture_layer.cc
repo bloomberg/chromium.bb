@@ -46,8 +46,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   // See PictureLayerImpl::PushPropertiesTo for more details.
   layer_impl->invalidation_.Clear();
   layer_impl->invalidation_.Swap(&pile_invalidation_);
-  layer_impl->pile_ = PicturePileImpl::CreateFromOther(
-      pile_.get(), layer_impl->is_using_lcd_text_);
+  layer_impl->pile_ = PicturePileImpl::CreateFromOther(pile_.get());
   layer_impl->SyncFromActiveLayer();
 }
 

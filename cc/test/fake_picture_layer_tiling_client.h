@@ -33,7 +33,6 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   virtual const Region* GetInvalidation() OVERRIDE;
   virtual const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) OVERRIDE;
-  virtual bool TileMayHaveLCDText(Tile* tile) OVERRIDE;
 
   void set_twin_tiling(PictureLayerTiling* tiling) { twin_tiling_ = tiling; }
   void set_text_rect(gfx::Rect rect) { text_rect_ = rect; }

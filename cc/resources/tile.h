@@ -29,7 +29,8 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
        gfx::Rect opaque_rect,
        float contents_scale,
        int layer_id,
-       int source_frame_number);
+       int source_frame_number,
+       bool can_use_lcd_text);
 
   PicturePileImpl* picture_pile() {
     return picture_pile_.get();
@@ -58,6 +59,14 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
 
   bool required_for_activation() const {
     return priority_[PENDING_TREE].required_for_activation;
+  }
+
+  void set_can_use_lcd_text(bool can_use_lcd_text) {
+    can_use_lcd_text_ = can_use_lcd_text;
+  }
+
+  bool can_use_lcd_text() const {
+    return can_use_lcd_text_;
   }
 
   scoped_ptr<base::Value> AsValue() const;
@@ -110,6 +119,9 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
     for (int mode = 0; mode < NUM_RASTER_MODES; ++mode)
       managed_state().tile_versions[mode].raster_task_.Reset();
   }
+  RasterMode GetRasterModeForTesting() const {
+    return managed_state().raster_mode;
+  }
 
  private:
   // Methods called by by tile manager.
@@ -138,6 +150,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   ManagedTileState managed_state_;
   int layer_id_;
   int source_frame_number_;
+  bool can_use_lcd_text_;
 
   DISALLOW_COPY_AND_ASSIGN(Tile);
 };

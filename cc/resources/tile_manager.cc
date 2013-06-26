@@ -335,7 +335,7 @@ void TileManager::GetMemoryStats(
     const Tile* tile = *it;
     const ManagedTileState& mts = tile->managed_state();
 
-    RasterMode mode = HIGH_QUALITY_RASTER_MODE;
+    RasterMode mode = HIGH_QUALITY_NO_LCD_RASTER_MODE;
     if (tile->IsReadyToDraw(&mode) &&
         !mts.tile_versions[mode].requires_resource())
       continue;
@@ -395,16 +395,19 @@ RasterMode TileManager::DetermineRasterMode(const Tile* tile) const {
   DCHECK(tile);
   DCHECK(tile->picture_pile());
 
-  RasterMode raster_mode;
+  const ManagedTileState& mts = tile->managed_state();
+  RasterMode current_mode = mts.raster_mode;
 
+  RasterMode raster_mode = HIGH_QUALITY_RASTER_MODE;
   if (tile->managed_state().resolution == LOW_RESOLUTION)
     raster_mode = LOW_QUALITY_RASTER_MODE;
-  else if (!tile->picture_pile()->can_use_lcd_text())
-    raster_mode = HIGH_QUALITY_NO_LCD_RASTER_MODE;
-  else
+  else if (tile->can_use_lcd_text())
     raster_mode = HIGH_QUALITY_RASTER_MODE;
+  else if (mts.tile_versions[current_mode].has_text_ ||
+           !mts.tile_versions[current_mode].IsReadyToDraw())
+    raster_mode = HIGH_QUALITY_NO_LCD_RASTER_MODE;
 
-  return raster_mode;
+  return std::min(raster_mode, current_mode);
 }
 
 void TileManager::AssignGpuMemoryToTiles() {
@@ -447,9 +450,7 @@ void TileManager::AssignGpuMemoryToTiles() {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
 
-    // Pick the better version out of the one we already set,
-    // and the one that is required.
-    mts.raster_mode = std::min(mts.raster_mode, DetermineRasterMode(tile));
+    mts.raster_mode = DetermineRasterMode(tile);
 
     ManagedTileState::TileVersion& tile_version =
         mts.tile_versions[mts.raster_mode];

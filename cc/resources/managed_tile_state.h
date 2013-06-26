@@ -64,9 +64,14 @@ class CC_EXPORT ManagedTileState {
       void SetResourceForTesting(scoped_ptr<ResourcePool::Resource> resource) {
         resource_ = resource.Pass();
       }
-
       const ResourcePool::Resource* GetResourceForTesting() const {
         return resource_.get();
+      }
+      void SetSolidColorForTesting(SkColor color) {
+        set_solid_color(color);
+      }
+      void SetHasTextForTesting(bool has_text) {
+        has_text_ = has_text;
       }
 
     private:

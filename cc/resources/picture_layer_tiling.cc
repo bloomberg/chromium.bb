@@ -16,13 +16,6 @@
 
 namespace cc {
 
-bool PictureLayerTilingClient::TileMayHaveLCDText(Tile* tile) {
-  RasterMode raster_mode = HIGH_QUALITY_RASTER_MODE;
-  if (!tile->IsReadyToDraw(&raster_mode))
-    return true;
-  return tile->has_text(raster_mode);
-}
-
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
     float contents_scale,
     gfx::Size layer_bounds,
@@ -114,18 +107,9 @@ Region PictureLayerTiling::OpaqueRegionInContentRect(
   return opaque_region;
 }
 
-void PictureLayerTiling::DestroyAndRecreateTilesWithText() {
-  std::vector<TileMapKey> new_tiles;
-  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    if (client_->TileMayHaveLCDText(it->second.get()))
-      new_tiles.push_back(it->first);
-  }
-
-  const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
-  for (size_t i = 0; i < new_tiles.size(); ++i) {
-    tiles_.erase(new_tiles[i]);
-    CreateTile(new_tiles[i].first, new_tiles[i].second, twin_tiling);
-  }
+void PictureLayerTiling::SetCanUseLCDText(bool can_use_lcd_text) {
+  for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+    it->second->set_can_use_lcd_text(can_use_lcd_text);
 }
 
 PictureLayerTiling::CoverageIterator::CoverageIterator()

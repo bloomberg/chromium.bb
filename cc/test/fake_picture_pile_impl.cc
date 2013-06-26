@@ -11,8 +11,7 @@
 
 namespace cc {
 
-FakePicturePileImpl::FakePicturePileImpl()
-    : PicturePileImpl(false) {}
+FakePicturePileImpl::FakePicturePileImpl() {}
 
 FakePicturePileImpl::~FakePicturePileImpl() {}
 

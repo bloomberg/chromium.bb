@@ -17,14 +17,16 @@ Tile::Tile(TileManager* tile_manager,
            gfx::Rect opaque_rect,
            float contents_scale,
            int layer_id,
-           int source_frame_number)
+           int source_frame_number,
+           bool can_use_lcd_text)
   : tile_manager_(tile_manager),
     tile_size_(tile_size),
     content_rect_(content_rect),
     contents_scale_(contents_scale),
     opaque_rect_(opaque_rect),
     layer_id_(layer_id),
-    source_frame_number_(source_frame_number) {
+    source_frame_number_(source_frame_number),
+    can_use_lcd_text_(can_use_lcd_text) {
   set_picture_pile(picture_pile);
   tile_manager_->RegisterTile(this);
 }

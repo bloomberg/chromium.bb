@@ -31,14 +31,13 @@ PicturePileImpl::ClonesForDrawing::ClonesForDrawing(
 PicturePileImpl::ClonesForDrawing::~ClonesForDrawing() {
 }
 
-scoped_refptr<PicturePileImpl> PicturePileImpl::Create(bool enable_lcd_text) {
-  return make_scoped_refptr(new PicturePileImpl(enable_lcd_text));
+scoped_refptr<PicturePileImpl> PicturePileImpl::Create() {
+  return make_scoped_refptr(new PicturePileImpl);
 }
 
 scoped_refptr<PicturePileImpl> PicturePileImpl::CreateFromOther(
-    const PicturePileBase* other,
-    bool enable_lcd_text) {
-  return make_scoped_refptr(new PicturePileImpl(other, enable_lcd_text));
+    const PicturePileBase* other) {
+  return make_scoped_refptr(new PicturePileImpl(other));
 }
 
 scoped_refptr<PicturePileImpl> PicturePileImpl::CreateCloneForDrawing(
@@ -46,22 +45,18 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::CreateCloneForDrawing(
   return make_scoped_refptr(new PicturePileImpl(other, thread_index));
 }
 
-PicturePileImpl::PicturePileImpl(bool enable_lcd_text)
-    : enable_lcd_text_(enable_lcd_text),
-      clones_for_drawing_(ClonesForDrawing(this, 0)) {
+PicturePileImpl::PicturePileImpl()
+    : clones_for_drawing_(ClonesForDrawing(this, 0)) {
 }
 
-PicturePileImpl::PicturePileImpl(const PicturePileBase* other,
-                                 bool enable_lcd_text)
+PicturePileImpl::PicturePileImpl(const PicturePileBase* other)
     : PicturePileBase(other),
-      enable_lcd_text_(enable_lcd_text),
       clones_for_drawing_(ClonesForDrawing(this, num_raster_threads())) {
 }
 
 PicturePileImpl::PicturePileImpl(
     const PicturePileImpl* other, unsigned thread_index)
     : PicturePileBase(other, thread_index),
-      enable_lcd_text_(other->enable_lcd_text_),
       clones_for_drawing_(ClonesForDrawing(this, 0)) {
 }
 

@@ -90,7 +90,7 @@ class CC_EXPORT PictureLayerImpl
   void CleanUpTilingsOnActiveLayer(
       std::vector<PictureLayerTiling*> used_tilings);
   float MinimumContentsScale() const;
-  void UpdateLCDTextStatus();
+  void UpdateLCDTextStatus(bool new_status);
   void ResetRasterScale();
   void MarkVisibleResourcesAsRequired() const;
 

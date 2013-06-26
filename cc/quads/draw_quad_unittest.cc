@@ -663,7 +663,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
   gfx::Rect content_rect(30, 40, 20, 30);
   float contents_scale = 3.141592f;
   bool can_draw_direct_to_backbuffer = true;
-  scoped_refptr<PicturePileImpl> picture_pile = PicturePileImpl::Create(false);
+  scoped_refptr<PicturePileImpl> picture_pile = PicturePileImpl::Create();
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_8_NEW(PictureDrawQuad,
@@ -890,7 +890,7 @@ TEST_F(DrawQuadIteratorTest, DISABLED_PictureDrawQuad) {
   gfx::Rect content_rect(30, 40, 20, 30);
   float contents_scale = 3.141592f;
   bool can_draw_direct_to_backbuffer = true;
-  scoped_refptr<PicturePileImpl> picture_pile = PicturePileImpl::Create(false);
+  scoped_refptr<PicturePileImpl> picture_pile = PicturePileImpl::Create();
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_8_NEW(PictureDrawQuad,

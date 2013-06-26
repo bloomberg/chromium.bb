@@ -36,9 +36,6 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) = 0;
 
-  // This is on the client so tests can override behaviour.
-  virtual bool TileMayHaveLCDText(Tile* tile);
-
  protected:
   virtual ~PictureLayerTilingClient() {}
 };
@@ -53,7 +50,7 @@ class CC_EXPORT PictureLayerTiling {
       gfx::Size layer_bounds,
       PictureLayerTilingClient* client);
   gfx::Size layer_bounds() const { return layer_bounds_; }
-  void DestroyAndRecreateTilesWithText();
+  void SetCanUseLCDText(bool can_use_lcd_text);
 
   void SetClient(PictureLayerTilingClient* client);
   void set_resolution(TileResolution resolution) { resolution_ = resolution; }

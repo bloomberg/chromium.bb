@@ -77,14 +77,16 @@ template <> struct hash<cc::internal::RasterWorkerPoolTask*> {
 
 namespace cc {
 
-// Low quality implies no lcd test;
-// high quality implies lcd text.
-// Note that the order of these matters, from "better" to "worse" in terms of
-// quality.
+// Low quality implies no lcd test; high quality implies lcd text.
+// Note that the order of these matters. It is organized in the order in which
+// we can promote tiles. That is, we always move from higher number enum to
+// lower number: low quality can be re-rastered as high quality with or without
+// LCD text; high quality LCD can only move to high quality no LCD mode. We
+// currently don't support moving from no LCD to LCD high quality.
 // TODO(vmpstr): Find a better place for this.
 enum RasterMode {
-  HIGH_QUALITY_RASTER_MODE = 0,
-  HIGH_QUALITY_NO_LCD_RASTER_MODE = 1,
+  HIGH_QUALITY_NO_LCD_RASTER_MODE = 0,
+  HIGH_QUALITY_RASTER_MODE = 1,
   LOW_QUALITY_RASTER_MODE = 2,
   NUM_RASTER_MODES = 3
 };
