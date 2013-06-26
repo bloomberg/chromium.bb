@@ -32,7 +32,7 @@
 #define AccessibilityUIElementChromium_h
 
 #include "CppBoundClass.h"
-#include "WebAccessibilityObject.h"
+#include "public/web/WebAccessibilityObject.h"
 #include <vector>
 
 namespace WebTestRunner {

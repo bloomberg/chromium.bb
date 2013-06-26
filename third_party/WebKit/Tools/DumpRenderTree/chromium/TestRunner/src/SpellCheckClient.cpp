@@ -31,9 +31,9 @@
 #include "SpellCheckClient.h"
 
 #include "MockGrammarCheck.h"
-#include "WebTestDelegate.h"
-#include "WebTextCheckingCompletion.h"
-#include "WebTextCheckingResult.h"
+#include "public/testing/WebTestDelegate.h"
+#include "public/web/WebTextCheckingCompletion.h"
+#include "public/web/WebTextCheckingResult.h"
 
 using namespace WebKit;
 using namespace std;

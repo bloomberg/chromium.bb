@@ -27,11 +27,11 @@
 #define MockWebSpeechInputController_h
 
 #include "TestCommon.h"
-#include "WebSpeechInputController.h"
-#include "WebSpeechInputResult.h"
-#include "WebTask.h"
-#include <map>
 #include "public/platform/WebRect.h"
+#include "public/testing/WebTask.h"
+#include "public/web/WebSpeechInputController.h"
+#include "public/web/WebSpeechInputResult.h"
+#include <map>
 #include <string>
 #include <vector>
 

@@ -1,14 +1,6 @@
 {
     'variables': {
         'test_runner_files': [
-            'chromium/TestRunner/public/WebFrameTestProxy.h',
-            'chromium/TestRunner/public/WebTestDelegate.h',
-            'chromium/TestRunner/public/WebPreferences.h',
-            'chromium/TestRunner/public/WebTask.h',
-            'chromium/TestRunner/public/WebTestCommon.h',
-            'chromium/TestRunner/public/WebTestInterfaces.h',
-            'chromium/TestRunner/public/WebTestProxy.h',
-            'chromium/TestRunner/public/WebTestRunner.h',
             'chromium/TestRunner/src/AccessibilityControllerChromium.cpp',
             'chromium/TestRunner/src/AccessibilityControllerChromium.h',
             'chromium/TestRunner/src/AccessibilityUIElementChromium.cpp',

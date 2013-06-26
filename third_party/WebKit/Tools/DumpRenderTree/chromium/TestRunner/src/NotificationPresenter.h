@@ -31,8 +31,8 @@
 #ifndef NotificationPresenter_h
 #define NotificationPresenter_h
 
-#include "WebNotification.h"
-#include "WebNotificationPresenter.h"
+#include "public/web/WebNotification.h"
+#include "public/web/WebNotificationPresenter.h"
 #include <map>
 #include <set>
 #include <string>

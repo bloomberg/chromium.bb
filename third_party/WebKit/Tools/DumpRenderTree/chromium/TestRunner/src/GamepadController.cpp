@@ -30,7 +30,7 @@
 
 #include "GamepadController.h"
 
-#include "WebTestDelegate.h"
+#include "public/testing/WebTestDelegate.h"
 
 using namespace WebKit;
 

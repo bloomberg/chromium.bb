@@ -30,8 +30,8 @@
 
 #include "MockColorChooser.h"
 
-#include "WebTestDelegate.h"
-#include "WebTestProxy.h"
+#include "public/testing/WebTestDelegate.h"
+#include "public/testing/WebTestProxy.h"
 
 using namespace WebKit;
 using namespace std;

@@ -31,9 +31,9 @@
 #include "WebPermissions.h"
 
 #include "TestCommon.h"
-#include "WebTestDelegate.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebURL.h"
+#include "public/testing/WebTestDelegate.h"
 
 using namespace std;
 

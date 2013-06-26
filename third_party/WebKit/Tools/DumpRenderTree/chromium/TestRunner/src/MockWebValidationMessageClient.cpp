@@ -30,9 +30,9 @@
 
 #include "MockWebValidationMessageClient.h"
 
-#include "WebTestDelegate.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebString.h"
+#include "public/testing/WebTestDelegate.h"
 
 using namespace WebKit;
 

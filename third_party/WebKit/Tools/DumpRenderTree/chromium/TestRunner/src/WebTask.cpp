@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "WebTask.h"
+#include "public/testing/WebTask.h"
 
-#include "WebKit.h"
+#include "public/web/WebKit.h"
 #include <algorithm>
 
 using namespace std;

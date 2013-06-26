@@ -24,10 +24,10 @@
 
 #include "MockWebRTCDataChannelHandler.h"
 
-#include "WebTestDelegate.h"
-#include <assert.h>
 #include "public/platform/WebRTCDataChannelHandlerClient.h"
 #include "public/platform/WebRTCDataChannelInit.h"
+#include "public/testing/WebTestDelegate.h"
+#include <assert.h>
 
 using namespace WebKit;
 

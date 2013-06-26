@@ -25,10 +25,10 @@
 
 #include "MockWebSpeechInputController.h"
 
-#include "WebSpeechInputListener.h"
-#include "WebTestDelegate.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebVector.h"
+#include "public/testing/WebTestDelegate.h"
+#include "public/web/WebSpeechInputListener.h"
 
 #if ENABLE_INPUT_SPEECH
 

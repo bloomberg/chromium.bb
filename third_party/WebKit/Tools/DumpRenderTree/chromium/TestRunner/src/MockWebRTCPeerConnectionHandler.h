@@ -32,11 +32,11 @@
 #define MockWebRTCPeerConnectionHandler_h
 
 #include "TestCommon.h"
-#include "WebTask.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebRTCSessionDescription.h"
 #include "public/platform/WebRTCSessionDescriptionRequest.h"
 #include "public/platform/WebRTCStatsRequest.h"
+#include "public/testing/WebTask.h"
 
 namespace WebKit {
 class WebRTCPeerConnectionHandlerClient;

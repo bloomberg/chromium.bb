@@ -42,10 +42,10 @@
 #include "CppBoundClass.h"
 
 #include "TestCommon.h"
-#include "WebBindings.h"
-#include "WebFrame.h"
-#include <memory>
 #include "public/platform/WebString.h"
+#include "public/web/WebBindings.h"
+#include "public/web/WebFrame.h"
+#include <memory>
 
 using namespace WebKit;
 using namespace std;

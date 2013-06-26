@@ -27,8 +27,8 @@
 #define MockWebSpeechRecognizer_h
 
 #include "TestCommon.h"
-#include "WebSpeechRecognizer.h"
-#include "WebTask.h"
+#include "public/testing/WebTask.h"
+#include "public/web/WebSpeechRecognizer.h"
 #include <deque>
 #include <vector>
 

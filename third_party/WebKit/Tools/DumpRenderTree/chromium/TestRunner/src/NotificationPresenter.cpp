@@ -31,14 +31,14 @@
 #if ENABLE_NOTIFICATIONS
 #include "NotificationPresenter.h"
 
-#include "WebKit.h"
-#include "WebNotification.h"
-#include "WebNotificationPermissionCallback.h"
-#include "WebSecurityOrigin.h"
-#include "WebTestDelegate.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/testing/WebTestDelegate.h"
+#include "public/web/WebKit.h"
+#include "public/web/WebNotification.h"
+#include "public/web/WebNotificationPermissionCallback.h"
+#include "public/web/WebSecurityOrigin.h"
 #include <url/gurl.h>
 
 using namespace WebKit;

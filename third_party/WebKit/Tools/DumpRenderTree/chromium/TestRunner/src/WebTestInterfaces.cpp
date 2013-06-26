@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "WebTestInterfaces.h"
+#include "public/testing/WebTestInterfaces.h"
 
 #include "MockWebMIDIAccessor.h"
 #include "MockWebMediaStreamCenter.h"

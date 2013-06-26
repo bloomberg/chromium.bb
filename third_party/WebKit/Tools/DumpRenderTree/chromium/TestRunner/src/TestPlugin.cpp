@@ -26,16 +26,16 @@
 #include "TestPlugin.h"
 
 #include "TestCommon.h"
-#include "WebFrame.h"
-#include "WebInputEvent.h"
-#include "WebKit.h"
-#include "WebPluginParams.h"
-#include "WebTestDelegate.h"
-#include "WebTouchPoint.h"
-#include "WebUserGestureIndicator.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebGraphicsContext3D.h"
+#include "public/testing/WebTestDelegate.h"
+#include "public/web/WebFrame.h"
+#include "public/web/WebInputEvent.h"
+#include "public/web/WebKit.h"
+#include "public/web/WebPluginParams.h"
+#include "public/web/WebTouchPoint.h"
+#include "public/web/WebUserGestureIndicator.h"
 
 using namespace WebKit;
 using namespace std;

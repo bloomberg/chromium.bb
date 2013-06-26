@@ -26,9 +26,9 @@
 #define MockWebRTCDataChannelHandler_h
 
 #include "TestCommon.h"
-#include "WebTask.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
 #include "public/platform/WebString.h"
+#include "public/testing/WebTask.h"
 
 namespace WebKit {
 struct WebRTCDataChannelInit;

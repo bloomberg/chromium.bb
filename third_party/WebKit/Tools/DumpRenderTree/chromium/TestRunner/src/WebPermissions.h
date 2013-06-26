@@ -31,7 +31,7 @@
 #ifndef WebPermissions_h
 #define WebPermissions_h
 
-#include "WebPermissionClient.h"
+#include "public/web/WebPermissionClient.h"
 
 namespace WebTestRunner {
 

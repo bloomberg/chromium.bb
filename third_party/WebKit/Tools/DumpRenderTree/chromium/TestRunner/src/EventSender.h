@@ -38,11 +38,11 @@
 #define EventSender_h
 
 #include "CppBoundClass.h"
-#include "WebDragOperation.h"
-#include "WebInputEvent.h"
-#include "WebTask.h"
-#include <memory>
 #include "public/platform/WebPoint.h"
+#include "public/testing/WebTask.h"
+#include "public/web/WebDragOperation.h"
+#include "public/web/WebInputEvent.h"
+#include <memory>
 
 namespace WebKit {
 class WebDragData;

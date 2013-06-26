@@ -31,7 +31,7 @@
 #include "CppVariant.h"
 
 #include "TestCommon.h"
-#include "WebBindings.h"
+#include "public/web/WebBindings.h"
 #include <limits>
 
 using namespace WebKit;

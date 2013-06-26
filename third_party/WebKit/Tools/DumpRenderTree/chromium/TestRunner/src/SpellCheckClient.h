@@ -32,8 +32,8 @@
 #define SpellCheckClient_h
 
 #include "MockSpellCheck.h"
-#include "WebSpellCheckClient.h"
-#include "WebTask.h"
+#include "public/web/WebSpellCheckClient.h"
+#include "public/testing/WebTask.h"
 
 namespace WebTestRunner {
 

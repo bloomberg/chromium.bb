@@ -42,19 +42,19 @@
 
 #include "EventSender.h"
 
-#include <deque>
 #include "KeyCodeMapping.h"
 #include "MockSpellCheck.h"
 #include "TestCommon.h"
-#include "WebContextMenuData.h"
-#include "WebDragOperation.h"
-#include "WebTestDelegate.h"
-#include "WebTouchPoint.h"
-#include "WebView.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/testing/WebTestDelegate.h"
+#include "public/web/WebContextMenuData.h"
+#include "public/web/WebDragOperation.h"
+#include "public/web/WebTouchPoint.h"
+#include "public/web/WebView.h"
+#include <deque>
 
 #ifdef WIN32
 #include "win/WebInputEventFactory.h"

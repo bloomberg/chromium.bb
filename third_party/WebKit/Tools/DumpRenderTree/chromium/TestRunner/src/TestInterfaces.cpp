@@ -30,19 +30,19 @@
 
 #include "TestInterfaces.h"
 
-#include <string>
 #include "AccessibilityControllerChromium.h"
 #include "EventSender.h"
 #include "GamepadController.h"
 #include "TestRunner.h"
 #include "TextInputController.h"
-#include "WebCache.h"
-#include "WebKit.h"
-#include "WebRuntimeFeatures.h"
-#include "WebTestProxy.h"
-#include "WebView.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/testing/WebTestProxy.h"
+#include "public/web/WebCache.h"
+#include "public/web/WebKit.h"
+#include "public/web/WebRuntimeFeatures.h"
+#include "public/web/WebView.h"
+#include <string>
 
 using namespace WebKit;
 using namespace std;

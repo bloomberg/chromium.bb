@@ -31,15 +31,15 @@
 #include "WebUserMediaClientMock.h"
 
 #include "MockConstraints.h"
-#include "WebDocument.h"
-#include "WebMediaStreamRegistry.h"
-#include "WebTestDelegate.h"
-#include "WebUserMediaRequest.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebVector.h"
+#include "public/testing/WebTestDelegate.h"
+#include "public/web/WebDocument.h"
+#include "public/web/WebMediaStreamRegistry.h"
+#include "public/web/WebUserMediaRequest.h"
 
 using namespace WebKit;
 

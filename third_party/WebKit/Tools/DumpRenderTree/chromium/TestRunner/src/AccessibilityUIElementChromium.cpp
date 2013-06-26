@@ -31,11 +31,11 @@
 #include "AccessibilityUIElementChromium.h"
 
 #include "TestCommon.h"
-#include "WebAccessibilityObject.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
+#include "public/web/WebAccessibilityObject.h"
 
 using namespace WebKit;
 using namespace std;

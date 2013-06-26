@@ -35,13 +35,13 @@
 
 #include "CppBoundClass.h"
 #include "TestCommon.h"
-#include "WebArrayBufferView.h"
-#include "WebTask.h"
-#include "WebTestRunner.h"
-#include "WebTextDirection.h"
+#include "public/platform/WebURL.h"
+#include "public/testing/WebTask.h"
+#include "public/testing/WebTestRunner.h"
+#include "public/web/WebArrayBufferView.h"
+#include "public/web/WebTextDirection.h"
 #include <deque>
 #include <memory>
-#include "public/platform/WebURL.h"
 #include <set>
 #include <string>
 

@@ -27,10 +27,10 @@
 #define MockWebRTCDTMFSenderHandler_h
 
 #include "TestCommon.h"
-#include "WebTask.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebRTCDTMFSenderHandler.h"
 #include "public/platform/WebString.h"
+#include "public/testing/WebTask.h"
 
 namespace WebTestRunner {
 

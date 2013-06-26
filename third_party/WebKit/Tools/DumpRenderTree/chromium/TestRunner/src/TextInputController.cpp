@@ -31,14 +31,14 @@
 #include "TextInputController.h"
 
 #include "TestCommon.h"
-#include "WebBindings.h"
-#include "WebCompositionUnderline.h"
-#include "WebFrame.h"
-#include "WebInputEvent.h"
-#include "WebRange.h"
-#include "WebView.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebBindings.h"
+#include "public/web/WebCompositionUnderline.h"
+#include "public/web/WebFrame.h"
+#include "public/web/WebInputEvent.h"
+#include "public/web/WebRange.h"
+#include "public/web/WebView.h"
 #include <string>
 
 using namespace WebKit;

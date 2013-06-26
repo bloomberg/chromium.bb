@@ -25,10 +25,10 @@
 
 #include "MockWebRTCDTMFSenderHandler.h"
 
-#include "WebTestDelegate.h"
-#include <assert.h>
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebRTCDTMFSenderHandlerClient.h"
+#include "public/testing/WebTestDelegate.h"
+#include <assert.h>
 
 using namespace WebKit;
 

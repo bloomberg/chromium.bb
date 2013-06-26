@@ -32,11 +32,11 @@
 #define WebUserMediaClientMock_h
 
 #include "TestCommon.h"
-#include "WebTask.h"
-#include "WebUserMediaClient.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/testing/WebTask.h"
+#include "public/web/WebUserMediaClient.h"
 
 namespace WebTestRunner {
 

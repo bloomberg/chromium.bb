@@ -32,9 +32,9 @@
 #define MockColorChooser_h
 
 #include "TestCommon.h"
-#include "WebColorChooser.h"
-#include "WebColorChooserClient.h"
-#include "WebTask.h"
+#include "public/testing/WebTask.h"
+#include "public/web/WebColorChooser.h"
+#include "public/web/WebColorChooserClient.h"
 
 namespace WebTestRunner {
 

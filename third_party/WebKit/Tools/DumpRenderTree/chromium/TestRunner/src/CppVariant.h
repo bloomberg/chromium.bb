@@ -42,7 +42,7 @@
 #ifndef CppVariant_h
 #define CppVariant_h
 
-#include "WebBindings.h"
+#include "public/web/WebBindings.h"
 #include <string>
 #include <vector>
 
