@@ -1660,8 +1660,11 @@ void WebGLRenderingContext::deleteTexture(WebGLTexture* texture)
     if (!deleteObject(texture))
         return;
     for (size_t i = 0; i < m_textureUnits.size(); ++i) {
-        if (texture == m_textureUnits[i].m_texture2DBinding)
+        if (texture == m_textureUnits[i].m_texture2DBinding) {
             m_textureUnits[i].m_texture2DBinding = 0;
+            if (!i)
+                m_drawingBuffer->setTexture2DBinding(0);
+        }
         if (texture == m_textureUnits[i].m_textureCubeMapBinding)
             m_textureUnits[i].m_textureCubeMapBinding = 0;
     }
