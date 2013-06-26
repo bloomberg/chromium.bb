@@ -33,9 +33,6 @@
     ],
     'targets': [
         {
-            # These targets should be sufficient to cause everything
-            # else to build (incl. webkit); if they aren't, we have our
-            # dependencies wrong.
             'target_name': 'all_blink',
             'type': 'none',
             'dependencies': [
@@ -54,6 +51,16 @@
                     ],
                 }],
             ],
-        }
+        },
+        {
+            'target_name': 'blink_testing',
+            'type': 'none',
+            'dependencies': [
+                '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
+            ],
+            'export_dependent_settings': [
+                '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
+            ],
+        },
     ],
 }

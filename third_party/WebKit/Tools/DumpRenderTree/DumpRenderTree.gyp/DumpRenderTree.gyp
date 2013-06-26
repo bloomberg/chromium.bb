@@ -88,6 +88,9 @@
                 '../../../Source',
                 '../../..',
             ],
+            'export_dependent_settings': [
+                '../../../public/blink.gyp:blink',
+            ],
             'direct_dependent_settings': {
                 'include_dirs': [
                     '../chromium/TestRunner/public',
