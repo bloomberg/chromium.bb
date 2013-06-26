@@ -37,6 +37,38 @@ function testElementWithoutBoundingRectangle() {
   assertEquals(0, region.height);
 }
 
+function testAreaPoly() {
+  var region = getElementRegion(document.getElementById('poly'));
+  assertEquals(20, region.left);
+  assertEquals(10, region.top);
+  assertEquals(40, region.width);
+  assertEquals(45, region.height);
+}
+
+function testAreaRect() {
+  var region = getElementRegion(document.getElementById('rect'));
+  assertEquals(120, region.left);
+  assertEquals(100, region.top);
+  assertEquals(20, region.width);
+  assertEquals(50, region.height);
+}
+
+function testAreaCircle() {
+  var region = getElementRegion(document.getElementById('circle'));
+  assertEquals(175, region.left);
+  assertEquals(165, region.top);
+  assertEquals(10, region.width);
+  assertEquals(10, region.height);
+}
+
+function testAreaDefault() {
+  try {
+    getElementRegion(document.getElementById('default'));
+    assert(false);
+  } catch (error) {
+  }
+}
+
 </script>
 <body>
 <div style="border: 3px coral solid;">
@@ -48,6 +80,16 @@ function testElementWithoutBoundingRectangle() {
       <ellipse cx="150" cy="65" rx="85" ry="55" id="e">
       </ellipse>
     </svg>
+  </div>
+  <br>
+  <div>
+    <img width="200" height="200" usemap="#imgmap">
+    <map name="imgmap">
+      <area id="poly" shape="poly" coords="20,20,30,10,50,20,60,40,50,50,30,55">
+      <area id="rect" shape="rect" coords="120,100,140,150">
+      <area id="circle" shape="circle" coords="180,170,5">
+      <area id="default" shape="default">
+    </map>
   </div>
 </div>
 </body>

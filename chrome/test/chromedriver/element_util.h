@@ -119,16 +119,21 @@ Status ToggleOptionElement(
 Status ScrollElementIntoView(
     Session* session,
     WebView* web_view,
-    const std::string& id,
+    const std::string& element_id,
     WebPoint* location);
 
+// |element_id| refers to the element which is to be scrolled into view.
+// |clickable_element_id| refers to the element needing clickable verification.
+// They are usually the same, but can be different. This is useful when an image
+// uses map/area. The image is scrolled, but check clickable against the area.
+// If |clickable_element_id| is "", no verification will be performed.
 Status ScrollElementRegionIntoView(
     Session* session,
     WebView* web_view,
     const std::string& element_id,
     const WebRect& region,
     bool center,
-    bool verify_clickable,
+    const std::string& clickable_element_id,
     WebPoint* location);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_ELEMENT_UTIL_H_
