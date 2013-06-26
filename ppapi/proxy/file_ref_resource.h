@@ -1,0 +1,101 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef PPAPI_PROXY_PPB_FILE_REF_PROXY_H_
+#define PPAPI_PROXY_PPB_FILE_REF_PROXY_H_
+
+#include <string>
+
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_time.h"
+#include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/shared_impl/file_ref_create_info.h"
+#include "ppapi/thunk/ppb_file_ref_api.h"
+
+namespace ppapi {
+class StringVar;
+
+namespace proxy {
+
+class PPAPI_PROXY_EXPORT FileRefResource
+    : public PluginResource,
+      public thunk::PPB_FileRef_API {
+ public:
+  static PP_Resource CreateFileRef(Connection connection,
+                                   PP_Instance instance,
+                                   FileRef_CreateInfo info);
+
+  virtual ~FileRefResource();
+
+  // Resource implementation.
+  virtual thunk::PPB_FileRef_API* AsPPB_FileRef_API() OVERRIDE;
+
+  // PPB_FileRef_API implementation.
+  virtual PP_FileSystemType GetFileSystemType() const OVERRIDE;
+  virtual PP_Var GetName() const OVERRIDE;
+  virtual PP_Var GetPath() const OVERRIDE;
+  virtual PP_Resource GetParent() OVERRIDE;
+  virtual int32_t MakeDirectory(
+     PP_Bool make_ancestors,
+     scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Touch(PP_Time last_access_time,
+                        PP_Time last_modified_time,
+                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Delete(scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Rename(PP_Resource new_file_ref,
+                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Query(PP_FileInfo* info,
+                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t ReadDirectoryEntries(
+      const PP_ArrayOutput& output,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual const PPB_FileRef_CreateInfo& GetCreateInfo() const OVERRIDE;
+  virtual int32_t QueryInHost(linked_ptr<PP_FileInfo> info,
+                              scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t ReadDirectoryEntriesInHost(
+      linked_ptr<std::vector<ppapi::PPB_FileRef_CreateInfo> > files,
+      linked_ptr<std::vector<PP_FileType> > file_types,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+
+  // Private API
+  virtual PP_Var GetAbsolutePath() OVERRIDE;
+
+ private:
+  FileRefResource(Connection connection,
+                  PP_Instance instance,
+                  FileRef_CreateInfo info);
+
+  void RunTrackedCallback(scoped_refptr<TrackedCallback> callback,
+                          const ResourceMessageReplyParams& params);
+
+  void OnQueryReply(PP_FileInfo* out_info,
+                    scoped_refptr<TrackedCallback> callback,
+                    const ResourceMessageReplyParams& params,
+                    const PP_FileInfo& info);
+
+  void OnDirectoryEntriesReply(
+      const PP_ArrayOutput& output,
+      scoped_refptr<TrackedCallback> callback,
+      const ResourceMessageReplyParams& params,
+      const std::vector<ppapi::FileRef_CreateInfo>& infos,
+      const std::vector<PP_FileType>& file_types);
+
+  // Populated after creation.
+  FileRef_CreateInfo create_info_;
+
+  scoped_refptr<StringVar> name_var_;
+  scoped_refptr<StringVar> path_var_;
+  scoped_refptr<StringVar> absolute_path_var_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileRefResource);
+};
+
+}  // namespace proxy
+}  // namespace ppapi
+
+#endif  // PPAPI_PROXY_PPB_FILE_REF_PROXY_H_

@@ -41,6 +41,8 @@
           'proxy/ext_crx_file_system_private_resource.h',
           'proxy/file_chooser_resource.cc',
           'proxy/file_chooser_resource.h',
+          'proxy/file_ref_resource.cc',
+          'proxy/file_ref_resource.h',
           'proxy/flash_clipboard_resource.cc',
           'proxy/flash_clipboard_resource.h',
           'proxy/flash_drm_resource.cc',

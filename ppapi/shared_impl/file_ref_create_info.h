@@ -18,7 +18,6 @@ namespace ppapi {
 struct FileRef_CreateInfo {
   PP_FileSystemType file_system_type;
   std::string internal_path;
-  base::FilePath external_path;
   std::string display_name;
 
   // Used when a FileRef is created in the Renderer.
