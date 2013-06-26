@@ -29,6 +29,9 @@
 // Return best color for keyboard focus ring.
 - (NSColor*)cr_keyboardFocusIndicatorColor;
 
+// Set needsDisplay for this view and all descendants.
+- (void)cr_recursivelySetNeedsDisplay:(BOOL)flag;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_NSVIEW_ADDITIONS_H_

@@ -67,4 +67,10 @@
       colorWithAlphaComponent:0.5 / [self cr_lineWidth]];
 }
 
+- (void)cr_recursivelySetNeedsDisplay:(BOOL)flag {
+  [self setNeedsDisplay:YES];
+  for (NSView* child in [self subviews])
+    [child cr_recursivelySetNeedsDisplay:flag];
+}
+
 @end

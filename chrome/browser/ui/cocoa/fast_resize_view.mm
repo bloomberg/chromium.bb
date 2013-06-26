@@ -19,11 +19,16 @@
 @synthesize contentOffset = contentOffset_;
 
 - (void)setFastResizeMode:(BOOL)fastResizeMode {
+  if (fastResizeMode_ == fastResizeMode)
+    return;
+
   fastResizeMode_ = fastResizeMode;
 
   // Force a relayout when coming out of fast resize mode.
   if (!fastResizeMode_)
     [self layoutSubviews];
+
+  [self setNeedsDisplay:YES];
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldSize {
@@ -58,6 +63,7 @@
 @end
 
 @implementation FastResizeView (PrivateMethods)
+
 - (void)layoutSubviews {
   // There should never be more than one subview.  There can be zero, if we are
   // in the process of switching tabs or closing the window.  In those cases, no
@@ -79,4 +85,5 @@
     [subview setFrame:bounds];
   }
 }
+
 @end
