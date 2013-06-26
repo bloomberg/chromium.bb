@@ -47,7 +47,10 @@ def main(argv):
     # to False to bypass the driver's line-by-line handling of stdout
     # which is extremely slow when you have a lot of output
 
-    if driver_tools.IsLLVMBitcode(infile):
+    if (driver_tools.IsLLVMBitcode(infile) or
+        driver_tools.IsPNaClBitcode(infile)):
+      format = 'pnacl' if driver_tools.IsPNaClBitcode(infile) else 'llvm'
+      env.append('FLAGS', '-bitcode-format=' + format)
       if output == '':
         # LLVM by default outputs to a file if -o is missing
         # Let's instead output to stdout
