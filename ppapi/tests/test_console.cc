@@ -5,6 +5,9 @@
 #include "ppapi/tests/test_console.h"
 
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/var_array.h"
+#include "ppapi/cpp/var_array_buffer.h"
+#include "ppapi/cpp/var_dictionary.h"
 #include "ppapi/tests/testing_instance.h"
 
 REGISTER_TEST_CASE(Console);
@@ -24,15 +27,37 @@ void TestConsole::RunTests(const std::string& filter) {
   RUN_TEST(Smoke, filter);
 }
 
+namespace {
+
+void TestConsoleSub(const PPB_Console* console_interface_,
+                    PP_Instance instance,
+                    pp::Var source,
+                    pp::Var message) {
+
+  console_interface_->Log(instance, PP_LOGLEVEL_ERROR,
+                          message.pp_var());
+  console_interface_->LogWithSource(instance, PP_LOGLEVEL_LOG,
+                                    source.pp_var(), message.pp_var());
+}
+
+} // anonymous namespace
+
 std::string TestConsole::TestSmoke() {
   // This test does not verify the log message actually reaches the console, but
   // it does test that the interface exists and that it can be called without
   // crashing.
   pp::Var source(std::string("somewhere"));
-  pp::Var message(std::string("hello, world."));
-  console_interface_->Log(instance()->pp_instance(), PP_LOGLEVEL_ERROR,
-                          message.pp_var());
-  console_interface_->LogWithSource(instance()->pp_instance(), PP_LOGLEVEL_LOG,
-                                    source.pp_var(), message.pp_var());
+  const PPB_Console* interface = console_interface_;
+  PP_Instance pp_instance = instance()->pp_instance();
+
+  TestConsoleSub(interface, pp_instance, source, pp::Var());
+  TestConsoleSub(interface, pp_instance, source, pp::Var(pp::Var::Null()));
+  TestConsoleSub(interface, pp_instance, source, pp::Var(false));
+  TestConsoleSub(interface, pp_instance, source, pp::Var(12345678));
+  TestConsoleSub(interface, pp_instance, source, pp::Var(-0.0));
+  TestConsoleSub(interface, pp_instance, source, pp::Var("Hello World!"));
+  TestConsoleSub(interface, pp_instance, source, pp::VarArray());
+  TestConsoleSub(interface, pp_instance, source, pp::VarArrayBuffer());
+  TestConsoleSub(interface, pp_instance, source, pp::VarDictionary());
   PASS();
 }
