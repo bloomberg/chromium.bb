@@ -871,6 +871,7 @@ class NinjaWriter:
       'loadable_module': 'solink_module',
       'shared_library':  'solink',
     }[spec['type']]
+    command_suffix = ''
 
     implicit_deps = set()
     solibs = set()
@@ -924,6 +925,9 @@ class NinjaWriter:
       ldflags, manifest_files = self.msvs_settings.GetLdflags(config_name,
           self.GypPathToNinja, self.ExpandSpecial, manifest_name, is_executable)
       self.WriteVariableList('manifests', manifest_files)
+      command_suffix = _GetWinLinkRuleNameSuffix(
+          self.msvs_settings.IsEmbedManifest(config_name),
+          self.msvs_settings.IsLinkIncremental(config_name))
     else:
       ldflags = config.get('ldflags', [])
       if is_executable and len(solibs):
@@ -963,7 +967,7 @@ class NinjaWriter:
     if len(solibs):
       extra_bindings.append(('solibs', gyp.common.EncodePOSIXShellList(solibs)))
 
-    self.ninja.build(output, command, link_deps,
+    self.ninja.build(output, command + command_suffix, link_deps,
                      implicit=list(implicit_deps),
                      variables=extra_bindings)
 
@@ -1367,6 +1371,82 @@ def GetDefaultConcurrentLinks():
     return 1
 
 
+def _GetWinLinkRuleNameSuffix(embed_manifest, link_incremental):
+  """Returns the suffix used to select an appropriate linking rule depending on
+  whether the manifest embedding and/or incremental linking is enabled."""
+  suffix = ''
+  if embed_manifest:
+    suffix += '_embed'
+    if link_incremental:
+      suffix += '_inc'
+  return suffix
+
+
+def _AddWinLinkRules(master_ninja, embed_manifest, link_incremental):
+  """Adds link rules for Windows platform to |master_ninja|."""
+  def FullLinkCommand(ldcmd, out, binary_type):
+    cmd = ('cmd /c %(ldcmd)s'
+           ' && %(python)s gyp-win-tool manifest-wrapper $arch'
+           ' cmd /c if exist %(out)s.manifest del %(out)s.manifest'
+           ' && %(python)s gyp-win-tool manifest-wrapper $arch'
+           ' $mt -nologo -manifest $manifests')
+    if embed_manifest and not link_incremental:
+      # Embed manifest into a binary. If incremental linking is enabled,
+      # embedding is postponed to the re-linking stage (see below).
+      cmd += ' -outputresource:%(out)s;%(resname)s'
+    else:
+      # Save manifest as an external file.
+      cmd += ' -out:%(out)s.manifest'
+    if link_incremental:
+      # There is no point in generating separate rule for the case when
+      # incremental linking is enabled, but manifest embedding is disabled.
+      # In that case the basic rule should be used (e.g. 'link').
+      # See also implementation of _GetWinLinkRuleNameSuffix().
+      assert embed_manifest
+      # Make .rc file out of manifest, compile it to .res file and re-link.
+      cmd += (' && %(python)s gyp-win-tool manifest-to-rc $arch'
+              ' %(out)s.manifest %(out)s.manifest.rc %(resname)s'
+              ' && %(python)s gyp-win-tool rc-wrapper $arch $rc'
+              ' %(out)s.manifest.rc'
+              ' && %(ldcmd)s %(out)s.manifest.res')
+    resource_name = {
+      'exe': '1',
+      'dll': '2',
+    }[binary_type]
+    return cmd % {'python': sys.executable,
+                  'out': out,
+                  'ldcmd': ldcmd,
+                  'resname': resource_name}
+
+  rule_name_suffix = _GetWinLinkRuleNameSuffix(embed_manifest, link_incremental)
+  dlldesc = 'LINK%s(DLL) $dll' % rule_name_suffix.upper()
+  dllcmd = ('%s gyp-win-tool link-wrapper $arch '
+            '$ld /nologo $implibflag /DLL /OUT:$dll '
+            '/PDB:$dll.pdb @$dll.rsp' % sys.executable)
+  dllcmd = FullLinkCommand(dllcmd, '$dll', 'dll')
+  master_ninja.rule('solink' + rule_name_suffix,
+                    description=dlldesc, command=dllcmd,
+                    rspfile='$dll.rsp',
+                    rspfile_content='$libs $in_newline $ldflags',
+                    restat=True)
+  master_ninja.rule('solink_module' + rule_name_suffix,
+                    description=dlldesc, command=dllcmd,
+                    rspfile='$dll.rsp',
+                    rspfile_content='$libs $in_newline $ldflags',
+                    restat=True)
+  # Note that ldflags goes at the end so that it has the option of
+  # overriding default settings earlier in the command line.
+  exe_cmd = ('%s gyp-win-tool link-wrapper $arch '
+             '$ld /nologo /OUT:$out /PDB:$out.pdb @$out.rsp' %
+              sys.executable)
+  exe_cmd = FullLinkCommand(exe_cmd, '$out', 'exe')
+  master_ninja.rule('link' + rule_name_suffix,
+                    description='LINK%s $out' % rule_name_suffix.upper(),
+                    command=exe_cmd,
+                    rspfile='$out.rsp',
+                    rspfile_content='$in_newline $libs $ldflags')
+
+
 def GenerateOutputForConfig(target_list, target_dicts, data, params,
                             config_name):
   options = params['options']
@@ -1633,41 +1713,12 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
                  sys.executable),
         rspfile='$out.rsp',
         rspfile_content='$in_newline $libflags')
-    dlldesc = 'LINK(DLL) $dll'
-    dllcmd = ('%s gyp-win-tool link-wrapper $arch '
-              '$ld /nologo $implibflag /DLL /OUT:$dll '
-              '/PDB:$dll.pdb @$dll.rsp' % sys.executable)
-    dllcmd += (' && %s gyp-win-tool manifest-wrapper $arch '
-               'cmd /c if exist $dll.manifest del $dll.manifest' %
-               sys.executable)
-    dllcmd += (' && %s gyp-win-tool manifest-wrapper $arch '
-               '$mt -nologo -manifest $manifests -out:$dll.manifest' %
-               sys.executable)
-    master_ninja.rule('solink', description=dlldesc, command=dllcmd,
-                      rspfile='$dll.rsp',
-                      rspfile_content='$libs $in_newline $ldflags',
-                      restat=True,
-                      pool='link_pool')
-    master_ninja.rule('solink_module', description=dlldesc, command=dllcmd,
-                      rspfile='$dll.rsp',
-                      rspfile_content='$libs $in_newline $ldflags',
-                      restat=True,
-                      pool='link_pool')
-    # Note that ldflags goes at the end so that it has the option of
-    # overriding default settings earlier in the command line.
-    master_ninja.rule(
-        'link',
-        description='LINK $out',
-        command=('%s gyp-win-tool link-wrapper $arch '
-                 '$ld /nologo /OUT:$out /PDB:$out.pdb @$out.rsp && '
-                 '%s gyp-win-tool manifest-wrapper $arch '
-                 'cmd /c if exist $out.manifest del $out.manifest && '
-                 '%s gyp-win-tool manifest-wrapper $arch '
-                 '$mt -nologo -manifest $manifests -out:$out.manifest' %
-                 (sys.executable, sys.executable, sys.executable)),
-        rspfile='$out.rsp',
-        rspfile_content='$in_newline $libs $ldflags',
-        pool='link_pool')
+    _AddWinLinkRules(master_ninja, embed_manifest=True, link_incremental=True)
+    _AddWinLinkRules(master_ninja, embed_manifest=True, link_incremental=False)
+    _AddWinLinkRules(master_ninja, embed_manifest=False, link_incremental=False)
+    # Do not generate rules for embed_manifest=False and link_incremental=True
+    # because in that case rules for (False, False) should be used (see
+    # implementation of _GetWinLinkRuleNameSuffix()).
   else:
     master_ninja.rule(
       'objc',
