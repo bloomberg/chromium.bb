@@ -179,7 +179,7 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
                             const std::string& evaluates_to,
                             content::WebContents* tab_contents) {
     base::Time start_time = base::Time::Now();
-    base::TimeDelta timeout = TestTimeouts::action_timeout();
+    base::TimeDelta timeout = TestTimeouts::action_max_timeout();
     std::string result;
 
     while (base::Time::Now() - start_time < timeout) {
