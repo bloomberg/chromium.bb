@@ -33,7 +33,7 @@ class LevelDBFactory {
   virtual scoped_ptr<LevelDBDatabase> OpenLevelDB(
       const base::FilePath& file_name,
       const LevelDBComparator* comparator,
-      bool* is_disk_full = NULL) = 0;
+      bool* is_disk_full) = 0;
   virtual bool DestroyLevelDB(const base::FilePath& file_name) = 0;
 };
 
@@ -211,7 +211,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
     };
 
     const IndexedDBKey& key() const { return *current_key_; }
-    bool ContinueFunction(const IndexedDBKey* = 0, IteratorState = SEEK);
+    bool ContinueFunction() { return ContinueFunction(NULL, SEEK); }
+    bool ContinueFunction(const IndexedDBKey* key, IteratorState state);
     bool Advance(uint32 count);
     bool FirstSeek();
 

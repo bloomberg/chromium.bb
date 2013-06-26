@@ -114,7 +114,9 @@ void IndexedDBCursor::CursorAdvanceOperation::Perform(
 void IndexedDBCursor::CursorIterationOperation::Perform(
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("CursorIterationOperation");
-  if (!cursor_->cursor_ || !cursor_->cursor_->ContinueFunction(key_.get())) {
+  if (!cursor_->cursor_ ||
+      !cursor_->cursor_->ContinueFunction(
+          key_.get(), IndexedDBBackingStore::Cursor::SEEK)) {
     cursor_->cursor_.reset();
     callbacks_->OnSuccess(static_cast<std::vector<char>*>(NULL));
     return;
@@ -148,7 +150,7 @@ void IndexedDBCursor::CursorPrefetchIterationOperation::Perform(
   size_t size_estimate = 0;
 
   for (int i = 0; i < number_to_fetch_; ++i) {
-    if (!cursor_->cursor_ || !cursor_->cursor_->ContinueFunction(0)) {
+    if (!cursor_->cursor_ || !cursor_->cursor_->ContinueFunction()) {
       cursor_->cursor_.reset();
       break;
     }

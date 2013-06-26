@@ -175,18 +175,18 @@ static void PutIDBKeyPath(LevelDBTransaction* transaction,
 }
 
 static int CompareKeys(const LevelDBSlice& a, const LevelDBSlice& b) {
-  return Compare(a, b);
+  return Compare(a, b, false /*index_keys*/);
 }
 
 static int CompareIndexKeys(const LevelDBSlice& a, const LevelDBSlice& b) {
-  return Compare(a, b, true);
+  return Compare(a, b, true  /*index_keys*/);
 }
 
 class Comparator : public LevelDBComparator {
  public:
   virtual int Compare(const LevelDBSlice& a, const LevelDBSlice& b) const
       OVERRIDE {
-    return content::Compare(a, b);
+    return content::Compare(a, b, false /*index_keys*/);
   }
   virtual const char* Name() const OVERRIDE { return "idb_cmp1"; }
 };
@@ -570,7 +570,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     }
 
     LOG(ERROR) << "IndexedDB backing store cleanup succeeded, reopening";
-    db = leveldb_factory->OpenLevelDB(file_path, comparator.get());
+    db = leveldb_factory->OpenLevelDB(file_path, comparator.get(), NULL);
     if (!db) {
       LOG(ERROR) << "IndexedDB backing store reopen after recovery failed";
       base::Histogram::FactoryGet(
@@ -1675,7 +1675,8 @@ bool IndexedDBBackingStore::PutIndexDataForRecord(
                            object_store_id,
                            index_id,
                            encoded_key,
-                           record_identifier.primary_key());
+                           record_identifier.primary_key(),
+                           0);
 
   std::vector<char> data;
   EncodeVarInt(record_identifier.version(), &data);

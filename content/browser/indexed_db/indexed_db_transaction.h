@@ -47,12 +47,18 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   void Run();
   indexed_db::TransactionMode mode() const { return mode_; }
   const std::set<int64>& scope() const { return object_store_ids_; }
-  void ScheduleTask(Operation* task, Operation* abort_task = NULL) {
+  void ScheduleTask(Operation* task) {
+    ScheduleTask(IndexedDBDatabase::NORMAL_TASK, task, NULL);
+  }
+  void ScheduleTask(Operation* task, Operation* abort_task) {
     ScheduleTask(IndexedDBDatabase::NORMAL_TASK, task, abort_task);
   }
-  void ScheduleTask(IndexedDBDatabase::TaskType,
+  void ScheduleTask(IndexedDBDatabase::TaskType task_type, Operation* task) {
+    ScheduleTask(task_type, task, NULL);
+  }
+  void ScheduleTask(IndexedDBDatabase::TaskType task_type,
                     Operation* task,
-                    Operation* abort_task = NULL);
+                    Operation* abort_task);
   void RegisterOpenCursor(IndexedDBCursor* cursor);
   void UnregisterOpenCursor(IndexedDBCursor* cursor);
   void AddPreemptiveEvent() { pending_preemptive_events_++; }

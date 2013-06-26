@@ -1823,14 +1823,14 @@ std::vector<char> IndexDataKey::Encode(int64 database_id,
   std::vector<char> encoded_key;
   EncodeIDBKey(user_key, &encoded_key);
   return Encode(
-      database_id, object_store_id, index_id, encoded_key, MinIDBKey());
+      database_id, object_store_id, index_id, encoded_key, MinIDBKey(), 0);
 }
 
 std::vector<char> IndexDataKey::EncodeMinKey(int64 database_id,
                                              int64 object_store_id,
                                              int64 index_id) {
   return Encode(
-      database_id, object_store_id, index_id, MinIDBKey(), MinIDBKey());
+      database_id, object_store_id, index_id, MinIDBKey(), MinIDBKey(), 0);
 }
 
 std::vector<char> IndexDataKey::EncodeMaxKey(int64 database_id,

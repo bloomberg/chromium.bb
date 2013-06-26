@@ -824,12 +824,12 @@ TEST(IndexedDBLevelDBCodingTest, ComparisonTest) {
 
   for (size_t i = 0; i < keys.size(); ++i) {
     const LevelDBSlice key_a(keys[i]);
-    EXPECT_EQ(Compare(key_a, key_a), 0);
+    EXPECT_EQ(Compare(key_a, key_a, false), 0);
 
     for (size_t j = i + 1; j < keys.size(); ++j) {
       const LevelDBSlice key_b(keys[j]);
-      EXPECT_LT(Compare(key_a, key_b), 0);
-      EXPECT_GT(Compare(key_b, key_a), 0);
+      EXPECT_LT(Compare(key_a, key_b, false), 0);
+      EXPECT_GT(Compare(key_b, key_a, false), 0);
     }
   }
 }

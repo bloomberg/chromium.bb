@@ -75,7 +75,7 @@ CONTENT_EXPORT int CompareEncodedIDBKeys(const std::vector<char>& a,
 
 CONTENT_EXPORT int Compare(const LevelDBSlice& a,
                            const LevelDBSlice& b,
-                           bool index_keys = false);
+                           bool index_keys);
 
 class KeyPrefix {
  public:
@@ -421,7 +421,7 @@ class IndexDataKey {
       int64 index_id,
       const std::vector<char>& encoded_user_key,
       const std::vector<char>& encoded_primary_key,
-      int64 sequence_number = 0);
+      int64 sequence_number);
   static std::vector<char> Encode(int64 database_id,
                                   int64 object_store_id,
                                   int64 index_id,
