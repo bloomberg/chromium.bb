@@ -620,7 +620,11 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   } else if (stream_texture_factory_ && !stream_texture_proxy_) {
     // Do deferred stream texture creation finally.
     if (paused()) {
-      stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
+      stream_id_ = stream_texture_factory_->CreateStreamTexture(
+          kGLTextureExternalOES,
+          &texture_id_,
+          &texture_mailbox_,
+          &texture_mailbox_sync_point_);
       SetNeedsEstablishPeer(true);
     } else {
       EstablishSurfaceTexturePeer();
