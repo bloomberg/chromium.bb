@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "ui/gfx/font.h"
 
-@class AutocompleteMatrix;
 class OmniboxEditModel;
+@class OmniboxPopupMatrix;
 class OmniboxPopupModel;
 class OmniboxView;
 
@@ -62,14 +62,14 @@ class OmniboxPopupViewMac : public OmniboxPopupView {
 
   virtual gfx::Rect GetTargetBounds() OVERRIDE;
 
-  // Set |line| to be selected.
-  void SetSelectedLine(size_t line);
-
   // This is only called by model in SetSelectedLine() after updating
   // everything.  Popup should already be visible.
   virtual void PaintUpdatesNow() OVERRIDE;
 
   virtual void OnDragCanceled() OVERRIDE {}
+
+  // Set |line| to be selected.
+  void SetSelectedLine(size_t line);
 
   // Opens the URL corresponding to the given |row|.  If |force_background| is
   // true, forces the URL to open in a background tab.  Otherwise, determines
@@ -129,7 +129,7 @@ class OmniboxPopupViewMac : public OmniboxPopupView {
   base::scoped_nsobject<NSWindow> popup_;
   NSRect targetPopupFrame_;
 
-  base::scoped_nsobject<AutocompleteMatrix> autocomplete_matrix_;
+  base::scoped_nsobject<OmniboxPopupMatrix> autocomplete_matrix_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupViewMac);
 };

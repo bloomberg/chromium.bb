@@ -14,6 +14,72 @@ namespace {
 
 const float kLargeWidth = 10000;
 
+// Returns the length of the run starting at |location| for which
+// |attributeName| remains the same.
+NSUInteger RunLengthForAttribute(NSAttributedString* string,
+                                 NSUInteger location,
+                                 NSString* attributeName) {
+  const NSRange fullRange = NSMakeRange(0, [string length]);
+  NSRange range;
+  [string attribute:attributeName
+            atIndex:location longestEffectiveRange:&range inRange:fullRange];
+
+  // In order to signal when the run doesn't start exactly at
+  // location, return a weirdo length.  This causes the incorrect
+  // expectation to manifest at the calling location, which is more
+  // useful than an EXPECT_EQ() would be here.
+  if (range.location != location) {
+    return -1;
+  }
+
+  return range.length;
+}
+
+// Return true if the run starting at |location| has |color| for
+// attribute NSForegroundColorAttributeName.
+bool RunHasColor(NSAttributedString* string,
+                 NSUInteger location,
+                 NSColor* color) {
+  const NSRange fullRange = NSMakeRange(0, [string length]);
+  NSRange range;
+  NSColor* runColor = [string attribute:NSForegroundColorAttributeName
+                                atIndex:location
+                  longestEffectiveRange:&range inRange:fullRange];
+
+  // According to one "Ali Ozer", you can compare objects within the
+  // same color space using -isEqual:.  Converting color spaces
+  // seems too heavyweight for these tests.
+  // http://lists.apple.com/archives/cocoa-dev/2005/May/msg00186.html
+  return [runColor isEqual:color] ? true : false;
+}
+
+// Return true if the run starting at |location| has the font
+// trait(s) in |mask| font in NSFontAttributeName.
+bool RunHasFontTrait(NSAttributedString* string,
+                     NSUInteger location,
+                     NSFontTraitMask mask) {
+  const NSRange fullRange = NSMakeRange(0, [string length]);
+  NSRange range;
+  NSFont* runFont = [string attribute:NSFontAttributeName
+                              atIndex:location
+                longestEffectiveRange:&range inRange:fullRange];
+  NSFontManager* fontManager = [NSFontManager sharedFontManager];
+  if (runFont && (mask == ([fontManager traitsOfFont:runFont]&mask))) {
+    return true;
+  }
+  return false;
+}
+
+// AutocompleteMatch doesn't really have the right constructor for our
+// needs.  Fake one for us to use.
+AutocompleteMatch MakeMatch(const string16& contents,
+                            const string16& description) {
+  AutocompleteMatch m(NULL, 1, true, AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+  m.contents = contents;
+  m.description = description;
+  return m;
+}
+
 class OmniboxPopupViewMacTest : public PlatformTest {
  public:
   OmniboxPopupViewMacTest() {}
@@ -27,71 +93,6 @@ class OmniboxPopupViewMacTest : public PlatformTest {
     dimColor_ = [NSColor darkGrayColor];
     font_ = gfx::Font(
         base::SysNSStringToUTF8([[NSFont userFontOfSize:12] fontName]), 12);
-  }
-
-  // Returns the length of the run starting at |location| for which
-  // |attributeName| remains the same.
-  static NSUInteger RunLengthForAttribute(NSAttributedString* string,
-                                          NSUInteger location,
-                                          NSString* attributeName) {
-    const NSRange fullRange = NSMakeRange(0, [string length]);
-    NSRange range;
-    [string attribute:attributeName
-              atIndex:location longestEffectiveRange:&range inRange:fullRange];
-
-    // In order to signal when the run doesn't start exactly at
-    // location, return a weirdo length.  This causes the incorrect
-    // expectation to manifest at the calling location, which is more
-    // useful than an EXPECT_EQ() would be here.
-    if (range.location != location) {
-      return -1;
-    }
-
-    return range.length;
-  }
-
-  // Return true if the run starting at |location| has |color| for
-  // attribute NSForegroundColorAttributeName.
-  static bool RunHasColor(NSAttributedString* string,
-                          NSUInteger location, NSColor* color) {
-    const NSRange fullRange = NSMakeRange(0, [string length]);
-    NSRange range;
-    NSColor* runColor = [string attribute:NSForegroundColorAttributeName
-                                  atIndex:location
-                    longestEffectiveRange:&range inRange:fullRange];
-
-    // According to one "Ali Ozer", you can compare objects within the
-    // same color space using -isEqual:.  Converting color spaces
-    // seems too heavyweight for these tests.
-    // http://lists.apple.com/archives/cocoa-dev/2005/May/msg00186.html
-    return [runColor isEqual:color] ? true : false;
-  }
-
-  // Return true if the run starting at |location| has the font
-  // trait(s) in |mask| font in NSFontAttributeName.
-  static bool RunHasFontTrait(NSAttributedString* string, NSUInteger location,
-                              NSFontTraitMask mask) {
-    const NSRange fullRange = NSMakeRange(0, [string length]);
-    NSRange range;
-    NSFont* runFont = [string attribute:NSFontAttributeName
-                                atIndex:location
-                  longestEffectiveRange:&range inRange:fullRange];
-    NSFontManager* fontManager = [NSFontManager sharedFontManager];
-    if (runFont && (mask == ([fontManager traitsOfFont:runFont]&mask))) {
-      return true;
-    }
-    return false;
-  }
-
-  // AutocompleteMatch doesn't really have the right constructor for our
-  // needs.  Fake one for us to use.
-  static AutocompleteMatch MakeMatch(const string16 &contents,
-                                     const string16 &description) {
-    AutocompleteMatch m(NULL, 1, true,
-                        AutocompleteMatchType::URL_WHAT_YOU_TYPED);
-    m.contents = contents;
-    m.description = description;
-    return m;
   }
 
   NSColor* color_;  // weak
