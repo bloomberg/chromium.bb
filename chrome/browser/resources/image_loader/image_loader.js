@@ -28,14 +28,11 @@ function ImageLoader() {
    */
   this.worker_ = new Worker();
 
-  // Grant permissions to the local file system.
+  // Grant permissions to the local file system and initialize the cache.
   chrome.fileBrowserPrivate.requestFileSystem(function(filesystem) {
-    // TODO(mtomasz): Handle.
-  });
-
-  // Initialize the cache database, then start handling requests.
-  this.cache_.initialize(function() {
-    this.worker_.start();
+    this.cache_.initialize(function() {
+      this.worker_.start();
+    }.bind(this));
   }.bind(this));
 
   chrome.extension.onMessageExternal.addListener(function(request,
