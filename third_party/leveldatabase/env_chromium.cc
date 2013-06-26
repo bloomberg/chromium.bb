@@ -205,9 +205,10 @@ class ChromiumSequentialFile: public SequentialFile {
 
   virtual Status Skip(uint64_t n) {
     if (fseek(file_, n, SEEK_CUR)) {
+      int saved_errno = errno;
       uma_logger_->RecordErrorAt(kSequentialFileSkip);
       return MakeIOError(
-          filename_, strerror(errno), kSequentialFileSkip, errno);
+          filename_, strerror(saved_errno), kSequentialFileSkip, saved_errno);
     }
     return Status::OK();
   }
@@ -471,8 +472,10 @@ Status ChromiumWritableFile::Append(const Slice& data) {
 
   size_t r = fwrite_wrapper(data.data(), 1, data.size(), file_);
   if (r != data.size()) {
-    uma_logger_->RecordOSError(kWritableFileAppend, errno);
-    return MakeIOError(filename_, strerror(errno), kWritableFileAppend, errno);
+    int saved_errno = errno;
+    uma_logger_->RecordOSError(kWritableFileAppend, saved_errno);
+    return MakeIOError(
+        filename_, strerror(saved_errno), kWritableFileAppend, saved_errno);
   }
   return Status::OK();
 }
@@ -583,8 +586,10 @@ Status ChromiumEnv::NewWritableFile(const std::string& fname,
   *result = NULL;
   FILE* f = fopen_internal(fname.c_str(), "wb");
   if (f == NULL) {
+    int saved_errno = errno;
     RecordErrorAt(kNewWritableFile);
-    return MakeIOError(fname, strerror(errno), kNewWritableFile, errno);
+    return MakeIOError(
+        fname, strerror(saved_errno), kNewWritableFile, saved_errno);
   } else {
     *result = new ChromiumWritableFile(fname, f, this, this);
     return Status::OK();
