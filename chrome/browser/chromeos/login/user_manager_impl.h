@@ -398,7 +398,8 @@ class UserManagerImpl
   // Lazy-initialized default flow.
   mutable scoped_ptr<UserFlow> default_flow_;
 
-  // Specific flows by user e-mail.
+  // Specific flows by user e-mail. Keys should be canonicalized before
+  // access.
   FlowMap specific_flows_;
 
   // User sessions that have to be restored after browser crash.

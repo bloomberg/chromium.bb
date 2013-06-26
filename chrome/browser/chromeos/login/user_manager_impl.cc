@@ -445,8 +445,7 @@ const User* UserManagerImpl::CreateLocallyManagedUserRecord(
   prefs_new_users_update->Insert(0, new base::StringValue(e_mail));
   users_.insert(users_.begin(), new_user);
 
-
-  const User* manager = FindUser(manager_id);
+  const User* manager = FindUser(gaia::CanonicalizeEmail(manager_id));
   CHECK(manager);
 
   DictionaryPrefUpdate manager_update(local_state, kManagedUserManagers);
@@ -1554,7 +1553,9 @@ UserFlow* UserManagerImpl::GetCurrentUserFlow() const {
 
 UserFlow* UserManagerImpl::GetUserFlow(const std::string& email) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FlowMap::const_iterator it = specific_flows_.find(email);
+  std::string canonical_email = email.empty() ? email :
+      gaia::CanonicalizeEmail(email);
+  FlowMap::const_iterator it = specific_flows_.find(canonical_email);
   if (it != specific_flows_.end())
     return it->second;
   return GetDefaultUserFlow();
@@ -1562,13 +1563,15 @@ UserFlow* UserManagerImpl::GetUserFlow(const std::string& email) const {
 
 void UserManagerImpl::SetUserFlow(const std::string& email, UserFlow* flow) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ResetUserFlow(email);
-  specific_flows_[email] = flow;
+  std::string canonical_email = gaia::CanonicalizeEmail(email);
+  ResetUserFlow(canonical_email);
+  specific_flows_[canonical_email] = flow;
 }
 
 void UserManagerImpl::ResetUserFlow(const std::string& email) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FlowMap::iterator it = specific_flows_.find(email);
+  std::string canonical_email = gaia::CanonicalizeEmail(email);
+  FlowMap::iterator it = specific_flows_.find(canonical_email);
   if (it != specific_flows_.end()) {
     delete it->second;
     specific_flows_.erase(it);
