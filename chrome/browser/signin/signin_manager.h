@@ -186,6 +186,7 @@ class SigninManager : public SigninManagerBase,
   // OneClickSigninHelper).  All of this tracking state is reset once the
   // renderer process terminates.
   void SetSigninProcess(int process_id);
+  void ClearSigninProcess();
   bool IsSigninProcess(int process_id) const;
   bool HasSigninProcess() const;
 

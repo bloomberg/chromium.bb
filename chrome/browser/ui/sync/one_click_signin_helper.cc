@@ -991,6 +991,21 @@ void OneClickSigninHelper::NavigateToPendingEntry(
   }
 }
 
+void OneClickSigninHelper::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  // If we navigate to a non-sign-in URL, make sure that the renderer process
+  // is no longer considered the trusted sign-in process.
+  if (!SigninManager::IsWebBasedSigninFlowURL(params.url)) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    SigninManager* manager = profile ?
+        SigninManagerFactory::GetForProfile(profile) : NULL;
+    if (manager)
+      manager->ClearSigninProcess();
+  }
+}
+
 void OneClickSigninHelper::DidStopLoading(
     content::RenderViewHost* render_view_host) {
   // If the user left the sign in process, clear all members.

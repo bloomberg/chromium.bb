@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SIGNIN_SIGNIN_BROWSERTEST_H_
 #define CHROME_BROWSER_SIGNIN_SIGNIN_BROWSERTEST_H_
 
+#include "base/command_line.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 
@@ -28,6 +30,23 @@ namespace {
 
 class SigninBrowserTest : public InProcessBrowserTest {
  public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    https_server_.reset(new net::SpawnedTestServer(
+        net::SpawnedTestServer::TYPE_HTTPS,
+        net::SpawnedTestServer::kLocalhost,
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))));
+    ASSERT_TRUE(https_server_->Start());
+
+    // Add a host resolver rule to map all outgoing requests to the test server.
+    // This allows us to use "real" hostnames in URLs, which we can use to
+    // create arbitrary SiteInstances.
+    command_line->AppendSwitchASCII(
+        switches::kHostResolverRules,
+        "MAP * " + https_server_->host_port_pair().ToString() +
+            ",EXCLUDE localhost");
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
   virtual void SetUp() OVERRIDE {
     factory_.reset(new net::URLFetcherImplFactory());
     fake_factory_.reset(new net::FakeURLFetcherFactory(factory_.get()));
@@ -59,7 +78,17 @@ class SigninBrowserTest : public InProcessBrowserTest {
 
   // The URLFetcherImplFactory instance used to instantiate |fake_factory_|.
   scoped_ptr<net::URLFetcherImplFactory> factory_;
+
+  scoped_ptr<net::SpawnedTestServer> https_server_;
 };
+
+// If the one-click-signin feature is not enabled (e.g Chrome OS), we
+// never grant signin privileges to any renderer processes.
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+const bool kOneClickSigninEnabled = true;
+#else
+const bool kOneClickSigninEnabled = false;
+#endif
 
 // Disabled on Windows due to flakiness. http://crbug.com/249055
 #if defined(OS_WIN)
@@ -68,14 +97,6 @@ class SigninBrowserTest : public InProcessBrowserTest {
 #define MAYBE_ProcessIsolation ProcessIsolation
 #endif
 IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
-  // If the one-click-signin feature is not enabled (e.g Chrome OS), we
-  // never grant signin privileges to any renderer processes.
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-  const bool kOneClickSigninEnabled = true;
-#else
-  const bool kOneClickSigninEnabled = false;
-#endif
-
   SigninManager* signin = SigninManagerFactory::GetForProfile(
       browser()->profile());
   EXPECT_FALSE(signin->HasSigninProcess());
@@ -116,6 +137,22 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
   ui_test_utils::NavigateToURL(browser(), GURL(kNonSigninURL));
   EXPECT_FALSE(signin->IsSigninProcess(
       active_tab->GetRenderProcessHost()->GetID()));
+}
+
+IN_PROC_BROWSER_TEST_F(SigninBrowserTest, NotTrustedAfterRedirect) {
+  SigninManager* signin = SigninManagerFactory::GetForProfile(
+      browser()->profile());
+  EXPECT_FALSE(signin->HasSigninProcess());
+
+  GURL url = SyncPromoUI::GetSyncPromoURL(SyncPromoUI::SOURCE_NTP_LINK, true);
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
+
+  // Navigating away should change the process.
+  GURL redirect_url("https://accounts.google.com/server-redirect?"
+      "https://foo.com?service=chromiumsync");
+  ui_test_utils::NavigateToURL(browser(), redirect_url);
+  EXPECT_FALSE(signin->HasSigninProcess());
 }
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_BROWSERTEST_H_

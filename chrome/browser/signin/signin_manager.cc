@@ -103,6 +103,10 @@ void SigninManager::SetSigninProcess(int process_id) {
                  content::Source<content::RenderProcessHost>(process));
 }
 
+void SigninManager::ClearSigninProcess() {
+  signin_process_id_ = kInvalidProcessId;
+}
+
 bool SigninManager::IsSigninProcess(int process_id) const {
   return process_id == signin_process_id_;
 }
