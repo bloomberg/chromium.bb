@@ -343,6 +343,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     // assigned to ugrave key.
     case XK_ugrave:
     case XK_Ugrave:
+    case XK_brokenbar:
       return VKEY_OEM_102;  // international backslash key in 102 keyboard.
 
     // When evdev is in use, /usr/share/X11/xkb/symbols/inet maps F13-18 keys
