@@ -769,8 +769,12 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   host->GetChannel()->AddFilter(new WebRtcLoggingHandlerHost());
 #endif
 #if !defined(DISABLE_NACL)
-  host->GetChannel()->AddFilter(new NaClHostMessageFilter(id, profile,
-    context));
+  ExtensionInfoMap* extension_info_map =
+      extensions::ExtensionSystem::Get(profile)->info_map();
+  host->GetChannel()->AddFilter(new NaClHostMessageFilter(
+      id, profile->IsOffTheRecord(),
+      profile->GetPath(), extension_info_map,
+      context));
 #endif
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(

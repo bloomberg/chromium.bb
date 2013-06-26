@@ -13,7 +13,6 @@
 #include "chrome/browser/nacl_host/nacl_file_host.h"
 #include "chrome/browser/nacl_host/nacl_infobar.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/nacl_host_messages.h"
 #include "googleurl/src/gurl.h"
@@ -22,14 +21,15 @@
 
 NaClHostMessageFilter::NaClHostMessageFilter(
     int render_process_id,
-    Profile* profile,
+    bool is_off_the_record,
+    const base::FilePath& profile_directory,
+    ExtensionInfoMap* extension_info_map,
     net::URLRequestContextGetter* request_context)
     : render_process_id_(render_process_id),
-      profile_(profile),
-      off_the_record_(profile_->IsOffTheRecord()),
+      off_the_record_(is_off_the_record),
+      profile_directory_(profile_directory),
       request_context_(request_context),
-      extension_info_map_(
-          extensions::ExtensionSystem::Get(profile)->info_map()),
+      extension_info_map_(extension_info_map),
       weak_ptr_factory_(this) {
 }
 
@@ -72,7 +72,7 @@ void NaClHostMessageFilter::OnLaunchNaCl(
       launch_params.enable_dyncode_syscalls,
       launch_params.enable_exception_handling,
       off_the_record_,
-      profile_->GetPath());
+      profile_directory_);
   host->Launch(this, reply_msg, extension_info_map_);
 }
 

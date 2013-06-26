@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_NACL_HOST_NACL_HOST_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_NACL_HOST_NACL_HOST_MESSAGE_FILTER_H_
 
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
 
 class ExtensionInfoMap;
 class GURL;
-class Profile;
 
 namespace nacl {
 struct NaClLaunchParams;
@@ -26,7 +26,9 @@ class URLRequestContextGetter;
 class NaClHostMessageFilter : public content::BrowserMessageFilter {
  public:
   NaClHostMessageFilter(int render_process_id,
-                        Profile* profile,
+                        bool is_off_the_record,
+                        const base::FilePath& profile_directory,
+                        ExtensionInfoMap* extension_info_map,
                         net::URLRequestContextGetter* request_context);
 
   // content::BrowserMessageFilter methods:
@@ -56,11 +58,10 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
 #endif
   int render_process_id_;
 
-  // The Profile associated with our renderer process.  This should only be
-  // accessed on the UI thread!
-  Profile* profile_;
-  // Copied from the profile so that it can be read on the IO thread.
+  // off_the_record_ is copied from the profile partly so that it can be
+  // read on the IO thread.
   bool off_the_record_;
+  base::FilePath profile_directory_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
