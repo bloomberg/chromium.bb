@@ -2,57 +2,59 @@
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import os
 
 Import('env')
 
-# A simple test of the sincos function
 
-sincos_test_nexe = env.ComponentProgram('sincos_test', 'sincos_test.c',
-                                  EXTRA_LIBS=['${NONIRT_LIBS}', 'm'])
-node = env.CommandSelLdrTestNacl(
-    'sincos_test.out',
-    sincos_test_nexe,
-    stdout_golden=env.File('sincos_test.stdout'),
-    )
+# test_env: The env to add to.
+# src: Source file name. The default test name will be the file name with its
+#      extension stripped.
+# testname: If the default test name is not good enough, provide a custom one.
+# exit_status: The expected exit status.
+# golden_filename: Name of the golden stdout file.
+def AddMathTest(test_env, src, testname=None,
+                exit_status='0', golden_filename=''):
+  if testname is None:
+    testname = os.path.splitext(src)[0]
+  golden_file = test_env.File(golden_filename) if golden_filename else None
 
-env.AddNodeToTestSuite(node,
-                       ['small_tests'], 'run_sincos_test')
+  object = test_env.ComponentObject(testname, src)
+  nexe = test_env.ComponentProgram(testname,
+                                   object,
+                                   EXTRA_LIBS=['${NONIRT_LIBS}', 'm'])
+  node = test_env.CommandSelLdrTestNacl(
+    testname + '.out',
+    nexe,
+    exit_status=exit_status,
+    stdout_golden=golden_file)
+  test_env.AddNodeToTestSuite(node,
+                              ['small_tests'], 'run_' + testname + '_test')
 
-#--- Version that tests errno conditions
 
-# Note: -fno-math-errno is the default on Clang, and some versions of gcc.
+AddMathTest(env, 'sincos_test.c',
+            exit_status='0', golden_filename='sincos_test.stdout')
+
+# Create envs for -fmath-errno (which also happens to be the default) and
+# -fno-math-errno.
 errno_env = env.Clone()
 errno_env.Append(CCFLAGS=['-fmath-errno'])
-float_math_obj = errno_env.ComponentObject('float_math', 'float_math.c')
-float_math_nexe = errno_env.ComponentProgram('float_math',
-                                       float_math_obj,
-                                       EXTRA_LIBS=['m', '${NONIRT_LIBS}'])
-node = errno_env.CommandSelLdrTestNacl(
-  'float_math.out',
-  float_math_nexe,
-  exit_status='55',
-  )
-errno_env.AddNodeToTestSuite(node,
-                       ['small_tests'],
-                       'run_float_math_test')
-
-#--- Version that uses -fno-math-errno and doesn't test errno conditions
-
 noerrno_env = env.Clone()
 noerrno_env.Append(CCFLAGS=['-fno-math-errno'])
 noerrno_env.Append(CPPDEFINES=['NO_ERRNO_CHECK'])
 
-float_math_noerrno_obj = noerrno_env.ComponentObject('float_math_noerrno',
-                                                     'float_math.c')
-float_math_noerrno_nexe = noerrno_env.ComponentProgram(
-                              'float_math_noerrno',
-                              float_math_noerrno_obj,
-                              EXTRA_LIBS=['m', '${NONIRT_LIBS}'])
-node = noerrno_env.CommandSelLdrTestNacl(
-  'float_math_noerrno.out',
-  float_math_noerrno_nexe,
-  exit_status='55',
-  )
-noerrno_env.AddNodeToTestSuite(node,
-                               ['small_tests'],
-                               'run_float_math_noerrno_test')
+AddMathTest(errno_env, 'float_math.c', testname='float_math_errno',
+            exit_status='55')
+AddMathTest(noerrno_env, 'float_math.c', testname='float_math_noerrno',
+            exit_status='55')
+
+AddMathTest(errno_env, 'c_pow.c', testname='c_pow_errno',
+            golden_filename='common_pow.stdout')
+AddMathTest(noerrno_env, 'c_pow.c', testname='c_pow_noerrno',
+            golden_filename='common_pow.stdout')
+
+AddMathTest(errno_env, 'cxx_pow.cc', testname='cxx_pow_errno',
+            golden_filename='common_pow.stdout')
+AddMathTest(noerrno_env, 'cxx_pow.cc', testname='cxx_pow_noerrno',
+            golden_filename='common_pow.stdout')
+
