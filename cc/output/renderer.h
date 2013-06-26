@@ -28,8 +28,6 @@ class CC_EXPORT RendererClient {
   virtual const LayerTreeSettings& Settings() const = 0;
   virtual void SetFullRootLayerDamage() = 0;
   virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
-  virtual void EnforceManagedMemoryPolicy(
-      const ManagedMemoryPolicy& policy) = 0;
   virtual bool HasImplThread() const = 0;
   virtual bool ShouldClearRootRenderPass() const = 0;
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const = 0;
@@ -84,6 +82,7 @@ class CC_EXPORT Renderer {
 
   RendererClient* client_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(Renderer);
 };
 

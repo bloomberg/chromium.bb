@@ -176,6 +176,9 @@ class CC_EXPORT LayerTreeHostImpl
   // the URL bar and non-overlay scrollbars.
   gfx::SizeF VisibleViewportSize() const;
 
+  // Evict all textures by enforcing a memory policy with an allocation of 0.
+  void EvictTexturesForTesting();
+
   // RendererClient implementation
   virtual gfx::Rect DeviceViewport() const OVERRIDE;
  private:
@@ -184,8 +187,6 @@ class CC_EXPORT LayerTreeHostImpl
  public:
   virtual void SetFullRootLayerDamage() OVERRIDE;
   virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
-      OVERRIDE;
-  virtual void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
       OVERRIDE;
   virtual bool HasImplThread() const OVERRIDE;
   virtual bool ShouldClearRootRenderPass() const OVERRIDE;
@@ -438,6 +439,7 @@ class CC_EXPORT LayerTreeHostImpl
   void UpdateCurrentFrameTime(base::TimeTicks* ticks, base::Time* now) const;
 
   void StartScrollbarAnimationRecursive(LayerImpl* layer, base::TimeTicks time);
+  void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
 
   scoped_ptr<OutputSurface> output_surface_;
 

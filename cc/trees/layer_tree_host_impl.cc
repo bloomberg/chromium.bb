@@ -949,6 +949,10 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
   return true;
 }
 
+void LayerTreeHostImpl::EvictTexturesForTesting() {
+  EnforceManagedMemoryPolicy(ManagedMemoryPolicy(0));
+}
+
 void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
     const ManagedMemoryPolicy& policy) {
 

@@ -2075,19 +2075,11 @@ void GLRenderer::onMemoryAllocationChanged(
         allocation.bytesLimitWhenNotVisible,
         PriorityCutoff(allocation.priorityCutoffWhenNotVisible));
 
-    if (allocation.enforceButDoNotKeepAsPolicy)
-      client_->EnforceManagedMemoryPolicy(policy);
-    else
-      client_->SetManagedMemoryPolicy(policy);
+    client_->SetManagedMemoryPolicy(policy);
   }
 
-  bool old_discard_backbuffer_when_not_visible =
-      discard_backbuffer_when_not_visible_;
   discard_backbuffer_when_not_visible_ = !allocation.suggestHaveBackbuffer;
   EnforceMemoryPolicy();
-  if (allocation.enforceButDoNotKeepAsPolicy)
-    discard_backbuffer_when_not_visible_ =
-        old_discard_backbuffer_when_not_visible;
 }
 
 ManagedMemoryPolicy::PriorityCutoff GLRenderer::PriorityCutoff(

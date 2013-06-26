@@ -64,8 +64,6 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   virtual void SetFullRootLayerDamage() OVERRIDE {}
   virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
       OVERRIDE {}
-  virtual void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
-      OVERRIDE {}
   virtual bool HasImplThread() const OVERRIDE { return false; }
   virtual bool ShouldClearRootRenderPass() const OVERRIDE {
     return should_clear_root_render_pass_;

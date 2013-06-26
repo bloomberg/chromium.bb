@@ -4767,8 +4767,6 @@ class TestRenderer : public GLRenderer, public RendererClient {
   virtual void SetFullRootLayerDamage() OVERRIDE {}
   virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
       OVERRIDE {}
-  virtual void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
-      OVERRIDE {}
   virtual bool HasImplThread() const OVERRIDE { return false; }
   virtual bool ShouldClearRootRenderPass() const OVERRIDE { return true; }
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const

@@ -1728,8 +1728,7 @@ class LayerTreeHostTestEvictTextures : public LayerTreeHostTest {
 
   void EvictTexturesOnImplThread() {
     DCHECK(impl_for_evict_textures_);
-    impl_for_evict_textures_->EnforceManagedMemoryPolicy(
-        ManagedMemoryPolicy(0));
+    impl_for_evict_textures_->EvictTexturesForTesting();
   }
 
   // Commit 1: Just commit and draw normally, then post an eviction at the end

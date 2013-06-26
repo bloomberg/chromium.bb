@@ -183,7 +183,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::GpuMemoryAllocationForRenderer)
   IPC_STRUCT_TRAITS_MEMBER(bytes_limit_when_not_visible)
   IPC_STRUCT_TRAITS_MEMBER(priority_cutoff_when_not_visible)
   IPC_STRUCT_TRAITS_MEMBER(have_backbuffer_when_not_visible)
-  IPC_STRUCT_TRAITS_MEMBER(enforce_but_do_not_keep_as_policy)
 IPC_STRUCT_TRAITS_END()
 IPC_ENUM_TRAITS(content::GpuMemoryAllocationForRenderer::PriorityCutoff)
 

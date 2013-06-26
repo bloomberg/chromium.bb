@@ -182,9 +182,6 @@ class FakeRendererClient : public RendererClient {
   virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
       OVERRIDE {
     memory_allocation_limit_bytes_ = policy.bytes_limit_when_visible;
-  }
-  virtual void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
-      OVERRIDE {
     if (last_call_was_set_visibility_)
       *last_call_was_set_visibility_ = false;
   }
@@ -860,7 +857,7 @@ TEST(GLRendererTest2, VisibilityChangeIsLastCall) {
   bool last_call_was_set_visiblity = false;
   // Ensure that the call to setVisibilityCHROMIUM is the last call issue to the
   // GPU process, after glFlush is called, and after the RendererClient's
-  // EnforceManagedMemoryPolicy is called. Plumb this tracking between both the
+  // SetManagedMemoryPolicy is called. Plumb this tracking between both the
   // RenderClient and the Context by giving them both a pointer to a variable on
   // the stack.
   context->set_last_call_was_set_visibility_pointer(

@@ -842,7 +842,7 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
   }
 
   void EvictTexturesOnImplThread() {
-    impl_host_->EnforceManagedMemoryPolicy(ManagedMemoryPolicy(0));
+    impl_host_->EvictTexturesForTesting();
     if (lose_after_evict_)
       LoseContext();
   }

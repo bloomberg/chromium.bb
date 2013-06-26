@@ -1418,8 +1418,6 @@ void WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged(
       WebkitPriorityCutoff(allocation.priority_cutoff_when_not_visible);
   web_allocation.haveBackbufferWhenNotVisible =
       allocation.have_backbuffer_when_not_visible;
-  web_allocation.enforceButDoNotKeepAsPolicy =
-      allocation.enforce_but_do_not_keep_as_policy;
 
   // Populate deprecated WebKit fields. These may be removed when references to
   // them in WebKit are removed.

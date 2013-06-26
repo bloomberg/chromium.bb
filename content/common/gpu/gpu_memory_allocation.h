@@ -38,17 +38,12 @@ struct GpuMemoryAllocationForRenderer {
   PriorityCutoff priority_cutoff_when_not_visible;
   bool have_backbuffer_when_not_visible;
 
-  // If true, enforce this policy just once, but do not keep
-  // it as a permanent policy.
-  bool enforce_but_do_not_keep_as_policy;
-
   GpuMemoryAllocationForRenderer()
       : bytes_limit_when_visible(0),
         priority_cutoff_when_visible(kPriorityCutoffAllowNothing),
         bytes_limit_when_not_visible(0),
         priority_cutoff_when_not_visible(kPriorityCutoffAllowNothing),
-        have_backbuffer_when_not_visible(false),
-        enforce_but_do_not_keep_as_policy(false) {
+        have_backbuffer_when_not_visible(false) {
   }
 
   GpuMemoryAllocationForRenderer(uint64 bytes_limit_when_visible)
@@ -56,8 +51,7 @@ struct GpuMemoryAllocationForRenderer {
         priority_cutoff_when_visible(kPriorityCutoffAllowEverything),
         bytes_limit_when_not_visible(0),
         priority_cutoff_when_not_visible(kPriorityCutoffAllowNothing),
-        have_backbuffer_when_not_visible(false),
-        enforce_but_do_not_keep_as_policy(false) {
+        have_backbuffer_when_not_visible(false) {
   }
 
   bool Equals(const GpuMemoryAllocationForRenderer& other) const {
@@ -68,9 +62,7 @@ struct GpuMemoryAllocationForRenderer {
         priority_cutoff_when_not_visible ==
             other.priority_cutoff_when_not_visible &&
         have_backbuffer_when_not_visible ==
-            other.have_backbuffer_when_not_visible &&
-        enforce_but_do_not_keep_as_policy ==
-            other.enforce_but_do_not_keep_as_policy;
+            other.have_backbuffer_when_not_visible;
   }
 };
 
