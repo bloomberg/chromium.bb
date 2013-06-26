@@ -76,7 +76,9 @@ class Operation:
 
     # By default, we display ANSI colors unless output is redirected.
     want_color = (color == self.COLOR_ON or
-      (color == self.COLOR_IF_TERMINAL and os.isatty(sys.stdout.fileno())))
+                  (color == self.COLOR_IF_TERMINAL and
+                   hasattr(sys.stdout, 'fileno') and
+                   os.isatty(sys.stdout.fileno())))
     self._color = Color(want_color)
 
     # -1 = no newline pending
