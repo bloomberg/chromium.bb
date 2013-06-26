@@ -1229,20 +1229,6 @@ void InspectorPageAgent::setForceCompositingMode(ErrorString* errorString, bool 
     mainFrame->view()->updateCompositingLayersAfterStyleChange();
 }
 
-void InspectorPageAgent::getCompositingBordersVisible(ErrorString* error, bool* outParam)
-{
-    Settings* settings = m_page->settings();
-    *outParam = settings->showDebugBorders() || settings->showRepaintCounter();
-}
-
-void InspectorPageAgent::setCompositingBordersVisible(ErrorString*, bool visible)
-{
-    Settings* settings = m_page->settings();
-
-    settings->setShowDebugBorders(visible);
-    settings->setShowRepaintCounter(visible);
-}
-
 void InspectorPageAgent::captureScreenshot(ErrorString*, String*)
 {
     // Handled on the browser level.
