@@ -326,17 +326,17 @@ bool WebMediaPlayerImpl::supportsSave() const {
 void WebMediaPlayerImpl::seek(double seconds) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
+  base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
+
   if (starting_ || seeking_) {
     pending_seek_ = true;
     pending_seek_seconds_ = seconds;
     if (chunk_demuxer_)
-      chunk_demuxer_->CancelPendingSeek();
+      chunk_demuxer_->CancelPendingSeek(seek_time);
     return;
   }
 
   media_log_->AddEvent(media_log_->CreateSeekEvent(seconds));
-
-  base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
 
   // Update our paused time.
   if (paused_)
@@ -345,7 +345,7 @@ void WebMediaPlayerImpl::seek(double seconds) {
   seeking_ = true;
 
   if (chunk_demuxer_)
-    chunk_demuxer_->StartWaitingForSeek();
+    chunk_demuxer_->StartWaitingForSeek(seek_time);
 
   // Kick off the asynchronous seek!
   pipeline_->Seek(

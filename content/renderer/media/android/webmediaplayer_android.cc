@@ -309,11 +309,11 @@ void WebMediaPlayerAndroid::pause() {
 
 void WebMediaPlayerAndroid::seek(double seconds) {
   pending_seek_ = seconds;
+  base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
   if (seeking_ && media_source_delegate_)
-    media_source_delegate_->CancelPendingSeek();
+    media_source_delegate_->CancelPendingSeek(seek_time);
   seeking_ = true;
 
-  base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
 #if defined(GOOGLE_TV)
   // TODO(qinmin): check if GTV can also defer the seek until the browser side
   // player is ready.
@@ -683,7 +683,7 @@ void WebMediaPlayerAndroid::OnMediaSeekRequest(base::TimeDelta time_to_seek) {
     return;
 
   if (!seeking_)
-    media_source_delegate_->CancelPendingSeek();
+    media_source_delegate_->CancelPendingSeek(time_to_seek);
   media_source_delegate_->Seek(time_to_seek);
   OnTimeUpdate(time_to_seek);
 }

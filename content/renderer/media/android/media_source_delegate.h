@@ -69,7 +69,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
 
   void Seek(base::TimeDelta time);
 
-  void CancelPendingSeek();
+  void CancelPendingSeek(base::TimeDelta time);
 
   void NotifyKeyAdded(const std::string& key_system);
 

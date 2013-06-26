@@ -235,8 +235,8 @@ class MockMediaSource {
     need_key_cb_ = need_key_cb;
   }
 
-  void Seek(int new_position, int seek_append_size) {
-    chunk_demuxer_->StartWaitingForSeek();
+  void Seek(base::TimeDelta seek_time, int new_position, int seek_append_size) {
+    chunk_demuxer_->StartWaitingForSeek(seek_time);
 
     chunk_demuxer_->Abort(kSourceId);
 
@@ -382,7 +382,7 @@ class PipelineIntegrationTest
     if (!WaitUntilCurrentTimeIsAfter(start_seek_time))
       return false;
 
-    source.Seek(seek_file_position, seek_append_size);
+    source.Seek(seek_time, seek_file_position, seek_append_size);
     if (!Seek(seek_time))
       return false;
 

@@ -111,11 +111,12 @@ class MEDIA_EXPORT SourceBufferStream {
   // yet.
   base::TimeDelta GetMaxInterbufferDistance() const;
 
- private:
-  friend class SourceBufferStreamTest;
-  typedef std::list<SourceBufferRange*> RangeList;
+  void set_memory_limit_for_testing(int memory_limit) {
+    memory_limit_ = memory_limit;
+  }
 
-  void set_memory_limit(int memory_limit) { memory_limit_ = memory_limit; }
+ private:
+  typedef std::list<SourceBufferRange*> RangeList;
 
   // Frees up space if the SourceBufferStream is taking up too much memory.
   void GarbageCollectIfNeeded();

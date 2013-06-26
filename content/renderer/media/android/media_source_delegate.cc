@@ -167,14 +167,14 @@ void MediaSourceDelegate::Seek(base::TimeDelta time) {
   seeking_ = true;
   DCHECK(demuxer_);
   if (chunk_demuxer_)
-    chunk_demuxer_->StartWaitingForSeek();
+    chunk_demuxer_->StartWaitingForSeek(time);
   demuxer_->Seek(time,
       BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerError));
 }
 
-void MediaSourceDelegate::CancelPendingSeek() {
+void MediaSourceDelegate::CancelPendingSeek(base::TimeDelta time) {
   if (chunk_demuxer_)
-    chunk_demuxer_->CancelPendingSeek();
+    chunk_demuxer_->CancelPendingSeek(time);
 }
 
 void MediaSourceDelegate::SetTotalBytes(int64 total_bytes) {

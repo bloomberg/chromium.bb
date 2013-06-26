@@ -205,7 +205,7 @@ class ChunkDemuxerStream : public DemuxerStream {
                      const LogCB& log_cb);
   virtual ~ChunkDemuxerStream();
 
-  void AbortReads();
+  void AbortReadsAndSeekStream(TimeDelta seek_time);
   void Seek(TimeDelta time);
   bool IsSeekWaitingForData() const;
 
@@ -241,6 +241,10 @@ class ChunkDemuxerStream : public DemuxerStream {
   virtual void EnableBitstreamConverter() OVERRIDE;
   virtual AudioDecoderConfig audio_decoder_config() OVERRIDE;
   virtual VideoDecoderConfig video_decoder_config() OVERRIDE;
+
+  void set_memory_limit_for_testing(int memory_limit) {
+    stream_->set_memory_limit_for_testing(memory_limit);
+  }
 
  private:
   enum State {
@@ -293,12 +297,13 @@ ChunkDemuxerStream::ChunkDemuxerStream(const VideoDecoderConfig& video_config,
   stream_.reset(new SourceBufferStream(video_config, log_cb));
 }
 
-void ChunkDemuxerStream::AbortReads() {
+void ChunkDemuxerStream::AbortReadsAndSeekStream(TimeDelta seek_time) {
   DVLOG(1) << "ChunkDemuxerStream::AbortReads()";
   ReadCBQueue read_cbs;
   {
     base::AutoLock auto_lock(lock_);
     ChangeState_Locked(RETURNING_ABORT_FOR_READS);
+    stream_->Seek(seek_time);
     std::swap(read_cbs_, read_cbs);
   }
 
@@ -637,7 +642,7 @@ TimeDelta ChunkDemuxer::GetStartTime() const {
   return TimeDelta();
 }
 
-void ChunkDemuxer::StartWaitingForSeek() {
+void ChunkDemuxer::StartWaitingForSeek(TimeDelta seek_time) {
   DVLOG(1) << "StartWaitingForSeek()";
   base::AutoLock auto_lock(lock_);
   DCHECK(state_ == INITIALIZED || state_ == ENDED || state_ == SHUTDOWN);
@@ -647,17 +652,17 @@ void ChunkDemuxer::StartWaitingForSeek() {
     return;
 
   if (audio_)
-    audio_->AbortReads();
+    audio_->AbortReadsAndSeekStream(seek_time);
 
   if (video_)
-    video_->AbortReads();
+    video_->AbortReadsAndSeekStream(seek_time);
 
   // Cancel state set in CancelPendingSeek() since we want to
   // accept the next Seek().
   cancel_next_seek_ = false;
 }
 
-void ChunkDemuxer::CancelPendingSeek() {
+void ChunkDemuxer::CancelPendingSeek(TimeDelta seek_time) {
   base::AutoLock auto_lock(lock_);
   DCHECK_NE(state_, INITIALIZING);
   DCHECK(seek_cb_.is_null() || IsSeekWaitingForData_Locked());
@@ -666,10 +671,10 @@ void ChunkDemuxer::CancelPendingSeek() {
     return;
 
   if (audio_)
-    audio_->AbortReads();
+    audio_->AbortReadsAndSeekStream(seek_time);
 
   if (video_)
-    video_->AbortReads();
+    video_->AbortReadsAndSeekStream(seek_time);
 
   if (seek_cb_.is_null()) {
     cancel_next_seek_ = true;
@@ -1007,6 +1012,14 @@ void ChunkDemuxer::Shutdown() {
 
   if(!seek_cb_.is_null())
     base::ResetAndReturn(&seek_cb_).Run(PIPELINE_ERROR_ABORT);
+}
+
+void ChunkDemuxer::SetMemoryLimitsForTesting(int memory_limit) {
+  if (audio_)
+    audio_->set_memory_limit_for_testing(memory_limit);
+
+  if (video_)
+    video_->set_memory_limit_for_testing(memory_limit);
 }
 
 void ChunkDemuxer::ChangeState_Locked(State new_state) {

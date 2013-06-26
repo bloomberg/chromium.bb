@@ -69,7 +69,10 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // This method MUST ALWAYS be called before Seek() is called to signal that
   // the next Seek() call represents the seek point we actually want to return
   // data for.
-  void StartWaitingForSeek();
+  // |seek_time| - The presentation timestamp for the seek that triggered this
+  // call. It represents the most recent position the caller is trying to seek
+  // to.
+  void StartWaitingForSeek(base::TimeDelta seek_time);
 
   // Indicates that a Seek() call is on its way, but another seek has been
   // requested that will override the impending Seek() call. Any pending Reads
@@ -78,7 +81,10 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // StartWaitingForSeek() call. This method also arranges for the next Seek()
   // call received before a StartWaitingForSeek() call to immediately call its
   // callback without waiting for any data.
-  void CancelPendingSeek();
+  // |seek_time| - The presentation timestamp for the seek request that
+  // triggered this call. It represents the most recent position the caller is
+  // trying to seek to.
+  void CancelPendingSeek(base::TimeDelta seek_time);
 
   // Registers a new |id| to use for AppendData() calls. |type| indicates
   // the MIME type for the data that we intend to append for this ID.
@@ -121,6 +127,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Signals an EndOfStream request.
   void EndOfStream(PipelineStatus status);
   void Shutdown();
+
+  void SetMemoryLimitsForTesting(int memory_limit);
 
  private:
   enum State {
