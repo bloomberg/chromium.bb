@@ -6,12 +6,12 @@
 
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
+#include "cc/animation/animation_delegate.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/test/animation_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebAnimationDelegate.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -378,17 +378,17 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
   EXPECT_TRUE(end_transform_event->is_impl_only);
 }
 
-class FakeWebAnimationDelegate : public WebKit::WebAnimationDelegate {
+class FakeAnimationDelegate : public AnimationDelegate {
  public:
-  FakeWebAnimationDelegate()
+  FakeAnimationDelegate()
       : started_(false),
         finished_(false) {}
 
-  virtual void notifyAnimationStarted(double time) OVERRIDE {
+  virtual void NotifyAnimationStarted(double time) OVERRIDE {
     started_ = true;
   }
 
-  virtual void notifyAnimationFinished(double time) OVERRIDE {
+  virtual void NotifyAnimationFinished(double time) OVERRIDE {
     finished_ = true;
   }
 
@@ -415,7 +415,7 @@ TEST(LayerAnimationControllerTest,
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
-  FakeWebAnimationDelegate delegate;
+  FakeAnimationDelegate delegate;
   controller->set_layer_animation_delegate(&delegate);
 
   scoped_ptr<Animation> to_add(CreateAnimation(

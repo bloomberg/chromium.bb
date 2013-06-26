@@ -11,7 +11,6 @@ include_rules = [
   "+ui/gl",
   # DO NOT ADD ANY NEW WEBKIT HEADERS TO THIS LIST.
   # TODO(danakj): Drop dependencies on WebKit Platform API from cc.
-  "+third_party/WebKit/public/platform/WebAnimationDelegate.h",
   "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
   "+third_party/WebKit/public/platform/WebGraphicsMemoryAllocation.h",
   "+third_party/WebKit/public/platform/WebLayerScrollClient.h",

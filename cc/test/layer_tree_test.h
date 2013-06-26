@@ -7,10 +7,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
+#include "cc/animation/animation_delegate.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebAnimationDelegate.h"
 
 namespace Webkit {
 class WebGraphicsContext3D;
@@ -26,7 +26,7 @@ class LayerTreeHostImpl;
 class FakeOutputSurface;
 
 // Used by test stubs to notify the test when something interesting happens.
-class TestHooks : public WebKit::WebAnimationDelegate {
+class TestHooks : public AnimationDelegate {
  public:
   TestHooks();
   virtual ~TestHooks();
@@ -67,9 +67,9 @@ class TestHooks : public WebKit::WebAnimationDelegate {
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) {}
 
-  // Implementation of WebAnimationDelegate
-  virtual void notifyAnimationStarted(double time) OVERRIDE {}
-  virtual void notifyAnimationFinished(double time) OVERRIDE {}
+  // Implementation of AnimationDelegate:
+  virtual void NotifyAnimationStarted(double time) OVERRIDE {}
+  virtual void NotifyAnimationFinished(double time) OVERRIDE {}
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() = 0;
   virtual scoped_refptr<cc::ContextProvider>

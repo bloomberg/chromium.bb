@@ -148,7 +148,7 @@ class LayerTreeHostAnimationTestAddAnimation
     }
   }
 
-  virtual void notifyAnimationStarted(double wall_clock_time) OVERRIDE {
+  virtual void NotifyAnimationStarted(double wall_clock_time) OVERRIDE {
     received_animation_started_notification_ = true;
     start_time_ = wall_clock_time;
     if (num_animates_) {
@@ -239,7 +239,7 @@ class LayerTreeHostAnimationTestAnimationsGetDeleted
       EndTest();
   }
 
-  virtual void notifyAnimationFinished(double time) OVERRIDE {
+  virtual void NotifyAnimationFinished(double time) OVERRIDE {
     // Animations on the impl-side controller only get deleted during a commit,
     // so we need to schedule a commit.
     layer_tree_host()->SetNeedsCommit();
@@ -372,7 +372,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
     PostAddAnimationToMainThread(content_.get());
   }
 
-  virtual void notifyAnimationStarted(double time) OVERRIDE {
+  virtual void NotifyAnimationStarted(double time) OVERRIDE {
     LayerAnimationController* controller =
         layer_tree_host()->root_layer()->children()[0]->
         layer_animation_controller();
@@ -427,7 +427,7 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents
     PostAddInstantAnimationToMainThread(layer_tree_host()->root_layer());
   }
 
-  virtual void notifyAnimationFinished(double time) OVERRIDE {
+  virtual void NotifyAnimationFinished(double time) OVERRIDE {
     LayerAnimationController* controller =
         layer_tree_host()->root_layer()->layer_animation_controller();
     Animation* animation =
@@ -643,11 +643,11 @@ class LayerTreeHostAnimationTestRunAnimationWhenNotCanDraw
     PostAddAnimationToMainThread(content_.get());
   }
 
-  virtual void notifyAnimationStarted(double wall_clock_time) OVERRIDE {
+  virtual void NotifyAnimationStarted(double wall_clock_time) OVERRIDE {
     started_times_++;
   }
 
-  virtual void notifyAnimationFinished(double wall_clock_time) OVERRIDE {
+  virtual void NotifyAnimationFinished(double wall_clock_time) OVERRIDE {
     EndTest();
   }
 
@@ -689,12 +689,12 @@ class LayerTreeHostAnimationTestRunAnimationWhenNotVisible
     layer_tree_host()->SetVisible(false);
   }
 
-  virtual void notifyAnimationStarted(double wall_clock_time) OVERRIDE {
+  virtual void NotifyAnimationStarted(double wall_clock_time) OVERRIDE {
     EXPECT_FALSE(visible_);
     started_times_++;
   }
 
-  virtual void notifyAnimationFinished(double wall_clock_time) OVERRIDE {
+  virtual void NotifyAnimationFinished(double wall_clock_time) OVERRIDE {
     EXPECT_FALSE(visible_);
     EXPECT_EQ(1, started_times_);
     EndTest();
@@ -773,13 +773,13 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     }
   }
 
-  virtual void notifyAnimationStarted(double wall_clock_time) OVERRIDE {
+  virtual void NotifyAnimationStarted(double wall_clock_time) OVERRIDE {
     if (TestEnded())
       return;
     started_times_++;
   }
 
-  virtual void notifyAnimationFinished(double wall_clock_time) OVERRIDE {
+  virtual void NotifyAnimationFinished(double wall_clock_time) OVERRIDE {
     // We should be checkerboarding already, but it should still finish the
     // first animation.
     EXPECT_EQ(2, added_animations_);

@@ -31,13 +31,13 @@
 #include "ui/gfx/transform.h"
 
 namespace WebKit {
-class WebAnimationDelegate;
 class WebLayerScrollClient;
 }
 
 namespace cc {
 
 class Animation;
+class AnimationDelegate;
 struct AnimationEvent;
 class CopyOutputRequest;
 class LayerAnimationDelegate;
@@ -334,7 +334,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetLayerAnimationControllerForTest(
       scoped_refptr<LayerAnimationController> controller);
 
-  void set_layer_animation_delegate(WebKit::WebAnimationDelegate* delegate) {
+  void set_layer_animation_delegate(AnimationDelegate* delegate) {
     layer_animation_controller_->set_layer_animation_delegate(delegate);
   }
 

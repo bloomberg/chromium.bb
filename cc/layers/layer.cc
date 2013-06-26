@@ -17,7 +17,6 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "third_party/WebKit/public/platform/WebAnimationDelegate.h"
 #include "third_party/WebKit/public/platform/WebLayerScrollClient.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect_conversions.h"

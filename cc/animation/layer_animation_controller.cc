@@ -7,11 +7,11 @@
 #include <algorithm>
 
 #include "cc/animation/animation.h"
+#include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_value_observer.h"
 #include "cc/base/scoped_ptr_algorithm.h"
-#include "third_party/WebKit/public/platform/WebAnimationDelegate.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -264,7 +264,7 @@ void LayerAnimationController::NotifyAnimationStarted(
     FOR_EACH_OBSERVER(LayerAnimationEventObserver, event_observers_,
                       OnAnimationStarted(event));
     if (layer_animation_delegate_)
-      layer_animation_delegate_->notifyAnimationStarted(wall_clock_time);
+      layer_animation_delegate_->NotifyAnimationStarted(wall_clock_time);
 
     return;
   }
@@ -279,7 +279,7 @@ void LayerAnimationController::NotifyAnimationStarted(
       FOR_EACH_OBSERVER(LayerAnimationEventObserver, event_observers_,
                         OnAnimationStarted(event));
       if (layer_animation_delegate_)
-        layer_animation_delegate_->notifyAnimationStarted(wall_clock_time);
+        layer_animation_delegate_->NotifyAnimationStarted(wall_clock_time);
 
       return;
     }
@@ -291,7 +291,7 @@ void LayerAnimationController::NotifyAnimationFinished(
     double wall_clock_time) {
   if (event.is_impl_only) {
     if (layer_animation_delegate_)
-      layer_animation_delegate_->notifyAnimationFinished(wall_clock_time);
+      layer_animation_delegate_->NotifyAnimationFinished(wall_clock_time);
     return;
   }
 
@@ -300,7 +300,7 @@ void LayerAnimationController::NotifyAnimationFinished(
         active_animations_[i]->target_property() == event.target_property) {
       active_animations_[i]->set_received_finished_event(true);
       if (layer_animation_delegate_)
-        layer_animation_delegate_->notifyAnimationFinished(wall_clock_time);
+        layer_animation_delegate_->NotifyAnimationFinished(wall_clock_time);
 
       return;
     }

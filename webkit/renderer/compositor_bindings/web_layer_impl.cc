@@ -17,6 +17,7 @@
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "webkit/renderer/compositor_bindings/web_animation_impl.h"
 #include "webkit/renderer/compositor_bindings/web_filter_operations_impl.h"
+#include "webkit/renderer/compositor_bindings/web_to_cc_animation_delegate_adapter.h"
 
 using cc::Animation;
 using cc::Layer;
@@ -191,7 +192,9 @@ void WebLayerImpl::setCompositingReasons(
 
 void WebLayerImpl::setAnimationDelegate(
       WebKit::WebAnimationDelegate* delegate) {
-  layer_->set_layer_animation_delegate(delegate);
+  animation_delegate_adapter_.reset(
+      new WebToCCAnimationDelegateAdapter(delegate));
+  layer_->set_layer_animation_delegate(animation_delegate_adapter_.get());
 }
 
 bool WebLayerImpl::addAnimation(WebKit::WebAnimation* animation) {
@@ -362,4 +365,4 @@ bool WebLayerImpl::isOrphan() const { return !layer_->layer_tree_host(); }
 
 Layer* WebLayerImpl::layer() const { return layer_.get(); }
 
-}  // namespace WebKit
+}  // namespace webkit
