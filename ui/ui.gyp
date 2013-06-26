@@ -494,6 +494,8 @@
         'gfx/path_gtk.cc',
         'gfx/path_win.cc',
         'gfx/path_win.h',
+        'gfx/path_x11.cc',
+        'gfx/path_x11.h',
         'gfx/platform_font.h',
         'gfx/platform_font_android.cc',
         'gfx/platform_font_ios.h',

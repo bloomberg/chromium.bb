@@ -4,13 +4,16 @@
 
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
 
+#include <X11/extensions/shape.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/Xatom.h>
+#include <X11/Xregion.h>
 #include <X11/Xutil.h>
 
 #include "base/message_loop/message_pump_aurax11.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/focus_manager.h"
@@ -21,6 +24,7 @@
 #include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/path_x11.h"
 #include "ui/linux_ui/linux_ui.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/compound_event_filter.h"
@@ -506,8 +510,11 @@ gfx::Rect DesktopRootWindowHostX11::GetWorkAreaBoundsInScreen() const {
 }
 
 void DesktopRootWindowHostX11::SetShape(gfx::NativeRegion native_region) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  SkPath path;
+  native_region->getBoundaryPath(&path);
+  Region region = gfx::CreateRegionFromSkPath(path);
+  XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0, region, false);
+  XDestroyRegion(region);
 }
 
 void DesktopRootWindowHostX11::Activate() {
