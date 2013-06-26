@@ -157,7 +157,7 @@ static void openFileSystemHelper(ScriptExecutionContext* context, FileSystemType
     bool allowed = true;
     ASSERT(context);
     if (context->isDocument()) {
-        Document* document = static_cast<Document*>(context);
+        Document* document = toDocument(context);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         WebKit::WebViewImpl* webView = webFrame->viewImpl();
         if (webView->permissionClient() && !webView->permissionClient()->allowFileSystem(webFrame))
@@ -194,7 +194,7 @@ void LocalFileSystem::deleteFileSystem(ScriptExecutionContext* context, FileSyst
     ASSERT(context);
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
 
-    Document* document = static_cast<Document*>(context);
+    Document* document = toDocument(context);
     WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
     WebKit::WebViewImpl* webView = webFrame->viewImpl();
     if (webView->permissionClient() && !webView->permissionClient()->allowFileSystem(webFrame)) {

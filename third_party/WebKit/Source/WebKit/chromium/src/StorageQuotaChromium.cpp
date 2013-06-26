@@ -75,7 +75,7 @@ void StorageQuota::queryUsageAndQuota(ScriptExecutionContext* scriptExecutionCon
         return;
     }
     if (scriptExecutionContext->isDocument()) {
-        Document* document = static_cast<Document*>(scriptExecutionContext);
+        Document* document = toDocument(scriptExecutionContext);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         webFrame->client()->queryStorageUsageAndQuota(webFrame, storageType, new WebStorageQuotaCallbacksImpl(successCallback, errorCallback));
     } else {
@@ -95,7 +95,7 @@ void StorageQuota::requestQuota(ScriptExecutionContext* scriptExecutionContext, 
         return;
     }
     if (scriptExecutionContext->isDocument()) {
-        Document* document = static_cast<Document*>(scriptExecutionContext);
+        Document* document = toDocument(scriptExecutionContext);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         webFrame->client()->requestStorageQuota(webFrame, storageType, newQuotaInBytes, new WebStorageQuotaCallbacksImpl(successCallback, errorCallback));
     } else {

@@ -72,7 +72,7 @@ namespace WebKit {
 WorkerGlobalScopeProxy* WebWorkerClientImpl::createWorkerGlobalScopeProxy(Worker* worker)
 {
     if (worker->scriptExecutionContext()->isDocument()) {
-        Document* document = static_cast<Document*>(worker->scriptExecutionContext());
+        Document* document = toDocument(worker->scriptExecutionContext());
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         WebWorkerClientImpl* proxy = new WebWorkerClientImpl(worker, webFrame);
         return proxy;

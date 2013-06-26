@@ -288,7 +288,7 @@ WebDocument& WebDocument::operator=(const PassRefPtr<Document>& elem)
 
 WebDocument::operator PassRefPtr<Document>() const
 {
-    return static_cast<Document*>(m_private.get());
+    return toDocument(m_private.get());
 }
 
 } // namespace WebKit

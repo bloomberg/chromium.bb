@@ -114,7 +114,7 @@ bool IDBFactoryBackendProxy::allowIndexedDB(ScriptExecutionContext* context, con
     bool allowed;
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument() || context->isWorkerGlobalScope());
     if (context->isDocument()) {
-        Document* document = static_cast<Document*>(context);
+        Document* document = toDocument(context);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         WebViewImpl* webView = webFrame->viewImpl();
         // FIXME: webView->permissionClient() returns 0 in test_shell and content_shell http://crbug.com/137269

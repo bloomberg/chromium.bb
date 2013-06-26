@@ -133,7 +133,7 @@ bool DatabaseObserver::canEstablishDatabase(ScriptExecutionContext* scriptExecut
     ASSERT(scriptExecutionContext->isContextThread());
     ASSERT(scriptExecutionContext->isDocument() || scriptExecutionContext->isWorkerGlobalScope());
     if (scriptExecutionContext->isDocument()) {
-        Document* document = static_cast<Document*>(scriptExecutionContext);
+        Document* document = toDocument(scriptExecutionContext);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         if (!webFrame)
             return false;

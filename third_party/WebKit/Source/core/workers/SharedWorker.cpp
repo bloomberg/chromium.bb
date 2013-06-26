@@ -54,7 +54,7 @@ inline SharedWorker::SharedWorker(ScriptExecutionContext* context)
 PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, const String& url, const String& name, ExceptionCode& ec)
 {
     ASSERT(isMainThread());
-    UseCounter::count(static_cast<Document*>(context)->domWindow(), UseCounter::SharedWorkerStart);
+    UseCounter::count(toDocument(context)->domWindow(), UseCounter::SharedWorkerStart);
 
     RefPtr<SharedWorker> worker = adoptRef(new SharedWorker(context));
 
@@ -71,7 +71,7 @@ PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, c
 
     // We don't currently support nested workers, so workers can only be created from documents.
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
-    Document* document = static_cast<Document*>(context);
+    Document* document = toDocument(context);
     if (!document->securityOrigin()->canAccessSharedWorkers(document->topOrigin())) {
         ec = SECURITY_ERR;
         return 0;
