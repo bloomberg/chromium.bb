@@ -316,6 +316,12 @@ void RecentTabsSubMenuModel::BuildRecentTabs() {
   ListValue recently_closed_list;
   TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
+  if (service) {
+    // This does nothing if the tabs have already been loaded or they
+    // shouldn't be loaded.
+    service->LoadTabsFromLastSession();
+  }
+
   if (!service || service->entries().size() == 0) {
     // This is to show a disabled restore tab entry with the accelerator to
     // teach users about this command.
