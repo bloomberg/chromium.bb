@@ -21,8 +21,7 @@
       "all_frames": true,
       "js": [
         "chromeVoxChromePageScript.js"
-      ],
-      "run_at": "document_start"
+      ]
     }
   ],
   "web_accessible_resources": [
