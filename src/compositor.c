@@ -93,6 +93,9 @@ static void
 weston_output_transform_scale_init(struct weston_output *output,
 				   uint32_t transform, uint32_t scale);
 
+static void
+weston_compositor_build_surface_list(struct weston_compositor *compositor);
+
 WL_EXPORT int
 weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode, int32_t scale)
 {
@@ -1011,8 +1014,10 @@ weston_surface_destroy(struct weston_surface *surface)
 	assert(wl_list_empty(&surface->subsurface_list_pending));
 	assert(wl_list_empty(&surface->subsurface_list));
 
-	if (weston_surface_is_mapped(surface))
+	if (weston_surface_is_mapped(surface)) {
 		weston_surface_unmap(surface);
+		weston_compositor_build_surface_list(compositor);
+	}
 
 	wl_list_for_each_safe(cb, next,
 			      &surface->pending.frame_callback_list, link)
