@@ -112,7 +112,7 @@
 
 - (void)windowFocusDidChange:(NSNotification*)notification {
   // The background color depends on the window's focus state.
-  [self setNeedsDisplay:YES];
+  [self cr_recursivelySetNeedsDisplay:YES];
 }
 
 - (void)viewWillMoveToWindow:(NSWindow*)window {
