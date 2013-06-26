@@ -148,7 +148,7 @@ public:
     virtual void clearBrowserCookies(ErrorString*);
     virtual void setCacheDisabled(ErrorString*, bool cacheDisabled);
 
-    virtual void loadResourceForFrontend(ErrorString*, const String& frameId, const String& url, PassRefPtr<LoadResourceForFrontendCallback>);
+    virtual void loadResourceForFrontend(ErrorString*, const String& frameId, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtr<LoadResourceForFrontendCallback>);
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 

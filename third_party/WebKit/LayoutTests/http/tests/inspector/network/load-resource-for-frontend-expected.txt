@@ -1,7 +1,21 @@
 
-Running: testNetworkResource
+Running: testNetworkResourceNonCached
 Loading resource from http://localhost:8080/inspector/network/resources/resource.php
-Success: Hello world
+Success: 200
+Logged headers: cache-control, expires, pragma
+Content: "Hello world"
+
+Running: testNetworkResourceCached
+Loading resource from http://localhost:8080/inspector/network/resources/resource.php?cached=1
+Success: 200
+Logged headers: cache-control, expires, last-modified
+Content: "Hello world"
+
+Running: testNetworkResourceIfModifiedSince
+Loading resource from http://localhost:8080/inspector/network/resources/resource.php?cached=1
+Success: 304
+Logged headers: 
+Content: ""
 
 Running: testResourceFromIncorrectURL
 Loading resource from resource.php

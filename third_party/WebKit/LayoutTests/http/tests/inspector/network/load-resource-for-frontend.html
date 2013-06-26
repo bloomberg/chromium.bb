@@ -4,35 +4,61 @@
 <script>
 function test()
 {
-    function testLoadForURL(url, next)
+    var loggedHeaders = {
+        "cache-control": true,
+        "expires": true,
+        "last-modified": true,
+        "pragma": true
+    };
+    function testLoadForURL(url, headers, next)
     {
         InspectorTest.addResult("Loading resource from " + url);
-        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, url, callback);
+        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, url, headers, callback);
 
-        function callback(error, content)
+        function callback(error, statusCode, headers, content)
         {
             if (error)
                 InspectorTest.addResult("Failed: " + error);
-            else
-                InspectorTest.addResult("Success: " + content);
+            else {
+                InspectorTest.addResult("Success: " + statusCode);
+                var headersArray = [];
+                for (var name in headers) {
+                    var nameLower = name.toLowerCase();
+                    if (nameLower in loggedHeaders)
+                        headersArray.push(nameLower);
+                }
+                headersArray.sort();
+                InspectorTest.addResult("Logged headers: " + headersArray.join(", "));
+                InspectorTest.addResult("Content: \"" + content + "\"");
+            }
             next();
         }
     }
 
     InspectorTest.runTestSuite([
-        function testNetworkResource(next)
+        function testNetworkResourceNonCached(next)
         {
-            testLoadForURL("http://localhost:8080/inspector/network/resources/resource.php", next);
+            testLoadForURL("http://localhost:8080/inspector/network/resources/resource.php", undefined, next);
+        },
+
+        function testNetworkResourceCached(next)
+        {
+            testLoadForURL("http://localhost:8080/inspector/network/resources/resource.php?cached=1", undefined, next);
+        },
+
+        function testNetworkResourceIfModifiedSince(next)
+        {
+            testLoadForURL("http://localhost:8080/inspector/network/resources/resource.php?cached=1", { "if-modified-since": new Date().toUTCString() }, next);
         },
 
         function testResourceFromIncorrectURL(next)
         {
-            testLoadForURL("resource.php", next);
+            testLoadForURL("resource.php", undefined, next);
         },
 
         function testResourceFromFileScheme(next)
         {
-            testLoadForURL("file:///var/www/index.html", next);
+            testLoadForURL("file:///var/www/index.html", undefined, next);
         },
     ]);
 }

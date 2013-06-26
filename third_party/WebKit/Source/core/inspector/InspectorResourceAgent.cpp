@@ -86,11 +86,21 @@ static const char userAgentOverride[] = "userAgentOverride";
 
 namespace {
 
+static PassRefPtr<JSONObject> buildObjectForHeaders(const HTTPHeaderMap& headers)
+{
+    RefPtr<JSONObject> headersObject = JSONObject::create();
+    HTTPHeaderMap::const_iterator end = headers.end();
+    for (HTTPHeaderMap::const_iterator it = headers.begin(); it != end; ++it)
+        headersObject->setString(it->key.string(), it->value);
+    return headersObject;
+}
+
 class InspectorThreadableLoaderClient : public ThreadableLoaderClient {
     WTF_MAKE_NONCOPYABLE(InspectorThreadableLoaderClient);
 public:
     InspectorThreadableLoaderClient(PassRefPtr<LoadResourceForFrontendCallback> callback)
-        : m_callback(callback) { }
+        : m_callback(callback)
+        , m_statusCode(0) { }
 
     virtual ~InspectorThreadableLoaderClient() { }
 
@@ -103,6 +113,8 @@ public:
             useDetector = true;
         }
         m_decoder = TextResourceDecoder::create("text/plain", textEncoding, useDetector);
+        m_statusCode = response.httpStatusCode();
+        m_responseHeaders = response.httpHeaderFields();
     }
 
     virtual void didReceiveData(const char* data, int dataLength)
@@ -119,7 +131,7 @@ public:
     virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/)
     {
         m_responseText = m_responseText.concatenateWith(m_decoder->flush());
-        m_callback->sendSuccess(m_responseText.flattenToString());
+        m_callback->sendSuccess(m_statusCode, buildObjectForHeaders(m_responseHeaders), m_responseText.flattenToString());
         dispose();
     }
 
@@ -157,6 +169,8 @@ private:
     RefPtr<ThreadableLoader> m_loader;
     RefPtr<TextResourceDecoder> m_decoder;
     ScriptString m_responseText;
+    int m_statusCode;
+    HTTPHeaderMap m_responseHeaders;
 };
 
 KURL urlWithoutFragment(const KURL& url)
@@ -184,15 +198,6 @@ void InspectorResourceAgent::restore()
 {
     if (m_state->getBoolean(ResourceAgentState::resourceAgentEnabled))
         enable();
-}
-
-static PassRefPtr<JSONObject> buildObjectForHeaders(const HTTPHeaderMap& headers)
-{
-    RefPtr<JSONObject> headersObject = JSONObject::create();
-    HTTPHeaderMap::const_iterator end = headers.end();
-    for (HTTPHeaderMap::const_iterator it = headers.begin(); it != end; ++it)
-        headersObject->setString(it->key.string(), it->value);
-    return headersObject;
 }
 
 static PassRefPtr<TypeBuilder::Network::ResourceTiming> buildObjectForTiming(const ResourceLoadTiming& timing, DocumentLoader* loader)
@@ -700,7 +705,7 @@ void InspectorResourceAgent::setCacheDisabled(ErrorString*, bool cacheDisabled)
         memoryCache()->evictResources();
 }
 
-void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, const String& frameId, const String& url, PassRefPtr<LoadResourceForFrontendCallback> callback)
+void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, const String& frameId, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtr<LoadResourceForFrontendCallback> callback)
 {
     Frame* frame = m_pageAgent->assertFrame(errorString, frameId);
     if (!frame)
@@ -720,6 +725,17 @@ void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, c
 
     ResourceRequest request(url);
     request.setHTTPMethod("GET");
+    if (requestHeaders) {
+        for (JSONObject::iterator it = (*requestHeaders)->begin(); it != (*requestHeaders)->end(); ++it) {
+            String value;
+            bool success = it->value->asString(&value);
+            if (!success) {
+                *errorString = "Request header \"" + it->key + "\" value is not a string";
+                return;
+            }
+            request.addHTTPHeaderField(it->key, value);
+        }
+    }
 
     ThreadableLoaderOptions options;
     options.allowCredentials = DoNotAllowStoredCredentials;

@@ -29,10 +29,10 @@ var test = function()
     {
         var mainResourceURL = WebInspector.resourceTreeModel.mainFrame.url;
         var resourceURL = WebInspector.ParsedURL.completeURL(mainResourceURL, "resources/resource.php");
-        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, resourceURL, resourceContentLoaded);
+        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, resourceURL, undefined, resourceContentLoaded);
     }
 
-    function resourceContentLoaded(error, content)
+    function resourceContentLoaded(error, statusCode, headers, content)
     {
         InspectorTest.assertTrue(!error, "There shouldn't have been an error on resource load: " + error);
         InspectorTest.addResult("Resource content loaded: " + content);
