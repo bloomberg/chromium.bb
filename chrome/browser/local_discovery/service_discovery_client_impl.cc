@@ -135,7 +135,7 @@ void ServiceWatcherImpl::OnRecordUpdate(
            record->type() == net::dns_protocol::kTypeTXT);
     DCHECK(services_.find(record->name()) != services_.end());
 
-    delegate_->OnServiceUpdated(UPDATE_CHANGED, record->name());
+    DeferUpdate(UPDATE_CHANGED, record->name());
   }
 }
 
@@ -162,7 +162,7 @@ void ServiceWatcherImpl::OnTransactionResponse(
 
 ServiceWatcherImpl::ServiceListeners::ServiceListeners(
     const std::string& service_name,
-    ServiceWatcherImpl* watcher) {
+    ServiceWatcherImpl* watcher) : update_pending_(false) {
   srv_listener_ = net::MDnsClient::GetInstance()->CreateListener(
       net::dns_protocol::kTypeSRV, service_name, watcher);
   txt_listener_ = net::MDnsClient::GetInstance()->CreateListener(
@@ -186,8 +186,33 @@ void ServiceWatcherImpl::AddService(const std::string& service) {
     found.first->second = linked_ptr<ServiceListeners>(
         new ServiceListeners(service, this));
     bool success = found.first->second->Start();
+
+    DeferUpdate(UPDATE_ADDED, service);
+
     DCHECK(success);
-    delegate_->OnServiceUpdated(UPDATE_ADDED, service);
+  }
+}
+
+void ServiceWatcherImpl::DeferUpdate(ServiceWatcher::UpdateType update_type,
+                                     const std::string& service_name) {
+  ServiceListenersMap::iterator found = services_.find(service_name);
+
+  if (found != services_.end() && !found->second->update_pending()) {
+    found->second->set_update_pending(true);
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ServiceWatcherImpl::DeliverDeferredUpdate, AsWeakPtr(),
+                   update_type, service_name));
+  }
+}
+
+void ServiceWatcherImpl::DeliverDeferredUpdate(
+    ServiceWatcher::UpdateType update_type, const std::string& service_name) {
+  ServiceListenersMap::iterator found = services_.find(service_name);
+
+  if (found != services_.end()) {
+    found->second->set_update_pending(false);
+    delegate_->OnServiceUpdated(update_type, service_name);
   }
 }
 

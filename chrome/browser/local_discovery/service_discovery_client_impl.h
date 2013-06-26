@@ -39,7 +39,8 @@ class ServiceDiscoveryClientImpl : public ServiceDiscoveryClient {
 };
 
 class ServiceWatcherImpl : public ServiceWatcher,
-                           public net::MDnsListener::Delegate {
+                           public net::MDnsListener::Delegate,
+                           public base::SupportsWeakPtr<ServiceWatcherImpl> {
  public:
   ServiceWatcherImpl(const std::string& service_type,
                      ServiceWatcher::Delegate* delegate);
@@ -77,9 +78,15 @@ class ServiceWatcherImpl : public ServiceWatcher,
     ~ServiceListeners();
     bool Start();
 
+    void set_update_pending(bool update_pending) {
+      update_pending_ = update_pending;
+    }
+
+    bool update_pending() { return update_pending_; }
    private:
     scoped_ptr<net::MDnsListener> srv_listener_;
     scoped_ptr<net::MDnsListener> txt_listener_;
+    bool update_pending_;
   };
 
   typedef std::map<std::string, linked_ptr<ServiceListeners>>
@@ -90,6 +97,11 @@ class ServiceWatcherImpl : public ServiceWatcher,
   bool CreateTransaction(bool active, bool alert_existing_services,
                          bool force_refresh,
                          scoped_ptr<net::MDnsTransaction>* transaction);
+
+  void DeferUpdate(ServiceWatcher::UpdateType update_type,
+                   const std::string& service_name);
+  void DeliverDeferredUpdate(ServiceWatcher::UpdateType update_type,
+                             const std::string& service_name);
 
   std::string service_type_;
   ServiceListenersMap services_;

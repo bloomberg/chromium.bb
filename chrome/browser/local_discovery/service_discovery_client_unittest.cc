@@ -238,7 +238,6 @@ TEST_F(ServiceDiscoveryTest, GetAvailableServices) {
   EXPECT_EQ(data, data_expected);
 };
 
-
 TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
   NiceMock<MockServiceWatcherDelegate> delegate_irrelevant;
   scoped_ptr<ServiceWatcher> watcher_irrelevant =
@@ -262,6 +261,8 @@ TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
       .Times(Exactly(1));
 
   watcher->ReadCachedServices();
+
+  base::MessageLoop::current()->RunUntilIdle();
 };
 
 TEST_F(ServiceDiscoveryTest, OnServiceChanged) {
@@ -279,9 +280,11 @@ TEST_F(ServiceDiscoveryTest, OnServiceChanged) {
   socket_factory_->SimulateReceive(
       kSamplePacketPTR, sizeof(kSamplePacketPTR));
 
+  base::MessageLoop::current()->RunUntilIdle();
+
   EXPECT_CALL(delegate, OnServiceUpdated(ServiceWatcher::UPDATE_CHANGED,
                                          "hello._privet._tcp.local"))
-      .Times(Exactly(2));
+      .Times(Exactly(1));
 
   socket_factory_->SimulateReceive(
       kSamplePacketSRV, sizeof(kSamplePacketSRV));
@@ -289,9 +292,39 @@ TEST_F(ServiceDiscoveryTest, OnServiceChanged) {
   socket_factory_->SimulateReceive(
       kSamplePacketTXT, sizeof(kSamplePacketTXT));
 
-  watcher->ReadCachedServices();
+  base::MessageLoop::current()->RunUntilIdle();
 };
 
+TEST_F(ServiceDiscoveryTest, SinglePacket) {
+  StrictMock<MockServiceWatcherDelegate> delegate;
+  scoped_ptr<ServiceWatcher> watcher =
+      service_discovery_client_.CreateServiceWatcher(
+          "_privet._tcp.local", &delegate);
+
+  watcher->Start();
+
+  EXPECT_CALL(delegate, OnServiceUpdated(ServiceWatcher::UPDATE_ADDED,
+                                         "hello._privet._tcp.local"))
+      .Times(Exactly(1));
+
+  socket_factory_->SimulateReceive(
+      kSamplePacketPTR, sizeof(kSamplePacketPTR));
+
+  // Reset the "already updated" flag.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_CALL(delegate, OnServiceUpdated(ServiceWatcher::UPDATE_CHANGED,
+                                         "hello._privet._tcp.local"))
+      .Times(Exactly(1));
+
+  socket_factory_->SimulateReceive(
+      kSamplePacketSRV, sizeof(kSamplePacketSRV));
+
+  socket_factory_->SimulateReceive(
+      kSamplePacketTXT, sizeof(kSamplePacketTXT));
+
+  base::MessageLoop::current()->RunUntilIdle();
+};
 
 class ServiceResolverTest : public ServiceDiscoveryTest {
  public:
