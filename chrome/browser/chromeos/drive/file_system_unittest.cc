@@ -430,7 +430,7 @@ TEST_F(FileSystemTest, GetDuplicateNames) {
   const std::string resource_id1 = entry->resource_id();
 
   const base::FilePath kFilePath2(
-      FILE_PATH_LITERAL("drive/root/Duplicate Name (2).txt"));
+      FILE_PATH_LITERAL("drive/root/Duplicate Name (1).txt"));
   entry = GetResourceEntryByPathSync(kFilePath2);
   ASSERT_TRUE(entry);
   const std::string resource_id2 = entry->resource_id();

@@ -513,13 +513,13 @@ TEST_F(ResourceMetadataTestOnUIThread, RenameEntry) {
           &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir2/file7 (2)"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir2/file7 (1)"),
             drive_file_path);
 
   // Rename to same name. This should fail.
   resource_metadata_->RenameEntryOnUIThread(
-      base::FilePath::FromUTF8Unsafe("drive/root/dir2/file7 (2)"),
-      "file7 (2)",
+      base::FilePath::FromUTF8Unsafe("drive/root/dir2/file7 (1)"),
+      "file7 (1)",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();

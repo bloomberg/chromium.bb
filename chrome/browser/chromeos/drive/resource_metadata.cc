@@ -746,7 +746,7 @@ bool ResourceMetadata::PutEntryUnderDirectory(
 
   // Do file name de-duplication - Keep changing |entry|'s name until there is
   // no other entry with the same name under the parent.
-  int modifier = 1;
+  int modifier = 0;
   std::string new_base_name = updated_entry.base_name();
   while (true) {
     const std::string existing_entry_id =
@@ -759,7 +759,7 @@ bool ResourceMetadata::PutEntryUnderDirectory(
     new_path =
         new_path.InsertBeforeExtension(base::StringPrintf(" (%d)", ++modifier));
     // The new filename must be different from the previous one.
-    DCHECK(new_base_name != new_path.AsUTF8Unsafe());
+    DCHECK_NE(new_base_name, new_path.AsUTF8Unsafe());
     new_base_name = new_path.AsUTF8Unsafe();
   }
   updated_entry.set_base_name(new_base_name);
