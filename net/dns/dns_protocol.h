@@ -117,6 +117,8 @@ static const uint16 kTypePTR = 12;
 static const uint16 kTypeTXT = 16;
 static const uint16 kTypeAAAA = 28;
 static const uint16 kTypeSRV = 33;
+static const uint16 kTypeNSEC = 47;
+
 
 // DNS rcode values.
 static const uint8 kRcodeMask = 0xf;

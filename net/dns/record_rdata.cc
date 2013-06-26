@@ -215,4 +215,73 @@ bool TxtRecordRdata::IsEqual(const RecordRdata* other) const {
   return texts_ == txt_other->texts_;
 }
 
+NsecRecordRdata::NsecRecordRdata() {
+}
+
+NsecRecordRdata::~NsecRecordRdata() {
+}
+
+// static
+scoped_ptr<NsecRecordRdata> NsecRecordRdata::Create(
+    const base::StringPiece& data,
+    const DnsRecordParser& parser) {
+  scoped_ptr<NsecRecordRdata> rdata(new NsecRecordRdata);
+
+  // Read the "next domain". This part for the NSEC record format is
+  // ignored for mDNS, since it has no semantic meaning.
+  unsigned next_domain_length = parser.ReadName(data.data(), NULL);
+
+  // If we did not succeed in getting the next domain or the data length
+  // is too short for reading the bitmap header, return.
+  if (next_domain_length == 0 || data.length() < next_domain_length + 2)
+    return scoped_ptr<NsecRecordRdata>();
+
+  struct BitmapHeader {
+    uint8 block_number;  // The block number should be zero.
+    uint8 length;  // Bitmap length in bytes. Between 1 and 32.
+  };
+
+  const BitmapHeader* header = reinterpret_cast<const BitmapHeader*>(
+      data.data() + next_domain_length);
+
+  // The block number must be zero in mDns-specific NSEC records. The bitmap
+  // length must be between 1 and 32.
+  if (header->block_number != 0 || header->length == 0 || header->length > 32)
+    return scoped_ptr<NsecRecordRdata>();
+
+  base::StringPiece bitmap_data = data.substr(next_domain_length + 2);
+
+  // Since we may only have one block, the data length must be exactly equal to
+  // the domain length plus bitmap size.
+  if (bitmap_data.length() != header->length)
+    return scoped_ptr<NsecRecordRdata>();
+
+  rdata->bitmap_.insert(rdata->bitmap_.begin(),
+                        bitmap_data.begin(),
+                        bitmap_data.end());
+
+  return rdata.Pass();
+}
+
+uint16 NsecRecordRdata::Type() const {
+  return NsecRecordRdata::kType;
+}
+
+bool NsecRecordRdata::IsEqual(const RecordRdata* other) const {
+  if (other->Type() != Type())
+    return false;
+  const NsecRecordRdata* nsec_other =
+      static_cast<const NsecRecordRdata*>(other);
+  return bitmap_ == nsec_other->bitmap_;
+}
+
+bool NsecRecordRdata::GetBit(unsigned i) const {
+  unsigned byte_num = i/8;
+  if (bitmap_.size() < byte_num + 1)
+    return false;
+
+  unsigned bit_num = 7 - i % 8;
+  return (bitmap_[byte_num] & (1 << bit_num)) != 0;
+}
+
 }  // namespace net

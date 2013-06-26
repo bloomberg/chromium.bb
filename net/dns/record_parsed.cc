@@ -49,6 +49,9 @@ scoped_ptr<const RecordParsed> RecordParsed::CreateFrom(
     case TxtRecordRdata::kType:
       rdata = TxtRecordRdata::Create(record.rdata, *parser);
       break;
+    case NsecRecordRdata::kType:
+      rdata = NsecRecordRdata::Create(record.rdata, *parser);
+      break;
     default:
       LOG(WARNING) << "Unknown RData type for recieved record: " << record.type;
       return scoped_ptr<const RecordParsed>();

@@ -180,4 +180,37 @@ TEST(RecordRdataTest, ParseTxtRecord) {
   ASSERT_TRUE(record_obj->IsEqual(record_obj.get()));
 }
 
+TEST(RecordRdataTest, ParseNsecRecord) {
+  scoped_ptr<NsecRecordRdata> record_obj;
+
+  // These are just the rdata portions of the DNS records, rather than complete
+  // records, but it works well enough for this test.
+
+  const char record[] = {
+    0x03, 'w', 'w', 'w',
+    0x06, 'g', 'o', 'o', 'g', 'l', 'e',
+    0x03, 'c', 'o', 'm',
+    0x00,
+    0x00, 0x02, 0x40, 0x01
+  };
+
+  DnsRecordParser parser(record, sizeof(record), 0);
+  base::StringPiece record_strpiece(record, sizeof(record));
+
+  record_obj = NsecRecordRdata::Create(record_strpiece, parser);
+  ASSERT_TRUE(record_obj != NULL);
+
+  ASSERT_EQ(16u, record_obj->bitmap_length());
+
+  EXPECT_FALSE(record_obj->GetBit(0));
+  EXPECT_TRUE(record_obj->GetBit(1));
+  for (int i = 2; i < 15; i++) {
+    EXPECT_FALSE(record_obj->GetBit(i));
+  }
+  EXPECT_TRUE(record_obj->GetBit(15));
+
+  ASSERT_TRUE(record_obj->IsEqual(record_obj.get()));
+}
+
+
 }  // namespace net

@@ -181,6 +181,37 @@ class NET_EXPORT_PRIVATE TxtRecordRdata : public RecordRdata {
   DISALLOW_COPY_AND_ASSIGN(TxtRecordRdata);
 };
 
+// Only the subset of the NSEC record format required by mDNS is supported.
+// Nsec record format is described in http://www.ietf.org/rfc/rfc3845.txt and
+// the limited version required for mDNS described in
+// http://www.rfc-editor.org/rfc/rfc6762.txt Section 6.1.
+class NET_EXPORT_PRIVATE NsecRecordRdata : public RecordRdata {
+ public:
+  static const uint16 kType = dns_protocol::kTypeNSEC;
+
+  virtual ~NsecRecordRdata();
+  static scoped_ptr<NsecRecordRdata> Create(const base::StringPiece& data,
+                                            const DnsRecordParser& parser);
+  virtual bool IsEqual(const RecordRdata* other) const OVERRIDE;
+  virtual uint16 Type() const OVERRIDE;
+
+  // Length of the bitmap in bits.
+  unsigned bitmap_length() const { return bitmap_.size() * 8; }
+
+  // Returns bit i-th bit in the bitmap, where bits withing a byte are organized
+  // most to least significant. If it is set, a record with rrtype i exists for
+  // the domain name of this nsec record.
+  bool GetBit(unsigned i) const;
+
+ private:
+  NsecRecordRdata();
+
+  std::vector<uint8> bitmap_;
+
+  DISALLOW_COPY_AND_ASSIGN(NsecRecordRdata);
+};
+
+
 }  // namespace net
 
 #endif  // NET_DNS_RECORD_RDATA_H_
