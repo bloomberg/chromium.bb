@@ -112,6 +112,8 @@
          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
          '<(SHARED_INTERMEDIATE_DIR)/WindowConstructors.idl',
          '<(SHARED_INTERMEDIATE_DIR)/WorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/SharedWorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/DedicatedWorkerGlobalScopeConstructors.idl',
        ],
        'msvs_cygwin_shell': 0,
        'action': [
@@ -123,8 +125,12 @@
          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
          '--window-constructors-file',
          '<(SHARED_INTERMEDIATE_DIR)/WindowConstructors.idl',
-         '--workercontext-constructors-file',
+         '--workerglobalscope-constructors-file',
          '<(SHARED_INTERMEDIATE_DIR)/WorkerGlobalScopeConstructors.idl',
+         '--sharedworkerglobalscope-constructors-file',
+         '<(SHARED_INTERMEDIATE_DIR)/SharedWorkerGlobalScopeConstructors.idl',
+         '--dedicatedworkerglobalscope-constructors-file',
+         '<(SHARED_INTERMEDIATE_DIR)/DedicatedWorkerGlobalScopeConstructors.idl',
          '<@(write_file_only_if_changed)',
        ],
        'message': 'Resolving partial interfaces dependencies in all IDL files',
@@ -173,6 +179,8 @@
           '<!@pymod_do_main(supplemental_idl_files <@(idl_files))',
           '<(SHARED_INTERMEDIATE_DIR)/WindowConstructors.idl',
           '<(SHARED_INTERMEDIATE_DIR)/WorkerGlobalScopeConstructors.idl',
+          '<(SHARED_INTERMEDIATE_DIR)/SharedWorkerGlobalScopeConstructors.idl',
+          '<(SHARED_INTERMEDIATE_DIR)/DedicatedWorkerGlobalScopeConstructors.idl',
         ],
         'outputs': [
           # FIXME:  The .cpp file should be in webkit/bindings once

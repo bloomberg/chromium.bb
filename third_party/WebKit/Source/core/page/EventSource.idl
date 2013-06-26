@@ -30,7 +30,7 @@
  */
 
 [
-    GlobalContext=WindowAndWorker,
+    GlobalContext=Window&WorkerGlobalScope,
     ActiveDOMObject,
     Constructor(DOMString url, optional Dictionary eventSourceInit),
     ConstructorCallWith=ScriptExecutionContext,

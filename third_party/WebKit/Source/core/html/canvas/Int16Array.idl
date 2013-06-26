@@ -24,7 +24,7 @@
  */
 
 [
-    GlobalContext=WindowAndWorker,
+    GlobalContext=Window&WorkerGlobalScope,
     ConstructorTemplate=TypedArray,
     CustomToV8,
     DoNotCheckConstants

@@ -38,15 +38,21 @@ def parse_options():
     parser.add_option('--idl-files-list', help='file listing all IDLs')
     parser.add_option('--supplemental-dependency-file', help='output file')
     parser.add_option('--window-constructors-file', help='output file')
-    parser.add_option('--workercontext-constructors-file', help='output file')
+    parser.add_option('--workerglobalscope-constructors-file', help='output file')
+    parser.add_option('--sharedworkerglobalscope-constructors-file', help='output file')
+    parser.add_option('--dedicatedworkerglobalscope-constructors-file', help='output file')
     parser.add_option('--write-file-only-if-changed', type='int')
     options, args = parser.parse_args()
     if options.supplemental_dependency_file is None:
         parser.error('Must specify an output file using --supplemental-dependency-file.')
     if options.window_constructors_file is None:
         parser.error('Must specify an output file using --window-constructors-file.')
-    if options.workercontext_constructors_file is None:
-        parser.error('Must specify an output file using --workercontext-constructors-file.')
+    if options.workerglobalscope_constructors_file is None:
+        parser.error('Must specify an output file using --workerglobalscope-constructors-file.')
+    if options.workerglobalscope_constructors_file is None:
+        parser.error('Must specify an output file using --sharedworkerglobalscope-constructors-file.')
+    if options.workerglobalscope_constructors_file is None:
+        parser.error('Must specify an output file using --dedicatedworkerglobalscope-constructors-file.')
     if options.idl_files_list is None:
         parser.error('Must specify the file listing all IDLs using --idl-files-list.')
     if options.write_file_only_if_changed is None:
@@ -142,13 +148,15 @@ def generate_global_constructors_partial_interface(interface_name, destination_f
         destination_file.write('};\n')
 
 
-def parse_idl_files(idl_files, window_constructors_filename, workercontext_constructors_filename):
+def parse_idl_files(idl_files, window_constructors_filename, workerglobalscope_constructors_filename, sharedworkerglobalscope_constructors_filename, dedicatedworkerglobalscope_constructors_filename):
     interface_name_to_idl_file = {}
     idl_file_to_interface_name = {}
     supplemental_dependencies = {}
     supplementals = {}
     window_constructor_attributes_list = []
-    workercontext_constructor_attributes_list = []
+    workerglobalscope_constructor_attributes_list = []
+    sharedworkerglobalscope_constructor_attributes_list = []
+    dedicatedworkerglobalscope_constructor_attributes_list = []
 
     # Populate interface_name_to_idl_file first
     for idl_file_name in idl_files:
@@ -175,22 +183,32 @@ def parse_idl_files(idl_files, window_constructors_filename, workercontext_const
         if not is_callback_interface_from_idl(idl_file_contents):
             extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
             if 'NoInterfaceObject' not in extended_attributes:
-                global_context = extended_attributes.get("GlobalContext", "WindowOnly")
+                global_contexts = extended_attributes.get('GlobalContext', 'Window').split('&')
                 constructor_list = generate_constructor_attribute_list(interface_name, extended_attributes)
-                if global_context != "WorkerOnly":
+                if 'Window' in global_contexts:
                     window_constructor_attributes_list.extend(constructor_list)
-                if global_context != "WindowOnly":
-                    workercontext_constructor_attributes_list.extend(constructor_list)
+                if 'WorkerGlobalScope' in global_contexts:
+                    workerglobalscope_constructor_attributes_list.extend(constructor_list)
+                if 'SharedWorkerGlobalScope' in global_contexts:
+                    sharedworkerglobalscope_constructor_attributes_list.extend(constructor_list)
+                if 'DedicatedWorkerGlobalScope' in global_contexts:
+                    dedicatedworkerglobalscope_constructor_attributes_list.extend(constructor_list)
         idl_file_to_interface_name[full_path] = interface_name
         supplementals[full_path] = []
 
     # Generate Global constructors
-    generate_global_constructors_partial_interface("Window", window_constructors_filename, window_constructor_attributes_list)
     if 'Window' in interface_name_to_idl_file:
+        generate_global_constructors_partial_interface("Window", window_constructors_filename, window_constructor_attributes_list)
         supplemental_dependencies[window_constructors_filename] = ['Window']
-    generate_global_constructors_partial_interface("WorkerGlobalScope", workercontext_constructors_filename, workercontext_constructor_attributes_list)
     if 'WorkerGlobalScope' in interface_name_to_idl_file:
-        supplemental_dependencies[workercontext_constructors_filename] = ['WorkerGlobalScope']
+        generate_global_constructors_partial_interface("WorkerGlobalScope", workerglobalscope_constructors_filename, workerglobalscope_constructor_attributes_list)
+        supplemental_dependencies[workerglobalscope_constructors_filename] = ['WorkerGlobalScope']
+    if 'SharedWorkerGlobalScope' in interface_name_to_idl_file:
+        generate_global_constructors_partial_interface("SharedWorkerGlobalScope", sharedworkerglobalscope_constructors_filename, sharedworkerglobalscope_constructor_attributes_list)
+        supplemental_dependencies[sharedworkerglobalscope_constructors_filename] = ['SharedWorkerGlobalScope']
+    if 'DedicatedWorkerGlobalScope' in interface_name_to_idl_file:
+        generate_global_constructors_partial_interface("DedicatedWorkerGlobalScope", dedicatedworkerglobalscope_constructors_filename, dedicatedworkerglobalscope_constructor_attributes_list)
+        supplemental_dependencies[dedicatedworkerglobalscope_constructors_filename] = ['DedicatedWorkerGlobalScope']
 
     # Resolve partial interfaces dependencies
     for idl_file, base_files in supplemental_dependencies.iteritems():
@@ -239,7 +257,7 @@ def main():
     with open(options.idl_files_list) as idl_files_list_file:
         for line in idl_files_list_file:
             idl_files.append(string.rstrip(line, '\n'))
-    resolved_supplementals = parse_idl_files(idl_files, options.window_constructors_file, options.workercontext_constructors_file)
+    resolved_supplementals = parse_idl_files(idl_files, options.window_constructors_file, options.workerglobalscope_constructors_file, options.sharedworkerglobalscope_constructors_file, options.dedicatedworkerglobalscope_constructors_file)
     write_dependency_file(options.supplemental_dependency_file, resolved_supplementals, only_if_changed=options.write_file_only_if_changed)
 
 

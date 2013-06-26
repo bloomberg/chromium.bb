@@ -1,4 +1,4 @@
-This test documents the Constructor properties on the global worker context.
+This test documents the Constructor properties on SharedWorkerGlobalScope.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -41,6 +41,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] RangeError
 [Worker] ReferenceError
 [Worker] RegExp
+[Worker] SharedWorkerGlobalScope
 [Worker] String
 [Worker] SyntaxError
 [Worker] TypeError
@@ -51,6 +52,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] Uint8Array
 [Worker] Uint8ClampedArray
 [Worker] WebSocket
+[Worker] WorkerGlobalScope
 [Worker] WorkerLocation
 [Worker] XMLHttpRequest
 [Worker] webkitIDBCursor

@@ -29,7 +29,7 @@
  */
 
 [
-    GlobalContext=WindowAndWorker,
+    GlobalContext=Window&WorkerGlobalScope,
     CustomToV8,
     CustomConstructor,
     CustomConstructor(sequence<any> blobParts, optional BlobPropertyBag options)

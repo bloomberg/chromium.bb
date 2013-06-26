@@ -24,7 +24,7 @@
  */
 
 [
-    GlobalContext=WindowAndWorker,
+    GlobalContext=Window&WorkerGlobalScope,
     CustomConstructor(ArrayBuffer buffer, optional unsigned long byteOffset, optional unsigned long byteLength),
     CustomToV8
 ] interface DataView : ArrayBufferView {

@@ -25,7 +25,7 @@
  */
 
 [
-    GlobalContext=WindowAndWorker,
+    GlobalContext=Window&WorkerGlobalScope,
     Constructor,
     ConstructorCallWith=ScriptExecutionContext,
     CustomConstructor
