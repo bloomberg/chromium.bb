@@ -32,7 +32,7 @@ def FixPath(path):
   path = os.path.normpath(os.path.join(os.getcwd(), path))
   if sys.platform in ['win32', 'cygwin']:
     if len(path) > 255:
-      raise Error('Path "%s" is too long (%d characters), and will fail.\n' % (
+      raise Error('Path "%s" is too long (%d characters), and will fail.' % (
           path, len(path)))
   return path
 
@@ -334,7 +334,7 @@ class Builder(object):
 
   def Log(self, msg):
     if self.verbose:
-      print str(msg)
+      sys.stderr.write(str(msg) + '\n')
 
   def Run(self, cmd_line, out):
     """Helper which runs a command line."""
@@ -357,12 +357,8 @@ class Builder(object):
         ecode = subprocess.call(' '.join(cmd_line), shell=True)
       else:
         ecode = subprocess.call(cmd_line)
-
-    except Exception, err:
-      raise Error('\n%s\nFAILED: %s\n\n' % (' '.join(cmd_line), str(err)))
-    if ecode != 0:
-      print 'Err %d: nacl-%s %s' % (ecode, os.path.basename(cmd_line[0]), out)
-      print '>>%s<<' % '<< >>'.join(cmd_line)
+    except Exception as err:
+      raise Error('%s\nFAILED: %s' % (' '.join(cmd_line), str(err)))
 
     if temp_file is not None:
       RemoveFile(temp_file.name)
@@ -505,12 +501,12 @@ class Builder(object):
     err = self.RunWithRetry(cmd_line, out)
     if err:
       self.CleanOutput(outd)
-      raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+      raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     else:
       try:
         self.NeedsRebuild(outd, out, src, True)
-      except Error, e:
-        raise Error('\nFailed to compile %s to %s with deps %s and cmdline:\t%s'
+      except Error as e:
+        raise Error('Failed to compile %s to %s with deps %s and cmdline:\t%s'
                     '\nNeedsRebuild returned error: %s' % (
                         src, out, outd, ' '.join(cmd_line), e))
     return out
@@ -530,7 +526,7 @@ class Builder(object):
 
     err = self.RunWithRetry(cmd_line, out)
     if err:
-      raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+      raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
 
   # For now, only support translating a pexe, and not .o file(s)
@@ -544,7 +540,7 @@ class Builder(object):
 
     err = self.RunWithRetry(cmd_line, out)
     if err:
-      raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+      raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
 
   def Archive(self, srcs):
@@ -568,7 +564,7 @@ class Builder(object):
     self.CleanOutput(out)
     err = self.RunWithRetry(cmd_line, out)
     if err:
-      raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+      raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
 
   def Strip(self, src):
@@ -588,12 +584,12 @@ class Builder(object):
       cmd_line = [strip_name, strip_option, src, '-o', out]
       err = self.RunWithRetry(cmd_line, out)
       if err:
-        raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+        raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     else:
       cmd_line = [strip_name, strip_option, src, '-o', pre_debug_tagging]
       err = self.RunWithRetry(cmd_line, pre_debug_tagging)
       if err:
-        raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+        raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
 
       # Tag with a debug link to foo.debug copying from foo.untagged to foo.
       objcopy_name = self.GetObjCopy()
@@ -601,7 +597,7 @@ class Builder(object):
                   pre_debug_tagging, out]
       err = self.RunWithRetry(cmd_line, out)
       if err:
-        raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+        raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
 
       # Drop the untagged intermediate.
       self.CleanOutput(pre_debug_tagging)
@@ -618,7 +614,7 @@ class Builder(object):
     cmd_line = [bin_name, src, '-o', out]
     err = self.RunWithRetry(cmd_line, out)
     if err:
-      raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+      raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
 
   def Generate(self, srcs):
@@ -640,7 +636,7 @@ class Builder(object):
       elif self.strip_all:
         raise Error('FAILED: --strip-all on libs will result in unusable libs.')
     else:
-      raise Error('FAILED: Unknown outtype %s:\n' % (self.outtype))
+      raise Error('FAILED: Unknown outtype: %s' % (self.outtype))
 
 
 def Main(argv):
@@ -690,7 +686,7 @@ def Main(argv):
                     help='Enable verbosity', action='store_true')
   parser.add_option('-t', '--toolpath', dest='toolpath',
                     help='Set the path for of the toolchains.')
-  (options, files) = parser.parse_args(argv[1:])
+  options, files = parser.parse_args(argv[1:])
 
   if not argv:
     parser.print_help()
@@ -741,7 +737,7 @@ def Main(argv):
     if not options.compile_only:
       build.Generate(objs)
     return 0
-  except Error, e:
+  except Error as e:
     sys.stderr.write('%s\n' % e)
     return 1
 
