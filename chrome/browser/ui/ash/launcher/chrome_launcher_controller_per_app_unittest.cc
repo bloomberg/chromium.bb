@@ -64,18 +64,22 @@ class TestLauncherModelObserver : public ash::LauncherModelObserver {
   // LauncherModelObserver
   virtual void LauncherItemAdded(int index) OVERRIDE {
     ++added_;
+    last_index_ = index;
   }
 
   virtual void LauncherItemRemoved(int index, ash::LauncherID id) OVERRIDE {
     ++removed_;
+    last_index_ = index;
   }
 
   virtual void LauncherItemChanged(int index,
                                    const ash::LauncherItem& old_item) OVERRIDE {
     ++changed_;
+    last_index_ = index;
   }
 
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE {
+    last_index_ = target_index;
   }
 
   virtual void LauncherStatusChanged() OVERRIDE {
@@ -85,16 +89,19 @@ class TestLauncherModelObserver : public ash::LauncherModelObserver {
     added_ = 0;
     removed_ = 0;
     changed_ = 0;
+    last_index_ = 0;
   }
 
   int added() const { return added_; }
   int removed() const { return removed_; }
   int changed() const { return changed_; }
+  int last_index() const { return last_index_; }
 
  private:
   int added_;
   int removed_;
   int changed_;
+  int last_index_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLauncherModelObserver);
 };
@@ -1061,6 +1068,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, AppPanels) {
       launcher_controller_.get());
   ash::LauncherID launcher_id1 = launcher_controller_->CreateAppLauncherItem(
       &app_panel_controller, app_id, ash::STATUS_RUNNING);
+  int panel_index = model_observer_->last_index();
   EXPECT_EQ(2, model_observer_->added());
   EXPECT_EQ(0, model_observer_->changed());
   EXPECT_EQ(1, app_icon_loader->fetch_count());
@@ -1074,9 +1082,19 @@ TEST_F(ChromeLauncherControllerPerAppTest, AppPanels) {
   gfx::ImageSkia image;
   launcher_controller_->SetAppImage(app_id, image);
   EXPECT_EQ(0, model_observer_->changed());
+  model_observer_->clear_counts();
 
+  // Add a second app panel and verify that it get the same index as the first
+  // one had, being added to the left of the existing panel.
+  ash::LauncherID launcher_id2 = launcher_controller_->CreateAppLauncherItem(
+      &app_panel_controller, app_id, ash::STATUS_RUNNING);
+  EXPECT_EQ(panel_index, model_observer_->last_index());
+  EXPECT_EQ(1, model_observer_->added());
+  model_observer_->clear_counts();
+
+  launcher_controller_->CloseLauncherItem(launcher_id2);
   launcher_controller_->CloseLauncherItem(launcher_id1);
-  EXPECT_EQ(1, model_observer_->removed());
+  EXPECT_EQ(2, model_observer_->removed());
 }
 
 // Tests that the Gmail extension matches more then the app itself claims with

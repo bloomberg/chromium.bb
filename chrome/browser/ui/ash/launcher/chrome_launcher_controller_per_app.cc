@@ -326,10 +326,13 @@ ash::LauncherID ChromeLauncherControllerPerApp::CreateAppLauncherItem(
     const std::string& app_id,
     ash::LauncherItemStatus status) {
   CHECK(controller);
+  // Panels are inserted on the left so as not to push all existing panels over.
+  int index = controller->GetLauncherItemType() == ash::TYPE_APP_PANEL ?
+      0 : model_->item_count();
   return InsertAppLauncherItem(controller,
                                app_id,
                                status,
-                               model_->item_count(),
+                               index,
                                controller->GetLauncherItemType());
 }
 
