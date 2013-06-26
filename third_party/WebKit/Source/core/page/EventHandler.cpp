@@ -2080,7 +2080,7 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
         // if the page already set it (e.g., by canceling default behavior).
         if (Page* page = m_frame->page()) {
             if (node && node->isMouseFocusable()) {
-                if (!page->focusController()->setFocusedNode(node, m_frame))
+                if (!page->focusController()->setFocusedNode(node, m_frame, FocusDirectionMouse))
                     swallowEvent = true;
             } else if (!node || !node->focused()) {
                 if (!page->focusController()->setFocusedNode(0, m_frame))

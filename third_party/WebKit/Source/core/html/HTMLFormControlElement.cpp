@@ -55,6 +55,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Doc
     , m_willValidate(true)
     , m_isValid(true)
     , m_wasChangedSinceLastFormControlChangeEvent(false)
+    , m_wasFocusedByMouse(false)
     , m_hasAutofocused(false)
 {
     setForm(form ? form : findFormAncestor());
@@ -319,10 +320,34 @@ bool HTMLFormControlElement::isKeyboardFocusable(KeyboardEvent*) const
     return isFocusable() && document()->frame();
 }
 
-bool HTMLFormControlElement::isMouseFocusable() const
+bool HTMLFormControlElement::shouldShowFocusRingOnMouseFocus() const
 {
     return false;
 }
+
+void HTMLFormControlElement::dispatchFocusEvent(PassRefPtr<Node> oldFocusedNode, FocusDirection direction)
+{
+    m_wasFocusedByMouse = direction == FocusDirectionMouse;
+    HTMLElement::dispatchFocusEvent(oldFocusedNode, direction);
+}
+
+bool HTMLFormControlElement::shouldHaveFocusAppearance() const
+{
+    ASSERT(focused());
+    return shouldShowFocusRingOnMouseFocus() || !m_wasFocusedByMouse;
+}
+
+void HTMLFormControlElement::willCallDefaultEventHandler(const Event& event)
+{
+    if (!event.isKeyboardEvent() || event.type() != eventNames().keydownEvent)
+        return;
+    if (!m_wasFocusedByMouse)
+        return;
+    m_wasFocusedByMouse = false;
+    if (renderer())
+        renderer()->repaint();
+}
+
 
 short HTMLFormControlElement::tabIndex() const
 {

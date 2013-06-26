@@ -700,6 +700,22 @@ void RenderTheme::adjustRepaintRect(const RenderObject* o, IntRect& r)
 #endif
 }
 
+bool RenderTheme::shouldDrawDefaultFocusRing(RenderObject* renderer) const
+{
+    if (supportsFocusRing(renderer->style()))
+        return false;
+    if (!renderer->style()->hasAppearance())
+        return true;
+    Node* node = renderer->node();
+    if (!node)
+        return true;
+    // We can't use RenderTheme::isFocused because outline:auto might be
+    // specified to non-:focus rulesets.
+    if (node->focused() && !node->shouldHaveFocusAppearance())
+        return false;
+    return true;
+}
+
 bool RenderTheme::supportsFocusRing(const RenderStyle* style) const
 {
     return (style->hasAppearance() && style->appearance() != TextFieldPart && style->appearance() != TextAreaPart && style->appearance() != MenulistButtonPart && style->appearance() != ListboxPart);
@@ -796,7 +812,7 @@ bool RenderTheme::isFocused(const RenderObject* o) const
     node = node->focusDelegate();
     Document* document = node->document();
     Frame* frame = document->frame();
-    return node == document->focusedNode() && frame && frame->selection()->isFocusedAndActive();
+    return node == document->focusedNode() && node->shouldHaveFocusAppearance() && frame && frame->selection()->isFocusedAndActive();
 }
 
 bool RenderTheme::isPressed(const RenderObject* o) const

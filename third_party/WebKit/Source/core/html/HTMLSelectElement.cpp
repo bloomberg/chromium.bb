@@ -319,11 +319,9 @@ bool HTMLSelectElement::isKeyboardFocusable(KeyboardEvent* event) const
     return HTMLFormControlElementWithState::isKeyboardFocusable(event);
 }
 
-bool HTMLSelectElement::isMouseFocusable() const
+bool HTMLSelectElement::shouldShowFocusRingOnMouseFocus() const
 {
-    if (renderer())
-        return isFocusable();
-    return HTMLFormControlElementWithState::isMouseFocusable();
+    return true;
 }
 
 bool HTMLSelectElement::canSelectAll() const

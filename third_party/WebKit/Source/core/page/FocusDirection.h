@@ -34,7 +34,8 @@ namespace WebCore {
         FocusDirectionUp,
         FocusDirectionDown,
         FocusDirectionLeft,
-        FocusDirectionRight
+        FocusDirectionRight,
+        FocusDirectionMouse
     };
 }
 

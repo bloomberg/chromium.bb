@@ -121,7 +121,10 @@ protected:
     virtual bool supportsFocus() const OVERRIDE;
     virtual bool rendererIsFocusable() const OVERRIDE;
     virtual bool isKeyboardFocusable(KeyboardEvent*) const;
-    virtual bool isMouseFocusable() const;
+    virtual bool shouldShowFocusRingOnMouseFocus() const;
+    virtual bool shouldHaveFocusAppearance() const OVERRIDE;
+    virtual void dispatchFocusEvent(PassRefPtr<Node> oldFocusedNode, FocusDirection) OVERRIDE;
+    virtual void willCallDefaultEventHandler(const Event&) OVERRIDE;
 
     virtual void didRecalcStyle(StyleChange) OVERRIDE;
 
@@ -167,7 +170,7 @@ private:
     bool m_isValid : 1;
 
     bool m_wasChangedSinceLastFormControlChangeEvent : 1;
-
+    bool m_wasFocusedByMouse : 1;
     bool m_hasAutofocused : 1;
 };
 

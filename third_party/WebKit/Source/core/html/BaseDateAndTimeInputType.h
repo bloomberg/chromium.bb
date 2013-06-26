@@ -64,6 +64,7 @@ private:
     virtual String localizeValue(const String&) const OVERRIDE;
     virtual bool supportsReadOnly() const OVERRIDE;
     virtual bool shouldRespectListAttribute() OVERRIDE;
+    virtual bool shouldShowFocusRingOnMouseFocus() const OVERRIDE;
 };
 
 } // namespace WebCore

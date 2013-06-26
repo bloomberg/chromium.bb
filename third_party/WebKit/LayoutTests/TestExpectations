@@ -1251,6 +1251,9 @@ crbug.com/239811 crbug.com/239811 http/tests/security/mixedContent/about-blank-i
 crbug.com/239811 webkit.org/b/112598 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure Pass ]
 crbug.com/239811 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/data-url-iframe-in-main-frame.html [ Failure Pass ]
 
+# Need rebaseline
+crbug.com/89708 fast/repaint/slider-thumb-float.html [ ImageOnlyFailure ]
+
 crbug.com/230554 [ Linux Mac Debug ] plugins/drag-events.html [ Crash Pass ]
 
 # From WebKit's generic expectations.
@@ -1845,6 +1848,17 @@ Bug(schenney) fast/text/line-break-after-empty-inline-hebrew.html [ Pass Failure
 Bug(schenney) fast/text/line-break-after-inline-latin1.html [ Pass Failure ]
 Bug(schenney) fast/text/line-break-between-text-nodes-cjk.html [ Pass Failure ]
 Bug(schenney) fast/text/line-break-between-text-nodes-latin1.html [ Pass Failure ]
+
+crbug.com/89708 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
+crbug.com/89708 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse.html [ ImageOnlyFailure Pass ]
+crbug.com/89708 [ Linux Win ] fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
+crbug.com/89708 [ Linux Win ] fast/forms/checkbox/checkbox-focus-by-mouse.html [ ImageOnlyFailure Pass ]
+crbug.com/89708 [ Linux Win ] fast/forms/radio/radio-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
+crbug.com/89708 [ Linux Win ] fast/forms/radio/radio-focus-by-mouse.html [ ImageOnlyFailure Pass ]
+crbug.com/89708 [ Linux Win ] fast/forms/range/range-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
+crbug.com/89708 [ Linux Win ] fast/forms/range/range-focus-by-mouse.html [ ImageOnlyFailure Pass ]
+crbug.com/89708 [ Linux Win ] fast/forms/submit/submit-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
+crbug.com/89708 [ Linux Win ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 
 crbug.com/248832 [ XP ] virtual/softwarecompositing/reflections/nested-reflection-anchor-point.html [ ImageOnlyFailure ]
 

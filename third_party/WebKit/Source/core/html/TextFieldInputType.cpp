@@ -74,9 +74,9 @@ bool TextFieldInputType::isKeyboardFocusable(KeyboardEvent*) const
     return element()->isFocusable();
 }
 
-bool TextFieldInputType::isMouseFocusable() const
+bool TextFieldInputType::shouldShowFocusRingOnMouseFocus() const
 {
-    return element()->isFocusable();
+    return true;
 }
 
 bool TextFieldInputType::isTextField() const

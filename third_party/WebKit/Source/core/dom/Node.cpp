@@ -899,6 +899,12 @@ Node* Node::focusDelegate()
     return this;
 }
 
+bool Node::shouldHaveFocusAppearance() const
+{
+    ASSERT(focused());
+    return true;
+}
+
 unsigned Node::nodeIndex() const
 {
     Node *_tempNode = previousSibling();
@@ -2527,6 +2533,10 @@ void Node::defaultEventHandler(Event* event)
     } else if (event->type() == eventNames().webkitEditableContentChangedEvent) {
         dispatchInputEvent();
     }
+}
+
+void Node::willCallDefaultEventHandler(const Event&)
+{
 }
 
 bool Node::willRespondToMouseMoveEvents()

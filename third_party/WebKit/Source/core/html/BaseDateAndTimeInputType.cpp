@@ -174,4 +174,9 @@ bool BaseDateAndTimeInputType::valueMissing(const String& value) const
     return element()->isRequired() && value.isEmpty();
 }
 
+bool BaseDateAndTimeInputType::shouldShowFocusRingOnMouseFocus() const
+{
+    return true;
+}
+
 } // namespace WebCore

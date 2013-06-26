@@ -199,6 +199,7 @@ inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHand
     // implementation detail and not part of the DOM.
     if (!m_event->defaultPrevented() && !m_event->defaultHandled()) {
         // Non-bubbling events call only one default event handler, the one for the target.
+        m_node->willCallDefaultEventHandler(*m_event);
         m_node->defaultEventHandler(m_event.get());
         ASSERT(!m_event->defaultPrevented());
         if (m_event->defaultHandled())
@@ -208,6 +209,7 @@ inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHand
         if (m_event->bubbles()) {
             size_t size = m_event->eventPath().size();
             for (size_t i = 1; i < size; ++i) {
+                m_event->eventPath()[i]->node()->willCallDefaultEventHandler(*m_event);
                 m_event->eventPath()[i]->node()->defaultEventHandler(m_event.get());
                 ASSERT(!m_event->defaultPrevented());
                 if (m_event->defaultHandled())

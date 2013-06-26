@@ -241,9 +241,9 @@ bool HTMLTextAreaElement::isKeyboardFocusable(KeyboardEvent*) const
     return isFocusable();
 }
 
-bool HTMLTextAreaElement::isMouseFocusable() const
+bool HTMLTextAreaElement::shouldShowFocusRingOnMouseFocus() const
 {
-    return isFocusable();
+    return true;
 }
 
 void HTMLTextAreaElement::updateFocusAppearance(bool restorePreviousSelection)

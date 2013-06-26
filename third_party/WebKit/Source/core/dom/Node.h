@@ -416,6 +416,8 @@ public:
     virtual bool isKeyboardFocusable(KeyboardEvent*) const;
     virtual bool isMouseFocusable() const;
     virtual Node* focusDelegate();
+    // This is called only when the node is focused.
+    virtual bool shouldHaveFocusAppearance() const;
 
     enum UserSelectAllTreatment {
         UserSelectAllDoesNotAffectEditability,
@@ -669,6 +671,7 @@ public:
 
     // Perform the default action for an event.
     virtual void defaultEventHandler(Event*);
+    virtual void willCallDefaultEventHandler(const Event&);
 
     using TreeShared<Node>::ref;
     using TreeShared<Node>::deref;

@@ -531,9 +531,9 @@ bool InputType::isKeyboardFocusable(KeyboardEvent* event) const
     return element()->isTextFormControlKeyboardFocusable(event);
 }
 
-bool InputType::isMouseFocusable() const
+bool InputType::shouldShowFocusRingOnMouseFocus() const
 {
-    return element()->isTextFormControlMouseFocusable();
+    return false;
 }
 
 bool InputType::shouldUseInputMethod() const

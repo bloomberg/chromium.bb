@@ -119,8 +119,7 @@ public:
     // old theme.
     virtual void themeChanged() { }
 
-    // A method asking if the theme is able to draw the focus ring.
-    virtual bool supportsFocusRing(const RenderStyle*) const;
+    bool shouldDrawDefaultFocusRing(RenderObject*) const;
 
     // A method asking if the theme's controls actually care about redrawing when hovered.
     virtual bool supportsHover(const RenderStyle*) const { return false; }
@@ -230,6 +229,8 @@ protected:
     virtual Color platformActiveListBoxSelectionForegroundColor() const;
     virtual Color platformInactiveListBoxSelectionForegroundColor() const;
 
+    // A method asking if the theme is able to draw the focus ring.
+    virtual bool supportsFocusRing(const RenderStyle*) const;
     virtual bool supportsSelectionForegroundColors() const { return true; }
     virtual bool supportsListBoxSelectionForegroundColors() const { return true; }
 
