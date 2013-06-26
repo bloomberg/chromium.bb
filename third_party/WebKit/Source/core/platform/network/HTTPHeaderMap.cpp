@@ -97,7 +97,7 @@ struct CaseFoldingCStringTranslator {
 
 AtomicString HTTPHeaderMap::get(const char* name) const
 {
-    const_iterator i = find<const char*, CaseFoldingCStringTranslator>(name);
+    const_iterator i = find<CaseFoldingCStringTranslator>(name);
     if (i == end())
         return nullAtom;
     return i->value;
@@ -105,12 +105,12 @@ AtomicString HTTPHeaderMap::get(const char* name) const
 
 bool HTTPHeaderMap::contains(const char* name) const
 {
-    return find<const char*, CaseFoldingCStringTranslator>(name) != end();
+    return find<CaseFoldingCStringTranslator>(name) != end();
 }
 
 HTTPHeaderMap::AddResult HTTPHeaderMap::add(const char* name, const AtomicString& value)
 {
-    return HashMap<AtomicString, AtomicString, CaseFoldingHash>::add<const char*, CaseFoldingCStringTranslator>(name, value);
+    return HashMap<AtomicString, AtomicString, CaseFoldingHash>::add<CaseFoldingCStringTranslator>(name, value);
 }
 
 } // namespace WebCore
