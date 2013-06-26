@@ -32,6 +32,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 
 #if defined(USE_OPENSSL)
 #include "third_party/libjingle/source/talk/base/ssladapter.h"
@@ -315,11 +316,9 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
     }
 
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    // TODO(grunell): Change hard coded string to
-    // RTCMediaConstraints::kInternalAecDump when libjingle has been rolled.
     if (command_line.HasSwitch(switches::kEnableWebRtcAecRecordings)) {
       native_audio_constraints.AddOptional(
-          "internalAecDump", "true");
+          RTCMediaConstraints::kInternalAecDump, "true");
     }
 
     // Creates a LocalAudioSource object which holds audio options.
