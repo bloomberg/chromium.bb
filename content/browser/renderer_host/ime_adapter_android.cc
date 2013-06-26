@@ -119,14 +119,20 @@ bool ImeAdapterAndroid::SendKeyEvent(JNIEnv* env, jobject,
   NativeWebKeyboardEvent event = NativeWebKeyboardEventFromKeyEvent(
           env, original_key_event, action, modifiers,
           time_ms, key_code, is_system_key, unicode_char);
+  bool key_down_text_insertion =
+      event.type == WebKit::WebInputEvent::RawKeyDown && event.text[0];
+  // If we are going to follow up with a synthetic Char event, then that's the
+  // one we expect to test if it's handled or unhandled, so skip handling the
+  // "real" event in the browser.
+  event.skip_in_browser = key_down_text_insertion;
   rwhva_->SendKeyEvent(event);
-  if (event.type == WebKit::WebInputEvent::RawKeyDown && event.text[0]) {
+  if (key_down_text_insertion) {
     // Send a Char event, but without an os_event since we don't want to
     // roundtrip back to java such synthetic event.
     NativeWebKeyboardEvent char_event(event);
     char_event.os_event = NULL;
-    event.type = WebKit::WebInputEvent::Char;
-    rwhva_->SendKeyEvent(event);
+    char_event.type = WebKit::WebInputEvent::Char;
+    rwhva_->SendKeyEvent(char_event);
   }
   return true;
 }
