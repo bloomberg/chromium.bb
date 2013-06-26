@@ -151,7 +151,7 @@ scoped_ptr<Socket> ConnectToUnixDomainSocket(
     }
     return socket.Pass();
   }
-  return scoped_ptr<Socket>(NULL);
+  return scoped_ptr<Socket>();
 }
 
 }  // namespace

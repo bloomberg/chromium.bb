@@ -43,8 +43,7 @@ class MultiThreadedTest {
         state_(kInvalidActivityState),
         event_(false, false),
         thread_("ActivityStatusTest thread"),
-        main_(),
-        listener_(NULL) {
+        main_() {
   }
 
   void Run() {

@@ -60,7 +60,6 @@ enum {
 ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
     : profile_(NULL),
       sync_service_(NULL),
-      sync_prefs_(NULL),
       weak_java_profile_sync_service_(env, obj) {
   if (g_browser_process == NULL ||
       g_browser_process->profile_manager() == NULL) {
