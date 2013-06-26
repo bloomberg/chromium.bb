@@ -262,26 +262,6 @@
    fun:v8::Function::Call
 }
 {
-   bug_19775_a
-   Heapcheck:Leak
-   ...
-   fun:history::InMemoryHistoryBackend::Init
-   fun:history::HistoryBackend::InitImpl
-}
-{
-   bug_19775_b
-   Heapcheck:Leak
-   ...
-   fun:history::HistoryBackend::InitImpl
-   fun:history::HistoryBackend::Init
-}
-{
-   bug_19775_d
-   Heapcheck:Leak
-   ...
-   fun:ProfileManagerTest_CreateAndUseTwoProfiles_Test::TestBody
-}
-{
    bug_49300_a
    Heapcheck:Leak
    fun:disk_cache::StorageBlock::AllocateData
@@ -345,13 +325,6 @@
    fun:*ScriptDataToV8String
    fun:net::ProxyResolverV8::Context::InitV8
    fun:net::ProxyResolverV8::SetPacScript
-}
-{
-   bug_79328
-   Heapcheck:Leak
-   ...
-   fun:TestingProfile::CreateRequestContext
-   fun:*
 }
 {
    bug_82974a
@@ -863,14 +836,6 @@
    fun:ProxyResolvingClientSocket
    fun:jingle_glue::XmppClientSocketFactory::CreateTransportClientSocket
    fun:jingle_glue::ChromeAsyncSocket::Connect
-}
-{
-   bug_251004
-   Heapcheck:Leak
-   fun:base::internal::PostTaskAndReplyImpl::PostTaskAndReply
-   fun:base::TaskRunner::PostTaskAndReply
-   fun:net::FileStream::Context::CloseAndDelete
-   fun:net::FileStream::Context::Orphan
 }
 {
    bug_251034_a
