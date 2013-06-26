@@ -48,9 +48,7 @@ public:
     bool parentStackIsEmpty() const { return m_parentStack.isEmpty(); }
     bool parentStackIsConsistent(const ContainerNode* parentNode) const { return !m_parentStack.isEmpty() && m_parentStack.last().element == parentNode; }
 
-    template <unsigned maximumIdentifierCount>
-    inline bool fastRejectSelector(const unsigned* identifierHashes) const;
-    static void collectIdentifierHashes(const CSSSelector*, unsigned* identifierHashes, unsigned maximumIdentifierCount);
+    bool fastRejectSelector(const CSSSelector*) const;
 
 private:
     struct ParentStackFrame {
@@ -65,17 +63,6 @@ private:
     static const unsigned bloomFilterKeyBits = 12;
     OwnPtr<BloomFilter<bloomFilterKeyBits> > m_ancestorIdentifierFilter;
 };
-
-template <unsigned maximumIdentifierCount>
-inline bool SelectorFilter::fastRejectSelector(const unsigned* identifierHashes) const
-{
-    ASSERT(m_ancestorIdentifierFilter);
-    for (unsigned n = 0; n < maximumIdentifierCount && identifierHashes[n]; ++n) {
-        if (!m_ancestorIdentifierFilter->mayContain(identifierHashes[n]))
-            return true;
-    }
-    return false;
-}
 
 }
 

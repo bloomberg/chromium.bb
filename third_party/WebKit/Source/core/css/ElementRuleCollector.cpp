@@ -208,7 +208,7 @@ inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const Co
 
 void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, const MatchRequest& matchRequest, StyleResolver::RuleRange& ruleRange)
 {
-    if (m_canUseFastReject && m_selectorFilter.fastRejectSelector<RuleData::maximumIdentifierCount>(ruleData.descendantSelectorIdentifierHashes()))
+    if (m_canUseFastReject && m_selectorFilter.fastRejectSelector(ruleData.selector()))
         return;
 
     StyleRule* rule = ruleData.rule();
