@@ -62,7 +62,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   // and passing the data along to the QuicConnection.
   void StartReading();
 
-  // Close the session because of |error|.
+  // Close the session because of |error| and notifies the factory
+  // that this session has been closed, which will delete the session.
   void CloseSessionOnError(int error);
 
   base::Value* GetInfoAsValue(const HostPortPair& pair) const;
@@ -78,6 +79,15 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   friend class test::QuicClientSessionPeer;
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
+
+  void CloseSessionOnErrorInner(int error);
+
+  // Posts a task to notify the factory that this session has been closed.
+  void NotifyFactoryOfSessionCloseLater();
+
+  // Notifies the factory that this session has been closed which will
+  // delete |this|.
+  void NotifyFactoryOfSessionClose();
 
   base::WeakPtrFactory<QuicClientSession> weak_factory_;
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;

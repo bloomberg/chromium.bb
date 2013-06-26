@@ -103,6 +103,8 @@ QuicReliableClientStream* QuicClientSession::CreateOutgoingReliableStream() {
                << "Already received goaway.";
     return NULL;
   }
+
+  DCHECK(connection()->connected());
   QuicReliableClientStream* stream =
       new QuicReliableClientStream(GetNextStreamId(), this, net_log_);
   ActivateStream(stream);
@@ -159,6 +161,7 @@ void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
     base::ResetAndReturn(&callback_).Run(ERR_QUIC_PROTOCOL_ERROR);
   }
   QuicSession::ConnectionClose(error, from_peer);
+  NotifyFactoryOfSessionCloseLater();
 }
 
 void QuicClientSession::StartReading() {
@@ -184,6 +187,11 @@ void QuicClientSession::StartReading() {
 }
 
 void QuicClientSession::CloseSessionOnError(int error) {
+  CloseSessionOnErrorInner(error);
+  NotifyFactoryOfSessionClose();
+}
+
+void QuicClientSession::CloseSessionOnErrorInner(int error) {
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(error);
   }
@@ -193,11 +201,9 @@ void QuicClientSession::CloseSessionOnError(int error) {
     static_cast<QuicReliableClientStream*>(stream)->OnError(error);
     CloseStream(id);
   }
-  net_log_.BeginEvent(
-      NetLog::TYPE_QUIC_SESSION,
+  net_log_.AddEvent(
+      NetLog::TYPE_QUIC_SESSION_CLOSE_ON_ERROR,
       NetLog::IntegerCallback("net_error", error));
-  // Will delete |this|.
-  stream_factory_->OnSessionClose(this);
 }
 
 base::Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
@@ -217,7 +223,8 @@ void QuicClientSession::OnReadComplete(int result) {
 
   if (result < 0) {
     DLOG(INFO) << "Closing session on read error: " << result;
-    CloseSessionOnError(result);
+    CloseSessionOnErrorInner(result);
+    NotifyFactoryOfSessionCloseLater();
     return;
   }
 
@@ -236,6 +243,19 @@ void QuicClientSession::OnReadComplete(int result) {
     return;
   }
   StartReading();
+}
+
+void QuicClientSession::NotifyFactoryOfSessionCloseLater() {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&QuicClientSession::NotifyFactoryOfSessionClose,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void QuicClientSession::NotifyFactoryOfSessionClose() {
+  DCHECK(stream_factory_);
+  // Will delete |this|.
+  stream_factory_->OnSessionClose(this);
 }
 
 }  // namespace net
