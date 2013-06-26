@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 
+#include <cerrno>
 #include <string>
 
 #include "base/basictypes.h"
@@ -91,9 +92,7 @@ static leveldb::Status OpenDB(leveldb::Comparator* comparator,
   // it for IndexedDB. http://crbug.com/81384
   options.compression = leveldb::kNoCompression;
 
-  // 20 max_open_files is the minimum LevelDB allows but its cache behaves
-  // poorly with less than 4 files per shard. As of this writing the latest
-  // leveldb (1.9) hardcodes 16 shards. See
+  // For info about the troubles we've run into with this parameter, see:
   // https://code.google.com/p/chromium/issues/detail?id=227313#c11
   options.max_open_files = 80;
   options.env = env;
@@ -181,6 +180,29 @@ static void HistogramLevelDBError(const std::string& histogram_name,
       leveldb_env::kNumEntries,
       leveldb_env::kNumEntries + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag)->Add(method);
+
+  std::string error_histogram_name(histogram_name);
+
+  if (result == leveldb_env::METHOD_AND_PFE) {
+    DCHECK(error < 0);
+    error_histogram_name.append(std::string(".PFE.") +
+                                leveldb_env::MethodIDToString(method));
+    base::LinearHistogram::FactoryGet(
+        error_histogram_name,
+        1,
+        -base::PLATFORM_FILE_ERROR_MAX,
+        -base::PLATFORM_FILE_ERROR_MAX + 1,
+        base::HistogramBase::kUmaTargetedHistogramFlag)->Add(-error);
+  } else if (result == leveldb_env::METHOD_AND_ERRNO) {
+    error_histogram_name.append(std::string(".Errno.") +
+                                leveldb_env::MethodIDToString(method));
+    base::LinearHistogram::FactoryGet(
+        error_histogram_name,
+        1,
+        ERANGE + 1,
+        ERANGE + 2,
+        base::HistogramBase::kUmaTargetedHistogramFlag)->Add(error);
+  }
 }
 
 scoped_ptr<LevelDBDatabase> LevelDBDatabase::Open(

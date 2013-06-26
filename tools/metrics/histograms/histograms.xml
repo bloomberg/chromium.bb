@@ -11946,6 +11946,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.LevelDBOpenErrors.Errno"
+    enum="OSAgnosticErrno">
+  <summary>
+    Errno errors encountered by a single LevelDBEnv method when opening an
+    IndexedDB instance.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDBOpenErrors.PFE"
+    enum="PlatformFileError">
+  <summary>
+    PlatformFileErrors encountered by a single LevelDBEnv method when opening an
+    IndexedDB instance.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.LevelDBWriteErrors" enum="LevelDBErrorTypes">
   <summary>
     Error classes returned by LevelDB when it failed to write to a database.
@@ -11956,6 +11972,22 @@ other types of suffix sets.
     enum="LevelDBIOErrorMethods">
   <summary>
     LevelDBEnv methods that generated IO errors when writing to a database.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDBWriteErrors.Errno"
+    enum="OSAgnosticErrno">
+  <summary>
+    Errno errors encountered by a single LevelDBEnv method when writing to an
+    IndexedDB instance.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDBWriteErrors.PFE"
+    enum="PlatformFileError">
+  <summary>
+    PlatformFileErrors encountered by a single LevelDBEnv method when writing to
+    an IndexedDB instance.
   </summary>
 </histogram>
 
@@ -18793,6 +18825,36 @@ other types of suffix sets.
   <affected-histogram name="NetConnectivity.Pipeline.CanarySuccess"/>
   <affected-histogram name="NetConnectivity.Pipeline.Depth"/>
   <affected-histogram name="NetConnectivity.Pipeline.Success"/>
+</fieldtrial>
+
+<fieldtrial name="IndexedDBLevelDBErrnoMethods" separator=".">
+  <group name="NewLogger" label="ChromiumEnv::NewLogger"/>
+  <group name="NewSequentialFile" label="ChromiumEnv::NewSequentialFile"/>
+  <group name="NewWritableFile" label="ChromiumEnv::NewWritableFile"/>
+  <group name="SequentialFileRead" label="ChromiumSequentialFile::Read"/>
+  <group name="SequentialFileSkip" label="ChromiumSequentialFile::Skip"/>
+  <group name="WritableFileAppend" label="ChromiumWritableFile::Append"/>
+  <group name="WritableFileClose" label="ChromiumWritableFile::Close"/>
+  <group name="WritableFileFlush" label="ChromiumWritableFile::Flush"/>
+  <group name="WritableFileSync" label="ChromiumWritableFile::Sync"/>
+  <group name="WritableFileSyncParent"
+      label="ChromiumWritableFile::SyncParent"/>
+  <affected-histogram name="WebCore.IndexedDB.LevelDBOpenErrors.Errno"/>
+  <affected-histogram name="WebCore.IndexedDB.LevelDBWriteErrors.Errno"/>
+</fieldtrial>
+
+<fieldtrial name="IndexedDBLevelDBPFEMethods" separator=".">
+  <group name="CreateDir" label="ChromiumEnv::CreateDir"/>
+  <group name="DeleteDir" label="ChromiumEnv::DeleteDir"/>
+  <group name="DeleteFile" label="ChromiumEnv::DeleteFile"/>
+  <group name="GetFileSize" label="ChromiumEnv::GetFileSize"/>
+  <group name="LockFile" label="ChromiumEnv::LockFile"/>
+  <group name="NewRandomAccessFile" label="ChromiumEnv::NewRandomAccessFile"/>
+  <group name="RandomAccessFileRead" label="ChromiumRandomAccessFile::Read"/>
+  <group name="RenameFile" label="ChromiumEnv::RenameFile"/>
+  <group name="UnlockFile" label="ChromiumEnv::UnlockFile"/>
+  <affected-histogram name="WebCore.IndexedDB.LevelDBOpenErrors.PFE"/>
+  <affected-histogram name="WebCore.IndexedDB.LevelDBWriteErrors.PFE"/>
 </fieldtrial>
 
 <fieldtrial name="InstallerDownloadSources" separator="">
