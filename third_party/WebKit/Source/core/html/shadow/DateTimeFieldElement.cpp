@@ -57,7 +57,7 @@ void DateTimeFieldElement::defaultEventHandler(Event* event)
         didFocus();
 
     if (event->isKeyboardEvent()) {
-        KeyboardEvent* keyboardEvent = static_cast<KeyboardEvent*>(event);
+        KeyboardEvent* keyboardEvent = toKeyboardEvent(event);
         if (!isDisabled() && !isFieldOwnerDisabled() && !isFieldOwnerReadOnly()) {
             handleKeyboardEvent(keyboardEvent);
             if (keyboardEvent->defaultHandled())

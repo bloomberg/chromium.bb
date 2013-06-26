@@ -1105,7 +1105,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
         if (!renderer() || !event->isKeyboardEvent())
             return;
 
-        if (platformHandleKeydownEvent(static_cast<KeyboardEvent*>(event)))
+        if (platformHandleKeydownEvent(toKeyboardEvent(event)))
             return;
 
         // When using spatial navigation, we want to be able to navigate away
@@ -1116,7 +1116,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
                 return;
         }
 
-        const String& keyIdentifier = static_cast<KeyboardEvent*>(event)->keyIdentifier();
+        const String& keyIdentifier = toKeyboardEvent(event)->keyIdentifier();
         bool handled = true;
         const Vector<HTMLElement*>& listItems = this->listItems();
         int listIndex = optionToListIndex(selectedIndex());
@@ -1149,7 +1149,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
         if (!renderer() || !event->isKeyboardEvent())
             return;
 
-        int keyCode = static_cast<KeyboardEvent*>(event)->keyCode();
+        int keyCode = toKeyboardEvent(event)->keyCode();
         bool handled = false;
 
         if (keyCode == ' ' && isSpatialNavigationEnabled(document()->frame())) {
@@ -1345,7 +1345,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
     } else if (event->type() == eventNames().keydownEvent) {
         if (!event->isKeyboardEvent())
             return;
-        const String& keyIdentifier = static_cast<KeyboardEvent*>(event)->keyIdentifier();
+        const String& keyIdentifier = toKeyboardEvent(event)->keyIdentifier();
 
         bool handled = false;
         int endIndex = 0;
@@ -1404,12 +1404,12 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
             ASSERT_UNUSED(listItems, !listItems.size() || static_cast<size_t>(endIndex) < listItems.size());
             setActiveSelectionEndIndex(endIndex);
 
-            bool selectNewItem = !m_multiple || static_cast<KeyboardEvent*>(event)->shiftKey() || !isSpatialNavigationEnabled(document()->frame());
+            bool selectNewItem = !m_multiple || toKeyboardEvent(event)->shiftKey() || !isSpatialNavigationEnabled(document()->frame());
             if (selectNewItem)
                 m_activeSelectionState = true;
             // If the anchor is unitialized, or if we're going to deselect all
             // other options, then set the anchor index equal to the end index.
-            bool deselectOthers = !m_multiple || (!static_cast<KeyboardEvent*>(event)->shiftKey() && selectNewItem);
+            bool deselectOthers = !m_multiple || (!toKeyboardEvent(event)->shiftKey() && selectNewItem);
             if (m_activeSelectionAnchorIndex < 0 || deselectOthers) {
                 if (deselectOthers)
                     deselectItemsWithoutValidation();
@@ -1428,7 +1428,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
     } else if (event->type() == eventNames().keypressEvent) {
         if (!event->isKeyboardEvent())
             return;
-        int keyCode = static_cast<KeyboardEvent*>(event)->keyCode();
+        int keyCode = toKeyboardEvent(event)->keyCode();
 
         if (keyCode == '\r') {
             if (form())
@@ -1462,7 +1462,7 @@ void HTMLSelectElement::defaultEventHandler(Event* event)
         return;
 
     if (event->type() == eventNames().keypressEvent && event->isKeyboardEvent()) {
-        KeyboardEvent* keyboardEvent = static_cast<KeyboardEvent*>(event);
+        KeyboardEvent* keyboardEvent = toKeyboardEvent(event);
         if (!keyboardEvent->ctrlKey() && !keyboardEvent->altKey() && !keyboardEvent->metaKey() && isPrintableChar(keyboardEvent->charCode())) {
             typeAheadFind(keyboardEvent);
             event->setDefaultHandled();
