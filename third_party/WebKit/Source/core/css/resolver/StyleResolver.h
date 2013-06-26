@@ -178,6 +178,9 @@ public:
     const DocumentRuleSets& ruleSets() const { return m_ruleSets; }
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 
+    void setBuildScopedStyleTreeInDocumentOrder(bool enabled) { m_styleTree.setBuildInDocumentOrder(enabled); }
+    bool buildScopedStyleTreeInDocumentOrder() const { return m_styleTree.buildInDocumentOrder(); }
+
     ScopedStyleResolver* ensureScopedStyleResolver(const ContainerNode* scope)
     {
         return m_styleTree.ensureScopedStyleResolver(scope ? scope : document());

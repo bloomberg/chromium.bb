@@ -83,22 +83,34 @@ void ScopedStyleTree::setupScopedStylesTree(ScopedStyleResolver* target)
     ASSERT(target);
     ASSERT(target->scopingNode());
 
+    const ContainerNode* scopingNode = target->scopingNode();
+
     // Since StyleResolver creates RuleSets according to styles' document
     // order, a parent of the given ScopedRuleData has been already
     // prepared.
-    const ContainerNode* e = target->scopingNode()->parentOrShadowHostNode();
-    for (; e; e = e->parentOrShadowHostNode()) {
-        if (ScopedStyleResolver* scopedResolver = scopedStyleResolverFor(e)) {
+    for (const ContainerNode* node = scopingNode->parentOrShadowHostNode(); node; node = node->parentOrShadowHostNode()) {
+        if (ScopedStyleResolver* scopedResolver = scopedStyleResolverFor(node)) {
             target->setParent(scopedResolver);
             break;
         }
-        if (e->isDocumentNode()) {
+        if (node->isDocumentNode()) {
             bool dummy;
-            ScopedStyleResolver* scopedResolver = addScopedStyleResolver(e, dummy);
+            ScopedStyleResolver* scopedResolver = addScopedStyleResolver(node, dummy);
             target->setParent(scopedResolver);
             setupScopedStylesTree(scopedResolver);
             break;
         }
+    }
+
+    if (m_buildInDocumentOrder)
+        return;
+
+    // Reparent all nodes whose scoping node is contained by target's one.
+    for (HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> >::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it) {
+        if (it->value == target)
+            continue;
+        if (it->value->parent() == target->parent() && scopingNode->containsIncludingShadowDOM(it->key))
+            it->value->setParent(target);
     }
 }
 

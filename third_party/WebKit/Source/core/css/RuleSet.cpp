@@ -60,6 +60,11 @@ static inline bool isDocumentScope(const ContainerNode* scope)
     return !scope || scope->isDocumentNode();
 }
 
+static inline bool isScopingNodeInShadowTree(const ContainerNode* scopingNode)
+{
+    return scopingNode && scopingNode->isInShadowTree();
+}
+
 static inline bool isSelectorMatchingHTMLBasedOnRuleHash(const CSSSelector* selector)
 {
     ASSERT(selector);
@@ -410,10 +415,14 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
         else if (rule->isRegionRule() && resolver) {
             // FIXME (BUG 72472): We don't add @-webkit-region rules of scoped style sheets for the moment.
             addRegionRule(static_cast<StyleRuleRegion*>(rule), hasDocumentSecurityOrigin);
-        }
-        else if (rule->isHostRule())
+        } else if (rule->isHostRule() && resolver) {
+            if (!isScopingNodeInShadowTree(scope))
+                continue;
+            bool enabled = resolver->buildScopedStyleTreeInDocumentOrder();
+            resolver->setBuildScopedStyleTreeInDocumentOrder(false);
             resolver->ensureScopedStyleResolver(scope->shadowHost())->addHostRule(static_cast<StyleRuleHost*>(rule), hasDocumentSecurityOrigin, scope);
-        else if (RuntimeEnabledFeatures::cssViewportEnabled() && rule->isViewportRule() && resolver) {
+            resolver->setBuildScopedStyleTreeInDocumentOrder(enabled);
+        } else if (RuntimeEnabledFeatures::cssViewportEnabled() && rule->isViewportRule() && resolver) {
             // @viewport should not be scoped.
             if (!isDocumentScope(scope))
                 continue;

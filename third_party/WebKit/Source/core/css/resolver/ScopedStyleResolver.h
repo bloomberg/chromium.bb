@@ -52,7 +52,6 @@ public:
 
     static const ContainerNode* scopingNodeFor(const CSSStyleSheet*);
 
-    // methods for building tree.
     const ContainerNode* scopingNode() const { return m_scopingNode; }
     const TreeScope* treeScope() const { return m_scopingNode->treeScope(); }
     void prepareEmptyRuleSet() { m_authorStyle = RuleSet::create(); }
@@ -88,7 +87,7 @@ private:
 class ScopedStyleTree {
     WTF_MAKE_NONCOPYABLE(ScopedStyleTree); WTF_MAKE_FAST_ALLOCATED;
 public:
-    ScopedStyleTree() : m_scopedResolverForDocument(0) { }
+    ScopedStyleTree() : m_scopedResolverForDocument(0), m_buildInDocumentOrder(true) { }
 
     ScopedStyleResolver* ensureScopedStyleResolver(const ContainerNode* scopingNode);
     ScopedStyleResolver* scopedStyleResolverFor(const ContainerNode* scopingNode);
@@ -106,6 +105,8 @@ public:
     void popStyleCache(const ContainerNode* scopingNode);
 
     void collectFeaturesTo(RuleFeatureSet& features);
+    void setBuildInDocumentOrder(bool enabled) { m_buildInDocumentOrder = enabled; }
+    bool buildInDocumentOrder() const { return m_buildInDocumentOrder; }
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 private:
@@ -118,6 +119,7 @@ private:
 private:
     HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> > m_authorStyles;
     ScopedStyleResolver* m_scopedResolverForDocument;
+    bool m_buildInDocumentOrder;
 
     struct ScopedStyleCache {
         ScopedStyleResolver* scopedResolver;

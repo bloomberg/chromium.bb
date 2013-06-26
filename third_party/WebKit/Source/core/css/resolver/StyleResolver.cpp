@@ -221,6 +221,7 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
     }
 #endif
 
+    // FIXME: Stylesheet candidate nodes are sorted in document order, but scoping nodes are not sorted.
     appendAuthorStyleSheets(0, styleSheetCollection->activeAuthorStyleSheets());
 }
 
