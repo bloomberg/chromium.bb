@@ -239,9 +239,6 @@ examples/tutorial/load_progress/Makefile
 examples/tutorial/load_progress/manifest.json
 [win]examples/tutorial/make.bat
 examples/tutorial/Makefile
-include/EGL/eglext.h
-include/EGL/egl.h
-include/EGL/eglplatform.h
 include/error_handling/error_handling.h
 include/error_handling/string_stream.h
 include/GLES2/gl2ext.h

@@ -35,16 +35,6 @@
       'DEST': 'include/GLES2',
     },
 
-    # ppapi/lib/gl/include/EGL
-    {
-      'FILES': [
-        'egl.h',
-        'eglext.h',
-        'eglplatform.h',
-      ],
-      'DEST': 'include/EGL',
-    },
-
     # ppapi/lib/gl/gles2
     {
       'FILES': [ 'gl2ext_ppapi.h' ],
