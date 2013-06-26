@@ -466,8 +466,9 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
   scoped_ptr<base::Environment> environment_;
 };
 
+// Broken: times out on bots, requires special config. crbug.com/254433.
 IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
-                       MANUAL_TestVGAVideoQuality) {
+                       DISABLED_MANUAL_TestVGAVideoQuality) {
   // TODO(phoglund): de-dupe from chrome_webrtc_browsertest.cc.
   StartPyWebSocketServer();
 
