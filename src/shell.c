@@ -2122,9 +2122,11 @@ add_popup_grab(struct shell_surface *shsurf, struct shell_seat *shseat)
 		if (shseat->seat->pointer->button_count > 0)
 			shseat->popup_grab.initial_up = 0;
 
+		wl_list_insert(&shseat->popup_grab.surfaces_list, &shsurf->popup.grab_link);
 		weston_pointer_start_grab(seat->pointer, &shseat->popup_grab.grab);
+	} else {
+		wl_list_insert(&shseat->popup_grab.surfaces_list, &shsurf->popup.grab_link);
 	}
-	wl_list_insert(&shseat->popup_grab.surfaces_list, &shsurf->popup.grab_link);
 }
 
 static void
