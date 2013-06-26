@@ -46,6 +46,11 @@ class InstantIPCSenderImpl : public InstantIPCSender {
         routing_id(), omnibox_font_name, omnibox_font_size));
   }
 
+  virtual void SetPromoInformation(bool is_app_launcher_enabled) OVERRIDE {
+    Send(new ChromeViewMsg_SearchBoxPromoInformation(
+        routing_id(), is_app_launcher_enabled));
+  }
+
   virtual void SendAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results) OVERRIDE {
     Send(new ChromeViewMsg_SearchBoxAutocompleteResults(routing_id(), results));

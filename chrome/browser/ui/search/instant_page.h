@@ -132,6 +132,8 @@ class InstantPage : public content::WebContentsObserver,
 
   void InitializeFonts();
 
+  void InitializePromos();
+
  protected:
   InstantPage(Delegate* delegate, const std::string& instant_url,
               bool is_incognito);

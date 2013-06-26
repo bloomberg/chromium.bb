@@ -76,6 +76,7 @@ class SearchBox : public content::RenderViewObserver,
   bool display_instant_results() const { return display_instant_results_; }
   const string16& omnibox_font() const { return omnibox_font_; }
   size_t omnibox_font_size() const { return omnibox_font_size_; }
+  bool app_launcher_enabled() const { return app_launcher_enabled_; }
 
   // In extended Instant, returns the start-edge margin of the location bar in
   // screen pixels.
@@ -168,6 +169,7 @@ class SearchBox : public content::RenderViewObserver,
   void OnThemeAreaHeightChanged(int height);
   void OnFontInformationReceived(const string16& omnibox_font,
                                  size_t omnibox_font_size);
+  void OnPromoInformationReceived(bool is_app_launcher_enabled);
   void OnMostVisitedChanged(
       const std::vector<InstantMostVisitedItem>& items);
   void OnToggleVoiceSearch();
@@ -198,6 +200,7 @@ class SearchBox : public content::RenderViewObserver,
   bool display_instant_results_;
   string16 omnibox_font_;
   size_t omnibox_font_size_;
+  bool app_launcher_enabled_;
   InstantRestrictedIDCache<InstantAutocompleteResult>
       autocomplete_results_cache_;
   InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_items_cache_;

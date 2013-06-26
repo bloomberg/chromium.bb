@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/search/instant_page.h"
 
+#include "apps/app_launcher.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/instant_ipc_sender.h"
@@ -55,6 +56,10 @@ void InstantPage::InitializeFonts() {
 #endif
   sender()->SetFontInformation(UTF8ToUTF16(omnibox_font.GetFontName()),
                                omnibox_font.GetFontSize());
+}
+
+void InstantPage::InitializePromos() {
+  sender()->SetPromoInformation(apps::IsAppLauncherEnabled());
 }
 
 InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url,

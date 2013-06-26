@@ -258,6 +258,7 @@ if (!chrome.embeddedSearch) {
       native function UndoMostVisitedDeletion();
       native function NavigateNewTabPage();
       native function IsInputInProgress();
+      native function GetAppLauncherEnabled();
 
       function GetMostVisitedItemsWrapper() {
         var mostVisitedItems = GetMostVisitedItems();
@@ -278,6 +279,7 @@ if (!chrome.embeddedSearch) {
       this.__defineGetter__('mostVisited', GetMostVisitedItemsWrapper);
       this.__defineGetter__('themeBackgroundInfo', GetThemeBackgroundInfo);
       this.__defineGetter__('isInputInProgress', IsInputInProgress);
+      this.__defineGetter__('appLauncherEnabled', GetAppLauncherEnabled);
 
       this.deleteMostVisitedItem = function(restrictedId) {
         DeleteMostVisitedItem(restrictedId);

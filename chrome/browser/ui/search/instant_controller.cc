@@ -1249,6 +1249,7 @@ void InstantController::InstantPageRenderViewCreated(
     ntp_->sender()->SetDisplayInstantResults(instant_enabled_);
     ntp_->sender()->SetOmniboxBounds(omnibox_bounds_);
     ntp_->InitializeFonts();
+    ntp_->InitializePromos();
   } else {
     NOTREACHED();
   }
@@ -1688,6 +1689,7 @@ void InstantController::UpdateInfoForInstantTab() {
       instant_service->UpdateThemeInfo();
 
     instant_tab_->InitializeFonts();
+    instant_tab_->InitializePromos();
     UpdateMostVisitedItems();
     instant_tab_->sender()->FocusChanged(omnibox_focus_state_,
                                          omnibox_focus_change_reason_);

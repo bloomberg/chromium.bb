@@ -62,6 +62,9 @@ class InstantIPCSender : public content::WebContentsObserver {
   virtual void SetFontInformation(const string16& omnibox_font_name,
                                   size_t omnibox_font_size) {}
 
+  // Tells the page information it needs to display promos.
+  virtual void SetPromoInformation(bool is_app_launcher_enabled) {}
+
   // Tells the page about the available autocomplete results.
   virtual void SendAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results) {}
