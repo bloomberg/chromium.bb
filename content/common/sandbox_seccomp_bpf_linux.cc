@@ -1948,7 +1948,7 @@ bool SandboxSeccompBpf::StartSandbox(const std::string& process_type) {
 bool SandboxSeccompBpf::StartSandboxWithExternalPolicy(
     playground2::BpfSandboxPolicy policy) {
 #if defined(SECCOMP_BPF_SANDBOX)
-  if (IsSeccompBpfDesired()) {
+  if (IsSeccompBpfDesired() && SupportsSandbox()) {
     CHECK(policy);
     StartSandboxWithPolicy(policy, NULL);
     return true;
