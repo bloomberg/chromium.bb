@@ -33,7 +33,7 @@ class Var;
 ///
 /// bool MyInstance::HandleInputEvent(const pp::InputEvent& event) {
 ///   switch (event.GetType()) {
-///     case PP_INPUTEVENT_TYPE_MOUSE_DOWN {
+///     case PP_INPUTEVENT_TYPE_MOUSEDOWN {
 ///       pp::MouseInputEvent mouse_event(event);
 ///       return HandleMouseDown(mouse_event.GetMousePosition());
 ///     }
