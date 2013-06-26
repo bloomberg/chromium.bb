@@ -11,11 +11,11 @@
 #include <unistd.h>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/file_descriptor_posix.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/shared_memory.h"
+#include "content/common/view_messages.h"
 #include "media/base/android/webaudio_media_codec_info.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
@@ -187,7 +187,7 @@ static void BufferAndCopyPcmDataToBus(int input_fd,
 // shared memory and write the PCM samples back to us over a pipe.
 bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
                          size_t data_size, double sample_rate,
-                         const WebAudioMediaCodecRunner& runner) {
+                         scoped_refptr<ThreadSafeSender> sender) {
   AudioDecoderIO audio_decoder(data, data_size);
 
   if (!audio_decoder.IsValid())
@@ -203,17 +203,17 @@ bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
   // encoded_data_handle for our shared memory and write the decoded
   // PCM samples (16-bit integer) to our pipe.
 
-  runner.Run(encoded_data_handle, fd, data_size);
+  sender->Send(new ViewHostMsg_RunWebAudioMediaCodec(
+      encoded_data_handle, fd, data_size));
 
   // First, read the number of channels, the sample rate, and the
   // number of frames and a flag indicating if the file is an
   // ogg/vorbis file.  This must be coordinated with
   // WebAudioMediaCodecBridge!
   //
-  // TODO(rtoy): If we know the number of samples, we can create the
-  // destination bus directly and do the conversion directly to the
-  // bus instead of buffering up everything before saving the data to
-  // the bus.
+  // If we know the number of samples, we can create the destination
+  // bus directly and do the conversion directly to the bus instead of
+  // buffering up everything before saving the data to the bus.
 
   int input_fd = audio_decoder.read_fd();
   struct media::WebAudioMediaCodecInfo info;

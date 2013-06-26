@@ -833,13 +833,6 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
 }
 
 #if defined(OS_ANDROID)
-static void RunWebAudioMediaCodec(base::SharedMemoryHandle encoded_data_handle,
-                                  base::FileDescriptor pcm_output,
-                                  uint32_t data_size) {
-  RenderThread::Get()->Send(new ViewHostMsg_RunWebAudioMediaCodec(
-      encoded_data_handle, pcm_output, data_size));
-}
-
 bool RendererWebKitPlatformSupportImpl::loadAudioResource(
     WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
     size_t data_size, double sample_rate) {
@@ -847,7 +840,7 @@ bool RendererWebKitPlatformSupportImpl::loadAudioResource(
                              audio_file_data,
                              data_size,
                              sample_rate,
-                             base::Bind(&RunWebAudioMediaCodec));
+                             thread_safe_sender_);
 }
 #else
 bool RendererWebKitPlatformSupportImpl::loadAudioResource(
