@@ -27,6 +27,10 @@
   width: 4em;
 }
 
+#snapshot-view .process-info {
+  text-align: left;
+}
+
 #snapshot-view .process-memory {
   border-left: 1px solid rgb(181, 198, 222);
   text-align: right;

@@ -27,6 +27,10 @@
   width: 4em;
 }
 
+#extension-view .extension-info {
+  text-align: left;
+}
+
 #extension-view .extension-memory {
   border-left: 1px solid rgb(181, 198, 222);
   text-align: right;
