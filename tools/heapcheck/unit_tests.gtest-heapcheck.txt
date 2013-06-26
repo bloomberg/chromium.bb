@@ -22,9 +22,6 @@ ProcessWatcherTest.ImmediateTermination
 BookmarkEditorGtkTest.ModelsMatch
 BookmarkEditorGtkTest.MoveToNewParent
 
-# Randomly fails on the linux heapcheck bot
-HistoryQuickProviderTest.*
-
 # Timing out all over the place. Disabling for now. http://crbug.com/149715
 ExtensionWebRequestTest.*
 
