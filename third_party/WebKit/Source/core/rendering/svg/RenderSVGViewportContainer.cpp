@@ -96,14 +96,14 @@ void RenderSVGViewportContainer::calcViewport()
         // values will override the corresponding attributes on the 'svg' in the generated tree.
 
         SVGLengthContext lengthContext(element);
-        if (useElement->width().value(lengthContext) > 0)
+        if (useElement->hasAttribute(SVGNames::widthAttr))
             m_viewport.setWidth(useElement->width().value(lengthContext));
         else if (isSymbolElement && svg->hasAttribute(SVGNames::widthAttr)) {
             SVGLength containerWidth(LengthModeWidth, "100%");
             m_viewport.setWidth(containerWidth.value(lengthContext));
         }
 
-        if (useElement->height().value(lengthContext) > 0)
+        if (useElement->hasAttribute(SVGNames::heightAttr))
             m_viewport.setHeight(useElement->height().value(lengthContext));
         else if (isSymbolElement && svg->hasAttribute(SVGNames::heightAttr)) {
             SVGLength containerHeight(LengthModeHeight, "100%");
