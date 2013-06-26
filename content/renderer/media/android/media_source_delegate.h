@@ -67,9 +67,10 @@ class MediaSourceDelegate : public media::DemuxerHost {
   size_t AudioDecodedByteCount() const;
   size_t VideoDecodedByteCount() const;
 
-  void Seek(base::TimeDelta time);
-
-  void CancelPendingSeek(base::TimeDelta time);
+  // Seeks the demuxer and acknowledges the seek request with |seek_request_id|
+  // after the seek has been completed. This method can be called during pending
+  // seeks, in which case only the last seek request will be acknowledged.
+  void Seek(base::TimeDelta time, unsigned seek_request_id);
 
   void NotifyKeyAdded(const std::string& key_system);
 
@@ -97,6 +98,8 @@ class MediaSourceDelegate : public media::DemuxerHost {
 
   // Callbacks for ChunkDemuxer.
   void OnDemuxerInitDone(media::PipelineStatus status);
+  void OnDemuxerSeekDone(unsigned seek_request_id,
+                         media::PipelineStatus status);
   void OnDemuxerStopDone();
   void OnDemuxerOpened();
   void OnNeedKey(const std::string& type,
@@ -157,6 +160,9 @@ class MediaSourceDelegate : public media::DemuxerHost {
   scoped_ptr<media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params> video_params_;
 
   bool seeking_;
+  base::TimeDelta last_seek_time_;
+  unsigned last_seek_request_id_;
+
   bool key_added_;
   size_t access_unit_size_;
 

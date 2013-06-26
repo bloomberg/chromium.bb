@@ -164,7 +164,8 @@ class WebMediaPlayerAndroid
   void OnSeekComplete(base::TimeDelta current_time);
   void OnMediaError(int error_type);
   void OnVideoSizeChanged(int width, int height);
-  void OnMediaSeekRequest(base::TimeDelta time_to_seek);
+  void OnMediaSeekRequest(base::TimeDelta time_to_seek,
+                          unsigned seek_request_id);
   void OnMediaConfigRequest();
   void OnDurationChange(const base::TimeDelta& duration);
 

@@ -179,6 +179,12 @@ void WebMediaPlayerProxyAndroid::ReadFromDemuxerAck(
       routing_id(), player_id, params));
 }
 
+void WebMediaPlayerProxyAndroid::SeekRequestAck(int player_id,
+                                                unsigned seek_request_id) {
+  Send(new MediaPlayerHostMsg_MediaSeekRequestAck(
+      routing_id(), player_id, seek_request_id));
+}
+
 #if defined(GOOGLE_TV)
 void WebMediaPlayerProxyAndroid::RequestExternalSurface(
     int player_id,
@@ -260,11 +266,8 @@ void WebMediaPlayerProxyAndroid::OnMediaSeekRequest(
     base::TimeDelta time_to_seek,
     unsigned seek_request_id) {
   WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
-  if (player) {
-    Send(new MediaPlayerHostMsg_MediaSeekRequestAck(
-        routing_id(), player_id, seek_request_id));
-    player->OnMediaSeekRequest(time_to_seek);
-  }
+  if (player)
+    player->OnMediaSeekRequest(time_to_seek, seek_request_id);
 }
 
 void WebMediaPlayerProxyAndroid::OnMediaConfigRequest(int player_id) {

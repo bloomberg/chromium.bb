@@ -39,6 +39,9 @@ const uint8 kVorbisPadding[] = { 0xff, 0xff, 0xff, 0xff };
 
 namespace content {
 
+// TODO(xhwang): BIND_TO_RENDER_LOOP* force posts callback! Since everything
+// works on the same thread in this class, not all force posts are necessary.
+
 #define BIND_TO_RENDER_LOOP(function) \
   media::BindToLoop(base::MessageLoopProxy::current(), \
                     base::Bind(function, weak_this_.GetWeakPtr()))
@@ -72,18 +75,19 @@ MediaSourceDelegate::MediaSourceDelegate(WebMediaPlayerProxyAndroid* proxy,
       audio_params_(new MediaPlayerHostMsg_ReadFromDemuxerAck_Params),
       video_params_(new MediaPlayerHostMsg_ReadFromDemuxerAck_Params),
       seeking_(false),
+      last_seek_request_id_(0),
       key_added_(false),
       access_unit_size_(0) {
 }
 
 MediaSourceDelegate::~MediaSourceDelegate() {
-  DVLOG(1) << "MediaSourceDelegate::~MediaSourceDelegate() : " << player_id_;
+  DVLOG(1) << "~MediaSourceDelegate() : " << player_id_;
   DCHECK(!chunk_demuxer_);
   DCHECK(!demuxer_);
 }
 
 void MediaSourceDelegate::Destroy() {
-  DVLOG(1) << "MediaSourceDelegate::Destroy() : " << player_id_;
+  DVLOG(1) << "Destroy() : " << player_id_;
   if (!demuxer_) {
     delete this;
     return;
@@ -95,9 +99,10 @@ void MediaSourceDelegate::Destroy() {
   proxy_ = NULL;
 
   demuxer_ = NULL;
-  if (chunk_demuxer_)
+  if (chunk_demuxer_) {
     chunk_demuxer_->Stop(
         BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerStopDone));
+  }
 }
 
 void MediaSourceDelegate::InitializeMediaSource(
@@ -161,20 +166,25 @@ size_t MediaSourceDelegate::VideoDecodedByteCount() const {
   return statistics_.video_bytes_decoded;
 }
 
-void MediaSourceDelegate::Seek(base::TimeDelta time) {
-  DVLOG(1) << "MediaSourceDelegate::Seek(" << time.InSecondsF() << ") : "
-           << player_id_;
-  seeking_ = true;
-  DCHECK(demuxer_);
-  if (chunk_demuxer_)
-    chunk_demuxer_->StartWaitingForSeek(time);
-  demuxer_->Seek(time,
-      BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerError));
-}
+void MediaSourceDelegate::Seek(base::TimeDelta time, unsigned seek_request_id) {
+  DVLOG(1) << "Seek(" << time.InSecondsF() << ") : " << player_id_;
 
-void MediaSourceDelegate::CancelPendingSeek(base::TimeDelta time) {
-  if (chunk_demuxer_)
-    chunk_demuxer_->CancelPendingSeek(time);
+  last_seek_time_ = time;
+  last_seek_request_id_ = seek_request_id;
+
+  if (chunk_demuxer_) {
+    if (seeking_) {
+      chunk_demuxer_->CancelPendingSeek(time);
+      return;
+    }
+
+    chunk_demuxer_->StartWaitingForSeek(time);
+  }
+
+  seeking_ = true;
+  demuxer_->Seek(time,
+                 BIND_TO_RENDER_LOOP_1(&MediaSourceDelegate::OnDemuxerSeekDone,
+                                       seek_request_id));
 }
 
 void MediaSourceDelegate::SetTotalBytes(int64 total_bytes) {
@@ -191,8 +201,7 @@ void MediaSourceDelegate::AddBufferedTimeRange(base::TimeDelta start,
 }
 
 void MediaSourceDelegate::SetDuration(base::TimeDelta duration) {
-  DVLOG(1) << "MediaSourceDelegate::SetDuration(" << duration.InSecondsF()
-           << ") : " << player_id_;
+  DVLOG(1) << "SetDuration(" << duration.InSecondsF() << ") : " << player_id_;
   // Notify our owner (e.g. WebMediaPlayerAndroid) that
   // duration has changed.
   if (!duration_change_cb_.is_null())
@@ -201,8 +210,8 @@ void MediaSourceDelegate::SetDuration(base::TimeDelta duration) {
 
 void MediaSourceDelegate::OnReadFromDemuxer(media::DemuxerStream::Type type,
                                             bool seek_done) {
-  DVLOG(1) << "MediaSourceDelegate::OnReadFromDemuxer(" << type
-           << ", " << seek_done << ") : " << player_id_;
+  DVLOG(1) << "OnReadFromDemuxer(" << type << ", " << seek_done
+           << ") : " << player_id_;
   if (seeking_ && !seek_done)
       return;  // Drop the request during seeking.
   seeking_ = false;
@@ -223,8 +232,10 @@ void MediaSourceDelegate::ReadFromDemuxerStream(
     DemuxerStream* stream,
     MediaPlayerHostMsg_ReadFromDemuxerAck_Params* params,
     size_t index) {
-  stream->Read(BIND_TO_RENDER_LOOP_3(&MediaSourceDelegate::OnBufferReady,
-                                     stream, params, index));
+  DCHECK(!seeking_);
+  // DemuxerStream::Read() always returns the read callback asynchronously.
+  stream->Read(base::Bind(&MediaSourceDelegate::OnBufferReady,
+                          weak_this_.GetWeakPtr(), stream, params, index));
 }
 
 void MediaSourceDelegate::OnBufferReady(
@@ -233,9 +244,16 @@ void MediaSourceDelegate::OnBufferReady(
     size_t index,
     DemuxerStream::Status status,
     const scoped_refptr<media::DecoderBuffer>& buffer) {
-  DVLOG(1) << "MediaSourceDelegate::OnBufferReady() : " << player_id_;
-  DCHECK(status == DemuxerStream::kAborted ||
-         index < params->access_units.size());
+  DVLOG(1) << "OnBufferReady() : " << player_id_;
+
+  // No new OnReadFromDemuxer() will be called during seeking. So this callback
+  // must be from previous OnReadFromDemuxer() call and should be ignored.
+  if (seeking_) {
+    DVLOG(1) << "OnBufferReady(): Ignore previous read during seeking.";
+    params->access_units.clear();
+    return;
+  }
+
   bool is_audio = stream->type() == DemuxerStream::AUDIO;
   if (status != DemuxerStream::kAborted &&
       index >= params->access_units.size()) {
@@ -243,11 +261,15 @@ void MediaSourceDelegate::OnBufferReady(
                << (is_audio ? "Audio" : "Video") << ", index " << index
                <<", size " << params->access_units.size()
                << ", status " << static_cast<int>(status);
+    NOTREACHED();
     return;
   }
+
   switch (status) {
     case DemuxerStream::kAborted:
       // Because the abort was caused by the seek, don't respond ack.
+      DVLOG(1) << "OnBufferReady() : Aborted";
+      params->access_units.clear();
       return;
 
     case DemuxerStream::kConfigChanged:
@@ -257,8 +279,8 @@ void MediaSourceDelegate::OnBufferReady(
         stream->audio_decoder_config();
       } else {
         gfx::Size size = stream->video_decoder_config().coded_size();
-        DVLOG(1) << "Video config is changed: " <<
-            size.width() << "x" << size.height();
+        DVLOG(1) << "Video config is changed: " << size.width() << "x"
+                 << size.height();
       }
       params->access_units[index].status = status;
       params->access_units.resize(index + 1);
@@ -316,21 +338,18 @@ void MediaSourceDelegate::OnBufferReady(
 
   if (proxy_)
     proxy_->ReadFromDemuxerAck(player_id_, *params);
-  params->access_units.resize(0);
+
+  params->access_units.clear();
 }
 
-void MediaSourceDelegate::OnDemuxerError(
-    media::PipelineStatus status) {
-  DVLOG(1) << "MediaSourceDelegate::OnDemuxerError(" << status << ") : "
-           << player_id_;
+void MediaSourceDelegate::OnDemuxerError(media::PipelineStatus status) {
+  DVLOG(1) << "OnDemuxerError(" << status << ") : " << player_id_;
   if (status != media::PIPELINE_OK && !update_network_state_cb_.is_null())
     update_network_state_cb_.Run(PipelineErrorToNetworkState(status));
 }
 
-void MediaSourceDelegate::OnDemuxerInitDone(
-    media::PipelineStatus status) {
-  DVLOG(1) << "MediaSourceDelegate::OnDemuxerInitDone(" << status << ") : "
-           << player_id_;
+void MediaSourceDelegate::OnDemuxerInitDone(media::PipelineStatus status) {
+  DVLOG(1) << "OnDemuxerInitDone(" << status << ") : " << player_id_;
   // It is possible that this function is called after Destroy(). As a result,
   // we need to check whether the |demuxer_| is NULL before we proceed.
   if (!demuxer_)
@@ -344,8 +363,34 @@ void MediaSourceDelegate::OnDemuxerInitDone(
     NotifyDemuxerReady("");
 }
 
+void MediaSourceDelegate::OnDemuxerSeekDone(unsigned seek_request_id,
+                                            media::PipelineStatus status) {
+  DVLOG(1) << "OnDemuxerSeekDone(" << status << ") : " << player_id_;
+  DCHECK(seeking_);
+
+  if (status != media::PIPELINE_OK) {
+    OnDemuxerError(status);
+    return;
+  }
+
+  // Newer seek has been issued. Resume the last seek request.
+  if (seek_request_id != last_seek_request_id_) {
+    if (chunk_demuxer_)
+      chunk_demuxer_->StartWaitingForSeek(last_seek_time_);
+    demuxer_->Seek(
+        last_seek_time_,
+        BIND_TO_RENDER_LOOP_1(&MediaSourceDelegate::OnDemuxerSeekDone,
+                              last_seek_request_id_));
+    return;
+  }
+
+  seeking_ = false;
+  last_seek_request_id_ = 0;
+  proxy_->SeekRequestAck(player_id_, seek_request_id);
+}
+
 void MediaSourceDelegate::OnDemuxerStopDone() {
-  DVLOG(1) << "MediaSourceDelegate::OnDemuxerStopDone() : " << player_id_;
+  DVLOG(1) << "OnDemuxerStopDone() : " << player_id_;
   chunk_demuxer_.reset();
   delete this;
 }

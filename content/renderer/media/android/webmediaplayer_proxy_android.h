@@ -74,6 +74,7 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
   void ReadFromDemuxerAck(
       int player_id,
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
+  void SeekRequestAck(int player_id, unsigned seek_request_id);
   void DurationChanged(int player_id, const base::TimeDelta& duration);
 
   // Encrypted media related methods.
