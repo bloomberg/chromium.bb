@@ -304,9 +304,6 @@ void OmniboxEditModel::OnChanged() {
   if (!performed_instant) {
     // Hide any suggestions we might be showing.
     view_->SetInstantSuggestion(string16());
-
-    // No need to wait any longer for Instant.
-    omnibox_controller_->FinalizeInstantQuery(string16(), InstantSuggestion());
   }
 
   switch (recommended_action) {

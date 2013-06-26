@@ -25,7 +25,6 @@
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/common/instant_types.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
@@ -84,33 +83,8 @@ class SearchProvider : public AutocompleteProvider,
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
   virtual void ResetSession() OVERRIDE;
 
-  // Marks the instant query as done. If |input_text| is non-empty this changes
-  // the 'search what you typed' results text to |input_text| +
-  // |suggestion.text|. |input_text| is the text the user input into the edit.
-  // |input_text| differs from |input_.text()| if the input contained
-  // whitespace.
-  //
-  // This method also marks the search provider as no longer needing to wait for
-  // the instant result.
-  void FinalizeInstantQuery(const string16& input_text,
-                            const InstantSuggestion& suggestion);
-  void ClearInstantSuggestion();
-
-  // If called, SearchProvider will not fetch any search suggestions for the
-  // next call to Start(). Used with InstantExtended where Instant fetches its
-  // own search suggestions.
-  //
-  // Note that this only applies to the next call to Start() and so this must be
-  // called repeatedly before Start() if you wish to continually suppress search
-  // suggestions.
-  void SuppressSearchSuggestions();
-
   // Update the omnibox start margin used to generate search suggestion URLs.
   void SetOmniboxStartMargin(int omnibox_start_margin);
-
-  // Returns whether the provider is done processing the query with the
-  // exception of waiting for Instant to finish.
-  bool IsNonInstantSearchDone() const;
 
   bool field_trial_triggered_in_session() const {
     return field_trial_triggered_in_session_;
@@ -370,12 +344,6 @@ class SearchProvider : public AutocompleteProvider,
   // on RemoveStaleResults().
   void RemoveAllStaleResults();
 
-  // If |default_provider_suggestion_| (which was suggested for
-  // |previous_input|) is still applicable given the |current_input|, adjusts it
-  // so it can be reused. Otherwise, clears it.
-  void AdjustDefaultProviderSuggestion(const string16& previous_input,
-                                       const string16& current_input);
-
   // Apply calculated relevance scores to the current results.
   void ApplyCalculatedRelevance();
   void ApplyCalculatedSuggestRelevance(SuggestResults* list);
@@ -533,12 +501,6 @@ class SearchProvider : public AutocompleteProvider,
   Results default_results_;
   Results keyword_results_;
 
-  // Has FinalizeInstantQuery been invoked since the last |Start|?
-  bool instant_finalized_;
-
-  // The |suggestion| parameter passed to FinalizeInstantQuery.
-  InstantSuggestion default_provider_suggestion_;
-
   // Whether a field trial, if any, has triggered in the most recent
   // autocomplete query.  This field is set to false in Start() and may be set
   // to true if either the default provider or keyword provider has completed
@@ -550,10 +512,6 @@ class SearchProvider : public AutocompleteProvider,
   // Same as above except that it is maintained across the current Omnibox
   // session.
   bool field_trial_triggered_in_session_;
-
-  // If true, suppress search suggestions. Reset to false in Start().
-  // See comments for SuppressSearchSuggestions().
-  bool suppress_search_suggestions_;
 
   // Start margin of the omnibox. Used to construct search URLs.
   int omnibox_start_margin_;

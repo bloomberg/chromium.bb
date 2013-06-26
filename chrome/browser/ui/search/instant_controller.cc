@@ -548,13 +548,6 @@ bool InstantController::Update(const AutocompleteMatch& match,
   return true;
 }
 
-bool InstantController::WillFetchCompletions() const {
-  if (!extended_enabled())
-    return false;
-
-  return !UsingLocalPage();
-}
-
 scoped_ptr<content::WebContents> InstantController::ReleaseNTPContents() {
   if (!extended_enabled() || !browser_->profile() ||
       browser_->profile()->IsOffTheRecord() ||
@@ -623,22 +616,6 @@ void InstantController::HandleAutocompleteResults(
   // as it stops autocomplete. Ignore these.
   if (omnibox_focus_state_ == OMNIBOX_FOCUS_NONE)
     return;
-
-  for (ACProviders::const_iterator provider = providers.begin();
-       provider != providers.end(); ++provider) {
-    const bool from_search_provider =
-        (*provider)->type() == AutocompleteProvider::TYPE_SEARCH;
-
-    // TODO(jeremycho): Pass search_provider() as a parameter to this function
-    // and remove the static cast.
-    const bool provider_done = from_search_provider ?
-        static_cast<SearchProvider*>(*provider)->IsNonInstantSearchDone() :
-        (*provider)->done();
-    if (!provider_done) {
-      DVLOG(1) << "Waiting for " << (*provider)->GetName();
-      return;
-    }
-  }
 
   DVLOG(1) << "AutocompleteResults:";
   std::vector<InstantAutocompleteResult> results;

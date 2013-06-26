@@ -67,10 +67,6 @@ class OmniboxController : public AutocompleteControllerDelegate {
                  bool just_deleted_text,
                  bool keyword_is_selected);
 
-  // Calls through to SearchProvider::FinalizeInstantQuery.
-  void FinalizeInstantQuery(const string16& input_text,
-                            const InstantSuggestion& suggestion);
-
   // Sets the suggestion text.
   void SetInstantSuggestion(const InstantSuggestion& suggestion);
 

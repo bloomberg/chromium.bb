@@ -25,7 +25,6 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/common/instant_types.h"
 #include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -286,7 +285,6 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
   QueryForInput(text, false, false);
   profile_.BlockUntilHistoryProcessesPendingRequests();
   ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
-  EXPECT_NE(chrome::IsInstantExtendedAPIEnabled(), provider_->done());
   if (!wyt_match)
     return;
   ASSERT_GE(provider_->matches().size(), 1u);
@@ -508,190 +506,6 @@ TEST_F(SearchProviderTest, DontSendPrivateDataToSuggest) {
     // Run till the history results complete.
     RunTillProviderDone();
   }
-}
-
-// Make sure FinalizeInstantQuery works.
-TEST_F(SearchProviderTest, FinalizeInstantQuery) {
-  chrome::EnableInstantExtendedAPIForTesting();
-
-  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("foo"),
-                                                      NULL));
-
-  // Tell the provider Instant is done.
-  provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"),
-                                  InstantSuggestion(ASCIIToUTF16("bar"),
-                                                    INSTANT_COMPLETE_NOW,
-                                                    INSTANT_SUGGESTION_SEARCH,
-                                                    string16(),
-                                                    kNoMatchIndex));
-
-  // The provider should now be done.
-  EXPECT_TRUE(provider_->done());
-
-  // There should be two matches, one for what you typed, the other for
-  // 'foobar'.
-  EXPECT_EQ(2u, provider_->matches().size());
-  GURL instant_url(default_t_url_->url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("foobar"))));
-  AutocompleteMatch instant_match;
-  EXPECT_TRUE(FindMatchWithDestination(instant_url, &instant_match));
-
-  // And the 'foobar' match should not have a description, it'll be set later.
-  EXPECT_TRUE(instant_match.description.empty());
-
-  // Make sure the what you typed match has no description.
-  AutocompleteMatch wyt_match;
-  EXPECT_TRUE(FindMatchWithDestination(
-      GURL(default_t_url_->url_ref().ReplaceSearchTerms(
-          TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("foo")))),
-          &wyt_match));
-  EXPECT_TRUE(wyt_match.description.empty());
-
-  // Instant search suggestions should be ranked above verbatim matches.
-  EXPECT_GT(instant_match.relevance, wyt_match.relevance);
-}
-
-// Make sure FinalizeInstantQuery works with URL suggestions.
-TEST_F(SearchProviderTest, FinalizeInstantURL) {
-  chrome::EnableInstantExtendedAPIForTesting();
-
-  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("ex"),
-                                                      NULL));
-
-  // Tell the provider Instant is done.
-  provider_->FinalizeInstantQuery(ASCIIToUTF16("ex"),
-                                  InstantSuggestion(
-                                      ASCIIToUTF16("http://example.com/"),
-                                      INSTANT_COMPLETE_NOW,
-                                      INSTANT_SUGGESTION_URL,
-                                      string16(),
-                                      kNoMatchIndex));
-
-  // The provider should now be done.
-  EXPECT_TRUE(provider_->done());
-
-  // There should be two matches, one for what you typed, the other for
-  // "http://example.com/".
-  EXPECT_EQ(2u, provider_->matches().size());
-  GURL instant_url("http://example.com");
-  AutocompleteMatch instant_match;
-  EXPECT_TRUE(FindMatchWithDestination(instant_url, &instant_match));
-
-  // The Instant match should not have a description, it'll be set later.
-  EXPECT_TRUE(instant_match.description.empty());
-
-  // Make sure the what you typed match has no description.
-  AutocompleteMatch wyt_match;
-  EXPECT_TRUE(FindMatchWithDestination(
-      GURL(default_t_url_->url_ref().ReplaceSearchTerms(
-          TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("ex")))),
-          &wyt_match));
-  EXPECT_TRUE(wyt_match.description.empty());
-
-  // The Instant URL should be more relevant.
-  EXPECT_GT(instant_match.relevance, wyt_match.relevance);
-}
-
-// An Instant URL suggestion should behave the same way whether the input text
-// is classified as UNKNOWN or as an URL. Otherwise if the user types
-// "example.co" url-what-you-typed will displace the Instant suggestion for
-// "example.com".
-TEST_F(SearchProviderTest, FinalizeInstantURLWithURLText) {
-  chrome::EnableInstantExtendedAPIForTesting();
-
-  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(
-      ASCIIToUTF16("example.co"), NULL));
-
-  // Tell the provider Instant is done.
-  provider_->FinalizeInstantQuery(ASCIIToUTF16("example.co"),
-                                  InstantSuggestion(
-                                      ASCIIToUTF16("http://example.com/"),
-                                      INSTANT_COMPLETE_NOW,
-                                      INSTANT_SUGGESTION_URL,
-                                      string16(),
-                                      kNoMatchIndex));
-
-  // The provider should now be done.
-  EXPECT_TRUE(provider_->done());
-
-  // There should be two matches, one for what you typed, the other for
-  // "http://example.com/".
-  EXPECT_EQ(2u, provider_->matches().size());
-  GURL instant_url("http://example.com");
-  AutocompleteMatch instant_match;
-  EXPECT_TRUE(FindMatchWithDestination(instant_url, &instant_match));
-
-  // The Instant match should not have a description, it'll be set later.
-  EXPECT_TRUE(instant_match.description.empty());
-
-  // The Instant URL should be more relevant than a URL_WHAT_YOU_TYPED match.
-  EXPECT_GT(instant_match.relevance,
-            HistoryURLProvider::kScoreForWhatYouTypedResult);
-}
-
-// Make sure that if FinalizeInstantQuery is invoked before suggest results
-// return, the suggest text from FinalizeInstantQuery is remembered.
-TEST_F(SearchProviderTest, RememberInstantQuery) {
-  chrome::EnableInstantExtendedAPIForTesting();
-
-  QueryForInput(ASCIIToUTF16("foo"), false, false);
-
-  // Finalize the Instant query immediately.
-  provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"),
-                                  InstantSuggestion(ASCIIToUTF16("bar"),
-                                                    INSTANT_COMPLETE_NOW,
-                                                    INSTANT_SUGGESTION_SEARCH,
-                                                    string16(),
-                                                    kNoMatchIndex));
-
-  // There should be two matches, one for what you typed, the other for
-  // 'foobar'.
-  EXPECT_EQ(2u, provider_->matches().size());
-  GURL instant_url(default_t_url_->url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("foobar"))));
-  AutocompleteMatch instant_match;
-  EXPECT_TRUE(FindMatchWithDestination(instant_url, &instant_match));
-
-  // Wait until history and the suggest query complete.
-  profile_.BlockUntilHistoryProcessesPendingRequests();
-  ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
-
-  // Provider should be done.
-  EXPECT_TRUE(provider_->done());
-
-  // There should be two matches, one for what you typed, the other for
-  // 'foobar'.
-  EXPECT_EQ(2u, provider_->matches().size());
-  EXPECT_TRUE(FindMatchWithDestination(instant_url, &instant_match));
-
-  // And the 'foobar' match should not have a description, it'll be set later.
-  EXPECT_TRUE(instant_match.description.empty());
-}
-
-// Make sure that if trailing whitespace is added to the text supplied to
-// AutocompleteInput the default suggest text is cleared.
-TEST_F(SearchProviderTest, DifferingText) {
-  chrome::EnableInstantExtendedAPIForTesting();
-
-  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("foo"),
-                                                      NULL));
-
-  // Finalize the Instant query immediately.
-  provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"),
-                                  InstantSuggestion(ASCIIToUTF16("bar"),
-                                                    INSTANT_COMPLETE_NOW,
-                                                    INSTANT_SUGGESTION_SEARCH,
-                                                    string16(),
-                                                    kNoMatchIndex));
-
-  // Query with the same input text, but trailing whitespace.
-  AutocompleteMatch instant_match;
-  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("foo "),
-                                                      &instant_match));
-
-  // There should only one match, for what you typed.
-  EXPECT_EQ(1u, provider_->matches().size());
-  EXPECT_FALSE(instant_match.destination_url.is_empty());
 }
 
 TEST_F(SearchProviderTest, DontAutocompleteURLLikeTerms) {
@@ -1658,8 +1472,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
 
 TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
   // Enable Instant Extended in order to allow an increased number of
-  // suggestions.  Unfortunately this requires us to call FinalizeInstantQuery()
-  // every time.
+  // suggestions.
   chrome::EnableInstantExtendedAPIForTesting();
 
   // We hardcode the string "term1" below, so ensure that the search term that
@@ -1737,7 +1550,6 @@ TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(cases[i].input, false, false);
-    provider_->FinalizeInstantQuery(string16(), InstantSuggestion());
     net::TestURLFetcher* fetcher = WaitUntilURLFetcherIsReady(
         SearchProvider::kDefaultProviderURLFetcherID);
     ASSERT_TRUE(fetcher);

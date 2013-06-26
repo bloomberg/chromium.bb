@@ -69,17 +69,8 @@ void OmniboxController::StartAutocomplete(
 
 #if defined(HTML_INSTANT_EXTENDED_POPUP)
   InstantController* instant_controller = GetInstantController();
-  if (instant_controller) {
+  if (instant_controller)
     instant_controller->OnAutocompleteStart();
-    // If the embedded page for InstantExtended is fetching its own suggestions,
-    // suppress search suggestions from SearchProvider. We still need
-    // SearchProvider to run for FinalizeInstantQuery.
-    // TODO(dcblack): Once we are done refactoring the omnibox so we don't need
-    // to use FinalizeInstantQuery anymore, we can take out this check and
-    // remove this provider from kInstantExtendedOmniboxProviders.
-    if (instant_controller->WillFetchCompletions())
-      autocomplete_controller_->search_provider()->SuppressSearchSuggestions();
-  }
 #endif
   if (chrome::IsInstantExtendedAPIEnabled()) {
     autocomplete_controller_->search_provider()->
@@ -184,25 +175,6 @@ bool OmniboxController::DoInstant(const AutocompleteMatch& match,
 #endif
 }
 
-void OmniboxController::FinalizeInstantQuery(
-    const string16& input_text,
-    const InstantSuggestion& suggestion) {
-// Should only get called for the HTML popup.
-#if defined(HTML_INSTANT_EXTENDED_POPUP)
-  if (!popup_model()->result().empty()) {
-    // We need to finalize the instant query in all cases where the
-    // |popup_model| holds some result. It is not enough to check whether the
-    // popup is open, since when an IME is active the popup may be closed while
-    // |popup_model| contains a non-empty result.
-    SearchProvider* search_provider =
-        autocomplete_controller_->search_provider();
-    // There may be no providers during testing; guard against that.
-    if (search_provider)
-      search_provider->FinalizeInstantQuery(input_text, suggestion);
-  }
-#endif
-}
-
 void OmniboxController::SetInstantSuggestion(
     const InstantSuggestion& suggestion) {
 // Should only get called for the HTML popup.
@@ -210,12 +182,8 @@ void OmniboxController::SetInstantSuggestion(
   switch (suggestion.behavior) {
     case INSTANT_COMPLETE_NOW:
       // Set blue suggestion text.
-      // TODO(beaudoin): This currently goes to the SearchProvider. Instead we
-      // should just create a valid current_match_ and call
-      // omnibox_edit_model_->OnCurrentMatchChanged. This way we can get rid of
-      // FinalizeInstantQuery entirely.
-      if (!suggestion.text.empty())
-        FinalizeInstantQuery(omnibox_edit_model_->GetViewText(), suggestion);
+      // TODO(beaudoin): Create a valid current_match_ and call
+      // omnibox_edit_model_->OnCurrentMatchChanged.
       return;
 
     case INSTANT_COMPLETE_NEVER: {
@@ -224,13 +192,6 @@ void OmniboxController::SetInstantSuggestion(
       // Set gray suggestion text.
       // Remove "?" if we're in forced query mode.
       gray_suggestion_ = suggestion.text;
-
-      // TODO(beaudoin): The following should no longer be needed once the
-      // instant suggestion no longer goes through the search provider.
-      SearchProvider* search_provider =
-          autocomplete_controller_->search_provider();
-      if (search_provider)
-        search_provider->ClearInstantSuggestion();
 
       omnibox_edit_model_->OnGrayTextChanged();
       return;

@@ -110,10 +110,6 @@ class InstantController : public InstantPage::Delegate,
               bool escape_pressed,
               bool is_keyword_search);
 
-  // Returns whether the Instant page currently being used will fetch its own
-  // completions. True for extended mode, unless using a local Instant page.
-  bool WillFetchCompletions() const;
-
   // Releases and returns the NTP WebContents. May be NULL. Loads a new
   // WebContents for the NTP.
   scoped_ptr<content::WebContents> ReleaseNTPContents() WARN_UNUSED_RESULT;
