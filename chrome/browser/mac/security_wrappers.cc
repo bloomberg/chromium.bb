@@ -7,27 +7,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 
-#if !defined(MAC_OS_X_VERSION_10_5) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
-
-enum {
-  // New Security.framework code uses errSecSuccess instead of noErr, but the
-  // constant is new in 10.6.
-  errSecSuccess = 0
-};
-
-// This exists on 10.5 for linking, but but because
-// <Security/SecRequirement.h> did not ship in the SDK in that version, no
-// declaration is present. This declaration is correct on 10.5, see
-// 10.5.0 libsecurity_codesigning-32568/lib/SecRequirement.h.
-extern "C" {
-OSStatus SecRequirementCopyString(SecRequirementRef requirement,
-                                  SecCSFlags flags,
-                                  CFStringRef* text);
-}  // extern "C"
-
-#endif
-
 extern "C" {
 OSStatus SecTrustedApplicationCopyRequirement(
     SecTrustedApplicationRef application,

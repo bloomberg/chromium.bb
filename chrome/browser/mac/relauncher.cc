@@ -34,15 +34,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 
-// RTLD_MAIN_ONLY is supported as of Mac OS X 10.5, but <dlfcn.h> does not
-// define it in the 10.5 SDK. It is present in the 10.6 SDK and is documented
-// as working on 10.5 and later. The source code for the version of dyld that
-// shipped in 10.5, dyld-95.3/src/dyldAPIs.cpp, confirms that this feature is
-// supported. Provide a fallback definition here.
-#if MAC_OS_X_VERSION_MAX_ALLOWED == MAC_OS_X_VERSION_10_5  // 10.5 SDK
-#define RTLD_MAIN_ONLY ((void*)-5)  // Search main executable only.
-#endif
-
 namespace mac_relauncher {
 
 const char* const kRelauncherDMGDeviceArg = "--dmg-device=";
