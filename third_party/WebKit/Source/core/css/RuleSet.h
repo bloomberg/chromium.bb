@@ -51,6 +51,7 @@ class StyleRuleRegion;
 class StyleSheetContents;
 
 class RuleData {
+    NEW_DELETE_SAME_AS_MALLOC_FREE;
 public:
     RuleData(StyleRule*, unsigned selectorIndex, unsigned position, AddRuleFlags);
 
@@ -58,6 +59,9 @@ public:
     StyleRule* rule() const { return m_rule; }
     const CSSSelector* selector() const { return m_rule->selectorList().selectorAt(m_selectorIndex); }
     unsigned selectorIndex() const { return m_selectorIndex; }
+
+    bool isLastInArray() const { return m_isLastInArray; }
+    void setLastInArray(bool flag) { m_isLastInArray = flag; }
 
     bool hasFastCheckableSelector() const { return m_hasFastCheckableSelector; }
     bool hasMultipartSelector() const { return m_hasMultipartSelector; }
@@ -75,7 +79,8 @@ public:
 
 private:
     StyleRule* m_rule;
-    unsigned m_selectorIndex : 13;
+    unsigned m_selectorIndex : 12;
+    unsigned m_isLastInArray : 1; // We store an array of RuleData objects in a primitive array.
     // This number was picked fairly arbitrarily. We can probably lower it if we need to.
     // Some simple testing showed <100,000 RuleData's on large sites.
     unsigned m_position : 18;
@@ -111,10 +116,10 @@ public:
 
     const RuleFeatureSet& features() const { return m_features; }
 
-    const Vector<RuleData>* idRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_idRules.get(key); }
-    const Vector<RuleData>* classRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_classRules.get(key); }
-    const Vector<RuleData>* tagRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_tagRules.get(key); }
-    const Vector<RuleData>* shadowPseudoElementRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_shadowPseudoElementRules.get(key); }
+    const RuleData* idRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_idRules.get(key); }
+    const RuleData* classRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_classRules.get(key); }
+    const RuleData* tagRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_tagRules.get(key); }
+    const RuleData* shadowPseudoElementRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_shadowPseudoElementRules.get(key); }
     const Vector<RuleData>* linkPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_linkPseudoClassRules; }
     const Vector<RuleData>* cuePseudoRules() const { ASSERT(!m_pendingRules); return &m_cuePseudoRules; }
     const Vector<RuleData>* focusPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_focusPseudoClassRules; }
@@ -145,7 +150,7 @@ public:
 
 private:
     typedef HashMap<AtomicStringImpl*, OwnPtr<LinkedStack<RuleData> > > PendingRuleMap;
-    typedef HashMap<AtomicStringImpl*, OwnPtr<Vector<RuleData> > > CompactRuleMap;
+    typedef HashMap<AtomicStringImpl*, OwnPtr<RuleData> > CompactRuleMap;
 
     RuleSet()
         : m_ruleCount(0)

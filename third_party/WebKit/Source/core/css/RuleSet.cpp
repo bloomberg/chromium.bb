@@ -130,9 +130,80 @@ static inline PropertyWhitelistType determinePropertyWhitelistType(const AddRule
     return PropertyWhitelistNone;
 }
 
+namespace {
+
+// FIXME: Should we move this class to WTF?
+template<typename T>
+class TerminatedArrayBuilder {
+public:
+    explicit TerminatedArrayBuilder(PassOwnPtr<T> array)
+        : m_array(array)
+        , m_count(0)
+        , m_capacity(0)
+    {
+        if (!m_array)
+            return;
+        for (T* item = m_array.get(); !item->isLastInArray(); ++item)
+            ++m_count;
+        ++m_count; // To count the last item itself.
+        m_capacity = m_count;
+    }
+
+    void grow(size_t count)
+    {
+        ASSERT(count);
+        if (!m_array) {
+            ASSERT(!m_count);
+            ASSERT(!m_capacity);
+            m_capacity = count;
+            m_array = adoptPtr(static_cast<T*>(fastMalloc(m_capacity * sizeof(T))));
+            return;
+        }
+        m_capacity += count;
+        m_array = adoptPtr(static_cast<T*>(fastRealloc(m_array.leakPtr(), m_capacity * sizeof(T))));
+        m_array.get()[m_count - 1].setLastInArray(false);
+    }
+
+    void append(const T& item)
+    {
+        RELEASE_ASSERT(m_count < m_capacity);
+        ASSERT(!item.isLastInArray());
+        m_array.get()[m_count++] = item;
+    }
+
+    PassOwnPtr<T> release()
+    {
+        RELEASE_ASSERT(m_count == m_capacity);
+        if (m_array)
+            m_array.get()[m_count - 1].setLastInArray(true);
+        assertValid();
+        return m_array.release();
+    }
+
+private:
+#ifndef NDEBUG
+    void assertValid()
+    {
+        for (size_t i = 0; i < m_count; ++i) {
+            bool isLastInArray = (i + 1 == m_count);
+            ASSERT(m_array.get()[i].isLastInArray() == isLastInArray);
+        }
+    }
+#else
+    void assertValid() { }
+#endif
+
+    OwnPtr<T> m_array;
+    size_t m_count;
+    size_t m_capacity;
+};
+
+}
+
 RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, AddRuleFlags addRuleFlags)
     : m_rule(rule)
     , m_selectorIndex(selectorIndex)
+    , m_isLastInArray(false)
     , m_position(position)
     , m_hasFastCheckableSelector((addRuleFlags & RuleCanUseFastCheckSelector) && SelectorCheckerFastPath::canUse(selector()))
     , m_specificity(selector()->specificity())
@@ -381,21 +452,16 @@ void RuleSet::compactPendingRules(PendingRuleMap& pendingMap, CompactRuleMap& co
     PendingRuleMap::iterator end = pendingMap.end();
     for (PendingRuleMap::iterator it = pendingMap.begin(); it != end; ++it) {
         OwnPtr<LinkedStack<RuleData> > pendingRules = it->value.release();
-        size_t pendingSize = pendingRules->size();
-        ASSERT(pendingSize);
+        CompactRuleMap::iterator compactRules = compactMap.add(it->key, nullptr).iterator;
 
-        OwnPtr<Vector<RuleData> >& compactRules = compactMap.add(it->key, nullptr).iterator->value;
-        if (!compactRules) {
-            compactRules = adoptPtr(new Vector<RuleData>);
-            compactRules->reserveInitialCapacity(pendingSize);
-        } else {
-            compactRules->reserveCapacity(compactRules->size() + pendingSize);
-        }
-
+        TerminatedArrayBuilder<RuleData> builder(compactRules->value.release());
+        builder.grow(pendingRules->size());
         while (!pendingRules->isEmpty()) {
-            compactRules->append(pendingRules->peek());
+            builder.append(pendingRules->peek());
             pendingRules->pop();
         }
+
+        compactRules->value = builder.release();
     }
 }
 

@@ -77,7 +77,9 @@ public:
 private:
     Document* document() { return m_state.document(); }
 
+    void collectRuleIfMatches(const RuleData&, const MatchRequest&, StyleResolver::RuleRange&);
     void collectMatchingRulesForList(const Vector<RuleData>*, const MatchRequest&, StyleResolver::RuleRange&);
+    void collectMatchingRulesForList(const RuleData*, const MatchRequest&, StyleResolver::RuleRange&);
     bool ruleMatches(const RuleData&, const ContainerNode* scope, PseudoId&);
 
     void sortMatchedRules();
