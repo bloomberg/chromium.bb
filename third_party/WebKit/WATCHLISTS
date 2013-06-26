@@ -152,6 +152,12 @@
                   '|Source/bindings/v8/custom/V8CustomElementConstructorCustom.*' \
                   '|Source/bindings/v8/CustomElementHelpers.*'
     },
+    'mediastream': {
+      'filepath': 'Source/core/platform/mediastream/' \
+                  '|Source/modules/mediastream/' \
+                  '|LayoutTests/fast/mediastream/' \
+                  '|Source/core/platform/chromium/support/'
+    },
   },
 
   'WATCHLISTS': {
@@ -216,5 +222,6 @@
     'viewport_interaction': [ 'kenneth.christiansen@gmail.com' ],
     'css_regions': [ 'ChromiumBugTracker@adobe.com' ],
     'webcomponents': [ 'webcomponents-bugzilla@chromium.org', 'dglazkov+blink@chromium.org' ],
+    'mediastream': [ 'tommyw+watchlist@chromium.org' ],
   },
 }
