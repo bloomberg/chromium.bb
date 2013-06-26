@@ -805,6 +805,10 @@ void PnaclCoordinator::OpenBitcodeStream() {
 void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
   if (pp_error != PP_OK) {
     BitcodeStreamDidFinish(pp_error);
+    // In the new cache case, we have not spun up the translation process yet,
+    // so we need to call TranslateFinished here.
+    if (use_new_cache_)
+      TranslateFinished(pp_error);
     return;
   }
 

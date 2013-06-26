@@ -57,6 +57,11 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclWithNewCache,
   RunLoadTest(FILE_PATH_LITERAL("nacl_load_test.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclWithNewCache,
+                       MAYBE_PNACL(PnaclErrorHandling)) {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("pnacl_error_handling.html"));
+}
+
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_ExitStatus0, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL(
       "pm_exit_status_test.html?trigger=exit0&expected_exit=0"));

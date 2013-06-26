@@ -357,7 +357,8 @@ void PnaclTranslateThread::AbortSubprocesses() {
 PnaclTranslateThread::~PnaclTranslateThread() {
   PLUGIN_PRINTF(("~PnaclTranslateThread (translate_thread=%p)\n", this));
   AbortSubprocesses();
-  NaClThreadJoin(translate_thread_.get());
+  if (translate_thread_ != NULL)
+    NaClThreadJoin(translate_thread_.get());
   PLUGIN_PRINTF(("~PnaclTranslateThread joined\n"));
   NaClCondVarDtor(&buffer_cond_);
   NaClMutexDtor(&cond_mu_);
