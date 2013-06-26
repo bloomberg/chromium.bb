@@ -183,6 +183,11 @@ class InProcessBrowserTest : public content::BrowserTestBase {
     exit_when_last_browser_closes_ = value;
   }
 
+  // This must be called before RunTestOnMainThreadLoop() to have any effect.
+  void set_multi_desktop_test(bool multi_desktop_test) {
+    multi_desktop_test_ = multi_desktop_test;
+  }
+
  private:
   // Creates a user data directory for the test if one is needed. Returns true
   // if successful.
@@ -207,6 +212,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
   // True if we should exit the tests after the last browser instance closes.
   bool exit_when_last_browser_closes_;
+
+  // True if this is a multi-desktop test (in which case this browser test will
+  // not ensure that Browsers are only created on the tested desktop).
+  bool multi_desktop_test_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;

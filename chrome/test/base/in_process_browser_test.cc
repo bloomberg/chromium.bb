@@ -5,6 +5,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 
 #include "base/auto_reset.h"
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -13,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_file_util.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/io_thread.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -77,11 +80,44 @@ const char kBrowserTestType[] = "browser";
 base::LazyInstance<chrome::ChromeContentRendererClient>::Leaky
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 
+// A BrowserListObserver that makes sure that all browsers created are on the
+// |allowed_desktop_|.
+class SingleDesktopTestObserver : public chrome::BrowserListObserver,
+                                  public base::NonThreadSafe {
+ public:
+  explicit SingleDesktopTestObserver(chrome::HostDesktopType allowed_desktop);
+  virtual ~SingleDesktopTestObserver();
+
+  // chrome::BrowserListObserver:
+  virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
+
+ private:
+  chrome::HostDesktopType allowed_desktop_;
+
+  DISALLOW_COPY_AND_ASSIGN(SingleDesktopTestObserver);
+};
+
+SingleDesktopTestObserver::SingleDesktopTestObserver(
+    chrome::HostDesktopType allowed_desktop)
+        : allowed_desktop_(allowed_desktop) {
+  BrowserList::AddObserver(this);
+}
+
+SingleDesktopTestObserver::~SingleDesktopTestObserver() {
+  BrowserList::RemoveObserver(this);
+}
+
+void SingleDesktopTestObserver::OnBrowserAdded(Browser* browser) {
+  CHECK(CalledOnValidThread());
+  CHECK_EQ(browser->host_desktop_type(), allowed_desktop_);
+}
+
 }  // namespace
 
 InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
-      exit_when_last_browser_closes_(true)
+      exit_when_last_browser_closes_(true),
+      multi_desktop_test_(false)
 #if defined(OS_MACOSX)
       , autorelease_pool_(NULL)
 #endif  // OS_MACOSX
@@ -363,8 +399,16 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   autorelease_pool_->Recycle();
 #endif
 
+  chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
+  // Self-adds/removes itself from the BrowserList observers.
+  scoped_ptr<SingleDesktopTestObserver> single_desktop_test_observer;
+  if (!multi_desktop_test_) {
+    single_desktop_test_observer.reset(
+        new SingleDesktopTestObserver(active_desktop));
+  }
+
   const BrowserList* active_browser_list =
-      BrowserList::GetInstance(chrome::GetActiveDesktop());
+      BrowserList::GetInstance(active_desktop);
   if (!active_browser_list->empty()) {
     browser_ = active_browser_list->get(0);
 #if defined(USE_ASH)
