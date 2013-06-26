@@ -941,7 +941,7 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_CHROMEOS)
   {
-      "ash-use-alt-shelf",
+      "ash-use-alternate-shelf",
       IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_NAME,
       IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_DESCRIPTION,
       kOsCrOS,
