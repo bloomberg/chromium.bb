@@ -753,7 +753,6 @@
             '../skia/skia.gyp:skia',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
-            '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner_resources',
             '../third_party/mesa/mesa.gyp:osmesa',
             '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
             '../ui/gl/gl.gyp:gl',
@@ -950,7 +949,6 @@
               # npapi test plugin doesn't build on android or ios
               'dependencies': [
                 # Runtime dependencies
-                '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:copy_TestNetscapePlugIn',
                 '../webkit/plugins/webkit_plugins.gyp:copy_npapi_test_plugin',
               ],
             }],
