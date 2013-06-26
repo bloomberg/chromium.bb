@@ -41,10 +41,6 @@ const char kHttpNotFound[] = "HTTP/1.1 404 Not Found\n\n";
 #if defined(DEBUG_DEVTOOLS)
 // Local frontend url provided by InspectUI.
 const char kLocalFrontendURLPrefix[] = "https://localhost:9222/";
-// URL local frontend should be served from.
-const char kLocalFrontendBase[] = "http://localhost:9222/";
-// Local frontend path in DevToolsDataSource.
-const char kLocalFrontendDataSourcePath[] = "localhost";
 #endif  // defined(DEBUG_DEVTOOLS)
 
 class FetchRequest : public net::URLFetcherDelegate {
@@ -140,17 +136,6 @@ class DevToolsDataSource : public content::URLDataSource {
                               callback);
       return;
     }
-#if defined(DEBUG_DEVTOOLS)
-    std::string local_path_prefix(kLocalFrontendDataSourcePath);
-    local_path_prefix += "/";
-    if (StartsWithASCII(path, local_path_prefix, false)) {
-      StartLocalDataRequest(path.substr(local_path_prefix.length()),
-                              render_process_id,
-                              render_view_id,
-                              callback);
-      return;
-    }
-#endif  // defined(DEBUG_DEVTOOLS)
   }
 
   // Serves bundled DevTools frontend from ResourceBundle.
@@ -184,18 +169,6 @@ class DevToolsDataSource : public content::URLDataSource {
     new FetchRequest(request_context_.get(), url, callback);
   }
 
-  // Serves debug DevTools frontend from localhost:9222.
-#if defined(DEBUG_DEVTOOLS)
-  void StartLocalDataRequest(
-      const std::string& path,
-      int render_process_id,
-      int render_view_id,
-      const content::URLDataSource::GotDataCallback& callback) {
-    GURL url = GURL(kLocalFrontendBase + path);
-    new FetchRequest(request_context_.get(), url, callback);
-  }
-#endif  // defined(DEBUG_DEVTOOLS)
-
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
     return GetMimeTypeForPath(path);
   }
@@ -219,12 +192,17 @@ GURL DevToolsUI::GetProxyURL(const std::string& frontend_url) {
 #if defined(DEBUG_DEVTOOLS)
   if (frontend_url.find(kLocalFrontendURLPrefix) == 0) {
     std::string path = url.path();
-    CHECK(path.find(chrome::kChromeUIDevToolsHost) == 1);
-    return GURL(base::StringPrintf("%s://%s/%s/%s",
-                                   chrome::kChromeDevToolsScheme,
-                                   chrome::kChromeUIDevToolsHost,
-                                   kLocalFrontendDataSourcePath,
-                                   path.substr(1).c_str()));
+    std::string local_path_prefix = "/";
+    local_path_prefix += chrome::kChromeUIDevToolsHost;
+    local_path_prefix += "/";
+    if (StartsWithASCII(path, local_path_prefix, false)) {
+      std::string local_path = path.substr(local_path_prefix.length());
+      return GURL(base::StringPrintf("%s://%s/%s/%s",
+                                     chrome::kChromeDevToolsScheme,
+                                     chrome::kChromeUIDevToolsHost,
+                                     chrome::kChromeUIDevToolsBundledPath,
+                                     local_path.c_str()));
+    }
   }
 #endif  // defined(DEBUG_DEVTOOLS)
   CHECK(url.is_valid());
