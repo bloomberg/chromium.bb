@@ -121,12 +121,29 @@ def CheckPassByValue(input_api,
         (f.LocalPath(), match.group('type'))))
   return local_errors
 
+def CheckTodos(input_api, output_api):
+  errors = []
+
+  source_file_filter = lambda x: x
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    contents = input_api.ReadFile(f, 'rb')
+    if ('FIX'+'ME') in contents or re.search(r"TO(?:)DO[^(]", contents):
+      errors.append(f.LocalPath())
+
+  if errors:
+    return [output_api.PresubmitError(
+      'All TO'+'DO comments should be of the form TODO(name).',
+      items=errors)]
+  return []
+
+
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results += CheckAsserts(input_api, output_api)
   results += CheckSpamLogging(input_api, output_api, black_list=CC_PERF_TEST)
   results += CheckPassByValue(input_api, output_api)
   results += CheckChangeLintsClean(input_api, output_api)
+  results += CheckTodos(input_api, output_api)
   return results
 
 def GetPreferredTrySlaves(project, change):
