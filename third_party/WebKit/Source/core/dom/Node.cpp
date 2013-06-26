@@ -81,9 +81,9 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
+#include "core/platform/Partitions.h"
 #include "core/rendering/RenderBox.h"
 #include "wtf/HashSet.h"
-#include "wtf/PartitionAlloc.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/UnusedParam.h"
@@ -98,11 +98,9 @@ namespace WebCore {
 using namespace HTMLNames;
 
 #if ENABLE(PARTITION_ALLOC)
-static PartitionRoot root;
-
 void* Node::operator new(size_t size)
 {
-    return partitionAlloc(&root, size);
+    return partitionAlloc(Partitions::getObjectModelPartition(), size);
 }
 
 void Node::operator delete(void* ptr)
@@ -110,20 +108,6 @@ void Node::operator delete(void* ptr)
     partitionFree(ptr);
 }
 #endif // ENABLE(PARTITION_ALLOC)
-
-void Node::init()
-{
-#if ENABLE(PARTITION_ALLOC)
-    partitionAllocInit(&root);
-#endif
-}
-
-void Node::shutdown()
-{
-#if ENABLE(PARTITION_ALLOC)
-    partitionAllocShutdown(&root);
-#endif
-}
 
 bool Node::isSupported(const String& feature, const String& version)
 {

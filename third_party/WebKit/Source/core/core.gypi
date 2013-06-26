@@ -2504,6 +2504,8 @@
             'platform/MIMETypeFromURL.cpp',
             'platform/MIMETypeFromURL.h',
             'platform/NotImplemented.cpp',
+            'platform/Partitions.cpp',
+            'platform/Partitions.h',
             'platform/Pasteboard.h',
             'platform/PlatformEvent.cpp',
             'platform/PlatformEvent.h',

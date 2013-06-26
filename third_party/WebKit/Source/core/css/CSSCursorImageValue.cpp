@@ -203,7 +203,7 @@ void CSSCursorImageValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryOb
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     m_imageValue->reportMemoryUsage(memoryObjectInfo);
-    // No need to report m_image as it is counted as part of RenderArena.
+    // FIXME: report m_image. It has never been allocated from any of our rendering custom heaps.
     info.addMember(m_referencedElements, "referencedElements");
 }
 

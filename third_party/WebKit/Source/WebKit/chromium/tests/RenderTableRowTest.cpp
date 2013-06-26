@@ -33,7 +33,6 @@
 #include "WebView.h"
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"
-#include "core/rendering/RenderArena.h"
 
 #include <gtest/gtest.h>
 
@@ -61,11 +60,6 @@ class RenderTableRowDeathTest : public testing::Test {
     static Document* document()
     {
         return frame()->document();
-    }
-
-    static RenderArena* arena()
-    {
-        return document()->renderArena();
     }
 
     virtual void SetUp()

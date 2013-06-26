@@ -28,50 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #include "config.h"
-#include "Init.h"
-
-#include "FontFamilyNames.h"
-#include "HTMLNames.h"
-#include "MathMLNames.h"
-#include "SVGNames.h"
-#include "XLinkNames.h"
-#include "XMLNSNames.h"
-#include "XMLNames.h"
-#include "core/css/MediaFeatureNames.h"
-#include "core/platform/EventTracer.h"
 #include "core/platform/Partitions.h"
-#include "wtf/text/StringStatics.h"
 
+#if ENABLE(PARTITION_ALLOC)
 namespace WebCore {
 
-void init()
-{
-    static bool isInited;
-    if (isInited)
-        return;
-    isInited = true;
+PartitionRoot Partitions::m_objectModelRoot;
 
-    AtomicString::init();
-    HTMLNames::init();
-    SVGNames::init();
-    XLinkNames::init();
-    MathMLNames::init();
-    XMLNSNames::init();
-    XMLNames::init();
-    FontFamilyNames::init();
-    MediaFeatureNames::init();
-    WTF::StringStatics::init();
-    QualifiedName::init();
-#if ENABLE(PARTITION_ALLOC)
-    Partitions::init();
+void Partitions::init()
+{
+    partitionAllocInit(&m_objectModelRoot);
+}
+
+void Partitions::shutdown()
+{
+    partitionAllocShutdown(&m_objectModelRoot);
+}
 #endif
-    EventTracer::initialize();
-}
-
-void shutdown()
-{
-    Partitions::shutdown();
-}
 
 } // namespace WebCore
