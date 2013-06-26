@@ -407,7 +407,7 @@ cr.define('login', function() {
         return;
 
       if (active) {
-        this.actionBoxMenuRemoveElement.hidden = false;
+        this.actionBoxMenuRemoveElement.hidden = !this.user_.canRemove;
         this.actionBoxRemoveManagedUserWarningElement.hidden = true;
 
         // Clear focus first if another pod is focused.
