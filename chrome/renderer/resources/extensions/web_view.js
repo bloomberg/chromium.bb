@@ -176,7 +176,8 @@ WebView.prototype.setupWebviewNodeMethods_ = function() {
 
   $Array.forEach(WEB_VIEW_API_METHODS, function(apiMethod) {
     webviewNode[apiMethod] = function(var_args) {
-      return browserPluginNode[apiMethod].apply(browserPluginNode, arguments);
+      return $Function.apply(browserPluginNode[apiMethod],
+          browserPluginNode, arguments);
     };
   }, this);
   this.setupExecuteCodeAPI_();
