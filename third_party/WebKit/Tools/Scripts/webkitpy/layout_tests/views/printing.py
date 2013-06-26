@@ -45,7 +45,7 @@ def print_options():
         optparse.make_option('-q', '--quiet', action='store_true', default=False,
                              help='run quietly (errors, warnings, and progress only)'),
         optparse.make_option('--timing', action='store_true', default=False,
-                             help='display per-test execution time (implies --verbose)'),
+                             help='display test times (summary plus per-test w/ --verbose)'),
         optparse.make_option('-v', '--verbose', action='store_true', default=False,
                              help='print a summarized result for every test (one line per test)'),
         optparse.make_option('--details', action='store_true', default=False,
@@ -63,7 +63,7 @@ class Printer(object):
         self.num_tests = 0
         self._port = port
         self._options = options
-        if self._options.timing or self._options.debug_rwt_logging:
+        if self._options.debug_rwt_logging:
             self._options.verbose = True
         self._meter = MeteredStream(regular_output, options.debug_rwt_logging, logger=logger,
                                     number_of_columns=self._port.host.platform.terminal_width())
@@ -143,9 +143,7 @@ class Printer(object):
 
     def print_results(self, run_time, run_results, summarized_results):
         self._print_timing_statistics(run_time, run_results)
-        self._print_one_line_summary(run_results.total - run_results.expected_skips,
-                                     run_results.expected - run_results.expected_skips,
-                                     run_results.unexpected)
+        self._print_one_line_summary(run_time, run_results)
 
     def _print_timing_statistics(self, total_time, run_results):
         self._print_debug("Test timing:")
@@ -277,7 +275,23 @@ class Printer(object):
         self._print_debug("  Standard dev:    %6.3f" % std_deviation)
         self._print_debug("")
 
-    def _print_one_line_summary(self, total, expected, unexpected):
+    def _print_one_line_summary(self, total_time, run_results):
+        if self._options.timing:
+            parallel_time = sum(result.total_run_time for result in run_results.results_by_name.values())
+
+            # There is serial overhead in layout_test_runner.run() that we can't easily account for when
+            # really running in parallel, but taking the min() ensures that in the worst case
+            # (if parallel time is less than run_time) we do account for it.
+            serial_time = total_time - min(run_results.run_time, parallel_time)
+
+            speedup = (parallel_time + serial_time) / total_time
+            timing_summary = ' in %.2fs (%.2fs in rwt, %.2gx)' % (total_time, serial_time, speedup)
+        else:
+            timing_summary = ''
+
+        total = run_results.total - run_results.expected_skips
+        expected = run_results.expected - run_results.expected_skips
+        unexpected = run_results.unexpected
         incomplete = total - expected - unexpected
         incomplete_str = ''
         if incomplete:
@@ -291,13 +305,13 @@ class Printer(object):
         if unexpected == 0:
             if expected == total:
                 if expected > 1:
-                    summary = "All %d tests ran as expected." % expected
+                    summary = "All %d tests ran as expected%s." % (expected, timing_summary)
                 else:
-                    summary = "The test ran as expected."
+                    summary = "The test ran as expected%s." % (timing_summary)
             else:
-                summary = "%s ran as expected%s." % (grammar.pluralize('test', expected), incomplete_str)
+                summary = "%s ran as expected%s%s." % (grammar.pluralize('test', expected), incomplete_str, timing_summary)
         else:
-            summary = "%s ran as expected, %d didn't%s:" % (grammar.pluralize('test', expected), unexpected, incomplete_str)
+            summary = "%s ran as expected, %d didn't%s%s:" % (grammar.pluralize('test', expected), unexpected, incomplete_str, timing_summary)
 
         self._print_quiet(summary)
         self._print_quiet("")

@@ -168,6 +168,7 @@ class Manager(object):
 
     def run(self, args):
         """Run the tests and return a RunDetails object with the results."""
+        start_time = time.time()
         self._printer.write_update("Collecting tests ...")
         try:
             paths, test_names = self._collect_tests(args)
@@ -195,8 +196,6 @@ class Manager(object):
         else:
             should_retry_failures = self._options.retry_failures
 
-
-        start_time = time.time()
         enabled_pixel_tests_in_retry = False
         try:
             self._start_servers(tests_to_run)
@@ -222,8 +221,6 @@ class Manager(object):
             self._stop_servers()
             self._clean_up_run()
 
-        end_time = time.time()
-
         # Some crash logs can take a long time to be written out so look
         # for new logs after the test run finishes.
         _log.debug("looking for new crash logs")
@@ -234,7 +231,6 @@ class Manager(object):
         _log.debug("summarizing results")
         summarized_full_results = test_run_results.summarize_results(self._port, self._expectations, initial_results, retry_results, enabled_pixel_tests_in_retry)
         summarized_failing_results = test_run_results.summarize_results(self._port, self._expectations, initial_results, retry_results, enabled_pixel_tests_in_retry, only_include_failing=True)
-        self._printer.print_results(end_time - start_time, initial_results, summarized_failing_results)
 
         exit_code = self._port.exit_code_from_summarized_results(summarized_failing_results)
         if not self._options.dry_run:
@@ -246,6 +242,7 @@ class Manager(object):
             if self._options.show_results and (exit_code or (self._options.full_results_html and initial_results.total_failures)):
                 self._port.show_results_html_file(results_path)
 
+        self._printer.print_results(time.time() - start_time, initial_results, summarized_failing_results)
         return test_run_results.RunDetails(exit_code, summarized_full_results, summarized_failing_results, initial_results, retry_results, enabled_pixel_tests_in_retry)
 
     def _run_tests(self, tests_to_run, tests_to_skip, repeat_each, iterations, num_workers, retrying):

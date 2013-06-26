@@ -110,6 +110,7 @@ class LayoutTestRunner(object):
 
         self._printer.write_update('Starting %s ...' % grammar.pluralize('worker', num_workers))
 
+        start_time = time.time()
         try:
             with message_pool.get(self, self._worker_factory, num_workers, self._port.worker_startup_delay_secs(), self._port.host) as pool:
                 pool.run(('test_list', shard.name, shard.test_inputs) for shard in all_shards)
@@ -123,6 +124,8 @@ class LayoutTestRunner(object):
         except Exception, e:
             _log.debug('%s("%s") raised, exiting' % (e.__class__.__name__, str(e)))
             raise
+        finally:
+            run_results.run_time = time.time() - start_time
 
         return run_results
 

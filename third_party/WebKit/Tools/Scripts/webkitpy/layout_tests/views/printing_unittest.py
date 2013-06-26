@@ -57,6 +57,27 @@ class TestUtilityFunctions(unittest.TestCase):
         self.assertIsNotNone(options)
 
 
+class FakeRunResults(object):
+    def __init__(self, total=1, expected=1, unexpected=0, fake_results=None):
+        fake_results = fake_results or []
+        self.total = total
+        self.expected = expected
+        self.unexpected = unexpected
+        self.expected_skips = 0
+        self.results_by_name = {}
+        total_run_time = 0
+        for result in fake_results:
+            self.results_by_name[result.shard_name] = result
+            total_run_time += result.total_run_time
+        self.run_time = total_run_time + 1
+
+
+class FakeShard(object):
+    def __init__(self, shard_name, total_run_time):
+        self.shard_name = shard_name
+        self.total_run_time = total_run_time
+
+
 class  Testprinter(unittest.TestCase):
     def assertEmpty(self, stream):
         self.assertFalse(stream.getvalue())
@@ -126,19 +147,11 @@ class  Testprinter(unittest.TestCase):
         printer, err = self.get_printer()
         printer._options.debug_rwt_logging = True
 
-        class MockRunResults:
-            results_by_name = {}
-
-        class MockResult:
-            def __init__(self, shard_name, total_run_time):
-                self.shard_name = shard_name
-                self.total_run_time = total_run_time
-
-        run_results = MockRunResults()
+        run_results = FakeRunResults()
         run_results.results_by_name = {
-            "slowShard": MockResult("slowShard", 16),
-            "borderlineShard": MockResult("borderlineShard", 15),
-            "fastShard": MockResult("fastShard", 1),
+            "slowShard": FakeShard("slowShard", 16),
+            "borderlineShard": FakeShard("borderlineShard", 15),
+            "fastShard": FakeShard("fastShard", 1),
         }
 
         printer._print_directory_timings(run_results)
@@ -148,33 +161,33 @@ class  Testprinter(unittest.TestCase):
         printer._options.debug_rwt_logging = True
 
         run_results.results_by_name = {
-            "borderlineShard": MockResult("borderlineShard", 15),
-            "fastShard": MockResult("fastShard", 1),
+            "borderlineShard": FakeShard("borderlineShard", 15),
+            "fastShard": FakeShard("fastShard", 1),
         }
 
         printer._print_directory_timings(run_results)
         self.assertWritten(err, [])
 
     def test_print_one_line_summary(self):
-        printer, err = self.get_printer()
-        printer._print_one_line_summary(1, 1, 0)
-        self.assertWritten(err, ["The test ran as expected.\n", "\n"])
+        def run_test(total, exp, unexp, shards, result):
+            printer, err = self.get_printer(['--timing'] if shards else None)
+            fake_results = FakeRunResults(total, exp, unexp, shards)
+            total_time = fake_results.run_time + 1
+            printer._print_one_line_summary(total_time, fake_results)
+            self.assertWritten(err, result)
 
-        printer, err = self.get_printer()
-        printer._print_one_line_summary(1, 1, 0)
-        self.assertWritten(err, ["The test ran as expected.\n", "\n"])
+        # Without times:
+        run_test(1, 1, 0, [], ["The test ran as expected.\n", "\n"])
+        run_test(2, 1, 1, [], ["\n", "1 test ran as expected, 1 didn't:\n", "\n"])
+        run_test(3, 2, 1, [], ["\n", "2 tests ran as expected, 1 didn't:\n", "\n"])
+        run_test(3, 2, 0, [], ["\n", "2 tests ran as expected (1 didn't run).\n", "\n"])
 
-        printer, err = self.get_printer()
-        printer._print_one_line_summary(2, 1, 1)
-        self.assertWritten(err, ["\n", "1 test ran as expected, 1 didn't:\n", "\n"])
-
-        printer, err = self.get_printer()
-        printer._print_one_line_summary(3, 2, 1)
-        self.assertWritten(err, ["\n", "2 tests ran as expected, 1 didn't:\n", "\n"])
-
-        printer, err = self.get_printer()
-        printer._print_one_line_summary(3, 2, 0)
-        self.assertWritten(err, ['\n', "2 tests ran as expected (1 didn't run).\n", '\n'])
+        # With times:
+        fake_shards = [FakeShard("foo", 1), FakeShard("bar", 2)]
+        run_test(1, 1, 0, fake_shards, ["The test ran as expected in 5.00s (2.00s in rwt, 1x).\n", "\n"])
+        run_test(2, 1, 1, fake_shards, ["\n", "1 test ran as expected, 1 didn't in 5.00s (2.00s in rwt, 1x):\n", "\n"])
+        run_test(3, 2, 1, fake_shards, ["\n", "2 tests ran as expected, 1 didn't in 5.00s (2.00s in rwt, 1x):\n", "\n"])
+        run_test(3, 2, 0, fake_shards, ["\n", "2 tests ran as expected (1 didn't run) in 5.00s (2.00s in rwt, 1x).\n", "\n"])
 
     def test_test_status_line(self):
         printer, _ = self.get_printer()
