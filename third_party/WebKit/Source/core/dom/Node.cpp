@@ -1491,7 +1491,7 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
         case DOCUMENT_FRAGMENT_NODE:
             return false;
         case ATTRIBUTE_NODE: {
-            const Attr* attr = static_cast<const Attr*>(this);
+            const Attr* attr = toAttr(this);
             if (attr->ownerElement())
                 return attr->ownerElement()->isDefaultNamespace(namespaceURI);
             return false;
@@ -1729,8 +1729,8 @@ unsigned short Node::compareDocumentPositionInternal(const Node* otherNode, Shad
     if (otherNode == this)
         return DOCUMENT_POSITION_EQUIVALENT;
     
-    const Attr* attr1 = nodeType() == ATTRIBUTE_NODE ? static_cast<const Attr*>(this) : 0;
-    const Attr* attr2 = otherNode->nodeType() == ATTRIBUTE_NODE ? static_cast<const Attr*>(otherNode) : 0;
+    const Attr* attr1 = nodeType() == ATTRIBUTE_NODE ? toAttr(this) : 0;
+    const Attr* attr2 = otherNode->nodeType() == ATTRIBUTE_NODE ? toAttr(otherNode) : 0;
     
     const Node* start1 = attr1 ? attr1->ownerElement() : this;
     const Node* start2 = attr2 ? attr2->ownerElement() : otherNode;

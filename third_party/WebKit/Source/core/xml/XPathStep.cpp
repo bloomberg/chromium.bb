@@ -253,7 +253,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             return;
         case ParentAxis:
             if (context->isAttributeNode()) {
-                Element* n = static_cast<Attr*>(context)->ownerElement();
+                Element* n = toAttr(context)->ownerElement();
                 if (nodeMatches(n, ParentAxis, m_nodeTest))
                     nodes.append(n);
             } else {
@@ -265,7 +265,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
         case AncestorAxis: {
             Node* n = context;
             if (context->isAttributeNode()) {
-                n = static_cast<Attr*>(context)->ownerElement();
+                n = toAttr(context)->ownerElement();
                 if (nodeMatches(n, AncestorAxis, m_nodeTest))
                     nodes.append(n);
             }
@@ -297,10 +297,11 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             return;
         case FollowingAxis:
             if (context->isAttributeNode()) {
-                Node* p = static_cast<Attr*>(context)->ownerElement();
-                while ((p = NodeTraversal::next(p)))
+                Node* p = toAttr(context)->ownerElement();
+                while ((p = NodeTraversal::next(p))) {
                     if (nodeMatches(p, FollowingAxis, m_nodeTest))
                         nodes.append(p);
+                }
             } else {
                 for (Node* p = context; !isRootDomNode(p); p = p->parentNode()) {
                     for (Node* n = p->nextSibling(); n; n = n->nextSibling()) {
@@ -315,7 +316,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             return;
         case PrecedingAxis: {
             if (context->isAttributeNode())
-                context = static_cast<Attr*>(context)->ownerElement();
+                context = toAttr(context)->ownerElement();
 
             Node* n = context;
             while (ContainerNode* parent = n->parentNode()) {
@@ -375,7 +376,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
                 nodes.append(context);
             Node* n = context;
             if (context->isAttributeNode()) {
-                n = static_cast<Attr*>(context)->ownerElement();
+                n = toAttr(context)->ownerElement();
                 if (nodeMatches(n, AncestorOrSelfAxis, m_nodeTest))
                     nodes.append(n);
             }

@@ -145,7 +145,7 @@ v8::Handle<v8::Object> wrap(Node* impl, v8::Handle<v8::Object> creationContext, 
             return wrap(toSVGElement(impl), creationContext, isolate);
         return V8Element::createWrapper(toElement(impl), creationContext, isolate);
     case Node::ATTRIBUTE_NODE:
-        return wrap(static_cast<Attr*>(impl), creationContext, isolate);
+        return wrap(toAttr(impl), creationContext, isolate);
     case Node::TEXT_NODE:
         return wrap(toText(impl), creationContext, isolate);
     case Node::CDATA_SECTION_NODE:

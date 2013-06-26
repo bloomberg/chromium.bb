@@ -994,7 +994,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
                     break;
 
                 if (node->nodeType() == Node::ATTRIBUTE_NODE)
-                    node = static_cast<Attr*>(node)->ownerElement();
+                    node = toAttr(node)->ownerElement();
                 resultCollector.add(node);
             }
         }
@@ -1413,7 +1413,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
         value->setSystemId(docType->systemId());
         value->setInternalSubset(docType->internalSubset());
     } else if (node->isAttributeNode()) {
-        Attr* attribute = static_cast<Attr*>(node);
+        Attr* attribute = toAttr(node);
         value->setName(attribute->name());
         value->setValue(attribute->value());
     }
