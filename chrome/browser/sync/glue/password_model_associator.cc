@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/location.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -63,10 +64,15 @@ syncer::SyncError PasswordModelAssociator::AssociateModels(
   if (!password_store_->FillAutofillableLogins(&passwords) ||
       !password_store_->FillBlacklistLogins(&passwords)) {
     STLDeleteElements(&passwords);
-    return error_handler_->CreateAndUploadError(
-        FROM_HERE,
-        "Could not get the password entries.",
-        model_type());
+
+    // Password store often fails to load passwords. Track failures with UMA.
+    // (http://crbug.com/249000)
+    UMA_HISTOGRAM_ENUMERATION("Sync.LocalDataFailedToLoad",
+                              ModelTypeToHistogramInt(syncer::PASSWORDS),
+                              syncer::MODEL_TYPE_COUNT);
+    return syncer::SyncError(FROM_HERE,
+                             "Could not get the password entries.",
+                             model_type());
   }
 
   std::set<std::string> current_passwords;
