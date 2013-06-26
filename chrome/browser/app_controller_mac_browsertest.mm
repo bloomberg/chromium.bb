@@ -22,7 +22,7 @@ namespace {
 class AppControllerPlatformAppBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerPlatformAppBrowserTest()
-      : native_browser_list(BrowserList::GetInstance(
+      : active_browser_list_(BrowserList::GetInstance(
                                 chrome::GetActiveDesktop())) {
   }
 
@@ -31,8 +31,7 @@ class AppControllerPlatformAppBrowserTest : public InProcessBrowserTest {
                                     "1234");
   }
 
-  // Mac only has the native desktop.
-  const BrowserList* native_browser_list;
+  const BrowserList* active_browser_list_;
 };
 
 // Test that if only a platform app window is open and no browser windows are
@@ -41,18 +40,18 @@ IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
                        PlatformAppReopenWithWindows) {
   base::scoped_nsobject<AppController> ac([[AppController alloc] init]);
   NSUInteger old_window_count = [[NSApp windows] count];
-  EXPECT_EQ(1u, native_browser_list->size());
+  EXPECT_EQ(1u, active_browser_list_->size());
   BOOL result = [ac applicationShouldHandleReopen:NSApp hasVisibleWindows:YES];
 
   EXPECT_TRUE(result);
   EXPECT_EQ(old_window_count, [[NSApp windows] count]);
-  EXPECT_EQ(1u, native_browser_list->size());
+  EXPECT_EQ(1u, active_browser_list_->size());
 }
 
 class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerWebAppBrowserTest()
-      : native_browser_list(BrowserList::GetInstance(
+      : active_browser_list_(BrowserList::GetInstance(
                                 chrome::GetActiveDesktop())) {
   }
 
@@ -64,21 +63,20 @@ class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
     return "http://example.com/";
   }
 
-  // Mac only has the native desktop.
-  const BrowserList* native_browser_list;
+  const BrowserList* active_browser_list_;
 };
 
 // Test that in web app mode a reopen event opens the app URL.
 IN_PROC_BROWSER_TEST_F(AppControllerWebAppBrowserTest,
                        WebAppReopenWithNoWindows) {
   base::scoped_nsobject<AppController> ac([[AppController alloc] init]);
-  EXPECT_EQ(1u, native_browser_list->size());
+  EXPECT_EQ(1u, active_browser_list_->size());
   BOOL result = [ac applicationShouldHandleReopen:NSApp hasVisibleWindows:NO];
 
   EXPECT_FALSE(result);
-  EXPECT_EQ(2u, native_browser_list->size());
+  EXPECT_EQ(2u, active_browser_list_->size());
 
-  Browser* browser = native_browser_list->get(0);
+  Browser* browser = active_browser_list_->get(0);
   GURL current_url =
       browser->tab_strip_model()->GetActiveWebContents()->GetURL();
   EXPECT_EQ(GetAppURL(), current_url.spec());
