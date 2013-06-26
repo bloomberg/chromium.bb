@@ -125,10 +125,10 @@ void SignalingConnector::OnRefreshTokenResponse(
       base::TimeDelta::FromSeconds(expires_seconds) -
       base::TimeDelta::FromSeconds(kTokenUpdateTimeBeforeExpirySeconds);
 
-  gaia_oauth_client_->GetUserInfo(access_token, 1, this);
+  gaia_oauth_client_->GetUserEmail(access_token, 1, this);
 }
 
-void SignalingConnector::OnGetUserInfoResponse(const std::string& user_email) {
+void SignalingConnector::OnGetUserEmailResponse(const std::string& user_email) {
   DCHECK(CalledOnValidThread());
   DCHECK(oauth_credentials_.get());
   LOG(INFO) << "Received user info.";

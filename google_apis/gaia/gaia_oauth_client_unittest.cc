@@ -179,7 +179,7 @@ class MockGaiaOAuthClientDelegate : public gaia::GaiaOAuthClient::Delegate {
                                          int expires_in_seconds));
   MOCK_METHOD2(OnRefreshTokenResponse, void(const std::string& access_token,
                                             int expires_in_seconds));
-  MOCK_METHOD1(OnGetUserInfoResponse, void(const std::string& user_email));
+  MOCK_METHOD1(OnGetUserEmailResponse, void(const std::string& user_email));
   MOCK_METHOD0(OnOAuthError, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
 
@@ -294,15 +294,15 @@ TEST_F(GaiaOAuthClientTest, RefreshTokenDownscopingSuccess) {
 }
 
 
-TEST_F(GaiaOAuthClientTest, GetUserInfo) {
+TEST_F(GaiaOAuthClientTest, GetUserEmail) {
   MockGaiaOAuthClientDelegate delegate;
-  EXPECT_CALL(delegate, OnGetUserInfoResponse(kTestUserEmail)).Times(1);
+  EXPECT_CALL(delegate, OnGetUserEmailResponse(kTestUserEmail)).Times(1);
 
   MockOAuthFetcherFactory factory;
   factory.set_results(kDummyUserInfoResult);
 
   GaiaOAuthClient auth(profile_.GetRequestContext());
-  auth.GetUserInfo("access_token", 1, &delegate);
+  auth.GetUserEmail("access_token", 1, &delegate);
 }
 
 TEST_F(GaiaOAuthClientTest, GetTokenInfo) {

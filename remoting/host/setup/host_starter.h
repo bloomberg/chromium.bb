@@ -52,7 +52,7 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
                                    int expires_in_seconds) OVERRIDE;
   virtual void OnRefreshTokenResponse(const std::string& access_token,
                                       int expires_in_seconds) OVERRIDE;
-  virtual void OnGetUserInfoResponse(const std::string& user_email) OVERRIDE;
+  virtual void OnGetUserEmailResponse(const std::string& user_email) OVERRIDE;
 
   // remoting::ServiceClient::Delegate
   virtual void OnHostRegistered() OVERRIDE;

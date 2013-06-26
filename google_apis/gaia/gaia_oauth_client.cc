@@ -49,9 +49,9 @@ class GaiaOAuthClient::Core
                     const std::vector<std::string>& scopes,
                     int max_retries,
                     GaiaOAuthClient::Delegate* delegate);
-  void GetUserInfo(const std::string& oauth_access_token,
-                   int max_retries,
-                   Delegate* delegate);
+  void GetUserEmail(const std::string& oauth_access_token,
+                    int max_retries,
+                    Delegate* delegate);
   void GetTokenInfo(const std::string& oauth_access_token,
                     int max_retries,
                     Delegate* delegate);
@@ -131,9 +131,9 @@ void GaiaOAuthClient::Core::RefreshToken(
                   post_body, max_retries, delegate);
 }
 
-void GaiaOAuthClient::Core::GetUserInfo(const std::string& oauth_access_token,
-                                        int max_retries,
-                                        Delegate* delegate) {
+void GaiaOAuthClient::Core::GetUserEmail(const std::string& oauth_access_token,
+                                         int max_retries,
+                                         Delegate* delegate) {
   DCHECK_EQ(request_type_, NO_PENDING_REQUEST);
   DCHECK(!request_.get());
   request_type_ = USER_INFO;
@@ -253,7 +253,7 @@ void GaiaOAuthClient::Core::HandleResponse(
     case USER_INFO: {
       std::string email;
       response_dict->GetString("email", &email);
-      delegate_->OnGetUserInfoResponse(email);
+      delegate_->OnGetUserEmailResponse(email);
       break;
     }
 
@@ -322,10 +322,10 @@ void GaiaOAuthClient::RefreshToken(
                              delegate);
 }
 
-void GaiaOAuthClient::GetUserInfo(const std::string& access_token,
+void GaiaOAuthClient::GetUserEmail(const std::string& access_token,
                                   int max_retries,
                                   Delegate* delegate) {
-  return core_->GetUserInfo(access_token, max_retries, delegate);
+  return core_->GetUserEmail(access_token, max_retries, delegate);
 }
 
 void GaiaOAuthClient::GetTokenInfo(const std::string& access_token,
