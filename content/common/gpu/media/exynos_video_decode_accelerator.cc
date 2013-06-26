@@ -207,7 +207,6 @@ ExynosVideoDecodeAccelerator::ExynosVideoDecodeAccelerator(
       client_(client_ptr_factory_.GetWeakPtr()),
       decoder_thread_("ExynosDecoderThread"),
       decoder_state_(kUninitialized),
-      decoder_current_bitstream_buffer_(NULL),
       decoder_delay_bitstream_buffer_id_(-1),
       decoder_current_input_buffer_(-1),
       decoder_decode_buffer_tasks_scheduled_(0),
