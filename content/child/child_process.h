@@ -53,7 +53,8 @@ class CONTENT_EXPORT ChildProcess {
   void AddRefProcess();
   void ReleaseProcess();
 
-  // Getter for the one ChildProcess object for this process.
+  // Getter for the one ChildProcess object for this process. Can only be called
+  // on the main thread.
   static ChildProcess* current();
 
   static void WaitForDebugger(const std::string& label);

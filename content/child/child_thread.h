@@ -93,9 +93,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
     return quota_dispatcher_.get();
   }
 
-  // Safe to call on any thread, as long as it's guaranteed that the thread's
-  // lifetime is less than the main thread. The |filter| returned may only
-  // be used on background threads.
   IPC::SyncMessageFilter* sync_message_filter() const {
     return sync_message_filter_.get();
   }
@@ -113,10 +110,14 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   base::MessageLoop* message_loop() const { return message_loop_; }
 
-  // Returns the one child thread.
+  // Returns the one child thread. Can only be called on the main thread.
   static ChildThread* current();
 
-  virtual bool IsWebFrameValid(WebKit::WebFrame* frame);
+#if defined(OS_ANDROID)
+  // Called on Android's service thread to shutdown the main thread of this
+  // process.
+  static void ShutdownThread();
+#endif
 
  protected:
   friend class ChildProcess;

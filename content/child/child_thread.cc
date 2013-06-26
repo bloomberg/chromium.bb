@@ -6,10 +6,12 @@
 
 #include "base/allocator/allocator_extension.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_local.h"
 #include "base/tracked_objects.h"
 #include "components/tracing/child_trace_message_filter.h"
 #include "content/child/child_histogram_message_filter.h"
@@ -39,6 +41,9 @@ namespace {
 
 // How long to wait for a connection to the browser process before giving up.
 const int kConnectionTimeoutS = 15;
+
+base::LazyInstance<base::ThreadLocalPointer<ChildThread> > g_lazy_tls =
+    LAZY_INSTANCE_INITIALIZER;
 
 // This isn't needed on Windows because there the sandbox's job object
 // terminates child processes automatically. For unsandboxed processes (i.e.
@@ -80,6 +85,15 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
 
 #endif  // OS(POSIX)
 
+#if defined(OS_ANDROID)
+ChildThread* g_child_thread;
+
+void QuitMainThreadMessageLoop() {
+  base::MessageLoop::current()->Quit();
+}
+
+#endif
+
 }  // namespace
 
 ChildThread::ChildThread()
@@ -96,6 +110,7 @@ ChildThread::ChildThread(const std::string& channel_name)
 }
 
 void ChildThread::Init() {
+  g_lazy_tls.Pointer()->Set(this);
   on_channel_error_called_ = false;
   message_loop_ = base::MessageLoop::current();
   channel_.reset(
@@ -140,6 +155,10 @@ void ChildThread::Init() {
       base::Bind(&ChildThread::EnsureConnected,
                  channel_connected_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kConnectionTimeoutS));
+
+#if defined(OS_ANDROID)
+  g_child_thread = this;
+#endif
 }
 
 ChildThread::~ChildThread() {
@@ -159,6 +178,7 @@ ChildThread::~ChildThread() {
   // automatically.  We used to watch the object handle on Windows to do this,
   // but it wasn't possible to do so on POSIX.
   channel_->ClearIPCTaskRunner();
+  g_lazy_tls.Pointer()->Set(NULL);
 }
 
 void ChildThread::OnChannelConnected(int32 peer_pid) {
@@ -328,14 +348,17 @@ void ChildThread::OnGetTcmallocStats() {
 #endif
 
 ChildThread* ChildThread::current() {
-  return ChildProcess::current() ?
-      ChildProcess::current()->main_thread() : NULL;
+  return g_lazy_tls.Pointer()->Get();
 }
 
-bool ChildThread::IsWebFrameValid(WebKit::WebFrame* frame) {
-  // Return false so that it is overridden in any process in which it is used.
-  return false;
+#if defined(OS_ANDROID)
+void ChildThread::ShutdownThread() {
+  DCHECK_NE(base::MessageLoop::current(), g_child_thread->message_loop());
+  g_child_thread->message_loop()->PostTask(
+      FROM_HERE, base::Bind(&QuitMainThreadMessageLoop));
 }
+
+#endif
 
 void ChildThread::OnProcessFinalRelease() {
   if (on_channel_error_called_) {

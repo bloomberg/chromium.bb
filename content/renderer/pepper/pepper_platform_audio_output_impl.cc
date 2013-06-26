@@ -135,31 +135,22 @@ bool PepperPlatformAudioOutputImpl::Initialize(
 
 void PepperPlatformAudioOutputImpl::InitializeOnIOThread(
     const media::AudioParameters& params) {
-  DCHECK(ChildProcess::current()->io_message_loop_proxy()->
-      BelongsToCurrentThread());
   const int kSessionId = 0;
   if (ipc_)
     ipc_->CreateStream(this, params, kSessionId);
 }
 
 void PepperPlatformAudioOutputImpl::StartPlaybackOnIOThread() {
-  DCHECK(ChildProcess::current()->io_message_loop_proxy()->
-      BelongsToCurrentThread());
   if (ipc_)
     ipc_->PlayStream();
 }
 
 void PepperPlatformAudioOutputImpl::StopPlaybackOnIOThread() {
-  DCHECK(ChildProcess::current()->io_message_loop_proxy()->
-      BelongsToCurrentThread());
   if (ipc_)
     ipc_->PauseStream();
 }
 
 void PepperPlatformAudioOutputImpl::ShutDownOnIOThread() {
-  DCHECK(ChildProcess::current()->io_message_loop_proxy()->
-      BelongsToCurrentThread());
-
   // Make sure we don't call shutdown more than once.
   if (!ipc_)
     return;

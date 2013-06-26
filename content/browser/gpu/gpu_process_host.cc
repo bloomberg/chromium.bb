@@ -285,8 +285,7 @@ class GpuMainThread : public base::Thread {
   explicit GpuMainThread(const std::string& channel_id)
       : base::Thread("Chrome_InProcGpuThread"),
         channel_id_(channel_id),
-        gpu_process_(NULL),
-        child_thread_(NULL) {
+        gpu_process_(NULL) {
   }
 
   virtual ~GpuMainThread() {
@@ -295,27 +294,20 @@ class GpuMainThread : public base::Thread {
 
  protected:
   virtual void Init() OVERRIDE {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
-      child_thread_ = new GpuChildThread(channel_id_);
-    } else {
-      gpu_process_ = new GpuProcess();
-      // The process object takes ownership of the thread object, so do not
-      // save and delete the pointer.
-      gpu_process_->set_main_thread(new GpuChildThread(channel_id_));
-    }
+    gpu_process_ = new GpuProcess();
+    // The process object takes ownership of the thread object, so do not
+    // save and delete the pointer.
+    gpu_process_->set_main_thread(new GpuChildThread(channel_id_));
   }
 
   virtual void CleanUp() OVERRIDE {
     delete gpu_process_;
-    if (child_thread_)
-      delete child_thread_;
   }
 
  private:
   std::string channel_id_;
   // Deleted in CleanUp() on the gpu thread, so don't use smart pointers.
   GpuProcess* gpu_process_;
-  GpuChildThread* child_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMainThread);
 };

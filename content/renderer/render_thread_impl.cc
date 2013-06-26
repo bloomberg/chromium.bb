@@ -34,6 +34,7 @@
 #include "content/child/plugin_messages.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/runtime_features.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/child/web_database_observer_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/database_messages.h"
@@ -344,6 +345,7 @@ void RenderThreadImpl::Init() {
   idle_notification_delay_in_ms_ = kInitialIdleHandlerDelayMs;
   idle_notifications_to_skip_ = 0;
   layout_test_mode_ = false;
+  shutdown_event_ = NULL;
 
   appcache_dispatcher_.reset(
       new AppCacheDispatcher(Get(), new appcache::AppCacheFrontendImpl()));
@@ -1004,17 +1006,6 @@ void RenderThreadImpl::ReleaseCachedFonts() {
 
 #endif  // OS_WIN
 
-bool RenderThreadImpl::IsWebFrameValid(WebKit::WebFrame* web_frame) {
-  if (!web_frame)
-    return false;  // We must be shutting down.
-
-  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
-  if (!render_view)
-    return false;  // We must be shutting down.
-
-  return true;
-}
-
 bool RenderThreadImpl::IsMainThread() {
   return !!current();
 }
@@ -1024,11 +1015,11 @@ base::MessageLoop* RenderThreadImpl::GetMainLoop() {
 }
 
 scoped_refptr<base::MessageLoopProxy> RenderThreadImpl::GetIOLoopProxy() {
-  return ChildProcess::current()->io_message_loop_proxy();
+  return io_message_loop_proxy_;
 }
 
 base::WaitableEvent* RenderThreadImpl::GetShutDownEvent() {
-  return ChildProcess::current()->GetShutDownEvent();
+  return shutdown_event_;
 }
 
 scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
@@ -1051,10 +1042,7 @@ int32 RenderThreadImpl::CreateViewCommandBuffer(
       &route_id);
 
   // Allow calling this from the compositor thread.
-  if (base::MessageLoop::current() == message_loop())
-    ChildThread::Send(message);
-  else
-    sync_message_filter()->Send(message);
+  thread_safe_sender()->Send(message);
 
   return route_id;
 }
@@ -1168,6 +1156,12 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   }
 
   GetContentClient()->SetGpuInfo(gpu_info);
+
+  // Cache some variables that are needed on the compositor thread for our
+  // implementation of GpuChannelHostFactory.
+  io_message_loop_proxy_ = ChildProcess::current()->io_message_loop_proxy();
+  shutdown_event_ = ChildProcess::current()->GetShutDownEvent();
+
   gpu_channel_ = GpuChannelHost::Create(
       this, 0, client_id, gpu_info, channel_handle);
   return gpu_channel_.get();

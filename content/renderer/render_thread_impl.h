@@ -13,7 +13,6 @@
 #include "base/strings/string16.h"
 #include "base/timer.h"
 #include "build/build_config.h"
-#include "content/child/child_process.h"
 #include "content/child/child_thread.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
@@ -154,25 +153,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   virtual void PreCacheFont(const LOGFONT& log_font) OVERRIDE;
   virtual void ReleaseCachedFonts() OVERRIDE;
 #endif
-
-  // ChildThread:
-  virtual bool IsWebFrameValid(WebKit::WebFrame* frame) OVERRIDE;
-
-  // GpuChannelHostFactory implementation:
-  virtual bool IsMainThread() OVERRIDE;
-  virtual base::MessageLoop* GetMainLoop() OVERRIDE;
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() OVERRIDE;
-  virtual base::WaitableEvent* GetShutDownEvent() OVERRIDE;
-  virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(
-      size_t size) OVERRIDE;
-  virtual int32 CreateViewCommandBuffer(
-      int32 surface_id,
-      const GPUCreateCommandBufferConfig& init_params) OVERRIDE;
-  virtual void CreateImage(
-      gfx::PluginWindowHandle window,
-      int32 image_id,
-      const CreateImageCallback& callback) OVERRIDE;
-  virtual void DeleteImage(int32 image_id, int32 sync_point) OVERRIDE;
 
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
@@ -351,7 +331,24 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
                                const std::vector<float>& new_touchscreen);
 
  private:
+  // ChildThread
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
+
+  // GpuChannelHostFactory implementation:
+  virtual bool IsMainThread() OVERRIDE;
+  virtual base::MessageLoop* GetMainLoop() OVERRIDE;
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() OVERRIDE;
+  virtual base::WaitableEvent* GetShutDownEvent() OVERRIDE;
+  virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(
+      size_t size) OVERRIDE;
+  virtual int32 CreateViewCommandBuffer(
+      int32 surface_id,
+      const GPUCreateCommandBufferConfig& init_params) OVERRIDE;
+  virtual void CreateImage(
+      gfx::PluginWindowHandle window,
+      int32 image_id,
+      const CreateImageCallback& callback) OVERRIDE;
+  virtual void DeleteImage(int32 image_id, int32 sync_point) OVERRIDE;
 
   void Init();
 
@@ -429,6 +426,11 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   // The channel from the renderer process to the GPU process.
   scoped_refptr<GpuChannelHost> gpu_channel_;
+
+  // Cache of variables that are needed on the compositor thread by
+  // GpuChannelHostFactory methods.
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  base::WaitableEvent* shutdown_event_;
 
   // A lazily initiated thread on which file operations are run.
   scoped_ptr<base::Thread> file_thread_;

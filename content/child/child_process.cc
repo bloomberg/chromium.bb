@@ -8,12 +8,14 @@
 #include <signal.h>  // For SigUSR1Handler below.
 #endif
 
+#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/process_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_local.h"
 #include "content/child/child_thread.h"
 
 #if defined(OS_ANDROID)
@@ -25,15 +27,19 @@ static void SigUSR1Handler(int signal) { }
 #endif
 
 namespace content {
-// The singleton instance for this process.
-ChildProcess* child_process = NULL;
+
+namespace {
+
+base::LazyInstance<base::ThreadLocalPointer<ChildProcess> > g_lazy_tls =
+    LAZY_INSTANCE_INITIALIZER;
+}
 
 ChildProcess::ChildProcess()
     : ref_count_(0),
       shutdown_event_(true, false),
       io_thread_("Chrome_ChildIOThread") {
-  DCHECK(!child_process);
-  child_process = this;
+  DCHECK(!g_lazy_tls.Pointer()->Get());
+  g_lazy_tls.Pointer()->Set(this);
 
   base::StatisticsRecorder::Initialize();
 
@@ -47,7 +53,7 @@ ChildProcess::ChildProcess()
 }
 
 ChildProcess::~ChildProcess() {
-  DCHECK(child_process == this);
+  DCHECK(g_lazy_tls.Pointer()->Get() == this);
 
   // Signal this event before destroying the child process.  That way all
   // background threads can cleanup.
@@ -62,7 +68,7 @@ ChildProcess::~ChildProcess() {
     main_thread_.reset();
   }
 
-  child_process = NULL;
+  g_lazy_tls.Pointer()->Set(NULL);
 }
 
 ChildThread* ChildProcess::main_thread() {
@@ -83,7 +89,6 @@ void ChildProcess::ReleaseProcess() {
   DCHECK(!main_thread_.get() ||  // null in unittests.
          base::MessageLoop::current() == main_thread_->message_loop());
   DCHECK(ref_count_);
-  DCHECK(child_process);
   if (--ref_count_)
     return;
 
@@ -92,12 +97,11 @@ void ChildProcess::ReleaseProcess() {
 }
 
 ChildProcess* ChildProcess::current() {
-  return child_process;
+  return g_lazy_tls.Pointer()->Get();
 }
 
 base::WaitableEvent* ChildProcess::GetShutDownEvent() {
-  DCHECK(child_process);
-  return &child_process->shutdown_event_;
+  return &shutdown_event_;
 }
 
 void ChildProcess::WaitForDebugger(const std::string& label) {

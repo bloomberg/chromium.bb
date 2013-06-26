@@ -5,6 +5,7 @@
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 
 #include "base/bind.h"
+#include "content/child/child_process.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
 
@@ -31,7 +32,7 @@ PepperHungPluginFilter::PepperHungPluginFilter(
       view_routing_id_(view_routing_id),
       plugin_child_id_(plugin_child_id),
       filter_(RenderThread::Get()->GetSyncMessageFilter()),
-      io_loop_(RenderThreadImpl::current()->GetIOLoopProxy()),
+      io_loop_(ChildProcess::current()->io_message_loop_proxy()),
       pending_sync_message_count_(0),
       hung_plugin_showing_(false),
       timer_task_pending_(false) {

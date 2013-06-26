@@ -10,7 +10,6 @@
 #include "base/android/jni_array.h"
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
-#include "content/child/child_process.h"
 #include "content/child/child_thread.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/common/gpu/gpu_surface_lookup.h"
@@ -81,13 +80,13 @@ class SurfaceTexturePeerChildImpl : public content::SurfaceTexturePeer,
 // Chrome actually uses the renderer code path for all of its child
 // processes such as renderers, plugins, etc.
 void InternalInitChildProcess(const std::vector<int>& file_ids,
-                                  const std::vector<int>& file_fds,
-                                  JNIEnv* env,
-                                  jclass clazz,
-                                  jobject context,
-                                  jobject service_in,
-                                  jint cpu_count,
-                                  jlong cpu_features) {
+                              const std::vector<int>& file_fds,
+                              JNIEnv* env,
+                              jclass clazz,
+                              jobject context,
+                              jobject service_in,
+                              jint cpu_count,
+                              jlong cpu_features) {
   base::android::ScopedJavaLocalRef<jobject> service(env, service_in);
 
   // Set the CPU properties.
@@ -104,20 +103,16 @@ void InternalInitChildProcess(const std::vector<int>& file_ids,
 
 }
 
-void QuitMainThreadMessageLoop() {
-  base::MessageLoop::current()->Quit();
-}
-
 }  // namespace <anonymous>
 
 void InitChildProcess(JNIEnv* env,
-                          jclass clazz,
-                          jobject context,
-                          jobject service,
-                          jintArray j_file_ids,
-                          jintArray j_file_fds,
-                          jint cpu_count,
-                          jlong cpu_features) {
+                      jclass clazz,
+                      jobject context,
+                      jobject service,
+                      jintArray j_file_ids,
+                      jintArray j_file_fds,
+                      jint cpu_count,
+                      jlong cpu_features) {
   std::vector<int> file_ids;
   std::vector<int> file_fds;
   JavaIntArrayToIntVector(env, j_file_ids, &file_ids);
@@ -139,13 +134,7 @@ bool RegisterChildProcessService(JNIEnv* env) {
 }
 
 void ShutdownMainThread(JNIEnv* env, jobject obj) {
-  ChildProcess* current_process = ChildProcess::current();
-  if (!current_process)
-    return;
-  ChildThread* main_child_thread = current_process->main_thread();
-  if (main_child_thread && main_child_thread->message_loop())
-    main_child_thread->message_loop()->PostTask(FROM_HERE,
-        base::Bind(&QuitMainThreadMessageLoop));
+  ChildThread::ShutdownThread();
 }
 
 }  // namespace content
