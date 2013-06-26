@@ -55,10 +55,6 @@ struct WebGraphicsMemoryAllocation {
     PriorityCutoff priorityCutoffWhenNotVisible;
     bool haveBackbufferWhenNotVisible;
 
-    // If true, enforce this policy just once, but do not keep
-    // it as a permanent policy.
-    bool enforceButDoNotKeepAsPolicy;
-
     WebGraphicsMemoryAllocation()
         : gpuResourceSizeInBytes(0)
         , suggestHaveBackbuffer(false)
@@ -67,7 +63,6 @@ struct WebGraphicsMemoryAllocation {
         , bytesLimitWhenNotVisible(0)
         , priorityCutoffWhenNotVisible(PriorityCutoffAllowNothing)
         , haveBackbufferWhenNotVisible(false)
-        , enforceButDoNotKeepAsPolicy(false)
     {
     }
 
@@ -79,7 +74,6 @@ struct WebGraphicsMemoryAllocation {
         , bytesLimitWhenNotVisible(0)
         , priorityCutoffWhenNotVisible(PriorityCutoffAllowNothing)
         , haveBackbufferWhenNotVisible(false)
-        , enforceButDoNotKeepAsPolicy(false)
     {
     }
 };
