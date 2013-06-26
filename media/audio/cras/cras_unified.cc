@@ -87,8 +87,6 @@ CrasUnifiedStream::CrasUnifiedStream(const AudioParameters& params,
       volume_(1.0),
       manager_(manager),
       source_callback_(NULL),
-      input_bus_(NULL),
-      output_bus_(NULL),
       stream_direction_(CRAS_STREAM_OUTPUT) {
   DCHECK(manager_);
   DCHECK(params_.channels()  > 0);
