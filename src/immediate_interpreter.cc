@@ -1430,8 +1430,12 @@ bool ImmediateInterpreter::TwoFingersGesturing(
 
   // Next, if fingers are vertically aligned and one is in the bottom zone,
   // consider that one a resting thumb (thus, do not scroll/right click)
+  // if it has greater pressure. For clicking, we relax the pressure requirement
+  // because we may not have enough time to determine.
   if (xdist < ydist && (FingerInDampenedZone(finger1) ||
-                        FingerInDampenedZone(finger2)))
+                        FingerInDampenedZone(finger2)) &&
+      (FingerInDampenedZone(finger1) == (finger1.pressure > finger2.pressure) ||
+       check_button_type))
     return false;
   return true;
 }
