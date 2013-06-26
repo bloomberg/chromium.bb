@@ -313,7 +313,7 @@ Actions:"""
         opts.internal = True
       args[1] = args[1][1:]
 
-  opts.gerrit = gerrit.GetGerritHelper(
+  opts.gerrit = gerrit.GerritHelper.FromRemote(
       constants.INTERNAL_REMOTE if opts.internal else constants.EXTERNAL_REMOTE,
       print_cmd=opts.debug)
 

@@ -4,17 +4,14 @@
 
 """Module that handles the processing of patches to the source tree."""
 
-import calendar
 import logging
 import os
 import random
 import re
-import time
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
-from chromite.lib import gob_util
 
 _MAXIMUM_GERRIT_NUMBER_LENGTH = 6
 
@@ -1028,21 +1025,20 @@ class GerritPatch(GitRepoPatch):
     """
     self.patch_dict = patch_dict
     self.url_prefix = url_prefix
-    current_patch_set = patch_dict.get('currentPatchSet', {})
     super(GerritPatch, self).__init__(
         os.path.join(url_prefix, patch_dict['project']),
         patch_dict['project'],
-        current_patch_set.get('ref'),
+        patch_dict['currentPatchSet']['ref'],
         patch_dict['branch'],
         remote,
-        sha1=current_patch_set.get('revision'),
+        sha1=patch_dict['currentPatchSet']['revision'],
         change_id=patch_dict['id'])
 
     # id - The CL's ChangeId
     # revision - The CL's SHA1 hash.
-    self.revision = current_patch_set.get('revision')
-    self.patch_number = current_patch_set.get('number')
-    self.commit = patch_dict
+    self.revision = patch_dict['currentPatchSet']['revision']
+    self.patch_number = patch_dict['currentPatchSet']['number']
+    self.commit = patch_dict['currentPatchSet']['revision']
     self.owner, _, _ = patch_dict['owner']['email'].partition('@')
     self.gerrit_number = FormatGerritNumber(str(patch_dict['number']),
                                             strict=True)
@@ -1056,63 +1052,6 @@ class GerritPatch(GitRepoPatch):
     self.approval_timestamp = \
         max(x['grantedOn'] for x in self._approvals) if self._approvals else 0
     self.commit_message = patch_dict.get('commitMessage')
-
-  @classmethod
-  def FromGerritOnBorgQuery(cls, change, remote, host):
-    """
-    Create a GerritPatch instance from the json data returned by a query.
-
-    The HTTP interface to gerrit uses a different json schema from the old SQL
-    interface.  The method essentially converts data from the new schema to the
-    old one before passing it to the GerritPatch constructor.
-
-    Old interface:
-      http://gerrit-documentation.googlecode.com/svn/Documentation/2.6/json.html
-
-    New interface:
-      https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#json-entities
-    """
-    _convert_tm = lambda tm: calendar.timegm(time.strptime(tm.partition('.')[0]))
-    _convert_user = lambda u: {
-        'name': u['name'],
-        'email': u['email'],
-        'username': u['name'],
-    }
-    patch_dict = {
-       'project': change['project'],
-       'branch': change['branch'],
-       'createdOn': _convert_tm(change['created']),
-       'lastUpdated': _convert_tm(change['updated']),
-       'sortKey': change.get('_sortkey'),
-       'id': change['change_id'],
-       'owner': _convert_user(change['owner']),
-       'number': change['_number'],
-       'url': gob_util.GetChangeUrl(host, change['change_id']),
-       'status': change['status'],
-       'subject': change.get('subject'),
-    }
-    current_revision = change.get('current_revision', '')
-    current_revision_info = change.get('revisions', {}).get(current_revision)
-    if current_revision_info:
-      approvals = []
-      for label, label_data in change['labels'].iteritems():
-        for review_data in label_data['all']:
-          approvals.append({
-              'type': constants.GERRIT_ON_BORG_LABELS[label],
-              'description': label,
-              'value': review_data.get('value', 0),
-              'grantedOn': _convert_tm(review_data['date']),
-              'by': _convert_user(review_data),
-          })
-      patch_dict['currentPatchSet'] = {
-          'approvals': approvals,
-          'parents': [
-              x['commit'] for x in current_revision_info['commit']['parents']],
-          'ref': current_revision_info['fetch']['http']['ref'],
-          'revision': current_revision,
-          'number': current_revision_info['_number'],
-      }
-    return cls(patch_dict, remote, url_prefix)
 
   def __reduce__(self):
     """Used for pickling to re-create patch object."""
