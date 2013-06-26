@@ -11084,6 +11084,10 @@ void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
         builder.appendLiteral("Invalid CSS media query: ");
         break;
 
+    case InvalidSelectorPseudoError:
+        builder.appendLiteral("Invalid CSS selector pseudoclass: ");
+        break;
+
     case InvalidKeyframeSelectorError:
         builder.appendLiteral("Invalid CSS keyframe selector: ");
         break;

@@ -86,6 +86,7 @@ public:
         InvalidRuleError,
         InvalidMediaQueryError,
         InvalidKeyframeSelectorError,
+        InvalidSelectorPseudoError,
         GeneralError
     };
 

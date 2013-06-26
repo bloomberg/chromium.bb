@@ -79,11 +79,13 @@ x {
     background: IE-hack ignored \9  ;
     background: IE-hack ignored \0 ;
     background: IE-hack ignored\0/ ;
+    background: IE-hack ignored !ie;
     animation: 3s slidein;
     font-size-adjust: none;
     transform: translateZ(0);
     user-select: none;
     -webkit-text-size-adjust: 100%;
+    unicode-bidi: isolate;
 }
 
 x, {
@@ -141,6 +143,12 @@ x, {
     x
 }
 
+div.search input:invalid-pseudo-one {}
+div.search input::invalid-pseudo-two {}
+
+div.search input::-webkit-input-placeholder {}
+div.search input:-moz-placeholder {}
+div.search input:-ms-input-placeholder {}
 </style>
 
 <script>

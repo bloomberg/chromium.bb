@@ -1370,24 +1370,28 @@ pseudo_page:
     }
 
 pseudo:
-    ':' IDENT {
+    ':' error_location IDENT {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoClass);
-        parser->tokenToLowerCase($2);
-        $$->setValue($2);
-        CSSSelector::PseudoType type = $$->pseudoType();
-        if (type == CSSSelector::PseudoUnknown)
-            YYERROR;
-    }
-    | ':' ':' IDENT {
-        $$ = parser->createFloatingSelector();
-        $$->setMatch(CSSSelector::PseudoElement);
         parser->tokenToLowerCase($3);
         $$->setValue($3);
+        CSSSelector::PseudoType type = $$->pseudoType();
+        if (type == CSSSelector::PseudoUnknown) {
+            parser->reportError($2, CSSParser::InvalidSelectorPseudoError);
+            YYERROR;
+        }
+    }
+    | ':' ':' error_location IDENT {
+        $$ = parser->createFloatingSelector();
+        $$->setMatch(CSSSelector::PseudoElement);
+        parser->tokenToLowerCase($4);
+        $$->setValue($4);
         // FIXME: This call is needed to force selector to compute the pseudoType early enough.
         CSSSelector::PseudoType type = $$->pseudoType();
-        if (type == CSSSelector::PseudoUnknown)
+        if (type == CSSSelector::PseudoUnknown) {
+            parser->reportError($3, CSSParser::InvalidSelectorPseudoError);
             YYERROR;
+        }
     }
     // used by ::cue(:past/:future)
     | ':' ':' CUEFUNCTION maybe_space simple_selector_list maybe_space closing_parenthesis {

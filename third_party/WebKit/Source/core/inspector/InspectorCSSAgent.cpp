@@ -679,14 +679,23 @@ bool InspectorCSSAgent::cssErrorFilter(const CSSParserString& content, int prope
         if (contentLength > 2 && content[contentLength - 2] == '\\' && (content[contentLength - 1] == '9' || content[contentLength - 1] == '0'))
             return false;
 
-        // Another hack like "property: value\0/".
-        if (contentLength > 3 && content[contentLength - 3] == '\\' && content[contentLength - 2] == '0' && content[contentLength - 1] == '/')
-            return false;
+        if (contentLength > 3) {
+
+            // property: value\0/;
+            if (content[contentLength - 3] == '\\' && content[contentLength - 2] == '0' && content[contentLength - 1] == '/')
+                return false;
+
+            // property: value !ie;
+            if (content[contentLength - 3] == '!' && content[contentLength - 2] == 'i' && content[contentLength - 1] == 'e')
+                return false;
+        }
 
         // Popular value prefixes valid in other browsers.
         if (content.startsWithIgnoringCase("linear-gradient"))
             return false;
         if (content.startsWithIgnoringCase("-webkit-flexbox"))
+            return false;
+        if (propertyId == CSSPropertyUnicodeBidi && content.startsWithIgnoringCase("isolate"))
             return false;
 
         break;
@@ -713,6 +722,10 @@ bool InspectorCSSAgent::cssErrorFilter(const CSSParserString& content, int prope
         if (contentLength > 4 && content[0] == '@')
             return false;
         return true;
+
+    case CSSParser::InvalidSelectorPseudoError:
+        if (hasNonWebkitVendorSpecificPrefix(content))
+            return false;
     }
     return true;
 }
