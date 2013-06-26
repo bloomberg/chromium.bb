@@ -3166,7 +3166,7 @@
                 '../crypto/crypto.gyp:crypto_unittests',
                 '../jingle/jingle.gyp:jingle_unittests',
                 '../net/net.gyp:net_perftests',
-                '../third_party/WebKit/Source/WebKit/chromium/WebKitUnitTests.gyp:webkit_unit_tests',
+                '../third_party/WebKit/public/all.gyp:all_blink',
                 '../url/url.gyp:googleurl_unittests',
                 'browser_tests',
                 'chromedriver_unittests',
