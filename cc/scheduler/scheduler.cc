@@ -132,7 +132,8 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
   // because every SetNeedsBeginFrame will force a redraw.
   bool proactive_begin_frame_wanted =
       state_machine_.ProactiveBeginFrameWantedByImplThread() &&
-      !settings_.using_synchronous_renderer_compositor;
+      !settings_.using_synchronous_renderer_compositor &&
+      settings_.throttle_frame_production;
   bool needs_begin_frame = needs_begin_frame_to_draw ||
                            proactive_begin_frame_wanted;
   bool immediate_disables_needed =

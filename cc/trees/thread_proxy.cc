@@ -1176,6 +1176,8 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
       settings.timeout_and_draw_when_animation_checkerboards;
   scheduler_settings.using_synchronous_renderer_compositor =
       settings.using_synchronous_renderer_compositor;
+  scheduler_settings.throttle_frame_production =
+      settings.throttle_frame_production;
   scheduler_on_impl_thread_ = Scheduler::Create(this, scheduler_settings);
   scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
 

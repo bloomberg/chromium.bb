@@ -364,12 +364,13 @@ bool SchedulerStateMachine::BeginFrameNeededToDrawByImplThread() const {
 }
 
 bool SchedulerStateMachine::ProactiveBeginFrameWantedByImplThread() const {
-  // We should proactively request a BeginFrame if a commit is pending.
-  if (needs_commit_ || needs_forced_commit_ ||
-      commit_state_ != COMMIT_STATE_IDLE)
-    return true;
+  // Do not be proactive when invisible.
+  if (!visible_ || output_surface_state_ != OUTPUT_SURFACE_ACTIVE)
+    return false;
 
-  return false;
+  // We should proactively request a BeginFrame if a commit is pending.
+  return (needs_commit_ || needs_forced_commit_ ||
+      commit_state_ != COMMIT_STATE_IDLE);
 }
 
 void SchedulerStateMachine::DidEnterBeginFrame(const BeginFrameArgs& args) {
