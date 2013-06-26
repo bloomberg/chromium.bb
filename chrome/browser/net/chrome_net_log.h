@@ -17,12 +17,8 @@ class NetLogLogger;
 
 class NetLogTempFile;
 
-// ChromeNetLog is an implementation of NetLog that dispatches network log
-// messages to a list of observers.
-//
-// All methods are thread safe, with the exception that no NetLog or
-// NetLog::ThreadSafeObserver functions may be called by an observer's
-// OnAddEntry() method.  Doing so will result in a deadlock.
+// ChromeNetLog is an implementation of NetLog that adds file loggers
+// as its observers.
 class ChromeNetLog : public net::NetLog {
  public:
   ChromeNetLog();
