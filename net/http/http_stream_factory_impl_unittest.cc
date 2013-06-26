@@ -44,7 +44,7 @@ namespace {
 
 class UseAlternateProtocolsScopedSetter {
  public:
-  UseAlternateProtocolsScopedSetter(bool use_alternate_protocols)
+  explicit UseAlternateProtocolsScopedSetter(bool use_alternate_protocols)
       : use_alternate_protocols_(HttpStreamFactory::use_alternate_protocols()) {
     HttpStreamFactory::set_use_alternate_protocols(use_alternate_protocols);
   }
@@ -767,6 +767,11 @@ TEST(HttpStreamFactoryTest, RequestHttpStream) {
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
       HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
+      session->GetTransportSocketPool(
+          HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+      HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
@@ -808,6 +813,11 @@ TEST(HttpStreamFactoryTest, RequestHttpStreamOverSSL) {
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(1, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
+      session->GetTransportSocketPool(
+          HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+      HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
@@ -852,6 +862,12 @@ TEST(HttpStreamFactoryTest, RequestHttpStreamOverProxy) {
   EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForSSLWithProxy(
       HttpNetworkSession::NORMAL_SOCKET_POOL,
       HostPortPair("myproxy", 8888))));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPProxy(
+      HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
+      HostPortPair("myproxy", 8888))));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForSSLWithProxy(
+      HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
+      HostPortPair("myproxy", 8888))));
   EXPECT_FALSE(waiter.used_proxy_info().is_direct());
 }
 
@@ -888,10 +904,15 @@ TEST(HttpStreamFactoryTest, RequestWebSocketBasicStream) {
   ASSERT_TRUE(NULL != waiter.websocket_stream());
   EXPECT_EQ(MockWebSocketStream::kStreamTypeBasic,
             waiter.websocket_stream()->type());
-  EXPECT_EQ(1, GetSocketPoolGroupCount(
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(
+      session->GetTransportSocketPool(
+          HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
+      session->GetSSLSocketPool(HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
@@ -932,10 +953,15 @@ TEST(HttpStreamFactoryTest, RequestWebSocketBasicStreamOverSSL) {
   ASSERT_TRUE(NULL != waiter.websocket_stream());
   EXPECT_EQ(MockWebSocketStream::kStreamTypeBasic,
             waiter.websocket_stream()->type());
-  EXPECT_EQ(1, GetSocketPoolGroupCount(
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
-  EXPECT_EQ(1, GetSocketPoolGroupCount(
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(
+      session->GetTransportSocketPool(
+          HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(
+      session->GetSSLSocketPool(HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
@@ -974,14 +1000,21 @@ TEST(HttpStreamFactoryTest, RequestWebSocketBasicStreamOverProxy) {
   EXPECT_EQ(MockWebSocketStream::kStreamTypeBasic,
             waiter.websocket_stream()->type());
   EXPECT_EQ(0, GetSocketPoolGroupCount(
-      session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
+      session->GetTransportSocketPool(
+          HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(
-      session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
-  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPProxy(
+      session->GetSSLSocketPool(HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPProxy(
       HttpNetworkSession::NORMAL_SOCKET_POOL,
       HostPortPair("myproxy", 8888))));
   EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForSSLWithProxy(
       HttpNetworkSession::NORMAL_SOCKET_POOL,
+      HostPortPair("myproxy", 8888))));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPProxy(
+      HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
+      HostPortPair("myproxy", 8888))));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForSSLWithProxy(
+      HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
       HostPortPair("myproxy", 8888))));
   EXPECT_FALSE(waiter.used_proxy_info().is_direct());
 }
@@ -1028,6 +1061,11 @@ TEST(HttpStreamFactoryTest, RequestSpdyHttpStream) {
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(1, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
+      session->GetTransportSocketPool(
+          HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
+      session->GetSSLSocketPool(HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
@@ -1095,10 +1133,15 @@ TEST(HttpStreamFactoryTest, RequestWebSocketSpdyStream) {
             static_cast<WebSocketSpdyStream*>(waiter1.websocket_stream())->
             spdy_session());
 
-  EXPECT_EQ(1, GetSocketPoolGroupCount(
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
-  EXPECT_EQ(1, GetSocketPoolGroupCount(
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(
+      session->GetTransportSocketPool(
+          HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(
+      session->GetSSLSocketPool(HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter1.used_proxy_info().is_direct());
 }
 
@@ -1156,10 +1199,15 @@ TEST(HttpStreamFactoryTest, OrphanedWebSocketStream) {
 
   // Make sure that there was an alternative connection
   // which consumes extra connections.
-  EXPECT_EQ(2, GetSocketPoolGroupCount(
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
-  EXPECT_EQ(1, GetSocketPoolGroupCount(
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(2, GetSocketPoolGroupCount(
+      session->GetTransportSocketPool(
+          HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(
+      session->GetSSLSocketPool(HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 
   // Make sure there is no orphaned job. it is already canceled.

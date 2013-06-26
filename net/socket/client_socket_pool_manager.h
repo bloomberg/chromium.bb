@@ -114,6 +114,7 @@ int InitSocketHandleForHttpRequest(
 // |resolution_callback| will be invoked after the the hostname is
 // resolved.  If |resolution_callback| does not return OK, then the
 // connection will be aborted with that value.
+// This function uses WEBSOCKET_SOCKET_POOL socket pools.
 int InitSocketHandleForWebSocketRequest(
     const GURL& request_url,
     const HttpRequestHeaders& request_extra_headers,
