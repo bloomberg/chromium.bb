@@ -10,15 +10,15 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18N) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("i18n")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   // Create an Extension whose messages.json file will be updated.
   base::ScopedTempDir extension_dir;
   ASSERT_TRUE(extension_dir.CreateUniqueTempDir());
@@ -42,7 +42,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
 
   // Test that the messages.json file is loaded and the i18n message is loaded.
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("file/extensions/test_file.html"));
+      browser(),
+      embedded_test_server()->GetURL("/extensions/test_file.html"));
   EXPECT_TRUE(catcher.GetNextResult());
 
   string16 title;
@@ -58,7 +59,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
 
   // Check that the i18n message is also changed.
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("file/extensions/test_file.html"));
+      browser(),
+      embedded_test_server()->GetURL("/extensions/test_file.html"));
   EXPECT_TRUE(catcher.GetNextResult());
 
   ui_test_utils::GetCurrentTabTitle(browser(), &title);

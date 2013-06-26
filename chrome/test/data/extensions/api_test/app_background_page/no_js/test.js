@@ -11,7 +11,7 @@
 //   existing background page being closed and a new one being re-opened.
 
 var pagePrefix =
-    'http://a.com:PORT/files/extensions/api_test/app_background_page/no_js';
+    'http://a.com:PORT/extensions/api_test/app_background_page/no_js';
 var launchUrl;
 var launchTabId;
 var backgroundPageLoaded = false;

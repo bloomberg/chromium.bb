@@ -42,7 +42,7 @@
 #include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/message_center/message_center.h"
@@ -57,7 +57,7 @@
 
 namespace {
 
-const char kExpectedIconUrl[] = "files/notifications/no_such_file.png";
+const char kExpectedIconUrl[] = "/notifications/no_such_file.png";
 
 enum InfobarAction {
   DISMISS = 0,
@@ -206,9 +206,6 @@ class NotificationsTest : public InProcessBrowserTest {
   NotificationsTest() {}
 
  protected:
-  // Overriden from InProcessBrowserTest:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
-
   int GetNotificationCount();
 
   NotificationChangeObserver* CreateObserver();
@@ -244,22 +241,15 @@ class NotificationsTest : public InProcessBrowserTest {
   bool CheckOriginInSetting(const ContentSettingsForOneType& settings,
                             const GURL& origin);
 
-  GURL empty_page_url_;
-  GURL test_page_url_;
+  GURL GetTestPageURL() const {
+    return embedded_test_server()->GetURL(
+      "/notifications/notification_tester.html");
+  }
 
  private:
   void DropOriginPreference(const GURL& origin);
   DesktopNotificationService* GetDesktopNotificationService();
 };
-
-void NotificationsTest::SetUpInProcessBrowserTestFixture() {
-  InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-
-  ASSERT_TRUE(test_server()->Start());
-  empty_page_url_ = test_server()->GetURL("files/empty.html");
-  test_page_url_ = test_server()->GetURL(
-      "files/notifications/notification_tester.html");
-}
 
 int NotificationsTest::GetNotificationCount() {
   if (message_center::IsRichNotificationEnabled()) {
@@ -483,10 +473,12 @@ DesktopNotificationService* NotificationsTest::GetDesktopNotificationService() {
 
 // If this flakes, use http://crbug.com/62311 and http://crbug.com/74428.
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestUserGestureInfobar) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   ui_test_utils::NavigateToURL(
       browser(),
-      test_server()->GetURL(
-          "files/notifications/notifications_request_function.html"));
+      embedded_test_server()->GetURL(
+          "/notifications/notifications_request_function.html"));
 
   // Request permission by calling request() while eval'ing an inline script;
   // That's considered a user gesture to webkit, and should produce an infobar.
@@ -503,12 +495,14 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestUserGestureInfobar) {
 
 // If this flakes, use http://crbug.com/62311.
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNoUserGestureInfobar) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Load a page which just does a request; no user gesture should result
   // in no infobar.
   ui_test_utils::NavigateToURL(
       browser(),
-      test_server()->GetURL(
-          "files/notifications/notifications_request_inline.html"));
+      embedded_test_server()->GetURL(
+          "/notifications/notifications_request_inline.html"));
 
   EXPECT_EQ(0U, InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetWebContentsAt(0))->infobar_count());
@@ -521,14 +515,16 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
     return;
 #endif
 
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Creates a simple notification.
   AllowAllOrigins();
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
   std::string result = CreateSimpleNotification(browser(), true);
   EXPECT_NE("-1", result);
 
-  GURL EXPECTED_ICON_URL = test_server()->GetURL(kExpectedIconUrl);
+  GURL EXPECTED_ICON_URL = embedded_test_server()->GetURL(kExpectedIconUrl);
   ASSERT_EQ(1, GetNotificationCount());
   if (message_center::IsRichNotificationEnabled()) {
     message_center::NotificationList::Notifications notifications =
@@ -553,9 +549,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseNotification) {
     return;
 #endif
 
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Creates a notification and closes it.
   AllowAllOrigins();
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
   std::string result = CreateSimpleNotification(browser(), true);
   EXPECT_NE("-1", result);
@@ -582,9 +580,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCancelNotification) {
     return;
 #endif
 
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Creates a notification and cancels it in the origin page.
   AllowAllOrigins();
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
   std::string note_id = CreateSimpleNotification(browser(), true);
   EXPECT_NE(note_id, "-1");
@@ -595,8 +595,10 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCancelNotification) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestPermissionInfobarAppears) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Requests notification privileges and verifies the infobar appears.
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
 
   ASSERT_EQ(0, GetNotificationCount());
@@ -610,8 +612,10 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowOnPermissionInfobar) {
     return;
 #endif
 
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Tries to create a notification and clicks allow on the infobar.
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   // This notification should not be shown because we do not have permission.
   CreateSimpleNotification(browser(), false);
   ASSERT_EQ(0, GetNotificationCount());
@@ -624,21 +628,25 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowOnPermissionInfobar) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyOnPermissionInfobar) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Test that no notification is created
   // when Deny is chosen from permission infobar.
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
   PerformActionOnInfobar(browser(), DENY, 0, 0);
   CreateSimpleNotification(browser(), false);
   ASSERT_EQ(0, GetNotificationCount());
   ContentSettingsForOneType settings;
   GetPrefsByContentSetting(CONTENT_SETTING_BLOCK, &settings);
-  EXPECT_TRUE(CheckOriginInSetting(settings, test_page_url_));
+  EXPECT_TRUE(CheckOriginInSetting(settings, GetTestPageURL()));
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestClosePermissionInfobar) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Test that no notification is created when permission infobar is dismissed.
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
   PerformActionOnInfobar(browser(), DISMISS, 0, 0);
   CreateSimpleNotification(browser(), false);
@@ -654,9 +662,12 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowNotificationsFromAllSites) {
   if (base::mac::IsOSMountainLionOrLater())
     return;
 #endif
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Verify that all domains can be allowed to show notifications.
   SetDefaultPermissionSetting(CONTENT_SETTING_ALLOW);
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
   std::string result = CreateSimpleNotification(browser(), true);
   EXPECT_NE("-1", result);
@@ -667,9 +678,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowNotificationsFromAllSites) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyNotificationsFromAllSites) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Verify that no domain can show notifications.
   SetDefaultPermissionSetting(CONTENT_SETTING_BLOCK);
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
   std::string result = CreateSimpleNotification(browser(), false);
   EXPECT_EQ("-1", result);
@@ -678,12 +691,14 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyNotificationsFromAllSites) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyDomainAndAllowAll) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Verify that denying a domain and allowing all shouldn't show
   // notifications from the denied domain.
-  DenyOrigin(test_page_url_.GetOrigin());
+  DenyOrigin(GetTestPageURL().GetOrigin());
   SetDefaultPermissionSetting(CONTENT_SETTING_ALLOW);
 
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
   std::string result = CreateSimpleNotification(browser(), false);
   EXPECT_EQ("-1", result);
@@ -697,12 +712,15 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowDomainAndDenyAll) {
   if (base::mac::IsOSMountainLionOrLater())
     return;
 #endif
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Verify that allowing a domain and denying all others should show
   // notifications from the allowed domain.
-  AllowOrigin(test_page_url_.GetOrigin());
+  AllowOrigin(GetTestPageURL().GetOrigin());
   SetDefaultPermissionSetting(CONTENT_SETTING_BLOCK);
 
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
   std::string result = CreateSimpleNotification(browser(), true);
   EXPECT_NE("-1", result);
@@ -716,17 +734,20 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyAndThenAllowDomain) {
   if (base::mac::IsOSMountainLionOrLater())
     return;
 #endif
-  // Verify that denying and again allowing should show notifications.
-  DenyOrigin(test_page_url_.GetOrigin());
 
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  // Verify that denying and again allowing should show notifications.
+  DenyOrigin(GetTestPageURL().GetOrigin());
+
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
   std::string result = CreateSimpleNotification(browser(), false);
   EXPECT_EQ("-1", result);
 
   ASSERT_EQ(0, GetNotificationCount());
 
-  AllowOrigin(test_page_url_.GetOrigin());
+  AllowOrigin(GetTestPageURL().GetOrigin());
   result = CreateSimpleNotification(browser(), true);
   EXPECT_NE("-1", result);
 
@@ -741,16 +762,19 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {
   if (base::mac::IsOSMountainLionOrLater())
     return;
 #endif
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Verify able to create, deny, and close the notification.
   AllowAllOrigins();
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   CreateSimpleNotification(browser(), true);
   ASSERT_EQ(1, GetNotificationCount());
 
-  DenyOrigin(test_page_url_.GetOrigin());
+  DenyOrigin(GetTestPageURL().GetOrigin());
   ContentSettingsForOneType settings;
   GetPrefsByContentSetting(CONTENT_SETTING_BLOCK, &settings);
-  ASSERT_TRUE(CheckOriginInSetting(settings, test_page_url_.GetOrigin()));
+  ASSERT_TRUE(CheckOriginInSetting(settings, GetTestPageURL().GetOrigin()));
 
   EXPECT_EQ(1, GetNotificationCount());
   if (message_center::IsRichNotificationEnabled()) {
@@ -770,15 +794,17 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {
 IN_PROC_BROWSER_TEST_F(
     NotificationsTest,
     DISABLED_TestOriginPrefsNotSavedInIncognito) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Verify that allow/deny origin preferences are not saved in incognito.
   Browser* incognito = CreateIncognitoBrowser();
-  ui_test_utils::NavigateToURL(incognito, test_page_url_);
+  ui_test_utils::NavigateToURL(incognito, GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(incognito));
   PerformActionOnInfobar(incognito, DENY, 0, 0);
   CloseBrowserWindow(incognito);
 
   incognito = CreateIncognitoBrowser();
-  ui_test_utils::NavigateToURL(incognito, test_page_url_);
+  ui_test_utils::NavigateToURL(incognito, GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(incognito));
   PerformActionOnInfobar(incognito, ALLOW, 0, 0);
   CreateSimpleNotification(incognito, true);
@@ -786,7 +812,7 @@ IN_PROC_BROWSER_TEST_F(
   CloseBrowserWindow(incognito);
 
   incognito = CreateIncognitoBrowser();
-  ui_test_utils::NavigateToURL(incognito, test_page_url_);
+  ui_test_utils::NavigateToURL(incognito, GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(incognito));
 
   ContentSettingsForOneType settings;
@@ -797,8 +823,10 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestExitBrowserWithInfobar) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Exit the browser window, when the infobar appears.
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
 }
 
@@ -812,14 +840,16 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestExitBrowserWithInfobar) {
 #endif
 IN_PROC_BROWSER_TEST_F(NotificationsTest,
                        MAYBE_TestCrashTabWithPermissionInfobar) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Test crashing the tab with permission infobar doesn't crash Chrome.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
-      empty_page_url_,
+      embedded_test_server()->GetURL("/empty.html"),
       NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   browser()->tab_strip_model()->ActivateTabAt(0, true);
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
   CrashTab(browser(), 0);
 }
@@ -834,9 +864,12 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestKillNotificationProcess) {
   if (base::mac::IsOSMountainLionOrLater())
     return;
 #endif
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Test killing a notification doesn't crash Chrome.
   AllowAllOrigins();
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   CreateSimpleNotification(browser(), true);
   ASSERT_EQ(1, GetNotificationCount());
 
@@ -852,9 +885,12 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestIncognitoNotification) {
   if (base::mac::IsOSMountainLionOrLater())
     return;
 #endif
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Test notifications in incognito window.
   Browser* browser = CreateIncognitoBrowser();
-  ui_test_utils::NavigateToURL(browser, test_page_url_);
+  ui_test_utils::NavigateToURL(browser, GetTestPageURL());
   browser->tab_strip_model()->ActivateTabAt(0, true);
   ASSERT_TRUE(RequestPermissionAndWait(browser));
   PerformActionOnInfobar(browser, ALLOW, 0, 0);
@@ -863,6 +899,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestIncognitoNotification) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseTabWithPermissionInfobar) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Test that user can close tab when infobar present.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
@@ -870,7 +908,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseTabWithPermissionInfobar) {
       NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   browser()->tab_strip_model()->ActivateTabAt(0, true);
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
@@ -888,6 +926,9 @@ IN_PROC_BROWSER_TEST_F(
   if (base::mac::IsOSMountainLionOrLater())
     return;
 #endif
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Test navigating away when an infobar is present,
   // then trying to create a notification from the same page.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -896,9 +937,9 @@ IN_PROC_BROWSER_TEST_F(
       NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   browser()->tab_strip_model()->ActivateTabAt(0, true);
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
   PerformActionOnInfobar(browser(), ALLOW, 0, 0);
   CreateSimpleNotification(browser(), true);
@@ -921,6 +962,9 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest,
   if (base::mac::IsOSMountainLionOrLater())
     return;
 #endif
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Test crashing renderer does not close or crash notification.
   AllowAllOrigins();
   ui_test_utils::NavigateToURLWithDisposition(
@@ -929,7 +973,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest,
       NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   browser()->tab_strip_model()->ActivateTabAt(0, true);
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   CreateSimpleNotification(browser(), true);
   ASSERT_EQ(1, GetNotificationCount());
   CrashTab(browser(), 0);
@@ -942,10 +986,13 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
   if (base::mac::IsOSMountainLionOrLater())
     return;
 #endif
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
   // Test that we can replace a notification using the replaceId.
   AllowAllOrigins();
 
-  ui_test_utils::NavigateToURL(browser(), test_page_url_);
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
   std::string result = CreateNotification(
       browser(), true, "abc.png", "Title1", "Body1", "chat");
@@ -968,7 +1015,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
     ASSERT_EQ(1U, balloons.size());
     Balloon* balloon = balloons[0];
     const Notification& notification = balloon->notification();
-    GURL EXPECTED_ICON_URL = test_server()->GetURL(kExpectedIconUrl);
+    GURL EXPECTED_ICON_URL = embedded_test_server()->GetURL(kExpectedIconUrl);
     EXPECT_EQ(EXPECTED_ICON_URL, notification.icon_url());
     EXPECT_EQ(ASCIIToUTF16("Title2"), notification.title());
     EXPECT_EQ(ASCIIToUTF16("Body2"), notification.message());

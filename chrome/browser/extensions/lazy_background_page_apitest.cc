@@ -30,6 +30,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using extensions::Extension;
 
@@ -141,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   const Extension* extension = LoadExtensionAndWait("broadcast_event");
   ASSERT_TRUE(extension);
@@ -159,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
         content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/extensions/test_file.html"));
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
   page_complete.Wait();
 
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
@@ -183,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Filters) {
   // Open a tab to a URL that will fire a webNavigation event.
   LazyBackgroundObserver page_complete;
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/extensions/test_file.html"));
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
   page_complete.Wait();
 }
 
@@ -235,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForView) {
 // are complete.
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   LazyBackgroundObserver page_complete;
   ResultCatcher catcher;
@@ -376,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, MAYBE_IncognitoSplitMode) {
 // Tests that messages from the content script activate the lazy background
 // page, and keep it alive until all channels are closed.
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Messaging) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(LoadExtensionAndWait("messaging"));
 
   // Lazy Background Page doesn't exist yet.
@@ -389,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Messaging) {
   ResultCatcher catcher;
   LazyBackgroundObserver lazybg;
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/extensions/test_file.html"));
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
   lazybg.WaitUntilLoaded();
 
   // Background page got the content script's message and is still loaded

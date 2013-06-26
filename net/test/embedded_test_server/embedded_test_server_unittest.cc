@@ -85,7 +85,7 @@ class EmbeddedTestServerTest : public testing::Test,
   scoped_ptr<HttpResponse> HandleRequest(const std::string& path,
                                          const std::string& content,
                                          const std::string& content_type,
-                                         ResponseCode code,
+                                         HttpStatusCode code,
                                          const HttpRequest& request) {
     request_relative_url_ = request.relative_url;
 
@@ -128,7 +128,7 @@ TEST_F(EmbeddedTestServerTest, RegisterRequestHandler) {
                  "/test",
                  "<b>Worked!</b>",
                  "text/html",
-                 SUCCESS));
+                 HTTP_OK));
 
   scoped_ptr<URLFetcher> fetcher(
       URLFetcher::Create(server_->GetURL("/test?q=foo"),
@@ -139,7 +139,7 @@ TEST_F(EmbeddedTestServerTest, RegisterRequestHandler) {
   WaitForResponses(1);
 
   EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
-  EXPECT_EQ(SUCCESS, fetcher->GetResponseCode());
+  EXPECT_EQ(HTTP_OK, fetcher->GetResponseCode());
   EXPECT_EQ("<b>Worked!</b>", GetContentFromFetcher(*fetcher));
   EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher));
 
@@ -161,7 +161,7 @@ TEST_F(EmbeddedTestServerTest, ServeFilesFromDirectory) {
   WaitForResponses(1);
 
   EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
-  EXPECT_EQ(SUCCESS, fetcher->GetResponseCode());
+  EXPECT_EQ(HTTP_OK, fetcher->GetResponseCode());
   EXPECT_EQ("<p>Hello World!</p>", GetContentFromFetcher(*fetcher));
   EXPECT_EQ("", GetContentTypeFromFetcher(*fetcher));
 }
@@ -176,7 +176,7 @@ TEST_F(EmbeddedTestServerTest, DefaultNotFoundResponse) {
   fetcher->Start();
   WaitForResponses(1);
   EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
-  EXPECT_EQ(NOT_FOUND, fetcher->GetResponseCode());
+  EXPECT_EQ(HTTP_NOT_FOUND, fetcher->GetResponseCode());
 }
 
 TEST_F(EmbeddedTestServerTest, ConcurrentFetches) {
@@ -186,21 +186,21 @@ TEST_F(EmbeddedTestServerTest, ConcurrentFetches) {
                  "/test1",
                  "Raspberry chocolate",
                  "text/html",
-                 SUCCESS));
+                 HTTP_OK));
   server_->RegisterRequestHandler(
       base::Bind(&EmbeddedTestServerTest::HandleRequest,
                  base::Unretained(this),
                  "/test2",
                  "Vanilla chocolate",
                  "text/html",
-                 SUCCESS));
+                 HTTP_OK));
   server_->RegisterRequestHandler(
       base::Bind(&EmbeddedTestServerTest::HandleRequest,
                  base::Unretained(this),
                  "/test3",
                  "No chocolates",
                  "text/plain",
-                 NOT_FOUND));
+                 HTTP_NOT_FOUND));
 
   scoped_ptr<URLFetcher> fetcher1 = scoped_ptr<URLFetcher>(
       URLFetcher::Create(server_->GetURL("/test1"),
@@ -225,17 +225,17 @@ TEST_F(EmbeddedTestServerTest, ConcurrentFetches) {
   WaitForResponses(3);
 
   EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher1->GetStatus().status());
-  EXPECT_EQ(SUCCESS, fetcher1->GetResponseCode());
+  EXPECT_EQ(HTTP_OK, fetcher1->GetResponseCode());
   EXPECT_EQ("Raspberry chocolate", GetContentFromFetcher(*fetcher1));
   EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher1));
 
   EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher2->GetStatus().status());
-  EXPECT_EQ(SUCCESS, fetcher2->GetResponseCode());
+  EXPECT_EQ(HTTP_OK, fetcher2->GetResponseCode());
   EXPECT_EQ("Vanilla chocolate", GetContentFromFetcher(*fetcher2));
   EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher2));
 
   EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher3->GetStatus().status());
-  EXPECT_EQ(NOT_FOUND, fetcher3->GetResponseCode());
+  EXPECT_EQ(HTTP_NOT_FOUND, fetcher3->GetResponseCode());
   EXPECT_EQ("No chocolates", GetContentFromFetcher(*fetcher3));
   EXPECT_EQ("text/plain", GetContentTypeFromFetcher(*fetcher3));
 }

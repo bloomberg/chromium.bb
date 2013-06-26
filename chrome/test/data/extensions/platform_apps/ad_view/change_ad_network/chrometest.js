@@ -59,7 +59,7 @@ function runTests(guestURL) {
 window.onload = function() {
   chrome.test.getConfig(function(config) {
     var guestURL = 'http://localhost:' + config.testServer.port +
-        '/files/extensions/platform_apps/ad_view/ad_network_site/testsdk.html';
+        '/extensions/platform_apps/ad_view/ad_network_site/testsdk.html';
     runTests(guestURL);
   });
 }

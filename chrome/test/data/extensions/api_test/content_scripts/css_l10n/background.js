@@ -7,7 +7,7 @@ var firstEnter = true;
 chrome.test.getConfig(function(config) {
   chrome.test.log('Creating tab...');
 
-  var URL = 'http://localhost:PORT/files/extensions/test_file_with_body.html';
+  var URL = 'http://localhost:PORT/extensions/test_file_with_body.html';
   var TEST_FILE_URL = URL.replace(/PORT/, config.testServer.port);
 
   chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {

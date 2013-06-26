@@ -14,7 +14,7 @@ chrome.test.getConfig(function(config) {
   }
 
   function doReq(domain, expectSuccess) {
-    var url = rewriteURL(domain + ':PORT/files/extensions/test_file.txt');
+    var url = rewriteURL(domain + ':PORT/extensions/test_file.txt');
 
     chrome.tabs.sendRequest(testTabId, url, pass(function(response) {
       if (expectSuccess) {
@@ -28,7 +28,7 @@ chrome.test.getConfig(function(config) {
   }
 
   chrome.tabs.create({
-      url: rewriteURL('http://localhost:PORT/files/extensions/test_file.html')},
+      url: rewriteURL('http://localhost:PORT/extensions/test_file.html')},
       function(tab) {
         testTabId = tab.id;
       });

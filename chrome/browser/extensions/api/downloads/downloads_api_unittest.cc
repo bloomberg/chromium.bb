@@ -1541,7 +1541,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_Basic) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
   GoOnTheRecord();
 
@@ -1584,7 +1585,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_Incognito) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   GoOffTheRecord();
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
@@ -1635,7 +1637,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        MAYBE_DownloadExtensionTest_Download_UnsafeHeaders) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   GoOnTheRecord();
 
   static const char* kUnsafeHeaders[] = {
@@ -1687,7 +1690,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_Subdirectory) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
   GoOnTheRecord();
 
@@ -1703,7 +1707,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_InvalidFilename) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
   GoOnTheRecord();
 
@@ -1749,7 +1754,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_URLFragment) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0#fragment").spec();
   GoOnTheRecord();
 
@@ -1886,7 +1892,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_AuthBasic_Fail) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("auth-basic").spec();
   GoOnTheRecord();
 
@@ -1916,7 +1923,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_Headers) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("files/downloads/"
       "a_zip_file.zip?expected_headers=Foo:bar&expected_headers=Qx:yo").spec();
   GoOnTheRecord();
@@ -1966,7 +1974,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_Headers_Fail) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("files/downloads/"
       "a_zip_file.zip?expected_headers=Foo:bar&expected_headers=Qx:yo").spec();
   GoOnTheRecord();
@@ -1999,7 +2008,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_AuthBasic) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("auth-basic").spec();
   // This is just base64 of 'username:secret'.
   static const char* kAuthorization = "dXNlcm5hbWU6c2VjcmV0";
@@ -2039,7 +2049,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_Post) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("files/post/downloads/"
       "a_zip_file.zip?expected_body=BODY").spec();
   GoOnTheRecord();
@@ -2088,7 +2099,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_Post_Get) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("files/post/downloads/"
       "a_zip_file.zip?expected_body=BODY").spec();
   GoOnTheRecord();
@@ -2126,7 +2138,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_Post_NoBody) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("files/post/downloads/"
       "a_zip_file.zip?expected_body=BODY").spec();
   GoOnTheRecord();
@@ -2163,7 +2176,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        DownloadExtensionTest_Download_Cancel) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL(
       "download-known-size").spec();
   GoOnTheRecord();
@@ -2258,7 +2272,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
   // Start downloading a file.
@@ -2325,7 +2340,8 @@ IN_PROC_BROWSER_TEST_F(
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
   // Start downloading a file.
@@ -2401,7 +2417,8 @@ IN_PROC_BROWSER_TEST_F(
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
   // Start downloading a file.
@@ -2465,7 +2482,8 @@ IN_PROC_BROWSER_TEST_F(
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
   // Start downloading a file.
@@ -2529,7 +2547,8 @@ IN_PROC_BROWSER_TEST_F(
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
   // Start downloading a file.
@@ -2594,7 +2613,8 @@ IN_PROC_BROWSER_TEST_F(
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
   // Start downloading a file.
@@ -2658,7 +2678,8 @@ IN_PROC_BROWSER_TEST_F(
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
   // Start downloading a file.
@@ -2719,7 +2740,8 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
     DownloadExtensionTest_OnDeterminingFilename_ParentDirInvalid) {
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
@@ -2786,7 +2808,8 @@ IN_PROC_BROWSER_TEST_F(
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
   // Start downloading a file.
@@ -2851,7 +2874,8 @@ IN_PROC_BROWSER_TEST_F(
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
   // Start downloading a file.
@@ -2916,7 +2940,8 @@ IN_PROC_BROWSER_TEST_F(
   GoOnTheRecord();
   LoadExtension("downloads_split");
   AddFilenameDeterminer();
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
   // Start downloading a file.
@@ -3037,7 +3062,8 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
     DownloadExtensionTest_OnDeterminingFilename_RemoveFilenameDeterminer) {
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   GoOnTheRecord();
   LoadExtension("downloads_split");
   content::RenderProcessHost* host = AddFilenameDeterminer();
@@ -3087,7 +3113,8 @@ IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
     DownloadExtensionTest_OnDeterminingFilename_IncognitoSplit) {
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
   GoOnTheRecord();
@@ -3219,7 +3246,8 @@ IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
     DownloadExtensionTest_OnDeterminingFilename_IncognitoSpanning) {
   LoadExtension("downloads_spanning");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   std::string download_url = test_server()->GetURL("slow?0").spec();
 
   GoOnTheRecord();
@@ -3364,7 +3392,8 @@ IN_PROC_BROWSER_TEST_F(
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   LoadExtension("downloads_split");
-  CHECK(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
   GoOnTheRecord();
   content::RenderProcessHost* host = AddFilenameDeterminer();
 

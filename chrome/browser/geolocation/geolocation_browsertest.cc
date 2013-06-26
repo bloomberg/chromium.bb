@@ -31,7 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::DomOperationNotificationDetails;
 using content::NavigationController;
@@ -274,9 +274,6 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   double fake_latitude_;
   double fake_longitude_;
 
-  // TODO(phajdan.jr): Remove after we can ask TestServer whether it is started.
-  bool started_test_server_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(GeolocationBrowserTest);
 };
@@ -284,10 +281,10 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
 GeolocationBrowserTest::GeolocationBrowserTest()
   : infobar_(NULL),
     current_browser_(NULL),
-    html_for_tests_("files/geolocation/simple.html"),
+    html_for_tests_("/geolocation/simple.html"),
     fake_latitude_(1.23),
-    fake_longitude_(4.56),
-    started_test_server_(false) {}
+    fake_longitude_(4.56) {
+}
 
 void GeolocationBrowserTest::SetUpOnMainThread() {
   ui_test_utils::OverrideGeolocation(fake_latitude_, fake_longitude_);
@@ -298,13 +295,13 @@ void GeolocationBrowserTest::TearDownInProcessBrowserTestFixture() {
 }
 
 bool GeolocationBrowserTest::Initialize(InitializationOptions options) {
-  if (!started_test_server_)
-    started_test_server_ = test_server()->Start();
-  EXPECT_TRUE(started_test_server_);
-  if (!started_test_server_)
+  if (!embedded_test_server()->Started() &&
+      !embedded_test_server()->InitializeAndWaitUntilReady()) {
+    ADD_FAILURE() << "Test server failed to start.";
     return false;
+  }
 
-  current_url_ = test_server()->GetURL(html_for_tests_);
+  current_url_ = embedded_test_server()->GetURL(html_for_tests_);
   LOG(WARNING) << "before navigate";
   if (options == INITIALIZATION_OFFTHERECORD) {
     current_browser_ = ui_test_utils::OpenURLOffTheRecord(
@@ -540,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoLeakFromOffTheRecord) {
 // crbug.com/176291
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
                        DISABLED_IFramesWithFreshPosition) {
-  html_for_tests_ = "files/geolocation/iframes_different_origin.html";
+  html_for_tests_ = "/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
   LOG(WARNING) << "frames loaded";
@@ -585,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
                        IFramesWithCachedPosition) {
-  html_for_tests_ = "files/geolocation/iframes_different_origin.html";
+  html_for_tests_ = "/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
 
@@ -624,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
 // crbug.com/176291
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
                        DISABLED_CancelPermissionForFrame) {
-  html_for_tests_ = "files/geolocation/iframes_different_origin.html";
+  html_for_tests_ = "/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
   LOG(WARNING) << "frames loaded";
@@ -653,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, InvalidUrlRequest) {
   // Tests that an invalid URL (e.g. from a popup window) is rejected
   // correctly. Also acts as a regression test for http://crbug.com/40478
-  html_for_tests_ = "files/geolocation/invalid_request_url.html";
+  html_for_tests_ = "/geolocation/invalid_request_url.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   WebContents* original_tab =
       current_browser_->tab_strip_model()->GetActiveWebContents();
@@ -663,7 +660,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, InvalidUrlRequest) {
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfoBarBeforeStart) {
   // See http://crbug.com/42789
-  html_for_tests_ = "files/geolocation/iframes_different_origin.html";
+  html_for_tests_ = "/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
   LOG(WARNING) << "frames loaded";
@@ -686,7 +683,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfoBarBeforeStart) {
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
-  html_for_tests_ = "files/geolocation/two_watches.html";
+  html_for_tests_ = "/geolocation/two_watches.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   // First, set the JavaScript to navigate when it receives |final_position|.
   double final_position_latitude = 3.17;
@@ -720,7 +717,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
 
 // crbug.com/176291
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_TabDestroyed) {
-  html_for_tests_ = "files/geolocation/tab_destroyed.html";
+  html_for_tests_ = "/geolocation/tab_destroyed.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(3);
 

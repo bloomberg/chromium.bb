@@ -5,11 +5,11 @@
   "permissions": ["storage"],
   "content_scripts": [
     {
-      "matches": ["*://*/functions.html"],
+      "matches": ["*://*/*/functions.html"],
       "js": ["functions.js"]
     },
     {
-      "matches": ["*://*/events.html"],
+      "matches": ["*://*/*/events.html"],
       "js": ["events.js"]
     }
   ]

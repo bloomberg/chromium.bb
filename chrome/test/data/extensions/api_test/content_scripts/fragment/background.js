@@ -19,7 +19,7 @@ function fail() {
   }
 }
 
-var test_url = "http://localhost:PORT/files/extensions/test_file.html";
+var test_url = "http://localhost:PORT/extensions/test_file.html";
 
 // For running in normal chrome (ie outside of the browser_tests environment),
 // set debug to 1 here.

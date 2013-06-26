@@ -10,7 +10,7 @@ embedder.guestURL = '';
 embedder.setUp = function(config) {
   embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
   embedder.guestURL = embedder.baseGuestURL +
-      '/files/extensions/platform_apps/web_view/focus' +
+      '/extensions/platform_apps/web_view/focus' +
       '/guest.html';
   chrome.test.log('Guest url is: ' + embedder.guestURL);
 };

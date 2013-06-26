@@ -11,8 +11,8 @@ chrome.test.getConfig(function(config) {
   var fixPort = function(url) {
     return url.replace(/PORT/, config.testServer.port);
   };
-  var urlA = fixPort("http://a.com:PORT/files/extensions/test_file.html");
-  var urlB = fixPort("http://b.com:PORT/files/extensions/test_file.html");
+  var urlA = fixPort("http://a.com:PORT/extensions/test_file.html");
+  var urlB = fixPort("http://b.com:PORT/extensions/test_file.html");
 
   chrome.tabs.create({ url: urlA }, function(tab) {
     var firstTabId = tab.id;

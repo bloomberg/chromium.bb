@@ -6,7 +6,7 @@ chrome.test.getConfig(function(config) {
   var LOCAL_URL = 'local-iframe.html';
   var DATA_URL = 'data:text/plain,This frame should be displayed.';
   var REMOTE_URL = 'http://localhost:' + config.testServer.port
-      '/files/extensions/platform_apps/iframes/remote-iframe.html';
+      '/extensions/platform_apps/iframes/remote-iframe.html';
 
   chrome.test.runTests([
     function localIframe() {

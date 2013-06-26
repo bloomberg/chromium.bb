@@ -8,7 +8,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 class LoadtimesExtensionBindingsTest : public InProcessBrowserTest {
  public:
@@ -45,8 +45,8 @@ class LoadtimesExtensionBindingsTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(LoadtimesExtensionBindingsTest,
                        LoadTimesSameAfterClientInDocNavigation) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL plain_url = test_server()->GetURL("blank");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL plain_url = embedded_test_server()->GetURL("/simple.html");
   ui_test_utils::NavigateToURL(browser(), plain_url);
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -61,8 +61,8 @@ IN_PROC_BROWSER_TEST_F(LoadtimesExtensionBindingsTest,
 
 IN_PROC_BROWSER_TEST_F(LoadtimesExtensionBindingsTest,
                        LoadTimesSameAfterUserInDocNavigation) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL plain_url = test_server()->GetURL("blank");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL plain_url = embedded_test_server()->GetURL("/simple.html");
   GURL hash_url(plain_url.spec() + "#");
   ui_test_utils::NavigateToURL(browser(), plain_url);
   content::WebContents* contents =

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 var server = 'http://b.com:PORT';
-var relativePath = '/files/extensions/api_test/executescript/file_after_close/';
+var relativePath = '/extensions/api_test/executescript/file_after_close/';
 var extensionPage = chrome.extension.getURL('extension_page.html');
 var webPage1 = server + relativePath + 'web_page1.html';
 var webPage2 = server + relativePath + 'web_page2.html';

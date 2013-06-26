@@ -18,10 +18,10 @@ function getURLNonUTF8SetCookie() {
 }
 
 function getURLHttpSimpleLoad() {
-  return getServerURL('files/extensions/api_test/webrequest/simpleLoad/a.html');
+  return getServerURL('extensions/api_test/webrequest/simpleLoad/a.html');
 }
 function getURLHttpXHRData() {
-  return getServerURL('files/extensions/api_test/webrequest/xhr/data.json');
+  return getServerURL('extensions/api_test/webrequest/xhr/data.json');
 }
 
 function toCharCodes(str) {
@@ -100,7 +100,7 @@ runTests([
           event: "onHeadersReceived",
           details: {
             url: getURLHttpSimpleLoad(),
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           },
           retval: {cancel: true}
         },
@@ -215,7 +215,7 @@ runTests([
           event: "onHeadersReceived",
           details: {
             url: getURLEchoUserAgent(),
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "onResponseStarted",
@@ -225,7 +225,7 @@ runTests([
             fromCache: false,
             statusCode: 200,
             ip: "127.0.0.1",
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "onCompleted",
@@ -235,7 +235,7 @@ runTests([
             fromCache: false,
             statusCode: 200,
             ip: "127.0.0.1",
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
       ],
@@ -290,7 +290,7 @@ runTests([
           event: "onHeadersReceived",
           details: {
             url: getURLEchoUserAgent(),
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "onResponseStarted",
@@ -300,7 +300,7 @@ runTests([
             fromCache: false,
             statusCode: 200,
             ip: "127.0.0.1",
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "onCompleted",
@@ -310,7 +310,7 @@ runTests([
             fromCache: false,
             statusCode: 200,
             ip: "127.0.0.1",
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
       ],
@@ -363,7 +363,7 @@ runTests([
           event: "onHeadersReceived",
           details: {
             url: getURLSetCookie(),
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
             responseHeadersExist: true,
           },
           retval_function: function(name, details) {
@@ -387,7 +387,7 @@ runTests([
             url: getURLSetCookie(),
             fromCache: false,
             statusCode: 200,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
             ip: "127.0.0.1",
             responseHeadersExist: true,
           }
@@ -398,7 +398,7 @@ runTests([
             url: getURLSetCookie(),
             fromCache: false,
             statusCode: 200,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
             ip: "127.0.0.1",
             responseHeadersExist: true,
           }
@@ -453,7 +453,7 @@ runTests([
           event: "onHeadersReceived",
           details: {
             url: getURLNonUTF8SetCookie(),
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
             responseHeadersExist: true,
           },
           retval_function: function(name, details) {
@@ -484,7 +484,7 @@ runTests([
             url: getURLNonUTF8SetCookie(),
             fromCache: false,
             statusCode: 200,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
             ip: "127.0.0.1",
             responseHeadersExist: true,
           }
@@ -495,7 +495,7 @@ runTests([
             url: getURLNonUTF8SetCookie(),
             fromCache: false,
             statusCode: 200,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
             ip: "127.0.0.1",
             responseHeadersExist: true,
           }
@@ -566,7 +566,7 @@ runTests([
             url: getURLHttpXHRData(),
             statusCode: 200,
             fromCache: false,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
             tabId: 1,
             type: "xmlhttprequest",
             ip: "127.0.0.1",
@@ -579,7 +579,7 @@ runTests([
             url: getURLHttpXHRData(),
             statusCode: 200,
             fromCache: false,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
             tabId: 1,
             type: "xmlhttprequest",
             ip: "127.0.0.1",
@@ -695,7 +695,7 @@ runTests([
             url: getURLHttpXHRData(),
             statusCode: 200,
             fromCache: false,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
             tabId: 1,
             type: "xmlhttprequest",
             ip: "127.0.0.1",
@@ -709,7 +709,7 @@ runTests([
             url: getURLHttpXHRData(),
             tabId: 1,
             type: "xmlhttprequest",
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "x-onCompleted",
@@ -718,7 +718,7 @@ runTests([
             url: getURLHttpXHRData(),
             statusCode: 200,
             fromCache: false,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
             tabId: 1,
             type: "xmlhttprequest",
             ip: "127.0.0.1",

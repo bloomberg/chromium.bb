@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsGranted) {
 
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
   host_resolver()->AddRule("*.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   EXPECT_TRUE(RunExtensionTest("permissions/optional")) << message_;
 }
 
@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsAutoConfirm) {
   PermissionsRequestFunction::SetAutoConfirmForTests(true);
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
   host_resolver()->AddRule("*.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   EXPECT_TRUE(RunExtensionTest("permissions/optional")) << message_;
 }
 
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsDeny) {
   PermissionsRequestFunction::SetAutoConfirmForTests(false);
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
   host_resolver()->AddRule("*.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   EXPECT_TRUE(RunExtensionTest("permissions/optional_deny")) << message_;
 }
 
@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsDeny) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsGesture) {
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(false);
   host_resolver()->AddRule("*.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   EXPECT_TRUE(RunExtensionTest("permissions/optional_gesture")) << message_;
 }
 

@@ -7,6 +7,6 @@ onload = function() {
     location.href =
         "http://127.0.0.1:" +
         location.search.substr(1) +
-        "/files/extensions/api_test/webnavigation/crossProcess/empty.html";
+        "/extensions/api_test/webnavigation/crossProcess/empty.html";
   }, 0);
 };

@@ -15,7 +15,7 @@ var kWindowRect = {
   'height': 400
 };
 
-var kTestDir = '/files/extensions/api_test/tabs/capture_visible_tab/common/';
+var kTestDir = '/extensions/api_test/tabs/capture_visible_tab/common/';
 var kURLBaseA = 'http://a.com:PORT' + kTestDir;
 var kURLBaseB = 'http://b.com:PORT' + kTestDir;
 

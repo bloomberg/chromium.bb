@@ -18,22 +18,7 @@ class ExtensionPageCaptureApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
-
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-
-    host_resolver()->AddRule("www.a.com", "127.0.0.1");
-
-    ASSERT_TRUE(StartTestServer());
-  }
 };
-
-// Disabled on Linux http://crbug.com/98194
-#if defined(OS_LINUX)
-#define MAYBE_SaveAsMHTML DISABLED_SaveAsMHTML
-#else
-#define MAYBE_SaveAsMHTML SaveAsMHTML
-#endif  // defined(OS_LINUX)
 
 class PageCaptureSaveAsMHTMLDelegate
     : public PageCaptureSaveAsMHTMLFunction::TestDelegate {
@@ -54,7 +39,9 @@ class PageCaptureSaveAsMHTMLDelegate
   base::FilePath temp_file_;
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, MAYBE_SaveAsMHTML) {
+IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, SaveAsMHTML) {
+  host_resolver()->AddRule("www.a.com", "127.0.0.1");
+  ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
   ASSERT_TRUE(RunExtensionTest("page_capture")) << message_;
   ASSERT_FALSE(delegate.temp_file_.empty());

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace extensions {
 namespace {
@@ -20,7 +21,7 @@ namespace {
 #define MAYBE_ActiveTab ActiveTab
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ActiveTab) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("active_tab"));
@@ -32,7 +33,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ActiveTab) {
   // Shouldn't be initially granted based on activeTab.
   {
     ResultCatcher catcher;
-    ui_test_utils::NavigateToURL(browser(), test_server()->GetURL("page.html"));
+    ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL(
+            "/extensions/api_test/active_tab/page.html"));
     EXPECT_TRUE(catcher.GetNextResult()) << message_;
   }
 
@@ -46,8 +50,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ActiveTab) {
   // Changing page should go back to it not having access.
   {
     ResultCatcher catcher;
-    ui_test_utils::NavigateToURL(browser(),
-                                 test_server()->GetURL("final_page.html"));
+    ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL(
+            "/extensions/api_test/active_tab/final_page.html"));
     EXPECT_TRUE(catcher.GetNextResult()) << message_;
   }
 }

@@ -34,13 +34,13 @@ function getURLEchoUserAgent() {
 }
 
 function getURLHttpSimple() {
-  return getServerURL("files/extensions/api_test/webrequest/simpleLoad/a.html");
+  return getServerURL("extensions/api_test/webrequest/simpleLoad/a.html");
 }
 
 function getURLOfHTMLWithThirdParty() {
   // Returns the URL of a HTML document with a third-party resource.
   return getServerURL(
-      "files/extensions/api_test/webrequest/declarative/third-party.html");
+      "extensions/api_test/webrequest/declarative/third-party.html");
 }
 
 function getURLSetCookie() {
@@ -57,7 +57,7 @@ function getURLEchoCookie() {
 }
 
 function getURLHttpXHRData() {
-  return getServerURL("files/extensions/api_test/webrequest/xhr/data.json",
+  return getServerURL("extensions/api_test/webrequest/xhr/data.json",
                       "b.com");
 }
 
@@ -160,7 +160,7 @@ runTests([
             url: getURLHttpSimple(),
             statusCode: 200,
             fromCache: false,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
             ip: "127.0.0.1",
           }
         }

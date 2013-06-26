@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 function getURLHttpXHR() {
-  return getServerURL('files/extensions/api_test/webrequest/xhr/a.html');
+  return getServerURL('extensions/api_test/webrequest/xhr/a.html');
 }
 function getURLHttpXHRJavaScript() {
-  return getServerURL('files/extensions/api_test/webrequest/xhr/a.js');
+  return getServerURL('extensions/api_test/webrequest/xhr/a.js');
 }
 function getURLHttpXHRData() {
-  return getServerURL('files/extensions/api_test/webrequest/xhr/data.json');
+  return getServerURL('extensions/api_test/webrequest/xhr/data.json');
 }
 
 runTests([
@@ -252,7 +252,7 @@ runTests([
           details: {
             type: "main_frame",
             url: getURLHttpXHR(),
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "onResponseStarted-1",
@@ -263,7 +263,7 @@ runTests([
             statusCode: 200,
             ip: "127.0.0.1",
             fromCache: false,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "onCompleted-1",
@@ -274,7 +274,7 @@ runTests([
             statusCode: 200,
             ip: "127.0.0.1",
             fromCache: false,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "a.js-onBeforeRequest",
@@ -304,7 +304,7 @@ runTests([
           details: {
             type: "script",
             url: getURLHttpXHRJavaScript(),
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "a.js-onResponseStarted",
@@ -315,7 +315,7 @@ runTests([
             statusCode: 200,
             ip: "127.0.0.1",
             fromCache: false,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "a.js-onCompleted",
@@ -326,7 +326,7 @@ runTests([
             statusCode: 200,
             ip: "127.0.0.1",
             fromCache: false,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "onBeforeRequest-2",
@@ -356,7 +356,7 @@ runTests([
           details: {
             type: "xmlhttprequest",
             url: getURLHttpXHRData(),
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "onResponseStarted-2",
@@ -367,7 +367,7 @@ runTests([
             statusCode: 200,
             ip: "127.0.0.1",
             fromCache: false,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "onCompleted-2",
@@ -378,7 +378,7 @@ runTests([
             statusCode: 200,
             ip: "127.0.0.1",
             fromCache: false,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         }
       ],

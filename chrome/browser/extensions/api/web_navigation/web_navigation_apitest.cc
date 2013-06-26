@@ -37,6 +37,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/glue/resource_type.h"
@@ -360,7 +361,6 @@ class WebNavigationApiTest : public ExtensionApiTest {
         switches::kAllowLegacyExtensionManifests);
 
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(StartTestServer());
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
@@ -387,6 +387,7 @@ class WebNavigationApiTest : public ExtensionApiTest {
 #define MAYBE_Api Api
 #endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Api) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_api.html")) << message_;
 }
@@ -398,17 +399,20 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Api) {
 #define MAYBE_GetFrame GetFrame
 #endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_GetFrame) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_getFrame.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ClientRedirect) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_clientRedirect.html"))
           << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_serverRedirect.html"))
           << message_;
@@ -423,6 +427,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
 #endif
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest,
                        MAYBE_ServerRedirectSingleProcess) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
   // Set max renderers to 1 to force running out of processes.
   content::RenderProcessHost::SetMaxRendererProcessCount(1);
 
@@ -437,15 +443,15 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest,
   ResultCatcher catcher;
   GURL url(base::StringPrintf(
       "http://www.a.com:%d/"
-          "files/extensions/api_test/webnavigation/serverRedirect/a.html",
-      test_server()->host_port_pair().port()));
+          "extensions/api_test/webnavigation/serverRedirect/a.html",
+      embedded_test_server()->port()));
 
   ui_test_utils::NavigateToURL(browser(), url);
 
   url = GURL(base::StringPrintf(
       "http://www.b.com:%d/server-redirect?http://www.b.com:%d/",
-      test_server()->host_port_pair().port(),
-      test_server()->host_port_pair().port()));
+      embedded_test_server()->port(),
+      embedded_test_server()->port()));
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -453,33 +459,39 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ForwardBack) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_forwardBack.html"))
           << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, IFrame) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_iframe.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SrcDoc) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_srcdoc.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, OpenTab) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_openTab.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ReferenceFragment) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_referenceFragment.html"))
           << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SimpleLoad) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_simpleLoad.html")) << message_;
 }
@@ -491,11 +503,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SimpleLoad) {
 #define MAYBE_Failures Failures
 #endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Failures) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_failures.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, FilteredTest) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_filtered.html")) << message_;
 }
@@ -507,6 +521,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, FilteredTest) {
 #define MAYBE_UserAction UserAction
 #endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_UserAction) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_userAction.html")) << message_;
@@ -547,6 +563,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_UserAction) {
 #define MAYBE_RequestOpenTab RequestOpenTab
 #endif
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_RequestOpenTab) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_requestOpenTab.html"))
       << message_;
@@ -585,6 +603,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_RequestOpenTab) {
 #define MAYBE_TargetBlank TargetBlank
 #endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_TargetBlank) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_targetBlank.html"))
       << message_;
@@ -594,8 +614,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_TargetBlank) {
 
   ResultCatcher catcher;
 
-  GURL url = test_server()->GetURL(
-      "files/extensions/api_test/webnavigation/targetBlank/a.html");
+  GURL url = embedded_test_server()->GetURL(
+      "/extensions/api_test/webnavigation/targetBlank/a.html");
 
   chrome::NavigateParams params(browser(), url, content::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params);
@@ -622,6 +642,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_TargetBlank) {
 #define MAYBE_TargetBlankIncognito TargetBlankIncognito
 #endif
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_TargetBlankIncognito) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionSubtest(
       "webnavigation", "test_targetBlank.html",
@@ -629,8 +651,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_TargetBlankIncognito) {
 
   ResultCatcher catcher;
 
-  GURL url = test_server()->GetURL(
-      "files/extensions/api_test/webnavigation/targetBlank/a.html");
+  GURL url = embedded_test_server()->GetURL(
+      "/extensions/api_test/webnavigation/targetBlank/a.html");
 
   Browser* otr_browser = ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(), url);
@@ -652,12 +674,15 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_TargetBlankIncognito) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, History) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_history.html"))
           << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcess) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
   LoadExtension(test_data_dir_.AppendASCII("webnavigation").AppendASCII("app"));
   LoadExtension(test_data_dir_.AppendASCII("webnavigation"));
 
@@ -669,7 +694,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcess) {
   // See crossProcess/d.html.
   DelayLoadStartAndExecuteJavascript call_script(
       test_navigation_listener(),
-      test_server()->GetURL("test1"),
+      embedded_test_server()->GetURL("/test1"),
       "navigate2()",
       extension->GetResourceURL("crossProcess/empty.html"));
 
@@ -679,6 +704,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcess) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessFragment) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
   LoadExtension(test_data_dir_.AppendASCII("webnavigation"));
 
   ExtensionService* service = extensions::ExtensionSystem::Get(
@@ -689,20 +716,20 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessFragment) {
   // See crossProcess/f.html.
   DelayLoadStartAndExecuteJavascript call_script3(
       test_navigation_listener(),
-      test_server()->GetURL("test3"),
+      embedded_test_server()->GetURL("/test3"),
       "updateFragment()",
       extension->GetResourceURL(base::StringPrintf(
           "crossProcess/f.html?%d#foo",
-          test_server()->host_port_pair().port())));
+          embedded_test_server()->port())));
 
   // See crossProcess/g.html.
   DelayLoadStartAndExecuteJavascript call_script4(
       test_navigation_listener(),
-      test_server()->GetURL("test4"),
+      embedded_test_server()->GetURL("/test4"),
       "updateFragment()",
       extension->GetResourceURL(base::StringPrintf(
           "crossProcess/g.html?%d#foo",
-          test_server()->host_port_pair().port())));
+          embedded_test_server()->port())));
 
   ASSERT_TRUE(RunPageTest(
       extension->GetResourceURL("test_crossProcessFragment.html").spec()))
@@ -710,6 +737,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessFragment) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessHistory) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
   LoadExtension(test_data_dir_.AppendASCII("webnavigation"));
 
   ExtensionService* service = extensions::ExtensionSystem::Get(
@@ -720,21 +749,21 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessHistory) {
   // See crossProcess/e.html.
   DelayLoadStartAndExecuteJavascript call_script2(
       test_navigation_listener(),
-      test_server()->GetURL("test2"),
+      embedded_test_server()->GetURL("/test2"),
       "updateHistory()",
       extension->GetResourceURL("crossProcess/empty.html"));
 
   // See crossProcess/h.html.
   DelayLoadStartAndExecuteJavascript call_script5(
       test_navigation_listener(),
-      test_server()->GetURL("test5"),
+      embedded_test_server()->GetURL("/test5"),
       "updateHistory()",
       extension->GetResourceURL("crossProcess/empty.html"));
 
   // See crossProcess/i.html.
   DelayLoadStartAndExecuteJavascript call_script6(
       test_navigation_listener(),
-      test_server()->GetURL("test6"),
+      embedded_test_server()->GetURL("/test6"),
       "updateHistory()",
       extension->GetResourceURL("crossProcess/empty.html"));
 
@@ -750,6 +779,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessHistory) {
 #define MAYBE_Crash Crash
 #endif
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Crash) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_crash.html"))
       << message_;
@@ -761,16 +792,16 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Crash) {
 
   GURL url(base::StringPrintf(
       "http://www.a.com:%d/"
-          "files/extensions/api_test/webnavigation/crash/a.html",
-      test_server()->host_port_pair().port()));
+          "extensions/api_test/webnavigation/crash/a.html",
+      embedded_test_server()->port()));
   ui_test_utils::NavigateToURL(browser(), url);
 
   ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUICrashURL));
 
   url = GURL(base::StringPrintf(
       "http://www.a.com:%d/"
-          "files/extensions/api_test/webnavigation/crash/b.html",
-      test_server()->host_port_pair().port()));
+          "extensions/api_test/webnavigation/crash/b.html",
+      embedded_test_server()->port()));
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();

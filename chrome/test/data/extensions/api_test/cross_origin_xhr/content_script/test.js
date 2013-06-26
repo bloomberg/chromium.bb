@@ -12,7 +12,7 @@ chrome.test.getConfig(function(config) {
   }
 
   function doReq(domain, expectSuccess) {
-    var url = rewriteURL(domain + ':PORT/files/extensions/test_file.txt');
+    var url = rewriteURL(domain + ':PORT/extensions/test_file.txt');
 
     chrome.tabs.sendRequest(testTabId, url, function(response) {
       if (expectSuccess) {
@@ -28,7 +28,7 @@ chrome.test.getConfig(function(config) {
   }
 
   chrome.tabs.create({
-      url: rewriteURL('http://localhost:PORT/files/extensions/test_file.html')},
+      url: rewriteURL('http://localhost:PORT/extensions/test_file.html')},
       function(tab) {
         testTabId = tab.id;
       });
@@ -52,9 +52,10 @@ chrome.test.getConfig(function(config) {
       function disallowedSubdomain() {
         doReq('http://foob.com', false);
       },
-      function disallowedSSL() {
-        doReq('https://a.com', false);
-      },
+      // TODO(asargent): Explicitly create SSL test server and enable the test.
+      // function disallowedSSL() {
+      //   doReq('https://a.com', false);
+      // },
       function targetPageAlwaysAllowed() {
         // Even though localhost does not show up in the host permissions, we
         // can still make requests to it since it's the page that the content

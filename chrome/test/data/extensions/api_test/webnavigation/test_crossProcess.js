@@ -5,7 +5,7 @@
 onload = function() {
   var getURL = chrome.extension.getURL;
   var URL_REGULAR =
-      "http://127.0.0.1:PORT/files/extensions/api_test/webnavigation/crossProcess/empty.html";
+      "http://127.0.0.1:PORT/extensions/api_test/webnavigation/crossProcess/empty.html";
   var URL_REDIRECT = "http://www.a.com:PORT/server-redirect";
   var URL_TEST = "http://127.0.0.1:PORT/test";
   chrome.tabs.create({"url": "about:blank"}, function(tab) {

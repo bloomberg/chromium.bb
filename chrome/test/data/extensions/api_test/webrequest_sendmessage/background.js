@@ -6,7 +6,7 @@ var EVENT_MESSAGE_EXTENSION_STRING = "Extension";
 
 // Constants as functions, not to be called until after runTests.
 function getURLHttpSimpleLoad() {
-  return getServerURL('files/extensions/api_test/webrequest/simpleLoad/a.html');
+  return getServerURL('extensions/api_test/webrequest/simpleLoad/a.html');
 }
 
 function getServerURL(path) {

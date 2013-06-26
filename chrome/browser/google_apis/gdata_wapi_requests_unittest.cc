@@ -222,7 +222,7 @@ class GDataWapiRequestsTest : public testing::Test {
       if (found != request.headers.end() &&
           found->second != "*" &&
           found->second != kTestETag) {
-        http_response->set_code(net::test_server::PRECONDITION);
+        http_response->set_code(net::HTTP_PRECONDITION_FAILED);
         return http_response.PassAs<net::test_server::HttpResponse>();
       }
 
@@ -235,7 +235,7 @@ class GDataWapiRequestsTest : public testing::Test {
       }
       received_bytes_ = 0;
 
-      http_response->set_code(net::test_server::SUCCESS);
+      http_response->set_code(net::HTTP_OK);
       GURL upload_url;
       // POST is used for a new file, and PUT is used for an existing file.
       if (request.method == net::test_server::METHOD_POST) {
@@ -271,7 +271,7 @@ class GDataWapiRequestsTest : public testing::Test {
     // response.code() is set to SUCCESS. Change it to CREATED if it's a new
     // file.
     if (absolute_url.path() == "/upload_new_file")
-      response->set_code(net::test_server::CREATED);
+      response->set_code(net::HTTP_CREATED);
 
     // Check if the Content-Range header is present. This must be present if
     // the request body is not empty.
@@ -306,7 +306,7 @@ class GDataWapiRequestsTest : public testing::Test {
 
     // Change the code to RESUME_INCOMPLETE if upload is not complete.
     if (received_bytes_ < content_length_)
-      response->set_code(net::test_server::RESUME_INCOMPLETE);
+      response->set_code(static_cast<net::HttpStatusCode>(308));
 
     return response.PassAs<net::test_server::HttpResponse>();
   }

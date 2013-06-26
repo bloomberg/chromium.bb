@@ -33,7 +33,7 @@ chrome.test.getConfig(function(config) {
       }));
     },
     function setOnlineJpegWallpaper() {
-      var url = "http://a.com:PORT/files/extensions/api_test" +
+      var url = "http://a.com:PORT/extensions/api_test" +
           "/wallpaper_manager/test.jpg";
       url = url.replace(/PORT/, config.testServer.port);
       requestImage(url, function(requestStatus, response) {
@@ -64,7 +64,7 @@ chrome.test.getConfig(function(config) {
       }));
     },
     function setCustomPngWallpaper() {
-      var url = "http://a.com:PORT/files/extensions/api_test" +
+      var url = "http://a.com:PORT/extensions/api_test" +
           "/wallpaper_manager/test.png";
       url = url.replace(/PORT/, config.testServer.port);
       requestImage(url, function(requestStatus, response) {
@@ -87,7 +87,7 @@ chrome.test.getConfig(function(config) {
       });
     },
     function setCustomJepgBadWallpaper() {
-      var url = "http://a.com:PORT/files/extensions/api_test" +
+      var url = "http://a.com:PORT/extensions/api_test" +
           "/wallpaper_manager/test_bad.jpg";
       url = url.replace(/PORT/, config.testServer.port);
       requestImage(url, function(requestStatus, response) {
@@ -102,7 +102,7 @@ chrome.test.getConfig(function(config) {
       });
     },
     function setWallpaperFromFileSystem() {
-      var url = "http://a.com:PORT/files/extensions/api_test" +
+      var url = "http://a.com:PORT/extensions/api_test" +
           "/wallpaper_manager/test.jpg";
       url = url.replace(/PORT/, config.testServer.port);
       chrome.wallpaperPrivate.setWallpaperIfExists(url, 'CENTER_CROPPED',
@@ -115,7 +115,7 @@ chrome.test.getConfig(function(config) {
       }));
     },
     function getAndSetThumbnail() {
-      var url = "http://a.com:PORT/files/extensions/api_test" +
+      var url = "http://a.com:PORT/extensions/api_test" +
           "/wallpaper_manager/test.jpg";
       url = url.replace(/PORT/, config.testServer.port);
       chrome.wallpaperPrivate.getThumbnail(url, 'ONLINE', pass(function(data) {

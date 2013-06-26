@@ -89,7 +89,7 @@ var receiveMessage = function(event) {
 
 chrome.test.getConfig(function(config) {
   guestURL = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/web_view/pointer_lock/guest.html';
+      '/extensions/platform_apps/web_view/pointer_lock/guest.html';
   document.querySelector('#webview-tag-container').innerHTML =
       '<webview id=\'webview\' style="width: 400px; height: 400px; ' +
       'margin: 0; padding: 0;"' +

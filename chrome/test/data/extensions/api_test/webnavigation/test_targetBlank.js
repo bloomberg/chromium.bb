@@ -4,9 +4,9 @@
 
 onload = function() {
   var URL_LOAD =
-      "http://127.0.0.1:PORT/files/extensions/api_test/webnavigation/targetBlank/a.html";
+      "http://127.0.0.1:PORT/extensions/api_test/webnavigation/targetBlank/a.html";
   var URL_TARGET =
-      "http://127.0.0.1:PORT/files/extensions/api_test/webnavigation/targetBlank/b.html";
+      "http://127.0.0.1:PORT/extensions/api_test/webnavigation/targetBlank/b.html";
   chrome.tabs.create({"url": "about:blank"}, function(tab) {
     var tabId = tab.id;
     chrome.test.getConfig(function(config) {

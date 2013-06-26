@@ -7,7 +7,7 @@ onload = function() {
     var target =
         "http://127.0.0.1:" +
         location.search.substr(1) +
-        "/files/extensions/api_test/webnavigation/crossProcess/empty.html";
+        "/extensions/api_test/webnavigation/crossProcess/empty.html";
     location.href =
         "http://www.a.com:" +
         location.search.substr(1) +

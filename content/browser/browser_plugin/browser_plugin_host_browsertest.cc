@@ -733,7 +733,7 @@ scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
-  http_response->set_code(net::test_server::MOVED);
+  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
   http_response->AddCustomHeader("Location", redirect_target.spec());
   return http_response.PassAs<net::test_server::HttpResponse>();
 }

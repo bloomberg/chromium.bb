@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 var relativePath =
-    '/files/extensions/api_test/executescript/callback/test.html';
+    '/extensions/api_test/executescript/callback/test.html';
 var testUrl = 'http://b.com:PORT' + relativePath;
 
 chrome.test.getConfig(function(config) {

@@ -5,9 +5,9 @@
 onload = function() {
   var getURL = chrome.extension.getURL;
   var URL_LOAD =
-      "http://127.0.0.1:PORT/files/prerender/prerender_loader.html";
+      "http://127.0.0.1:PORT/prerender/prerender_loader.html";
   var URL_TARGET =
-      "http://127.0.0.1:PORT/files/prerender/prerender_page.html";
+      "http://127.0.0.1:PORT/prerender/prerender_page.html";
   chrome.tabs.create({"url": "about:blank"}, function(tab) {
     var tabId = tab.id;
     chrome.test.getConfig(function(config) {

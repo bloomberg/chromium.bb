@@ -9,7 +9,7 @@ const assertEq = chrome.test.assertEq;
 const assertTrue = chrome.test.assertTrue;
 
 var testUrl = 'http://www.a.com:PORT' +
-    '/files/extensions/api_test/page_capture/google.html';
+    '/extensions/api_test/page_capture/google.html';
 
 function waitForCurrentTabLoaded(callback) {
   chrome.tabs.getSelected(null, function(tab) {

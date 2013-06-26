@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var baseUrl = 'http://a.com:PORT/files/extensions/api_test/executescript/' +
+var baseUrl = 'http://a.com:PORT/extensions/api_test/executescript/' +
     'frame_after_load/';
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {

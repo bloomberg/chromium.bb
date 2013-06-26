@@ -92,7 +92,7 @@ class MessageSender : public content::NotificationObserver {
 
 // Tests that message passing between extensions and content scripts works.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Messaging) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("messaging/connect")) << message_;
 }
 

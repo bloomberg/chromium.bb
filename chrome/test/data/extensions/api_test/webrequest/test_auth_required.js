@@ -41,7 +41,7 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized"
           }
         },
         { label: "onAuthRequired",
@@ -53,7 +53,7 @@ runTests([
             realm: realm,
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
         { label: "onResponseStarted",
@@ -64,7 +64,7 @@ runTests([
             statusCode: 401,
             ip: "127.0.0.1",
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
         { label: "onCompleted",
@@ -75,7 +75,7 @@ runTests([
             statusCode: 401,
             ip: "127.0.0.1",
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
       ],
@@ -119,7 +119,7 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized"
           }
         },
         { label: "onAuthRequired",
@@ -131,7 +131,7 @@ runTests([
             realm: realm,
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
         { label: "onResponseStarted",
@@ -142,7 +142,7 @@ runTests([
             statusCode: 401,
             ip: "127.0.0.1",
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
         { label: "onCompleted",
@@ -153,7 +153,7 @@ runTests([
             statusCode: 401,
             ip: "127.0.0.1",
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
       ],
@@ -199,7 +199,7 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized"
           }
         },
         { label: "onAuthRequired",
@@ -211,7 +211,7 @@ runTests([
             realm: realm,
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           },
           retval: {cancel: true}
         },
@@ -223,7 +223,7 @@ runTests([
             statusCode: 401,
             ip: "127.0.0.1",
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
         { label: "onCompleted",
@@ -234,7 +234,7 @@ runTests([
             statusCode: 401,
             ip: "127.0.0.1",
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
       ],
@@ -281,7 +281,7 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized"
           }
         },
         { label: "onAuthRequired",
@@ -293,7 +293,7 @@ runTests([
             realm: realm,
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           },
           retval: {authCredentials: {username: "foo", password: "secret"}}
         },
@@ -361,7 +361,7 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized"
           }
         },
         { label: "onAuthRequired",
@@ -373,7 +373,7 @@ runTests([
             realm: realm,
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
         { label: "onResponseStarted",
@@ -384,7 +384,7 @@ runTests([
             statusCode: 401,
             ip: "127.0.0.1",
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
         { label: "onCompleted",
@@ -395,7 +395,7 @@ runTests([
             statusCode: 401,
             ip: "127.0.0.1",
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
       ],
@@ -441,7 +441,7 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized"
           }
         },
         { label: "onAuthRequired",
@@ -453,7 +453,7 @@ runTests([
             realm: realm,
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           },
           retval: {cancel: true}
         },
@@ -465,7 +465,7 @@ runTests([
             statusCode: 401,
             ip: "127.0.0.1",
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
         { label: "onCompleted",
@@ -476,7 +476,7 @@ runTests([
             statusCode: 401,
             ip: "127.0.0.1",
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           }
         },
       ],
@@ -523,7 +523,7 @@ runTests([
           details: {
             url: url,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized"
+            statusLine: "HTTP/1.1 401 Unauthorized"
           }
         },
         { label: "onAuthRequired",
@@ -535,7 +535,7 @@ runTests([
             realm: realm,
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 401 Unauthorized",
+            statusLine: "HTTP/1.1 401 Unauthorized",
           },
           retval: {authCredentials: {username: "foo", password: "secret"}}
         },

@@ -15,7 +15,7 @@ chrome.test.getConfig(function(config) {
       );
       chrome.test.log("Creating tab...");
       var test_url =
-          ("http://localhost:PORT/files/extensions/" +
+          ("http://localhost:PORT/extensions/" +
            "test_file_with_about_blank_iframe.html")
               .replace(/PORT/, config.testServer.port);
       chrome.tabs.create({ url: test_url });

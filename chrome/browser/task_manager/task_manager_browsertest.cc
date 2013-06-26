@@ -39,6 +39,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "grit/generated_resources.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -302,12 +303,12 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // must stay in scope with replace_host
   replace_host.SetHostStr(host_str);
-  GURL base_url = test_server()->GetURL(
-      "files/extensions/api_test/app_process/");
+  GURL base_url = embedded_test_server()->GetURL(
+      "/extensions/api_test/app_process/");
   base_url = base_url.ReplaceComponents(replace_host);
 
   // Open a new tab to an app URL before the app is loaded.

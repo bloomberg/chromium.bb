@@ -28,7 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 
 class TabRestoreTest : public InProcessBrowserTest {
@@ -363,10 +363,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreIntoSameWindow) {
 // Tests that a duplicate history entry is not created when we restore a page
 // to an existing SiteInstance.  (Bug 1230446)
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWithExistingSiteInstance) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
-  GURL http_url1(test_server()->GetURL("files/title1.html"));
-  GURL http_url2(test_server()->GetURL("files/title2.html"));
+  GURL http_url1(embedded_test_server()->GetURL("/title1.html"));
+  GURL http_url2(embedded_test_server()->GetURL("/title2.html"));
   int tab_count = browser()->tab_strip_model()->count();
 
   // Add a tab
@@ -420,10 +420,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWithExistingSiteInstance) {
 // already exists.  (Bug 1204135)
 IN_PROC_BROWSER_TEST_F(TabRestoreTest,
                        MAYBE_RestoreCrossSiteWithExistingSiteInstance) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
-  GURL http_url1(test_server()->GetURL("files/title1.html"));
-  GURL http_url2(test_server()->GetURL("files/title2.html"));
+  GURL http_url1(embedded_test_server()->GetURL("/title1.html"));
+  GURL http_url2(embedded_test_server()->GetURL("/title2.html"));
 
   int tab_count = browser()->tab_strip_model()->count();
 
@@ -551,9 +551,9 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURL) {
 // Restore tab with special URL in its navigation history, go back to that
 // entry and see that it loads properly. See http://crbug.com/31905
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURLOnBack) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
-  const GURL http_url(test_server()->GetURL("files/title1.html"));
+  const GURL http_url(embedded_test_server()->GetURL("/title1.html"));
 
   // Navigate new tab to a special URL.
   ui_test_utils::NavigateToURLWithDisposition(

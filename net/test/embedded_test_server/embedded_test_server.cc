@@ -25,6 +25,23 @@ namespace test_server {
 
 namespace {
 
+class CustomHttpResponse : public HttpResponse {
+ public:
+  CustomHttpResponse(const std::string& headers, const std::string& contents)
+      : headers_(headers), contents_(contents) {
+  }
+
+  virtual std::string ToResponseString() const OVERRIDE {
+    return headers_ + "\r\n" + contents_;
+  }
+
+ private:
+  std::string headers_;
+  std::string contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomHttpResponse);
+};
+
 // Handles |request| by serving a file from under |server_root|.
 scoped_ptr<HttpResponse> HandleFileRequest(
     const base::FilePath& server_root,
@@ -40,14 +57,26 @@ scoped_ptr<HttpResponse> HandleFileRequest(
   if (query_pos != std::string::npos)
     request_path = request_path.substr(0, query_pos);
 
+  base::FilePath file_path(server_root.AppendASCII(request_path));
   std::string file_contents;
-  if (!file_util::ReadFileToString(
-          server_root.AppendASCII(request_path), &file_contents)) {
+  if (!file_util::ReadFileToString(file_path, &file_contents))
     return scoped_ptr<HttpResponse>();
+
+  base::FilePath headers_path(
+      file_path.AddExtension(FILE_PATH_LITERAL("mock-http-headers")));
+
+  if (file_util::PathExists(headers_path)) {
+    std::string headers_contents;
+    if (!file_util::ReadFileToString(headers_path, &headers_contents))
+      return scoped_ptr<HttpResponse>(NULL);
+
+    scoped_ptr<CustomHttpResponse> http_response(
+        new CustomHttpResponse(headers_contents, file_contents));
+    return http_response.PassAs<HttpResponse>();
   }
 
   scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
-  http_response->set_code(net::test_server::SUCCESS);
+  http_response->set_code(HTTP_OK);
   http_response->set_content(file_contents);
   return http_response.PassAs<HttpResponse>();
 }
@@ -168,7 +197,7 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
     LOG(WARNING) << "Request not handled. Returning 404: "
                  << request->relative_url;
     scoped_ptr<BasicHttpResponse> not_found_response(new BasicHttpResponse);
-    not_found_response->set_code(NOT_FOUND);
+    not_found_response->set_code(HTTP_NOT_FOUND);
     connection->SendResponse(
         not_found_response.PassAs<HttpResponse>());
   }

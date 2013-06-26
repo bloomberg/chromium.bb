@@ -8,7 +8,7 @@ var startTest = function() {
 
 chrome.test.getConfig(function(config) {
   var guestURL = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/web_view/popup_positioning/guest.html';
+      '/extensions/platform_apps/web_view/popup_positioning/guest.html';
   var webview = document.createElement('webview');
   var loaded = false;
   webview.addEventListener('loadstop', function(e) {

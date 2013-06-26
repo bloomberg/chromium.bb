@@ -18,7 +18,7 @@ chrome.test.runTests([
 
     chrome.test.getConfig(function(config) {
       chrome.test.log("Creating tab...");
-      var test_url = ("http://a.com:PORT/files/extensions/api_test" +
+      var test_url = ("http://a.com:PORT/extensions/api_test" +
           "/content_scripts/other_extensions/iframe_content.html#" +
           escape(chrome.extension.getURL("test.html")))
           .replace(/PORT/, config.testServer.port);

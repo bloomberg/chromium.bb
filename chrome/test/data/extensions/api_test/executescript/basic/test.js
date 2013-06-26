@@ -7,7 +7,7 @@ var fail = chrome.test.callbackFail;
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 var relativePath =
-    '/files/extensions/api_test/executescript/basic/test_executescript.html';
+    '/extensions/api_test/executescript/basic/test_executescript.html';
 var testUrl = 'http://a.com:PORT' + relativePath;
 var testFailureUrl = 'http://b.com:PORT' + relativePath;
 var firstEnter = true;

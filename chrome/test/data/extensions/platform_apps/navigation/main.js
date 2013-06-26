@@ -5,7 +5,7 @@
 chrome.test.getConfig(function(config) {
   var IN_APP_URL = 'nav-target.html';
   var REMOTE_URL = 'http://localhost:' + config.testServer.port
-      '/files/extensions/platform_apps/navigation/nav-target.html';
+      '/extensions/platform_apps/navigation/nav-target.html';
 
   var testForm = document.getElementById('test-form');
   var testLink = document.getElementById('test-link');

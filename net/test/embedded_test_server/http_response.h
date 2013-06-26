@@ -7,23 +7,14 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "net/http/http_status_code.h"
 
 namespace net {
 namespace test_server {
-
-enum ResponseCode {
-  SUCCESS = 200,
-  CREATED = 201,
-  NO_CONTENT = 204,
-  MOVED = 301,
-  RESUME_INCOMPLETE = 308,
-  NOT_FOUND = 404,
-  PRECONDITION = 412,
-  ACCESS_DENIED = 500,
-};
 
 // Interface for HTTP response implementations.
 class HttpResponse{
@@ -44,8 +35,8 @@ class BasicHttpResponse : public HttpResponse {
   virtual ~BasicHttpResponse();
 
   // The response code.
-  ResponseCode code() const { return code_; }
-  void set_code(ResponseCode code) { code_ = code; }
+  HttpStatusCode code() const { return code_; }
+  void set_code(HttpStatusCode code) { code_ = code; }
 
   // The content of the response.
   const std::string& content() const { return content_; }
@@ -57,24 +48,19 @@ class BasicHttpResponse : public HttpResponse {
     content_type_ = content_type;
   }
 
-  // The custom headers to be sent to the client.
-  const std::map<std::string, std::string>& custom_headers() const {
-    return custom_headers_;
-  }
-
   // Adds a custom header.
   void AddCustomHeader(const std::string& key, const std::string& value) {
-    custom_headers_[key] = value;
+    custom_headers_.push_back(std::make_pair(key, value));
   }
 
   // Generates and returns a http response string.
   virtual std::string ToResponseString() const OVERRIDE;
 
  private:
-  ResponseCode code_;
+  HttpStatusCode code_;
   std::string content_;
   std::string content_type_;
-  std::map<std::string, std::string> custom_headers_;
+  std::vector<std::pair<std::string, std::string> > custom_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicHttpResponse);
 };

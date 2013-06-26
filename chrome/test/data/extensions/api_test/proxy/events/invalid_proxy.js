@@ -25,7 +25,7 @@ function readConfigAndSetProxy(test_config) {
   // Construct the URL used for XHRs and set the proxy settings.
   empty_json_url = "http://127.0.0.1:" +
       test_config.testServer.port +
-      "/files/extensions/api_test/proxy/events/empty.json";
+      "/extensions/api_test/proxy/events/empty.json";
 
   // Set an invalid proxy and fire of a XHR. This should trigger proxy errors.
   // There may be any number of proxy errors, as systems like safe browsing

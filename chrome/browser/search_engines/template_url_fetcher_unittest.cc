@@ -16,7 +16,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "googleurl/src/gurl.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TemplateURLFetcherTest;
@@ -53,10 +53,11 @@ class TemplateURLFetcherTest : public testing::Test {
 
     profile->CreateRequestContext();
     ASSERT_TRUE(profile->GetRequestContext());
-    ASSERT_TRUE(test_server_.Start());
+    ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
   }
 
   virtual void TearDown() OVERRIDE {
+    ASSERT_TRUE(test_server_.ShutdownAndWaitUntilComplete());
     test_util_.TearDown();
   }
 
@@ -78,7 +79,7 @@ class TemplateURLFetcherTest : public testing::Test {
   void WaitForDownloadToFinish();
 
   TemplateURLServiceTestUtil test_util_;
-  net::SpawnedTestServer test_server_;
+  net::test_server::EmbeddedTestServer test_server_;
 
   // The last TemplateURL to come from a callback.
   scoped_ptr<TemplateURL> last_callback_template_url_;
@@ -108,12 +109,16 @@ void TemplateURLFetcherTestCallbacks::ConfirmAddSearchProvider(
 }
 
 TemplateURLFetcherTest::TemplateURLFetcherTest()
-    : test_server_(net::SpawnedTestServer::TYPE_HTTP,
-                   net::SpawnedTestServer::kLocalhost,
-                   base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))),
+    : test_server_(
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::IO)),
       callbacks_destroyed_(0),
       add_provider_called_(0),
       waiting_for_download_(false) {
+  base::FilePath src_dir;
+  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  test_server_.ServeFilesFromDirectory(
+      src_dir.AppendASCII("chrome/test/data"));
 }
 
 void TemplateURLFetcherTest::DestroyedCallback(
@@ -145,7 +150,7 @@ void TemplateURLFetcherTest::StartDownload(
   }
 
   // Start the fetch.
-  GURL osdd_url = test_server_.GetURL("files/" + osdd_file_name);
+  GURL osdd_url = test_server_.GetURL("/" + osdd_file_name);
   GURL favicon_url;
   TemplateURLFetcherFactory::GetForProfile(
       test_util_.profile())->ScheduleDownload(

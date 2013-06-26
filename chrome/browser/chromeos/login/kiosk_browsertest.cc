@@ -443,7 +443,7 @@ class KioskTest : public chromeos::CrosInProcessBrowserTest,
 
     scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
     if (url.path() == "/ServiceLogin") {
-      http_response->set_code(net::test_server::SUCCESS);
+      http_response->set_code(net::HTTP_OK);
       http_response->set_content(service_login_response_);
       http_response->set_content_type("text/html");
     } else if (url.path() == "/ServiceLoginAuth") {
@@ -454,7 +454,7 @@ class KioskTest : public chromeos::CrosInProcessBrowserTest,
       int continue_arg_end = request.content.find("&", continue_arg_begin);
       const std::string continue_url = request.content.substr(
           continue_arg_begin, continue_arg_end - continue_arg_begin);
-      http_response->set_code(net::test_server::SUCCESS);
+      http_response->set_code(net::HTTP_OK);
       const std::string redirect_js =
           "document.location.href = unescape('" + continue_url + "');";
       http_response->set_content(

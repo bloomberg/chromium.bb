@@ -11,9 +11,8 @@ chrome.test.getConfig(function(config) {
           'http://localhost:' + config.testServer.port + '/echoheader?Cookie',
           true);
       xhr.onload = function() {
-        // Cookies should not have been passed in the request, so the echo of
-        // their header should be the Pythonic "None".
-        chrome.test.assertEq('None', xhr.responseText);
+        // Cookies should not have been passed in the request.
+        chrome.test.assertEq('', xhr.responseText);
         chrome.test.succeed();
       };
       xhr.onerror = function() {

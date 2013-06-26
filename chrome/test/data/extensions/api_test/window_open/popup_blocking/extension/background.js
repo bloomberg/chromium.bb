@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function buildUrl(host, port) {
-  return ("http://HOST:PORT/files/extensions/api_test/window_open/" +
+  return ("http://HOST:PORT/extensions/api_test/window_open/" +
           "popup_blocking/extension/foo.html")
              .replace(/HOST/, host).replace(/PORT/, port);
 }

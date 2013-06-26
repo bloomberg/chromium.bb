@@ -22,9 +22,9 @@ util.createWebViewTagInDOM = function(partitionName) {
 
 chrome.test.getConfig(function(config) {
   var windowOpenGuestURL = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/web_view/shim/guest.html';
+      '/extensions/platform_apps/web_view/shim/guest.html';
   var noReferrerGuestURL = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/web_view/shim/guest_noreferrer.html';
+      '/extensions/platform_apps/web_view/shim/guest_noreferrer.html';
   chrome.test.runTests([
     function webView() {
       var webview = document.querySelector('webview');

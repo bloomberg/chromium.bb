@@ -8,7 +8,7 @@ var startTest = function() {
 
 chrome.test.getConfig(function(config) {
   var guestURL = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/web_view/speech/guest.html';
+      '/extensions/platform_apps/web_view/speech/guest.html';
   document.querySelector('#webview-tag-container').innerHTML =
       '<webview style="width: 10px; height: 10px; margin: 0; padding: 0;"' +
       ' src="' + guestURL + '"' +

@@ -21,7 +21,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -44,16 +44,19 @@ class PDFBrowserTest : public InProcessBrowserTest,
   PDFBrowserTest()
       : snapshot_different_(true),
         next_dummy_search_value_(0),
-        load_stop_notification_count_(0) {
-    pdf_test_server_.reset(new net::SpawnedTestServer(
-        net::SpawnedTestServer::TYPE_HTTP,
-        net::SpawnedTestServer::kLocalhost,
-        base::FilePath(FILE_PATH_LITERAL("pdf/test"))));
+        load_stop_notification_count_(0),
+        pdf_test_server_(
+            content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::IO)) {
+    pdf_test_server_.ServeFilesFromDirectory(
+        base::FilePath(FILE_PATH_LITERAL("pdf/test")));
   }
 
  protected:
   // Use our own TestServer so that we can serve files from the pdf directory.
-  net::SpawnedTestServer* pdf_test_server() { return pdf_test_server_.get(); }
+  net::test_server::EmbeddedTestServer* pdf_test_server() {
+    return &pdf_test_server_;
+  }
 
   int load_stop_notification_count() const {
     return load_stop_notification_count_;
@@ -207,7 +210,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
   // How many times we've seen chrome::LOAD_STOP.
   int load_stop_notification_count_;
 
-  scoped_ptr<net::SpawnedTestServer> pdf_test_server_;
+  net::test_server::EmbeddedTestServer pdf_test_server_;
 };
 
 #if defined(OS_CHROMEOS)
@@ -303,7 +306,7 @@ const int kLoadingNumberOfParts = 10;
 // regressions.
 // If it flakes, reopen http://crbug.com/74548.
 IN_PROC_BROWSER_TEST_P(PDFBrowserTest, Loading) {
-  ASSERT_TRUE(pdf_test_server()->Start());
+  ASSERT_TRUE(pdf_test_server()->InitializeAndWaitUntilReady());
 
   NavigationController* controller =
       &(browser()->tab_strip_model()->GetActiveWebContents()->GetController());
@@ -311,7 +314,7 @@ IN_PROC_BROWSER_TEST_P(PDFBrowserTest, Loading) {
   registrar.Add(this,
                 content::NOTIFICATION_LOAD_STOP,
                 content::Source<NavigationController>(controller));
-  std::string base_url = std::string("files/");
+  std::string base_url = std::string("/");
 
   base::FileEnumerator file_enumerator(
       ui_test_utils::GetTestFilePath(GetPDFTestDir(), base::FilePath()),
@@ -396,9 +399,9 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Action) {
 
 // Flaky as per http://crbug.com/74549.
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, DISABLED_OnLoadAndReload) {
-  ASSERT_TRUE(pdf_test_server()->Start());
+  ASSERT_TRUE(pdf_test_server()->InitializeAndWaitUntilReady());
 
-  GURL url = pdf_test_server()->GetURL("files/onload_reload.html");
+  GURL url = pdf_test_server()->GetURL("/onload_reload.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
   content::WindowedNotificationObserver observer(

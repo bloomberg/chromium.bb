@@ -30,32 +30,32 @@ var RemoveResponseCookie = chrome.declarativeWebRequest.RemoveResponseCookie;
 
 // Constants as functions, not to be called until after runTests.
 function getURLHttpSimple() {
-  return getServerURL("files/extensions/api_test/webrequest/simpleLoad/a.html");
+  return getServerURL("extensions/api_test/webrequest/simpleLoad/a.html");
 }
 
 function getURLHttpSimpleB() {
-  return getServerURL("files/extensions/api_test/webrequest/simpleLoad/b.html");
+  return getServerURL("extensions/api_test/webrequest/simpleLoad/b.html");
 }
 
 function getURLHttpComplex() {
   return getServerURL(
-      "files/extensions/api_test/webrequest/complexLoad/a.html");
+      "extensions/api_test/webrequest/complexLoad/a.html");
 }
 
 function getURLHttpRedirectTest() {
   return getServerURL(
-      "files/extensions/api_test/webrequest/declarative/a.html");
+      "extensions/api_test/webrequest/declarative/a.html");
 }
 
 function getURLHttpWithHeaders() {
   return getServerURL(
-      "files/extensions/api_test/webrequest/declarative/headers.html");
+      "extensions/api_test/webrequest/declarative/headers.html");
 }
 
 function getURLOfHTMLWithThirdParty() {
   // Returns the URL of a HTML document with a third-party resource.
   return getServerURL(
-      "files/extensions/api_test/webrequest/declarative/third-party.html");
+      "extensions/api_test/webrequest/declarative/third-party.html");
 }
 
 // Shared test sections.
@@ -80,7 +80,7 @@ function cancelThirdPartyExpected() {
         event: "onHeadersReceived",
         details: {
           url: getURLOfHTMLWithThirdParty(),
-          statusLine: "HTTP/1.0 200 OK"
+          statusLine: "HTTP/1.1 200 OK"
         }
       },
       { label: "onResponseStarted",
@@ -90,7 +90,7 @@ function cancelThirdPartyExpected() {
           fromCache: false,
           ip: "127.0.0.1",
           statusCode: 200,
-          statusLine: "HTTP/1.0 200 OK"
+          statusLine: "HTTP/1.1 200 OK"
         }
       },
       { label: "onCompleted",
@@ -100,7 +100,7 @@ function cancelThirdPartyExpected() {
           ip: "127.0.0.1",
           url: getURLOfHTMLWithThirdParty(),
           statusCode: 200,
-          statusLine: "HTTP/1.0 200 OK"
+          statusLine: "HTTP/1.1 200 OK"
         }
       },
       { label: "img-onBeforeRequest",
@@ -330,7 +330,7 @@ runTests([
             url: getURLHttpSimple(),
             fromCache: false,
             statusCode: 200,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
       ],
@@ -357,7 +357,7 @@ runTests([
             url: getURLHttpRedirectTest(),
             fromCache: false,
             statusCode: 200,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         // We cannot wait for onCompleted signals because these are not sent
@@ -366,7 +366,7 @@ runTests([
           event: "onBeforeRedirect",
           details: {
             url: getServerURL(
-                "files/extensions/api_test/webrequest/declarative/image.png"),
+                "extensions/api_test/webrequest/declarative/image.png"),
             redirectUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEA" +
                 "AAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJ" +
                 "ggg==",
@@ -382,7 +382,7 @@ runTests([
             frameId: 1,
             parentFrameId: 0,
             url: getServerURL(
-                "files/extensions/api_test/webrequest/declarative/frame.html"),
+                "extensions/api_test/webrequest/declarative/frame.html"),
             redirectUrl: "data:text/html,",
             fromCache: false,
             statusCode: -1,
@@ -416,7 +416,7 @@ runTests([
             url: getURLHttpSimpleB(),
             fromCache: false,
             statusCode: 200,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
       ],

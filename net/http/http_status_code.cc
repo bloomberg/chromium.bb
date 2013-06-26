@@ -16,7 +16,7 @@ const char* GetHttpReasonPhrase(HttpStatusCode code) {
 #undef HTTP_STATUS
 
     default:
-      NOTREACHED();
+      NOTREACHED() << "unknown HTTP status code " << code;
   }
 
   return "";

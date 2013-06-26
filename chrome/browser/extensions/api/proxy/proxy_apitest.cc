@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
 
 // Tests error events: invalid proxy
 IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, MAYBE_ProxyEventsInvalidProxy) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("proxy/events", "invalid_proxy.html")) << message_;
 }

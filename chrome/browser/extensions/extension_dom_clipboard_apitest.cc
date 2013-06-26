@@ -11,6 +11,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace {
 
@@ -29,7 +30,7 @@ bool ClipboardApiTest::LoadHostedApp(const std::string& app_name,
                                      const std::string& launch_page) {
   host_resolver()->AddRule("*", "127.0.0.1");
 
-  if (!StartTestServer()) {
+  if (!StartEmbeddedTestServer()) {
     message_ = "Failed to start test server.";
     return false;
   }
@@ -40,7 +41,8 @@ bool ClipboardApiTest::LoadHostedApp(const std::string& app_name,
     return false;
   }
 
-  GURL base_url = test_server()->GetURL("files/extensions/api_test/clipboard/");
+  GURL base_url = embedded_test_server()->GetURL(
+      "/extensions/api_test/clipboard/");
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // Must stay in scope with replace_host.
   replace_host.SetHostStr(host_str);
@@ -80,12 +82,12 @@ bool ClipboardApiTest::ExecuteScriptInSelectedTab(const std::string& script,
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(ClipboardApiTest, Extension) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("clipboard/extension")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ClipboardApiTest, ExtensionNoPermission) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("clipboard/extension_no_permission"))
       << message_;
 }

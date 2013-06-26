@@ -10,7 +10,7 @@ embedder.guestURL = '';
 embedder.setUp = function(config) {
   embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
   embedder.guestURL = embedder.baseGuestURL +
-      '/files/extensions/platform_apps/web_view/screen_coordinates' +
+      '/extensions/platform_apps/web_view/screen_coordinates' +
       '/guest.html';
   chrome.test.log('Guest url is: ' + embedder.guestURL);
 };

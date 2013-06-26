@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/compositor/compositor_setup.h"
 #include "ui/gl/gl_switches.h"
 
@@ -204,26 +205,26 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
 
     navigate_to_url = navigate_to_url.ReplaceComponents(replace_host);
 
-    GURL tag_url1 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view/isolation/cookie.html");
+    GURL tag_url1 = embedded_test_server()->GetURL(
+        "/extensions/platform_apps/web_view/isolation/cookie.html");
     tag_url1 = tag_url1.ReplaceComponents(replace_host);
-    GURL tag_url2 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view/isolation/cookie2.html");
+    GURL tag_url2 = embedded_test_server()->GetURL(
+        "/extensions/platform_apps/web_view/isolation/cookie2.html");
     tag_url2 = tag_url2.ReplaceComponents(replace_host);
-    GURL tag_url3 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view/isolation/storage1.html");
+    GURL tag_url3 = embedded_test_server()->GetURL(
+        "/extensions/platform_apps/web_view/isolation/storage1.html");
     tag_url3 = tag_url3.ReplaceComponents(replace_host);
-    GURL tag_url4 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view/isolation/storage2.html");
+    GURL tag_url4 = embedded_test_server()->GetURL(
+        "/extensions/platform_apps/web_view/isolation/storage2.html");
     tag_url4 = tag_url4.ReplaceComponents(replace_host);
-    GURL tag_url5 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view/isolation/storage1.html#p1");
+    GURL tag_url5 = embedded_test_server()->GetURL(
+        "/extensions/platform_apps/web_view/isolation/storage1.html#p1");
     tag_url5 = tag_url5.ReplaceComponents(replace_host);
-    GURL tag_url6 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view/isolation/storage1.html#p2");
+    GURL tag_url6 = embedded_test_server()->GetURL(
+        "/extensions/platform_apps/web_view/isolation/storage1.html#p2");
     tag_url6 = tag_url6.ReplaceComponents(replace_host);
-    GURL tag_url7 = test_server()->GetURL(
-        "files/extensions/platform_apps/web_view/isolation/storage1.html#p3");
+    GURL tag_url7 = embedded_test_server()->GetURL(
+        "/extensions/platform_apps/web_view/isolation/storage1.html#p3");
     tag_url7 = tag_url7.ReplaceComponents(replace_host);
 
     ui_test_utils::NavigateToURLWithDisposition(
@@ -356,7 +357,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
                   const std::string& test_passed_msg,
                   const std::string& test_failed_msg,
                   const std::string& app_location) {
-    ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+    ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
     ExtensionTestMessageListener launched_listener("Launched", false);
     LoadAndLaunchPlatformApp(app_location.c_str());
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -379,7 +380,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     std::string host_str("localhost");  // Must stay in scope with replace_host.
     replace_host.SetHostStr(host_str);
 
-    GURL guest_url = test_server()->GetURL(guest_path);
+    GURL guest_url = embedded_test_server()->GetURL(guest_path);
     guest_url = guest_url.ReplaceComponents(replace_host);
 
     ui_test_utils::UrlLoadObserver guest_observer(
@@ -407,7 +408,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   // Runs media_access/deny tests, each of them are run separately otherwise
   // they timeout (mostly on Windows).
   void MediaAccessAPIDenyTestHelper(const std::string& test_name) {
-    ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+    ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
     ExtensionTestMessageListener loaded_listener("loaded", false);
     LoadAndLaunchPlatformApp("web_view/media_access/deny");
     ASSERT_TRUE(loaded_listener.WaitUntilSatisfied());
@@ -439,7 +440,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
 #define MAYBE_Shim Shim
 #endif
 IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/shim")) << message_;
 }
 
@@ -452,10 +453,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
 // This test is here rather than in PrerenderBrowserTest for testing convenience
 // only. If it breaks then this is a bug in the prerenderer.
 IN_PROC_BROWSER_TEST_F(WebViewTest, NoPrerenderer) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   content::WebContents* guest_web_contents =
       LoadGuest(
-          "files/extensions/platform_apps/web_view/noprerenderer/guest.html",
+          "/extensions/platform_apps/web_view/noprerenderer/guest.html",
           "web_view/noprerenderer");
   ASSERT_TRUE(guest_web_contents != NULL);
 
@@ -471,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoPrerenderer) {
 // multiple webview tags. Each tag sets a cookie and the test checks the proper
 // storage isolation is enforced.
 IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   const std::string kExpire =
       "var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
   std::string cookie_script1(kExpire);
@@ -485,8 +486,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
   std::string host_str("localhost");  // Must stay in scope with replace_host.
   replace_host.SetHostStr(host_str);
 
-  GURL set_cookie_url = test_server()->GetURL(
-      "files/extensions/platform_apps/isolation/set_cookie.html");
+  GURL set_cookie_url = embedded_test_server()->GetURL(
+      "/extensions/platform_apps/isolation/set_cookie.html");
   set_cookie_url = set_cookie_url.ReplaceComponents(replace_host);
 
   // The first two partitions will be used to set cookies and ensure they are
@@ -537,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
 // This tests that in-memory storage partitions are reset on browser restart,
 // but persistent ones maintain state for cookies and HTML5 storage.
 IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   const std::string kExpire =
       "var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
   std::string cookie_script1(kExpire);
@@ -622,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
 // This is the post-reset portion of the StoragePersistence test.  See
 // PRE_StoragePersistence for main comment.
 IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_StoragePersistence) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   // We don't care where the main browser is on this test.
   GURL blank_url("about:blank");
@@ -692,8 +693,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_StoragePersistence) {
 // entries, which the test checks to ensure proper storage isolation is
 // enforced.
 IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DOMStorageIsolation) {
-  ASSERT_TRUE(StartTestServer());
-  GURL regular_url = test_server()->GetURL("files/title1.html");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  GURL regular_url = embedded_test_server()->GetURL("/title1.html");
 
   std::string output;
   std::string get_local_storage("window.domAutomationController.send("
@@ -786,8 +787,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DOMStorageIsolation) {
 // an app with multiple webview tags and each tag creates an IndexedDB record,
 // which the test checks to ensure proper storage isolation is enforced.
 IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_IndexedDBIsolation) {
-  ASSERT_TRUE(StartTestServer());
-  GURL regular_url = test_server()->GetURL("files/title1.html");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  GURL regular_url = embedded_test_server()->GetURL("/title1.html");
 
   content::WebContents* default_tag_contents1;
   content::WebContents* default_tag_contents2;
@@ -899,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 }
 
 void WebViewTest::MediaAccessAPIAllowTestHelper(const std::string& test_name) {
-  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ExtensionTestMessageListener launched_listener("Launched", false);
   LoadAndLaunchPlatformApp("web_view/media_access/allow");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -941,16 +942,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestAllowAsync) {
 // Checks that window.screenX/screenY/screenLeft/screenTop works correctly for
 // guests.
 IN_PROC_BROWSER_TEST_F(WebViewTest, ScreenCoordinates) {
-  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "screen_coordinates"))
           << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognition) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   content::WebContents* guest_web_contents = LoadGuest(
-      "files/extensions/platform_apps/web_view/speech/guest.html",
+      "/extensions/platform_apps/web_view/speech/guest.html",
       "web_view/speech");
   ASSERT_TRUE(guest_web_contents);
 
@@ -1039,7 +1040,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 // BrowserPluginGeolocationPermissionContext::CancelGeolocationPermissionRequest
 // is handled correctly (and does not crash).
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPICancelGeolocation) {
-  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest(
         "platform_apps/web_view/geolocation/cancel_request")) << message_;
 }
@@ -1052,16 +1053,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Navigation) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ConsoleMessage) {
-  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "console_messages"))
           << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadPermission) {
-  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   content::WebContents* guest_web_contents =
-      LoadGuest("files/extensions/platform_apps/web_view/download/guest.html",
+      LoadGuest("/extensions/platform_apps/web_view/download/guest.html",
                 "web_view/download");
   ASSERT_TRUE(guest_web_contents);
 

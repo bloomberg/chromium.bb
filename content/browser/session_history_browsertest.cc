@@ -33,7 +33,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleEchoTitleRequest(
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
-  http_response->set_code(net::test_server::SUCCESS);
+  http_response->set_code(net::HTTP_OK);
   http_response->set_content(
       base::StringPrintf(
           "<html><head><title>%s</title></head></html>",

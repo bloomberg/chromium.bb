@@ -17,7 +17,7 @@ var pageC;
 var step = 0;
 
 var pagePrefix =
-    'http://a.com:PORT/files/extensions/api_test/app_background_page/common';
+    'http://a.com:PORT/extensions/api_test/app_background_page/common';
 
 // Dispatch "tunneled" functions from the live web pages to this testing page.
 chrome.extension.onRequest.addListener(function(request) {

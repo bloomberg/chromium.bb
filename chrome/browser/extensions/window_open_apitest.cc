@@ -107,7 +107,7 @@ bool WaitForTabsAndPopups(Browser* browser,
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserIsApp) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("browser_is_app")));
 
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserIsApp) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupDefault) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup")));
 
@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupDefault) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupLarge) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup_large")));
 
@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupLarge) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupSmall) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup_small")));
 
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupSmall) {
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_PopupBlockingExtension) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup_blocking")
@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
   int num_popups = 2;
   int num_panels = 2;
 #endif
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Setup listeners to wait on strings we expect the extension pages to send.
   std::vector<std::string> test_strings;
@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_ClosePanelsOnExtensionCrash) {
   int num_popups = 2;
   int num_panels = 2;
 #endif
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Setup listeners to wait on strings we expect the extension pages to send.
   std::vector<std::string> test_strings;
@@ -381,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_ClosePanelsOnExtensionCrash) {
 #define MAYBE_WindowOpenFromPanel WindowOpenFromPanel
 #endif
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenFromPanel) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Load the extension that will open a panel which then calls window.open.
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("window_open").

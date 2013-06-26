@@ -23,7 +23,7 @@ window.runNewWindowTest = function(testName) {
 embedder.setUp_ = function(config) {
   embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
   embedder.guestURL = embedder.baseGuestURL +
-      '/files/extensions/platform_apps/web_view/newwindow' +
+      '/extensions/platform_apps/web_view/newwindow' +
       '/guest_opener.html';
   chrome.test.log('Guest url is: ' + embedder.guestURL);
 };

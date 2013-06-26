@@ -2737,11 +2737,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
                                            public ExtensionApiTest {
  public:
-  PrerenderBrowserTestWithExtensions() {
-    autostart_test_server_ = false;
-  }
-  virtual ~PrerenderBrowserTestWithExtensions() {}
-
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     PrerenderBrowserTest::SetUpCommandLine(command_line);
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -2765,7 +2760,7 @@ class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
 // http://crbug.com/177163
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions,
                        DISABLED_WebNavigation) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   extensions::FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -2796,7 +2791,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions,
 #define MAYBE_TabsApi TabsApi
 #endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, MAYBE_TabsApi) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   extensions::FrameNavigationState::set_allow_extension_scheme(true);
 
   // Wait for the extension to set itself up and return control to us.

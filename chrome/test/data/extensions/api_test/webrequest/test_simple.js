@@ -4,7 +4,7 @@
 
 // Constants as functions, not to be called until after runTests.
 function getURLHttpSimpleLoad() {
-  return getServerURL('files/extensions/api_test/webrequest/simpleLoad/a.html');
+  return getServerURL('extensions/api_test/webrequest/simpleLoad/a.html');
 }
 
 function getURLHttpSimpleLoadRedirect() {
@@ -80,7 +80,7 @@ runTests([
           details: {
             url: getURLHttpSimpleLoadRedirect(),
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 301 Moved Permanently"
+            statusLine: "HTTP/1.1 301 Moved Permanently"
           }
         },
         { label: "onBeforeRedirect",
@@ -92,7 +92,7 @@ runTests([
             responseHeadersExist: true,
             ip: "127.0.0.1",
             fromCache: false,
-            statusLine: "HTTP/1.0 301 Moved Permanently"
+            statusLine: "HTTP/1.1 301 Moved Permanently"
           }
         },
         { label: "onBeforeRequest-2",
@@ -121,7 +121,7 @@ runTests([
           details: {
             url: getURLHttpSimpleLoad(),
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "onResponseStarted",
@@ -132,7 +132,7 @@ runTests([
             responseHeadersExist: true,
             ip: "127.0.0.1",
             fromCache: false,
-            statusLine: "HTTP/1.0 200 OK",
+            statusLine: "HTTP/1.1 200 OK",
           }
         },
         { label: "onCompleted",
@@ -143,7 +143,7 @@ runTests([
             ip: "127.0.0.1",
             fromCache: false,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.0 200 OK"
+            statusLine: "HTTP/1.1 200 OK"
           }
         }
       ],

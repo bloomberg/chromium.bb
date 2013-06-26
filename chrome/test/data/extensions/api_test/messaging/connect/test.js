@@ -26,7 +26,7 @@ chrome.test.getConfig(function(config) {
     function setupTestTab() {
       chrome.test.log("Creating tab...");
       chrome.tabs.create({
-        url: "http://localhost:PORT/files/extensions/test_file.html"
+        url: "http://localhost:PORT/extensions/test_file.html"
                  .replace(/PORT/, config.testServer.port)
       }, function(newTab) {
         chrome.tabs.onUpdated.addListener(function listener(_, info, tab) {

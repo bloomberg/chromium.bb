@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 chrome.test.getConfig(function(config) {
-  var path = "/files/extensions/test_file.txt";
+  var path = "/extensions/test_file.txt";
   var urlA = "http://a.com:" + config.testServer.port + path;
   var urlB = "http://b.com:" + config.testServer.port + path;
   var testTabId;

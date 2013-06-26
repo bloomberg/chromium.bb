@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/http/http_status_code.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -27,7 +28,7 @@ namespace {
 
 const base::FilePath::CharType kTranslateRoot[] =
     FILE_PATH_LITERAL("chrome/test/data/translate");
-const char kNonSecurePrefix[] = "files/translate/";
+const char kNonSecurePrefix[] = "/translate/";
 const char kSecurePrefix[] = "files/";
 const char kFrenchTestPath[] = "fr_test.html";
 const char kRefreshMetaTagTestPath[] = "refresh_meta_tag.html";
@@ -56,7 +57,7 @@ class TranslateBrowserTest : public InProcessBrowserTest {
  protected:
   GURL GetNonSecureURL(const std::string& path) const {
     std::string prefix(kNonSecurePrefix);
-    return test_server()->GetURL(prefix + path);
+    return embedded_test_server()->GetURL(prefix + path);
   }
 
   GURL GetSecureURL(const std::string& path) const {
@@ -73,7 +74,7 @@ class TranslateBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, Translate) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -141,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, Translate) {
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -172,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
                        IgnoreRefreshMetaTagInCaseInsensitive) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -202,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -232,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -262,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

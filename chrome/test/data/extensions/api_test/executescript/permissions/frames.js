@@ -6,7 +6,7 @@
 // DOM to load before adding iframes.  This means one less callback to wait on.
 function addIFrame(host) {
   document.write(['<iframe src="http://', host, ':', location.port,
-                  '/files/extensions/api_test/executescript',
+                  '/extensions/api_test/executescript',
                   '/permissions/empty.html"> </iframe>'].join(''));
 }
 addIFrame("a.com");

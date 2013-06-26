@@ -158,7 +158,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
   // Start the test server, and store details of its state.  Those details
   // will be available to javascript tests using chrome.test.getConfig().
-  bool StartTestServer();
+  bool StartEmbeddedTestServer();
 
   // Start the test WebSocket server, and store details of its state. Those
   // details will be available to javascript tests using

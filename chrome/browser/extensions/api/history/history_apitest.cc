@@ -26,8 +26,6 @@ class HistoryApiTest : public ExtensionApiTest {
 
     host_resolver()->AddRule("www.a.com", "127.0.0.1");
     host_resolver()->AddRule("www.b.com", "127.0.0.1");
-
-    ASSERT_TRUE(StartTestServer());
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -38,11 +36,13 @@ class HistoryApiTest : public ExtensionApiTest {
 
 // Full text search indexing sometimes exceeds a timeout. (http://crbug/119505)
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, DISABLED_MiscSearch) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("history", "misc_search.html")) << message_;
 }
 
 // Same could happen here without the FTS (http://crbug/119505)
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, DISABLED_TimedSearch) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("history", "timed_search.html")) << message_;
 }
 
@@ -53,18 +53,21 @@ IN_PROC_BROWSER_TEST_F(HistoryApiTest, DISABLED_TimedSearch) {
 #define MAYBE_Delete Delete
 #endif
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, MAYBE_Delete) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("history", "delete.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, DeleteProhibited) {
   browser()->profile()->GetPrefs()->
       SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("history", "delete_prohibited.html")) <<
       message_;
 }
 
 // See crbug.com/79074
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, DISABLED_GetVisits) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("history", "get_visits.html")) << message_;
 }
 
@@ -77,11 +80,14 @@ IN_PROC_BROWSER_TEST_F(HistoryApiTest, DISABLED_GetVisits) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, MAYBE_SearchAfterAdd) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("history", "search_after_add.html"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, MostVisited) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
   // Add entries to the history database that we can query for (using the
   // extension history API for this doesn't work as it only adds URLs with
   // LINK transition type).

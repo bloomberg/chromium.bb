@@ -24,8 +24,8 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 chrome.test.getConfig(function(config) {
   chrome.tabs.create({
       url: 'http://a.com:' + config.testServer.port +
-           '/files/extensions/test_file.html'});
+           '/extensions/test_file.html'});
   chrome.tabs.create({
       url: 'http://b.com:' + config.testServer.port +
-           '/files/extensions/test_file.html'});
+           '/extensions/test_file.html'});
 });

@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 // Tests the privileged components of chrome.runtime.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimePrivileged) {
@@ -14,14 +15,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimePrivileged) {
 
 // Tests the unprivileged components of chrome.runtime.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUnprivileged) {
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       LoadExtension(test_data_dir_.AppendASCII("runtime/content_script")));
 
   // The content script runs on webpage.html.
   ResultCatcher catcher;
   ui_test_utils::NavigateToURL(browser(),
-                               test_server()->GetURL("webpage.html"));
+                               embedded_test_server()->GetURL("/webpage.html"));
   EXPECT_TRUE(catcher.GetNextResult()) << message_;
 }
 

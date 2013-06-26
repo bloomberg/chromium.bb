@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/test/test_api.h"
@@ -18,7 +19,11 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "net/base/escape.h"
 #include "net/base/net_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 namespace {
@@ -28,9 +33,108 @@ const char kTestServerPort[] = "testServer.port";
 const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestWebSocketPort[] = "testWebSocketPort";
 
+scoped_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
+    const net::test_server::HttpRequest& request) {
+  if (!StartsWithASCII(request.relative_url, "/server-redirect?", true))
+    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+
+  size_t query_string_pos = request.relative_url.find('?');
+  std::string redirect_target =
+      request.relative_url.substr(query_string_pos + 1);
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+  http_response->AddCustomHeader("Location", redirect_target);
+  return http_response.PassAs<net::test_server::HttpResponse>();
+}
+
+scoped_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
+    const net::test_server::HttpRequest& request) {
+  if (!StartsWithASCII(request.relative_url, "/echoheader?", true))
+    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+
+  size_t query_string_pos = request.relative_url.find('?');
+  std::string header_name =
+      request.relative_url.substr(query_string_pos + 1);
+
+  std::string header_value;
+  std::map<std::string, std::string>::const_iterator it = request.headers.find(
+      header_name);
+  if (it != request.headers.end())
+    header_value = it->second;
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content(header_value);
+  return http_response.PassAs<net::test_server::HttpResponse>();
+}
+
+scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
+    const net::test_server::HttpRequest& request) {
+  if (!StartsWithASCII(request.relative_url, "/set-cookie?", true))
+    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_code(net::HTTP_OK);
+
+  size_t query_string_pos = request.relative_url.find('?');
+  std::string cookie_value =
+      request.relative_url.substr(query_string_pos + 1);
+
+  std::vector<std::string> cookies;
+  base::SplitString(cookie_value, '&', &cookies);
+
+  for (size_t i = 0; i < cookies.size(); i++)
+    http_response->AddCustomHeader("Set-Cookie", cookies[i]);
+
+  return http_response.PassAs<net::test_server::HttpResponse>();
+}
+
+scoped_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
+    const net::test_server::HttpRequest& request) {
+  if (!StartsWithASCII(request.relative_url, "/set-header?", true))
+    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+
+  size_t query_string_pos = request.relative_url.find('?');
+  std::string escaped_header =
+      request.relative_url.substr(query_string_pos + 1);
+
+  std::string header =
+      net::UnescapeURLComponent(escaped_header,
+                                net::UnescapeRule::NORMAL |
+                                net::UnescapeRule::SPACES |
+                                net::UnescapeRule::URL_SPECIAL_CHARS);
+
+  size_t colon_pos = header.find(':');
+  if (colon_pos == std::string::npos)
+    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+
+  std::string header_name = header.substr(0, colon_pos);
+  // Skip space after colon.
+  std::string header_value = header.substr(colon_pos + 2);
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_code(net::HTTP_OK);
+  http_response->AddCustomHeader(header_name, header_value);
+  return http_response.PassAs<net::test_server::HttpResponse>();
+}
+
 };  // namespace
 
-ExtensionApiTest::ExtensionApiTest() {}
+ExtensionApiTest::ExtensionApiTest() {
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&HandleServerRedirectRequest));
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&HandleEchoHeaderRequest));
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&HandleSetCookieRequest));
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&HandleSetHeaderRequest));
+}
 
 ExtensionApiTest::~ExtensionApiTest() {}
 
@@ -305,15 +409,15 @@ const extensions::Extension* ExtensionApiTest::GetSingleLoadedExtension() {
   return extension;
 }
 
-bool ExtensionApiTest::StartTestServer() {
-  if (!test_server()->Start())
+bool ExtensionApiTest::StartEmbeddedTestServer() {
+  if (!embedded_test_server()->InitializeAndWaitUntilReady())
     return false;
 
   // Build a dictionary of values that tests can use to build URLs that
   // access the test server and local file system.  Tests can see these values
   // using the extension API function chrome.test.getConfig().
   test_config_->SetInteger(kTestServerPort,
-                           test_server()->host_port_pair().port());
+                           embedded_test_server()->port());
 
   return true;
 }

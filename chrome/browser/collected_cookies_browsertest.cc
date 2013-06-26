@@ -13,20 +13,13 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
-
-namespace {
-
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
-}  // namespace
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 typedef InProcessBrowserTest CollectedCookiesTest;
 
 // If this crashes on Windows, use http://crbug.com/79331
 IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, DoubleDisplay) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Disable cookies.
   CookieSettings::Factory::GetForProfile(browser()->profile())->
@@ -34,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, DoubleDisplay) {
 
   // Load a page with cookies.
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/cookie1.html"));
+      browser(), embedded_test_server()->GetURL("/cookie1.html"));
 
   // Click on the info link twice.
   content::WebContents* web_contents =
@@ -52,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, NavigateAway) {
 
   // Load a page with cookies.
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/cookie1.html"));
+      browser(), embedded_test_server()->GetURL("/cookie1.html"));
 
   // Click on the info link.
   content::WebContents* web_contents =
@@ -61,5 +54,5 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, NavigateAway) {
 
   // Navigate to another page.
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/cookie2.html"));
+      browser(), embedded_test_server()->GetURL("/cookie2.html"));
 }

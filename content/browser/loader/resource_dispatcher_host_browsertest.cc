@@ -256,7 +256,7 @@ scoped_ptr<net::test_server::HttpResponse> NoContentResponseHandler(
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
-  http_response->set_code(net::test_server::NO_CONTENT);
+  http_response->set_code(net::HTTP_NO_CONTENT);
   return http_response.PassAs<net::test_server::HttpResponse>();
 }
 

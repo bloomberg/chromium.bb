@@ -21,6 +21,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/http_request.h"
 
 using content::ExecuteScript;
 using content::ExecuteScriptAndExtractString;
@@ -33,6 +36,64 @@ namespace {
 std::string WrapForJavascriptAndExtract(const char* javascript_expression) {
   return std::string("window.domAutomationController.send(") +
       javascript_expression + ")";
+}
+
+scoped_ptr<net::test_server::HttpResponse> HandleExpectAndSetCookieRequest(
+    const net::test_server::EmbeddedTestServer* test_server,
+    const net::test_server::HttpRequest& request) {
+  if (!StartsWithASCII(request.relative_url, "/expect-and-set-cookie?", true))
+    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_code(net::HTTP_OK);
+
+  std::string request_cookies;
+  std::map<std::string, std::string>::const_iterator it =
+      request.headers.find("Cookie");
+  if (it != request.headers.end())
+    request_cookies = it->second;
+
+  size_t query_string_pos = request.relative_url.find('?');
+  std::string query_string =
+      request.relative_url.substr(query_string_pos + 1);
+  url_parse::Component query(0, query_string.length()), key_pos, value_pos;
+  bool expectations_satisfied = true;
+  std::vector<std::string> cookies_to_set;
+  while (url_parse::ExtractQueryKeyValue(
+             query_string.c_str(), &query, &key_pos, &value_pos)) {
+    std::string escaped_key(query_string.substr(key_pos.begin, key_pos.len));
+    std::string escaped_value(
+        query_string.substr(value_pos.begin, value_pos.len));
+
+    std::string key =
+        net::UnescapeURLComponent(escaped_key,
+                                  net::UnescapeRule::NORMAL |
+                                  net::UnescapeRule::SPACES |
+                                  net::UnescapeRule::URL_SPECIAL_CHARS);
+
+    std::string value =
+        net::UnescapeURLComponent(escaped_value,
+                                  net::UnescapeRule::NORMAL |
+                                  net::UnescapeRule::SPACES |
+                                  net::UnescapeRule::URL_SPECIAL_CHARS);
+
+    if (key == "expect") {
+      if (request_cookies.find(value) == std::string::npos)
+        expectations_satisfied = false;
+    } else if (key == "set") {
+      cookies_to_set.push_back(value);
+    } else {
+      return scoped_ptr<net::test_server::HttpResponse>(NULL);
+    }
+  }
+
+  if (expectations_satisfied) {
+    for (size_t i = 0; i < cookies_to_set.size(); i++)
+      http_response->AddCustomHeader("Set-Cookie", cookies_to_set[i]);
+  }
+
+  return http_response.PassAs<net::test_server::HttpResponse>();
 }
 
 class IsolatedAppTest : public ExtensionBrowserTest {
@@ -76,12 +137,12 @@ class IsolatedAppTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app2")));
 
-  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
+  GURL base_url = embedded_test_server()->GetURL("/extensions/isolated_apps/");
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // Must stay in scope with replace_host.
   replace_host.SetHostStr(host_str);
@@ -91,8 +152,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
       CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Redirect to app2.
-  GURL redirect_url(test_server()->GetURL(
-      "client-redirect?files/extensions/isolated_apps/app2/main.html"));
+  GURL redirect_url(embedded_test_server()->GetURL(
+      "/extensions/isolated_apps/app2/redirect.html"));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), redirect_url,
       CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
@@ -143,14 +204,14 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
 // separation as you would expect.
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app2")));
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
+  GURL base_url = embedded_test_server()->GetURL("/extensions/isolated_apps/");
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // Must stay in scope with replace_host.
   replace_host.SetHostStr(host_str);
@@ -242,11 +303,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
 // Ensure that cookies are not isolated if the isolated apps are not installed.
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_NoCookieIsolationWithoutApp) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
+  GURL base_url = embedded_test_server()->GetURL("/extensions/isolated_apps/");
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // Must stay in scope with replace_host.
   replace_host.SetHostStr(host_str);
@@ -321,15 +382,18 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_NoCookieIsolationWithoutApp) {
 // Tests that subresource and media requests use the app's cookie store.
 // See http://crbug.com/141172.
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_SubresourceCookieIsolation) {
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&HandleExpectAndSetCookieRequest, embedded_test_server()));
+
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  GURL root_url = test_server()->GetURL(std::string());
-  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
+  GURL root_url = embedded_test_server()->GetURL("/");
+  GURL base_url = embedded_test_server()->GetURL("/extensions/isolated_apps/");
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // Must stay in scope with replace_host.
   replace_host.SetHostStr(host_str);
@@ -338,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_SubresourceCookieIsolation) {
 
   // First set cookies inside and outside the app.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), root_url.Resolve("set-cookie?nonApp=1"),
+      browser(), root_url.Resolve("expect-and-set-cookie?set=nonApp%3d1"),
       CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   WebContents* tab0 = browser()->tab_strip_model()->GetWebContentsAt(0);
   ASSERT_FALSE(GetInstalledApp(tab0));
@@ -397,13 +461,13 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_SubresourceCookieIsolation) {
 // where non-app popups may be kept in the hosted app process.
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_IsolatedAppProcessModel) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
+  GURL base_url = embedded_test_server()->GetURL("/extensions/isolated_apps/");
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // Must stay in scope with replace_host.
   replace_host.SetHostStr(host_str);
@@ -457,14 +521,14 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_IsolatedAppProcessModel) {
 // removed. http://crbug.com/159932
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_SessionStorage) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app2")));
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
+  GURL base_url = embedded_test_server()->GetURL("/extensions/isolated_apps/");
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // Must stay in scope with replace_host.
   replace_host.SetHostStr(host_str);

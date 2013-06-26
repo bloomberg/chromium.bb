@@ -12,9 +12,9 @@ var PICASA_URL = 'http://www.picasa.com/';
 
 // PORT will be changed to the port of the test server.
 var A_RELATIVE_URL =
-    'http://www.a.com:PORT/files/extensions/api_test/history/a.html';
+    'http://www.a.com:PORT/extensions/api_test/history/a.html';
 var B_RELATIVE_URL =
-    'http://www.b.com:PORT/files/extensions/api_test/history/b.html';
+    'http://www.b.com:PORT/extensions/api_test/history/b.html';
 
 /**
  * A helper function to flip the setTimeout arguments and make the code

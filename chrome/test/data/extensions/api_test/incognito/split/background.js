@@ -88,7 +88,7 @@ chrome.test.getConfig(function(config) {
     // Tests content script injection to verify that the script can tell its
     // in incongnito.
     function contentScriptTestIncognito() {
-      var testUrl = "http://localhost:PORT/files/extensions/test_file.html"
+      var testUrl = "http://localhost:PORT/extensions/test_file.html"
                         .replace(/PORT/, config.testServer.port);
 
       // Test that chrome.extension.inIncognitoContext is true for incognito

@@ -20,6 +20,7 @@
 #include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -114,7 +115,7 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, MAYBE_Basic) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   std::string app_manifest = base::StringPrintf(
       "{"
@@ -131,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, MAYBE_Basic) {
       "  },"
       "  \"permissions\": [\"background\"]"
       "}",
-      test_server()->host_port_pair().port());
+      embedded_test_server()->port());
 
   base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
@@ -147,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, MAYBE_Basic) {
 // Crashy, http://crbug.com/69215.
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_LacksPermission) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   std::string app_manifest = base::StringPrintf(
       "{"
@@ -163,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_LacksPermission) {
       "    }"
       "  }"
       "}",
-      test_server()->host_port_pair().port());
+      embedded_test_server()->port());
 
   base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
@@ -175,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_LacksPermission) {
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   std::string app_manifest = base::StringPrintf(
       "{"
@@ -195,8 +196,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
       "    \"page\": \"http://a.com:%d/test.html\""
       "  }"
       "}",
-      test_server()->host_port_pair().port(),
-      test_server()->host_port_pair().port());
+      embedded_test_server()->port(),
+      embedded_test_server()->port());
 
   base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
@@ -223,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
       content::Source<Profile>(browser()->profile()));
 
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   std::string app_manifest = base::StringPrintf(
       "{"
@@ -243,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
       "    \"allow_js_access\": false"
       "  }"
       "}",
-      test_server()->host_port_pair().port());
+      embedded_test_server()->port());
 
   base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
@@ -267,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   std::string app_manifest = base::StringPrintf(
       "{"
@@ -288,8 +289,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
       "    \"allow_js_access\": false"
       "  }"
       "}",
-      test_server()->host_port_pair().port(),
-      test_server()->host_port_pair().port());
+      embedded_test_server()->port(),
+      embedded_test_server()->port());
 
   base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
@@ -307,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   std::string app_manifest = base::StringPrintf(
       "{"
@@ -324,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {
       "  },"
       "  \"permissions\": [\"background\"]"
       "}",
-      test_server()->host_port_pair().port());
+      embedded_test_server()->port());
 
   base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
@@ -336,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoPagesWithManifest) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   std::string app_manifest = base::StringPrintf(
       "{"
@@ -356,8 +357,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoPagesWithManifest) {
       "  },"
       "  \"permissions\": [\"background\"]"
       "}",
-      test_server()->host_port_pair().port(),
-      test_server()->host_port_pair().port());
+      embedded_test_server()->port(),
+      embedded_test_server()->port());
 
   base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
@@ -371,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoPagesWithManifest) {
 // Times out occasionally -- see crbug.com/108493
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenPopupFromBGPage) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   std::string app_manifest = base::StringPrintf(
       "{"
@@ -386,12 +387,12 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenPopupFromBGPage) {
       "      \"web_url\": \"http://a.com:%d/\""
       "    }"
       "  },"
-      "  \"background\": { \"page\": \"http://a.com:%d/files/extensions/api_test/"
+      "  \"background\": { \"page\": \"http://a.com:%d/extensions/api_test/"
       "app_background_page/bg_open/bg_open_bg.html\" },"
       "  \"permissions\": [\"background\"]"
       "}",
-      test_server()->host_port_pair().port(),
-      test_server()->host_port_pair().port());
+      embedded_test_server()->port(),
+      embedded_test_server()->port());
 
   base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
@@ -401,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenPopupFromBGPage) {
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenThenClose) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   std::string app_manifest = base::StringPrintf(
       "{"
@@ -418,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenThenClose) {
       "  },"
       "  \"permissions\": [\"background\"]"
       "}",
-      test_server()->host_port_pair().port());
+      embedded_test_server()->port());
 
   base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
@@ -447,7 +448,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenThenClose) {
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
   std::string app_manifest = base::StringPrintf(
       "{"
@@ -467,8 +468,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
       "    \"page\": \"http://a.com:%d/test.html\""
       "  }"
       "}",
-      test_server()->host_port_pair().port(),
-      test_server()->host_port_pair().port());
+      embedded_test_server()->port(),
+      embedded_test_server()->port());
 
   base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));

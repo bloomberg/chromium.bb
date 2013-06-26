@@ -19,7 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
@@ -40,7 +40,7 @@ class ScriptBadgeApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ScriptBadgeApiTest, Basics) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(RunExtensionTest("script_badge/basics")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
@@ -88,8 +88,8 @@ IN_PROC_BROWSER_TEST_F(ScriptBadgeApiTest, Basics) {
     ResultCatcher catcher;
     // Visit a non-extension page so the extension can run a content script and
     // cause the script badge to be animated in.
-    ui_test_utils::NavigateToURL(browser(),
-                                 test_server()->GetURL(std::string()));
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/title1.html"));
     ASSERT_TRUE(catcher.GetNextResult());
   }
   EXPECT_TRUE(script_badge->GetIsVisible(tab_id));

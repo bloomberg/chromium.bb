@@ -37,7 +37,7 @@ utils.test.assertEq = function(expected, actual) {
 utils.setUp = function(chromeConfig, config) {
   embedder.baseGuestURL = 'http://localhost:' + chromeConfig.testServer.port;
   embedder.guestURL = embedder.baseGuestURL +
-      '/files/extensions/platform_apps/web_view/common/' +
+      '/extensions/platform_apps/web_view/common/' +
       config.TEST_DIR + '/guest.html';
   chrome.test.log('Guest url is: ' + embedder.guestURL);
 };

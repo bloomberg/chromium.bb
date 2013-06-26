@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace extensions {
 
@@ -37,9 +38,9 @@ class ActivityLogExtensionTest : public ExtensionApiTest {
   }
   // Start the test server, load the activity log extension, and navigate
   // the browser to the options page of the extension.
-  TabStripModel* StartTestServerAndInitialize() {
+  TabStripModel* StartEmbeddedTestServerAndInitialize() {
     host_resolver()->AddRule("*", "127.0.0.1");
-    StartTestServer();
+    StartEmbeddedTestServer();
 
     // Get the extension (chrome/test/data/extensions/activity_log)
     const extensions::Extension* ext =
@@ -81,12 +82,12 @@ class ActivityLogExtensionTest : public ExtensionApiTest {
 #endif
 
 IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, MAYBE_ChromeEndToEnd) {
-  TabStripModel* tab_strip = StartTestServerAndInitialize();
+  TabStripModel* tab_strip = StartEmbeddedTestServerAndInitialize();
   ResultCatcher catcher;
   // Set the default URL so that is has the correct port number.
-  net::HostPortPair host_port = test_server()->host_port_pair();
   std::string url_setting_script = base::StringPrintf(
-      "defaultUrl = \'http://www.google.com:%d\';", host_port.port());
+      "defaultUrl = \'http://www.google.com:%d\';",
+      embedded_test_server()->port());
   ASSERT_TRUE(content::ExecuteScript(tab_strip->GetActiveWebContents(),
                                      url_setting_script));
   // Set the test buttons array
@@ -108,12 +109,12 @@ IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, MAYBE_ChromeEndToEnd) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, MAYBE_DOMEndToEnd) {
-  TabStripModel* tab_strip = StartTestServerAndInitialize();
+  TabStripModel* tab_strip = StartEmbeddedTestServerAndInitialize();
   ResultCatcher catcher;
   // Set the default URL so that is has the correct port number.
-  net::HostPortPair host_port = test_server()->host_port_pair();
   std::string url_setting_script = base::StringPrintf(
-      "defaultUrl = \'http://www.google.com:%d\';", host_port.port());
+      "defaultUrl = \'http://www.google.com:%d\';",
+      embedded_test_server()->port());
   ASSERT_TRUE(content::ExecuteScript(tab_strip->GetActiveWebContents(),
                                      url_setting_script));
   // Set the test buttons array
@@ -129,8 +130,8 @@ IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, MAYBE_DOMEndToEnd) {
 
 IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, ExtensionPrerender) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  StartTestServer();
-  int port = test_server()->host_port_pair().port();
+  StartEmbeddedTestServer();
+  int port = embedded_test_server()->port();
 
   // Get the extension (chrome/test/data/extensions/activity_log)
   const Extension* ext =

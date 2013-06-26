@@ -7,7 +7,7 @@ var fail = chrome.test.callbackFail;
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 var relativePath =
-    '/files/extensions/api_test/executescript/in_frame/test_executescript.html';
+    '/extensions/api_test/executescript/in_frame/test_executescript.html';
 var testUrl = 'http://a.com:PORT' + relativePath;
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {

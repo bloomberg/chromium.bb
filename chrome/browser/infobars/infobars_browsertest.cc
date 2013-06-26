@@ -17,7 +17,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
 #include "content/public/browser/notification_service.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 class InfoBarsTest : public InProcessBrowserTest {
  public:
@@ -51,10 +51,10 @@ class InfoBarsTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL("files/simple.html"));
+      browser(), embedded_test_server()->GetURL("/simple.html"));
 
   content::WindowedNotificationObserver infobar_added_1(
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   infobar_added_1.Wait();
 
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), test_server()->GetURL("files/simple.html"),
+      browser(), embedded_test_server()->GetURL("/simple.html"),
       NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WindowedNotificationObserver infobar_added_2(
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,

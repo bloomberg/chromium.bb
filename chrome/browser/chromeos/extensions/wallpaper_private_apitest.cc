@@ -7,6 +7,6 @@
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WallpaperPicker) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunComponentExtensionTest("wallpaper_manager")) << message_;
 }

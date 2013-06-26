@@ -150,7 +150,7 @@ class DriveApiRequestsTest : public testing::Test {
     // Return the response with just "204 No Content" status code.
     scoped_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
-    http_response->set_code(net::test_server::NO_CONTENT);
+    http_response->set_code(net::HTTP_NO_CONTENT);
     return http_response.PassAs<net::test_server::HttpResponse>();
   }
 
@@ -198,7 +198,7 @@ class DriveApiRequestsTest : public testing::Test {
     if (found != request.headers.end() &&
         found->second != "*" &&
         found->second != kTestETag) {
-      response->set_code(net::test_server::PRECONDITION);
+      response->set_code(net::HTTP_PRECONDITION_FAILED);
       return response.PassAs<net::test_server::HttpResponse>();
     }
 
@@ -211,7 +211,7 @@ class DriveApiRequestsTest : public testing::Test {
     }
     received_bytes_ = 0;
 
-    response->set_code(net::test_server::SUCCESS);
+    response->set_code(net::HTTP_OK);
     response->AddCustomHeader(
         "Location",
         test_server_.base_url().Resolve(expected_upload_path_).spec());
@@ -256,7 +256,7 @@ class DriveApiRequestsTest : public testing::Test {
       scoped_ptr<net::test_server::BasicHttpResponse> response(
           new net::test_server::BasicHttpResponse);
       // Set RESUME INCOMPLETE (308) status code.
-      response->set_code(net::test_server::RESUME_INCOMPLETE);
+      response->set_code(static_cast<net::HttpStatusCode>(308));
 
       // Add Range header to the response, based on the values of
       // Content-Range header in the request.
@@ -277,7 +277,7 @@ class DriveApiRequestsTest : public testing::Test {
 
     // The response code is CREATED if it is new file uploading.
     if (http_request_.relative_url == kTestUploadNewFilePath) {
-      response->set_code(net::test_server::CREATED);
+      response->set_code(net::HTTP_CREATED);
     }
 
     return response.PassAs<net::test_server::HttpResponse>();
@@ -298,7 +298,7 @@ class DriveApiRequestsTest : public testing::Test {
 
     scoped_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse);
-    response->set_code(net::test_server::SUCCESS);
+    response->set_code(net::HTTP_OK);
     response->set_content_type(expected_content_type_);
     response->set_content(expected_content_);
     return response.PassAs<net::test_server::HttpResponse>();

@@ -11,10 +11,10 @@ embedder.iframeURL = '';
 embedder.setUp_ = function(config) {
   embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
   embedder.guestURL = embedder.baseGuestURL +
-      '/files/extensions/platform_apps/web_view/geolocation' +
+      '/extensions/platform_apps/web_view/geolocation' +
       '/cancel_request/pages/guest.html';
   embedder.iframeURL = embedder.baseGuestURL +
-      '/files/extensions/platform_apps/web_view/geolocation' +
+      '/extensions/platform_apps/web_view/geolocation' +
       '/cancel_request/pages/iframe.html';
   chrome.test.log('Guest url is: ' + embedder.guestURL);
 };

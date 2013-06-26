@@ -44,7 +44,7 @@ onload = function() {
   chrome.test.getConfig(function(config) {
     embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
     embedder.guestURL = embedder.baseGuestURL +
-        '/files/extensions/platform_apps/web_view/download/guest.html';
+        '/extensions/platform_apps/web_view/download/guest.html';
     embedder.setUpGuest_();
   });
 };

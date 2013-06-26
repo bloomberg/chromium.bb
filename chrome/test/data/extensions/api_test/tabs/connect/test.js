@@ -16,7 +16,7 @@ chrome.test.getConfig(function(config) {
   chrome.test.runTests([
     function setupConnect() {
       // The web page that our content script will be injected into.
-      var relativePath = '/files/extensions/api_test/tabs/basics/relative.html';
+      var relativePath = '/extensions/api_test/tabs/basics/relative.html';
       var testUrl =
           ['http://localhost:PORT'.replace(/PORT/, config.testServer.port),
            relativePath].join('');

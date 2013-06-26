@@ -17,10 +17,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace {
-const char kTestHtml[] = "files/viewsource/test.html";
+const char kTestHtml[] = "/viewsource/test.html";
 const char kTestMedia[] = "files/media/pink_noise_140ms.wav";
 }
 
@@ -31,11 +31,11 @@ typedef InProcessBrowserTest ViewSourceTest;
 // page in view source).
 // Flaky; see http://crbug.com/72201.
 IN_PROC_BROWSER_TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // First we navigate to our view-source test page.
   GURL url(content::kViewSourceScheme + std::string(":") +
-           test_server()->GetURL(kTestHtml).spec());
+           embedded_test_server()->GetURL(kTestHtml).spec());
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Check that the title didn't get set.  It should not be there (because we
@@ -49,10 +49,10 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
 // implementation of the view-source: prefix being consumed (removed from the
 // URL) if the URL was not changed (apart from adding the view-source prefix)
 IN_PROC_BROWSER_TEST_F(ViewSourceTest, DoesBrowserConsumeViewSourcePrefix) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // First we navigate to google.html.
-  GURL url(test_server()->GetURL(kTestHtml));
+  GURL url(embedded_test_server()->GetURL(kTestHtml));
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Then we navigate to the same url but with the "view-source:" prefix.
@@ -69,9 +69,9 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, DoesBrowserConsumeViewSourcePrefix) {
 // Make sure that when looking at the actual page, we can select "View Source"
 // from the menu.
 IN_PROC_BROWSER_TEST_F(ViewSourceTest, ViewSourceInMenuEnabledOnANormalPage) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
-  GURL url(test_server()->GetURL(kTestHtml));
+  GURL url(embedded_test_server()->GetURL(kTestHtml));
   ui_test_utils::NavigateToURL(browser(), url);
 
   EXPECT_TRUE(chrome::CanViewSource(browser()));
@@ -96,10 +96,10 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, ViewSourceInMenuDisabledOnAMediaPage) {
 // from the menu.
 IN_PROC_BROWSER_TEST_F(ViewSourceTest,
                        ViewSourceInMenuDisabledWhileViewingSource) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url_viewsource(content::kViewSourceScheme + std::string(":") +
-                      test_server()->GetURL(kTestHtml).spec());
+                      embedded_test_server()->GetURL(kTestHtml).spec());
   ui_test_utils::NavigateToURL(browser(), url_viewsource);
 
   EXPECT_FALSE(chrome::CanViewSource(browser()));
@@ -109,10 +109,10 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest,
 // the page in view-source mode.
 // Times out on Mac, Windows, ChromeOS Linux: crbug.com/162080
 IN_PROC_BROWSER_TEST_F(ViewSourceTest, DISABLED_TestViewSourceReload) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url_viewsource(content::kViewSourceScheme + std::string(":") +
-                      test_server()->GetURL(kTestHtml).spec());
+                      embedded_test_server()->GetURL(kTestHtml).spec());
 
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,

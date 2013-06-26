@@ -207,7 +207,7 @@ onload = function() {
   chrome.test.getConfig(function(config) {
     embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
     embedder.guestURL = embedder.baseGuestURL +
-        '/files/extensions/platform_apps/web_view/media_access' +
+        '/extensions/platform_apps/web_view/media_access' +
         '/media_access_guest.html';
     chrome.test.log('Guest url is: ' + embedder.guestURL);
     chrome.test.sendMessage('loaded');

@@ -13,7 +13,7 @@ var port;
 
 function testUrl(domain) {
   return 'http://' + domain + ':' + port +
-      '/files/extensions/test_file.html';
+      '/extensions/test_file.html';
 }
 
 function error(domain) {

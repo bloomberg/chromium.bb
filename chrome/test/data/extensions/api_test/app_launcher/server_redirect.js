@@ -4,7 +4,7 @@
 
 chrome.test.getConfig(function(config) {
   var appUrl = 'http://localhost:' + config.testServer.port +
-        '/files/extensions/api_test/app_process/path1/empty.html';
+        '/extensions/api_test/app_process/path1/empty.html';
   var redirectUrl = 'http://localhost:' + config.testServer.port +
       '/server-redirect?' + appUrl;
   chrome.tabs.create({

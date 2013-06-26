@@ -5,11 +5,11 @@
   "description": "Tests that app URLs without the background permission are not consolidated.",
   "app": {
     "urls": [
-      "http://localhost/files/extensions/api_test/app_process_instances/path1",
-      "http://localhost/files/extensions/api_test/app_process_instances/path2"
+      "http://localhost/extensions/api_test/app_process_instances/path1",
+      "http://localhost/extensions/api_test/app_process_instances/path2"
     ],
     "launch": {
-      "web_url": "http://localhost/files/extensions/api_test/app_process_instances/path1/empty.html"
+      "web_url": "http://localhost/extensions/api_test/app_process_instances/path1/empty.html"
     }
   }
 }

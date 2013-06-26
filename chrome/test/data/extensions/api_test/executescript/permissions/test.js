@@ -5,7 +5,7 @@
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 var numReceivedRequests = 0;
-var relativePath = 'files/extensions/api_test/executescript/permissions/';
+var relativePath = 'extensions/api_test/executescript/permissions/';
 var testFile = relativePath + 'empty.html';
 var testFileFrames = relativePath + 'frames.html';
 var onTabLoaded;

@@ -83,7 +83,7 @@ chrome.test.getConfig(function(config) {
     function contentScriptTestIncognito() {
       assertTrue(!chrome.extension.inIncognitoContext);
 
-      var testUrl = "http://localhost:PORT/files/extensions/test_file.html"
+      var testUrl = "http://localhost:PORT/extensions/test_file.html"
           .replace(/PORT/, config.testServer.port);
 
       // Test that chrome.extension.inIncognitoTab is true for incognito tabs.

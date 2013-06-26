@@ -14,7 +14,7 @@ chrome.test.getConfig(function(config) {
 
   function doReq(domain, callback) {
     var req = new XMLHttpRequest();
-    var url = domain + ":PORT/files/extensions/test_file.txt";
+    var url = domain + ":PORT/extensions/test_file.txt";
     url = url.replace(/PORT/, config.testServer.port);
 
     chrome.test.log("Requesting url: " + url);

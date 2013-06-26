@@ -12,7 +12,7 @@ chrome.extension.onRequest.addListener(function(data) {
 });
 
 chrome.test.getConfig(function(config) {
-  var test_file_url = "http://localhost:PORT/files/extensions/test_file.html"
+  var test_file_url = "http://localhost:PORT/extensions/test_file.html"
       .replace(/PORT/, config.testServer.port);
 
   // Add a window.

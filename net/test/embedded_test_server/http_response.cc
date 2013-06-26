@@ -7,6 +7,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "net/http/http_status_code.h"
 
 namespace net {
 namespace test_server {
@@ -14,7 +15,7 @@ namespace test_server {
 HttpResponse::~HttpResponse() {
 }
 
-BasicHttpResponse::BasicHttpResponse() : code_(SUCCESS) {
+BasicHttpResponse::BasicHttpResponse() : code_(HTTP_OK) {
 }
 
 BasicHttpResponse::~BasicHttpResponse() {
@@ -24,23 +25,23 @@ std::string BasicHttpResponse::ToResponseString() const {
   // Response line with headers.
   std::string response_builder;
 
+  std::string http_reason_phrase(GetHttpReasonPhrase(code_));
+
   // TODO(mtomasz): For http/1.0 requests, send http/1.0.
-  // TODO(mtomasz): For different codes, send a corrent string instead of OK.
-  base::StringAppendF(&response_builder, "HTTP/1.1 %d OK\r\n", code_);
-  base::StringAppendF(&response_builder, "Connection: closed\r\n");
+  base::StringAppendF(&response_builder,
+                      "HTTP/1.1 %d %s\r\n",
+                      code_,
+                      http_reason_phrase.c_str());
+  base::StringAppendF(&response_builder, "Connection: close\r\n");
   base::StringAppendF(&response_builder,
                       "Content-Length: %"PRIuS"\r\n",
                       content_.size());
   base::StringAppendF(&response_builder,
                       "Content-Type: %s\r\n",
                       content_type_.c_str());
-  for (std::map<std::string, std::string>::const_iterator it =
-           custom_headers_.begin();
-       it != custom_headers_.end();
-       ++it) {
-    // Multi-line header value support.
-    const std::string& header_name = it->first;
-    const std::string& header_value = it->second;
+  for (size_t i = 0; i < custom_headers_.size(); ++i) {
+    const std::string& header_name = custom_headers_[i].first;
+    const std::string& header_value = custom_headers_[i].second;
     DCHECK(header_value.find_first_of("\n\r") == std::string::npos) <<
         "Malformed header value.";
     base::StringAppendF(&response_builder,

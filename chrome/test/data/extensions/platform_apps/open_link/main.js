@@ -5,7 +5,7 @@
 chrome.test.getConfig(function(config) {
   var linkNode = document.getElementById('test-link');
   linkNode.href = 'http://localhost:' + config.testServer.port +
-      '/files/extensions/platform_apps/open_link/link.html';
+      '/extensions/platform_apps/open_link/link.html';
 
   var clickEvent = document.createEvent('MouseEvents');
   clickEvent.initMouseEvent('click', true, true, window,
