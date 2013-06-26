@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/installer/util/util_constants.h"
 
 namespace {
@@ -79,17 +80,30 @@ ComponentUnpacker::Error ComponentPatcherWin::Patch(
   cl.AppendSwitchPath(installer::switches::kPatchFile, patch_file);
   cl.AppendSwitchPath(installer::switches::kOutputFile, output_file);
 
+  // Create the child process in a job object. The job object prevents leaving
+  // child processes around when the parent process exits, either gracefully or
+  // accidentally.
+  base::win::ScopedHandle job(CreateJobObject(NULL, NULL));
+  if (!job || !base::SetJobObjectAsKillOnJobClose(job)) {
+    *error = GetLastError();
+    return ComponentUnpacker::kDeltaPatchProcessFailure;
+  }
+
   base::LaunchOptions launch_options;
   launch_options.wait = true;
+  launch_options.job_handle = job;
   launch_options.start_hidden = true;
   CommandLine setup_path(exe_path);
   setup_path.AppendArguments(cl, false);
 
-  base::ProcessHandle ph;
+  // |ph| is closed by WaitForExitCode.
+  base::ProcessHandle ph = base::kNullProcessHandle;
   int exit_code = 0;
   if (!base::LaunchProcess(setup_path, launch_options, &ph) ||
-      !base::WaitForExitCode(ph, &exit_code))
+      !base::WaitForExitCode(ph, &exit_code)) {
+    *error = GetLastError();
     return ComponentUnpacker::kDeltaPatchProcessFailure;
+  }
 
   *error = exit_code;
   return *error ? ComponentUnpacker::kDeltaOperationFailure :
