@@ -33,6 +33,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
@@ -48,10 +49,10 @@
 #include "extensions/common/error_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/glue/webkit_glue.h"
 
 using content::DevToolsAgentHost;
 using content::DevToolsClientHost;
+using content::DevToolsHttpHandler;
 using content::DevToolsManager;
 using content::RenderProcessHost;
 using content::RenderViewHost;
@@ -636,8 +637,8 @@ bool DebuggerAttachFunction::RunImpl() {
   if (!InitAgentHost())
     return false;
 
-  if (!webkit_glue::IsInspectorProtocolVersionSupported(
-      params->required_version)) {
+  if (!DevToolsHttpHandler::IsSupportedProtocolVersion(
+          params->required_version)) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kProtocolVersionNotSupportedError,
         params->required_version);

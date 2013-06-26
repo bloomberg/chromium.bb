@@ -44,8 +44,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/server/http_server_request_info.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebDevToolsAgent.h"
 #include "ui/base/layout.h"
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/common/user_agent/user_agent_util.h"
@@ -55,6 +53,8 @@ namespace content {
 const int kBufferSize = 16 * 1024;
 
 namespace {
+
+static const char* kProtocolVersion = "1.0";
 
 static const char* kDevToolsHandlerThreadName = "Chrome_DevToolsHandlerThread";
 
@@ -164,6 +164,12 @@ static bool TimeComparator(const PageInfo& info1, const PageInfo& info2) {
 }
 
 }  // namespace
+
+// static
+bool DevToolsHttpHandler::IsSupportedProtocolVersion(
+    const std::string& version) {
+  return version == kProtocolVersion;
+}
 
 // static
 int DevToolsHttpHandler::GetFrontendResourceId(const std::string& name) {
@@ -486,12 +492,9 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
 
   if (command == "version") {
     base::DictionaryValue version;
-    version.SetString("Protocol-Version",
-                      WebKit::WebDevToolsAgent::inspectorProtocolVersion());
-    version.SetString("WebKit-Version",
-                      webkit_glue::GetWebKitVersion());
-    version.SetString("Browser",
-                      content::GetContentClient()->GetProduct());
+    version.SetString("Protocol-Version", kProtocolVersion);
+    version.SetString("WebKit-Version", webkit_glue::GetWebKitVersion());
+    version.SetString("Browser", content::GetContentClient()->GetProduct());
     version.SetString("User-Agent",
                       webkit_glue::GetUserAgent(GURL(kAboutBlankURL)));
     SendJson(connection_id, net::HTTP_OK, &version, std::string());

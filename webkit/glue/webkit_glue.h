@@ -70,13 +70,6 @@ WEBKIT_GLUE_EXPORT WebKit::WebCanvas* ToWebCanvas(SkCanvas*);
 // used to get memory usage statistics.
 WEBKIT_GLUE_EXPORT int GetGlyphPageCount();
 
-// Returns WebKit Web Inspector protocol version.
-std::string GetInspectorProtocolVersion();
-
-// Tells caller whether the given protocol version is supported by the.
-WEBKIT_GLUE_EXPORT bool IsInspectorProtocolVersionSupported(
-    const std::string& version);
-
 // Returns an estimate of the memory usage of the renderer process. Different
 // platforms implement this function differently, and count in different
 // allocations. Results are not comparable across platforms. The estimate is

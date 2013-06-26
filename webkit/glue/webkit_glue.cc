@@ -164,15 +164,6 @@ int GetGlyphPageCount() {
   return WebGlyphCache::pageCount();
 }
 
-std::string GetInspectorProtocolVersion() {
-  return WebDevToolsAgent::inspectorProtocolVersion().utf8();
-}
-
-bool IsInspectorProtocolVersionSupported(const std::string& version) {
-  return WebDevToolsAgent::supportsInspectorProtocolVersion(
-      WebString::fromUTF8(version));
-}
-
 COMPILE_ASSERT(std::numeric_limits<double>::has_quiet_NaN, has_quiet_NaN);
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

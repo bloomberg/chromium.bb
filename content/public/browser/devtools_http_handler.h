@@ -39,6 +39,10 @@ class DevToolsHttpHandler {
     virtual DevToolsAgentHost* ForIdentifier(const std::string& identifier) = 0;
   };
 
+  // Returns true if the given protocol version is supported.
+  CONTENT_EXPORT static bool IsSupportedProtocolVersion(
+      const std::string& version);
+
   // Returns frontend resource id for the given resource |name|.
   CONTENT_EXPORT static int GetFrontendResourceId(
       const std::string& name);
