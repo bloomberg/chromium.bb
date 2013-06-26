@@ -31,26 +31,22 @@
 
 namespace WebCore {
 
-PassRefPtr<Storage> Storage::create(Frame* frame, PassRefPtr<StorageArea> storageArea)
+PassRefPtr<Storage> Storage::create(Frame* frame, PassOwnPtr<StorageArea> storageArea)
 {
     return adoptRef(new Storage(frame, storageArea));
 }
 
-Storage::Storage(Frame* frame, PassRefPtr<StorageArea> storageArea)
+Storage::Storage(Frame* frame, PassOwnPtr<StorageArea> storageArea)
     : DOMWindowProperty(frame)
     , m_storageArea(storageArea)
 {
     ASSERT(m_frame);
     ASSERT(m_storageArea);
     ScriptWrappable::init(this);
-    if (m_storageArea)
-        m_storageArea->incrementAccessCount();
 }
 
 Storage::~Storage()
 {
-    if (m_storageArea)
-        m_storageArea->decrementAccessCount();
 }
 
 String Storage::anonymousIndexedGetter(unsigned index, ExceptionCode& ec)

@@ -30,7 +30,6 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/storage/StorageNamespace.h"
 
 namespace WebCore {
 
@@ -67,13 +66,6 @@ void PageGroup::removePage(Page* page)
     ASSERT(page);
     ASSERT(m_pages.contains(page));
     m_pages.remove(page);
-}
-
-StorageNamespace* PageGroup::localStorage()
-{
-    if (!m_localStorage)
-        m_localStorage = StorageNamespace::localStorageNamespace();
-    return m_localStorage.get();
 }
 
 void PageGroup::addUserStyleSheet(const String& source, const KURL& url,

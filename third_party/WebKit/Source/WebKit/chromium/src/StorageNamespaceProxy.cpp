@@ -38,24 +38,27 @@
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "weborigin/SecurityOrigin.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 
-PassRefPtr<StorageNamespace> StorageNamespace::localStorageNamespace()
+PassOwnPtr<StorageArea> StorageNamespace::localStorageArea(SecurityOrigin* origin)
 {
-    return adoptRef(new StorageNamespaceProxy(WebKit::Platform::current()->createLocalStorageNamespace(), LocalStorage));
+    ASSERT(isMainThread());
+    static WebKit::WebStorageNamespace* localStorageNamespace = 0;
+    if (!localStorageNamespace)
+        localStorageNamespace = WebKit::Platform::current()->createLocalStorageNamespace();
+    return adoptPtr(new StorageAreaProxy(adoptPtr(localStorageNamespace->createStorageArea(origin->toString())), LocalStorage));
 }
 
-PassRefPtr<StorageNamespace> StorageNamespace::sessionStorageNamespace(Page* page)
+PassOwnPtr<StorageNamespace> StorageNamespace::sessionStorageNamespace(Page* page)
 {
     WebKit::WebViewClient* webViewClient = static_cast<WebKit::WebViewImpl*>(page->chrome().client()->webView())->client();
-    return adoptRef(new StorageNamespaceProxy(webViewClient->createSessionStorageNamespace(), SessionStorage));
+    return adoptPtr(new StorageNamespaceProxy(adoptPtr(webViewClient->createSessionStorageNamespace())));
 }
 
-// FIXME: storageNamespace argument should be a PassOwnPtr.
-StorageNamespaceProxy::StorageNamespaceProxy(WebKit::WebStorageNamespace* storageNamespace, StorageType storageType)
-    : m_storageNamespace(adoptPtr(storageNamespace))
-    , m_storageType(storageType)
+StorageNamespaceProxy::StorageNamespaceProxy(PassOwnPtr<WebKit::WebStorageNamespace> storageNamespace)
+    : m_storageNamespace(storageNamespace)
 {
 }
 
@@ -63,42 +66,9 @@ StorageNamespaceProxy::~StorageNamespaceProxy()
 {
 }
 
-PassRefPtr<StorageNamespace> StorageNamespaceProxy::copy()
+PassOwnPtr<StorageArea> StorageNamespaceProxy::storageArea(SecurityOrigin* origin)
 {
-    ASSERT(m_storageType == SessionStorage);
-    WebKit::WebStorageNamespace* newNamespace = m_storageNamespace->copy();
-    // Some embedders hook into WebViewClient::createView to make the copy of
-    // session storage and then return the object lazily.  Other embedders
-    // choose to make the copy now and return a pointer immediately.  So handle
-    // both cases.
-    if (!newNamespace)
-        return 0;
-    return adoptRef(new StorageNamespaceProxy(newNamespace, m_storageType));
-}
-
-PassRefPtr<StorageArea> StorageNamespaceProxy::storageArea(PassRefPtr<SecurityOrigin> origin)
-{
-    return adoptRef(new StorageAreaProxy(adoptPtr(m_storageNamespace->createStorageArea(origin->toString())), m_storageType));
-}
-
-void StorageNamespaceProxy::close()
-{
-    // N/A to the chromium port.
-}
-
-void StorageNamespaceProxy::clearOriginForDeletion(SecurityOrigin* origin)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void StorageNamespaceProxy::clearAllOriginsForDeletion()
-{
-    ASSERT_NOT_REACHED();
-}
-
-void StorageNamespaceProxy::sync()
-{
-    ASSERT_NOT_REACHED();
+    return adoptPtr(new StorageAreaProxy(adoptPtr(m_storageNamespace->createStorageArea(origin->toString())), SessionStorage));
 }
 
 bool StorageNamespaceProxy::isSameNamespace(const WebKit::WebStorageNamespace& sessionNamespace)

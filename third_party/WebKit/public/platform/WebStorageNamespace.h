@@ -50,9 +50,6 @@ public:
     // You should call delete on the returned object when you're finished.
     virtual WebStorageArea* createStorageArea(const WebString& origin) = 0;
 
-    // Copy a StorageNamespace. This only makes sense in the case of SessionStorage.
-    virtual WebStorageNamespace* copy() = 0;
-
     // Returns true of the two instances represent the same storage namespace.
     virtual bool isSameNamespace(const WebStorageNamespace&) const { return false; }
 };

@@ -81,7 +81,7 @@ private:
     InspectorDOMStorageAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorCompositeState*);
 
     bool isEnabled() const;
-    PassRefPtr<StorageArea> findStorageArea(ErrorString*, const RefPtr<JSONObject>&, Frame*&);
+    PassOwnPtr<StorageArea> findStorageArea(ErrorString*, const RefPtr<JSONObject>&, Frame*&);
 
     InspectorPageAgent* m_pageAgent;
     InspectorFrontend* m_frontend;

@@ -757,9 +757,7 @@ Frame* FrameLoaderClientImpl::dispatchCreatePage(const NavigationAction& action)
         return m_webFrame->frame();
 
     struct WindowFeatures features;
-    Page* newPage = m_webFrame->frame()->page()->chrome().createWindow(
-        m_webFrame->frame(), FrameLoadRequest(m_webFrame->frame()->document()->securityOrigin()),
-        features, action);
+    Page* newPage = chromeClient->createWindow(m_webFrame->frame(), FrameLoadRequest(m_webFrame->frame()->document()->securityOrigin()), features, action);
 
     // createWindow can return null (e.g., popup blocker denies the window).
     if (!newPage)

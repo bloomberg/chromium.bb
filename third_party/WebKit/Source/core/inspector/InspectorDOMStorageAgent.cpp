@@ -113,7 +113,7 @@ void InspectorDOMStorageAgent::disable(ErrorString*)
 void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String> > >& items)
 {
     Frame* frame;
-    RefPtr<StorageArea> storageArea = findStorageArea(errorString, storageId, frame);
+    OwnPtr<StorageArea> storageArea = findStorageArea(errorString, storageId, frame);
     if (!storageArea)
         return;
 
@@ -147,7 +147,7 @@ static String toErrorString(const ExceptionCode& ec)
 void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, const RefPtr<JSONObject>& storageId, const String& key, const String& value)
 {
     Frame* frame;
-    RefPtr<StorageArea> storageArea = findStorageArea(0, storageId, frame);
+    OwnPtr<StorageArea> storageArea = findStorageArea(0, storageId, frame);
     if (!storageArea) {
         *errorString = "Storage not found";
         return;
@@ -161,7 +161,7 @@ void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, const
 void InspectorDOMStorageAgent::removeDOMStorageItem(ErrorString* errorString, const RefPtr<JSONObject>& storageId, const String& key)
 {
     Frame* frame;
-    RefPtr<StorageArea> storageArea = findStorageArea(0, storageId, frame);
+    OwnPtr<StorageArea> storageArea = findStorageArea(0, storageId, frame);
     if (!storageArea) {
         *errorString = "Storage not found";
         return;
@@ -208,7 +208,7 @@ void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, con
         m_frontend->domstorage()->domStorageItemUpdated(id, key, oldValue, newValue);
 }
 
-PassRefPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, const RefPtr<JSONObject>& storageId, Frame*& targetFrame)
+PassOwnPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, const RefPtr<JSONObject>& storageId, Frame*& targetFrame)
 {
     String securityOrigin;
     bool isLocalStorage = false;
@@ -229,10 +229,9 @@ PassRefPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(ErrorString* e
     }
     targetFrame = frame;
 
-    Page* page = m_pageAgent->page();
     if (isLocalStorage)
-        return page->group().localStorage()->storageArea(frame->document()->securityOrigin());
-    return page->sessionStorage()->storageArea(frame->document()->securityOrigin());
+        return StorageNamespace::localStorageArea(frame->document()->securityOrigin());
+    return m_pageAgent->page()->sessionStorage()->storageArea(frame->document()->securityOrigin());
 }
 
 void InspectorDOMStorageAgent::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

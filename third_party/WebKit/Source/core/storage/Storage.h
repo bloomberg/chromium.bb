@@ -40,7 +40,7 @@ namespace WebCore {
 
     class Storage : public ScriptWrappable, public RefCounted<Storage>, public DOMWindowProperty {
     public:
-        static PassRefPtr<Storage> create(Frame*, PassRefPtr<StorageArea>);
+        static PassRefPtr<Storage> create(Frame*, PassOwnPtr<StorageArea>);
         ~Storage();
 
         unsigned length(ExceptionCode& ec) const { return m_storageArea->length(ec, m_frame); }
@@ -63,9 +63,9 @@ namespace WebCore {
         bool namedPropertyQuery(const AtomicString&, ExceptionCode&);
 
     private:
-        Storage(Frame*, PassRefPtr<StorageArea>);
+        Storage(Frame*, PassOwnPtr<StorageArea>);
 
-        RefPtr<StorageArea> m_storageArea;
+        OwnPtr<StorageArea> m_storageArea;
     };
 
 } // namespace WebCore

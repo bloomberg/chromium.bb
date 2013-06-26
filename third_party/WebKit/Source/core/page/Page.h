@@ -228,7 +228,6 @@ public:
     static void visitedStateChanged(PageGroup*, LinkHash visitedHash);
 
     StorageNamespace* sessionStorage(bool optionalCreate = true);
-    void setSessionStorage(PassRefPtr<StorageNamespace>);
 
     // Don't allow more than a certain number of frames in a page.
     // This seems like a reasonable upper bound, and otherwise mutually
@@ -326,7 +325,7 @@ private:
 
     RefPtr<PageGroup> m_group;
 
-    RefPtr<StorageNamespace> m_sessionStorage;
+    OwnPtr<StorageNamespace> m_sessionStorage;
 
     double m_timerAlignmentInterval;
 

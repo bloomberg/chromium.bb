@@ -42,7 +42,6 @@ class Frame;
 class Geolocation;
 class HitTestResult;
 class IntRect;
-class NavigationAction;
 class Node;
 class Page;
 class PopupMenu;
@@ -51,9 +50,7 @@ class PopupOpeningObserver;
 class SearchPopupMenu;
 
 struct DateTimeChooserParameters;
-struct FrameLoadRequest;
 struct ViewportArguments;
-struct WindowFeatures;
     
 class Chrome : public HostWindow {
 public:
@@ -90,7 +87,6 @@ public:
 
     void focusedNodeChanged(Node*) const;
 
-    Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, const NavigationAction&) const;
     void show() const;
 
     bool canRunModal() const;

@@ -27,8 +27,6 @@
 #define StorageArea_h
 
 #include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
@@ -39,7 +37,7 @@ class StorageSyncManager;
 typedef int ExceptionCode;
 enum StorageType { LocalStorage, SessionStorage };
 
-class StorageArea : public RefCounted<StorageArea> {
+class StorageArea {
 public:
     virtual ~StorageArea() { }
 
@@ -56,10 +54,6 @@ public:
     virtual bool canAccessStorage(Frame*) = 0;
 
     virtual size_t memoryBytesUsedByCache() = 0;
-
-    virtual void incrementAccessCount() { }
-    virtual void decrementAccessCount() { }
-    virtual void closeDatabaseIfIdle() { }
 };
 
 } // namespace WebCore

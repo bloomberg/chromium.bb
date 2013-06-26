@@ -26,9 +26,7 @@
 #ifndef StorageNamespace_h
 #define StorageNamespace_h
 
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
@@ -36,19 +34,13 @@ class Page;
 class SecurityOrigin;
 class StorageArea;
 
-class StorageNamespace : public RefCounted<StorageNamespace> {
+class StorageNamespace {
 public:
-    static PassRefPtr<StorageNamespace> localStorageNamespace();
-    static PassRefPtr<StorageNamespace> sessionStorageNamespace(Page*);
+    static PassOwnPtr<StorageArea> localStorageArea(SecurityOrigin*);
+    static PassOwnPtr<StorageNamespace> sessionStorageNamespace(Page*);
 
     virtual ~StorageNamespace() { }
-    virtual PassRefPtr<StorageArea> storageArea(PassRefPtr<SecurityOrigin>) = 0;
-    virtual PassRefPtr<StorageNamespace> copy() = 0;
-    virtual void close() = 0;
-    virtual void clearOriginForDeletion(SecurityOrigin*) = 0;
-    virtual void clearAllOriginsForDeletion() = 0;
-    virtual void sync() = 0;
-    virtual void closeIdleLocalStorageDatabases()  { }
+    virtual PassOwnPtr<StorageArea> storageArea(SecurityOrigin*) = 0;
 };
 
 } // namespace WebCore

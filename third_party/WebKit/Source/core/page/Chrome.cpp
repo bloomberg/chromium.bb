@@ -43,7 +43,6 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/network/DNS.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/storage/StorageNamespace.h"
 
 namespace WebCore {
 
@@ -146,18 +145,6 @@ void Chrome::takeFocus(FocusDirection direction) const
 void Chrome::focusedNodeChanged(Node* node) const
 {
     m_client->focusedNodeChanged(node);
-}
-
-Page* Chrome::createWindow(Frame* frame, const FrameLoadRequest& request, const WindowFeatures& features, const NavigationAction& action) const
-{
-    Page* newPage = m_client->createWindow(frame, request, features, action);
-
-    if (newPage) {
-        if (StorageNamespace* oldSessionStorage = m_page->sessionStorage(false))
-            newPage->setSessionStorage(oldSessionStorage->copy());
-    }
-
-    return newPage;
 }
 
 void Chrome::show() const

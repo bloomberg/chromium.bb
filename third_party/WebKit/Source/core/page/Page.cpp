@@ -616,11 +616,6 @@ StorageNamespace* Page::sessionStorage(bool optionalCreate)
     return m_sessionStorage.get();
 }
 
-void Page::setSessionStorage(PassRefPtr<StorageNamespace> newStorage)
-{
-    m_sessionStorage = newStorage;
-}
-
 void Page::setTimerAlignmentInterval(double interval)
 {
     if (interval == m_timerAlignmentInterval)

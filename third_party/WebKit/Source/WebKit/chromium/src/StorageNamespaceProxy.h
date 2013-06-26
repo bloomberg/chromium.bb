@@ -33,23 +33,18 @@ namespace WebKit { class WebStorageNamespace; }
 
 namespace WebCore {
 
+// Instances of StorageNamespaceProxy are only used to interact with
+// SessionStorage, never LocalStorage.
 class StorageNamespaceProxy : public StorageNamespace {
 public:
-    StorageNamespaceProxy(WebKit::WebStorageNamespace*, StorageType);
+    explicit StorageNamespaceProxy(PassOwnPtr<WebKit::WebStorageNamespace>);
     virtual ~StorageNamespaceProxy();
-    virtual PassRefPtr<StorageArea> storageArea(PassRefPtr<SecurityOrigin>);
-    virtual PassRefPtr<StorageNamespace> copy();
-
-    virtual void close();
-    virtual void clearOriginForDeletion(SecurityOrigin*);
-    virtual void clearAllOriginsForDeletion();
-    virtual void sync();
+    virtual PassOwnPtr<StorageArea> storageArea(SecurityOrigin*);
 
     bool isSameNamespace(const WebKit::WebStorageNamespace&);
 
 private:
     OwnPtr<WebKit::WebStorageNamespace> m_storageNamespace;
-    StorageType m_storageType;
 };
 
 } // namespace WebCore

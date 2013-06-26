@@ -2505,7 +2505,7 @@ Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLoadReque
         return 0;
 
     NavigationAction action(requestWithReferrer.resourceRequest());
-    Page* page = oldPage->chrome().createWindow(openerFrame, requestWithReferrer, features, action);
+    Page* page = oldPage->chrome().client()->createWindow(openerFrame, requestWithReferrer, features, action);
     if (!page)
         return 0;
 

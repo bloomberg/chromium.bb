@@ -39,7 +39,6 @@ namespace WebCore {
     class KURL;
     class Page;
     class SecurityOrigin;
-    class StorageNamespace;
 
     class PageGroup : public Supplementable<PageGroup>, public RefCounted<PageGroup> {
         WTF_MAKE_NONCOPYABLE(PageGroup); WTF_MAKE_FAST_ALLOCATED;
@@ -54,9 +53,6 @@ namespace WebCore {
 
         void addPage(Page*);
         void removePage(Page*);
-
-        StorageNamespace* localStorage();
-        bool hasLocalStorage() { return m_localStorage; }
 
         void addUserStyleSheet(const String& source, const KURL&,
                                const Vector<String>& whitelist, const Vector<String>& blacklist,
@@ -74,7 +70,6 @@ namespace WebCore {
         void invalidatedInjectedStyleSheetCacheInAllFrames();
 
         HashSet<Page*> m_pages;
-        RefPtr<StorageNamespace> m_localStorage;
         UserStyleSheetVector m_userStyleSheets;
     };
 
