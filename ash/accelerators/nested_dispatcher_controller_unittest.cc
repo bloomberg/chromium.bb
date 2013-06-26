@@ -35,7 +35,7 @@ class MockDispatcher : public base::MessageLoop::Dispatcher {
 
   int num_key_events_dispatched() { return num_key_events_dispatched_; }
 
-#if defined(OS_WIN) || defined(USE_X11) || defined(USE_MESSAGEPUMP_LINUX)
+#if defined(OS_WIN) || defined(USE_X11) || defined(USE_OZONE)
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE {
     if (ui::EventTypeFromNative(event) == ui::ET_KEY_RELEASED)
       num_key_events_dispatched_++;

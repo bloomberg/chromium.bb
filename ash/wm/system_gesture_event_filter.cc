@@ -52,8 +52,7 @@ SystemGestureEventFilter::~SystemGestureEventFilter() {
 }
 
 void SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-// TODO(rjkroege): Remove USE_MESSAGEPUMP_LINUX guard once mice are supported.
-#if defined(OS_CHROMEOS) && !defined(USE_MESSAGEPUMP_LINUX)
+#if defined(OS_CHROMEOS) && !defined(USE_OZONE)
   if (event->type() == ui::ET_MOUSE_PRESSED && event->native_event() &&
       ui::TouchFactory::GetInstance()->IsTouchDevicePresent() &&
       Shell::GetInstance()->delegate()) {
