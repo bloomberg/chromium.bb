@@ -42,7 +42,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleExpectAndSetCookieRequest(
     const net::test_server::EmbeddedTestServer* test_server,
     const net::test_server::HttpRequest& request) {
   if (!StartsWithASCII(request.relative_url, "/expect-and-set-cookie?", true))
-    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+    return scoped_ptr<net::test_server::HttpResponse>();
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
@@ -84,7 +84,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleExpectAndSetCookieRequest(
     } else if (key == "set") {
       cookies_to_set.push_back(value);
     } else {
-      return scoped_ptr<net::test_server::HttpResponse>(NULL);
+      return scoped_ptr<net::test_server::HttpResponse>();
     }
   }
 

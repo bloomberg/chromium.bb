@@ -68,7 +68,7 @@ scoped_ptr<HttpResponse> HandleFileRequest(
   if (file_util::PathExists(headers_path)) {
     std::string headers_contents;
     if (!file_util::ReadFileToString(headers_path, &headers_contents))
-      return scoped_ptr<HttpResponse>(NULL);
+      return scoped_ptr<HttpResponse>();
 
     scoped_ptr<CustomHttpResponse> http_response(
         new CustomHttpResponse(headers_contents, file_contents));

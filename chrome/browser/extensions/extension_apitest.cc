@@ -36,7 +36,7 @@ const char kTestWebSocketPort[] = "testWebSocketPort";
 scoped_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
     const net::test_server::HttpRequest& request) {
   if (!StartsWithASCII(request.relative_url, "/server-redirect?", true))
-    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+    return scoped_ptr<net::test_server::HttpResponse>();
 
   size_t query_string_pos = request.relative_url.find('?');
   std::string redirect_target =
@@ -52,7 +52,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
 scoped_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
     const net::test_server::HttpRequest& request) {
   if (!StartsWithASCII(request.relative_url, "/echoheader?", true))
-    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+    return scoped_ptr<net::test_server::HttpResponse>();
 
   size_t query_string_pos = request.relative_url.find('?');
   std::string header_name =
@@ -74,7 +74,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
 scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
     const net::test_server::HttpRequest& request) {
   if (!StartsWithASCII(request.relative_url, "/set-cookie?", true))
-    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+    return scoped_ptr<net::test_server::HttpResponse>();
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
@@ -96,7 +96,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
 scoped_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
     const net::test_server::HttpRequest& request) {
   if (!StartsWithASCII(request.relative_url, "/set-header?", true))
-    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+    return scoped_ptr<net::test_server::HttpResponse>();
 
   size_t query_string_pos = request.relative_url.find('?');
   std::string escaped_header =
@@ -110,7 +110,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
 
   size_t colon_pos = header.find(':');
   if (colon_pos == std::string::npos)
-    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+    return scoped_ptr<net::test_server::HttpResponse>();
 
   std::string header_name = header.substr(0, colon_pos);
   // Skip space after colon.
