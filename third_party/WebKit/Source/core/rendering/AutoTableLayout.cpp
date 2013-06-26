@@ -113,11 +113,6 @@ void AutoTableLayout::recalcColumn(unsigned effCol)
                         if (cellLogicalWidth.isPositive() && (!columnLayout.logicalWidth.isPercent() || cellLogicalWidth.value() > columnLayout.logicalWidth.value()))
                             columnLayout.logicalWidth = cellLogicalWidth;
                         break;
-                    case Relative:
-                        // FIXME: Need to understand this case and whether it makes sense to compare values
-                        // which are not necessarily of the same type.
-                        if (cellLogicalWidth.value() > columnLayout.logicalWidth.value())
-                            columnLayout.logicalWidth = cellLogicalWidth;
                     default:
                         break;
                     }
@@ -281,7 +276,7 @@ int AutoTableLayout::calcEffectiveLogicalWidth()
         unsigned span = cell->colSpan();
 
         Length cellLogicalWidth = cell->styleOrColLogicalWidth();
-        if (!cellLogicalWidth.isRelative() && cellLogicalWidth.isZero())
+        if (cellLogicalWidth.isZero())
             cellLogicalWidth = Length(); // make it Auto
 
         unsigned effCol = m_table->colToEffCol(cell->col());
@@ -496,7 +491,6 @@ void AutoTableLayout::layout()
         calcEffectiveLogicalWidth();
 
     bool havePercent = false;
-    int totalRelative = 0;
     int numAuto = 0;
     int numFixed = 0;
     float totalAuto = 0;
@@ -515,9 +509,6 @@ void AutoTableLayout::layout()
         case Percent:
             havePercent = true;
             totalPercent += logicalWidth.percent();
-            break;
-        case Relative:
-            totalRelative += logicalWidth.value();
             break;
         case Fixed:
             numFixed++;
@@ -573,19 +564,6 @@ void AutoTableLayout::layout()
             if (logicalWidth.isFixed() && logicalWidth.value() > m_layoutStruct[i].computedLogicalWidth) {
                 available += m_layoutStruct[i].computedLogicalWidth - logicalWidth.value();
                 m_layoutStruct[i].computedLogicalWidth = logicalWidth.value();
-            }
-        }
-    }
-
-    // now satisfy relative
-    if (available > 0) {
-        for (size_t i = 0; i < nEffCols; ++i) {
-            Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
-            if (logicalWidth.isRelative() && logicalWidth.value() != 0) {
-                // width=0* gets effMinWidth.
-                int cellLogicalWidth = logicalWidth.value() * tableLogicalWidth / totalRelative;
-                available += m_layoutStruct[i].computedLogicalWidth - cellLogicalWidth;
-                m_layoutStruct[i].computedLogicalWidth = cellLogicalWidth;
             }
         }
     }
@@ -653,9 +631,8 @@ void AutoTableLayout::layout()
     if (available < 0) {
         // Need to reduce cells with the following prioritization:
         // (1) Auto
-        // (2) Relative
-        // (3) Fixed
-        // (4) Percent
+        // (2) Fixed
+        // (3) Percent
         // This is basically the reverse of how we grew the cells.
         if (available < 0) {
             int logicalWidthBeyondMin = 0;
@@ -670,30 +647,6 @@ void AutoTableLayout::layout()
                 --i;
                 Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
                 if (logicalWidth.isAuto()) {
-                    int minMaxDiff = m_layoutStruct[i].computedLogicalWidth - m_layoutStruct[i].effectiveMinLogicalWidth;
-                    int reduce = available * minMaxDiff / logicalWidthBeyondMin;
-                    m_layoutStruct[i].computedLogicalWidth += reduce;
-                    available -= reduce;
-                    logicalWidthBeyondMin -= minMaxDiff;
-                    if (available >= 0)
-                        break;
-                }
-            }
-        }
-
-        if (available < 0) {
-            int logicalWidthBeyondMin = 0;
-            for (unsigned i = nEffCols; i; ) {
-                --i;
-                Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
-                if (logicalWidth.isRelative())
-                    logicalWidthBeyondMin += m_layoutStruct[i].computedLogicalWidth - m_layoutStruct[i].effectiveMinLogicalWidth;
-            }
-            
-            for (unsigned i = nEffCols; i && logicalWidthBeyondMin > 0; ) {
-                --i;
-                Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
-                if (logicalWidth.isRelative()) {
                     int minMaxDiff = m_layoutStruct[i].computedLogicalWidth - m_layoutStruct[i].effectiveMinLogicalWidth;
                     int reduce = available * minMaxDiff / logicalWidthBeyondMin;
                     m_layoutStruct[i].computedLogicalWidth += reduce;
