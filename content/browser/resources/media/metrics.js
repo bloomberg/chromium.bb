@@ -78,14 +78,12 @@ cr.define('media', function() {
      * @param {string} type The type of event.
      */
     addEventInternal: function(event, type) {
-      var timeInMs = event.time * 1000;  // Work with milliseconds.
-
       for (var metric in metrics) {
         var m = this[metric];
         if (type == metrics[metric].start && !m.start) {
-          m.start = timeInMs;
+          m.start = event.ticksMillis;
         } else if (type == metrics[metric].end && m.start != null) {
-          var last = timeInMs - m.start;
+          var last = event.ticksMillis - m.start;
           m.last.textContent = last.toFixed(1);
           m.total += last;
           m.count++;

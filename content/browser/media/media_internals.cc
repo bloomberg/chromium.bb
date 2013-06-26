@@ -59,7 +59,12 @@ void MediaInternals::OnMediaEvents(
     dict.SetInteger("renderer", render_process_id);
     dict.SetInteger("player", event->id);
     dict.SetString("type", media::MediaLog::EventTypeToString(event->type));
-    dict.SetDouble("time", event->time.ToDoubleT());
+
+    int64 ticks = event->time.ToInternalValue();
+    double ticks_millis =
+        ticks / static_cast<double>(base::Time::kMicrosecondsPerMillisecond);
+
+    dict.SetDouble("ticksMillis", ticks_millis);
     dict.Set("params", event->params.DeepCopy());
     SendUpdate("media.onMediaEvent", &dict);
   }

@@ -92,7 +92,7 @@ struct MediaLogEvent {
   int32 id;
   Type type;
   base::DictionaryValue params;
-  base::Time time;
+  base::TimeTicks time;
 };
 
 }  // namespace media

@@ -41,12 +41,12 @@ cr.define('media', function() {
      * @param {Object} event The MediaLogEvent that has occurred.
      */
     addEvent: function(event) {
-      var timeInMs = event.time * 1000;  // Work with milliseconds.
-      this.startTime_ = this.startTime_ || timeInMs;
-      timeInMs -= this.startTime_;
+      this.startTime_ = this.startTime_ || event.ticksMillis;
+      var normalizedTicksMillis = event.ticksMillis - this.startTime_;
 
       var row = document.createElement('tr');
-      row.appendChild(media.makeElement('td', timeInMs.toFixed(1)));
+      row.appendChild(media.makeElement(
+          'td', normalizedTicksMillis.toFixed(1)));
       row.appendChild(media.makeElement('td', event.type));
       var params = [];
       for (var key in event.params) {

@@ -118,7 +118,7 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateEvent(MediaLogEvent::Type type) {
   scoped_ptr<MediaLogEvent> event(new MediaLogEvent);
   event->id = id_;
   event->type = type;
-  event->time = base::Time::Now();
+  event->time = base::TimeTicks::Now();
   return event.Pass();
 }
 
