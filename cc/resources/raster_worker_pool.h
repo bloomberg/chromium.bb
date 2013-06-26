@@ -35,12 +35,13 @@ class CC_EXPORT RasterWorkerPoolTask
   // Returns true if |device| was written to. False indicate that
   // the content of |device| is undefined and the resource doesn't
   // need to be initialized.
-  virtual bool RunOnThread(SkDevice* device, unsigned thread_index) = 0;
-  virtual void DispatchCompletionCallback() = 0;
+  virtual bool RunOnWorkerThread(SkDevice* device, unsigned thread_index) = 0;
+  virtual void CompleteOnOriginThread() = 0;
 
   void DidRun(bool was_canceled);
   bool HasFinishedRunning() const;
   bool WasCanceled() const;
+  void WillComplete();
   void DidComplete();
   bool HasCompleted() const;
 

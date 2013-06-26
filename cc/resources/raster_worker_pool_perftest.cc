@@ -18,8 +18,8 @@ static const int kTimeCheckInterval = 10;
 class PerfWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
   // Overridden from internal::WorkerPoolTask:
-  virtual void RunOnThread(unsigned thread_index) OVERRIDE {}
-  virtual void DispatchCompletionCallback() OVERRIDE {}
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {}
+  virtual void CompleteOnOriginThread() OVERRIDE {}
 
  private:
   virtual ~PerfWorkerPoolTaskImpl() {}

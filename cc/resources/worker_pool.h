@@ -23,12 +23,13 @@ namespace internal {
 class CC_EXPORT WorkerPoolTask
     : public base::RefCountedThreadSafe<WorkerPoolTask> {
  public:
-  virtual void RunOnThread(unsigned thread_index) = 0;
-  virtual void DispatchCompletionCallback() = 0;
+  virtual void RunOnWorkerThread(unsigned thread_index) = 0;
+  virtual void CompleteOnOriginThread() = 0;
 
   void DidSchedule();
   void WillRun();
   void DidRun();
+  void WillComplete();
   void DidComplete();
 
   bool HasFinishedRunning() const;
@@ -131,9 +132,9 @@ class CC_EXPORT WorkerPool {
   class Inner;
   friend class Inner;
 
-  typedef std::deque<scoped_refptr<internal::WorkerPoolTask> > TaskDeque;
+  typedef std::vector<scoped_refptr<internal::WorkerPoolTask> > TaskVector;
 
-  void DispatchCompletionCallbacks(TaskDeque* completed_tasks);
+  void ProcessCompletedTasks(const TaskVector& completed_tasks);
 
   bool in_dispatch_completion_callbacks_;
 

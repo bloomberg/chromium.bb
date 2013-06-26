@@ -51,6 +51,10 @@ void WorkerPoolTask::DidRun() {
   did_run_ = true;
 }
 
+void WorkerPoolTask::WillComplete() {
+  DCHECK(!did_complete_);
+}
+
 void WorkerPoolTask::DidComplete() {
   DCHECK(did_schedule_);
   DCHECK(!did_complete_);
@@ -86,7 +90,7 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   void SetTaskGraph(TaskGraph* graph);
 
   // Collect all completed tasks in |completed_tasks|.
-  void CollectCompletedTasks(TaskDeque* completed_tasks);
+  void CollectCompletedTasks(TaskVector* completed_tasks);
 
  private:
   class PriorityComparator {
@@ -131,7 +135,7 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   GraphNodeMap running_tasks_;
 
   // Completed tasks not yet collected by origin thread.
-  TaskDeque completed_tasks_;
+  TaskVector completed_tasks_;
 
   ScopedPtrDeque<base::DelegateSimpleThread> workers_;
 
@@ -206,7 +210,7 @@ void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
 
     // First remove all completed tasks from |new_pending_tasks| and
     // adjust number of dependencies.
-    for (TaskDeque::iterator it = completed_tasks_.begin();
+    for (TaskVector::iterator it = completed_tasks_.begin();
          it != completed_tasks_.end(); ++it) {
       internal::WorkerPoolTask* task = it->get();
 
@@ -277,7 +281,7 @@ void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
   }
 }
 
-void WorkerPool::Inner::CollectCompletedTasks(TaskDeque* completed_tasks) {
+void WorkerPool::Inner::CollectCompletedTasks(TaskVector* completed_tasks) {
   base::AutoLock lock(lock_);
 
   DCHECK_EQ(0u, completed_tasks->size());
@@ -326,7 +330,7 @@ void WorkerPool::Inner::Run() {
     {
       base::AutoUnlock unlock(lock_);
 
-      task->RunOnThread(thread_index);
+      task->RunOnWorkerThread(thread_index);
     }
 
     // This will mark task as finished running.
@@ -390,24 +394,26 @@ void WorkerPool::CheckForCompletedTasks() {
 
   DCHECK(!in_dispatch_completion_callbacks_);
 
-  TaskDeque completed_tasks;
+  TaskVector completed_tasks;
   inner_->CollectCompletedTasks(&completed_tasks);
-  DispatchCompletionCallbacks(&completed_tasks);
+  ProcessCompletedTasks(completed_tasks);
 }
 
-void WorkerPool::DispatchCompletionCallbacks(TaskDeque* completed_tasks) {
-  TRACE_EVENT0("cc", "WorkerPool::DispatchCompletionCallbacks");
+void WorkerPool::ProcessCompletedTasks(
+    const TaskVector& completed_tasks) {
+  TRACE_EVENT0("cc", "WorkerPool::ProcessCompletedTasks");
 
   // Worker pool instance is not reentrant while processing completed tasks.
   in_dispatch_completion_callbacks_ = true;
 
-  while (!completed_tasks->empty()) {
-    internal::WorkerPoolTask* task = completed_tasks->front().get();
+  for (TaskVector::const_iterator it = completed_tasks.begin();
+       it != completed_tasks.end();
+       ++it) {
+    internal::WorkerPoolTask* task = it->get();
 
+    task->WillComplete();
+    task->CompleteOnOriginThread();
     task->DidComplete();
-    task->DispatchCompletionCallback();
-
-    completed_tasks->pop_front();
   }
 
   in_dispatch_completion_callbacks_ = false;

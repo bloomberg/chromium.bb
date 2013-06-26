@@ -27,7 +27,7 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   }
 
   // Overridden from internal::WorkerPoolTask:
-  virtual void RunOnThread(unsigned thread_index) OVERRIDE {
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     if (!buffer_)
       return;
 
@@ -38,9 +38,9 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
                      stride_);
     bitmap.setPixels(buffer_);
     SkDevice device(bitmap);
-    task_->RunOnThread(&device, thread_index);
+    task_->RunOnWorkerThread(&device, thread_index);
   }
-  virtual void DispatchCompletionCallback() OVERRIDE {
+  virtual void CompleteOnOriginThread() OVERRIDE {
     reply_.Run(!HasFinishedRunning());
   }
 
@@ -120,8 +120,9 @@ void ImageRasterWorkerPool::OnRasterTaskCompleted(
   resource_provider()->BindImage(task->resource()->id());
 
   task->DidRun(was_canceled);
+  task->WillComplete();
+  task->CompleteOnOriginThread();
   task->DidComplete();
-  task->DispatchCompletionCallback();
 
   image_tasks_.erase(task.get());
 }

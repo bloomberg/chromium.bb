@@ -19,8 +19,8 @@ static const int kTimeCheckInterval = 10;
 class PerfWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
   // Overridden from internal::WorkerPoolTask:
-  virtual void RunOnThread(unsigned thread_index) OVERRIDE {}
-  virtual void DispatchCompletionCallback() OVERRIDE {}
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {}
+  virtual void CompleteOnOriginThread() OVERRIDE {}
 
  private:
   virtual ~PerfWorkerPoolTaskImpl() {}
@@ -32,11 +32,11 @@ class PerfControlWorkerPoolTaskImpl : public internal::WorkerPoolTask {
                                     can_finish_(new CompletionEvent) {}
 
   // Overridden from internal::WorkerPoolTask:
-  virtual void RunOnThread(unsigned thread_index) OVERRIDE {
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     did_start_->Signal();
     can_finish_->Wait();
   }
-  virtual void DispatchCompletionCallback() OVERRIDE {}
+  virtual void CompleteOnOriginThread() OVERRIDE {}
 
   void WaitForTaskToStartRunning() {
     did_start_->Wait();

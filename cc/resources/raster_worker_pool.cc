@@ -138,11 +138,12 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   }
 
   // Overridden from internal::RasterWorkerPoolTask:
-  virtual bool RunOnThread(SkDevice* device, unsigned thread_index) OVERRIDE {
+  virtual bool RunOnWorkerThread(SkDevice* device, unsigned thread_index)
+      OVERRIDE {
     RunAnalysisOnThread(thread_index);
     return RunRasterOnThread(device, thread_index);
   }
-  virtual void DispatchCompletionCallback() OVERRIDE {
+  virtual void CompleteOnOriginThread() OVERRIDE {
     reply_.Run(analysis_, !HasFinishedRunning() || WasCanceled());
   }
 
@@ -175,8 +176,8 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
         reply_(reply) {}
 
   // Overridden from internal::WorkerPoolTask:
-  virtual void RunOnThread(unsigned thread_index) OVERRIDE {
-    TRACE_EVENT0("cc", "ImageDecodeWorkerPoolTaskImpl::RunOnThread");
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+    TRACE_EVENT0("cc", "ImageDecodeWorkerPoolTaskImpl::RunOnWorkerThread");
     devtools_instrumentation::ScopedLayerTask image_decode_task(
         devtools_instrumentation::kImageDecodeTask, layer_id_);
     base::TimeTicks start_time = rendering_stats_->StartRecording();
@@ -184,7 +185,7 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
     base::TimeDelta duration = rendering_stats_->EndRecording(start_time);
     rendering_stats_->AddDeferredImageDecode(duration);
   }
-  virtual void DispatchCompletionCallback() OVERRIDE {
+  virtual void CompleteOnOriginThread() OVERRIDE {
     reply_.Run(!HasFinishedRunning());
   }
 
@@ -210,10 +211,10 @@ class RasterFinishedWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   }
 
   // Overridden from internal::WorkerPoolTask:
-  virtual void RunOnThread(unsigned thread_index) OVERRIDE {
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     origin_loop_->PostTask(FROM_HERE, on_raster_finished_callback_);
   }
-  virtual void DispatchCompletionCallback() OVERRIDE {}
+  virtual void CompleteOnOriginThread() OVERRIDE {}
 
  private:
   virtual ~RasterFinishedWorkerPoolTaskImpl() {}
@@ -256,6 +257,10 @@ bool RasterWorkerPoolTask::HasFinishedRunning() const {
 
 bool RasterWorkerPoolTask::WasCanceled() const {
   return was_canceled_;
+}
+
+void RasterWorkerPoolTask::WillComplete() {
+  DCHECK(!did_complete_);
 }
 
 void RasterWorkerPoolTask::DidComplete() {

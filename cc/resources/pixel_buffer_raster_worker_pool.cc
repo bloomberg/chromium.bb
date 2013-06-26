@@ -26,7 +26,7 @@ class PixelBufferWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   }
 
   // Overridden from internal::WorkerPoolTask:
-  virtual void RunOnThread(unsigned thread_index) OVERRIDE {
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     // |buffer_| can be NULL in lost context situations.
     if (!buffer_) {
       // |needs_upload_| still needs to be true as task has not
@@ -40,9 +40,9 @@ class PixelBufferWorkerPoolTaskImpl : public internal::WorkerPoolTask {
                      task_->resource()->size().height());
     bitmap.setPixels(buffer_);
     SkDevice device(bitmap);
-    needs_upload_ = task_->RunOnThread(&device, thread_index);
+    needs_upload_ = task_->RunOnWorkerThread(&device, thread_index);
   }
-  virtual void DispatchCompletionCallback() OVERRIDE {
+  virtual void CompleteOnOriginThread() OVERRIDE {
     // |needs_upload_| must be be false if task didn't run.
     DCHECK(HasFinishedRunning() || !needs_upload_);
     reply_.Run(!HasFinishedRunning(), needs_upload_);
@@ -182,8 +182,9 @@ void PixelBufferRasterWorkerPool::CheckForCompletedTasks() {
 
     pixel_buffer_tasks_.erase(task);
 
+    task->WillComplete();
+    task->CompleteOnOriginThread();
     task->DidComplete();
-    task->DispatchCompletionCallback();
 
     completed_tasks_.pop_front();
   }
