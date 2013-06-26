@@ -63,10 +63,13 @@ include_rules = [
   "+webkit/browser",
   "+webkit/common",
 
+  # TODO(ananta): remove me when
+  # bug https://code.google.com/p/chromium/issues/detail?id=237249 is fixed.
+  "!content/public/child/image_decoder_utils.h",
+
   # webkit/glue files are listed individually since they aren't conceptually
   # grouped like the other webkit/ files, and can therefore be tackled one at
   # a time.
-  "+webkit/glue/image_decoder.h",
   "+webkit/glue/resource_type.h",
   "+webkit/glue/webkit_glue.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!

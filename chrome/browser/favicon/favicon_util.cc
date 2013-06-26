@@ -7,6 +7,7 @@
 #include "chrome/browser/favicon/favicon_types.h"
 #include "chrome/browser/history/select_favicon_frames.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/child/image_decoder_utils.h"
 #include "googleurl/src/gurl.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -14,7 +15,7 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
-#include "webkit/glue/image_decoder.h"
+#include "ui/gfx/size.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"
@@ -205,9 +206,10 @@ bool FaviconUtil::ReencodeFavicon(const unsigned char* src_data,
                                   size_t src_len,
                                   std::vector<unsigned char>* png_data) {
   // Decode the favicon using WebKit's image decoder.
-  webkit_glue::ImageDecoder decoder(
-      gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize));
-  SkBitmap decoded = decoder.Decode(src_data, src_len);
+  SkBitmap decoded = content::DecodeImage(
+      src_data,
+      gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize),
+      src_len);
   if (decoded.empty())
     return false;  // Unable to decode.
 

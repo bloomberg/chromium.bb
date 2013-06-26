@@ -20,6 +20,7 @@
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 #include "chrome/utility/profile_import_handler.h"
+#include "content/public/child/image_decoder_utils.h"
 #include "content/public/utility/utility_thread.h"
 #include "printing/page_range.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -27,7 +28,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/image_decoder.h"
+#include "ui/gfx/size.h"
 
 #if defined(OS_WIN)
 #include "base/file_util.h"
@@ -195,9 +196,9 @@ void ChromeContentUtilityClient::OnParseUpdateManifest(const std::string& xml) {
 
 void ChromeContentUtilityClient::OnDecodeImage(
     const std::vector<unsigned char>& encoded_data) {
-  webkit_glue::ImageDecoder decoder;
-  const SkBitmap& decoded_image = decoder.Decode(&encoded_data[0],
-                                                 encoded_data.size());
+  const SkBitmap& decoded_image = content::DecodeImage(&encoded_data[0],
+                                                       gfx::Size(),
+                                                       encoded_data.size());
   if (decoded_image.empty()) {
     Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
   } else {

@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/child/image_decoder_utils.h"
 #include "extensions/common/extension_resource.h"
 #include "googleurl/src/gurl.h"
 #include "grit/component_extension_resources_map.h"
@@ -34,8 +35,8 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "webkit/glue/image_decoder.h"
 
 namespace {
 
@@ -51,9 +52,8 @@ SkBitmap DesaturateImage(const SkBitmap* image) {
 }
 
 SkBitmap* ToBitmap(const unsigned char* data, size_t size) {
-  webkit_glue::ImageDecoder decoder;
   SkBitmap* decoded = new SkBitmap();
-  *decoded = decoder.Decode(data, size);
+  *decoded = content::DecodeImage(data, gfx::Size(), size);
   return decoded;
 }
 

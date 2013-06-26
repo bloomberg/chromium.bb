@@ -11,9 +11,10 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/nix/mime_util_xdg.h"
+#include "content/public/child/image_decoder_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
-#include "webkit/glue/image_decoder.h"
+#include "ui/gfx/size.h"
 
 using std::string;
 
@@ -50,10 +51,10 @@ void IconLoader::ReadIcon() {
     string icon_data;
     file_util::ReadFileToString(filename, &icon_data);
 
-    webkit_glue::ImageDecoder decoder;
     SkBitmap bitmap;
-    bitmap = decoder.Decode(
+    bitmap = content::DecodeImage(
         reinterpret_cast<const unsigned char*>(icon_data.data()),
+        gfx::Size(),
         icon_data.length());
     if (!bitmap.empty()) {
       DCHECK_EQ(size_pixels, bitmap.width());

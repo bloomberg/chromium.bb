@@ -16,6 +16,7 @@
     '../base/base.gyp:base',
   ],
   'sources': [
+    'public/child/image_decoder_utils.h',
     'child/android/child_jni_registrar.cc',
     'child/android/child_jni_registrar.h',
     'child/appcache_backend_proxy.cc',
@@ -40,6 +41,8 @@
     'child/fileapi/webfilesystem_impl.h',
     'child/fileapi/webfilewriter_impl.cc',
     'child/fileapi/webfilewriter_impl.h',
+    'child/image_decoder.cc',
+    'child/image_decoder.h',
     'child/indexed_db/indexed_db_dispatcher.cc',
     'child/indexed_db/indexed_db_dispatcher.h',
     'child/indexed_db/indexed_db_message_filter.cc',

@@ -51,7 +51,6 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "v8/include/v8-testing.h"
-#include "webkit/glue/image_decoder.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebAccessibilityObject;

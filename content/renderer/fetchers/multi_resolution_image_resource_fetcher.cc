@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "content/child/image_decoder.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
-#include "webkit/glue/image_decoder.h"
 
 using WebKit::WebFrame;
 using WebKit::WebURLRequest;
@@ -46,7 +46,7 @@ void MultiResolutionImageResourceFetcher::OnURLFetchComplete(
     http_status_code_ = response.httpStatusCode();
     if (http_status_code_ == 200) {
       // Request succeeded, try to convert it to an image.
-      bitmaps = webkit_glue::ImageDecoder::DecodeAll(
+      bitmaps = ImageDecoder::DecodeAll(
           reinterpret_cast<const unsigned char*>(data.data()), data.size());
     }
   } // else case:

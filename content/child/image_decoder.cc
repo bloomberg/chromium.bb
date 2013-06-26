@@ -1,9 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/image_decoder.h"
+#include "content/child/image_decoder.h"
 
+#include "content/public/child/image_decoder_utils.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -12,7 +13,14 @@
 using WebKit::WebData;
 using WebKit::WebImage;
 
-namespace webkit_glue {
+namespace content {
+
+SkBitmap DecodeImage(const unsigned char* data,
+                     const gfx::Size& desired_image_size,
+                     size_t size) {
+  ImageDecoder decoder(desired_image_size);
+  return decoder.Decode(data, size);
+}
 
 ImageDecoder::ImageDecoder() : desired_icon_size_(0, 0) {
 }
@@ -41,4 +49,4 @@ std::vector<SkBitmap> ImageDecoder::DecodeAll(
   return result;
 }
 
-}  // namespace webkit_glue
+}  // namespace content

@@ -275,8 +275,6 @@
       'sources': [
         'ftp_directory_listing_response_delegate.cc',
         'ftp_directory_listing_response_delegate.h',
-        'image_decoder.cc',
-        'image_decoder.h',
         'network_list_observer.h',
         'resource_loader_bridge.cc',
         'resource_loader_bridge.h',

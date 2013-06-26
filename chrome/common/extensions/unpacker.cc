@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/child/image_decoder_utils.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
@@ -31,7 +32,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/zlib/google/zip.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/glue/image_decoder.h"
+#include "ui/gfx/size.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
@@ -53,8 +54,9 @@ SkBitmap DecodeImage(const base::FilePath& path) {
   // Decode the image using WebKit's image decoder.
   const unsigned char* data =
       reinterpret_cast<const unsigned char*>(file_contents.data());
-  webkit_glue::ImageDecoder decoder;
-  SkBitmap bitmap = decoder.Decode(data, file_contents.length());
+  SkBitmap bitmap = content::DecodeImage(data,
+                                         gfx::Size(),
+                                         file_contents.length());
   Sk64 bitmap_size = bitmap.getSize64();
   if (!bitmap_size.is32() || bitmap_size.get32() > kMaxImageCanvas)
     return SkBitmap();

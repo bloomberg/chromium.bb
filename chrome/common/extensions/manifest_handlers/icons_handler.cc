@@ -14,11 +14,12 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler_helpers.h"
+#include "content/public/child/image_decoder_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/glue/image_decoder.h"
+#include "ui/gfx/size.h"
 
 namespace keys = extension_manifest_keys;
 
@@ -71,9 +72,8 @@ void IconsInfo::DecodeIconFromPath(const base::FilePath& icon_path,
   // Decode the image using WebKit's image decoder.
   const unsigned char* data =
     reinterpret_cast<const unsigned char*>(file_contents.data());
-  webkit_glue::ImageDecoder decoder;
   scoped_ptr<SkBitmap> decoded(new SkBitmap());
-  *decoded = decoder.Decode(data, file_contents.length());
+  *decoded = content::DecodeImage(data, gfx::Size(), file_contents.length());
   if (decoded->empty()) {
     DLOG(ERROR) << "Could not decode icon file: "
                 << icon_path.LossyDisplayName();

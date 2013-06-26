@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "content/child/image_decoder.h"
 #include "content/common/image_messages.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
@@ -19,7 +20,6 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "webkit/glue/image_decoder.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;
@@ -170,8 +170,7 @@ SkBitmap ImageLoadingHelper::ImageFromDataUrl(const GURL& url) const {
   std::string mime_type, char_set, data;
   if (net::DataURL::Parse(url, &mime_type, &char_set, &data) && !data.empty()) {
     // Decode the image using WebKit's image decoder.
-    webkit_glue::ImageDecoder decoder(
-        gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize));
+    ImageDecoder decoder(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize));
     const unsigned char* src_data =
         reinterpret_cast<const unsigned char*>(&data[0]);
 
