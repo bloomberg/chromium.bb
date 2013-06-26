@@ -256,7 +256,7 @@ ManagedUserAuthenticator::AuthState ManagedUserAuthenticator::ResolveState() {
   // This is an important invariant.
   if (!current_state_->cryptohome_complete())
     return CONTINUE;
-  if (!current_state_->hash_obtained())
+  if (!current_state_->add_key && !current_state_->hash_obtained())
     return CONTINUE;
 
   AuthState state;
@@ -267,7 +267,7 @@ ManagedUserAuthenticator::AuthState ManagedUserAuthenticator::ResolveState() {
     state = ResolveCryptohomeFailureState();
 
   DCHECK(current_state_->cryptohome_complete());
-  DCHECK(current_state_->hash_obtained());
+  DCHECK(current_state_->hash_obtained() || current_state_->add_key);
   return state;
 }
 

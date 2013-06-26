@@ -22,7 +22,7 @@ namespace {
 // stub_hash = "[user_id]-hash";
 static const char kUserIdStubHashSuffix[] = "-hash";
 
-static const char kCryptohomeAsyncAddKey[] = "AddKey";
+static const char kCryptohomeAsyncAddKey[] = "AsyncAddKey";
 
 // The CryptohomeClient implementation.
 class CryptohomeClientImpl : public CryptohomeClient {
