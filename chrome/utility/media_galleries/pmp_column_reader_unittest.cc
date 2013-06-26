@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <vector>
 
-#include "chrome/browser/media_galleries/fileapi/picasa/pmp_column_reader.h"
-#include "chrome/browser/media_galleries/fileapi/picasa/pmp_constants.h"
-#include "chrome/browser/media_galleries/fileapi/picasa/pmp_test_helper.h"
+#include "chrome/common/media_galleries/pmp_constants.h"
+#include "chrome/utility/media_galleries/pmp_column_reader.h"
+#include "chrome/utility/media_galleries/pmp_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

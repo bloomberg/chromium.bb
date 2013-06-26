@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_COLUMN_READER_H_
-#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_COLUMN_READER_H_
+#ifndef CHROME_UTILITY_MEDIA_GALLERIES_PMP_COLUMN_READER_H_
+#define CHROME_UTILITY_MEDIA_GALLERIES_PMP_COLUMN_READER_H_
 
 #include <string>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "chrome/browser/media_galleries/fileapi/picasa/pmp_constants.h"
+#include "chrome/common/media_galleries/pmp_constants.h"
 
 namespace base {
 class FilePath;
@@ -62,4 +62,4 @@ class PmpColumnReader {
 
 }  // namespace picasa
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_COLUMN_READER_H_
+#endif  // CHROME_UTILITY_MEDIA_GALLERIES_PMP_COLUMN_READER_H_

@@ -386,8 +386,8 @@
         }],
         ['OS=="win" or OS=="mac"', {
           'sources': [
-            'browser/media_galleries/fileapi/picasa/pmp_test_helper.cc',
-            'browser/media_galleries/fileapi/picasa/pmp_test_helper.h',
+            'utility/media_galleries/pmp_test_helper.cc',
+            'utility/media_galleries/pmp_test_helper.h',
           ],
         }],
       ],
@@ -2168,10 +2168,10 @@
             }],
             ['OS=="win" or OS=="mac"', {
               'sources': [
-                'browser/media_galleries/fileapi/picasa/picasa_album_table_reader_unittest.cc',
                 'browser/media_galleries/fileapi/picasa/picasa_file_util_unittest.cc',
-                'browser/media_galleries/fileapi/picasa/pmp_column_reader_unittest.cc',
                 'utility/itunes_library_parser_unittest.cc',
+                'utility/media_galleries/picasa_album_table_reader_unittest.cc',
+                'utility/media_galleries/pmp_column_reader_unittest.cc',
               ],
             }],
           ],

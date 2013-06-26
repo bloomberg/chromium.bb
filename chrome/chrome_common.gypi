@@ -482,6 +482,9 @@
             'common/itunes_library.h',
             'common/itunes_xml_utils.cc',
             'common/itunes_xml_utils.h',
+            'common/media_galleries/picasa_types.cc',
+            'common/media_galleries/picasa_types.h',
+            'common/media_galleries/pmp_constants.h',
           ],
         }],
         ['OS != "ios"', {

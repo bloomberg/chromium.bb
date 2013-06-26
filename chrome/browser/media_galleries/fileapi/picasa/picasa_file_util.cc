@@ -4,15 +4,18 @@
 
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_file_util.h"
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
-#include "chrome/browser/media_galleries/fileapi/picasa/picasa_album_table_reader.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_data_provider.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
+#include "chrome/common/media_galleries/picasa_types.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_util.h"

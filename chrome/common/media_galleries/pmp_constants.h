@@ -2,19 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_CONSTANTS_H_
-#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_CONSTANTS_H_
+#ifndef CHROME_COMMON_MEDIA_GALLERIES_PMP_CONSTANTS_H_
+#define CHROME_COMMON_MEDIA_GALLERIES_PMP_CONSTANTS_H_
 
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/time.h"
 
 namespace picasa {
 
 // PMP file format.
 // Info derived from: http://sbktech.blogspot.com/2011/12/picasa-pmp-format.html
 
-const char* const kPmpExtension = "pmp";
+const char kPmpExtension[] = "pmp";
+
+const base::Time::Exploded kPmpVariantTimeEpoch = {
+  1899, 12, 7, 30,  // Dec 30, 1899 (Saturday)
+  0, 0, 0, 0        // 00:00:00.000
+};
 
 const int64 kPmpHeaderSize = 20;
 
@@ -43,4 +49,4 @@ enum PmpFieldType {
 
 }  // namespace picasa
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_CONSTANTS_H_
+#endif  // CHROME_COMMON_MEDIA_GALLERIES_PMP_CONSTANTS_H_

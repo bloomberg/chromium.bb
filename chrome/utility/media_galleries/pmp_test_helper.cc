@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_galleries/fileapi/picasa/pmp_test_helper.h"
+#include "chrome/utility/media_galleries/pmp_test_helper.h"
 
 #include <algorithm>
 #include <iterator>
@@ -11,7 +11,8 @@
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/media_galleries/fileapi/picasa/pmp_column_reader.h"
+#include "chrome/common/media_galleries/picasa_types.h"
+#include "chrome/utility/media_galleries/pmp_column_reader.h"
 
 namespace picasa {
 
