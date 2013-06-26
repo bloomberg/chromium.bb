@@ -7333,3 +7333,35 @@
    fun:_ZN8autofill12_GLOBAL__N_126AutofillQueryXmlParserTest13ParseQueryXMLERKSsb
    fun:_ZN8autofill12_GLOBAL__N_149AutofillQueryXmlParserTest_ParseAutofillFlow_Test8TestBodyEv
 }
+{
+   bug_254403a
+   Memcheck:Unaddressable
+   fun:_ZNK9SkPathRef10countVerbsEv
+   fun:_ZNK6SkPath7isEmptyEv
+   fun:_ZN8SkCanvas8drawPathERK6SkPathRK7SkPaint
+   fun:_ZN17SkPicturePlayback4drawER8SkCanvasP21SkDrawPictureCallback
+   fun:_ZN9SkPicture4drawEP8SkCanvasP21SkDrawPictureCallback
+   fun:_ZN8SkCanvas11drawPictureER9SkPicture
+   fun:_ZN4skia17LazyPixelRefUtils15GatherPixelRefsEP9SkPicturePSt6vectorINS0_20PositionLazyPixelRefESaIS4_EE
+   fun:_ZN4skia35LazyPixelRefUtilsTest_DrawPath_Test8TestBodyEv
+}
+{
+   bug_254403b
+   Memcheck:Unaddressable
+   fun:_ZNK8SkRefCnt9getRefCntEv
+   fun:_ZN9SkPathRef11removeOwnerEP6SkPath
+   fun:_ZN6SkPath15PathRefDebugRefD1Ev
+   fun:_ZN6SkPathD1Ev
+   ...
+   fun:_ZNK8SkRefCnt16internal_disposeEv
+   fun:_ZNK8SkRefCnt5unrefEv
+   fun:_Z11SkSafeUnrefI10SkPathHeapEvPT_
+   fun:_ZN12SkAutoTUnrefI10SkPathHeapED1Ev
+   ...
+   fun:_ZNK8SkRefCnt16internal_disposeEv
+   fun:_ZNK8SkRefCnt5unrefEv
+   fun:_Z11SkSafeUnrefI9SkPictureEvPT_
+   fun:_ZN4skia6RefPtrI9SkPictureE5clearEv
+   fun:_ZN4skia6RefPtrI9SkPictureED1Ev
+   fun:_ZN4skia35LazyPixelRefUtilsTest_DrawText_Test8TestBodyEv
+}
