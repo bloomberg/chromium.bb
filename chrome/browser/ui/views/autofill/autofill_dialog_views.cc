@@ -455,9 +455,13 @@ AutofillDialogViews::DecoratedTextfield::DecoratedTextfield(
     views::TextfieldController* controller)
     : border_(new views::FocusableBorder()),
       invalid_(false) {
+  set_background(
+      views::Background::CreateSolidBackground(GetBackgroundColor()));
+
   set_border(border_);
   // Removes the border from |native_wrapper_|.
   RemoveBorder();
+
   set_placeholder_text(placeholder);
   SetText(default_value);
   SetController(controller);
@@ -495,12 +499,14 @@ void AutofillDialogViews::DecoratedTextfield::PaintChildren(
     gfx::Canvas* canvas) {}
 
 void AutofillDialogViews::DecoratedTextfield::OnPaint(gfx::Canvas* canvas) {
-  // Draw the textfield first.
+  // Draw the border and background.
+  border_->set_has_focus(HasFocus());
+  views::View::OnPaint(canvas);
+
+  // Then the textfield.
   views::View::PaintChildren(canvas);
 
-  border_->set_has_focus(HasFocus());
-  OnPaintBorder(canvas);
-
+  // Then the icon.
   if (!icon_.IsEmpty()) {
     gfx::Rect bounds = GetContentsBounds();
     int x = base::i18n::IsRTL() ?
@@ -510,7 +516,7 @@ void AutofillDialogViews::DecoratedTextfield::OnPaint(gfx::Canvas* canvas) {
                          bounds.y() + (bounds.height() - icon_.Height()) / 2);
   }
 
-  // Then draw extra stuff on top.
+  // Then the invalid indicator.
   if (invalid_) {
     if (base::i18n::IsRTL()) {
       canvas->Translate(gfx::Vector2d(width(), 0));
