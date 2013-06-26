@@ -4,6 +4,7 @@
 
 #include "media/audio/android/opensles_output.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "media/audio/android/audio_manager_android.h"
 
@@ -259,6 +260,7 @@ void OpenSLESOutputStream::FillBufferQueue() {
   if (!started_)
     return;
 
+  TRACE_EVENT0("audio", "OpenSLESOutputStream::FillBufferQueue");
   // Read data from the registered client source.
   // TODO(xians): Get an accurate delay estimation.
   uint32 hardware_delay = buffer_size_bytes_;
