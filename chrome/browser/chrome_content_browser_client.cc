@@ -136,6 +136,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center_util.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/common/webpreferences.h"
 #include "webkit/plugins/plugin_switches.h"
 
@@ -147,6 +148,7 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
+#include "chrome/browser/chromeos/fileapi/cros_mount_point_provider.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
@@ -2255,6 +2257,8 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
 
 void ChromeContentBrowserClient::GetAdditionalFileSystemMountPointProviders(
     const base::FilePath& storage_partition_path,
+    quota::SpecialStoragePolicy* special_storage_policy,
+    fileapi::ExternalMountPoints* external_mount_points,
     ScopedVector<fileapi::FileSystemMountPointProvider>* additional_providers) {
 #if !defined(OS_ANDROID)
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
@@ -2262,6 +2266,17 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemMountPointProviders(
       storage_partition_path,
       pool->GetSequencedTaskRunner(pool->GetNamedSequenceToken(
           MediaFileSystemMountPointProvider::kMediaTaskRunnerName)).get()));
+#endif
+#if defined(OS_CHROMEOS)
+  DCHECK(external_mount_points);
+  chromeos::CrosMountPointProvider* cros_mount_provider =
+      new chromeos::CrosMountPointProvider(
+          special_storage_policy,
+          external_mount_points,
+          fileapi::ExternalMountPoints::GetSystemInstance());
+  cros_mount_provider->AddSystemMountPoints();
+  DCHECK(cros_mount_provider->CanHandleType(fileapi::kFileSystemTypeExternal));
+  additional_providers->push_back(cros_mount_provider);
 #endif
 }
 

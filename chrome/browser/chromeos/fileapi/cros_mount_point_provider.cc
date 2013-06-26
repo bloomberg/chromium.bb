@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/chromeos/fileapi/cros_mount_point_provider.h"
+#include "chrome/browser/chromeos/fileapi/cros_mount_point_provider.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -11,13 +11,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
+#include "chrome/browser/chromeos/fileapi/remote_file_stream_writer.h"
+#include "chrome/browser/chromeos/fileapi/remote_file_system_operation.h"
 #include "chromeos/dbus/cros_disks_client.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
-#include "third_party/WebKit/public/platform/WebFileSystem.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "webkit/browser/chromeos/fileapi/file_access_permissions.h"
-#include "webkit/browser/chromeos/fileapi/remote_file_stream_writer.h"
-#include "webkit/browser/chromeos/fileapi/remote_file_system_operation.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -275,7 +272,7 @@ fileapi::FileSystemOperation* CrosMountPointProvider::CreateFileSystemOperation(
       *error_code = base::PLATFORM_FILE_ERROR_NOT_FOUND;
       return NULL;
     }
-    return new chromeos::RemoteFileSystemOperation(remote_proxy);
+    return new RemoteFileSystemOperation(remote_proxy);
   }
 
   DCHECK(url.type() == fileapi::kFileSystemTypeNativeLocal ||
@@ -323,7 +320,7 @@ CrosMountPointProvider::CreateFileStreamWriter(
     if (!remote_proxy)
       return scoped_ptr<fileapi::FileStreamWriter>();
     return scoped_ptr<fileapi::FileStreamWriter>(
-        new fileapi::RemoteFileStreamWriter(
+        new RemoteFileStreamWriter(
             remote_proxy, url, offset,
             context->task_runners()->file_task_runner()));
   }

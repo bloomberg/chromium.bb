@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
-#define WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
+#define CHROME_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -14,6 +14,10 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
+namespace fileapi {
+class RemoteFileSystemProxyInterface;
+}
+
 namespace net {
 class IOBuffer;
 }
@@ -22,9 +26,7 @@ namespace webkit_blob {
 class ShareableFileReference;
 }
 
-namespace fileapi {
-
-class RemoteFileSystemProxyInterface;
+namespace chromeos {
 
 // FileStreamWriter interface for writing to a file on remote file system.
 class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
@@ -35,8 +37,9 @@ class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
   // call to Write() method fails.
   // Uses |local_task_runner| for local file operations.
   RemoteFileStreamWriter(
-      const scoped_refptr<RemoteFileSystemProxyInterface>& remote_filesystem,
-      const FileSystemURL& url,
+      const scoped_refptr<fileapi::RemoteFileSystemProxyInterface>&
+          remote_filesystem,
+      const fileapi::FileSystemURL& url,
       int64 offset,
       base::TaskRunner* local_task_runner);
   virtual ~RemoteFileStreamWriter();
@@ -60,9 +63,9 @@ class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
   // Calls |pending_cancel_callback_|, assuming it is non-null.
   void InvokePendingCancelCallback(int result);
 
-  scoped_refptr<RemoteFileSystemProxyInterface> remote_filesystem_;
+  scoped_refptr<fileapi::RemoteFileSystemProxyInterface> remote_filesystem_;
   scoped_refptr<base::TaskRunner> local_task_runner_;
-  const FileSystemURL url_;
+  const fileapi::FileSystemURL url_;
   const int64 initial_offset_;
   scoped_ptr<fileapi::FileStreamWriter> local_file_writer_;
   scoped_refptr<webkit_blob::ShareableFileReference> file_ref_;
@@ -74,6 +77,6 @@ class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
   DISALLOW_COPY_AND_ASSIGN(RemoteFileStreamWriter);
 };
 
-}  // namespace fileapi
+}  // namespace chromeos
 
-#endif  // WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_

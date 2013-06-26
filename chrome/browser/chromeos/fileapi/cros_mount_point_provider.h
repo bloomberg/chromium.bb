@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
-#define WEBKIT_BROWSER_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
+#define CHROME_BROWSER_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
 
 #include <map>
 #include <string>
@@ -63,7 +63,7 @@ class FileAccessPermissions;
 //
 //   filesystem:<origin>/external/<mount_name>/...
 //
-class WEBKIT_STORAGE_BROWSER_EXPORT CrosMountPointProvider
+class CrosMountPointProvider
     : public fileapi::ExternalFileSystemMountPointProvider {
  public:
   using fileapi::FileSystemMountPointProvider::OpenFileSystemCallback;
@@ -170,4 +170,4 @@ class WEBKIT_STORAGE_BROWSER_EXPORT CrosMountPointProvider
 
 }  // namespace chromeos
 
-#endif  // WEBKIT_BROWSER_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_

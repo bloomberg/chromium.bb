@@ -1,10 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
-#define WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
+#define CHROME_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
 
+#include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_writer_delegate.h"
@@ -117,4 +118,4 @@ class RemoteFileSystemOperation
 
 }  // namespace chromeos
 
-#endif  // WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_

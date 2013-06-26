@@ -3,5 +3,4 @@ include_rules = [
   "+dbus",
   "+device/bluetooth",
   "+media/base/media_switches.h",  # For media command line switches.
-  "+webkit/chromeos/fileapi",
 ]

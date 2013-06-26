@@ -31,10 +31,6 @@
 #include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "webkit/browser/chromeos/fileapi/cros_mount_point_provider.h"
-#endif
-
 using quota::QuotaClient;
 
 namespace fileapi {
@@ -88,19 +84,6 @@ FileSystemContext::FileSystemContext(
 
   RegisterMountPointProvider(sandbox_provider_.get());
   RegisterMountPointProvider(isolated_provider_.get());
-
-#if defined(OS_CHROMEOS)
-  // TODO(kinuko): Move this out of webkit/fileapi layer.
-  DCHECK(external_mount_points);
-  chromeos::CrosMountPointProvider* cros_mount_provider =
-      new chromeos::CrosMountPointProvider(
-          special_storage_policy,
-          external_mount_points,
-          ExternalMountPoints::GetSystemInstance());
-  cros_mount_provider->AddSystemMountPoints();
-  additional_providers_.push_back(cros_mount_provider);
-  DCHECK(cros_mount_provider->CanHandleType(kFileSystemTypeExternal));
-#endif
 
   for (ScopedVector<FileSystemMountPointProvider>::const_iterator iter =
           additional_providers_.begin();

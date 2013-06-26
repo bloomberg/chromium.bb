@@ -443,8 +443,6 @@
         '../webkit/browser/blob/local_file_stream_reader_unittest.cc',
         '../webkit/browser/blob/mock_blob_url_request_context.cc',
         '../webkit/browser/blob/mock_blob_url_request_context.h',
-        '../webkit/browser/chromeos/fileapi/cros_mount_point_provider_unittest.cc',
-        '../webkit/browser/chromeos/fileapi/file_access_permissions_unittest.cc',
         '../webkit/browser/database/database_quota_client_unittest.cc',
         '../webkit/browser/database/database_tracker_unittest.cc',
         '../webkit/browser/database/database_util_unittest.cc',

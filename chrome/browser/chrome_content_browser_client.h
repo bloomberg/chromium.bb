@@ -238,6 +238,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       std::vector<std::string>* additional_schemes) OVERRIDE;
   virtual void GetAdditionalFileSystemMountPointProviders(
       const base::FilePath& storage_partition_path,
+      quota::SpecialStoragePolicy* special_storage_policy,
+      fileapi::ExternalMountPoints* external_mount_points,
       ScopedVector<fileapi::FileSystemMountPointProvider>*
           additional_providers) OVERRIDE;
 

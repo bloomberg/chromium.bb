@@ -1,21 +1,22 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_
-#define WEBKIT_BROWSER_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_
+#define CHROME_BROWSER_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_
 
 #include <map>
 #include <set>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/synchronization/lock.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace chromeos {
 
-class WEBKIT_STORAGE_BROWSER_EXPORT FileAccessPermissions {
+class FileAccessPermissions {
  public:
   FileAccessPermissions();
   virtual ~FileAccessPermissions();
@@ -35,8 +36,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileAccessPermissions {
 
   mutable base::Lock lock_;  // Synchronize all access to path_map_.
   PathAccessMap path_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileAccessPermissions);
 };
 
 }  // namespace chromeos
 
-#endif  // WEBKIT_BROWSER_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_

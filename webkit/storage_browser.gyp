@@ -241,22 +241,6 @@
         'browser/quota/usage_tracker.cc',
         'browser/quota/usage_tracker.h',
       ],
-      'conditions': [
-        ['chromeos==1', {
-          'sources': [
-            'browser/chromeos/fileapi/async_file_stream.h',
-            'browser/chromeos/fileapi/cros_mount_point_provider.cc',
-            'browser/chromeos/fileapi/cros_mount_point_provider.h',
-            'browser/chromeos/fileapi/file_access_permissions.cc',
-            'browser/chromeos/fileapi/file_access_permissions.h',
-            'browser/chromeos/fileapi/file_util_async.h',
-            'browser/chromeos/fileapi/remote_file_system_operation.cc',
-            'browser/chromeos/fileapi/remote_file_system_operation.h',
-            'browser/chromeos/fileapi/remote_file_stream_writer.cc',
-            'browser/chromeos/fileapi/remote_file_stream_writer.h',
-          ],
-        }],
-      ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },

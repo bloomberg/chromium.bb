@@ -66,7 +66,12 @@ class SelectFilePolicy;
 }
 
 namespace fileapi {
+class ExternalMountPoints;
 class FileSystemMountPointProvider;
+}
+
+namespace quota {
+class SpecialStoragePolicy;
 }
 
 namespace content {
@@ -535,8 +540,16 @@ class CONTENT_EXPORT ContentBrowserClient {
       std::vector<std::string>* additional_schemes) {}
 
   // Returns additional MountPointProviders for FileSystem API.
+  // |special_storage_policy| and |external_mount_points| are needed in the
+  // additional MountPointProviders. |special_storage_policy| is used to grant
+  // permissions. |external_mount_points| has mount points to create objects
+  // returned by additional MountPointProviders. (Note: although it is named
+  // "provider", it acts creating objects based on mount points provided by
+  // |external_mount_points|).
   virtual void GetAdditionalFileSystemMountPointProviders(
       const base::FilePath& storage_partition_path,
+      quota::SpecialStoragePolicy* special_storage_policy,
+      fileapi::ExternalMountPoints* external_mount_points,
       ScopedVector<fileapi::FileSystemMountPointProvider>*
           additional_providers) {}
 

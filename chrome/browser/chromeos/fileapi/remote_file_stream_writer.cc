@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/chromeos/fileapi/remote_file_stream_writer.h"
+#include "chrome/browser/chromeos/fileapi/remote_file_stream_writer.h"
 
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -11,19 +11,20 @@
 #include "webkit/browser/fileapi/remote_file_system_proxy.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-namespace fileapi {
+namespace chromeos {
 
 RemoteFileStreamWriter::RemoteFileStreamWriter(
-    const scoped_refptr<RemoteFileSystemProxyInterface>& remote_filesystem,
-    const FileSystemURL& url,
+    const scoped_refptr<fileapi::RemoteFileSystemProxyInterface>&
+        remote_filesystem,
+    const fileapi::FileSystemURL& url,
     int64 offset,
     base::TaskRunner *local_task_runner)
     : remote_filesystem_(remote_filesystem),
+      local_task_runner_(local_task_runner),
       url_(url),
       initial_offset_(offset),
       has_pending_create_snapshot_(false),
-      weak_factory_(this),
-      local_task_runner_(local_task_runner) {
+      weak_factory_(this) {
 }
 
 RemoteFileStreamWriter::~RemoteFileStreamWriter() {
@@ -118,4 +119,4 @@ void RemoteFileStreamWriter::InvokePendingCancelCallback(int result) {
   callback.Run(result);
 }
 
-}  // namespace gdata
+}  // namespace chromeos

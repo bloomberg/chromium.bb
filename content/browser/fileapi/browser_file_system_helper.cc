@@ -66,7 +66,10 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
   // Setting up additional mount point providers.
   ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;
   GetContentClient()->browser()->GetAdditionalFileSystemMountPointProviders(
-      profile_path, &additional_providers);
+      profile_path,
+      special_storage_policy,
+      external_mount_points,
+      &additional_providers);
 
   return new fileapi::FileSystemContext(
       task_runners.Pass(),
