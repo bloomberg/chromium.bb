@@ -78,8 +78,11 @@ message PowerManagementPolicy {
   }
 
   // Action to perform when |idle_ms| (see Delays) is reached without any
-  // user activity.
-  optional Action idle_action = 1;
+  // user activity while the system is on AC power.
+  optional Action ac_idle_action = 1;
+
+  // Idle action when the system is on battery power.
+  optional Action battery_idle_action = 11;
 
   // Action to perform when the lid is closed.
   optional Action lid_closed_action = 2;
@@ -126,5 +129,5 @@ message PowerManagementPolicy {
   // DEPRECATED: Use |presentation_screen_dim_delay_factor| instead.
   optional double presentation_idle_delay_factor = 7;
 
-  // Next ID to use: 11
+  // Next ID to use: 12
 }
