@@ -432,6 +432,9 @@ class scoped_ptr {
   template <typename U, typename V> friend class scoped_ptr;
   base::internal::scoped_ptr_impl<element_type, deleter_type> impl_;
 
+  // Forbidden for API compatibility with std::unique_ptr.
+  explicit scoped_ptr(int disallow_construction_from_null);
+
   // Forbid comparison of scoped_ptr types.  If U != T, it totally
   // doesn't make sense, and if U == T, it still doesn't make sense
   // because you should never have the same object owned by two different
