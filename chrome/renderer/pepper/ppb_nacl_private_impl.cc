@@ -267,6 +267,12 @@ int32_t GetNexeFd(PP_Instance instance,
   return enter.retval();
 }
 
+void ReportTranslationFinished(PP_Instance instance) {
+  // Do nothing for now. Once the IPC plumbing is in place, this function will
+  // send the routing id to the browser process, which will cache the contents
+  // of the temp file it sent.
+}
+
 PP_Bool IsOffTheRecord() {
   return PP_FromBool(ChromeRenderProcessObserver::is_incognito_process());
 }
@@ -331,6 +337,7 @@ const PPB_NaCl_Private nacl_interface = {
   &GetReadonlyPnaclFD,
   &CreateTemporaryFile,
   &GetNexeFd,
+  &ReportTranslationFinished,
   &IsOffTheRecord,
   &IsPnaclEnabled,
   &ReportNaClError,

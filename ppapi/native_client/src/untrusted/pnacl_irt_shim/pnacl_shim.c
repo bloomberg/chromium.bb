@@ -2738,6 +2738,11 @@ static int32_t Pnacl_M13_PPB_NaCl_Private_GetNexeFd(PP_Instance instance, const 
   return iface->GetNexeFd(instance, cache_key, is_hit, nexe_handle, *callback);
 }
 
+static void Pnacl_M13_PPB_NaCl_Private_ReportTranslationFinished(PP_Instance instance) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->ReportTranslationFinished(instance);
+}
+
 static PP_Bool Pnacl_M13_PPB_NaCl_Private_IsOffTheRecord(void) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->IsOffTheRecord();
@@ -4514,6 +4519,7 @@ struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .GetReadonlyPnaclFd = (PP_FileHandle (*)(const char* filename))&Pnacl_M13_PPB_NaCl_Private_GetReadonlyPnaclFd,
     .CreateTemporaryFile = (PP_FileHandle (*)(PP_Instance instance))&Pnacl_M13_PPB_NaCl_Private_CreateTemporaryFile,
     .GetNexeFd = (int32_t (*)(PP_Instance instance, const char* cache_key, PP_Bool* is_hit, PP_FileHandle* nexe_handle, struct PP_CompletionCallback callback))&Pnacl_M13_PPB_NaCl_Private_GetNexeFd,
+    .ReportTranslationFinished = (void (*)(PP_Instance instance))&Pnacl_M13_PPB_NaCl_Private_ReportTranslationFinished,
     .IsOffTheRecord = (PP_Bool (*)(void))&Pnacl_M13_PPB_NaCl_Private_IsOffTheRecord,
     .IsPnaclEnabled = (PP_Bool (*)(void))&Pnacl_M13_PPB_NaCl_Private_IsPnaclEnabled,
     .ReportNaClError = (PP_NaClResult (*)(PP_Instance instance, PP_NaClError message_id))&Pnacl_M13_PPB_NaCl_Private_ReportNaClError,

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Jun 19 13:46:04 2013. */
+/* From private/ppb_nacl_private.idl modified Tue Jun 25 15:57:09 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -143,6 +143,14 @@ struct PPB_NaCl_Private_1_0 {
                        PP_Bool* is_hit,
                        PP_FileHandle* nexe_handle,
                        struct PP_CompletionCallback callback);
+  /* Report to the browser that translation of the pexe for |instance|
+   * has finished. The browser may then store the translation in the
+   * cache. The renderer must first have called GetNexeFd for the same
+   * instance. (It is not guaranteed to, however; if there is an error
+   * or the file is too big for the cache, or the browser is in incognito
+   * mode, no notification will be delivered to the plugin.)
+   */
+  void (*ReportTranslationFinished)(PP_Instance instance);
   /* Return true if we are off the record.
    */
   PP_Bool (*IsOffTheRecord)(void);

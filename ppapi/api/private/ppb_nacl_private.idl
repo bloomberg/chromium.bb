@@ -119,12 +119,21 @@ interface PPB_NaCl_Private {
    * it will call into the browser which will remember the association between
    * the cache key and the fd, and copy the nexe into the cache after the
    * translation finishes.
-  */
+   */
   int32_t GetNexeFd([in] PP_Instance instance,
                     [in] str_t cache_key,
                     [out] PP_Bool is_hit,
                     [out] PP_FileHandle nexe_handle,
                     [in] PP_CompletionCallback callback);
+
+  /* Report to the browser that translation of the pexe for |instance|
+   * has finished. The browser may then store the translation in the
+   * cache. The renderer must first have called GetNexeFd for the same
+   * instance. (It is not guaranteed to, however; if there is an error
+   * or the file is too big for the cache, or the browser is in incognito
+   * mode, no notification will be delivered to the plugin.)
+   */
+  void ReportTranslationFinished([in] PP_Instance instance);
 
   /* Return true if we are off the record.
    */

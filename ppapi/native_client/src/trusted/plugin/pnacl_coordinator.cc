@@ -396,6 +396,14 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   // pointer to be able to read it again from the beginning.
   temp_nexe_file_->Reset();
 
+  if (use_new_cache_) {
+    // Report to the browser that translation finished. The browser will take
+    // care of caching.
+    plugin_->nacl_interface()->ReportTranslationFinished(
+        plugin_->pp_instance());
+    NexeReadDidOpen(PP_OK);
+    return;
+  }
   if (pnacl_options_.HasCacheKey() && cached_nexe_file_ != NULL) {
     // We are using a cache, but had a cache miss, which is why we did the
     // translation.  Reset cached_nexe_file_ to have a random name,
