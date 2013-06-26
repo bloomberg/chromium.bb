@@ -65,7 +65,7 @@ void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicStri
             m_shape = Rect;
         invalidateCachedRegion();
     } else if (name == coordsAttr) {
-        m_coords = newCoordsArray(value.string(), m_coordsLen);
+        m_coords = parseHTMLAreaElementCoords(value.string(), m_coordsLen);
         invalidateCachedRegion();
     } else if (name == altAttr || name == accesskeyAttr) {
         // Do nothing.

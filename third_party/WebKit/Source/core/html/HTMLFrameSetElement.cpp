@@ -83,12 +83,12 @@ void HTMLFrameSetElement::parseAttribute(const QualifiedName& name, const Atomic
 {
     if (name == rowsAttr) {
         if (!value.isNull()) {
-            m_rowLengths = newLengthArray(value.string(), m_totalRows);
+            m_rowLengths = parseFrameSetListOfDimensions(value.string(), m_totalRows);
             setNeedsStyleRecalc();
         }
     } else if (name == colsAttr) {
         if (!value.isNull()) {
-            m_colLengths = newLengthArray(value.string(), m_totalCols);
+            m_colLengths = parseFrameSetListOfDimensions(value.string(), m_totalCols);
             setNeedsStyleRecalc();
         }
     } else if (name == frameborderAttr) {

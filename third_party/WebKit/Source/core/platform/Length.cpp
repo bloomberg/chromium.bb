@@ -37,10 +37,9 @@ using namespace WTF;
 namespace WebCore {
 
 template<typename CharType>
-static Length parseLength(const CharType* data, unsigned length)
+static unsigned splitLength(const CharType* data, unsigned length, unsigned& intLength, unsigned& doubleLength)
 {
-    if (length == 0)
-        return Length(1, Relative);
+    ASSERT(length);
 
     unsigned i = 0;
     while (i < length && isSpaceOrNewline(data[i]))
@@ -49,14 +48,41 @@ static Length parseLength(const CharType* data, unsigned length)
         ++i;
     while (i < length && isASCIIDigit(data[i]))
         ++i;
-    unsigned intLength = i;
+    intLength = i;
     while (i < length && (isASCIIDigit(data[i]) || data[i] == '.'))
         ++i;
-    unsigned doubleLength = i;
+    doubleLength = i;
 
     // IE quirk: Skip whitespace between the number and the % character (20 % => 20%).
     while (i < length && isSpaceOrNewline(data[i]))
         ++i;
+
+    return i;
+}
+
+template<typename CharType>
+static Length parseHTMLAreaCoordinate(const CharType* data, unsigned length)
+{
+    unsigned intLength;
+    unsigned doubleLength;
+    splitLength(data, length, intLength, doubleLength);
+
+    bool ok;
+    int r = charactersToIntStrict(data, intLength, &ok);
+    if (ok)
+        return Length(r, Fixed);
+    return Length(0, Fixed);
+}
+
+template<typename CharType>
+static Length parseFrameSetDimension(const CharType* data, unsigned length)
+{
+    if (!length)
+        return Length(1, Relative);
+
+    unsigned intLength;
+    unsigned doubleLength;
+    unsigned i = splitLength(data, length, intLength, doubleLength);
 
     bool ok;
     CharType next = (i < length) ? data[i] : ' ';
@@ -78,13 +104,14 @@ static Length parseLength(const CharType* data, unsigned length)
     return Length(0, Relative);
 }
 
-PassOwnArrayPtr<Length> newCoordsArray(const String& string, int& len)
+// FIXME: Per HTML5, this should follow the "rules for parsing a list of integers".
+PassOwnArrayPtr<Length> parseHTMLAreaElementCoords(const String& string, int& len)
 {
     unsigned length = string.length();
     StringBuffer<LChar> spacified(length);
     for (unsigned i = 0; i < length; i++) {
         UChar cc = string[i];
-        if (cc > '9' || (cc < '0' && cc != '-' && cc != '*' && cc != '.'))
+        if (cc > '9' || (cc < '0' && cc != '-' && cc != '.'))
             spacified[i] = ' ';
         else
             spacified[i] = cc;
@@ -96,22 +123,28 @@ PassOwnArrayPtr<Length> newCoordsArray(const String& string, int& len)
     len = str->count(' ') + 1;
     OwnArrayPtr<Length> r = adoptArrayPtr(new Length[len]);
 
+    if (!str->length()) {
+        len = 0;
+        return r.release();
+    }
+
     int i = 0;
     unsigned pos = 0;
     size_t pos2;
 
     while ((pos2 = str->find(' ', pos)) != notFound) {
-        r[i++] = parseLength(str->characters8() + pos, pos2 - pos);
-        pos = pos2+1;
+        r[i++] = parseHTMLAreaCoordinate(str->characters8() + pos, pos2 - pos);
+        pos = pos2 + 1;
     }
-    r[i] = parseLength(str->characters8() + pos, str->length() - pos);
+    r[i] = parseHTMLAreaCoordinate(str->characters8() + pos, str->length() - pos);
 
     ASSERT(i == len - 1);
 
     return r.release();
 }
 
-PassOwnArrayPtr<Length> newLengthArray(const String& string, int& len)
+// FIXME: Per HTML5, this should "use the rules for parsing a list of dimensions".
+PassOwnArrayPtr<Length> parseFrameSetListOfDimensions(const String& string, int& len)
 {
     RefPtr<StringImpl> str = string.impl()->simplifyWhiteSpace();
     if (!str->length()) {
@@ -127,15 +160,15 @@ PassOwnArrayPtr<Length> newLengthArray(const String& string, int& len)
     size_t pos2;
 
     while ((pos2 = str->find(',', pos)) != notFound) {
-        r[i++] = parseLength(str->characters() + pos, pos2 - pos);
-        pos = pos2+1;
+        r[i++] = parseFrameSetDimension(str->characters() + pos, pos2 - pos);
+        pos = pos2 + 1;
     }
 
     ASSERT(i == len - 1);
 
     // IE Quirk: If the last comma is the last char skip it and reduce len by one.
     if (str->length()-pos > 0)
-        r[i] = parseLength(str->characters() + pos, str->length() - pos);
+        r[i] = parseFrameSetDimension(str->characters() + pos, str->length() - pos);
     else
         len--;
 

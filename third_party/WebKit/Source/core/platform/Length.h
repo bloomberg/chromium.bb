@@ -309,8 +309,8 @@ private:
     bool m_isFloat;
 };
 
-PassOwnArrayPtr<Length> newCoordsArray(const String&, int& len);
-PassOwnArrayPtr<Length> newLengthArray(const String&, int& len);
+PassOwnArrayPtr<Length> parseHTMLAreaElementCoords(const String&, int& len);
+PassOwnArrayPtr<Length> parseFrameSetListOfDimensions(const String&, int& len);
 
 } // namespace WebCore
 
