@@ -408,7 +408,6 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , m_closeAfterStyleRecalc(false)
     , m_gotoAnchorNeededAfterStylesheetsLoad(false)
     , m_pendingStyleRecalcShouldForce(false)
-    , m_frameElementsShouldIgnoreScrolling(false)
     , m_containsValidityStyleRules(false)
     , m_updateFocusAppearanceRestoresSelection(false)
     , m_ignoreDestructiveWriteCount(0)

@@ -924,10 +924,6 @@ public:
         displayBufferModifiedByEncodingInternal(buffer, len);
     }
 
-    // Quirk for the benefit of Apple's Dictionary application.
-    void setFrameElementsShouldIgnoreScrolling(bool ignore) { m_frameElementsShouldIgnoreScrolling = ignore; }
-    bool frameElementsShouldIgnoreScrolling() const { return m_frameElementsShouldIgnoreScrolling; }
-
     void setAnnotatedRegionsDirty(bool f) { m_annotatedRegionsDirty = f; }
     bool annotatedRegionsDirty() const { return m_annotatedRegionsDirty; }
     bool hasAnnotatedRegions () const { return m_hasAnnotatedRegions; }
@@ -1248,7 +1244,6 @@ private:
     bool m_gotoAnchorNeededAfterStylesheetsLoad;
     bool m_isDNSPrefetchEnabled;
     bool m_haveExplicitlyDisabledDNSPrefetch;
-    bool m_frameElementsShouldIgnoreScrolling;
     bool m_containsValidityStyleRules;
     bool m_updateFocusAppearanceRestoresSelection;
 
