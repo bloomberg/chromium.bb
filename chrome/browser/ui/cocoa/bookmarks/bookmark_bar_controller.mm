@@ -479,6 +479,12 @@ void RecordAppLaunch(Profile* profile, GURL url) {
       NSInsetRect(buttonViewFrame, morph * padding, morph * padding);
 
   [buttonView_ setFrame:buttonViewFrame];
+
+  // Update bookmark button backgrounds.
+  if ([self isAnimationRunning]) {
+    for (NSButton* button in buttons_.get())
+      [button setNeedsDisplay:YES];
+  }
 }
 
 // We don't change a preference; we only change visibility. Preference changing

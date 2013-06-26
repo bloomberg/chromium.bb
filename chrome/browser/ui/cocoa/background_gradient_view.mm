@@ -16,6 +16,7 @@
 @end
 
 @implementation BackgroundGradientView
+
 @synthesize showsDivider = showsDivider_;
 
 - (id)initWithFrame:(NSRect)frameRect {

@@ -751,6 +751,8 @@ class NotificationBridge
     ToolbarView* toolbarView = (ToolbarView*)view;
     [toolbarView setDividerOpacity:opacity];
   }
+
+  [view setNeedsDisplay:YES];
 }
 
 - (BrowserActionsController*)browserActionsController {

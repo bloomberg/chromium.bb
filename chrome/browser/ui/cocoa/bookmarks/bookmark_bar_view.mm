@@ -121,10 +121,6 @@ using content::UserMetricsAction;
     [controller_ clearDropInsertionPos];
 }
 
-- (void)drawRect:(NSRect)dirtyRect {
-  [super drawRect:dirtyRect];
-}
-
 // Shim function to assist in unit testing.
 - (BOOL)dragClipboardContainsBookmarks {
   return bookmark_pasteboard_helper_mac::PasteboardContainsBookmarks(

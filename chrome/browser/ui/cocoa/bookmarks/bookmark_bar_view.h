@@ -10,14 +10,13 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 @class BookmarkBarController;
 @class BookmarkBarItemContainer;
 @class BookmarkBarTextField;
 
-@interface BookmarkBarView : BackgroundGradientView {
+@interface BookmarkBarView : NSView {
  @private
   BOOL dropIndicatorShown_;
   CGFloat dropIndicatorPosition_;  // x position
