@@ -194,6 +194,8 @@
     'renderer/media/video_capture_message_filter.h',
     'renderer/media/webcontentdecryptionmodule_impl.cc',
     'renderer/media/webcontentdecryptionmodule_impl.h',
+    'renderer/media/webcontentdecryptionmodulesession_impl.cc',
+    'renderer/media/webcontentdecryptionmodulesession_impl.h',
     'renderer/memory_benchmarking_extension.cc',
     'renderer/memory_benchmarking_extension.h',
     'renderer/mhtml_generator.cc',
