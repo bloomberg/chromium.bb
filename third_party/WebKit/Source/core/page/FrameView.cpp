@@ -152,7 +152,7 @@ Pagination::Mode paginationModeForRenderStyle(RenderStyle* style)
 
     // paged-y always corresponds to TopToBottomPaginated or BottomToTopPaginated. If the WritingMode
     // is horizontal, then the direction of the horizontality dictates the choice. If the WritingMode
-    // is vertical, then we use TextDirection to choose between those options. 
+    // is vertical, then we use TextDirection to choose between those options.
     if (writingMode == TopToBottomWritingMode || (!isHorizontalWritingMode && textDirection == RTL))
         return Pagination::TopToBottomPaginated;
     return Pagination::BottomToTopPaginated;
@@ -225,7 +225,7 @@ FrameView::~FrameView()
         m_postLayoutTasksTimer.stop();
         m_actionScheduler->clear();
     }
-    
+
     removeFromAXObjectCache();
     resetScrollbars();
 
@@ -235,7 +235,7 @@ FrameView::~FrameView()
 
     setHasHorizontalScrollbar(false); // Remove native scrollbars now before we lose the connection to the HostWindow.
     setHasVerticalScrollbar(false);
-    
+
     ASSERT(!m_scrollCorner);
     ASSERT(m_actionScheduler->isEmpty());
 
@@ -342,7 +342,7 @@ void FrameView::init()
             setMarginHeight(marginHeight);
     }
 }
-    
+
 void FrameView::prepareForDetach()
 {
     detachCustomScrollbars();
@@ -395,7 +395,7 @@ void FrameView::recalculateScrollbarOverlayStyle()
 void FrameView::clear()
 {
     setCanBlitOnScroll(true);
-    
+
     reset();
 
     if (m_frame) {
@@ -509,17 +509,17 @@ PassRefPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientatio
     Element* body = doc ? doc->body() : 0;
     if (body && body->renderer() && body->renderer()->style()->hasPseudoStyle(SCROLLBAR))
         return RenderScrollbar::createCustomScrollbar(this, orientation, body);
-    
+
     // If the <body> didn't have a custom style, then the root element might.
     Element* docElement = doc ? doc->documentElement() : 0;
     if (docElement && docElement->renderer() && docElement->renderer()->style()->hasPseudoStyle(SCROLLBAR))
         return RenderScrollbar::createCustomScrollbar(this, orientation, docElement);
-        
+
     // If we have an owning iframe/frame element, then it can set the custom scrollbar also.
     RenderPart* frameRenderer = m_frame->ownerRenderer();
     if (frameRenderer && frameRenderer->style()->hasPseudoStyle(SCROLLBAR))
         return RenderScrollbar::createCustomScrollbar(this, orientation, 0, m_frame.get());
-    
+
     // Nobody set a custom style, so we just use a native scrollbar.
     return ScrollView::createScrollbar(orientation);
 }
@@ -533,7 +533,7 @@ void FrameView::setContentsSize(const IntSize& size)
 
     ScrollView::setContentsSize(size);
     ScrollView::contentsResized();
-    
+
     Page* page = frame() ? frame()->page() : 0;
     if (!page)
         return;
@@ -543,7 +543,7 @@ void FrameView::setContentsSize(const IntSize& size)
     page->chrome().contentsSizeChanged(frame(), size); // Notify only.
 
     m_deferSetNeedsLayouts--;
-    
+
     if (!m_deferSetNeedsLayouts)
         m_setNeedsLayoutWasDeferred = false; // FIXME: Find a way to make the deferred layout actually happen.
 }
@@ -559,7 +559,7 @@ void FrameView::adjustViewSize()
     const IntRect rect = renderView->documentRect();
     const IntSize& size = rect.size();
     ScrollView::setScrollOrigin(IntPoint(-rect.x(), -rect.y()), !m_frame->document()->printing(), size == contentsSize());
-    
+
     setContentsSize(size);
 }
 
@@ -595,7 +595,7 @@ void FrameView::applyOverflowToViewport(RenderObject* o, ScrollbarMode& hMode, S
             // Don't set it at all.
             ;
     }
-    
+
      switch (overflowY) {
         case OHIDDEN:
             vMode = ScrollbarAlwaysOff;
@@ -651,8 +651,8 @@ void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, Scrollbar
         hMode = ScrollbarAlwaysOff;
         vMode = ScrollbarAlwaysOff;
         return;
-    }  
-    
+    }
+
     if (m_canHaveScrollbars || strategy == RulesFromWebContentOnly) {
         hMode = ScrollbarAuto;
         // Seamless documents begin with heights of 0; we special case that here
@@ -664,7 +664,7 @@ void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, Scrollbar
         hMode = ScrollbarAlwaysOff;
         vMode = ScrollbarAlwaysOff;
     }
-    
+
     if (!m_layoutRoot) {
         Document* document = m_frame->document();
         Node* documentElement = document->documentElement();
@@ -682,7 +682,7 @@ void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, Scrollbar
             }
         } else if (rootRenderer)
             applyOverflowToViewport(rootRenderer, hMode, vMode);
-    }    
+    }
 }
 
 void FrameView::updateCompositingLayersAfterStyleChange()
@@ -808,7 +808,7 @@ bool FrameView::isEnclosedInCompositingLayer() const
 
     return false;
 }
-    
+
 bool FrameView::isSoftwareRenderable() const
 {
     RenderView* renderView = this->renderView();
@@ -894,7 +894,7 @@ void FrameView::layout(bool allowSubtree)
         m_size.setWidth(layoutWidth());
         return;
     }
-    
+
     // we shouldn't enter layout() while painting
     ASSERT(!isPainting());
     if (isPainting())
@@ -937,7 +937,7 @@ void FrameView::layout(bool allowSubtree)
 
         subtree = m_layoutRoot;
 
-        // If there is only one ref to this view left, then its going to be destroyed as soon as we exit, 
+        // If there is only one ref to this view left, then its going to be destroyed as soon as we exit,
         // so there's no point to continuing to layout
         if (protector->hasOneRef())
             return;
@@ -973,13 +973,13 @@ void FrameView::layout(bool allowSubtree)
 #ifdef INSTRUMENT_LAYOUT_SCHEDULING
             if (m_firstLayout && !m_frame->ownerElement())
                 printf("Elapsed time before first layout: %d\n", document->elapsedTime());
-#endif        
+#endif
         }
 
         autoSizeIfEnabled();
 
         ScrollbarMode hMode;
-        ScrollbarMode vMode;    
+        ScrollbarMode vMode;
         calculateScrollbarModesForLayout(hMode, vMode);
 
         m_doFullRepaint = !subtree && (m_firstLayout || toRenderView(root)->printing());
@@ -1204,12 +1204,12 @@ void FrameView::removeWidgetToUpdate(RenderObject* object)
     m_widgetUpdateSet->remove(object);
 }
 
-void FrameView::setMediaType(const String& mediaType)
+void FrameView::setMediaType(const AtomicString& mediaType)
 {
     m_mediaType = mediaType;
 }
 
-String FrameView::mediaType() const
+AtomicString FrameView::mediaType() const
 {
     // See if we have an override type.
     String overrideType;
@@ -1228,7 +1228,7 @@ void FrameView::adjustMediaTypeForPrinting(bool printing)
     } else {
         if (!m_mediaTypeWhenNotPrinting.isNull())
             setMediaType(m_mediaTypeWhenNotPrinting);
-        m_mediaTypeWhenNotPrinting = String();
+        m_mediaTypeWhenNotPrinting = nullAtom;
     }
 }
 
@@ -1380,7 +1380,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
 
         if (renderer->isComposited())
             continue;
-    
+
         // Fixed items should always have layers.
         ASSERT(renderer->hasLayer());
         RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
@@ -1392,7 +1392,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         }
 
         if (layer->hasAncestorWithFilterOutsets()) {
-            // If the fixed layer has a blur/drop-shadow filter applied on at least one of its parents, we cannot 
+            // If the fixed layer has a blur/drop-shadow filter applied on at least one of its parents, we cannot
             // scroll using the fast path, otherwise the outsets of the filter will be moved around the page.
             return false;
         }
@@ -1529,7 +1529,7 @@ bool FrameView::scrollToAnchor(const String& name)
                 return true;
         }
     }
-  
+
     // Implement the rule that "" and "top" both mean top of page as in other browsers.
     if (!anchorNode && !(name.isEmpty() || equalIgnoringCase(name, "top")))
         return false;
@@ -1717,7 +1717,7 @@ void FrameView::repaintContentRectangle(const IntRect& r)
 
         return;
     }
-    
+
     if (!shouldUpdate())
         return;
 
@@ -1779,7 +1779,7 @@ void FrameView::endDeferredRepaints()
         startDeferredRepaintTimer(delay);
         return;
     }
-    
+
     doDeferredRepaints();
 }
 
@@ -1830,7 +1830,7 @@ void FrameView::doDeferredRepaints()
     }
     m_repaintRects.clear();
     m_repaintCount = 0;
-    
+
     updateDeferredRepaintDelayAfterRepaint();
 }
 
@@ -1877,7 +1877,7 @@ double FrameView::adjustedDeferredRepaintDelay() const
     double timeSinceLastPaint = currentTime() - m_lastPaintTime;
     return max(0., m_deferredRepaintDelay - timeSinceLastPaint);
 }
-    
+
 void FrameView::deferredRepaintTimerFired(Timer<FrameView>*)
 {
     doDeferredRepaints();
@@ -2033,7 +2033,7 @@ void FrameView::unscheduleRelayout()
     if (!m_frame->document()->ownerElement())
         printf("Layout timer unscheduled at %d\n", m_frame->document()->elapsedTime());
 #endif
-    
+
     m_layoutTimer.stop();
     m_delayedLayout = false;
 }
@@ -2190,7 +2190,7 @@ bool FrameView::updateWidgets()
 {
     if (m_nestedLayoutCount > 1 || !m_widgetUpdateSet || m_widgetUpdateSet->isEmpty())
         return true;
-    
+
     size_t size = m_widgetUpdateSet->size();
 
     Vector<RenderObject*> objects;
@@ -2221,7 +2221,7 @@ bool FrameView::updateWidgets()
             embeddedObject->deref(protectedArena.get());
         }
     }
-    
+
     return m_widgetUpdateSet->isEmpty();
 }
 
@@ -2423,26 +2423,26 @@ void FrameView::updateOverflowStatus(bool horizontalOverflow, bool verticalOverf
 {
     if (!m_viewportRenderer)
         return;
-    
+
     if (m_overflowStatusDirty) {
         m_horizontalOverflow = horizontalOverflow;
         m_verticalOverflow = verticalOverflow;
         m_overflowStatusDirty = false;
         return;
     }
-    
+
     bool horizontalOverflowChanged = (m_horizontalOverflow != horizontalOverflow);
     bool verticalOverflowChanged = (m_verticalOverflow != verticalOverflow);
-    
+
     if (horizontalOverflowChanged || verticalOverflowChanged) {
         m_horizontalOverflow = horizontalOverflow;
         m_verticalOverflow = verticalOverflow;
-        
+
         m_actionScheduler->scheduleEvent(OverflowEvent::create(horizontalOverflowChanged, horizontalOverflow,
             verticalOverflowChanged, verticalOverflow),
             m_viewportRenderer->node());
     }
-    
+
 }
 
 const Pagination& FrameView::pagination() const
@@ -2507,7 +2507,7 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
         clipRect = pixelSnappedIntRect(enclosingLayer->childrenClipRect());
     else
         clipRect = pixelSnappedIntRect(enclosingLayer->selfClipRect());
-    clipRect = contentsToWindow(clipRect); 
+    clipRect = contentsToWindow(clipRect);
     return intersection(clipRect, windowClipRect());
 }
 
@@ -2719,7 +2719,7 @@ void FrameView::updateScrollCorner()
             if (RenderObject* renderer = body->renderer())
                 cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
         }
-        
+
         if (!cornerStyle) {
             // If the <body> didn't have a custom style, then the root element might.
             if (Element* docElement = doc->documentElement()) {
@@ -2727,7 +2727,7 @@ void FrameView::updateScrollCorner()
                     cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
             }
         }
-        
+
         if (!cornerStyle) {
             // If we have an owning iframe/frame element, then it can set the custom scrollbar also.
             if (RenderPart* renderer = m_frame->ownerRenderer())
@@ -2854,7 +2854,7 @@ void FrameView::updateControlTints()
     // We do a "fake" paint, and when the theme gets a paint call, it can then do an invalidate.
     // This is only done if the theme supports control tinting. It's up to the theme and platform
     // to define when controls get the tint and to call this function when that changes.
-    
+
     // Optimize the common case where we bring a window to the front while it's still empty.
     if (!m_frame || m_frame->document()->url().isEmpty())
         return;
@@ -2932,12 +2932,12 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     FontCachePurgePreventer fontCachePurgePreventer;
 
     PaintBehavior oldPaintBehavior = m_paintBehavior;
-    
+
     if (FrameView* parentView = parentFrameView()) {
         if (parentView->paintBehavior() & PaintBehaviorFlattenCompositingLayers)
             m_paintBehavior |= PaintBehaviorFlattenCompositingLayers;
     }
-    
+
     if (m_paintBehavior == PaintBehaviorNormal)
         document->markers()->invalidateRenderedRectsForMarkersInRect(rect);
 
@@ -3147,7 +3147,7 @@ IntRect FrameView::convertFromRenderer(const RenderObject* renderer, const IntRe
 IntRect FrameView::convertToRenderer(const RenderObject* renderer, const IntRect& viewRect) const
 {
     IntRect rect = viewRect;
-    
+
     // Convert from FrameView coords into page ("absolute") coordinates.
     rect.moveBy(scrollPosition());
 
@@ -3185,17 +3185,17 @@ IntRect FrameView::convertToContainingView(const IntRect& localRect) const
             RenderPart* renderer = m_frame->ownerRenderer();
             if (!renderer)
                 return localRect;
-                
+
             IntRect rect(localRect);
             // Add borders and padding??
             rect.move(renderer->borderLeft() + renderer->paddingLeft(),
                       renderer->borderTop() + renderer->paddingTop());
             return parentView->convertFromRenderer(renderer, rect);
         }
-        
+
         return Widget::convertToContainingView(localRect);
     }
-    
+
     return localRect;
 }
 
@@ -3216,10 +3216,10 @@ IntRect FrameView::convertFromContainingView(const IntRect& parentRect) const
                       -renderer->borderTop() - renderer->paddingTop());
             return rect;
         }
-        
+
         return Widget::convertFromContainingView(parentRect);
     }
-    
+
     return parentRect;
 }
 
@@ -3233,7 +3233,7 @@ IntPoint FrameView::convertToContainingView(const IntPoint& localPoint) const
             RenderPart* renderer = m_frame->ownerRenderer();
             if (!renderer)
                 return localPoint;
-                
+
             IntPoint point(localPoint);
 
             // Add borders and padding
@@ -3241,10 +3241,10 @@ IntPoint FrameView::convertToContainingView(const IntPoint& localPoint) const
                        renderer->borderTop() + renderer->paddingTop());
             return parentView->convertFromRenderer(renderer, point);
         }
-        
+
         return Widget::convertToContainingView(localPoint);
     }
-    
+
     return localPoint;
 }
 
@@ -3265,10 +3265,10 @@ IntPoint FrameView::convertFromContainingView(const IntPoint& parentPoint) const
                        -renderer->borderTop() - renderer->paddingTop());
             return point;
         }
-        
+
         return Widget::convertFromContainingView(parentPoint);
     }
-    
+
     return parentPoint;
 }
 
@@ -3422,5 +3422,5 @@ AXObjectCache* FrameView::axObjectCache() const
         return frame()->document()->existingAXObjectCache();
     return 0;
 }
-    
+
 } // namespace WebCore

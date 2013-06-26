@@ -71,7 +71,7 @@ private:
 
     MediaQueryMatcher(Document*);
     PassOwnPtr<MediaQueryEvaluator> prepareEvaluator() const;
-    String mediaType() const;
+    AtomicString mediaType() const;
 
     Document* m_document;
     Vector<OwnPtr<Listener> > m_listeners;

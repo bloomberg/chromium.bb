@@ -11092,10 +11092,7 @@ void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
         builder.appendLiteral("Unexpected CSS token: ");
     }
 
-    if (content.is8Bit())
-        builder.append(content.characters8(), content.length());
-    else
-        builder.append(content.characters16(), content.length());
+    builder.append(content);
 
     logError(builder.toString(), location.lineNumber);
 }

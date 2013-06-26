@@ -66,10 +66,10 @@ void MediaQueryMatcher::documentDestroyed()
     m_document = 0;
 }
 
-String MediaQueryMatcher::mediaType() const
+AtomicString MediaQueryMatcher::mediaType() const
 {
     if (!m_document || !m_document->frame() || !m_document->frame()->view())
-        return String();
+        return nullAtom;
 
     return m_document->frame()->view()->mediaType();
 }

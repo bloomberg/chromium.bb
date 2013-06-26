@@ -62,15 +62,15 @@ public:
      *  Evaluator  returns true for acceptedMediaType and returns value of \mediafeatureResult
      *  for any media features
      */
-    MediaQueryEvaluator(const String& acceptedMediaType, bool mediaFeatureResult = false);
+    MediaQueryEvaluator(const AtomicString& acceptedMediaType, bool mediaFeatureResult = false);
     MediaQueryEvaluator(const char* acceptedMediaType, bool mediaFeatureResult = false);
 
     /** Creates evaluator which evaluates full media queries */
-    MediaQueryEvaluator(const String& acceptedMediaType, Frame*, RenderStyle*);
+    MediaQueryEvaluator(const AtomicString& acceptedMediaType, Frame*, RenderStyle*);
 
     ~MediaQueryEvaluator();
 
-    bool mediaTypeMatch(const String& mediaTypeToMatch) const;
+    bool mediaTypeMatch(const AtomicString& mediaTypeToMatch) const;
     bool mediaTypeMatchSpecific(const char* mediaTypeToMatch) const;
 
     /** Evaluates a list of media queries */
@@ -80,7 +80,7 @@ public:
     bool eval(const MediaQueryExp*) const;
 
 private:
-    String m_mediaType;
+    AtomicString m_mediaType;
     Frame* m_frame; // Not owned.
     RefPtr<RenderStyle> m_style;
     bool m_expResult;

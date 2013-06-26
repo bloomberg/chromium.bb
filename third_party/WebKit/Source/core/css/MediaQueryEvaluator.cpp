@@ -68,7 +68,7 @@ MediaQueryEvaluator::MediaQueryEvaluator(bool mediaFeatureResult)
 {
 }
 
-MediaQueryEvaluator::MediaQueryEvaluator(const String& acceptedMediaType, bool mediaFeatureResult)
+MediaQueryEvaluator::MediaQueryEvaluator(const AtomicString& acceptedMediaType, bool mediaFeatureResult)
     : m_mediaType(acceptedMediaType)
     , m_frame(0)
     , m_style(0)
@@ -84,7 +84,7 @@ MediaQueryEvaluator::MediaQueryEvaluator(const char* acceptedMediaType, bool med
 {
 }
 
-MediaQueryEvaluator::MediaQueryEvaluator(const String& acceptedMediaType, Frame* frame, RenderStyle* style)
+MediaQueryEvaluator::MediaQueryEvaluator(const AtomicString& acceptedMediaType, Frame* frame, RenderStyle* style)
     : m_mediaType(acceptedMediaType)
     , m_frame(frame)
     , m_style(style)
@@ -96,7 +96,7 @@ MediaQueryEvaluator::~MediaQueryEvaluator()
 {
 }
 
-bool MediaQueryEvaluator::mediaTypeMatch(const String& mediaTypeToMatch) const
+bool MediaQueryEvaluator::mediaTypeMatch(const AtomicString& mediaTypeToMatch) const
 {
     return mediaTypeToMatch.isEmpty()
         || equalIgnoringCase(mediaTypeToMatch, "all")
@@ -108,7 +108,7 @@ bool MediaQueryEvaluator::mediaTypeMatchSpecific(const char* mediaTypeToMatch) c
     // Like mediaTypeMatch, but without the special cases for "" and "all".
     ASSERT(mediaTypeToMatch);
     ASSERT(mediaTypeToMatch[0] != '\0');
-    ASSERT(!equalIgnoringCase(mediaTypeToMatch, String("all")));
+    ASSERT(!equalIgnoringCase(mediaTypeToMatch, AtomicString("all")));
     return equalIgnoringCase(mediaTypeToMatch, m_mediaType);
 }
 
