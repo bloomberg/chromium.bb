@@ -305,7 +305,7 @@ bool V8WindowShell::installDOMWindow()
 {
     DOMWrapperWorld::setInitializingWindow(true);
     DOMWindow* window = m_frame->document()->domWindow();
-    v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(V8PerContextData::from(m_context.get())->constructorForType(&V8Window::info));
+    v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(V8PerContextData::from(m_context.newLocal(m_isolate))->constructorForType(&V8Window::info));
     if (windowWrapper.IsEmpty())
         return false;
 
