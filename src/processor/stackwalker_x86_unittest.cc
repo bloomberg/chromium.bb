@@ -129,7 +129,7 @@ class StackwalkerX86Fixture {
     for (size_t i = 0; i < sizeof(*raw_context); i++)
       reinterpret_cast<uint8_t *>(raw_context)[i] = (x += 17);
   }
-  
+
   SystemInfo system_info;
   MDRawContextX86 raw_context;
   Section stack_section;
@@ -151,7 +151,7 @@ class SanityCheck: public StackwalkerX86Fixture, public Test { };
 
 TEST_F(SanityCheck, NoResolver) {
   stack_section.start() = 0x80000000;
-  stack_section.D32(0).D32(0); // end-of-stack marker
+  stack_section.D32(0).D32(0);  // end-of-stack marker
   RegionFromSection();
   raw_context.eip = 0x40000200;
   raw_context.ebp = 0x80000000;
@@ -175,7 +175,7 @@ class GetContextFrame: public StackwalkerX86Fixture, public Test { };
 
 TEST_F(GetContextFrame, Simple) {
   stack_section.start() = 0x80000000;
-  stack_section.D32(0).D32(0); // end-of-stack marker
+  stack_section.D32(0).D32(0);  // end-of-stack marker
   RegionFromSection();
   raw_context.eip = 0x40000200;
   raw_context.ebp = 0x80000000;
@@ -275,6 +275,7 @@ TEST_F(GetCallerFrame, Traditional) {
 TEST_F(GetCallerFrame, TraditionalScan) {
   stack_section.start() = 0x80000000;
   Label frame1_ebp;
+  Label frame1_esp;
   stack_section
     // frame 0
     .D32(0xf065dc76)    // locals area:
@@ -283,6 +284,7 @@ TEST_F(GetCallerFrame, TraditionalScan) {
     .D32(frame1_ebp)    // saved %ebp (%ebp fails to point here, forcing scan)
     .D32(0x4000129d)    // return address
     // frame 1
+    .Mark(&frame1_esp)
     .Append(8, 0)       // space
     .Mark(&frame1_ebp)  // %ebp points here
     .D32(0)             // saved %ebp (stack end)
@@ -319,18 +321,14 @@ TEST_F(GetCallerFrame, TraditionalScan) {
   {  // To avoid reusing locals by mistake
     StackFrameX86 *frame1 = static_cast<StackFrameX86 *>(frames->at(1));
     EXPECT_EQ(StackFrame::FRAME_TRUST_SCAN, frame1->trust);
-    // I'd argue that CONTEXT_VALID_EBP shouldn't be here, since the
-    // walker does not actually fetch the EBP after a scan (forcing the
-    // next frame to be scanned as well). But let's grandfather the existing
-    // behavior in for now.
     ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP
                | StackFrameX86::CONTEXT_VALID_ESP
                | StackFrameX86::CONTEXT_VALID_EBP),
               frame1->context_validity);
     EXPECT_EQ(0x4000129dU, frame1->instruction + 1);
     EXPECT_EQ(0x4000129dU, frame1->context.eip);
-    EXPECT_EQ(0x80000014U, frame1->context.esp);
-    EXPECT_EQ(0xd43eed6eU, frame1->context.ebp);
+    EXPECT_EQ(frame1_esp.Value(), frame1->context.esp);
+    EXPECT_EQ(frame1_ebp.Value(), frame1->context.ebp);
     EXPECT_EQ(NULL, frame1->windows_frame_info);
   }
 }
@@ -339,6 +337,7 @@ TEST_F(GetCallerFrame, TraditionalScan) {
 TEST_F(GetCallerFrame, TraditionalScanLongWay) {
   stack_section.start() = 0x80000000;
   Label frame1_ebp;
+  Label frame1_esp;
   stack_section
     // frame 0
     .D32(0xf065dc76)    // locals area:
@@ -348,6 +347,7 @@ TEST_F(GetCallerFrame, TraditionalScanLongWay) {
     .D32(frame1_ebp)    // saved %ebp (%ebp fails to point here, forcing scan)
     .D32(0x4000129d)    // return address
     // frame 1
+    .Mark(&frame1_esp)
     .Append(8, 0)       // space
     .Mark(&frame1_ebp)  // %ebp points here
     .D32(0)             // saved %ebp (stack end)
@@ -384,18 +384,14 @@ TEST_F(GetCallerFrame, TraditionalScanLongWay) {
   {  // To avoid reusing locals by mistake
     StackFrameX86 *frame1 = static_cast<StackFrameX86 *>(frames->at(1));
     EXPECT_EQ(StackFrame::FRAME_TRUST_SCAN, frame1->trust);
-    // I'd argue that CONTEXT_VALID_EBP shouldn't be here, since the
-    // walker does not actually fetch the EBP after a scan (forcing the
-    // next frame to be scanned as well). But let's grandfather the existing
-    // behavior in for now.
     ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP
                | StackFrameX86::CONTEXT_VALID_ESP
                | StackFrameX86::CONTEXT_VALID_EBP),
               frame1->context_validity);
     EXPECT_EQ(0x4000129dU, frame1->instruction + 1);
     EXPECT_EQ(0x4000129dU, frame1->context.eip);
-    EXPECT_EQ(0x80000064U, frame1->context.esp);
-    EXPECT_EQ(0xd43eed6eU, frame1->context.ebp);
+    EXPECT_EQ(frame1_esp.Value(), frame1->context.esp);
+    EXPECT_EQ(frame1_ebp.Value(), frame1->context.ebp);
     EXPECT_EQ(NULL, frame1->windows_frame_info);
   }
 }
@@ -482,11 +478,11 @@ TEST_F(GetCallerFrame, WindowsFrameData) {
 TEST_F(GetCallerFrame, WindowsFrameDataAligned) {
   SetModuleSymbols(&module1,
                    "STACK WIN 4 aa85 176 0 0 4 4 8 0 1"
-		   " $T1 .raSearch ="
-		   " $T0 $T1 4 - 8 @ ="
-		   " $ebp $T1 4 - ^ ="
-		   " $eip $T1 ^ ="
-		   " $esp $T1 4 + =");
+                   " $T1 .raSearch ="
+                   " $T0 $T1 4 - 8 @ ="
+                   " $ebp $T1 4 - ^ ="
+                   " $eip $T1 ^ ="
+                   " $esp $T1 4 + =");
   Label frame1_esp, frame1_ebp;
   stack_section.start() = 0x80000000;
   stack_section
@@ -591,7 +587,7 @@ TEST_F(GetCallerFrame, WindowsFrameDataParameterSize) {
     .D32(0);            // saved %eip (stack end)
 
   RegionFromSection();
-  raw_context.eip = 0x40001004; // in module1::wheedle
+  raw_context.eip = 0x40001004;  // in module1::wheedle
   raw_context.esp = stack_section.start().Value();
   raw_context.ebp = frame0_ebp.Value();
 
@@ -832,18 +828,18 @@ TEST_F(GetCallerFrame, WindowsFPOUnchangedEBP) {
     // frame 0, in module1::wheedle.  FrameTypeFPO (STACK WIN 0) frame.
     .Mark(&frame0_esp)
     // no outgoing parameters; this is the youngest frame.
-    .D32(0x7c521352)    // four bytes of saved registers
-    .Append(0x10, 0x42) // local area
-    .D32(0x40009b5b)    // return address, in module1, no function
+    .D32(0x7c521352)     // four bytes of saved registers
+    .Append(0x10, 0x42)  // local area
+    .D32(0x40009b5b)     // return address, in module1, no function
     // frame 1, in module1, no function.
     .Mark(&frame1_esp)
-    .D32(0xf60ea7fc)    // junk
+    .D32(0xf60ea7fc)     // junk
     .Mark(&frame1_ebp)
-    .D32(0)             // saved %ebp (stack end)
-    .D32(0);            // saved %eip (stack end)
+    .D32(0)              // saved %ebp (stack end)
+    .D32(0);             // saved %eip (stack end)
 
   RegionFromSection();
-  raw_context.eip = 0x4000e8b8; // in module1::whine
+  raw_context.eip = 0x4000e8b8;  // in module1::whine
   raw_context.esp = stack_section.start().Value();
   // Frame pointer unchanged from caller.
   raw_context.ebp = frame1_ebp.Value();
@@ -864,7 +860,8 @@ TEST_F(GetCallerFrame, WindowsFPOUnchangedEBP) {
     EXPECT_EQ(0x4000e8b8U, frame0->instruction);
     EXPECT_EQ(0x4000e8b8U, frame0->context.eip);
     EXPECT_EQ(frame0_esp.Value(), frame0->context.esp);
-    EXPECT_EQ(frame1_ebp.Value(), frame0->context.ebp); // unchanged from caller
+    // unchanged from caller
+    EXPECT_EQ(frame1_ebp.Value(), frame0->context.ebp);
     EXPECT_EQ(&module1, frame0->module);
     EXPECT_EQ("module1::discombobulated", frame0->function_name);
     EXPECT_EQ(0x4000e8a8U, frame0->function_base);
@@ -922,7 +919,7 @@ TEST_F(GetCallerFrame, WindowsFPOUsedEBP) {
     .D32(0);            // saved %eip (stack end)
 
   RegionFromSection();
-  raw_context.eip = 0x40009ab8; // in module1::RaisedByTheAliens
+  raw_context.eip = 0x40009ab8;  // in module1::RaisedByTheAliens
   raw_context.esp = stack_section.start().Value();
   // RaisedByTheAliens uses %ebp for its own mysterious purposes.
   raw_context.ebp = 0xecbdd1a5;
@@ -1124,12 +1121,12 @@ TEST_F(GetCallerFrame, WindowsFPOSystemCall) {
 }
 
 // Scan the stack for a better return address and potentially skip frames
-// when the calculated return address is not in a known module.
-// Note, that the span of this scan is somewhat arbitrarily limited to 30
-// search words (pointers):
+// when the calculated return address is not in a known module.  Note, that
+// the span of this scan is somewhat arbitrarily limited to 120 search words
+// for the context frame and 30 search words (pointers) for the other frames:
 //     const int kRASearchWords = 30;
 // This means that frames can be skipped only when their size is relatively
-// small: smaller than kRASearchWords * sizeof(InstructionType)
+// small: smaller than 4 * kRASearchWords * sizeof(InstructionType)
 TEST_F(GetCallerFrame, ReturnAddressIsNotInKnownModule) {
   MockCodeModule msvcrt_dll(0x77be0000, 0x58000, "msvcrt.dll", "version1");
   SetModuleSymbols(&msvcrt_dll,  // msvcrt.dll
@@ -1359,6 +1356,234 @@ TEST_F(GetCallerFrame, ReturnAddressIsNotInKnownModule) {
   }
 }
 
+// Scan the stack for a return address and potentially skip frames when the
+// current IP address is not in a known module.  Note, that that the span of
+// this scan is limited to 120 search words for the context frame and 30
+// search words (pointers) for the other frames:
+//     const int kRASearchWords = 30;
+TEST_F(GetCallerFrame, IPAddressIsNotInKnownModule) {
+  MockCodeModule remoting_core_dll(0x54080000, 0x501000, "remoting_core.dll",
+                                   "version1");
+  SetModuleSymbols(&remoting_core_dll,  // remoting_core.dll
+                   "FUNC 137214 17d 10 PK11_Verify\n"
+                   "FUNC 15c834 37 14 nsc_ECDSAVerifyStub\n"
+                   "FUNC 1611d3 91 14 NSC_Verify\n"
+                   "FUNC 162ff7 60 4 sftk_SessionFromHandle\n"
+                   "STACK WIN 4 137214 17d 9 0 10 0 10 0 1 $T0 $ebp = "
+                   "$eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + =\n"
+                   "STACK WIN 4 15c834 37 6 0 14 0 18 0 1 $T0 $ebp = "
+                   "$eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + =\n"
+                   "STACK WIN 4 1611d3 91 7 0 14 0 8 0 1 $T0 $ebp = "
+                   "$eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + =\n"
+                   "STACK WIN 4 162ff7 60 5 0 4 0 0 0 1 $T0 $ebp = "
+                   "$eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + =\n");
+
+  // Create some modules with some stock debugging information.
+  MockCodeModules local_modules;
+  local_modules.Add(&remoting_core_dll);
+
+  Label frame0_esp;
+  Label frame0_ebp;
+  Label frame1_ebp;
+  Label frame1_esp;
+  Label frame2_ebp;
+  Label frame2_esp;
+  Label frame3_ebp;
+  Label frame3_esp;
+  Label bogus_stack_location_1;
+  Label bogus_stack_location_2;
+  Label bogus_stack_location_3;
+
+  stack_section.start() = 0x01a3ea28;
+  stack_section
+    .Mark(&frame0_esp)
+    .D32(bogus_stack_location_2)
+    .D32(bogus_stack_location_1)
+    .D32(0x042478e4)
+    .D32(bogus_stack_location_2)
+    .D32(0x00000000)
+    .D32(0x041f0420)
+    .D32(0x00000000)
+    .D32(0x00000000)
+    .D32(0x00000040)
+    .D32(0x00000001)
+    .D32(0x00b7e0d0)
+    .D32(0x00000000)
+    .D32(0x00000040)
+    .D32(0x00000001)
+    .D32(0x00b7f570)
+    .Mark(&bogus_stack_location_1)
+    .D32(0x00000000)
+    .D32(0x00000040)
+    .D32(0x00000008)
+    .D32(0x04289530)
+    .D32(0x00000000)
+    .D32(0x00000040)
+    .D32(0x00000008)
+    .D32(0x00b7e910)
+    .D32(0x00000000)
+    .D32(0x00000040)
+    .D32(0x00000008)
+    .D32(0x00b7d998)
+    .D32(0x00000000)
+    .D32(0x00000040)
+    .D32(0x00000008)
+    .D32(0x00b7dec0)
+    .Mark(&bogus_stack_location_2)
+    .D32(0x00000000)
+    .D32(0x00000040)
+    .D32(0x00000008)
+    .D32(0x04289428)
+    .D32(0x00000000)
+    .D32(0x00000040)
+    .D32(0x00000008)
+    .D32(0x00b7f258)
+    .Mark(&bogus_stack_location_3)
+    .D32(0x00000000)
+    .D32(0x041f3560)
+    .D32(0x00000041)
+    .D32(0x00000020)
+    .D32(0xffffffff)
+    .Mark(&frame0_ebp)
+    .D32(frame1_ebp)  // Child %ebp
+    .D32(0x541dc866)  // return address of frame 0
+                      // inside remoting_core!nsc_ECDSAVerifyStub+0x32
+    .Mark(&frame1_esp)
+    .D32(0x04247860)
+    .D32(0x01a3eaec)
+    .D32(0x01a3eaf8)
+    .D32(0x541e304f)  // remoting_core!sftk_SessionFromHandle+0x58
+    .D32(0x0404c620)
+    .D32(0x00000040)
+    .D32(0x01a3eb2c)
+    .D32(0x01a3ec08)
+    .D32(0x00000014)
+    .Mark(&frame1_ebp)
+    .D32(frame2_ebp)  // Child %ebp
+    .D32(0x541e1234)  // return address of frame 1
+                      // inside remoting_core!NSC_Verify+0x61
+    .Mark(&frame2_esp)
+    .D32(0x04247858)
+    .D32(0x0404c620)
+    .D32(0x00000040)
+    .D32(0x01a3ec08)
+    .D32(0x00000014)
+    .D32(0x01000005)
+    .D32(0x00b2f7a0)
+    .D32(0x041f0420)
+    .D32(0x041f3650)
+    .Mark(&frame2_ebp)
+    .D32(frame3_ebp)  // Child %ebp
+    .D32(0x541b734d)  // return address of frame 1
+                      // inside remoting_core!PK11_Verify+0x139
+    .Mark(&frame3_esp)
+    .D32(0x01000005)
+    .D32(0x01a3ec08)
+    .D32(0x00000014)
+    .D32(0x0404c620)
+    .D32(0x00000040)
+    .D32(0x04073e00)
+    .D32(0x04073e00)
+    .D32(0x04247050)
+    .D32(0x00001041)
+    .D32(0x00000000)
+    .D32(0x00000000)
+    .D32(0x00000000)
+    .Mark(&frame3_ebp)
+    .D32(0)           // saved %ebp (stack end)
+    .D32(0);          // saved %eip (stack end)
+
+  RegionFromSection();
+  raw_context.eip = 0x4247860;   // IP address not in known module
+  raw_context.ebp = 0x5420362d;  // bogus
+  raw_context.esp = frame0_esp.Value();
+
+  // sanity
+  ASSERT_TRUE(raw_context.esp == stack_section.start().Value());
+
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
+  StackwalkerX86 walker(&system_info, &raw_context, &stack_region,
+                        &local_modules, &frame_symbolizer);
+  vector<const CodeModule*> modules_without_symbols;
+  ASSERT_TRUE(walker.Walk(&call_stack, &modules_without_symbols));
+  ASSERT_EQ(0U, modules_without_symbols.size());
+  frames = call_stack.frames();
+
+  ASSERT_EQ(4U, frames->size());
+
+  {  // To avoid reusing locals by mistake
+    StackFrameX86 *frame0 = static_cast<StackFrameX86 *>(frames->at(0));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frame0->trust);
+    ASSERT_EQ(StackFrameX86::CONTEXT_VALID_ALL, frame0->context_validity);
+    EXPECT_EQ(raw_context.eip, frame0->context.eip);
+    EXPECT_EQ(raw_context.ebp, frame0->context.ebp);
+    EXPECT_EQ(raw_context.esp, frame0->context.esp);
+    EXPECT_EQ(NULL, frame0->module);  // IP not in known module
+    EXPECT_EQ("", frame0->function_name);
+    ASSERT_EQ(NULL, frame0->windows_frame_info);
+  }
+
+  {  // To avoid reusing locals by mistake
+    StackFrameX86 *frame1 = static_cast<StackFrameX86 *>(frames->at(1));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_SCAN, frame1->trust);
+    ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP |
+               StackFrameX86::CONTEXT_VALID_ESP |
+               StackFrameX86::CONTEXT_VALID_EBP),
+              frame1->context_validity);
+    EXPECT_EQ(frame1_ebp.Value(), frame1->context.ebp);
+    EXPECT_EQ(frame1_esp.Value(), frame1->context.esp);
+    EXPECT_EQ(&remoting_core_dll, frame1->module);
+    EXPECT_EQ("nsc_ECDSAVerifyStub", frame1->function_name);
+    ASSERT_TRUE(frame1->windows_frame_info != NULL);
+    EXPECT_EQ(WindowsFrameInfo::VALID_ALL, frame1->windows_frame_info->valid);
+    EXPECT_EQ(WindowsFrameInfo::STACK_INFO_FRAME_DATA,
+              frame1->windows_frame_info->type_);
+    EXPECT_EQ("$T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + =",
+              frame1->windows_frame_info->program_string);
+    EXPECT_FALSE(frame1->windows_frame_info->allocates_base_pointer);
+  }
+
+  {  // To avoid reusing locals by mistake
+    StackFrameX86 *frame2 = static_cast<StackFrameX86 *>(frames->at(2));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CFI, frame2->trust);
+    ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP |
+               StackFrameX86::CONTEXT_VALID_ESP |
+               StackFrameX86::CONTEXT_VALID_EBP),
+              frame2->context_validity);
+    EXPECT_EQ(frame2_ebp.Value(), frame2->context.ebp);
+    EXPECT_EQ(frame2_esp.Value(), frame2->context.esp);
+    EXPECT_EQ(&remoting_core_dll, frame2->module);
+    EXPECT_EQ("NSC_Verify", frame2->function_name);
+    ASSERT_TRUE(frame2->windows_frame_info != NULL);
+    EXPECT_EQ(WindowsFrameInfo::VALID_ALL, frame2->windows_frame_info->valid);
+    EXPECT_EQ(WindowsFrameInfo::STACK_INFO_FRAME_DATA,
+              frame2->windows_frame_info->type_);
+    EXPECT_EQ("$T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + =",
+              frame2->windows_frame_info->program_string);
+    EXPECT_FALSE(frame2->windows_frame_info->allocates_base_pointer);
+  }
+
+  {  // To avoid reusing locals by mistake
+    StackFrameX86 *frame3 = static_cast<StackFrameX86 *>(frames->at(3));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CFI, frame3->trust);
+    ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP |
+               StackFrameX86::CONTEXT_VALID_ESP |
+               StackFrameX86::CONTEXT_VALID_EBP),
+              frame3->context_validity);
+    EXPECT_EQ(frame3_ebp.Value(), frame3->context.ebp);
+    EXPECT_EQ(frame3_esp.Value(), frame3->context.esp);
+    EXPECT_EQ(&remoting_core_dll, frame3->module);
+    EXPECT_EQ("PK11_Verify", frame3->function_name);
+    ASSERT_TRUE(frame3->windows_frame_info != NULL);
+    EXPECT_EQ(WindowsFrameInfo::VALID_ALL, frame3->windows_frame_info->valid);
+    EXPECT_EQ(WindowsFrameInfo::STACK_INFO_FRAME_DATA,
+              frame3->windows_frame_info->type_);
+    EXPECT_EQ("$T0 $ebp = $eip $T0 4 + ^ = $ebp $T0 ^ = $esp $T0 8 + =",
+              frame3->windows_frame_info->program_string);
+    EXPECT_FALSE(frame3->windows_frame_info->allocates_base_pointer);
+  }
+}
+
 struct CFIFixture: public StackwalkerX86Fixture {
   CFIFixture() {
     // Provide a bunch of STACK CFI records; individual tests walk to the
@@ -1456,8 +1681,8 @@ class CFI: public CFIFixture, public Test { };
 TEST_F(CFI, At4000) {
   Label frame1_esp = expected.esp;
   stack_section
-    .D32(0x40005510)            // return address
-    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+    .D32(0x40005510)             // return address
+    .Mark(&frame1_esp);          // This effectively sets stack_section.start().
   raw_context.eip = 0x40004000;
   CheckWalk();
 }
@@ -1465,39 +1690,39 @@ TEST_F(CFI, At4000) {
 TEST_F(CFI, At4001) {
   Label frame1_esp = expected.esp;
   stack_section
-    .D32(0x60f20ce6)            // saved %ebx
-    .D32(0x40005510)            // return address
-    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+    .D32(0x60f20ce6)             // saved %ebx
+    .D32(0x40005510)             // return address
+    .Mark(&frame1_esp);          // This effectively sets stack_section.start().
   raw_context.eip = 0x40004001;
-  raw_context.ebx = 0x91aa9a8b; // callee's %ebx value
+  raw_context.ebx = 0x91aa9a8b;  // callee's %ebx value
   CheckWalk();
 }
 
 TEST_F(CFI, At4002) {
   Label frame1_esp = expected.esp;
   stack_section
-    .D32(0x60f20ce6)            // saved %ebx
-    .D32(0x40005510)            // return address
-    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+    .D32(0x60f20ce6)             // saved %ebx
+    .D32(0x40005510)             // return address
+    .Mark(&frame1_esp);          // This effectively sets stack_section.start().
   raw_context.eip = 0x40004002;
-  raw_context.ebx = 0x53d1379d; // saved %esi
-  raw_context.esi = 0xa5c790ed; // callee's %esi value
+  raw_context.ebx = 0x53d1379d;  // saved %esi
+  raw_context.esi = 0xa5c790ed;  // callee's %esi value
   CheckWalk();
 }
 
 TEST_F(CFI, At4003) {
   Label frame1_esp = expected.esp;
   stack_section
-    .D32(0x56ec3db7)            // garbage
-    .D32(0xafbae234)            // saved %edi
-    .D32(0x53d67131)            // garbage
-    .D32(0x60f20ce6)            // saved %ebx
-    .D32(0x40005510)            // return address
-    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+    .D32(0x56ec3db7)             // garbage
+    .D32(0xafbae234)             // saved %edi
+    .D32(0x53d67131)             // garbage
+    .D32(0x60f20ce6)             // saved %ebx
+    .D32(0x40005510)             // return address
+    .Mark(&frame1_esp);          // This effectively sets stack_section.start().
   raw_context.eip = 0x40004003;
-  raw_context.ebx = 0x53d1379d; // saved %esi
-  raw_context.esi = 0xa97f229d; // callee's %esi
-  raw_context.edi = 0xb05cc997; // callee's %edi
+  raw_context.ebx = 0x53d1379d;  // saved %esi
+  raw_context.esi = 0xa97f229d;  // callee's %esi
+  raw_context.edi = 0xb05cc997;  // callee's %edi
   CheckWalk();
 }
 
@@ -1506,32 +1731,32 @@ TEST_F(CFI, At4003) {
 TEST_F(CFI, At4004) {
   Label frame1_esp = expected.esp;
   stack_section
-    .D32(0xe29782c2)            // garbage
-    .D32(0xafbae234)            // saved %edi
-    .D32(0x5ba29ce9)            // garbage
-    .D32(0x60f20ce6)            // saved %ebx
-    .D32(0x40005510)            // return address
-    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+    .D32(0xe29782c2)             // garbage
+    .D32(0xafbae234)             // saved %edi
+    .D32(0x5ba29ce9)             // garbage
+    .D32(0x60f20ce6)             // saved %ebx
+    .D32(0x40005510)             // return address
+    .Mark(&frame1_esp);          // This effectively sets stack_section.start().
   raw_context.eip = 0x40004004;
-  raw_context.ebx = 0x53d1379d; // saved %esi
-  raw_context.esi = 0x0fb7dc4e; // callee's %esi
-  raw_context.edi = 0x993b4280; // callee's %edi
+  raw_context.ebx = 0x53d1379d;  // saved %esi
+  raw_context.esi = 0x0fb7dc4e;  // callee's %esi
+  raw_context.edi = 0x993b4280;  // callee's %edi
   CheckWalk();
 }
 
 TEST_F(CFI, At4005) {
   Label frame1_esp = expected.esp;
   stack_section
-    .D32(0xe29782c2)            // garbage
-    .D32(0xafbae234)            // saved %edi
-    .D32(0x5ba29ce9)            // garbage
-    .D32(0x60f20ce6)            // saved %ebx
-    .D32(0x8036cc02)            // garbage
-    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+    .D32(0xe29782c2)             // garbage
+    .D32(0xafbae234)             // saved %edi
+    .D32(0x5ba29ce9)             // garbage
+    .D32(0x60f20ce6)             // saved %ebx
+    .D32(0x8036cc02)             // garbage
+    .Mark(&frame1_esp);          // This effectively sets stack_section.start().
   raw_context.eip = 0x40004005;
-  raw_context.ebx = 0x53d1379d; // saved %esi
-  raw_context.esi = 0x0fb7dc4e; // callee's %esi
-  raw_context.edi = 0x40005510; // return address
+  raw_context.ebx = 0x53d1379d;  // saved %esi
+  raw_context.esi = 0x0fb7dc4e;  // callee's %esi
+  raw_context.edi = 0x40005510;  // return address
   CheckWalk();
 }
 
@@ -1539,18 +1764,18 @@ TEST_F(CFI, At4006) {
   Label frame0_ebp;
   Label frame1_esp = expected.esp;
   stack_section
-    .D32(0xdcdd25cd)            // garbage
-    .D32(0xafbae234)            // saved %edi
-    .D32(0xc0d4aab9)            // saved %ebp
-    .Mark(&frame0_ebp)          // frame pointer points here
-    .D32(0x60f20ce6)            // saved %ebx
-    .D32(0x8036cc02)            // garbage
-    .Mark(&frame1_esp);         // This effectively sets stack_section.start().
+    .D32(0xdcdd25cd)             // garbage
+    .D32(0xafbae234)             // saved %edi
+    .D32(0xc0d4aab9)             // saved %ebp
+    .Mark(&frame0_ebp)           // frame pointer points here
+    .D32(0x60f20ce6)             // saved %ebx
+    .D32(0x8036cc02)             // garbage
+    .Mark(&frame1_esp);          // This effectively sets stack_section.start().
   raw_context.eip = 0x40004006;
   raw_context.ebp = frame0_ebp.Value();
-  raw_context.ebx = 0x53d1379d; // saved %esi
-  raw_context.esi = 0x743833c9; // callee's %esi
-  raw_context.edi = 0x40005510; // return address
+  raw_context.ebx = 0x53d1379d;  // saved %esi
+  raw_context.esi = 0x743833c9;  // callee's %esi
+  raw_context.edi = 0x40005510;  // return address
   CheckWalk();
 }
 

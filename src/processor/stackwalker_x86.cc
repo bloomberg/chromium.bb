@@ -50,6 +50,12 @@
 
 namespace google_breakpad {
 
+// Max reasonable size for a single x86 frame is 128 KB.  This value is used in
+// a heuristic for recovering of the EBP chain after a scan for return address.
+// This value is based on a stack frame size histogram built for a set of
+// popular third party libraries which suggests that 99.5% of all frames are
+// smaller than 128 KB.
+static const uint32_t kMaxReasonableGapBetweenFrames = 128 * 1024;
 
 const StackwalkerX86::CFIWalker::RegisterSet
 StackwalkerX86::cfi_register_map_[] = {
@@ -106,10 +112,9 @@ StackFrameX86::~StackFrameX86() {
   cfi_frame_info = NULL;
 }
 
-uint64_t StackFrameX86::ReturnAddress() const
-{
+uint64_t StackFrameX86::ReturnAddress() const {
   assert(context_validity & StackFrameX86::CONTEXT_VALID_EIP);
-  return context.eip;   
+  return context.eip;
 }
 
 StackFrame* StackwalkerX86::GetContextFrame() {
@@ -340,7 +345,8 @@ StackFrameX86* StackwalkerX86::GetCallerByWindowsFrameInfo(
     // frame pointer.
     uint32_t location_start = last_frame->context.esp;
     uint32_t location, eip;
-    if (!ScanForReturnAddress(location_start, &location, &eip)) {
+    if (!ScanForReturnAddress(location_start, &location, &eip,
+                              frames.size() == 1 /* is_context_frame */)) {
       // if we can't find an instruction pointer even with stack scanning,
       // give up.
       return NULL;
@@ -382,7 +388,8 @@ StackFrameX86* StackwalkerX86::GetCallerByWindowsFrameInfo(
       // looking one 32-bit word above that location.
       uint32_t location_start = dictionary[".raSearchStart"] + 4;
       uint32_t location;
-      if (ScanForReturnAddress(location_start, &location, &eip)) {
+      if (ScanForReturnAddress(location_start, &location, &eip,
+                               frames.size() == 1 /* is_context_frame */)) {
         // This is a better return address that what program string
         // evaluation found.  Use it, and set %esp to the location above the
         // one where the return address was found.
@@ -531,17 +538,29 @@ StackFrameX86* StackwalkerX86::GetCallerByEBPAtBase(
     // return address. This can happen if last_frame is executing code
     // for a module for which we don't have symbols, and that module
     // is compiled without a frame pointer.
-    if (!ScanForReturnAddress(last_esp, &caller_esp, &caller_eip)) {
+    if (!ScanForReturnAddress(last_esp, &caller_esp, &caller_eip,
+                              frames.size() == 1 /* is_context_frame */)) {
       // if we can't find an instruction pointer even with stack scanning,
       // give up.
       return NULL;
     }
 
-    // ScanForReturnAddress found a reasonable return address. Advance
-    // %esp to the location above the one where the return address was
-    // found. Assume that %ebp is unchanged.
+    // ScanForReturnAddress found a reasonable return address. Advance %esp to
+    // the location immediately above the one where the return address was
+    // found.
     caller_esp += 4;
-    caller_ebp = last_ebp;
+    // Try to restore the %ebp chain.  The caller %ebp should be stored at a
+    // location immediately below the one where the return address was found.
+    // A valid caller %ebp must be greater than the address where it is stored
+    // and the gap between the two adjacent frames should be reasonable.
+    uint32_t restored_ebp_chain = caller_esp - 8;
+    if (!memory_->GetMemoryAtAddress(restored_ebp_chain, &caller_ebp) ||
+        caller_ebp <= restored_ebp_chain ||
+        caller_ebp - restored_ebp_chain > kMaxReasonableGapBetweenFrames) {
+      // The restored %ebp chain doesn't appear to be valid.
+      // Assume that %ebp is unchanged.
+      caller_ebp = last_ebp;
+    }
 
     trust = StackFrame::FRAME_TRUST_SCAN;
   }

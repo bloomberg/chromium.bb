@@ -126,9 +126,16 @@ class Stackwalker {
   template<typename InstructionType>
   bool ScanForReturnAddress(InstructionType location_start,
                             InstructionType* location_found,
-                            InstructionType* ip_found) {
+                            InstructionType* ip_found,
+                            bool is_context_frame) {
+    // When searching for the caller of the context frame,
+    // allow the scanner to look farther down the stack.
+    const int search_words = is_context_frame ?
+      kRASearchWords * 4 :
+      kRASearchWords;
+
     return ScanForReturnAddress(location_start, location_found, ip_found,
-                                kRASearchWords);
+                                search_words);
   }
 
   // Scan the stack starting at location_start, looking for an address
