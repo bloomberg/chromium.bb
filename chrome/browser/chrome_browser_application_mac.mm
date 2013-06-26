@@ -406,7 +406,7 @@ void SwizzleInit() {
   }
 
   // Minimize the window by keeping this close to the super call.
-  scoped_ptr<base::mac::ScopedNSExceptionEnabler> enabler(NULL);
+  scoped_ptr<base::mac::ScopedNSExceptionEnabler> enabler;
   if (enableNSExceptions)
     enabler.reset(new base::mac::ScopedNSExceptionEnabler());
   return [super sendAction:anAction to:aTarget from:sender];

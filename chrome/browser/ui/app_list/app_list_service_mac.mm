@@ -248,7 +248,7 @@ void AppListServiceMac::CreateAppList(Profile* requested_profile) {
   // The Objective C objects might be released at some unknown point in the
   // future, so explicitly clear references to C++ objects.
   [[window_controller_ appListViewController]
-      setDelegate:scoped_ptr<app_list::AppListViewDelegate>(NULL)];
+      setDelegate:scoped_ptr<app_list::AppListViewDelegate>()];
 
   SetProfile(requested_profile);
   scoped_ptr<app_list::AppListViewDelegate> delegate(

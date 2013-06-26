@@ -94,7 +94,6 @@ LocationBarViewMac::LocationBarViewMac(
       selected_keyword_decoration_(new SelectedKeywordDecoration()),
       ev_bubble_decoration_(
           new EVBubbleDecoration(location_icon_decoration_.get())),
-      plus_decoration_(NULL),
       star_decoration_(new StarDecoration(command_updater)),
       zoom_decoration_(new ZoomDecoration(this)),
       keyword_hint_decoration_(new KeywordHintDecoration()),
