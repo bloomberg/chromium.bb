@@ -48,16 +48,6 @@
 #
 # START OVERRIDES HERE
 
-# With the Skia DEPS roll to r9631 (https://codereview.chromium.org/17078006/)
-# some layout test images changed. This is most likely due to r9605 
-# (https://code.google.com/p/skia/source/detail?r=9605)
-crbug.com/250525 css3/filters/custom/custom-filter-nonseparable-blend-mode-color.html [ ImageOnlyFailure Crash ]
-crbug.com/250525 css3/filters/custom/custom-filter-nonseparable-blend-mode-hue.html [ ImageOnlyFailure Crash ]
-crbug.com/250525 css3/filters/custom/custom-filter-nonseparable-blend-mode-luminosity.html [ ImageOnlyFailure Crash ]
-crbug.com/250525 css3/filters/custom/custom-filter-nonseparable-blend-mode-saturation.html [ ImageOnlyFailure Crash ]
-crbug.com/250525 svg/custom/grayscale-gradient-mask-2.svg [ ImageOnlyFailure ]
-crbug.com/250525 svg/W3C-SVG-1.1/filters-turb-02-f.svg [ ImageOnlyFailure ]
-
 # to be rebaselined
 Bug(senorblanco) css3/filters/composited-reflected.html [ ImageOnlyFailure ]
 Bug(senorblanco) css3/filters/effect-brightness-clamping-hw.html [ ImageOnlyFailure ]
