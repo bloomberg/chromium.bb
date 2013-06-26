@@ -251,13 +251,12 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
     return;
   }
 
-#if 0
-  // Temporary disable until all regressions introduced are fixed.
-  // See crbug.com/252442, crbug.com/251261, crbug.com/251253
   CommandLine user_flags(CommandLine::NO_PROGRAM);
   about_flags::PrefServiceFlagsStorage flags_storage_(profile->GetPrefs());
   about_flags::ConvertFlagsToSwitches(&flags_storage_, &user_flags);
-  if (!about_flags::AreSwitchesIdenticalToCurrentCommandLine(
+  // Only restart if needed and if not going into managed mode.
+  if (!UserManager::Get()->IsLoggedInAsLocallyManagedUser() &&
+      !about_flags::AreSwitchesIdenticalToCurrentCommandLine(
           user_flags, *CommandLine::ForCurrentProcess())) {
     CommandLine::StringVector flags;
     // argv[0] is the program name |CommandLine::NO_PROGRAM|.
@@ -268,7 +267,6 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
     chrome::ExitCleanly();
     return;
   }
-#endif
 
   if (login_host) {
     login_host->SetStatusAreaVisible(true);
