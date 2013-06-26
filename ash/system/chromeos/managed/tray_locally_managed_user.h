@@ -41,6 +41,8 @@ class TrayLocallyManagedUser : public SystemTrayItem,
  private:
   LabelTrayView* tray_view_;
   views::View* notification_view_;
+  // Previous login status to avoid showing notification upon unlock.
+  user::LoginStatus status_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayLocallyManagedUser);
 };

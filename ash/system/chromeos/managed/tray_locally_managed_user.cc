@@ -49,7 +49,8 @@ class ManagedUserNotificationView : public TrayNotificationView {
 TrayLocallyManagedUser::TrayLocallyManagedUser(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       tray_view_(NULL),
-      notification_view_(NULL) {
+      notification_view_(NULL),
+      status_(ash::user::LOGGED_IN_NONE) {
 }
 
 TrayLocallyManagedUser::~TrayLocallyManagedUser() {
@@ -98,8 +99,13 @@ void TrayLocallyManagedUser::OnViewClicked(views::View* sender) {
 
 void TrayLocallyManagedUser::UpdateAfterLoginStatusChange(
     user::LoginStatus status) {
-  if (status == ash::user::LOGGED_IN_LOCALLY_MANAGED)
+  if (status == status_)
+    return;
+  if (status == ash::user::LOGGED_IN_LOCALLY_MANAGED &&
+      status_ != ash::user::LOGGED_IN_LOCKED) {
     ShowNotificationView();
+  }
+  status_ = status;
 }
 
 } // namespace internal
