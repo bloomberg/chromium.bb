@@ -220,6 +220,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   bool audio_finished_;
   bool video_finished_;
   bool playing_;
+  bool is_audio_encrypted_;
+  bool is_video_encrypted_;
 
   // Timestamps for providing simple A/V sync. When start decoding an audio
   // chunk, we record its presentation timestamp and the current system time.

@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
 
 namespace {
@@ -283,6 +284,8 @@ MediaSourcePlayer::MediaSourcePlayer(
       audio_finished_(true),
       video_finished_(true),
       playing_(false),
+      is_audio_encrypted_(false),
+      is_video_encrypted_(false),
       reconfig_audio_decoder_(false),
       reconfig_video_decoder_(false),
       audio_access_unit_index_(0),
@@ -429,6 +432,9 @@ void MediaSourcePlayer::DemuxerReady(
   audio_codec_ = params.audio_codec;
   video_codec_ = params.video_codec;
   audio_extra_data_ = params.audio_extra_data;
+  is_audio_encrypted_ = params.is_audio_encrypted;
+  is_video_encrypted_ = params.is_video_encrypted;
+
   OnMediaMetadataChanged(duration_, width_, height_, true);
   if (pending_event_ & CONFIG_CHANGE_EVENT_PENDING) {
     if (reconfig_audio_decoder_)
@@ -476,10 +482,22 @@ void MediaSourcePlayer::DurationChanged(const base::TimeDelta& duration) {
 }
 
 void MediaSourcePlayer::SetDrmBridge(MediaDrmBridge* drm_bridge) {
+  if (!is_audio_encrypted_ && !is_video_encrypted_)
+    return;
+
+  // Currently we don't support DRM change during the middle of playback, even
+  // if the player is paused.
+  // TODO(qinmin): support DRM change after playback has started.
+  // http://crbug.com/253792.
+  DCHECK(!audio_decoder_job_ || !audio_decoder_job_->is_decoding());
+  DCHECK(!video_decoder_job_ || !video_decoder_job_->is_decoding());
+  DCHECK_EQ(0u, audio_access_unit_index_);
+  DCHECK_EQ(0u, video_access_unit_index_);
+
   drm_bridge_ = drm_bridge;
-  // TODO(qinmin): similar to SetVideoSurface() call, we need to wait for the
-  // current decoder jobs to finish, and then use the ProcessPendingEvents()
-  // to pass the drm_bridge to the decoder jobs.
+
+  // TODO(qinmin): Check if Start() is already called. If so, create the
+  // decoder jobs and kick off the playback.
 }
 
 void MediaSourcePlayer::OnSeekRequestAck(unsigned seek_request_id) {
@@ -676,13 +694,32 @@ void MediaSourcePlayer::ConfigureAudioDecoderJob() {
   }
 
   // Create audio decoder job only if config changes.
-  if (HasAudio() && (reconfig_audio_decoder_ || !audio_decoder_job_)) {
-    audio_decoder_job_.reset(AudioDecoderJob::Create(
-        audio_codec_, sampling_rate_, num_channels_, &audio_extra_data_[0],
-        audio_extra_data_.size(), NULL));
-    if (audio_decoder_job_)
-      reconfig_audio_decoder_ =  false;
+  if (audio_decoder_job_ && !reconfig_audio_decoder_)
+    return;
+
+  base::android::ScopedJavaLocalRef<jobject> media_codec;
+  if (is_audio_encrypted_) {
+    if (drm_bridge_) {
+      media_codec = drm_bridge_->GetMediaCrypto();
+      // TODO(qinmin): currently we assume MediaCrypto is available whenever
+      // MediaDrmBridge is constructed. This will change if we want to support
+      // more general uses cases of EME.
+      DCHECK(!media_codec.is_null());
+    } else {
+      // Don't create the decoder job if |drm_bridge_| is not set,
+      // so StartInternal() will not proceed.
+      LOG(INFO) << "MediaDrmBridge is not available when creating decoder "
+                << "for encrypted audio stream.";
+      return;
+    }
   }
+
+  audio_decoder_job_.reset(AudioDecoderJob::Create(
+      audio_codec_, sampling_rate_, num_channels_, &audio_extra_data_[0],
+      audio_extra_data_.size(), media_codec.obj()));
+
+  if (audio_decoder_job_)
+    reconfig_audio_decoder_ =  false;
 }
 
 void MediaSourcePlayer::ConfigureVideoDecoderJob() {
@@ -691,16 +728,31 @@ void MediaSourcePlayer::ConfigureVideoDecoderJob() {
     return;
   }
 
-  if (reconfig_video_decoder_ || !video_decoder_job_) {
-    // Release the old VideoDecoderJob first so the surface can get released.
-    video_decoder_job_.reset();
-    // Create the new VideoDecoderJob.
-    video_decoder_job_.reset(VideoDecoderJob::Create(
-        video_codec_, gfx::Size(width_, height_), surface_.j_surface().obj(),
-        NULL));
-    if (video_decoder_job_)
-      reconfig_video_decoder_ = false;
+  // Create video decoder job only if config changes.
+  if (video_decoder_job_ && !reconfig_video_decoder_)
+    return;
+
+  base::android::ScopedJavaLocalRef<jobject> media_codec;
+  if (is_video_encrypted_) {
+    if (drm_bridge_) {
+      media_codec = drm_bridge_->GetMediaCrypto();
+      DCHECK(!media_codec.is_null());
+    } else {
+      LOG(INFO) << "MediaDrmBridge is not available when creating decoder "
+                << "for encrypted video stream.";
+      return;
+    }
   }
+
+  // Release the old VideoDecoderJob first so the surface can get released.
+  // Android does not allow 2 MediaCodec instances use the same surface.
+  video_decoder_job_.reset();
+  // Create the new VideoDecoderJob.
+  video_decoder_job_.reset(VideoDecoderJob::Create(
+      video_codec_, gfx::Size(width_, height_), surface_.j_surface().obj(),
+      media_codec.obj()));
+  if (video_decoder_job_)
+    reconfig_video_decoder_ = false;
 
   // Inform the fullscreen view the player is ready.
   // TODO(qinmin): refactor MediaPlayerBridge so that we have a better way
