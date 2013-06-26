@@ -56,6 +56,10 @@ void InputEventTracker::ReleaseAll() {
 }
 
 void InputEventTracker::InjectKeyEvent(const KeyEvent& event) {
+  // We don't need to track the keyboard lock states of key down events.
+  // Pressed keys will be released with |lock_states| set to 0.
+  // The lock states of auto generated key up events don't matter as long as
+  // we release all the pressed keys at blurring/disconnection time.
   if (event.has_pressed()) {
     if (event.has_usb_keycode()) {
       if (event.pressed()) {

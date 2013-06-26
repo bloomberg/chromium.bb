@@ -12,6 +12,13 @@ package remoting.protocol;
 
 // Defines a keyboard event.
 message KeyEvent {
+
+  // The keyboard (Caps/Num) lock states.
+  enum LockStates {
+    LOCK_STATES_CAPSLOCK = 1;
+    LOCK_STATES_NUMLOCK = 2;
+  }
+
   // The Windows Virtual Key code.
   //optional int32 keycode = 1;
   optional bool pressed = 2;
@@ -20,6 +27,9 @@ message KeyEvent {
   // The upper 16-bits are the USB Page (0x07 for key events).
   // The lower 16-bits are the USB Usage ID (which identifies the actual key).
   optional uint32 usb_keycode = 3;
+
+  // The keyboard lock states.
+  optional uint32 lock_states = 4 [default = 0];
 }
 
 // Defines a mouse event message on the event channel. 

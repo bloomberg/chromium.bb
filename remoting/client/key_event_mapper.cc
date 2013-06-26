@@ -42,7 +42,7 @@ void KeyEventMapper::InjectKeyEvent(const protocol::KeyEvent& event) {
     // Deliver trapped keys to the callback, not the next stub.
     if (!trap_callback.is_null() && event.has_pressed() &&
         (trapped_keys.find(event.usb_keycode()) != trapped_keys.end())) {
-      trap_callback.Run(event.usb_keycode(), event.pressed());
+      trap_callback.Run(event);
       return;
     }
 

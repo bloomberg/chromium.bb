@@ -49,13 +49,12 @@ void MacKeyEventProcessor::InjectKeyEvent(const protocol::KeyEvent& event) {
   if (event.usb_keycode() == kUsbCapsLock) {
     // Mac OS X generates keydown/keyup on lock-state transitions, rather than
     // when the key is pressed & released, so fake keydown/keyup on each event.
-    protocol::KeyEvent event;
-    event.set_usb_keycode(kUsbCapsLock);
+    protocol::KeyEvent newEvent(event);
 
-    event.set_pressed(true);
-    InputFilter::InjectKeyEvent(event);
-    event.set_pressed(false);
-    InputFilter::InjectKeyEvent(event);
+    newEvent.set_pressed(true);
+    InputFilter::InjectKeyEvent(newEvent);
+    newEvent.set_pressed(false);
+    InputFilter::InjectKeyEvent(newEvent);
 
     return;
   } else if (!is_cmd_key && !is_special_key) {
@@ -78,23 +77,17 @@ void MacKeyEventProcessor::InjectKeyEvent(const protocol::KeyEvent& event) {
 }
 
 void MacKeyEventProcessor::GenerateKeyupEvents() {
-  // A list of key codes to be erased from |key_pressed_map_|.
-  typedef std::vector<int> KeycodeList;
-  KeycodeList keycodes;
-
   for (KeyPressedMap::iterator i = key_pressed_map_.begin();
        i != key_pressed_map_.end(); ++i) {
-    const int keycode = i->first;
-
-    keycodes.push_back(keycode);
+    // The generated key up event will have the same key code and lock states
+    // as the original key down event.
     protocol::KeyEvent event = i->second;
     event.set_pressed(false);
     InputFilter::InjectKeyEvent(event);
   }
 
-  for (KeycodeList::iterator i = keycodes.begin(); i != keycodes.end(); ++i) {
-    key_pressed_map_.erase(*i);
-  }
+  // Clearing the map now that we have released all the pressed keys.
+  key_pressed_map_.clear();
 }
 
 }  // namespace remoting

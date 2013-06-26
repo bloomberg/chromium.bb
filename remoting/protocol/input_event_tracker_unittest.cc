@@ -16,12 +16,27 @@ using ::testing::InSequence;
 namespace remoting {
 namespace protocol {
 
+namespace {
+
 static const MouseEvent::MouseButton BUTTON_LEFT = MouseEvent::BUTTON_LEFT;
 static const MouseEvent::MouseButton BUTTON_RIGHT = MouseEvent::BUTTON_RIGHT;
 
+// A hardcoded value used to verify |lock_states| is preserved.
+static const uint32 kTestLockStates = protocol::KeyEvent::LOCK_STATES_CAPSLOCK;
+
+// Verify the usb key code and the "pressed" state.
+// Also verify that the event doesn't have |lock_states| set.
+MATCHER_P2(EqualsUsbEventWithoutLockStates, usb_keycode, pressed, "") {
+  return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
+         arg.pressed() == pressed &&
+         !arg.has_lock_states();
+}
+
+// Verify the usb key code, the "pressed" state, and the lock states.
 MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
   return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
-         arg.pressed() == pressed;
+          arg.pressed() == pressed &&
+          arg.lock_states() == kTestLockStates;
 }
 
 MATCHER_P4(EqualsMouseEvent, x, y, button, down, "") {
@@ -29,10 +44,13 @@ MATCHER_P4(EqualsMouseEvent, x, y, button, down, "") {
          arg.button_down() == down;
 }
 
-static KeyEvent NewUsbEvent(uint32 usb_keycode, bool pressed) {
+static KeyEvent NewUsbEvent(uint32 usb_keycode,
+                            bool pressed) {
   KeyEvent event;
   event.set_usb_keycode(usb_keycode);
   event.set_pressed(pressed);
+  // Create all key events with the hardcoded |lock_state| in this test.
+  event.set_lock_states(kTestLockStates);
   return event;
 }
 
@@ -50,6 +68,8 @@ static MouseEvent NewMouseEvent(int x, int y,
   event.set_button(button);
   event.set_button_down(down);
   return event;
+}
+
 }
 
 // Verify that keys that were pressed and released aren't re-released.
@@ -103,7 +123,9 @@ TEST(InputEventTrackerTest, ReleaseAllKeys) {
         InjectMouseEvent(EqualsMouseEvent(1, 1, BUTTON_LEFT, false)));
   }
 
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, false)))
+  // The key should be released but |lock_states| should not be set.
+  EXPECT_CALL(mock_stub,
+              InjectKeyEvent(EqualsUsbEventWithoutLockStates(3, false)))
       .After(injects);
   EXPECT_CALL(mock_stub,
               InjectMouseEvent(EqualsMouseEvent(1, 1, BUTTON_RIGHT, false)))
@@ -143,13 +165,18 @@ TEST(InputEventTrackerTest, TrackUsbKeyEvents) {
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, false)));
   }
 
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, false)))
+  // The key should be auto released with no |lock_states|.
+  EXPECT_CALL(mock_stub,
+              InjectKeyEvent(EqualsUsbEventWithoutLockStates(3, false)))
       .After(injects);
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(6, false)))
+  EXPECT_CALL(mock_stub,
+              InjectKeyEvent(EqualsUsbEventWithoutLockStates(6, false)))
       .After(injects);
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(7, false)))
+  EXPECT_CALL(mock_stub,
+              InjectKeyEvent(EqualsUsbEventWithoutLockStates(7, false)))
       .After(injects);
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(5, false)))
+  EXPECT_CALL(mock_stub,
+              InjectKeyEvent(EqualsUsbEventWithoutLockStates(5, false)))
       .After(injects);
 
   input_tracker.InjectKeyEvent(NewUsbEvent(3, true));
@@ -187,7 +214,8 @@ TEST(InputEventTrackerTest, InvalidEventsNotTracked) {
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, false)));
   }
 
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, false)))
+  EXPECT_CALL(mock_stub,
+              InjectKeyEvent(EqualsUsbEventWithoutLockStates(3, false)))
       .After(injects);
 
   input_tracker.InjectKeyEvent(NewUsbEvent(3, true));

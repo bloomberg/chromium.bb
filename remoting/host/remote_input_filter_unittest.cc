@@ -19,6 +19,8 @@ namespace remoting {
 using protocol::MockInputStub;
 using protocol::InputEventTracker;
 
+namespace {
+
 MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
   return arg.usb_keycode() == (unsigned int)usb_keycode &&
          arg.pressed() == pressed;
@@ -36,6 +38,8 @@ static protocol::KeyEvent UsbKeyEvent(int usb_keycode, bool pressed) {
   event.set_usb_keycode(usb_keycode);
   event.set_pressed(pressed);
   return event;
+}
+
 }
 
 // Verify that events get through if there is no local activity.

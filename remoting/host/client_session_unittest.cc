@@ -277,6 +277,8 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
   message_loop_.Run();
 }
 
+namespace {
+
 MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
   return arg.usb_keycode() == (unsigned int)usb_keycode &&
          arg.pressed() == pressed;
@@ -288,6 +290,8 @@ MATCHER_P2(EqualsMouseEvent, x, y, "") {
 
 MATCHER_P2(EqualsMouseButtonEvent, button, down, "") {
   return arg.button() == button && arg.button_down() == down;
+}
+
 }
 
 TEST_F(ClientSessionTest, InputStubFilter) {

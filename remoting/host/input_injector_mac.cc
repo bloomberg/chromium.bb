@@ -166,14 +166,18 @@ void InputInjectorMac::Core::InjectKeyEvent(const KeyEvent& event) {
   if (keycode == InvalidNativeKeycode())
     return;
 
-  // We use the deprecated event injection API because the new one doesn't
-  // work with switched-out sessions (curtain mode).
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  CGError error = CGPostKeyboardEvent(0, keycode, event.pressed());
-#pragma clang diagnostic pop
-  if (error != kCGErrorSuccess)
-    LOG(WARNING) << "CGPostKeyboardEvent error " << error;
+  base::ScopedCFTypeRef<CGEventRef> eventRef(
+      CGEventCreateKeyboardEvent(NULL, keycode, event.pressed()));
+
+  if (eventRef) {
+    // We only need to manually set CapsLock: Mac ignores NumLock.
+    // Modifier keys work correctly already via press/release event injection.
+    if (event.lock_states() & protocol::KeyEvent::LOCK_STATES_CAPSLOCK)
+      CGEventSetFlags(eventRef, kCGEventFlagMaskAlphaShift);
+
+    // Post the event to the current session.
+    CGEventPost(kCGSessionEventTap, eventRef);
+  }
 }
 
 void InputInjectorMac::Core::InjectMouseEvent(const MouseEvent& event) {
