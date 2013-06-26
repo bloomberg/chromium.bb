@@ -326,8 +326,12 @@ Gallery.prototype.initDom_ = function() {
     cr.dispatchSimpleEvent(this, 'image-saved');
   }.bind(this));
 
+  this.printButton_ = this.createToolbarButton_('print', 'print');
+  this.printButton_.setAttribute('disabled', '');
+  this.printButton_.addEventListener('click', this.print_.bind(this));
+
   var deleteButton = this.createToolbarButton_('delete', 'delete');
-  deleteButton.addEventListener('click', this.onDelete_.bind(this));
+  deleteButton.addEventListener('click', this.delete_.bind(this));
 
   this.shareButton_ = this.createToolbarButton_('share', 'share');
   this.shareButton_.setAttribute('disabled', '');
@@ -508,6 +512,13 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
     this.modeButton_.title =
         this.displayStringFunction_(oppositeMode.getName());
   }
+
+  // Printing is available only in the slide view.
+  if (mode == this.slideMode_)
+    this.printButton_.removeAttribute('disabled');
+  else
+    this.printButton_.setAttribute('disabled', '');
+
   this.container_.setAttribute('mode', this.currentMode_.getName());
   this.updateSelectionAndState_();
 };
@@ -564,10 +575,10 @@ Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {
 };
 
 /**
- * Delete event handler.
+ * Deletes the selected items.
  * @private
  */
-Gallery.prototype.onDelete_ = function() {
+Gallery.prototype.delete_ = function() {
   this.onUserAction_();
 
   // Clone the sorted selected indexes array.
@@ -620,6 +631,15 @@ Gallery.prototype.onDelete_ = function() {
         // Restore the listener after a timeout so that ESC is processed.
         setTimeout(restoreListener, 0);
       });
+};
+
+/**
+ * Prints the current item.
+ * @private
+ */
+Gallery.prototype.print_ = function() {
+  this.onUserAction_();
+  window.print();
 };
 
 /**
@@ -709,11 +729,16 @@ Gallery.prototype.onKeyDown_ = function(event) {
 
     case 'U+0056':  // 'v'
       this.slideMode_.startSlideshow(SlideMode.SLIDESHOW_INTERVAL_FIRST, event);
-      return;
+      break;
+
+    case 'Ctrl-U+0050':  // Ctrl+'p' prints the current image.
+      if (this.currentMode_ == this.slideMode_)
+        this.print_();
+      break;
 
     case 'U+007F':  // Delete
     case 'Shift-U+0033':  // Shift+'3' (Delete key might be missing).
-      this.onDelete_();
+      this.delete_();
       break;
   }
 };

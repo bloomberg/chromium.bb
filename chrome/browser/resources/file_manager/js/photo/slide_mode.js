@@ -833,7 +833,7 @@ SlideMode.prototype.onKeyDown = function(event) {
       }
       break;
 
-    case 'U+0045':  // 'e' toggles the editor
+    case 'U+0045':  // 'e' toggles the editor.
       this.toggleEditor(event);
       break;
 

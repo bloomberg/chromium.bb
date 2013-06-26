@@ -787,14 +787,30 @@ body {
     url('../images/gallery/2x/icon_edit_selected.png') 2x);
 }
 
+.gallery > .toolbar > button.print {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_print.png') 1x,
+    url('../images/gallery/2x/icon_print.png') 2x);
+}
+
+.gallery > .toolbar > button.print:active,
+.gallery > .toolbar > button.print[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_print_selected.png') 1x,
+    url('../images/gallery/2x/icon_print_selected.png') 2x);
+}
+
 .gallery > .toolbar > button.share {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_share.png') 1x,
     url('../images/gallery/2x/icon_share.png') 2x);
 }
 
-.gallery > .toolbar > button.share:hover {
-  background-color: rgba(31, 31, 31, 1);
+.gallery > .toolbar > button.share:active,
+.gallery > .toolbar > button.share[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_share_selected.png') 1x,
+    url('../images/gallery/2x/icon_share_selected.png') 2x);
 }
 
 .gallery[error] > .toolbar button.edit,
