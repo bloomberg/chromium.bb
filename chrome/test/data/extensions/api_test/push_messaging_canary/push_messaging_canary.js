@@ -1,3 +1,4 @@
+
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -90,12 +91,13 @@ function askServerToSendPushMessageWithToken(accessToken, channelId) {
   pushRequest.setRequestHeader('Content-Type', 'application/json');
   pushRequest.onreadystatechange = function () {
     if (pushRequest.readyState === 4) {
-      if (pushRequest.status === 200) {
-        console.log("second XHR returned, " + pushRequest.response);
+      if (pushRequest.status >= 200 && pushRequest.status <= 299) {
+        console.log("second XHR returned, " + pushRequest.response +
+                    " status is " + pushRequest.status);
       } else {
-        console.log('Error sending second XHR, status is ' +
+        console.log('Error sending second XHR, status was ' +
                     pushRequest.status + ' ' +
-                    pushRequest.statusText + ' body is ' +
+                    pushRequest.statusText + ', body is ' +
                     pushRequest.response);
       }
     }
