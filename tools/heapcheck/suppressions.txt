@@ -879,7 +879,7 @@
    fun:gfx::OSMESAApiBase::OSMesaMakeCurrentFn
    fun:gfx::GLContextOSMesa::MakeCurrent
    fun:gpu::gles2::GLES2DecoderImpl::MakeCurrent
-   fun:webkit::gpu::GLInProcessContext::PumpCommands
+   fun:PumpCommands
 }
 {
    bug_251034_b
@@ -887,8 +887,8 @@
    ...
    fun:gfx::OSMESAApiBase::OSMesaMakeCurrentFn
    fun:gfx::GLContextOSMesa::MakeCurrent
-   fun:webkit::gpu::GLInProcessContext::Initialize
-   fun:webkit::gpu::GLInProcessContext::CreateContext
+   fun:Initialize
+   fun:gpu::GLInProcessContext::CreateContext
    fun:webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL
    fun:webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::makeContextCurrent
    fun:ui::DefaultContextFactory::CreateContextCommon
@@ -911,7 +911,7 @@
    fun:ScopedMakeCurrent
    fun:gfx::GLSurfaceOSMesa::Resize
    fun:gfx::NativeViewGLSurfaceOSMesa::Resize
-   fun:webkit::gpu::GLInProcessContext::OnResizeView
+   fun:OnResizeView
 }
 {
    bug_251034_d
@@ -925,7 +925,7 @@
    fun:~scoped_ptr
    fun:gfx::GLSurfaceOSMesa::Resize
    fun:gfx::NativeViewGLSurfaceOSMesa::Resize
-   fun:webkit::gpu::GLInProcessContext::OnResizeView
+   fun:OnResizeView
 }
 {
    bug_251827_a
