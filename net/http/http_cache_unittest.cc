@@ -5935,17 +5935,22 @@ TEST(HttpCache, SetPriority) {
   EXPECT_EQ(net::ERR_IO_PENDING,
             trans->Start(&info, callback.callback(), net::BoundNetLog()));
 
-  ASSERT_TRUE(cache.network_layer()->last_transaction());
-  EXPECT_EQ(net::LOW,
-            cache.network_layer()->last_create_transaction_priority());
-  EXPECT_EQ(net::LOW,
-            cache.network_layer()->last_transaction()->priority());
+  EXPECT_TRUE(cache.network_layer()->last_transaction());
+  if (cache.network_layer()->last_transaction()) {
+    EXPECT_EQ(net::LOW,
+              cache.network_layer()->last_create_transaction_priority());
+    EXPECT_EQ(net::LOW,
+              cache.network_layer()->last_transaction()->priority());
+  }
 
   trans->SetPriority(net::HIGHEST);
-  EXPECT_EQ(net::LOW,
-            cache.network_layer()->last_create_transaction_priority());
-  EXPECT_EQ(net::HIGHEST,
-            cache.network_layer()->last_transaction()->priority());
+
+  if (cache.network_layer()->last_transaction()) {
+    EXPECT_EQ(net::LOW,
+              cache.network_layer()->last_create_transaction_priority());
+    EXPECT_EQ(net::HIGHEST,
+              cache.network_layer()->last_transaction()->priority());
+  }
 
   EXPECT_EQ(net::OK, callback.WaitForResult());
 }

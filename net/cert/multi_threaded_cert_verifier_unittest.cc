@@ -95,7 +95,7 @@ TEST_F(MultiThreadedCertVerifierTest, CacheHit) {
                            &request_handle,
                            BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
-  ASSERT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle);
   error = callback.WaitForResult();
   ASSERT_TRUE(IsCertificateError(error));
   ASSERT_EQ(1u, verifier_.requests());
@@ -165,7 +165,7 @@ TEST_F(MultiThreadedCertVerifierTest, DifferentCACerts) {
                            &request_handle,
                            BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
-  ASSERT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle);
   error = callback.WaitForResult();
   ASSERT_TRUE(IsCertificateError(error));
   ASSERT_EQ(1u, verifier_.requests());
@@ -182,7 +182,7 @@ TEST_F(MultiThreadedCertVerifierTest, DifferentCACerts) {
                            &request_handle,
                            BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
-  ASSERT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle);
   error = callback.WaitForResult();
   ASSERT_TRUE(IsCertificateError(error));
   ASSERT_EQ(2u, verifier_.requests());
@@ -215,7 +215,7 @@ TEST_F(MultiThreadedCertVerifierTest, InflightJoin) {
                            &request_handle,
                            BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
-  ASSERT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle);
   error = verifier_.Verify(test_cert.get(),
                            "www.example.com",
                            0,
@@ -224,10 +224,10 @@ TEST_F(MultiThreadedCertVerifierTest, InflightJoin) {
                            callback2.callback(),
                            &request_handle2,
                            BoundNetLog());
-  ASSERT_EQ(ERR_IO_PENDING, error);
-  ASSERT_TRUE(request_handle2 != NULL);
+  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_TRUE(request_handle2 != NULL);
   error = callback.WaitForResult();
-  ASSERT_TRUE(IsCertificateError(error));
+  EXPECT_TRUE(IsCertificateError(error));
   error = callback2.WaitForResult();
   ASSERT_TRUE(IsCertificateError(error));
   ASSERT_EQ(2u, verifier_.requests());
@@ -272,7 +272,7 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequest) {
                              &request_handle,
                              BoundNetLog());
     ASSERT_EQ(ERR_IO_PENDING, error);
-    ASSERT_TRUE(request_handle != NULL);
+    EXPECT_TRUE(request_handle);
     error = callback.WaitForResult();
     verifier_.ClearCache();
   }
@@ -299,7 +299,7 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequestThenQuit) {
                            &request_handle,
                            BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
-  ASSERT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle);
   verifier_.CancelRequest(request_handle);
   // Destroy |verifier| by going out of scope.
 }
@@ -432,7 +432,7 @@ TEST_F(MultiThreadedCertVerifierTest, CertTrustAnchorProvider) {
                            BoundNetLog());
   Mock::VerifyAndClearExpectations(&trust_provider);
   ASSERT_EQ(ERR_IO_PENDING, error);
-  ASSERT_TRUE(request_handle);
+  EXPECT_TRUE(request_handle);
   error = callback.WaitForResult();
   EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, error);
   ASSERT_EQ(1u, verifier_.requests());
@@ -469,7 +469,7 @@ TEST_F(MultiThreadedCertVerifierTest, CertTrustAnchorProvider) {
                            BoundNetLog());
   Mock::VerifyAndClearExpectations(&trust_provider);
   ASSERT_EQ(ERR_IO_PENDING, error);
-  ASSERT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle);
   error = callback.WaitForResult();
   EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, error);
   ASSERT_EQ(3u, verifier_.requests());
