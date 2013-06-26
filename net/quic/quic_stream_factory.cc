@@ -265,14 +265,15 @@ int QuicStreamFactory::Create(const HostPortProxyPair& host_port_proxy_pair,
     return ERR_IO_PENDING;
   }
 
-  Job* job = new Job(this, host_resolver_, host_port_proxy_pair, net_log);
+  scoped_ptr<Job> job(
+      new Job(this, host_resolver_, host_port_proxy_pair, net_log));
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
-                               base::Unretained(this), job));
+                               base::Unretained(this), job.get()));
 
   if (rv == ERR_IO_PENDING) {
-    active_jobs_[host_port_proxy_pair] = job;
-    job_requests_map_[job].insert(request);
-    active_requests_[request] = job;
+    active_requests_[request] = job.get();
+    job_requests_map_[job.get()].insert(request);
+    active_jobs_[host_port_proxy_pair] = job.release();
   }
   if (rv == OK) {
     DCHECK(HasActiveSession(host_port_proxy_pair));
