@@ -72,14 +72,15 @@ function FullWindowVideoControls(
     }
   }.bind(this));
 
+  // TODO(mtomasz): Simplify. crbug.com/254318.
   videoContainer.addEventListener('click', function(e) {
-  if (event.ctrlKey) {
-    this.toggleLoopedModeWithFeedback(true);
-    if (!this.isPlaying())
+    if (e.ctrlKey) {
+      this.toggleLoopedModeWithFeedback(true);
+      if (!this.isPlaying())
+        this.togglePlayStateWithFeedback();
+    } else {
       this.togglePlayStateWithFeedback();
-  } else {
-    this.togglePlayStateWithFeedback();
-  }
+    }
   }.bind(this));
 
   this.inactivityWatcher_ = new MouseInactivityWatcher(playerContainer);
