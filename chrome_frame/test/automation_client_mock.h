@@ -169,7 +169,7 @@ class CFACMockTest : public testing::Test {
 
  protected:
   CFACMockTest()
-    : tracker_(NULL), timeout_(500),
+    : timeout_(500),
       returned_proxy_(static_cast<ChromeFrameAutomationProxy*>(&mock_proxy_)) {
     GetChromeFrameProfilePath(L"Adam.N.Epilinter", &profile_path_);
     id_ = reinterpret_cast<void*>(5);
