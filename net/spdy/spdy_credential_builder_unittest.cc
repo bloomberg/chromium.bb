@@ -8,12 +8,10 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "net/cert/asn1_util.h"
-#include "net/spdy/spdy_test_util_spdy3.h"
+#include "net/spdy/spdy_test_util_common.h"
 #include "net/ssl/default_server_bound_cert_store.h"
 #include "net/ssl/server_bound_cert_service.h"
 #include "testing/platform_test.h"
-
-using namespace net::test_spdy3;
 
 namespace net {
 
