@@ -58,8 +58,7 @@ cr.define('options', function() {
    * @type {string}
    * @const
    */
-  var TRANSLATE_BLOCKED_LANGUAGES_PREF =
-      'translate_blocked_languages';
+  var TRANSLATE_BLOCKED_LANGUAGES_PREF = 'translate_blocked_languages';
 
   /**
    * The preference key that is a string that describes the spell check
@@ -872,7 +871,6 @@ cr.define('options', function() {
       var languageOptionsList = $('language-options-list');
       var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
       this.translateBlockedLanguages_ = e.value.value;
-
       this.updateDontTranslateCheckbox_(selectedLanguageCode);
     },
 

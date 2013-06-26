@@ -112,6 +112,12 @@ void TranslatePrefs::UnblockLanguage(
   }
 }
 
+void TranslatePrefs::RemoveLanguageFromLegacyBlacklist(
+    const std::string& original_language) {
+  RemoveValueFromBlacklist(kPrefTranslateLanguageBlacklist,
+                           original_language);
+}
+
 bool TranslatePrefs::IsSiteBlacklisted(const std::string& site) const {
   return IsValueBlacklisted(kPrefTranslateSiteBlacklist, site);
 }

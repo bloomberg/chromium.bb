@@ -9,12 +9,14 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_error_details.h"
 #include "chrome/browser/translate/translate_event_details.h"
 #include "chrome/browser/translate/translate_prefs.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/translate/language_detection_details.h"
 #include "content/public/browser/web_contents.h"
@@ -89,11 +91,16 @@ void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
   if (!args->GetString(0, &pref_name))
     return;
 
-  if (pref_name == "language_blacklist") {
+  if (pref_name == "blocked_languages") {
     std::string language;
     if (!args->GetString(1, &language))
       return;
     translate_prefs.UnblockLanguage(language);
+  } else if (pref_name == "language_blacklist") {
+    std::string language;
+    if (!args->GetString(1, &language))
+      return;
+    translate_prefs.RemoveLanguageFromLegacyBlacklist(language);
   } else if (pref_name == "site_blacklist") {
     std::string site;
     if (!args->GetString(1, &site))
@@ -133,18 +140,25 @@ void TranslateInternalsHandler::SendPrefsToJs() {
 
   base::DictionaryValue dict;
 
-  static const char* keys[] = {
-    prefs::kEnableTranslate,
-    TranslatePrefs::kPrefTranslateLanguageBlacklist,
-    TranslatePrefs::kPrefTranslateSiteBlacklist,
-    TranslatePrefs::kPrefTranslateWhitelists,
-    TranslatePrefs::kPrefTranslateDeniedCount,
-    TranslatePrefs::kPrefTranslateAcceptedCount,
-  };
+  std::vector<std::string> keys;
+  keys.push_back(prefs::kEnableTranslate);
 
-  for (size_t i = 0; i < arraysize(keys); ++i) {
-    const char* key = keys[i];
-    const PrefService::Preference* pref = prefs->FindPreference(key);
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  bool enable_translate_settings =
+      command_line.HasSwitch(switches::kEnableTranslateSettings);
+  if (enable_translate_settings)
+    keys.push_back(TranslatePrefs::kPrefTranslateBlockedLanguages);
+
+  keys.push_back(TranslatePrefs::kPrefTranslateLanguageBlacklist);
+  keys.push_back(TranslatePrefs::kPrefTranslateSiteBlacklist);
+  keys.push_back(TranslatePrefs::kPrefTranslateWhitelists);
+  keys.push_back(TranslatePrefs::kPrefTranslateDeniedCount);
+  keys.push_back(TranslatePrefs::kPrefTranslateAcceptedCount);
+
+  for (std::vector<std::string>::const_iterator it = keys.begin();
+       it != keys.end(); ++it) {
+    const std::string& key = *it;
+    const PrefService::Preference* pref = prefs->FindPreference(key.c_str());
     if (pref)
       dict.Set(key, pref->GetValue()->DeepCopy());
   }

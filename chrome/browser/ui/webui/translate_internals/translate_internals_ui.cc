@@ -7,11 +7,13 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_handler.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -57,6 +59,11 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
     it.value().GetAsString(&value);
     source->AddString(key, value);
   }
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  bool enable_translate_settings =
+      command_line.HasSwitch(switches::kEnableTranslateSettings);
+  source->AddBoolean("enable-translate-settings", enable_translate_settings);
 
   return source;
 }

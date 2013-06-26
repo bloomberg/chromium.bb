@@ -25,6 +25,12 @@
 
       var button = $('detection-logs-dump');
       button.addEventListener('click', onDetectionLogsDump);
+
+      var enableTranslateSettings = templateData['enable-translate-settings'];
+      if (!enableTranslateSettings) {
+        $('prefs-blocked-languages').hidden = true;
+        $('prefs-language-blacklist').querySelector('h2 span').hidden = true;
+      }
     }
 
     /**
@@ -101,6 +107,24 @@
      */
     function onPrefsUpdated(detail) {
       var ul;
+
+      ul = document.querySelector('#prefs-blocked-languages ul');
+      ul.innerHTML = '';
+
+      if ('translate_blocked_languages' in detail) {
+        var langs = detail['translate_blocked_languages'];
+
+        langs.forEach(function(langCode) {
+          var text = formatLanguageCode(langCode);
+
+          var li = createLIWithDismissingButton(text, function() {
+            chrome.send('removePrefItem',
+                        ['blocked_languages', langCode]);
+          });
+          ul.appendChild(li);
+        });
+      }
+
       ul = document.querySelector('#prefs-language-blacklist ul');
       ul.innerHTML = '';
 

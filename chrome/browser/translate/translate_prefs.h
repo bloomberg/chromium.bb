@@ -38,6 +38,11 @@ class TranslatePrefs {
   void BlockLanguage(const std::string& original_language);
   void UnblockLanguage(const std::string& original_language);
 
+  // Removes a language from the old blacklist. This method is for
+  // chrome://translate-internals/.  Don't use this if there is no special
+  // reason.
+  void RemoveLanguageFromLegacyBlacklist(const std::string& original_language);
+
   bool IsSiteBlacklisted(const std::string& site) const;
   void BlacklistSite(const std::string& site);
   void RemoveSiteFromBlacklist(const std::string& site);
