@@ -1054,7 +1054,7 @@ def CMDstatus(parser, args):
       alignment = max(5, max(len(b) for b in branches))
       print 'Branches associated with reviews:'
       for branch in sorted(branches):
-        print "  %*s: %s" % (alignment, branch, branches[branch] or '')
+        print "  %*s: %s" % (alignment, branch, branches[branch])
 
   cl = Changelist()
   if options.field:
