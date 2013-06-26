@@ -6,6 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "content/renderer/gpu/input_handler_proxy_client.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -18,6 +19,32 @@ using WebKit::WebInputEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebPoint;
 using WebKit::WebTouchEvent;
+
+namespace {
+
+void SendScrollLatencyUma(const WebInputEvent& event,
+                          const ui::LatencyInfo& latency_info) {
+  if (!(event.type == WebInputEvent::GestureScrollBegin ||
+        event.type == WebInputEvent::GestureScrollUpdate ||
+        event.type == WebInputEvent::GestureScrollUpdateWithoutPropagation))
+    return;
+
+  ui::LatencyInfo::LatencyMap::const_iterator it =
+      latency_info.latency_components.find(std::make_pair(
+          ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0));
+
+  if (it == latency_info.latency_components.end())
+    return;
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Event.Latency.RendererImpl.GestureScroll",
+      (base::TimeTicks::HighResNow() - it->second.event_time).InMicroseconds(),
+      0,
+      200000,
+      100);
+}  // namespace
+
+}
 
 namespace content {
 
@@ -54,6 +81,8 @@ InputHandlerProxy::HandleInputEventWithLatencyInfo(
     const WebInputEvent& event,
     const ui::LatencyInfo& latency_info) {
   DCHECK(input_handler_);
+
+  SendScrollLatencyUma(event, latency_info);
 
   InputHandlerProxy::EventDisposition disposition = HandleInputEvent(event);
   if (disposition != DID_NOT_HANDLE)
