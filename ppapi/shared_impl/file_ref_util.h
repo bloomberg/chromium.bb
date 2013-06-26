@@ -7,8 +7,11 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace ppapi {
 
@@ -20,6 +23,9 @@ PPAPI_SHARED_EXPORT std::string GetNameForExternalFilePath(
 
 // Determines whether an internal file path is valid.
 PPAPI_SHARED_EXPORT bool IsValidInternalPath(const std::string& path);
+
+// Determines whether an external file path is valid.
+PPAPI_SHARED_EXPORT bool IsValidExternalPath(const base::FilePath& path);
 
 // If path ends with a slash, normalize it away unless it's the root path.
 PPAPI_SHARED_EXPORT void NormalizeInternalPath(std::string* path);

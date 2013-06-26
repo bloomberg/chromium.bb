@@ -831,6 +831,8 @@
     'browser/renderer_host/pepper/content_browser_pepper_host_factory.h',
     'browser/renderer_host/pepper/pepper_browser_font_singleton_host.cc',
     'browser/renderer_host/pepper/pepper_browser_font_singleton_host.h',
+    'browser/renderer_host/pepper/pepper_external_file_ref_backend.cc',
+    'browser/renderer_host/pepper/pepper_external_file_ref_backend.h',
     'browser/renderer_host/pepper/pepper_file_ref_host.cc',
     'browser/renderer_host/pepper/pepper_file_ref_host.h',
     'browser/renderer_host/pepper/pepper_file_system_browser_host.cc',

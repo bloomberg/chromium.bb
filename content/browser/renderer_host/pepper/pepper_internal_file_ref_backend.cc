@@ -32,7 +32,6 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
 #include "ppapi/thunk/ppb_file_system_api.h"
-#include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -90,13 +89,6 @@ int32_t PepperInternalFileRefBackend::MakeDirectory(
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
 
-  base::PlatformFileError error;
-  if (!HasPermissionsForFile(GetFileSystemURL(),
-                             fileapi::kCreateFilePermissions,
-                             &error)) {
-    return ppapi::PlatformFileErrorToPepperError(error);
-  }
-
   GetFileSystemContext()->operation_runner()->CreateDirectory(
       GetFileSystemURL(),
       false,
@@ -115,15 +107,6 @@ int32_t PepperInternalFileRefBackend::Touch(
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
 
-  // TODO(teravest): Change this to be kWriteFilePermissions here and in
-  // fileapi_message_filter.
-  base::PlatformFileError error;
-  if (!HasPermissionsForFile(GetFileSystemURL(),
-                             fileapi::kCreateFilePermissions,
-                             &error)) {
-    return ppapi::PlatformFileErrorToPepperError(error);
-  }
-
   GetFileSystemContext()->operation_runner()->TouchFile(
       GetFileSystemURL(),
       ppapi::PPTimeToTime(last_access_time),
@@ -140,13 +123,6 @@ int32_t PepperInternalFileRefBackend::Delete(
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
 
-  base::PlatformFileError error;
-  if (!HasPermissionsForFile(GetFileSystemURL(),
-                             fileapi::kWriteFilePermissions,
-                             &error)) {
-    return ppapi::PlatformFileErrorToPepperError(error);
-  }
-
   GetFileSystemContext()->operation_runner()->Remove(
       GetFileSystemURL(),
       false,
@@ -159,38 +135,15 @@ int32_t PepperInternalFileRefBackend::Delete(
 
 int32_t PepperInternalFileRefBackend::Rename(
     ppapi::host::ReplyMessageContext reply_context,
-    PP_Resource new_file_ref) {
+    PepperFileRefHost* new_file_ref) {
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
 
-  base::PlatformFileError error;
-  if (!HasPermissionsForFile(
-      GetFileSystemURL(),
-      fileapi::kReadFilePermissions | fileapi::kWriteFilePermissions,
-      &error)) {
-    return ppapi::PlatformFileErrorToPepperError(error);
-  }
-
-  ResourceHost* resource_host = host_->GetResourceHost(new_file_ref);
-  if (!resource_host)
-    return PP_ERROR_BADRESOURCE;
-
-  PepperFileRefHost* file_ref_host = resource_host->AsPepperFileRefHost();
-  if (!file_ref_host)
-    return PP_ERROR_BADRESOURCE;
-
-  fileapi::FileSystemURL new_url = file_ref_host->GetFileSystemURL();
+  fileapi::FileSystemURL new_url = new_file_ref->GetFileSystemURL();
   if (!new_url.is_valid())
     return PP_ERROR_FAILED;
   if (!new_url.IsInSameFileSystem(GetFileSystemURL()))
     return PP_ERROR_FAILED;
-
-  if (!HasPermissionsForFile(GetFileSystemURL(),
-                             fileapi::kCreateFilePermissions,
-                             &error)) {
-    return ppapi::PlatformFileErrorToPepperError(error);
-  }
-
 
   GetFileSystemContext()->operation_runner()->Move(
       GetFileSystemURL(),
@@ -206,13 +159,6 @@ int32_t PepperInternalFileRefBackend::Query(
     ppapi::host::ReplyMessageContext reply_context) {
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
-
-  base::PlatformFileError error;
-  if (!HasPermissionsForFile(GetFileSystemURL(),
-                             fileapi::kReadFilePermissions,
-                             &error)) {
-    return ppapi::PlatformFileErrorToPepperError(error);
-  }
 
   GetFileSystemContext()->operation_runner()->GetMetadata(
       GetFileSystemURL(),
@@ -242,13 +188,6 @@ int32_t PepperInternalFileRefBackend::ReadDirectoryEntries(
     ppapi::host::ReplyMessageContext reply_context) {
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
-
-  base::PlatformFileError error;
-  if (!HasPermissionsForFile(GetFileSystemURL(),
-                             fileapi::kReadFilePermissions,
-                             &error)) {
-    return ppapi::PlatformFileErrorToPepperError(error);
-  }
 
   GetFileSystemContext()->operation_runner()->ReadDirectory(
       GetFileSystemURL(),
@@ -304,15 +243,14 @@ int32_t PepperInternalFileRefBackend::GetAbsolutePath(
   return PP_OK_COMPLETIONPENDING;
 }
 
-bool PepperInternalFileRefBackend::HasPermissionsForFile(
-    const fileapi::FileSystemURL& url,
-    int permissions,
-    base::PlatformFileError* error) const {
-  return CheckFileSystemPermissionsForProcess(GetFileSystemContext(),
-                                              render_process_id_,
-                                              url,
-                                              permissions,
-                                              error);
+int32_t PepperInternalFileRefBackend::HasPermissions(int permissions) const {
+  base::PlatformFileError error;
+  CheckFileSystemPermissionsForProcess(GetFileSystemContext(),
+                                       render_process_id_,
+                                       GetFileSystemURL(),
+                                       permissions,
+                                       &error);
+  return ppapi::PlatformFileErrorToPepperError(error);
 }
 
 }  // namespace content

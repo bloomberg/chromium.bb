@@ -19,6 +19,8 @@
 
 namespace content {
 
+class PepperFileRefHost;
+
 // Internal and external filesystems have very different codepaths for
 // performing FileRef operations. The logic is split into separate classes
 // to make it easier to read.
@@ -33,14 +35,16 @@ class PepperFileRefBackend {
                         PP_Time last_modified_time) = 0;
   virtual int32_t Delete(ppapi::host::ReplyMessageContext context) = 0;
   virtual int32_t Rename(ppapi::host::ReplyMessageContext context,
-                         PP_Resource new_file_ref) = 0;
+                         PepperFileRefHost* new_file_ref) = 0;
   virtual int32_t Query(ppapi::host::ReplyMessageContext context) = 0;
   virtual int32_t ReadDirectoryEntries(
       ppapi::host::ReplyMessageContext context) = 0;
   virtual int32_t GetAbsolutePath(
       ppapi::host::ReplyMessageContext context) = 0;
-
   virtual fileapi::FileSystemURL GetFileSystemURL() const = 0;
+
+  // Returns an error from the pp_errors.h enum.
+  virtual int32_t HasPermissions(int permissions) const = 0;
 };
 
 class CONTENT_EXPORT PepperFileRefHost
@@ -53,7 +57,10 @@ class CONTENT_EXPORT PepperFileRefHost
                     PP_Resource file_system,
                     const std::string& internal_path);
 
-  // TODO(teravest): Add a constructor for external paths.
+  PepperFileRefHost(BrowserPpapiHost* host,
+                    PP_Instance instance,
+                    PP_Resource resource,
+                    const base::FilePath& external_path);
 
   virtual ~PepperFileRefHost();
 
@@ -66,6 +73,7 @@ class CONTENT_EXPORT PepperFileRefHost
   // Required to support Rename().
   PP_FileSystemType GetFileSystemType() const;
   fileapi::FileSystemURL GetFileSystemURL() const;
+  int32_t HasPermissions(int permissions) const;
 
  private:
   int32_t OnMakeDirectory(ppapi::host::HostMessageContext* context,

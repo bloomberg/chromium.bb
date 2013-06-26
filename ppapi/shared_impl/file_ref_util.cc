@@ -4,6 +4,7 @@
 
 #include "ppapi/shared_impl/file_ref_util.h"
 
+#include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -41,6 +42,10 @@ bool IsValidInternalPath(const std::string& path) {
   if (file_path.ReferencesParent())
     return false;
   return true;
+}
+
+bool IsValidExternalPath(const base::FilePath& path) {
+  return !path.empty() && !path.ReferencesParent();
 }
 
 void NormalizeInternalPath(std::string* path) {

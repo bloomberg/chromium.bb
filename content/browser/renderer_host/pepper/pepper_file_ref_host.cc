@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "content/browser/renderer_host/pepper/pepper_external_file_ref_backend.h"
 #include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 #include "content/browser/renderer_host/pepper/pepper_internal_file_ref_backend.h"
 #include "ppapi/c/pp_errors.h"
@@ -16,6 +17,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/file_ref_util.h"
+#include "webkit/browser/fileapi/file_permission_policy.h"
 
 using ppapi::host::ResourceHost;
 
@@ -73,6 +75,29 @@ PepperFileRefHost::PepperFileRefHost(BrowserPpapiHost* host,
       path));
 }
 
+PepperFileRefHost::PepperFileRefHost(BrowserPpapiHost* host,
+                                     PP_Instance instance,
+                                     PP_Resource resource,
+                                     const base::FilePath& external_path)
+    : ResourceHost(host->GetPpapiHost(), instance, resource),
+      host_(host),
+      fs_type_(PP_FILESYSTEMTYPE_EXTERNAL) {
+  if (!ppapi::IsValidExternalPath(external_path))
+    return;
+
+  int render_process_id;
+  int unused;
+  if (!host->GetRenderViewIDsForInstance(instance,
+                                         &render_process_id,
+                                         &unused)) {
+    return;
+  }
+
+  backend_.reset(new PepperExternalFileRefBackend(host->GetPpapiHost(),
+                                                  render_process_id,
+                                                  external_path));
+}
+
 PepperFileRefHost::~PepperFileRefHost() {
 }
 
@@ -88,6 +113,12 @@ fileapi::FileSystemURL PepperFileRefHost::GetFileSystemURL() const {
   if (backend_)
     return backend_->GetFileSystemURL();
   return fileapi::FileSystemURL();
+}
+
+int32_t PepperFileRefHost::HasPermissions(int permissions) const {
+  if (backend_)
+    return backend_->HasPermissions(permissions);
+  return PP_ERROR_FAILED;
 }
 
 int32_t PepperFileRefHost::OnResourceMessageReceived(
@@ -120,6 +151,9 @@ int32_t PepperFileRefHost::OnResourceMessageReceived(
 int32_t PepperFileRefHost::OnMakeDirectory(
     ppapi::host::HostMessageContext* context,
     bool make_ancestors) {
+  int32_t rv = HasPermissions(fileapi::kCreateFilePermissions);
+  if (rv != PP_OK)
+    return rv;
   return backend_->MakeDirectory(context->MakeReplyMessageContext(),
                                  make_ancestors);
 }
@@ -127,27 +161,59 @@ int32_t PepperFileRefHost::OnMakeDirectory(
 int32_t PepperFileRefHost::OnTouch(ppapi::host::HostMessageContext* context,
                                    PP_Time last_access_time,
                                    PP_Time last_modified_time) {
+  // TODO(teravest): Change this to be kWriteFilePermissions here and in
+  // fileapi_message_filter.
+  int32_t rv = HasPermissions(fileapi::kCreateFilePermissions);
+  if (rv != PP_OK)
+    return rv;
   return backend_->Touch(context->MakeReplyMessageContext(),
                          last_access_time,
                          last_modified_time);
 }
 
 int32_t PepperFileRefHost::OnDelete(ppapi::host::HostMessageContext* context) {
+  int32_t rv = HasPermissions(fileapi::kWriteFilePermissions);
+  if (rv != PP_OK)
+    return rv;
   return backend_->Delete(context->MakeReplyMessageContext());
 }
 
 int32_t PepperFileRefHost::OnRename(ppapi::host::HostMessageContext* context,
                                     PP_Resource new_file_ref) {
+  int32_t rv = HasPermissions(
+      fileapi::kReadFilePermissions | fileapi::kWriteFilePermissions);
+  if (rv != PP_OK)
+    return rv;
+
+  ResourceHost* resource_host =
+      host_->GetPpapiHost()->GetResourceHost(new_file_ref);
+  if (!resource_host)
+    return PP_ERROR_BADRESOURCE;
+
+  PepperFileRefHost* file_ref_host = resource_host->AsPepperFileRefHost();
+  if (!file_ref_host)
+    return PP_ERROR_BADRESOURCE;
+
+  rv = file_ref_host->HasPermissions(fileapi::kCreateFilePermissions);
+  if (rv != PP_OK)
+    return rv;
+
   return backend_->Rename(context->MakeReplyMessageContext(),
-                          new_file_ref);
+                          file_ref_host);
 }
 
 int32_t PepperFileRefHost::OnQuery(ppapi::host::HostMessageContext* context) {
+  int32_t rv = HasPermissions(fileapi::kReadFilePermissions);
+  if (rv != PP_OK)
+    return rv;
   return backend_->Query(context->MakeReplyMessageContext());
 }
 
 int32_t PepperFileRefHost::OnReadDirectoryEntries(
     ppapi::host::HostMessageContext* context) {
+  int32_t rv = HasPermissions(fileapi::kReadFilePermissions);
+  if (rv != PP_OK)
+    return rv;
   return backend_->ReadDirectoryEntries(context->MakeReplyMessageContext());
 }
 

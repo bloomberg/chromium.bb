@@ -2,31 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_INTERNAL_FILE_REF_BACKEND_H_
-#define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_INTERNAL_FILE_REF_BACKEND_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_EXTERNAL_FILE_REF_BACKEND_H_
+#define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_EXTERNAL_FILE_REF_BACKEND_H_
 
 #include <string>
 
+#include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
 #include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/host/ppapi_host.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace content {
 
-// Implementations of FileRef operations for internal filesystems.
-class PepperInternalFileRefBackend : public PepperFileRefBackend {
+// Implementations of FileRef operations for external filesystems.
+class PepperExternalFileRefBackend : public PepperFileRefBackend {
  public:
-  PepperInternalFileRefBackend(
-      ppapi::host::PpapiHost* host,
-      int render_process_id,
-      base::WeakPtr<PepperFileSystemBrowserHost> fs_host,
-      const std::string& path);
-  virtual ~PepperInternalFileRefBackend();
+  PepperExternalFileRefBackend(ppapi::host::PpapiHost* host,
+                               int render_process_id,
+                               const base::FilePath& path);
+  virtual ~PepperExternalFileRefBackend();
 
   // PepperFileRefBackend overrides.
   virtual int32_t MakeDirectory(ppapi::host::ReplyMessageContext context,
@@ -42,7 +40,6 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
       ppapi::host::ReplyMessageContext context) OVERRIDE;
   virtual int32_t GetAbsolutePath(ppapi::host::ReplyMessageContext context)
       OVERRIDE;
-
   virtual fileapi::FileSystemURL GetFileSystemURL() const OVERRIDE;
   virtual int32_t HasPermissions(int permissions) const OVERRIDE;
 
@@ -57,25 +54,16 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
     ppapi::host::ReplyMessageContext reply_context,
     base::PlatformFileError error,
     const base::PlatformFileInfo& file_info);
-  void ReadDirectoryComplete(
-      ppapi::host::ReplyMessageContext context,
-      base::PlatformFileError error,
-      const fileapi::FileSystemOperation::FileEntryList& file_list,
-      bool has_more);
-
-  scoped_refptr<fileapi::FileSystemContext> GetFileSystemContext() const;
 
   ppapi::host::PpapiHost* host_;
+  base::FilePath path_;
   int render_process_id_;
-  base::WeakPtr<PepperFileSystemBrowserHost> fs_host_;
-  PP_FileSystemType fs_type_;
-  std::string path_;
 
-  mutable fileapi::FileSystemURL fs_url_;
+  scoped_refptr<base::TaskRunner> task_runner_;
 
-  base::WeakPtrFactory<PepperInternalFileRefBackend> weak_factory_;
+  base::WeakPtrFactory<PepperExternalFileRefBackend> weak_factory_;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_INTERNAL_FILE_REF_BACKEND_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_EXTERNAL_FILE_REF_BACKEND_H_
