@@ -24,7 +24,7 @@ class DevicePolicyCrosBrowserTest :
   // Marks the device as enterprise-owned. Must be called to make device
   // policies apply Chrome-wide. If this is not called, device policies will
   // affect CrosSettings only.
-  static void MarkAsEnterpriseOwned(base::ScopedTempDir* temp_dir);
+  void MarkAsEnterpriseOwned();
 
  protected:
   DevicePolicyCrosBrowserTest();
@@ -51,10 +51,10 @@ class DevicePolicyCrosBrowserTest :
 
   DevicePolicyBuilder* device_policy() { return &device_policy_; }
 
+ private:
   // Stores the device owner key and the install attributes.
   base::ScopedTempDir temp_dir_;
 
- private:
   // MockDBusThreadManagerWithoutGMock uses FakeSessionManagerClient.
   chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
 

@@ -8,21 +8,20 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
-#include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
+#include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -39,24 +38,23 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
+#include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace em = enterprise_management;
 
+using testing::InvokeWithoutArgs;
 using testing::Return;
+using testing::_;
 
 namespace policy {
 
@@ -64,8 +62,7 @@ namespace {
 
 const char kAccountId1[] = "dla1@example.com";
 const char kAccountId2[] = "dla2@example.com";
-const char kDisplayName1[] = "display name for account 1";
-const char kDisplayName2[] = "display name for account 2";
+const char kDisplayName[] = "display name";
 const char* kStartupURLs[] = {
   "chrome://policy",
   "chrome://about",
@@ -73,7 +70,7 @@ const char* kStartupURLs[] = {
 
 }  // namespace
 
-class DeviceLocalAccountTest : public InProcessBrowserTest {
+class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest {
  protected:
   DeviceLocalAccountTest()
       : user_id_1_(GenerateDeviceLocalAccountUserId(
@@ -93,7 +90,7 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
                                 PolicyBuilder::kFakeDeviceId);
     ASSERT_TRUE(test_server_.Start());
 
-    InProcessBrowserTest::SetUp();
+    DevicePolicyCrosBrowserTest::SetUp();
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -105,7 +102,7 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
 
     // Clear command-line arguments (but keep command-line switches) so the
     // startup pages policy takes effect.
@@ -115,17 +112,10 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
                argv.end());
     command_line->InitFromArgv(argv);
 
-    // Mark the device enterprise-enrolled.
-    DevicePolicyCrosBrowserTest::MarkAsEnterpriseOwned(&temp_dir_);
+    InstallOwnerKey();
+    MarkAsEnterpriseOwned();
 
-    // Redirect session_manager DBus calls to FakeSessionManagerClient.
-    chromeos::MockDBusThreadManagerWithoutGMock* dbus_thread_manager =
-        new chromeos::MockDBusThreadManagerWithoutGMock();
-    session_manager_client_ =
-        dbus_thread_manager->fake_session_manager_client();
-    chromeos::DBusThreadManager::InitializeForTesting(dbus_thread_manager);
-
-    SetUpPolicy();
+    InitializePolicy();
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
@@ -135,74 +125,69 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetUpPolicy() {
-    // Configure two device-local accounts in device settings.
-    DevicePolicyBuilder device_policy;
-    device_policy.policy_data().set_public_key_version(1);
-    em::ChromeDeviceSettingsProto& proto(device_policy.payload());
+  void RemoveOwnerPrivateKeyFromPolicyBuilders() {
+    // Any instances of the private half of the owner key held by policy
+    // builders must be dropped as otherwise the NSS library will tell Chrome
+    // that the key is available - which is incorrect and leads to Chrome
+    // behaving as if a local owner were logged in.
+    device_policy()->set_signing_key(scoped_ptr<crypto::RSAPrivateKey>(NULL));
+    device_policy()->set_new_signing_key(
+        scoped_ptr<crypto::RSAPrivateKey>(NULL));
+    device_local_account_policy_.set_signing_key(
+        scoped_ptr<crypto::RSAPrivateKey>(NULL));
+    device_local_account_policy_.set_new_signing_key(
+        scoped_ptr<crypto::RSAPrivateKey>(NULL));
+  }
+
+  void InitializePolicy() {
+    device_policy()->policy_data().set_public_key_version(1);
+    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
     proto.mutable_show_user_names()->set_show_user_names(true);
-    em::DeviceLocalAccountInfoProto* account1 =
-        proto.mutable_device_local_accounts()->add_account();
-    account1->set_account_id(kAccountId1);
-    account1->set_type(
-        em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
-    em::DeviceLocalAccountInfoProto* account2 =
-        proto.mutable_device_local_accounts()->add_account();
-    account2->set_account_id(kAccountId2);
-    account2->set_type(
-        em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
-    device_policy.Build();
-    session_manager_client_->set_device_policy(device_policy.GetBlob());
-    test_server_.UpdatePolicy(dm_protocol::kChromeDevicePolicyType,
-                              std::string(), proto.SerializeAsString());
 
-    // Install the owner key.
-    base::FilePath owner_key_file = temp_dir_.path().AppendASCII("owner.key");
-    std::vector<uint8> owner_key_bits;
-    ASSERT_TRUE(device_policy.signing_key()->ExportPublicKey(&owner_key_bits));
-    ASSERT_EQ(
-        static_cast<int>(owner_key_bits.size()),
-        file_util::WriteFile(
-            owner_key_file,
-            reinterpret_cast<const char*>(vector_as_array(&owner_key_bits)),
-            owner_key_bits.size()));
-    ASSERT_TRUE(
-        PathService::Override(chromeos::FILE_OWNER_KEY, owner_key_file));
-
-    // Configure device-local account policy for the first device-local account.
-    UserPolicyBuilder device_local_account_policy;
-    device_local_account_policy.policy_data().set_policy_type(
+    device_local_account_policy_.policy_data().set_policy_type(
         dm_protocol::kChromePublicAccountPolicyType);
-    device_local_account_policy.policy_data().set_username(kAccountId1);
-    device_local_account_policy.policy_data().set_settings_entity_id(
+    device_local_account_policy_.policy_data().set_username(kAccountId1);
+    device_local_account_policy_.policy_data().set_settings_entity_id(
         kAccountId1);
-    device_local_account_policy.policy_data().set_public_key_version(1);
-    device_local_account_policy.payload().mutable_restoreonstartup()->set_value(
-        SessionStartupPref::kPrefValueURLs);
-    em::StringListPolicyProto* startup_urls_proto =
-        device_local_account_policy.payload().mutable_restoreonstartupurls();
-    for (size_t i = 0; i < arraysize(kStartupURLs); ++i)
-      startup_urls_proto->mutable_value()->add_entries(kStartupURLs[i]);
-    device_local_account_policy.payload().mutable_userdisplayname()->set_value(
-        kDisplayName1);
-    device_local_account_policy.Build();
-    session_manager_client_->set_device_local_account_policy(
-        kAccountId1, device_local_account_policy.GetBlob());
+    device_local_account_policy_.policy_data().set_public_key_version(1);
+    device_local_account_policy_.payload().mutable_userdisplayname()->set_value(
+        kDisplayName);
+
+    RemoveOwnerPrivateKeyFromPolicyBuilders();
+  }
+
+  void BuildDeviceLocalAccountPolicy() {
+    device_local_account_policy_.set_signing_key(
+        PolicyBuilder::CreateTestSigningKey());
+    device_local_account_policy_.Build();
+    RemoveOwnerPrivateKeyFromPolicyBuilders();
+  }
+
+  void InstallDeviceLocalAccountPolicy() {
+    BuildDeviceLocalAccountPolicy();
+    session_manager_client()->set_device_local_account_policy(
+        kAccountId1, device_local_account_policy_.GetBlob());
+  }
+
+  void UploadDeviceLocalAccountPolicy() {
+    BuildDeviceLocalAccountPolicy();
+    ASSERT_TRUE(session_manager_client()->device_local_account_policy(
+        kAccountId1).empty());
     test_server_.UpdatePolicy(
         dm_protocol::kChromePublicAccountPolicyType, kAccountId1,
-        device_local_account_policy.payload().SerializeAsString());
+        device_local_account_policy_.payload().SerializeAsString());
+  }
 
-    // Make policy for the second account available from the server.
-    device_local_account_policy.payload().mutable_userdisplayname()->set_value(
-        kDisplayName2);
-    test_server_.UpdatePolicy(
-        dm_protocol::kChromePublicAccountPolicyType, kAccountId2,
-        device_local_account_policy.payload().SerializeAsString());
-
-    // Don't install policy for |kAccountId2| yet so initial download gets
-    // test coverage.
-    ASSERT_TRUE(session_manager_client_->device_local_account_policy(
-        kAccountId2).empty());
+  void AddPublicSessionToDevicePolicy(const std::string& username) {
+    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+    em::DeviceLocalAccountInfoProto* account =
+        proto.mutable_device_local_accounts()->add_account();
+    account->set_account_id(username);
+    account->set_type(
+        em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
+    RefreshDevicePolicy();
+    test_server_.UpdatePolicy(dm_protocol::kChromeDevicePolicyType,
+                              std::string(), proto.SerializeAsString());
   }
 
   void CheckPublicSessionPresent(const std::string& id) {
@@ -215,10 +200,8 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
   const std::string user_id_1_;
   const std::string user_id_2_;
 
+  UserPolicyBuilder device_local_account_policy_;
   LocalPolicyTestServer test_server_;
-  base::ScopedTempDir temp_dir_;
-
-  chromeos::FakeSessionManagerClient* session_manager_client_;
 };
 
 static bool IsKnownUser(const std::string& account_id) {
@@ -226,6 +209,9 @@ static bool IsKnownUser(const std::string& account_id) {
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  AddPublicSessionToDevicePolicy(kAccountId2);
+
   content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
                                         base::Bind(&IsKnownUser, user_id_1_))
       .Wait();
@@ -238,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
 }
 
 static bool DisplayNameMatches(const std::string& account_id,
-                        const std::string& display_name) {
+                               const std::string& display_name) {
   const chromeos::User* user =
       chromeos::UserManager::Get()->FindUser(account_id);
   if (!user || user->display_name().empty())
@@ -248,23 +234,28 @@ static bool DisplayNameMatches(const std::string& account_id,
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DisplayName) {
+  InstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_USER_LIST_CHANGED,
-      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName1)).Wait();
+      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
-  // Policy for kAccountId2 is not installed in session_manager_client, make
-  // sure it gets fetched from the server. Note that the test setup doesn't set
-  // up policy for kAccountId2, so the presence of the display name can be used
-  // as signal to indicate successful policy download.
+  UploadDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  // Policy for the account is not installed in session_manager_client. Because
+  // of this, the presence of the display name (which comes from policy) can be
+  // used as a signal that indicates successful policy download.
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_USER_LIST_CHANGED,
-      base::Bind(&DisplayNameMatches, user_id_2_, kDisplayName2)).Wait();
+      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
 
   // Sanity check: The policy should be present now.
-  ASSERT_FALSE(session_manager_client_->device_local_account_policy(
-      kAccountId2).empty());
+  ASSERT_FALSE(session_manager_client()->device_local_account_policy(
+      kAccountId1).empty());
 }
 
 static bool IsNotKnownUser(const std::string& account_id) {
@@ -272,6 +263,9 @@ static bool IsNotKnownUser(const std::string& account_id) {
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DevicePolicyChange) {
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  AddPublicSessionToDevicePolicy(kAccountId2);
+
   // Wait until the login screen is up.
   content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
                                         base::Bind(&IsKnownUser, user_id_1_))
@@ -281,6 +275,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DevicePolicyChange) {
       .Wait();
 
   // Update policy to remove kAccountId2.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_device_local_accounts()->clear_account();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
   em::ChromeDeviceSettingsProto policy;
   policy.mutable_show_user_names()->set_show_user_names(true);
   em::DeviceLocalAccountInfoProto* account1 =
@@ -304,12 +302,22 @@ static bool IsSessionStarted() {
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
+  // Specify startup pages.
+  device_local_account_policy_.payload().mutable_restoreonstartup()->set_value(
+      SessionStartupPref::kPrefValueURLs);
+  em::StringListPolicyProto* startup_urls_proto =
+      device_local_account_policy_.payload().mutable_restoreonstartupurls();
+  for (size_t i = 0; i < arraysize(kStartupURLs); ++i)
+    startup_urls_proto->mutable_value()->add_entries(kStartupURLs[i]);
+  InstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
   // This observes the display name becoming available as this indicates
   // device-local account policy is fully loaded, which is a prerequisite for
   // successful login.
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_USER_LIST_CHANGED,
-      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName1)).Wait();
+      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
 
   chromeos::LoginDisplayHost* host =
       chromeos::LoginDisplayHostImpl::default_host();
@@ -336,6 +344,51 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
   EXPECT_EQ(expected_tab_count, tabs->count());
   for (int i = 0; i < expected_tab_count && i < tabs->count(); ++i)
     EXPECT_EQ(GURL(kStartupURLs[i]), tabs->GetWebContentsAt(i)->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfService) {
+  // Specify Terms of Service. The URL does not really matter as the test does
+  // not wait for the terms to load.
+  device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
+      "http://localhost/tos");
+  InstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  // Wait for the device-local account policy to be fully loaded.
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_USER_LIST_CHANGED,
+      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
+
+  // Start login into the device-local account.
+  chromeos::LoginDisplayHost* host =
+      chromeos::LoginDisplayHostImpl::default_host();
+  ASSERT_TRUE(host);
+  host->StartSignInScreen();
+  chromeos::ExistingUserController* controller =
+      chromeos::ExistingUserController::current_controller();
+  ASSERT_TRUE(controller);
+  controller->LoginAsPublicAccount(user_id_1_);
+
+  // Set up an observer that will quit the message loop when login has succeeded
+  // and the first wizard screen, if any, is being shown.
+  base::RunLoop run_loop;
+  chromeos::MockConsumer login_status_consumer;
+  EXPECT_CALL(login_status_consumer, OnLoginSuccess(_, false, false))
+      .Times(1)
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  // Spin the loop until the observer fires. Then, unregister the observer.
+  controller->set_login_status_consumer(&login_status_consumer);
+  run_loop.Run();
+  controller->set_login_status_consumer(NULL);
+
+  // Verify that the Terms of Service screen is being shown.
+  chromeos::WizardController* wizard_controller =
+        chromeos::WizardController::default_controller();
+  ASSERT_TRUE(wizard_controller);
+  ASSERT_TRUE(wizard_controller->current_screen());
+  EXPECT_EQ(chromeos::WizardController::kTermsOfServiceScreenName,
+            wizard_controller->current_screen()->GetName());
 }
 
 }  // namespace policy

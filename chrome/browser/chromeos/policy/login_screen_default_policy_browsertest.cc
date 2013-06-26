@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -142,7 +141,7 @@ LoginScreenDefaultPolicyBrowsertestBase::
 void LoginScreenDefaultPolicyBrowsertestBase::
     SetUpInProcessBrowserTestFixture() {
   InstallOwnerKey();
-  MarkAsEnterpriseOwned(&temp_dir_);
+  MarkAsEnterpriseOwned();
   DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
 }
 

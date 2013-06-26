@@ -27,9 +27,7 @@ using ::testing::Return;
 
 namespace policy {
 
-// static
-void DevicePolicyCrosBrowserTest::MarkAsEnterpriseOwned(
-    base::ScopedTempDir* temp_dir) {
+void DevicePolicyCrosBrowserTest::MarkAsEnterpriseOwned() {
   cryptohome::SerializedInstallAttributes install_attrs_proto;
   cryptohome::SerializedInstallAttributes::Attribute* attribute = NULL;
 
@@ -42,7 +40,7 @@ void DevicePolicyCrosBrowserTest::MarkAsEnterpriseOwned(
   attribute->set_value(DevicePolicyBuilder::kFakeUsername);
 
   base::FilePath install_attrs_file =
-      temp_dir->path().AppendASCII("install_attributes.pb");
+      temp_dir_.path().AppendASCII("install_attributes.pb");
   const std::string install_attrs_blob(
       install_attrs_proto.SerializeAsString());
   ASSERT_EQ(static_cast<int>(install_attrs_blob.size()),
