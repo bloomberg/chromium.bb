@@ -477,11 +477,9 @@ void HostProcess::CreateAuthenticatorFactory() {
     return;
   }
 
-  // TODO(jamiewalch): Add a pairing registry here once all the code
+  // TODO(jamiewalch): Create a pairing registry here once all the code
   // is committed.
-  scoped_refptr<remoting::protocol::PairingRegistry> pairing_registry(
-      new remoting::protocol::PairingRegistry(
-          CreatePairingRegistryDelegate(NULL)));
+  scoped_refptr<remoting::protocol::PairingRegistry> pairing_registry = NULL;
 
   scoped_ptr<protocol::AuthenticatorFactory> factory;
 
