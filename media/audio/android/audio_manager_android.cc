@@ -147,7 +147,8 @@ AudioParameters AudioManagerAndroid::GetPreferredOutputStreamParameters(
     bits_per_sample = input_params.bits_per_sample();
     channel_layout = input_params.channel_layout();
     input_channels = input_params.input_channels();
-    buffer_size = GetOptimalOutputFrameSize(sample_rate, channel_layout);
+    buffer_size = GetOptimalOutputFrameSize(
+        sample_rate, ChannelLayoutToChannelCount(channel_layout));
   }
 
   int user_buffer_size = GetUserBufferSize();
