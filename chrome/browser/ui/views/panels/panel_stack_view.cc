@@ -218,6 +218,11 @@ void PanelStackView::DrawSystemAttention(bool draw_attention) {
     // To work around this problem, we recreate the underlying window.
     views::Widget* old_window = window_;
     window_ = CreateWindowWithBounds(GetStackWindowBounds());
+
+    // New background window should also be minimized if the old one is.
+    if (old_window->IsMinimized())
+      window_->Minimize();
+
     // Make sure the new background window stays at the same z-order as the old
     // one.
     ::SetWindowPos(views::HWNDForWidget(window_),
@@ -228,6 +233,11 @@ void PanelStackView::DrawSystemAttention(bool draw_attention) {
          iter != panels_.end(); ++iter) {
       MakeStackWindowOwnPanelWindow(*iter, this);
     }
+
+    // Serve the snapshot to the new backgroud window.
+    if (thumbnailer_.get())
+      thumbnailer_->ReplaceWindow(views::HWNDForWidget(window_));
+
     window_->UpdateWindowTitle();
     window_->UpdateWindowIcon();
     old_window->Close();
@@ -450,12 +460,6 @@ views::Widget* PanelStackView::CreateWindowWithBounds(const gfx::Rect& bounds) {
       ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
                                                 panel->profile()->GetPath()),
       views::HWNDForWidget(window));
-
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    HWND native_window = views::HWNDForWidget(window);
-    thumbnailer_.reset(new TaskbarWindowThumbnailerWin(native_window, this));
-    thumbnailer_->Start();
-  }
 #endif
 
   return window;
@@ -468,6 +472,14 @@ void PanelStackView::EnsureWindowCreated() {
   // Empty size is not allowed so a temporary small size is passed. SetBounds
   // will be called later to update the bounds.
   window_ = CreateWindowWithBounds(gfx::Rect(0, 0, 1, 1));
+
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
+    HWND native_window = views::HWNDForWidget(window_);
+    thumbnailer_.reset(new TaskbarWindowThumbnailerWin(native_window, this));
+    thumbnailer_->Start();
+  }
+#endif
 }
 
 #if defined(OS_WIN)

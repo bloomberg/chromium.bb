@@ -82,6 +82,18 @@ void TaskbarWindowThumbnailerWin::InvalidateSnapshot() {
   ::DwmInvalidateIconicBitmaps(hwnd_);
 }
 
+void TaskbarWindowThumbnailerWin::ReplaceWindow(HWND new_hwnd) {
+  // Stop serving the custom thumbnail for the old window.
+  EnableCustomThumbnail(hwnd_, false);
+  ui::HWNDSubclass::RemoveFilterFromAllTargets(this);
+
+  hwnd_ = new_hwnd;
+
+  // Start serving the custom thumbnail to the new window.
+  ui::HWNDSubclass::AddFilterToTarget(hwnd_, this);
+  EnableCustomThumbnail(hwnd_, true);
+}
+
 bool TaskbarWindowThumbnailerWin::FilterMessage(HWND hwnd,
                                                 UINT message,
                                                 WPARAM w_param,

@@ -42,6 +42,10 @@ class TaskbarWindowThumbnailerWin : public ui::HWNDMessageFilter {
   // when the system requests it.
   void InvalidateSnapshot();
 
+  // Provide the snapshot to the new window. If the snapshot is captured for the
+  // old window, it will also be used for the new window.
+  void ReplaceWindow(HWND new_hwnd);
+
  private:
   // Overridden from ui::HWNDMessageFilter:
   virtual bool FilterMessage(HWND hwnd,
