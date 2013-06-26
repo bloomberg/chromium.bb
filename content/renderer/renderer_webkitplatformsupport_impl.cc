@@ -873,6 +873,11 @@ RendererWebKitPlatformSupportImpl::createContentDecryptionModule(
 WebKit::WebMIDIAccessor*
 RendererWebKitPlatformSupportImpl::createMIDIAccessor(
     WebKit::WebMIDIAccessorClient* client) {
+  WebKit::WebMIDIAccessor* accessor =
+      GetContentClient()->renderer()->OverrideCreateMIDIAccessor(client);
+  if (accessor)
+    return accessor;
+
   return new RendererWebMIDIAccessorImpl(client);
 }
 

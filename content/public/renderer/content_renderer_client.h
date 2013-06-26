@@ -29,6 +29,8 @@ namespace WebKit {
 class WebClipboard;
 class WebFrame;
 class WebHyphenator;
+class WebMIDIAccessor;
+class WebMIDIAccessorClient;
 class WebMediaPlayerClient;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
@@ -143,6 +145,11 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual WebKit::WebRTCPeerConnectionHandler*
   OverrideCreateWebRTCPeerConnectionHandler(
       WebKit::WebRTCPeerConnectionHandlerClient* client);
+
+  // Allows the embedder to override creating a WebMIDIAccessor.  If it
+  // returns NULL the content layer will create the MIDI accessor.
+  virtual WebKit::WebMIDIAccessor* OverrideCreateMIDIAccessor(
+      WebKit::WebMIDIAccessorClient* client);
 
   // Allows the embedder to override the WebKit::WebClipboard used. If it
   // returns NULL the content layer will handle clipboard interactions.

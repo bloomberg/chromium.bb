@@ -59,6 +59,12 @@ ContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
   return NULL;
 }
 
+WebKit::WebMIDIAccessor*
+ContentRendererClient::OverrideCreateMIDIAccessor(
+    WebKit::WebMIDIAccessorClient* client) {
+  return NULL;
+}
+
 WebKit::WebClipboard* ContentRendererClient::OverrideWebClipboard() {
   return NULL;
 }

@@ -52,6 +52,8 @@ class ShellContentRendererClient : public ContentRendererClient {
   virtual WebKit::WebRTCPeerConnectionHandler*
   OverrideCreateWebRTCPeerConnectionHandler(
       WebKit::WebRTCPeerConnectionHandlerClient* client) OVERRIDE;
+  virtual WebKit::WebMIDIAccessor* OverrideCreateMIDIAccessor(
+      WebKit::WebMIDIAccessorClient* client) OVERRIDE;
   virtual WebKit::WebClipboard* OverrideWebClipboard() OVERRIDE;
   virtual WebKit::WebHyphenator* OverrideWebHyphenator() OVERRIDE;
   virtual WebKit::WebThemeEngine* OverrideThemeEngine() OVERRIDE;

@@ -27,6 +27,8 @@
 using WebKit::WebClipboard;
 using WebKit::WebFrame;
 using WebKit::WebHyphenator;
+using WebKit::WebMIDIAccessor;
+using WebKit::WebMIDIAccessorClient;
 using WebKit::WebMediaStreamCenter;
 using WebKit::WebMediaStreamCenterClient;
 using WebKit::WebPlugin;
@@ -138,6 +140,14 @@ ShellContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
 #else
   return NULL;
 #endif
+}
+
+WebMIDIAccessor*
+ShellContentRendererClient::OverrideCreateMIDIAccessor(
+    WebMIDIAccessorClient* client) {
+  WebTestInterfaces* interfaces =
+      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+  return interfaces->createMIDIAccessor(client);
 }
 
 WebClipboard* ShellContentRendererClient::OverrideWebClipboard() {
