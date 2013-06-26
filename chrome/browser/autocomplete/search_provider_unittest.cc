@@ -547,9 +547,8 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
           &wyt_match));
   EXPECT_TRUE(wyt_match.description.empty());
 
-  // Instant search suggestions are never inline autocompleted, so they should
-  // score less than the WYT match.
-  EXPECT_LT(instant_match.relevance, wyt_match.relevance);
+  // Instant search suggestions should be ranked above verbatim matches.
+  EXPECT_GT(instant_match.relevance, wyt_match.relevance);
 }
 
 // Make sure FinalizeInstantQuery works with URL suggestions.
@@ -1660,8 +1659,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
 TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
   // Enable Instant Extended in order to allow an increased number of
   // suggestions.  Unfortunately this requires us to call FinalizeInstantQuery()
-  // every time, and also means we'll clamp non-verbatim results to score below
-  // the verbatim result (see http://crbug.com/251493 ).
+  // every time.
   chrome::EnableInstantExtendedAPIForTesting();
 
   // We hardcode the string "term1" below, so ensure that the search term that
@@ -1677,51 +1675,50 @@ TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
     const std::string json;
     const std::string matches[6];
   } cases[] = {
-    // The verbatim result is always first because of the clamping mentioned
-    // above.  The history results are in alphabetical order because they score
-    // the same and thus are pulled out of the MatchMap in the order of their
-    // map keys.
+    // The history results outscore the default verbatim score.  term2 has more
+    // visits so it outscores term1.  The suggestions are still returned since
+    // they're server-scored.
     { term,
       "[\"term\",[\"a1\", \"a2\", \"a3\"],[],[],"
        "{\"google:suggesttype\":[\"QUERY\", \"QUERY\", \"QUERY\"],"
         "\"google:suggestrelevance\":[1, 2, 3]}]",
-      { "term", "term1", "term2", "a3", "a2", "a1" } },
+      { "term2", "term1", "term", "a3", "a2", "a1" } },
     // Because we already have three suggestions by the time we see the history
     // results, they don't get returned.
     { term,
       "[\"term\",[\"a1\", \"a2\", \"a3\"],[],[],"
        "{\"google:suggesttype\":[\"QUERY\", \"QUERY\", \"QUERY\"],"
-        "\"google:verbatimrelevance\":1350,"
-        "\"google:suggestrelevance\":[1340, 1330, 1320]}]",
+        "\"google:verbatimrelevance\":1450,"
+        "\"google:suggestrelevance\":[1440, 1430, 1420]}]",
       { "term", "a1", "a2", "a3", kNotApplicable, kNotApplicable } },
     // If we only have two suggestions, we have room for a history result.
     { term,
       "[\"term\",[\"a1\", \"a2\"],[],[],"
        "{\"google:suggesttype\":[\"QUERY\", \"QUERY\"],"
-        "\"google:verbatimrelevance\":1350,"
-        "\"google:suggestrelevance\":[1330, 1310]}]",
-      { "term", "a1", "a2", "term1", kNotApplicable, kNotApplicable } },
+        "\"google:verbatimrelevance\":1450,"
+        "\"google:suggestrelevance\":[1430, 1410]}]",
+      { "term", "a1", "a2", "term2", kNotApplicable, kNotApplicable } },
     // If we have more than three suggestions, they should all be returned as
     // long as we have enough total space for them.
     { term,
       "[\"term\",[\"a1\", \"a2\", \"a3\", \"a4\"],[],[],"
        "{\"google:suggesttype\":[\"QUERY\", \"QUERY\", \"QUERY\", \"QUERY\"],"
-        "\"google:verbatimrelevance\":1350,"
-        "\"google:suggestrelevance\":[1340, 1330, 1320, 1310]}]",
+        "\"google:verbatimrelevance\":1450,"
+        "\"google:suggestrelevance\":[1440, 1430, 1420, 1410]}]",
       { "term", "a1", "a2", "a3", "a4", kNotApplicable } },
     { term,
       "[\"term\",[\"a1\", \"a2\", \"a3\", \"a4\", \"a5\", \"a6\"],[],[],"
        "{\"google:suggesttype\":[\"QUERY\", \"QUERY\", \"QUERY\", \"QUERY\","
                                 "\"QUERY\", \"QUERY\"],"
-        "\"google:verbatimrelevance\":1350,"
-        "\"google:suggestrelevance\":[1340, 1330, 1320, 1310, 1300, 1290]}]",
+        "\"google:verbatimrelevance\":1450,"
+        "\"google:suggestrelevance\":[1440, 1430, 1420, 1410, 1400, 1390]}]",
       { "term", "a1", "a2", "a3", "a4", "a5" } },
     { term,
       "[\"term\",[\"a1\", \"a2\", \"a3\", \"a4\"],[],[],"
        "{\"google:suggesttype\":[\"QUERY\", \"QUERY\", \"QUERY\", \"QUERY\"],"
-        "\"google:verbatimrelevance\":1350,"
-        "\"google:suggestrelevance\":[1330, 1310, 1290, 1270]}]",
-      { "term", "a1", "a2", "term1", "a3", "a4" } },
+        "\"google:verbatimrelevance\":1450,"
+        "\"google:suggestrelevance\":[1430, 1410, 1390, 1370]}]",
+      { "term", "a1", "a2", "term2", "a3", "a4" } },
     // When the input looks like a URL, we disallow having a query as the
     // highest-ranking result.  If the query was provided by a suggestion, we
     // reset the suggest scores to enforce this (see

@@ -1537,21 +1537,6 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
                                    int accepted_suggestion,
                                    bool is_keyword,
                                    MatchMap* map) {
-  // With Instant Extended, we never want to inline autocomplete search queries
-  // -- they should always use grey text if they are to autocomplete at all. So
-  // we clamp non-verbatim results to just below the verbatim score to ensure
-  // that none of them are inline autocompleted.
-  // TODO(pkasting): This shouldn't depend on Instant Extended.  If we think
-  // this change is a win, let's change the suggest server to not send
-  // high-ranking suggest scores, and change CalculateRelevanceForHistory() to
-  // use lower curves.  This code is also buggy as-is because it can demote many
-  // matches to the same relevance score.
-  if (type != AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED &&
-      type != AutocompleteMatchType::SEARCH_OTHER_ENGINE &&
-      chrome::IsInstantExtendedAPIEnabled()) {
-    relevance = std::min(kNonURLVerbatimRelevance - 1, relevance);
-  }
-
   const string16& keyword = is_keyword ?
       providers_.keyword_provider() : providers_.default_provider();
   AutocompleteMatch match = CreateSearchSuggestion(profile_, this, input_,
