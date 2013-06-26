@@ -35,6 +35,7 @@ HTTP_STATUS(NOT_MODIFIED, 304, "Not Modified")
 HTTP_STATUS(USE_PROXY, 305, "Use Proxy")
 // 306 is no longer used.
 HTTP_STATUS(TEMPORARY_REDIRECT, 307, "Temporary Redirect")
+HTTP_STATUS(PERMANENT_REDIRECT, 308, "Permanent Redirect")
 
 // Client error 4xx
 HTTP_STATUS(BAD_REQUEST, 400, "Bad Request")
