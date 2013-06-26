@@ -136,6 +136,8 @@ enum {
     ID_PROPERTY_WINDOWED_PLUGIN,
     ID_PROPERTY_TEST_OBJECT_COUNT,
     ID_PROPERTY_DELETE_IN_GET_PROPERTY,
+    ID_PROPERTY_DELETE_IN_HAS_PROPERTY_RETURN_TRUE,
+    ID_PROPERTY_DELETE_IN_SET_PROPERTY,
     NUM_PROPERTY_IDENTIFIERS
 };
 
@@ -152,7 +154,9 @@ static const NPUTF8 *pluginPropertyIdentifierNames[NUM_PROPERTY_IDENTIFIERS] = {
     "lastSetWindowArguments",
     "windowedPlugin",
     "testObjectCount",
-    "deletePluginInGetProperty"
+    "deletePluginInGetProperty",
+    "deletePluginInHasPropertyReturnTrue",
+    "deletePluginInSetProperty"
 };
 
 enum {
@@ -274,11 +278,10 @@ static bool callDeletePlugin(NPObject* obj, NPIdentifier name, NPIdentifier iden
 
 static bool pluginHasProperty(NPObject *obj, NPIdentifier name)
 {
-    if (callDeletePlugin(obj, name, browser->getstringidentifier("deletePluginReturnTrue")))
-        return true;
-
-    if (callDeletePlugin(obj, name, browser->getstringidentifier("deletePluginReturnFalse")))
+    if (callDeletePlugin(obj, name, browser->getstringidentifier("deletePluginInHasPropertyReturnFalse")))
         return false;
+
+    callDeletePlugin(obj, name, pluginPropertyIdentifiers[ID_PROPERTY_DELETE_IN_HAS_PROPERTY_RETURN_TRUE]);
 
     for (int i = 0; i < NUM_PROPERTY_IDENTIFIERS; i++)
         if (name == pluginPropertyIdentifiers[i])
@@ -366,7 +369,7 @@ static bool pluginGetProperty(NPObject* obj, NPIdentifier name, NPVariant* resul
 static bool pluginSetProperty(NPObject* obj, NPIdentifier name, const NPVariant* variant)
 {
     PluginObject* plugin = reinterpret_cast<PluginObject*>(obj);
-    if (callDeletePlugin(obj, name, browser->getstringidentifier("deletePluginReturnTrue")))
+    if (callDeletePlugin(obj, name, pluginPropertyIdentifiers[ID_PROPERTY_DELETE_IN_SET_PROPERTY]))
         return true;
 
     if (name == pluginPropertyIdentifiers[ID_PROPERTY_EVENT_LOGGING]) {
