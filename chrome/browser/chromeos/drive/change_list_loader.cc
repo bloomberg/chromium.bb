@@ -103,13 +103,6 @@ void ChangeListLoader::LoadDirectoryFromServer(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // Do not try to load when offline.
-  // TODO(hashimoto): Remove this offline check. crbug.com/230308
-  if (net::NetworkChangeNotifier::IsOffline()) {
-    callback.Run(FILE_ERROR_NO_CONNECTION);
-    return;
-  }
-
   // First fetch the latest changestamp to see if this directory needs to be
   // updated.
   scheduler_->GetAboutResource(
@@ -256,13 +249,6 @@ void ChangeListLoader::LoadFromServerIfNeeded(
     const DirectoryFetchInfo& directory_fetch_info,
     int64 local_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Do not try to load when offline.
-  // TODO(hashimoto): Remove this offline check. crbug.com/230308
-  if (net::NetworkChangeNotifier::IsOffline()) {
-    OnChangeListLoadComplete(FILE_ERROR_NO_CONNECTION);
-    return;
-  }
 
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
@@ -524,13 +510,6 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
     // Load for a <other> directory is meaningless in the server.
     // Let it succeed and use what we have locally.
     callback.Run(FILE_ERROR_OK);
-    return;
-  }
-
-  // Do not try to load when offline.
-  // TODO(hashimoto): Remove this offline check. crbug.com/230308
-  if (net::NetworkChangeNotifier::IsOffline()) {
-    callback.Run(FILE_ERROR_NO_CONNECTION);
     return;
   }
 

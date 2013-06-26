@@ -39,6 +39,12 @@ bool JobQueue::PopForRun(int accepted_priority, JobID* id) {
   return false;
 }
 
+void JobQueue::GetQueuedJobs(int priority, std::vector<JobID>* jobs) const {
+  DCHECK_LT(priority, static_cast<int>(queue_.size()));
+
+  jobs->assign(queue_[priority].begin(), queue_[priority].end());
+}
+
 void JobQueue::Push(JobID id, int priority) {
   DCHECK_LT(priority, static_cast<int>(queue_.size()));
 

@@ -311,6 +311,9 @@ class JobScheduler
   // For testing only.  Disables throttling so that testing is faster.
   void SetDisableThrottling(bool disable) { disable_throttling_ = disable; }
 
+  // Aborts a job which is not in STATE_RUNNING.
+  void AbortNotRunningJob(JobEntry* job, google_apis::GDataErrorCode error);
+
   // Notifies updates to observers.
   void NotifyJobAdded(const JobInfo& job_info);
   void NotifyJobDone(const JobInfo& job_info,

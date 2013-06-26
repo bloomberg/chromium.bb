@@ -123,10 +123,6 @@ class JobSchedulerTest : public testing::Test {
   // the specified connection type.
   void ChangeConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
     fake_network_change_notifier_->SetConnectionType(type);
-    // Notify the sync client that the network is changed. This is done via
-    // NetworkChangeNotifier in production, but here, we simulate the behavior
-    // by directly calling OnConnectionTypeChanged().
-    scheduler_->OnConnectionTypeChanged(type);
   }
 
   // Sets up FakeNetworkChangeNotifier as if it's connected to wifi network.
@@ -147,6 +143,10 @@ class JobSchedulerTest : public testing::Test {
   // Sets up FakeNetworkChangeNotifier as if it's disconnected.
   void ConnectToNone() {
     ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
+  }
+
+  static int GetMetadataQueueMaxJobCount() {
+    return JobScheduler::kMaxJobCount[JobScheduler::METADATA_QUEUE];
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -417,9 +417,19 @@ TEST_F(JobSchedulerTest, AddNewDirectory) {
 }
 
 TEST_F(JobSchedulerTest, GetResourceEntryPriority) {
-  // Disconnect from the network to prevent jobs from starting.
-  ConnectToNone();
+  // Saturate the metadata job queue with uninteresting jobs to prevent
+  // following jobs from starting.
+  google_apis::GDataErrorCode error_dontcare = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> entry_dontcare;
+  for (int i = 0; i < GetMetadataQueueMaxJobCount(); ++i) {
+    scheduler_->GetResourceEntry(
+        "uninteresting_resource_id",
+        ClientContext(USER_INITIATED),
+        google_apis::test_util::CreateCopyResultCallback(&error_dontcare,
+                                                         &entry_dontcare));
+  }
 
+  // Start jobs with different priorities.
   std::string resource_1("file:1_file_resource_id");
   std::string resource_2("file:2_file_resource_id");
   std::string resource_3("file:3_file_resource_id");
@@ -451,40 +461,54 @@ TEST_F(JobSchedulerTest, GetResourceEntryPriority) {
                  &resource_ids,
                  resource_4));
 
-  // Reconnect to the network to start all jobs.
-  ConnectToWifi();
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(resource_ids.size(), 4ul);
-  ASSERT_EQ(resource_ids[0], resource_1);
-  ASSERT_EQ(resource_ids[1], resource_4);
-  ASSERT_EQ(resource_ids[2], resource_2);
-  ASSERT_EQ(resource_ids[3], resource_3);
+  EXPECT_EQ(resource_ids[0], resource_1);
+  EXPECT_EQ(resource_ids[1], resource_4);
+  EXPECT_EQ(resource_ids[2], resource_2);
+  EXPECT_EQ(resource_ids[3], resource_3);
 }
 
-TEST_F(JobSchedulerTest, GetResourceEntryNoConnection) {
+TEST_F(JobSchedulerTest, GetResourceEntryNoConnectionUserInitiated) {
   ConnectToNone();
 
-  std::string resource("file:1_file_resource_id");
-  std::vector<std::string> resource_ids;
+  std::string resource_id("file:2_file_resource_id");
 
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> entry;
   scheduler_->GetResourceEntry(
-      resource,  // resource ID
-      ClientContext(BACKGROUND),
-      base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
-                 &resource_ids,
-                 resource));
+      resource_id,
+      ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(resource_ids.size(), 0ul);
+  EXPECT_EQ(google_apis::GDATA_NO_CONNECTION, error);
+}
+
+TEST_F(JobSchedulerTest, GetResourceEntryNoConnectionBackground) {
+  ConnectToNone();
+
+  std::string resource_id("file:2_file_resource_id");
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> entry;
+  scheduler_->GetResourceEntry(
+      resource_id,
+      ClientContext(BACKGROUND),
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(entry);
 
   // Reconnect to the net.
   ConnectToWifi();
 
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(resource_ids.size(), 1ul);
-  ASSERT_EQ(resource_ids[0], resource);
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(resource_id, entry->resource_id());
 }
 
 TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {

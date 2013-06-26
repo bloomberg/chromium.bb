@@ -199,12 +199,7 @@ void JobScheduler::CancelJob(JobID job_id) {
       if (!job->cancel_callback.is_null())
         job->cancel_callback.Run();
     } else {
-      // Otherwise, just remove from the queue and calls back to the client.
-      base::Callback<void(google_apis::GDataErrorCode)> callback =
-          job->abort_callback;
-      queue_[GetJobQueueType(job->job_info.job_type)]->Remove(job_id);
-      job_map_.Remove(job_id);
-      callback.Run(google_apis::GDATA_CANCELLED);
+      AbortNotRunningJob(job, google_apis::GDATA_CANCELLED);
     }
   }
 }
@@ -708,11 +703,23 @@ void JobScheduler::QueueJob(JobID job_id) {
 void JobScheduler::DoJobLoop(QueueType queue_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  JobID job_id = -1;
-  if (!queue_[queue_type]->PopForRun(GetCurrentAcceptedPriority(queue_type),
-                                     &job_id)) {
-    return;
+  const int accepted_priority = GetCurrentAcceptedPriority(queue_type);
+
+  // Abort all USER_INITAITED jobs when not accepted.
+  if (accepted_priority < USER_INITIATED) {
+    std::vector<JobID> jobs;
+    queue_[queue_type]->GetQueuedJobs(USER_INITIATED, &jobs);
+    for (size_t i = 0; i < jobs.size(); ++i) {
+      JobEntry* job = job_map_.Lookup(jobs[i]);
+      DCHECK(job);
+      AbortNotRunningJob(job, google_apis::GDATA_NO_CONNECTION);
+    }
   }
+
+  // Run the job with the highest priority in the queue.
+  JobID job_id = -1;
+  if (!queue_[queue_type]->PopForRun(accepted_priority, &job_id))
+    return;
 
   JobEntry* entry = job_map_.Lookup(job_id);
   DCHECK(entry);
@@ -734,8 +741,7 @@ int JobScheduler::GetCurrentAcceptedPriority(QueueType queue_type) {
 
   const int kNoJobShouldRun = -1;
 
-  // Should stop if the gdata feature was disabled while running the fetch
-  // loop.
+  // Should stop if Drive was disabled while running the fetch loop.
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDrive))
     return kNoJobShouldRun;
 
@@ -827,7 +833,7 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
   } else {
     NotifyJobDone(*job_info, error);
     // The job has finished, no retry will happen in the scheduler. Now we can
-    // remove the job info from the map. This is the only place of the removal.
+    // remove the job info from the map.
     job_map_.Remove(job_id);
 
     ResetThrottleAndContinueJobLoop(queue_type);
@@ -956,14 +962,11 @@ void JobScheduler::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Resume the job loop if the network is back online. Note that we don't
-  // need to check the type of the network as it will be checked in
-  // ShouldStopJobLoop() as soon as the loop is resumed.
-  if (!net::NetworkChangeNotifier::IsOffline()) {
-    for (int i = METADATA_QUEUE; i < NUM_QUEUES; ++i) {
-      DoJobLoop(static_cast<QueueType>(i));
-    }
-  }
+  // Resume the job loop.
+  // Note that we don't need to check the network connection status as it will
+  // be checked in GetCurrentAcceptedPriority().
+  for (int i = METADATA_QUEUE; i < NUM_QUEUES; ++i)
+    DoJobLoop(static_cast<QueueType>(i));
 }
 
 JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
@@ -994,6 +997,26 @@ JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
   }
   NOTREACHED();
   return FILE_QUEUE;
+}
+
+void JobScheduler::AbortNotRunningJob(JobEntry* job,
+                                      google_apis::GDataErrorCode error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const base::TimeDelta elapsed = base::Time::Now() - job->job_info.start_time;
+  const QueueType queue_type = GetJobQueueType(job->job_info.job_type);
+  util::Log("Job aborted: %s => %s (elapsed time: %sms) - %s",
+            job->job_info.ToString().c_str(),
+            GDataErrorCodeToString(error).c_str(),
+            base::Int64ToString(elapsed.InMilliseconds()).c_str(),
+            GetQueueInfo(queue_type).c_str());
+
+  base::Callback<void(google_apis::GDataErrorCode)> callback =
+      job->abort_callback;
+  queue_[GetJobQueueType(job->job_info.job_type)]->Remove(job->job_info.job_id);
+  job_map_.Remove(job->job_info.job_id);
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                              base::Bind(callback, error));
 }
 
 void JobScheduler::NotifyJobAdded(const JobInfo& job_info) {
