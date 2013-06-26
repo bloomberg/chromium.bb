@@ -1606,7 +1606,6 @@ crbug.com/243492 [ Win Mac Linux ] http/tests/inspector-enabled/injected-script-
 crbug.com/243515 [ Win ] fast/autoresize/basic.html [ Pass Timeout ]
 crbug.com/243520 [ Mac ] fast/css/font-weight-1.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/243523 http/tests/history/back-with-fragment-change.php [ Pass Timeout Failure ]
-crbug.com/243592 [ Win ] fast/dom/Window/window-screen-properties.html [ Failure ]
 crbug.com/243593 [ Win ] fast/media/color-does-not-include-alpha.html [ Failure ]
 crbug.com/243596 [ Win ] inspector-protocol/input/dispatchMouseEvent.html [ Failure Pass ]
 crbug.com/243599 [ Release ] fast/loader/stateobjects/replacestate-in-onunload.html [ Crash Pass ]
