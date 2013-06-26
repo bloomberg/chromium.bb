@@ -1455,6 +1455,17 @@ crbug.com/247572 fast/forms/suggestion-picker/week-suggestion-picker-appearance-
 crbug.com/247572 fast/css/input-search-padding.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/247572 fast/css/text-overflow-input.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/247572 fast/replaced/width100percent-searchfield.html [ Failure ImageOnlyFailure Pass ]
+crbug.com/130259 [ Mac ] fast/forms/datalist/input-appearance-range-with-datalist-zoomed.html [ ImageOnlyFailure ]
+crbug.com/130259 [ Mac ] fast/forms/datalist/input-appearance-range-with-datalist.html [ ImageOnlyFailure ]
+crbug.com/130259 [ Mac ] fast/forms/datalist/input-appearance-range-with-padding-with-datalist.html [ ImageOnlyFailure ]
+crbug.com/130259 [ Mac ] fast/forms/datalist/input-appearance-range-with-transform.html [ ImageOnlyFailure ]
+crbug.com/130259 [ Mac ] fast/forms/range/input-appearance-range.html [ ImageOnlyFailure ]
+crbug.com/130259 [ Mac ] fast/forms/range/range-appearance-basic.html [ ImageOnlyFailure ]
+crbug.com/130259 [ Mac ] fast/forms/range/slider-padding.html [ ImageOnlyFailure ]
+crbug.com/130259 [ Mac ] fast/forms/range/slider-thumb-shared-style.html [ ImageOnlyFailure ]
+crbug.com/130259 [ Mac ] fast/forms/range/thumbslider-no-parent-slider.html [ ImageOnlyFailure ]
+crbug.com/130259 [ Mac ] fast/dom/HTMLInputElement/input-slider-update.html [ ImageOnlyFailure ]
+crbug.com/130259 [ Mac ] fast/repaint/slider-thumb-drag-release.html [ ImageOnlyFailure ]
 
 # New virtual test suite. This needs to be updated with more specific
 # expectations once we have more data from running the tests on the bots.

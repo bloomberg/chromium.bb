@@ -322,6 +322,16 @@ public:
     void drawFocusRing(const Vector<IntRect>&, int width, int offset, const Color&);
     void drawFocusRing(const Path&, int width, int offset, const Color&);
 
+    enum Edge {
+        NoEdge = 0,
+        TopEdge = 1 << 1,
+        RightEdge = 1 << 2,
+        BottomEdge = 1 << 3,
+        LeftEdge = 1 << 4
+    };
+    typedef unsigned Edges;
+    void drawInnerShadow(const RoundedRect&, const Color& shadowColor, const IntSize shadowOffset, int shadowBlur, int shadowSpread, Edges clippedEdges = NoEdge);
+
     // This clip function is used only by <canvas> code. It allows
     // implementations to handle clipping on the canvas differently since
     // the discipline is different.

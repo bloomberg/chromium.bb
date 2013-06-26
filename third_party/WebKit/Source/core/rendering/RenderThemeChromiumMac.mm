@@ -170,9 +170,7 @@ enum {
 };
 
 RenderThemeChromiumMac::RenderThemeChromiumMac()
-    : m_isSliderThumbHorizontalPressed(false)
-    , m_isSliderThumbVerticalPressed(false)
-    , m_notificationObserver(AdoptNS, [[WebCoreRenderThemeNotificationObserver alloc] initWithTheme:this])
+    : m_notificationObserver(AdoptNS, [[WebCoreRenderThemeNotificationObserver alloc] initWithTheme:this])
 {
     [[NSNotificationCenter defaultCenter] addObserver:m_notificationObserver.get()
                                                         selector:@selector(systemColorsDidChange:)
@@ -525,6 +523,8 @@ bool RenderThemeChromiumMac::isControlStyled(const RenderStyle* style, const Bor
     return RenderTheme::isControlStyled(style, border, background, backgroundColor);
 }
 
+const int sliderThumbShadowBlur = 1;
+
 void RenderThemeChromiumMac::adjustRepaintRect(const RenderObject* o, IntRect& r)
 {
     ControlPart part = o->style()->appearance();
@@ -551,6 +551,8 @@ void RenderThemeChromiumMac::adjustRepaintRect(const RenderObject* o, IntRect& r
         size.setHeight(size.height() * zoomLevel);
         size.setWidth(r.width());
         r = inflateRect(r, size, popupButtonMargins(), zoomLevel);
+    } else if (part == SliderThumbHorizontalPart || part == SliderThumbVerticalPart) {
+        r.setHeight(r.height() + sliderThumbShadowBlur);
     }
 }
 
@@ -1157,16 +1159,6 @@ static void MainGradientInterpolate(void*, const CGFloat* inData, CGFloat* outDa
         outData[i] = (1.0f - a) * dark[i] + a * light[i];
 }
 
-static void TrackGradientInterpolate(void*, const CGFloat* inData, CGFloat* outData)
-{
-    static float dark[4] = { 0.0f, 0.0f, 0.0f, 0.678f };
-    static float light[4] = { 0.0f, 0.0f, 0.0f, 0.13f };
-    float a = inData[0];
-    int i = 0;
-    for (i = 0; i < 4; i++)
-        outData[i] = (1.0f - a) * dark[i] + a * light[i];
-}
-
 void RenderThemeChromiumMac::paintMenuListButtonGradients(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     if (r.isEmpty())
@@ -1419,107 +1411,161 @@ int RenderThemeChromiumMac::minimumMenuListSize(RenderStyle* style) const
     return sizeForSystemFont(style, menuListSizes()).width();
 }
 
-const int trackWidth = 5;
-const int trackRadius = 2;
+const int sliderTrackWidth = 5;
+const int sliderTrackBorderWidth = 1;
 
 bool RenderThemeChromiumMac::paintSliderTrack(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    IntRect bounds = r;
-    float zoomLevel = o->style()->effectiveZoom();
-    float zoomedTrackWidth = trackWidth * zoomLevel;
-
-    if (o->style()->appearance() ==  SliderHorizontalPart || o->style()->appearance() ==  MediaSliderPart) {
-        bounds.setHeight(zoomedTrackWidth);
-        bounds.setY(r.y() + r.height() / 2 - zoomedTrackWidth / 2);
-    } else if (o->style()->appearance() == SliderVerticalPart) {
-        bounds.setWidth(zoomedTrackWidth);
-        bounds.setX(r.x() + r.width() / 2 - zoomedTrackWidth / 2);
-    }
-
-    LocalCurrentGraphicsContext localContext(paintInfo.context);
-    CGContextRef context = localContext.cgContext();
-    CGColorSpaceRef cspace = deviceRGBColorSpaceRef();
-
     paintSliderTicks(o, paintInfo, r);
 
-    GraphicsContextStateSaver stateSaver(*paintInfo.context);
-    CGContextClipToRect(context, bounds);
+    float zoomLevel = o->style()->effectiveZoom();
+    FloatRect unzoomedRect = r;
 
-    struct CGFunctionCallbacks mainCallbacks = { 0, TrackGradientInterpolate, NULL };
-    RetainPtr<CGFunctionRef> mainFunction(AdoptCF, CGFunctionCreate(NULL, 1, NULL, 4, NULL, &mainCallbacks));
-    RetainPtr<CGShadingRef> mainShading;
-    if (o->style()->appearance() == SliderVerticalPart)
-        mainShading.adoptCF(CGShadingCreateAxial(cspace, CGPointMake(bounds.x(),  bounds.maxY()), CGPointMake(bounds.maxX(), bounds.maxY()), mainFunction.get(), false, false));
-    else
-        mainShading.adoptCF(CGShadingCreateAxial(cspace, CGPointMake(bounds.x(),  bounds.y()), CGPointMake(bounds.x(), bounds.maxY()), mainFunction.get(), false, false));
-
-    IntSize radius(trackRadius, trackRadius);
-    paintInfo.context->clipRoundedRect(RoundedRect(bounds, radius, radius, radius, radius));
-    context = localContext.cgContext();
-    CGContextDrawShading(context, mainShading.get());
-
-    return false;
-}
-
-const float verticalSliderHeightPadding = 0.1f;
-
-bool RenderThemeChromiumMac::paintSliderThumb(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
-{
-    NSSliderCell* sliderThumbCell = o->style()->appearance() == SliderThumbVerticalPart
-        ? sliderThumbVertical()
-        : sliderThumbHorizontal();
-
-    LocalCurrentGraphicsContext localContext(paintInfo.context);
-
-    // Update the various states we respond to.
-    updateActiveState(sliderThumbCell, o);
-    updateEnabledState(sliderThumbCell, o);
-    updateFocusedState(sliderThumbCell, (o->node() && o->node()->focusDelegate()->renderer()) ? o->node()->focusDelegate()->renderer() : o);
-
-    // Update the pressed state using the NSCell tracking methods, since that's how NSSliderCell keeps track of it.
-    bool oldPressed;
-    if (o->style()->appearance() == SliderThumbVerticalPart)
-        oldPressed = m_isSliderThumbVerticalPressed;
-    else
-        oldPressed = m_isSliderThumbHorizontalPressed;
-
-    bool pressed = isPressed(o);
-
-    if (o->style()->appearance() == SliderThumbVerticalPart)
-        m_isSliderThumbVerticalPressed = pressed;
-    else
-        m_isSliderThumbHorizontalPressed = pressed;
-
-    if (pressed != oldPressed) {
-        if (pressed)
-            [sliderThumbCell startTrackingAt:NSPoint() inView:nil];
-        else
-            [sliderThumbCell stopTracking:NSPoint() at:NSPoint() inView:nil mouseIsUp:YES];
+    if (o->style()->appearance() ==  SliderHorizontalPart || o->style()->appearance() ==  MediaSliderPart) {
+        unzoomedRect.setY(ceilf(unzoomedRect.y() + unzoomedRect.height() / 2 - zoomLevel * sliderTrackWidth / 2));
+        unzoomedRect.setHeight(zoomLevel * sliderTrackWidth);
+    } else if (o->style()->appearance() == SliderVerticalPart) {
+        unzoomedRect.setX(ceilf(unzoomedRect.x() + unzoomedRect.width() / 2 - zoomLevel * sliderTrackWidth / 2));
+        unzoomedRect.setWidth(zoomLevel * sliderTrackWidth);
     }
 
-    FloatRect bounds = r;
-    // Make the height of the vertical slider slightly larger so NSSliderCell will draw a vertical slider.
-    if (o->style()->appearance() == SliderThumbVerticalPart)
-        bounds.setHeight(bounds.height() + verticalSliderHeightPadding * o->style()->effectiveZoom());
-
-    GraphicsContextStateSaver stateSaver(*paintInfo.context);
-    float zoomLevel = o->style()->effectiveZoom();
-
-    FloatRect unzoomedRect = bounds;
-    if (zoomLevel != 1.0f) {
+    if (zoomLevel != 1) {
         unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
         unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
+    }
+
+    GraphicsContextStateSaver stateSaver(*paintInfo.context);
+    if (zoomLevel != 1) {
         paintInfo.context->translate(unzoomedRect.x(), unzoomedRect.y());
         paintInfo.context->scale(FloatSize(zoomLevel, zoomLevel));
         paintInfo.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
-    paintInfo.context->translate(0, unzoomedRect.y());
-    paintInfo.context->scale(FloatSize(1, -1));
-    paintInfo.context->translate(0, -(unzoomedRect.y() + unzoomedRect.height()));
+    Color fillColor(205, 205, 205);
+    Color borderGradientTopColor(109, 109, 109);
+    Color borderGradientBottomColor(181, 181, 181);
+    Color shadowColor(0, 0, 0, 118);
 
-    [sliderThumbCell drawInteriorWithFrame:unzoomedRect inView:documentViewFor(o)];
-    [sliderThumbCell setControlView:nil];
+    if (!isEnabled(o)) {
+        Color tintColor(255, 255, 255, 128);
+        fillColor = fillColor.blend(tintColor);
+        borderGradientTopColor = borderGradientTopColor.blend(tintColor);
+        borderGradientBottomColor = borderGradientBottomColor.blend(tintColor);
+        shadowColor = shadowColor.blend(tintColor);
+    }
+
+    Color tintColor;
+    if (!isEnabled(o))
+        tintColor = Color(255, 255, 255, 128);
+
+    bool isVerticalSlider = o->style()->appearance() == SliderVerticalPart;
+
+    int fillRadiusSize = (sliderTrackWidth - sliderTrackBorderWidth) / 2;
+    IntSize fillRadius(fillRadiusSize, fillRadiusSize);
+    IntRect fillBounds = enclosedIntRect(unzoomedRect);
+    RoundedRect fillRect(fillBounds, fillRadius, fillRadius, fillRadius, fillRadius);
+    paintInfo.context->fillRoundedRect(fillRect, fillColor);
+
+    IntSize shadowOffset(isVerticalSlider ? 1 : 0,
+                         isVerticalSlider ? 0 : 1);
+    int shadowBlur = 3;
+    int shadowSpread = 0;
+    paintInfo.context->save();
+    paintInfo.context->drawInnerShadow(fillRect, shadowColor, shadowOffset, shadowBlur, shadowSpread);
+    paintInfo.context->restore();
+
+    RefPtr<Gradient> borderGradient = Gradient::create(fillBounds.minXMinYCorner(),
+        isVerticalSlider ? fillBounds.maxXMinYCorner() : fillBounds.minXMaxYCorner());
+    borderGradient->addColorStop(0.0, borderGradientTopColor);
+    borderGradient->addColorStop(1.0, borderGradientBottomColor);
+    Path borderPath;
+    FloatRect borderRect(unzoomedRect);
+    borderRect.inflate(-sliderTrackBorderWidth / 2.0);
+    float borderRadiusSize = (isVerticalSlider ? borderRect.width() : borderRect.height()) / 2;
+    FloatSize borderRadius(borderRadiusSize, borderRadiusSize);
+    borderPath.addRoundedRect(borderRect, borderRadius, borderRadius, borderRadius, borderRadius);
+    paintInfo.context->setStrokeGradient(borderGradient);
+    paintInfo.context->setStrokeThickness(sliderTrackBorderWidth);
+    paintInfo.context->strokePath(borderPath);
+    return false;
+}
+
+const int sliderThumbWidth = 15;
+const int sliderThumbHeight = 15;
+const int sliderThumbBorderWidth = 1;
+
+bool RenderThemeChromiumMac::paintSliderThumb(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
+{
+    GraphicsContextStateSaver stateSaver(*paintInfo.context);
+    float zoomLevel = o->style()->effectiveZoom();
+
+    FloatRect unzoomedRect(r.x(), r.y(), sliderThumbWidth, sliderThumbHeight);
+    if (zoomLevel != 1.0f) {
+        paintInfo.context->translate(unzoomedRect.x(), unzoomedRect.y());
+        paintInfo.context->scale(FloatSize(zoomLevel, zoomLevel));
+        paintInfo.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
+    }
+
+    Color fillGradientTopColor(250, 250, 250);
+    Color fillGradientUpperMiddleColor(244, 244, 244);
+    Color fillGradientLowerMiddleColor(236, 236, 236);
+    Color fillGradientBottomColor(238, 238, 238);
+    Color borderGradientTopColor(151, 151, 151);
+    Color borderGradientBottomColor(128, 128, 128);
+    Color shadowColor(0, 0, 0, 36);
+
+    if (!isEnabled(o)) {
+        Color tintColor(255, 255, 255, 128);
+        fillGradientTopColor = fillGradientTopColor.blend(tintColor);
+        fillGradientUpperMiddleColor = fillGradientUpperMiddleColor.blend(tintColor);
+        fillGradientLowerMiddleColor = fillGradientLowerMiddleColor.blend(tintColor);
+        fillGradientBottomColor = fillGradientBottomColor.blend(tintColor);
+        borderGradientTopColor = borderGradientTopColor.blend(tintColor);
+        borderGradientBottomColor = borderGradientBottomColor.blend(tintColor);
+        shadowColor = shadowColor.blend(tintColor);
+    } else if (isPressed(o)) {
+        Color tintColor(0, 0, 0, 32);
+        fillGradientTopColor = fillGradientTopColor.blend(tintColor);
+        fillGradientUpperMiddleColor = fillGradientUpperMiddleColor.blend(tintColor);
+        fillGradientLowerMiddleColor = fillGradientLowerMiddleColor.blend(tintColor);
+        fillGradientBottomColor = fillGradientBottomColor.blend(tintColor);
+        borderGradientTopColor = borderGradientTopColor.blend(tintColor);
+        borderGradientBottomColor = borderGradientBottomColor.blend(tintColor);
+        shadowColor = shadowColor.blend(tintColor);
+    }
+
+    FloatRect borderBounds = unzoomedRect;
+    borderBounds.inflate(sliderThumbBorderWidth / 2.0);
+
+    FloatRect shadowBounds = unzoomedRect;
+    borderBounds.inflate(-sliderThumbBorderWidth);
+    FloatSize shadowOffset(0, 1);
+    paintInfo.context->setShadow(shadowOffset, sliderThumbShadowBlur, shadowColor);
+    paintInfo.context->setFillColor(Color::black);
+    paintInfo.context->fillEllipse(borderBounds);
+    paintInfo.context->clearShadow();
+
+    IntRect fillBounds = enclosedIntRect(unzoomedRect);
+    RefPtr<Gradient> fillGradient = Gradient::create(fillBounds.minXMinYCorner(), fillBounds.minXMaxYCorner());
+    fillGradient->addColorStop(0.0, fillGradientTopColor);
+    fillGradient->addColorStop(0.52, fillGradientUpperMiddleColor);
+    fillGradient->addColorStop(0.52, fillGradientLowerMiddleColor);
+    fillGradient->addColorStop(1.0, fillGradientBottomColor);
+    paintInfo.context->setFillGradient(fillGradient);
+    paintInfo.context->fillEllipse(borderBounds);
+
+    RefPtr<Gradient> borderGradient = Gradient::create(fillBounds.minXMinYCorner(), fillBounds.minXMaxYCorner());
+    borderGradient->addColorStop(0.0, borderGradientTopColor);
+    borderGradient->addColorStop(1.0, borderGradientBottomColor);
+    paintInfo.context->setStrokeGradient(borderGradient);
+    paintInfo.context->setStrokeThickness(sliderThumbBorderWidth);
+    paintInfo.context->strokeEllipse(borderBounds);
+
+    if (isFocused(o)) {
+        Path borderPath;
+        borderPath.addEllipse(borderBounds);
+        paintInfo.context->drawFocusRing(borderPath, 5, -2, focusRingColor());
+    }
 
     return false;
 }
@@ -1756,9 +1802,6 @@ int RenderThemeChromiumMac::sliderTickOffsetFromTrackCenter() const
     return -9;
 }
 
-const int sliderThumbWidth = 15;
-const int sliderThumbHeight = 15;
-
 void RenderThemeChromiumMac::adjustSliderThumbSize(RenderStyle* style, Element*) const
 {
     float zoomLevel = style->effectiveZoom();
@@ -1800,30 +1843,6 @@ NSMenu* RenderThemeChromiumMac::searchMenuTemplate() const
         m_searchMenuTemplate.adoptNS([[NSMenu alloc] initWithTitle:@""]);
 
     return m_searchMenuTemplate.get();
-}
-
-NSSliderCell* RenderThemeChromiumMac::sliderThumbHorizontal() const
-{
-    if (!m_sliderThumbHorizontal) {
-        m_sliderThumbHorizontal.adoptNS([[NSSliderCell alloc] init]);
-        [m_sliderThumbHorizontal.get() setSliderType:NSLinearSlider];
-        [m_sliderThumbHorizontal.get() setControlSize:NSSmallControlSize];
-        [m_sliderThumbHorizontal.get() setFocusRingType:NSFocusRingTypeExterior];
-    }
-
-    return m_sliderThumbHorizontal.get();
-}
-
-NSSliderCell* RenderThemeChromiumMac::sliderThumbVertical() const
-{
-    if (!m_sliderThumbVertical) {
-        m_sliderThumbVertical.adoptNS([[NSSliderCell alloc] init]);
-        [m_sliderThumbVertical.get() setSliderType:NSLinearSlider];
-        [m_sliderThumbVertical.get() setControlSize:NSSmallControlSize];
-        [m_sliderThumbVertical.get() setFocusRingType:NSFocusRingTypeExterior];
-    }
-
-    return m_sliderThumbVertical.get();
 }
 
 NSTextFieldCell* RenderThemeChromiumMac::textField() const

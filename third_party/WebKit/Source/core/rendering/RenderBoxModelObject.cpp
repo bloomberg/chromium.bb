@@ -2368,7 +2368,6 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
     bool isHorizontal = s->isHorizontalWritingMode();
     
     bool hasOpaqueBackground = s->visitedDependentColor(CSSPropertyBackgroundColor).isValid() && s->visitedDependentColor(CSSPropertyBackgroundColor).alpha() == 255;
-    bool contextWasClipped = false;
     for (const ShadowData* shadow = s->boxShadow(); shadow; shadow = shadow->next()) {
         if (shadow->style() != shadowStyle)
             continue;
@@ -2398,21 +2397,18 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
             context->setDrawLooper(drawLooper);
 
+            context->save();
             if (hasBorderRadius) {
-                if (!contextWasClipped) {
-                    RoundedRect rectToClipOut = border;
+                RoundedRect rectToClipOut = border;
 
-                    // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
-                    // when painting the shadow. On the other hand, it introduces subpixel gaps along the
-                    // corners. Those are avoided by insetting the clipping path by one pixel.
-                    if (hasOpaqueBackground)
-                        rectToClipOut.inflateWithRadii(-1);
+                // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
+                // when painting the shadow. On the other hand, it introduces subpixel gaps along the
+                // corners. Those are avoided by insetting the clipping path by one pixel.
+                if (hasOpaqueBackground)
+                    rectToClipOut.inflateWithRadii(-1);
 
-                    if (!rectToClipOut.isEmpty()) {
-                        context->save();
-                        context->clipOutRoundedRect(rectToClipOut);
-                        contextWasClipped = true;
-                    }
+                if (!rectToClipOut.isEmpty()) {
+                    context->clipOutRoundedRect(rectToClipOut);
                 }
 
                 RoundedRect influenceRect(shadowRect, border.radii());
@@ -2426,88 +2422,44 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
                     context->fillRoundedRect(fillRect, Color::black);
                 }
             } else {
-                if (!contextWasClipped) {
-                    IntRect rectToClipOut = border.rect();
+                IntRect rectToClipOut = border.rect();
 
-                    // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
-                    // when painting the shadow. On the other hand, it introduces subpixel gaps along the
-                    // edges if they are not pixel-aligned. Those are avoided by insetting the clipping path
-                    // by one pixel.
-                    if (hasOpaqueBackground) {
-                        // FIXME: The function to decide on the policy based on the transform should be a named function.
-                        // FIXME: It's not clear if this check is right. What about integral scale factors?
-                        AffineTransform transform = context->getCTM();
-                        if (transform.a() != 1 || (transform.d() != 1 && transform.d() != -1) || transform.b() || transform.c())
-                            rectToClipOut.inflate(-1);
-                    }
+                // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
+                // when painting the shadow. On the other hand, it introduces subpixel gaps along the
+                // edges if they are not pixel-aligned. Those are avoided by insetting the clipping path
+                // by one pixel.
+                if (hasOpaqueBackground) {
+                    // FIXME: The function to decide on the policy based on the transform should be a named function.
+                    // FIXME: It's not clear if this check is right. What about integral scale factors?
+                    AffineTransform transform = context->getCTM();
+                    if (transform.a() != 1 || (transform.d() != 1 && transform.d() != -1) || transform.b() || transform.c())
+                        rectToClipOut.inflate(-1);
+                }
 
-                    if (!rectToClipOut.isEmpty()) {
-                        context->save();
-                        context->clipOut(rectToClipOut);
-                        contextWasClipped = true;
-                    }
+                if (!rectToClipOut.isEmpty()) {
+                    context->clipOut(rectToClipOut);
                 }
                 context->fillRect(fillRect.rect(), Color::black);
             }
+            context->restore();
+            context->clearDrawLooper();
         } else {
-            // Inset shadow.
-            IntRect holeRect(border.rect());
-            holeRect.inflate(-shadowSpread);
-
-            if (holeRect.isEmpty()) {
-                if (hasBorderRadius)
-                    context->fillRoundedRect(border, shadowColor);
-                else
-                    context->fillRect(border.rect(), shadowColor);
-                continue;
-            }
-
+            GraphicsContext::Edges clippedEdges = GraphicsContext::NoEdge;
             if (!includeLogicalLeftEdge) {
-                if (isHorizontal) {
-                    holeRect.move(-max(shadowOffset.width(), 0) - shadowBlur, 0);
-                    holeRect.setWidth(holeRect.width() + max(shadowOffset.width(), 0) + shadowBlur);
-                } else {
-                    holeRect.move(0, -max(shadowOffset.height(), 0) - shadowBlur);
-                    holeRect.setHeight(holeRect.height() + max(shadowOffset.height(), 0) + shadowBlur);
-                }
+                if (isHorizontal)
+                    clippedEdges |= GraphicsContext::LeftEdge;
+                else
+                    clippedEdges |= GraphicsContext::TopEdge;
             }
             if (!includeLogicalRightEdge) {
                 if (isHorizontal)
-                    holeRect.setWidth(holeRect.width() - min(shadowOffset.width(), 0) + shadowBlur);
+                    clippedEdges |= GraphicsContext::RightEdge;
                 else
-                    holeRect.setHeight(holeRect.height() - min(shadowOffset.height(), 0) + shadowBlur);
+                    clippedEdges |= GraphicsContext::BottomEdge;
             }
-
-            Color fillColor(shadowColor.red(), shadowColor.green(), shadowColor.blue(), 255);
-
-            IntRect outerRect = areaCastingShadowInHole(border.rect(), shadowBlur, shadowSpread, shadowOffset);
-            RoundedRect roundedHole(holeRect, border.radii());
-            if (hasBorderRadius)
-                roundedHole.shrinkRadii(shadowSpread);
-
-            if (!contextWasClipped) {
-                context->save();
-                if (hasBorderRadius) {
-                    Path path;
-                    path.addRoundedRect(border);
-                    context->clipPath(path);
-                } else {
-                    context->clip(border.rect());
-                }
-                contextWasClipped = true;
-            }
-
-            DrawLooper drawLooper;
-            drawLooper.addShadow(shadowOffset, shadowBlur, shadowColor,
-                DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
-            context->setDrawLooper(drawLooper);
-            context->fillRectWithRoundedHole(outerRect, roundedHole, fillColor);
+            context->drawInnerShadow(border, shadowColor, shadowOffset, shadowBlur, shadowSpread, clippedEdges);
         }
     }
-
-    if (contextWasClipped)
-        context->restore();
-    context->clearDrawLooper();
 }
 
 LayoutUnit RenderBoxModelObject::containingBlockLogicalWidthForContent() const

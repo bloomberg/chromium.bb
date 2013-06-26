@@ -166,8 +166,6 @@ private:
     NSPopUpButtonCell* popupButton() const;
     NSSearchFieldCell* search() const;
     NSMenu* searchMenuTemplate() const;
-    NSSliderCell* sliderThumbHorizontal() const;
-    NSSliderCell* sliderThumbVertical() const;
     NSTextFieldCell* textField() const;
 
     NSLevelIndicatorStyle levelIndicatorStyleFor(ControlPart) const;
@@ -212,13 +210,8 @@ private:
     mutable RetainPtr<NSPopUpButtonCell> m_popupButton;
     mutable RetainPtr<NSSearchFieldCell> m_search;
     mutable RetainPtr<NSMenu> m_searchMenuTemplate;
-    mutable RetainPtr<NSSliderCell> m_sliderThumbHorizontal;
-    mutable RetainPtr<NSSliderCell> m_sliderThumbVertical;
     mutable RetainPtr<NSLevelIndicatorCell> m_levelIndicator;
     mutable RetainPtr<NSTextFieldCell> m_textField;
-
-    bool m_isSliderThumbHorizontalPressed;
-    bool m_isSliderThumbVerticalPressed;
 
     mutable HashMap<int, RGBA32> m_systemColorCache;
 

@@ -532,14 +532,13 @@ void GraphicsContext::drawFocusRing(const Path& focusRingPath, int width, int of
     if (paintingDisabled())
         return;
 
-    SkPath path = focusRingPath.skPath();
     SkPaint paint;
     paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kStroke_Style);
-
     paint.setColor(color.rgb());
-    drawOuterPath(path, paint, width);
-    drawInnerPath(path, paint, width);
+
+    drawOuterPath(focusRingPath.skPath(), paint, width);
+    drawInnerPath(focusRingPath.skPath(), paint, width);
 }
 
 void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects, int width, int offset, const Color& color)
@@ -568,6 +567,70 @@ void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects, int width, int
     focusRingRegion.getBoundaryPath(&path);
     drawOuterPath(path, paint, width);
     drawInnerPath(path, paint, width);
+}
+
+static inline IntRect areaCastingShadowInHole(const IntRect& holeRect, int shadowBlur, int shadowSpread, const IntSize& shadowOffset)
+{
+    IntRect bounds(holeRect);
+
+    bounds.inflate(shadowBlur);
+
+    if (shadowSpread < 0)
+        bounds.inflate(-shadowSpread);
+
+    IntRect offsetBounds = bounds;
+    offsetBounds.move(-shadowOffset);
+    return unionRect(bounds, offsetBounds);
+}
+
+void GraphicsContext::drawInnerShadow(const RoundedRect& rect, const Color& shadowColor, const IntSize shadowOffset, int shadowBlur, int shadowSpread, Edges clippedEdges)
+{
+    IntRect holeRect(rect.rect());
+    holeRect.inflate(-shadowSpread);
+
+    if (holeRect.isEmpty()) {
+        if (rect.isRounded())
+            fillRoundedRect(rect, shadowColor);
+        else
+            fillRect(rect.rect(), shadowColor);
+        return;
+    }
+
+    if (clippedEdges & LeftEdge) {
+        holeRect.move(-max(shadowOffset.width(), 0) - shadowBlur, 0);
+        holeRect.setWidth(holeRect.width() + max(shadowOffset.width(), 0) + shadowBlur);
+    }
+    if (clippedEdges & TopEdge) {
+        holeRect.move(0, -max(shadowOffset.height(), 0) - shadowBlur);
+        holeRect.setHeight(holeRect.height() + max(shadowOffset.height(), 0) + shadowBlur);
+    }
+    if (clippedEdges & RightEdge)
+        holeRect.setWidth(holeRect.width() - min(shadowOffset.width(), 0) + shadowBlur);
+    if (clippedEdges & BottomEdge)
+        holeRect.setHeight(holeRect.height() - min(shadowOffset.height(), 0) + shadowBlur);
+
+    Color fillColor(shadowColor.red(), shadowColor.green(), shadowColor.blue(), 255);
+
+    IntRect outerRect = areaCastingShadowInHole(rect.rect(), shadowBlur, shadowSpread, shadowOffset);
+    RoundedRect roundedHole(holeRect, rect.radii());
+
+    save();
+    if (rect.isRounded()) {
+        Path path;
+        path.addRoundedRect(rect);
+        clipPath(path);
+        roundedHole.shrinkRadii(shadowSpread);
+    } else {
+        clip(rect.rect());
+    }
+
+    DrawLooper drawLooper;
+    drawLooper.addShadow(shadowOffset, shadowBlur, shadowColor,
+        DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
+    setDrawLooper(drawLooper);
+    fillRectWithRoundedHole(outerRect, roundedHole, fillColor);
+    restore();
+    clearDrawLooper();
 }
 
 // This is only used to draw borders.
