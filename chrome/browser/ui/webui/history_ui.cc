@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -962,6 +963,7 @@ void BrowsingHistoryHandler::Observe(
 
 HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
+  web_ui->AddMessageHandler(new MetricsHandler());
 
 // On mobile we deal with foreign sessions differently.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
