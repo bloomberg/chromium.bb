@@ -33,6 +33,8 @@
             'chromium/TestRunner/src/MockSpellCheck.h',
             'chromium/TestRunner/src/MockWebMediaStreamCenter.cpp',
             'chromium/TestRunner/src/MockWebMediaStreamCenter.h',
+            'chromium/TestRunner/src/MockWebMIDIAccessor.cpp',
+            'chromium/TestRunner/src/MockWebMIDIAccessor.h',
             'chromium/TestRunner/src/MockWebRTCDataChannelHandler.cpp',
             'chromium/TestRunner/src/MockWebRTCDataChannelHandler.h',
             'chromium/TestRunner/src/MockWebRTCDTMFSenderHandler.cpp',

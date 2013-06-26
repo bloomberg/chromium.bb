@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,60 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTestInterfaces_h
-#define WebTestInterfaces_h
+#include "MockWebMIDIAccessor.h"
 
-#include "WebTestCommon.h"
-#include <memory>
+#include "public/platform/WebMIDIAccessorClient.h"
 
-namespace WebKit {
-class WebFrame;
-class WebMediaStreamCenter;
-class WebMediaStreamCenterClient;
-class WebMIDIAccessor;
-class WebMIDIAccessorClient;
-class WebRTCPeerConnectionHandler;
-class WebRTCPeerConnectionHandlerClient;
-class WebThemeEngine;
-class WebURL;
-class WebView;
-}
+using namespace WebKit;
 
 namespace WebTestRunner {
 
-class TestInterfaces;
-class WebTestDelegate;
-class WebTestProxyBase;
-class WebTestRunner;
-
-class WEBTESTRUNNER_EXPORT WebTestInterfaces {
-public:
-    WebTestInterfaces();
-    ~WebTestInterfaces();
-
-    void setWebView(WebKit::WebView*, WebTestProxyBase*);
-    void setDelegate(WebTestDelegate*);
-    void bindTo(WebKit::WebFrame*);
-    void resetAll();
-    void setTestIsRunning(bool);
-    void configureForTestWithURL(const WebKit::WebURL&, bool generatePixels);
-
-    WebTestRunner* testRunner();
-    WebKit::WebThemeEngine* themeEngine();
-
-    WebKit::WebMediaStreamCenter* createMediaStreamCenter(WebKit::WebMediaStreamCenterClient*);
-    WebKit::WebRTCPeerConnectionHandler* createWebRTCPeerConnectionHandler(WebKit::WebRTCPeerConnectionHandlerClient*);
-
-    WebKit::WebMIDIAccessor* createMIDIAccessor(WebKit::WebMIDIAccessorClient*);
-
-#if WEBTESTRUNNER_IMPLEMENTATION
-    TestInterfaces* testInterfaces();
-#endif
-
-private:
-    std::auto_ptr<TestInterfaces> m_interfaces;
-};
-
+MockWebMIDIAccessor::MockWebMIDIAccessor(WebKit::WebMIDIAccessorClient* client)
+    : m_client(client)
+{
 }
 
-#endif // WebTestInterfaces_h
+MockWebMIDIAccessor::~MockWebMIDIAccessor()
+{
+}
+
+void MockWebMIDIAccessor::requestAccess(bool requestSysex)
+{
+    // Allows us to test both the success and error case.
+    if (requestSysex) {
+        m_client->didBlockAccess();
+    } else {
+        // Add a mock input and output port.
+        m_client->didAddInputPort("MockInputID", "MockInputManufacturer", "MockInputName", "MockInputVersion");
+        m_client->didAddOutputPort("MockOutputID", "MockOutputManufacturer", "MockOutputName", "MockOutputVersion");
+        m_client->didAllowAccess();
+    }
+}
+
+} // namespace WebTestRunner

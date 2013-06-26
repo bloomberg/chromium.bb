@@ -65,6 +65,8 @@ class WebGeolocationClientMock;
 class WebImage;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
+class WebMIDIAccessor;
+class WebMIDIAccessorClient;
 class WebNode;
 class WebNotificationPresenter;
 class WebPlugin;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,60 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTestInterfaces_h
-#define WebTestInterfaces_h
+#ifndef MockWebMIDIAccessor_h
+#define MockWebMIDIAccessor_h
 
-#include "WebTestCommon.h"
-#include <memory>
+#include "TestCommon.h"
+#include "public/platform/WebMIDIAccessor.h"
 
 namespace WebKit {
-class WebFrame;
-class WebMediaStreamCenter;
-class WebMediaStreamCenterClient;
-class WebMIDIAccessor;
 class WebMIDIAccessorClient;
-class WebRTCPeerConnectionHandler;
-class WebRTCPeerConnectionHandlerClient;
-class WebThemeEngine;
-class WebURL;
-class WebView;
 }
 
 namespace WebTestRunner {
 
-class TestInterfaces;
-class WebTestDelegate;
-class WebTestProxyBase;
-class WebTestRunner;
-
-class WEBTESTRUNNER_EXPORT WebTestInterfaces {
+class MockWebMIDIAccessor : public WebKit::WebMIDIAccessor {
 public:
-    WebTestInterfaces();
-    ~WebTestInterfaces();
+    explicit MockWebMIDIAccessor(WebKit::WebMIDIAccessorClient*);
+    virtual ~MockWebMIDIAccessor();
 
-    void setWebView(WebKit::WebView*, WebTestProxyBase*);
-    void setDelegate(WebTestDelegate*);
-    void bindTo(WebKit::WebFrame*);
-    void resetAll();
-    void setTestIsRunning(bool);
-    void configureForTestWithURL(const WebKit::WebURL&, bool generatePixels);
-
-    WebTestRunner* testRunner();
-    WebKit::WebThemeEngine* themeEngine();
-
-    WebKit::WebMediaStreamCenter* createMediaStreamCenter(WebKit::WebMediaStreamCenterClient*);
-    WebKit::WebRTCPeerConnectionHandler* createWebRTCPeerConnectionHandler(WebKit::WebRTCPeerConnectionHandlerClient*);
-
-    WebKit::WebMIDIAccessor* createMIDIAccessor(WebKit::WebMIDIAccessorClient*);
-
-#if WEBTESTRUNNER_IMPLEMENTATION
-    TestInterfaces* testInterfaces();
-#endif
+    // WebKit::WebMIDIAccessor implementation.
+    virtual void requestAccess(bool requestSysex) OVERRIDE;
+    virtual void sendMIDIData(
+        unsigned portIndex,
+        const unsigned char* data,
+        size_t length,
+        double timestamp) OVERRIDE { }
 
 private:
-    std::auto_ptr<TestInterfaces> m_interfaces;
+    WebKit::WebMIDIAccessorClient* m_client;
 };
 
-}
+} // namespace WebTestRunner
 
-#endif // WebTestInterfaces_h
+#endif // MockWebMIDIAccessor_h
