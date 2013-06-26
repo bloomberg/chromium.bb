@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
@@ -265,7 +264,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
 }
 
 bool BookmarkContextMenuController::IsCommandIdChecked(int command_id) const {
-  PrefService* prefs = user_prefs::UserPrefs::Get(profile_);
+  PrefService* prefs = profile_->GetPrefs();
   if (command_id == IDC_BOOKMARK_BAR_ALWAYS_SHOW)
     return prefs->GetBoolean(prefs::kShowBookmarkBar);
 
@@ -278,13 +277,13 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
   if (IsPlatformCommandIdEnabled(command_id, &enabled))
     return enabled;
 
-  PrefService* prefs = user_prefs::UserPrefs::Get(profile_);
+  PrefService* prefs = profile_->GetPrefs();
 
   bool is_root_node = selection_.size() == 1 &&
                       selection_[0]->parent() == model_->root_node();
   bool can_edit = prefs->GetBoolean(prefs::kEditBookmarksEnabled);
   IncognitoModePrefs::Availability incognito_avail =
-      IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
+      IncognitoModePrefs::GetAvailability(prefs);
   switch (command_id) {
     case IDC_BOOKMARK_BAR_OPEN_INCOGNITO:
       return !profile_->IsOffTheRecord() &&
