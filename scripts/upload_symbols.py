@@ -35,6 +35,11 @@ CRASH_SERVER_FILE_LIMIT = 350 * 1024 * 1024
 DEFAULT_FILE_LIMIT = CRASH_SERVER_FILE_LIMIT - (10 * 1024 * 1024)
 
 
+# How long to wait (in seconds) for a single upload to complete.  This has
+# to allow for symbols that are up to CRASH_SERVER_FILE_LIMIT in size.
+UPLOAD_TIMEOUT = 30 * 60
+
+
 # Sleep for 200ms in between uploads to avoid DoS'ing symbol server.
 DEFAULT_SLEEP_DELAY = 0.2
 
@@ -58,7 +63,9 @@ def SymUpload(sym_file, upload_url):
   # reads the sym_file and does a HTTP post to URL with a few fields set.
   # See the tiny breakpad/tools/linux/symupload/sym_upload.cc for details.
   cmd = ['sym_upload', sym_file, upload_url]
-  return cros_build_lib.RunCommandCaptureOutput(cmd)
+  with cros_build_lib.SubCommandTimeout(UPLOAD_TIMEOUT):
+    return cros_build_lib.RunCommandCaptureOutput(
+        cmd, debug_level=logging.DEBUG)
 
 
 def TestingSymUpload(sym_file, upload_url):
