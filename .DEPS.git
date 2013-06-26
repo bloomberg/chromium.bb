@@ -138,7 +138,7 @@ deps = {
     'src/tools/swarm_client':
         Var('git_url') + '/chromium/tools/swarm_client.git@75584e2e2a130fa12d7ad0b96d2abdeb71c1ca41',
     'src/v8':
-        Var('git_url') + '/external/v8.git@db6c80e9dfa14411c3f8d2f848633dae39b9a2dc',
+        Var('git_url') + '/external/v8.git@11ab1e4059c0677c8f8723d852db7b085fa65166',
     'src/webkit/renderer/media/crypto/ppapi/cdm':
         Var('git_url') + '/chromium/cdm.git@c2b192a02546916d28233cfd8b7717ffcdcc8347',
 }
@@ -298,7 +298,7 @@ deps_os = {
         'src/third_party/lss':
             Var('git_url') + '/external/linux-syscall-support/lss.git@833a10e5529d400827756f4f8396809e837248a0',
         'src/third_party/mtpd/source':
-            Var('git_url') + '/chromiumos/platform/mtpd.git@132604f107368f617a3073ba2d515b78641ceeed',
+            Var('git_url') + '/chromiumos/platform/mtpd.git@5be739c938a0a229ba9479b00b180e1f9c843e81',
         'src/third_party/openssl':
             Var('git_url') + '/chromium/deps/openssl.git@8f54aac19a36d72ea630c813cae51c81a3cc0d78',
         'src/third_party/pyelftools':
