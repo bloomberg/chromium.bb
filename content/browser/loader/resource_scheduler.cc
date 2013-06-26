@@ -313,7 +313,12 @@ size_t ResourceScheduler::GetNumDelayableRequestsInFlight(
   for (RequestSet::iterator it = client->in_flight_requests.begin();
        it != client->in_flight_requests.end(); ++it) {
     if ((*it)->url_request()->priority() < net::LOW) {
-      ++count;
+      const net::HttpServerProperties& http_server_properties =
+          *(*it)->url_request()->context()->http_server_properties();
+      if (!http_server_properties.SupportsSpdy(
+          net::HostPortPair::FromURL((*it)->url_request()->url()))) {
+        ++count;
+      }
     }
   }
   return count;
@@ -335,6 +340,7 @@ size_t ResourceScheduler::GetNumDelayableRequestsInFlight(
 //     requests.
 //   * Once the renderer has a <body>, start loading delayable requests.
 //   * Never exceed 10 delayable requests in flight per client.
+//   * Prior to <body>, allow one delayable request to load at a time.
 bool ResourceScheduler::ShouldStartRequest(ScheduledResourceRequest* request,
                                            Client* client) const {
   const net::URLRequest& url_request = *request->url_request();
@@ -361,7 +367,8 @@ bool ResourceScheduler::ShouldStartRequest(ScheduledResourceRequest* request,
 
   bool have_immediate_requests_in_flight =
       client->in_flight_requests.size() > num_delayable_requests_in_flight;
-  if (have_immediate_requests_in_flight && !client->has_body) {
+  if (have_immediate_requests_in_flight && !client->has_body &&
+      num_delayable_requests_in_flight != 0) {
     return false;
   }
 

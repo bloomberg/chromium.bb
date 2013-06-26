@@ -213,36 +213,42 @@ TEST_F(ResourceSchedulerTest, OneIsolatedLowRequest) {
   EXPECT_TRUE(request->started());
 }
 
-TEST_F(ResourceSchedulerTest, LowBlocksUntilIdle) {
+TEST_F(ResourceSchedulerTest, OneLowLoadsUntilIdle) {
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
   scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
-  EXPECT_FALSE(low->started());
+  EXPECT_TRUE(low->started());
+  EXPECT_FALSE(low2->started());
   high.reset();
-  EXPECT_TRUE(low->started());
+  EXPECT_TRUE(low2->started());
 }
 
-TEST_F(ResourceSchedulerTest, LowBlocksUntilBodyInserted) {
+TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInserted) {
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
   scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
-  EXPECT_FALSE(low->started());
-  scheduler_.OnWillInsertBody(kChildId, kRouteId);
   EXPECT_TRUE(low->started());
+  EXPECT_FALSE(low2->started());
+  scheduler_.OnWillInsertBody(kChildId, kRouteId);
+  EXPECT_TRUE(low2->started());
 }
 
-TEST_F(ResourceSchedulerTest, LowBlocksUntilBodyInsertedExceptSpdy) {
+TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInsertedExceptSpdy) {
   http_server_properties_.SetSupportsSpdy(
       net::HostPortPair("spdyhost", 443), true);
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
   scoped_ptr<TestRequest> low_spdy(
       NewRequest("https://spdyhost/high", net::LOWEST));
   scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(low_spdy->started());
-  EXPECT_FALSE(low->started());
-  scheduler_.OnWillInsertBody(kChildId, kRouteId);
   EXPECT_TRUE(low->started());
+  EXPECT_FALSE(low2->started());
+  scheduler_.OnWillInsertBody(kChildId, kRouteId);
+  EXPECT_TRUE(low2->started());
 }
 
 TEST_F(ResourceSchedulerTest, NavigationResetsState) {
@@ -250,8 +256,10 @@ TEST_F(ResourceSchedulerTest, NavigationResetsState) {
   scheduler_.OnNavigate(kChildId, kRouteId);
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
   scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high->started());
-  EXPECT_FALSE(low->started());
+  EXPECT_TRUE(low->started());
+  EXPECT_FALSE(low2->started());
 }
 
 TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
@@ -261,17 +269,19 @@ TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
   EXPECT_TRUE(request->started());
 }
 
-TEST_F(ResourceSchedulerTest, StartRequestsWhenIdle) {
+TEST_F(ResourceSchedulerTest, StartMultipleLowRequestsWhenIdle) {
   scoped_ptr<TestRequest> high1(NewRequest("http://host/high1", net::HIGHEST));
   scoped_ptr<TestRequest> high2(NewRequest("http://host/high2", net::HIGHEST));
   scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
   EXPECT_TRUE(high1->started());
   EXPECT_TRUE(high2->started());
-  EXPECT_FALSE(low->started());
-  high1.reset();
-  EXPECT_FALSE(low->started());
-  high2.reset();
   EXPECT_TRUE(low->started());
+  EXPECT_FALSE(low2->started());
+  high1.reset();
+  EXPECT_FALSE(low2->started());
+  high2.reset();
+  EXPECT_TRUE(low2->started());
 }
 
 TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
@@ -323,8 +333,9 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
 }
 
 TEST_F(ResourceSchedulerTest, RaisePriorityAndStart) {
-  // Dummy to enforce scheduling.
+  // Dummies to enforce scheduling.
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/req", net::LOWEST));
 
   scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::LOWEST));
   EXPECT_FALSE(request->started());
@@ -334,8 +345,9 @@ TEST_F(ResourceSchedulerTest, RaisePriorityAndStart) {
 }
 
 TEST_F(ResourceSchedulerTest, RaisePriorityInQueue) {
-  // Dummy to enforce scheduling.
+  // Dummies to enforce scheduling.
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
   scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::IDLE));
   scoped_ptr<TestRequest> idle(NewRequest("http://host/idle", net::IDLE));
@@ -359,8 +371,9 @@ TEST_F(ResourceSchedulerTest, RaisePriorityInQueue) {
 }
 
 TEST_F(ResourceSchedulerTest, LowerPriority) {
-  // Dummy to enforce scheduling.
+  // Dummies to enforce scheduling.
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
   scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::LOWEST));
   scoped_ptr<TestRequest> idle(NewRequest("http://host/idle", net::IDLE));
@@ -372,8 +385,11 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
   EXPECT_FALSE(idle->started());
 
   const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
+  // 2 fewer filler requests: 1 for the "low" dummy at the start, and 1 for the
+  // one at the end, which will be tested.
+  const int kNumFillerRequests = kMaxNumDelayableRequestsPerClient - 2;
   ScopedVector<TestRequest> lows;
-  for (int i = 0; i < kMaxNumDelayableRequestsPerClient - 1; ++i) {
+  for (int i = 0; i < kNumFillerRequests; ++i) {
     string url = "http://host/low" + base::IntToString(i);
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
@@ -384,8 +400,9 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
 }
 
 TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
-  // Dummy to enforce scheduling.
+  // Dummies to enforce scheduling.
   scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/high", net::LOWEST));
 
   scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::LOWEST));
   scoped_ptr<TestRequest> idle(NewRequest("http://host/idle", net::IDLE));
