@@ -1772,8 +1772,8 @@ void RenderBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeF
     // Add visual overflow from theme.
     addVisualOverflowFromTheme();
 
-    if (isRenderFlowThread())
-        toRenderFlowThread(this)->computeOversetStateForRegions(oldClientAfterEdge);
+    if (isRenderNamedFlowThread())
+        toRenderNamedFlowThread(this)->computeOversetStateForRegions(oldClientAfterEdge);
 }
 
 void RenderBlock::addOverflowFromBlockChildren()
