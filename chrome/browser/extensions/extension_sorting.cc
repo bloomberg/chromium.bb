@@ -467,6 +467,7 @@ void ExtensionSorting::InitializePageOrdinalMap(
     // Ensure that the web store app still isn't found in this list, since
     // it is added after this loop.
     DCHECK(*ext_it != extension_misc::kWebStoreAppId);
+    DCHECK(*ext_it != extension_misc::kChromeAppId);
   }
 
   // Include the Web Store App since it is displayed on the NTP.
@@ -476,6 +477,14 @@ void ExtensionSorting::InitializePageOrdinalMap(
     AddOrdinalMapping(extension_misc::kWebStoreAppId,
                       web_store_app_page,
                       GetAppLaunchOrdinal(extension_misc::kWebStoreAppId));
+  }
+  // Include the Chrome App since it is displayed in the app launcher.
+  syncer::StringOrdinal chrome_app_page =
+      GetPageOrdinal(extension_misc::kChromeAppId);
+  if (chrome_app_page.IsValid()) {
+    AddOrdinalMapping(extension_misc::kChromeAppId,
+                      chrome_app_page,
+                      GetAppLaunchOrdinal(extension_misc::kChromeAppId));
   }
 }
 
@@ -540,6 +549,7 @@ void ExtensionSorting::CreateDefaultOrdinals() {
   chromeos::default_app_order::Get(&app_ids);
 #else
   const char* kDefaultAppOrder[] = {
+    extension_misc::kChromeAppId,
     extension_misc::kWebStoreAppId,
   };
   const std::vector<const char*> app_ids(

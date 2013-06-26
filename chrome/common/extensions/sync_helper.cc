@@ -85,6 +85,8 @@ bool IsSyncable(const Extension* extension) {
                       !extension->was_installed_by_default());
   // Sync the chrome web store to maintain its position on the new tab page.
   is_syncable |= (extension->id() == extension_misc::kWebStoreAppId);
+  // Sync the chrome component app to maintain its position on the app list.
+  is_syncable |= (extension->id() == extension_misc::kChromeAppId);
   return is_syncable;
 }
 
