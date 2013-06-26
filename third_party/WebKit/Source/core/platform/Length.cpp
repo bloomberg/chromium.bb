@@ -36,7 +36,8 @@ using namespace WTF;
 
 namespace WebCore {
 
-static Length parseLength(const UChar* data, unsigned length)
+template<typename CharType>
+static Length parseLength(const CharType* data, unsigned length)
 {
     if (length == 0)
         return Length(1, Relative);
@@ -58,7 +59,7 @@ static Length parseLength(const UChar* data, unsigned length)
         ++i;
 
     bool ok;
-    UChar next = (i < length) ? data[i] : ' ';
+    CharType next = (i < length) ? data[i] : ' ';
     if (next == '%') {
         // IE quirk: accept decimal fractions for percentages.
         double r = charactersToDouble(data, doubleLength, &ok);
@@ -77,31 +78,22 @@ static Length parseLength(const UChar* data, unsigned length)
     return Length(0, Relative);
 }
 
-static int countCharacter(const UChar* data, unsigned length, UChar character)
-{
-    int count = 0;
-    for (int i = 0; i < static_cast<int>(length); ++i)
-        count += data[i] == character;
-    return count;
-}
-
 PassOwnArrayPtr<Length> newCoordsArray(const String& string, int& len)
 {
     unsigned length = string.length();
-    const UChar* data = string.characters();
-    StringBuffer<UChar> spacified(length);
+    StringBuffer<LChar> spacified(length);
     for (unsigned i = 0; i < length; i++) {
-        UChar cc = data[i];
+        UChar cc = string[i];
         if (cc > '9' || (cc < '0' && cc != '-' && cc != '*' && cc != '.'))
             spacified[i] = ' ';
         else
             spacified[i] = cc;
     }
     RefPtr<StringImpl> str = StringImpl::adopt(spacified);
-
     str = str->simplifyWhiteSpace();
+    ASSERT(str->is8Bit());
 
-    len = countCharacter(str->characters(), str->length(), ' ') + 1;
+    len = str->count(' ') + 1;
     OwnArrayPtr<Length> r = adoptArrayPtr(new Length[len]);
 
     int i = 0;
@@ -109,10 +101,10 @@ PassOwnArrayPtr<Length> newCoordsArray(const String& string, int& len)
     size_t pos2;
 
     while ((pos2 = str->find(' ', pos)) != notFound) {
-        r[i++] = parseLength(str->characters() + pos, pos2 - pos);
+        r[i++] = parseLength(str->characters8() + pos, pos2 - pos);
         pos = pos2+1;
     }
-    r[i] = parseLength(str->characters() + pos, str->length() - pos);
+    r[i] = parseLength(str->characters8() + pos, str->length() - pos);
 
     ASSERT(i == len - 1);
 
@@ -127,7 +119,7 @@ PassOwnArrayPtr<Length> newLengthArray(const String& string, int& len)
         return nullptr;
     }
 
-    len = countCharacter(str->characters(), str->length(), ',') + 1;
+    len = str->count(',') + 1;
     OwnArrayPtr<Length> r = adoptArrayPtr(new Length[len]);
 
     int i = 0;
@@ -149,15 +141,15 @@ PassOwnArrayPtr<Length> newLengthArray(const String& string, int& len)
 
     return r.release();
 }
-        
+
 class CalculationValueHandleMap {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    CalculationValueHandleMap() 
-        : m_index(1) 
+    CalculationValueHandleMap()
+        : m_index(1)
     {
     }
-    
+
     int insert(PassRefPtr<CalculationValue> calcValue)
     {
         ASSERT(m_index);
@@ -166,9 +158,9 @@ public:
         // of the handle space. Consider reusing empty handles.
         while (m_map.contains(m_index))
             m_index++;
-        
-        m_map.set(m_index, calcValue);       
-        
+
+        m_map.set(m_index, calcValue);
+
         return m_index;
     }
 
@@ -177,18 +169,18 @@ public:
         ASSERT(m_map.contains(index));
         m_map.remove(index);
     }
-    
+
     PassRefPtr<CalculationValue> get(int index)
     {
         ASSERT(m_map.contains(index));
         return m_map.get(index);
     }
-    
-private:        
+
+private:
     int m_index;
     HashMap<int, RefPtr<CalculationValue> > m_map;
 };
-    
+
 static CalculationValueHandleMap& calcHandles()
 {
     DEFINE_STATIC_LOCAL(CalculationValueHandleMap, handleMap, ());
@@ -202,25 +194,25 @@ Length::Length(PassRefPtr<CalculationValue> calc)
 {
     m_intValue = calcHandles().insert(calc);
 }
-        
+
 Length Length::blendMixedTypes(const Length& from, double progress) const
 {
     if (progress <= 0.0)
         return from;
-        
+
     if (progress >= 1.0)
         return *this;
-        
+
     OwnPtr<CalcExpressionNode> blend = adoptPtr(new CalcExpressionBlendLength(from, *this, progress));
     return Length(CalculationValue::create(blend.release(), CalculationRangeAll));
 }
-          
+
 PassRefPtr<CalculationValue> Length::calculationValue() const
 {
     ASSERT(isCalculated());
     return calcHandles().get(calculationHandle());
 }
-    
+
 void Length::incrementCalculatedRef() const
 {
     ASSERT(isCalculated());
@@ -234,7 +226,7 @@ void Length::decrementCalculatedRef() const
     if (calcLength->hasOneRef())
         calcHandles().remove(calculationHandle());
     calcLength->deref();
-}    
+}
 
 float Length::nonNanCalculatedValue(int maxValue) const
 {

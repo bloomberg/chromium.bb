@@ -332,7 +332,7 @@ void XMLHttpRequest::setResponseType(const String& responseType, ExceptionCode& 
         return;
     }
 
-    // Newer functionality is not available to synchronous requests in window contexts, as a spec-mandated 
+    // Newer functionality is not available to synchronous requests in window contexts, as a spec-mandated
     // attempt to discourage synchronous XHR use. responseType is one such piece of functionality.
     // We'll only disable this functionality for HTTP(S) requests since sync requests for local protocols
     // such as file: and data: still make sense to allow.
@@ -573,9 +573,12 @@ void XMLHttpRequest::send(Document* document, ExceptionCode& ec)
         // from the HTML5 specification to serialize the document.
         String body = createMarkup(document);
 
-        // FIXME: this should use value of document.inputEncoding to determine the encoding to use.
+        // FIXME: This should use value of document.inputEncoding to determine the encoding to use.
         WTF::TextEncoding encoding = UTF8Encoding();
-        m_requestEntityBody = FormData::create(encoding.encode(body.characters(), body.length(), WTF::EntitiesForUnencodables));
+        if (body.is8Bit())
+            m_requestEntityBody = FormData::create(body.characters8(), body.length());
+        else
+            m_requestEntityBody = FormData::create(encoding.encode(body.characters16(), body.length(), WTF::EntitiesForUnencodables));
         if (m_upload)
             m_requestEntityBody->setAlwaysStream(true);
     }
@@ -597,7 +600,10 @@ void XMLHttpRequest::send(const String& body, ExceptionCode& ec)
             m_requestHeaders.set("Content-Type", contentType);
         }
 
-        m_requestEntityBody = FormData::create(UTF8Encoding().encode(body.characters(), body.length(), WTF::EntitiesForUnencodables));
+        if (body.is8Bit())
+            m_requestEntityBody = FormData::create(body.characters8(), body.length());
+        else
+            m_requestEntityBody = FormData::create(UTF8Encoding().encode(body.characters16(), body.length(), WTF::EntitiesForUnencodables));
         if (m_upload)
             m_requestEntityBody->setAlwaysStream(true);
     }
@@ -976,7 +982,7 @@ String XMLHttpRequest::getResponseHeader(const AtomicString& name, ExceptionCode
         logConsoleError(scriptExecutionContext(), "Refused to get unsafe header \"" + name + "\"");
         return String();
     }
-    
+
     HTTPHeaderSet accessControlExposeHeaderSet;
     parseAccessControlExposeHeadersAllowList(m_response.httpHeaderField("Access-Control-Expose-Headers"), accessControlExposeHeaderSet);
 
