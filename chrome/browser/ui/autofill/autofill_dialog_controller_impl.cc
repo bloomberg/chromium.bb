@@ -313,6 +313,16 @@ bool HasCompleteAndVerifiedData(const AutofillDataModel& data_model,
   return true;
 }
 
+// Returns true if |profile| has an invalid address, i.e. an invalid state, zip
+// code, or phone number. Otherwise returns false. Profiles with invalid
+// addresses are not suggested in the dropdown menu for billing and shipping
+// addresses.
+bool HasInvalidAddress(const AutofillProfile& profile) {
+  return profile.IsPresentButInvalid(ADDRESS_HOME_STATE) ||
+         profile.IsPresentButInvalid(ADDRESS_HOME_ZIP) ||
+         profile.IsPresentButInvalid(PHONE_HOME_WHOLE_NUMBER);
+}
+
 // Loops through |addresses_| comparing to |address| ignoring ID. If a match
 // is not found, NULL is returned.
 const wallet::Address* FindDuplicateAddress(
@@ -2326,8 +2336,11 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
     const std::string app_locale = g_browser_process->GetApplicationLocale();
     for (size_t i = 0; i < profiles.size(); ++i) {
-      if (!HasCompleteAndVerifiedData(*profiles[i], requested_shipping_fields_))
+      if (!HasCompleteAndVerifiedData(*profiles[i],
+                                      requested_shipping_fields_) ||
+          HasInvalidAddress(*profiles[i])) {
         continue;
+      }
 
       // Add all email addresses.
       std::vector<string16> values;

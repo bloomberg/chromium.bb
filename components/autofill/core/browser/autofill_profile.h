@@ -85,6 +85,10 @@ class AutofillProfile : public AutofillDataModel {
   // Returns true if there are no values (field types) set.
   bool IsEmpty(const std::string& app_locale) const;
 
+  // Returns true if the |type| of data in this profile is present, but invalid.
+  // Otherwise returns false.
+  bool IsPresentButInvalid(AutofillFieldType type) const;
+
   // Comparison for Sync.  Returns 0 if the profile is the same as |this|,
   // or < 0, or > 0 if it is different.  The implied ordering can be used for
   // culling duplicates.  The ordering is based on collation order of the

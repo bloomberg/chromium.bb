@@ -820,7 +820,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   EXPECT_EQ(1, email_suggestions->checked_item());
 }
 
-TEST_F(AutofillDialogControllerTest, ValidSavedEmail) {
+TEST_F(AutofillDialogControllerTest, SuggestValidEmail) {
   AutofillProfile profile(test::GetVerifiedProfile());
   const string16 kValidEmail = ASCIIToUTF16(kFakeEmail);
   profile.SetRawInfo(EMAIL_ADDRESS, kValidEmail);
@@ -831,12 +831,47 @@ TEST_F(AutofillDialogControllerTest, ValidSavedEmail) {
             controller()->SuggestionStateForSection(SECTION_EMAIL).text);
 }
 
-TEST_F(AutofillDialogControllerTest, InvalidSavedEmail) {
+TEST_F(AutofillDialogControllerTest, DoNotSuggestInvalidEmail) {
   AutofillProfile profile(test::GetVerifiedProfile());
   profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16(".!#$%&'*+/=?^_`-@-.."));
   controller()->GetTestingManager()->AddTestingProfile(&profile);
   EXPECT_EQ(static_cast<ui::MenuModel*>(NULL),
             controller()->MenuModelForSection(SECTION_EMAIL));
+}
+
+TEST_F(AutofillDialogControllerTest, DoNotSuggestEmailFromIncompleteProfile) {
+  AutofillProfile profile(test::GetVerifiedProfile());
+  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16(kFakeEmail));
+  profile.SetRawInfo(ADDRESS_HOME_STATE, base::string16());
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+  EXPECT_EQ(static_cast<ui::MenuModel*>(NULL),
+            controller()->MenuModelForSection(SECTION_EMAIL));
+}
+
+TEST_F(AutofillDialogControllerTest, DoNotSuggestEmailFromInvalidProfile) {
+  AutofillProfile profile(test::GetVerifiedProfile());
+  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16(kFakeEmail));
+  profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("C"));
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+  EXPECT_EQ(static_cast<ui::MenuModel*>(NULL),
+            controller()->MenuModelForSection(SECTION_EMAIL));
+}
+
+TEST_F(AutofillDialogControllerTest, SuggestValidAddress) {
+  AutofillProfile full_profile(test::GetVerifiedProfile());
+  full_profile.set_origin(kSettingsOrigin);
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  EXPECT_EQ(
+      4, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+}
+
+TEST_F(AutofillDialogControllerTest, DoNotSuggestInvalidAddress) {
+  AutofillProfile full_profile(test::GetVerifiedProfile());
+  full_profile.set_origin(kSettingsOrigin);
+  full_profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("C"));
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  EXPECT_EQ(
+      3, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillCreditCards) {

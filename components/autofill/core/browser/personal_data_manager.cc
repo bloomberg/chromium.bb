@@ -708,16 +708,11 @@ bool PersonalDataManager::IsValidLearnableProfile(
     return false;
 
   // Reject profiles with invalid US state information.
-  base::string16 state = profile.GetRawInfo(ADDRESS_HOME_STATE);
-  if (profile.GetRawInfo(ADDRESS_HOME_COUNTRY) == ASCIIToUTF16("US") &&
-      !state.empty() && !IsValidState(state)) {
+  if (profile.IsPresentButInvalid(ADDRESS_HOME_STATE))
     return false;
-  }
 
   // Reject profiles with invalid US zip information.
-  base::string16 zip = profile.GetRawInfo(ADDRESS_HOME_ZIP);
-  if (profile.GetRawInfo(ADDRESS_HOME_COUNTRY) == ASCIIToUTF16("US") &&
-      !zip.empty() && !autofill::IsValidZip(zip))
+  if (profile.IsPresentButInvalid(ADDRESS_HOME_ZIP))
     return false;
 
   return true;

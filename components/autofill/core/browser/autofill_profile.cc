@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/contact_info.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/component_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -414,6 +415,35 @@ bool AutofillProfile::IsEmpty(const std::string& app_locale) const {
   GetNonEmptyTypes(app_locale, &types);
   return types.empty();
 }
+
+bool AutofillProfile::IsPresentButInvalid(AutofillFieldType type) const {
+  std::string country = UTF16ToUTF8(GetRawInfo(ADDRESS_HOME_COUNTRY));
+  base::string16 data = GetRawInfo(type);
+  switch (type) {
+    case ADDRESS_HOME_STATE:
+      if (!data.empty() && country == "US" && !autofill::IsValidState(data))
+        return true;
+      break;
+
+    case ADDRESS_HOME_ZIP:
+      if (!data.empty() && country == "US" && !autofill::IsValidZip(data))
+        return true;
+      break;
+
+    case PHONE_HOME_WHOLE_NUMBER: {
+      if (!data.empty() && !i18n::PhoneObject(data, country).IsValidNumber())
+        return true;
+      break;
+    }
+
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  return false;
+}
+
 
 int AutofillProfile::Compare(const AutofillProfile& profile) const {
   const AutofillFieldType single_value_types[] = { COMPANY_NAME,

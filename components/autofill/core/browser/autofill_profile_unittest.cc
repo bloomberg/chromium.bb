@@ -895,4 +895,34 @@ TEST(AutofillProfileTest, FillByContents) {
   EXPECT_EQ(ASCIIToUTF16("2"), field.value);
 }
 
+TEST(AutofillProfileTest, IsPresentButInvalid) {
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
+  EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_STATE));
+  EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_ZIP));
+  EXPECT_FALSE(profile.IsPresentButInvalid(PHONE_HOME_WHOLE_NUMBER));
+
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+  EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_STATE));
+  EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_ZIP));
+  EXPECT_FALSE(profile.IsPresentButInvalid(PHONE_HOME_WHOLE_NUMBER));
+
+  profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("C"));
+  EXPECT_TRUE(profile.IsPresentButInvalid(ADDRESS_HOME_STATE));
+
+  profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
+  EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_STATE));
+
+  profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90"));
+  EXPECT_TRUE(profile.IsPresentButInvalid(ADDRESS_HOME_ZIP));
+
+  profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90210"));
+  EXPECT_FALSE(profile.IsPresentButInvalid(ADDRESS_HOME_ZIP));
+
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("310"));
+  EXPECT_TRUE(profile.IsPresentButInvalid(PHONE_HOME_WHOLE_NUMBER));
+
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("(310) 310-6000"));
+  EXPECT_FALSE(profile.IsPresentButInvalid(PHONE_HOME_WHOLE_NUMBER));
+}
+
 }  // namespace autofill
