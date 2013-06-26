@@ -82,7 +82,7 @@ def check_bucket_permissions(bucket, gsutil):
   code, _, ls_err = gsutil.check_call('ls', base_url)
   if code == 403:
     print >> sys.stderr, 'Got error 403 while authenticating to %s.' % base_url
-    print >> sys.stderr, 'Try running "gsutil config".'
+    print >> sys.stderr, 'Try running "download_from_google_storage --config".'
   elif code == 404:
     print >> sys.stderr, '%s not found.' % base_url
   elif code != 0:
@@ -272,8 +272,28 @@ def main(args):
   parser.add_option('-s', '--sha1_file', action='store_true',
                     help='The target is a file containing a sha1 sum.  '
                          'Cannot be used with -d/--directory.')
+  parser.add_option('-g', '--config', action='store_true',
+                    help='Alias for "gsutil config".  Run this if you want '
+                         'to initialize your saved Google Storage '
+                         'credentials.')
 
   (options, args) = parser.parse_args()
+  # First, make sure we can find a working instance of gsutil.
+  if os.path.exists(GSUTIL_DEFAULT_PATH):
+    gsutil = Gsutil(GSUTIL_DEFAULT_PATH, boto_path=options.boto)
+  else:
+    gsutil = None
+    for path in os.environ["PATH"].split(os.pathsep):
+      if os.path.exists(path) and 'gsutil' in os.listdir(path):
+        gsutil = Gsutil(os.path.join(path, 'gsutil'), boto_path=options.boto)
+    if not gsutil:
+      parser.error('gsutil not found in %s, bad depot_tools checkout?' %
+                  GSUTIL_DEFAULT_PATH)
+
+  # Passing in -g/--config will run our copy of GSUtil, then quit.
+  if options.config:
+    return gsutil.call('config')
+
   if not args:
     parser.error('Missing target.')
   if len(args) > 1:
@@ -310,18 +330,6 @@ def main(args):
     if os.path.exists(options.output):
       parser.error('Output file %s exists and --no_resume is specified.'
                    % options.output)
-
-  # Make sure we can find a working instance of gsutil.
-  if os.path.exists(GSUTIL_DEFAULT_PATH):
-    gsutil = Gsutil(GSUTIL_DEFAULT_PATH, boto_path=options.boto)
-  else:
-    gsutil = None
-    for path in os.environ["PATH"].split(os.pathsep):
-      if os.path.exists(path) and 'gsutil' in os.listdir(path):
-        gsutil = Gsutil(os.path.join(path, 'gsutil'), boto_path=options.boto)
-    if not gsutil:
-      parser.error('gsutil not found in %s, bad depot_tools checkout?' %
-                   GSUTIL_DEFAULT_PATH)
 
   # Check we have a valid bucket with valid permissions.
   base_url, code = check_bucket_permissions(options.bucket, gsutil)
