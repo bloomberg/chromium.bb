@@ -65,8 +65,6 @@ def main():
       '--server',
       default='http://codereview.chromium.org',
       help='Rietveld server')
-  parser.add_option('--no-commit', action='store_true',
-      help='Do not try to commit patch to SCM (git only)')
   options, args = parser.parse_args()
   logging.basicConfig(
       format='%(levelname)5s %(module)11s(%(lineno)4d): %(message)s',
@@ -139,13 +137,11 @@ def main():
     print(patch)
   full_dir = os.path.abspath(options.root_dir)
   scm_type = scm.determine_scm(full_dir)
-
-  # FIXME: re-enable --no-commit.
   if scm_type == 'svn':
     scm_obj = checkout.SvnCheckout(full_dir, None, None, None, None)
   elif scm_type == 'git':
     scm_obj = checkout.GitCheckoutBase(full_dir, None, None)
-  elif scm_type is None:
+  elif scm_type == None:
     scm_obj = checkout.RawCheckout(full_dir, None, None)
   else:
     parser.error('Couldn\'t determine the scm')
