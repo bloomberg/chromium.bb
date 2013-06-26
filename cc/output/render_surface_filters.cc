@@ -381,13 +381,12 @@ SkBitmap RenderSurfaceFilters::Apply(const FilterOperations& filters,
                                      GrContext* gr_context) {
   DCHECK(gr_context);
 
-  FilterOperations optimized_filters = Optimize(filters);
   FilterBufferState state(gr_context, size, texture_id);
-  if (!state.Init(optimized_filters.size()))
+  if (!state.Init(filters.size()))
     return SkBitmap();
 
-  for (unsigned i = 0; i < optimized_filters.size(); ++i) {
-    const FilterOperation& op = optimized_filters.at(i);
+  for (unsigned i = 0; i < filters.size(); ++i) {
+    const FilterOperation& op = filters.at(i);
     SkCanvas* canvas = state.Canvas();
     switch (op.type()) {
       case FilterOperation::COLOR_MATRIX: {

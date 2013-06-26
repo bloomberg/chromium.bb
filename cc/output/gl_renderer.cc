@@ -589,7 +589,8 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   // FIXME: When this algorithm changes, update
   // LayerTreeHost::PrioritizeTextures() accordingly.
 
-  const FilterOperations& filters = quad->background_filters;
+  FilterOperations filters =
+      RenderSurfaceFilters::Optimize(quad->background_filters);
   DCHECK(!filters.IsEmpty());
 
   // FIXME: We only allow background filters on an opaque render surface because
@@ -737,8 +738,18 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       filter_bitmap =
           ApplyImageFilter(this, quad->filter.get(), contents_texture);
     }
-  } else {
-    filter_bitmap = ApplyFilters(this, quad->filters, contents_texture);
+  } else if (!quad->filters.IsEmpty()) {
+    FilterOperations optimized_filters =
+        RenderSurfaceFilters::Optimize(quad->filters);
+
+    if ((optimized_filters.size() == 1) &&
+        (optimized_filters.at(0).type() == FilterOperation::COLOR_MATRIX)) {
+      memcpy(
+          color_matrix, optimized_filters.at(0).matrix(), sizeof(color_matrix));
+      use_color_matrix = true;
+    } else {
+      filter_bitmap = ApplyFilters(this, optimized_filters, contents_texture);
+    }
   }
 
   // Draw the background texture if there is one.

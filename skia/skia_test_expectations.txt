@@ -58,4 +58,14 @@ crbug.com/250525 css3/filters/custom/custom-filter-nonseparable-blend-mode-satur
 crbug.com/250525 svg/custom/grayscale-gradient-mask-2.svg [ ImageOnlyFailure ]
 crbug.com/250525 svg/W3C-SVG-1.1/filters-turb-02-f.svg [ ImageOnlyFailure ]
 
+# to be rebaselined
+Bug(senorblanco) css3/filters/composited-reflected.html [ ImageOnlyFailure ]
+Bug(senorblanco) css3/filters/effect-brightness-clamping-hw.html [ ImageOnlyFailure ]
+Bug(senorblanco) css3/filters/effect-brightness-hw.html [ ImageOnlyFailure ]
+Bug(senorblanco) css3/filters/effect-contrast-hw.html [ ImageOnlyFailure ]
+Bug(senorblanco) css3/filters/effect-grayscale-hw.html [ ImageOnlyFailure ]
+Bug(senorblanco) css3/filters/effect-hue-rotate-hw.html [ ImageOnlyFailure ]
+Bug(senorblanco) css3/filters/effect-saturate-hw.html [ ImageOnlyFailure ]
+Bug(senorblanco) css3/filters/effect-sepia-hw.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
