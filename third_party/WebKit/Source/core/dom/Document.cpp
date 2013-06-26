@@ -1753,6 +1753,18 @@ void Document::updateStyleIfNeeded()
     recalcStyle(NoChange);
 }
 
+void Document::updateStyleForNodeIfNeeded(Node* node)
+{
+    if (!hasPendingForcedStyleRecalc() && !childNeedsStyleRecalc() && !needsStyleRecalc())
+        return;
+
+    bool needsStyleRecalc = hasPendingForcedStyleRecalc();
+    for (Node* n = node; n && !needsStyleRecalc; n = n->parentNode())
+        needsStyleRecalc = n->needsStyleRecalc();
+    if (needsStyleRecalc)
+        updateStyleIfNeeded();
+}
+
 void Document::updateLayout()
 {
     ASSERT(isMainThread());

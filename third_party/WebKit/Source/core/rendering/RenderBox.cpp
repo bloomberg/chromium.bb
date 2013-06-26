@@ -424,6 +424,37 @@ int RenderBox::pixelSnappedOffsetHeight() const
     return snapSizeToPixel(offsetHeight(), y() + clientTop());
 }
 
+bool RenderBox::requiresLayoutToDetermineWidth() const
+{
+    RenderStyle* style = this->style();
+    return !style->width().isFixed()
+        || !style->minWidth().isFixed()
+        || (!style->maxWidth().isUndefined() && !style->maxWidth().isFixed())
+        || !style->paddingLeft().isFixed()
+        || !style->paddingRight().isFixed()
+        || style->resize() != RESIZE_NONE
+        || style->boxSizing() == BORDER_BOX
+        || !isRenderBlock()
+        || !isBlockFlow()
+        || isFlexItemIncludingDeprecated();
+}
+
+LayoutUnit RenderBox::fixedOffsetWidth() const
+{
+    ASSERT(!requiresLayoutToDetermineWidth());
+
+    RenderStyle* style = this->style();
+
+    LayoutUnit width = std::max(LayoutUnit(style->minWidth().value()), LayoutUnit(style->width().value()));
+    if (style->maxWidth().isFixed())
+        width = std::min(LayoutUnit(style->maxWidth().value()), width);
+
+    LayoutUnit borderLeft = style->borderLeft().nonZero() ? style->borderLeft().width() : 0;
+    LayoutUnit borderRight = style->borderRight().nonZero() ? style->borderRight().width() : 0;
+
+    return width + borderLeft + borderRight + style->paddingLeft().value() + style->paddingRight().value();
+}
+
 int RenderBox::scrollWidth() const
 {
     if (hasOverflowClip())

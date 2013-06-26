@@ -481,6 +481,7 @@ public:
     void recalcStyle(StyleChange = NoChange);
     bool childNeedsAndNotInStyleRecalc();
     void updateStyleIfNeeded();
+    void updateStyleForNodeIfNeeded(Node*);
     void updateLayout();
     void updateLayoutIgnorePendingStylesheets();
     PassRefPtr<RenderStyle> styleForElementIgnoringPendingStylesheets(Element*);

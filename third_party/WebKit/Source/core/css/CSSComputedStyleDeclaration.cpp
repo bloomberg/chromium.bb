@@ -1566,17 +1566,12 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
     if (updateLayout) {
         Document* document = styledNode->document();
 
-        bool needsStyleRecalc = document->hasPendingForcedStyleRecalc();
-        for (Node* n = styledNode; n && !needsStyleRecalc; n = n->parentNode())
-            needsStyleRecalc = n->needsStyleRecalc();
-        if (needsStyleRecalc) {
-            document->updateStyleIfNeeded();
+        document->updateStyleForNodeIfNeeded(styledNode);
 
-            // The style recalc could have caused the styled node to be discarded or replaced
-            // if it was a PseudoElement so we need to update it.
-            styledNode = this->styledNode();
-            renderer = styledNode->renderer();
-        }
+        // The style recalc could have caused the styled node to be discarded or replaced
+        // if it was a PseudoElement so we need to update it.
+        styledNode = this->styledNode();
+        renderer = styledNode->renderer();
 
         style = computeRenderStyle(propertyID);
 
