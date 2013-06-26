@@ -130,13 +130,12 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest {
     // builders must be dropped as otherwise the NSS library will tell Chrome
     // that the key is available - which is incorrect and leads to Chrome
     // behaving as if a local owner were logged in.
-    device_policy()->set_signing_key(scoped_ptr<crypto::RSAPrivateKey>(NULL));
-    device_policy()->set_new_signing_key(
-        scoped_ptr<crypto::RSAPrivateKey>(NULL));
+    device_policy()->set_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
+    device_policy()->set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
     device_local_account_policy_.set_signing_key(
-        scoped_ptr<crypto::RSAPrivateKey>(NULL));
+        scoped_ptr<crypto::RSAPrivateKey>());
     device_local_account_policy_.set_new_signing_key(
-        scoped_ptr<crypto::RSAPrivateKey>(NULL));
+        scoped_ptr<crypto::RSAPrivateKey>());
   }
 
   void InitializePolicy() {
