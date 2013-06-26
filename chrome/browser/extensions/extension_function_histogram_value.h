@@ -556,6 +556,7 @@ enum HistogramValue {
   DIAGNOSTICS_SENDPACKET,
   METRICSPRIVATE_GETFIELDTRIAL,
   FILEBROWSERPRIVATE_ZOOM,
+  WEBVIEW_GO,
   ENUM_BOUNDARY // Last entry: Add new entries above.
 };
 

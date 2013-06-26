@@ -85,11 +85,6 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
   IPC_STRUCT_MEMBER(GURL, url)
   // Indicates whether the navigation was on the top-level frame.
   IPC_STRUCT_MEMBER(bool, is_top_level)
-  // The index of the current navigation entry after this navigation was
-  // committed.
-  IPC_STRUCT_MEMBER(int, current_entry_index)
-  // The number of navigation entries after this navigation was committed.
-  IPC_STRUCT_MEMBER(int, entry_count)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)

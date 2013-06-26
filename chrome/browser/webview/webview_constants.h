@@ -16,6 +16,10 @@ extern const char kEventLoadCommit[];
 extern const char kIsTopLevel[];
 extern const char kUrl[];
 
+// Internal parameters/properties on events.
+extern const char kInternalCurrentEntryIndex[];
+extern const char kInternalEntryCount[];
+
 // Attributes.
 extern const char kAttributeApi[];
 

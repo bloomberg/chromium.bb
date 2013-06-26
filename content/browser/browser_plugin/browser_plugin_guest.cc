@@ -916,10 +916,6 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
   BrowserPluginMsg_LoadCommit_Params params;
   params.url = url;
   params.is_top_level = is_main_frame;
-  params.current_entry_index =
-      GetWebContents()->GetController().GetCurrentEntryIndex();
-  params.entry_count =
-      GetWebContents()->GetController().GetEntryCount();
   SendMessageToEmbedder(
       new BrowserPluginMsg_LoadCommit(instance_id(), params));
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));

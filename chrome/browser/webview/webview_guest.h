@@ -38,6 +38,10 @@ class WebViewGuest : public content::WebContentsObserver {
     return WebContentsObserver::web_contents();
   }
 
+  // If possible, navigate the guest to |relative_index| entries away from the
+  // current navigation entry.
+  void Go(int relative_index);
+
   int instance_id() const { return webview_instance_id_; }
 
   extensions::ScriptExecutor* script_executor() {

@@ -70,6 +70,20 @@
             ]
           }
         ]
+      },
+      {
+        "name": "go",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          },
+          {
+            "type": "integer",
+            "name": "relativeIndex"
+          }
+        ]
       }
     ]
   }

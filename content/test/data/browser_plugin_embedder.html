@@ -43,26 +43,6 @@ function PostMessage(data, shouldTargetIframe) {
     plugin.contentWindow.frames.postMessage('testing123', '*');
   }
 }
-function Back() {
-  var plugin = document.getElementById('plugin');
-  plugin.back();
-}
-function CanGoBack() {
-  var plugin = document.getElementById('plugin');
-  return plugin.canGoBack();
-}
-function CanGoForward() {
-  var plugin = document.getElementById('plugin');
-  return plugin.canGoForward();
-}
-function Forward() {
-  var plugin = document.getElementById('plugin');
-  plugin.forward();
-}
-function Go(relativeIndex) {
-  var plugin = document.getElementById('plugin');
-  plugin.go(relativeIndex);
-}
 function SetTitle(str) {
   document.title = str;
 }

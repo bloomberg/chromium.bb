@@ -108,11 +108,6 @@ class CONTENT_EXPORT BrowserPlugin :
   static bool AttachWindowTo(const WebKit::WebNode& node,
                              int window_id);
 
-  // Query whether the guest can navigate back to the previous entry.
-  bool CanGoBack() const;
-  // Query whether the guest can navigation forward to the next entry.
-  bool CanGoForward() const;
-
   // Informs the guest of an updated focus state.
   void UpdateGuestFocusState();
   // Indicates whether the guest should be focused.
@@ -122,15 +117,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // renderer.
   void UpdateDeviceScaleFactor(float device_scale_factor);
 
-  // Tells the BrowserPlugin to tell the guest to navigate to the previous
-  // navigation entry in the navigation history.
-  void Back();
-  // Tells the BrowserPlugin to tell the guest to navigate to the next
-  // navigation entry in the navigation history.
-  void Forward();
-  // Tells the BrowserPlugin to tell the guest to navigate to a position
-  // relative to the current index in its navigation history.
-  void Go(int relativeIndex);
   // Tells the BrowserPlugin to terminate the guest process.
   void TerminateGuest();
 
@@ -434,19 +420,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // store the BrowserPlugin's BrowserPluginManager in a member variable to
   // avoid accessing the RenderViewImpl.
   scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
-
-  // Important: Do not add more history state here.
-  // We strongly discourage storing additional history state (such as page IDs)
-  // in the embedder process, at the risk of having incorrect information that
-  // can lead to broken back/forward logic in apps.
-  // It's also important that this state does not get modified by any logic in
-  // the embedder process. It should only be updated in response to navigation
-  // events in the guest.  No assumptions should be made about how the index
-  // will change after a navigation (e.g., for back, forward, or go), because
-  // the changes are not always obvious.  For example, there is a maximum
-  // number of entries and earlier ones will automatically be pruned.
-  int current_nav_entry_index_;
-  int nav_entry_count_;
 
   // Used for HW compositing.
   bool compositing_enabled_;

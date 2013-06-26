@@ -64,6 +64,9 @@ bool WebviewExecuteCodeFunction::IsWebView() const {
   return true;
 }
 
+WebviewExecuteScriptFunction::WebviewExecuteScriptFunction() {
+}
+
 void WebviewExecuteScriptFunction::OnExecuteCodeFinished(
     const std::string& error,
     int32 on_page_id,
@@ -76,7 +79,31 @@ void WebviewExecuteScriptFunction::OnExecuteCodeFinished(
                                                     result);
 }
 
+WebviewInsertCSSFunction::WebviewInsertCSSFunction() {
+}
+
 bool WebviewInsertCSSFunction::ShouldInsertCSS() const {
   return true;
 }
 
+WebviewGoFunction::WebviewGoFunction() {
+}
+
+WebviewGoFunction::~WebviewGoFunction() {
+}
+
+bool WebviewGoFunction::RunImpl() {
+  int instance_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
+
+  int relative_index = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &relative_index));
+
+  WebViewGuest* guest = WebViewGuest::From(
+      render_view_host()->GetProcess()->GetID(), instance_id);
+  if (!guest)
+    return false;
+
+  guest->Go(relative_index);
+  return true;
+}

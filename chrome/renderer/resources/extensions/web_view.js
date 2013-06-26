@@ -18,12 +18,7 @@ var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autosize', 'minheight',
 // All exposed api methods for <webview>, these are forwarded to the browser
 // plugin.
 var WEB_VIEW_API_METHODS = [
-  'back',
-  'canGoBack',
-  'canGoForward',
-  'forward',
   'getProcessId',
-  'go',
   'reload',
   'stop',
   'terminate'
@@ -67,6 +62,13 @@ window.addEventListener('readystatechange', function(e) {
     watchForTag('WEBVIEW', function(addedNode) { new WebView(addedNode); });
   });
 }, true /* useCapture */);
+
+
+/** @type {number} */
+WebView.prototype.entryCount_;
+
+/** @type {number} */
+WebView.prototype.currentEntryIndex_;
 
 /**
  * @constructor
@@ -144,11 +146,37 @@ WebView.prototype.setupFocusPropagation_ = function() {
 WebView.prototype.setupWebviewNodeMethods_ = function() {
   // this.browserPluginNode_[apiMethod] are not necessarily defined immediately
   // after the shadow object is appended to the shadow root.
+  var webviewNode = this.webviewNode_;
+  var browserPluginNode = this.browserPluginNode_;
   var self = this;
+
+  webviewNode['canGoBack'] = function() {
+    return self.entryCount_ > 1 && self.currentEntryIndex_ > 0;
+  };
+
+  webviewNode['canGoForward'] = function() {
+    return self.currentEntryIndex_ >=0 &&
+        self.currentEntryIndex_ < (self.entryCount_ - 1);
+  };
+
+  webviewNode['back'] = function() {
+    webviewNode.go(-1);
+  };
+
+  webviewNode['forward'] = function() {
+    webviewNode.go(1);
+  };
+
+  webviewNode['go'] = function(relativeIndex) {
+    var instanceId = browserPluginNode.getGuestInstanceId();
+    if (!instanceId)
+      return;
+    chrome.webview.go(instanceId, relativeIndex);
+  };
+
   $Array.forEach(WEB_VIEW_API_METHODS, function(apiMethod) {
-    self.webviewNode_[apiMethod] = function(var_args) {
-      return $Function.apply(self.browserPluginNode_[apiMethod],
-          self.browserPluginNode_, arguments);
+    webviewNode[apiMethod] = function(var_args) {
+      return browserPluginNode[apiMethod].apply(browserPluginNode, arguments);
     };
   }, this);
   this.setupExecuteCodeAPI_();
@@ -274,6 +302,7 @@ WebView.prototype.handleBrowserPluginAttributeMutation_ = function(mutation) {
  * @private
  */
 WebView.prototype.setupWebviewNodeEvents_ = function() {
+  var self = this;
   var webviewNode = this.webviewNode_;
   // TODO(fsamuel): Generalize this further as we add more events.
   var onAttached = function(e) {
@@ -284,6 +313,8 @@ WebView.prototype.setupWebviewNodeEvents_ = function() {
       $Array.forEach(attribs, function(attribName) {
         webviewEvent[attribName] = event[attribName];
       });
+      self.currentEntryIndex_ = event.currentEntryIndex;
+      self.entryCount_ = event.entryCount;
       webviewNode.dispatchEvent(webviewEvent);
     }, {instanceId: detail.windowId});
   };

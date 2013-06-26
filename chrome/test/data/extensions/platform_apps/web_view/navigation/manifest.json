@@ -1,0 +1,13 @@
+{
+  "name": "Packaged App Test: <webview> Navigation",
+  "description": "Verifies that the <webview> Navigation works as expected.",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

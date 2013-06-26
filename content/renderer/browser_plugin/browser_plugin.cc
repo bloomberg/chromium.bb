@@ -127,8 +127,6 @@ BrowserPlugin::BrowserPlugin(
       size_changed_in_flight_(false),
       before_first_navigation_(true),
       browser_plugin_manager_(render_view->GetBrowserPluginManager()),
-      current_nav_entry_index_(0),
-      nav_entry_count_(0),
       compositing_enabled_(false),
       weak_ptr_factory_(this) {
 }
@@ -585,9 +583,6 @@ void BrowserPlugin::OnLoadCommit(
   guest_crashed_ = false;
   if (params.is_top_level)
     UpdateDOMAttribute(browser_plugin::kAttributeSrc, params.url.spec());
-
-  current_nav_entry_index_ = params.current_entry_index;
-  nav_entry_count_ = params.entry_count;
 }
 
 void BrowserPlugin::OnLoadHandlerCalled(int guest_instance_id) {
@@ -889,15 +884,6 @@ bool BrowserPlugin::HasGuestInstanceID() const {
   return guest_instance_id_ != browser_plugin::kInstanceIDNone;
 }
 
-bool BrowserPlugin::CanGoBack() const {
-  return nav_entry_count_ > 1 && current_nav_entry_index_ > 0;
-}
-
-bool BrowserPlugin::CanGoForward() const {
-  return current_nav_entry_index_ >= 0 &&
-      current_nav_entry_index_ < (nav_entry_count_ - 1);
-}
-
 bool BrowserPlugin::ParsePartitionAttribute(std::string* error_message) {
   if (HasNavigated()) {
     *error_message = browser_plugin::kErrorAlreadyNavigated;
@@ -1064,31 +1050,6 @@ void BrowserPlugin::WeakCallbackForPersistObject(
                    plugin,
                    request_id));
   }
-}
-
-void BrowserPlugin::Back() {
-  if (!HasGuestInstanceID())
-    return;
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_Go(render_view_routing_id_,
-                                  guest_instance_id_, -1));
-}
-
-void BrowserPlugin::Forward() {
-  if (!HasGuestInstanceID())
-    return;
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_Go(render_view_routing_id_,
-                                  guest_instance_id_, 1));
-}
-
-void BrowserPlugin::Go(int relative_index) {
-  if (!HasGuestInstanceID())
-    return;
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_Go(render_view_routing_id_,
-                                  guest_instance_id_,
-                                  relative_index));
 }
 
 void BrowserPlugin::TerminateGuest() {

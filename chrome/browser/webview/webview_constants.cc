@@ -13,6 +13,10 @@ const char kEventLoadCommit[] = "webview.onLoadCommit";
 const char kIsTopLevel[] = "isTopLevel";
 const char kUrl[] = "url";
 
+// Internal parameters/properties on events.
+const char kInternalCurrentEntryIndex[] = "currentEntryIndex";
+const char kInternalEntryCount[] = "entryCount";
+
 // Attributes.
 const char kAttributeApi[] = "api";
 

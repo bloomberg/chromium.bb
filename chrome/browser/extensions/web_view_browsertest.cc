@@ -352,8 +352,10 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
-  void GeolocationTestHelper(const std::string& test_name,
-                             const std::string& app_location) {
+  void TestHelper(const std::string& test_name,
+                  const std::string& test_passed_msg,
+                  const std::string& test_failed_msg,
+                  const std::string& app_location) {
     ASSERT_TRUE(StartTestServer());  // For serving guest pages.
     ExtensionTestMessageListener launched_listener("Launched", false);
     LoadAndLaunchPlatformApp(app_location.c_str());
@@ -363,13 +365,11 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         GetFirstShellWindowWebContents();
     ASSERT_TRUE(embedder_web_contents);
 
-    ExtensionTestMessageListener done_listener("DoneGeolocationTest.PASSED",
-                                               false);
-    done_listener.AlsoListenForFailureMessage("DoneGeolocationTest.FAILED");
+    ExtensionTestMessageListener done_listener(test_passed_msg, false);
+    done_listener.AlsoListenForFailureMessage(test_failed_msg);
     EXPECT_TRUE(content::ExecuteScript(
                     embedder_web_contents,
-                    base::StringPrintf("runGeolocationTest('%s')",
-                                       test_name.c_str())));
+                    base::StringPrintf("runTest('%s')", test_name.c_str())));
     ASSERT_TRUE(done_listener.WaitUntilSatisfied());
   }
 
@@ -988,13 +988,17 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TearDownTest) {
 // No matter what the API does, geolocation permission would be denied.
 // Note that the test name prefix must be "GeolocationAPI".
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessAllow) {
-  GeolocationTestHelper("testDenyDenies",
-                        "web_view/geolocation/embedder_has_no_permission");
+  TestHelper("testDenyDenies",
+             "DoneGeolocationTest.PASSED",
+             "DoneGeolocationTest.FAILED",
+             "web_view/geolocation/embedder_has_no_permission");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
-  GeolocationTestHelper("testDenyDenies",
-                        "web_view/geolocation/embedder_has_no_permission");
+  TestHelper("testDenyDenies",
+             "DoneGeolocationTest.PASSED",
+             "DoneGeolocationTest.FAILED",
+             "web_view/geolocation/embedder_has_no_permission");
 }
 
 // In following GeolocationAPIEmbedderHasAccess* tests, embedder (i.e. the
@@ -1008,21 +1012,27 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
 // the tests become flaky.
 // GeolocationAPI* test 1 of 3.
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessAllow) {
-  GeolocationTestHelper("testAllow",
-                        "web_view/geolocation/embedder_has_permission");
+  TestHelper("testAllow",
+             "DoneGeolocationTest.PASSED",
+             "DoneGeolocationTest.FAILED",
+             "web_view/geolocation/embedder_has_permission");
 }
 
 // GeolocationAPI* test 2 of 3.
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
-  GeolocationTestHelper("testDeny",
-                        "web_view/geolocation/embedder_has_permission");
+  TestHelper("testDeny",
+             "DoneGeolocationTest.PASSED",
+             "DoneGeolocationTest.FAILED",
+             "web_view/geolocation/embedder_has_permission");
 }
 
 // GeolocationAPI* test 3 of 3.
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
-  GeolocationTestHelper("testMultipleBridgeIdAllow",
-                        "web_view/geolocation/embedder_has_permission");
+  TestHelper("testMultipleBridgeIdAllow",
+             "DoneGeolocationTest.PASSED",
+             "DoneGeolocationTest.FAILED",
+             "web_view/geolocation/embedder_has_permission");
 }
 
 // Tests that
@@ -1032,6 +1042,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPICancelGeolocation) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest(
         "platform_apps/web_view/geolocation/cancel_request")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Navigation) {
+  TestHelper("testNavigation",
+             "DoneNavigationTest.PASSED",
+             "DoneNavigationTest.FAILED",
+             "web_view/navigation");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ConsoleMessage) {

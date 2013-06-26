@@ -66,6 +66,10 @@ WebViewGuest* WebViewGuest::From(int embedder_process_id,
   return it == guest_map->end() ? NULL : it->second;
 }
 
+void WebViewGuest::Go(int relative_index) {
+  web_contents()->GetController().GoToOffset(relative_index);
+}
+
 WebViewGuest::~WebViewGuest() {
   std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
   webview_guest_map.Get().erase(key);
@@ -97,6 +101,10 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
   scoped_ptr<DictionaryValue> event(new DictionaryValue());
   event->SetString(webview::kUrl, url.spec());
   event->SetBoolean(webview::kIsTopLevel, is_main_frame);
+  event->SetInteger(webview::kInternalCurrentEntryIndex,
+      web_contents()->GetController().GetCurrentEntryIndex());
+  event->SetInteger(webview::kInternalEntryCount,
+      web_contents()->GetController().GetEntryCount());
   DispatchEvent(webview::kEventLoadCommit, event.Pass());
 }
 
