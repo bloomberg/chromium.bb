@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
+#include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 
 #include <vector>
 
@@ -12,9 +12,9 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/in_process_webkit/indexed_db_callbacks.h"
-#include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
+#include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/webidbcursor_impl.h"
 #include "content/browser/indexed_db/webidbcursor_impl.h"

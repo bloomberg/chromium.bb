@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CALLBACKS_H_
-#define CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CALLBACKS_H_
+#ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CALLBACKS_H_
+#define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CALLBACKS_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
+#include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
@@ -207,4 +207,4 @@ class IndexedDBCallbacks<std::vector<char> > : public IndexedDBCallbacksBase {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CALLBACKS_H_
+#endif  // CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CALLBACKS_H_

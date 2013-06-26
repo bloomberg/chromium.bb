@@ -802,7 +802,7 @@
             'browser/gpu/gpu_pixel_browsertest.cc',
             'browser/gpu/webgl_conformance_test.cc',
             'browser/gpu/webgl_conformance_test_list_autogen.h',
-            'browser/in_process_webkit/indexed_db_browsertest.cc',
+            'browser/indexed_db/indexed_db_browsertest.cc',
             'browser/loader/resource_dispatcher_host_browsertest.cc',
             'browser/media/encrypted_media_browsertest.cc',
             'browser/media/media_browsertest.cc',

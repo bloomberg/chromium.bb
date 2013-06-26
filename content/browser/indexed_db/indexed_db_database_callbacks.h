@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DATABASE_CALLBACKS_H_
-#define CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DATABASE_CALLBACKS_H_
+#ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DATABASE_CALLBACKS_H_
+#define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DATABASE_CALLBACKS_H_
 
 #include "base/memory/ref_counted.h"
 
@@ -36,4 +36,4 @@ class IndexedDBDatabaseCallbacks {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DATABASE_CALLBACKS_H_
+#endif  // CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DATABASE_CALLBACKS_H_

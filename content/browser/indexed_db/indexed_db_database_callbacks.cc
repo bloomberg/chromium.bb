@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
+#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 
 #include "base/memory/scoped_vector.h"
-#include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
+#include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 

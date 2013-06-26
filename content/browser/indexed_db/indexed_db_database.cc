@@ -1596,7 +1596,7 @@ void IndexedDBDatabase::OpenConnection(
   if (version == IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION) {
     // For unit tests only - skip upgrade steps. Calling from script with
     // DEFAULT_INT_VERSION throws exception.
-    DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+    // TODO(jsbell): DCHECK that not in unit tests.
     DCHECK(is_new_database);
     database_callbacks_set_.insert(database_callbacks);
     callbacks->OnSuccess(this, this->metadata());
@@ -1806,8 +1806,7 @@ void IndexedDBDatabase::Close(
     backing_store_ = NULL;
 
     // factory_ should only be null in unit tests.
-    DCHECK(factory_ ||
-           !BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+    // TODO(jsbell): DCHECK(factory_ || !in_unit_tests) - somehow.
     if (factory_.get())
       factory_->RemoveIDBDatabaseBackend(identifier_);
   }

@@ -34,7 +34,7 @@ using webkit_database::DatabaseUtil;
 namespace content {
 
 // This browser test is aimed towards exercising the IndexedDB bindings and
-// the actual implementation that lives in the browser side (in_process_webkit).
+// the actual implementation that lives in the browser side.
 class IndexedDBBrowserTest : public ContentBrowserTest {
  public:
   IndexedDBBrowserTest() : disk_usage_(-1) {}

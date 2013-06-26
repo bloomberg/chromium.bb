@@ -23,7 +23,7 @@
 #include "content/browser/devtools/worker_devtools_manager.h"
 #include "content/browser/devtools/worker_devtools_message_filter.h"
 #include "content/browser/fileapi/fileapi_message_filter.h"
-#include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
+#include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
