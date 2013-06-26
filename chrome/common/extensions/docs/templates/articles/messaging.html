@@ -217,6 +217,65 @@ var port = chrome.runtime.connect(laserExtensionId);
 port.postMessage(...);
 </pre>
 
+
+<h2 id="external-webpage">Sending messages from web pages</h2>
+<p>
+Similar to <a href="#external">cross-extension messaging</a>,
+your app or extension can receive and
+respond to messages from regular web pages.
+To use this feature, you must first
+specify in your manifest.json which web sites you want to communicate with. For
+example:
+
+<pre>
+"externally_connectable": {
+  "matches": ["*://*.example.com/*"]
+}
+</pre>
+
+<p>
+This will expose the messaging API to any page which matches the URL patterns
+you specify. The URL pattern must contain at least a
+<a href="http://en.wikipedia.org/wiki/Second-level_domain">second-level domain</a>
+- that is, hostname
+patterns like "*", "*.com", "*.co.uk", and "*.appspot.com" are prohibited.
+From the web page, use the
+$ref:runtime.sendMessage
+or
+$ref:runtime.connect
+APIs to send a message to a specific app or extension. For example:
+<pre>
+// The ID of the extension we want to talk to.
+var editorExtensionId = "abcdefghijklmnoabcdefhijklmnoabc";
+
+// Make a simple request:
+chrome.runtime.sendMessage(editorExtensionId, {openUrlInEditor: url},
+  function(response) {
+    if (!response.success)
+      handleError(url);
+  });
+</pre>
+
+<p>
+From your app or extension, you may listen to messages from web pages via the
+$ref:runtime.onMessageExternal
+or
+$ref:runtime.onConnectExternal
+APIs, similar to <a href="#external">cross-extension messaging</a>.
+Only the web page can initiate a connection.
+Here is an example:
+
+<pre>
+chrome.runtime.onMessageExternal.addListener(
+  function(request, sender, sendResponse) {
+    if (sender.url == blacklistedWebsite)
+      return;  // don't allow this web page access
+    if (request.openUrlInEditor)
+      openUrl(request.openUrlInEditor);
+  });
+</pre>
+
+
 <h2 id="native-messaging">Native messaging</h2>
 <p>
 Extensions can exchange messages with native applications. Native
