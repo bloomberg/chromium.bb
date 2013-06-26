@@ -1685,12 +1685,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel->Close();
 }
 
-// http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MACOSX)
-#define MAYBE_DevTools DISABLED_DevTools
-#else
-#define MAYBE_DevTools DevTools
-#endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevTools) {
   // Create a test panel with web contents loaded.
   CreatePanelParams params("1", gfx::Rect(0, 0, 200, 220), SHOW_AS_ACTIVE);
@@ -1725,12 +1719,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevTools) {
   panel->Close();
 }
 
-// http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MACOSX)
-#define MAYBE_DevToolsConsole DISABLED_DevToolsConsole
-#else
-#define MAYBE_DevToolsConsole DevToolsConsole
-#endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevToolsConsole) {
   // Create a test panel with web contents loaded.
   CreatePanelParams params("1", gfx::Rect(0, 0, 200, 220), SHOW_AS_ACTIVE);
