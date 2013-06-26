@@ -7,6 +7,10 @@ body {
   -webkit-user-select: text;
 }
 
+#overlay .page:not(.showing) {
+  display: none;
+}
+
 #about-container {
   -webkit-box-align: center;
   display: -webkit-box;
@@ -51,13 +55,22 @@ body {
   margin-top: 200px;
 }
 
-#update-status-icon {
+.help-page-icon,
+.help-page-icon-large {
   background-repeat: no-repeat;
   display: inline-block;
-  height: 17px;
   margin-right: 4px;
   vertical-align: top;
+}
+
+.help-page-icon {
+  height: 17px;
   width: 17px;
+}
+
+.help-page-icon-large {
+  height: 22px;
+  width: 22px;
 }
 
 #update-status-icon.up-to-date {
@@ -100,4 +113,34 @@ body {
 
 #channel-change-confirmation {
   margin-top: 5px;
+}
+
+#change-channel {
+  margin-top: 8px;
+}
+
+#channel-change-disallowed-icon {
+  -webkit-margin-start: 4px;
+  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_GRAY');
+  background-size: 17px;
+  vertical-align: middle;
+}
+
+.channel-change-error-bubble {
+  display: -webkit-box;
+}
+
+.channel-change-error-icon {
+  -webkit-margin-start: 4px;
+  background-image:
+      url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY_LARGE');
+  background-size: 22px;
+  vertical-align: top;
+}
+
+.channel-change-error-text {
+  -webkit-margin-start: 4px;
+  display: block;
+  vertical-align: top;
+  width: 240px;
 }

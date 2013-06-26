@@ -14,7 +14,7 @@
 
 namespace dbus {
 class Bus;
-}  // namespace
+}
 
 namespace chromeos {
 
@@ -87,14 +87,22 @@ class CHROMEOS_EXPORT UpdateEngineClient {
   // Reboots if update has been performed.
   virtual void RebootAfterUpdate() = 0;
 
+  // DEPRECATED: Use SetChannel instead.
   // Requests to set the release track (channel). |track| should look like
   // "beta-channel" or "dev-channel".
   virtual void SetReleaseTrack(const std::string& track) = 0;
 
   // Called once GetReleaseTrack() is complete. Takes one parameter;
   // - string: the release track name like "beta-channel".
-  typedef base::Callback<void(const std::string&)> GetReleaseTrackCallback;
+  typedef base::Callback<void(const std::string& channel_name)>
+      GetReleaseTrackCallback;
 
+  // Called once GetChannel() is complete. Takes one parameter;
+  // - string: the channel name like "beta-channel".
+  typedef base::Callback<void(const std::string& channel_name)>
+      GetChannelCallback;
+
+  // DEPRECATED: Use GetChannel() instead.
   // Requests to get the release track and calls |callback| with the
   // release track (channel). On error, calls |callback| with an empty
   // string.
@@ -105,6 +113,27 @@ class CHROMEOS_EXPORT UpdateEngineClient {
   // Ideally, the D-Bus client should be state-less, but there are clients
   // that need this information.
   virtual Status GetLastStatus() = 0;
+
+  // Changes the current channel of the device to the target
+  // channel. If the target channel is a less stable channel than the
+  // current channel, then the channel change happens immediately (at
+  // the next update check).  If the target channel is a more stable
+  // channel, then if |is_powerwash_allowed| is set to true, then also
+  // the change happens immediately but with a powerwash if
+  // required. Otherwise, the change takes effect eventually (when the
+  // version on the target channel goes above the version number of
+  // what the device currently has). |target_channel| should look like
+  // "dev-channel", "beta-channel" or "stable-channel".
+  virtual void SetChannel(const std::string& target_channel,
+                          bool is_powerwash_allowed) = 0;
+
+  // If |get_current_channel| is set to true, calls |callback| with
+  // the name of the channel that the device is currently
+  // on. Otherwise, it calls it with the name of the channel the
+  // device is supposed to be (in case of a pending channel
+  // change). On error, calls |callback| with an empty string.
+  virtual void GetChannel(bool get_current_channel,
+                          const GetChannelCallback& callback) = 0;
 
   // Returns an empty UpdateCheckCallback that does nothing.
   static UpdateCheckCallback EmptyUpdateCheckCallback();

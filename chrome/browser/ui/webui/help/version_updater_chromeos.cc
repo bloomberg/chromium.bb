@@ -8,11 +8,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -125,25 +127,28 @@ void VersionUpdaterCros::RelaunchBrowser() const {
   DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 
-void VersionUpdaterCros::SetReleaseChannel(const std::string& channel) {
-  DBusThreadManager::Get()->GetUpdateEngineClient()->SetReleaseTrack(channel);
-  // For local owner set the field in the policy blob too.
-  if (UserManager::Get()->IsCurrentUserOwner())
+void VersionUpdaterCros::SetChannel(const std::string& channel,
+                                    bool is_powerwash_allowed) {
+  // On enterprise machines we can only use SetChannel to store the
+  // user choice in the lsb-release file but we can not modify the
+  // policy blob.  Therefore we only call SetString if the device is
+  // locally owned and the currently logged in user is the owner.
+  if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+    DBusThreadManager::Get()->GetUpdateEngineClient()->
+        SetChannel(channel, is_powerwash_allowed);
+  } else if (UserManager::Get()->IsCurrentUserOwner()) {
+    // For local owner set the field in the policy blob.
     CrosSettings::Get()->SetString(chromeos::kReleaseChannel, channel);
+  }
 }
 
-void VersionUpdaterCros::GetReleaseChannel(const ChannelCallback& cb) {
-  channel_callback_ = cb;
-
-  // TODO(jhawkins): Store on this object.
+void VersionUpdaterCros::GetChannel(bool get_current_channel,
+                                    const ChannelCallback& cb) {
   UpdateEngineClient* update_engine_client =
       DBusThreadManager::Get()->GetUpdateEngineClient();
 
-  // Request the channel information. Use the observer to track the help page
-  // handler and ensure it does not get deleted before the callback.
-  update_engine_client->GetReleaseTrack(
-      base::Bind(&VersionUpdaterCros::UpdateSelectedChannel,
-                 weak_ptr_factory_.GetWeakPtr()));
+  // Request the channel information.
+  update_engine_client->GetChannel(get_current_channel, cb);
 }
 
 VersionUpdaterCros::VersionUpdaterCros()
@@ -214,8 +219,4 @@ void VersionUpdaterCros::OnUpdateCheck(
   // possible with respect to automatic updating.
   if (result == UpdateEngineClient::UPDATE_RESULT_NOTIMPLEMENTED)
     callback_.Run(UPDATED, 0, string16());
-}
-
-void VersionUpdaterCros::UpdateSelectedChannel(const std::string& channel) {
-  channel_callback_.Run(channel);
 }

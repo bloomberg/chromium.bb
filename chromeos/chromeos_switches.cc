@@ -44,6 +44,9 @@ const char kDisableLocalAccounts[]          = "disable-local-accounts";
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[]        = "disable-login-animations";
 
+// Disable new channel switcher UI.
+const char kDisableNewChannelSwitcherUI[]   = "disable-new-channel-switcher-ui";
+
 // Disable Quickoffice component app thus handlers won't be registered so
 // it will be possible to install another version as normal app for testing.
 const char kDisableQuickofficeComponentApp[] =

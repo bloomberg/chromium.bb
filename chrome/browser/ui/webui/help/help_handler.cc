@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/send_feedback_experiment.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -46,6 +47,9 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #endif
 
@@ -89,17 +93,21 @@ string16 GetAllowedConnectionTypesMessage() {
   }
 }
 
-bool CanChangeReleaseChannel() {
-  // On non managed machines we have local owner who is the only one to change
-  // anything.
-  if (chromeos::UserManager::Get()->IsCurrentUserOwner())
-    return true;
+// Returns true if the device is enterprise managed, false otherwise.
+bool IsEnterpriseManaged() {
+  return g_browser_process->browser_policy_connector()->IsEnterpriseManaged();
+}
+
+// Returns true if current user can change channel, false otherwise.
+bool CanChangeChannel() {
+  bool value = false;
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kReleaseChannelDelegated,
+                                            &value);
+
   // On a managed machine we delegate this setting to the users of the same
   // domain only if the policy value is "domain".
-  if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
-    bool value = false;
-    if (!chromeos::CrosSettings::Get()->GetBoolean(
-            chromeos::kReleaseChannelDelegated, &value) || !value)
+  if (IsEnterpriseManaged()) {
+    if (!value)
       return false;
     // Get the currently logged in user and strip the domain part only.
     std::string domain = "";
@@ -109,6 +117,10 @@ bool CanChangeReleaseChannel() {
       domain = user.substr(user.find('@') + 1);
     return domain == g_browser_process->browser_policy_connector()->
         GetEnterpriseDomain();
+  } else if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+    // On non managed machines we have local owner who is the only one to change
+    // anything. Ensure that ReleaseChannelDelegated is false.
+    return !value;
   }
   return false;
 }
@@ -146,12 +158,22 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
 #endif
     { "aboutProductDescription", IDS_ABOUT_PRODUCT_DESCRIPTION },
     { "relaunch", IDS_RELAUNCH_BUTTON },
+    { "relaunch", IDS_RELAUNCH_BUTTON },
+#if defined(OS_CHROMEOS)
+    { "relaunchAndPowerwash", IDS_RELAUNCH_AND_POWERWASH_BUTTON },
+#endif
     { "productName", IDS_PRODUCT_NAME },
     { "productCopyright", IDS_ABOUT_VERSION_COPYRIGHT },
     { "updateCheckStarted", IDS_UPGRADE_CHECK_STARTED },
     { "upToDate", IDS_UPGRADE_UP_TO_DATE },
     { "updating", IDS_UPGRADE_UPDATING },
+#if defined(OS_CHROMEOS)
+    { "updatingChannelSwitch", IDS_UPGRADE_UPDATING_CHANNEL_SWITCH },
+#endif
     { "updateAlmostDone", IDS_UPGRADE_SUCCESSFUL_RELAUNCH },
+#if defined(OS_CHROMEOS)
+    { "successfulChannelSwitch", IDS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH },
+#endif
     { "getHelpWithChrome", IDS_GET_HELP_USING_CHROME },
     { kResourceReportIssue, IDS_REPORT_AN_ISSUE },
 #if defined(OS_CHROMEOS)
@@ -164,6 +186,28 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
     { "beta", IDS_ABOUT_PAGE_CHANNEL_BETA },
     { "dev", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT },
     { "channel-changed", IDS_ABOUT_PAGE_CHANNEL_CHANGED },
+    { "currentChannelStable", IDS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE },
+    { "currentChannelBeta", IDS_ABOUT_PAGE_CURRENT_CHANNEL_BETA },
+    { "currentChannelDev", IDS_ABOUT_PAGE_CURRENT_CHANNEL_DEV },
+    { "currentChannel", IDS_ABOUT_PAGE_CURRENT_CHANNEL },
+    { "channelChangeButton", IDS_ABOUT_PAGE_CHANNEL_CHANGE_BUTTON },
+    { "channelChangeDisallowedMessage",
+      IDS_ABOUT_PAGE_CHANNEL_CHANGE_DISALLOWED_MESSAGE },
+    { "channelChangePageTitle", IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_TITLE },
+    { "channelChangePagePowerwashTitle",
+      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_TITLE },
+    { "channelChangePagePowerwashMessage",
+      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_MESSAGE },
+    { "channelChangePageDelayedChangeTitle",
+      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_TITLE },
+    { "channelChangePageUnstableTitle",
+      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_TITLE },
+    { "channelChangePagePowerwashButton",
+      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_BUTTON },
+    { "channelChangePageChangeButton",
+      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CHANGE_BUTTON },
+    { "channelChangePageCancelButton",
+      IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CANCEL_BUTTON },
     { "webkit", IDS_WEBKIT },
     { "userAgent", IDS_ABOUT_VERSION_USER_AGENT },
     { "commandLine", IDS_ABOUT_VERSION_COMMAND_LINE },
@@ -206,6 +250,23 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
       IDS_ABOUT_CROS_VERSION_LICENSE,
       ASCIIToUTF16(chrome::kChromeUIOSCreditsURL));
   source->AddString("productOsLicense", os_license);
+
+  string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME);
+  source->AddString(
+      "channelChangePageDelayedChangeMessage",
+      l10n_util::GetStringFUTF16(
+          IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_MESSAGE,
+          product_name));
+  source->AddString(
+      "channelChangePageUnstableMessage",
+      l10n_util::GetStringFUTF16(
+          IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_MESSAGE,
+          product_name));
+
+  if (CommandLine::ForCurrentProcess()->
+      HasSwitch(chromeos::switches::kDisableNewChannelSwitcherUI)) {
+    source->AddBoolean("disableNewChannelSwitcherUI", true);
+  }
 #endif
 
   string16 tos = l10n_util::GetStringFUTF16(
@@ -237,8 +298,10 @@ void HelpHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("openHelpPage",
       base::Bind(&HelpHandler::OpenHelpPage, base::Unretained(this)));
 #if defined(OS_CHROMEOS)
-  web_ui()->RegisterMessageCallback("setReleaseTrack",
-      base::Bind(&HelpHandler::SetReleaseTrack, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("setChannel",
+      base::Bind(&HelpHandler::SetChannel, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("relaunchAndPowerwash",
+      base::Bind(&HelpHandler::RelaunchAndPowerwash, base::Unretained(this)));
 #endif
 #if defined(OS_MACOSX)
   web_ui()->RegisterMessageCallback("promoteUpdater",
@@ -278,7 +341,7 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
 
   web_ui()->CallJavascriptFunction(
       "help.HelpPage.updateEnableReleaseChannel",
-      base::FundamentalValue(CanChangeReleaseChannel()));
+      base::FundamentalValue(CanChangeChannel()));
 
   if (g_build_date_string == NULL) {
     // If |g_build_date_string| is |NULL|, the date has not yet been assigned.
@@ -302,8 +365,16 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
       );
 
 #if defined(OS_CHROMEOS)
-  version_updater_->GetReleaseChannel(
-      base::Bind(&HelpHandler::OnReleaseChannel, base::Unretained(this)));
+  web_ui()->CallJavascriptFunction(
+      "help.HelpPage.updateIsEnterpriseManaged",
+      base::FundamentalValue(IsEnterpriseManaged()));
+  // First argument to GetChannel() is a flag that indicates whether
+  // current channel should be returned (if true) or target channel
+  // (otherwise).
+  version_updater_->GetChannel(true,
+      base::Bind(&HelpHandler::OnCurrentChannel, weak_factory_.GetWeakPtr()));
+  version_updater_->GetChannel(false,
+      base::Bind(&HelpHandler::OnTargetChannel, weak_factory_.GetWeakPtr()));
 #endif
 }
 
@@ -334,25 +405,43 @@ void HelpHandler::OpenHelpPage(const base::ListValue* args) {
 
 #if defined(OS_CHROMEOS)
 
-void HelpHandler::SetReleaseTrack(const ListValue* args) {
-  if (!CanChangeReleaseChannel()) {
+void HelpHandler::SetChannel(const ListValue* args) {
+  DCHECK(args->GetSize() == 2);
+
+  if (!CanChangeChannel()) {
     LOG(WARNING) << "Non-owner tried to change release track.";
     return;
   }
 
-  const std::string channel = UTF16ToUTF8(ExtractStringValue(args));
-  version_updater_->SetReleaseChannel(channel);
-  // On enterprise machines we can only use SetReleaseChannel to store the
-  // user choice in the lsb-release file but we can not modify the policy blob.
-  // Therefore we only call SetString if the device is locally owned and the
-  // currently logged in user is the owner.
+  base::string16 channel;
+  bool is_powerwash_allowed;
+  if (!args->GetString(0, &channel) ||
+      !args->GetBoolean(1, &is_powerwash_allowed)) {
+    LOG(ERROR) << "Can't parse SetReleaseTrack() args";
+    return;
+  }
+
+  version_updater_->SetChannel(UTF16ToUTF8(channel), is_powerwash_allowed);
   if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
-    chromeos::CrosSettings::Get()->SetString(chromeos::kReleaseChannel,
-                                             channel);
     // Check for update after switching release channel.
     version_updater_->CheckForUpdate(base::Bind(&HelpHandler::SetUpdateStatus,
                                                 base::Unretained(this)));
   }
+}
+
+void HelpHandler::RelaunchAndPowerwash(const ListValue* args) {
+  DCHECK(args->empty());
+
+  if (IsEnterpriseManaged())
+    return;
+
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+  prefs->CommitPendingWrite();
+
+  // Perform sign out. Current chrome process will then terminate, new one will
+  // be launched (as if it was a restart).
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -447,9 +536,14 @@ void HelpHandler::OnOSFirmware(const std::string& firmware) {
                                    base::StringValue(firmware));
 }
 
-void HelpHandler::OnReleaseChannel(const std::string& channel) {
+void HelpHandler::OnCurrentChannel(const std::string& channel) {
   web_ui()->CallJavascriptFunction(
-      "help.HelpPage.updateSelectedChannel", base::StringValue(channel));
+      "help.HelpPage.updateCurrentChannel", base::StringValue(channel));
+}
+
+void HelpHandler::OnTargetChannel(const std::string& channel) {
+  web_ui()->CallJavascriptFunction(
+      "help.HelpPage.updateTargetChannel", base::StringValue(channel));
 }
 
 void HelpHandler::ProcessLsbFileInfo(

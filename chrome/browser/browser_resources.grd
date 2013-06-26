@@ -35,6 +35,8 @@
       <structure name="IDR_EXTENSIONS_HTML" file="resources\extensions\extensions.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_HELP_CSS" file="resources\help\help.css" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_HELP_HTML" file="resources\help\help.html" flattenhtml="true" type="chrome_html" />
+      <structure name="IDR_HELP_CHANNEL_CHANGE_PAGE_CSS" file="resources\help\channel_change_page.css" flattenhtml="true" type="chrome_html" />
+      <structure name="IDR_HELP_CHANNEL_CHANGE_PAGE_HTML" file="resources\help\channel_change_page.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_INCOGNITO_TAB_HTML" file="resources\incognito_tab.html" flattenhtml="true" type="chrome_html" />
       <if expr="pp_ifdef('chromeos')">
         <structure name="IDR_LOGIN_HTML" file="resources\chromeos\login\login.html" flattenhtml="true" type="chrome_html" variables="OOBE=login" expand_variables="true"/>
@@ -118,6 +120,7 @@
       <include name="IDR_FLAGS_HTML" file="resources\flags.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FLAGS_JS" file="resources\flags.js" type="BINDATA" />
       <include name="IDR_HELP_JS" file="resources\help\help.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_CHANNEL_CHANGE_PAGE_JS" file="resources\help\channel_change_page.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_HISTORY_HTML" file="resources\history\history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_HISTORY_JS" file="resources\history\history.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_OTHER_DEVICES_JS" file="resources\history\other_devices.js" flattenhtml="true" type="BINDATA" />

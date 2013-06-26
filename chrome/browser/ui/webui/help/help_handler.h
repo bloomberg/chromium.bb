@@ -60,7 +60,10 @@ class HelpHandler : public content::WebUIMessageHandler,
 
 #if defined(OS_CHROMEOS)
   // Sets the release track version.
-  void SetReleaseTrack(const base::ListValue* args);
+  void SetChannel(const base::ListValue* args);
+
+  // Performs relaunch and powerwash.
+  void RelaunchAndPowerwash(const base::ListValue* args);
 #endif
 
   // Callback method which forwards status updates to the page.
@@ -76,7 +79,8 @@ class HelpHandler : public content::WebUIMessageHandler,
   // Callbacks from VersionLoader.
   void OnOSVersion(const std::string& version);
   void OnOSFirmware(const std::string& firmware);
-  void OnReleaseChannel(const std::string& channel);
+  void OnCurrentChannel(const std::string& channel);
+  void OnTargetChannel(const std::string& channel);
 
   void ProcessLsbFileInfo(
       base::PlatformFileError rv, const base::PlatformFileInfo& file_info);

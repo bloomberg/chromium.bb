@@ -75,8 +75,10 @@ class VersionUpdater {
   virtual void RelaunchBrowser() const = 0;
 
 #if defined(OS_CHROMEOS)
-  virtual void SetReleaseChannel(const std::string& channel) = 0;
-  virtual void GetReleaseChannel(const ChannelCallback& callback) = 0;
+  virtual void SetChannel(const std::string& channel,
+                          bool is_powerwash_allowed) = 0;
+  virtual void GetChannel(bool get_current_channel,
+                          const ChannelCallback& callback) = 0;
 #endif
 };
 

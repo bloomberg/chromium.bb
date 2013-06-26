@@ -14,7 +14,12 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+
 namespace {
+
+const char kReleaseChannelDev[] = "dev-channel";
+const char kReleaseChannelBeta[] = "beta-channel";
+const char kReleaseChannelStable[] = "stable-channel";
 
 // Returns UPDATE_STATUS_ERROR on error.
 UpdateEngineClient::UpdateStatusOperation UpdateStatusFromString(
@@ -41,6 +46,12 @@ UpdateEngineClient::UpdateStatusOperation UpdateStatusFromString(
 // Used in UpdateEngineClient::EmptyUpdateCheckCallback().
 void EmptyUpdateCheckCallbackBody(
     UpdateEngineClient::UpdateCheckResult unused_result) {
+}
+
+bool IsValidChannel(const std::string& channel) {
+  return channel == kReleaseChannelDev ||
+      channel == kReleaseChannelBeta ||
+      channel == kReleaseChannelStable;
 }
 
 }  // namespace
@@ -77,22 +88,19 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   virtual ~UpdateEngineClientImpl() {
   }
 
-  // UpdateEngineClient override.
+  // UpdateEngineClient implementation:
   virtual void AddObserver(Observer* observer) OVERRIDE {
     observers_.AddObserver(observer);
   }
 
-  // UpdateEngineClient override.
   virtual void RemoveObserver(Observer* observer) OVERRIDE {
     observers_.RemoveObserver(observer);
   }
 
-  // UpdateEngineClient override.
   virtual bool HasObserver(Observer* observer) OVERRIDE {
     return observers_.HasObserver(observer);
   }
 
-  // UpdateEngineClient override.
   virtual void RequestUpdateCheck(
       const UpdateCheckCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
@@ -111,7 +119,6 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                    callback));
   }
 
-  // UpdateEngineClient override.
   virtual void RebootAfterUpdate() OVERRIDE {
     dbus::MethodCall method_call(
         update_engine::kUpdateEngineInterface,
@@ -125,7 +132,6 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // UpdateEngineClient override.
   virtual void SetReleaseTrack(const std::string& track) OVERRIDE {
     dbus::MethodCall method_call(
         update_engine::kUpdateEngineInterface,
@@ -141,7 +147,6 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // UpdateEngineClient override.
   virtual void GetReleaseTrack(
       const GetReleaseTrackCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
@@ -157,9 +162,50 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                    callback));
   }
 
-  // UpdateEngineClient override.
   virtual Status GetLastStatus() OVERRIDE {
     return last_status_;
+  }
+
+  virtual void SetChannel(const std::string& target_channel,
+                          bool is_powerwash_allowed) OVERRIDE {
+    if (!IsValidChannel(target_channel)) {
+      LOG(ERROR) << "Invalid channel name: " << target_channel;
+      return;
+    }
+
+    dbus::MethodCall method_call(
+        update_engine::kUpdateEngineInterface,
+        update_engine::kSetChannel);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(target_channel);
+    writer.AppendBool(is_powerwash_allowed);
+
+    VLOG(1) << "Requesting to set channel: "
+            << "target_channel=" << target_channel << ", "
+            << "is_powerwash_allowed=" << is_powerwash_allowed;
+    update_engine_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&UpdateEngineClientImpl::OnSetChannel,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  virtual void GetChannel(bool get_current_channel,
+                          const GetChannelCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        update_engine::kUpdateEngineInterface,
+        update_engine::kGetChannel);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(get_current_channel);
+
+    VLOG(1) << "Requesting to get channel, get_current_channel="
+            << get_current_channel;
+    update_engine_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&UpdateEngineClientImpl::OnGetChannel,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
   }
 
  private:
@@ -251,6 +297,34 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     LOG(ERROR) << "GetStatus request failed with error: " << error->ToString();
   }
 
+    // Called when a response for SetReleaseTrack() is received.
+  void OnSetChannel(dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to request setting channel";
+      return;
+    }
+    VLOG(1) << "Succeeded to set channel";
+  }
+
+  // Called when a response for GetChannel() is received.
+  void OnGetChannel(const GetReleaseTrackCallback& callback,
+                    dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to request getting channel";
+      callback.Run("");
+      return;
+    }
+    dbus::MessageReader reader(response);
+    std::string channel;
+    if (!reader.PopString(&channel)) {
+      LOG(ERROR) << "Incorrect response: " << response->ToString();
+      callback.Run("");
+      return;
+    }
+    VLOG(1) << "The channel received: " << channel;
+    callback.Run(channel);
+  }
+
   // Called when a status update signal is received.
   void StatusUpdateReceived(dbus::Signal* signal) {
     VLOG(1) << "Status update signal received: " << signal->ToString();
@@ -302,7 +376,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
 // The UpdateEngineClient implementation used on Linux desktop,
 // which does nothing.
 class UpdateEngineClientStubImpl : public UpdateEngineClient {
-  // UpdateEngineClient overrides.
+  // UpdateEngineClient implementation:
   virtual void AddObserver(Observer* observer) OVERRIDE {}
   virtual void RemoveObserver(Observer* observer) OVERRIDE {}
   virtual bool HasObserver(Observer* observer) OVERRIDE { return false; }
@@ -318,6 +392,18 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
     callback.Run("beta-channel");
   }
   virtual Status GetLastStatus() OVERRIDE { return Status(); }
+  virtual void SetChannel(const std::string& target_channel,
+                          bool is_powerwash_allowed) OVERRIDE {
+    LOG(INFO) << "Requesting to set channel: "
+              << "target_channel=" << target_channel << ", "
+              << "is_powerwash_allowed=" << is_powerwash_allowed;
+  }
+  virtual void GetChannel(bool get_current_channel,
+                          const GetChannelCallback& callback) OVERRIDE {
+    LOG(INFO) << "Requesting to get channel, get_current_channel="
+              << get_current_channel;
+    callback.Run("beta-channel");
+  }
 };
 
 UpdateEngineClient::UpdateEngineClient() {

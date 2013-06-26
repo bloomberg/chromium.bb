@@ -16,9 +16,41 @@ cr.define('help', function() {
     __proto__: HTMLDivElement.prototype,
 
     /**
+     * True if after update powerwash button should be displayed.
+     * @private
+     */
+    powerwashAfterUpdate_: false,
+
+    /**
+     * List of the channels names.
+     * @private
+     */
+    channelList_: ['dev-channel', 'beta-channel', 'stable-channel'],
+
+    /**
+     * Bubble for error messages and notifications.
+     * @private
+     */
+    bubble_: null,
+
+    /**
+     * Name of the channel the device is currently on.
+     * @private
+     */
+    currentChannel_: null,
+
+    /**
+     * Name of the channel the device is supposed to be on.
+     * @private
+     */
+    targetChannel_: null,
+
+    /**
      * Perform initial setup.
      */
     initialize: function() {
+      var self = this;
+
       uber.onContentFrameLoaded();
 
       // Set the title.
@@ -51,22 +83,102 @@ cr.define('help', function() {
       this.maybeSetOnClick_($('relaunch'), function() {
         chrome.send('relaunchNow');
       });
+      if (cr.isChromeOS) {
+        this.maybeSetOnClick_($('relaunch-and-powerwash'), function() {
+          chrome.send('relaunchAndPowerwash');
+        });
+
+        this.channelTable_ = {
+          'stable-channel': {
+              'name': loadTimeData.getString('stable'),
+              'label': loadTimeData.getString('currentChannelStable'),
+          },
+          'beta-channel': {
+              'name': loadTimeData.getString('beta'),
+              'label': loadTimeData.getString('currentChannelBeta')
+          },
+          'dev-channel': {
+              'name': loadTimeData.getString('dev'),
+              'label': loadTimeData.getString('currentChannelDev')
+          }
+        };
+      }
 
       var channelChanger = $('channel-changer');
       if (channelChanger) {
-        this.channelName_ = {
-            'stable-channel': loadTimeData.getString('stable'),
-            'beta-channel': loadTimeData.getString('beta'),
-            'dev-channel': loadTimeData.getString('dev')
-        };
-        var self = this;
         channelChanger.onchange = function(event) {
-          self.setReleaseChannel_(event.target.value);
-        }
+          self.setChannel_(event.target.value, false);
+        };
+      }
+
+      if (cr.isChromeOS) {
+        cr.ui.overlay.globalInitialization();
+        cr.ui.overlay.setupOverlay($('overlay-container'));
+        $('overlay-container').addEventListener('cancelOverlay', function() {
+          self.showOverlay_(null);
+        });
+
+        $('change-channel').onclick = function() {
+          self.showOverlay_($('channel-change-page'));
+        };
+
+        var channelChangeDisallowedError = document.createElement('div');
+        channelChangeDisallowedError.className = 'channel-change-error-bubble';
+
+        var channelChangeDisallowedIcon = document.createElement('div');
+        channelChangeDisallowedIcon.classList.add('help-page-icon-large');
+        channelChangeDisallowedIcon.classList.add('channel-change-error-icon');
+        channelChangeDisallowedError.appendChild(channelChangeDisallowedIcon);
+
+        var channelChangeDisallowedText = document.createElement('div');
+        channelChangeDisallowedText.className = 'channel-change-error-text';
+        channelChangeDisallowedText.textContent =
+            loadTimeData.getString('channelChangeDisallowedMessage');
+        channelChangeDisallowedError.appendChild(channelChangeDisallowedText);
+
+        $('channel-change-disallowed-icon').onclick = function() {
+            self.showBubble_(channelChangeDisallowedError,
+                             $('help-container'),
+                             $('channel-change-disallowed-icon'),
+                             cr.ui.ArrowLocation.TOP_END);
+        };
       }
 
       // Attempt to update.
       chrome.send('onPageLoaded');
+    },
+
+    /**
+     * Shows the bubble.
+     * @param {HTMLDivElement} content The content of the bubble.
+     * @param {HTMLElement} target The element at which the bubble points.
+     * @param {HTMLElement} domSibling The element after which the bubble is
+     *     added to the DOM.
+     * @param {cr.ui.ArrowLocation} location The arrow location.
+     * @private
+     */
+    showBubble_: function(content, domSibling, target, location) {
+      if (!cr.isChromeOS)
+        return;
+      this.hideBubble_();
+      var bubble = new cr.ui.AutoCloseBubble;
+      bubble.anchorNode = target;
+      bubble.domSibling = domSibling;
+      bubble.arrowLocation = location;
+      bubble.content = content;
+      bubble.show();
+      this.bubble_ = bubble;
+    },
+
+    /**
+     * Hides the bubble.
+     * @private
+     */
+    hideBubble_: function() {
+      if (!cr.isChromeOS)
+        return;
+      if (this.bubble_)
+        this.bubble_.hide();
     },
 
     /**
@@ -98,25 +210,66 @@ cr.define('help', function() {
      * @private
      */
     setUpdateImage_: function(state) {
-      $('update-status-icon').className = 'update-icon ' + state;
+      $('update-status-icon').className = 'help-page-icon ' + state;
+    },
+
+    /**
+     * Returns current overlay.
+     * @return {HTMLElement} Current overlay
+     * @private
+     */
+    getCurrentOverlay_: function() {
+      return document.querySelector('#overlay .page.showing');
+    },
+
+    /**
+     * @return {boolean} True, if new channel switcher UI is used,
+     *    false otherwise.
+     * @private
+     */
+    isNewChannelSwitcherUI_: function() {
+      return !loadTimeData.valueExists('disableNewChannelSwitcherUI');
+    },
+
+    /**
+     * @return {boolean} True if target and current channels are not
+     *     null and not equals
+     * @private
+     */
+    channelsDiffer_: function() {
+      var current = this.currentChannel_;
+      var target = this.targetChannel_;
+      return (current != null && target != null && current != target);
     },
 
     /**
      * @private
      */
     setUpdateStatus_: function(status, message) {
+      var channel = this.targetChannel_;
       if (status == 'checking') {
         this.setUpdateImage_('working');
         $('update-status-message').innerHTML =
             loadTimeData.getString('updateCheckStarted');
       } else if (status == 'updating') {
         this.setUpdateImage_('working');
-        $('update-status-message').innerHTML =
-            loadTimeData.getString('updating');
+        if (this.channelsDiffer_()) {
+          $('update-status-message').innerHTML =
+              loadTimeData.getStringF('updatingChannelSwitch',
+                                      this.channelTable_[channel].label);
+        } else {
+          $('update-status-message').innerHTML =
+              loadTimeData.getStringF('updating');
+        }
       } else if (status == 'nearly_updated') {
         this.setUpdateImage_('up-to-date');
-        $('update-status-message').innerHTML =
-            loadTimeData.getString('updateAlmostDone');
+        if (this.channelsDiffer_()) {
+          $('update-status-message').innerHTML =
+              loadTimeData.getString('successfulChannelSwitch');
+        } else {
+          $('update-status-message').innerHTML =
+              loadTimeData.getString('updateAlmostDone');
+        }
       } else if (status == 'updated') {
         this.setUpdateImage_('up-to-date');
         $('update-status-message').innerHTML =
@@ -133,6 +286,14 @@ cr.define('help', function() {
 
         if (!cr.isMac)
           $('update-percentage').hidden = status != 'updating';
+      }
+
+      if ($('relaunch-and-powerwash')) {
+        // It's allowed to do powerwash only for customer devices,
+        // when user explicitly decides to update to a more stable
+        // channel.
+        $('relaunch-and-powerwash').hidden =
+            !this.powerwashAfterUpdate_ || status != 'nearly_updated';
       }
     },
 
@@ -201,14 +362,27 @@ cr.define('help', function() {
      *     overlays are hidden.
      */
     showOverlay_: function(node) {
-      var currentlyShowingOverlay =
-        document.querySelector('#overlay .page.showing');
+      var currentlyShowingOverlay = this.getCurrentOverlay_();
       if (currentlyShowingOverlay)
         currentlyShowingOverlay.classList.remove('showing');
-
       if (node)
         node.classList.add('showing');
-      $('overlay').hidden = !node;
+      $('overlay-container').hidden = !node;
+    },
+
+    /**
+     * Updates name of the current channel, i.e. the name of the
+     * channel the device is currently on.
+     * @param {string} channel The name of the current channel
+     * @private
+     */
+    updateCurrentChannel_: function(channel) {
+      if (this.channelList_.indexOf(channel) < 0)
+        return;
+      $('current-channel').textContent = loadTimeData.getStringF(
+          'currentChannel', this.channelTable_[channel].label);
+      this.currentChannel_ = channel;
+      help.ChannelChangePage.updateCurrentChannel(channel);
     },
 
     /**
@@ -216,29 +390,24 @@ cr.define('help', function() {
      * @private
      */
     updateEnableReleaseChannel_: function(enabled) {
-      $('channel-changer-container').hidden = !enabled;
+      this.updateChannelChangerContainerVisibility_(enabled);
+      $('change-channel').disabled = !enabled;
+      $('channel-change-disallowed-icon').hidden = enabled;
     },
 
     /**
+     * Sets the device target channel.
+     * @param {string} channel The name of the target channel
+     * @param {boolean} isPowerwashAllowed True iff powerwash is allowed
      * @private
      */
-    updateSelectedChannel_: function(value) {
-      var options = $('channel-changer').querySelectorAll('option');
-      for (var i = 0; i < options.length; i++) {
-        var option = options[i];
-        if (option.value == value)
-          option.selected = true;
-      }
-    },
-
-    /**
-     * @private
-     */
-    setReleaseChannel_: function(channel) {
-      chrome.send('setReleaseTrack', [channel]);
+    setChannel_: function(channel, isPowerwashAllowed) {
+      this.powerwashAfterUpdate_ = isPowerwashAllowed;
+      this.targetChannel_ = channel;
+      chrome.send('setChannel', [channel, isPowerwashAllowed]);
       $('channel-change-confirmation').hidden = false;
       $('channel-change-confirmation').textContent = loadTimeData.getStringF(
-          'channel-changed', this.channelName_[channel]);
+          'channel-changed', this.channelTable_[channel].name);
     },
 
     /**
@@ -249,6 +418,35 @@ cr.define('help', function() {
     setBuildDate_: function(buildDate) {
       $('build-date-container').classList.remove('empty');
       $('build-date').textContent = buildDate;
+    },
+
+    /**
+     * Updates channel-change-page-container visibility according to
+     * internal state.
+     * @private
+     */
+    updateChannelChangePageContainerVisibility_: function() {
+      if (!this.isNewChannelSwitcherUI_()) {
+        $('channel-change-page-container').hidden = true;
+        return;
+      }
+      $('channel-change-page-container').hidden =
+          !help.ChannelChangePage.isPageReady();
+    },
+
+    /**
+     * Updates channel-changer dropdown visibility if |visible| is
+     * true and new channel switcher UI is disallowed.
+     * @param {boolean} visible True if channel-changer should be
+     *     displayed, false otherwise.
+     * @private
+     */
+    updateChannelChangerContainerVisibility_: function(visible) {
+      if (this.isNewChannelSwitcherUI_()) {
+        $('channel-changer').hidden = true;
+        return;
+      }
+      $('channel-changer').hidden = !visible;
     },
   };
 
@@ -289,21 +487,43 @@ cr.define('help', function() {
     HelpPage.getInstance().showOverlay_(node);
   };
 
-  HelpPage.updateSelectedChannel = function(channel) {
-    HelpPage.getInstance().updateSelectedChannel_(channel);
+  HelpPage.cancelOverlay = function() {
+    HelpPage.getInstance().showOverlay_(null);
+  };
+
+  HelpPage.updateIsEnterpriseManaged = function(isEnterpriseManaged) {
+    if (!cr.isChromeOS)
+      return;
+    help.ChannelChangePage.updateIsEnterpriseManaged(isEnterpriseManaged);
+  };
+
+  HelpPage.updateCurrentChannel = function(channel) {
+    if (!cr.isChromeOS)
+      return;
+    HelpPage.getInstance().updateCurrentChannel_(channel);
+  };
+
+  HelpPage.updateTargetChannel = function(channel) {
+    if (!cr.isChromeOS)
+      return;
+    help.ChannelChangePage.updateTargetChannel(channel);
   };
 
   HelpPage.updateEnableReleaseChannel = function(enabled) {
     HelpPage.getInstance().updateEnableReleaseChannel_(enabled);
   };
 
-  HelpPage.setReleaseChannel = function(channel) {
-    HelpPage.getInstance().setReleaseChannel_(channel);
+  HelpPage.setChannel = function(channel, isPowerwashAllowed) {
+    HelpPage.getInstance().setChannel_(channel, isPowerwashAllowed);
   };
 
   HelpPage.setBuildDate = function(buildDate) {
     HelpPage.getInstance().setBuildDate_(buildDate);
-  }
+  };
+
+  HelpPage.updateChannelChangePageContainerVisibility = function() {
+    HelpPage.getInstance().updateChannelChangePageContainerVisibility_();
+  };
 
   // Export
   return {
@@ -316,4 +536,6 @@ cr.define('help', function() {
  */
 window.onload = function() {
   help.HelpPage.getInstance().initialize();
+  if (cr.isChromeOS)
+    help.ChannelChangePage.getInstance().initialize();
 };

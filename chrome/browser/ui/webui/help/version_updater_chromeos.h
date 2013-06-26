@@ -16,8 +16,10 @@ class VersionUpdaterCros : public VersionUpdater,
   // VersionUpdater implementation.
   virtual void CheckForUpdate(const StatusCallback& callback) OVERRIDE;
   virtual void RelaunchBrowser() const OVERRIDE;
-  virtual void SetReleaseChannel(const std::string& channel) OVERRIDE;
-  virtual void GetReleaseChannel(const ChannelCallback& callback) OVERRIDE;
+  virtual void SetChannel(const std::string& channel,
+                          bool is_powerwash_allowed) OVERRIDE;
+  virtual void GetChannel(bool get_current_channel,
+                          const ChannelCallback& callback) OVERRIDE;
 
  protected:
   friend class VersionUpdater;
@@ -34,14 +36,8 @@ class VersionUpdaterCros : public VersionUpdater,
   // Callback from UpdateEngineClient::RequestUpdateCheck().
   void OnUpdateCheck(chromeos::UpdateEngineClient::UpdateCheckResult result);
 
-  // Callback from UpdateEngineClient::GetReleaseTrack().
-  void UpdateSelectedChannel(const std::string& channel);
-
   // Callback used to communicate update status to the client.
   StatusCallback callback_;
-
-  // Callback used to communicate current channel to the client.
-  ChannelCallback channel_callback_;
 
   // Last state received via UpdateStatusChanged().
   chromeos::UpdateEngineClient::UpdateStatusOperation last_operation_;

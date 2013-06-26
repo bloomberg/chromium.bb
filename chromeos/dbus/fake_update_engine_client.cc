@@ -49,6 +49,14 @@ UpdateEngineClient::Status FakeUpdateEngineClient::GetLastStatus() {
   return last_status;
 }
 
+void FakeUpdateEngineClient::SetChannel(const std::string& target_channel,
+                                        bool is_powerwash_allowed) {
+}
+
+void FakeUpdateEngineClient::GetChannel(bool get_current_channel,
+                                        const GetChannelCallback& callback) {
+}
+
 void FakeUpdateEngineClient::set_default_status(
     const UpdateEngineClient::Status& status) {
   default_status_ = status;
