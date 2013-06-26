@@ -7,8 +7,8 @@ include_rules = [
   # lib is the top-level target, and must remain a leaf in the dependency tree.
   "-android_webview/lib",
 
-  "!chrome/browser/component",
   "+content/public/common",
+  "+gpu/command_buffer/client",
   "+jni",
   "+net",
   "+skia",

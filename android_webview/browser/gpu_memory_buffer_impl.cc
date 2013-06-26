@@ -7,9 +7,9 @@
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer.h"
 #include "ui/gfx/size.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace android_webview {
 
@@ -93,8 +93,7 @@ scoped_ptr<gpu::GpuMemoryBuffer> GpuMemoryBufferImpl::CreateGpuMemoryBuffer(
 void GpuMemoryBufferImpl::SetAwDrawGLFunctionTable(
     AwDrawGLFunctionTable* table) {
   g_gl_draw_functions = table;
-  ::webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
-      SetGpuMemoryBufferCreator(&CreateGpuMemoryBuffer);
+  gpu::GLInProcessContext::SetGpuMemoryBufferCreator(&CreateGpuMemoryBuffer);
 }
 
 }  // namespace android_webview
