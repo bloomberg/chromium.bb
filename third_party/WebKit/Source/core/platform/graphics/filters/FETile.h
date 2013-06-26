@@ -32,6 +32,8 @@ class FETile : public FilterEffect {
 public:
     static PassRefPtr<FETile> create(Filter* filter);
 
+    virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
+
     virtual void determineAbsolutePaintRect() { setAbsolutePaintRect(enclosingIntRect(maxEffectRect())); }
 
     virtual FilterEffectType filterEffectType() const { return FilterEffectTypeTile; }
