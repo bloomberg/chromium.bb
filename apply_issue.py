@@ -139,12 +139,14 @@ def main():
     print(patch)
   full_dir = os.path.abspath(options.root_dir)
   scm_type = scm.determine_scm(full_dir)
-  if options.no_commit or scm_type is None:
-    scm_obj = checkout.RawCheckout(full_dir, None, None)
-  elif scm_type == 'svn':
+
+  # FIXME: re-enable --no-commit.
+  if scm_type == 'svn':
     scm_obj = checkout.SvnCheckout(full_dir, None, None, None, None)
   elif scm_type == 'git':
     scm_obj = checkout.GitCheckoutBase(full_dir, None, None)
+  elif scm_type is None:
+    scm_obj = checkout.RawCheckout(full_dir, None, None)
   else:
     parser.error('Couldn\'t determine the scm')
 
