@@ -929,28 +929,33 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     return;
   }
 
+  pendingCopyOperationsCount_ = 1;
+
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
       base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
                  ReadSyncFileSystemDirectory,
-                 this, project_path));
+                 this, project_path, project_path.BaseName()));
 }
 
 void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-    ReadSyncFileSystemDirectory(const base::FilePath& project_path) {
+    ReadSyncFileSystemDirectory(const base::FilePath& project_path,
+                                const base::FilePath& destination_path) {
   std::string origin_url(
       Extension::GetBaseURLFromExtensionId(extension_id()).spec());
   fileapi::FileSystemURL url(sync_file_system::CreateSyncableFileSystemURL(
       GURL(origin_url),
-      project_path.BaseName()));
+      destination_path));
 
   context_->operation_runner()->ReadDirectory(
       url, base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-                      ReadSyncFileSystemDirectoryCb, this, project_path));
+                      ReadSyncFileSystemDirectoryCb,
+                      this, project_path, destination_path));
 }
 
 void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     ReadSyncFileSystemDirectoryCb(
     const base::FilePath& project_path,
+    const base::FilePath& destination_path,
     base::PlatformFileError status,
     const fileapi::FileSystemOperation::FileEntryList& file_list,
     bool has_more) {
@@ -960,24 +965,27 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     return;
   }
 
-  // Create an empty project folder if there are no files.
-  if (!file_list.size()) {
-    content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-                     CreateFolderAndSendResponse,
-                 this,
-                 project_path));
-    return;
-  }
-
-  pendingCallbacksCount_ = file_list.size();
+  // We add 1 to the pending copy operations for both files and directories. We
+  // release the directory copy operation once all the files under the directory
+  // are added for copying. We do that to ensure that pendingCopyOperationsCount
+  // does not become zero before all copy operations are finished.
+  // In case the directory happens to be executing the last copy operation it
+  // will call SendResponse to send the response to the API. The pending copy
+  // operations of files are released by the CopyFile function.
+  pendingCopyOperationsCount_ += file_list.size();
 
   for (size_t i = 0; i < file_list.size(); ++i) {
+    if (file_list[i].is_directory) {
+      ReadSyncFileSystemDirectory(project_path.Append(file_list[i].name),
+                                  destination_path.Append(file_list[i].name));
+      continue;
+    }
+
     std::string origin_url(
         Extension::GetBaseURLFromExtensionId(extension_id()).spec());
     fileapi::FileSystemURL url(sync_file_system::CreateSyncableFileSystemURL(
         GURL(origin_url),
-        project_path.BaseName().Append(file_list[i].name)));
+        destination_path.Append(file_list[i].name)));
     base::FilePath target_path = project_path;
     target_path = target_path.Append(file_list[i].name);
 
@@ -988,19 +996,19 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
                 SnapshotFileCallback,
             this,
             target_path));
-  }
-}
 
-void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-    CreateFolderAndSendResponse(const base::FilePath& project_path) {
-  if (!(success_ = file_util::CreateDirectory(project_path))) {
-    SetError("Error in copying files from sync filesystem.");
   }
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-                     SendResponse,
-                 this,
-                 success_));
+
+  // Directory copy operation released here.
+  pendingCopyOperationsCount_--;
+
+  if (!pendingCopyOperationsCount_) {
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+                       SendResponse,
+                   this,
+                   success_));
+  }
 }
 
 void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::SnapshotFileCallback(
@@ -1033,10 +1041,10 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::CopyFile(
   if (success_)
     file_util::CopyFile(src_path, target_path);
 
-  CHECK(pendingCallbacksCount_ > 0);
-  pendingCallbacksCount_--;
+  CHECK(pendingCopyOperationsCount_ > 0);
+  pendingCopyOperationsCount_--;
 
-  if (!pendingCallbacksCount_) {
+  if (!pendingCopyOperationsCount_) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
         base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
                        SendResponse,
@@ -1047,7 +1055,7 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::CopyFile(
 
 DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     DeveloperPrivateExportSyncfsFolderToLocalfsFunction()
-    : pendingCallbacksCount_(0), success_(true) {}
+    : pendingCopyOperationsCount_(0), success_(true) {}
 
 DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     ~DeveloperPrivateExportSyncfsFolderToLocalfsFunction() {}

@@ -376,15 +376,15 @@ class DeveloperPrivateExportSyncfsFolderToLocalfsFunction
 
    void ClearPrexistingDirectoryContent(const base::FilePath& project_path);
 
-   void ReadSyncFileSystemDirectory(const base::FilePath& project_path);
+   void ReadSyncFileSystemDirectory(const base::FilePath& project_path,
+                                    const base::FilePath& destination_path);
 
    void ReadSyncFileSystemDirectoryCb(
        const base::FilePath& project_path,
+       const base::FilePath& destination_path,
        base::PlatformFileError result,
        const fileapi::FileSystemOperation::FileEntryList& file_list,
        bool has_more);
-
-   void CreateFolderAndSendResponse(const base::FilePath& project_path);
 
    void SnapshotFileCallback(
        const base::FilePath& target_path,
@@ -399,7 +399,7 @@ class DeveloperPrivateExportSyncfsFolderToLocalfsFunction
    scoped_refptr<fileapi::FileSystemContext> context_;
 
   private:
-   int pendingCallbacksCount_;
+   int pendingCopyOperationsCount_;
 
    // This is set to false if any of the copyFile operations fail on
    // call of the API. It is returned as a response of the API call.
