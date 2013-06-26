@@ -384,11 +384,6 @@ public:
     // FIXME: stopLoading does not yet cancel an associated loader!!
     virtual WebURLLoader* createAssociatedURLLoader(const WebURLLoaderOptions& = WebURLLoaderOptions()) = 0;
 
-    // Called from within WebFrameClient::didReceiveDocumentData to commit
-    // data for the frame that will be used to construct the frame's
-    // document.
-    virtual void commitDocumentData(const char* data, size_t length) = 0;
-
     // Returns the number of registered unload listeners.
     virtual unsigned unloadListenerCount() const = 0;
 

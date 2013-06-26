@@ -224,16 +224,13 @@ public:
     virtual void dispatchWillSendSubmitEvent(PassRefPtr<FormState>) OVERRIDE;
     virtual void dispatchWillSubmitForm(PassRefPtr<FormState>) OVERRIDE;
 
-    virtual void setMainDocumentError(DocumentLoader*, const ResourceError&) OVERRIDE { }
-
     virtual void postProgressStartedNotification() OVERRIDE { }
     virtual void postProgressEstimateChangedNotification() OVERRIDE { }
     virtual void postProgressFinishedNotification() OVERRIDE { }
 
     virtual void startDownload(const ResourceRequest&, const String& suggestedName = String()) OVERRIDE { UNUSED_PARAM(suggestedName); }
 
-    virtual void committedLoad(DocumentLoader*, const char*, int) OVERRIDE { }
-    virtual void finishedLoading(DocumentLoader*) OVERRIDE { }
+    virtual void didReceiveDocumentData(const char*, int) OVERRIDE { }
 
     virtual ResourceError cancelledError(const ResourceRequest&) OVERRIDE { ResourceError error("", 0, "", ""); error.setIsCancellation(true); return error; }
     virtual ResourceError cannotShowURLError(const ResourceRequest&) OVERRIDE { return ResourceError("", 0, "", ""); }
@@ -269,7 +266,6 @@ public:
 
     virtual ObjectContentType objectContentType(const KURL&, const String&, bool) OVERRIDE { return ObjectContentType(); }
 
-    virtual void redirectDataToPlugin(Widget*) OVERRIDE { }
     virtual void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*) OVERRIDE { }
     virtual void documentElementAvailable() OVERRIDE { }
 

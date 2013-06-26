@@ -160,7 +160,6 @@ public:
     virtual void setReferrerForRequest(WebURLRequest&, const WebURL& referrer);
     virtual void dispatchWillSendRequest(WebURLRequest&);
     virtual WebURLLoader* createAssociatedURLLoader(const WebURLLoaderOptions&);
-    virtual void commitDocumentData(const char* data, size_t length);
     virtual unsigned unloadListenerCount() const;
     virtual bool willSuppressOpenerInNewFrame() const;
     virtual void replaceSelection(const WebString&);

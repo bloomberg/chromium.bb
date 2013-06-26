@@ -36,6 +36,8 @@ namespace WebKit { class WebLayer; }
 
 namespace WebCore {
 
+class ResourceError;
+class ResourceResponse;
 class Scrollbar;
 
 class PluginView : public Widget {
@@ -48,6 +50,11 @@ public:
     virtual bool wantsWheelEvents() { return false; }
     virtual bool supportsKeyboardFocus() const { return false; }
     virtual bool canProcessDrag() const { return false; }
+
+    virtual void didReceiveResponse(const ResourceResponse&) { }
+    virtual void didReceiveData(const char*, int) { }
+    virtual void didFinishLoading() { }
+    virtual void didFailLoading(const ResourceError&) { }
 
 protected:
     PluginView() : Widget() { }

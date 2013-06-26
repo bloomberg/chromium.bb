@@ -106,7 +106,6 @@ enum {
 
 FrameLoaderClientImpl::FrameLoaderClientImpl(WebFrameImpl* frame)
     : m_webFrame(frame)
-    , m_sentInitialResponseToPlugin(false)
     , m_nextNavigationPolicy(WebNavigationPolicyIgnore)
 {
 }
@@ -260,11 +259,6 @@ bool FrameLoaderClientImpl::hasFrameView() const
 
 void FrameLoaderClientImpl::detachedFromParent()
 {
-    // If we were reading data into a plugin, drop our reference to it. If we
-    // don't do this then it may end up out-living the rest of the page, which
-    // leads to problems if the plugin's destructor tries to script things.
-    m_pluginWidget = 0;
-
     // Close down the proxy.  The purpose of this change is to make the
     // call to ScriptController::clearWindowShell a no-op when called from
     // Frame::pageDestroyed.  Without this change, this call to clearWindowShell
@@ -865,18 +859,6 @@ void FrameLoaderClientImpl::dispatchWillSubmitForm(PassRefPtr<FormState> formSta
         m_webFrame->client()->willSubmitForm(m_webFrame, WebFormElement(formState->form()));
 }
 
-void FrameLoaderClientImpl::setMainDocumentError(DocumentLoader*,
-                                                 const ResourceError& error)
-{
-    if (m_pluginWidget) {
-        if (m_sentInitialResponseToPlugin) {
-            m_pluginWidget->didFailLoading(error);
-            m_sentInitialResponseToPlugin = false;
-        }
-        m_pluginWidget = 0;
-    }
-}
-
 void FrameLoaderClientImpl::postProgressStartedNotification()
 {
     WebViewImpl* webview = m_webFrame->viewImpl();
@@ -913,45 +895,11 @@ void FrameLoaderClientImpl::startDownload(const ResourceRequest& request, const 
     }
 }
 
-// Called whenever data is received.
-void FrameLoaderClientImpl::committedLoad(DocumentLoader* loader, const char* data, int length)
+void FrameLoaderClientImpl::didReceiveDocumentData(const char* data, int length)
 {
-    if (!m_pluginWidget) {
-        if (m_webFrame->client()) {
-            bool preventDefault = false;
-            m_webFrame->client()->didReceiveDocumentData(m_webFrame, data, length, preventDefault);
-            if (!preventDefault)
-                m_webFrame->commitDocumentData(data, length);
-        }
-    }
-
-    // If we are sending data to MediaDocument, we should stop here
-    // and cancel the request.
-    if (m_webFrame->frame()->document()->isMediaDocument())
-        loader->cancelMainResourceLoad(pluginWillHandleLoadError(loader->response()));
-
-    // The plugin widget could have been created in the m_webFrame->DidReceiveData
-    // function.
-    if (m_pluginWidget) {
-        if (!m_sentInitialResponseToPlugin) {
-            m_sentInitialResponseToPlugin = true;
-            m_pluginWidget->didReceiveResponse(
-                m_webFrame->frame()->loader()->activeDocumentLoader()->response());
-        }
-
-        // It's possible that the above call removed the pointer to the plugin, so
-        // check before calling it.
-        if (m_pluginWidget)
-            m_pluginWidget->didReceiveData(data, length);
-    }
-}
-
-void FrameLoaderClientImpl::finishedLoading(DocumentLoader*)
-{
-    if (m_pluginWidget) {
-        m_pluginWidget->didFinishLoading();
-        m_pluginWidget = 0;
-        m_sentInitialResponseToPlugin = false;
+    if (m_webFrame->client()) {
+        bool preventDefault = false;
+        m_webFrame->client()->didReceiveDocumentData(m_webFrame, data, length, preventDefault);
     }
 }
 
@@ -1195,14 +1143,6 @@ PassRefPtr<Widget> FrameLoaderClientImpl::createPlugin(
         return 0;
 
     return container;
-}
-
-// This method gets called when a plugin is put in place of html content
-// (e.g., acrobat reader).
-void FrameLoaderClientImpl::redirectDataToPlugin(Widget* pluginWidget)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!pluginWidget || pluginWidget->isPluginContainer());
-    m_pluginWidget = static_cast<WebPluginContainerImpl*>(pluginWidget);
 }
 
 PassRefPtr<Widget> FrameLoaderClientImpl::createJavaAppletWidget(

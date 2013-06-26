@@ -207,8 +207,7 @@ void DocumentLoader::setRequest(const ResourceRequest& req)
 
 void DocumentLoader::setMainDocumentError(const ResourceError& error)
 {
-    m_mainDocumentError = error;    
-    frameLoader()->client()->setMainDocumentError(this, error);
+    m_mainDocumentError = error;
 }
 
 void DocumentLoader::mainReceivedError(const ResourceError& error)
@@ -349,7 +348,6 @@ void DocumentLoader::finishedLoading(double finishTime)
         // DocumentWriter::begin() gets called and creates the Document.
         if (!m_gotFirstByte)
             commitData(0, 0);
-        frameLoader()->client()->finishedLoading(this);
     }
 
     m_writer.end();
@@ -601,22 +599,6 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
     }
 }
 
-void DocumentLoader::commitLoad(const char* data, int length)
-{
-    // Both unloading the old page and parsing the new page may execute JavaScript which destroys the datasource
-    // by starting a new load, so retain temporarily.
-    RefPtr<Frame> protectFrame(m_frame);
-    RefPtr<DocumentLoader> protectLoader(this);
-
-    commitIfReady();
-    FrameLoader* frameLoader = DocumentLoader::frameLoader();
-    if (!frameLoader)
-        return;
-    if (isArchiveMIMEType(response().mimeType()))
-        return;
-    frameLoader->client()->committedLoad(this, data, length);
-}
-
 ResourceError DocumentLoader::interruptedForPolicyChangeError() const
 {
     return frameLoader()->client()->interruptedForPolicyChangeError(request());
@@ -687,13 +669,29 @@ void DocumentLoader::dataReceived(CachedResource* resource, const char* data, in
     ASSERT(!m_response.isNull());
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
 
+    // Both unloading the old page and parsing the new page may execute JavaScript which destroys the datasource
+    // by starting a new load, so retain temporarily.
+    RefPtr<Frame> protectFrame(m_frame);
+    RefPtr<DocumentLoader> protectLoader(this);
+
     if (m_identifierForLoadWithoutResourceLoader)
         frameLoader()->notifier()->dispatchDidReceiveData(this, m_identifierForLoadWithoutResourceLoader, data, length, -1);
 
     m_applicationCacheHost->mainResourceDataReceived(data, length);
     m_timeOfLastDataReceived = monotonicallyIncreasingTime();
 
-    commitLoad(data, length);
+    commitIfReady();
+    if (!frameLoader())
+        return;
+    if (isArchiveMIMEType(response().mimeType()))
+        return;
+    frameLoader()->client()->didReceiveDocumentData(data, length);
+    commitData(data, length);
+
+    // If we are sending data to MediaDocument, we should stop here
+    // and cancel the request.
+    if (m_frame->document()->isMediaDocument())
+        cancelMainResourceLoad(frameLoader()->cancelledError(m_request));
 }
 
 void DocumentLoader::checkLoadComplete()

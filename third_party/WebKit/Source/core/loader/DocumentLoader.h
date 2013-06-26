@@ -152,10 +152,6 @@ namespace WebCore {
         DocumentLoadTiming* timing() { return &m_documentLoadTiming; }
         void resetTiming() { m_documentLoadTiming = DocumentLoadTiming(); }
 
-        // The WebKit layer calls this function when it's ready for the data to
-        // actually be added to the document.
-        void commitData(const char* bytes, size_t length);
-
         ApplicationCacheHost* applicationCacheHost() const { return m_applicationCacheHost.get(); }
 
         virtual void reportMemoryUsage(MemoryObjectInfo*) const;
@@ -175,8 +171,8 @@ namespace WebCore {
         void setRequest(const ResourceRequest&);
 
         void commitIfReady();
+        void commitData(const char* bytes, size_t length);
         void setMainDocumentError(const ResourceError&);
-        void commitLoad(const char*, int);
         void clearMainResourceLoader();
         ResourceLoader* mainResourceLoader() const;
         void clearMainResourceHandle();

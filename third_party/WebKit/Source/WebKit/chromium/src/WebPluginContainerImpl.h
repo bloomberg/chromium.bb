@@ -145,10 +145,10 @@ public:
     bool executeEditCommand(const WebString& name, const WebString& value);
 
     // Resource load events for the plugin's source data:
-    void didReceiveResponse(const WebCore::ResourceResponse&);
-    void didReceiveData(const char *data, int dataLength);
-    void didFinishLoading();
-    void didFailLoading(const WebCore::ResourceError&);
+    virtual void didReceiveResponse(const WebCore::ResourceResponse&) OVERRIDE;
+    virtual void didReceiveData(const char *data, int dataLength) OVERRIDE;
+    virtual void didFinishLoading() OVERRIDE;
+    virtual void didFailLoading(const WebCore::ResourceError&) OVERRIDE;
 
     void willDestroyPluginLoadObserver(WebPluginLoadObserver*);
 

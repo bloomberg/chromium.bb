@@ -1098,11 +1098,6 @@ WebURLLoader* WebFrameImpl::createAssociatedURLLoader(const WebURLLoaderOptions&
     return new AssociatedURLLoader(this, options);
 }
 
-void WebFrameImpl::commitDocumentData(const char* data, size_t length)
-{
-    frame()->loader()->documentLoader()->commitData(data, length);
-}
-
 unsigned WebFrameImpl::unloadListenerCount() const
 {
     return frame()->document()->domWindow()->pendingUnloadEventListeners();

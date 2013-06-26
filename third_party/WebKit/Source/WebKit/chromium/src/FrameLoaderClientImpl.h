@@ -104,13 +104,11 @@ public:
     virtual void dispatchWillRequestResource(WebCore::CachedResourceRequest*);
     virtual void dispatchWillSendSubmitEvent(PassRefPtr<WebCore::FormState>);
     virtual void dispatchWillSubmitForm(PassRefPtr<WebCore::FormState>);
-    virtual void setMainDocumentError(WebCore::DocumentLoader*, const WebCore::ResourceError&);
     virtual void postProgressStartedNotification();
     virtual void postProgressEstimateChangedNotification();
     virtual void postProgressFinishedNotification();
     virtual void startDownload(const WebCore::ResourceRequest&, const String& suggestedName = String());
-    virtual void committedLoad(WebCore::DocumentLoader*, const char*, int);
-    virtual void finishedLoading(WebCore::DocumentLoader*);
+    virtual void didReceiveDocumentData(const char*, int);
     virtual bool shouldGoToHistoryItem(WebCore::HistoryItem*) const;
     virtual bool shouldStopLoadingForHistoryItem(WebCore::HistoryItem*) const;
     virtual void didAccessInitialDocument();
@@ -142,7 +140,6 @@ public:
         const WebCore::IntSize&, WebCore::HTMLPlugInElement*, const WebCore::KURL&,
         const Vector<WTF::String>&, const Vector<WTF::String>&,
         const WTF::String&, bool loadManually);
-    virtual void redirectDataToPlugin(WebCore::Widget* pluginWidget);
     virtual PassRefPtr<WebCore::Widget> createJavaAppletWidget(
         const WebCore::IntSize&,
         WebCore::HTMLAppletElement*,
@@ -196,13 +193,6 @@ private:
     // Both should be empty if unused.
     WebCore::KURL m_expectedClientRedirectSrc;
     WebCore::KURL m_expectedClientRedirectDest;
-
-    // Contains a pointer to the plugin widget.
-    RefPtr<WebPluginContainerImpl> m_pluginWidget;
-
-    // Indicates if we need to send over the initial notification to the plugin
-    // which specifies that the plugin should be ready to accept data.
-    bool m_sentInitialResponseToPlugin;
 
     // The navigation policy to use for the next call to dispatchCreatePage.
     WebNavigationPolicy m_nextNavigationPolicy;
