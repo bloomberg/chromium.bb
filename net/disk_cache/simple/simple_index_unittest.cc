@@ -40,10 +40,10 @@ class EntryMetadataTest  : public testing::Test {
   }
 };
 
-class TestSimpleIndexFile : public SimpleIndexFile,
-                            public base::SupportsWeakPtr<TestSimpleIndexFile> {
+class MockSimpleIndexFile : public SimpleIndexFile,
+                            public base::SupportsWeakPtr<MockSimpleIndexFile> {
  public:
-  TestSimpleIndexFile()
+  MockSimpleIndexFile()
       : SimpleIndexFile(NULL, NULL, base::FilePath()),
         get_index_entries_calls_(0),
         doom_entry_set_calls_(0),
@@ -103,7 +103,7 @@ class TestSimpleIndexFile : public SimpleIndexFile,
 class SimpleIndexTest  : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
-    scoped_ptr<TestSimpleIndexFile> index_file(new TestSimpleIndexFile());
+    scoped_ptr<MockSimpleIndexFile> index_file(new MockSimpleIndexFile());
     index_file_ = index_file->AsWeakPtr();
     index_.reset(new SimpleIndex(NULL, base::FilePath(),
                                  index_file.PassAs<SimpleIndexFile>()));
@@ -145,12 +145,12 @@ class SimpleIndexTest  : public testing::Test {
 
   // Non-const for timer manipulation.
   SimpleIndex* index() { return index_.get(); }
-  const TestSimpleIndexFile* index_file() const { return index_file_.get(); }
+  const MockSimpleIndexFile* index_file() const { return index_file_.get(); }
 
  protected:
   SimpleIndex::EntrySet index_file_return_map_;
   scoped_ptr<SimpleIndex> index_;
-  base::WeakPtr<TestSimpleIndexFile> index_file_;
+  base::WeakPtr<MockSimpleIndexFile> index_file_;
 };
 
 TEST_F(EntryMetadataTest, Basics) {

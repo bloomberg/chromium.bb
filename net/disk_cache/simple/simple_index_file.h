@@ -6,6 +6,7 @@
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_FILE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
@@ -66,9 +67,9 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
       scoped_ptr<SimpleIndex::EntrySet>, bool force_index_flush)>
       IndexCompletionCallback;
 
-  explicit SimpleIndexFile(base::SingleThreadTaskRunner* cache_thread,
-                           base::TaskRunner* worker_pool,
-                           const base::FilePath& index_file_directory);
+  SimpleIndexFile(base::SingleThreadTaskRunner* cache_thread,
+                  base::TaskRunner* worker_pool,
+                  const base::FilePath& index_file_directory);
   virtual ~SimpleIndexFile();
 
   // Get index entries based on current disk context.
@@ -88,10 +89,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                             const base::Callback<void(int)>& reply_callback);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, IsIndexFileCorrupt);
-  FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, IsIndexFileStale);
-  FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, Serialize);
-  FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, WriteThenLoadIndex);
+  friend class WrappedSimpleIndexFile;
 
   // Using the mtime of the file and its mtime, detects if the index file is
   // stale.
