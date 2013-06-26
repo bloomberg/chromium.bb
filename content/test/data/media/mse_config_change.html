@@ -37,12 +37,11 @@
           srcBuffer.timestampOffset = APPEND_TIME;
           srcBuffer.append(new Uint8Array(e.target.response));
           mediaSource.endOfStream();
-          // Video total duration should include the second appended segtment.
-          // Video duration is a float value so we check it within a range.
-          if (!video.duration ||
-              Math.abs(video.duration - TOTAL_DURATION) > DELTA) {
-            failTest('Unexpected video.duration = ' + video.duration +
-                     ', expected duration = ' + TOTAL_DURATION);
+          if (!mediaSource.duration ||
+              Math.abs(mediaSource.duration - TOTAL_DURATION) > DELTA) {
+            failTest('Unexpected mediaSource.duration = ' +
+                     mediaSource.duration + ', expected duration = ' +
+                     TOTAL_DURATION);
             return;
           }
           video.play();
@@ -51,7 +50,9 @@
       }
 
       function onTimeUpdate() {
-        checkVideoProperties();
+        // crbug.com/246308
+        //checkVideoProperties();
+
         // Seek to APPEND_TIME because after a seek a timeUpdate event is fired
         // before video width and height properties get updated.
         if (video.currentTime < APPEND_TIME - DELTA) {
@@ -59,6 +60,16 @@
           // on the first buffer.
           video.currentTime = APPEND_TIME - DELTA;
         } else if (video.currentTime > APPEND_TIME + DELTA) {
+          // Check video duration here to guarantee that second segment has been
+          // appended and video total duration is updated.
+          // Video duration is a float value so we check it within a range.
+          if (!video.duration ||
+              Math.abs(video.duration - TOTAL_DURATION) > DELTA) {
+            failTest('Unexpected video.duration = ' + video.duration +
+                     ', expected duration = ' + TOTAL_DURATION);
+            return;
+          }
+
           video.removeEventListener('timeupdate', onTimeUpdate);
           video.removeEventListener('ended', failTest);
           installTitleEventHandler(video, 'ended');

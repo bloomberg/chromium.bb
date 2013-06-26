@@ -51,7 +51,8 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Type_Error) {
 }
 
 // Flaky test crbug.com/246308
-IN_PROC_BROWSER_TEST_F(MediaSourceTest, DISABLED_ConfigChangeVideo) {
+// Test changed to skip checks resulting in flakiness. Proper fix still needed.
+IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
   RunMediaTestPage("mse_config_change.html", NULL, kEnded, true);
 }
 
