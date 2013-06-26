@@ -140,6 +140,8 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void signalQuery(unsigned query,
                            WebGraphicsSyncPointCallback* callback);
 
+  virtual void loseContextCHROMIUM(WGC3Denum current, WGC3Denum other);
+
   virtual void reshape(int width, int height);
   virtual void reshapeWithScaleFactor(
       int width, int height, float scale_factor);

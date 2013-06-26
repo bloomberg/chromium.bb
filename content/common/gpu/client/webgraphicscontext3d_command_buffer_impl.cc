@@ -1553,6 +1553,12 @@ void WebGraphicsContext3DCommandBufferImpl::signalQuery(
       base::Bind(&SignalSyncPointCallback, base::Passed(&own_callback)));
 }
 
+void WebGraphicsContext3DCommandBufferImpl::loseContextCHROMIUM(
+    WGC3Denum current, WGC3Denum other) {
+  gl_->LoseContextCHROMIUM(current, other);
+  gl_->Flush();
+}
+
 void WebGraphicsContext3DCommandBufferImpl::genMailboxCHROMIUM(
     WGC3Dbyte* name) {
   std::vector<gpu::Mailbox> names;
