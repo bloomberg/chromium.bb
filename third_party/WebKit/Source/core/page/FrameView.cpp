@@ -995,7 +995,7 @@ void FrameView::layout(bool allowSubtree)
 
                     m_firstLayout = false;
                     m_firstLayoutCallbackPending = true;
-                    m_lastViewportSize = visibleContentRect(IncludeScrollbars).size();
+                    m_lastViewportSize = layoutSize(IncludeScrollbars);
                     m_lastZoomFactor = root->style()->zoom();
 
                     // Set the initial vMode to AlwaysOn if we're auto.
@@ -2303,8 +2303,7 @@ void FrameView::performPostLayoutTasks()
     // Refetch render view since it can be destroyed by updateWidget() call above.
     renderView = this->renderView();
     if (renderView && !renderView->printing()) {
-        IntSize currentSize;
-        currentSize = visibleContentRect(IncludeScrollbars).size();
+        IntSize currentSize = layoutSize(IncludeScrollbars);
         float currentZoomFactor = renderView->style()->zoom();
         bool resized = !m_firstLayout && (currentSize != m_lastViewportSize || currentZoomFactor != m_lastZoomFactor);
         m_lastViewportSize = currentSize;
