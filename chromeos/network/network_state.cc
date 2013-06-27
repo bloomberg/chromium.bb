@@ -180,16 +180,17 @@ bool NetworkState::PropertyChanged(const std::string& key,
   } else if (key == flimflam::kUsageURLProperty) {
     return GetStringValue(key, value, &usage_url_);
   } else if (key == flimflam::kPaymentPortalProperty) {
-    const DictionaryValue& dict = static_cast<const DictionaryValue&>(value);
-    if (!dict.GetStringWithoutPathExpansion(flimflam::kPaymentPortalURL,
-                                            &payment_url_))
+    const DictionaryValue* dict;
+    if (!value.GetAsDictionary(&dict))
       return false;
-    if (!dict.GetStringWithoutPathExpansion(flimflam::kPaymentPortalMethod,
-                                            &post_method_))
+    if (!dict->GetStringWithoutPathExpansion(
+            flimflam::kPaymentPortalURL, &payment_url_) ||
+        !dict->GetStringWithoutPathExpansion(
+            flimflam::kPaymentPortalMethod, &post_method_) ||
+        !dict->GetStringWithoutPathExpansion(
+            flimflam::kPaymentPortalPostData, &post_data_)) {
       return false;
-    if (!dict.GetStringWithoutPathExpansion(flimflam::kPaymentPortalPostData,
-                                            &post_data_))
-      return false;
+    }
     return true;
   } else if (key == flimflam::kWifiHexSsid) {
     return GetStringValue(key, value, &hex_ssid_);
