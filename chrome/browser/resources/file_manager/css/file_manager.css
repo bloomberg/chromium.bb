@@ -562,10 +562,6 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
   white-space: nowrap;
 }
 
-.breadcrumb-path:hover {
-  color: #666;
-}
-
 /* The final breadcrumb, representing the current directory. */
 #search-breadcrumbs .breadcrumb-path.breadcrumb-last {
   color: #141414;
@@ -876,24 +872,6 @@ body[type='full-page'] .thumbnail-frame > .img-container {
 body[type='full-page'] .thumbnail-frame > .img-container,
 body[type='full-page'] .detail-name .detail-icon {
   cursor: pointer;
-}
-
-.breadcrumb-path:not(.breadcrumb-last):hover,
-.breadcrumb-path.accepts {
-  color: rgb(17, 85, 204);
-  text-decoration: underline;
-}
-
-.breadcrumb-path.accepts {
-  -webkit-animation: acceptsBlinkText 200ms linear 1s 3;
-}
-
-@-webkit-keyframes acceptsBlinkText {
-  0% {
-    color: white;
-  }
-  50% {
-  }
 }
 
 .img-container > img {

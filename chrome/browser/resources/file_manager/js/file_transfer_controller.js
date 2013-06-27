@@ -399,22 +399,6 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
-   * @param {HTMLElement} breadcrumbsContainer Element which contains target
-   *     breadcrumbs.
-   * @param {Event} event A dragenter event of DOM.
-   */
-  onDragEnterBreadcrumbs_: function(breadcrumbsContainer, event) {
-    event.preventDefault();  // Required to prevent the cursor flicker.
-    this.lastEnteredTarget_ = event.target;
-    var path = breadcrumbsContainer.getTargetPath(event);
-    if (!path)
-      return;
-
-    this.setDropTarget_(event.target, true, event.dataTransfer, path);
-  },
-
-  /**
-   * @this {FileTransferController}
    * @param {cr.ui.List} list Drop target list.
    * @param {Event} event A dragleave event of DOM.
    */
