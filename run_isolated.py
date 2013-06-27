@@ -308,7 +308,7 @@ def make_temp_dir(prefix, root_dir):
   return tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir)
 
 
-def load_isolated(content):
+def load_isolated(content, os_flavor=None):
   """Verifies the .isolated file is valid and loads this object with the json
   data.
   """
@@ -376,10 +376,11 @@ def load_isolated(content):
         raise ConfigError('Expected string, got %r' % value)
 
     elif key == 'os':
-      if value != get_flavor():
+      expected_value = os_flavor or get_flavor()
+      if value != expected_value:
         raise ConfigError(
             'Expected \'os\' to be \'%s\' but got \'%s\'' %
-            (get_flavor(), value))
+            (expected_value, value))
 
     else:
       raise ConfigError('Unknown key %s' % key)
