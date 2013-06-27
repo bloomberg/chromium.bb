@@ -3043,9 +3043,10 @@
             'target_conditions': [
               ['_toolset=="target"', {
                 'conditions': [
-                  ['mips_arch_variant=="mips32r2"', {
+                  ['android_webview_build==0 and mips_arch_variant=="mips32r2"', {
                     'cflags': ['-mips32r2', '-Wa,-mips32r2'],
-                  }, {
+                  }],
+                  ['android_webview_build==0 and mips_arch_variant!="mips32r2"', {
                     'cflags': ['-mips32', '-Wa,-mips32'],
                   }],
                 ],
