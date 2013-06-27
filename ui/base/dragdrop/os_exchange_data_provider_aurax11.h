@@ -56,20 +56,21 @@ class UI_EXPORT OSExchangeDataProviderAuraX11
   SelectionFormatMap GetFormatMap() const;
 
   // Overridden from OSExchangeData::Provider:
+  virtual Provider* Clone() const OVERRIDE;
   virtual void SetString(const base::string16& data) OVERRIDE;
   virtual void SetURL(const GURL& url, const base::string16& title) OVERRIDE;
   virtual void SetFilename(const base::FilePath& path) OVERRIDE;
   virtual void SetFilenames(
       const std::vector<OSExchangeData::FileInfo>& filenames) OVERRIDE;
   virtual void SetPickledData(const OSExchangeData::CustomFormat& format,
-                              const Pickle& data) OVERRIDE;
+                              const Pickle& pickle) OVERRIDE;
   virtual bool GetString(base::string16* data) const OVERRIDE;
   virtual bool GetURLAndTitle(GURL* url, base::string16* title) const OVERRIDE;
   virtual bool GetFilename(base::FilePath* path) const OVERRIDE;
   virtual bool GetFilenames(
       std::vector<OSExchangeData::FileInfo>* filenames) const OVERRIDE;
   virtual bool GetPickledData(const OSExchangeData::CustomFormat& format,
-                              Pickle* data) const OVERRIDE;
+                              Pickle* pickle) const OVERRIDE;
   virtual bool HasString() const OVERRIDE;
   virtual bool HasURL() const OVERRIDE;
   virtual bool HasFile() const OVERRIDE;

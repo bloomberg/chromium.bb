@@ -147,6 +147,7 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   IDataObjectAsyncCapability* async_operation() const { return data_.get(); }
 
   // OSExchangeData::Provider methods.
+  virtual Provider* Clone() const;
   virtual void SetString(const base::string16& data);
   virtual void SetURL(const GURL& url, const base::string16& title);
   virtual void SetFilename(const base::FilePath& path);

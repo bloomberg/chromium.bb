@@ -26,6 +26,7 @@ class UI_EXPORT OSExchangeDataProviderAura
   virtual ~OSExchangeDataProviderAura();
 
   // Overridden from OSExchangeData::Provider:
+  virtual Provider* Clone() const OVERRIDE;
   virtual void SetString(const base::string16& data) OVERRIDE;
   virtual void SetURL(const GURL& url, const base::string16& title) OVERRIDE;
   virtual void SetFilename(const base::FilePath& path) OVERRIDE;

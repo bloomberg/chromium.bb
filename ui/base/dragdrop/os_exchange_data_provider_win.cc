@@ -265,6 +265,10 @@ OSExchangeDataProviderWin::OSExchangeDataProviderWin()
 OSExchangeDataProviderWin::~OSExchangeDataProviderWin() {
 }
 
+OSExchangeData::Provider* OSExchangeDataProviderWin::Clone() const {
+  return new OSExchangeDataProviderWin(data_object());
+}
+
 void OSExchangeDataProviderWin::SetString(const base::string16& data) {
   STGMEDIUM* storage = GetStorageForString(data);
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(

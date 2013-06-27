@@ -18,6 +18,21 @@ OSExchangeDataProviderAura::OSExchangeDataProviderAura()
 
 OSExchangeDataProviderAura::~OSExchangeDataProviderAura() {}
 
+OSExchangeData::Provider* OSExchangeDataProviderAura::Clone() const {
+  OSExchangeDataProviderAura* ret = new OSExchangeDataProviderAura();
+  ret->formats_ = formats_;
+  ret->string_ = string_;
+  ret->url_ = url_;
+  ret->title_ = title_;
+  ret->filenames_ = filenames_;
+  ret->pickle_data_ = pickle_data_;
+  // We skip copying the drag images.
+  ret->html_ = html_;
+  ret->base_url_ = base_url_;
+
+  return ret;
+}
+
 void OSExchangeDataProviderAura::SetString(const base::string16& data) {
   string_ = data;
   formats_ |= OSExchangeData::STRING;
@@ -28,6 +43,8 @@ void OSExchangeDataProviderAura::SetURL(const GURL& url,
   url_ = url;
   title_ = title;
   formats_ |= OSExchangeData::URL;
+
+  SetString(UTF8ToUTF16(url.spec()));
 }
 
 void OSExchangeDataProviderAura::SetFilename(const base::FilePath& path) {

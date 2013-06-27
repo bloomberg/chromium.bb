@@ -102,6 +102,12 @@ SelectionFormatMap OSExchangeDataProviderAuraX11::GetFormatMap() const {
   return selection_owner_.selection_format_map();
 }
 
+OSExchangeData::Provider* OSExchangeDataProviderAuraX11::Clone() const {
+  OSExchangeDataProviderAuraX11* ret = new OSExchangeDataProviderAuraX11();
+  ret->format_map_ = format_map_;
+  return ret;
+}
+
 void OSExchangeDataProviderAuraX11::SetString(const base::string16& text_data) {
   std::string utf8 = UTF16ToUTF8(text_data);
   scoped_refptr<base::RefCountedMemory> mem(
@@ -115,7 +121,21 @@ void OSExchangeDataProviderAuraX11::SetString(const base::string16& text_data) {
 
 void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
                                            const base::string16& title) {
-  NOTIMPLEMENTED();
+  // Mozilla's URL format: (UTF16: URL, newline, title)
+  if (url.is_valid()) {
+    string16 spec = UTF8ToUTF16(url.spec());
+
+    std::vector<unsigned char> data;
+    ui::AddString16ToVector(spec, &data);
+    ui::AddString16ToVector(ASCIIToUTF16("\n"), &data);
+    ui::AddString16ToVector(title, &data);
+    scoped_refptr<base::RefCountedMemory> mem(
+        base::RefCountedBytes::TakeVector(&data));
+
+    format_map_.Insert(atom_cache_.GetAtom(kMimeTypeMozillaURL), mem);
+
+    SetString(spec);
+  }
 }
 
 void OSExchangeDataProviderAuraX11::SetFilename(const base::FilePath& path) {
@@ -129,8 +149,16 @@ void OSExchangeDataProviderAuraX11::SetFilenames(
 
 void OSExchangeDataProviderAuraX11::SetPickledData(
     const OSExchangeData::CustomFormat& format,
-    const Pickle& data) {
-  NOTIMPLEMENTED();
+    const Pickle& pickle) {
+  const unsigned char* data =
+      reinterpret_cast<const unsigned char*>(pickle.data());
+
+  std::vector<unsigned char> bytes;
+  bytes.insert(bytes.end(), data, data + pickle.size());
+  scoped_refptr<base::RefCountedMemory> mem(
+      base::RefCountedBytes::TakeVector(&bytes));
+
+  format_map_.Insert(atom_cache_.GetAtom(format.ToString().c_str()), mem);
 }
 
 bool OSExchangeDataProviderAuraX11::GetString(base::string16* result) const {
@@ -212,8 +240,19 @@ bool OSExchangeDataProviderAuraX11::GetFilenames(
 
 bool OSExchangeDataProviderAuraX11::GetPickledData(
     const OSExchangeData::CustomFormat& format,
-    Pickle* data) const {
-  NOTIMPLEMENTED();
+    Pickle* pickle) const {
+  std::vector< ::Atom> requested_types;
+  requested_types.push_back(atom_cache_.GetAtom(format.ToString().c_str()));
+
+  ui::SelectionData data(format_map_.GetFirstOf(requested_types));
+  if (data.IsValid()) {
+    // Note that the pickle object on the right hand side of the assignment
+    // only refers to the bytes in |data|. The assignment copies the data.
+    *pickle = Pickle(reinterpret_cast<const char*>(data.GetData()),
+                     static_cast<int>(data.GetSize()));
+    return true;
+  }
+
   return false;
 }
 
@@ -248,7 +287,16 @@ bool OSExchangeDataProviderAuraX11::HasCustomFormat(
 
 void OSExchangeDataProviderAuraX11::SetHtml(const base::string16& html,
                                             const GURL& base_url) {
-  NOTIMPLEMENTED();
+  std::vector<unsigned char> bytes;
+  // Manually jam a UTF16 BOM into bytes because otherwise, other programs will
+  // assume UTF-8.
+  bytes.push_back(0xFF);
+  bytes.push_back(0xFE);
+  ui::AddString16ToVector(html, &bytes);
+  scoped_refptr<base::RefCountedMemory> mem(
+      base::RefCountedBytes::TakeVector(&bytes));
+
+  format_map_.Insert(atom_cache_.GetAtom(Clipboard::kMimeTypeHTML), mem);
 }
 
 bool OSExchangeDataProviderAuraX11::GetHtml(base::string16* html,
@@ -306,7 +354,15 @@ bool OSExchangeDataProviderAuraX11::Dispatch(const base::NativeEvent& event) {
 }
 
 bool OSExchangeDataProviderAuraX11::GetPlainTextURL(GURL* url) const {
-  NOTIMPLEMENTED();
+  string16 text;
+  if (GetString(&text)) {
+    GURL test_url(text);
+    if (test_url.is_valid()) {
+      *url = test_url;
+      return true;
+    }
+  }
+
   return false;
 }
 

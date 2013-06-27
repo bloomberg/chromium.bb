@@ -96,6 +96,8 @@ class UI_EXPORT OSExchangeData {
     Provider() {}
     virtual ~Provider() {}
 
+    virtual Provider* Clone() const = 0;
+
     virtual void SetString(const base::string16& data) = 0;
     virtual void SetURL(const GURL& url, const base::string16& title) = 0;
     virtual void SetFilename(const base::FilePath& path) = 0;
