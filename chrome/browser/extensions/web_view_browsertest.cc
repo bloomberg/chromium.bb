@@ -431,17 +431,130 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
       fake_speech_recognition_manager_;
 };
 
-// This test is flaky on Windows, Chrome OS, and Mac (all platforms that
-// have threaded compositing enabled).
-// http://crbug.com/176122
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
-#define MAYBE_Shim DISABLED_Shim
-#else
-#define MAYBE_Shim Shim
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/shim")) << message_;
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestSize) {
+  TestHelper("testSize",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAPIMethodExistence) {
+  TestHelper("testAPIMethodExistence",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestEventName) {
+  TestHelper("testEventName",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDestroyOnEventListener) {
+  TestHelper("testDestroyOnEventListener",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestCannotMutateEventName) {
+  TestHelper("testCannotMutateEventName",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPartitionRaisesException) {
+  TestHelper("testPartitionRaisesException",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScriptFail) {
+  TestHelper("testExecuteScriptFail",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScript) {
+  TestHelper("testExecuteScript",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestTerminateAfterExit) {
+  TestHelper("testTerminateAfterExit",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAssignSrcAfterCrash) {
+  TestHelper("testAssignSrcAfterCrash",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveSrcAttribute) {
+  TestHelper("testRemoveSrcAttribute",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestBrowserPluginNotAllowed) {
+  TestHelper("testBrowserPluginNotAllowed",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindow) {
+  TestHelper("testNewWindow",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowTwoListeners) {
+  TestHelper("testNewWindowTwoListeners",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowNoPreventDefault) {
+  TestHelper("testNewWindowNoPreventDefault",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowNoReferrerLink) {
+  TestHelper("testNewWindowNoReferrerLink",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestContentLoadEvent) {
+  TestHelper("testContentLoadEvent",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPI) {
+  TestHelper("testWebRequestAPI",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
