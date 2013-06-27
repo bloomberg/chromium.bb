@@ -46,35 +46,6 @@ RenderFlexibleBox::OrderIterator::OrderIterator(const RenderFlexibleBox* flexibl
 {
 }
 
-void RenderFlexibleBox::OrderIterator::setOrderValues(Vector<int>& orderValues)
-{
-    reset();
-    m_orderValues.clear();
-
-    if (orderValues.isEmpty())
-        return;
-
-    std::sort(orderValues.begin(), orderValues.end());
-
-
-    // This is inefficient if there are many repeated values, but
-    // saves a lot of allocations when the values are unique. By far,
-    // the common case is that there's exactly one item in the list
-    // (the default order value of 0).
-    m_orderValues.reserveInitialCapacity(orderValues.size());
-
-    int previous = orderValues[0];
-    m_orderValues.append(previous);
-    for (size_t i = 1; i < orderValues.size(); ++i) {
-        int current = orderValues[i];
-        if (current == previous)
-            continue;
-        m_orderValues.append(current);
-        previous = current;
-    }
-    m_orderValues.shrinkToFit();
-}
-
 RenderBox* RenderFlexibleBox::OrderIterator::first()
 {
     reset();
@@ -362,13 +333,12 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)
 
     RenderBlock::startDelayUpdateScrollInfo();
 
-    Vector<LineContext> lineContexts;
-    Vector<int> orderValues;
-    computeMainAxisPreferredSizes(orderValues);
-    m_orderIterator.setOrderValues(orderValues);
+    prepareOrderIteratorAndMargins();
 
     ChildFrameRects oldChildRects;
     appendChildFrameRects(oldChildRects);
+
+    Vector<LineContext> lineContexts;
     layoutFlexItems(relayoutChildren, lineContexts);
 
     updateLogicalHeight();
@@ -939,15 +909,18 @@ LayoutUnit RenderFlexibleBox::computeChildMarginValue(Length margin, RenderView*
     return minimumValueForLength(margin, availableSize, view);
 }
 
-void RenderFlexibleBox::computeMainAxisPreferredSizes(Vector<int>& orderValues)
+void RenderFlexibleBox::prepareOrderIteratorAndMargins()
 {
     RenderView* renderView = view();
     bool anyChildHasDefaultOrderValue = false;
 
+    m_orderIterator.reset();
+    m_orderIterator.m_orderValues.resize(0);
+
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
         // Avoid growing the vector for the common-case default value of 0.
         if (int order = child->style()->order())
-            orderValues.append(child->style()->order());
+            m_orderIterator.m_orderValues.append(child->style()->order());
         else
             anyChildHasDefaultOrderValue = true;
 
@@ -967,10 +940,26 @@ void RenderFlexibleBox::computeMainAxisPreferredSizes(Vector<int>& orderValues)
 
     if (anyChildHasDefaultOrderValue) {
         // Avoid growing the vector to the default capacity of 16 if we're only going to put one item in it.
-        if (orderValues.isEmpty())
-            orderValues.reserveInitialCapacity(1);
-        orderValues.append(0);
+        if (m_orderIterator.m_orderValues.isEmpty())
+            m_orderIterator.m_orderValues.reserveInitialCapacity(1);
+        m_orderIterator.m_orderValues.append(0);
+    } else if (m_orderIterator.m_orderValues.isEmpty()) {
+        m_orderIterator.m_orderValues.clear();
+        return;
     }
+
+    std::sort(m_orderIterator.m_orderValues.begin(), m_orderIterator.m_orderValues.end());
+
+    int previous = m_orderIterator.m_orderValues[0];
+    int uniqueCount = 1;
+    for (size_t i = 1; i < m_orderIterator.m_orderValues.size(); ++i) {
+        int current = m_orderIterator.m_orderValues[i];
+        if (current == previous)
+            continue;
+        m_orderIterator.m_orderValues[uniqueCount++] = current;
+        previous = current;
+    }
+    m_orderIterator.m_orderValues.shrinkCapacity(uniqueCount);
 }
 
 LayoutUnit RenderFlexibleBox::adjustChildSizeForMinAndMax(RenderBox* child, LayoutUnit childSize)
