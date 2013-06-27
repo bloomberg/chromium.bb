@@ -19,13 +19,7 @@ class AdViewTest : public extensions::PlatformAppBrowserTest {
 
 // This test checks the "loadcommit" event is called when the page inside an
 // <adview> is loaded.
-#if defined(OS_MACOSX)
-// Very flaky on MacOS 10.8.
-#define MAYBE_LoadCommitEventIsCalled DISABLED_LoadCommitEventIsCalled
-#else
-#define MAYBE_LoadCommitEventIsCalled LoadCommitEventIsCalled
-#endif
-IN_PROC_BROWSER_TEST_F(AdViewTest, MAYBE_LoadCommitEventIsCalled) {
+IN_PROC_BROWSER_TEST_F(AdViewTest, LoadCommitEventIsCalled) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   ASSERT_TRUE(RunPlatformAppTest(
