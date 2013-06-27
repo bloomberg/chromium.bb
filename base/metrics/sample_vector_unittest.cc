@@ -91,7 +91,7 @@ TEST(SampleVectorDeathTest, BucketIndexTest) {
   // 8 buckets with exponential layout:
   // [0, 1) [1, 2) [2, 4) [4, 8) [8, 16) [16, 32) [32, 64) [64, INT_MAX)
   BucketRanges ranges(9);
-  Histogram::InitializeBucketRanges(1, 64, 8, &ranges);
+  Histogram::InitializeBucketRanges(1, 64, &ranges);
   SampleVector samples(&ranges);
 
   // Normal case

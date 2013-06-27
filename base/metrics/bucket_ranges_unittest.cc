@@ -12,8 +12,9 @@ namespace {
 TEST(BucketRangesTest, NormalSetup) {
   BucketRanges ranges(5);
   ASSERT_EQ(5u, ranges.size());
+  ASSERT_EQ(4u, ranges.bucket_count());
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 5; ++i) {
     EXPECT_EQ(0, ranges.range(i));
   }
   EXPECT_EQ(0u, ranges.checksum());

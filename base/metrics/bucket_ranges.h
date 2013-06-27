@@ -39,6 +39,12 @@ class BASE_EXPORT BucketRanges {
   uint32 checksum() const { return checksum_; }
   void set_checksum(uint32 checksum) { checksum_ = checksum; }
 
+  // A bucket is defined by a consecutive pair of entries in |ranges|, so there
+  // is one fewer bucket than there are ranges.  For example, if |ranges| is
+  // [0, 1, 3, 7, INT_MAX], then the buckets in this histogram are
+  // [0, 1), [1, 3), [3, 7), and [7, INT_MAX).
+  size_t bucket_count() const { return ranges_.size() - 1; }
+
   // Checksum methods to verify whether the ranges are corrupted (e.g. bad
   // memory access).
   uint32 CalculateChecksum() const;

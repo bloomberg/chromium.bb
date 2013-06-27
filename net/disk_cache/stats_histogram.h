@@ -32,7 +32,6 @@ class StatsHistogram : public base::Histogram {
   StatsHistogram(const std::string& name,
                  Sample minimum,
                  Sample maximum,
-                 size_t bucket_count,
                  const base::BucketRanges* ranges,
                  const Stats* stats);
   virtual ~StatsHistogram();

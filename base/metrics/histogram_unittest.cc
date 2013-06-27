@@ -90,7 +90,7 @@ TEST_F(HistogramTest, NameMatchTest) {
 TEST_F(HistogramTest, ExponentialRangesTest) {
   // Check that we got a nice exponential when there was enough rooom.
   BucketRanges ranges(9);
-  Histogram::InitializeBucketRanges(1, 64, 8, &ranges);
+  Histogram::InitializeBucketRanges(1, 64, &ranges);
   EXPECT_EQ(0, ranges.range(0));
   int power_of_2 = 1;
   for (int i = 1; i < 8; i++) {
@@ -107,7 +107,7 @@ TEST_F(HistogramTest, ExponentialRangesTest) {
   // When bucket count is limited, exponential ranges will partially look like
   // linear.
   BucketRanges ranges2(16);
-  Histogram::InitializeBucketRanges(1, 32, 15, &ranges2);
+  Histogram::InitializeBucketRanges(1, 32, &ranges2);
 
   EXPECT_EQ(0, ranges2.range(0));
   EXPECT_EQ(1, ranges2.range(1));
@@ -134,7 +134,7 @@ TEST_F(HistogramTest, ExponentialRangesTest) {
 
 TEST_F(HistogramTest, LinearRangesTest) {
   BucketRanges ranges(9);
-  LinearHistogram::InitializeBucketRanges(1, 7, 8, &ranges);
+  LinearHistogram::InitializeBucketRanges(1, 7, &ranges);
   // Gets a nice linear set of bucket ranges.
   for (int i = 0; i < 8; i++)
     EXPECT_EQ(i, ranges.range(i));
@@ -147,7 +147,7 @@ TEST_F(HistogramTest, LinearRangesTest) {
 
   // Linear ranges are not divisible.
   BucketRanges ranges2(6);
-  LinearHistogram::InitializeBucketRanges(1, 6, 5, &ranges2);
+  LinearHistogram::InitializeBucketRanges(1, 6, &ranges2);
   EXPECT_EQ(0, ranges2.range(0));
   EXPECT_EQ(1, ranges2.range(1));
   EXPECT_EQ(3, ranges2.range(2));

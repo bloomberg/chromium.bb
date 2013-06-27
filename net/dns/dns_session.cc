@@ -64,7 +64,7 @@ base::LazyInstance<DnsSession::RttBuckets>::Leaky DnsSession::rtt_buckets_ =
     LAZY_INSTANCE_INITIALIZER;
 
 DnsSession::RttBuckets::RttBuckets() : base::BucketRanges(kRTTBucketCount + 1) {
-  base::Histogram::InitializeBucketRanges(1, 5000, kRTTBucketCount, this);
+  base::Histogram::InitializeBucketRanges(1, 5000, this);
 }
 
 DnsSession::SocketLease::SocketLease(scoped_refptr<DnsSession> session,

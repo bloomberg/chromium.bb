@@ -23,10 +23,9 @@ using base::StatisticsRecorder;
 StatsHistogram::StatsHistogram(const std::string& name,
                                Sample minimum,
                                Sample maximum,
-                               size_t bucket_count,
                                const BucketRanges* ranges,
                                const Stats* stats)
-    : Histogram(name, minimum, maximum, bucket_count, ranges),
+    : Histogram(name, minimum, maximum, ranges),
       stats_(stats) {}
 
 StatsHistogram::~StatsHistogram() {}
@@ -34,7 +33,7 @@ StatsHistogram::~StatsHistogram() {}
 // static
 void StatsHistogram::InitializeBucketRanges(const Stats* stats,
                                             BucketRanges* ranges) {
-  for (size_t i = 0; i < ranges->size(); i++) {
+  for (size_t i = 0; i < ranges->size(); ++i) {
     ranges->set_range(i, stats->GetBucketRange(i));
   }
   ranges->ResetChecksum();
@@ -57,8 +56,7 @@ StatsHistogram* StatsHistogram::FactoryGet(const std::string& name,
 
     // To avoid racy destruction at shutdown, the following will be leaked.
     StatsHistogram* stats_histogram =
-        new StatsHistogram(name, minimum, maximum, bucket_count,
-                           registered_ranges, stats);
+        new StatsHistogram(name, minimum, maximum, registered_ranges, stats);
     stats_histogram->SetFlags(kUmaTargetedHistogramFlag);
     histogram = StatisticsRecorder::RegisterOrDeleteDuplicate(stats_histogram);
   }

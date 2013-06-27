@@ -15,9 +15,9 @@ typedef HistogramBase::Count Count;
 typedef HistogramBase::Sample Sample;
 
 SampleVector::SampleVector(const BucketRanges* bucket_ranges)
-    : counts_(bucket_ranges->size() - 1),
+    : counts_(bucket_ranges->bucket_count()),
       bucket_ranges_(bucket_ranges) {
-  CHECK_GE(bucket_ranges_->size(), 2u);
+  CHECK_GE(bucket_ranges_->bucket_count(), 1u);
 }
 
 SampleVector::~SampleVector() {}
@@ -83,7 +83,7 @@ bool SampleVector::AddSubtractImpl(SampleCountIterator* iter,
 // Use simple binary search.  This is very general, but there are better
 // approaches if we knew that the buckets were linearly distributed.
 size_t SampleVector::GetBucketIndex(Sample value) const {
-  size_t bucket_count = bucket_ranges_->size() - 1;
+  size_t bucket_count = bucket_ranges_->bucket_count();
   CHECK_GE(bucket_count, 1u);
   CHECK_GE(value, bucket_ranges_->range(0));
   CHECK_LT(value, bucket_ranges_->range(bucket_count));
@@ -112,7 +112,7 @@ SampleVectorIterator::SampleVectorIterator(const vector<Count>* counts,
     : counts_(counts),
       bucket_ranges_(bucket_ranges),
       index_(0) {
-  CHECK_GT(bucket_ranges_->size(), counts_->size());
+  CHECK_GE(bucket_ranges_->bucket_count(), counts_->size());
   SkipEmptyBuckets();
 }
 

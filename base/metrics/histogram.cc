@@ -97,12 +97,12 @@ HistogramBase* Histogram::FactoryGet(const string& name,
   if (!histogram) {
     // To avoid racy destruction at shutdown, the following will be leaked.
     BucketRanges* ranges = new BucketRanges(bucket_count + 1);
-    InitializeBucketRanges(minimum, maximum, bucket_count, ranges);
+    InitializeBucketRanges(minimum, maximum, ranges);
     const BucketRanges* registered_ranges =
         StatisticsRecorder::RegisterOrDeleteDuplicateRanges(ranges);
 
     Histogram* tentative_histogram =
-        new Histogram(name, minimum, maximum, bucket_count, registered_ranges);
+        new Histogram(name, minimum, maximum, registered_ranges);
 
     tentative_histogram->SetFlags(flags);
     histogram =
@@ -143,15 +143,14 @@ TimeTicks Histogram::DebugNow() {
 // static
 void Histogram::InitializeBucketRanges(Sample minimum,
                                        Sample maximum,
-                                       size_t bucket_count,
                                        BucketRanges* ranges) {
-  DCHECK_EQ(ranges->size(), bucket_count + 1);
   double log_max = log(static_cast<double>(maximum));
   double log_ratio;
   double log_next;
   size_t bucket_index = 1;
   Sample current = minimum;
   ranges->set_range(bucket_index, current);
+  size_t bucket_count = ranges->bucket_count();
   while (bucket_count > ++bucket_index) {
     double log_current;
     log_current = log(static_cast<double>(current));
@@ -167,7 +166,7 @@ void Histogram::InitializeBucketRanges(Sample minimum,
       ++current;  // Just do a narrow bucket, and keep trying.
     ranges->set_range(bucket_index, current);
   }
-  ranges->set_range(ranges->size() - 1, HistogramBase::kSampleType_MAX);
+  ranges->set_range(ranges->bucket_count(), HistogramBase::kSampleType_MAX);
   ranges->ResetChecksum();
 }
 
@@ -211,7 +210,7 @@ Sample Histogram::ranges(size_t i) const {
 }
 
 size_t Histogram::bucket_count() const {
-  return bucket_count_;
+  return bucket_ranges_->bucket_count();
 }
 
 // static
@@ -247,16 +246,17 @@ HistogramType Histogram::GetHistogramType() const {
   return HISTOGRAM;
 }
 
-bool Histogram::HasConstructionArguments(Sample minimum,
-                                         Sample maximum,
-                                         size_t bucket_count) const {
-  return ((minimum == declared_min_) && (maximum == declared_max_) &&
-          (bucket_count == bucket_count_));
+bool Histogram::HasConstructionArguments(Sample expected_minimum,
+                                         Sample expected_maximum,
+                                         size_t expected_bucket_count) const {
+  return ((expected_minimum == declared_min_) &&
+          (expected_maximum == declared_max_) &&
+          (expected_bucket_count == bucket_count()));
 }
 
 void Histogram::Add(int value) {
   DCHECK_EQ(0, ranges(0));
-  DCHECK_EQ(kSampleType_MAX, ranges(bucket_count_));
+  DCHECK_EQ(kSampleType_MAX, ranges(bucket_count()));
 
   if (value > kSampleType_MAX - 1)
     value = kSampleType_MAX - 1;
@@ -302,13 +302,11 @@ bool Histogram::SerializeInfoImpl(Pickle* pickle) const {
 Histogram::Histogram(const string& name,
                      Sample minimum,
                      Sample maximum,
-                     size_t bucket_count,
                      const BucketRanges* ranges)
   : HistogramBase(name),
     bucket_ranges_(ranges),
     declared_min_(minimum),
-    declared_max_(maximum),
-    bucket_count_(bucket_count) {
+    declared_max_(maximum) {
   if (ranges)
     samples_.reset(new SampleVector(ranges));
 }
@@ -548,13 +546,12 @@ HistogramBase* LinearHistogram::FactoryGetWithRangeDescription(
   if (!histogram) {
     // To avoid racy destruction at shutdown, the following will be leaked.
     BucketRanges* ranges = new BucketRanges(bucket_count + 1);
-    InitializeBucketRanges(minimum, maximum, bucket_count, ranges);
+    InitializeBucketRanges(minimum, maximum, ranges);
     const BucketRanges* registered_ranges =
         StatisticsRecorder::RegisterOrDeleteDuplicateRanges(ranges);
 
     LinearHistogram* tentative_histogram =
-        new LinearHistogram(name, minimum, maximum, bucket_count,
-                            registered_ranges);
+        new LinearHistogram(name, minimum, maximum, registered_ranges);
 
     // Set range descriptions.
     if (descriptions) {
@@ -581,9 +578,8 @@ HistogramType LinearHistogram::GetHistogramType() const {
 LinearHistogram::LinearHistogram(const string& name,
                                  Sample minimum,
                                  Sample maximum,
-                                 size_t bucket_count,
                                  const BucketRanges* ranges)
-    : Histogram(name, minimum, maximum, bucket_count, ranges) {
+    : Histogram(name, minimum, maximum, ranges) {
 }
 
 double LinearHistogram::GetBucketSize(Count current, size_t i) const {
@@ -609,18 +605,16 @@ bool LinearHistogram::PrintEmptyBucket(size_t index) const {
 // static
 void LinearHistogram::InitializeBucketRanges(Sample minimum,
                                              Sample maximum,
-                                             size_t bucket_count,
                                              BucketRanges* ranges) {
-  DCHECK_EQ(ranges->size(), bucket_count + 1);
   double min = minimum;
   double max = maximum;
-  size_t i;
-  for (i = 1; i < bucket_count; ++i) {
+  size_t bucket_count = ranges->bucket_count();
+  for (size_t i = 1; i < bucket_count; ++i) {
     double linear_range =
-        (min * (bucket_count -1 - i) + max * (i - 1)) / (bucket_count - 2);
+        (min * (bucket_count - 1 - i) + max * (i - 1)) / (bucket_count - 2);
     ranges->set_range(i, static_cast<Sample>(linear_range + 0.5));
   }
-  ranges->set_range(ranges->size() - 1, HistogramBase::kSampleType_MAX);
+  ranges->set_range(ranges->bucket_count(), HistogramBase::kSampleType_MAX);
   ranges->ResetChecksum();
 }
 
@@ -656,7 +650,7 @@ HistogramBase* BooleanHistogram::FactoryGet(const string& name, int32 flags) {
   if (!histogram) {
     // To avoid racy destruction at shutdown, the following will be leaked.
     BucketRanges* ranges = new BucketRanges(4);
-    LinearHistogram::InitializeBucketRanges(1, 2, 3, ranges);
+    LinearHistogram::InitializeBucketRanges(1, 2, ranges);
     const BucketRanges* registered_ranges =
         StatisticsRecorder::RegisterOrDeleteDuplicateRanges(ranges);
 
@@ -678,7 +672,7 @@ HistogramType BooleanHistogram::GetHistogramType() const {
 
 BooleanHistogram::BooleanHistogram(const string& name,
                                    const BucketRanges* ranges)
-    : LinearHistogram(name, 1, 2, 3, ranges) {}
+    : LinearHistogram(name, 1, 2, ranges) {}
 
 HistogramBase* BooleanHistogram::DeserializeInfoImpl(PickleIterator* iter) {
   string histogram_name;
@@ -754,8 +748,7 @@ CustomHistogram::CustomHistogram(const string& name,
                                  const BucketRanges* ranges)
     : Histogram(name,
                 ranges->range(1),
-                ranges->range(ranges->size() - 2),
-                ranges->size() - 1,
+                ranges->range(ranges->bucket_count() - 1),
                 ranges) {}
 
 bool CustomHistogram::SerializeInfoImpl(Pickle* pickle) const {
@@ -764,7 +757,7 @@ bool CustomHistogram::SerializeInfoImpl(Pickle* pickle) const {
 
   // Serialize ranges. First and last ranges are alwasy 0 and INT_MAX, so don't
   // write them.
-  for (size_t i = 1; i < bucket_ranges()->size() - 1; ++i) {
+  for (size_t i = 1; i < bucket_ranges()->bucket_count(); ++i) {
     if (!pickle->WriteInt(bucket_ranges()->range(i)))
       return false;
   }

@@ -64,9 +64,10 @@ class BASE_EXPORT_PRIVATE SparseHistogram : public HistogramBase {
 
   // HistogramBase implementation:
   virtual HistogramType GetHistogramType() const OVERRIDE;
-  virtual bool HasConstructionArguments(Sample minimum,
-                                        Sample maximum,
-                                        size_t bucket_count) const OVERRIDE;
+  virtual bool HasConstructionArguments(
+      Sample expected_minimum,
+      Sample expected_maximum,
+      size_t expected_bucket_count) const OVERRIDE;
   virtual void Add(Sample value) OVERRIDE;
   virtual void AddSamples(const HistogramSamples& samples) OVERRIDE;
   virtual bool AddSamplesFromPickle(PickleIterator* iter) OVERRIDE;
