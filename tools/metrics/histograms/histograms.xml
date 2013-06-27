@@ -20064,6 +20064,7 @@ other types of suffix sets.
   <group name="DomainBoundCerts" label="DomainBoundCerts"/>
   <group name="DomStorageDatabase" label="DomStorageDatabase"/>
   <group name="History" label="History"/>
+  <group name="Predictor" label="Predictor"/>
   <group name="Quota" label="Quota"/>
   <group name="SyncDirectory" label="SyncDirectory"/>
   <group name="Text" label="Text"/>
