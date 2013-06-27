@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "components/autofill/content/browser/autocheckout_steps.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
 #include "components/autofill/content/browser/wallet/wallet_client.h"
@@ -466,6 +467,15 @@ const char kSendAutocheckoutStatusOfSuccessValidRequest[] =
         "\"success\":true"
     "}";
 
+const char kSendAutocheckoutStatusWithStatisticsValidRequest[] =
+    "{"
+        "\"google_transaction_id\":\"google_transaction_id\","
+        "\"merchant_domain\":\"https://example.com/\","
+        "\"steps\":[{\"step_description\":\"1_AUTOCHECKOUT_STEP_SHIPPING\""
+        ",\"time_taken\":100}],"
+        "\"success\":true"
+    "}";
+
 const char kSendAutocheckoutStatusOfFailureValidRequest[] =
     "{"
         "\"google_transaction_id\":\"google_transaction_id\","
@@ -792,8 +802,10 @@ TEST_F(WalletClientTest, WalletError) {
   delegate_.ExpectWalletErrorMetric(
       AutofillMetrics::WALLET_SERVICE_UNAVAILABLE);
 
+  std::vector<AutocheckoutStatistic> statistics;
   wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
                                          GURL(kMerchantUrl),
+                                         statistics,
                                          "google_transaction_id");
   VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                          kSendAutocheckoutStatusOfSuccessValidRequest,
@@ -807,8 +819,10 @@ TEST_F(WalletClientTest, WalletErrorResponseMissing) {
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_UNKNOWN_ERROR);
 
+  std::vector<AutocheckoutStatistic> statistics;
   wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
                                          GURL(kMerchantUrl),
+                                         statistics,
                                          "google_transaction_id");
   VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                          kSendAutocheckoutStatusOfSuccessValidRequest,
@@ -821,8 +835,10 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedVoidResponse) {
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
 
+  std::vector<AutocheckoutStatistic> statistics;
   wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
                                          GURL(kMerchantUrl),
+                                         statistics,
                                          "google_transaction_id");
   VerifyAndFinishRequest(net::HTTP_UNAUTHORIZED,
                          kSendAutocheckoutStatusOfSuccessValidRequest,
@@ -848,8 +864,10 @@ TEST_F(WalletClientTest, RequestError) {
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_BAD_REQUEST);
 
+  std::vector<AutocheckoutStatistic> statistics;
   wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
                                          GURL(kMerchantUrl),
+                                         statistics,
                                          "google_transaction_id");
   VerifyAndFinishRequest(net::HTTP_BAD_REQUEST,
                          kSendAutocheckoutStatusOfSuccessValidRequest,
@@ -1725,11 +1743,18 @@ TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
+  AutocheckoutStatistic statistic;
+  statistic.page_number = 1;
+  statistic.steps.push_back(AUTOCHECKOUT_STEP_SHIPPING);
+  statistic.time_taken = base::TimeDelta::FromMilliseconds(100);
+  std::vector<AutocheckoutStatistic> statistics;
+  statistics.push_back(statistic);
   wallet_client_->SendAutocheckoutStatus(autofill::SUCCESS,
                                          GURL(kMerchantUrl),
+                                         statistics,
                                          "google_transaction_id");
   VerifyAndFinishRequest(net::HTTP_OK,
-                         kSendAutocheckoutStatusOfSuccessValidRequest,
+                         kSendAutocheckoutStatusWithStatisticsValidRequest,
                          ")]}");  // Invalid JSON. Should be ignored.
 }
 
@@ -1737,8 +1762,10 @@ TEST_F(WalletClientTest, SendAutocheckoutStatusOfFailure) {
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
+  std::vector<AutocheckoutStatistic> statistics;
   wallet_client_->SendAutocheckoutStatus(autofill::CANNOT_PROCEED,
                                          GURL(kMerchantUrl),
+                                         statistics,
                                          "google_transaction_id");
   VerifyAndFinishRequest(net::HTTP_OK,
                          kSendAutocheckoutStatusOfFailureValidRequest,

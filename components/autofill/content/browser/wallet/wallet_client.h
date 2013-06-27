@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "components/autofill/content/browser/autocheckout_statistic.h"
 #include "components/autofill/content/browser/wallet/encryption_escrow_client.h"
 #include "components/autofill/content/browser/wallet/encryption_escrow_client_observer.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
@@ -205,12 +206,15 @@ class WalletClient
                                         const GURL& source_url);
 
   // SendAutocheckoutStatus is used for tracking the success of Autocheckout
-  // flows. |status| is the result of the flow, |merchant_domain| is the domain
+  // flows. |status| is the result of the flow, |source_url| is the domain
   // where the purchase occured, and |google_transaction_id| is the same as the
-  // one provided by GetWalletItems.
-  void SendAutocheckoutStatus(autofill::AutocheckoutStatus status,
-                              const GURL& source_url,
-                              const std::string& google_transaction_id);
+  // one provided by GetWalletItems. |latency_statistics| contain statistics
+  // required to measure Autocheckout process.
+  void SendAutocheckoutStatus(
+      autofill::AutocheckoutStatus status,
+      const GURL& source_url,
+      const std::vector<AutocheckoutStatistic>& latency_statistics,
+      const std::string& google_transaction_id);
 
   // UpdateAddress updates Online Wallet with the data in |address|.
   virtual void UpdateAddress(const Address& address, const GURL& source_url);
