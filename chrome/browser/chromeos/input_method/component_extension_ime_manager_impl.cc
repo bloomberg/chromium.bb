@@ -31,6 +31,11 @@ struct WhitelistedComponentExtensionIME {
     "jhffeifommiaekmbkkjlpmilogcfdohp",
     "/usr/share/chromeos-assets/input_methods/keyboard_layouts",
   },
+  {
+    // ChromeOS Hangul Input.
+    "bdgdidmhaijohebebipajioienkglgfo",
+    "/usr/share/chromeos-assets/input_methods/hangul",
+  },
 #if defined(OFFICIAL_BUILD)
   {
     // Official Google Japanese Input.
