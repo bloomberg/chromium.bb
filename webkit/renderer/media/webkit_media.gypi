@@ -48,6 +48,8 @@
         'buffered_resource_loader.h',
         'cache_util.cc',
         'cache_util.h',
+        'crypto/content_decryption_module_factory.cc',
+        'crypto/content_decryption_module_factory.h',
         'crypto/key_systems.cc',
         'crypto/key_systems.h',
         'crypto/key_systems_info.cc',

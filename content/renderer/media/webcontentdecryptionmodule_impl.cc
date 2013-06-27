@@ -14,7 +14,7 @@
 #include "base/strings/string_util.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
 #include "media/base/media_keys.h"
-#include "webkit/renderer/media/crypto/proxy_decryptor.h"
+#include "webkit/renderer/media/crypto/content_decryption_module_factory.h"
 
 namespace content {
 

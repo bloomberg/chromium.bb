@@ -14,45 +14,13 @@
 #include "media/base/media_keys.h"
 
 namespace WebKit {
+#if defined(ENABLE_PEPPER_CDMS)
 class WebFrame;
 class WebMediaPlayerClient;
+#endif  // defined(ENABLE_PEPPER_CDMS)
 }
 
 namespace webkit_media {
-
-// TODO(ddorwin): Move to its own file.
-class ContentDecryptionModuleFactory {
- public:
-  static scoped_ptr<media::MediaKeys> Create(
-      const std::string& key_system,
-#if defined(ENABLE_PEPPER_CDMS)
-      // TODO(ddorwin): We need different pointers for the WD API.
-      WebKit::WebMediaPlayerClient* web_media_player_client,
-      WebKit::WebFrame* web_frame,
-      const base::Closure& destroy_plugin_cb,
-#elif defined(OS_ANDROID)
-      // TODO(scherkus): Revert the ProxyDecryptor changes from r208040 so that
-      // this class always creates the MediaKeys.
-      // A ProxyMediaKeys to be used if |key_system| is not Clear Key.
-      scoped_ptr<media::MediaKeys> media_keys,
-#endif  // defined(ENABLE_PEPPER_CDMS)
-      const media::KeyAddedCB& key_added_cb,
-      const media::KeyErrorCB& key_error_cb,
-      const media::KeyMessageCB& key_message_cb);
-
- private:
-#if defined(ENABLE_PEPPER_CDMS)
-  static scoped_ptr<media::MediaKeys> CreatePpapiDecryptor(
-      const std::string& key_system,
-      const media::KeyAddedCB& key_added_cb,
-      const media::KeyErrorCB& key_error_cb,
-      const media::KeyMessageCB& key_message_cb,
-      const base::Closure& destroy_plugin_cb,
-      // TODO(ddorwin): We need different pointers for the WD API.
-      WebKit::WebMediaPlayerClient* web_media_player_client,
-      WebKit::WebFrame* web_frame);
-#endif  // defined(ENABLE_PEPPER_CDMS)
-};
 
 // ProxyDecryptor is for EME v0.1b only. It should not be used for the WD API.
 // A decryptor proxy that creates a real decryptor object on demand and
