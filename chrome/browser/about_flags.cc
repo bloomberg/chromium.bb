@@ -1573,6 +1573,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableTranslateSettings)
   },
+  {
+    "enable-web-midi",
+    IDS_FLAGS_ENABLE_WEB_MIDI_NAME,
+    IDS_FLAGS_ENABLE_WEB_MIDI_DESCRIPTION,
+    kOsMac,
+    SINGLE_VALUE_TYPE(switches::kEnableWebMIDI)
+  },
 };
 
 const Experiment* experiments = kExperiments;
