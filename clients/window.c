@@ -4751,7 +4751,7 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 
 	if (strcmp(interface, "wl_compositor") == 0) {
 		d->compositor = wl_registry_bind(registry, id,
-						 &wl_compositor_interface, 1);
+						 &wl_compositor_interface, 3);
 	} else if (strcmp(interface, "wl_output") == 0) {
 		display_add_output(d, id);
 	} else if (strcmp(interface, "wl_seat") == 0) {
