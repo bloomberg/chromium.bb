@@ -27,6 +27,7 @@
 
 #if defined(USE_AURA)
 #include "grit/keyboard_resources.h"
+#include "ui/keyboard/keyboard_util.h"
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -289,7 +290,8 @@ void ComponentLoader::AddChromeApp() {
 
 void ComponentLoader::AddKeyboardApp() {
 #if defined(USE_AURA)
-  Add(IDR_KEYBOARD_MANIFEST, base::FilePath(FILE_PATH_LITERAL("keyboard")));
+  if (keyboard::IsKeyboardEnabled())
+    Add(IDR_KEYBOARD_MANIFEST, base::FilePath(FILE_PATH_LITERAL("keyboard")));
 #endif
 }
 
