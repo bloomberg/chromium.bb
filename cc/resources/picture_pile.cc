@@ -37,7 +37,7 @@ void PicturePile::Update(
     bool contents_opaque,
     const Region& invalidation,
     gfx::Rect visible_layer_rect,
-    RenderingStats* stats) {
+    RenderingStatsInstrumentation* stats_instrumentation) {
   background_color_ = background_color;
   contents_opaque_ = contents_opaque;
 
@@ -109,8 +109,8 @@ void PicturePile::Update(
       if (!(*pic)->HasRecording()) {
         TRACE_EVENT0("cc", "PicturePile::Update recording loop");
         for (int i = 0; i < repeat_count; i++)
-          (*pic)->Record(painter, tile_grid_info_, stats);
-        (*pic)->GatherPixelRefs(tile_grid_info_, stats);
+          (*pic)->Record(painter, tile_grid_info_, stats_instrumentation);
+        (*pic)->GatherPixelRefs(tile_grid_info_, stats_instrumentation);
         (*pic)->CloneForDrawing(num_raster_threads_);
       }
     }

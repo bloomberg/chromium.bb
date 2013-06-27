@@ -4,6 +4,7 @@
 
 #include "cc/resources/picture_pile.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
@@ -27,6 +28,7 @@ class TestPicturePile : public PicturePile {
 
 TEST(PicturePileTest, SmallInvalidateInflated) {
   FakeContentLayerClient client;
+  FakeRenderingStatsInstrumentation stats_instrumentation;
   scoped_refptr<TestPicturePile> pile = new TestPicturePile;
   SkColor background_color = SK_ColorBLUE;
 
@@ -44,7 +46,7 @@ TEST(PicturePileTest, SmallInvalidateInflated) {
                false,
                gfx::Rect(layer_size),
                gfx::Rect(layer_size),
-               NULL);
+               &stats_instrumentation);
 
   // Invalidate something inside a tile.
   gfx::Rect invalidate_rect(50, 50, 1, 1);
@@ -53,7 +55,7 @@ TEST(PicturePileTest, SmallInvalidateInflated) {
                false,
                invalidate_rect,
                gfx::Rect(layer_size),
-               NULL);
+               &stats_instrumentation);
 
   EXPECT_EQ(1, pile->tiling().num_tiles_x());
   EXPECT_EQ(1, pile->tiling().num_tiles_y());
@@ -78,6 +80,7 @@ TEST(PicturePileTest, SmallInvalidateInflated) {
 
 TEST(PicturePileTest, LargeInvalidateInflated) {
   FakeContentLayerClient client;
+  FakeRenderingStatsInstrumentation stats_instrumentation;
   scoped_refptr<TestPicturePile> pile = new TestPicturePile;
   SkColor background_color = SK_ColorBLUE;
 
@@ -95,7 +98,7 @@ TEST(PicturePileTest, LargeInvalidateInflated) {
                false,
                gfx::Rect(layer_size),
                gfx::Rect(layer_size),
-               NULL);
+               &stats_instrumentation);
 
   // Invalidate something inside a tile.
   gfx::Rect invalidate_rect(50, 50, 100, 100);
@@ -104,7 +107,7 @@ TEST(PicturePileTest, LargeInvalidateInflated) {
                false,
                invalidate_rect,
                gfx::Rect(layer_size),
-               NULL);
+               &stats_instrumentation);
 
   EXPECT_EQ(1, pile->tiling().num_tiles_x());
   EXPECT_EQ(1, pile->tiling().num_tiles_y());
@@ -131,6 +134,7 @@ TEST(PicturePileTest, LargeInvalidateInflated) {
 
 TEST(PicturePileTest, InvalidateOnTileBoundaryInflated) {
   FakeContentLayerClient client;
+  FakeRenderingStatsInstrumentation stats_instrumentation;
   scoped_refptr<TestPicturePile> pile = new TestPicturePile;
   SkColor background_color = SK_ColorBLUE;
 
@@ -157,7 +161,7 @@ TEST(PicturePileTest, InvalidateOnTileBoundaryInflated) {
                false,
                gfx::Rect(layer_size),
                gfx::Rect(layer_size),
-               NULL);
+               &stats_instrumentation);
 
   // Invalidate something just over a tile boundary by a single pixel.
   // This will invalidate the tile (1, 1), as well as 1 row of pixels in (1, 0).
@@ -171,7 +175,7 @@ TEST(PicturePileTest, InvalidateOnTileBoundaryInflated) {
                false,
                invalidate_rect,
                gfx::Rect(layer_size),
-               NULL);
+               &stats_instrumentation);
 
   for (int i = 0; i < pile->tiling().num_tiles_x(); ++i) {
     for (int j = 0; j < pile->tiling().num_tiles_y(); ++j) {

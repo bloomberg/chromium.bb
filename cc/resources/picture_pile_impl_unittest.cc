@@ -4,6 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/test/fake_picture_pile_impl.h"
+#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/skia_common.h"
 #include "skia/ext/lazy_pixel_ref.h"
 #include "skia/ext/refptr.h"
@@ -664,6 +665,7 @@ TEST(PicturePileImplTest, PixelRefIteratorMultiplePictures) {
   pile->RerecordPile();
 
   FakeContentLayerClient content_layer_clients[2][2];
+  FakeRenderingStatsInstrumentation stats_instrumentation;
   scoped_refptr<Picture> pictures[2][2];
   for (int y = 0; y < 2; ++y) {
     for (int x = 0; x < 2; ++x) {
@@ -677,8 +679,8 @@ TEST(PicturePileImplTest, PixelRefIteratorMultiplePictures) {
       pictures[y][x]->Record(
           &content_layer_clients[y][x],
           tile_grid_info,
-          NULL);
-      pictures[y][x]->GatherPixelRefs(tile_grid_info, NULL);
+          &stats_instrumentation);
+      pictures[y][x]->GatherPixelRefs(tile_grid_info, &stats_instrumentation);
       pile->AddPictureToRecording(0, 0, pictures[y][x]);
     }
   }

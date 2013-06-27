@@ -17,7 +17,6 @@
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace cc {
-struct RenderingStats;
 
 class CC_EXPORT PicturePileImpl : public PicturePileBase {
  public:

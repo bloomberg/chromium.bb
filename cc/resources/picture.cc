@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
-#include "cc/debug/rendering_stats.h"
+#include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/debug/traced_picture.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/content_layer_client.h"
@@ -188,7 +188,7 @@ void Picture::CloneForDrawing(int num_threads) {
 
 void Picture::Record(ContentLayerClient* painter,
                      const SkTileGridPicture::TileGridInfo& tile_grid_info,
-                     RenderingStats* stats) {
+                     RenderingStatsInstrumentation* stats_instrumentation) {
   TRACE_EVENT2("cc", "Picture::Record",
                "width", layer_rect_.width(),
                "height", layer_rect_.height());
@@ -214,15 +214,13 @@ void Picture::Record(ContentLayerClient* painter,
   canvas->clipRect(layer_skrect);
 
   gfx::RectF opaque_layer_rect;
-  base::TimeTicks begin_record_time;
-  if (stats)
-    begin_record_time = base::TimeTicks::Now();
+  base::TimeTicks start_time = stats_instrumentation->StartRecording();
+
   painter->PaintContents(canvas, layer_rect_, &opaque_layer_rect);
-  if (stats) {
-    stats->total_record_time += base::TimeTicks::Now() - begin_record_time;
-    stats->total_pixels_recorded +=
-        layer_rect_.width() * layer_rect_.height();
-  }
+
+  base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
+  stats_instrumentation->AddPaint(duration,
+                                  layer_rect_.width() * layer_rect_.height());
 
   canvas->restore();
   picture_->endRecording();
@@ -234,7 +232,7 @@ void Picture::Record(ContentLayerClient* painter,
 
 void Picture::GatherPixelRefs(
     const SkTileGridPicture::TileGridInfo& tile_grid_info,
-    RenderingStats* stats) {
+    RenderingStatsInstrumentation* stats_instrumentation) {
   TRACE_EVENT2("cc", "Picture::GatherPixelRefs",
                "width", layer_rect_.width(),
                "height", layer_rect_.height());
@@ -253,9 +251,7 @@ void Picture::GatherPixelRefs(
   int max_x = 0;
   int max_y = 0;
 
-  base::TimeTicks begin_image_gathering_time;
-  if (stats)
-    begin_image_gathering_time = base::TimeTicks::Now();
+  base::TimeTicks start_time = stats_instrumentation->StartRecording();
 
   skia::LazyPixelRefList pixel_refs;
   skia::LazyPixelRefUtils::GatherPixelRefs(picture_.get(), &pixel_refs);
@@ -286,11 +282,8 @@ void Picture::GatherPixelRefs(
     max_y = std::max(max_y, max.y());
   }
 
-  if (stats) {
-    stats->total_image_gathering_time +=
-        base::TimeTicks::Now() - begin_image_gathering_time;
-    stats->total_image_gathering_count++;
-  }
+  base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
+  stats_instrumentation->AddImageGathering(duration);
 
   min_pixel_cell_ = gfx::Point(min_x, min_y);
   max_pixel_cell_ = gfx::Point(max_x, max_y);

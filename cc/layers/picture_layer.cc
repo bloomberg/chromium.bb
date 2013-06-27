@@ -95,7 +95,7 @@ void PictureLayer::Update(ResourceUpdateQueue*,
                 contents_opaque(),
                 pile_invalidation_,
                 visible_layer_rect,
-                stats);
+                rendering_stats_instrumentation());
 }
 
 void PictureLayer::SetIsMask(bool is_mask) {

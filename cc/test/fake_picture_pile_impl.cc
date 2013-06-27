@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,9 +53,11 @@ void FakePicturePileImpl::AddRecordingAt(int x, int y) {
   gfx::Rect bounds(tiling().TileBounds(x, y));
   bounds.Inset(-buffer_pixels(), -buffer_pixels());
 
+  FakeRenderingStatsInstrumentation stats_instrumentation;
+
   scoped_refptr<Picture> picture(Picture::Create(bounds));
-  picture->Record(&client_, tile_grid_info_, NULL);
-  picture->GatherPixelRefs(tile_grid_info_, NULL);
+  picture->Record(&client_, tile_grid_info_, &stats_instrumentation);
+  picture->GatherPixelRefs(tile_grid_info_, &stats_instrumentation);
   picture_list_map_[std::pair<int, int>(x, y)].push_back(picture);
   EXPECT_TRUE(HasRecordingAt(x, y));
 
