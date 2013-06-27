@@ -1780,7 +1780,7 @@
         # unit_tests than in base_unittests.
         '../base/path_service_unittest.cc',
 
-        # TODO(joi): Move to //components/components.gypi once
+        # TODO(joi): Move to //components/components_tests.gypi once
         # remaining dependencies back to //chrome are eliminated.
         '../components/autofill/content/browser/autocheckout/whitelist_manager_unittest.cc',
         '../components/autofill/content/browser/autocheckout_manager_unittest.cc',
@@ -1826,7 +1826,7 @@
         '../components/autofill/core/browser/phone_number_i18n_unittest.cc',
         '../components/autofill/core/browser/validation_unittest.cc',
 
-        # TODO(caitkp): Move to //components/components.gypi once
+        # TODO(caitkp): Move to //components/components_tests.gypi once
         # remaining dependencies back to //chrome are eliminated.
         '../components/autofill/core/browser/webdata/autofill_entry_unittest.cc',
         '../components/autofill/core/browser/webdata/autofill_table_unittest.cc',

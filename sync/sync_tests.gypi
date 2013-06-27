@@ -268,7 +268,6 @@
           'syncable/syncable_unittest.cc',
           'syncable/syncable_util_unittest.cc',
           'util/cryptographer_unittest.cc',
-          'util/data_encryption_win_unittest.cc',
           'util/data_type_histogram_unittest.cc',
           'util/get_session_name_unittest.cc',
           'util/nigori_unittest.cc',

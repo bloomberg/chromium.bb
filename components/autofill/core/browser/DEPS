@@ -33,9 +33,6 @@ include_rules = [
   "!content/public/common/url_constants.h",
   "!third_party/WebKit/public/web/WebAutofillClient.h",
   "!third_party/WebKit/public/web/WebInputElement.h",
-
-  # TODO(akalin): Remove this dependency.
-  "!sync/util/data_encryption_win.h",
 ]
 
 specific_include_rules = {

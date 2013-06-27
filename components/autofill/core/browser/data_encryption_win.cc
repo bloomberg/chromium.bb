@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/util/data_encryption_win.h"
+#include "components/autofill/core/browser/data_encryption_win.h"
 
 #include <windows.h>
 #include <wincrypt.h>
@@ -17,7 +17,7 @@
 // components/webdata/encryptor/encryptor_win.cc.  Preferably, all
 // this stuff would live in crypto/.
 
-namespace syncer {
+namespace autofill {
 
 std::vector<uint8> EncryptData(const std::string& data) {
   DATA_BLOB unencrypted_data = { 0 };
@@ -54,4 +54,4 @@ bool DecryptData(const std::vector<uint8>& in_data, std::string* out_data) {
   }
 }
 
-}  // namespace syncer
+}  // namespace autofill
