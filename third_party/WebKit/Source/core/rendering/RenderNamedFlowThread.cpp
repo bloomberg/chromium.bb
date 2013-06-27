@@ -478,6 +478,7 @@ void RenderNamedFlowThread::dispatchRegionLayoutUpdateEvent()
 void RenderNamedFlowThread::dispatchRegionOversetChangeEvent()
 {
     RenderFlowThread::dispatchRegionOversetChangeEvent();
+    InspectorInstrumentation::didChangeRegionOverset(document(), m_namedFlow.get());
 
     if (!m_regionOversetChangeEventTimer.isActive() && m_namedFlow->hasEventListeners())
         m_regionOversetChangeEventTimer.startOneShot(0);

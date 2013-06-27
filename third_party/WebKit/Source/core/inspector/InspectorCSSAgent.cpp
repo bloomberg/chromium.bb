@@ -322,6 +322,54 @@ void UpdateRegionLayoutTask::onTimer(Timer<UpdateRegionLayoutTask>*)
         m_timer.startOneShot(0);
 }
 
+class ChangeRegionOversetTask {
+public:
+    ChangeRegionOversetTask(InspectorCSSAgent*);
+    void scheduleFor(NamedFlow*, int documentNodeId);
+    void unschedule(NamedFlow*);
+    void reset();
+    void onTimer(Timer<ChangeRegionOversetTask>*);
+
+private:
+    InspectorCSSAgent* m_cssAgent;
+    Timer<ChangeRegionOversetTask> m_timer;
+    HashMap<NamedFlow*, int> m_namedFlows;
+};
+
+ChangeRegionOversetTask::ChangeRegionOversetTask(InspectorCSSAgent* cssAgent)
+    : m_cssAgent(cssAgent)
+    , m_timer(this, &ChangeRegionOversetTask::onTimer)
+{
+}
+
+void ChangeRegionOversetTask::scheduleFor(NamedFlow* namedFlow, int documentNodeId)
+{
+    m_namedFlows.add(namedFlow, documentNodeId);
+
+    if (!m_timer.isActive())
+        m_timer.startOneShot(0);
+}
+
+void ChangeRegionOversetTask::unschedule(NamedFlow* namedFlow)
+{
+    m_namedFlows.remove(namedFlow);
+}
+
+void ChangeRegionOversetTask::reset()
+{
+    m_timer.stop();
+    m_namedFlows.clear();
+}
+
+void ChangeRegionOversetTask::onTimer(Timer<ChangeRegionOversetTask>*)
+{
+    // The timer is stopped on m_cssAgent destruction, so this method will never be called after m_cssAgent has been destroyed.
+    for (HashMap<NamedFlow*, int>::iterator it = m_namedFlows.begin(), end = m_namedFlows.end(); it != end; ++it)
+        m_cssAgent->regionOversetChanged(it->key, it->value);
+
+    m_namedFlows.clear();
+}
+
 class InspectorCSSAgent::StyleSheetAction : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(StyleSheetAction);
 public:
@@ -793,6 +841,8 @@ void InspectorCSSAgent::resetNonPersistentData()
     m_namedFlowCollectionsRequested.clear();
     if (m_updateRegionLayoutTask)
         m_updateRegionLayoutTask->reset();
+    if (m_changeRegionOversetTask)
+        m_changeRegionOversetTask->reset();
     resetPseudoStates();
 }
 
@@ -872,6 +922,28 @@ void InspectorCSSAgent::regionLayoutUpdated(NamedFlow* namedFlow, int documentNo
     RefPtr<NamedFlow> protector(namedFlow);
 
     m_frontend->regionLayoutUpdated(buildObjectForNamedFlow(&errorString, namedFlow, documentNodeId));
+}
+
+void InspectorCSSAgent::didChangeRegionOverset(Document* document, NamedFlow* namedFlow)
+{
+    int documentNodeId = documentNodeWithRequestedFlowsId(document);
+    if (!documentNodeId)
+        return;
+
+    if (!m_changeRegionOversetTask)
+        m_changeRegionOversetTask = adoptPtr(new ChangeRegionOversetTask(this));
+    m_changeRegionOversetTask->scheduleFor(namedFlow, documentNodeId);
+}
+
+void InspectorCSSAgent::regionOversetChanged(NamedFlow* namedFlow, int documentNodeId)
+{
+    if (namedFlow->flowState() == NamedFlow::FlowStateNull)
+        return;
+
+    ErrorString errorString;
+    RefPtr<NamedFlow> protector(namedFlow);
+
+    m_frontend->regionOversetChanged(buildObjectForNamedFlow(&errorString, namedFlow, documentNodeId));
 }
 
 void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document, const Vector<RefPtr<StyleSheet> >& newSheets)

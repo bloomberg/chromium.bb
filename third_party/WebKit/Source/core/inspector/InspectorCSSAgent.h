@@ -41,6 +41,7 @@
 
 namespace WebCore {
 
+class ChangeRegionOversetTask;
 struct CSSParserString;
 class CSSRule;
 class CSSRuleList;
@@ -117,8 +118,15 @@ public:
     void mediaQueryResultChanged();
     void didCreateNamedFlow(Document*, NamedFlow*);
     void willRemoveNamedFlow(Document*, NamedFlow*);
-    void didUpdateRegionLayout(Document*, NamedFlow*);
+
+private:
     void regionLayoutUpdated(NamedFlow*, int documentNodeId);
+    void regionOversetChanged(NamedFlow*, int documentNodeId);
+
+public:
+    void didUpdateRegionLayout(Document*, NamedFlow*);
+    void didChangeRegionOverset(Document*, NamedFlow*);
+
     void activeStyleSheetsUpdated(Document*, const Vector<RefPtr<StyleSheet> >& newSheets);
     void frameDetachedFromParent(Frame*);
 
@@ -206,13 +214,16 @@ private:
     NodeIdToForcedPseudoState m_nodeIdToForcedPseudoState;
     HashSet<int> m_namedFlowCollectionsRequested;
     OwnPtr<UpdateRegionLayoutTask> m_updateRegionLayoutTask;
+    OwnPtr<ChangeRegionOversetTask> m_changeRegionOversetTask;
 
     int m_lastStyleSheetId;
     bool m_creatingViaInspectorStyleSheet;
 
     OwnPtr<SelectorProfile> m_currentSelectorProfile;
 
+    friend class ChangeRegionOversetTask;
     friend class StyleSheetBinder;
+    friend class UpdateRegionLayoutTask;
 };
 
 
