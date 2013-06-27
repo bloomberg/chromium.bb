@@ -7,7 +7,6 @@
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
 #include "base/debug/trace_event.h"
-#include "base/hi_res_timer_manager.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -21,7 +20,8 @@
 #include "base/process_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
+#include "base/timer/hi_res_timer_manager.h"
 #include "content/child/child_process.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/public/common/content_switches.h"
@@ -165,7 +165,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::PlatformThread::SetName("CrRendererMain");
 
   base::PowerMonitor power_monitor;
-  HighResolutionTimerManager hi_res_timer_manager;
+  base::HighResolutionTimerManager hi_res_timer_manager;
 
   platform.PlatformInitialize();
 

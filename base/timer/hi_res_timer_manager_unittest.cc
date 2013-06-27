@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/hi_res_timer_manager.h"
+#include "base/timer/hi_res_timer_manager.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
 
 #if defined(OS_WIN)
 // http://crbug.com/114048
@@ -51,3 +53,5 @@ TEST(HiResTimerManagerTest, DISABLED_ToggleOnOff) {
   }
 }
 #endif  // defined(OS_WIN)
+
+}  // namespace base

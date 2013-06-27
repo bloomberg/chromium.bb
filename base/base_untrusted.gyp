@@ -27,7 +27,7 @@
               'base_switches.h',
               'strings/string16.cc',
               'sync_socket_nacl.cc',
-              'time_posix.cc',
+              'time/time_posix.cc',
             ],
           },
           'dependencies': [

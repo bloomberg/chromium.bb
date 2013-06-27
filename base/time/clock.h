@@ -6,7 +6,7 @@
 #define BASE_CLOCK_H_
 
 #include "base/base_export.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace base {
 
@@ -14,7 +14,7 @@ namespace base {
 // intended to be able to test the behavior of classes with respect to
 // time.
 //
-// See DefaultClock (base/default_clock.h) for the default
+// See DefaultClock (base/time/default_clock.h) for the default
 // implementation that simply uses Time::Now().
 //
 // (An implementation that uses Time::SystemTime() should be added as
@@ -23,7 +23,7 @@ namespace base {
 // See SimpleTestClock (base/test/simple_test_clock.h) for a simple
 // test implementation.
 //
-// See TickClock (base/tick_clock.h) for the equivalent interface for
+// See TickClock (base/time/tick_clock.h) for the equivalent interface for
 // TimeTicks.
 class BASE_EXPORT Clock {
  public:

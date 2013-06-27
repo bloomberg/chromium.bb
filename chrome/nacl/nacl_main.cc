@@ -5,9 +5,9 @@
 #include "build/build_config.h"
 
 #include "base/command_line.h"
-#include "base/hi_res_timer_manager.h"
 #include "base/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/timer/hi_res_timer_manager.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -25,7 +25,7 @@ int NaClMain(const content::MainFunctionParams& parameters) {
   base::PlatformThread::SetName("CrNaClMain");
 
   base::PowerMonitor power_monitor;
-  HighResolutionTimerManager hi_res_timer_manager;
+  base::HighResolutionTimerManager hi_res_timer_manager;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   NaClMainPlatformDelegate platform(parameters);

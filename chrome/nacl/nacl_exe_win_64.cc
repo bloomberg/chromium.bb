@@ -4,12 +4,12 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/hi_res_timer_manager.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process_util.h"
 #include "base/strings/string_util.h"
+#include "base/timer/hi_res_timer_manager.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/logging_chrome.h"
@@ -34,7 +34,7 @@ int NaClBrokerMain(const content::MainFunctionParams& parameters) {
   base::PlatformThread::SetName("CrNaClBrokerMain");
 
   base::PowerMonitor power_monitor;
-  HighResolutionTimerManager hi_res_timer_manager;
+  base::HighResolutionTimerManager hi_res_timer_manager;
 
   NaClBrokerListener listener;
   listener.Listen();

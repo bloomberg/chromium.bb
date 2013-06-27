@@ -34,15 +34,15 @@
 // do.  Otherwise, WaitForSingleObject(..., 1) will no less than 15ms when
 // there is nothing else to waken the Wait.
 
-#include "base/time.h"
+#include "base/time/time.h"
 
 #pragma comment(lib, "winmm.lib")
 #include <windows.h>
 #include <mmsystem.h>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/cpu.h"
+#include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 

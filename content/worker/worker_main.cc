@@ -4,11 +4,11 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/hi_res_timer_manager.h"
 #include "base/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
+#include "base/timer/hi_res_timer_manager.h"
 #include "content/child/child_process.h"
 #include "content/common/sandbox_linux.h"
 #include "content/public/common/main_function_params.h"
@@ -32,7 +32,7 @@ int WorkerMain(const MainFunctionParams& parameters) {
   base::PlatformThread::SetName("CrWorkerMain");
 
   base::PowerMonitor power_monitor;
-  HighResolutionTimerManager hi_res_timer_manager;
+  base::HighResolutionTimerManager hi_res_timer_manager;
 
 #if defined(OS_WIN)
   sandbox::TargetServices* target_services =

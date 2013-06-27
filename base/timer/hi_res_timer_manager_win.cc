@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/hi_res_timer_manager.h"
+#include "base/timer/hi_res_timer_manager.h"
 
 #include "base/power_monitor/power_monitor.h"
-#include "base/time.h"
+#include "base/time/time.h"
+
+namespace base {
 
 HighResolutionTimerManager::HighResolutionTimerManager()
     : hi_res_clock_available_(false) {
@@ -29,3 +31,5 @@ void HighResolutionTimerManager::UseHiResClock(bool use) {
   hi_res_clock_available_ = use;
   base::Time::EnableHighResolutionTimer(use);
 }
+
+}  // namespace base

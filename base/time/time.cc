@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/time.h"
+#include "base/time/time.h"
 
 #include <math.h>
 #if defined(OS_WIN)
@@ -11,10 +11,9 @@
 
 #include <limits>
 
+#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/third_party/nspr/prtime.h"
-
-#include "base/logging.h"
 
 namespace base {
 

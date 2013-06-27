@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
-#include "base/hi_res_timer_manager.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -18,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/timer/hi_res_timer_manager.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gamepad/gamepad_service.h"
@@ -394,7 +394,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:HighResTimerManager")
-    hi_res_timer_manager_.reset(new HighResolutionTimerManager);
+    hi_res_timer_manager_.reset(new base::HighResolutionTimerManager);
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:NetworkChangeNotifier")

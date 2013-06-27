@@ -6,7 +6,7 @@
 #define BASE_TICK_CLOCK_H_
 
 #include "base/base_export.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace base {
 
@@ -14,7 +14,7 @@ namespace base {
 // intended to be able to test the behavior of classes with respect to
 // non-decreasing time.
 //
-// See DefaultTickClock (base/default_tick_clock.h) for the default
+// See DefaultTickClock (base/time/default_tick_clock.h) for the default
 // implementation that simply uses TimeTicks::Now().
 //
 // (Other implementations that use TimeTicks::HighResNow() or
@@ -23,7 +23,7 @@ namespace base {
 // See SimpleTestTickClock (base/test/simple_test_tick_clock.h) for a
 // simple test implementation.
 //
-// See Clock (base/clock.h) for the equivalent interface for Times.
+// See Clock (base/time/clock.h) for the equivalent interface for Times.
 class BASE_EXPORT TickClock {
  public:
   virtual ~TickClock();

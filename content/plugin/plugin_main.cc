@@ -10,11 +10,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/hi_res_timer_manager.h"
 #include "base/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
+#include "base/timer/hi_res_timer_manager.h"
 #include "content/child/child_process.h"
 #include "content/plugin/plugin_thread.h"
 #include "content/public/common/content_switches.h"
@@ -56,7 +56,7 @@ int PluginMain(const MainFunctionParams& parameters) {
   base::PlatformThread::SetName("CrPluginMain");
 
   base::PowerMonitor power_monitor;
-  HighResolutionTimerManager high_resolution_timer_manager;
+  base::HighResolutionTimerManager high_resolution_timer_manager;
 
   const CommandLine& parsed_command_line = parameters.command_line;
 
