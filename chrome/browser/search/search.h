@@ -218,12 +218,6 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags);
 
-// Coerces the commandline Instant URL to look like a template URL, so that we
-// can extract search terms from it. Exposed for testing only.
-GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
-                                       const TemplateURLRef& ref,
-                                       int start_margin);
-
 // Returns whether the default search provider has a valid Instant URL in its
 // template. Exposed for testing only.
 bool DefaultSearchProviderSupportsInstant(Profile* profile);

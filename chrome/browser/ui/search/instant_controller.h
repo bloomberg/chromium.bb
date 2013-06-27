@@ -220,7 +220,6 @@ class InstantController : public InstantPage::Delegate,
 
   // Returns the correct Instant URL to use from the following possibilities:
   //   o The default search engine's Instant URL
-  //   o The --instant-url command line switch
   //   o The local page (see GetLocalInstantURL())
   // Returns empty string if no valid Instant URL is available (this is only
   // possible in non-extended mode where we don't have a local page fall-back).

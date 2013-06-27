@@ -323,26 +323,4 @@ TEST(GoogleUtilTest, GoogleDomains) {
   EXPECT_FALSE(IsGoogleDomainUrl("doesnotexist://www.google.com",
                                  google_util::DISALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
-
-  // Test overriding with --instant-url works.
-  EXPECT_FALSE(IsGoogleDomainUrl("http://test.foo.com",
-                                 google_util::DISALLOW_SUBDOMAIN,
-                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_FALSE(IsGoogleDomainUrl("http://test.foo.com:1234",
-                                 google_util::DISALLOW_SUBDOMAIN,
-                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kInstantURL, "http://test.foo.com:1234/bar");
-  EXPECT_FALSE(IsGoogleDomainUrl("http://test.foo.com",
-                                 google_util::DISALLOW_SUBDOMAIN,
-                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("http://test.foo.com:1234",
-                                google_util::DISALLOW_SUBDOMAIN,
-                                google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_FALSE(IsGoogleDomainUrl("file://test.foo.com:1234",
-                                 google_util::DISALLOW_SUBDOMAIN,
-                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com",
-                                google_util::DISALLOW_SUBDOMAIN,
-                                google_util::DISALLOW_NON_STANDARD_PORTS));
 }

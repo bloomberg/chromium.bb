@@ -291,17 +291,6 @@ TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedEnabled) {
   }
 }
 
-TEST_F(SearchTest, CoerceCommandLineURLToTemplateURL) {
-  TemplateURL* template_url =
-      TemplateURLServiceFactory::GetForProfile(profile())->
-          GetDefaultSearchProvider();
-  EXPECT_EQ(
-      GURL("https://foo.com/dev?bar=bar#bar=bar"),
-      CoerceCommandLineURLToTemplateURL(
-          GURL("http://myserver.com:9000/dev?bar=bar#bar=bar"),
-          template_url->instant_url_ref(), kDisableStartMargin));
-}
-
 const SearchTestCase kInstantNTPTestCases[] = {
   {"https://foo.com/instant?strk",         true,  "Valid Instant URL"},
   {"https://foo.com/instant#strk",         true,  "Valid Instant URL"},
@@ -400,19 +389,6 @@ TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
   EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
             GetInstantURL(profile(), kDisableStartMargin));
 
-  // Override the Instant URL on the commandline. Oops, forgot "strk".
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kInstantURL,
-      "http://myserver.com:9000/dev?bar=bar#bar=bar");
-  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
-
-  // Override with "strk". For fun, put it in the query, instead of the ref.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kInstantURL,
-      "http://myserver.com:9000/dev?bar=bar&strk#bar=bar");
-  EXPECT_EQ(GURL("http://myserver.com:9000/dev?bar=bar&strk#bar=bar"),
-            GetInstantURL(profile(), kDisableStartMargin));
-
   // Disable suggest. No Instant URL.
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
   EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
@@ -454,15 +430,6 @@ TEST_F(SearchTest, DefaultSearchProviderSupportsInstant) {
 
   // Disable Instant. No difference.
   profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, false);
-  EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
-
-  // Override the Instant URL on the commandline. Oops, forgot "strk".
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kInstantURL,
-      "http://myserver.com:9000/dev?bar=bar#bar=bar");
-  EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin));
-
-  // Check that command line overrides don't affect the default search provider.
   EXPECT_TRUE(DefaultSearchProviderSupportsInstant(profile()));
 
   // Disable suggest. No Instant URL.

@@ -152,28 +152,13 @@ bool GetReactivationBrand(std::string* brand) {
 
 #endif
 
-bool IsGoogleDomainUrl(const std::string& url,
+bool IsGoogleDomainUrl(const std::string& in_url,
                        SubdomainPermission subdomain_permission,
                        PortPermission port_permission) {
-  GURL original_url(url);
-  if (!original_url.is_valid() ||
-      !(original_url.SchemeIs("http") || original_url.SchemeIs("https")))
-    return false;
-
-  // If we have the Instant URL overridden with a command line flag, accept
-  // its domain/port combination as well.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kInstantURL)) {
-    GURL custom_instant_url(
-        command_line.GetSwitchValueASCII(switches::kInstantURL));
-    if (original_url.host() == custom_instant_url.host() &&
-        original_url.port() == custom_instant_url.port())
-      return true;
-  }
-
-  return (original_url.port().empty() ||
-      port_permission == ALLOW_NON_STANDARD_PORTS) &&
-      google_util::IsGoogleHostname(original_url.host(), subdomain_permission);
+  GURL url(in_url);
+  return url.is_valid() && (url.SchemeIs("http") || url.SchemeIs("https")) &&
+      (url.port().empty() || (port_permission == ALLOW_NON_STANDARD_PORTS)) &&
+      google_util::IsGoogleHostname(url.host(), subdomain_permission);
 }
 
 bool IsGoogleHostname(const std::string& host,

@@ -100,12 +100,6 @@ bool MatchesOrigin(const GURL& my_url, const GURL& other_url) {
            other_url.SchemeIs(chrome::kHttpScheme)));
 }
 
-bool IsCommandLineInstantURL(const GURL& url) {
-  const CommandLine* cl = CommandLine::ForCurrentProcess();
-  const GURL instant_url(cl->GetSwitchValueASCII(switches::kInstantURL));
-  return instant_url.is_valid() && MatchesOrigin(url, instant_url);
-}
-
 bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
   GURL search_url =
       TemplateURLRefToGURL(template_url->url_ref(), kDisableStartMargin);
@@ -164,20 +158,14 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
 
   const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
   const bool extended_api_enabled = IsInstantExtendedAPIEnabled();
-  GURL effective_url = url;
 
-  if (IsCommandLineInstantURL(url))
-    effective_url = CoerceCommandLineURLToTemplateURL(url, instant_url_ref,
-                                                      kDisableStartMargin);
-
-  if (!effective_url.is_valid())
+  if (!url.is_valid())
     return false;
 
-  if (extended_api_enabled && !effective_url.SchemeIsSecure())
+  if (extended_api_enabled && !url.SchemeIsSecure())
     return false;
 
-  if (extended_api_enabled &&
-      !template_url->HasSearchTermsReplacementKey(effective_url))
+  if (extended_api_enabled && !template_url->HasSearchTermsReplacementKey(url))
     return false;
 
   const GURL instant_url =
@@ -185,10 +173,10 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
   if (!instant_url.is_valid())
     return false;
 
-  if (MatchesOriginAndPath(effective_url, instant_url))
+  if (MatchesOriginAndPath(url, instant_url))
     return true;
 
-  if (extended_api_enabled && MatchesAnySearchURL(effective_url, template_url))
+  if (extended_api_enabled && MatchesAnySearchURL(url, template_url))
     return true;
 
   return false;
@@ -270,17 +258,12 @@ bool IsQueryExtractionEnabled() {
   return EmbeddedSearchPageVersion() != kEmbeddedPageVersionDisabled;
 }
 
-string16 GetSearchTermsFromURL(Profile* profile, const GURL& in_url) {
-  GURL url(in_url);
+string16 GetSearchTermsFromURL(Profile* profile, const GURL& url) {
   string16 search_terms;
 
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
   if (!template_url)
     return string16();
-
-  if (IsCommandLineInstantURL(url))
-    url = CoerceCommandLineURLToTemplateURL(url, template_url->url_ref(),
-                                            kDisableStartMargin);
 
   if (url.SchemeIsSecure() && template_url->HasSearchTermsReplacementKey(url))
     template_url->ExtractSearchTermsFromURL(url, &search_terms);
@@ -444,19 +427,6 @@ GURL GetInstantURL(Profile* profile, int start_margin) {
     return GURL();
 
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kInstantURL)) {
-    GURL instant_url(cl->GetSwitchValueASCII(switches::kInstantURL));
-    if (extended_api_enabled) {
-      // Extended mode won't work if the search terms replacement key is absent.
-      GURL coerced_url = CoerceCommandLineURLToTemplateURL(
-          instant_url, template_url->instant_url_ref(), start_margin);
-      if (!template_url->HasSearchTermsReplacementKey(coerced_url))
-        return GURL();
-    }
-    return instant_url;
-  }
-
   GURL instant_url =
       TemplateURLRefToGURL(template_url->instant_url_ref(), start_margin);
   if (extended_api_enabled && !instant_url.SchemeIsSecure()) {
@@ -675,27 +645,6 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     bool default_value,
                                     const FieldTrialFlags& flags) {
   return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
-}
-
-// Coerces the commandline Instant URL to look like a template URL, so that we
-// can extract search terms from it.
-GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
-                                       const TemplateURLRef& ref,
-                                       int start_margin) {
-  GURL search_url = TemplateURLRefToGURL(ref, start_margin);
-
-  // NOTE(samarth): GURL returns temporaries which we must save because
-  // GURL::Replacements expects the replacements to live until
-  // ReplaceComponents is called.
-  const std::string search_scheme = chrome::kHttpsScheme;
-  const std::string search_host = search_url.host();
-  const std::string search_port = search_url.port();
-
-  GURL::Replacements replacements;
-  replacements.SetSchemeStr(search_scheme);
-  replacements.SetHostStr(search_host);
-  replacements.SetPortStr(search_port);
-  return instant_url.ReplaceComponents(replacements);
 }
 
 bool DefaultSearchProviderSupportsInstant(Profile* profile) {

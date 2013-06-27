@@ -828,8 +828,8 @@ const char kHostResolverRetryAttempts[]     = "host-resolver-retry-attempts";
 
 // Causes net::URLFetchers to ignore requests for SSL client certificates,
 // causing them to attempt an unauthenticated SSL/TLS session. This is intended
-// for use when testing various service URLs (eg: kPromoServerURL, kInstantURL,
-// kSbURLPrefix, kSyncServiceURL, etc)
+// for use when testing various service URLs (eg: kPromoServerURL, kSbURLPrefix,
+// kSyncServiceURL, etc)
 const char kIgnoreUrlFetcherCertRequests[]  =
     "ignore-urlfetcher-cert-requests";
 
@@ -842,10 +842,6 @@ const char kInstallFromWebstore[]           = "install-from-webstore";
 
 // Marks a renderer as an Instant process.
 const char kInstantProcess[]                = "instant-process";
-
-// URL to use for instant. If specified this overrides the url from the
-// TemplateURL.
-const char kInstantURL[]                    = "instant-url";
 
 // Used for testing - keeps browser alive after last browser window closes.
 const char kKeepAliveForTest[]              = "keep-alive-for-test";
