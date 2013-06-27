@@ -64,8 +64,7 @@ char GetFieldTrialGroupFromFile(const std::string& name_of_experiment,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // The dice for this experiment have been thrown at boot.  The selected group
   // number is stored in a file.
-  const base::FilePath kPathToGroupFile(
-      FILE_PATH_LITERAL(path_to_group_file.c_str()));
+  const base::FilePath kPathToGroupFile(path_to_group_file);
   std::string file_content;
 
   // If the file does not exist, the experiment has not started.
@@ -165,32 +164,39 @@ void SetupProgressiveScanFieldTrial() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   const char name_of_experiment[] = "ProgressiveScan";
   const char path_to_group_file[] = "/home/chronos/.progressive_scan_variation";
-  char group_char = GetFieldTrialGroupFromFile(name_of_experiment,
-                                               path_to_group_file);
-  if (!IsGroupInFieldTrial(name_of_experiment, path_to_group_file, group_char,
-                           "c1234")) {
-    return;
-  }
-
-  const base::FieldTrial::Probability kDivisor = 1;  // on/off only.
+  const base::FieldTrial::Probability kDivisor = 1000;
   scoped_refptr<base::FieldTrial> trial =
       base::FieldTrialList::FactoryGetFieldTrial(name_of_experiment,
                                                  kDivisor,
-                                                 "default",
+                                                 "Default",
                                                  2013, 12, 31, NULL);
-  // Assign probability of 1 to the group Chrome OS has picked.  Assign 0 to
-  // all other choices.
-  trial->AppendGroup("FullScan", group_char == 'c' ? kDivisor : 0);
-  trial->AppendGroup("33Percent_4MinMax", group_char == '1' ? kDivisor : 0);
-  trial->AppendGroup("50Percent_4MinMax", group_char == '2' ? kDivisor : 0);
-  trial->AppendGroup("50Percent_8MinMax", group_char == '3' ? kDivisor : 0);
-  trial->AppendGroup("100Percent_8MinMax", group_char == '4' ? kDivisor : 0);
+  // Announce the groups with 0 percentage; the actual percentages come from
+  // the server configuration.
+  std::map<int, std::string> group_to_char;
+  group_to_char[trial->AppendGroup("FullScan", 0)] = "c";
+  group_to_char[trial->AppendGroup("33Percent_4MinMax", 0)] = "1";
+  group_to_char[trial->AppendGroup("50Percent_4MinMax", 0)] = "2";
+  group_to_char[trial->AppendGroup("50Percent_8MinMax", 0)] = "3";
+  group_to_char[trial->AppendGroup("100Percent_8MinMax", 0)] = "4";
 
   // Announce the experiment to any listeners (especially important is the UMA
   // software, which will append the group names to UMA statistics).
-  trial->group();
-  LOG(INFO) << "Configured in group '" << trial->group_name() << "' for "
-            << name_of_experiment << " field trial";
+  const int group_num = trial->group();
+  std::string group_char = "x";
+  if (ContainsKey(group_to_char, group_num))
+    group_char = group_to_char[group_num];
+
+  // Write the group to the file to be read by ChromeOS.
+  const base::FilePath kPathToGroupFile(path_to_group_file);
+
+  if (file_util::WriteFile(kPathToGroupFile, group_char.c_str(),
+                           group_char.length())) {
+    LOG(INFO) << "Configured in group '" << trial->group_name()
+              << "' ('" << group_char << "') for "
+              << name_of_experiment << " field trial";
+  } else {
+    LOG(ERROR) << "Couldn't write to " << path_to_group_file;
+  }
 }
 
 }  // namespace
