@@ -1719,28 +1719,6 @@ crbug.com/244225 inspector-protocol/dom/setFileInputFiles.html [ Skip ]
 crbug.com/244276 fast/images/gif-loop-count.html [ ImageOnlyFailure Pass ]
 crbug.com/244276 crbug.com/245189 virtual/deferred/fast/images/gif-loop-count.html [ ImageOnlyFailure Pass ]
 
-# Needs rebaseline
-crbug.com/116481 fast/images/imagemap-case.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 fast/images/imagemap-circle-focus-ring.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 fast/images/imagemap-focus-ring-outline-color-explicitly-inherited-from-map.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 fast/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 fast/images/imagemap-focus-ring-outline-color.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 fast/images/imagemap-focus-ring.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 fast/images/imagemap-polygon-focus-ring.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 fast/images/imagemap-overflowing-polygon-focus-ring.html [ ImageOnlyFailure Pass Missing ]
-crbug.com/116481 fast/images/imagemap-overflowing-circle-focus-ring.html [ ImageOnlyFailure Pass Missing ]
-crbug.com/116481 virtual/deferred/fast/images/imagemap-case.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 virtual/deferred/fast/images/imagemap-circle-focus-ring.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 virtual/deferred/fast/images/imagemap-focus-ring-outline-color-explicitly-inherited-from-map.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 virtual/deferred/fast/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 virtual/deferred/fast/images/imagemap-focus-ring-outline-color.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 virtual/deferred/fast/images/imagemap-focus-ring.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 virtual/deferred/fast/images/imagemap-polygon-focus-ring.html [ ImageOnlyFailure Pass ]
-crbug.com/116481 virtual/deferred/fast/images/imagemap-overflowing-polygon-focus-ring.html [ ImageOnlyFailure Pass Missing ]
-crbug.com/116481 virtual/deferred/fast/images/imagemap-overflowing-circle-focus-ring.html [ ImageOnlyFailure Pass Missing ]
-
 # Wrong fixed-position layout
 crbug.com/243967 compositing/gestures/gesture-tapHighlight-simple-div-boxshadow-fixed-nested2.html [ ImageOnlyFailure ]
 
