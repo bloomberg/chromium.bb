@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -35,6 +36,7 @@ class IndexedDBKeyPath;
 class IndexedDBKeyRange;
 class RendererWebIDBCursorImpl;
 class RendererWebIDBDatabaseImpl;
+class ThreadSafeSender;
 
 CONTENT_EXPORT extern const size_t kMaxIDBValueSizeInBytes;
 
@@ -47,9 +49,13 @@ class CONTENT_EXPORT IndexedDBDispatcher
   // failing a NOTREACHED in ThreadSpecificInstance in tests that instantiate
   // two copies of RenderThreadImpl on the same thread.  Everyone else probably
   // wants to use ThreadSpecificInstance().
-  IndexedDBDispatcher();
+  explicit IndexedDBDispatcher(ThreadSafeSender* thread_safe_sender);
   virtual ~IndexedDBDispatcher();
-  static IndexedDBDispatcher* ThreadSpecificInstance();
+
+  // |thread_safe_sender| needs to be passed in because if the call leads to
+  // construction it will be needed.
+  static IndexedDBDispatcher* ThreadSpecificInstance(
+      ThreadSafeSender* thread_safe_sender);
 
   // webkit_glue::WorkerTaskRunner::Observer implementation.
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
@@ -58,7 +64,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
       const IndexedDBDatabaseMetadata& idb_metadata);
 
   void OnMessageReceived(const IPC::Message& msg);
-  static bool Send(IPC::Message* msg);
+  bool Send(IPC::Message* msg);
 
   void RequestIDBFactoryGetDatabaseNames(
       WebKit::WebIDBCallbacks* callbacks,
@@ -222,6 +228,8 @@ class CONTENT_EXPORT IndexedDBDispatcher
 
   // Reset cursor prefetch caches for all cursors except exception_cursor_id.
   void ResetCursorPrefetchCaches(int32 ipc_exception_cursor_id = -1);
+
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be
   // destroyed and used on the same thread it was created on.

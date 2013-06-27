@@ -205,7 +205,7 @@ long long WorkerWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
 
 WebKit::WebIDBFactory* WorkerWebKitPlatformSupportImpl::idbFactory() {
   if (!web_idb_factory_)
-    web_idb_factory_.reset(new RendererWebIDBFactoryImpl());
+    web_idb_factory_.reset(new RendererWebIDBFactoryImpl(thread_safe_sender_));
   return web_idb_factory_.get();
 }
 

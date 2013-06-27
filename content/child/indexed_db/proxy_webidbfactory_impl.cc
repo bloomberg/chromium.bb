@@ -4,8 +4,9 @@
 
 #include "content/child/indexed_db/proxy_webidbfactory_impl.h"
 
-#include "content/child/child_thread.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
+#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 using WebKit::WebIDBCallbacks;
@@ -15,7 +16,9 @@ using WebKit::WebString;
 
 namespace content {
 
-RendererWebIDBFactoryImpl::RendererWebIDBFactoryImpl() {
+RendererWebIDBFactoryImpl::RendererWebIDBFactoryImpl(
+    ThreadSafeSender* thread_safe_sender)
+    : thread_safe_sender_(thread_safe_sender) {
 }
 
 RendererWebIDBFactoryImpl::~RendererWebIDBFactoryImpl() {
@@ -26,7 +29,7 @@ void RendererWebIDBFactoryImpl::getDatabaseNames(
     const WebString& database_identifier,
     const WebString& data_dir_unused) {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
   dispatcher->RequestIDBFactoryGetDatabaseNames(
       callbacks, database_identifier.utf8());
 }
@@ -42,7 +45,7 @@ void RendererWebIDBFactoryImpl::open(
   // Don't send the data_dir. We know what we want on the Browser side of
   // things.
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
   dispatcher->RequestIDBFactoryOpen(
       name, version, transaction_id, callbacks, database_callbacks,
       database_identifier.utf8());
@@ -56,7 +59,7 @@ void RendererWebIDBFactoryImpl::deleteDatabase(
   // Don't send the data_dir. We know what we want on the Browser side of
   // things.
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
   dispatcher->RequestIDBFactoryDeleteDatabase(
       name, callbacks, database_identifier.utf8());
 }

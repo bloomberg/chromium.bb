@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -19,11 +20,13 @@
 #include "third_party/WebKit/public/platform/WebIDBKey.h"
 
 namespace content {
+class ThreadSafeSender;
 
 class CONTENT_EXPORT RendererWebIDBCursorImpl
     : NON_EXPORTED_BASE(public WebKit::WebIDBCursor) {
  public:
-  explicit RendererWebIDBCursorImpl(int32 ipc_cursor_id);
+  RendererWebIDBCursorImpl(int32 ipc_cursor_id,
+                           ThreadSafeSender* thread_safe_sender);
   virtual ~RendererWebIDBCursorImpl();
 
   virtual void advance(unsigned long count, WebKit::WebIDBCallbacks* callback);
@@ -59,6 +62,8 @@ class CONTENT_EXPORT RendererWebIDBCursorImpl
 
   // Number of items to request in next prefetch.
   int prefetch_amount_;
+
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   enum { kInvalidCursorId = -1 };
   enum { kPrefetchContinueThreshold = 2 };

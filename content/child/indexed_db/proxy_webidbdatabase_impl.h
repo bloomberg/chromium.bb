@@ -6,6 +6,7 @@
 #define CONTENT_CHILD_INDEXED_DB_PROXY_WEBIDBDATABASE_IMPL_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 
 namespace WebKit {
@@ -15,11 +16,13 @@ class WebString;
 }
 
 namespace content {
+class ThreadSafeSender;
 
 class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
  public:
-  explicit RendererWebIDBDatabaseImpl(int32 ipc_database_id,
-                                      int32 ipc_database_callbacks_id);
+  RendererWebIDBDatabaseImpl(int32 ipc_database_id,
+                             int32 ipc_database_callbacks_id,
+                             ThreadSafeSender* thread_safe_sender);
   virtual ~RendererWebIDBDatabaseImpl();
 
   // WebKit::WebIDBDatabase
@@ -96,6 +99,7 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
  private:
   int32 ipc_database_id_;
   int32 ipc_database_callbacks_id_;
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 };
 
 }  // namespace content

@@ -8,9 +8,9 @@
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_local.h"
-#include "content/child/child_thread.h"
 #include "content/child/indexed_db/proxy_webidbcursor_impl.h"
 #include "content/child/indexed_db/proxy_webidbdatabase_impl.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
@@ -47,7 +47,8 @@ int32 CurrentWorkerId() {
 
 const size_t kMaxIDBValueSizeInBytes = 64 * 1024 * 1024;
 
-IndexedDBDispatcher::IndexedDBDispatcher() {
+IndexedDBDispatcher::IndexedDBDispatcher(ThreadSafeSender* thread_safe_sender)
+    : thread_safe_sender_(thread_safe_sender) {
   g_idb_dispatcher_tls.Pointer()->Set(this);
 }
 
@@ -63,7 +64,8 @@ IndexedDBDispatcher::~IndexedDBDispatcher() {
   g_idb_dispatcher_tls.Pointer()->Set(kHasBeenDeleted);
 }
 
-IndexedDBDispatcher* IndexedDBDispatcher::ThreadSpecificInstance() {
+IndexedDBDispatcher* IndexedDBDispatcher::ThreadSpecificInstance(
+    ThreadSafeSender* thread_safe_sender) {
   if (g_idb_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted) {
     NOTREACHED() << "Re-instantiating TLS IndexedDBDispatcher.";
     g_idb_dispatcher_tls.Pointer()->Set(NULL);
@@ -71,7 +73,7 @@ IndexedDBDispatcher* IndexedDBDispatcher::ThreadSpecificInstance() {
   if (g_idb_dispatcher_tls.Pointer()->Get())
     return g_idb_dispatcher_tls.Pointer()->Get();
 
-  IndexedDBDispatcher* dispatcher = new IndexedDBDispatcher;
+  IndexedDBDispatcher* dispatcher = new IndexedDBDispatcher(thread_safe_sender);
   if (WorkerTaskRunner::Instance()->CurrentWorkerId())
     webkit_glue::WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
   return dispatcher;
@@ -161,17 +163,7 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
 }
 
 bool IndexedDBDispatcher::Send(IPC::Message* msg) {
-  if (!ChildThread::current()) {
-    // Unexpected - this may be happening during shutdown.
-    NOTREACHED();
-    return false;
-  }
-  if (CurrentWorkerId()) {
-    scoped_refptr<IPC::SyncMessageFilter> filter(
-        ChildThread::current()->sync_message_filter());
-    return filter->Send(msg);
-  }
-  return ChildThread::current()->Send(msg);
+  return thread_safe_sender_->Send(msg);
 }
 
 void IndexedDBDispatcher::RequestIDBCursorAdvance(
@@ -468,7 +460,7 @@ void IndexedDBDispatcher::OnSuccessIDBDatabase(
   // If an upgrade was performed, count will be non-zero.
   if (!databases_.count(ipc_object_id))
     databases_[ipc_object_id] = new RendererWebIDBDatabaseImpl(
-        ipc_object_id, ipc_database_callbacks_id);
+        ipc_object_id, ipc_database_callbacks_id, thread_safe_sender_);
   DCHECK_EQ(databases_.count(ipc_object_id), 1u);
   callbacks->onSuccess(databases_[ipc_object_id], metadata);
   pending_callbacks_.Remove(ipc_callbacks_id);
@@ -565,7 +557,7 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(
     return;
 
   RendererWebIDBCursorImpl* cursor =
-      new RendererWebIDBCursorImpl(ipc_object_id);
+      new RendererWebIDBCursorImpl(ipc_object_id, thread_safe_sender_);
   cursors_[ipc_object_id] = cursor;
   callbacks->onSuccess(cursor, key, primary_key, web_value);
 
@@ -635,7 +627,7 @@ void IndexedDBDispatcher::OnUpgradeNeeded(
   WebIDBMetadata metadata(ConvertMetadata(p.idb_metadata));
   DCHECK(!databases_.count(p.ipc_database_id));
   databases_[p.ipc_database_id] = new RendererWebIDBDatabaseImpl(
-      p.ipc_database_id, p.ipc_database_callbacks_id);
+      p.ipc_database_id, p.ipc_database_callbacks_id, thread_safe_sender_);
   callbacks->onUpgradeNeeded(
       p.old_version,
       databases_[p.ipc_database_id],

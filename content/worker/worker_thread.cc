@@ -47,7 +47,7 @@ WorkerThread::WorkerThread() {
   channel()->AddFilter(db_message_filter_.get());
 
   indexed_db_message_filter_ = new IndexedDBMessageFilter(
-      sync_message_filter());
+      thread_safe_sender());
   channel()->AddFilter(indexed_db_message_filter_.get());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();

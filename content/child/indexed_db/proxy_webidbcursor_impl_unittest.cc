@@ -6,7 +6,9 @@
 #include "base/values.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/proxy_webidbcursor_impl.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/common/indexed_db/indexed_db_key.h"
+#include "ipc/ipc_sync_message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
@@ -23,8 +25,9 @@ namespace {
 
 class MockDispatcher : public IndexedDBDispatcher {
  public:
-  MockDispatcher()
-      : prefetch_calls_(0),
+  MockDispatcher(ThreadSafeSender* thread_safe_sender)
+      : IndexedDBDispatcher(thread_safe_sender),
+        prefetch_calls_(0),
         last_prefetch_count_(0),
         continue_calls_(0),
         destroyed_cursor_id_(0) {}
@@ -84,10 +87,18 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
   WebIDBKey null_key;
   null_key.assignNull();
 
-  MockDispatcher dispatcher;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy(
+      base::MessageLoopProxy::current());
+  scoped_refptr<IPC::SyncMessageFilter> sync_message_filter(
+      new IPC::SyncMessageFilter(NULL));
+  scoped_refptr<ThreadSafeSender> thread_safe_sender(new ThreadSafeSender(
+      message_loop_proxy, sync_message_filter));
+
+  MockDispatcher dispatcher(thread_safe_sender);
 
   {
-    RendererWebIDBCursorImpl cursor(RendererWebIDBCursorImpl::kInvalidCursorId);
+    RendererWebIDBCursorImpl cursor(
+        RendererWebIDBCursorImpl::kInvalidCursorId, thread_safe_sender);
 
     // Call continue() until prefetching should kick in.
     int continue_calls = 0;

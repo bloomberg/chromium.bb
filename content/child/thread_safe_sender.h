@@ -5,7 +5,9 @@
 #ifndef CONTENT_CHILD_THREAD_SAFE_SENDER_H_
 #define CONTENT_CHILD_THREAD_SAFE_SENDER_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_sender.h"
 
 namespace base {
@@ -20,7 +22,7 @@ namespace content {
 class ChildThread;
 
 // The class of Sender returned by ChildThread::thread_safe_sender().
-class ThreadSafeSender
+class CONTENT_EXPORT ThreadSafeSender
     : public IPC::Sender,
       public base::RefCountedThreadSafe<ThreadSafeSender> {
  public:
@@ -29,6 +31,8 @@ class ThreadSafeSender
  private:
   friend class ChildThread;  // for construction
   friend class base::RefCountedThreadSafe<ThreadSafeSender>;
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, ValueSizeTest);
+  FRIEND_TEST_ALL_PREFIXES(RendererWebIDBCursorImplTest, PrefetchTest);
 
   ThreadSafeSender(base::MessageLoopProxy* main_loop,
                    IPC::SyncMessageFilter* sync_filter);

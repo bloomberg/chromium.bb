@@ -350,7 +350,8 @@ void RenderThreadImpl::Init() {
   appcache_dispatcher_.reset(
       new AppCacheDispatcher(Get(), new appcache::AppCacheFrontendImpl()));
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
-  main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
+  main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher(
+      thread_safe_sender()));
 
   media_stream_center_ = NULL;
 
@@ -378,7 +379,7 @@ void RenderThreadImpl::Init() {
   midi_message_filter_ = new MIDIMessageFilter(GetIOMessageLoopProxy());
   AddFilter(midi_message_filter_.get());
 
-  AddFilter(new IndexedDBMessageFilter(sync_message_filter()));
+  AddFilter(new IndexedDBMessageFilter(thread_safe_sender()));
 
   GetContentClient()->renderer()->RenderThreadStarted();
 
