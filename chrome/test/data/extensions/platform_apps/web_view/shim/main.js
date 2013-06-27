@@ -502,9 +502,7 @@ embedder.test.testList = {
   'testSize': testSize,
   'testAPIMethodExistence': testAPIMethodExistence,
   'testEventName': testEventName,
-  // WebViewTest.Shim_TestDestroyOnEventListener is flaky, so disable it.
-  // http://crbug.com/255106
-  //  'testDestroyOnEventListener': testDestroyOnEventListener,
+  'testDestroyOnEventListener': testDestroyOnEventListener,
   'testCannotMutateEventName': testCannotMutateEventName,
   'testPartitionRaisesException': testPartitionRaisesException,
   'testExecuteScriptFail': testExecuteScriptFail,
