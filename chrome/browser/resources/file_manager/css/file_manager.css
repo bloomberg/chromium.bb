@@ -902,7 +902,7 @@ body[type='full-page'] .detail-name .detail-icon {
 }
 
 .img-container > img:not(.cached):not(.drag-thumbnail) {
-  -webkit-animation: fadeIn 500ms ease-in;
+  -webkit-animation: fadeIn 250ms linear;
 }
 
 .thumbnail-bottom {

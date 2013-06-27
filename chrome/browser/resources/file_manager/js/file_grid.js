@@ -144,8 +144,10 @@ FileGrid.decorateThumbnailBox = function(
         new ThumbnailLoader(imageUrl,
                             ThumbnailLoader.LoaderType.IMAGE,
                             metadata,
-                            undefined,
-                            ThumbnailLoader.UseEmbedded.NO_EMBEDDED).
+                            undefined,  // opt_mediaType
+                            FileType.isOnDrive(imageUrl) ?
+                                ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
+                                ThumbnailLoader.UseEmbedded.NO_EMBEDDED).
             load(box,
                 fillMode,
                 ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
