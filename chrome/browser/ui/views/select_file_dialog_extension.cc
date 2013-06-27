@@ -37,11 +37,8 @@ using content::BrowserThread;
 
 namespace {
 
-const int kFileManagerWidth = 954;  // pixels
+const int kFileManagerWidth = 972;  // pixels
 const int kFileManagerHeight = 640;  // pixels
-
-const int kFileManagerMinimumWidth = kFileManagerWidth * 2 / 3;  // pixels
-const int kFileManagerMinimumHeight = kFileManagerHeight * 2 / 3;  // pixels
 
 // Holds references to file manager dialogs that have callbacks pending
 // to their listeners.
@@ -354,8 +351,8 @@ void SelectFileDialogExtension::SelectFileImpl(
   ExtensionDialog* dialog = ExtensionDialog::Show(file_browser_url,
       base_window, profile_, web_contents,
       kFileManagerWidth, kFileManagerHeight,
-      kFileManagerMinimumWidth,
-      kFileManagerMinimumHeight,
+      kFileManagerWidth,
+      kFileManagerHeight,
 #if defined(USE_AURA)
       file_manager_util::GetTitleFromType(type),
 #else
