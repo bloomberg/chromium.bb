@@ -16,15 +16,13 @@
 
 // Note: this file is used by the zygote and nacl_helper.
 
+#if !defined(HAVE_XSTAT) && defined(LIBC_GLIBC)
+#define HAVE_XSTAT 1
+#endif
+
 namespace sandbox {
 
 static bool g_override_urandom = false;
-
-void InitLibcUrandomOverrides() {
-  // Make sure /dev/urandom is open.
-  base::GetUrandomFD();
-  g_override_urandom = true;
-}
 
 // TODO(sergeyu): Currently this code doesn't work properly under ASAN
 // - it crashes content_unittests. Make sure it works properly and
@@ -34,16 +32,28 @@ void InitLibcUrandomOverrides() {
 static const char kUrandomDevPath[] = "/dev/urandom";
 
 typedef FILE* (*FopenFunction)(const char* path, const char* mode);
+
+static pthread_once_t g_libc_file_io_funcs_guard = PTHREAD_ONCE_INIT;
+static FopenFunction g_libc_fopen = NULL;
+static FopenFunction g_libc_fopen64 = NULL;
+
+#if HAVE_XSTAT
 typedef int (*XstatFunction)(int version, const char *path, struct stat *buf);
 typedef int (*Xstat64Function)(int version, const char *path,
                                struct stat64 *buf);
 
-static pthread_once_t g_libc_file_io_funcs_guard = PTHREAD_ONCE_INIT;
-static FopenFunction g_libc_fopen;
-static FopenFunction g_libc_fopen64;
-static XstatFunction g_libc_xstat;
-static Xstat64Function g_libc_xstat64;
+static XstatFunction g_libc_xstat = NULL;
+static Xstat64Function g_libc_xstat64 = NULL;
+#else
+typedef int (*StatFunction)(const char *path, struct stat *buf);
+typedef int (*Stat64Function)(const char *path, struct stat64 *buf);
 
+static StatFunction g_libc_stat = NULL;
+static Stat64Function g_libc_stat64 = NULL;
+#endif  // HAVE_XSTAT
+
+// Find the libc's real fopen* and *stat* functions. This should only be
+// called once, and should be guarded by g_libc_file_io_funcs_guard.
 static void InitLibcFileIOFunctions() {
   g_libc_fopen = reinterpret_cast<FopenFunction>(
       dlsym(RTLD_NEXT, "fopen"));
@@ -59,9 +69,7 @@ static void InitLibcFileIOFunctions() {
     g_libc_fopen64 = g_libc_fopen;
   }
 
-#if defined(LIBC_GLIBC)
-  // TODO(sergeyu): This works only on systems with glibc. Fix it to
-  // work properly on other systems if necessary.
+#if HAVE_XSTAT
   g_libc_xstat = reinterpret_cast<XstatFunction>(
       dlsym(RTLD_NEXT, "__xstat"));
   g_libc_xstat64 = reinterpret_cast<Xstat64Function>(
@@ -71,8 +79,30 @@ static void InitLibcFileIOFunctions() {
     LOG(FATAL) << "Failed to get __xstat() from libc.";
   }
   if (!g_libc_xstat64) {
-    LOG(WARNING) << "Failed to get __xstat64() from libc.";
+    LOG(FATAL) << "Failed to get __xstat64() from libc.";
   }
+#else
+  g_libc_stat = reinterpret_cast<StatFunction>(
+      dlsym(RTLD_NEXT, "stat"));
+  g_libc_stat64 = reinterpret_cast<Stat64Function>(
+      dlsym(RTLD_NEXT, "stat64"));
+
+  if (!g_libc_stat) {
+    LOG(FATAL) << "Failed to get stat() from libc.";
+  }
+  if (!g_libc_stat64) {
+    LOG(FATAL) << "Failed to get stat64() from libc.";
+  }
+#endif  // HAVE_XSTAT
+}
+
+void InitLibcUrandomOverrides() {
+  // Make sure /dev/urandom is open.
+  base::GetUrandomFD();
+  g_override_urandom = true;
+
+  CHECK_EQ(0, pthread_once(&g_libc_file_io_funcs_guard,
+                           InitLibcFileIOFunctions));
 }
 
 // fopen() and fopen64() are intercepted here so that NSS can open
@@ -120,8 +150,11 @@ FILE* fopen64(const char* path, const char* mode) {
   }
 }
 
-// stat() is subject to the same problem as fopen(), so we have to use
-// the same trick to override it.
+// The stat() family of functions are subject to the same problem as
+// fopen(), so we have to use the same trick to override them.
+
+#if HAVE_XSTAT
+
 __attribute__ ((__visibility__("default")))
 int xstat_override(int version,
                    const char *path,
@@ -152,11 +185,45 @@ int xstat64_override(int version, const char *path, struct stat64 *buf) {
   } else {
     CHECK_EQ(0, pthread_once(&g_libc_file_io_funcs_guard,
                              InitLibcFileIOFunctions));
-    CHECK(g_libc_xstat64);
     return g_libc_xstat64(version, path, buf);
   }
 }
-#endif  // defined(LIBC_GLIBC)
+
+#else
+
+__attribute__ ((__visibility__("default")))
+int stat_override(const char *path,
+                  struct stat *buf)  __asm__ ("stat");
+
+__attribute__ ((__visibility__("default")))
+int stat_override(const char *path, struct stat *buf) {
+  if (g_override_urandom && strcmp(path, kUrandomDevPath) == 0) {
+    int result = fstat(base::GetUrandomFD(), buf);
+    return result;
+  } else {
+    CHECK_EQ(0, pthread_once(&g_libc_file_io_funcs_guard,
+                             InitLibcFileIOFunctions));
+    return g_libc_stat(path, buf);
+  }
+}
+
+__attribute__ ((__visibility__("default")))
+int stat64_override(const char *path,
+                    struct stat64 *buf)  __asm__ ("stat64");
+
+__attribute__ ((__visibility__("default")))
+int stat64_override(const char *path, struct stat64 *buf) {
+  if (g_override_urandom && strcmp(path, kUrandomDevPath) == 0) {
+    int result = fstat64(base::GetUrandomFD(), buf);
+    return result;
+  } else {
+    CHECK_EQ(0, pthread_once(&g_libc_file_io_funcs_guard,
+                             InitLibcFileIOFunctions));
+    return g_libc_stat64(path, buf);
+  }
+}
+
+#endif  // HAVE_XSTAT
 
 #endif  // !defined(ADDRESS_SANITIZER)
 
