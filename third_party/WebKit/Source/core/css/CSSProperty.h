@@ -1,7 +1,6 @@
 /*
  * (C) 1999-2003 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2004, 2005, 2006 Apple Computer, Inc.
- * Copyright (C) 2013 Intel Corporation. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -44,12 +43,12 @@ struct StylePropertyMetadata {
 
     CSSPropertyID shorthandID() const;
 
-    uint16_t m_propertyID : 10;
-    uint16_t m_isSetFromShorthand : 1;
-    uint16_t m_indexInShorthandsVector : 2; // If this property was set as part of an ambiguous shorthand, gives the index in the shorthands vector.
-    uint16_t m_important : 1;
-    uint16_t m_implicit : 1; // Whether or not the property was set implicitly as the result of a shorthand.
-    uint16_t m_inherited : 1;
+    unsigned m_propertyID : 10;
+    unsigned m_isSetFromShorthand : 1;
+    unsigned m_indexInShorthandsVector : 2; // If this property was set as part of an ambiguous shorthand, gives the index in the shorthands vector.
+    unsigned m_important : 1;
+    unsigned m_implicit : 1; // Whether or not the property was set implicitly as the result of a shorthand.
+    unsigned m_inherited : 1;
 };
 
 class CSSProperty {
