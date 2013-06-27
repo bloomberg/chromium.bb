@@ -230,6 +230,7 @@ struct WebPluginImpl::ClientInfo {
   linked_ptr<WebKit::WebURLLoader> loader;
   bool notify_redirects;
   bool is_plugin_src_load;
+  int64 data_offset;
 };
 
 bool WebPluginImpl::initialize(WebPluginContainer* container) {
@@ -926,8 +927,22 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
   bool request_is_seekable = true;
   if (client->IsMultiByteResponseExpected()) {
     if (response.httpStatusCode() == kHttpPartialResponseStatusCode) {
-      HandleHttpMultipartResponse(response, client);
-      return;
+      ClientInfo* client_info = GetClientInfoFromLoader(loader);
+      if (!client_info)
+        return;
+      if (HandleHttpMultipartResponse(response, client)) {
+        // Multiple ranges requested, data will be delivered by
+        // MultipartResponseDelegate.
+        client_info->data_offset = 0;
+        return;
+      }
+      int64 upper_bound = 0, instance_size = 0;
+      // Single range requested - go through original processing for
+      // non-multipart requests, but update data offset.
+      MultipartResponseDelegate::ReadContentRanges(response,
+                                                   &client_info->data_offset,
+                                                   &upper_bound,
+                                                   &instance_size);
     } else if (response.httpStatusCode() == kHttpResponseSuccessStatusCode) {
       // If the client issued a byte range request and the server responds with
       // HTTP 200 OK, it indicates that the server does not support byte range
@@ -1015,7 +1030,9 @@ void WebPluginImpl::didReceiveData(WebURLLoader* loader,
                                        encoded_data_length);
   } else {
     loader->setDefersLoading(true);
-    client->DidReceiveData(buffer, data_length, 0);
+    ClientInfo* client_info = GetClientInfoFromLoader(loader);
+    client->DidReceiveData(buffer, data_length, client_info->data_offset);
+    client_info->data_offset += data_length;
   }
 }
 
@@ -1197,6 +1214,7 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
   info.pending_failure_notification = false;
   info.notify_redirects = notify_redirects;
   info.is_plugin_src_load = is_plugin_src_load;
+  info.data_offset = 0;
 
   if (range_info) {
     info.request.addHTTPHeaderField(WebString::fromUTF8("Range"),
@@ -1282,13 +1300,12 @@ bool WebPluginImpl::IsOffTheRecord() {
   return false;
 }
 
-void WebPluginImpl::HandleHttpMultipartResponse(
+bool WebPluginImpl::HandleHttpMultipartResponse(
     const WebURLResponse& response, WebPluginResourceClient* client) {
   std::string multipart_boundary;
   if (!MultipartResponseDelegate::ReadMultipartBoundary(
           response, &multipart_boundary)) {
-    NOTREACHED();
-    return;
+    return false;
   }
 
   if (page_delegate_.get())
@@ -1302,6 +1319,7 @@ void WebPluginImpl::HandleHttpMultipartResponse(
                                     response,
                                     multipart_boundary);
   multi_part_response_map_[client] = multi_part_response_handler;
+  return true;
 }
 
 bool WebPluginImpl::ReinitializePluginForResponse(

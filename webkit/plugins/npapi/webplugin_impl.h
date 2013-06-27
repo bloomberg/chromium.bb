@@ -239,7 +239,9 @@ class WEBKIT_PLUGINS_EXPORT WebPluginImpl :
 
   // Handles HTTP multipart responses, i.e. responses received with a HTTP
   // status code of 206.
-  void HandleHttpMultipartResponse(const WebKit::WebURLResponse& response,
+  // Returns false if response is not multipart (may be if we requested
+  // single range).
+  bool HandleHttpMultipartResponse(const WebKit::WebURLResponse& response,
                                    WebPluginResourceClient* client);
 
   void HandleURLRequestInternal(const char* url,
