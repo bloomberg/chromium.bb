@@ -18,7 +18,7 @@ from pylib import constants
 from pylib.cmd_helper import GetCmdOutput
 
 
-def DeviceInfo(serial):
+def DeviceInfo(serial, options):
   """Gathers info on a device via various adb calls.
 
   Args:
@@ -75,7 +75,8 @@ def DeviceInfo(serial):
   errors = []
   if battery_level < 15:
     errors += ['Device critically low in battery. Turning off device.']
-  if not setup_wizard_disabled and device_build_type != 'user':
+  if (not setup_wizard_disabled and device_build_type != 'user' and
+      not options.no_provisioning_check):
     errors += ['Setup wizard not disabled. Was it provisioned correctly?']
   if device_product_name == 'mantaray' and ac_power != 'true':
     errors += ['Mantaray device not connected to AC power.']
@@ -185,6 +186,8 @@ def main():
                     help='Directory where the device path is stored',
                     default=os.path.join(os.path.dirname(__file__), '..',
                                          '..', 'out'))
+  parser.add_option('--no-provisioning-check',
+                    help='Will not check if devices are provisioned properly.')
 
   options, args = parser.parse_args()
   if args:
@@ -193,8 +196,8 @@ def main():
   types, builds, reports, errors = [], [], [], []
   fail_step_lst = []
   if devices:
-    types, builds, reports, errors, fail_step_lst = zip(*[DeviceInfo(dev)
-                                                          for dev in devices])
+    types, builds, reports, errors, fail_step_lst = (
+        zip(*[DeviceInfo(dev, options) for dev in devices]))
 
   err_msg = CheckForMissingDevices(options, devices) or []
 
