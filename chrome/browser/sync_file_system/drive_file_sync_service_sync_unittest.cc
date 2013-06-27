@@ -395,6 +395,13 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     return SYNC_STATUS_OK;
   }
 
+  // Verifies local and remote files/folders are consistent.
+  // This function checks:
+  //  - Each registered origin has corresponding remote folder.
+  //  - Each local file/folder has corresponding remote one.
+  //  - Each remote file/folder has corresponding local one.
+  // TODO(tzik): Handle conflict case. i.e. allow remote file has different
+  // file content if the corresponding local file conflicts to it.
   void VerifyConsistency() {
     std::string sync_root_folder_id = GetSyncRootFolderID();
     if (sync_root_folder_id.empty()) {
@@ -730,6 +737,28 @@ void DriveFileSyncServiceSyncTest::TestLocalFileDeletion() {
   VerifyConsistency();
 }
 
+void DriveFileSyncServiceSyncTest::TestRemoteFileDeletion() {
+  const GURL kOrigin("chrome-extension://example");
+  const base::FilePath kPath(FPL("file"));
+  const std::string kTitle(DriveFileSyncService::PathToTitle(kPath));
+
+  std::string sync_root_folder_id =
+      AddOrphanedRemoteFolder(drive::APIUtil::GetSyncRootDirectoryName());
+  std::string origin_root_folder_id =
+      AddRemoteFolder(sync_root_folder_id, kOrigin.host());
+  std::string remote_file_id =
+      AddRemoteFile(origin_root_folder_id, kTitle, "abcde");
+
+  RegisterOrigin(kOrigin);
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistencyForOrigin(kOrigin);
+
+  RemoveRemote(remote_file_id);
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+}
+
 TEST_F(DriveFileSyncServiceSyncTest, InitializationTest) {
   ASSERT_FALSE(IsDriveAPIDisabled());
   TestInitialization();
@@ -788,6 +817,16 @@ TEST_F(DriveFileSyncServiceSyncTest, LocalFileDeletionTest) {
 TEST_F(DriveFileSyncServiceSyncTest, LocalFileDeletionTest_WAPI) {
   ScopedDisableDriveAPI disable_drive_api;
   TestLocalFileDeletion();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, RemoteFileDeletionTest) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  TestRemoteFileDeletion();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, RemoteFileDeletionTest_WAPI) {
+  ScopedDisableDriveAPI disable_drive_api;
+  TestRemoteFileDeletion();
 }
 
 }  // namespace sync_file_system
