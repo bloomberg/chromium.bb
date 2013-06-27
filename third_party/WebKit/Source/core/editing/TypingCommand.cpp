@@ -160,7 +160,7 @@ void TypingCommand::insertText(Document* document, const String& text, Options o
     ASSERT(frame);
 
     if (!text.isEmpty())
-        document->frame()->editor()->updateMarkersForWordsAffectedByEditing(isSpaceOrNewline(text.characters()[0]));
+        document->frame()->editor()->updateMarkersForWordsAffectedByEditing(isSpaceOrNewline(text[0]));
     
     insertText(document, text, frame->selection()->selection(), options, composition);
 }

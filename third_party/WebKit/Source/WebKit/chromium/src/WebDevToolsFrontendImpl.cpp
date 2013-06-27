@@ -93,7 +93,8 @@ static v8::Local<v8::String> ToV8String(const String& s)
     if (s.isNull())
         return v8::Local<v8::String>();
 
-    return v8::String::New(reinterpret_cast<const uint16_t*>(s.characters()), s.length());
+    // FIXME: Call v8String from the Bindings layer.
+    return v8::String::New(reinterpret_cast<const uint16_t*>(s.bloatedCharacters()), s.length());
 }
 
 WebDevToolsFrontend* WebDevToolsFrontend::create(

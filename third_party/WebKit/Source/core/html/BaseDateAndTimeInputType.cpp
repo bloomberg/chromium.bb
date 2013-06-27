@@ -109,7 +109,7 @@ bool BaseDateAndTimeInputType::parseToDateComponents(const String& source, DateC
     DateComponents ignoredResult;
     if (!out)
         out = &ignoredResult;
-    return parseToDateComponentsInternal(source.characters(), source.length(), out);
+    return parseToDateComponentsInternal(source.bloatedCharacters(), source.length(), out);
 }
 
 String BaseDateAndTimeInputType::serialize(const Decimal& value) const

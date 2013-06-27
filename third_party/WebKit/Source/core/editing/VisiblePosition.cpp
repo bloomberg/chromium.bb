@@ -588,7 +588,7 @@ UChar32 VisiblePosition::characterAfter() const
         return 0;
 
     UChar32 ch;
-    const UChar* characters = textNode->data().characters();
+    const UChar* characters = textNode->data().bloatedCharacters();
     U16_NEXT(characters, offset, length, ch);
     return ch;
 }

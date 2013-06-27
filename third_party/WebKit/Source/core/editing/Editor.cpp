@@ -1497,7 +1497,7 @@ String Editor::misspelledWordAtCaretOrRange(Node* clickedNode) const
     int wordLength = word.length();
     int misspellingLocation = -1;
     int misspellingLength = 0;
-    textChecker()->checkSpellingOfString(word.characters(), wordLength, &misspellingLocation, &misspellingLength);
+    textChecker()->checkSpellingOfString(word.bloatedCharacters(), wordLength, &misspellingLocation, &misspellingLength);
 
     return misspellingLength == wordLength ? word : String();
 }

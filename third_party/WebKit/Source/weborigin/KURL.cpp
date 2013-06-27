@@ -605,7 +605,7 @@ String decodeURLEscapeSequences(const String& string, const WTF::TextEncoding& e
 String encodeWithURLEscapeSequences(const String& notEncodedString)
 {
     CString utf8 = UTF8Encoding().encode(
-        reinterpret_cast<const UChar*>(notEncodedString.characters()),
+        reinterpret_cast<const UChar*>(notEncodedString.bloatedCharacters()),
         notEncodedString.length(),
         WTF::URLEncodedEntitiesForUnencodables);
 

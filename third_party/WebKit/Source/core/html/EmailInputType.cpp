@@ -58,7 +58,7 @@ static String convertEmailAddressToASCII(const String& address)
 
     UErrorCode error = U_ZERO_ERROR;
     UChar domainNameBuffer[maximumDomainNameLength];
-    int32_t domainNameLength = uidna_IDNToASCII(address.characters() + atPosition + 1, address.length() - atPosition - 1, domainNameBuffer, WTF_ARRAY_LENGTH(domainNameBuffer), idnaConversionOption, 0, &error);
+    int32_t domainNameLength = uidna_IDNToASCII(address.bloatedCharacters() + atPosition + 1, address.length() - atPosition - 1, domainNameBuffer, WTF_ARRAY_LENGTH(domainNameBuffer), idnaConversionOption, 0, &error);
     if (error != U_ZERO_ERROR || domainNameLength <= 0)
         return address;
 

@@ -36,7 +36,7 @@ namespace WebCore {
 
 bool SVGFitToViewBox::parseViewBox(Document* doc, const String& s, FloatRect& viewBox)
 {
-    const UChar* c = s.characters();
+    const UChar* c = s.bloatedCharacters();
     const UChar* end = c + s.length();
     return parseViewBox(doc, c, end, viewBox, true);
 }

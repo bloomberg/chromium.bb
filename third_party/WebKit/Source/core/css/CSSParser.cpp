@@ -339,7 +339,7 @@ void CSSParser::setupParser(const char* prefix, unsigned prefixLength, const Str
     for (unsigned i = 0; i < m_parsedTextPrefixLength; i++)
         m_dataStart16[i] = prefix[i];
 
-    memcpy(m_dataStart16.get() + m_parsedTextPrefixLength, string.characters(), stringLength * sizeof(UChar));
+    memcpy(m_dataStart16.get() + m_parsedTextPrefixLength, string.bloatedCharacters(), stringLength * sizeof(UChar));
 
     unsigned start = m_parsedTextPrefixLength + stringLength;
     unsigned end = start + suffixLength;
@@ -7763,7 +7763,7 @@ PassRefPtr<CSSValue> CSSParser::parseImageSet(CSSParserValueList* valueList)
             const LChar* start = string.characters8();
             parseDouble(start, start + length, 'x', imageScaleFactor);
         } else {
-            const UChar* start = string.characters();
+            const UChar* start = string.characters16();
             parseDouble(start, start + length, 'x', imageScaleFactor);
         }
         if (imageScaleFactor <= 0)
@@ -11658,7 +11658,7 @@ CSSPropertyID cssPropertyID(const String& string)
     if (length > maxCSSPropertyNameLength)
         return CSSPropertyInvalid;
 
-    return string.is8Bit() ? cssPropertyID(string.characters8(), length) : cssPropertyID(string.characters(), length);
+    return string.is8Bit() ? cssPropertyID(string.characters8(), length) : cssPropertyID(string.characters16(), length);
 }
 
 CSSPropertyID cssPropertyID(const CSSParserString& string)
@@ -11744,7 +11744,7 @@ static bool isCSSTokenizerIdentifier(const String& string)
 
     if (string.is8Bit())
         return isCSSTokenizerIdentifier(string.characters8(), length);
-    return isCSSTokenizerIdentifier(string.characters(), length);
+    return isCSSTokenizerIdentifier(string.characters16(), length);
 }
 
 template <typename CharacterType>
@@ -11784,7 +11784,7 @@ static bool isCSSTokenizerURL(const String& string)
 
     if (string.is8Bit())
         return isCSSTokenizerURL(string.characters8(), length);
-    return isCSSTokenizerURL(string.characters(), length);
+    return isCSSTokenizerURL(string.characters16(), length);
 }
 
 

@@ -134,7 +134,7 @@ String decodeEscapeSequences(const String& string, const WTF::TextEncoding& enco
             continue;
         }
 
-        String decoded = EscapeSequence::decodeRun(string.characters() + encodedRunPosition, encodedRunEnd - encodedRunPosition, encoding);
+        String decoded = EscapeSequence::decodeRun(string.bloatedCharacters() + encodedRunPosition, encodedRunEnd - encodedRunPosition, encoding);
         if (decoded.isEmpty())
             continue;
 

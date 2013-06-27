@@ -494,7 +494,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
             // Treat bullets used in the text security mode as regular characters when looking for boundaries
             String iteratorString(it.characters(), it.length());
             iteratorString.fill('x');
-            string.prepend(iteratorString.characters(), iteratorString.length());
+            string.prepend(iteratorString.bloatedCharacters(), iteratorString.length());
         }
         next = searchFunction(string.data(), string.size(), string.size() - suffixLength, MayHaveMoreContext, needMoreContext);
         if (next)
@@ -568,7 +568,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
             // Treat bullets used in the text security mode as regular characters when looking for boundaries
             String iteratorString(it.characters(), it.length());
             iteratorString.fill('x');
-            string.append(iteratorString.characters(), iteratorString.length());
+            string.append(iteratorString.bloatedCharacters(), iteratorString.length());
         }
         next = searchFunction(string.data(), string.size(), prefixLength, MayHaveMoreContext, needMoreContext);
         if (next != string.size())

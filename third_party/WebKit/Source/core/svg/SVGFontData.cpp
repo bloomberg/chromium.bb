@@ -145,7 +145,7 @@ bool SVGFontData::applySVGGlyphSelection(WidthIterator& iterator, GlyphData& gly
     }
 
     if (mirror)
-        remainingTextInRun = createStringWithMirroredCharacters(remainingTextInRun.characters(), remainingTextInRun.length());
+        remainingTextInRun = createStringWithMirroredCharacters(remainingTextInRun.bloatedCharacters(), remainingTextInRun.length());
     if (!currentCharacter && arabicForms.isEmpty())
         arabicForms = charactersWithArabicForm(remainingTextInRun, mirror);
 
