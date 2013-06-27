@@ -317,7 +317,8 @@ bool HTMLFormControlElement::rendererIsFocusable() const
 
 bool HTMLFormControlElement::isKeyboardFocusable(KeyboardEvent*) const
 {
-    return isFocusable() && document()->frame();
+    // Skip tabIndex check in a parent class.
+    return isFocusable();
 }
 
 bool HTMLFormControlElement::shouldShowFocusRingOnMouseFocus() const
