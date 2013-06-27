@@ -87,8 +87,6 @@ class COMPOSITOR_EXPORT ImplicitAnimationObserver
   // Called when the first animation sequence has started.
   virtual void OnImplicitAnimationsScheduled() {}
 
-  // Do not "delete this" in your implementation.  Consider using something
-  // like MessageLoop::current()->DeleteSoon() instead.
   virtual void OnImplicitAnimationsCompleted() = 0;
 
  protected:

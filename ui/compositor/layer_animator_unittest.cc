@@ -92,10 +92,8 @@ class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
 // When notified that an animation has ended, stops all other animations.
 class DeletingLayerAnimationObserver : public LayerAnimationObserver {
  public:
-  DeletingLayerAnimationObserver(LayerAnimator* animator,
-                                 LayerAnimationSequence* sequence)
-    : animator_(animator),
-      sequence_(sequence) {
+  DeletingLayerAnimationObserver(LayerAnimator* animator)
+    : animator_(animator) {
   }
 
   virtual void OnLayerAnimationEnded(
@@ -105,6 +103,7 @@ class DeletingLayerAnimationObserver : public LayerAnimationObserver {
 
   virtual void OnLayerAnimationAborted(
       LayerAnimationSequence* sequence) OVERRIDE {
+    animator_->StopAnimating();
   }
 
   virtual void OnLayerAnimationScheduled(
@@ -1851,7 +1850,7 @@ TEST(LayerAnimatorTest, ObserverDetachedBeforeAnimationFinished) {
 // two running animations, and the first finishes and the resulting callback
 // causes the second to be deleted, we should not attempt to animate the second
 // animation.
-TEST(LayerAnimatorTest, ObserverDeletesAnimations) {
+TEST(LayerAnimatorTest, ObserverDeletesAnimationsOnEnd) {
   ScopedAnimationDurationScaleMode normal_duration_mode(
       ScopedAnimationDurationScaleMode::NORMAL_DURATION);
   scoped_refptr<LayerAnimator> animator(new TestLayerAnimator());
@@ -1873,11 +1872,8 @@ TEST(LayerAnimatorTest, ObserverDeletesAnimations) {
   base::TimeDelta halfway_delta = base::TimeDelta::FromSeconds(2);
   base::TimeDelta bounds_delta = base::TimeDelta::FromSeconds(3);
 
-  LayerAnimationSequence* to_delete = new LayerAnimationSequence(
-      LayerAnimationElement::CreateBoundsElement(target_bounds, bounds_delta));
-
   scoped_ptr<DeletingLayerAnimationObserver> observer(
-      new DeletingLayerAnimationObserver(animator.get(), to_delete));
+      new DeletingLayerAnimationObserver(animator.get()));
 
   animator->AddObserver(observer.get());
 
@@ -1886,10 +1882,66 @@ TEST(LayerAnimatorTest, ObserverDeletesAnimations) {
           LayerAnimationElement::CreateBrightnessElement(
               target_brightness, brightness_delta)));
 
-  animator->StartAnimation(to_delete);
+  animator->StartAnimation(new LayerAnimationSequence(
+      LayerAnimationElement::CreateBoundsElement(
+          target_bounds, bounds_delta)));
+  ASSERT_TRUE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
 
   base::TimeTicks start_time = animator->last_step_time();
   element->Step(start_time + halfway_delta);
+
+  // Completing the brightness animation should have stopped the bounds
+  // animation.
+  ASSERT_FALSE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
+
+  animator->RemoveObserver(observer.get());
+}
+
+// Similar to the ObserverDeletesAnimationsOnEnd test above except that it
+// tests the behavior when the OnLayerAnimationAborted() callback causes
+// all of the animator's other animations to be deleted.
+TEST(LayerAnimatorTest, ObserverDeletesAnimationsOnAbort) {
+  ScopedAnimationDurationScaleMode normal_duration_mode(
+      ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  scoped_refptr<LayerAnimator> animator(new TestLayerAnimator());
+  animator->set_disable_timer_for_test(true);
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  double start_brightness(0.0);
+  double target_brightness(1.0);
+  gfx::Rect start_bounds(0, 0, 50, 50);
+  gfx::Rect target_bounds(5, 5, 5, 5);
+  base::TimeDelta brightness_delta = base::TimeDelta::FromSeconds(1);
+  base::TimeDelta bounds_delta = base::TimeDelta::FromSeconds(2);
+
+  delegate.SetBrightnessFromAnimation(start_brightness);
+  delegate.SetBoundsFromAnimation(start_bounds);
+
+  scoped_ptr<DeletingLayerAnimationObserver> observer(
+      new DeletingLayerAnimationObserver(animator.get()));
+  animator->AddObserver(observer.get());
+
+  animator->StartAnimation(
+      new LayerAnimationSequence(
+          LayerAnimationElement::CreateBrightnessElement(
+              target_brightness, brightness_delta)));
+  animator->StartAnimation(new LayerAnimationSequence(
+      LayerAnimationElement::CreateBoundsElement(
+          target_bounds, bounds_delta)));
+  ASSERT_TRUE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
+
+  animator->set_preemption_strategy(
+      LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  animator->StartAnimation(
+      new LayerAnimationSequence(
+          LayerAnimationElement::CreateBrightnessElement(
+              target_brightness, brightness_delta)));
+
+  // Starting the second brightness animation should have aborted the initial
+  // brightness animation. |observer| should have stopped the bounds animation
+  // as a result.
+  ASSERT_FALSE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
 
   animator->RemoveObserver(observer.get());
 }

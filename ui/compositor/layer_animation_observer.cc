@@ -102,7 +102,12 @@ void ImplicitAnimationObserver::OnLayerAnimationEnded(
 void ImplicitAnimationObserver::OnLayerAnimationAborted(
     LayerAnimationSequence* sequence) {
   UpdatePropertyAnimationStatus(sequence, ANIMATION_STATUS_ABORTED);
+  bool destroyed = false;
+  destroyed_ = &destroyed;
   sequence->RemoveObserver(this);
+  if (destroyed)
+    return;
+  destroyed_ = NULL;
   DCHECK(attached_sequences().find(sequence) == attached_sequences().end());
   CheckCompleted();
 }
