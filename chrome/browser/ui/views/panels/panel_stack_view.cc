@@ -496,7 +496,9 @@ std::vector<HWND> PanelStackView::GetSnapshotWindowHandles() const {
 }
 
 void PanelStackView::RefreshLivePreviewThumbnail() {
-  if (!thumbnailer_.get())
+  // Don't refresh the thumbnail when the stack window is system minimized
+  // because the snapshot could not be retrieved.
+  if (!thumbnailer_.get() || IsMinimized())
     return;
   thumbnailer_->InvalidateSnapshot();
 }
