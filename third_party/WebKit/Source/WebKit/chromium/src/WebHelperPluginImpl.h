@@ -32,8 +32,8 @@
 #define WebHelperPluginImpl_h
 
 #include "WebHelperPlugin.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 class Page;

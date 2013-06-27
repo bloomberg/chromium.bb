@@ -28,8 +28,8 @@
 
 #include "public/platform/WebIDBDatabaseCallbacks.h"
 #include "public/platform/WebString.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore { class IDBDatabaseCallbacks; }
 

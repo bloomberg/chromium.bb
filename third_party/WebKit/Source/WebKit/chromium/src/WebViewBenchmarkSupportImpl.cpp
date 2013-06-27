@@ -36,9 +36,9 @@
 #include "core/platform/graphics/IntSize.h"
 
 #include "public/platform/WebCanvas.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
 
 using namespace WebCore;
 

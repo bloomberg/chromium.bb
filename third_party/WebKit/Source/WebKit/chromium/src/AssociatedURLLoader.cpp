@@ -49,8 +49,8 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "public/platform/WebURLRequest.h"
-#include <wtf/HashSet.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashSet.h"
+#include "wtf/text/WTFString.h"
 
 using namespace WebCore;
 using namespace WTF;

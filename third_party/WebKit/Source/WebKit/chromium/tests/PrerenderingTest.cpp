@@ -51,7 +51,7 @@
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebUnitTestSupport.h"
-#include <wtf/OwnPtr.h>
+#include "wtf/OwnPtr.h"
 
 using namespace WebKit;
 using WebKit::URLTestHelpers::toKURL;

@@ -29,7 +29,7 @@
 #include "WebDeviceOrientationClient.h"
 #include "core/dom/DeviceOrientationClient.h"
 #include "core/dom/DeviceOrientationData.h"
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 class DeviceOrientationController;

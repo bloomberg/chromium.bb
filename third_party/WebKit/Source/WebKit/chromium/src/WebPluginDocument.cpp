@@ -36,7 +36,7 @@
 
 #include "WebPluginContainerImpl.h"
 
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
 
 using namespace WebCore;
 

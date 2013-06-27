@@ -59,8 +59,8 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebString.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 class ChromiumDataObject;

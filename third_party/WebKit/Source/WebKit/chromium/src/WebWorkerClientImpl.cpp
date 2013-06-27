@@ -49,7 +49,7 @@
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerMessagingProxy.h"
-#include <wtf/Threading.h>
+#include "wtf/Threading.h"
 
 #include "FrameLoaderClientImpl.h"
 #include "WebFrameClient.h"

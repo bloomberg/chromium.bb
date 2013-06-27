@@ -27,8 +27,8 @@
 #define WebIDBCallbacksImpl_h
 
 #include "public/platform/WebIDBCallbacks.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

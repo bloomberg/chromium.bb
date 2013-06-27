@@ -32,7 +32,7 @@
 #include "WebScopedMicrotaskSuppression.h"
 
 #include "bindings/v8/V8RecursionScope.h"
-#include <wtf/OwnPtr.h>
+#include "wtf/OwnPtr.h"
 
 namespace WebKit {
 

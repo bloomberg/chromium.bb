@@ -39,7 +39,7 @@
 #include "modules/indexeddb/IDBKeyPath.h"
 
 #include <gtest/gtest.h>
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 using namespace WebCore;
 using namespace WebKit;

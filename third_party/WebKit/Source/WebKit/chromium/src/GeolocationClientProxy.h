@@ -28,7 +28,7 @@
 
 #include "WebGeolocationController.h"
 #include "modules/geolocation/GeolocationClient.h"
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 class GeolocationPosition;

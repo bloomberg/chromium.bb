@@ -34,8 +34,8 @@
 #include "PageWidgetDelegate.h"
 #include "WebPagePopup.h"
 #include "core/page/PagePopup.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 class Page;

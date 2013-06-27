@@ -34,8 +34,8 @@
 #include "WebIconLoadingCompletion.h"
 #include "core/platform/FileIconLoader.h"
 #include "public/platform/WebData.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 using WebKit::WebIconLoadingCompletion;
 using WebKit::WebData;

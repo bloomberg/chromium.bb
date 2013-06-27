@@ -32,8 +32,8 @@
 #include "core/platform/text/LocaleICU.h"
 
 #include <gtest/gtest.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/StringBuilder.h"
 
 using namespace WebCore;
 

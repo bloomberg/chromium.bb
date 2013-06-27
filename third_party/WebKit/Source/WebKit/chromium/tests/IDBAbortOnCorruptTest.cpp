@@ -25,7 +25,7 @@
 
 #include "config.h"
 #include <gtest/gtest.h>
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 #include "IDBFakeBackingStore.h"
 #include "core/dom/DOMStringList.h"
 #include "modules/indexeddb/IDBCallbacks.h"

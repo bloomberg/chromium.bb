@@ -35,9 +35,9 @@
 
 #include "WebSpeechInputListener.h"
 #include "core/page/SpeechInputClient.h"
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 class SecurityOrigin;

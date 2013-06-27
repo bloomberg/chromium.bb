@@ -29,7 +29,7 @@
 #include <gtest/gtest.h>
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/opentype/OpenTypeTypes.h"
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 using namespace WebCore;
 

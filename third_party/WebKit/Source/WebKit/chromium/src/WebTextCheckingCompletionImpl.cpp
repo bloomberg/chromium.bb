@@ -36,7 +36,7 @@
 #include "core/editing/SpellChecker.h"
 #include "core/platform/text/TextCheckerClient.h"
 #include "public/platform/WebVector.h"
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 using namespace WebCore;
 

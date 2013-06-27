@@ -29,7 +29,7 @@
 #include "WebColorChooserClient.h"
 #include "core/platform/ColorChooser.h"
 #include "core/platform/text/PlatformLocale.h"
-#include <wtf/OwnPtr.h>
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 class ColorChooserClient;

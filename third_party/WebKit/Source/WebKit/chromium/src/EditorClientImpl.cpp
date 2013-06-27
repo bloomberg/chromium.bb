@@ -60,7 +60,7 @@
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/rendering/RenderObject.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 using namespace WebCore;
 

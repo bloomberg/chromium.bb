@@ -34,7 +34,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 using namespace WebCore;
 using namespace WebKit;

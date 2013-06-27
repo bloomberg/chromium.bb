@@ -35,7 +35,7 @@
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutRect.h"
-#include <wtf/RefCounted.h>
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 class EventHandler;

@@ -27,9 +27,9 @@
 #define IDBDatabaseBackendProxy_h
 
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebKit {
 

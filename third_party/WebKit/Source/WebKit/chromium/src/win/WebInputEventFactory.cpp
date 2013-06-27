@@ -33,7 +33,7 @@
 
 #include "WebInputEvent.h"
 
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WebKit {
 

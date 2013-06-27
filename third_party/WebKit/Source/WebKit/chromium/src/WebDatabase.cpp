@@ -32,8 +32,8 @@
 #include "WebDatabase.h"
 
 #include "public/platform/WebString.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 #include "WebDatabaseObserver.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseManager.h"

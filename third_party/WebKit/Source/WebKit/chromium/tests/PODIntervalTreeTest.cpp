@@ -32,8 +32,8 @@
 #include <gtest/gtest.h>
 #include "TreeTestHelpers.h"
 #include "core/platform/Logging.h"
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/text/WTFString.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

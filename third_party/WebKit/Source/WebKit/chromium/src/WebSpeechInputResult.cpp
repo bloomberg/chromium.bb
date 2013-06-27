@@ -29,7 +29,7 @@
 #if ENABLE(INPUT_SPEECH)
 
 #include "core/page/SpeechInputResult.h"
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebKit {
 

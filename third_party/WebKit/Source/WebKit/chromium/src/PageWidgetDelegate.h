@@ -34,7 +34,7 @@
 #include "WebWidget.h"
 #include "core/page/Page.h"
 #include "public/platform/WebCanvas.h"
-#include <wtf/OwnPtr.h>
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 class Frame;

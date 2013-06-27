@@ -40,7 +40,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace {
 

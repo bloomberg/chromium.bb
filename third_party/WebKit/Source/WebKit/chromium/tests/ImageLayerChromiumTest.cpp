@@ -29,7 +29,7 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "public/platform/WebImageLayer.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 using namespace WebCore;
 

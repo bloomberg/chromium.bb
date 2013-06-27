@@ -27,7 +27,7 @@
 #include "WebGeolocationPermissionRequestManager.h"
 
 #include "WebGeolocationPermissionRequest.h"
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 class Geolocation;

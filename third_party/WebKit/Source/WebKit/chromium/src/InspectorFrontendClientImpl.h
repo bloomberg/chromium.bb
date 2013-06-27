@@ -32,7 +32,7 @@
 #define InspectorFrontendClientImpl_h
 
 #include "core/inspector/InspectorFrontendClient.h"
-#include <wtf/Noncopyable.h>
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 class InspectorFrontendHost;

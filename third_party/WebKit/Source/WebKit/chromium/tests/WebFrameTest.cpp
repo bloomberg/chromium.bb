@@ -77,8 +77,8 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/platform/WebURLResponse.h"
-#include <wtf/dtoa/utils.h>
-#include <wtf/Forward.h>
+#include "wtf/dtoa/utils.h"
+#include "wtf/Forward.h"
 
 using namespace WebKit;
 using WebCore::Document;

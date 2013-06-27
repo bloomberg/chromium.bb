@@ -33,8 +33,8 @@
 
 #include <ctype.h>
 #include "core/platform/chromium/KeyboardCodes.h"
-#include <wtf/Assertions.h>
-#include <wtf/StringExtras.h>
+#include "wtf/Assertions.h"
+#include "wtf/StringExtras.h"
 
 using namespace WebCore;
 

@@ -33,10 +33,10 @@
 
 #include <gtest/gtest.h>
 #include "core/platform/DateComponents.h"
-#include <wtf/DateMath.h>
-#include <wtf/MathExtras.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/CString.h>
+#include "wtf/DateMath.h"
+#include "wtf/MathExtras.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/CString.h"
 
 using namespace WebCore;
 using namespace std;

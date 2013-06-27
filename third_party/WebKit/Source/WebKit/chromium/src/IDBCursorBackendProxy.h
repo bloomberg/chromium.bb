@@ -27,10 +27,10 @@
 #define IDBCursorBackendProxy_h
 
 #include "public/platform/WebIDBCursor.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
 
 namespace WebKit {

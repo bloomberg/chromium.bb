@@ -27,8 +27,8 @@
 
 #include "WebPluginScrollbar.h"
 
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 class IntPoint;

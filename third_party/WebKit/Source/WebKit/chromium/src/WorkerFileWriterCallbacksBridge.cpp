@@ -41,8 +41,8 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebFileSystem.h"
-#include <wtf/MainThread.h>
-#include <wtf/Threading.h>
+#include "wtf/MainThread.h"
+#include "wtf/Threading.h"
 
 using namespace WebCore;
 

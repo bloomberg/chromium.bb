@@ -32,7 +32,7 @@
 #include "FakeWebPlugin.h"
 
 #include "WebPluginParams.h"
-#include <wtf/StdLibExtras.h>
+#include "wtf/StdLibExtras.h"
 
 namespace WebKit {
 

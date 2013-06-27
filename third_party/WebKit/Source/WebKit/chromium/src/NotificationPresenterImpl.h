@@ -34,8 +34,8 @@
 #include "core/html/VoidCallback.h"
 #include "modules/notifications/NotificationClient.h"
 
-#include <wtf/HashMap.h>
-#include <wtf/PassRefPtr.h>
+#include "wtf/HashMap.h"
+#include "wtf/PassRefPtr.h"
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 

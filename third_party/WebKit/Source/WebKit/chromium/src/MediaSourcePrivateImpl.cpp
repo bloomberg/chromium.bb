@@ -36,8 +36,8 @@
 #include "WebSourceBuffer.h"
 #include <algorithm>
 #include <limits>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebKit {
 

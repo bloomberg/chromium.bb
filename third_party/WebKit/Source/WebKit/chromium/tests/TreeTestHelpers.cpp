@@ -28,7 +28,7 @@
 #include "TreeTestHelpers.h"
 
 #include <cstdlib>
-#include <wtf/CurrentTime.h>
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 namespace TreeTestHelpers {

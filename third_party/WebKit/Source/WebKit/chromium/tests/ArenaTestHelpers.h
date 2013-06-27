@@ -28,8 +28,8 @@
 
 #include <gtest/gtest.h>
 #include "core/platform/PODArena.h"
-#include <wtf/NotFound.h>
-#include <wtf/Vector.h>
+#include "wtf/NotFound.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 namespace ArenaTestHelpers {

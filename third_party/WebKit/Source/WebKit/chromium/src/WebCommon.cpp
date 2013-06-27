@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/platform/WebCommon.h"
 
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WebKit {
 

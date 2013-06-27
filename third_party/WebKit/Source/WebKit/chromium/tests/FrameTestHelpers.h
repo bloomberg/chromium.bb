@@ -32,7 +32,7 @@
 #define FrameTestHelpers_h
 
 #include <string>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebKit {
 

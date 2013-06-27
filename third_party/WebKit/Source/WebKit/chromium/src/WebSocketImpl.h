@@ -35,8 +35,8 @@
 #include "WebSocketClient.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "public/platform/WebCommon.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore { class MainThreadWebSocketChannel; }
 

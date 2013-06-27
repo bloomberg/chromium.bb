@@ -38,8 +38,8 @@
 #include "WebPageOverlay.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 class Document;

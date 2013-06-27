@@ -30,9 +30,9 @@
 #include <gtest/gtest.h>
 #include <algorithm>
 #include "ArenaTestHelpers.h"
-#include <wtf/FastMalloc.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/FastMalloc.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

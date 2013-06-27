@@ -50,8 +50,8 @@
 #include "public/platform/WebFileError.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemType.h"
-#include <wtf/text/WTFString.h>
-#include <wtf/Threading.h>
+#include "wtf/text/WTFString.h"
+#include "wtf/Threading.h"
 
 using namespace WebKit;
 

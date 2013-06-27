@@ -44,7 +44,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "public/platform/WebFileSystem.h"
-#include <wtf/text/CString.h>
+#include "wtf/text/CString.h"
 
 using namespace WebKit;
 

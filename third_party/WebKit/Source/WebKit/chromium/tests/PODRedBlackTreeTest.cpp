@@ -32,7 +32,7 @@
 #include <gtest/gtest.h>
 #include "ArenaTestHelpers.h"
 #include "TreeTestHelpers.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

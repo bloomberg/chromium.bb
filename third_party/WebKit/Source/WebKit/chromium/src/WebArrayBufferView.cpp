@@ -30,7 +30,7 @@
 #include "WebArrayBufferView.h"
 
 #include "V8ArrayBufferView.h"
-#include <wtf/ArrayBufferView.h>
+#include "wtf/ArrayBufferView.h"
 
 using namespace WTF;
 
