@@ -45,6 +45,7 @@ class TabModalConfirmDialogGtk : public TabModalConfirmDialog {
   CHROMEGTK_CALLBACK_0(TabModalConfirmDialogGtk, void, OnAccept);
   CHROMEGTK_CALLBACK_0(TabModalConfirmDialogGtk, void, OnCancel);
   CHROMEGTK_CALLBACK_0(TabModalConfirmDialogGtk, void, OnDestroy);
+  CHROMEGTK_CALLBACK_0(TabModalConfirmDialogGtk, void, OnLinkClicked);
 
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
 
