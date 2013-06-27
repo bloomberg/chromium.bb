@@ -6,7 +6,7 @@
 #define ASH_WM_WORKSPACE_WORKSPACE_ANIMATIONS_H_
 
 #include "ash/ash_export.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace aura {
 class Window;

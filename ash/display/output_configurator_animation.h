@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "base/callback.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chromeos/display/output_configurator.h"
 
 namespace aura {

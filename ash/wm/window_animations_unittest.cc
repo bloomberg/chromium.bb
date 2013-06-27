@@ -7,7 +7,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/workspace_controller.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/animation_container_element.h"

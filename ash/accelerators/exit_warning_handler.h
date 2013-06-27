@@ -6,7 +6,7 @@
 #define ASH_ACCELERATORS_EXIT_WARNING_HANDLER_H_
 
 #include "ash/ash_export.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace views {

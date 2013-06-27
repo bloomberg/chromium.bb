@@ -11,7 +11,7 @@
 #include "ash/system/chromeos/network/network_tray_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {

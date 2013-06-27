@@ -5,7 +5,7 @@
 #ifndef ASH_WM_GESTURES_LONG_PRESS_AFFORDANCE_HANDLER_H_
 #define ASH_WM_GESTURES_LONG_PRESS_AFFORDANCE_HANDLER_H_
 
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/linear_animation.h"
 #include "ui/gfx/point.h"

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/lock_state_controller.h"
-#include "ash/wm/power_button_controller.h"
-#include "ash/wm/session_state_animator.h"
-#include "ash/wm/session_state_controller_impl.h"
 #include "ash/ash_switches.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/wm/lock_state_controller.h"
+#include "ash/wm/power_button_controller.h"
+#include "ash/wm/session_state_animator.h"
+#include "ash/wm/session_state_controller_impl.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"

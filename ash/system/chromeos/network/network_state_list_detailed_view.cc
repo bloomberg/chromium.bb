@@ -22,7 +22,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_state.h"

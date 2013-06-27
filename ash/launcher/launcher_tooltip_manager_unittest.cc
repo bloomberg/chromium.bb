@@ -12,7 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string16.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"

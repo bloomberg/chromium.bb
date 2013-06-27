@@ -14,9 +14,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/time.h"
-#include "ui/gfx/display_observer.h"
+#include "base/time/time.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/display_observer.h"
 
 namespace aura {
 class Display;

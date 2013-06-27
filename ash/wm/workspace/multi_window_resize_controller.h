@@ -10,7 +10,7 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/mouse_watcher.h"

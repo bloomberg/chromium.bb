@@ -31,7 +31,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/events/event_constants.h"

@@ -10,7 +10,7 @@
 #include "ash/shell.h"
 #include "ash/volume_control_delegate.h"
 #include "base/message_loop.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace ash {
 namespace test {

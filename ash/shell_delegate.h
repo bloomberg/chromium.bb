@@ -12,7 +12,7 @@
 #include "ash/shell.h"
 #include "base/callback.h"
 #include "base/strings/string16.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace app_list {
 class AppListViewDelegate;

@@ -5,7 +5,7 @@
 #include "ash/wm/screen_dimmer.h"
 
 #include "ash/shell.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ui/aura/root_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

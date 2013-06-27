@@ -17,7 +17,7 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"

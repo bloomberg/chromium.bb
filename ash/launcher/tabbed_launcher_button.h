@@ -7,7 +7,7 @@
 
 #include "ash/launcher/launcher_button.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/glow_hover_controller.h"

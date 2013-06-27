@@ -10,7 +10,7 @@
 #include "ash/system/tray/tray_utils.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "grit/ash_strings.h"
 #include "third_party/icu/public/i18n/unicode/datefmt.h"
 #include "third_party/icu/public/i18n/unicode/dtptngen.h"

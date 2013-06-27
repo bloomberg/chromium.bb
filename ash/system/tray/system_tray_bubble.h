@@ -8,7 +8,7 @@
 #include "ash/system/user/login_status.h"
 #include "base/base_export.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 
 #include <vector>

@@ -6,7 +6,7 @@
 
 #include "ash/wm/window_animations.h"
 #include "ash/wm/workspace/colored_window_controller.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/widget/widget.h"

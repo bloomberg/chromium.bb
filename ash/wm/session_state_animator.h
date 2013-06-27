@@ -9,7 +9,7 @@
 #include "ash/wm/workspace/colored_window_controller.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_observer.h"
 

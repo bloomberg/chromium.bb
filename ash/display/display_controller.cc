@@ -44,7 +44,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #if defined(USE_X11)
 #include "ash/display/output_configurator_animation.h"
 #include "chromeos/display/output_configurator.h"

@@ -4,7 +4,7 @@
 
 #include "ash/rotator/screen_rotation.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/rect.h"

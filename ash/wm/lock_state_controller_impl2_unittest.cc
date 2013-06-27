@@ -14,7 +14,7 @@
 #include "ash/wm/session_state_animator.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
