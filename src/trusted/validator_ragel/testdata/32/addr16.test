@@ -1,14 +1,15 @@
 @hex:
-  # Doesn't disassemble correctly
-  # 16-bit instructions
-  # mov %ax, (%bx)
   67 66 89 07
-  # mov %ax, (%bp)
-  67 66 89 46 00
 @dis:
      0:	67 66 89 07                                  	addr16 mov %ax,(%bx)
-     4:	67 66 89 46 00                               	addr16 mov %ax,0x0(%bp)
 @rdfa_output:
   0: [0] unrecognized instruction
-  4: [1] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  67 66 89 46 00
+@dis:
+     0:	67 66 89 46 00                               	addr16 mov %ax,0x0(%bp)
+@rdfa_output:
+  0: [0] unrecognized instruction
   return code: 1
