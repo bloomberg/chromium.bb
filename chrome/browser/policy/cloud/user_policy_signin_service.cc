@@ -4,18 +4,15 @@
 
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 
-#include <vector>
-
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
-#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
+#include "chrome/browser/policy/cloud/cloud_policy_client_registration_helper.h"
 #include "chrome/browser/policy/cloud/cloud_policy_service.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
-#include "chrome/browser/policy/cloud/user_info_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -28,24 +25,12 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/gaia_urls.h"
-#include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #endif
 
-namespace em = enterprise_management;
-
 namespace {
-
-const char kServiceScopeGetUserInfo[] =
-    "https://www.googleapis.com/auth/userinfo.email";
-
-// The key under which the hosted-domain value is stored in the UserInfo
-// response.
-const char kGetHostedDomainKey[] = "hd";
 
 bool ShouldForceLoadPolicy() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
@@ -55,176 +40,6 @@ bool ShouldForceLoadPolicy() {
 }  // namespace
 
 namespace policy {
-
-// Helper class that registers a CloudPolicyClient and returns the associated
-// DMToken to the caller.
-class CloudPolicyClientRegistrationHelper
-    : public policy::CloudPolicyClient::Observer,
-      public OAuth2AccessTokenConsumer,
-      public policy::UserInfoFetcher::Delegate {
- public:
-  explicit CloudPolicyClientRegistrationHelper(
-      net::URLRequestContextGetter* context);
-
-  virtual ~CloudPolicyClientRegistrationHelper();
-
-  // Starts the client registration process. Callback is invoked when the
-  // registration is complete.
-  void StartRegistration(policy::CloudPolicyClient* client,
-                         const std::string& oauth2_login_token,
-                         base::Closure callback);
-
-  // OAuth2AccessTokenConsumer implementation.
-  virtual void OnGetTokenSuccess(const std::string& access_token,
-                                 const base::Time& expiration_time) OVERRIDE;
-  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
-
-  // UserInfoFetcher::Delegate implementation:
-  virtual void OnGetUserInfoSuccess(const DictionaryValue* response) OVERRIDE;
-  virtual void OnGetUserInfoFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-
-  // CloudPolicyClient::Observer implementation.
-  virtual void OnPolicyFetched(policy::CloudPolicyClient* client) OVERRIDE {}
-  virtual void OnRegistrationStateChanged(
-      policy::CloudPolicyClient* client) OVERRIDE;
-  virtual void OnClientError(policy::CloudPolicyClient* client) OVERRIDE;
-
- private:
-  // Invoked when the registration request has been completed.
-  void RequestCompleted();
-
-  // Fetcher used while obtaining an OAuth token for client registration.
-  scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
-
-  // Helper class for fetching information from GAIA about the currently
-  // signed-in user.
-  scoped_ptr<policy::UserInfoFetcher> user_info_fetcher_;
-
-  // Access token used to register the CloudPolicyClient and also access
-  // GAIA to get information about the signed in user.
-  std::string oauth_access_token_;
-
-  net::URLRequestContextGetter* context_;
-  policy::CloudPolicyClient* client_;
-  base::Closure callback_;
-};
-
-CloudPolicyClientRegistrationHelper::CloudPolicyClientRegistrationHelper(
-    net::URLRequestContextGetter* context) : context_(context) {
-  DCHECK(context_);
-}
-
-CloudPolicyClientRegistrationHelper::~CloudPolicyClientRegistrationHelper() {
-  // Clean up any pending observers in case the browser is shutdown while
-  // trying to register for policy.
-  if (client_)
-    client_->RemoveObserver(this);
-}
-
-void CloudPolicyClientRegistrationHelper::RequestCompleted() {
-  if (client_) {
-    client_->RemoveObserver(this);
-    // |client_| may be freed by the callback so clear it now.
-    client_ = NULL;
-    callback_.Run();
-  }
-}
-
-void CloudPolicyClientRegistrationHelper::StartRegistration(
-    policy::CloudPolicyClient* client,
-    const std::string& login_token,
-    base::Closure callback) {
-  DVLOG(1) << "Starting registration process";
-  DCHECK(client);
-  DCHECK(!client->is_registered());
-  client_ = client;
-  callback_ = callback;
-  client_->AddObserver(this);
-
-  // Start fetching an OAuth2 access token for the device management and
-  // userinfo services.
-  oauth2_access_token_fetcher_.reset(
-      new OAuth2AccessTokenFetcher(this, context_));
-  std::vector<std::string> scopes;
-  scopes.push_back(GaiaConstants::kDeviceManagementServiceOAuth);
-  scopes.push_back(kServiceScopeGetUserInfo);
-  GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
-  oauth2_access_token_fetcher_->Start(
-      gaia_urls->oauth2_chrome_client_id(),
-      gaia_urls->oauth2_chrome_client_secret(),
-      login_token,
-      scopes);
-}
-
-void CloudPolicyClientRegistrationHelper::OnGetTokenFailure(
-    const GoogleServiceAuthError& error) {
-  DLOG(WARNING) << "Could not fetch access token for "
-                << GaiaConstants::kDeviceManagementServiceOAuth;
-  oauth2_access_token_fetcher_.reset();
-
-  // Invoke the callback to let them know the fetch failed.
-  RequestCompleted();
-}
-
-void CloudPolicyClientRegistrationHelper::OnGetTokenSuccess(
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  // Cache the access token to be used after the GetUserInfo call.
-  oauth_access_token_ = access_token;
-  DVLOG(1) << "Fetched new scoped OAuth token:" << oauth_access_token_;
-  oauth2_access_token_fetcher_.reset();
-  // Now we've gotten our access token - contact GAIA to see if this is a
-  // hosted domain.
-  user_info_fetcher_.reset(new policy::UserInfoFetcher(this, context_));
-  user_info_fetcher_->Start(oauth_access_token_);
-}
-
-void CloudPolicyClientRegistrationHelper::OnGetUserInfoFailure(
-    const GoogleServiceAuthError& error) {
-  DVLOG(1) << "Failed to fetch user info from GAIA: " << error.state();
-  user_info_fetcher_.reset();
-  RequestCompleted();
-}
-
-void CloudPolicyClientRegistrationHelper::OnGetUserInfoSuccess(
-    const DictionaryValue* data) {
-  user_info_fetcher_.reset();
-  if (!data->HasKey(kGetHostedDomainKey) && !ShouldForceLoadPolicy()) {
-    DVLOG(1) << "User not from a hosted domain - skipping registration";
-    RequestCompleted();
-    return;
-  }
-  DVLOG(1) << "Registering CloudPolicyClient for user from hosted domain";
-  // The user is from a hosted domain, so it's OK to register the
-  // CloudPolicyClient and make requests to DMServer.
-  if (client_->is_registered()) {
-    // Client should not be registered yet.
-    NOTREACHED();
-    RequestCompleted();
-    return;
-  }
-
-  // Kick off registration of the CloudPolicyClient with our newly minted
-  // oauth_access_token_.
-  client_->Register(em::DeviceRegisterRequest::BROWSER, oauth_access_token_,
-                    std::string(), false, std::string());
-}
-
-void CloudPolicyClientRegistrationHelper::OnRegistrationStateChanged(
-    policy::CloudPolicyClient* client) {
-  DVLOG(1) << "Client registration succeeded";
-  DCHECK_EQ(client, client_);
-  DCHECK(client->is_registered());
-  RequestCompleted();
-}
-
-void CloudPolicyClientRegistrationHelper::OnClientError(
-    policy::CloudPolicyClient* client) {
-  DVLOG(1) << "Client registration failed";
-  DCHECK_EQ(client, client_);
-  RequestCompleted();
-}
 
 UserPolicySigninService::UserPolicySigninService(
     Profile* profile)
@@ -292,20 +107,19 @@ void UserPolicySigninService::RegisterPolicyClient(
           g_browser_process->browser_policy_connector()->
           device_management_service()));
 
-  registration_helper_.reset(
-      new CloudPolicyClientRegistrationHelper(profile_->GetRequestContext()));
-
   // Fire off the registration process. Callback keeps the CloudPolicyClient
   // alive for the length of the registration process.
-  // Grab a pointer to the client before base::Bind() clears the reference in
-  // |policy_client|.
-  CloudPolicyClient* client = policy_client.get();
-  base::Closure registration_callback =
+  registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
+      profile_->GetRequestContext(),
+      policy_client.get(),
+      ShouldForceLoadPolicy(),
+      enterprise_management::DeviceRegisterRequest::BROWSER));
+  registration_helper_->StartRegistrationWithLoginToken(
+      oauth2_refresh_token,
       base::Bind(&UserPolicySigninService::CallPolicyRegistrationCallback,
-                 base::Unretained(this), base::Passed(&policy_client),
-                 callback);
-  registration_helper_->StartRegistration(
-      client, oauth2_refresh_token, registration_callback);
+                 base::Unretained(this),
+                 base::Passed(&policy_client),
+                 callback));
 }
 
 void UserPolicySigninService::CallPolicyRegistrationCallback(
@@ -564,10 +378,12 @@ void UserPolicySigninService::RegisterCloudPolicyService(
 
   // Start the process of registering the CloudPolicyClient. Once it completes,
   // policy fetch will automatically happen.
-  registration_helper_.reset(
-      new CloudPolicyClientRegistrationHelper(profile_->GetRequestContext()));
-  registration_helper_->StartRegistration(
+  registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
+      profile_->GetRequestContext(),
       GetManager()->core()->client(),
+      ShouldForceLoadPolicy(),
+      enterprise_management::DeviceRegisterRequest::BROWSER));
+  registration_helper_->StartRegistrationWithLoginToken(
       login_token,
       base::Bind(&UserPolicySigninService::OnRegistrationComplete,
                  base::Unretained(this)));
