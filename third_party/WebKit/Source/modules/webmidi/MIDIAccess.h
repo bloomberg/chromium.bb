@@ -34,6 +34,8 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
+#include "core/platform/midi/MIDIAccessor.h"
+#include "core/platform/midi/MIDIAccessorClient.h"
 #include "modules/webmidi/MIDIInput.h"
 #include "modules/webmidi/MIDIOutput.h"
 #include "wtf/RefCounted.h"
@@ -45,7 +47,7 @@ namespace WebCore {
 class ScriptExecutionContext;
 class MIDIAccessPromise;
 
-class MIDIAccess : public RefCounted<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTarget {
+class MIDIAccess : public RefCounted<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTarget, public MIDIAccessorClient {
 public:
     virtual ~MIDIAccess();
     static PassRefPtr<MIDIAccess> create(ScriptExecutionContext*, MIDIAccessPromise*);
@@ -66,6 +68,13 @@ public:
     // ActiveDOMObject
     virtual bool canSuspend() const OVERRIDE { return true; }
 
+    // MIDIAccessorClient
+    virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
+    virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
+    virtual void didAllowAccess() OVERRIDE;
+    virtual void didBlockAccess() OVERRIDE;
+    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) OVERRIDE;
+
 private:
     explicit MIDIAccess(ScriptExecutionContext*, MIDIAccessPromise*);
 
@@ -79,6 +88,9 @@ private:
     MIDIOutputVector m_outputs;
     EventTargetData m_eventTargetData;
     MIDIAccessPromise* m_promise;
+
+    OwnPtr<MIDIAccessor> m_accessor;
+    bool m_hasAccess;
 };
 
 } // namespace WebCore

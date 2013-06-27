@@ -41,7 +41,6 @@ namespace WebCore {
 PassRefPtr<MIDIAccessPromise> MIDIAccessPromise::create(ScriptExecutionContext* context, const Dictionary& options)
 {
     RefPtr<MIDIAccessPromise> midiAccessPromise(adoptRef(new MIDIAccessPromise(context, options)));
-    midiAccessPromise->setPendingActivity(midiAccessPromise.get());
     midiAccessPromise->suspendIfNeeded();
     return midiAccessPromise.release();
 }
@@ -50,7 +49,6 @@ MIDIAccessPromise::MIDIAccessPromise(ScriptExecutionContext* context, const Dict
     : ActiveDOMObject(context)
     , m_state(Pending)
     , m_options(adoptPtr(new MIDIOptions(options)))
-    , m_access(MIDIAccess::create(context, this))
 {
     ScriptWrappable::init(this);
 }
@@ -65,6 +63,7 @@ void MIDIAccessPromise::fulfill()
     if (m_state == Pending) {
         if (m_successCallback) {
             m_state = Invoked;
+            ASSERT(m_access.get());
             m_successCallback->handleEvent(m_access.release().leakRef(), m_options->sysexEnabled);
             m_options.clear();
         } else {
@@ -76,15 +75,15 @@ void MIDIAccessPromise::fulfill()
     m_errorCallback.clear();
 }
 
-void MIDIAccessPromise::reject(DOMError* error)
+void MIDIAccessPromise::reject(PassRefPtr<DOMError> error)
 {
     if (m_state == Pending) {
         if (m_errorCallback) {
             m_state = Invoked;
-            m_errorCallback->handleEvent(error);
+            m_errorCallback->handleEvent(error.leakRef());
         } else {
             m_state = Rejected;
-            m_error = adoptRef(error);
+            m_error = error;
         }
         unsetPendingActivity(this);
     }
@@ -94,6 +93,12 @@ void MIDIAccessPromise::reject(DOMError* error)
 
 void MIDIAccessPromise::then(PassRefPtr<MIDISuccessCallback> successCallback, PassRefPtr<MIDIErrorCallback> errorCallback)
 {
+    // Lazily request access.
+    if (!m_access) {
+        setPendingActivity(this);
+        m_access = MIDIAccess::create(scriptExecutionContext(), this);
+    }
+
     switch (m_state) {
     case Accepted:
         successCallback->handleEvent(m_access.release().leakRef(), m_options->sysexEnabled);

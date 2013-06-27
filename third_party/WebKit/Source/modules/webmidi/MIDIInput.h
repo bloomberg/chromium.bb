@@ -48,6 +48,8 @@ public:
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE { return eventNames().interfaceForMIDIInput; }
 
+    void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
+
 private:
     MIDIInput(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
 };

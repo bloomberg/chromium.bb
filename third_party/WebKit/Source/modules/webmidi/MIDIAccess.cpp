@@ -31,7 +31,9 @@
 #include "config.h"
 #include "modules/webmidi/MIDIAccess.h"
 
+#include "core/dom/DOMError.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/webmidi/MIDIAccessPromise.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
 #include "modules/webmidi/MIDIInput.h"
 #include "modules/webmidi/MIDIOutput.h"
@@ -54,8 +56,50 @@ MIDIAccess::~MIDIAccess()
 MIDIAccess::MIDIAccess(ScriptExecutionContext* context, MIDIAccessPromise* promise)
     : ActiveDOMObject(context)
     , m_promise(promise)
+    , m_hasAccess(false)
 {
     ScriptWrappable::init(this);
+    m_accessor = MIDIAccessor::create(this);
+    m_accessor->requestAccess(promise->options()->sysexEnabled);
+}
+
+void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version)
+{
+    ASSERT(isMainThread());
+
+    m_inputs.append(MIDIInput::create(scriptExecutionContext(), id, manufacturer, name, version));
+}
+
+void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version)
+{
+    ASSERT(isMainThread());
+
+    m_outputs.append(MIDIOutput::create(scriptExecutionContext(), id, manufacturer, name, version));
+}
+
+void MIDIAccess::didAllowAccess()
+{
+    ASSERT(isMainThread());
+
+    m_hasAccess = true;
+    m_promise->fulfill();
+}
+
+void MIDIAccess::didBlockAccess()
+{
+    ASSERT(isMainThread());
+
+    m_hasAccess = false;
+    RefPtr<DOMError> error = DOMError::create("SecurityError");
+    m_promise->reject(error);
+}
+
+void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
+{
+    ASSERT(isMainThread());
+
+    if (m_hasAccess && portIndex < m_inputs.size())
+        m_inputs[portIndex]->didReceiveMIDIData(portIndex, data, length, timeStamp);
 }
 
 } // namespace WebCore

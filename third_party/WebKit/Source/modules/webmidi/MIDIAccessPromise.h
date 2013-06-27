@@ -58,8 +58,10 @@ public:
     // ActiveDOMObject
     virtual bool canSuspend() const OVERRIDE { return true; }
 
+    MIDIOptions* options() { return m_options.get(); }
+
     void fulfill();
-    void reject(DOMError*);
+    void reject(PassRefPtr<DOMError>);
 
 private:
     enum State {

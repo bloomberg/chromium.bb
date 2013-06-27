@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "modules/webmidi/MIDIInput.h"
+#include "modules/webmidi/MIDIMessageEvent.h"
 
 namespace WebCore {
 
@@ -42,6 +43,16 @@ MIDIInput::MIDIInput(ScriptExecutionContext* context, const String& id, const St
     : MIDIPort(context, id, manufacturer, name, MIDIPortTypeInput, version)
 {
     ScriptWrappable::init(this);
+}
+
+void MIDIInput::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
+{
+    ASSERT(isMainThread());
+
+    RefPtr<Uint8Array> array = Uint8Array::create(length);
+    array->setRange(data, length, 0);
+
+    dispatchEvent(MIDIMessageEvent::create(timeStamp, array));
 }
 
 } // namespace WebCore

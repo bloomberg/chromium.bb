@@ -66,15 +66,18 @@ public:
     double receivedTime() { return m_receivedTime; }
     PassRefPtr<Uint8Array> data() { return m_data; }
 
+    virtual const AtomicString& interfaceName() const OVERRIDE { return eventNames().interfaceForMIDIMessageEvent; }
+
 private:
     MIDIMessageEvent()
-        : m_receivedTime(0.0)
+        : m_receivedTime(0)
     {
         ScriptWrappable::init(this);
     }
 
     MIDIMessageEvent(double receivedTime, PassRefPtr<Uint8Array> data)
-        : m_receivedTime(receivedTime)
+        : Event(eventNames().midimessageEvent, true, false)
+        , m_receivedTime(receivedTime)
         , m_data(data)
     {
         ScriptWrappable::init(this);
