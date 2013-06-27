@@ -59,9 +59,9 @@ void NetworkScreen::PrepareToShow() {
 }
 
 void NetworkScreen::Show() {
+  Refresh();
   if (actor_)
     actor_->Show();
-  Refresh();
 }
 
 void NetworkScreen::Hide() {

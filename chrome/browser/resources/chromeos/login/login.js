@@ -41,7 +41,6 @@ cr.define('cr.ui.Oobe', function() {
     handleSpokenFeedbackClick: function(e) {},
     handleHighContrastClick: function(e) {},
     handleScreenMagnifierClick: function(e) {},
-    enableContinueButton: function(enable) {},
     setUsageStats: function(checked) {},
     setOemEulaUrl: function(oemEulaUrl) {},
     setUpdateProgress: function(progress) {},

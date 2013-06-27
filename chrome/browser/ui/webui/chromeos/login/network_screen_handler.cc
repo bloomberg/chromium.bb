@@ -89,7 +89,7 @@ void NetworkScreenHandler::ShowConnectingStatus(
 void NetworkScreenHandler::EnableContinue(bool enabled) {
   is_continue_enabled_ = enabled;
   if (page_is_ready())
-    CallJS("cr.ui.Oobe.enableContinueButton", enabled);
+    CallJS("login.NetworkScreen.enableContinueButton", enabled);
 }
 
 // NetworkScreenHandler, BaseScreenHandler implementation: --------------------

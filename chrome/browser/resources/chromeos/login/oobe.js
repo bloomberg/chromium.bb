@@ -160,14 +160,6 @@ cr.define('cr.ui.Oobe', function() {
     },
 
     /**
-     * Enables/disables continue button.
-     * @param {boolean} enable Should the button be enabled?
-     */
-    enableContinueButton: function(enable) {
-      $('continue-button').disabled = !enable;
-    },
-
-    /**
      * Sets usage statistics checkbox.
      * @param {boolean} checked Is the checkbox checked?
      */

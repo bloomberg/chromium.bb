@@ -9,6 +9,7 @@
 login.createScreen('NetworkScreen', 'connect', function() {
   return {
     EXTERNAL_API: [
+      'enableContinueButton',
       'showError'
     ],
 
@@ -37,6 +38,7 @@ login.createScreen('NetworkScreen', 'connect', function() {
 
     onBeforeHide: function() {
       cr.ui.DropDown.hide('networks-list');
+      this.enableContinueButton(false);
     },
 
     /**
@@ -55,8 +57,10 @@ login.createScreen('NetworkScreen', 'connect', function() {
       var buttons = [];
 
       var continueButton = this.ownerDocument.createElement('button');
+      continueButton.disabled = true;
       continueButton.id = 'continue-button';
       continueButton.textContent = loadTimeData.getString('continueButton');
+      continueButton.classList.add('preserve-disabled-state');
       continueButton.addEventListener('click', function(e) {
         chrome.send('networkOnExit');
         e.stopPropagation();
@@ -71,6 +75,14 @@ login.createScreen('NetworkScreen', 'connect', function() {
      */
     get defaultControl() {
       return $('language-select');
+    },
+
+    /**
+     * Enables/disables continue button.
+     * @param {boolean} enable Should the button be enabled?
+     */
+    enableContinueButton: function(enable) {
+      $('continue-button').disabled = !enable;
     },
 
     /**
