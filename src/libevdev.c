@@ -61,7 +61,7 @@ int EvdevRead(EvdevPtr evdev) {
   do {
     len = read(evdev->fd, &ev, sizeof(ev));
     if (len <= 0)
-      return errno;
+      break;
 
     /* Read as many whole struct input_event objects as we can into the
        circular buffer */
@@ -75,7 +75,7 @@ int EvdevRead(EvdevPtr evdev) {
 
     /* kernel always delivers complete events, so len must be sizeof *ev */
     if (len % sizeof(*ev))
-      return errno;
+      break;
 
     /* Process events ... */
     for (i = 0; i < len / sizeof(ev[0]); i++) {
@@ -86,7 +86,7 @@ int EvdevRead(EvdevPtr evdev) {
         continue;
       } else if (timercmp(&ev[i].time, &evdev->after_sync_time, >)) {
         /* Event_Process returns TRUE if SYN_DROPPED detected */
-        sync_evdev_state = Event_Process(evdev, &ev[i]);
+        sync_evdev_state |= Event_Process(evdev, &ev[i]);
       } else {
         /* If the event occurred during sync, then sync again */
         sync_evdev_state = true;
