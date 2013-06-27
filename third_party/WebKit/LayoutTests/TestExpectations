@@ -1001,7 +1001,8 @@ webkit.org/b/90980 fast/forms/textarea/textarea-state-restore.html [ Failure Pas
 webkit.org/b/91183 http/tests/w3c/webperf/approved/HighResolutionTime/test_cross_frame_start.html [ Failure Pass ]
 
 # started failing around Chrome r207326 to r207404, but only on main waterfall
-Bug(senorblanco) [ XP ] http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-dedicated-basic.html [ Failure Pass ]
+# Flakes also on the V8 waterfall on Win7.
+Bug(senorblanco) [ Win ] http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-dedicated-basic.html [ Failure Pass ]
 
 # Fails since creation in 122663
 webkit.org/b/91372 [ Win ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]
