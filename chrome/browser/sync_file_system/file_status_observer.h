@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_FILE_STATUS_OBSERVER_H_
 
 #include "base/basictypes.h"
-#include "webkit/browser/fileapi/syncable/sync_action.h"
-#include "webkit/browser/fileapi/syncable/sync_direction.h"
+#include "chrome/browser/sync_file_system/sync_action.h"
+#include "chrome/browser/sync_file_system/sync_direction.h"
 #include "webkit/browser/fileapi/syncable/sync_file_status.h"
 
 namespace fileapi {
