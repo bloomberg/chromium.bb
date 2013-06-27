@@ -544,20 +544,6 @@ void DisplayController::RegisterLayoutForDisplayIdPair(
   RegisterLayoutForDisplayIdPairInternal(id1, id2, layout, true);
 }
 
-void DisplayController::RegisterLayoutForDisplayId(
-    int64 id,
-    const DisplayLayout& layout) {
-  int64 first_id = gfx::Display::InternalDisplayId();
-  if (first_id == gfx::Display::kInvalidDisplayID)
-    first_id = GetDisplayManager()->first_display_id();
-  // Caveat: This doesn't work if the machine booted with
-  // no display.
-  // Ignore if the layout was registered for the internal or
-  // 1st display.
-  if (first_id != id)
-    RegisterLayoutForDisplayIdPairInternal(first_id, id, layout, false);
-}
-
 void DisplayController::SetLayoutForCurrentDisplays(
     const DisplayLayout& layout_relative_to_primary) {
   DCHECK_EQ(2U, GetDisplayManager()->GetNumDisplays());

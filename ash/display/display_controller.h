@@ -175,10 +175,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   void RegisterLayoutForDisplayIdPair(int64 id1,
                                       int64 id2,
                                       const DisplayLayout& layout);
-  // OBSOLETE
-  // TODO(oshima): Remove this in m28.
-  void RegisterLayoutForDisplayId(int64 id, const DisplayLayout& layout);
-
   // Sets the layout for the current display pair. The |layout| specifies
   // the locaion of the secondary display relative to the primary.
   void SetLayoutForCurrentDisplays(const DisplayLayout& layout);

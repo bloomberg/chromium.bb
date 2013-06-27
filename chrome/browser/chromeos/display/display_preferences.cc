@@ -111,13 +111,6 @@ void LoadDisplayLayouts() {
         continue;
       }
       display_controller->RegisterLayoutForDisplayIdPair(id1, id2, layout);
-    } else {
-      int64 id = gfx::Display::kInvalidDisplayID;
-      if (!base::StringToInt64(it.key(), &id) ||
-          id == gfx::Display::kInvalidDisplayID) {
-        continue;
-      }
-      display_controller->RegisterLayoutForDisplayId(id, layout);
     }
   }
 }

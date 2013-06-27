@@ -173,39 +173,6 @@ TEST_F(DisplayPreferencesTest, DefaultLayout) {
             display_controller->GetCurrentDisplayLayout().primary_id);
 }
 
-TEST_F(DisplayPreferencesTest, OldInitialization) {
-  ash::DisplayController* display_controller =
-      ash::Shell::GetInstance()->display_controller();
-
-  int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
-  int64 id2 = id1 + 1;
-  int64 dummy_id = id2 + 1;
-
-  StoreDisplayLayoutPrefForSecondary(id2, ash::DisplayLayout::BOTTOM, 20, id2);
-  StoreDisplayLayoutPrefForSecondary(
-      dummy_id, ash::DisplayLayout::TOP, -10, id1);
-  StoreDisplayOverscan(id1, gfx::Insets(10, 10, 10, 10));
-  StoreDisplayOverscan(id2, gfx::Insets(20, 20, 20, 20));
-
-  LoadDisplayPreferences(true);
-
-  UpdateDisplay("100x100,200x200");
-  EXPECT_EQ(id1, ash::ScreenAsh::GetSecondaryDisplay().id());
-
-  // Check if the layout settings are notified to the system properly.
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-  EXPECT_EQ(id2, screen->GetPrimaryDisplay().id());
-  // Display was swapped, so the layout was inverted.
-  EXPECT_EQ("top, -20",
-            display_controller->GetCurrentDisplayLayout().ToString());
-
-  EXPECT_EQ("bottom, 20", GetRegisteredDisplayLayoutStr(id1, id2));
-  EXPECT_EQ("top, -10", GetRegisteredDisplayLayoutStr(id1, dummy_id));
-  EXPECT_EQ("160x160", screen->GetPrimaryDisplay().bounds().size().ToString());
-  EXPECT_EQ("80x80",
-            ash::ScreenAsh::GetSecondaryDisplay().bounds().size().ToString());
-}
-
 TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
   UpdateDisplay("100x100,200x200");
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
