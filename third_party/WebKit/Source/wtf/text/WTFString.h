@@ -189,10 +189,6 @@ public:
     template <typename CharacterType>
     inline const CharacterType* getCharacters() const;
 
-    // Like getCharacters() and upconvert if CharacterType is UChar on a 8bit string.
-    template <typename CharacterType>
-    inline const CharacterType* getCharactersWithUpconvert() const;
-
     bool is8Bit() const { return m_impl->is8Bit(); }
 
     unsigned sizeInBytes() const
@@ -527,19 +523,6 @@ inline const UChar* String::getCharacters<UChar>() const
 {
     ASSERT(!is8Bit());
     return characters16();
-}
-
-template<>
-inline const LChar* String::getCharactersWithUpconvert<LChar>() const
-{
-    ASSERT(is8Bit());
-    return characters8();
-}
-
-template<>
-inline const UChar* String::getCharactersWithUpconvert<UChar>() const
-{
-    return characters();
 }
 
 inline bool String::containsOnlyLatin1() const
