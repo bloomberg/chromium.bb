@@ -771,11 +771,6 @@ NPObject* WebFrameImpl::windowObject() const
 
 void WebFrameImpl::bindToWindowObject(const WebString& name, NPObject* object)
 {
-    bindToWindowObject(name, object, 0);
-}
-
-void WebFrameImpl::bindToWindowObject(const WebString& name, NPObject* object, void*)
-{
     if (!frame() || !frame()->script()->canExecuteScripts(NotAboutToExecuteScript))
         return;
     frame()->script()->bindToWindowObject(frame(), String(name), object);

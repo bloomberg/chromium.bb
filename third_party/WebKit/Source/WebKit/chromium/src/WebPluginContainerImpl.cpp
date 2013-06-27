@@ -407,13 +407,17 @@ void WebPluginContainerImpl::reportGeometry()
 
 void WebPluginContainerImpl::allowScriptObjects()
 {
+    ASSERT(m_element);
+    Frame* frame = m_element->document()->frame();
+    ASSERT(frame);
+    frame->script()->allowScriptObjectsForPlugin(this);
 }
 
 void WebPluginContainerImpl::clearScriptObjects()
 {
+    ASSERT(m_element);
     Frame* frame = m_element->document()->frame();
-    if (!frame)
-        return;
+    ASSERT(frame);
     frame->script()->cleanupScriptObjectsForPlugin(this);
 }
 
@@ -564,6 +568,11 @@ WebLayer* WebPluginContainerImpl::platformLayer() const
 NPObject* WebPluginContainerImpl::scriptableObject()
 {
     return m_webPlugin->scriptableObject();
+}
+
+NPP WebPluginContainerImpl::pluginNPP()
+{
+    return m_webPlugin->pluginNPP();
 }
 
 bool WebPluginContainerImpl::getFormValue(String& value)

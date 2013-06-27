@@ -127,7 +127,7 @@ public:
     // invoked. Returns whether the method was successfully invoked. If the
     // method was invoked successfully, any return value is stored in the
     // CppVariant specified by result.
-    bool invoke(const std::string&, const CppVariant* arguments,
+    bool invoke(NPP, const std::string&, const CppVariant* arguments,
                 uint32_t argumentCount, CppVariant& result) const;
 
     // Invoke an object's default method with the supplied arguments.
@@ -135,7 +135,7 @@ public:
     // invoked. Returns whether the method was successfully invoked. If the
     // method was invoked successfully, any return value is stored in the
     // CppVariant specified by result.
-    bool invokeDefault(const CppVariant* arguments,
+    bool invokeDefault(NPP, const CppVariant* arguments,
                        uint32_t argumentCount, CppVariant& result) const;
 };
 

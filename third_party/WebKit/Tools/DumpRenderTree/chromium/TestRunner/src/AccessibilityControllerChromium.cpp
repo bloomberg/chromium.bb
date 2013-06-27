@@ -143,7 +143,7 @@ void AccessibilityController::notificationReceived(const WebKit::WebAccessibilit
         arguments[0].set(*element->getAsCppVariant());
         arguments[1].set(notificationName);
         CppVariant invokeResult;
-        m_notificationCallbacks[i].invokeDefault(arguments, 2, invokeResult);
+        m_notificationCallbacks[i].invokeDefault(npp(), arguments, 2, invokeResult);
     }
 }
 

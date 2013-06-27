@@ -295,27 +295,27 @@ vector<string> CppVariant::toStringVector() const
     return stringVector;
 }
 
-bool CppVariant::invoke(const string& method, const CppVariant* arguments,
+bool CppVariant::invoke(NPP npp, const string& method, const CppVariant* arguments,
                         uint32_t argumentCount, CppVariant& result) const
 {
     WEBKIT_ASSERT(isObject());
     NPIdentifier methodName = WebBindings::getStringIdentifier(method.c_str());
     NPObject* npObject = value.objectValue;
-    if (!WebBindings::hasMethod(0, npObject, methodName))
+    if (!WebBindings::hasMethod(npp, npObject, methodName))
         return false;
     NPVariant r;
-    bool status = WebBindings::invoke(0, npObject, methodName, arguments, argumentCount, &r);
+    bool status = WebBindings::invoke(npp, npObject, methodName, arguments, argumentCount, &r);
     result.set(r);
     return status;
 }
 
-bool CppVariant::invokeDefault(const CppVariant* arguments, uint32_t argumentCount,
+bool CppVariant::invokeDefault(NPP npp, const CppVariant* arguments, uint32_t argumentCount,
                                CppVariant& result) const
 {
     WEBKIT_ASSERT(isObject());
     NPObject* npObject = value.objectValue;
     NPVariant r;
-    bool status = WebBindings::invokeDefault(0, npObject, arguments, argumentCount, &r);
+    bool status = WebBindings::invokeDefault(npp, npObject, arguments, argumentCount, &r);
     result.set(r);
     return status;
 }

@@ -176,7 +176,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
      browser->setvalue(instance, NPPVpluginEventModel, (void *)eventModel);
 #endif // XP_MACOSX
 
-    PluginObject* obj = (PluginObject*)browser->createobject(instance, getPluginClass());
+    PluginObject* obj = (PluginObject*)browser->createobject(instance, createPluginClass());
     instance->pdata = obj;
 
 #ifdef XP_MACOSX
@@ -301,6 +301,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
 NPError NPP_Destroy(NPP instance, NPSavedData **save)
 {
     PluginObject* obj = static_cast<PluginObject*>(instance->pdata);
+
     if (obj) {
         if (obj->testGetURLOnDestroy)
             browser->geturlnotify(obj->npp, "about:blank", "", 0);
@@ -336,7 +337,15 @@ NPError NPP_Destroy(NPP instance, NPSavedData **save)
         if (obj->pluginTest)
             obj->pluginTest->NPP_Destroy(save);
 
+        // Save the object's class, release the object, then trash the class.
+        NPClass* scriptClass = obj->header._class;
         browser->releaseobject(&obj->header);
+
+        // FIXME: This breaks
+        // plugins/npruntime/delete-plugin-within-invoke.html on Mac, since the
+        // plugin object is released only after NPP_Destroy completes. Verify
+        // that that behaviour is sane, and move this to NPP_Shutdown if so.
+        // memset(scriptClass, 0xf00dbeef, sizeof(NPClass));
     }
     return NPERR_NO_ERROR;
 }

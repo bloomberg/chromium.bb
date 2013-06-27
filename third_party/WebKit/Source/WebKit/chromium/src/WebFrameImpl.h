@@ -42,6 +42,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
+#include <bindings/npruntime.h>
 
 namespace WebCore {
 class GraphicsContext;
@@ -107,7 +108,6 @@ public:
     virtual WebPerformance performance() const;
     virtual NPObject* windowObject() const;
     virtual void bindToWindowObject(const WebString& name, NPObject*);
-    virtual void bindToWindowObject(const WebString& name, NPObject*, void*);
     virtual void executeScript(const WebScriptSource&);
     virtual void executeScriptInIsolatedWorld(
         int worldID, const WebScriptSource* sources, unsigned numSources,

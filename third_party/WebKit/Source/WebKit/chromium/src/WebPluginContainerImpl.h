@@ -74,6 +74,7 @@ public:
     // PluginView methods
     virtual WebLayer* platformLayer() const OVERRIDE;
     virtual NPObject* scriptableObject() OVERRIDE;
+    virtual NPP pluginNPP() OVERRIDE;
     virtual bool getFormValue(String&) OVERRIDE;
     virtual bool supportsKeyboardFocus() const OVERRIDE;
     virtual bool canProcessDrag() const OVERRIDE;

@@ -42,7 +42,7 @@
 
 namespace WebCore {
 
-void convertV8ObjectToNPVariant(v8::Local<v8::Value> object, NPObject* owner, NPVariant* result)
+void convertV8ObjectToNPVariant(v8::Local<v8::Value> object, NPP owner, NPVariant* result)
 {
     VOID_TO_NPVARIANT(*result);
 
@@ -69,14 +69,17 @@ void convertV8ObjectToNPVariant(v8::Local<v8::Value> object, NPObject* owner, NP
         STRINGN_TO_NPVARIANT(utf8Chars, length-1, *result);
     } else if (object->IsObject()) {
         DOMWindow* window = toDOMWindow(v8::Context::GetCurrent());
-        NPObject* npobject = npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(object), window);
-        if (npobject)
-            _NPN_RegisterObject(npobject, owner);
-        OBJECT_TO_NPVARIANT(npobject, *result);
+        if (owner) {
+            NPObject* npobject = npCreateV8ScriptObject(
+                owner, v8::Handle<v8::Object>::Cast(object), window);
+            OBJECT_TO_NPVARIANT(npobject, *result);
+        } else {
+            NULL_TO_NPVARIANT(*result);
+        }
     }
 }
 
-v8::Handle<v8::Value> convertNPVariantToV8Object(const NPVariant* variant, NPObject* npobject, v8::Isolate* isolate)
+v8::Handle<v8::Value> convertNPVariantToV8Object(const NPVariant* variant, v8::Isolate* isolate)
 {
     NPVariantType type = variant->type;
 
@@ -96,10 +99,10 @@ v8::Handle<v8::Value> convertNPVariantToV8Object(const NPVariant* variant, NPObj
         return v8::String::New(src.UTF8Characters, src.UTF8Length);
     }
     case NPVariantType_Object: {
-        NPObject* obj = NPVARIANT_TO_OBJECT(*variant);
-        if (obj->_class == npScriptObjectClass)
-            return v8::Local<v8::Object>::New(isolate, reinterpret_cast<V8NPObject*>(obj)->v8Object);
-        return createV8ObjectForNPObject(obj, npobject);
+        NPObject* object = NPVARIANT_TO_OBJECT(*variant);
+        if (V8NPObject* v8Object = npObjectToV8NPObject(object))
+            return v8::Local<v8::Object>::New(isolate, v8Object->v8Object);
+        return createV8ObjectForNPObject(object);
     }
     default:
         return v8::Undefined();

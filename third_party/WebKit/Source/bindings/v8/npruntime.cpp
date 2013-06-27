@@ -159,7 +159,6 @@ NPIdentifier _NPN_GetStringIdentifier(const NPUTF8* name)
     ASSERT(name);
 
     if (name) {
-
         StringKey key(name);
         StringIdentifierMap* identMap = getStringIdentifierMap();
         StringIdentifierMap::iterator iter = identMap->find(key);
@@ -260,6 +259,8 @@ void _NPN_ReleaseVariantValue(NPVariant* variant)
     variant->type = NPVariantType_Void;
 }
 
+static void _NPN_RegisterObject(NPObject*, NPP);
+
 NPObject *_NPN_CreateObject(NPP npp, NPClass* npClass)
 {
     ASSERT(npClass);
@@ -273,6 +274,12 @@ NPObject *_NPN_CreateObject(NPP npp, NPClass* npClass)
 
         npObject->_class = npClass;
         npObject->referenceCount = 1;
+
+        // TODO(wez): Temporarily allow objects to be created with null owner,
+        // until Chrome-side patch to call-sites has landed.
+        if (npp)
+            _NPN_RegisterObject(npObject, npp);
+
         return npObject;
     }
 
@@ -290,6 +297,8 @@ NPObject* _NPN_RetainObject(NPObject* npObject)
     return npObject;
 }
 
+static void _NPN_UnregisterObject(NPObject*);
+
 // _NPN_DeallocateObject actually deletes the object.  Technically,
 // callers should use _NPN_ReleaseObject.  Webkit exposes this function
 // to kill objects which plugins may not have properly released.
@@ -305,6 +314,7 @@ void _NPN_DeallocateObject(NPObject* npObject)
         if (_NPN_IsAlive(npObject))
             _NPN_UnregisterObject(npObject);
 
+        ASSERT(!npObject->referenceCount);
         npObject->referenceCount = -1;
         if (npObject->_class->deallocate)
             npObject->_class->deallocate(npObject);
@@ -353,107 +363,92 @@ void _NPN_InitializeVariantWithStringCopy(NPVariant* variant, const NPString* va
 // with a particular plugin.
 
 typedef WTF::HashSet<NPObject*> NPObjectSet;
-typedef WTF::HashMap<NPObject*, NPObject*> NPObjectMap;
-typedef WTF::HashMap<NPObject*, NPObjectSet*> NPRootObjectMap;
+typedef WTF::HashMap<NPObject*, NPP> NPObjectMap;
+typedef WTF::HashMap<NPP, OwnPtr<NPObjectSet> > NPObjectOwnerMap;
 
-// A map of live NPObjects with pointers to their Roots.
+// A map of live NPObjects to their owner Ids.
 static NPObjectMap& liveObjectMap()
 {
     DEFINE_STATIC_LOCAL(NPObjectMap, objectMap, ());
     return objectMap;
 }
 
-// A map of the root objects and the list of NPObjects
-// associated with that object.
-static NPRootObjectMap& rootObjectMap()
+// A map of the owner Ids and the list of NPObjects
+// associated with each.
+static NPObjectOwnerMap& objectOwnerMap()
 {
-    DEFINE_STATIC_LOCAL(NPRootObjectMap, objectMap, ());
-    return objectMap;
+    DEFINE_STATIC_LOCAL(NPObjectOwnerMap, ownerMap, ());
+    return ownerMap;
 }
 
-extern "C" {
-
-void _NPN_RegisterObject(NPObject* npObject, NPObject* owner)
+static void _NPN_RegisterObject(NPObject* npObject, NPP owner)
 {
     ASSERT(npObject);
+    ASSERT(owner);
 
-    // Check if already registered.
-    if (liveObjectMap().find(npObject) != liveObjectMap().end())
-        return;
-
-    if (!owner) {
-        // Registering a new owner object.
-        ASSERT(rootObjectMap().find(npObject) == rootObjectMap().end());
-        rootObjectMap().set(npObject, new NPObjectSet());
-    } else {
-        // Always associate this object with it's top-most parent.
-        // Since we always flatten, we only have to look up one level.
-        NPObjectMap::iterator ownerEntry = liveObjectMap().find(owner);
-        NPObject* parent = 0;
-        if (liveObjectMap().end() != ownerEntry)
-            parent = ownerEntry->value;
-
-        if (parent)
-            owner = parent;
-        ASSERT(rootObjectMap().find(npObject) == rootObjectMap().end());
-        if (rootObjectMap().find(owner) != rootObjectMap().end())
-            rootObjectMap().get(owner)->add(npObject);
-    }
+    NPObjectOwnerMap::iterator ownerEntry = objectOwnerMap().find(owner);
+    ASSERT(ownerEntry != objectOwnerMap().end());
+    ownerEntry->value->add(npObject);
 
     ASSERT(liveObjectMap().find(npObject) == liveObjectMap().end());
     liveObjectMap().set(npObject, owner);
 }
 
-void _NPN_UnregisterObject(NPObject* npObject)
+static void _NPN_UnregisterObject(NPObject* npObject)
 {
     ASSERT(npObject);
     ASSERT(liveObjectMap().find(npObject) != liveObjectMap().end());
+    NPP owner = liveObjectMap().find(npObject)->value;
 
-    NPObject* owner = 0;
-    if (liveObjectMap().find(npObject) != liveObjectMap().end())
-        owner = liveObjectMap().find(npObject)->value;
+    ASSERT(objectOwnerMap().find(owner) != objectOwnerMap().end());
+    NPObjectSet* list = objectOwnerMap().find(owner)->value.get();
 
-    if (!owner) {
-        // Unregistering a owner object; also unregister it's descendants.
-        ASSERT(rootObjectMap().find(npObject) != rootObjectMap().end());
-        NPObjectSet* set = rootObjectMap().get(npObject);
-        while (set->size() > 0) {
-#ifndef NDEBUG
-            int size = set->size();
-#endif
-            NPObject* sub_object = *(set->begin());
-            // The sub-object should not be a owner!
-            ASSERT(rootObjectMap().find(sub_object) == rootObjectMap().end());
-
-            // First, unregister the object.
-            set->remove(sub_object);
-            liveObjectMap().remove(sub_object);
-
-            // Script objects hold a refernce to their DOMWindow*, which is going away if
-            // we're unregistering the associated owner NPObject. Clear it out.
-            if (sub_object->_class == npScriptObjectClass) {
-                V8NPObject* v8npObject = reinterpret_cast<V8NPObject*>(sub_object);
-                v8npObject->rootObject = 0;
-            }
-
-            // Remove the JS references to the object.
-            forgetV8ObjectForNPObject(sub_object);
-
-            ASSERT(set->size() < size);
-        }
-        delete set;
-        rootObjectMap().remove(npObject);
-    } else {
-        NPRootObjectMap::iterator ownerEntry = rootObjectMap().find(owner);
-        if (ownerEntry != rootObjectMap().end()) {
-            NPObjectSet* list = ownerEntry->value;
-            ASSERT(list->find(npObject) != list->end());
-            list->remove(npObject);
-        }
-    }
+    ASSERT(list->find(npObject) != list->end());
+    list->remove(npObject);
 
     liveObjectMap().remove(npObject);
     forgetV8ObjectForNPObject(npObject);
+}
+
+extern "C" {
+
+void _NPN_RegisterObjectOwner(NPP owner)
+{
+    ASSERT(owner);
+
+    if (objectOwnerMap().find(owner) == objectOwnerMap().end())
+        objectOwnerMap().set(owner, adoptPtr(new NPObjectSet()));
+}
+
+void _NPN_UnregisterObjectOwner(NPP owner)
+{
+    ASSERT(objectOwnerMap().find(owner) != objectOwnerMap().end());
+    OwnPtr<NPObjectSet> set = objectOwnerMap().take(owner);
+
+    for (NPObjectSet::iterator iter = set->begin(); iter != set->end(); ++iter) {
+        NPObject* npObject = *iter;
+
+        // First, unregister the object.
+        liveObjectMap().remove(npObject);
+
+        // Script objects hold a reference to their DOMWindow*, which is going
+        // away if we're unregistering the associated owner NPObject. Clear it
+        // out.
+        // TODO(wez): If the object is no longer "alive", why do we need this?
+        if (V8NPObject* v8NpObject = npObjectToV8NPObject(npObject))
+            v8NpObject->rootObject = 0;
+
+        // Remove the JS references to the object.
+        forgetV8ObjectForNPObject(npObject);
+    }
+}
+
+NPP _NPN_GetObjectOwner(NPObject* npObject)
+{
+    NPObjectMap::iterator i = liveObjectMap().find(npObject);
+    if (i != liveObjectMap().end())
+        return i->value;
+    return 0;
 }
 
 bool _NPN_IsAlive(NPObject* npObject)

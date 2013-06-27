@@ -28,9 +28,8 @@
 
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/Widget.h"
+#include <bindings/npruntime.h>
 #include <wtf/text/WTFString.h>
-
-struct NPObject;
 
 namespace WebKit { class WebLayer; }
 
@@ -46,6 +45,8 @@ public:
 
     virtual WebKit::WebLayer* platformLayer() const { return 0; }
     virtual NPObject* scriptableObject() { return 0; }
+    virtual NPP pluginNPP() = 0;
+
     virtual bool getFormValue(String&) { return false; }
     virtual bool wantsWheelEvents() { return false; }
     virtual bool supportsKeyboardFocus() const { return false; }

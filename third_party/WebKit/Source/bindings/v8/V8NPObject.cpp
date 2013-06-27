@@ -29,13 +29,13 @@
 */
 
 #include "config.h"
-
 #include "bindings/v8/V8NPObject.h"
 
 #include "V8HTMLAppletElement.h"
 #include "V8HTMLEmbedElement.h"
 #include "V8HTMLObjectElement.h"
 #include "bindings/v8/NPV8Object.h"
+#include "bindings/v8/ScriptController.h"
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8NPUtils.h"
@@ -43,6 +43,8 @@
 #include "bindings/v8/npruntime_impl.h"
 #include "bindings/v8/npruntime_priv.h"
 #include "core/html/HTMLPlugInElement.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
 #include "wtf/OwnArrayPtr.h"
 
 namespace WebCore {
@@ -106,12 +108,16 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& args, 
         return;
     }
 
+    // Determine the object owner for the calling context.
+    DOMWindow* domWindow = firstDOMWindow();
+    ASSERT(domWindow);
+    NPP owner = domWindow->frame() ? domWindow->frame()->script()->frameNPP() : 0;
+
     // Wrap up parameters.
     int numArgs = args.Length();
     OwnArrayPtr<NPVariant> npArgs = adoptArrayPtr(new NPVariant[numArgs]);
-
     for (int i = 0; i < numArgs; i++)
-        convertV8ObjectToNPVariant(args[i], npObject, &npArgs[i]);
+        convertV8ObjectToNPVariant(args[i], owner, &npArgs[i]);
 
     NPVariant result;
     VOID_TO_NPVARIANT(result);
@@ -146,7 +152,7 @@ static void npObjectInvokeImpl(const v8::FunctionCallbackInfo<v8::Value>& args, 
     // Unwrap return values.
     v8::Handle<v8::Value> returnValue;
     if (_NPN_IsAlive(npObject))
-        returnValue = convertNPVariantToV8Object(&result, npObject, args.GetIsolate());
+        returnValue = convertNPVariantToV8Object(&result, args.GetIsolate());
     _NPN_ReleaseVariantValue(&result);
 
     v8SetReturnValue(args, returnValue);
@@ -226,7 +232,6 @@ static v8::Handle<v8::Value> npObjectGetProperty(v8::Local<v8::Object> self, NPI
     if (!npObject || !_NPN_IsAlive(npObject))
         return throwError(v8ReferenceError, "NPObject deleted", isolate);
 
-
     if (npObject->_class->hasProperty && npObject->_class->getProperty && npObject->_class->hasProperty(npObject, identifier)) {
         if (!_NPN_IsAlive(npObject))
             return throwError(v8ReferenceError, "NPObject deleted", isolate);
@@ -238,7 +243,8 @@ static v8::Handle<v8::Value> npObjectGetProperty(v8::Local<v8::Object> self, NPI
 
         v8::Handle<v8::Value> returnValue;
         if (_NPN_IsAlive(npObject))
-            returnValue = convertNPVariantToV8Object(&result, npObject, isolate);
+            returnValue = convertNPVariantToV8Object(&result, isolate);
+
         _NPN_ReleaseVariantValue(&result);
         return returnValue;
 
@@ -318,9 +324,14 @@ static v8::Handle<v8::Value> npObjectSetProperty(v8::Local<v8::Object> self, NPI
         if (!_NPN_IsAlive(npObject))
             return throwError(v8ReferenceError, "NPObject deleted", isolate);
 
+        // Determine the object owner for the calling context.
+        DOMWindow* domWindow = firstDOMWindow();
+        ASSERT(domWindow);
+        NPP owner = domWindow->frame() ? domWindow->frame()->script()->frameNPP() : 0;
+
         NPVariant npValue;
         VOID_TO_NPVARIANT(npValue);
-        convertV8ObjectToNPVariant(value, npObject, &npValue);
+        convertV8ObjectToNPVariant(value, owner, &npValue);
         bool success = npObject->_class->setProperty(npObject, identifier, &npValue);
         _NPN_ReleaseVariantValue(&npValue);
         if (success)
@@ -415,7 +426,7 @@ inline void DOMWrapperMap<NPObject>::makeWeakCallback(v8::Isolate* isolate, v8::
         _NPN_ReleaseObject(npObject);
 }
 
-v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root)
+v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object)
 {
     static v8::Persistent<v8::FunctionTemplate> npObjectDesc;
 
@@ -424,10 +435,9 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
 
     // If this is a v8 object, just return it.
-    if (object->_class == npScriptObjectClass) {
-        V8NPObject* v8NPObject = reinterpret_cast<V8NPObject*>(object);
+    V8NPObject* v8NPObject = npObjectToV8NPObject(object);
+    if (v8NPObject)
         return v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
-    }
 
     // If we've already wrapped this object, just return it.
     v8::Handle<v8::Object> wrapper = staticNPObjectMap().get(object);
@@ -459,7 +469,6 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root
 
     // KJS retains the object as part of its wrapper (see Bindings::CInstance).
     _NPN_RetainObject(object);
-    _NPN_RegisterObject(object, root);
 
     WrapperConfiguration configuration = buildWrapperConfiguration(object, WrapperConfiguration::Dependent);
     staticNPObjectMap().set(object, value, configuration);

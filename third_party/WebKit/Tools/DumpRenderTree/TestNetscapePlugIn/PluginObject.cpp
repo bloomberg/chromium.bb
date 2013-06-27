@@ -100,7 +100,7 @@ static void pluginDeallocate(NPObject*);
 NPNetscapeFuncs* browser;
 NPPluginFuncs* pluginFunctions;
 
-static NPClass pluginClass = {
+static NPClass pluginClass_ = {
     NP_CLASS_STRUCT_VERSION,
     pluginAllocate,
     pluginDeallocate,
@@ -116,9 +116,11 @@ static NPClass pluginClass = {
     0, // NPClass::construct
 };
 
-NPClass* getPluginClass(void)
+NPClass* createPluginClass(void)
 {
-    return &pluginClass;
+    NPClass* pluginClass = new NPClass;
+    *pluginClass = pluginClass_;
+    return pluginClass;
 }
 
 static bool identifiersInitialized = false;
@@ -852,7 +854,8 @@ static bool testScriptObjectInvoke(PluginObject* obj, const NPVariant* args, uin
     free(object_mehod_string);
 
     // Create a fresh NPObject to be passed as an argument
-    NPObject* object_arg = browser->createobject(obj->npp, &pluginClass);
+    NPObject* object_arg = browser->createobject(obj->npp, obj->header._class);
+
     NPVariant invoke_args[1];
     OBJECT_TO_NPVARIANT(object_arg, invoke_args[0]);
 
@@ -1094,7 +1097,7 @@ static bool pluginInvoke(NPObject* header, NPIdentifier name, const NPVariant* a
         return false;
     }
     if (name == pluginMethodIdentifiers[ID_TEST_CLONE_OBJECT]) {
-        NPObject* new_object = browser->createobject(plugin->npp, &pluginClass);
+        NPObject* new_object = browser->createobject(plugin->npp, plugin->header._class);
         assert(new_object->referenceCount == 1);
         OBJECT_TO_NPVARIANT(new_object, *result);
         return true;
@@ -1159,7 +1162,7 @@ static bool pluginInvoke(NPObject* header, NPIdentifier name, const NPVariant* a
     if (name == pluginMethodIdentifiers[ID_OBJECTS_ARE_SAME])
         return objectsAreSame(plugin, args, argCount, result);
     if (name == pluginMethodIdentifiers[ID_TEST_DELETE_WITHIN_INVOKE]) {
-        NPObject* newObject = browser->createobject(plugin->npp, &pluginClass);
+        NPObject* newObject = browser->createobject(plugin->npp, plugin->header._class);
         OBJECT_TO_NPVARIANT(newObject, *result);
         callDeletePlugin(header, name, pluginMethodIdentifiers[ID_TEST_DELETE_WITHIN_INVOKE]);
         return true;
