@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -251,6 +252,10 @@ void GLManager::Destroy() {
     decoder_->Destroy(true);
     decoder_.reset();
   }
+}
+
+const gpu::gles2::FeatureInfo::Workarounds& GLManager::workarounds() const {
+  return decoder_->GetContextGroup()->feature_info()->workarounds();
 }
 
 void GLManager::PumpCommands() {

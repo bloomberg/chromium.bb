@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "ui/gfx/size.h"
 
 namespace gfx {
@@ -86,6 +87,8 @@ class GLManager {
   gfx::GLContext* context() {
     return context_.get();
   }
+
+  const gpu::gles2::FeatureInfo::Workarounds& workarounds() const;
 
  private:
   void PumpCommands();

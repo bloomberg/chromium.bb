@@ -7,6 +7,7 @@
 #include <GLES2/gl2extchromium.h>
 
 #include "base/logging.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,6 +40,11 @@ class GLLoseContextTest : public testing::Test {
 // Test that glLoseContextCHROMIUM loses context in the same
 // share group but not other.
 TEST_F(GLLoseContextTest, ShareGroup) {
+  // If losing the context will cause the process to exit, do not perform this
+  // test as it will cause all subsequent tests to not run.
+  if (gl1a_.workarounds().exit_on_context_lost)
+    return;
+
   gl1a_.MakeCurrent();
   glLoseContextCHROMIUM(
       GL_GUILTY_CONTEXT_RESET_EXT, GL_INNOCENT_CONTEXT_RESET_EXT);
