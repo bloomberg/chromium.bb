@@ -522,124 +522,6 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   EXPECT_TRUE(deterministic_data()->at_write_eof());
 }
 
-// Test the receipt of a WINDOW_UPDATE frame while waiting for a chunk to be
-// made available is handled correctly.
-TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
-  if (GetParam() < kProtoSPDY3)
-    return;
-
-  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
-  scoped_ptr<SpdyFrame> chunk1(spdy_util_.ConstructSpdyBodyFrame(1, true));
-  MockWrite writes[] = {
-    CreateMockWrite(*req.get(), 0),
-    CreateMockWrite(*chunk1, 1),
-  };
-  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
-  scoped_ptr<SpdyFrame> window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(1, kUploadDataSize));
-  MockRead reads[] = {
-    CreateMockRead(*window_update, 2),
-    CreateMockRead(*resp, 3),
-    CreateMockRead(*chunk1, 4),
-    MockRead(ASYNC, 0, 5)  // EOF
-  };
-
-  HostPortPair host_port_pair("www.google.com", 80);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     kPrivacyModeDisabled);
-
-  DeterministicSocketData data(reads, arraysize(reads),
-                               writes, arraysize(writes));
-
-  DeterministicMockClientSocketFactory* socket_factory =
-      session_deps_.deterministic_socket_factory.get();
-  socket_factory->AddSocketDataProvider(&data);
-
-  http_session_ = SpdySessionDependencies::SpdyCreateSessionDeterministic(
-      &session_deps_);
-  session_ = http_session_->spdy_session_pool()->Get(key, BoundNetLog());
-  transport_params_ = new TransportSocketParams(host_port_pair,
-                                                MEDIUM, false, false,
-                                                OnHostResolutionCallback());
-
-  TestCompletionCallback callback;
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection->Init(host_port_pair.ToString(),
-                             transport_params_,
-                             MEDIUM,
-                             callback.callback(),
-                             http_session_->GetTransportSocketPool(
-                                 HttpNetworkSession::NORMAL_SOCKET_POOL),
-                             BoundNetLog()));
-
-  callback.WaitForResult();
-  EXPECT_EQ(OK,
-            session_->InitializeWithSocket(connection.release(), false, OK));
-
-  UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
-
-  HttpRequestInfo request;
-  request.method = "POST";
-  request.url = GURL("http://www.google.com/");
-  request.upload_data_stream = &upload_stream;
-
-  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
-  upload_stream.AppendChunk(kUploadData, kUploadDataSize, true);
-
-  BoundNetLog net_log;
-  scoped_ptr<SpdyHttpStream> http_stream(
-      new SpdyHttpStream(session_.get(), true));
-  ASSERT_EQ(OK, http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
-                                              net_log, CompletionCallback()));
-
-  HttpRequestHeaders headers;
-  HttpResponseInfo response;
-  // This will attempt to Write() the initial request and headers, which will
-  // complete asynchronously.
-  EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
-                                                     callback.callback()));
-  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(key));
-
-  // Complete the initial request write and first chunk.
-  data.RunFor(2);
-  ASSERT_TRUE(callback.have_result());
-  EXPECT_EQ(OK, callback.WaitForResult());
-
-  // Verify that the window size has decreased.
-  ASSERT_TRUE(http_stream->stream() != NULL);
-  EXPECT_NE(static_cast<int>(kSpdyStreamInitialWindowSize),
-            http_stream->stream()->send_window_size());
-
-  // Read window update.
-  data.RunFor(1);
-
-  // Verify the window update.
-  ASSERT_TRUE(http_stream->stream() != NULL);
-  EXPECT_EQ(static_cast<int>(kSpdyStreamInitialWindowSize),
-            http_stream->stream()->send_window_size());
-
-  // Read response headers.
-  data.RunFor(1);
-  ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
-
-  // Read and check |chunk1| response.
-  data.RunFor(1);
-  scoped_refptr<IOBuffer> buf1(new IOBuffer(kUploadDataSize));
-  ASSERT_EQ(kUploadDataSize,
-            http_stream->ReadResponseBody(
-                buf1.get(), kUploadDataSize, callback.callback()));
-  EXPECT_EQ(kUploadData, std::string(buf1->data(), kUploadDataSize));
-
-  // Finish reading the |EOF|.
-  data.RunFor(1);
-  ASSERT_TRUE(response.headers.get());
-  ASSERT_EQ(200, response.headers->response_code());
-  EXPECT_TRUE(data.at_read_eof());
-  EXPECT_TRUE(data.at_write_eof());
-}
-
 // Test case for bug: http://code.google.com/p/chromium/issues/detail?id=50058
 TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
   const char * const full_url = "http://www.google.com/foo?query=what#anchor";
@@ -878,6 +760,126 @@ void SpdyHttpStreamTest::TestSendCredentials(
   EXPECT_EQ(OK, callback.WaitForResult());
   ASSERT_TRUE(response.headers.get() != NULL);
   ASSERT_EQ(200, response.headers->response_code());
+}
+
+// The tests below are only for SPDY/3 and above.
+
+// Test the receipt of a WINDOW_UPDATE frame while waiting for a chunk to be
+// made available is handled correctly.
+TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
+  if (GetParam() < kProtoSPDY3)
+    return;
+
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  scoped_ptr<SpdyFrame> chunk1(spdy_util_.ConstructSpdyBodyFrame(1, true));
+  MockWrite writes[] = {
+    CreateMockWrite(*req.get(), 0),
+    CreateMockWrite(*chunk1, 1),
+  };
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  scoped_ptr<SpdyFrame> window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(1, kUploadDataSize));
+  MockRead reads[] = {
+    CreateMockRead(*window_update, 2),
+    CreateMockRead(*resp, 3),
+    CreateMockRead(*chunk1, 4),
+    MockRead(ASYNC, 0, 5)  // EOF
+  };
+
+  HostPortPair host_port_pair("www.google.com", 80);
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     kPrivacyModeDisabled);
+
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+
+  DeterministicMockClientSocketFactory* socket_factory =
+      session_deps_.deterministic_socket_factory.get();
+  socket_factory->AddSocketDataProvider(&data);
+
+  http_session_ = SpdySessionDependencies::SpdyCreateSessionDeterministic(
+      &session_deps_);
+  session_ = http_session_->spdy_session_pool()->Get(key, BoundNetLog());
+  transport_params_ = new TransportSocketParams(host_port_pair,
+                                                MEDIUM, false, false,
+                                                OnHostResolutionCallback());
+
+  TestCompletionCallback callback;
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection->Init(host_port_pair.ToString(),
+                             transport_params_,
+                             MEDIUM,
+                             callback.callback(),
+                             http_session_->GetTransportSocketPool(
+                                 HttpNetworkSession::NORMAL_SOCKET_POOL),
+                             BoundNetLog()));
+
+  callback.WaitForResult();
+  EXPECT_EQ(OK,
+            session_->InitializeWithSocket(connection.release(), false, OK));
+
+  UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/");
+  request.upload_data_stream = &upload_stream;
+
+  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
+  upload_stream.AppendChunk(kUploadData, kUploadDataSize, true);
+
+  BoundNetLog net_log;
+  scoped_ptr<SpdyHttpStream> http_stream(
+      new SpdyHttpStream(session_.get(), true));
+  ASSERT_EQ(OK, http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
+                                              net_log, CompletionCallback()));
+
+  HttpRequestHeaders headers;
+  HttpResponseInfo response;
+  // This will attempt to Write() the initial request and headers, which will
+  // complete asynchronously.
+  EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
+                                                     callback.callback()));
+  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(key));
+
+  // Complete the initial request write and first chunk.
+  data.RunFor(2);
+  ASSERT_TRUE(callback.have_result());
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  // Verify that the window size has decreased.
+  ASSERT_TRUE(http_stream->stream() != NULL);
+  EXPECT_NE(static_cast<int>(kSpdyStreamInitialWindowSize),
+            http_stream->stream()->send_window_size());
+
+  // Read window update.
+  data.RunFor(1);
+
+  // Verify the window update.
+  ASSERT_TRUE(http_stream->stream() != NULL);
+  EXPECT_EQ(static_cast<int>(kSpdyStreamInitialWindowSize),
+            http_stream->stream()->send_window_size());
+
+  // Read response headers.
+  data.RunFor(1);
+  ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
+
+  // Read and check |chunk1| response.
+  data.RunFor(1);
+  scoped_refptr<IOBuffer> buf1(new IOBuffer(kUploadDataSize));
+  ASSERT_EQ(kUploadDataSize,
+            http_stream->ReadResponseBody(
+                buf1.get(), kUploadDataSize, callback.callback()));
+  EXPECT_EQ(kUploadData, std::string(buf1->data(), kUploadDataSize));
+
+  // Finish reading the |EOF|.
+  data.RunFor(1);
+  ASSERT_TRUE(response.headers.get());
+  ASSERT_EQ(200, response.headers->response_code());
+  EXPECT_TRUE(data.at_read_eof());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 TEST_P(SpdyHttpStreamTest, SendCredentialsEC) {

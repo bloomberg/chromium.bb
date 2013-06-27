@@ -2182,134 +2182,6 @@ TEST_P(SpdySessionTest, NeedsCredentials) {
   spdy_session_pool_->Remove(session);
 }
 
-TEST_P(SpdySessionTest, SendCredentials) {
-  if (GetParam() < kProtoSPDY3)
-    return;
-
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
-  };
-  SettingsMap settings;
-  scoped_ptr<SpdyFrame> settings_frame(
-      spdy_util_.ConstructSpdySettings(settings));
-  MockWrite writes[] = {
-    CreateMockWrite(*settings_frame),
-  };
-  StaticSocketDataProvider data(reads, arraysize(reads),
-                                writes, arraysize(writes));
-  data.set_connect_data(connect_data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  ssl.channel_id_sent = true;
-  ssl.protocol_negotiated = GetParam();
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
-
-  CreateNetworkSession();
-
-  const GURL kTestUrl("https://www.foo.com");
-  HostPortPair test_host_port_pair(kTestUrl.host(), 443);
-  SpdySessionKey key(test_host_port_pair, ProxyServer::Direct(),
-                     kPrivacyModeDisabled);
-
-  scoped_refptr<SpdySession> session = GetSession(key);
-
-  SSLConfig ssl_config;
-  scoped_refptr<TransportSocketParams> transport_params(
-      new TransportSocketParams(test_host_port_pair,
-                                MEDIUM,
-                                false,
-                                false,
-                                OnHostResolutionCallback()));
-  scoped_refptr<SOCKSSocketParams> socks_params;
-  scoped_refptr<HttpProxySocketParams> http_proxy_params;
-  scoped_refptr<SSLSocketParams> ssl_params(
-      new SSLSocketParams(transport_params,
-                          socks_params,
-                          http_proxy_params,
-                          ProxyServer::SCHEME_DIRECT,
-                          test_host_port_pair,
-                          ssl_config,
-                          0,
-                          false,
-                          false));
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  EXPECT_EQ(OK, connection->Init(test_host_port_pair.ToString(),
-                                 ssl_params, MEDIUM, CompletionCallback(),
-                                 http_session_->GetSSLSocketPool(
-                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
-                                 BoundNetLog()));
-
-  EXPECT_EQ(OK, session->InitializeWithSocket(connection.release(), true, OK));
-  EXPECT_TRUE(session->NeedsCredentials());
-
-  // Flush the SpdySession::OnReadComplete() task.
-  base::MessageLoop::current()->RunUntilIdle();
-
-  spdy_session_pool_->Remove(session);
-  EXPECT_FALSE(spdy_session_pool_->HasSession(key));
-}
-
-TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
-  if (GetParam() < kProtoSPDY3)
-    return;
-
-  // Set SETTINGS_INITIAL_WINDOW_SIZE to a small number so that WINDOW_UPDATE
-  // gets sent.
-  SettingsMap new_settings;
-  int32 window_size = 1;
-  new_settings[SETTINGS_INITIAL_WINDOW_SIZE] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, window_size);
-
-  // Set up the socket so we read a SETTINGS frame that sets
-  // INITIAL_WINDOW_SIZE.
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  scoped_ptr<SpdyFrame> settings_frame(
-      spdy_util_.ConstructSpdySettings(new_settings));
-  MockRead reads[] = {
-    CreateMockRead(*settings_frame, 0),
-    MockRead(ASYNC, 0, 1)  // EOF
-  };
-
-  session_deps_.host_resolver->set_synchronous_mode(true);
-
-  scoped_ptr<DeterministicSocketData> data(
-      new DeterministicSocketData(reads, arraysize(reads), NULL, 0));
-  data->set_connect_data(connect_data);
-  session_deps_.deterministic_socket_factory->AddSocketDataProvider(data.get());
-
-  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
-
-  CreateDeterministicNetworkSession();
-
-  scoped_refptr<SpdySession> session = CreateInitializedSession();
-  base::WeakPtr<SpdyStream> spdy_stream1 =
-      CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM,
-                                session, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != NULL);
-  TestCompletionCallback callback1;
-  EXPECT_NE(spdy_stream1->send_window_size(), window_size);
-
-  data->RunFor(1);  // Process the SETTINGS frame, but not the EOF
-  base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(session->stream_initial_send_window_size(), window_size);
-  EXPECT_EQ(spdy_stream1->send_window_size(), window_size);
-
-  // Release the first one, this will allow the second to be created.
-  spdy_stream1->Cancel();
-  EXPECT_EQ(NULL, spdy_stream1.get());
-
-  base::WeakPtr<SpdyStream> spdy_stream2 =
-      CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM,
-                                session, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream2.get() != NULL);
-  EXPECT_EQ(spdy_stream2->send_window_size(), window_size);
-  spdy_stream2->Cancel();
-  EXPECT_EQ(NULL, spdy_stream2.get());
-}
-
 // Test that SpdySession::DoRead reads data from the socket without yielding.
 // This test makes 32k - 1 bytes of data available on the socket for reading. It
 // then verifies that it has read all the available data without yielding.
@@ -2717,6 +2589,468 @@ TEST_P(SpdySessionTest, ProtocolNegotiation) {
   }
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 }
+
+// Tests the case of a non-SPDY request closing an idle SPDY session when no
+// pointers to the idle session are currently held.
+TEST_P(SpdySessionTest, CloseOneIdleConnection) {
+  ClientSocketPoolManager::set_max_sockets_per_group(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+  ClientSocketPoolManager::set_max_sockets_per_pool(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  CreateNetworkSession();
+
+  TransportClientSocketPool* pool =
+      http_session_->GetTransportSocketPool(
+          HttpNetworkSession::NORMAL_SOCKET_POOL);
+
+  // Create an idle SPDY session.
+  SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
+                      kPrivacyModeDisabled);
+  scoped_refptr<SpdySession> session1 = GetSession(key1);
+  EXPECT_EQ(
+      OK,
+      InitializeSession(http_session_.get(), session1.get(),
+                        key1.host_port_pair()));
+  EXPECT_FALSE(pool->IsStalled());
+  // Release the pointer to the session so it can be closed.
+  session1 = NULL;
+
+  // Trying to create a new connection should cause the pool to be stalled, and
+  // post a task asynchronously to try and close the session.
+  TestCompletionCallback callback2;
+  HostPortPair host_port2("2.com", 80);
+  scoped_refptr<TransportSocketParams> params2(
+      new TransportSocketParams(host_port2, DEFAULT_PRIORITY, false, false,
+                                OnHostResolutionCallback()));
+  scoped_ptr<ClientSocketHandle> connection2(new ClientSocketHandle);
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
+                              callback2.callback(), pool, BoundNetLog()));
+  EXPECT_TRUE(pool->IsStalled());
+
+  // The socket pool should close the connection asynchronously and establish a
+  // new connection.
+  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_FALSE(pool->IsStalled());
+}
+
+// Tests the case of a non-SPDY request closing an idle SPDY session when no
+// pointers to the idle session are currently held, in the case the SPDY session
+// has an alias.
+TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
+  ClientSocketPoolManager::set_max_sockets_per_group(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+  ClientSocketPoolManager::set_max_sockets_per_pool(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  session_deps_.host_resolver->rules()->AddIPLiteralRule(
+      "1.com", "192.168.0.2", std::string());
+  session_deps_.host_resolver->rules()->AddIPLiteralRule(
+      "2.com", "192.168.0.2", std::string());
+  // Not strictly needed.
+  session_deps_.host_resolver->rules()->AddIPLiteralRule(
+      "3.com", "192.168.0.3", std::string());
+
+  CreateNetworkSession();
+
+  TransportClientSocketPool* pool =
+      http_session_->GetTransportSocketPool(
+          HttpNetworkSession::NORMAL_SOCKET_POOL);
+
+  // Create an idle SPDY session.
+  SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
+                      kPrivacyModeDisabled);
+  scoped_refptr<SpdySession> session1 = GetSession(key1);
+  EXPECT_EQ(
+      OK,
+      InitializeSession(http_session_.get(), session1.get(),
+                        key1.host_port_pair()));
+  EXPECT_FALSE(pool->IsStalled());
+
+  // Set up an alias for the idle SPDY session, increasing its ref count to 2.
+  SpdySessionKey key2(HostPortPair("2.com", 80), ProxyServer::Direct(),
+                      kPrivacyModeDisabled);
+  SpdySessionPoolPeer pool_peer(spdy_session_pool_);
+  HostResolver::RequestInfo info(key2.host_port_pair());
+  AddressList addresses;
+  // Pre-populate the DNS cache, since a synchronous resolution is required in
+  // order to create the alias.
+  session_deps_.host_resolver->Resolve(
+      info, &addresses, CompletionCallback(), NULL, BoundNetLog());
+  // Add the alias for the first session's key.  Has to be done manually since
+  // the usual process is bypassed.
+  pool_peer.AddAlias(addresses.front(), key1);
+  // Get a session for |key2|, which should return the session created earlier.
+  scoped_refptr<SpdySession> session2 =
+      spdy_session_pool_->Get(key2, BoundNetLog());
+  ASSERT_EQ(session1.get(), session2.get());
+  EXPECT_FALSE(pool->IsStalled());
+
+  // Release both the pointers to the session so it can be closed.
+  session1 = NULL;
+  session2 = NULL;
+
+  // Trying to create a new connection should cause the pool to be stalled, and
+  // post a task asynchronously to try and close the session.
+  TestCompletionCallback callback3;
+  HostPortPair host_port3("3.com", 80);
+  scoped_refptr<TransportSocketParams> params3(
+      new TransportSocketParams(host_port3, DEFAULT_PRIORITY, false, false,
+                                OnHostResolutionCallback()));
+  scoped_ptr<ClientSocketHandle> connection3(new ClientSocketHandle);
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection3->Init(host_port3.ToString(), params3, DEFAULT_PRIORITY,
+                              callback3.callback(), pool, BoundNetLog()));
+  EXPECT_TRUE(pool->IsStalled());
+
+  // The socket pool should close the connection asynchronously and establish a
+  // new connection.
+  EXPECT_EQ(OK, callback3.WaitForResult());
+  EXPECT_FALSE(pool->IsStalled());
+}
+
+// Tests the case of a non-SPDY request closing an idle SPDY session when a
+// pointer to the idle session is still held.
+TEST_P(SpdySessionTest, CloseOneIdleConnectionSessionStillHeld) {
+  ClientSocketPoolManager::set_max_sockets_per_group(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+  ClientSocketPoolManager::set_max_sockets_per_pool(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  CreateNetworkSession();
+
+  TransportClientSocketPool* pool =
+      http_session_->GetTransportSocketPool(
+          HttpNetworkSession::NORMAL_SOCKET_POOL);
+
+  // Create an idle SPDY session.
+  SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
+                      kPrivacyModeDisabled);
+  scoped_refptr<SpdySession> session1 = GetSession(key1);
+  EXPECT_EQ(
+      OK,
+      InitializeSession(http_session_.get(), session1.get(),
+                        key1.host_port_pair()));
+  EXPECT_FALSE(pool->IsStalled());
+
+  // Trying to create a new connection should cause the pool to be stalled, and
+  // post a task asynchronously to try and close the session.
+  TestCompletionCallback callback2;
+  HostPortPair host_port2("2.com", 80);
+  scoped_refptr<TransportSocketParams> params2(
+      new TransportSocketParams(host_port2, DEFAULT_PRIORITY, false, false,
+                                OnHostResolutionCallback()));
+  scoped_ptr<ClientSocketHandle> connection2(new ClientSocketHandle);
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
+                              callback2.callback(), pool, BoundNetLog()));
+  EXPECT_TRUE(pool->IsStalled());
+
+  // Running the message loop should cause the session to prepare to be closed,
+  // but since there's still an outstanding reference, it should not be closed
+  // yet.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(pool->IsStalled());
+  EXPECT_FALSE(callback2.have_result());
+
+  // Release the pointer to the session so it can be closed.
+  session1 = NULL;
+  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_FALSE(pool->IsStalled());
+}
+
+// Tests that a non-SPDY request can't close a SPDY session that's currently in
+// use.
+TEST_P(SpdySessionTest, CloseOneIdleConnectionFailsWhenSessionInUse) {
+  ClientSocketPoolManager::set_max_sockets_per_group(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+  ClientSocketPoolManager::set_max_sockets_per_pool(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> cancel1(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
+  MockWrite writes[] = {
+    CreateMockWrite(*req1, 1),
+    CreateMockWrite(*cancel1, 1),
+  };
+  StaticSocketDataProvider data(reads, arraysize(reads),
+                                     writes, arraysize(writes));
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  CreateNetworkSession();
+
+  TransportClientSocketPool* pool =
+      http_session_->GetTransportSocketPool(
+          HttpNetworkSession::NORMAL_SOCKET_POOL);
+
+  // Create a SPDY session.
+  GURL url1("http://www.google.com");
+  SpdySessionKey key1(HostPortPair(url1.host(), 80),
+                      ProxyServer::Direct(), kPrivacyModeDisabled);
+  scoped_refptr<SpdySession> session1 = GetSession(key1);
+  EXPECT_EQ(
+      OK,
+      InitializeSession(http_session_.get(), session1.get(),
+                        key1.host_port_pair()));
+  EXPECT_FALSE(pool->IsStalled());
+
+  // Create a stream using the session, and send a request.
+
+  TestCompletionCallback callback1;
+  base::WeakPtr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
+                                session1, url1, DEFAULT_PRIORITY,
+                                BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get());
+  test::StreamDelegateDoNothing delegate1(spdy_stream1);
+  spdy_stream1->SetDelegate(&delegate1);
+
+  scoped_ptr<SpdyHeaderBlock> headers1(
+      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            spdy_stream1->SendRequestHeaders(
+                headers1.Pass(), NO_MORE_DATA_TO_SEND));
+  EXPECT_TRUE(spdy_stream1->HasUrl());
+
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Release the session, so holding onto a pointer here does not affect
+  // anything.
+  session1 = NULL;
+
+  // Trying to create a new connection should cause the pool to be stalled, and
+  // post a task asynchronously to try and close the session.
+  TestCompletionCallback callback2;
+  HostPortPair host_port2("2.com", 80);
+  scoped_refptr<TransportSocketParams> params2(
+      new TransportSocketParams(host_port2, DEFAULT_PRIORITY, false, false,
+                                OnHostResolutionCallback()));
+  scoped_ptr<ClientSocketHandle> connection2(new ClientSocketHandle);
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
+                              callback2.callback(), pool, BoundNetLog()));
+  EXPECT_TRUE(pool->IsStalled());
+
+  // Running the message loop should cause the socket pool to ask the SPDY
+  // session to close an idle socket, but since the socket is in use, nothing
+  // happens.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(pool->IsStalled());
+  EXPECT_FALSE(callback2.have_result());
+
+  // Cancelling the request should still not release the session's socket,
+  // since the session is still kept alive by the SpdySessionPool.
+  ASSERT_TRUE(spdy_stream1.get());
+  spdy_stream1->Cancel();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(pool->IsStalled());
+  EXPECT_FALSE(callback2.have_result());
+}
+
+// Verify that SpdySessionKey and therefore SpdySession is different when
+// privacy mode is enabled or disabled.
+TEST_P(SpdySessionTest, SpdySessionKeyPrivacyMode) {
+  CreateDeterministicNetworkSession();
+
+  HostPortPair host_port_pair("www.google.com", 443);
+  SpdySessionKey key_privacy_enabled(host_port_pair, ProxyServer::Direct(),
+                                     kPrivacyModeEnabled);
+  SpdySessionKey key_privacy_disabled(host_port_pair, ProxyServer::Direct(),
+                                     kPrivacyModeDisabled);
+
+  EXPECT_FALSE(spdy_session_pool_->HasSession(key_privacy_enabled));
+  EXPECT_FALSE(spdy_session_pool_->HasSession(key_privacy_disabled));
+
+  // Add SpdySession with PrivacyMode Enabled to the pool.
+  scoped_refptr<SpdySession> session_privacy_enabled =
+      spdy_session_pool_->Get(key_privacy_enabled, BoundNetLog());
+
+  EXPECT_TRUE(spdy_session_pool_->HasSession(key_privacy_enabled));
+  EXPECT_FALSE(spdy_session_pool_->HasSession(key_privacy_disabled));
+
+  // Add SpdySession with PrivacyMode Disabled to the pool.
+  scoped_refptr<SpdySession> session_privacy_disabled =
+      spdy_session_pool_->Get(key_privacy_disabled, BoundNetLog());
+
+  EXPECT_TRUE(spdy_session_pool_->HasSession(key_privacy_enabled));
+  EXPECT_TRUE(spdy_session_pool_->HasSession(key_privacy_disabled));
+
+  spdy_session_pool_->Remove(session_privacy_enabled);
+  EXPECT_FALSE(spdy_session_pool_->HasSession(key_privacy_enabled));
+  EXPECT_TRUE(spdy_session_pool_->HasSession(key_privacy_disabled));
+
+  spdy_session_pool_->Remove(session_privacy_disabled);
+  EXPECT_FALSE(spdy_session_pool_->HasSession(key_privacy_enabled));
+  EXPECT_FALSE(spdy_session_pool_->HasSession(key_privacy_disabled));
+}
+
+// The tests below are only for SPDY/3 and above.
+
+TEST_P(SpdySessionTest, SendCredentials) {
+  if (GetParam() < kProtoSPDY3)
+    return;
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+  SettingsMap settings;
+  scoped_ptr<SpdyFrame> settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
+  MockWrite writes[] = {
+    CreateMockWrite(*settings_frame),
+  };
+  StaticSocketDataProvider data(reads, arraysize(reads),
+                                writes, arraysize(writes));
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.channel_id_sent = true;
+  ssl.protocol_negotiated = GetParam();
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateNetworkSession();
+
+  const GURL kTestUrl("https://www.foo.com");
+  HostPortPair test_host_port_pair(kTestUrl.host(), 443);
+  SpdySessionKey key(test_host_port_pair, ProxyServer::Direct(),
+                     kPrivacyModeDisabled);
+
+  scoped_refptr<SpdySession> session = GetSession(key);
+
+  SSLConfig ssl_config;
+  scoped_refptr<TransportSocketParams> transport_params(
+      new TransportSocketParams(test_host_port_pair,
+                                MEDIUM,
+                                false,
+                                false,
+                                OnHostResolutionCallback()));
+  scoped_refptr<SOCKSSocketParams> socks_params;
+  scoped_refptr<HttpProxySocketParams> http_proxy_params;
+  scoped_refptr<SSLSocketParams> ssl_params(
+      new SSLSocketParams(transport_params,
+                          socks_params,
+                          http_proxy_params,
+                          ProxyServer::SCHEME_DIRECT,
+                          test_host_port_pair,
+                          ssl_config,
+                          0,
+                          false,
+                          false));
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  EXPECT_EQ(OK, connection->Init(test_host_port_pair.ToString(),
+                                 ssl_params, MEDIUM, CompletionCallback(),
+                                 http_session_->GetSSLSocketPool(
+                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
+                                 BoundNetLog()));
+
+  EXPECT_EQ(OK, session->InitializeWithSocket(connection.release(), true, OK));
+  EXPECT_TRUE(session->NeedsCredentials());
+
+  // Flush the SpdySession::OnReadComplete() task.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  spdy_session_pool_->Remove(session);
+  EXPECT_FALSE(spdy_session_pool_->HasSession(key));
+}
+
+TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
+  if (GetParam() < kProtoSPDY3)
+    return;
+
+  // Set SETTINGS_INITIAL_WINDOW_SIZE to a small number so that WINDOW_UPDATE
+  // gets sent.
+  SettingsMap new_settings;
+  int32 window_size = 1;
+  new_settings[SETTINGS_INITIAL_WINDOW_SIZE] =
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, window_size);
+
+  // Set up the socket so we read a SETTINGS frame that sets
+  // INITIAL_WINDOW_SIZE.
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  scoped_ptr<SpdyFrame> settings_frame(
+      spdy_util_.ConstructSpdySettings(new_settings));
+  MockRead reads[] = {
+    CreateMockRead(*settings_frame, 0),
+    MockRead(ASYNC, 0, 1)  // EOF
+  };
+
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  scoped_ptr<DeterministicSocketData> data(
+      new DeterministicSocketData(reads, arraysize(reads), NULL, 0));
+  data->set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(data.get());
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateDeterministicNetworkSession();
+
+  scoped_refptr<SpdySession> session = CreateInitializedSession();
+  base::WeakPtr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM,
+                                session, test_url_, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != NULL);
+  TestCompletionCallback callback1;
+  EXPECT_NE(spdy_stream1->send_window_size(), window_size);
+
+  data->RunFor(1);  // Process the SETTINGS frame, but not the EOF
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(session->stream_initial_send_window_size(), window_size);
+  EXPECT_EQ(spdy_stream1->send_window_size(), window_size);
+
+  // Release the first one, this will allow the second to be created.
+  spdy_stream1->Cancel();
+  EXPECT_EQ(NULL, spdy_stream1.get());
+
+  base::WeakPtr<SpdyStream> spdy_stream2 =
+      CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM,
+                                session, test_url_, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream2.get() != NULL);
+  EXPECT_EQ(spdy_stream2->send_window_size(), window_size);
+  spdy_stream2->Cancel();
+  EXPECT_EQ(NULL, spdy_stream2.get());
+}
+
+// The tests below are only for SPDY/3.1 and above.
 
 // SpdySession::{Increase,Decrease}RecvWindowSize should properly
 // adjust the session receive window size for SPDY 3.1 and higher. In
@@ -3749,337 +4083,6 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
   EXPECT_EQ(std::string(), delegate2.TakeReceivedData());
 
   EXPECT_TRUE(data.at_write_eof());
-}
-
-
-// Tests the case of a non-SPDY request closing an idle SPDY session when no
-// pointers to the idle session are currently held.
-TEST_P(SpdySessionTest, CloseOneIdleConnection) {
-  ClientSocketPoolManager::set_max_sockets_per_group(
-      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
-  ClientSocketPoolManager::set_max_sockets_per_pool(
-      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
-
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
-  };
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
-  data.set_connect_data(connect_data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  CreateNetworkSession();
-
-  TransportClientSocketPool* pool =
-      http_session_->GetTransportSocketPool(
-          HttpNetworkSession::NORMAL_SOCKET_POOL);
-
-  // Create an idle SPDY session.
-  SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
-                      kPrivacyModeDisabled);
-  scoped_refptr<SpdySession> session1 = GetSession(key1);
-  EXPECT_EQ(
-      OK,
-      InitializeSession(http_session_.get(), session1.get(),
-                        key1.host_port_pair()));
-  EXPECT_FALSE(pool->IsStalled());
-  // Release the pointer to the session so it can be closed.
-  session1 = NULL;
-
-  // Trying to create a new connection should cause the pool to be stalled, and
-  // post a task asynchronously to try and close the session.
-  TestCompletionCallback callback2;
-  HostPortPair host_port2("2.com", 80);
-  scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, DEFAULT_PRIORITY, false, false,
-                                OnHostResolutionCallback()));
-  scoped_ptr<ClientSocketHandle> connection2(new ClientSocketHandle);
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
-                              callback2.callback(), pool, BoundNetLog()));
-  EXPECT_TRUE(pool->IsStalled());
-
-  // The socket pool should close the connection asynchronously and establish a
-  // new connection.
-  EXPECT_EQ(OK, callback2.WaitForResult());
-  EXPECT_FALSE(pool->IsStalled());
-}
-
-// Tests the case of a non-SPDY request closing an idle SPDY session when no
-// pointers to the idle session are currently held, in the case the SPDY session
-// has an alias.
-TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
-  ClientSocketPoolManager::set_max_sockets_per_group(
-      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
-  ClientSocketPoolManager::set_max_sockets_per_pool(
-      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
-
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
-  };
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
-  data.set_connect_data(connect_data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  session_deps_.host_resolver->set_synchronous_mode(true);
-  session_deps_.host_resolver->rules()->AddIPLiteralRule(
-      "1.com", "192.168.0.2", std::string());
-  session_deps_.host_resolver->rules()->AddIPLiteralRule(
-      "2.com", "192.168.0.2", std::string());
-  // Not strictly needed.
-  session_deps_.host_resolver->rules()->AddIPLiteralRule(
-      "3.com", "192.168.0.3", std::string());
-
-  CreateNetworkSession();
-
-  TransportClientSocketPool* pool =
-      http_session_->GetTransportSocketPool(
-          HttpNetworkSession::NORMAL_SOCKET_POOL);
-
-  // Create an idle SPDY session.
-  SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
-                      kPrivacyModeDisabled);
-  scoped_refptr<SpdySession> session1 = GetSession(key1);
-  EXPECT_EQ(
-      OK,
-      InitializeSession(http_session_.get(), session1.get(),
-                        key1.host_port_pair()));
-  EXPECT_FALSE(pool->IsStalled());
-
-  // Set up an alias for the idle SPDY session, increasing its ref count to 2.
-  SpdySessionKey key2(HostPortPair("2.com", 80), ProxyServer::Direct(),
-                      kPrivacyModeDisabled);
-  SpdySessionPoolPeer pool_peer(spdy_session_pool_);
-  HostResolver::RequestInfo info(key2.host_port_pair());
-  AddressList addresses;
-  // Pre-populate the DNS cache, since a synchronous resolution is required in
-  // order to create the alias.
-  session_deps_.host_resolver->Resolve(
-      info, &addresses, CompletionCallback(), NULL, BoundNetLog());
-  // Add the alias for the first session's key.  Has to be done manually since
-  // the usual process is bypassed.
-  pool_peer.AddAlias(addresses.front(), key1);
-  // Get a session for |key2|, which should return the session created earlier.
-  scoped_refptr<SpdySession> session2 =
-      spdy_session_pool_->Get(key2, BoundNetLog());
-  ASSERT_EQ(session1.get(), session2.get());
-  EXPECT_FALSE(pool->IsStalled());
-
-  // Release both the pointers to the session so it can be closed.
-  session1 = NULL;
-  session2 = NULL;
-
-  // Trying to create a new connection should cause the pool to be stalled, and
-  // post a task asynchronously to try and close the session.
-  TestCompletionCallback callback3;
-  HostPortPair host_port3("3.com", 80);
-  scoped_refptr<TransportSocketParams> params3(
-      new TransportSocketParams(host_port3, DEFAULT_PRIORITY, false, false,
-                                OnHostResolutionCallback()));
-  scoped_ptr<ClientSocketHandle> connection3(new ClientSocketHandle);
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection3->Init(host_port3.ToString(), params3, DEFAULT_PRIORITY,
-                              callback3.callback(), pool, BoundNetLog()));
-  EXPECT_TRUE(pool->IsStalled());
-
-  // The socket pool should close the connection asynchronously and establish a
-  // new connection.
-  EXPECT_EQ(OK, callback3.WaitForResult());
-  EXPECT_FALSE(pool->IsStalled());
-}
-
-// Tests the case of a non-SPDY request closing an idle SPDY session when a
-// pointer to the idle session is still held.
-TEST_P(SpdySessionTest, CloseOneIdleConnectionSessionStillHeld) {
-  ClientSocketPoolManager::set_max_sockets_per_group(
-      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
-  ClientSocketPoolManager::set_max_sockets_per_pool(
-      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
-
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
-  };
-  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
-  data.set_connect_data(connect_data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  CreateNetworkSession();
-
-  TransportClientSocketPool* pool =
-      http_session_->GetTransportSocketPool(
-          HttpNetworkSession::NORMAL_SOCKET_POOL);
-
-  // Create an idle SPDY session.
-  SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
-                      kPrivacyModeDisabled);
-  scoped_refptr<SpdySession> session1 = GetSession(key1);
-  EXPECT_EQ(
-      OK,
-      InitializeSession(http_session_.get(), session1.get(),
-                        key1.host_port_pair()));
-  EXPECT_FALSE(pool->IsStalled());
-
-  // Trying to create a new connection should cause the pool to be stalled, and
-  // post a task asynchronously to try and close the session.
-  TestCompletionCallback callback2;
-  HostPortPair host_port2("2.com", 80);
-  scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, DEFAULT_PRIORITY, false, false,
-                                OnHostResolutionCallback()));
-  scoped_ptr<ClientSocketHandle> connection2(new ClientSocketHandle);
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
-                              callback2.callback(), pool, BoundNetLog()));
-  EXPECT_TRUE(pool->IsStalled());
-
-  // Running the message loop should cause the session to prepare to be closed,
-  // but since there's still an outstanding reference, it should not be closed
-  // yet.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(pool->IsStalled());
-  EXPECT_FALSE(callback2.have_result());
-
-  // Release the pointer to the session so it can be closed.
-  session1 = NULL;
-  EXPECT_EQ(OK, callback2.WaitForResult());
-  EXPECT_FALSE(pool->IsStalled());
-}
-
-// Tests that a non-SPDY request can't close a SPDY session that's currently in
-// use.
-TEST_P(SpdySessionTest, CloseOneIdleConnectionFailsWhenSessionInUse) {
-  ClientSocketPoolManager::set_max_sockets_per_group(
-      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
-  ClientSocketPoolManager::set_max_sockets_per_pool(
-      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
-
-  MockConnect connect_data(SYNCHRONOUS, OK);
-  MockRead reads[] = {
-    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
-  };
-  scoped_ptr<SpdyFrame> req1(
-      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
-  scoped_ptr<SpdyFrame> cancel1(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
-  MockWrite writes[] = {
-    CreateMockWrite(*req1, 1),
-    CreateMockWrite(*cancel1, 1),
-  };
-  StaticSocketDataProvider data(reads, arraysize(reads),
-                                     writes, arraysize(writes));
-  data.set_connect_data(connect_data);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  CreateNetworkSession();
-
-  TransportClientSocketPool* pool =
-      http_session_->GetTransportSocketPool(
-          HttpNetworkSession::NORMAL_SOCKET_POOL);
-
-  // Create a SPDY session.
-  GURL url1("http://www.google.com");
-  SpdySessionKey key1(HostPortPair(url1.host(), 80),
-                      ProxyServer::Direct(), kPrivacyModeDisabled);
-  scoped_refptr<SpdySession> session1 = GetSession(key1);
-  EXPECT_EQ(
-      OK,
-      InitializeSession(http_session_.get(), session1.get(),
-                        key1.host_port_pair()));
-  EXPECT_FALSE(pool->IsStalled());
-
-  // Create a stream using the session, and send a request.
-
-  TestCompletionCallback callback1;
-  base::WeakPtr<SpdyStream> spdy_stream1 =
-      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
-                                session1, url1, DEFAULT_PRIORITY,
-                                BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get());
-  test::StreamDelegateDoNothing delegate1(spdy_stream1);
-  spdy_stream1->SetDelegate(&delegate1);
-
-  scoped_ptr<SpdyHeaderBlock> headers1(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
-  EXPECT_EQ(ERR_IO_PENDING,
-            spdy_stream1->SendRequestHeaders(
-                headers1.Pass(), NO_MORE_DATA_TO_SEND));
-  EXPECT_TRUE(spdy_stream1->HasUrl());
-
-  base::MessageLoop::current()->RunUntilIdle();
-
-  // Release the session, so holding onto a pointer here does not affect
-  // anything.
-  session1 = NULL;
-
-  // Trying to create a new connection should cause the pool to be stalled, and
-  // post a task asynchronously to try and close the session.
-  TestCompletionCallback callback2;
-  HostPortPair host_port2("2.com", 80);
-  scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, DEFAULT_PRIORITY, false, false,
-                                OnHostResolutionCallback()));
-  scoped_ptr<ClientSocketHandle> connection2(new ClientSocketHandle);
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection2->Init(host_port2.ToString(), params2, DEFAULT_PRIORITY,
-                              callback2.callback(), pool, BoundNetLog()));
-  EXPECT_TRUE(pool->IsStalled());
-
-  // Running the message loop should cause the socket pool to ask the SPDY
-  // session to close an idle socket, but since the socket is in use, nothing
-  // happens.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(pool->IsStalled());
-  EXPECT_FALSE(callback2.have_result());
-
-  // Cancelling the request should still not release the session's socket,
-  // since the session is still kept alive by the SpdySessionPool.
-  ASSERT_TRUE(spdy_stream1.get());
-  spdy_stream1->Cancel();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(pool->IsStalled());
-  EXPECT_FALSE(callback2.have_result());
-}
-
-// Verify that SpdySessionKey and therefore SpdySession is different when
-// privacy mode is enabled or disabled.
-TEST_P(SpdySessionTest, SpdySessionKeyPrivacyMode) {
-  CreateDeterministicNetworkSession();
-
-  HostPortPair host_port_pair("www.google.com", 443);
-  SpdySessionKey key_privacy_enabled(host_port_pair, ProxyServer::Direct(),
-                                     kPrivacyModeEnabled);
-  SpdySessionKey key_privacy_disabled(host_port_pair, ProxyServer::Direct(),
-                                     kPrivacyModeDisabled);
-
-  EXPECT_FALSE(spdy_session_pool_->HasSession(key_privacy_enabled));
-  EXPECT_FALSE(spdy_session_pool_->HasSession(key_privacy_disabled));
-
-  // Add SpdySession with PrivacyMode Enabled to the pool.
-  scoped_refptr<SpdySession> session_privacy_enabled =
-      spdy_session_pool_->Get(key_privacy_enabled, BoundNetLog());
-
-  EXPECT_TRUE(spdy_session_pool_->HasSession(key_privacy_enabled));
-  EXPECT_FALSE(spdy_session_pool_->HasSession(key_privacy_disabled));
-
-  // Add SpdySession with PrivacyMode Disabled to the pool.
-  scoped_refptr<SpdySession> session_privacy_disabled =
-      spdy_session_pool_->Get(key_privacy_disabled, BoundNetLog());
-
-  EXPECT_TRUE(spdy_session_pool_->HasSession(key_privacy_enabled));
-  EXPECT_TRUE(spdy_session_pool_->HasSession(key_privacy_disabled));
-
-  spdy_session_pool_->Remove(session_privacy_enabled);
-  EXPECT_FALSE(spdy_session_pool_->HasSession(key_privacy_enabled));
-  EXPECT_TRUE(spdy_session_pool_->HasSession(key_privacy_disabled));
-
-  spdy_session_pool_->Remove(session_privacy_disabled);
-  EXPECT_FALSE(spdy_session_pool_->HasSession(key_privacy_enabled));
-  EXPECT_FALSE(spdy_session_pool_->HasSession(key_privacy_disabled));
 }
 
 }  // namespace net
