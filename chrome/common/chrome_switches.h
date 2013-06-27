@@ -216,7 +216,6 @@ extern const char kForceAppMode[];
 extern const char kForceFirstRun[];
 extern const char kForceLoadCloudPolicy[];
 extern const char kGaiaProfileInfo[];
-extern const char kGoogleBaseSuggestURL[];
 extern const char kGoogleSearchDomainCheckURL[];
 extern const char kGSSAPILibraryName[];
 extern const char kHelp[];
