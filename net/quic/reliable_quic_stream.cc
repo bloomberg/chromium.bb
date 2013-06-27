@@ -308,7 +308,7 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
 
   // We have processed all of the decompressed data but we might
   // have some more raw data to process.
-  if (decompressed_headers_.empty() || total_bytes_consumed < data_len) {
+  if (decompressed_headers_.empty() && bytes_consumed < data_len) {
     total_bytes_consumed += ProcessData(data + bytes_consumed,
                                         data_len - bytes_consumed);
   }

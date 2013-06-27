@@ -277,7 +277,7 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersAndBodyReadv) {
   string uncompressed_data = uncompressed_headers + body;
 
   stream_->OnStreamFrame(frame);
-  EXPECT_EQ(uncompressed_data, stream_->data());
+  EXPECT_EQ(uncompressed_headers, stream_->data());
 
   char buffer[1024];
   ASSERT_LT(data.length(), arraysize(buffer));
@@ -306,7 +306,7 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersAndBodyIncrementalReadv) {
   string uncompressed_data = uncompressed_headers + body;
 
   stream_->OnStreamFrame(frame);
-  EXPECT_EQ(uncompressed_data, stream_->data());
+  EXPECT_EQ(uncompressed_headers, stream_->data());
 
   char buffer[1];
   struct iovec vec;
@@ -331,7 +331,7 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
   string uncompressed_data = uncompressed_headers + body;
 
   stream_->OnStreamFrame(frame);
-  EXPECT_EQ(uncompressed_data, stream_->data());
+  EXPECT_EQ(uncompressed_headers, stream_->data());
 
   char buffer1[1];
   char buffer2[1];

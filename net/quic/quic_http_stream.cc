@@ -248,6 +248,7 @@ int QuicHttpStream::OnSendDataComplete(int status, bool* eof) {
 }
 
 int QuicHttpStream::OnDataReceived(const char* data, int length) {
+  DCHECK_NE(0, length);
   // Are we still reading the response headers.
   if (!response_headers_received_) {
     // Grow the read buffer if necessary.
