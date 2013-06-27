@@ -36,6 +36,10 @@ extern "C" {
 #include "matrix.h"
 #include "config-parser.h"
 
+#ifndef MIN
+#define MIN(x,y) (((x) < (y)) ? (x) : (y))
+#endif
+
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 #define container_of(ptr, type, member) ({				\
