@@ -90,7 +90,7 @@ SandboxFlags SecurityContext::parseSandboxPolicy(const String& policy, String& i
     // http://www.w3.org/TR/html5/the-iframe-element.html#attr-iframe-sandbox
     // Parse the unordered set of unique space-separated tokens.
     SandboxFlags flags = SandboxAll;
-    const UChar* characters = policy.bloatedCharacters();
+    const UChar* characters = policy.characters();
     unsigned length = policy.length();
     unsigned start = 0;
     unsigned numberOfTokenErrors = 0;

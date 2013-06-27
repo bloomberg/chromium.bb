@@ -587,7 +587,7 @@ static TextBreakIterator* setUpIteratorWithRules(bool& createdIterator, TextBrea
         UParseError parseStatus;
         UErrorCode openStatus = U_ZERO_ERROR;
         String rules(breakRules);
-        iterator = reinterpret_cast<TextBreakIterator*>(ubrk_openRules(rules.bloatedCharacters(), rules.length(), 0, 0, &parseStatus, &openStatus));
+        iterator = reinterpret_cast<TextBreakIterator*>(ubrk_openRules(rules.characters(), rules.length(), 0, 0, &parseStatus, &openStatus));
         createdIterator = true;
         ASSERT_WITH_MESSAGE(U_SUCCESS(openStatus), "ICU could not open a break iterator: %s (%d)", u_errorName(openStatus), openStatus);
     }

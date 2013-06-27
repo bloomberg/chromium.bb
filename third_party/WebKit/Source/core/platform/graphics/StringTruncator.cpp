@@ -63,16 +63,16 @@ static unsigned centerTruncateToBuffer(const String& string, unsigned length, un
     ASSERT(keepCount < STRING_BUFFER_SIZE);
     
     unsigned omitStart = (keepCount + 1) / 2;
-    NonSharedCharacterBreakIterator it(string.bloatedCharacters(), length);
+    NonSharedCharacterBreakIterator it(string.characters(), length);
     unsigned omitEnd = boundedTextBreakFollowing(it, omitStart + (length - keepCount) - 1, length);
     omitStart = textBreakAtOrPreceding(it, omitStart);
     
     unsigned truncatedLength = omitStart + 1 + (length - omitEnd);
     ASSERT(truncatedLength <= length);
 
-    memcpy(buffer, string.bloatedCharacters(), sizeof(UChar) * omitStart);
+    memcpy(buffer, string.characters(), sizeof(UChar) * omitStart);
     buffer[omitStart] = horizontalEllipsis;
-    memcpy(&buffer[omitStart + 1], &string.bloatedCharacters()[omitEnd], sizeof(UChar) * (length - omitEnd));
+    memcpy(&buffer[omitStart + 1], &string.characters()[omitEnd], sizeof(UChar) * (length - omitEnd));
     
     return truncatedLength;
 }
@@ -82,11 +82,11 @@ static unsigned rightTruncateToBuffer(const String& string, unsigned length, uns
     ASSERT(keepCount < length);
     ASSERT(keepCount < STRING_BUFFER_SIZE);
     
-    NonSharedCharacterBreakIterator it(string.bloatedCharacters(), length);
+    NonSharedCharacterBreakIterator it(string.characters(), length);
     unsigned keepLength = textBreakAtOrPreceding(it, keepCount);
     unsigned truncatedLength = keepLength + 1;
     
-    memcpy(buffer, string.bloatedCharacters(), sizeof(UChar) * keepLength);
+    memcpy(buffer, string.characters(), sizeof(UChar) * keepLength);
     buffer[keepLength] = horizontalEllipsis;
     
     return truncatedLength;
@@ -119,7 +119,7 @@ static String truncateString(const String& string, float maxWidth, const Font& f
         truncatedLength = centerTruncateToBuffer(string, length, keepCount, stringBuffer);
     } else {
         keepCount = length;
-        memcpy(stringBuffer, string.bloatedCharacters(), sizeof(UChar) * length);
+        memcpy(stringBuffer, string.characters(), sizeof(UChar) * length);
         truncatedLength = length;
     }
 
@@ -193,7 +193,7 @@ String StringTruncator::rightTruncate(const String& string, float maxWidth, cons
 
 float StringTruncator::width(const String& string, const Font& font, EnableRoundingHacksOrNot enableRoundingHacks)
 {
-    return stringWidth(font, string.bloatedCharacters(), string.length(), !enableRoundingHacks);
+    return stringWidth(font, string.characters(), string.length(), !enableRoundingHacks);
 }
 
 } // namespace WebCore

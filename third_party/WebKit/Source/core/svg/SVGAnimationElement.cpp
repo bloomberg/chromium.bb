@@ -90,7 +90,7 @@ static void parseKeySplines(const String& parse, Vector<UnitBezier>& result)
     result.clear();
     if (parse.isEmpty())
         return;
-    const UChar* cur = parse.bloatedCharacters();
+    const UChar* cur = parse.characters();
     const UChar* end = cur + parse.length();
 
     skipOptionalSVGSpaces(cur, end);

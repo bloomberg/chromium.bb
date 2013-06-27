@@ -62,7 +62,7 @@ String WebEntities::entityNameByCode(int code) const
 String WebEntities::convertEntitiesInString(const String& value) const
 {
     unsigned len = value.length();
-    const UChar* startPos = value.bloatedCharacters();
+    const UChar* startPos = value.characters();
     const UChar* curPos = startPos;
 
     // FIXME: Optimize - create StringBuilder only if value has any entities.

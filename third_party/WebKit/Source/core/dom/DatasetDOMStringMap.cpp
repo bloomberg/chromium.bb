@@ -39,7 +39,7 @@ static bool isValidAttributeName(const String& name)
     if (!name.startsWith("data-"))
         return false;
 
-    const UChar* characters = name.bloatedCharacters();
+    const UChar* characters = name.characters();
     unsigned length = name.length();
     for (unsigned i = 5; i < length; ++i) {
         if (isASCIIUpper(characters[i]))
@@ -53,7 +53,7 @@ static String convertAttributeNameToPropertyName(const String& name)
 {
     StringBuilder stringBuilder;
 
-    const UChar* characters = name.bloatedCharacters();
+    const UChar* characters = name.characters();
     unsigned length = name.length();
     for (unsigned i = 5; i < length; ++i) {
         UChar character = characters[i];
@@ -76,8 +76,8 @@ static bool propertyNameMatchesAttributeName(const String& propertyName, const S
     if (!attributeName.startsWith("data-"))
         return false;
 
-    const UChar* property = propertyName.bloatedCharacters();
-    const UChar* attribute = attributeName.bloatedCharacters();
+    const UChar* property = propertyName.characters();
+    const UChar* attribute = attributeName.characters();
     unsigned propertyLength = propertyName.length();
     unsigned attributeLength = attributeName.length();
    
@@ -101,7 +101,7 @@ static bool propertyNameMatchesAttributeName(const String& propertyName, const S
 
 static bool isValidPropertyName(const String& name)
 {
-    const UChar* characters = name.bloatedCharacters();
+    const UChar* characters = name.characters();
     unsigned length = name.length();
     for (unsigned i = 0; i < length; ++i) {
         if (characters[i] == '-' && (i + 1 < length) && isASCIILower(characters[i + 1]))
@@ -115,7 +115,7 @@ static String convertPropertyNameToAttributeName(const String& name)
     StringBuilder builder;
     builder.append("data-");
 
-    const UChar* characters = name.bloatedCharacters();
+    const UChar* characters = name.characters();
     unsigned length = name.length();
     for (unsigned i = 0; i < length; ++i) {
         UChar character = characters[i];

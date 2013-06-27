@@ -251,7 +251,7 @@ public:
         if (!m_length)
             return 0;
         if (!m_string.isNull())
-            return m_string.bloatedCharacters();
+            return m_string.characters();
         ASSERT(m_buffer);
         if (m_buffer->has16BitShadow() && m_valid16BitShadowLength < m_length)
             m_buffer->upconvertCharacters(m_valid16BitShadowLength, m_length);

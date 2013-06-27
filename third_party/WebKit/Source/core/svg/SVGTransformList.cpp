@@ -75,7 +75,7 @@ String SVGTransformList::valueAsString() const
 
 void SVGTransformList::parse(const String& transform)
 {
-    const UChar* start = transform.bloatedCharacters();
+    const UChar* start = transform.characters();
     if (!SVGTransformable::parseTransformAttribute(*this, start, start + transform.length()))
         clear();
 }

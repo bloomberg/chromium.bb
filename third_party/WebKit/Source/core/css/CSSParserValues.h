@@ -60,7 +60,7 @@ struct CSSParserString {
             m_data.characters8 = const_cast<LChar*>(string.characters8()) + startOffset;
             m_is8Bit = true;
         } else {
-            m_data.characters16 = const_cast<UChar*>(string.characters16()) + startOffset;
+            m_data.characters16 = const_cast<UChar*>(string.characters()) + startOffset;
             m_is8Bit = false;
         }
     }

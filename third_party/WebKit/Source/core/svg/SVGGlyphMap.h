@@ -69,7 +69,7 @@ public:
 
         UChar32 character = 0;
         unsigned clusterLength = 0;
-        SurrogatePairAwareTextIterator textIterator(unicodeString.bloatedCharacters(), 0, length, length);
+        SurrogatePairAwareTextIterator textIterator(unicodeString.characters(), 0, length, length);
         while (textIterator.consume(character, clusterLength)) {
             node = currentLayer->get(character);
             if (!node) {
@@ -114,7 +114,7 @@ public:
     {
         GlyphMapLayer* currentLayer = &m_rootLayer;
 
-        const UChar* characters = string.bloatedCharacters();
+        const UChar* characters = string.characters();
         size_t length = string.length();
 
         UChar32 character = 0;

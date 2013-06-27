@@ -141,7 +141,7 @@ void SVGAngle::setValueAsString(const String& value, ExceptionCode& ec)
     }
 
     float valueInSpecifiedUnits = 0;
-    const UChar* ptr = value.bloatedCharacters();
+    const UChar* ptr = value.characters();
     const UChar* end = ptr + value.length();
 
     if (!parseNumber(ptr, end, valueInSpecifiedUnits, false)) {

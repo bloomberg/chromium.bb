@@ -165,7 +165,7 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr *sorts, in
                     } else {
                         String str1 = String::fromUTF8((const char*)results[j]->stringval);
                         String str2 = String::fromUTF8((const char*)results[j + incr]->stringval);
-                        tst = collator.collate(str1.bloatedCharacters(), str1.length(), str2.bloatedCharacters(), str2.length());
+                        tst = collator.collate(str1.characters(), str1.length(), str2.characters(), str2.length());
                     }
                     if (descending)
                         tst = -tst;
@@ -220,7 +220,7 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr *sorts, in
                             } else {
                                 String str1 = String::fromUTF8((const char*)res[j]->stringval);
                                 String str2 = String::fromUTF8((const char*)res[j + incr]->stringval);
-                                tst = collator.collate(str1.bloatedCharacters(), str1.length(), str2.bloatedCharacters(), str2.length());
+                                tst = collator.collate(str1.characters(), str1.length(), str2.characters(), str2.length());
                             }
                             if (desc)
                                 tst = -tst;

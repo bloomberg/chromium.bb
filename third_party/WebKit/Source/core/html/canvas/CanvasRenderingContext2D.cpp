@@ -2066,7 +2066,7 @@ PassRefPtr<TextMetrics> CanvasRenderingContext2D::measureText(const String& text
 {
     FontCachePurgePreventer fontCachePurgePreventer;
     RefPtr<TextMetrics> metrics = TextMetrics::create();
-    metrics->setWidth(accessFont().width(TextRun(text.bloatedCharacters(), text.length())));
+    metrics->setWidth(accessFont().width(TextRun(text.characters(), text.length())));
     return metrics.release();
 }
 

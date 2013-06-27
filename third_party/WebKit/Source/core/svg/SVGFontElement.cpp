@@ -99,7 +99,7 @@ void SVGFontElement::registerLigaturesInGlyphCache(Vector<String>& ligatures)
         unsigned unicodeLength = unicode.length();
         ASSERT(unicodeLength > 1);
 
-        const UChar* characters = unicode.bloatedCharacters();
+        const UChar* characters = unicode.characters();
         for (unsigned i = 0; i < unicodeLength; ++i) {
             String lookupString(characters + i, 1);
             m_glyphMap.collectGlyphsForString(lookupString, glyphs);

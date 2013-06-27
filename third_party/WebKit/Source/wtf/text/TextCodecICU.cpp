@@ -431,7 +431,7 @@ CString TextCodecICU::encode(const UChar* characters, size_t length, Unencodable
     String copy(characters, length);
     copy = m_encoding.displayString(copy.impl());
 
-    const UChar* source = copy.bloatedCharacters();
+    const UChar* source = copy.characters();
     const UChar* sourceLimit = source + copy.length();
 
     UErrorCode err = U_ZERO_ERROR;

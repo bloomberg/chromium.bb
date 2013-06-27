@@ -181,14 +181,14 @@ int SQLiteStatement::bindBlob(int index, const void* blob, int size)
 
 int SQLiteStatement::bindBlob(int index, const String& text)
 {
-    // String::bloatedCharacters() returns 0 for the empty string, which SQLite
+    // String::characters() returns 0 for the empty string, which SQLite
     // treats as a null, so we supply a non-null pointer for that case.
     UChar anyCharacter = 0;
     const UChar* characters;
     if (text.isEmpty() && !text.isNull())
         characters = &anyCharacter;
     else
-        characters = text.bloatedCharacters();
+        characters = text.characters();
 
     return bindBlob(index, characters, text.length() * sizeof(UChar));
 }
@@ -199,14 +199,14 @@ int SQLiteStatement::bindText(int index, const String& text)
     ASSERT(index > 0);
     ASSERT(static_cast<unsigned>(index) <= bindParameterCount());
 
-    // String::bloatedCharacters() returns 0 for the empty string, which SQLite
+    // String::characters() returns 0 for the empty string, which SQLite
     // treats as a null, so we supply a non-null pointer for that case.
     UChar anyCharacter = 0;
     const UChar* characters;
     if (text.isEmpty() && !text.isNull())
         characters = &anyCharacter;
     else
-        characters = text.bloatedCharacters();
+        characters = text.characters();
 
     return sqlite3_bind_text16(m_statement, index, characters, sizeof(UChar) * text.length(), SQLITE_TRANSIENT);
 }
