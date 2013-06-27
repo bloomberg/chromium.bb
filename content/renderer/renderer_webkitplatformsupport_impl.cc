@@ -377,8 +377,7 @@ void RendererWebKitPlatformSupportImpl::suddenTerminationChanged(bool enabled) {
 }
 
 WebStorageNamespace*
-RendererWebKitPlatformSupportImpl::createLocalStorageNamespace(
-    const WebString& path, unsigned quota) {
+RendererWebKitPlatformSupportImpl::createLocalStorageNamespace() {
   return new WebStorageNamespaceImpl();
 }
 

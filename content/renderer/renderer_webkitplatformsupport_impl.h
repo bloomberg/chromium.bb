@@ -69,8 +69,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       const WebKit::WebURL&, double, const char*, size_t);
   virtual WebKit::WebString defaultLocale();
   virtual void suddenTerminationChanged(bool enabled);
-  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
-      const WebKit::WebString& path, unsigned quota);
+  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace();
   virtual WebKit::Platform::FileHandle databaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,

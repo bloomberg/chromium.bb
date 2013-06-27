@@ -39,8 +39,7 @@ class PpapiWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl {
   virtual WebKit::WebSocketStreamHandle* createSocketStreamHandle();
   virtual void getPluginList(bool refresh, WebKit::WebPluginListBuilder*);
   virtual WebKit::WebData loadResource(const char* name);
-  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
-      const WebKit::WebString& path, unsigned quota);
+  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace();
   virtual void dispatchStorageEvent(const WebKit::WebString& key,
       const WebKit::WebString& oldValue, const WebKit::WebString& newValue,
       const WebKit::WebString& origin, const WebKit::WebURL& url,

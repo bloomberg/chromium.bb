@@ -243,8 +243,7 @@ WebKit::WebData PpapiWebKitPlatformSupportImpl::loadResource(const char* name) {
 }
 
 WebKit::WebStorageNamespace*
-PpapiWebKitPlatformSupportImpl::createLocalStorageNamespace(
-    const WebKit::WebString& path, unsigned quota) {
+PpapiWebKitPlatformSupportImpl::createLocalStorageNamespace() {
   NOTREACHED();
   return 0;
 }

@@ -53,8 +53,7 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
       const WebKit::WebURL& first_party_for_cookies);
   virtual void prefetchHostName(const WebKit::WebString&);
   virtual WebKit::WebString defaultLocale();
-  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
-      const WebKit::WebString& path, unsigned quota);
+  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace();
   virtual void dispatchStorageEvent(
       const WebKit::WebString& key, const WebKit::WebString& old_value,
       const WebKit::WebString& new_value, const WebKit::WebString& origin,

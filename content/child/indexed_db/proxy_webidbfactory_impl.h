@@ -26,21 +26,18 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
   // See WebIDBFactory.h for documentation on these functions.
   virtual void getDatabaseNames(
       WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebString& database_identifier,
-      const WebKit::WebString& data_dir);
+      const WebKit::WebString& database_identifier);
   virtual void open(
       const WebKit::WebString& name,
       long long version,
       long long transaction_id,
       WebKit::WebIDBCallbacks* callbacks,
       WebKit::WebIDBDatabaseCallbacks* databaseCallbacks,
-      const WebKit::WebString& database_identifier,
-      const WebKit::WebString& data_dir);
+      const WebKit::WebString& database_identifier);
   virtual void deleteDatabase(
       const WebKit::WebString& name,
       WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebString& database_identifier,
-      const WebKit::WebString& data_dir);
+      const WebKit::WebString& database_identifier);
 
  private:
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

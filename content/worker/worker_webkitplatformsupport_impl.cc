@@ -159,8 +159,7 @@ WebString WorkerWebKitPlatformSupportImpl::defaultLocale() {
 }
 
 WebStorageNamespace*
-WorkerWebKitPlatformSupportImpl::createLocalStorageNamespace(
-    const WebString& path, unsigned quota) {
+WorkerWebKitPlatformSupportImpl::createLocalStorageNamespace() {
   NOTREACHED();
   return 0;
 }

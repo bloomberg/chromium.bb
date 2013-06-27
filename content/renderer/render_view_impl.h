@@ -420,8 +420,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual WebKit::WebExternalPopupMenu* createExternalPopupMenu(
       const WebKit::WebPopupMenuInfo& popup_menu_info,
       WebKit::WebExternalPopupMenuClient* popup_menu_client);
-  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace(
-      unsigned quota);
+  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name,

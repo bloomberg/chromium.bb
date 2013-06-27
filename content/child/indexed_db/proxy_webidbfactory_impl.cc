@@ -26,8 +26,7 @@ RendererWebIDBFactoryImpl::~RendererWebIDBFactoryImpl() {
 
 void RendererWebIDBFactoryImpl::getDatabaseNames(
     WebIDBCallbacks* callbacks,
-    const WebString& database_identifier,
-    const WebString& data_dir_unused) {
+    const WebString& database_identifier) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
   dispatcher->RequestIDBFactoryGetDatabaseNames(
@@ -40,10 +39,7 @@ void RendererWebIDBFactoryImpl::open(
     long long transaction_id,
     WebIDBCallbacks* callbacks,
     WebIDBDatabaseCallbacks* database_callbacks,
-    const WebString& database_identifier,
-    const WebString& data_dir) {
-  // Don't send the data_dir. We know what we want on the Browser side of
-  // things.
+    const WebString& database_identifier) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
   dispatcher->RequestIDBFactoryOpen(
@@ -54,10 +50,7 @@ void RendererWebIDBFactoryImpl::open(
 void RendererWebIDBFactoryImpl::deleteDatabase(
     const WebString& name,
     WebIDBCallbacks* callbacks,
-    const WebString& database_identifier,
-    const WebString& data_dir) {
-  // Don't send the data_dir. We know what we want on the Browser side of
-  // things.
+    const WebString& database_identifier) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
   dispatcher->RequestIDBFactoryDeleteDatabase(
