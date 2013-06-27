@@ -1442,6 +1442,7 @@
         'browser/extensions/stubs_apitest.cc',
         'browser/extensions/subscribe_page_action_browsertest.cc',
         'browser/extensions/api/system_private/system_private_apitest.cc',
+        'browser/extensions/window_controls_browsertest.cc',
         'browser/extensions/web_contents_browsertest.cc',
         'browser/extensions/web_view_browsertest.cc',
         'browser/extensions/webstore_startup_installer_browsertest.cc',

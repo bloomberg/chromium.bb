@@ -1332,6 +1332,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kDisableScriptedPrintThrottling,
       switches::kEnableAdview,
       switches::kEnableAdviewSrcAttribute,
+      switches::kEnableAppWindowControls,
       switches::kEnableBenchmarking,
       switches::kEnableExperimentalExtensionApis,
       switches::kEnableIPCFuzzing,

@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/dispatcher.h"
@@ -14,8 +16,11 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "content/public/renderer/v8_value_converter.h"
+#include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -54,6 +59,10 @@ AppWindowCustomBindings::AppWindowCustomBindings(
     ChromeV8Context* context) : ChromeV8Extension(dispatcher, context) {
   RouteFunction("GetView",
       base::Bind(&AppWindowCustomBindings::GetView,
+                 base::Unretained(this)));
+
+  RouteFunction("GetWindowControlsHtmlTemplate",
+      base::Bind(&AppWindowCustomBindings::GetWindowControlsHtmlTemplate,
                  base::Unretained(this)));
 }
 
@@ -99,6 +108,23 @@ void AppWindowCustomBindings::GetView(
 
   v8::Local<v8::Value> window = frame->mainWorldScriptContext()->Global();
   args.GetReturnValue().Set(window);
+}
+
+void AppWindowCustomBindings::GetWindowControlsHtmlTemplate(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK_EQ(args.Length(), 0);
+
+  v8::Handle<v8::Value> result = v8::String::Empty();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAppWindowControls)) {
+    base::Value* value = base::Value::CreateStringValue(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_WINDOW_CONTROLS_TEMPLATE_HTML).as_string());
+    scoped_ptr<content::V8ValueConverter> converter(
+        content::V8ValueConverter::create());
+    result = converter->ToV8Value(value, context()->v8_context());
+  }
+  args.GetReturnValue().Set(result);
 }
 
 }  // namespace extensions

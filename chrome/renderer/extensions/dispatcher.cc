@@ -968,6 +968,7 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("webRequestInternal",
                              IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("windowControls", IDR_WINDOW_CONTROLS_JS);
   source_map_.RegisterSource("binding", IDR_BINDING_JS);
 
   // Custom types sources.
@@ -1099,8 +1100,17 @@ void Dispatcher::DidCreateScriptContext(
 
   bool is_within_platform_app = IsWithinPlatformApp(frame);
   // Inject custom JS into the platform app context.
-  if (is_within_platform_app)
+  if (is_within_platform_app) {
     module_system->Require("platformApp");
+  }
+
+  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT &&
+      is_within_platform_app &&
+      Feature::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAppWindowControls)) {
+    module_system->Require("windowControls");
+  }
 
   // Only platform apps support the <webview> tag, because the "webView" and
   // "denyWebView" modules will affect the performance of DOM modifications

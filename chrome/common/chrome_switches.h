@@ -144,6 +144,7 @@ extern const char kDisableSyncTabs[];
 extern const char kEasyOffStoreExtensionInstall[];
 extern const char kEnableAdview[];
 extern const char kEnableAdviewSrcAttribute[];
+extern const char kEnableAppWindowControls[];
 extern const char kEnableAsyncDns[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableAutologin[];

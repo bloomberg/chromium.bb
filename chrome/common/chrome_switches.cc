@@ -486,6 +486,9 @@ const char kEnableAdview[]                  = "enable-adview";
 // (for testing purposes, to skip the whitelist).
 const char kEnableAdviewSrcAttribute[]      = "enable-adview-src-attribute";
 
+// Enables the <window-controls> tag in platform apps.
+const char kEnableAppWindowControls[]       = "enable-app-window-controls";
+
 // Enables the experimental asynchronous DNS client.
 const char kEnableAsyncDns[]                = "enable-async-dns";
 

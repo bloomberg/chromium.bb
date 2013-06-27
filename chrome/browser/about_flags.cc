@@ -555,6 +555,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAdviewSrcAttribute)
   },
   {
+    "enable-app-window-controls",
+    IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_NAME,
+    IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableAppWindowControls)
+  },
+  {
     "action-box",
     IDS_FLAGS_ACTION_BOX_NAME,
     IDS_FLAGS_ACTION_BOX_DESCRIPTION,
