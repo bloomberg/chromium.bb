@@ -31,8 +31,8 @@
 namespace WebCore {
 
 StyleGridData::StyleGridData()
-    : m_gridColumns(RenderStyle::initialGridColumns())
-    , m_gridRows(RenderStyle::initialGridRows())
+    : m_gridDefinitionColumns(RenderStyle::initialGridDefinitionColumns())
+    , m_gridDefinitionRows(RenderStyle::initialGridDefinitionRows())
     , m_gridAutoFlow(RenderStyle::initialGridAutoFlow())
     , m_gridAutoRows(RenderStyle::initialGridAutoRows())
     , m_gridAutoColumns(RenderStyle::initialGridAutoColumns())
@@ -43,8 +43,8 @@ StyleGridData::StyleGridData()
 
 StyleGridData::StyleGridData(const StyleGridData& o)
     : RefCounted<StyleGridData>()
-    , m_gridColumns(o.m_gridColumns)
-    , m_gridRows(o.m_gridRows)
+    , m_gridDefinitionColumns(o.m_gridDefinitionColumns)
+    , m_gridDefinitionRows(o.m_gridDefinitionRows)
     , m_namedGridColumnLines(o.m_namedGridColumnLines)
     , m_namedGridRowLines(o.m_namedGridRowLines)
     , m_gridAutoFlow(o.m_gridAutoFlow)

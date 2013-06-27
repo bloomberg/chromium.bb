@@ -259,8 +259,8 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyGridAutoColumns,
     CSSPropertyGridAutoFlow,
     CSSPropertyGridAutoRows,
-    CSSPropertyGridColumns,
-    CSSPropertyGridRows,
+    CSSPropertyGridDefinitionColumns,
+    CSSPropertyGridDefinitionRows,
     CSSPropertyGridStart,
     CSSPropertyGridEnd,
     CSSPropertyGridBefore,
@@ -1942,10 +1942,10 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->gridAutoFlow());
         case CSSPropertyGridAutoRows:
             return valueForGridTrackSize(style->gridAutoRows(), style.get(), m_node->document()->renderView());
-        case CSSPropertyGridColumns:
-            return valueForGridTrackList(style->gridColumns(), style->namedGridColumnLines(), style.get(), m_node->document()->renderView());
-        case CSSPropertyGridRows:
-            return valueForGridTrackList(style->gridRows(), style->namedGridRowLines(), style.get(), m_node->document()->renderView());
+        case CSSPropertyGridDefinitionColumns:
+            return valueForGridTrackList(style->gridDefinitionColumns(), style->namedGridColumnLines(), style.get(), m_node->document()->renderView());
+        case CSSPropertyGridDefinitionRows:
+            return valueForGridTrackList(style->gridDefinitionRows(), style->namedGridRowLines(), style.get(), m_node->document()->renderView());
 
         case CSSPropertyGridStart:
             return valueForGridPosition(style->gridStart());

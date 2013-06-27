@@ -8,65 +8,65 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .gridWithFixed {
-    grid-columns: 7px 11px;
-    grid-rows: 17px 2px;
+    grid-definition-columns: 7px 11px;
+    grid-definition-rows: 17px 2px;
 }
 
 .gridWithPercent {
-    grid-columns: 53% 99%;
-    grid-rows: 27% 52%;
+    grid-definition-columns: 53% 99%;
+    grid-definition-rows: 27% 52%;
 }
 .gridWithAuto {
-    grid-columns: auto auto;
-    grid-rows: auto auto;
+    grid-definition-columns: auto auto;
+    grid-definition-rows: auto auto;
 }
 .gridWithEM {
-    grid-columns: 10em 12em;
-    grid-rows: 15em 17em;
+    grid-definition-columns: 10em 12em;
+    grid-definition-rows: 15em 17em;
     font: 10px Ahem;
 }
 .gridWithNoneAndAuto {
-    grid-columns: none auto;
-    grid-rows: none auto;
+    grid-definition-columns: none auto;
+    grid-definition-rows: none auto;
 }
 .gridNoneWithAndFixed {
-    grid-columns: none 15px;
-    grid-rows: none 22px;
+    grid-definition-columns: none 15px;
+    grid-definition-rows: none 22px;
 }
 .gridWithThreeItems {
-    grid-columns: 15px auto 10em;
-    grid-rows: 12em 18px auto;
+    grid-definition-columns: 15px auto 10em;
+    grid-definition-rows: 12em 18px auto;
     font: 10px Ahem;
 }
 .gridWithPercentAndViewportPercent {
-    grid-columns: 50% 15vw;
-    grid-rows: 35% 28vh;
+    grid-definition-columns: 50% 15vw;
+    grid-definition-rows: 35% 28vh;
 }
 .gridWithFitContentAndFitAvailable {
-    grid-columns: -webkit-content-available;
-    grid-rows: -webkit-fitcontent -webkit-fit-available;
+    grid-definition-columns: -webkit-content-available;
+    grid-definition-rows: -webkit-fitcontent -webkit-fit-available;
 }
 .gridWithMinMaxContent {
-    grid-columns: min-content max-content;
-    grid-rows: max-content min-content;
+    grid-definition-columns: min-content max-content;
+    grid-definition-rows: max-content min-content;
 }
 .gridWithMinMaxAndFixed {
-    grid-columns: minmax(45px, 30%) 15px;
-    grid-rows: 12em minmax(35%, 10px);
+    grid-definition-columns: minmax(45px, 30%) 15px;
+    grid-definition-rows: 12em minmax(35%, 10px);
     font: 10px Ahem;
 }
 .gridWithMinMaxAndMinMaxContent {
-    grid-columns: minmax(min-content, 30%) 15px;
-    grid-rows: 12em minmax(35%, max-content);
+    grid-definition-columns: minmax(min-content, 30%) 15px;
+    grid-definition-rows: 12em minmax(35%, max-content);
     font: 10px Ahem;
 }
 .gridWithFractionFraction {
-    grid-columns: 1fr 2fr;
-    grid-rows: 3fr 4fr;
+    grid-definition-columns: 1fr 2fr;
+    grid-definition-rows: 3fr 4fr;
 }
 .gridWithFractionMinMax {
-    grid-columns: minmax(min-content, 45px) 2fr;
-    grid-rows: 3fr minmax(14px, max-content);
+    grid-definition-columns: minmax(min-content, 45px) 2fr;
+    grid-definition-rows: 3fr minmax(14px, max-content);
 }
 </style>
 <script src="../js/resources/js-test-pre.js"></script>

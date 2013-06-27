@@ -294,8 +294,8 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyFlexWrap: return 239;
     case CSSPropertyJustifyContent: return 240;
     case CSSPropertyWebkitFontSizeDelta: return 241;
-    case CSSPropertyGridColumns: return 242;
-    case CSSPropertyGridRows: return 243;
+    case CSSPropertyGridDefinitionColumns: return 242;
+    case CSSPropertyGridDefinitionRows: return 243;
     case CSSPropertyGridStart: return 244;
     case CSSPropertyGridEnd: return 245;
     case CSSPropertyGridBefore: return 246;

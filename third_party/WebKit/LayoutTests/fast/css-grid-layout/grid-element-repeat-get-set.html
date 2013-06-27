@@ -8,48 +8,48 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 #singleSingleTrackRepeat {
-    grid-rows: repeat(1, 18px);
-    grid-columns: repeat(1, 15%);
+    grid-definition-rows: repeat(1, 18px);
+    grid-definition-columns: repeat(1, 15%);
 }
 
 #twoSingleTrackRepeat {
-    grid-rows: repeat(2, auto);
-    grid-columns: repeat(2, minmax(15px, 50%));
+    grid-definition-rows: repeat(2, auto);
+    grid-definition-columns: repeat(2, minmax(15px, 50%));
 }
 
 #twoDoubleTrackRepeat {
-    grid-rows: repeat(2, minmax(5px, 10px)  auto);
-    grid-columns: repeat(2, auto minmax(100px, 120px));
+    grid-definition-rows: repeat(2, minmax(5px, 10px)  auto);
+    grid-definition-columns: repeat(2, auto minmax(100px, 120px));
 }
 
 #twoDoubleTrackWithNamedGridLineRepeat {
-    grid-rows: repeat(2, 10px 'start' auto 'end');
-    grid-columns: repeat(2, auto 'middle' 250px 'end');
+    grid-definition-rows: repeat(2, 10px 'start' auto 'end');
+    grid-definition-columns: repeat(2, auto 'middle' 250px 'end');
 }
 
 #twoDoubleTrackWithTrailingNamedGridLineRepeat {
-    grid-rows: repeat(2, 'before' 10px);
-    grid-columns: repeat(2, 'before' auto);
+    grid-definition-rows: repeat(2, 'before' 10px);
+    grid-definition-columns: repeat(2, 'before' auto);
 }
 
 #trailingNamedGridLineRepeat {
-    grid-rows: repeat(1, 10px) 'end';
-    grid-columns: repeat(1, 250px) 'end';
+    grid-definition-rows: repeat(1, 10px) 'end';
+    grid-definition-columns: repeat(1, 250px) 'end';
 }
 
 #leadingNamedGridLineRepeat {
-    grid-rows: 'start' repeat(2, 10px);
-    grid-columns: 'start' repeat(2, 250px);
+    grid-definition-rows: 'start' repeat(2, 10px);
+    grid-definition-columns: 'start' repeat(2, 250px);
 }
 
 #mixRepeatAfterNonRepeat {
-    grid-rows: auto repeat(2, 10px);
-    grid-columns: 'start' 140px repeat(2, 250px);
+    grid-definition-rows: auto repeat(2, 10px);
+    grid-definition-columns: 'start' 140px repeat(2, 250px);
 }
 
 #mixNonRepeatAfterRepeat {
-    grid-rows: repeat(2, 10px) 'end' auto;
-    grid-columns: repeat(2, 250px) 15% 'last';
+    grid-definition-rows: repeat(2, 10px) 'end' auto;
+    grid-definition-columns: repeat(2, 250px) 15% 'last';
 }
 </style>
 <script src="../js/resources/js-test-pre.js"></script>
@@ -65,52 +65,52 @@ if (window.testRunner)
 <div class="grid" id="mixRepeatAfterNonRepeat"></div>
 <div class="grid" id="mixNonRepeatAfterRepeat"></div>
 <script>
-    description('Test that setting and getting grid-columns and grid-rows with repeat() works as expected');
+    description('Test that setting and getting grid-definition-columns and grid-definition-rows with repeat() works as expected');
 
-    debug("Test getting grid-columns and grid-rows set through CSS");
+    debug("Test getting grid-definition-columns and grid-definition-rows set through CSS");
     var singleSingleTrackRepeat = document.getElementById("singleSingleTrackRepeat")
-    shouldBeEqualToString("window.getComputedStyle(singleSingleTrackRepeat, '').getPropertyValue('grid-rows')", "18px");
-    shouldBeEqualToString("window.getComputedStyle(singleSingleTrackRepeat, '').getPropertyValue('grid-columns')", "15%");
+    shouldBeEqualToString("window.getComputedStyle(singleSingleTrackRepeat, '').getPropertyValue('grid-definition-rows')", "18px");
+    shouldBeEqualToString("window.getComputedStyle(singleSingleTrackRepeat, '').getPropertyValue('grid-definition-columns')", "15%");
 
     var twoSingleTrackRepeat = document.getElementById("twoSingleTrackRepeat")
-    shouldBeEqualToString("window.getComputedStyle(twoSingleTrackRepeat, '').getPropertyValue('grid-rows')", "auto auto");
-    shouldBeEqualToString("window.getComputedStyle(twoSingleTrackRepeat, '').getPropertyValue('grid-columns')", "minmax(15px, 50%) minmax(15px, 50%)");
+    shouldBeEqualToString("window.getComputedStyle(twoSingleTrackRepeat, '').getPropertyValue('grid-definition-rows')", "auto auto");
+    shouldBeEqualToString("window.getComputedStyle(twoSingleTrackRepeat, '').getPropertyValue('grid-definition-columns')", "minmax(15px, 50%) minmax(15px, 50%)");
 
     var twoDoubleTrackRepeat = document.getElementById("twoDoubleTrackRepeat")
-    shouldBeEqualToString("window.getComputedStyle(twoDoubleTrackRepeat, '').getPropertyValue('grid-rows')", "minmax(5px, 10px) auto minmax(5px, 10px) auto");
-    shouldBeEqualToString("window.getComputedStyle(twoDoubleTrackRepeat, '').getPropertyValue('grid-columns')", "auto minmax(100px, 120px) auto minmax(100px, 120px)");
+    shouldBeEqualToString("window.getComputedStyle(twoDoubleTrackRepeat, '').getPropertyValue('grid-definition-rows')", "minmax(5px, 10px) auto minmax(5px, 10px) auto");
+    shouldBeEqualToString("window.getComputedStyle(twoDoubleTrackRepeat, '').getPropertyValue('grid-definition-columns')", "auto minmax(100px, 120px) auto minmax(100px, 120px)");
 
     var twoDoubleTrackWithNamedGridLineRepeat = document.getElementById("twoDoubleTrackWithNamedGridLineRepeat")
-    shouldBeEqualToString("window.getComputedStyle(twoDoubleTrackWithNamedGridLineRepeat, '').getPropertyValue('grid-rows')", "10px start auto end 10px start auto end");
-    shouldBeEqualToString("window.getComputedStyle(twoDoubleTrackWithNamedGridLineRepeat, '').getPropertyValue('grid-columns')", "auto middle 250px end auto middle 250px end");
+    shouldBeEqualToString("window.getComputedStyle(twoDoubleTrackWithNamedGridLineRepeat, '').getPropertyValue('grid-definition-rows')", "10px start auto end 10px start auto end");
+    shouldBeEqualToString("window.getComputedStyle(twoDoubleTrackWithNamedGridLineRepeat, '').getPropertyValue('grid-definition-columns')", "auto middle 250px end auto middle 250px end");
 
     var twoDoubleTrackWithTrailingNamedGridLineRepeat = document.getElementById("twoDoubleTrackWithTrailingNamedGridLineRepeat")
-    shouldBeEqualToString("window.getComputedStyle(twoDoubleTrackWithTrailingNamedGridLineRepeat, '').getPropertyValue('grid-rows')", "before 10px before 10px");
-    shouldBeEqualToString("window.getComputedStyle(twoDoubleTrackWithTrailingNamedGridLineRepeat, '').getPropertyValue('grid-columns')", "before auto before auto");
+    shouldBeEqualToString("window.getComputedStyle(twoDoubleTrackWithTrailingNamedGridLineRepeat, '').getPropertyValue('grid-definition-rows')", "before 10px before 10px");
+    shouldBeEqualToString("window.getComputedStyle(twoDoubleTrackWithTrailingNamedGridLineRepeat, '').getPropertyValue('grid-definition-columns')", "before auto before auto");
 
     var trailingNamedGridLineRepeat = document.getElementById("trailingNamedGridLineRepeat")
-    shouldBeEqualToString("window.getComputedStyle(trailingNamedGridLineRepeat, '').getPropertyValue('grid-rows')", "10px end");
-    shouldBeEqualToString("window.getComputedStyle(trailingNamedGridLineRepeat, '').getPropertyValue('grid-columns')", "250px end");
+    shouldBeEqualToString("window.getComputedStyle(trailingNamedGridLineRepeat, '').getPropertyValue('grid-definition-rows')", "10px end");
+    shouldBeEqualToString("window.getComputedStyle(trailingNamedGridLineRepeat, '').getPropertyValue('grid-definition-columns')", "250px end");
 
     var leadingNamedGridLineRepeat = document.getElementById("leadingNamedGridLineRepeat")
-    shouldBeEqualToString("window.getComputedStyle(leadingNamedGridLineRepeat, '').getPropertyValue('grid-rows')", "start 10px 10px");
-    shouldBeEqualToString("window.getComputedStyle(leadingNamedGridLineRepeat, '').getPropertyValue('grid-columns')", "start 250px 250px");
+    shouldBeEqualToString("window.getComputedStyle(leadingNamedGridLineRepeat, '').getPropertyValue('grid-definition-rows')", "start 10px 10px");
+    shouldBeEqualToString("window.getComputedStyle(leadingNamedGridLineRepeat, '').getPropertyValue('grid-definition-columns')", "start 250px 250px");
 
     var mixRepeatAfterNonRepeat = document.getElementById("mixRepeatAfterNonRepeat")
-    shouldBeEqualToString("window.getComputedStyle(mixRepeatAfterNonRepeat, '').getPropertyValue('grid-rows')", "auto 10px 10px");
-    shouldBeEqualToString("window.getComputedStyle(mixRepeatAfterNonRepeat, '').getPropertyValue('grid-columns')", "start 140px 250px 250px");
+    shouldBeEqualToString("window.getComputedStyle(mixRepeatAfterNonRepeat, '').getPropertyValue('grid-definition-rows')", "auto 10px 10px");
+    shouldBeEqualToString("window.getComputedStyle(mixRepeatAfterNonRepeat, '').getPropertyValue('grid-definition-columns')", "start 140px 250px 250px");
 
     var mixNonRepeatAfterRepeat = document.getElementById("mixNonRepeatAfterRepeat")
-    shouldBeEqualToString("window.getComputedStyle(mixNonRepeatAfterRepeat, '').getPropertyValue('grid-rows')", "10px 10px end auto");
-    shouldBeEqualToString("window.getComputedStyle(mixNonRepeatAfterRepeat, '').getPropertyValue('grid-columns')", "250px 250px 15% last");
+    shouldBeEqualToString("window.getComputedStyle(mixNonRepeatAfterRepeat, '').getPropertyValue('grid-definition-rows')", "10px 10px end auto");
+    shouldBeEqualToString("window.getComputedStyle(mixNonRepeatAfterRepeat, '').getPropertyValue('grid-definition-columns')", "250px 250px 15% last");
 
     debug("");
     debug("Test invalid repeat syntax.");
     function testInvalidSyntax(gridColumn) {
         element = document.createElement("div");
         document.body.appendChild(element);
-        element.style.gridColumns = gridColumn;
-        shouldBeEqualToString("window.getComputedStyle(element, '').getPropertyValue('grid-columns')", "none");
+        element.style.gridDefinitionColumns = gridColumn;
+        shouldBeEqualToString("window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "none");
         document.body.removeChild(element);
     }
     testInvalidSyntax("repeat(");

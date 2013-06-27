@@ -290,8 +290,8 @@ justify-content
 -webkit-font-size-delta
 grid-auto-columns
 grid-auto-rows
-grid-columns
-grid-rows
+grid-definition-columns
+grid-definition-rows
 grid-start
 grid-end
 grid-before

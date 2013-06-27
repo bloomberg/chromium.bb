@@ -8,28 +8,28 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .gridWithFixed {
-    grid-columns: "first" 10px;
-    grid-rows: "first" 15px;
+    grid-definition-columns: "first" 10px;
+    grid-definition-rows: "first" 15px;
 }
 .gridWithPercent {
-    grid-columns: 53% "last";
-    grid-rows: 27% "last";
+    grid-definition-columns: 53% "last";
+    grid-definition-rows: 27% "last";
 }
 .gridWithAuto {
-    grid-columns: "first" auto;
-    grid-rows: auto "last";
+    grid-definition-columns: "first" auto;
+    grid-definition-rows: auto "last";
 }
 .gridWithMinMax {
-    grid-columns: "first" minmax(10%, 15px);
-    grid-rows: minmax(20px, 50%) "last";
+    grid-definition-columns: "first" minmax(10%, 15px);
+    grid-definition-rows: minmax(20px, 50%) "last";
 }
 .gridWithFixedMultiple {
-    grid-columns: "first" "nav" 10px "last";
-    grid-rows: "first" "nav" 15px "last";
+    grid-definition-columns: "first" "nav" 10px "last";
+    grid-definition-rows: "first" "nav" 15px "last";
 }
 .gridWithPercentageSameStringMultipleTimes {
-    grid-columns: "first" "nav" 10% "nav" 15% "last";
-    grid-rows: "first" "nav2" 25% "nav2" 75% "last";
+    grid-definition-columns: "first" "nav" 10% "nav" 15% "last";
+    grid-definition-rows: "first" "nav2" 25% "nav2" 75% "last";
 }
 </style>
 <script src="../js/resources/js-test-pre.js"></script>
@@ -42,21 +42,21 @@ if (window.testRunner)
 <div class="grid gridWithFixedMultiple" id="gridWithFixedMultiple"></div>
 <div class="grid gridWithPercentageSameStringMultipleTimes" id="gridWithPercentageSameStringMultipleTimes"></div>
 <script>
-    description('Test that setting and getting grid-columns and grid-rows works as expected');
+    description('Test that setting and getting grid-definition-columns and grid-definition-rows works as expected');
 
-    function testValue(gridElement, namedGridColumns, namedGridRows)
+    function testValue(gridElement, namedGridDefinitionColumns, namedGridDefinitionRows)
     {
         this.gridElement = gridElement;
-        shouldBeEqualToString("getComputedStyle(gridElement, '').getPropertyValue('grid-columns')", namedGridColumns);
-        shouldBeEqualToString("getComputedStyle(gridElement, '').getPropertyValue('grid-rows')", namedGridRows);
+        shouldBeEqualToString("getComputedStyle(gridElement, '').getPropertyValue('grid-definition-columns')", namedGridDefinitionColumns);
+        shouldBeEqualToString("getComputedStyle(gridElement, '').getPropertyValue('grid-definition-rows')", namedGridDefinitionRows);
     }
 
-    function testCSSValue(gridElementId, namedGridColumns, namedGridRows)
+    function testCSSValue(gridElementId, namedGridDefinitionColumns, namedGridDefinitionRows)
     {
-        testValue(document.getElementById(gridElementId), namedGridColumns, namedGridRows);
+        testValue(document.getElementById(gridElementId), namedGridDefinitionColumns, namedGridDefinitionRows);
     }
 
-    debug("Test getting grid-columns and grid-rows set through CSS");
+    debug("Test getting grid-definition-columns and grid-definition-rows set through CSS");
     testCSSValue("gridWithFixedElement", "first 10px", "first 15px");
     testCSSValue("gridWithPercentElement", "53% last", "27% last");
     testCSSValue("gridWithAutoElement", "first auto", "auto last");
@@ -65,93 +65,93 @@ if (window.testRunner)
     testCSSValue("gridWithPercentageSameStringMultipleTimes", "nav first 10% nav 15% last", "first nav2 25% nav2 75% last");
 
     debug("");
-    debug("Test getting and setting grid-columns and grid-rows through JS");
+    debug("Test getting and setting grid-definition-columns and grid-definition-rows through JS");
     var element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridColumns = "'first' 18px";
-    element.style.gridRows = "66px 'last'";
+    element.style.gridDefinitionColumns = "'first' 18px";
+    element.style.gridDefinitionRows = "66px 'last'";
     testValue(element, "first 18px", "66px last");
 
     element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridColumns = "'first' 55%";
-    element.style.gridRows = "40% 'last'";
+    element.style.gridDefinitionColumns = "'first' 55%";
+    element.style.gridDefinitionRows = "40% 'last'";
     testValue(element, "first 55%", "40% last");
 
     element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridColumns = "'first' auto";
-    element.style.gridRows = "auto 'last'";
+    element.style.gridDefinitionColumns = "'first' auto";
+    element.style.gridDefinitionRows = "auto 'last'";
     testValue(element, "first auto", "auto last");
 
     element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridColumns = "'first' min-content";
-    element.style.gridRows = "min-content 'last'";
+    element.style.gridDefinitionColumns = "'first' min-content";
+    element.style.gridDefinitionRows = "min-content 'last'";
     testValue(element, "first min-content", "min-content last");
 
     element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridColumns = "'first' max-content";
-    element.style.gridRows = "max-content 'last'";
+    element.style.gridDefinitionColumns = "'first' max-content";
+    element.style.gridDefinitionRows = "max-content 'last'";
     testValue(element, "first max-content", "max-content last");
 
     element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridColumns = "'first' minmax(55%, 45px)";
-    element.style.gridRows = "minmax(30px, 40%) 'last'";
+    element.style.gridDefinitionColumns = "'first' minmax(55%, 45px)";
+    element.style.gridDefinitionRows = "minmax(30px, 40%) 'last'";
     testValue(element, "first minmax(55%, 45px)", "minmax(30px, 40%) last");
 
     element = document.createElement("div");
     document.body.appendChild(element);
     element.style.font = "10px Ahem";
-    element.style.gridColumns = "'first' minmax(22em, max-content)";
-    element.style.gridRows = "minmax(max-content, 5em) 'last'";
+    element.style.gridDefinitionColumns = "'first' minmax(22em, max-content)";
+    element.style.gridDefinitionRows = "minmax(max-content, 5em) 'last'";
     testValue(element, "first minmax(220px, max-content)", "minmax(max-content, 50px) last");
 
     element = document.createElement("div");
     document.body.appendChild(element);
     element.style.font = "10px Ahem";
-    element.style.gridColumns = "'first' minmax(22em, max-content)";
-    element.style.gridRows = "minmax(max-content, 5em) 'last'";
+    element.style.gridDefinitionColumns = "'first' minmax(22em, max-content)";
+    element.style.gridDefinitionRows = "minmax(max-content, 5em) 'last'";
     testValue(element, "first minmax(220px, max-content)", "minmax(max-content, 50px) last");
 
     element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridColumns = "'first' minmax(min-content, max-content)";
-    element.style.gridRows = "minmax(max-content, min-content) 'last'";
+    element.style.gridDefinitionColumns = "'first' minmax(min-content, max-content)";
+    element.style.gridDefinitionRows = "minmax(max-content, min-content) 'last'";
     testValue(element, "first minmax(min-content, max-content)", "minmax(max-content, min-content) last");
 
     element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridColumns = "'first' 'nav' minmax(min-content, max-content) 'last'";
-    element.style.gridRows = "'first' 'nav' minmax(max-content, min-content) 'last'";
+    element.style.gridDefinitionColumns = "'first' 'nav' minmax(min-content, max-content) 'last'";
+    element.style.gridDefinitionRows = "'first' 'nav' minmax(max-content, min-content) 'last'";
     testValue(element, "nav first minmax(min-content, max-content) last", "nav first minmax(max-content, min-content) last");
 
     element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridColumns = "'first' 'nav' minmax(min-content, max-content) 'nav' auto 'last'";
-    element.style.gridRows = "'first' 'nav2' minmax(max-content, min-content) 'nav2' minmax(10px, 15px) 'last'";
+    element.style.gridDefinitionColumns = "'first' 'nav' minmax(min-content, max-content) 'nav' auto 'last'";
+    element.style.gridDefinitionRows = "'first' 'nav2' minmax(max-content, min-content) 'nav2' minmax(10px, 15px) 'last'";
     testValue(element, "nav first minmax(min-content, max-content) nav auto last", "first nav2 minmax(max-content, min-content) nav2 minmax(10px, 15px) last");
 
     element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridColumns = "'foo' 'bar' auto 'foo' auto 'bar'";
-    element.style.gridRows = "'foo' 'bar' auto 'foo' auto 'bar'";
+    element.style.gridDefinitionColumns = "'foo' 'bar' auto 'foo' auto 'bar'";
+    element.style.gridDefinitionRows = "'foo' 'bar' auto 'foo' auto 'bar'";
     testValue(element, "foo bar auto foo auto bar", "foo bar auto foo auto bar");
 
     debug("");
-    debug("Test getting and setting invalid grid-columns and grid-rows through JS");
+    debug("Test getting and setting invalid grid-definition-columns and grid-definition-rows through JS");
     element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridColumns = "'foo'";
-    element.style.gridRows = "'bar";
+    element.style.gridDefinitionColumns = "'foo'";
+    element.style.gridDefinitionRows = "'bar";
     testValue(element, "none", "none");
 
     element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridColumns = "'foo' 'bar'";
-    element.style.gridRows = "'bar' 'foo'";
+    element.style.gridDefinitionColumns = "'foo' 'bar'";
+    element.style.gridDefinitionRows = "'bar' 'foo'";
     testValue(element, "none", "none");
 </script>
 <script src="../js/resources/js-test-post.js"></script>

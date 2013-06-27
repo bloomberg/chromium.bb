@@ -44,7 +44,7 @@ public:
 
     bool operator==(const StyleGridData& o) const
     {
-        return m_gridColumns == o.m_gridColumns && m_gridRows == o.m_gridRows && m_gridAutoFlow == o.m_gridAutoFlow && m_gridAutoRows == o.m_gridAutoRows && m_gridAutoColumns == o.m_gridAutoColumns && m_namedGridColumnLines == o.m_namedGridColumnLines && m_namedGridRowLines == o.m_namedGridRowLines;
+        return m_gridDefinitionColumns == o.m_gridDefinitionColumns && m_gridDefinitionRows == o.m_gridDefinitionRows && m_gridAutoFlow == o.m_gridAutoFlow && m_gridAutoRows == o.m_gridAutoRows && m_gridAutoColumns == o.m_gridAutoColumns && m_namedGridColumnLines == o.m_namedGridColumnLines && m_namedGridRowLines == o.m_namedGridRowLines;
     }
 
     bool operator!=(const StyleGridData& o) const
@@ -52,9 +52,8 @@ public:
         return !(*this == o);
     }
 
-    // FIXME: Update the naming of the following variables.
-    Vector<GridTrackSize> m_gridColumns;
-    Vector<GridTrackSize> m_gridRows;
+    Vector<GridTrackSize> m_gridDefinitionColumns;
+    Vector<GridTrackSize> m_gridDefinitionRows;
 
     NamedGridLinesMap m_namedGridColumnLines;
     NamedGridLinesMap m_namedGridRowLines;

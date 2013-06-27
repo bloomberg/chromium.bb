@@ -421,7 +421,7 @@ double RenderGrid::computeNormalizedFractionBreadth(Vector<GridTrack>& tracks, T
 
 const GridTrackSize& RenderGrid::gridTrackSize(TrackSizingDirection direction, size_t i) const
 {
-    const Vector<GridTrackSize>& trackStyles = (direction == ForColumns) ? style()->gridColumns() : style()->gridRows();
+    const Vector<GridTrackSize>& trackStyles = (direction == ForColumns) ? style()->gridDefinitionColumns() : style()->gridDefinitionRows();
     if (i >= trackStyles.size())
         return (direction == ForColumns) ? style()->gridAutoColumns() : style()->gridAutoRows();
 
@@ -430,12 +430,12 @@ const GridTrackSize& RenderGrid::gridTrackSize(TrackSizingDirection direction, s
 
 size_t RenderGrid::explicitGridColumnCount() const
 {
-    return style()->gridColumns().size();
+    return style()->gridDefinitionColumns().size();
 }
 
 size_t RenderGrid::explicitGridRowCount() const
 {
-    return style()->gridRows().size();
+    return style()->gridDefinitionRows().size();
 }
 
 size_t RenderGrid::explicitGridSizeForSide(GridPositionSide side) const
@@ -666,8 +666,8 @@ void RenderGrid::placeItemsOnGrid()
         insertItemIntoGrid(child, GridCoordinate(*rowPositions, *columnPositions));
     }
 
-    ASSERT(gridRowCount() >= style()->gridRows().size());
-    ASSERT(gridColumnCount() >= style()->gridColumns().size());
+    ASSERT(gridRowCount() >= style()->gridDefinitionRows().size());
+    ASSERT(gridColumnCount() >= style()->gridDefinitionColumns().size());
 
     if (autoFlow == AutoFlowNone) {
         // If we did collect some grid items, they won't be placed thus never laid out.

@@ -2434,8 +2434,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         parsedValue = parseGridTrackSize(*m_valueList);
         break;
 
-    case CSSPropertyGridColumns:
-    case CSSPropertyGridRows:
+    case CSSPropertyGridDefinitionColumns:
+    case CSSPropertyGridDefinitionRows:
         if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
             return false;
         return parseGridTrackList(propId, important);

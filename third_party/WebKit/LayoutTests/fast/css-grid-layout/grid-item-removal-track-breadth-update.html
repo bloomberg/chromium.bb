@@ -7,28 +7,28 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .gridAutoContent {
-    grid-columns: auto;
-    grid-rows: auto;
+    grid-definition-columns: auto;
+    grid-definition-rows: auto;
 }
 
 .gridMinContentFixed {
-    grid-columns: minmax(min-content, 100px);
-    grid-rows: minmax(min-content, 40px);
+    grid-definition-columns: minmax(min-content, 100px);
+    grid-definition-rows: minmax(min-content, 40px);
 }
 
 .gridMaxContentFixed {
-    grid-columns: minmax(max-content, 150px);
-    grid-rows: minmax(max-content, 40px);
+    grid-definition-columns: minmax(max-content, 150px);
+    grid-definition-rows: minmax(max-content, 40px);
 }
 
 .gridFixedMinContent {
-    grid-columns: minmax(100px, min-content);
-    grid-rows: minmax(40px, min-content);
+    grid-definition-columns: minmax(100px, min-content);
+    grid-definition-rows: minmax(40px, min-content);
 }
 
 .gridFixedMaxContent {
-    grid-columns: minmax(100px, max-content);
-    grid-rows: minmax(40px, max-content);
+    grid-definition-columns: minmax(100px, max-content);
+    grid-definition-rows: minmax(40px, max-content);
 }
 
 .lessConstrainedContainer {

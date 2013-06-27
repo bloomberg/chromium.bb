@@ -72,8 +72,8 @@ static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
     CSSPropertyID cssGridLayoutProperties[] = {
         CSSPropertyGridAutoColumns,
         CSSPropertyGridAutoRows,
-        CSSPropertyGridColumns,
-        CSSPropertyGridRows,
+        CSSPropertyGridDefinitionColumns,
+        CSSPropertyGridDefinitionRows,
         CSSPropertyGridStart,
         CSSPropertyGridEnd,
         CSSPropertyGridBefore,

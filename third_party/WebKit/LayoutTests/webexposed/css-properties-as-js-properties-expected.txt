@@ -106,10 +106,10 @@ gridAutoFlow
 gridAutoRows
 gridBefore
 gridColumn
-gridColumns
+gridDefinitionColumns
+gridDefinitionRows
 gridEnd
 gridRow
-gridRows
 gridStart
 height
 imageRendering

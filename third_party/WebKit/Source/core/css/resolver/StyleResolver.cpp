@@ -2937,14 +2937,14 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         state.style()->setGridAutoRows(trackSize);
         return;
     }
-    case CSSPropertyGridColumns: {
+    case CSSPropertyGridDefinitionColumns: {
         if (isInherit) {
-            m_state.style()->setGridColumns(m_state.parentStyle()->gridColumns());
+            m_state.style()->setGridDefinitionColumns(m_state.parentStyle()->gridDefinitionColumns());
             m_state.style()->setNamedGridColumnLines(m_state.parentStyle()->namedGridColumnLines());
             return;
         }
         if (isInitial) {
-            m_state.style()->setGridColumns(RenderStyle::initialGridColumns());
+            m_state.style()->setGridDefinitionColumns(RenderStyle::initialGridDefinitionColumns());
             m_state.style()->setNamedGridColumnLines(RenderStyle::initialNamedGridColumnLines());
             return;
         }
@@ -2953,18 +2953,18 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         NamedGridLinesMap namedGridLines;
         if (!createGridTrackList(value, trackSizes, namedGridLines, state))
             return;
-        state.style()->setGridColumns(trackSizes);
+        state.style()->setGridDefinitionColumns(trackSizes);
         state.style()->setNamedGridColumnLines(namedGridLines);
         return;
     }
-    case CSSPropertyGridRows: {
+    case CSSPropertyGridDefinitionRows: {
         if (isInherit) {
-            m_state.style()->setGridRows(m_state.parentStyle()->gridRows());
+            m_state.style()->setGridDefinitionRows(m_state.parentStyle()->gridDefinitionRows());
             m_state.style()->setNamedGridRowLines(m_state.parentStyle()->namedGridRowLines());
             return;
         }
         if (isInitial) {
-            m_state.style()->setGridRows(RenderStyle::initialGridRows());
+            m_state.style()->setGridDefinitionRows(RenderStyle::initialGridDefinitionRows());
             m_state.style()->setNamedGridRowLines(RenderStyle::initialNamedGridRowLines());
             return;
         }
@@ -2973,7 +2973,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         NamedGridLinesMap namedGridLines;
         if (!createGridTrackList(value, trackSizes, namedGridLines, state))
             return;
-        state.style()->setGridRows(trackSizes);
+        state.style()->setGridDefinitionRows(trackSizes);
         state.style()->setNamedGridRowLines(namedGridLines);
         return;
     }
