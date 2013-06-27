@@ -33,4 +33,6 @@ BUILT_SOURCES =					\
 	xserver-protocol.c			\
 	xserver-server-protocol.h
 
+CLEANFILES = $(BUILT_SOURCES)
+
 @wayland_scanner_rules@
