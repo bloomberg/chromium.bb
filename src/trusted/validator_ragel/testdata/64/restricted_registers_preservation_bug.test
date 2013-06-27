@@ -1,9 +1,8 @@
 @hex:
-  # mov %esi, %ecx
+  # Regression tests for 
+  # https://code.google.com/p/nativeclient/issues/detail?id=3084
   89 f1
-  # mov %rbp, %rsp
   48 89 ec
-  # mov (%rsp, %rcx), %ebx
   8b 1c 0c
 @dis:
      0:	89 f1                                        	mov    %esi,%ecx
@@ -14,11 +13,8 @@
   return code: 1
 ----------------------------------------------------------------------
 @hex:
-  # mov %esi, %ecx
   89 f1
-  # mov %rsp, %rbp
   48 89 e5
-  # mov (%rsp, %rcx), %ebx
   8b 1c 0c
 @dis:
      0:	89 f1                                        	mov    %esi,%ecx
