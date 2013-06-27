@@ -174,6 +174,10 @@ class UI_EXPORT Event {
            type_ == ET_SCROLL_FLING_START;
   }
 
+  bool IsMouseWheelEvent() const {
+    return type_ == ET_MOUSEWHEEL;
+  }
+
   // Returns true if the event has a valid |native_event_|.
   bool HasNativeEvent() const;
 
@@ -396,8 +400,6 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
   // recent enough and within a small enough distance.
   static int GetRepeatCount(const MouseEvent& click_event);
 
-  gfx::Point root_location_;
-
   // See description above getter for details.
   int changed_button_flags_;
 
@@ -414,6 +416,7 @@ class UI_EXPORT MouseWheelEvent : public MouseEvent {
   explicit MouseWheelEvent(const base::NativeEvent& native_event);
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
   MouseWheelEvent(const MouseEvent& mouse_event, int x_offset, int y_offset);
+  MouseWheelEvent(const MouseWheelEvent& mouse_wheel_event);
 
   template <class T>
   MouseWheelEvent(const MouseWheelEvent& model,
@@ -431,10 +434,12 @@ class UI_EXPORT MouseWheelEvent : public MouseEvent {
   int y_offset() const { return offset_.y(); }
   const gfx::Vector2d& offset() const { return offset_; }
 
+  // Overridden from LocatedEvent.
+  virtual void UpdateForRootTransform(
+      const gfx::Transform& inverted_root_transform) OVERRIDE;
+
  private:
   gfx::Vector2d offset_;
-
-  DISALLOW_COPY_AND_ASSIGN(MouseWheelEvent);
 };
 
 class UI_EXPORT TouchEvent : public LocatedEvent {

@@ -745,11 +745,25 @@ void NativeWidgetWin::HandleNativeBlur(HWND focused_window) {
 }
 
 bool NativeWidgetWin::HandleMouseEvent(const ui::MouseEvent& event) {
-  ui::MouseEvent dpi_event(event);
-  dpi_event.set_location(ui::win::ScreenToDIPPoint(event.location()));
-  dpi_event.set_root_location(ui::win::ScreenToDIPPoint(event.location()));
-  delegate_->OnMouseEvent(&dpi_event);
-  return dpi_event.handled();
+  static gfx::Transform scale_transform(
+    1/ui::win::GetDeviceScaleFactor(), 0.0,
+    0.0, 1/ui::win::GetDeviceScaleFactor(),
+    0.0, 0.0);
+  if (event.IsMouseWheelEvent()) {
+    ui::MouseWheelEvent dpi_event(
+        static_cast<const ui::MouseWheelEvent&>(event));
+    dpi_event.UpdateForRootTransform(scale_transform);
+    delegate_->OnMouseEvent(&dpi_event);
+    return dpi_event.handled();
+  } else if (event.IsMouseEvent()) {
+    CHECK(!event.IsScrollEvent()); // Scroll events don't happen in Windows.
+    ui::MouseEvent dpi_event(event);
+    dpi_event.UpdateForRootTransform(scale_transform);
+    delegate_->OnMouseEvent(&dpi_event);
+    return dpi_event.handled();
+  }
+  NOTREACHED();
+  return false;
 }
 
 bool NativeWidgetWin::HandleKeyEvent(const ui::KeyEvent& event) {
