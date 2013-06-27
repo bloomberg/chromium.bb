@@ -112,7 +112,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
        inspectorClient));
     m_agents.append(InspectorApplicationCacheAgent::create(m_instrumentingAgents.get(), m_state.get(), pageAgent));
 
-    m_agents.append(InspectorResourceAgent::create(m_instrumentingAgents.get(), pageAgent, inspectorClient, m_state.get()));
+    m_agents.append(InspectorResourceAgent::create(m_instrumentingAgents.get(), pageAgent, inspectorClient, m_state.get(), m_overlay.get()));
 
     PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
 

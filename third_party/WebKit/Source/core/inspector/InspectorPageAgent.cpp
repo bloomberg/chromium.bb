@@ -717,12 +717,16 @@ void InspectorPageAgent::setShowFPSCounter(ErrorString*, bool show)
 {
     m_state->setBoolean(PageAgentState::pageAgentShowFPSCounter, show);
     m_client->setShowFPSCounter(show);
+
+    updateOverridesTopOffset();
 }
 
 void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString*, bool enabled)
 {
     m_state->setBoolean(PageAgentState::pageAgentContinuousPaintingEnabled, enabled);
     m_client->setContinuousPaintingEnabled(enabled);
+
+    updateOverridesTopOffset();
 }
 
 void InspectorPageAgent::getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum* status)
@@ -1101,6 +1105,7 @@ void InspectorPageAgent::updateViewMetrics(int width, int height, double fontSca
     if (document)
         document->styleResolverChanged(RecalcStyleImmediately);
     InspectorInstrumentation::mediaQueryResultChanged(document);
+    m_overlay->setOverride(InspectorOverlay::DeviceMetricsOverride, width && height);
 }
 
 void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
@@ -1108,6 +1113,19 @@ void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
     m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, enabled);
     if (mainFrame() && mainFrame()->settings())
         mainFrame()->settings()->setTouchEventEmulationEnabled(enabled);
+    m_overlay->setOverride(InspectorOverlay::TouchOverride, enabled);
+}
+
+void InspectorPageAgent::updateOverridesTopOffset()
+{
+    static const int continousPaintingGraphHeight = 92;
+    static const int fpsGraphHeight = 73;
+    int topOffset = 0;
+    if (m_state->getBoolean(PageAgentState::pageAgentContinuousPaintingEnabled))
+        topOffset = continousPaintingGraphHeight;
+    else if (m_state->getBoolean(PageAgentState::pageAgentShowFPSCounter))
+        topOffset = fpsGraphHeight;
+    m_overlay->setOverridesTopOffset(topOffset);
 }
 
 void InspectorPageAgent::setGeolocationOverride(ErrorString* error, const double* latitude, const double* longitude, const double* accuracy)
@@ -1129,6 +1147,7 @@ void InspectorPageAgent::setGeolocationOverride(ErrorString* error, const double
         m_geolocationPosition.clear();
 
     controller->positionChanged(0); // Kick location update.
+    m_overlay->setOverride(InspectorOverlay::GeolocationOverride, true);
 }
 
 void InspectorPageAgent::clearGeolocationOverride(ErrorString*)
@@ -1141,6 +1160,7 @@ void InspectorPageAgent::clearGeolocationOverride(ErrorString*)
     GeolocationController* controller = GeolocationController::from(m_page);
     if (controller && m_platformGeolocationPosition.get())
         controller->positionChanged(m_platformGeolocationPosition.get());
+    m_overlay->setOverride(InspectorOverlay::GeolocationOverride, false);
 }
 
 GeolocationPosition* InspectorPageAgent::overrideGeolocationPosition(GeolocationPosition* position)
@@ -1166,11 +1186,13 @@ void InspectorPageAgent::setDeviceOrientationOverride(ErrorString* error, double
 
     m_deviceOrientation = DeviceOrientationData::create(true, alpha, true, beta, true, gamma);
     controller->didChangeDeviceOrientation(m_deviceOrientation.get());
+    m_overlay->setOverride(InspectorOverlay::DeviceOrientationOverride, true);
 }
 
 void InspectorPageAgent::clearDeviceOrientationOverride(ErrorString*)
 {
     m_deviceOrientation.clear();
+    m_overlay->setOverride(InspectorOverlay::DeviceOrientationOverride, false);
 }
 
 DeviceOrientationData* InspectorPageAgent::overrideDeviceOrientation(DeviceOrientationData* deviceOrientation)
@@ -1201,6 +1223,7 @@ void InspectorPageAgent::setEmulatedMedia(ErrorString*, const String& media)
         document->styleResolverChanged(RecalcStyleImmediately);
         document->updateLayout();
     }
+    m_overlay->setOverride(InspectorOverlay::CSSMediaOverride, !media.isEmpty());
 }
 
 void InspectorPageAgent::applyEmulatedMedia(String* media)

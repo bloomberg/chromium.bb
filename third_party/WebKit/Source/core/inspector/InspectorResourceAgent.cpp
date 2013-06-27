@@ -38,6 +38,7 @@
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorClient.h"
+#include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -618,6 +619,7 @@ void InspectorResourceAgent::disable(ErrorString*)
 void InspectorResourceAgent::setUserAgentOverride(ErrorString*, const String& userAgent)
 {
     m_state->setString(ResourceAgentState::userAgentOverride, userAgent);
+    m_overlay->setOverride(InspectorOverlay::UserAgentOverride, !userAgent.isEmpty());
 }
 
 void InspectorResourceAgent::setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>& headers)
@@ -775,10 +777,11 @@ void InspectorResourceAgent::reportMemoryUsage(MemoryObjectInfo* memoryObjectInf
     info.addMember(m_styleRecalculationInitiator, "styleRecalculationInitiator");
 }
 
-InspectorResourceAgent::InspectorResourceAgent(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorClient* client, InspectorCompositeState* state)
+InspectorResourceAgent::InspectorResourceAgent(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorClient* client, InspectorCompositeState* state, InspectorOverlay* overlay)
     : InspectorBaseAgent<InspectorResourceAgent>("Network", instrumentingAgents, state)
     , m_pageAgent(pageAgent)
     , m_client(client)
+    , m_overlay(overlay)
     , m_frontend(0)
     , m_resourcesData(adoptPtr(new NetworkResourcesData()))
     , m_loadingXHRSynchronously(false)
