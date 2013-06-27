@@ -75,4 +75,13 @@ NSString* ReplaceNSStringPlaceholders(NSString* formatString,
                                 offset));
 }
 
+NSString* TooltipForURLAndTitle(NSString* url, NSString* title) {
+  if ([title length] == 0)
+    return url;
+  else if ([url length] == 0 || [url isEqualToString:title])
+    return title;
+  else
+    return [NSString stringWithFormat:@"%@\n%@", title, url];
+}
+
 }  // namespace cocoa_l10n_util

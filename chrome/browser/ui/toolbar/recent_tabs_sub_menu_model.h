@@ -56,6 +56,9 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   virtual const gfx::Font* GetLabelFontAt(int index) const OVERRIDE;
 
   int GetMaxWidthForItemAtIndex(int item_index) const;
+  bool GetURLAndTitleForItemAtIndex(int index,
+                                    std::string* url,
+                                    string16* title) const;
 
   // Command Id for recently closed items header or disabled item to which the
   // accelerator string will be appended.

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/user_metrics.h"
 #import "ui/base/cocoa/cocoa_event_utils.h"
@@ -40,14 +41,9 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 
 + (NSString*)tooltipForNode:(const BookmarkNode*)node {
   NSString* title = base::SysUTF16ToNSString(node->GetTitle());
-  std::string url_string = node->url().possibly_invalid_spec();
-  NSString* url = [NSString stringWithUTF8String:url_string.c_str()];
-  if ([title length] == 0)
-    return url;
-  else if ([url length] == 0 || [url isEqualToString:title])
-    return title;
-  else
-    return [NSString stringWithFormat:@"%@\n%@", title, url];
+  std::string urlString = node->url().possibly_invalid_spec();
+  NSString* url = base::SysUTF8ToNSString(urlString);
+  return cocoa_l10n_util::TooltipForURLAndTitle(url, title);
 }
 
 - (id)initWithBridge:(BookmarkMenuBridge*)bridge

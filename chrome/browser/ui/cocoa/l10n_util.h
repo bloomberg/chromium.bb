@@ -29,4 +29,7 @@ NSString* ReplaceNSStringPlaceholders(NSString* formatString,
                                       const string16& a,
                                       size_t* offset);
 
+// Generates a tooltip string for a given URL and title.
+NSString* TooltipForURLAndTitle(NSString* url, NSString* title);
+
 }  // namespace cocoa_l10n_util

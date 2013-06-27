@@ -16,7 +16,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/recent_tabs_menu_model_delegate.h"
@@ -38,7 +40,7 @@ using content::UserMetricsAction;
 - (NSButton*)zoomDisplay;
 - (void)removeAllItems:(NSMenu*)menu;
 - (NSMenu*)recentTabsSubmenu;
-- (ui::MenuModel*)recentTabsMenuModel;
+- (RecentTabsSubMenuModel*)recentTabsMenuModel;
 - (int)maxWidthForMenuModel:(ui::MenuModel*)model
                  modelIndex:(int)modelIndex;
 @end
@@ -157,16 +159,27 @@ class ZoomLevelObserver {
   // The section headers in the recent tabs submenu should be bold and black if
   // a font is specified for the items (bold is already applied in the
   // |MenuController| as the font returned by |GetLabelFontAt| is bold).
-  if (model && model == [self recentTabsMenuModel] &&
-      model->GetLabelFontAt([item tag])) {
-    DCHECK([menuItem attributedTitle]);
-    base::scoped_nsobject<NSMutableAttributedString> title(
-        [[NSMutableAttributedString alloc]
-            initWithAttributedString:[menuItem attributedTitle]]);
-    [title addAttribute:NSForegroundColorAttributeName
-                  value:[NSColor blackColor]
-                  range:NSMakeRange(0, [title length])];
-    [menuItem setAttributedTitle:title.get()];
+  if (model && model == [self recentTabsMenuModel]) {
+    if (model->GetLabelFontAt([item tag])) {
+      DCHECK([menuItem attributedTitle]);
+      base::scoped_nsobject<NSMutableAttributedString> title(
+          [[NSMutableAttributedString alloc]
+              initWithAttributedString:[menuItem attributedTitle]]);
+      [title addAttribute:NSForegroundColorAttributeName
+                    value:[NSColor blackColor]
+                    range:NSMakeRange(0, [title length])];
+      [menuItem setAttributedTitle:title.get()];
+    } else {
+      // Not a section header. Add a tooltip with the title and the URL.
+      std::string url;
+      string16 title;
+      if ([self recentTabsMenuModel]->GetURLAndTitleForItemAtIndex(
+              [item tag], &url, &title)) {
+        [menuItem setToolTip:
+            cocoa_l10n_util::TooltipForURLAndTitle(
+                base::SysUTF8ToNSString(url), base::SysUTF16ToNSString(title))];
+       }
+    }
   }
 
   return enabled;
@@ -343,20 +356,20 @@ class ZoomLevelObserver {
 
 // The recent tabs menu model is recognized by the existence of either the
 // kRecentlyClosedHeaderCommandId or the kDisabledRecentlyClosedHeaderCommandId.
-- (ui::MenuModel*)recentTabsMenuModel {
+- (RecentTabsSubMenuModel*)recentTabsMenuModel {
   int index = 0;
-  // Start searching at the wrnech menu model level, |model| will be updated
+  // Start searching at the wrench menu model level, |model| will be updated
   // only if the command we're looking for is found in one of the [sub]menus.
   ui::MenuModel* model = [self wrenchMenuModel];
   if (ui::MenuModel::GetModelAndIndexForCommandId(
           RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId, &model,
           &index)) {
-    return model;
+    return static_cast<RecentTabsSubMenuModel*>(model);
   }
   if (ui::MenuModel::GetModelAndIndexForCommandId(
           RecentTabsSubMenuModel::kDisabledRecentlyClosedHeaderCommandId,
           &model, &index)) {
-    return model;
+    return static_cast<RecentTabsSubMenuModel*>(model);
   }
   return NULL;
 }
@@ -365,10 +378,9 @@ class ZoomLevelObserver {
 // menu.
 - (int)maxWidthForMenuModel:(ui::MenuModel*)model
                  modelIndex:(int)modelIndex {
-  ui::MenuModel* recentTabsMenuModel = [self recentTabsMenuModel];
+  RecentTabsSubMenuModel* recentTabsMenuModel = [self recentTabsMenuModel];
   if (recentTabsMenuModel && recentTabsMenuModel == model) {
-    return static_cast<RecentTabsSubMenuModel*>(
-        recentTabsMenuModel)->GetMaxWidthForItemAtIndex(modelIndex);
+    return recentTabsMenuModel->GetMaxWidthForItemAtIndex(modelIndex);
   }
   return -1;
 }
