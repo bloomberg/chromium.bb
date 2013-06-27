@@ -73,7 +73,7 @@ static void writeDocument(const String& pluginType, const WebDocument& hostDocum
     addString(objectTag, writer);
     addLiteral("</body>\n", writer);
 
-    writer->end();
+    loader->endWriting(writer);
 }
 
 class HelperPluginChromeClient : public EmptyChromeClient {

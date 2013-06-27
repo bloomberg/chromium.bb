@@ -2152,7 +2152,7 @@ void Document::cancelParsing()
     explicitClose();
 }
 
-void Document::implicitOpen()
+PassRefPtr<DocumentParser> Document::implicitOpen()
 {
     cancelParsing();
 
@@ -2170,6 +2170,8 @@ void Document::implicitOpen()
     m_parser = createParser();
     setParsing(true);
     setReadyState(Loading);
+
+    return m_parser;
 }
 
 HTMLElement* Document::body() const

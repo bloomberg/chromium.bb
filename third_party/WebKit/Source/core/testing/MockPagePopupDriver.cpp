@@ -73,7 +73,7 @@ inline MockPagePopup::MockPagePopup(PagePopupClient* client, const IntRect& orig
     const char scriptToSetUpPagePopupController[] = "<script>window.pagePopupController = parent.internals.pagePopupController;</script>";
     writer->addData(scriptToSetUpPagePopupController, sizeof(scriptToSetUpPagePopupController));
     m_popupClient->writeDocument(*writer);
-    writer->end();
+    contentFrame->loader()->activeDocumentLoader()->endWriting(writer);
 }
 
 PassRefPtr<MockPagePopup> MockPagePopup::create(PagePopupClient* client, const IntRect& originBoundsInRootView, Frame* mainFrame)
