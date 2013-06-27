@@ -55,7 +55,6 @@ ChromeSendPassthroughWebUITest.prototype = {
 
 // Test that the mocked chrome.send can call the original.
 TEST_F('ChromeSendPassthroughWebUITest', 'CanCallOriginal', function() {
-  chrome.send('expectCheckSend');
   this.mockHandler.expects(once()).checkSend().
       will(callFunction(function() {
                           chrome.originalSend('checkSend');

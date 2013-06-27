@@ -67,7 +67,6 @@ login.createScreen('KioskEnableScreen', 'kiosk-enable', function() {
       $('kiosk-ok-button').hidden = true;
       $('kiosk-enable-details').textContent =
           loadTimeData.getString('kioskEnableWarningDetails');
-      chrome.send('kioskEnableVisible');
     },
 
     /**

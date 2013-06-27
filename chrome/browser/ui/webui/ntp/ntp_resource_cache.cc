@@ -405,6 +405,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
   load_time_data.SetString("syncLinkText",
       l10n_util::GetStringUTF16(IDS_SYNC_ADVANCED_OPTIONS));
+  load_time_data.SetBoolean("shouldShowSyncLogin",
+                            NTPLoginHandler::ShouldShow(profile_));
   load_time_data.SetString("otherSessions",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_LABEL));
   load_time_data.SetString("otherSessionsEmpty",

@@ -216,6 +216,8 @@ void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
   if (callback != message_callbacks_.end()) {
     // Forward this message and content on.
     callback->second.Run(&args);
+  } else {
+    NOTREACHED() << "Unhandled chrome.send(\"" << message << "\");";
   }
 }
 

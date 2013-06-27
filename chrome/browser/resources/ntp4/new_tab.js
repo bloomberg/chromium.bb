@@ -244,7 +244,8 @@ cr.define('ntp', function() {
 
     var loginContainer = getRequiredElement('login-container');
     loginContainer.addEventListener('click', showSyncLoginUI);
-    chrome.send('initializeSyncLogin');
+    if (loadTimeData.getBoolean('shouldShowSyncLogin'))
+      chrome.send('initializeSyncLogin');
 
     doWhenAllSectionsReady(function() {
       // Tell the slider about the pages.
