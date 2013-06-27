@@ -60,7 +60,7 @@ inline void reportMemoryUsage(const StringImpl* stringImpl, MemoryObjectInfo* me
             info.addRawBuffer(buffer, bufferSize, "char[]", "ownedBuffer");
 
         if (stringImpl->has16BitShadow())
-            info.addRawBuffer(stringImpl->characters(), length * sizeof(UChar), "UChar[]", "16bitShadow");
+            info.addRawBuffer(stringImpl->bloatedCharacters(), length * sizeof(UChar), "UChar[]", "16bitShadow");
     }
 }
 

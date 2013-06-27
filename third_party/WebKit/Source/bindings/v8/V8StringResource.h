@@ -119,7 +119,7 @@ public:
     virtual size_t length() const OVERRIDE { return m_plainString.impl()->length(); }
     virtual const uint16_t* data() const OVERRIDE
     {
-        return reinterpret_cast<const uint16_t*>(m_plainString.impl()->characters());
+        return reinterpret_cast<const uint16_t*>(m_plainString.impl()->bloatedCharacters());
     }
 };
 

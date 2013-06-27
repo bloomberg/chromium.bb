@@ -160,7 +160,7 @@ PassOwnArrayPtr<Length> parseFrameSetListOfDimensions(const String& string, int&
     size_t pos2;
 
     while ((pos2 = str->find(',', pos)) != notFound) {
-        r[i++] = parseFrameSetDimension(str->characters() + pos, pos2 - pos);
+        r[i++] = parseFrameSetDimension(str->bloatedCharacters() + pos, pos2 - pos);
         pos = pos2 + 1;
     }
 
@@ -168,7 +168,7 @@ PassOwnArrayPtr<Length> parseFrameSetListOfDimensions(const String& string, int&
 
     // IE Quirk: If the last comma is the last char skip it and reduce len by one.
     if (str->length()-pos > 0)
-        r[i] = parseFrameSetDimension(str->characters() + pos, str->length() - pos);
+        r[i] = parseFrameSetDimension(str->bloatedCharacters() + pos, str->length() - pos);
     else
         len--;
 

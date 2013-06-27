@@ -418,10 +418,10 @@ public:
     bool hasOwnedBuffer() const { return bufferOwnership() == BufferOwned; }
     StringImpl* baseString() const { return bufferOwnership() == BufferSubstring ? m_substringBuffer : 0; }
 
-    // FIXME: Remove all unnecessary usages of characters()
+    // FIXME: Remove all unnecessary usages of bloatedCharacters()
     ALWAYS_INLINE const LChar* characters8() const { ASSERT(is8Bit()); return m_data8; }
     ALWAYS_INLINE const UChar* characters16() const { ASSERT(!is8Bit()); return m_data16; }
-    ALWAYS_INLINE const UChar* characters() const
+    ALWAYS_INLINE const UChar* bloatedCharacters() const
     {
         if (!is8Bit())
             return m_data16;
@@ -765,7 +765,7 @@ template <>
 ALWAYS_INLINE const LChar* StringImpl::getCharacters<LChar>() const { return characters8(); }
 
 template <>
-ALWAYS_INLINE const UChar* StringImpl::getCharacters<UChar>() const { return characters(); }
+ALWAYS_INLINE const UChar* StringImpl::getCharacters<UChar>() const { return bloatedCharacters(); }
 
 WTF_EXPORT bool equal(const StringImpl*, const StringImpl*);
 WTF_EXPORT bool equal(const StringImpl*, const LChar*);
@@ -1102,7 +1102,7 @@ bool equalIgnoringNullity(const Vector<UChar, inlineCapacity>& a, StringImpl* b)
         return !a.size();
     if (a.size() != b->length())
         return false;
-    return !memcmp(a.data(), b->characters(), b->length() * sizeof(UChar));
+    return !memcmp(a.data(), b->bloatedCharacters(), b->length() * sizeof(UChar));
 }
 
 template<typename CharacterType1, typename CharacterType2>

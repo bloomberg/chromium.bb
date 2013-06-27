@@ -2343,7 +2343,7 @@ Vector<uint8_t> SerializedScriptValue::toWireBytes() const
     size_t length = m_data.length();
     Vector<uint8_t> result(length * sizeof(UChar));
 
-    const UChar* src = m_data.characters();
+    const UChar* src = m_data.bloatedCharacters();
     UChar* dst = reinterpret_cast<UChar*>(result.data());
     for (size_t i = 0; i < length; i++)
         dst[i] = htons(src[i]);
@@ -2473,7 +2473,7 @@ v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, M
     if (!m_data.impl())
         return v8NullWithCheck(isolate);
     COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
-    Reader reader(reinterpret_cast<const uint8_t*>(m_data.impl()->characters()), 2 * m_data.length(), isolate);
+    Reader reader(reinterpret_cast<const uint8_t*>(m_data.impl()->bloatedCharacters()), 2 * m_data.length(), isolate);
     Deserializer deserializer(reader, messagePorts, m_arrayBufferContentsArray.get());
     return deserializer.deserialize();
 }

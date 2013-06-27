@@ -447,7 +447,7 @@ const UChar* StringImpl::getData16SlowCase() const
         // If this is a substring, return a pointer into the parent string.
         // TODO: Consider severing this string from the parent string
         unsigned offset = m_data8 - m_substringBuffer->characters8();
-        return m_substringBuffer->characters() + offset;
+        return m_substringBuffer->bloatedCharacters() + offset;
     }
 
     STRING_STATS_ADD_UPCONVERTED_STRING(m_length);
@@ -666,7 +666,7 @@ PassRefPtr<StringImpl> StringImpl::upper()
     }
 
 upconvert:
-    const UChar* source16 = characters();
+    const UChar* source16 = bloatedCharacters();
 
     UChar* data16;
     RefPtr<StringImpl> newImpl = createUninitialized(m_length, data16);
@@ -1049,7 +1049,7 @@ size_t StringImpl::find(const LChar* matchString, unsigned index)
     // delta is the number of additional times to test; delta == 0 means test only once.
     unsigned delta = searchLength - matchLength;
 
-    const UChar* searchCharacters = characters() + index;
+    const UChar* searchCharacters = bloatedCharacters() + index;
 
     // Optimization 2: keep a running hash of the strings,
     // only call equal if the hashes match.
@@ -1092,7 +1092,7 @@ size_t StringImpl::findIgnoringCase(const LChar* matchString, unsigned index)
     // delta is the number of additional times to test; delta == 0 means test only once.
     unsigned delta = searchLength - matchLength;
 
-    const UChar* searchCharacters = characters() + index;
+    const UChar* searchCharacters = bloatedCharacters() + index;
 
     unsigned i = 0;
     // keep looping until we match
@@ -1535,7 +1535,7 @@ PassRefPtr<StringImpl> StringImpl::replace(unsigned position, unsigned lengthToR
         for (unsigned i = 0; i < length() - position - lengthToReplace; ++i)
             data[i + position + lengthToInsert] = m_data8[i + position + lengthToReplace];
     } else {
-        memcpy(data + position + lengthToInsert, characters() + position + lengthToReplace,
+        memcpy(data + position + lengthToInsert, bloatedCharacters() + position + lengthToReplace,
             (length() - position - lengthToReplace) * sizeof(UChar));
     }
     return newImpl.release();

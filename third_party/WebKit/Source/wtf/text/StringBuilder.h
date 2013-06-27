@@ -258,7 +258,7 @@ public:
 
         m_valid16BitShadowLength = m_length;
 
-        return m_buffer->characters();
+        return m_buffer->bloatedCharacters();
     }
     
     bool is8Bit() const { return m_is8Bit; }

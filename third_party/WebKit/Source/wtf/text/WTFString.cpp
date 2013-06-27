@@ -107,8 +107,8 @@ void String::append(const String& str)
             UChar* data;
             RELEASE_ASSERT(str.length() <= numeric_limits<unsigned>::max() - m_impl->length());
             RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(m_impl->length() + str.length(), data);
-            memcpy(data, m_impl->characters(), m_impl->length() * sizeof(UChar));
-            memcpy(data + m_impl->length(), str.characters(), str.length() * sizeof(UChar));
+            memcpy(data, m_impl->bloatedCharacters(), m_impl->length() * sizeof(UChar));
+            memcpy(data + m_impl->length(), str.bloatedCharacters(), str.length() * sizeof(UChar));
             m_impl = newImpl.release();
         } else
             m_impl = str.m_impl;
@@ -125,7 +125,7 @@ void String::append(LChar c)
         UChar* data;
         RELEASE_ASSERT(m_impl->length() < numeric_limits<unsigned>::max());
         RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(m_impl->length() + 1, data);
-        memcpy(data, m_impl->characters(), m_impl->length() * sizeof(UChar));
+        memcpy(data, m_impl->bloatedCharacters(), m_impl->length() * sizeof(UChar));
         data[m_impl->length()] = c;
         m_impl = newImpl.release();
     } else
@@ -142,7 +142,7 @@ void String::append(UChar c)
         UChar* data;
         RELEASE_ASSERT(m_impl->length() < numeric_limits<unsigned>::max());
         RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(m_impl->length() + 1, data);
-        memcpy(data, m_impl->characters(), m_impl->length() * sizeof(UChar));
+        memcpy(data, m_impl->bloatedCharacters(), m_impl->length() * sizeof(UChar));
         data[m_impl->length()] = c;
         m_impl = newImpl.release();
     } else
@@ -163,7 +163,7 @@ void String::insert(const String& str, unsigned pos)
             m_impl = str.impl();
         return;
     }
-    insert(str.characters(), str.length(), pos);
+    insert(str.bloatedCharacters(), str.length(), pos);
 }
 
 void String::append(const LChar* charactersToAppend, unsigned lengthToAppend)
@@ -243,9 +243,9 @@ void String::insert(const UChar* charactersToInsert, unsigned lengthToInsert, un
     UChar* data;
     RELEASE_ASSERT(lengthToInsert <= numeric_limits<unsigned>::max() - length());
     RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(length() + lengthToInsert, data);
-    memcpy(data, characters(), position * sizeof(UChar));
+    memcpy(data, bloatedCharacters(), position * sizeof(UChar));
     memcpy(data + position, charactersToInsert, lengthToInsert * sizeof(UChar));
-    memcpy(data + position + lengthToInsert, characters() + position, (length() - position) * sizeof(UChar));
+    memcpy(data + position + lengthToInsert, bloatedCharacters() + position, (length() - position) * sizeof(UChar));
     m_impl = newImpl.release();
 }
 
@@ -262,7 +262,7 @@ void String::truncate(unsigned position)
         return;
     UChar* data;
     RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(position, data);
-    memcpy(data, characters(), position * sizeof(UChar));
+    memcpy(data, bloatedCharacters(), position * sizeof(UChar));
     m_impl = newImpl.release();
 }
 
@@ -380,7 +380,7 @@ bool String::percentage(int& result) const
     if ((*m_impl)[m_impl->length() - 1] != '%')
        return false;
 
-    result = charactersToIntStrict(m_impl->characters(), m_impl->length() - 1);
+    result = charactersToIntStrict(m_impl->bloatedCharacters(), m_impl->length() - 1);
     return true;
 }
 
@@ -389,9 +389,9 @@ const UChar* String::charactersWithNullTermination()
     if (!m_impl)
         return 0;
     if (m_impl->hasTerminatingNullCharacter())
-        return m_impl->characters();
+        return m_impl->bloatedCharacters();
     m_impl = StringImpl::createWithTerminatingNullCharacter(*m_impl);
-    return m_impl->characters();
+    return m_impl->bloatedCharacters();
 }
 
 String String::format(const char *format, ...)
@@ -792,7 +792,7 @@ CString String::utf8(ConversionMode mode) const
                 // was as an unpaired high surrogate would have been handled in
                 // the middle of a string with non-strict conversion - which is
                 // to say, simply encode it to UTF-8.
-                ASSERT((characters + 1) == (this->characters() + length));
+                ASSERT((characters + 1) == (this->bloatedCharacters() + length));
                 ASSERT((*characters >= 0xD800) && (*characters <= 0xDBFF));
                 // There should be room left, since one UChar hasn't been converted.
                 ASSERT((buffer + 3) <= (buffer + bufferVector.size()));
