@@ -423,42 +423,93 @@ Commands.volumeSwitchCommand = {
 Commands.togglePinnedCommand = {
   execute: function(event, fileManager) {
     var pin = !event.command.checked;
-    var entry = CommandUtil.getSingleEntry(event, fileManager);
-
-    var showError = function(filesystem) {
-      fileManager.alert.showHtml(str('DRIVE_OUT_OF_SPACE_HEADER'),
-          strf('DRIVE_OUT_OF_SPACE_MESSAGE',
-               unescape(entry.name),
-               util.bytesToString(filesystem.size)));
-    };
-
-    var callback = function() {
-      if (chrome.runtime.lastError && pin) {
-        fileManager.metadataCache_.get(entry, 'filesystem', showError);
-      }
-      // We don't have update events yet, so clear the cached data.
-      fileManager.metadataCache_.clear(entry, 'drive');
-      fileManager.metadataCache_.get(entry, 'drive', function(drive) {
-        fileManager.updateMetadataInUI_('drive', [entry.toURL()], [drive]);
-      });
-    };
-
-    chrome.fileBrowserPrivate.pinDriveFile(entry.toURL(), pin, callback);
     event.command.checked = pin;
-  },
-  canExecute: function(event, fileManager) {
-    var entry = CommandUtil.getSingleEntry(event, fileManager);
-    var drive = entry && fileManager.metadataCache_.getCached(entry, 'drive');
+    var entries = this.getTargetEntries_();
+    var currentEntry;
+    var error = false;
+    var steps = {
+      // Pick an entry and pin it.
+      start: function() {
+        // Check if all the entries are pinned or not.
+        if (entries.length == 0)
+          return;
+        currentEntry = entries.shift();
+        chrome.fileBrowserPrivate.pinDriveFile(
+            currentEntry.toURL(),
+            pin,
+            steps.entryPinned);
+      },
 
-    if (!fileManager.isOnDrive() || !entry || entry.isDirectory || !drive ||
-        drive.hosted) {
-      event.canExecute = false;
-      event.command.setHidden(true);
-    } else {
+      // Check the result of pinning
+      entryPinned: function() {
+        // Convert to boolean.
+        error = !!chrome.runtime.lastError;
+        if (error && pin) {
+          fileManager.metadataCache_.get(
+              currentEntry, 'filesystem', steps.showError);
+        }
+        fileManager.metadataCache_.clear(currentEntry, 'drive');
+        fileManager.metadataCache_.get(
+            currentEntry, 'drive', steps.updateUI.bind(this));
+      },
+
+      // Update the user interface accoding to the cache state.
+      updateUI: function(drive) {
+        fileManager.updateMetadataInUI_(
+            'drive', [currentEntry.toURL()], [drive]);
+        if (!error)
+          steps.start();
+      },
+
+      // Show the error
+      showError: function(filesystem) {
+        fileManager.alert.showHtml(str('DRIVE_OUT_OF_SPACE_HEADER'),
+                                   strf('DRIVE_OUT_OF_SPACE_MESSAGE',
+                                        unescape(currentEntry.name),
+                                        util.bytesToString(filesystem.size)));
+      }
+    };
+    steps.start();
+  },
+
+  canExecute: function(event, fileManager) {
+    var entries = this.getTargetEntries_();
+    var checked = true;
+    for (var i = 0; i < entries.length; i++) {
+      checked = checked && entries[i].pinned;
+    }
+    if (entries.length > 0) {
       event.canExecute = true;
       event.command.setHidden(false);
-      event.command.checked = drive.pinned;
+      event.command.checked = checked;
+    } else {
+      event.canExecute = false;
+      event.command.setHidden(true);
     }
+  },
+
+  /**
+   * Obtains target entries from the selection.
+   * If directories are included in the selection, it just returns an empty
+   * array to avoid confusing because pinning directory is not supported
+   * currently.
+   *
+   * @return {Array.<Entry>} Target entries.
+   * @private
+   */
+  getTargetEntries_: function() {
+    var hasDirectory = false;
+    var results = fileManager.getSelection().entries.filter(function(entry) {
+      hasDirectory = hasDirectory || entry.isDirectory;
+      if (!entry || hasDirectory)
+        return false;
+      var metadata = fileManager.metadataCache_.getCached(entry, 'drive');
+        if (!metadata || metadata.hosted)
+          return false;
+      entry.pinned = metadata.pinned;
+      return true;
+    });
+    return hasDirectory ? [] : results;
   }
 };
 
