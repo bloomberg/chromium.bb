@@ -239,6 +239,7 @@ cr.define('options', function() {
       var trash = trashTemplate.cloneNode(true);
       trash.title = loadTimeData.getString('extensionUninstall');
       trash.addEventListener('click', function(e) {
+        butterBarVisibility[extension.id] = false;
         chrome.send('extensionSettingsUninstall', [extension.id]);
       });
       node.querySelector('.enable-controls').appendChild(trash);
