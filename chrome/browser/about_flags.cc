@@ -716,6 +716,13 @@ const Experiment kExperiments[] = {
                               switches::kDisableQuic)
   },
   {
+    "enable-spdy4a2",
+    IDS_FLAGS_ENABLE_SPDY4A2_NAME,
+    IDS_FLAGS_ENABLE_SPDY4A2_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableSpdy4a2)
+  },
+  {
     "enable-async-dns",
     IDS_FLAGS_ENABLE_ASYNC_DNS_NAME,
     IDS_FLAGS_ENABLE_ASYNC_DNS_DESCRIPTION,

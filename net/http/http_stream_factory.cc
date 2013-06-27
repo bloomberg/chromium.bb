@@ -183,6 +183,18 @@ void HttpStreamFactory::EnableNpnSpdy31() {
 }
 
 // static
+void HttpStreamFactory::EnableNpnSpdy4a2() {
+  set_use_alternate_protocols(true);
+  std::vector<std::string> next_protos;
+  next_protos.push_back("http/1.1");
+  next_protos.push_back("spdy/2");
+  next_protos.push_back("spdy/3");
+  next_protos.push_back("spdy/3.1");
+  next_protos.push_back("spdy/4a2");
+  SetNextProtos(next_protos);
+}
+
+// static
 void HttpStreamFactory::SetNextProtos(const std::vector<std::string>& value) {
   if (!next_protos_)
     next_protos_ = new std::vector<std::string>;
