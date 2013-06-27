@@ -52,10 +52,7 @@ using sessions::SerializedNavigationEntryTestHelper;
 
 class SessionRestoreTest : public InProcessBrowserTest {
  public:
-  SessionRestoreTest()
-      : active_browser_list_(BrowserList::GetInstance(
-                                chrome::GetActiveDesktop())) {
-  }
+  SessionRestoreTest() : active_browser_list_(NULL) {}
 
  protected:
 #if defined(OS_CHROMEOS)
@@ -67,6 +64,8 @@ class SessionRestoreTest : public InProcessBrowserTest {
 #endif
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    active_browser_list_ = BrowserList::GetInstance(chrome::GetActiveDesktop());
+
     SessionStartupPref pref(SessionStartupPref::LAST);
     SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX)
@@ -81,6 +80,8 @@ class SessionRestoreTest : public InProcessBrowserTest {
       helper.ReleaseService();
     }
 #endif
+
+    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   virtual bool SetUpUserDataDirectory() OVERRIDE {

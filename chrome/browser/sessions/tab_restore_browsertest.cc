@@ -33,9 +33,7 @@
 
 class TabRestoreTest : public InProcessBrowserTest {
  public:
-  TabRestoreTest()
-      : active_browser_list_(BrowserList::GetInstance(
-                                chrome::GetActiveDesktop())) {
+  TabRestoreTest() : active_browser_list_(NULL) {
     url1_ = ui_test_utils::GetTestUrl(
         base::FilePath().AppendASCII("session_history"),
         base::FilePath().AppendASCII("bot1.html"));
@@ -45,6 +43,11 @@ class TabRestoreTest : public InProcessBrowserTest {
   }
 
  protected:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    active_browser_list_ = BrowserList::GetInstance(chrome::GetActiveDesktop());
+    InProcessBrowserTest::SetUpOnMainThread();
+  }
+
   Browser* GetBrowser(int index) {
 
     CHECK(static_cast<int>(active_browser_list_->size()) > index);
