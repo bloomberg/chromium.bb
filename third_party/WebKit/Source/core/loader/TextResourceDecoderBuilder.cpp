@@ -44,10 +44,8 @@ static inline bool canReferToParentFrameEncoding(const Frame* frame, const Frame
 }
 
 
-TextResourceDecoderBuilder::TextResourceDecoderBuilder(const String& mimeType, const String& encoding, bool encodingUserChoosen)
-    : m_mimeType(mimeType)
-    , m_encoding(encoding)
-    , m_encodingWasChosenByUser(encodingUserChoosen)
+TextResourceDecoderBuilder::TextResourceDecoderBuilder()
+    : m_encodingWasChosenByUser(false)
 {
 }
 
@@ -96,6 +94,12 @@ PassRefPtr<TextResourceDecoder> TextResourceDecoderBuilder::buildFor(Document* d
     setupEncoding(decoder.get(), document);
     document->setDecoder(decoder);
     return decoder.release();
+}
+
+void TextResourceDecoderBuilder::setEncoding(const String& encoding, bool userChosen)
+{
+    m_encoding = encoding;
+    m_encodingWasChosenByUser = userChosen;
 }
 
 void TextResourceDecoderBuilder::clear()

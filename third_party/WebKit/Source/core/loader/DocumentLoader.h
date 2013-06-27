@@ -86,8 +86,6 @@ namespace WebCore {
 
         void replaceDocument(const String& source, Document*);
         DocumentWriter* beginWriting(const String& mimeType, const String& encoding, const KURL& = KURL());
-        void endWriting(DocumentWriter*);
-
         String mimeType() const;
 
         const ResourceRequest& originalRequest() const;
@@ -165,10 +163,6 @@ namespace WebCore {
         bool m_deferMainResourceDataLoad;
 
     private:
-        static PassOwnPtr<DocumentWriter> createWriterFor(Frame*, const Document* ownerDocument, const KURL&, const String& mimeType, const String& encoding, bool userChosen, bool dispatch);
-
-        void ensureWriter();
-        void ensureWriter(const String& mimeType);
 
         // The URL of the document resulting from this DocumentLoader.
         KURL documentURL() const;
@@ -184,7 +178,7 @@ namespace WebCore {
         void clearMainResourceHandle();
         PassRefPtr<SharedBuffer> mainResourceData() const;
 
-        void createArchive();
+        bool maybeCreateArchive();
         void clearArchiveResources();
 
         void prepareSubframeArchiveLoadIfNeeded();
@@ -219,7 +213,7 @@ namespace WebCore {
         ResourceLoaderSet m_resourceLoaders;
         ResourceLoaderSet m_multipartResourceLoaders;
         
-        OwnPtr<DocumentWriter> m_writer;
+        mutable DocumentWriter m_writer;
 
         // A reference to actual request used to create the data source.
         // This should only be used by the resourceLoadDelegate's
@@ -244,6 +238,7 @@ namespace WebCore {
 
         bool m_committed;
         bool m_isStopping;
+        bool m_gotFirstByte;
         bool m_isClientRedirect;
 
         // FIXME: Document::m_processingLoadEvent and DocumentLoader::m_wasOnloadHandled are roughly the same
