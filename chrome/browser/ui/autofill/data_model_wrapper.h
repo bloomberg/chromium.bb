@@ -196,6 +196,20 @@ class FullWalletShippingWrapper : public DataModelWrapper {
   DISALLOW_COPY_AND_ASSIGN(FullWalletShippingWrapper);
 };
 
+// A DataModelWrapper to copy the output of one section to the input of another.
+class DetailOutputWrapper : public DataModelWrapper {
+ public:
+  explicit DetailOutputWrapper(const DetailOutputMap& outputs);
+  virtual ~DetailOutputWrapper();
+
+  virtual base::string16 GetInfo(AutofillFieldType type) const OVERRIDE;
+
+ private:
+  const DetailOutputMap& outputs_;
+
+  DISALLOW_COPY_AND_ASSIGN(DetailOutputWrapper);
+};
+
 }  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_DATA_MODEL_WRAPPER_H_

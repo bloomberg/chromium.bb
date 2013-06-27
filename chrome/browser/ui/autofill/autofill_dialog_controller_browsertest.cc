@@ -153,6 +153,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   using AutofillDialogControllerImpl::DisableWallet;
   using AutofillDialogControllerImpl::IsEditingExistingData;
+  using AutofillDialogControllerImpl::IsManuallyEditingSection;
 
   void set_use_validation(bool use_validation) {
     use_validation_ = use_validation;
@@ -197,7 +198,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     form.user_submitted = true;
 
     FormFieldData field;
-    field.autocomplete_attribute = "email";
+    field.autocomplete_attribute = "shipping tel";
     form.fields.push_back(field);
 
     message_loop_runner_ = new content::MessageLoopRunner;
@@ -291,11 +292,11 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     WaitForWebDB();
   }
 
+ private:
   void WaitForWebDB() {
     content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
   }
 
- private:
   MockAutofillMetrics metric_logger_;
   TestAutofillDialogController* controller_;  // Weak reference.
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
@@ -723,6 +724,86 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, NoCvcSegfault) {
 
   ASSERT_NO_FATAL_FAILURE(
       controller()->GetTestableView()->SubmitForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, PreservedSections) {
+  InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  controller()->set_use_validation(true);
+
+  // Set up some Autofill state.
+  CreditCard credit_card(test::GetVerifiedCreditCard());
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
+
+  AutofillProfile profile(test::GetVerifiedProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC));
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_BILLING));
+  EXPECT_FALSE(controller()->SectionIsActive(SECTION_CC_BILLING));
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_SHIPPING));
+
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_CC));
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_BILLING));
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+
+  // Set up some Wallet state.
+  controller()->OnUserNameFetchSuccess("user@example.com");
+  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+
+  ui::MenuModel* account_chooser = controller()->MenuModelForAccountChooser();
+  ASSERT_TRUE(account_chooser->IsItemCheckedAt(0));
+
+  // Check that the view's in the state we expect before starting to simulate
+  // user input.
+  EXPECT_FALSE(controller()->SectionIsActive(SECTION_CC));
+  EXPECT_FALSE(controller()->SectionIsActive(SECTION_BILLING));
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC_BILLING));
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_SHIPPING));
+
+  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_CC_BILLING));
+
+  // Create some valid inputted billing data.
+  const DetailInput& cc_name =
+      controller()->RequestedFieldsForSection(SECTION_CC_BILLING)[4];
+  ASSERT_EQ(CREDIT_CARD_NAME, cc_name.type);
+  TestableAutofillDialogView* view = controller()->GetTestableView();
+  view->SetTextContentsOfInput(cc_name, ASCIIToUTF16("credit card name"));
+
+  // Select "Add new shipping info..." from suggestions menu.
+  ui::MenuModel* shipping_model =
+      controller()->MenuModelForSection(SECTION_SHIPPING);
+  shipping_model->ActivatedAt(shipping_model->GetItemCount() - 2);
+
+  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+
+  // Create some invalid, manually inputted shipping data.
+  const DetailInput& shipping_zip =
+      controller()->RequestedFieldsForSection(SECTION_SHIPPING)[5];
+  ASSERT_EQ(ADDRESS_HOME_ZIP, shipping_zip.type);
+  view->SetTextContentsOfInput(shipping_zip, ASCIIToUTF16("shipping zip"));
+
+  // Switch to using Autofill.
+  account_chooser->ActivatedAt(1);
+
+  // Check that appropriate sections are preserved and in manually editing mode
+  // (or disabled, in the case of the combined cc + billing section).
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC));
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_BILLING));
+  EXPECT_FALSE(controller()->SectionIsActive(SECTION_CC_BILLING));
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_SHIPPING));
+
+  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_CC));
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_BILLING));
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+
+  const DetailInput& new_cc_name =
+      controller()->RequestedFieldsForSection(SECTION_CC).back();
+  ASSERT_EQ(cc_name.type, new_cc_name.type);
+  EXPECT_EQ(ASCIIToUTF16("credit card name"),
+            view->GetTextContentsOfInput(new_cc_name));
+
+  EXPECT_NE(ASCIIToUTF16("shipping name"),
+            view->GetTextContentsOfInput(shipping_zip));
 }
 #endif  // defined(TOOLKIT_VIEWS)
 

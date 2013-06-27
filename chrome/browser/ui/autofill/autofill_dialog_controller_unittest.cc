@@ -1925,7 +1925,8 @@ TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
 TEST_F(AutofillDialogControllerTest, UpgradeMinimalAddress) {
   // A minimal address being selected should trigger error validation in the
   // view. Called once for each incomplete suggestion.
-  EXPECT_CALL(*controller()->GetView(), UpdateForErrors()).Times(2);
+  // TODO(dbeam): re-enable this in https://codereview.chromium.org/17688004/.
+  // EXPECT_CALL(*controller()->GetView(), UpdateForErrors()).Times(2);
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentWithIdAndAddress(

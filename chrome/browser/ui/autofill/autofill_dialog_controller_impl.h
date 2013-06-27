@@ -293,6 +293,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // happens when a user clicks "Edit" or a suggestion is invalid.
   virtual bool IsEditingExistingData(DialogSection section) const;
 
+  // Whether the user has chosen to enter all new data in |section|. This
+  // happens via choosing "Add a new X..." from a section's suggestion menu.
+  bool IsManuallyEditingSection(DialogSection section) const;
+
   // Should be called on the Wallet sign-in error.
   virtual void OnWalletSigninError();
 
@@ -304,7 +308,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;
 
-  // Initializes |suggested_email_| et al.
+  // Initializes or updates |suggested_email_| et al.
   void SuggestionsUpdated();
 
   // Whether the user's wallet items have at least one address and instrument.
@@ -331,9 +335,26 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // they have not already been calculated.
   void EnsureLegalDocumentsText();
 
-  // Clears previously entered manual input, shows editing UI if the current
-  // suggestion is invalid, and updates the |view_| (if it exists).
-  void PrepareDetailInputsForSection(DialogSection section);
+  // Clears previously entered manual input and removes |section| from
+  // |section_editing_state_|. Does not update the view.
+  void ResetSectionInput(DialogSection section);
+
+  // Force |section| into edit mode if the current suggestion is invalid.
+  void ShowEditUiIfBadSuggestion(DialogSection section);
+
+  // Whether the |value| of |input| should be preserved on account change.
+  bool InputWasEdited(const DetailInput& input,
+                      const base::string16& value);
+
+  // Takes a snapshot of the newly inputted user data in |view_| (if it exists).
+  DetailOutputMap TakeUserInputSnapshot();
+
+  // Fills the detail inputs from a previously taken user input snapshot. Does
+  // not update the view.
+  void RestoreUserInputFromSnapshot(const DetailOutputMap& snapshot);
+
+  // Tells the view to update |section|.
+  void UpdateSection(DialogSection section);
 
   // Creates a DataModelWrapper item for the item that's checked in the
   // suggestion model for |section|. This may represent Autofill
@@ -412,10 +433,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Set whether the currently editing |section| was originally based on
   // existing Wallet or Autofill data.
   void SetEditingExistingData(DialogSection section, bool editing);
-
-  // Whether the user has chosen to enter all new data in |section|. This
-  // happens via choosing "Add a new X..." from a section's suggestion menu.
-  bool IsManuallyEditingSection(DialogSection section) const;
 
   // Whether the user has chosen to enter all new data in at least one section.
   bool IsManuallyEditingAnySection() const;

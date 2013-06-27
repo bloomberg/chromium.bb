@@ -255,4 +255,18 @@ string16 FullWalletShippingWrapper::GetInfo(AutofillFieldType type) const {
       type, g_browser_process->GetApplicationLocale());
 }
 
+DetailOutputWrapper::DetailOutputWrapper(const DetailOutputMap& outputs)
+    : outputs_(outputs) {}
+
+DetailOutputWrapper::~DetailOutputWrapper() {}
+
+base::string16 DetailOutputWrapper::GetInfo(AutofillFieldType type) const {
+  for (DetailOutputMap::const_iterator it = outputs_.begin();
+       it != outputs_.end(); ++it) {
+    if (type == it->first->type)
+      return it->second;
+  }
+  return base::string16();
+}
+
 }  // namespace autofill

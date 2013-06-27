@@ -70,6 +70,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "ui/base/base_window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -906,36 +907,103 @@ void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
   legal_documents_text_ = text;
 }
 
-void AutofillDialogControllerImpl::PrepareDetailInputsForSection(
-    DialogSection section) {
+void AutofillDialogControllerImpl::ResetSectionInput(DialogSection section) {
   SetEditingExistingData(section, false);
+
+  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
+  for (DetailInputs::iterator it = inputs->begin(); it != inputs->end(); ++it) {
+    it->initial_value.clear();
+  }
+}
+
+void AutofillDialogControllerImpl::ShowEditUiIfBadSuggestion(
+    DialogSection section) {
+  // |CreateWrapper()| returns an empty wrapper if |IsEditingExistingData()|, so
+  // get the wrapper before this potentially happens below.
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
 
   // If the chosen item in |model| yields an empty suggestion text, it is
-  // invalid. In this case, show the editing UI with invalid fields highlighted.
+  // invalid. In this case, show the edit UI and highlight invalid fields.
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   if (IsASuggestionItemKey(model->GetItemKeyForCheckedItem()) &&
       SuggestionTextForSection(section).empty()) {
     SetEditingExistingData(section, true);
   }
 
-  // Reset all previously entered data and stop editing |section|.
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
-  for (DetailInputs::iterator it = inputs->begin(); it != inputs->end(); ++it) {
-    it->initial_value.clear();
-    it->editable = InputIsEditable(*it, section);
-  }
-
   if (wrapper && IsEditingExistingData(section))
     wrapper->FillInputs(inputs);
 
+  for (DetailInputs::iterator it = inputs->begin(); it != inputs->end(); ++it) {
+    it->editable = InputIsEditable(*it, section);
+  }
+}
+
+bool AutofillDialogControllerImpl::InputWasEdited(const DetailInput& input,
+                                                  const base::string16& value) {
+  if (value.empty())
+    return false;
+
+  // If this is a combobox at the default value, don't preserve.
+  ui::ComboboxModel* model = ComboboxModelForAutofillType(input.type);
+  if (model && model->GetItemAt(model->GetDefaultIndex()) == value)
+    return false;
+
+  return true;
+}
+
+DetailOutputMap AutofillDialogControllerImpl::TakeUserInputSnapshot() {
+  DetailOutputMap snapshot;
+  if (!view_)
+    return snapshot;
+
+  for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
+    DialogSection section = static_cast<DialogSection>(i);
+    SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+    if (model->GetItemKeyForCheckedItem() != kAddNewItemKey)
+      continue;
+
+    DetailOutputMap outputs;
+    view_->GetUserInput(section, &outputs);
+    // Remove fields that are empty, at their default values, or invalid.
+    for (DetailOutputMap::iterator it = outputs.begin(); it != outputs.end();
+         ++it) {
+      if (InputWasEdited(*it->first, it->second) &&
+          InputValidityMessage(section, it->first->type, it->second).empty()) {
+        snapshot.insert(std::make_pair(it->first, it->second));
+      }
+    }
+  }
+
+  return snapshot;
+}
+
+void AutofillDialogControllerImpl::RestoreUserInputFromSnapshot(
+    const DetailOutputMap& snapshot) {
+  if (snapshot.empty())
+    return;
+
+  DetailOutputWrapper wrapper(snapshot);
+  for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
+    DialogSection section = static_cast<DialogSection>(i);
+    if (!SectionIsActive(section))
+      continue;
+
+    DetailInputs* inputs = MutableRequestedFieldsForSection(section);
+    wrapper.FillInputs(inputs);
+
+    for (size_t i = 0; i < inputs->size(); ++i) {
+      if (InputWasEdited((*inputs)[i], (*inputs)[i].initial_value)) {
+        SuggestionsMenuModelForSection(section)->SetCheckedItem(kAddNewItemKey);
+        break;
+      }
+    }
+  }
+}
+
+void AutofillDialogControllerImpl::UpdateSection(DialogSection section) {
   if (view_)
     view_->UpdateSection(section);
-
-  // If a suggestion is forced into edit mode, update the view to show the
-  // errors.
-  if (view_ && wrapper && IsEditingExistingData(section))
-    view_->UpdateForErrors();
 }
 
 const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
@@ -1251,7 +1319,7 @@ void AutofillDialogControllerImpl::EditClickedForSection(
   }
   model->FillInputs(inputs);
 
-  view_->UpdateSection(section);
+  UpdateSection(section);
 
   GetMetricLogger().LogDialogUiEvent(
       GetDialogType(), DialogSectionToUiEditEvent(section));
@@ -1259,7 +1327,8 @@ void AutofillDialogControllerImpl::EditClickedForSection(
 
 void AutofillDialogControllerImpl::EditCancelledForSection(
     DialogSection section) {
-  PrepareDetailInputsForSection(section);
+  ResetSectionInput(section);
+  UpdateSection(section);
 }
 
 gfx::Image AutofillDialogControllerImpl::IconForField(
@@ -1846,7 +1915,10 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
   }
 
   model->SetCheckedIndex(index);
-  PrepareDetailInputsForSection(SectionForSuggestionsMenuModel(*model));
+  DialogSection section = SectionForSuggestionsMenuModel(*model);
+  ResetSectionInput(section);
+  ShowEditUiIfBadSuggestion(section);
+  UpdateSection(section);
 
   LogSuggestionItemSelectedMetric(*model);
 }
@@ -2210,6 +2282,18 @@ void AutofillDialogControllerImpl::OpenTabWithUrl(const GURL& url) {
 #endif
 }
 
+bool AutofillDialogControllerImpl::IsEditingExistingData(
+    DialogSection section) const {
+  return section_editing_state_.count(section) > 0;
+}
+
+bool AutofillDialogControllerImpl::IsManuallyEditingSection(
+    DialogSection section) const {
+  return IsEditingExistingData(section) ||
+         SuggestionsMenuModelForSection(section)->
+             GetItemKeyForCheckedItem() == kAddNewItemKey;
+}
+
 void AutofillDialogControllerImpl::OnWalletSigninError() {
   signin_helper_.reset();
   account_chooser_model_.SetHadWalletSigninError();
@@ -2236,6 +2320,8 @@ void AutofillDialogControllerImpl::DisableWallet(
 }
 
 void AutofillDialogControllerImpl::SuggestionsUpdated() {
+  const DetailOutputMap snapshot = TakeUserInputSnapshot();
+
   suggested_email_.Reset();
   suggested_cc_.Reset();
   suggested_billing_.Reset();
@@ -2413,8 +2499,16 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
   if (view_)
     view_->ModelChanged();
 
-  for (size_t section = SECTION_MIN; section <= SECTION_MAX; ++section) {
-    PrepareDetailInputsForSection(static_cast<DialogSection>(section));
+  for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
+    ResetSectionInput(static_cast<DialogSection>(i));
+  }
+
+  RestoreUserInputFromSnapshot(snapshot);
+
+  for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
+    DialogSection section = static_cast<DialogSection>(i);
+    ShowEditUiIfBadSuggestion(section);
+    UpdateSection(section);
   }
 }
 
@@ -2611,24 +2705,12 @@ void AutofillDialogControllerImpl::HidePopup() {
   input_showing_popup_ = NULL;
 }
 
-bool AutofillDialogControllerImpl::IsEditingExistingData(
-    DialogSection section) const {
-  return section_editing_state_.count(section) > 0;
-}
-
 void AutofillDialogControllerImpl::SetEditingExistingData(
     DialogSection section, bool editing) {
   if (editing)
     section_editing_state_.insert(section);
   else
     section_editing_state_.erase(section);
-}
-
-bool AutofillDialogControllerImpl::IsManuallyEditingSection(
-    DialogSection section) const {
-  return IsEditingExistingData(section) ||
-         SuggestionsMenuModelForSection(section)->
-             GetItemKeyForCheckedItem() == kAddNewItemKey;
 }
 
 bool AutofillDialogControllerImpl::IsASuggestionItemKey(
