@@ -1594,6 +1594,8 @@ class BaseCQTest(StageTest):
       osutils.SafeMakedirs(os.path.join(self.build_root, '.repo', subdir))
     self.manifest_path = os.path.join(self.build_root, '.repo', 'manifest.xml')
     osutils.WriteFile(self.manifest_path, self.MANIFEST_CONTENTS)
+    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
+                     side_effect=lambda x: x)
 
   def PerformSync(self, remote='cros', committed=False, tree_open=True,
                   tracking_branch='master', num_patches=1, runs=0):

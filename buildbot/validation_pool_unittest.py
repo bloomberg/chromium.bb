@@ -127,7 +127,7 @@ class Base(cros_test_lib.TestCase):
     return l
 
 
-class MoxBase(Base, cros_test_lib.MoxTestCase):
+class MoxBase(Base, cros_test_lib.MoxTestCase, cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.mox.StubOutWithMock(validation_pool, '_RunCommand')
@@ -137,6 +137,8 @@ class MoxBase(Base, cros_test_lib.MoxTestCase):
     # the code is either misbehaving, or that the tests are bad.
     self.mox.StubOutWithMock(gerrit.GerritHelper, 'Query')
     self.mox.StubOutWithMock(gerrit.GerritHelper, '_SqlQuery')
+    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
+                     side_effect=lambda x: x)
 
   def MakeHelper(self, cros_internal=None, cros=None):
     # pylint: disable=W0201
@@ -155,6 +157,8 @@ class MoxBase(Base, cros_test_lib.MoxTestCase):
     # We use a custom mock class to fix a pymox bug where multiple mocks
     # sometimes equal each other (depending on stubs used).
     patch = MockPatch(cros_patch.GerritPatch)
+    # pylint: disable=W0201
+    patch.HasApproval = lambda _cat, _value: True
     mox_ = getattr(self, 'mox', None)
     if mox_:
       mox_._mock_objects.append(patch)
@@ -661,15 +665,9 @@ class TestCoreLogic(MoxBase):
     gerrit.GerritHelper.IsChangeCommitted(
         str(patch2.gerrit_number), False).InAnyOrder().AndReturn(False)
 
+    pool._HandleCouldNotSubmit(patch1).InAnyOrder()
     pool._HandleCouldNotSubmit(patch2).InAnyOrder()
-
-    pool._SubmitChange(patch1).AndReturn(None)
-    gerrit.GerritHelper.IsChangeCommitted(
-        str(patch1.gerrit_number), False).AndReturn(True)
-
-    pool._SubmitChange(patch3).AndRaise(
-        cros_build_lib.RunCommandError('blah', None))
-    pool._HandleCouldNotSubmit(patch3).InAnyOrder().AndReturn(None)
+    pool._HandleCouldNotSubmit(patch3).InAnyOrder()
 
     cros_build_lib.TreeOpen(
         validation_pool.ValidationPool.STATUS_URL,
@@ -1092,6 +1090,8 @@ class MockCreateDisjointTransactions(cros_test_lib.MockTestCase, Base):
                      side_effect=self.GetGerritPatch)
     self.PatchObject(validation_pool.PatchSeries, '_LookupHelper',
                      autospec=True)
+    self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
+                     side_effect=lambda x: x)
 
   def GetDepsForChange(self, patch):
     return self.deps[patch], []

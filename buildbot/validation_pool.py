@@ -1355,7 +1355,6 @@ class ValidationPool(object):
     assert self.is_master, 'Non-master builder calling SubmitPool'
     assert not self.pre_cq, 'Trybot calling SubmitPool'
 
-    changes_that_failed_to_submit = []
     # We use the default timeout here as while we want some robustness against
     # the tree status being red i.e. flakiness, we don't want to wait too long
     # as validation can become stale.
@@ -1363,21 +1362,45 @@ class ValidationPool(object):
         self.STATUS_URL, self.SLEEP_TIMEOUT):
       raise TreeIsClosedException()
 
+    # Reload all of the changes from the Gerrit server so that we have a fresh
+    # view of their approval status. This is needed so that our filtering that
+    # occurs below will be mostly up-to-date.
+    changes = list(self.ReloadChanges(changes))
+    changes_that_failed_to_submit = []
+
     plans, _ = self._patch_series.CreateDisjointTransactions(changes)
 
     for plan in plans:
+      # First, verify that all changes have their approvals. We do this up front
+      # to reduce the risk of submitting a subset of a cyclic set of changes
+      # without approvals.
+      submit_changes = True
+      filtered_plan = self.FilterNonMatchingChanges(plan)
+      for change in set(plan) - set(filtered_plan):
+        logging.error('Aborting plan due to change %s', change)
+        submit_changes = False
+
+      # Now, actually submit all of the changes.
+      submitted_changes = 0
       for change in plan:
         was_change_submitted = False
-        logging.info('Change %s will be submitted', change)
-        try:
+        if submit_changes:
+          logging.info('Change %s will be submitted', change)
           self._SubmitChange(change)
-          was_change_submitted = self._helper_pool.ForChange(
-              change).IsChangeCommitted(str(change.gerrit_number), self.dryrun)
-        except cros_build_lib.RunCommandError:
-          logging.error('gerrit review --submit failed for change.')
-        finally:
-          if not was_change_submitted:
-            changes_that_failed_to_submit.append(change)
+          was_change_submitted = self._IsChangeCommitted(change)
+          submitted_changes += int(was_change_submitted)
+
+        if not was_change_submitted:
+          changes_that_failed_to_submit.append(change)
+          submit_changes = False
+
+      if submitted_changes and not submit_changes:
+        # We can't necessarily revert our changes, because other developers
+        # might have chumped changes on top. For now, just print an error
+        # message. If you see this error a lot, consider implementing
+        # a best-effort attempt at reverting changes.
+        logging.error('Partial transaction aborted.')
+        logging.error('Some changes were erroneously submitted.')
 
     for change in changes_that_failed_to_submit:
       logging.error('Could not submit %s', str(change))
@@ -1386,11 +1409,46 @@ class ValidationPool(object):
     if changes_that_failed_to_submit:
       raise FailedToSubmitAllChangesException(changes_that_failed_to_submit)
 
+  def ReloadChanges(self, changes):
+    """Reload the specified |changes| from the server.
+
+    Return the reloaded changes.
+    """
+    # Split the changes into internal and external changes. This is needed
+    # because we have two servers (internal and external).
+    int_numbers, ext_numbers = [], []
+    for change in changes:
+      number = str(change.gerrit_number)
+      if change.internal:
+        int_numbers.append(number)
+      else:
+        ext_numbers.append(number)
+
+    # QueryMultipleCurrentPatchset returns a tuple of the patch number and the
+    # changes.
+    int_pool = gerrit.GerritHelper.GetCrosInternal()
+    ext_pool = gerrit.GerritHelper.GetCrosExternal()
+    return ([x[1] for x in int_pool.QueryMultipleCurrentPatchset(int_numbers)] +
+            [x[1] for x in ext_pool.QueryMultipleCurrentPatchset(ext_numbers)])
+
+  def _IsChangeCommitted(self, change, default=None):
+    """Return whether |change| was committed.
+
+    If an error occurs, return |default|.
+    """
+    try:
+      return self._helper_pool.ForChange(
+          change).IsChangeCommitted(str(change.gerrit_number),
+                                    self.dryrun)
+    except cros_build_lib.RunCommandError:
+      logging.error('Could not determine whether %s was committed.', change,
+                    exc_info=True)
+      return default
+
   def _SubmitChange(self, change):
     """Submits patch using Gerrit Review."""
     cmd = self._helper_pool.ForChange(change).GetGerritReviewCommand(
         ['--submit', '%s,%s' % (change.gerrit_number, change.patch_number)])
-
     _RunCommand(cmd, self.dryrun)
 
   def RemoveCommitReady(self, change):
