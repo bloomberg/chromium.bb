@@ -485,7 +485,6 @@ namespace WTF {
 
         static const int m_maxLoad = 2;
         static const int m_minLoad = 6;
-        static const int perturbShift = 5;
 
         ValueType* m_table;
         int m_tableSize;
@@ -562,6 +561,16 @@ namespace WTF {
     {
     }
 
+    inline unsigned doubleHash(unsigned key)
+    {
+        key = ~key + (key >> 23);
+        key ^= (key << 12);
+        key ^= (key >> 7);
+        key ^= (key << 2);
+        key ^= (key >> 20);
+        return key;
+    }
+
 #if ASSERT_DISABLED
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
@@ -594,11 +603,11 @@ namespace WTF {
     {
         checkKey<HashTranslator>(key);
 
+        int k = 0;
         int sizeMask = m_tableSizeMask;
         ValueType* table = m_table;
         unsigned h = HashTranslator::hash(key);
-        unsigned i = h;
-        unsigned perturb = h;
+        int i = h & sizeMask;
 
         if (!table)
             return 0;
@@ -614,7 +623,7 @@ namespace WTF {
 #endif
 
         while (1) {
-            ValueType* entry = table + (i & sizeMask);
+            ValueType* entry = table + i;
                 
             // we count on the compiler to optimize out this branch
             if (HashFunctions::safeToCompareToEmptyOrDeleted) {
@@ -640,8 +649,9 @@ namespace WTF {
             m_stats->recordCollisionAtCount(perTableProbeCount);
 #endif
 
-            perturb >>= perturbShift;
-            i = i*5 + perturb + 1;
+            if (!k)
+                k = 1 | doubleHash(h);
+            i = (i + k) & sizeMask;
         }
     }
 
@@ -652,11 +662,11 @@ namespace WTF {
         ASSERT(m_table);
         checkKey<HashTranslator>(key);
 
+        int k = 0;
         ValueType* table = m_table;
         int sizeMask = m_tableSizeMask;
         unsigned h = HashTranslator::hash(key);
-        unsigned i = h;
-        unsigned perturb = h;
+        int i = h & sizeMask;
 
 #if DUMP_HASHTABLE_STATS
         atomicIncrement(&HashTableStats::numAccesses);
@@ -671,7 +681,7 @@ namespace WTF {
         ValueType* deletedEntry = 0;
 
         while (1) {
-            ValueType* entry = table + (i & sizeMask);
+            ValueType* entry = table + i;
             
             // we count on the compiler to optimize out this branch
             if (HashFunctions::safeToCompareToEmptyOrDeleted) {
@@ -702,8 +712,9 @@ namespace WTF {
             m_stats->recordCollisionAtCount(perTableProbeCount);
 #endif
 
-            perturb >>= perturbShift;
-            i = i*5 + perturb + 1;
+            if (!k)
+                k = 1 | doubleHash(h);
+            i = (i + k) & sizeMask;
         }
     }
 
@@ -714,11 +725,11 @@ namespace WTF {
         ASSERT(m_table);
         checkKey<HashTranslator>(key);
 
+        int k = 0;
         ValueType* table = m_table;
         int sizeMask = m_tableSizeMask;
         unsigned h = HashTranslator::hash(key);
-        unsigned i = h;
-        unsigned perturb = h;
+        int i = h & sizeMask;
 
 #if DUMP_HASHTABLE_STATS
         atomicIncrement(&HashTableStats::numAccesses);
@@ -733,7 +744,7 @@ namespace WTF {
         ValueType* deletedEntry = 0;
 
         while (1) {
-            ValueType* entry = table + (i & sizeMask);
+            ValueType* entry = table + i;
             
             // we count on the compiler to optimize out this branch
             if (HashFunctions::safeToCompareToEmptyOrDeleted) {
@@ -764,8 +775,9 @@ namespace WTF {
             m_stats->recordCollisionAtCount(perTableProbeCount);
 #endif
 
-            perturb >>= perturbShift;
-            i = i*5 + perturb + 1;
+            if (!k)
+                k = 1 | doubleHash(h);
+            i = (i + k) & sizeMask;
         }
     }
 
@@ -809,11 +821,11 @@ namespace WTF {
 
         ASSERT(m_table);
 
+        int k = 0;
         ValueType* table = m_table;
         int sizeMask = m_tableSizeMask;
         unsigned h = HashTranslator::hash(key);
-        unsigned i = h;
-        unsigned perturb = h;
+        int i = h & sizeMask;
 
 #if DUMP_HASHTABLE_STATS
         atomicIncrement(&HashTableStats::numAccesses);
@@ -828,7 +840,7 @@ namespace WTF {
         ValueType* deletedEntry = 0;
         ValueType* entry;
         while (1) {
-            entry = table + (i & sizeMask);
+            entry = table + i;
             
             // we count on the compiler to optimize out this branch
             if (HashFunctions::safeToCompareToEmptyOrDeleted) {
@@ -859,8 +871,9 @@ namespace WTF {
             m_stats->recordCollisionAtCount(perTableProbeCount);
 #endif
 
-            perturb >>= perturbShift;
-            i = i*5 + perturb + 1;
+            if (!k)
+                k = 1 | doubleHash(h);
+            i = (i + k) & sizeMask;
         }
 
         if (deletedEntry) {
