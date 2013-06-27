@@ -243,20 +243,6 @@ void RecordTTL(base::TimeDelta ttl) {
                              base::TimeDelta::FromDays(1), 100);
 }
 
-bool ConfigureAsyncDnsNoFallbackFieldTrial() {
-  const bool kDefault = false;
-
-  // Configure the AsyncDns field trial as follows:
-  // groups AsyncDnsNoFallbackA and AsyncDnsNoFallbackB: return true,
-  // groups AsyncDnsA and AsyncDnsB: return false,
-  // groups SystemDnsA and SystemDnsB: return false,
-  // otherwise (trial absent): return default.
-  std::string group_name = base::FieldTrialList::FindFullName("AsyncDns");
-  if (!group_name.empty())
-    return StartsWithASCII(group_name, "AsyncDnsNoFallback", false);
-  return kDefault;
-}
-
 //-----------------------------------------------------------------------------
 
 AddressList EnsurePortOnAddressList(const AddressList& list, uint16 port) {
@@ -1499,34 +1485,9 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job {
     int rv = dns_task_->Start();
     if (rv != ERR_IO_PENDING) {
       DCHECK_NE(OK, rv);
-      // Since we could be running within Resolve() right now, we can't just
-      // call OnLookupComplete().  Instead we must wait until Resolve() has
-      // returned (IO_PENDING).
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&Job::OnDnsTaskFailure,
-                     base::Unretained(this),
-                     base::TimeDelta(),
-                     rv));
-    }
-  }
-
-  // Called if DnsTask fails.
-  void OnDnsTaskFailure(base::TimeDelta duration, int net_error) {
-    DNS_HISTOGRAM("AsyncDNS.ResolveFail", duration);
-    dns_task_error_ = net_error;
-
-    // TODO(szym): Run ServeFromHosts now if nsswitch.conf says so.
-    // http://crbug.com/117655
-
-    // TODO(szym): Some net errors indicate lack of connectivity. Starting
-    // ProcTask in that case is a waste of time.
-    if (resolver_->fallback_to_proctask_) {
+      dns_task_error_ = rv;
       dns_task_.reset();
       StartProcTask();
-    } else {
-      UmaAsyncDnsResolveStatus(RESOLVE_STATUS_FAIL);
-      CompleteRequestsWithError(net_error);
     }
   }
 
@@ -1539,7 +1500,17 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job {
 
     base::TimeDelta duration = base::TimeTicks::Now() - start_time;
     if (net_error != OK) {
-      OnDnsTaskFailure(duration, net_error);
+      DNS_HISTOGRAM("AsyncDNS.ResolveFail", duration);
+
+      dns_task_error_ = net_error;
+      dns_task_.reset();
+
+      // TODO(szym): Run ServeFromHosts now if nsswitch.conf says so.
+      // http://crbug.com/117655
+
+      // TODO(szym): Some net errors indicate lack of connectivity. Starting
+      // ProcTask in that case is a waste of time.
+      StartProcTask();
       return;
     }
     DNS_HISTOGRAM("AsyncDNS.ResolveSuccess", duration);
@@ -1733,8 +1704,7 @@ HostResolverImpl::HostResolverImpl(
       num_dns_failures_(0),
       ipv6_probe_monitoring_(false),
       resolved_known_ipv6_hostname_(false),
-      additional_resolver_flags_(0),
-      fallback_to_proctask_(true) {
+      additional_resolver_flags_(0) {
 
   DCHECK_GE(dispatcher_.num_priorities(), static_cast<size_t>(NUM_PRIORITIES));
 
@@ -1764,8 +1734,6 @@ HostResolverImpl::HostResolverImpl(
     NetworkChangeNotifier::GetDnsConfig(&dns_config);
     received_dns_config_ = dns_config.IsValid();
   }
-
-  fallback_to_proctask_ = !ConfigureAsyncDnsNoFallbackFieldTrial();
 }
 
 HostResolverImpl::~HostResolverImpl() {

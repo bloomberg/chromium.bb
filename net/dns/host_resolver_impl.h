@@ -279,9 +279,6 @@ class NET_EXPORT HostResolverImpl
   // Any resolver flags that should be added to a request by default.
   HostResolverFlags additional_resolver_flags_;
 
-  // Allow fallback to ProcTask if DnsTask fails.
-  bool fallback_to_proctask_;
-
   DISALLOW_COPY_AND_ASSIGN(HostResolverImpl);
 };
 

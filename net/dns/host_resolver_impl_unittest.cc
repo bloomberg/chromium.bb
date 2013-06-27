@@ -509,11 +509,6 @@ class HostResolverImplTest : public testing::Test {
     return resolver_->num_running_jobs_for_tests();
   }
 
-  void set_fallback_to_proctask(bool fallback_to_proctask) {
-    DCHECK(resolver_.get());
-    resolver_->fallback_to_proctask_ = fallback_to_proctask;
-  }
-
   scoped_refptr<MockHostResolverProc> proc_;
   scoped_ptr<HostResolverImpl> resolver_;
   ScopedVector<Request> requests_;
@@ -1337,55 +1332,6 @@ TEST_F(HostResolverImplDnsTest, DnsTask) {
   EXPECT_TRUE(requests_[4]->HasOneAddress("192.168.1.101", 80));
   EXPECT_EQ(OK, requests_[5]->result());
   EXPECT_TRUE(requests_[5]->HasOneAddress("192.168.1.102", 80));
-}
-
-// Test successful and failing resolutions in HostResolverImpl::DnsTask when
-// fallback to ProcTask is disabled.
-TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask) {
-  resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_IPV4);
-  set_fallback_to_proctask(false);
-
-  proc_->AddRuleForAllFamilies("er_succeed", "192.168.1.101");
-  proc_->AddRuleForAllFamilies("nx_succeed", "192.168.1.102");
-  // All other hostnames will fail in proc_.
-
-  // Set empty DnsConfig.
-  ChangeDnsConfig(DnsConfig());
-  // Initially there is no config, so client should not be invoked.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok_fail", 80)->Resolve());
-  // There is no config, so fallback to ProcTask must work.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("er_succeed", 80)->Resolve());
-  proc_->SignalMultiple(requests_.size());
-
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, requests_[0]->WaitForResult());
-  EXPECT_EQ(OK, requests_[1]->WaitForResult());
-  EXPECT_TRUE(requests_[1]->HasOneAddress("192.168.1.101", 80));
-
-  ChangeDnsConfig(CreateValidDnsConfig());
-
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok_abort1", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok_abort2", 80)->Resolve());
-  // Simulate the case when the preference or policy has disabled the DNS client
-  // causing AbortDnsTasks.
-  resolver_->SetDnsClient(CreateMockDnsClient(DnsConfig(), dns_rules_));
-  ChangeDnsConfig(CreateValidDnsConfig());
-
-  // First request is resolved by MockDnsClient, others should fail due to
-  // disabled fallback to ProcTask.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("ok_fail", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("er_fail", 80)->Resolve());
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest("nx_fail", 80)->Resolve());
-  proc_->SignalMultiple(requests_.size());
-
-  // Aborted due to Network Change.
-  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[2]->WaitForResult());
-  EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[3]->WaitForResult());
-  // Resolved by MockDnsClient.
-  EXPECT_EQ(OK, requests_[4]->WaitForResult());
-  EXPECT_TRUE(requests_[4]->HasOneAddress("127.0.0.1", 80));
-  // Fallback to ProcTask is disabled.
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, requests_[5]->WaitForResult());
-  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, requests_[6]->WaitForResult());
 }
 
 TEST_F(HostResolverImplDnsTest, DnsTaskUnspec) {
