@@ -31,7 +31,7 @@ function onAbort(e) {
     try {
       method();
     } catch (ex) {
-      assert(ex.code == 2);  // Security error
+      assert(ex.name == 'SecurityError');
       testPassed("Saw security error");
     }
 }

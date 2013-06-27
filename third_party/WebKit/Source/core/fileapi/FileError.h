@@ -32,6 +32,7 @@
 #define FileError_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -58,6 +59,7 @@ public:
     static PassRefPtr<FileError> create(ErrorCode code) { return adoptRef(new FileError(code)); }
 
     ErrorCode code() const { return m_code; }
+    static ExceptionCode ErrorCodeToExceptionCode(ErrorCode);
 
 private:
     FileError(ErrorCode code)

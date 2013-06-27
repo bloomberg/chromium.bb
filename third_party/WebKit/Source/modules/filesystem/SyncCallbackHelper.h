@@ -31,8 +31,8 @@
 #ifndef SyncCallbackHelper_h
 #define SyncCallbackHelper_h
 
+#include "core/dom/ExceptionCode.h"
 #include "core/fileapi/FileError.h"
-#include "core/fileapi/FileException.h"
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/EntriesCallback.h"
@@ -75,7 +75,7 @@ public:
         if (m_observer) {
             while (!m_completed) {
                 if (!m_observer->waitForOperationToComplete()) {
-                    m_exceptionCode = FileException::ABORT_ERR;
+                    m_exceptionCode = FSAbortError;
                     break;
                 }
             }
@@ -97,7 +97,7 @@ private:
 
         virtual bool handleEvent()
         {
-            m_helper->setError(0);
+            m_helper->setError(FileError::OK);
             return true;
         }
 
@@ -140,9 +140,9 @@ private:
     friend class SuccessCallbackImpl;
     friend class ErrorCallbackImpl;
 
-    void setError(int code)
+    void setError(FileError::ErrorCode code)
     {
-        m_exceptionCode = FileException::ErrorCodeToExceptionCode(code);
+        m_exceptionCode = FileError::ErrorCodeToExceptionCode(code);
         m_completed = true;
     }
 

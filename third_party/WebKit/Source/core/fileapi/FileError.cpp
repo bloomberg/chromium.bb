@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc.  All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,29 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    NoInterfaceObject,
-    DoNotCheckConstants
-] exception FileException {
+#include "config.h"
+#include "core/fileapi/FileError.h"
 
-    readonly attribute unsigned short   code;
-    readonly attribute DOMString        name;
-    readonly attribute DOMString        message;
+namespace WebCore {
 
-    // Override in a Mozilla compatible format
-    [NotEnumerable] DOMString toString();
+ExceptionCode FileError::ErrorCodeToExceptionCode(ErrorCode code)
+{
+    switch (code) {
+    case OK:
+        return 0;
+    case NOT_FOUND_ERR:
+        return FSNotFoundError;
+    case SECURITY_ERR:
+        return FSSecurityError;
+    case ABORT_ERR:
+        return FSAbortError;
+    case NOT_READABLE_ERR:
+        return FSNotReadableError;
+    case ENCODING_ERR:
+        return FSEncodingError;
+    case NO_MODIFICATION_ALLOWED_ERR:
+        return FSNoModificationAllowedError;
+    case INVALID_STATE_ERR:
+        return FSInvalidStateError;
+    case SYNTAX_ERR:
+        return FSSyntaxError;
+    case INVALID_MODIFICATION_ERR:
+        return FSInvalidModificationError;
+    case QUOTA_EXCEEDED_ERR:
+        return FSQuotaExceededError;
+    case TYPE_MISMATCH_ERR:
+        return FSTypeMismatchError;
+    case PATH_EXISTS_ERR:
+        return FSPathExistsError;
+    default:
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+}
 
-    // FileExceptionCode
-    const unsigned short NOT_FOUND_ERR = 1;
-    const unsigned short SECURITY_ERR = 2;
-    const unsigned short ABORT_ERR = 3;
-    const unsigned short NOT_READABLE_ERR = 4;
-    const unsigned short ENCODING_ERR = 5;
-    const unsigned short NO_MODIFICATION_ALLOWED_ERR = 6;
-    const unsigned short INVALID_STATE_ERR = 7;
-    const unsigned short SYNTAX_ERR = 8;
-    const unsigned short INVALID_MODIFICATION_ERR = 9;
-    const unsigned short QUOTA_EXCEEDED_ERR = 10;
-    const unsigned short TYPE_MISMATCH_ERR = 11;
-    const unsigned short PATH_EXISTS_ERR = 12;
-};
+} // namespace WebCore

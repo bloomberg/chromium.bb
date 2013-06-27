@@ -31,6 +31,8 @@
 #ifndef FileReaderLoaderClient_h
 #define FileReaderLoaderClient_h
 
+#include "core/fileapi/FileError.h"
+
 namespace WebCore {
 
 class FileReaderLoaderClient {
@@ -40,7 +42,7 @@ public:
     virtual void didStartLoading() = 0;
     virtual void didReceiveData() = 0;
     virtual void didFinishLoading() = 0;
-    virtual void didFail(int errorCode) = 0;
+    virtual void didFail(FileError::ErrorCode) = 0;
 };
 
 } // namespace WebCore

@@ -11,19 +11,19 @@ PASS [Worker] isFile is true
 PASS [Worker] expectedPath is actualPath
 PASS [Worker] isFile is true
 [Worker] * Resolving a URL with the wrong security origin (domain)
-PASS [Worker] FileException.SECURITY_ERR is errorCode
+PASS [Worker] error.name is 'SecurityError'
 [Worker] * Resolving a URL with the wrong security origin (port)
-PASS [Worker] FileException.SECURITY_ERR is errorCode
+PASS [Worker] error.name is 'SecurityError'
 [Worker] * Resolving a URL with the wrong security origin (scheme)
-PASS [Worker] FileException.SECURITY_ERR is errorCode
+PASS [Worker] error.name is 'SecurityError'
 [Worker] * Resolving a completely bogus URL.
-PASS [Worker] FileException.ENCODING_ERR is errorCode
+PASS [Worker] error.name is 'EncodingError'
 [Worker] * Resolving a URL with the wrong protocol
-PASS [Worker] FileException.ENCODING_ERR is errorCode
+PASS [Worker] error.name is 'EncodingError'
 [Worker] * Resolving a URL with no slash between type and file
-PASS [Worker] FileException.ENCODING_ERR is errorCode
+PASS [Worker] error.name is 'EncodingError'
 [Worker] * Resolving a URL with no slash between protocol and type (bogus port)
-PASS [Worker] FileException.SECURITY_ERR is errorCode
+PASS [Worker] error.name is 'SecurityError'
 [Worker] * Resolve a path using backslashes
 PASS [Worker] expectedPath is actualPath
 PASS [Worker] isFile is true

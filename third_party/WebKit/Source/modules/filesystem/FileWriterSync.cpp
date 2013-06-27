@@ -32,8 +32,8 @@
 
 #include "modules/filesystem/FileWriterSync.h"
 
+#include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
-#include "core/fileapi/FileException.h"
 #include "modules/filesystem/AsyncFileWriter.h"
 
 namespace WebCore {
@@ -44,7 +44,7 @@ void FileWriterSync::write(Blob* data, ExceptionCode& ec)
     ASSERT(m_complete);
     ec = 0;
     if (!data) {
-        ec = FileException::TYPE_MISMATCH_ERR;
+        ec = FSTypeMismatchError;
         return;
     }
 
@@ -52,7 +52,7 @@ void FileWriterSync::write(Blob* data, ExceptionCode& ec)
     writer()->write(position(), data);
     writer()->waitForOperationToComplete();
     ASSERT(m_complete);
-    ec = FileException::ErrorCodeToExceptionCode(m_error);
+    ec = FileError::ErrorCodeToExceptionCode(m_error);
     if (ec)
         return;
     setPosition(position() + data->size());
@@ -74,14 +74,14 @@ void FileWriterSync::truncate(long long offset, ExceptionCode& ec)
     ASSERT(m_complete);
     ec = 0;
     if (offset < 0) {
-        ec = FileException::INVALID_STATE_ERR;
+        ec = FSInvalidStateError;
         return;
     }
     prepareForWrite();
     writer()->truncate(offset);
     writer()->waitForOperationToComplete();
     ASSERT(m_complete);
-    ec = FileException::ErrorCodeToExceptionCode(m_error);
+    ec = FileError::ErrorCodeToExceptionCode(m_error);
     if (ec)
         return;
     if (offset < position())

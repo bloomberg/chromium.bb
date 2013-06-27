@@ -36,7 +36,6 @@
 #include "core/dom/ProgressEvent.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
-#include "core/fileapi/FileException.h"
 #include "modules/filesystem/AsyncFileWriter.h"
 #include "wtf/CurrentTime.h"
 
@@ -321,7 +320,7 @@ void FileWriter::fireEvent(const AtomicString& type)
 
 void FileWriter::setError(FileError::ErrorCode errorCode, ExceptionCode& ec)
 {
-    ec = FileException::ErrorCodeToExceptionCode(errorCode);
+    ec = FileError::ErrorCodeToExceptionCode(errorCode);
     m_error = FileError::create(errorCode);
 }
 

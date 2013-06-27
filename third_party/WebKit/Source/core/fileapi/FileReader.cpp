@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "core/fileapi/FileReader.h"
 
 #include "core/dom/CrossThreadTask.h"
@@ -242,7 +241,7 @@ void FileReader::didFinishLoading()
     unsetPendingActivity(this);
 }
 
-void FileReader::didFail(int errorCode)
+void FileReader::didFail(FileError::ErrorCode errorCode)
 {
     // If we're aborting, do not proceed with normal error handling since it is covered in aborting code.
     if (m_aborting)

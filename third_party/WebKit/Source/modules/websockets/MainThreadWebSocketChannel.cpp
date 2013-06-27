@@ -380,7 +380,7 @@ void MainThreadWebSocketChannel::didFinishLoading()
     deref();
 }
 
-void MainThreadWebSocketChannel::didFail(int errorCode)
+void MainThreadWebSocketChannel::didFail(FileError::ErrorCode errorCode)
 {
     LOG(Network, "MainThreadWebSocketChannel %p didFail() errorCode=%d", this, errorCode);
     ASSERT(m_blobLoader);

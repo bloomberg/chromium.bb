@@ -34,6 +34,5 @@ partial interface WorkerGlobalScope {
     [EnabledAtRuntime=FileSystem, RaisesException] EntrySync webkitResolveLocalFileSystemSyncURL(DOMString url);
 
     [EnabledAtRuntime=FileSystem] attribute FileErrorConstructor FileError;
-    [EnabledAtRuntime=FileSystem] attribute FileExceptionConstructor FileException;
 };
 

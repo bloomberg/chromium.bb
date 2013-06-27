@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/filesystem/DirectoryReaderSync.h"
 
-#include "core/fileapi/FileException.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryEntrySync.h"
 #include "modules/filesystem/EntryArraySync.h"
@@ -55,7 +55,7 @@ PassRefPtr<EntryArraySync> DirectoryReaderSync::readEntries(ExceptionCode& ec)
 
     EntriesSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->readDirectory(this, m_fullPath, helper.successCallback(), helper.errorCallback())) {
-        ec = FileException::INVALID_MODIFICATION_ERR;
+        ec = FSInvalidModificationError;
         setHasMoreEntries(false);
         return 0;
     }

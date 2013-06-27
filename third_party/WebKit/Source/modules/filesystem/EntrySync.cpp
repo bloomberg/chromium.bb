@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/filesystem/EntrySync.h"
 
-#include "core/fileapi/FileException.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystemSync.h"
 #include "modules/filesystem/DirectoryEntry.h"
@@ -54,7 +54,7 @@ PassRefPtr<Metadata> EntrySync::getMetadata(ExceptionCode& ec)
     ec = 0;
     MetadataSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->getMetadata(this, helper.successCallback(), helper.errorCallback())) {
-        ec = FileException::INVALID_MODIFICATION_ERR;
+        ec = FSInvalidModificationError;
         return 0;
     }
     return helper.getResult(ec);
@@ -65,7 +65,7 @@ PassRefPtr<EntrySync> EntrySync::moveTo(PassRefPtr<DirectoryEntrySync> parent, c
     ec = 0;
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->move(this, parent.get(), name, helper.successCallback(), helper.errorCallback())) {
-        ec = FileException::INVALID_MODIFICATION_ERR;
+        ec = FSInvalidModificationError;
         return 0;
     }
     return helper.getResult(ec);
@@ -76,7 +76,7 @@ PassRefPtr<EntrySync> EntrySync::copyTo(PassRefPtr<DirectoryEntrySync> parent, c
     ec = 0;
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->copy(this, parent.get(), name, helper.successCallback(), helper.errorCallback())) {
-        ec = FileException::INVALID_MODIFICATION_ERR;
+        ec = FSInvalidModificationError;
         return 0;
     }
     return helper.getResult(ec);
@@ -87,7 +87,7 @@ void EntrySync::remove(ExceptionCode& ec) const
     ec = 0;
     VoidSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->remove(this, helper.successCallback(), helper.errorCallback())) {
-        ec = FileException::INVALID_MODIFICATION_ERR;
+        ec = FSInvalidModificationError;
         return;
     }
     helper.getResult(ec);

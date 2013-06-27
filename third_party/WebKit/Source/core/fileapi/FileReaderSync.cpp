@@ -29,11 +29,10 @@
  */
 
 #include "config.h"
-
 #include "core/fileapi/FileReaderSync.h"
 
+#include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
-#include "core/fileapi/FileException.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/PassRefPtr.h>
@@ -48,7 +47,7 @@ FileReaderSync::FileReaderSync()
 PassRefPtr<ArrayBuffer> FileReaderSync::readAsArrayBuffer(ScriptExecutionContext* scriptExecutionContext, Blob* blob, ExceptionCode& ec)
 {
     if (!blob) {
-        ec = NOT_FOUND_ERR;
+        ec = FSNotFoundError;
         return 0;
     }
 
@@ -61,7 +60,7 @@ PassRefPtr<ArrayBuffer> FileReaderSync::readAsArrayBuffer(ScriptExecutionContext
 String FileReaderSync::readAsBinaryString(ScriptExecutionContext* scriptExecutionContext, Blob* blob, ExceptionCode& ec)
 {
     if (!blob) {
-        ec = NOT_FOUND_ERR;
+        ec = FSNotFoundError;
         return String();
     }
 
@@ -73,7 +72,7 @@ String FileReaderSync::readAsBinaryString(ScriptExecutionContext* scriptExecutio
 String FileReaderSync::readAsText(ScriptExecutionContext* scriptExecutionContext, Blob* blob, const String& encoding, ExceptionCode& ec)
 {
     if (!blob) {
-        ec = NOT_FOUND_ERR;
+        ec = FSNotFoundError;
         return String();
     }
 
@@ -86,7 +85,7 @@ String FileReaderSync::readAsText(ScriptExecutionContext* scriptExecutionContext
 String FileReaderSync::readAsDataURL(ScriptExecutionContext* scriptExecutionContext, Blob* blob, ExceptionCode& ec)
 {
     if (!blob) {
-        ec = NOT_FOUND_ERR;
+        ec = FSNotFoundError;
         return String();
     }
 
@@ -99,7 +98,7 @@ String FileReaderSync::readAsDataURL(ScriptExecutionContext* scriptExecutionCont
 void FileReaderSync::startLoading(ScriptExecutionContext* scriptExecutionContext, FileReaderLoader& loader, Blob* blob, ExceptionCode& ec)
 {
     loader.start(scriptExecutionContext, blob);
-    ec = FileException::ErrorCodeToExceptionCode(loader.errorCode());
+    ec = FileError::ErrorCodeToExceptionCode(loader.errorCode());
 }
 
 } // namespace WebCore

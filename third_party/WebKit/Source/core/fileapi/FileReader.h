@@ -87,7 +87,7 @@ public:
     virtual void didStartLoading();
     virtual void didReceiveData();
     virtual void didFinishLoading();
-    virtual void didFail(int errorCode);
+    virtual void didFail(FileError::ErrorCode);
 
     using RefCounted<FileReader>::ref;
     using RefCounted<FileReader>::deref;

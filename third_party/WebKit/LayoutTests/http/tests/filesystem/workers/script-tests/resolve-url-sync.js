@@ -16,14 +16,16 @@ function createTestFile() {
     return fileSystem.root.getFile(testFileName, {create:true});
 }
 
-function assertEncodingErr(code) {
-    errorCode = code;
-    shouldBe("FileException.ENCODING_ERR", "errorCode");
+var error;
+
+function assertEncodingErr(e) {
+    error = e;
+    shouldBe("error.name", "'EncodingError'");
 }
 
-function assertSecurityErr(code) {
-    errorCode = code;
-    shouldBe("FileException.SECURITY_ERR", "errorCode");
+function assertSecurityErr(e) {
+    error = e;
+    shouldBe("error.name", "'SecurityError'");
 }
 
 function assertPathsMatch(expected, actual) {
@@ -68,7 +70,7 @@ function runWrongDomain() {
         webkitResolveLocalFileSystemSyncURL("filesystem:http://localhost:8000/temporary/foo");
         testFailed();
     } catch (e) {
-        assertSecurityErr(e.code);
+        assertSecurityErr(e);
     }
 }
 
@@ -78,7 +80,7 @@ function runWrongPort() {
         webkitResolveLocalFileSystemSyncURL("filesystem:http://127.0.0.1:8080/temporary/foo");
         testFailed();
     } catch (e) {
-        assertSecurityErr(e.code);
+        assertSecurityErr(e);
     }
 }
 
@@ -88,7 +90,7 @@ function runWrongScheme() {
         webkitResolveLocalFileSystemSyncURL("filesystem:https://127.0.0.1:8000/temporary/foo");
         testFailed();
     } catch (e) {
-        assertSecurityErr(e.code);
+        assertSecurityErr(e);
     }
 }
 
@@ -98,7 +100,7 @@ function runBogusURL() {
         webkitResolveLocalFileSystemSyncURL("foo");
         testFailed();
     } catch (e) {
-        assertEncodingErr(e.code);
+        assertEncodingErr(e);
     }
 }
 
@@ -108,7 +110,7 @@ function runWrongProtocol() {
         webkitResolveLocalFileSystemSyncURL("http://127.0.0.1:8000/foo/bar/baz");
         testFailed();
     } catch (e) {
-        assertEncodingErr(e.code);
+        assertEncodingErr(e);
     }
 }
 
@@ -119,7 +121,7 @@ function runNotEnoughSlashes() {
         webkitResolveLocalFileSystemSyncURL("filesystem:http://127.0.0.1:8000/temporarytestFile");
         testFailed();
     } catch (e) {
-        assertEncodingErr(e.code);
+        assertEncodingErr(e);
     }
 }
 
@@ -129,7 +131,7 @@ function runNotEnoughSlashes2() {
     try {
         webkitResolveLocalFileSystemSyncURL("filesystem:http://127.0.0.1:8000temporary/testFile");
     } catch (e) {
-        assertSecurityErr(e.code);
+        assertSecurityErr(e);
     }
 }
 

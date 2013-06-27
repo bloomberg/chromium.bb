@@ -76,7 +76,7 @@ public:
 #endif // ENABLE(STREAM)
     unsigned bytesLoaded() const { return m_bytesLoaded; }
     unsigned totalBytes() const { return m_totalBytes; }
-    int errorCode() const { return m_errorCode; }
+    FileError::ErrorCode errorCode() const { return m_errorCode; }
 
     void setEncoding(const String&);
     void setDataType(const String& dataType) { m_dataType = dataType; }
@@ -87,7 +87,7 @@ public:
 private:
     void terminate();
     void cleanup();
-    void failed(int errorCode);
+    void failed(FileError::ErrorCode);
     void convertToText();
     void convertToDataURL();
 
@@ -120,7 +120,7 @@ private:
     unsigned m_rangeStart;
     unsigned m_rangeEnd;
 
-    int m_errorCode;
+    FileError::ErrorCode m_errorCode;
 };
 
 } // namespace WebCore

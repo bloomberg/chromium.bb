@@ -28,8 +28,8 @@
 #include "config.h"
 #include "modules/filesystem/WorkerGlobalScopeFileSystem.h"
 
+#include "core/dom/ExceptionCode.h"
 #include "core/fileapi/FileError.h"
-#include "core/fileapi/FileException.h"
 #include "core/platform/AsyncFileSystem.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
@@ -68,13 +68,13 @@ PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSyst
     ec = 0;
     ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem()) {
-        ec = FileException::SECURITY_ERR;
+        ec = FSSecurityError;
         return 0;
     }
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
-        ec = FileException::INVALID_MODIFICATION_ERR;
+        ec = FSInvalidModificationError;
         return 0;
     }
 
@@ -108,14 +108,14 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
     KURL completedURL = worker->completeURL(url);
     ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
-        ec = FileException::SECURITY_ERR;
+        ec = FSSecurityError;
         return 0;
     }
 
     FileSystemType type;
     String filePath;
     if (!completedURL.isValid() || !DOMFileSystemBase::crackFileSystemURL(completedURL, type, filePath)) {
-        ec = FileException::ENCODING_ERR;
+        ec = FSEncodingError;
         return 0;
     }
 
@@ -126,7 +126,7 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
         return 0;
 
     RefPtr<EntrySync> entry = fileSystem->root()->getDirectory(filePath, Dictionary(), ec);
-    if (ec == FileException::TYPE_MISMATCH_ERR)
+    if (ec == FSTypeMismatchError)
         return fileSystem->root()->getFile(filePath, Dictionary(), ec);
 
     return entry.release();

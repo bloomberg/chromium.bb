@@ -65,7 +65,7 @@ FileReaderLoader::FileReaderLoader(ReadType readType, FileReaderLoaderClient* cl
     , m_hasRange(false)
     , m_rangeStart(0)
     , m_rangeEnd(0)
-    , m_errorCode(0)
+    , m_errorCode(FileError::OK)
 {
 }
 
@@ -238,7 +238,7 @@ void FileReaderLoader::didFail(const ResourceError&)
     failed(FileError::NOT_READABLE_ERR);
 }
 
-void FileReaderLoader::failed(int errorCode)
+void FileReaderLoader::failed(FileError::ErrorCode errorCode)
 {
     m_errorCode = errorCode;
     cleanup();

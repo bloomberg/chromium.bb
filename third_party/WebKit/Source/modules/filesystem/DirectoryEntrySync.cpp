@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/filesystem/DirectoryEntrySync.h"
 
-#include "core/fileapi/FileException.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/filesystem/DirectoryReaderSync.h"
 #include "modules/filesystem/EntrySync.h"
 #include "modules/filesystem/FileEntrySync.h"
@@ -56,7 +56,7 @@ PassRefPtr<FileEntrySync> DirectoryEntrySync::getFile(const String& path, const 
     FileSystemFlags flags(options);
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->getFile(this, path, flags, helper.successCallback(), helper.errorCallback())) {
-        ec = FileException::INVALID_MODIFICATION_ERR;
+        ec = FSInvalidModificationError;
         return 0;
     }
     return static_pointer_cast<FileEntrySync>(helper.getResult(ec));
@@ -68,7 +68,7 @@ PassRefPtr<DirectoryEntrySync> DirectoryEntrySync::getDirectory(const String& pa
     FileSystemFlags flags(options);
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->getDirectory(this, path, flags, helper.successCallback(), helper.errorCallback())) {
-        ec = FileException::INVALID_MODIFICATION_ERR;
+        ec = FSInvalidModificationError;
         return 0;
     }
     return static_pointer_cast<DirectoryEntrySync>(helper.getResult(ec));
@@ -79,7 +79,7 @@ void DirectoryEntrySync::removeRecursively(ExceptionCode& ec)
     ec = 0;
     VoidSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->removeRecursively(this, helper.successCallback(), helper.errorCallback())) {
-        ec = FileException::INVALID_MODIFICATION_ERR;
+        ec = FSInvalidModificationError;
         return;
     }
     helper.getResult(ec);

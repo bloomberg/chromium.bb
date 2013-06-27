@@ -31,6 +31,7 @@
 #ifndef MainThreadWebSocketChannel_h
 #define MainThreadWebSocketChannel_h
 
+#include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/platform/Timer.h"
@@ -98,7 +99,7 @@ public:
     virtual void didStartLoading();
     virtual void didReceiveData();
     virtual void didFinishLoading();
-    virtual void didFail(int errorCode);
+    virtual void didFail(FileError::ErrorCode);
 
     using RefCounted<MainThreadWebSocketChannel>::ref;
     using RefCounted<MainThreadWebSocketChannel>::deref;

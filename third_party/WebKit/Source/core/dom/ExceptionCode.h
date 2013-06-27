@@ -75,6 +75,21 @@ namespace WebCore {
         ReadOnlyError,
         VersionError,
 
+        // File system
+        // FIXME: Consolidate these once https://crbug.com/252233 is fixed.
+        FSNotFoundError,
+        FSSecurityError,
+        FSAbortError,
+        FSNotReadableError,
+        FSEncodingError,
+        FSNoModificationAllowedError,
+        FSInvalidStateError,
+        FSSyntaxError,
+        FSInvalidModificationError,
+        FSQuotaExceededError,
+        FSTypeMismatchError,
+        FSPathExistsError,
+
         // WebIDL exception types, handled by the binding layer.
         // FIXME: Add GeneralError, EvalError, etc. when implemented in the bindings.
         TypeError,

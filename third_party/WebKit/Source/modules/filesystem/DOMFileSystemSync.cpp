@@ -31,9 +31,9 @@
 #include "config.h"
 #include "modules/filesystem/DOMFileSystemSync.h"
 
+#include "core/dom/ExceptionCode.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
-#include "core/fileapi/FileException.h"
 #include "core/platform/AsyncFileSystem.h"
 #include "core/platform/FileMetadata.h"
 #include "modules/filesystem/AsyncFileWriter.h"
@@ -158,7 +158,7 @@ PassRefPtr<File> DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, E
     RefPtr<CreateFileHelper::CreateFileResult> result(CreateFileHelper::CreateFileResult::create());
     m_asyncFileSystem->createSnapshotFileAndReadMetadata(fileSystemURL, CreateFileHelper::create(result, fileEntry->name(), fileSystemURL, type()));
     if (!m_asyncFileSystem->waitForOperationToComplete()) {
-        ec = FileException::ABORT_ERR;
+        ec = FSAbortError;
         return 0;
     }
     if (result->m_failed) {
@@ -247,12 +247,12 @@ PassRefPtr<FileWriterSync> DOMFileSystemSync::createWriter(const FileEntrySync* 
     OwnPtr<FileWriterBaseCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, successCallback, errorCallback);
     m_asyncFileSystem->createWriter(fileWriter.get(), createFileSystemURL(fileEntry), callbacks.release());
     if (!m_asyncFileSystem->waitForOperationToComplete()) {
-        ec = FileException::ABORT_ERR;
+        ec = FSAbortError;
         return 0;
     }
     if (errorCallback->error()) {
         ASSERT(!successCallback->fileWriterBase());
-        ec = FileException::ErrorCodeToExceptionCode(errorCallback->error()->code());
+        ec = FileError::ErrorCodeToExceptionCode(errorCallback->error()->code());
         return 0;
     }
     ASSERT(successCallback->fileWriterBase());
