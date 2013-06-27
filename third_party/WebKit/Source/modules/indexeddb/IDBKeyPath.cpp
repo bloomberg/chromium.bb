@@ -43,8 +43,8 @@ public:
 
     explicit IDBKeyPathLexer(const String& s)
         : m_string(s)
-        , m_ptr(s.bloatedCharacters())
-        , m_end(s.bloatedCharacters() + s.length())
+        , m_index(0)
+        , m_length(s.length())
         , m_currentTokenType(TokenError)
     {
     }
@@ -63,20 +63,20 @@ private:
     TokenType lex(String&);
     TokenType lexIdentifier(String&);
     String m_currentElement;
-    String m_string;
-    const UChar* m_ptr;
-    const UChar* m_end;
+    const String m_string;
+    const unsigned m_length;
+    unsigned m_index;
     TokenType m_currentTokenType;
 };
 
 IDBKeyPathLexer::TokenType IDBKeyPathLexer::lex(String& element)
 {
-    if (m_ptr >= m_end)
+    if (m_index >= m_length)
         return TokenEnd;
-    ASSERT(m_ptr < m_end);
+    ASSERT(m_index < m_length);
 
-    if (*m_ptr == '.') {
-        ++m_ptr;
+    if (m_string[m_index] == '.') {
+        ++m_index;
         return TokenDot;
     }
     return lexIdentifier(element);
@@ -108,16 +108,16 @@ static inline bool isIdentifierCharacter(UChar c)
 
 IDBKeyPathLexer::TokenType IDBKeyPathLexer::lexIdentifier(String& element)
 {
-    const UChar* start = m_ptr;
-    if (m_ptr < m_end && isIdentifierStartCharacter(*m_ptr))
-        ++m_ptr;
+    unsigned start = m_index;
+    if (m_index < m_length && isIdentifierStartCharacter(m_string[m_index]))
+        ++m_index;
     else
         return TokenError;
 
-    while (m_ptr < m_end && isIdentifierCharacter(*m_ptr))
-        ++m_ptr;
+    while (m_index < m_length && isIdentifierCharacter(m_string[m_index]))
+        ++m_index;
 
-    element = String(start, m_ptr - start);
+    element = m_string.substring(start, m_index - start);
     return TokenIdentifier;
 }
 
