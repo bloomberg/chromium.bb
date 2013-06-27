@@ -9,8 +9,8 @@
 
 namespace {
 
-// TODO(jvoung) use Tokenize from base/string_util.h when this moves
-// to chromium.
+// TODO(jvoung): Use Tokenize from base/strings/string_util.h when this moves
+// to Chromium.
 void SplitString(const std::string& str,
                  char delim,
                  std::vector<std::string>* elems) {
