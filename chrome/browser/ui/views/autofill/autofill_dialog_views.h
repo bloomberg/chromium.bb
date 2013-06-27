@@ -114,8 +114,9 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual bool CanHandleAccelerators() const OVERRIDE;
 
   // views::View implementation.
-  virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
   // views::DialogDelegate implementation:
   virtual string16 GetWindowTitle() const OVERRIDE;

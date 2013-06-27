@@ -1253,6 +1253,47 @@ bool AutofillDialogViews::CanHandleAccelerators() const {
   return true;
 }
 
+gfx::Size AutofillDialogViews::GetPreferredSize() {
+  gfx::Insets insets = GetInsets();
+  gfx::Size scroll_size = scrollable_area_->contents()->GetPreferredSize();
+  int width = scroll_size.width() + insets.width();
+
+  if (sign_in_webview_->visible()) {
+    gfx::Size size = static_cast<views::View*>(sign_in_webview_)->
+        GetPreferredSize();
+    return gfx::Size(width, size.height() + insets.height());
+  }
+
+  int base_height = insets.height();
+  int notification_height = notification_area_->GetPreferredSize().height();
+  if (notification_height > 0)
+    base_height += notification_height + views::kRelatedControlVerticalSpacing;
+
+  int steps_height = autocheckout_steps_area_->GetPreferredSize().height();
+  if (steps_height > 0)
+    base_height += steps_height + views::kRelatedControlVerticalSpacing;
+
+  // When the scroll area isn't visible, it still sets the width but doesn't
+  // factor into height.
+  if (!scrollable_area_->visible())
+    return gfx::Size(width, base_height);
+
+  // Show as much of the scroll view as is possible without going past the
+  // bottom of the browser window.
+  views::Widget* widget =
+      views::Widget::GetTopLevelWidgetForNativeView(
+          controller_->web_contents()->GetView()->GetNativeView());
+  int browser_window_height =
+      widget ? widget->GetContentsView()->bounds().height() : INT_MAX;
+  const int kWindowDecorationHeight = 200;
+  int height = base_height + std::min(
+      scroll_size.height(),
+      std::max(kMinimumContentsHeight,
+               browser_window_height - base_height - kWindowDecorationHeight));
+
+  return gfx::Size(width, height);
+}
+
 void AutofillDialogViews::Layout() {
   gfx::Rect content_bounds = GetContentsBounds();
   if (sign_in_webview_->visible()) {
@@ -1293,45 +1334,8 @@ void AutofillDialogViews::Layout() {
     error_bubble_->UpdatePosition();
 }
 
-gfx::Size AutofillDialogViews::GetPreferredSize() {
-  gfx::Insets insets = GetInsets();
-  if (sign_in_webview_->visible()) {
-    gfx::Size size = static_cast<views::View*>(sign_in_webview_)->
-        GetPreferredSize();
-    return gfx::Size(size.width() - insets.width(),
-                     size.height() - insets.height());
-  }
-
-  int base_height = insets.height();
-  int notification_height = notification_area_->GetPreferredSize().height();
-  if (notification_height > 0)
-    base_height += notification_height + views::kRelatedControlVerticalSpacing;
-
-  int steps_height = autocheckout_steps_area_->GetPreferredSize().height();
-  if (steps_height > 0)
-    base_height += steps_height + views::kRelatedControlVerticalSpacing;
-
-  // When the scroll area isn't visible, it still sets the width but doesn't
-  // factor into height.
-  gfx::Size scroll_size = scrollable_area_->contents()->GetPreferredSize();
-  int width = scroll_size.width() + insets.width();
-  if (!scrollable_area_->visible())
-    return gfx::Size(width, base_height);
-
-  // Show as much of the scroll view as is possible without going past the
-  // bottom of the browser window.
-  views::Widget* widget =
-      views::Widget::GetTopLevelWidgetForNativeView(
-          controller_->web_contents()->GetView()->GetNativeView());
-  int browser_window_height =
-      widget ? widget->GetContentsView()->bounds().height() : INT_MAX;
-  const int kWindowDecorationHeight = 200;
-  int height = base_height + std::min(
-      scroll_size.height(),
-      std::max(kMinimumContentsHeight,
-               browser_window_height - base_height - kWindowDecorationHeight));
-
-  return gfx::Size(width, height);
+void AutofillDialogViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  sign_in_delegate_->SetMinWidth(GetContentsBounds().width());
 }
 
 string16 AutofillDialogViews::GetWindowTitle() const {

@@ -32,8 +32,17 @@ class AutofillDialogSignInDelegate: public content::WebContentsDelegate,
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
 
+  // Sets the minimum width for the render view. This should be set to the
+  // width of the host AutofillDialogView.
+  void SetMinWidth(int width);
+
  private:
+  // Gets the minimum and maximum size for the dialog.
+  gfx::Size GetMinSize() const;
+  gfx::Size GetMaxSize() const;
+
   AutofillDialogView* dialog_view_;
+  int min_width_;
 };
 
 }  // namespace autofill

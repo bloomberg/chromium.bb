@@ -14,7 +14,8 @@ AutofillDialogSignInDelegate::AutofillDialogSignInDelegate(
     AutofillDialogView* dialog_view,
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      dialog_view_(dialog_view) {
+      dialog_view_(dialog_view),
+      min_width_(400) {
   web_contents->SetDelegate(this);
 }
 
@@ -25,15 +26,26 @@ void AutofillDialogSignInDelegate::ResizeDueToAutoResize(
 
 void AutofillDialogSignInDelegate::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
-  // Sizes to be used for the sign-in Window.
-  const gfx::Size kSignInWindowMinSize(400, 331);
-  const gfx::Size kSignInWindowMaxSize(800, 600);
+  SetMinWidth(min_width_);
 
-  render_view_host->EnableAutoResize(kSignInWindowMinSize,
-                                     kSignInWindowMaxSize);
   // Set the initial size as soon as we have an RVH to avoid
   // bad size jumping.
-  dialog_view_->OnSignInResize(kSignInWindowMinSize);
+  dialog_view_->OnSignInResize(GetMinSize());
+}
+
+void AutofillDialogSignInDelegate::SetMinWidth(int width) {
+  min_width_ = width;
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  if (host)
+    host->EnableAutoResize(GetMinSize(), GetMaxSize());
+}
+
+gfx::Size AutofillDialogSignInDelegate::GetMinSize() const {
+  return gfx::Size(min_width_, 331);
+}
+
+gfx::Size AutofillDialogSignInDelegate::GetMaxSize() const {
+  return gfx::Size(std::max(min_width_, 800), 600);
 }
 
 }  // namespace autofill
