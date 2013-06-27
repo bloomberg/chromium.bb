@@ -453,6 +453,13 @@ const CGFloat kRapidCloseDist = 2.5;
   }
 }
 
+- (void)setState:(NSCellStateValue)state {
+  if (state_ == state)
+    return;
+  state_ = state;
+  [self setNeedsDisplay:YES];
+}
+
 - (void)setClosing:(BOOL)closing {
   closing_ = closing;  // Safe because the property is nonatomic.
   // When closing, ensure clicks to the close button go nowhere.

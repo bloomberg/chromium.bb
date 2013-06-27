@@ -273,6 +273,7 @@ enum {
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kUseCoreAnimation) != "lazy") {
       [[[self window] contentView] setWantsLayer:YES];
+      [[self tabStripView] setWantsLayer:YES];
     }
 
     // Set different minimum sizes on tabbed windows vs non-tabbed, e.g. popups.

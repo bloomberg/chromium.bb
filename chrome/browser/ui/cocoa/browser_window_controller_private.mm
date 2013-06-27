@@ -1041,6 +1041,16 @@ willPositionSheet:(NSWindow*)sheet
 
   BOOL allowOverlappingViews =
       [self shouldAllowOverlappingViews:inPresentationMode];
+
+  if (allowOverlappingViews &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseCoreAnimation) &&
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseCoreAnimation) == "lazy") {
+    [[[self window] contentView] setWantsLayer:YES];
+    [[self tabStripView] setWantsLayer:YES];
+  }
+
   contents->GetView()->SetAllowOverlappingViews(allowOverlappingViews);
 
   DevToolsWindow* devToolsWindow =
