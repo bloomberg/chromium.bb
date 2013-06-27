@@ -10,6 +10,8 @@ InspectorTest.createIsolatedFileSystemManager = function(workspace, fileSystemMa
 
 var MockIsolatedFileSystem = function(path)
 {
+    this.originalTimestamp = 1000000;
+    this.modificationTimestampDelta = 1000;
     this._path = path;
 };
 MockIsolatedFileSystem.prototype = {
@@ -23,9 +25,19 @@ MockIsolatedFileSystem.prototype = {
         callback(this._files[path]);
     },
 
+    requestMetadata: function(path, callback)
+    {
+        if (!(path in this._files)) {
+            callback(null, null);
+            return;
+        }
+        callback(new Date(this._modificationTimestamps[path]), this._files[path].length);
+    },
+
     setFileContent: function(path, newContent, callback)
     {
         this._files[path] = newContent;
+        this._modificationTimestamps[path] = (this._modificationTimestamps[path] || (this.originalTimestamp - this.modifiationTimestampDelta)) + this.modificationTimestampDelta;
         callback();
     },
 
@@ -50,6 +62,10 @@ MockIsolatedFileSystem.prototype = {
     _addFiles: function(files)
     {
         this._files = files;
+        this._modificationTimestamps = {};
+        var files = Object.keys(this._files);
+        for (var i = 0; i < files.length; ++i)
+            this._modificationTimestamps[files[i]] = this.originalTimestamp;
         this._innerRequestFilesRecursive();
     }
 }

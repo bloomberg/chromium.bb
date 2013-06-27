@@ -18,7 +18,18 @@ function test()
                 next();
                 return;
             }
-            InspectorTest.dumpUISourceCode(uiSourceCodes[startIndex], innerDumpUISourceCodes.bind(this, uiSourceCodes, startIndex + 1, next));
+
+            InspectorTest.dumpUISourceCode(uiSourceCodes[startIndex], dumpCallback.bind(this, uiSourceCodes, startIndex, next));
+            function dumpCallback(uiSourceCodes, startIndex, next)
+            {
+                uiSourceCodes[startIndex].requestMetadata(dumpMetadata.bind(this, uiSourceCodes, startIndex, next));
+            }
+
+            function dumpMetadata(uiSourceCodes, startIndex, next, modificationTime, size)
+            {
+                InspectorTest.addResult("modificationTime=" + modificationTime.getTime() + ", size=" + size);
+                innerDumpUISourceCodes.call(this, uiSourceCodes, startIndex + 1, next);
+            }
         }
     }
 
@@ -50,8 +61,8 @@ function test()
             InspectorTest.testFileSystemMapping.addFileMapping("/foo/bar", "http://www.example.com/", "/");
 
             InspectorTest.addResult("Adding files to file systems.");
-            manager.addFiles("/var/www", {"/localhost/foo.js": "<foo content>", "/bar.js": "<bar content>"});
-            manager.addFiles("/foo/bar", {"/baz.js": "<baz content>"});
+            manager.addFiles("/var/www", {"/localhost/foo.js": "<foo content>", "/bar.js": "<bark content>"});
+            manager.addFiles("/foo/bar", {"/baz.js": "<bazzz content>"});
 
             dumpUISourceCodes(uiSourceCodes, uiSourceCodesDumped);
 
@@ -78,14 +89,32 @@ function test()
                     var uri = InspectorTest.testWorkspace.uiSourceCodeForURL(url).uri();
                     InspectorTest.addResult("    " + url + " -> " + uri);
                 }
-                var uiSourceCodesCount = InspectorTest.testWorkspace.uiSourceCodes().length;
-                InspectorTest.addResult("Removing second file system.");
-                manager.removeMockFileSystem("/var/www");
-                InspectorTest.addResult("    number of uiSourceCodes in workspace after removing second file system: " + InspectorTest.testWorkspace.uiSourceCodes().length);
-                InspectorTest.addResult("Removing first file system.");
-                manager.removeMockFileSystem("/foo/bar");
-                InspectorTest.addResult("    number of uiSourceCodes in workspace after removing first file system: " + InspectorTest.testWorkspace.uiSourceCodes().length);
-                next();
+                InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, contentCommitted, this);
+                uiSourceCodes[0].addRevision("<Modified UISourceCode content>");
+            }
+
+            function contentCommitted()
+            {
+                InspectorTest.addResult("After revision added:");
+                InspectorTest.dumpUISourceCode(uiSourceCodes[0], dumped);
+
+                function dumped()
+                {
+                    uiSourceCodes[0].requestMetadata(dumpModifiedMetadata);
+                }
+
+                function dumpModifiedMetadata(modificationTime, size)
+                {
+                    InspectorTest.addResult("New modificationTime=" + modificationTime.getTime() + ", size=" + size);
+                    var uiSourceCodesCount = InspectorTest.testWorkspace.uiSourceCodes().length;
+                    InspectorTest.addResult("Removing second file system.");
+                    manager.removeMockFileSystem("/var/www");
+                    InspectorTest.addResult("    number of uiSourceCodes in workspace after removing second file system: " + InspectorTest.testWorkspace.uiSourceCodes().length);
+                    InspectorTest.addResult("Removing first file system.");
+                    manager.removeMockFileSystem("/foo/bar");
+                    InspectorTest.addResult("    number of uiSourceCodes in workspace after removing first file system: " + InspectorTest.testWorkspace.uiSourceCodes().length);
+                    next();
+                }
             }
         },
     ]);
