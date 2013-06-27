@@ -18,6 +18,12 @@ enum InstantUIState {
   kInstantUIFullPageResults,
 };
 
+enum CoreAnimationStatus {
+  kCoreAnimationDisabled,
+  kCoreAnimationEnabledLazy,
+  kCoreAnimationEnabledAlways,
+};
+
 }  // namespace browser_window_controller
 
 // Private methods for the |BrowserWindowController|. This category should
@@ -172,6 +178,9 @@ enum InstantUIState {
 
 // Update visibility of the infobar tip, depending on the state of the window.
 - (void)updateInfoBarTipVisibility;
+
+// Checks if core animation should be enabled or not.
+- (browser_window_controller::CoreAnimationStatus)coreAnimationStatus;
 
 @end  // @interface BrowserWindowController(Private)
 

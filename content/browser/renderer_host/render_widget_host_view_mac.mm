@@ -84,12 +84,19 @@ enum CoreAnimationStatus {
 };
 
 static CoreAnimationStatus GetCoreAnimationStatus() {
+  // TODO(sail) Remove this.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseCoreAnimation))
-    return CORE_ANIMATION_DISABLED;
-  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseCoreAnimation) == "lazy")
+          switches::kUseCoreAnimation)) {
     return CORE_ANIMATION_ENABLED_LAZY;
+  }
+  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseCoreAnimation) == "lazy") {
+    return CORE_ANIMATION_ENABLED_LAZY;
+  }
+  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseCoreAnimation) == "disabled") {
+    return CORE_ANIMATION_DISABLED;
+  }
   return CORE_ANIMATION_ENABLED_ALWAYS;
 }
 
@@ -440,7 +447,6 @@ void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
   if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED_LAZY) {
     if (overlapping) {
       ScopedCAActionDisabler disabler;
-      [[[cocoa_view_ window] contentView] setWantsLayer:YES];
       EnableCoreAnimation();
       return;
     }

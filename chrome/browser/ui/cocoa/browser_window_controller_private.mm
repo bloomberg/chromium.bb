@@ -1043,10 +1043,8 @@ willPositionSheet:(NSWindow*)sheet
       [self shouldAllowOverlappingViews:inPresentationMode];
 
   if (allowOverlappingViews &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseCoreAnimation) &&
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseCoreAnimation) == "lazy") {
+      [self coreAnimationStatus] ==
+          browser_window_controller::kCoreAnimationEnabledLazy) {
     [[[self window] contentView] setWantsLayer:YES];
     [[self tabStripView] setWantsLayer:YES];
   }
@@ -1068,6 +1066,23 @@ willPositionSheet:(NSWindow*)sheet
       browser_window_controller::kInstantUINone || ![self hasToolbar];
   [infoBarContainerController_
       setShouldSuppressTopInfoBarTip:suppressInfoBarTip];
+}
+
+- (browser_window_controller::CoreAnimationStatus)coreAnimationStatus {
+  // TODO(sail) Remove this.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseCoreAnimation)) {
+    return browser_window_controller::kCoreAnimationEnabledLazy;
+  }
+  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseCoreAnimation) == "lazy") {
+    return browser_window_controller::kCoreAnimationEnabledLazy;
+  }
+  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseCoreAnimation) == "disabled") {
+    return browser_window_controller::kCoreAnimationDisabled;
+  }
+  return browser_window_controller::kCoreAnimationEnabledAlways;
 }
 
 @end  // @implementation BrowserWindowController(Private)
