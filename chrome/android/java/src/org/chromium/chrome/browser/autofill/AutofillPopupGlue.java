@@ -6,12 +6,10 @@ package org.chromium.chrome.browser.autofill;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.chrome.browser.autofill.AutofillPopup.AutofillPopupDelegate;
 import org.chromium.ui.ViewAndroid;
 import org.chromium.ui.ViewAndroidDelegate;
 import org.chromium.ui.WindowAndroid;
-import org.chromium.ui.autofill.AutofillPopup;
-import org.chromium.ui.autofill.AutofillPopup.AutofillPopupDelegate;
-import org.chromium.ui.autofill.AutofillSuggestion;
 
 /**
 * JNI call glue for AutofillExternalDelagate C++ and Java objects.

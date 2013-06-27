@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.autofill;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.autofill.AutofillPopup;
+import org.chromium.chrome.browser.autofill.AutofillPopup.AutofillPopupDelegate;
+import org.chromium.chrome.browser.autofill.AutofillSuggestion;
 import org.chromium.chrome.testshell.ChromiumTestShellActivity;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -15,9 +18,6 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.ViewAndroidDelegate;
 import org.chromium.ui.WindowAndroid;
-import org.chromium.ui.autofill.AutofillPopup;
-import org.chromium.ui.autofill.AutofillPopup.AutofillPopupDelegate;
-import org.chromium.ui.autofill.AutofillSuggestion;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

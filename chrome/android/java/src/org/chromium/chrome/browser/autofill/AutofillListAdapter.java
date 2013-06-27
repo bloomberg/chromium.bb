@@ -1,20 +1,18 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-package org.chromium.ui.autofill;
+package org.chromium.chrome.browser.autofill;
 
 import android.content.Context;
 import android.text.TextUtils;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import org.chromium.ui.R;
+import org.chromium.chrome.R;
 
 import java.util.ArrayList;
 

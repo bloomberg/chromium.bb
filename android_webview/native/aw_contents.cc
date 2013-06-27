@@ -11,7 +11,6 @@
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/aw_hit_test_data.h"
-#include "android_webview/native/aw_autofill_manager_delegate.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_client_bridge.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
@@ -193,7 +192,7 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
   // Do not initialize if the feature is not enabled.
   if (!enabled)
     return;
-  // Check if the autofill driver already exists.
+  // Check if the autofill manager already exists.
   content::WebContents* web_contents = web_contents_.get();
   if (AutofillDriverImpl::FromWebContents(web_contents))
     return;
@@ -206,14 +205,6 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
       AwAutofillManagerDelegate::FromWebContents(web_contents),
       l10n_util::GetDefaultLocale(),
       AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
-}
-
-void AwContents::SetAwAutofillManagerDelegate(jobject delegate) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_AwContents_setAwAutofillManagerDelegate(env, obj.obj(), delegate);
 }
 
 AwContents::~AwContents() {
