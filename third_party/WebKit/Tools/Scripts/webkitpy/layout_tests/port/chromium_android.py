@@ -275,17 +275,6 @@ class AndroidCommands(object):
         AndroidCommands._adb_command_path = command_path
         return command_path
 
-    @staticmethod
-    def get_devices(executive):
-        re_device = re.compile('^([a-zA-Z0-9_:.-]+)\tdevice$', re.MULTILINE)
-        result = executive.run_command([AndroidCommands.adb_command_path(executive), 'devices'],
-                error_handler=executive.ignore_error)
-        devices = re_device.findall(result)
-        if not devices:
-            raise AssertionError('No devices attached. Result of "adb devices": %s' % result)
-
-        return devices
-
     # Local private methods.
 
     def _log_error(self, message):
@@ -307,6 +296,74 @@ class AndroidCommands(object):
             return None
 
         return [int(n) for n in result.group(1).split('.')]
+
+
+# A class to encapsulate device status and information, such as the AndroidCommands
+# instances and whether the device has been set up.
+class AndroidDevices(object):
+    # Percentage of battery a device needs to have in order for it to be considered
+    # to participate in running the layout tests.
+    MINIMUM_BATTERY_PERCENTAGE = 30
+
+    def __init__(self, executive, default_device=None):
+        self._usable_devices = []
+        self._default_device = default_device
+        self._prepared_devices = []
+
+    def usable_devices(self, executive):
+        if self._usable_devices:
+            return self._usable_devices
+
+        if self._default_device:
+            self._usable_devices = [AndroidCommands(executive, self._default_device)]
+            return self._usable_devices
+
+        # Example "adb devices" command output:
+        #   List of devices attached
+        #   0123456789ABCDEF        device
+        re_device = re.compile('^([a-zA-Z0-9_:.-]+)\tdevice$', re.MULTILINE)
+
+        result = executive.run_command([AndroidCommands.adb_command_path(executive), 'devices'],
+                error_handler=executive.ignore_error)
+        devices = re_device.findall(result)
+        if not devices:
+            raise AssertionError('Unable to find attached Android devices. ADB output: %s' % result)
+
+        for device_serial in devices:
+            commands = AndroidCommands(executive, device_serial)
+            if self._battery_level_for_device(commands) < AndroidDevices.MINIMUM_BATTERY_PERCENTAGE:
+                continue
+
+            self._usable_devices.append(commands)
+
+        if not self._usable_devices:
+            raise AssertionError('No devices attached with more than %d percent battery.' %
+                AndroidDevices.MINIMUM_BATTERY_PERCENTAGE)
+
+        return self._usable_devices
+
+    def get_device(self, executive, device_index):
+        devices = self.usable_devices(executive)
+        if device_index >= len(devices):
+            raise AssertionError('Device index exceeds number of usable devices.')
+
+        return devices[device_index]
+
+    def is_device_prepared(self, device_serial):
+        return device_serial in self._prepared_devices
+
+    def set_device_prepared(self, device_serial):
+        self._prepared_devices.append(device_serial)
+
+    # Private methods
+    def _battery_level_for_device(self, commands):
+        battery_status = commands.run(['shell', 'dumpsys', 'battery'])
+        if 'Error' in battery_status:
+            _log.warning('Unable to read the battery level from device with serial "%s".' % commands.get_serial())
+            return 100
+
+        return int(re.findall('level: (\d+)', battery_status)[0])
+
 
 class ChromiumAndroidPort(chromium.ChromiumPort):
     port_name = 'chromium-android'
@@ -332,22 +389,18 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
         else:
             self._driver_details = DumpRenderTreeDriverDetails()
 
+        # Initialize the AndroidDevices class which tracks available devices.
+        default_device = None
         if hasattr(self._options, 'adb_device') and len(self._options.adb_device):
-            self._devices = [self._options.adb_device]
-        else:
-            self._devices = []
+            default_device = self._options.adb_device
 
+        self._devices = AndroidDevices(self._executive, default_device)
+
+        # Tell AndroidCommands where to search for the "adb" command.
         AndroidCommands.set_adb_command_path_options(['adb',
             self.path_from_chromium_base('third_party', 'android_tools', 'sdk', 'platform-tools', 'adb')])
 
     # Local public methods.
-    def get_device_serial(self, worker_number):
-        if not self._devices:
-            self._devices = AndroidCommands.get_devices(self._executive)
-        if worker_number >= len(self._devices):
-            raise AssertionError('Worker number exceeds available number of devices')
-        return self._devices[worker_number]
-
     def path_to_forwarder(self):
         return self._build_path('forwarder')
 
@@ -387,10 +440,11 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
         return 'DumpRenderTree'
 
     def default_child_processes(self):
-        if self._devices:
-            return len(self._devices)
+        usable_device_count = len(self._devices.usable_devices(self._executive))
+        if not usable_device_count:
+            raise AssertionError('There are no devices available to run the layout tests on.')
 
-        return len(AndroidCommands.get_devices(self._executive))
+        return usable_device_count
 
     def default_baseline_search_path(self):
         return map(self._webkit_baseline_path, self.FALLBACK_PATHS['android'])
@@ -436,7 +490,9 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
         super(ChromiumAndroidPort, self).start_http_server(additional_dirs, number_of_servers)
 
     def create_driver(self, worker_number, no_timeout=False):
-        return ChromiumAndroidDriver(self, worker_number, pixel_tests=self.get_option('pixel_tests'), driver_details=self._driver_details,
+        return ChromiumAndroidDriver(self, worker_number, pixel_tests=self.get_option('pixel_tests'),
+                                     driver_details=self._driver_details,
+                                     android_devices=self._devices,
                                      # Force no timeout to avoid test driver timeouts before NRWT.
                                      no_timeout=True)
 
@@ -621,7 +677,7 @@ http://crbug.com/165250 discusses making these pre-built binaries externally ava
 
 
 class ChromiumAndroidDriver(driver.Driver):
-    def __init__(self, port, worker_number, pixel_tests, driver_details, no_timeout=False):
+    def __init__(self, port, worker_number, pixel_tests, driver_details, android_devices, no_timeout=False):
         super(ChromiumAndroidDriver, self).__init__(port, worker_number, pixel_tests, no_timeout)
         self._in_fifo_path = driver_details.device_fifo_directory() + 'stdin.fifo'
         self._out_fifo_path = driver_details.device_fifo_directory() + 'test.fifo'
@@ -629,11 +685,11 @@ class ChromiumAndroidDriver(driver.Driver):
         self._read_stdout_process = None
         self._read_stderr_process = None
         self._forwarder_process = None
-        self._has_setup = False
         self._original_governors = {}
         self._original_kptr_restrict = None
 
-        self._android_commands = AndroidCommands(port._executive, port.get_device_serial(worker_number))
+        self._android_devices = android_devices
+        self._android_commands = android_devices.get_device(port._executive, worker_number)
         self._driver_details = driver_details
 
         # FIXME: If we taught ProfileFactory about "target" devices we could
@@ -710,12 +766,11 @@ class ChromiumAndroidDriver(driver.Driver):
         self._push_platform_resources()
 
     def _setup_test(self):
-        if self._has_setup:
+        if self._android_devices.is_device_prepared(self._android_commands.get_serial()):
             return
 
         self._android_commands.restart_as_root()
         self._setup_md5sum_and_push_data_if_needed()
-        self._has_setup = True
         self._setup_performance()
 
         # Required by webkit_support::GetWebKitRootDirFilePath().
@@ -729,6 +784,9 @@ class ChromiumAndroidDriver(driver.Driver):
 
         # Make sure that the disk cache on the device resets to a clean state.
         self._android_commands.run(['shell', 'rm', '-r', self._driver_details.device_cache_directory()])
+
+        # Mark this device as having been set up.
+        self._android_devices.set_device_prepared(self._android_commands.get_serial())
 
     def _log_error(self, message):
         _log.error('[%s] %s' % (self._android_commands.get_serial(), message))
@@ -1008,7 +1066,7 @@ class ChromiumAndroidDriver(driver.Driver):
             self._forwarder_process.kill()
             self._forwarder_process = None
 
-        if self._has_setup:
+        if self._android_devices.is_device_prepared(self._android_commands.get_serial()):
             if not ChromiumAndroidDriver._loop_with_timeout(self._remove_all_pipes, DRIVER_START_STOP_TIMEOUT_SECS):
                 raise AssertionError('Failed to remove fifo files. May be locked.')
 
