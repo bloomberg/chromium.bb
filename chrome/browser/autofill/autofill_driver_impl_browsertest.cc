@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
+#include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/test_autofill_driver.h"
-#include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
@@ -58,62 +57,46 @@ class MockAutofillManagerDelegate
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
 };
 
-// Subclass AutofillManager so we can create AutofillManager instance.
-class TestAutofillManager : public AutofillManager {
+// Subclass AutofillDriverImpl so we can create an AutofillDriverImpl instance.
+class TestAutofillDriverImpl : public AutofillDriverImpl {
  public:
-  TestAutofillManager(AutofillDriver* driver,
-                      autofill::AutofillManagerDelegate* delegate)
-      : AutofillManager(driver,
-                        delegate,
-                        g_browser_process->GetApplicationLocale(),
-                        AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {}
-  virtual ~TestAutofillManager() {}
+  TestAutofillDriverImpl(content::WebContents* web_contents,
+                         AutofillManagerDelegate* delegate)
+      : AutofillDriverImpl(
+          web_contents,
+          delegate,
+          g_browser_process->GetApplicationLocale(),
+          AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {}
+  virtual ~TestAutofillDriverImpl() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
-};
-
-// Subclass AutofillExternalDelegate so we can create an
-// AutofillExternalDelegate instance.
-class TestAutofillExternalDelegate : public AutofillExternalDelegate {
- public:
-  TestAutofillExternalDelegate(content::WebContents* web_contents,
-                               AutofillManager* autofill_manager)
-      : AutofillExternalDelegate(web_contents, autofill_manager) {}
-  virtual ~TestAutofillExternalDelegate() {}
+  DISALLOW_COPY_AND_ASSIGN(TestAutofillDriverImpl);
 };
 
 }  // namespace
 
-class AutofillExternalDelegateBrowserTest
+class AutofillDriverImplBrowserTest
     : public InProcessBrowserTest,
       public content::WebContentsObserver {
  public:
-  AutofillExternalDelegateBrowserTest() {}
-  virtual ~AutofillExternalDelegateBrowserTest() {}
+  AutofillDriverImplBrowserTest() {}
+  virtual ~AutofillDriverImplBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
     web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents_ != NULL);
     Observe(web_contents_);
-
     AutofillManager::RegisterUserPrefs(manager_delegate_.GetPrefRegistry());
 
-    autofill_driver_.reset(new TestAutofillDriver(web_contents_));
-    autofill_manager_.reset(
-        new TestAutofillManager(autofill_driver_.get(), &manager_delegate_));
-    autofill_external_delegate_.reset(
-        new TestAutofillExternalDelegate(web_contents_,
-                                         autofill_manager_.get()));
+    autofill_driver_.reset(new TestAutofillDriverImpl(web_contents_,
+                                                      &manager_delegate_));
   }
 
-  // Normally the WebContents will automatically delete the delegate, but here
-  // the delegate is owned by this test, so we have to manually destroy.
+  // Normally the WebContents will automatically delete the driver, but here
+  // the driver is owned by this test, so we have to manually destroy.
   virtual void WebContentsDestroyed(content::WebContents* web_contents)
       OVERRIDE {
     DCHECK_EQ(web_contents_, web_contents);
-    autofill_external_delegate_.reset();
-    autofill_manager_.reset();
     autofill_driver_.reset();
   }
 
@@ -121,15 +104,11 @@ class AutofillExternalDelegateBrowserTest
   content::WebContents* web_contents_;
 
   testing::NiceMock<MockAutofillManagerDelegate> manager_delegate_;
-  scoped_ptr<TestAutofillDriver> autofill_driver_;
-  scoped_ptr<TestAutofillManager> autofill_manager_;
-  scoped_ptr<TestAutofillExternalDelegate> autofill_external_delegate_;
+  scoped_ptr<TestAutofillDriverImpl> autofill_driver_;
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateBrowserTest,
+IN_PROC_BROWSER_TEST_F(AutofillDriverImplBrowserTest,
                        SwitchTabAndHideAutofillPopup) {
-  autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
-
   // Notification is different on platforms. On linux this will be called twice,
   // while on windows only once.
   EXPECT_CALL(manager_delegate_, HideAutofillPopup())
@@ -143,10 +122,8 @@ IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateBrowserTest,
   observer.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateBrowserTest,
+IN_PROC_BROWSER_TEST_F(AutofillDriverImplBrowserTest,
                        TestPageNavigationHidingAutofillPopup) {
-  autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
-
   // Notification is different on platforms. On linux this will be called twice,
   // while on windows only once.
   EXPECT_CALL(manager_delegate_, HideAutofillPopup())

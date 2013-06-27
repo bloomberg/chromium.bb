@@ -1191,7 +1191,7 @@
         'browser/app_controller_mac_browsertest.mm',
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/autofill/autofill_browsertest.cc',
-        'browser/autofill/autofill_external_delegate_browsertest.cc',
+        'browser/autofill/autofill_driver_impl_browsertest.cc',
         'browser/autofill/form_structure_browsertest.cc',
         'browser/autofill/risk/fingerprint_browsertest.cc',
         'browser/browser_encoding_browsertest.cc',

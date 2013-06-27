@@ -12,6 +12,8 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -31,6 +33,7 @@ class AutofillManagerDelegate;
 // communication from the renderer and from the external world. There is one
 // instance per WebContents.
 class AutofillDriverImpl : public AutofillDriver,
+                           public content::NotificationObserver,
                            public content::WebContentsObserver,
                            public base::SupportsUserData::Data {
  public:
@@ -74,6 +77,14 @@ class AutofillDriverImpl : public AutofillDriver,
   void SetAutofillManager(scoped_ptr<AutofillManager> manager);
 
  private:
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // A scoped container for notification registries.
+  content::NotificationRegistrar registrar_;
+
   // AutofillExternalDelegate instance that this object instantiates in the
   // case where the autofill native UI is enabled.
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;

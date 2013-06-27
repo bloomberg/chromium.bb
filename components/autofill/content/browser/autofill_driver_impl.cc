@@ -8,7 +8,11 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "components/autofill/core/common/autofill_messages.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "ipc/ipc_message_macros.h"
@@ -60,6 +64,15 @@ AutofillDriverImpl::AutofillDriverImpl(
           this, delegate, app_locale, enable_download_manager)) {
   SetAutofillExternalDelegate(scoped_ptr<AutofillExternalDelegate>(
       new AutofillExternalDelegate(web_contents, autofill_manager_.get())));
+
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
+                 content::Source<content::WebContents>(web_contents));
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<content::NavigationController>(
+          &(web_contents->GetController())));
 }
 
 AutofillDriverImpl::~AutofillDriverImpl() {}
@@ -142,6 +155,20 @@ void AutofillDriverImpl::SetAutofillManager(
     scoped_ptr<AutofillManager> manager) {
   autofill_manager_ = manager.Pass();
   autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
+}
+
+void AutofillDriverImpl::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
+    if (!*content::Details<bool>(details).ptr())
+      autofill_manager_->delegate()->HideAutofillPopup();
+  } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
+    autofill_manager_->delegate()->HideAutofillPopup();
+  } else {
+    NOTREACHED();
+  }
 }
 
 }  // namespace autofill

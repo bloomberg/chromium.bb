@@ -15,8 +15,6 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
 namespace gfx {
@@ -38,8 +36,7 @@ class AutofillManager;
 
 // Delegate for in-browser Autocomplete and Autofill display and selection.
 class AutofillExternalDelegate
-    : public content::NotificationObserver,
-      public AutofillPopupDelegate {
+    : public AutofillPopupDelegate {
  public:
   // Creates an AutofillExternalDelegate for the specified contents; the second
   // argument is an AutofillManager managing Autofill for that WebContents.
@@ -138,11 +135,6 @@ class AutofillExternalDelegate
                             std::vector<base::string16>* autofill_icons,
                             std::vector<int>* autofill_unique_ids);
 
-  // content::NotificationObserver method override.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // The web_contents associated with this delegate.
   content::WebContents* web_contents_;  // weak; owns me.
   AutofillManager* autofill_manager_;  // weak.
@@ -153,9 +145,6 @@ class AutofillExternalDelegate
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.
   int autofill_query_id_;
-
-  // A scoped container for notification registries.
-  content::NotificationRegistrar registrar_;
 
   // The current form and field selected by Autofill.
   FormData autofill_query_form_;

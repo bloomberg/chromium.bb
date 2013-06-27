@@ -8,10 +8,6 @@
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/common/autofill_messages.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/component_strings.h"
@@ -40,15 +36,6 @@ AutofillExternalDelegate::AutofillExternalDelegate(
       registered_keyboard_listener_with_(NULL),
       weak_ptr_factory_(this) {
   DCHECK(autofill_manager);
-
-  registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-                 content::Source<content::WebContents>(web_contents));
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<content::NavigationController>(
-          &(web_contents->GetController())));
 }
 
 AutofillExternalDelegate::~AutofillExternalDelegate() {}
@@ -373,20 +360,6 @@ void AutofillExternalDelegate::InsertDataListValues(
   autofill_unique_ids->insert(autofill_unique_ids->begin(),
                               data_list_unique_ids_.begin(),
                               data_list_unique_ids_.end());
-}
-
-void AutofillExternalDelegate::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
-    if (!*content::Details<bool>(details).ptr())
-      autofill_manager_->delegate()->HideAutofillPopup();
-  } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    autofill_manager_->delegate()->HideAutofillPopup();
-  } else {
-    NOTREACHED();
-  }
 }
 
 }  // namespace autofill

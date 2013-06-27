@@ -21,11 +21,6 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/webdata/encryptor/encryptor.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
-#include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -113,8 +108,6 @@ class PersonalDataManagerTest : public testing::Test {
   content::TestBrowserThread db_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<PersonalDataManager> personal_data_;
-  content::NotificationRegistrar registrar_;
-  content::MockNotificationObserver observer_;
   PersonalDataLoadedObserverMock personal_data_observer_;
 };
 
