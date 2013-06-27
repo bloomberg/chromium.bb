@@ -21,7 +21,6 @@ Properties of Not own properties
   toString inherited function undefined
   valueOf inherited function undefined
 Properties of Accessor only properties
-  __proto__ own object undefined
   b own no value, getter, setter
   d own no value, setter
 Properties of array

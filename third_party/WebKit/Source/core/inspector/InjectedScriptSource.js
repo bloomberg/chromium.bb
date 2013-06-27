@@ -407,6 +407,8 @@ InjectedScript.prototype = {
                             continue;
                     } else {
                         // Not all bindings provide proper descriptors. Fall back to the writable, configurable property.
+                        if (accessorPropertiesOnly)
+                            continue;
                         try {
                             descriptor = { name: name, value: o[name], writable: false, configurable: false, enumerable: false};
                             if (o === object) 
@@ -418,6 +420,8 @@ InjectedScript.prototype = {
                         continue;
                     }
                 } catch (e) {
+                    if (accessorPropertiesOnly)
+                        continue;
                     var descriptor = {};
                     descriptor.value = e;
                     descriptor.wasThrown = true;
@@ -429,7 +433,7 @@ InjectedScript.prototype = {
                 descriptors.push(descriptor);
             }
             if (ownProperties) {
-                if (object.__proto__)
+                if (object.__proto__ && !accessorPropertiesOnly)
                     descriptors.push({ name: "__proto__", value: object.__proto__, writable: true, configurable: true, enumerable: false, isOwn: true});
                 break;
             }
