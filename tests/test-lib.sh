@@ -48,6 +48,11 @@ setup_gitsvn() {
   # There appears to be no way to make git-svn completely shut up, so we
   # redirect its output.
   git svn -q clone -s $REPO_URL git-svn >/dev/null 2>&1
+  (
+    cd git-svn
+    git config user.name 'TestDood'
+    git config user.email 'TestDood@example.com'
+  )
 }
 
 # Set up a git-svn checkout of the repo and apply merge commits
@@ -60,6 +65,8 @@ setup_gitsvn_submodule() {
                 sed s/^.*:// | xargs`
   (
     cd git-svn-submodule
+    git config user.name 'TestDood'
+    git config user.email 'TestDood@example.com'
     echo 'merge-file line 1' > merge-file
     git add merge-file; git commit -q -m 'First non-svn commit on master'
     git checkout -q refs/remotes/trunk
@@ -81,6 +88,8 @@ setup_initgit() {
   (
     cd gitrepo
     git init -q
+    git config user.name 'TestDood'
+    git config user.email 'TestDood@example.com'
     echo "test" > test
     git add test
     git commit -qam "initial commit"
@@ -97,6 +106,11 @@ setup_gitgit() {
   echo "Setting up test git repo..."
   rm -rf git-git
   git clone -q $GITREPO_URL git-git
+  (
+    cd git-git
+    git config user.name 'TestDood'
+    git config user.email 'TestDood@example.com'
+  )
 }
 
 cleanup() {
