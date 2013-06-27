@@ -385,6 +385,10 @@ static const KeyDownEntry keyDownEntries[] = {
     { VKEY_DOWN,   ShiftKey,           "MoveDownAndModifySelection"           },
     { VKEY_NEXT,   ShiftKey,           "MovePageDownAndModifySelection"       },
 #if !OS(DARWIN)
+    { VKEY_UP,     CtrlKey,            "MoveParagraphBackward"                },
+    { VKEY_UP,     CtrlKey | ShiftKey, "MoveParagraphBackwardAndModifySelection" },
+    { VKEY_DOWN,   CtrlKey,            "MoveParagraphForward"                },
+    { VKEY_DOWN,   CtrlKey | ShiftKey, "MoveParagraphForwardAndModifySelection" },
     { VKEY_PRIOR,  0,                  "MovePageUp"                           },
     { VKEY_NEXT,   0,                  "MovePageDown"                         },
 #endif

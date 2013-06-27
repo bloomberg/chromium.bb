@@ -799,9 +799,21 @@ static bool executeMoveToEndOfParagraphAndModifySelection(Frame* frame, Event*, 
     return true;
 }
 
+static bool executeMoveParagraphBackward(Frame* frame, Event*, EditorCommandSource, const String&)
+{
+    frame->selection()->modify(FrameSelection::AlterationMove, DirectionBackward, ParagraphGranularity, UserTriggered);
+    return true;
+}
+
 static bool executeMoveParagraphBackwardAndModifySelection(Frame* frame, Event*, EditorCommandSource, const String&)
 {
     frame->selection()->modify(FrameSelection::AlterationExtend, DirectionBackward, ParagraphGranularity, UserTriggered);
+    return true;
+}
+
+static bool executeMoveParagraphForward(Frame* frame, Event*, EditorCommandSource, const String&)
+{
+    frame->selection()->modify(FrameSelection::AlterationMove, DirectionForward, ParagraphGranularity, UserTriggered);
     return true;
 }
 
@@ -1505,7 +1517,9 @@ static const CommandMap& createCommandMap()
         { "MovePageDownAndModifySelection", { executeMovePageDownAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
         { "MovePageUp", { executeMovePageUp, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
         { "MovePageUpAndModifySelection", { executeMovePageUpAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
+        { "MoveParagraphBackward", { executeMoveParagraphBackward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
         { "MoveParagraphBackwardAndModifySelection", { executeMoveParagraphBackwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
+        { "MoveParagraphForward", { executeMoveParagraphForward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
         { "MoveParagraphForwardAndModifySelection", { executeMoveParagraphForwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
         { "MoveRight", { executeMoveRight, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
         { "MoveRightAndModifySelection", { executeMoveRightAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },

@@ -115,6 +115,8 @@ shouldBe("whenEnabled('MoveToEndOfLine')", "'editable'");
 shouldBe("whenEnabled('MoveToEndOfParagraph')", "'editable'");
 shouldBe("whenEnabled('MoveToEndOfSentence')", "'editable'");
 shouldBe("whenEnabled('MoveUp')", "'editable'");
+shouldBe("whenEnabled('MoveParagraphBackward')", "'editable'");
+shouldBe("whenEnabled('MoveParagraphForward')", "'editable'");
 shouldBe("whenEnabled('MoveWordBackward')", "'editable'");
 shouldBe("whenEnabled('MoveWordForward')", "'editable'");
 shouldBe("whenEnabled('MoveWordLeft')", "'editable'");
