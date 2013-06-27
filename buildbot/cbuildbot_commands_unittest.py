@@ -309,6 +309,11 @@ ca-t3/pk-g4-4.0.1-r333
       commands.GenerateAuZip(self._buildroot, '/tmp/taco', None)
     self.assertCommandContains(['./build_library/generate_au_zip.py'])
 
+  def testTestAuZip(self):
+    """Test Basic generate_au_zip Command."""
+    commands.TestAuZip(self._buildroot, '/tmp/taco', None)
+    self.assertCommandContains(['./build_library/test_au_zip.py'])
+
   def testCompleteBuildImage(self):
     """Test Complete BuildImage Command."""
     images_to_build = ['bob', 'carol', 'ted', 'alice']

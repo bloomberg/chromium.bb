@@ -1703,6 +1703,11 @@ class UnitTestStage(BoardSpecificBuilderStage):
                             nowithdebug=self._build_config['nowithdebug'],
                             blacklist=self._build_config['unittest_blacklist'])
 
+    if os.path.exists(os.path.join(self.GetImageDirSymlink(),
+                                   'au-generator.zip')):
+      commands.TestAuZip(self._build_root,
+                         self.GetImageDirSymlink())
+
 
 class VMTestStage(ArchivingStage):
   """Run autotests in a virtual machine."""

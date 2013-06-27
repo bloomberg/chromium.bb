@@ -379,6 +379,23 @@ def GenerateAuZip(buildroot, image_dir, extra_env=None):
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
+def TestAuZip(buildroot, image_dir, extra_env=None):
+  """Run the script which validates an au-generator.zip.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    image_dir: The directory in which to find au-generator.zip.
+    extra_env: A dictionary of environmental variables to set during generation.
+
+  Raises:
+    results_lib.BuildScriptFailure if the test script fails.
+  """
+  cmd = ['./build_library/test_au_zip.py', '-o', image_dir]
+  _RunBuildScript(buildroot, cmd,
+                  cwd=constants.CROSUTILS_DIR,
+                  extra_env=extra_env)
+
+
 def BuildVMImageForTesting(buildroot, board, extra_env=None, disk_layout=None):
   cmd = ['./image_to_vm.sh', '--board=%s' % board, '--test_image']
   if disk_layout:

@@ -563,24 +563,50 @@ class UnitTestStageTest(AbstractStageTest):
     self.bot_id = 'x86-generic-full'
     self.build_config = config.config[self.bot_id].copy()
     self.mox.StubOutWithMock(commands, 'RunUnitTests')
+    self.mox.StubOutWithMock(commands, 'TestAuZip')
 
   def ConstructStage(self):
     return stages.UnitTestStage(self.options, self.build_config,
                                 self._current_board)
 
   def testQuickTests(self):
+    self.mox.StubOutWithMock(os.path, 'exists')
     self.build_config['quick_unit'] = True
     commands.RunUnitTests(self.build_root, self._current_board, full=False,
                           nowithdebug=mox.IgnoreArg(), blacklist=[])
+    image_dir = os.path.join(self.build_root,
+                             'src/build/images/x86-generic/latest-cbuildbot')
+    os.path.exists(os.path.join(image_dir,
+                                'au-generator.zip')).AndReturn(True)
+    commands.TestAuZip(self.build_root, image_dir)
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  def testQuickTestsAuGeneratorZipMissing(self):
+    self.mox.StubOutWithMock(os.path, 'exists')
+    self.build_config['quick_unit'] = True
+    commands.RunUnitTests(self.build_root, self._current_board, full=False,
+                          nowithdebug=mox.IgnoreArg(), blacklist=[])
+    image_dir = os.path.join(self.build_root,
+                             'src/build/images/x86-generic/latest-cbuildbot')
+    os.path.exists(os.path.join(image_dir,
+                                'au-generator.zip')).AndReturn(False)
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
+    self.mox.StubOutWithMock(os.path, 'exists')
     self.build_config['quick_unit'] = False
     commands.RunUnitTests(self.build_root, self._current_board, full=True,
                           nowithdebug=mox.IgnoreArg(), blacklist=[])
+    image_dir = os.path.join(self.build_root,
+                             'src/build/images/x86-generic/latest-cbuildbot')
+    os.path.exists(os.path.join(image_dir,
+                                'au-generator.zip')).AndReturn(True)
+    commands.TestAuZip(self.build_root, image_dir)
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
