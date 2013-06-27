@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "content/public/browser/browser_thread.h"
@@ -145,36 +144,30 @@ bool CreateTemporaryReadableFileInDir(const base::FilePath& dir,
       file_util::FILE_PERMISSION_READ_BY_OTHERS);
 }
 
-// Prepares for downloading the file. Given the |gdata_entry|, refreshes the
-// |metadata| and then allocates the enough space in the cache.
+// Prepares for downloading the file. Given the |resource_id|, allocates the
+// enough space for the file in the cache.
 // If succeeded, returns FILE_ERROR_OK with |entry| storing the ResourceEntry
 // of the resource, |drive_file_path| with storing the path of the entry,
 // and |temp_download_file| storing the path to the file in the cache.
 FileError PrepareForDownloadFile(
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
-    scoped_ptr<google_apis::ResourceEntry> gdata_entry,
+    const std::string& resource_id,
     const base::FilePath& temporary_file_directory,
     ResourceEntry* entry,
     base::FilePath* drive_file_path,
     base::FilePath* temp_download_file) {
   DCHECK(metadata);
   DCHECK(cache);
-  DCHECK(gdata_entry);
   DCHECK(entry);
   DCHECK(drive_file_path);
   DCHECK(temp_download_file);
 
-  *entry = ConvertToResourceEntry(*gdata_entry);
-  FileError error = metadata->RefreshEntry(*entry);
+  FileError error = metadata->GetResourceEntryById(resource_id, entry);
   if (error != FILE_ERROR_OK)
     return error;
 
-  error = metadata->GetResourceEntryById(entry->resource_id(), entry);
-  if (error != FILE_ERROR_OK)
-    return error;
-
-  *drive_file_path = metadata->GetFilePath(entry->resource_id());
+  *drive_file_path = metadata->GetFilePath(resource_id);
   if (drive_file_path->empty())
     return FILE_ERROR_NOT_FOUND;
 
@@ -182,7 +175,7 @@ FileError PrepareForDownloadFile(
   if (!cache->FreeDiskSpaceIfNeededFor(entry->file_info().size()))
     return FILE_ERROR_NO_SPACE;
 
-  // Create the temporary file which will store the donwloaded content.
+  // Create the temporary file which will store the downloaded content.
   return CreateTemporaryReadableFileInDir(
       temporary_file_directory,
       temp_download_file) ? FILE_ERROR_OK : FILE_ERROR_FAILED;
@@ -451,7 +444,7 @@ void DownloadOperation::EnsureFileDownloadedAfterGetResourceEntry(
       base::Bind(&PrepareForDownloadFile,
                  base::Unretained(metadata_),
                  base::Unretained(cache_),
-                 base::Passed(&resource_entry),
+                 resource_entry->resource_id(),
                  temporary_file_directory_,
                  params->entry.get(),
                  &params->drive_file_path,
