@@ -23,8 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGForeignObjectElement : SVGStyledElement,
-                                    SVGTransformable {
+interface SVGForeignObjectElement : SVGGraphicsElement {
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;
     readonly attribute SVGAnimatedLength width;
@@ -32,5 +31,4 @@ interface SVGForeignObjectElement : SVGStyledElement,
 };
 
 SVGForeignObjectElement implements SVGExternalResourcesRequired;
-SVGForeignObjectElement implements SVGTests;
 

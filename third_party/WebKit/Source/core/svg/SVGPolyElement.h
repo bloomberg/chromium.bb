@@ -24,14 +24,12 @@
 #include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGPointList.h"
-#include "core/svg/SVGStyledTransformableElement.h"
-#include "core/svg/SVGTests.h"
 
 namespace WebCore {
 
-class SVGPolyElement : public SVGStyledTransformableElement
-                     , public SVGTests
+class SVGPolyElement : public SVGGraphicsElement
                      , public SVGExternalResourcesRequired {
 public:
     SVGListPropertyTearOff<SVGPointList>* points();

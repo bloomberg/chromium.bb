@@ -24,11 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGClipPathElement : SVGStyledElement,
-                               SVGTransformable {
+interface SVGClipPathElement : SVGGraphicsElement {
     readonly attribute SVGAnimatedEnumeration clipPathUnits;
 };
 
 SVGClipPathElement implements SVGExternalResourcesRequired;
-SVGClipPathElement implements SVGTests;
-

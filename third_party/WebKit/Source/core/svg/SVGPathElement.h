@@ -25,10 +25,9 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathSegList.h"
-#include "core/svg/SVGStyledTransformableElement.h"
-#include "core/svg/SVGTests.h"
 
 namespace WebCore {
 
@@ -53,8 +52,7 @@ class SVGPathSegCurvetoQuadraticSmoothAbs;
 class SVGPathSegCurvetoQuadraticSmoothRel;
 class SVGPathSegListPropertyTearOff;
 
-class SVGPathElement FINAL : public SVGStyledTransformableElement,
-                             public SVGTests,
+class SVGPathElement FINAL : public SVGGraphicsElement,
                              public SVGExternalResourcesRequired {
 public:
     static PassRefPtr<SVGPathElement> create(const QualifiedName&, Document*);

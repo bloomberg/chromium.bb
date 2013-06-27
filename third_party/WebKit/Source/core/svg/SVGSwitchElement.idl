@@ -23,10 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGSwitchElement : SVGStyledElement,
-                             SVGTransformable {
+interface SVGSwitchElement : SVGGraphicsElement {
 };
 
 SVGSwitchElement implements SVGExternalResourcesRequired;
-SVGSwitchElement implements SVGTests;
 

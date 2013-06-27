@@ -40,16 +40,16 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
-#include "core/svg/SVGStyledTransformableElement.h"
+#include "core/svg/SVGGraphicsElement.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {
 
-RenderSVGShape::RenderSVGShape(SVGStyledTransformableElement* node)
+RenderSVGShape::RenderSVGShape(SVGGraphicsElement* node)
     : RenderSVGModelObject(node)
     , m_needsBoundariesUpdate(false) // Default is false, the cached rects are empty from the beginning.
-    , m_needsShapeUpdate(true) // Default is true, so we grab a Path object once from SVGStyledTransformableElement.
-    , m_needsTransformUpdate(true) // Default is true, so we grab a AffineTransform object once from SVGStyledTransformableElement.
+    , m_needsShapeUpdate(true) // Default is true, so we grab a Path object once from SVGGraphicsElement.
+    , m_needsTransformUpdate(true) // Default is true, so we grab a AffineTransform object once from SVGGraphicsElement.
 {
 }
 
@@ -63,7 +63,7 @@ void RenderSVGShape::updateShapeFromElement()
     m_path = adoptPtr(new Path);
     ASSERT(RenderSVGShape::isEmpty());
 
-    SVGStyledTransformableElement* element = toSVGStyledTransformableElement(node());
+    SVGGraphicsElement* element = toSVGGraphicsElement(node());
     updatePathFromGraphicsElement(element, path());
     processMarkerPositions();
 
@@ -141,7 +141,7 @@ void RenderSVGShape::layout()
 {
     StackStats::LayoutCheckPoint layoutCheckPoint;
     LayoutRepainter repainter(*this, SVGRenderSupport::checkForSVGRepaintDuringLayout(this) && selfNeedsLayout());
-    SVGStyledTransformableElement* element = toSVGStyledTransformableElement(node());
+    SVGGraphicsElement* element = toSVGGraphicsElement(node());
 
     bool updateCachedBoundariesInParents = false;
 
@@ -193,7 +193,7 @@ bool RenderSVGShape::setupNonScalingStrokeContext(AffineTransform& strokeTransfo
 
 AffineTransform RenderSVGShape::nonScalingStrokeTransform() const
 {
-    SVGStyledTransformableElement* element = toSVGStyledTransformableElement(node());
+    SVGGraphicsElement* element = toSVGGraphicsElement(node());
     return element->getScreenCTM(SVGLocatable::DisallowStyleUpdate);
 }
 
@@ -202,7 +202,7 @@ bool RenderSVGShape::shouldGenerateMarkerPositions() const
     if (!style()->svgStyle()->hasMarkers())
         return false;
 
-    SVGStyledTransformableElement* element = toSVGStyledTransformableElement(node());
+    SVGGraphicsElement* element = toSVGGraphicsElement(node());
     if (!element->supportsMarkers())
         return false;
 

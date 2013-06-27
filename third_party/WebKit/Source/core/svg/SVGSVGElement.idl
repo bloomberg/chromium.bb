@@ -21,10 +21,8 @@
  */
 
 // TODO: no css::ViewCSS available!
-// TODO: Fix SVGSVGElement inheritance (css::DocumentCSS)! 
 // TODO: no events::DocumentEvent available!
-interface SVGSVGElement : SVGStyledElement,
-                          SVGTransformable {
+interface SVGSVGElement : SVGGraphicsElement {
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;
     readonly attribute SVGAnimatedLength width;
@@ -72,7 +70,6 @@ interface SVGSVGElement : SVGStyledElement,
 };
 
 SVGSVGElement implements SVGExternalResourcesRequired;
-SVGSVGElement implements SVGTests;
 SVGSVGElement implements SVGFitToViewBox;
 SVGSVGElement implements SVGZoomAndPan;
 

@@ -23,13 +23,11 @@
 
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
-#include "core/svg/SVGStyledTransformableElement.h"
-#include "core/svg/SVGTests.h"
+#include "core/svg/SVGGraphicsElement.h"
 
 namespace WebCore {
 
-class SVGSwitchElement FINAL : public SVGStyledTransformableElement,
-                               public SVGTests,
+class SVGSwitchElement FINAL : public SVGGraphicsElement,
                                public SVGExternalResourcesRequired {
 public:
     static PassRefPtr<SVGSwitchElement> create(const QualifiedName&, Document*);

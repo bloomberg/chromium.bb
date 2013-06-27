@@ -33,7 +33,7 @@ namespace WebCore {
 
 class RenderSVGEllipse FINAL : public RenderSVGShape {
 public:
-    explicit RenderSVGEllipse(SVGStyledTransformableElement*);
+    explicit RenderSVGEllipse(SVGGraphicsElement*);
     virtual ~RenderSVGEllipse();
 
 private:

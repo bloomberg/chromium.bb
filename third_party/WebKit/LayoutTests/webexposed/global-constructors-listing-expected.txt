@@ -316,6 +316,7 @@ SVGGElement
 SVGGlyphElement
 SVGGlyphRefElement
 SVGGradientElement
+SVGGraphicsElement
 SVGHKernElement
 SVGImageElement
 SVGLength

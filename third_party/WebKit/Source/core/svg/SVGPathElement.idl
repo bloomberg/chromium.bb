@@ -24,8 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGPathElement : SVGStyledElement,
-                           SVGTransformable {
+interface SVGPathElement : SVGGraphicsElement {
     readonly attribute SVGAnimatedNumber pathLength;
 
     float getTotalLength();
@@ -108,5 +107,3 @@ interface SVGPathElement : SVGStyledElement,
 };
 
 SVGPathElement implements SVGExternalResourcesRequired;
-SVGPathElement implements SVGTests;
-

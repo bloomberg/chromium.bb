@@ -23,8 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGImageElement : SVGStyledElement,
-                            SVGTransformable {
+interface SVGImageElement : SVGGraphicsElement {
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;
     readonly attribute SVGAnimatedLength width;
@@ -33,6 +32,5 @@ interface SVGImageElement : SVGStyledElement,
 };
 
 SVGImageElement implements SVGExternalResourcesRequired;
-SVGImageElement implements SVGTests;
 SVGImageElement implements SVGURIReference;
 

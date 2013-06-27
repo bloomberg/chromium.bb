@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-RenderSVGEllipse::RenderSVGEllipse(SVGStyledTransformableElement* node)
+RenderSVGEllipse::RenderSVGEllipse(SVGGraphicsElement* node)
     : RenderSVGShape(node)
     , m_usePathFallback(false)
 {

@@ -23,12 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGAElement : SVGStyledElement,
-                        SVGTransformable {
+interface SVGAElement : SVGGraphicsElement {
     readonly attribute SVGAnimatedString target;
 };
 
 SVGAElement implements SVGExternalResourcesRequired;
-SVGAElement implements SVGTests;
 SVGAElement implements SVGURIReference;
 

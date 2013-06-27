@@ -52,12 +52,11 @@ DEFINE_ANIMATED_BOOLEAN(SVGPolyElement, SVGNames::externalResourcesRequiredAttr,
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPolyElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(points)
     REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGStyledTransformableElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
+    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 SVGPolyElement::SVGPolyElement(const QualifiedName& tagName, Document* document)
-    : SVGStyledTransformableElement(tagName, document)
+    : SVGGraphicsElement(tagName, document)
 {
     registerAnimatedPropertiesForSVGPolyElement();    
 }
@@ -77,7 +76,7 @@ bool SVGPolyElement::isSupportedAttribute(const QualifiedName& attrName)
 void SVGPolyElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (!isSupportedAttribute(name)) {
-        SVGStyledTransformableElement::parseAttribute(name, value);
+        SVGGraphicsElement::parseAttribute(name, value);
         return;
     }
 
@@ -106,7 +105,7 @@ void SVGPolyElement::parseAttribute(const QualifiedName& name, const AtomicStrin
 void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {
-        SVGStyledTransformableElement::svgAttributeChanged(attrName);
+        SVGGraphicsElement::svgAttributeChanged(attrName);
         return;
     }
 

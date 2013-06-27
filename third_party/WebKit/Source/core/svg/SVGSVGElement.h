@@ -27,8 +27,7 @@
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGFitToViewBox.h"
-#include "core/svg/SVGStyledTransformableElement.h"
-#include "core/svg/SVGTests.h"
+#include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGZoomAndPan.h"
 
 namespace WebCore {
@@ -40,16 +39,15 @@ class SVGViewSpec;
 class SVGViewElement;
 class SMILTimeContainer;
 
-class SVGSVGElement FINAL : public SVGStyledTransformableElement,
-                            public SVGTests,
+class SVGSVGElement FINAL : public SVGGraphicsElement,
                             public SVGExternalResourcesRequired,
                             public SVGFitToViewBox,
                             public SVGZoomAndPan {
 public:
     static PassRefPtr<SVGSVGElement> create(const QualifiedName&, Document*);
 
-    using SVGStyledTransformableElement::ref;
-    using SVGStyledTransformableElement::deref;
+    using SVGGraphicsElement::ref;
+    using SVGGraphicsElement::deref;
 
     virtual bool isValid() const { return SVGTests::isValid(); }
     virtual bool supportsFocus() const { return true; }

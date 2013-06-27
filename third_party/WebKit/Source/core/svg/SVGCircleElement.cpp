@@ -41,12 +41,11 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGCircleElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(cy)
     REGISTER_LOCAL_ANIMATED_PROPERTY(r)
     REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGStyledTransformableElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
+    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGCircleElement::SVGCircleElement(const QualifiedName& tagName, Document* document)
-    : SVGStyledTransformableElement(tagName, document)
+    : SVGGraphicsElement(tagName, document)
     , m_cx(LengthModeWidth)
     , m_cy(LengthModeHeight)
     , m_r(LengthModeOther)
@@ -80,7 +79,7 @@ void SVGCircleElement::parseAttribute(const QualifiedName& name, const AtomicStr
     SVGParsingError parseError = NoError;
 
     if (!isSupportedAttribute(name))
-        SVGStyledTransformableElement::parseAttribute(name, value);
+        SVGGraphicsElement::parseAttribute(name, value);
     else if (name == SVGNames::cxAttr)
         setCxBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
     else if (name == SVGNames::cyAttr)
@@ -99,7 +98,7 @@ void SVGCircleElement::parseAttribute(const QualifiedName& name, const AtomicStr
 void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {
-        SVGStyledTransformableElement::svgAttributeChanged(attrName);
+        SVGGraphicsElement::svgAttributeChanged(attrName);
         return;
     }
 

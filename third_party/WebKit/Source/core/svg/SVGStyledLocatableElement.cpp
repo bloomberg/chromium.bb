@@ -56,4 +56,4 @@ AffineTransform SVGStyledLocatableElement::getScreenCTM(StyleUpdateStrategy styl
     return SVGLocatable::computeCTM(this, SVGLocatable::ScreenScope, styleUpdateStrategy);
 }
 
-}
+} // namespace WebCore

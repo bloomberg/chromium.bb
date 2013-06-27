@@ -23,8 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGLineElement : SVGStyledElement,
-                           SVGTransformable {
+interface SVGLineElement : SVGGraphicsElement {
     readonly attribute SVGAnimatedLength x1;
     readonly attribute SVGAnimatedLength y1;
     readonly attribute SVGAnimatedLength x2;
@@ -32,5 +31,4 @@ interface SVGLineElement : SVGStyledElement,
 };
 
 SVGLineElement implements SVGExternalResourcesRequired;
-SVGLineElement implements SVGTests;
 

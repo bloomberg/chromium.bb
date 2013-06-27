@@ -23,12 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGPolygonElement : SVGStyledElement,
-                              SVGTransformable {
+interface SVGPolygonElement : SVGGraphicsElement {
     readonly attribute SVGPointList points;
     readonly attribute SVGPointList animatedPoints;
 };
 
 SVGPolygonElement implements SVGExternalResourcesRequired;
-SVGPolygonElement implements SVGTests;
-

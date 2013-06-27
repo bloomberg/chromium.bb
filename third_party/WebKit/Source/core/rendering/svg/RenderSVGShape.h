@@ -40,12 +40,12 @@ class GraphicsContextStateSaver;
 class RenderSVGContainer;
 class RenderSVGPath;
 class RenderSVGResource;
-class SVGStyledTransformableElement;
+class SVGGraphicsElement;
 
 class RenderSVGShape : public RenderSVGModelObject {
 public:
-    explicit RenderSVGShape(SVGStyledTransformableElement*);
-    RenderSVGShape(SVGStyledTransformableElement*, Path*, bool);
+    explicit RenderSVGShape(SVGGraphicsElement*);
+    RenderSVGShape(SVGGraphicsElement*, Path*, bool);
     virtual ~RenderSVGShape();
 
     void setNeedsShapeUpdate() { m_needsShapeUpdate = true; }

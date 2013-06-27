@@ -25,12 +25,12 @@
 
 #include "SVGNames.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/svg/SVGStyledTransformableElement.h"
+#include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGUseElement.h"
 
 namespace WebCore {
     
-RenderSVGTransformableContainer::RenderSVGTransformableContainer(SVGStyledTransformableElement* node)
+RenderSVGTransformableContainer::RenderSVGTransformableContainer(SVGGraphicsElement* node)
     : RenderSVGContainer(node)
     , m_needsTransformUpdate(true)
     , m_didTransformToRootUpdate(false)
@@ -39,7 +39,7 @@ RenderSVGTransformableContainer::RenderSVGTransformableContainer(SVGStyledTransf
 
 bool RenderSVGTransformableContainer::calculateLocalTransform()
 {
-    SVGStyledTransformableElement* element = toSVGStyledTransformableElement(node());
+    SVGGraphicsElement* element = toSVGGraphicsElement(node());
 
     // If we're either the renderer for a <use> element, or for any <g> element inside the shadow
     // tree, that was created during the use/symbol/svg expansion in SVGUseElement. These containers

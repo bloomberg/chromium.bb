@@ -25,15 +25,13 @@
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
+#include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGImageLoader.h"
-#include "core/svg/SVGStyledTransformableElement.h"
-#include "core/svg/SVGTests.h"
 #include "core/svg/SVGURIReference.h"
 
 namespace WebCore {
 
-class SVGImageElement FINAL : public SVGStyledTransformableElement,
-                              public SVGTests,
+class SVGImageElement FINAL : public SVGGraphicsElement,
                               public SVGExternalResourcesRequired,
                               public SVGURIReference {
 public:

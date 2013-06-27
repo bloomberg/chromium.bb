@@ -23,8 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGEllipseElement : SVGStyledElement,
-                              SVGTransformable {
+interface SVGEllipseElement : SVGGraphicsElement {
     readonly attribute SVGAnimatedLength cx;
     readonly attribute SVGAnimatedLength cy;
     readonly attribute SVGAnimatedLength rx;
@@ -32,5 +31,4 @@ interface SVGEllipseElement : SVGStyledElement,
 };
 
 SVGEllipseElement implements SVGExternalResourcesRequired;
-SVGEllipseElement implements SVGTests;
 

@@ -18,11 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGStyledTransformableElement_h
-#define SVGStyledTransformableElement_h
+#ifndef SVGGraphicsElement_h
+#define SVGGraphicsElement_h
 
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGStyledLocatableElement.h"
+#include "core/svg/SVGTests.h"
 #include "core/svg/SVGTransformable.h"
 
 namespace WebCore {
@@ -30,10 +31,9 @@ namespace WebCore {
 class AffineTransform;
 class Path;
 
-class SVGStyledTransformableElement : public SVGStyledLocatableElement,
-                                      public SVGTransformable {
+class SVGGraphicsElement : public SVGStyledLocatableElement, public SVGTransformable, public SVGTests {
 public:
-    virtual ~SVGStyledTransformableElement();
+    virtual ~SVGGraphicsElement();
 
     virtual AffineTransform getCTM(StyleUpdateStrategy = AllowStyleUpdate);
     virtual AffineTransform getScreenCTM(StyleUpdateStrategy = AllowStyleUpdate);
@@ -51,30 +51,30 @@ public:
     virtual RenderObject* createRenderer(RenderStyle*);
 
 protected:
-    SVGStyledTransformableElement(const QualifiedName&, Document*, ConstructionType = CreateSVGElement);
+    SVGGraphicsElement(const QualifiedName&, Document*, ConstructionType = CreateSVGElement);
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void svgAttributeChanged(const QualifiedName&);
 
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGStyledTransformableElement)
+    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGraphicsElement)
         DECLARE_ANIMATED_TRANSFORM_LIST(Transform, transform)
     END_DECLARE_ANIMATED_PROPERTIES
 
 private:
-    virtual bool isStyledTransformable() const OVERRIDE { return true; }
+    virtual bool isSVGGraphicsElement() const OVERRIDE { return true; }
 
     // Used by <animateMotion>
     OwnPtr<AffineTransform> m_supplementalTransform;
 };
 
-inline SVGStyledTransformableElement* toSVGStyledTransformableElement(Node* node)
+inline SVGGraphicsElement* toSVGGraphicsElement(Node* node)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isSVGElement());
-    ASSERT_WITH_SECURITY_IMPLICATION(!node || toSVGElement(node)->isStyledTransformable());
-    return static_cast<SVGStyledTransformableElement*>(node);
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || toSVGElement(node)->isSVGGraphicsElement());
+    return static_cast<SVGGraphicsElement*>(node);
 }
 
 } // namespace WebCore
 
-#endif // SVGStyledTransformableElement_h
+#endif // SVGGraphicsElement_h

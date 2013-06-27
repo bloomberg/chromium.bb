@@ -24,16 +24,14 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
-#include "core/svg/SVGStyledTransformableElement.h"
-#include "core/svg/SVGTests.h"
+#include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGUnitTypes.h"
 
 namespace WebCore {
 
 class RenderObject;
 
-class SVGClipPathElement FINAL : public SVGStyledTransformableElement,
-                                 public SVGTests,
+class SVGClipPathElement FINAL : public SVGGraphicsElement,
                                  public SVGExternalResourcesRequired {
 public:
     static PassRefPtr<SVGClipPathElement> create(const QualifiedName&, Document*);

@@ -100,9 +100,9 @@ bool RenderSVGResourceClipper::pathOnlyClipping(GraphicsContext* context, const 
         // Only shapes or paths are supported for direct clipping. We need to fallback to masking for texts.
         if (renderer->isSVGText())
             return false;
-        if (!childNode->isSVGElement() || !toSVGElement(childNode)->isStyledTransformable())
+        if (!childNode->isSVGElement() || !toSVGElement(childNode)->isSVGGraphicsElement())
             continue;
-        SVGStyledTransformableElement* styled = toSVGStyledTransformableElement(childNode);
+        SVGGraphicsElement* styled = toSVGGraphicsElement(childNode);
         RenderStyle* style = renderer->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
              continue;

@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-RenderSVGPath::RenderSVGPath(SVGStyledTransformableElement* node)
+RenderSVGPath::RenderSVGPath(SVGGraphicsElement* node)
     : RenderSVGShape(node)
 {
 }
