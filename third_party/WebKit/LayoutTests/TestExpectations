@@ -1780,7 +1780,7 @@ crbug.com/254332 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse-the
 crbug.com/254332 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/checkbox/checkbox-focus-by-mouse.html [ ImageOnlyFailure Pass ]
-crbug.com/254332 [ Linux Win ] fast/forms/radio/radio-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
+crbug.com/254332 [ Linux Win Mac ] fast/forms/radio/radio-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/radio/radio-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/range/range-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/range/range-focus-by-mouse.html [ ImageOnlyFailure Pass ]
