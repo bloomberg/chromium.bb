@@ -8,6 +8,7 @@
 #include <secerr.h>
 #include <ssl.h>
 #include <sslerr.h>
+#include <sslproto.h>
 
 #include <string>
 
@@ -52,10 +53,27 @@ class NSSSSLInitSingleton {
       SSLCipherSuiteInfo info;
       if (SSL_GetCipherSuiteInfo(ssl_ciphers[i], &info,
                                  sizeof(info)) == SECSuccess) {
-        SSL_CipherPrefSetDefault(ssl_ciphers[i],
-                                 (info.effectiveKeyBits >= 80));
+        bool enabled = info.effectiveKeyBits >= 80;
         if (info.authAlgorithm == ssl_auth_ecdsa && disableECDSA)
-          SSL_CipherPrefSetDefault(ssl_ciphers[i], PR_FALSE);
+          enabled = false;
+
+        // Trim the list of cipher suites in order to keep the size of the
+        // ClientHello down. DSS, ECDH, CAMELLIA, SEED and ECC+3DES cipher
+        // suites are disabled.
+        if (info.symCipher == ssl_calg_camellia ||
+            info.symCipher == ssl_calg_seed ||
+            (info.symCipher == ssl_calg_3des && info.keaType != ssl_kea_rsa) ||
+            info.authAlgorithm == ssl_auth_dsa ||
+            info.nonStandard ||
+            strcmp(info.keaTypeName, "ECDH") == 0) {
+          enabled = false;
+        }
+
+        if (ssl_ciphers[i] == TLS_DHE_DSS_WITH_AES_128_CBC_SHA) {
+          // Enabled to allow servers with only a DSA certificate to function.
+          enabled = true;
+        }
+        SSL_CipherPrefSetDefault(ssl_ciphers[i], enabled);
       }
     }
 
