@@ -166,13 +166,13 @@ void RenderFrameSet::GridAxis::resize(int size)
     m_allowBorder.resize(size + 1);
 }
 
-void RenderFrameSet::layOutAxis(GridAxis& axis, const Length* grid, int availableLen)
+void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<Length>& grid, int availableLen)
 {
     availableLen = max(availableLen, 0);
 
     int* gridLayout = axis.m_sizes.data();
 
-    if (!grid) {
+    if (grid.isEmpty()) {
         gridLayout[0] = availableLen;
         return;
     }

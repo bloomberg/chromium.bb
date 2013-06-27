@@ -39,7 +39,6 @@ using namespace HTMLNames;
 
 inline HTMLAreaElement::HTMLAreaElement(const QualifiedName& tagName, Document* document)
     : HTMLAnchorElement(tagName, document)
-    , m_coordsLen(0)
     , m_lastSize(-1, -1)
     , m_shape(Unknown)
 {
@@ -65,7 +64,7 @@ void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicStri
             m_shape = Rect;
         invalidateCachedRegion();
     } else if (name == coordsAttr) {
-        m_coords = parseHTMLAreaElementCoords(value.string(), m_coordsLen);
+        m_coords = parseHTMLAreaElementCoords(value.string());
         invalidateCachedRegion();
     } else if (name == altAttr || name == accesskeyAttr) {
         // Do nothing.
@@ -125,7 +124,7 @@ LayoutRect HTMLAreaElement::computeRect(RenderObject* obj) const
 
 Path HTMLAreaElement::getRegion(const LayoutSize& size) const
 {
-    if (!m_coords && m_shape != Default)
+    if (m_coords.isEmpty() && m_shape != Default)
         return Path();
 
     LayoutUnit width = size.width();
@@ -134,11 +133,11 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
     // If element omits the shape attribute, select shape based on number of coordinates.
     Shape shape = m_shape;
     if (shape == Unknown) {
-        if (m_coordsLen == 3)
+        if (m_coords.size() == 3)
             shape = Circle;
-        else if (m_coordsLen == 4)
+        else if (m_coords.size() == 4)
             shape = Rect;
-        else if (m_coordsLen >= 6)
+        else if (m_coords.size() >= 6)
             shape = Poly;
     }
 
@@ -146,8 +145,8 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
     RenderView* renderView = document()->renderView();
     switch (shape) {
         case Poly:
-            if (m_coordsLen >= 6) {
-                int numPoints = m_coordsLen / 2;
+            if (m_coords.size() >= 6) {
+                int numPoints = m_coords.size() / 2;
                 path.moveTo(FloatPoint(minimumValueForLength(m_coords[0], width, renderView), minimumValueForLength(m_coords[1], height, renderView)));
                 for (int i = 1; i < numPoints; ++i)
                     path.addLineTo(FloatPoint(minimumValueForLength(m_coords[i * 2], width, renderView), minimumValueForLength(m_coords[i * 2 + 1], height, renderView)));
@@ -155,14 +154,14 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
             }
             break;
         case Circle:
-            if (m_coordsLen >= 3) {
+            if (m_coords.size() >= 3) {
                 Length radius = m_coords[2];
                 int r = min(minimumValueForLength(radius, width, renderView), minimumValueForLength(radius, height, renderView));
                 path.addEllipse(FloatRect(minimumValueForLength(m_coords[0], width, renderView) - r, minimumValueForLength(m_coords[1], height, renderView) - r, 2 * r, 2 * r));
             }
             break;
         case Rect:
-            if (m_coordsLen >= 4) {
+            if (m_coords.size() >= 4) {
                 int x0 = minimumValueForLength(m_coords[0], width, renderView);
                 int y0 = minimumValueForLength(m_coords[1], height, renderView);
                 int x1 = minimumValueForLength(m_coords[2], width, renderView);

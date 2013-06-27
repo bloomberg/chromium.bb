@@ -25,7 +25,6 @@
 
 #include "core/html/HTMLAnchorElement.h"
 #include "core/platform/graphics/LayoutRect.h"
-#include <wtf/OwnArrayPtr.h>
 
 namespace WebCore {
 
@@ -64,8 +63,7 @@ private:
     void invalidateCachedRegion();
 
     OwnPtr<Path> m_region;
-    OwnArrayPtr<Length> m_coords;
-    int m_coordsLen;
+    Vector<Length> m_coords;
     LayoutSize m_lastSize;
     Shape m_shape;
 };

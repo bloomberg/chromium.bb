@@ -45,8 +45,6 @@ using namespace HTMLNames;
 
 HTMLFrameSetElement::HTMLFrameSetElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
-    , m_totalRows(1)
-    , m_totalCols(1)
     , m_border(6)
     , m_borderSet(false)
     , m_borderColorSet(false)
@@ -83,12 +81,12 @@ void HTMLFrameSetElement::parseAttribute(const QualifiedName& name, const Atomic
 {
     if (name == rowsAttr) {
         if (!value.isNull()) {
-            m_rowLengths = parseFrameSetListOfDimensions(value.string(), m_totalRows);
+            m_rowLengths = parseFrameSetListOfDimensions(value.string());
             setNeedsStyleRecalc();
         }
     } else if (name == colsAttr) {
         if (!value.isNull()) {
-            m_colLengths = parseFrameSetListOfDimensions(value.string(), m_totalCols);
+            m_colLengths = parseFrameSetListOfDimensions(value.string());
             setNeedsStyleRecalc();
         }
     } else if (name == frameborderAttr) {

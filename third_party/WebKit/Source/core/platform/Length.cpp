@@ -28,7 +28,6 @@
 #include "core/platform/CalculationValue.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/Assertions.h>
-#include <wtf/OwnArrayPtr.h>
 #include <wtf/text/StringBuffer.h>
 #include <wtf/text/WTFString.h>
 
@@ -105,7 +104,7 @@ static Length parseFrameSetDimension(const CharType* data, unsigned length)
 }
 
 // FIXME: Per HTML5, this should follow the "rules for parsing a list of integers".
-PassOwnArrayPtr<Length> parseHTMLAreaElementCoords(const String& string, int& len)
+Vector<Length> parseHTMLAreaElementCoords(const String& string)
 {
     unsigned length = string.length();
     StringBuffer<LChar> spacified(length);
@@ -120,13 +119,11 @@ PassOwnArrayPtr<Length> parseHTMLAreaElementCoords(const String& string, int& le
     str = str->simplifyWhiteSpace();
     ASSERT(str->is8Bit());
 
-    len = str->count(' ') + 1;
-    OwnArrayPtr<Length> r = adoptArrayPtr(new Length[len]);
+    if (!str->length())
+        return Vector<Length>();
 
-    if (!str->length()) {
-        len = 0;
-        return r.release();
-    }
+    unsigned len = str->count(' ') + 1;
+    Vector<Length> r(len);
 
     int i = 0;
     unsigned pos = 0;
@@ -140,20 +137,18 @@ PassOwnArrayPtr<Length> parseHTMLAreaElementCoords(const String& string, int& le
 
     ASSERT(i == len - 1);
 
-    return r.release();
+    return r;
 }
 
 // FIXME: Per HTML5, this should "use the rules for parsing a list of dimensions".
-PassOwnArrayPtr<Length> parseFrameSetListOfDimensions(const String& string, int& len)
+Vector<Length> parseFrameSetListOfDimensions(const String& string)
 {
     RefPtr<StringImpl> str = string.impl()->simplifyWhiteSpace();
-    if (!str->length()) {
-        len = 1;
-        return nullptr;
-    }
+    if (!str->length())
+        return Vector<Length>();
 
-    len = str->count(',') + 1;
-    OwnArrayPtr<Length> r = adoptArrayPtr(new Length[len]);
+    unsigned len = str->count(',') + 1;
+    Vector<Length> r(len);
 
     int i = 0;
     unsigned pos = 0;
@@ -170,9 +165,9 @@ PassOwnArrayPtr<Length> parseFrameSetListOfDimensions(const String& string, int&
     if (str->length()-pos > 0)
         r[i] = parseFrameSetDimension(str->bloatedCharacters() + pos, str->length() - pos);
     else
-        len--;
+        r.shrink(r.size() - 1);
 
-    return r.release();
+    return r;
 }
 
 class CalculationValueHandleMap {

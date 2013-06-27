@@ -25,12 +25,12 @@
 
 #include <cstring>
 #include "core/platform/animation/AnimationUtilities.h"
-#include <wtf/Assertions.h>
-#include <wtf/FastAllocBase.h>
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/MathExtras.h>
-#include <wtf/PassOwnArrayPtr.h>
+#include "wtf/Assertions.h"
+#include "wtf/FastAllocBase.h"
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/MathExtras.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -309,8 +309,8 @@ private:
     bool m_isFloat;
 };
 
-PassOwnArrayPtr<Length> parseHTMLAreaElementCoords(const String&, int& len);
-PassOwnArrayPtr<Length> parseFrameSetListOfDimensions(const String&, int& len);
+Vector<Length> parseHTMLAreaElementCoords(const String&);
+Vector<Length> parseFrameSetListOfDimensions(const String&);
 
 } // namespace WebCore
 

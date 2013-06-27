@@ -25,7 +25,6 @@
 #define HTMLFrameSetElement_h
 
 #include "core/html/HTMLElement.h"
-#include <wtf/OwnArrayPtr.h>
 
 namespace WebCore {
 
@@ -36,14 +35,14 @@ public:
     bool hasFrameBorder() const { return m_frameborder; }
     bool noResize() const { return m_noresize; }
 
-    int totalRows() const { return m_totalRows; }
-    int totalCols() const { return m_totalCols; }
+    size_t totalRows() const { return std::max<size_t>(1, m_rowLengths.size()); }
+    size_t totalCols() const { return std::max<size_t>(1, m_colLengths.size()); }
     int border() const { return hasFrameBorder() ? m_border : 0; }
 
     bool hasBorderColor() const { return m_borderColorSet; }
 
-    const Length* rowLengths() const { return m_rowLengths.get(); }
-    const Length* colLengths() const { return m_colLengths.get(); }
+    const Vector<Length>& rowLengths() const { return m_rowLengths; }
+    const Vector<Length>& colLengths() const { return m_colLengths; }
 
     DOMWindow* anonymousNamedGetter(const AtomicString&);
 
@@ -82,11 +81,8 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void willRecalcStyle(StyleChange) OVERRIDE;
 
-    OwnArrayPtr<Length> m_rowLengths;
-    OwnArrayPtr<Length> m_colLengths;
-
-    int m_totalRows;
-    int m_totalCols;
+    Vector<Length> m_rowLengths;
+    Vector<Length> m_colLengths;
 
     int m_border;
     bool m_borderSet;
