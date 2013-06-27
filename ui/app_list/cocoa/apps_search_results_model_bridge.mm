@@ -30,10 +30,9 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
   virtual void OnIconChanged() OVERRIDE {
     bridge_->ReloadDataForItems(row_in_view_, 1);
   }
-
-  virtual void OnActionIconsChanged() OVERRIDE {
-    NOTIMPLEMENTED();
-  }
+  virtual void OnActionsChanged() OVERRIDE {}
+  virtual void OnIsInstallingChanged() OVERRIDE {}
+  virtual void OnPercentDownloadedChanged() OVERRIDE {}
 
  private:
   AppsSearchResultsModelBridge* bridge_;  // Weak. Owns us.

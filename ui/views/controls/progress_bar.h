@@ -20,6 +20,10 @@ class VIEWS_EXPORT ProgressBar : public View {
 
   double current_value() const { return current_value_; }
 
+  // Gets a normalized current value in [0.0, 1.0] range based on current value
+  // range and the min/max display value range.
+  double GetNormalizedValue() const;
+
   // Sets the inclusive range of values to be displayed.  Values outside of the
   // range will be capped when displayed.
   void SetDisplayRange(double min_display_value, double max_display_value);

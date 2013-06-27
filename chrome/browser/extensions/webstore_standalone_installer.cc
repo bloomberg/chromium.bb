@@ -73,6 +73,11 @@ void WebstoreStandaloneInstaller::BeginInstall() {
   webstore_data_fetcher_->Start();
 }
 
+scoped_ptr<ExtensionInstallPrompt>
+WebstoreStandaloneInstaller::CreateInstallUI() {
+  return make_scoped_ptr(new ExtensionInstallPrompt(GetWebContents()));
+}
+
 void WebstoreStandaloneInstaller::OnWebstoreRequestFailure() {
   CompleteInstall(kWebstoreRequestError);
 }
@@ -174,7 +179,7 @@ void WebstoreStandaloneInstaller::OnWebstoreParseSuccess(
 
   install_prompt_ = CreateInstallPrompt();
   if (install_prompt_) {
-    CreateInstallUI();
+    ShowInstallUI();
     // Control flow finishes up in InstallUIProceed or InstallUIAbort.
   } else {
     InstallUIProceed();
@@ -251,7 +256,7 @@ void WebstoreStandaloneInstaller::CompleteInstall(const std::string& error) {
 }
 
 void
-WebstoreStandaloneInstaller::CreateInstallUI() {
+WebstoreStandaloneInstaller::ShowInstallUI() {
   std::string error;
   localized_extension_for_display_ =
       ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
@@ -266,7 +271,7 @@ WebstoreStandaloneInstaller::CreateInstallUI() {
     return;
   }
 
-  install_ui_.reset(new ExtensionInstallPrompt(GetWebContents()));
+  install_ui_ = CreateInstallUI();
   install_ui_->ConfirmStandaloneInstall(
       this, localized_extension_for_display_.get(), &icon_, *install_prompt_);
 }

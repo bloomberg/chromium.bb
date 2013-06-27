@@ -107,6 +107,10 @@ class WebstoreStandaloneInstaller
       const base::DictionaryValue& webstore_data,
       std::string* error) const = 0;
 
+  // Returns an install UI to be shown. By default, this returns an install UI
+  // that is a transient child of the host window for GetWebContents().
+  virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI();
+
   // Accessors to be used by subclasses.
   const std::string& localized_user_count() const {
     return localized_user_count_;
@@ -161,7 +165,7 @@ class WebstoreStandaloneInstaller
       const std::string& error,
       WebstoreInstaller::FailureReason reason) OVERRIDE;
 
-  void CreateInstallUI();
+  void ShowInstallUI();
 
   // Input configuration.
   std::string id_;
@@ -185,7 +189,7 @@ class WebstoreStandaloneInstaller
   scoped_ptr<DictionaryValue> manifest_;
   SkBitmap icon_;
 
-  // Created by CreateInstallUI() when a prompt is shown (if
+  // Created by ShowInstallUI() when a prompt is shown (if
   // the implementor returns a non-NULL in CreateInstallPrompt()).
   scoped_refptr<Extension> localized_extension_for_display_;
 

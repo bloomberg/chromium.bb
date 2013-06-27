@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 
+class AppListControllerDelegate;
 class Profile;
 
 namespace base {
@@ -30,7 +31,7 @@ class WebstoreSearchFetcher;
 // return any results.
 class WebstoreProvider : public SearchProvider {
  public:
-  explicit WebstoreProvider(Profile* profile);
+  WebstoreProvider(Profile* profile, AppListControllerDelegate* controller);
   virtual ~WebstoreProvider();
 
   // SearchProvider overrides:
@@ -50,6 +51,7 @@ class WebstoreProvider : public SearchProvider {
   }
 
   Profile* profile_;
+  AppListControllerDelegate* controller_;
   scoped_ptr<WebstoreSearchFetcher> webstore_search_;
   base::Closure webstore_search_fetched_callback_;
 

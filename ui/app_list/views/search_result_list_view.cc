@@ -89,7 +89,7 @@ bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
       return true;
     case ui::VKEY_RETURN:
       if (selected_index_ >= 0)
-        SearchResultActivated(GetResultViewAt(selected_index_), event);
+        SearchResultActivated(GetResultViewAt(selected_index_), event.flags());
       return true;
     default:
       break;
@@ -154,17 +154,17 @@ void SearchResultListView::ListItemsChanged(size_t start, size_t count) {
 }
 
 void SearchResultListView::SearchResultActivated(SearchResultView* view,
-                                                 const ui::Event& event) {
+                                                 int event_flags) {
   if (delegate_ && view->result())
-    delegate_->OpenResult(view->result(), event.flags());
+    delegate_->OpenResult(view->result(), event_flags);
 }
 
 void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
-                                                       int action_index,
-                                                       const ui::Event& event) {
+                                                       size_t action_index,
+                                                       int event_flags) {
   if (delegate_ && view->result()) {
     delegate_->InvokeResultAction(
-        view->result(), action_index, event.flags());
+        view->result(), action_index, event_flags);
   }
 }
 

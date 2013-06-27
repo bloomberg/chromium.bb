@@ -142,6 +142,13 @@ ProgressBar::ProgressBar()
 ProgressBar::~ProgressBar() {
 }
 
+double ProgressBar::GetNormalizedValue() const {
+  const double capped_value = std::min(
+      std::max(current_value_, min_display_value_), max_display_value_);
+  return (capped_value - min_display_value_) /
+      (max_display_value_ - min_display_value_);
+}
+
 void ProgressBar::SetDisplayRange(double min_display_value,
                                   double max_display_value) {
   if (min_display_value != min_display_value_ ||
@@ -184,12 +191,8 @@ const char* ProgressBar::GetClassName() const {
 }
 
 void ProgressBar::OnPaint(gfx::Canvas* canvas) {
-  const double capped_value = std::min(
-      std::max(current_value_, min_display_value_), max_display_value_);
-  const double capped_fraction =
-      (capped_value - min_display_value_) /
-      (max_display_value_ - min_display_value_);
-  const int progress_width = static_cast<int>(width() * capped_fraction + 0.5);
+  const int progress_width =
+      static_cast<int>(width() * GetNormalizedValue() + 0.5);
 
   // Draw background.
   FillRoundRect(canvas,

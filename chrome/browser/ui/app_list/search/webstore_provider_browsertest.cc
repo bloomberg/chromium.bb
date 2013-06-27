@@ -47,7 +47,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
         switches::kAppsGalleryURL, test_server_->base_url().spec());
 
     webstore_provider_.reset(new WebstoreProvider(
-        ProfileManager::GetDefaultProfile()));
+        ProfileManager::GetDefaultProfile(), NULL));
     webstore_provider_->set_webstore_search_fetched_callback(
         base::Bind(&WebstoreProviderTest::OnSearchResultsFetched,
                    base::Unretained(this)));

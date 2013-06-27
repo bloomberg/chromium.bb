@@ -57,7 +57,7 @@ void SearchController::Init() {
   AddProvider(Mixer::OMNIBOX_GROUP, scoped_ptr<SearchProvider>(
       new OmniboxProvider(profile_)).Pass());
   AddProvider(Mixer::WEBSTORE_GROUP, scoped_ptr<SearchProvider>(
-      new WebstoreProvider(profile_)).Pass());
+      new WebstoreProvider(profile_, list_controller_)).Pass());
 }
 
 void SearchController::Start() {

@@ -18,6 +18,8 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/install_tracker.h"
+#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -25,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -230,6 +233,17 @@ void WebstoreInstaller::Start() {
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&GetDownloadFilePath, download_path, id_,
                  base::Bind(&WebstoreInstaller::StartDownload, this)));
+
+  std::string name;
+  if (!approval_->manifest->value()->GetString(extension_manifest_keys::kName,
+                                               &name)) {
+    NOTREACHED();
+  }
+  extensions::InstallTracker* tracker =
+      extensions::InstallTrackerFactory::GetForProfile(profile_);
+  tracker->OnBeginExtensionInstall(
+      id_, name, approval_->installing_icon, approval_->manifest->is_app(),
+      approval_->manifest->is_platform_app());
 }
 
 void WebstoreInstaller::Observe(int type,
@@ -323,15 +337,27 @@ void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
       break;
     case DownloadItem::COMPLETE:
       // Wait for other notifications if the download is really an extension.
-      if (!download_crx_util::IsExtensionDownload(*download))
+      if (!download_crx_util::IsExtensionDownload(*download)) {
         ReportFailure(kInvalidDownloadError, FAILURE_REASON_OTHER);
-      else if (delegate_)
-        delegate_->OnExtensionDownloadProgress(id_, download);
+      } else {
+        if (delegate_)
+          delegate_->OnExtensionDownloadProgress(id_, download);
+
+        extensions::InstallTracker* tracker =
+            extensions::InstallTrackerFactory::GetForProfile(profile_);
+        tracker->OnDownloadProgress(id_, 100);
+      }
       break;
-    case DownloadItem::IN_PROGRESS:
+    case DownloadItem::IN_PROGRESS: {
       if (delegate_)
         delegate_->OnExtensionDownloadProgress(id_, download);
+
+      extensions::InstallTracker* tracker =
+          extensions::InstallTrackerFactory::GetForProfile(profile_);
+      tracker->OnDownloadProgress(id_, download->PercentComplete());
+
       break;
+    }
     default:
       // Continue listening if the download is not in one of the above states.
       break;
@@ -421,6 +447,10 @@ void WebstoreInstaller::ReportFailure(const std::string& error,
     delegate_->OnExtensionInstallFailure(id_, error, reason);
     delegate_ = NULL;
   }
+
+  extensions::InstallTracker* tracker =
+      extensions::InstallTrackerFactory::GetForProfile(profile_);
+  tracker->OnInstallFailure(id_);
 
   Release();  // Balanced in Start().
 }

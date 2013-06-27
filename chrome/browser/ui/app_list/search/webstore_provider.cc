@@ -28,7 +28,10 @@ const char kKeyIconUrl[] = "icon_url";
 
 }  // namespace
 
-WebstoreProvider::WebstoreProvider(Profile* profile) : profile_(profile) {}
+WebstoreProvider::WebstoreProvider(Profile* profile,
+                                   AppListControllerDelegate* controller)
+  : profile_(profile),
+    controller_(controller) {}
 
 WebstoreProvider::~WebstoreProvider() {}
 
@@ -113,7 +116,8 @@ scoped_ptr<ChromeSearchResult> WebstoreProvider::CreateResult(
   if (!icon_url.is_valid())
     return result.Pass();
 
-  result.reset(new WebstoreResult(profile_, app_id, localized_name, icon_url));
+  result.reset(new WebstoreResult(
+      profile_, app_id, localized_name, icon_url, controller_));
   return result.Pass();
 }
 

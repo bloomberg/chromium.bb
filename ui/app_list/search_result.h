@@ -29,7 +29,7 @@ class SearchResultObserver;
 class APP_LIST_EXPORT SearchResult {
  public:
   // A tagged range in search result text.
-  struct Tag {
+  struct APP_LIST_EXPORT Tag {
     // Similar to ACMatchClassification::Style, the style values are not
     // mutually exclusive.
     enum Style {
@@ -49,22 +49,27 @@ class APP_LIST_EXPORT SearchResult {
   };
   typedef std::vector<Tag> Tags;
 
-  // A collection of images representing an action that can be performed on this
-  // search result.
-  struct ActionIconSet {
-    ActionIconSet(const gfx::ImageSkia& base_image,
-                  const gfx::ImageSkia& hover_image,
-                  const gfx::ImageSkia& pressed_image,
-                  const base::string16& tooltip_text);
-    ~ActionIconSet();
+  // Data representing an action that can be performed on this search result.
+  // An action could be represented as an icon set or as a blue button with
+  // a label. Icon set is chosen if label text is empty. Otherwise, a blue
+  // button with the label text will be used.
+  struct APP_LIST_EXPORT Action {
+    Action(const gfx::ImageSkia& base_image,
+           const gfx::ImageSkia& hover_image,
+           const gfx::ImageSkia& pressed_image,
+           const base::string16& tooltip_text);
+    Action(const base::string16& label_text,
+           const base::string16& tooltip_text);
+    ~Action();
 
     gfx::ImageSkia base_image;
     gfx::ImageSkia hover_image;
     gfx::ImageSkia pressed_image;
 
     base::string16 tooltip_text;
+    base::string16 label_text;
   };
-  typedef std::vector<ActionIconSet> ActionIconSets;
+  typedef std::vector<Action> Actions;
 
   SearchResult();
   virtual ~SearchResult();
@@ -84,10 +89,16 @@ class APP_LIST_EXPORT SearchResult {
   const Tags& details_tags() const { return details_tags_; }
   void set_details_tags(const Tags& tags) { details_tags_ = tags; }
 
-  const ActionIconSets& action_icons() const {
-    return action_icons_;
+  const Actions& actions() const {
+    return actions_;
   }
-  void SetActionIcons(const ActionIconSets& sets);
+  void SetActions(const Actions& sets);
+
+  bool is_installing() const { return is_installing_; }
+  void SetIsInstalling(bool is_installing);
+
+  int percent_downloaded() const { return percent_downloaded_; }
+  void SetPercentDownloaded(int percent_downloaded);
 
   void AddObserver(SearchResultObserver* observer);
   void RemoveObserver(SearchResultObserver* observer);
@@ -105,9 +116,10 @@ class APP_LIST_EXPORT SearchResult {
   base::string16 details_;
   Tags details_tags_;
 
-  // Optional list of icons representing additional actions that can be
-  // performed on this result.
-  ActionIconSets action_icons_;
+  Actions actions_;
+
+  bool is_installing_;
+  int percent_downloaded_;
 
   ObserverList<SearchResultObserver> observers_;
 

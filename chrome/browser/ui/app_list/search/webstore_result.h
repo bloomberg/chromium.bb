@@ -9,19 +9,27 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "googleurl/src/gurl.h"
 
+class AppListControllerDelegate;
 class Profile;
+
+namespace extensions {
+class InstallTracker;
+}
 
 namespace app_list {
 
-class WebstoreResult : public ChromeSearchResult {
+class WebstoreResult : public ChromeSearchResult,
+                       public extensions::InstallObserver {
  public:
   WebstoreResult(Profile* profile,
                  const std::string& app_id,
                  const std::string& localized_name,
-                 const GURL& icon_url);
+                 const GURL& icon_url,
+                 AppListControllerDelegate* controller);
   virtual ~WebstoreResult();
 
   // ChromeSearchResult overides:
@@ -30,8 +38,35 @@ class WebstoreResult : public ChromeSearchResult {
   virtual scoped_ptr<ChromeSearchResult> Duplicate() OVERRIDE;
 
  private:
+  void UpdateActions();
   void SetDefaultDetails();
   void OnIconLoaded();
+
+  void StartInstall();
+  void InstallCallback(bool success, const std::string& error);
+
+  void StartObservingInstall();
+  void StopObservingInstall();
+
+  // extensions::InstallObserver overrides:
+  virtual void OnBeginExtensionInstall(const std::string& extension_id,
+                                       const std::string& extension_name,
+                                       const gfx::ImageSkia& installing_icon,
+                                       bool is_app,
+                                       bool is_platform_app) OVERRIDE;
+  virtual void OnDownloadProgress(const std::string& extension_id,
+                                  int percent_downloaded) OVERRIDE;
+  virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE;
+  virtual void OnExtensionInstalled(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionDisabled(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnAppsReordered() OVERRIDE;
+  virtual void OnAppInstalledToAppList(
+      const std::string& extension_id) OVERRIDE;
+  virtual void OnShutdown() OVERRIDE;
 
   Profile* profile_;
   const std::string app_id_;
@@ -40,6 +75,9 @@ class WebstoreResult : public ChromeSearchResult {
 
   gfx::ImageSkia icon_;
   base::WeakPtrFactory<WebstoreResult> weak_factory_;
+
+  AppListControllerDelegate* controller_;
+  extensions::InstallTracker* install_tracker_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreResult);
 };

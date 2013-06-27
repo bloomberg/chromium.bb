@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/search_result_view_delegate.h"
+#include "ui/app_list/views/search_result_view_delegate.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/views/view.h"
 
@@ -54,10 +54,10 @@ class SearchResultListView : public views::View,
 
   // Overridden from SearchResultViewDelegate:
   virtual void SearchResultActivated(SearchResultView* view,
-                                     const ui::Event& event) OVERRIDE;
+                                     int event_flags) OVERRIDE;
   virtual void SearchResultActionActivated(SearchResultView* view,
-                                           int action_index,
-                                           const ui::Event& event) OVERRIDE;
+                                           size_t action_index,
+                                           int event_flags) OVERRIDE;
 
   SearchResultListViewDelegate* delegate_;  // Not owned.
   AppListModel::SearchResults* results_;  // Owned by AppListModel.

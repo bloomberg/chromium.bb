@@ -7,11 +7,19 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/install_tracker.h"
+#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/search/webstore_installer.h"
 #include "chrome/browser/ui/app_list/search/webstore_result_icon_source.h"
-#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -20,17 +28,22 @@ namespace app_list {
 WebstoreResult::WebstoreResult(Profile* profile,
                                const std::string& app_id,
                                const std::string& localized_name,
-                               const GURL& icon_url)
+                               const GURL& icon_url,
+                               AppListControllerDelegate* controller)
     : profile_(profile),
       app_id_(app_id),
       localized_name_(localized_name),
       icon_url_(icon_url),
-      weak_factory_(this) {
+      weak_factory_(this),
+      controller_(controller),
+      install_tracker_(NULL) {
   set_id(extensions::Extension::GetBaseURLFromExtensionId(app_id_).spec());
   set_relevance(0.0);  // What is the right value to use?
 
   set_title(UTF8ToUTF16(localized_name_));
   SetDefaultDetails();
+
+  UpdateActions();
 
   const int kIconSize = 32;
   icon_ = gfx::ImageSkia(
@@ -42,25 +55,50 @@ WebstoreResult::WebstoreResult(Profile* profile,
           kIconSize),
       gfx::Size(kIconSize, kIconSize));
   SetIcon(icon_);
+
+  StartObservingInstall();
 }
 
-WebstoreResult::~WebstoreResult() {}
+WebstoreResult::~WebstoreResult() {
+  StopObservingInstall();
+}
 
 void WebstoreResult::Open(int event_flags) {
-  const GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
-                       app_id_);
-  chrome::NavigateParams params(profile_,
-                                store_url,
-                                content::PAGE_TRANSITION_LINK);
-  params.disposition = ui::DispositionFromEventFlags(event_flags);
-  chrome::Navigate(&params);
+  const extensions::Extension* extension =
+      extensions::ExtensionSystem::Get(profile_)->extension_service()
+          ->GetInstalledExtension(app_id_);
+  if (extension) {
+    controller_->ActivateApp(profile_, extension, event_flags);
+    return;
+  }
+
+  StartInstall();
 }
 
-void WebstoreResult::InvokeAction(int action_index, int event_flags) {}
+void WebstoreResult::InvokeAction(int action_index, int event_flags) {
+  DCHECK_EQ(0, action_index);
+  StartInstall();
+}
 
 scoped_ptr<ChromeSearchResult> WebstoreResult::Duplicate() {
-  return scoped_ptr<ChromeSearchResult>(
-      new WebstoreResult(profile_, app_id_, localized_name_, icon_url_)).Pass();
+  return scoped_ptr<ChromeSearchResult>(new WebstoreResult(
+      profile_, app_id_, localized_name_, icon_url_, controller_)).Pass();
+}
+
+void WebstoreResult::UpdateActions() {
+  Actions actions;
+
+  const bool is_otr = profile_->IsOffTheRecord();
+  const bool is_installed = !!extensions::ExtensionSystem::Get(profile_)->
+      extension_service()->GetInstalledExtension(app_id_);
+
+  if (!is_otr && !is_installed && !is_installing()) {
+    actions.push_back(Action(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE),
+        base::string16()));
+  }
+
+  SetActions(actions);
 }
 
 void WebstoreResult::SetDefaultDetails() {
@@ -81,6 +119,85 @@ void WebstoreResult::OnIconLoaded() {
     icon_.RemoveRepresentation(image_reps[i].scale_factor());
 
   SetIcon(icon_);
+}
+
+void WebstoreResult::StartInstall() {
+  SetPercentDownloaded(0);
+  SetIsInstalling(true);
+
+  scoped_refptr<WebstoreInstaller> installer =
+      new WebstoreInstaller(
+          app_id_,
+          profile_,
+          controller_->GetAppListWindow(),
+          base::Bind(&WebstoreResult::InstallCallback,
+                     weak_factory_.GetWeakPtr()));
+  installer->BeginInstall();
+}
+
+void WebstoreResult::InstallCallback(bool success, const std::string& error) {
+  if (!success) {
+    LOG(ERROR) << "Failed to install app, error=" << error;
+    SetIsInstalling(false);
+    return;
+  }
+
+  // Success handling is continued in OnExtensionInstalled.
+  SetPercentDownloaded(100);
+}
+
+void WebstoreResult::StartObservingInstall() {
+  DCHECK(!install_tracker_);
+
+  install_tracker_ = extensions::InstallTrackerFactory::GetForProfile(profile_);
+  install_tracker_->AddObserver(this);
+}
+
+void WebstoreResult::StopObservingInstall() {
+  if (install_tracker_)
+    install_tracker_->RemoveObserver(this);
+
+  install_tracker_ = NULL;
+}
+
+void WebstoreResult::OnBeginExtensionInstall(
+    const std::string& extension_id,
+    const std::string& extension_name,
+    const gfx::ImageSkia& installing_icon,
+    bool is_app,
+    bool is_platform_app) {}
+
+void WebstoreResult::OnDownloadProgress(const std::string& extension_id,
+                                        int percent_downloaded) {
+  if (extension_id != app_id_ || percent_downloaded < 0)
+    return;
+
+  SetPercentDownloaded(percent_downloaded);
+}
+
+void WebstoreResult::OnInstallFailure(const std::string& extension_id) {}
+
+void WebstoreResult::OnExtensionInstalled(
+    const extensions::Extension* extension) {
+  if (extension->id() != app_id_)
+    return;
+
+  SetIsInstalling(false);
+  UpdateActions();
+}
+
+void WebstoreResult::OnExtensionUninstalled(
+    const extensions::Extension* extension) {}
+
+void WebstoreResult::OnExtensionDisabled(
+    const extensions::Extension* extension) {}
+
+void WebstoreResult::OnAppsReordered() {}
+
+void WebstoreResult::OnAppInstalledToAppList(const std::string& extension_id) {}
+
+void WebstoreResult::OnShutdown() {
+  StopObservingInstall();
 }
 
 }  // namespace app_list

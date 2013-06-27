@@ -20,8 +20,6 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/install_tracker.h"
-#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -584,20 +582,9 @@ void CompleteInstallFunction::AfterMaybeInstallAppLauncher(bool ok) {
     LOG(ERROR) << "Error installing app launcher";
   std::string id = approval_->extension_id;
   if (apps::IsAppLauncherEnabled()) {
-    std::string name;
-    if (!approval_->manifest->value()->GetString(extension_manifest_keys::kName,
-                                                 &name)) {
-      NOTREACHED();
-    }
     // Show the app list so it receives install progress notifications.
     if (approval_->manifest->is_app())
       AppListService::Get()->ShowAppList(profile());
-
-    extensions::InstallTracker* tracker =
-        extensions::InstallTrackerFactory::GetForProfile(profile());
-    tracker->OnBeginExtensionInstall(
-        id, name, approval_->installing_icon, approval_->manifest->is_app(),
-        approval_->manifest->is_platform_app());
   }
 
   // The extension will install through the normal extension install flow, but
@@ -626,9 +613,6 @@ void CompleteInstallFunction::OnExtensionInstallFailure(
     const std::string& id,
     const std::string& error,
     WebstoreInstaller::FailureReason reason) {
-  extensions::InstallTracker* tracker =
-      extensions::InstallTrackerFactory::GetForProfile(profile());
-  tracker->OnInstallFailure(id);
   if (test_webstore_installer_delegate) {
     test_webstore_installer_delegate->OnExtensionInstallFailure(
         id, error, reason);
@@ -641,14 +625,6 @@ void CompleteInstallFunction::OnExtensionInstallFailure(
 
   // Matches the AddRef in RunImpl().
   Release();
-}
-
-void CompleteInstallFunction::OnExtensionDownloadProgress(
-    const std::string& id,
-    content::DownloadItem* item) {
-  extensions::InstallTracker* tracker =
-      extensions::InstallTrackerFactory::GetForProfile(profile());
-  tracker->OnDownloadProgress(id, item->PercentComplete());
 }
 
 EnableAppLauncherFunction::EnableAppLauncherFunction() {}

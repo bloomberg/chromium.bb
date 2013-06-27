@@ -8,24 +8,25 @@
 
 namespace app_list {
 
-SearchResult::ActionIconSet::ActionIconSet(const gfx::ImageSkia& base_image,
-                                           const gfx::ImageSkia& hover_image,
-                                           const gfx::ImageSkia& pressed_image,
-                                           const base::string16& tooltip_text)
+SearchResult::Action::Action(const gfx::ImageSkia& base_image,
+                             const gfx::ImageSkia& hover_image,
+                             const gfx::ImageSkia& pressed_image,
+                             const base::string16& tooltip_text)
     : base_image(base_image),
       hover_image(hover_image),
       pressed_image(pressed_image),
-      tooltip_text(tooltip_text) {
-}
+      tooltip_text(tooltip_text) {}
 
-SearchResult::ActionIconSet::~ActionIconSet() {
-}
+SearchResult::Action::Action(const base::string16& label_text,
+                             const base::string16& tooltip_text)
+    : tooltip_text(tooltip_text),
+      label_text(label_text) {}
 
-SearchResult::SearchResult() {
-}
+SearchResult::Action::~Action() {}
 
-SearchResult::~SearchResult() {
-}
+SearchResult::SearchResult() : is_installing_(false), percent_downloaded_(0) {}
+
+SearchResult::~SearchResult() {}
 
 void SearchResult::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
@@ -34,11 +35,31 @@ void SearchResult::SetIcon(const gfx::ImageSkia& icon) {
                     OnIconChanged());
 }
 
-void SearchResult::SetActionIcons(const std::vector<ActionIconSet>& sets) {
-  action_icons_ = sets;
+void SearchResult::SetActions(const Actions& sets) {
+  actions_ = sets;
   FOR_EACH_OBSERVER(SearchResultObserver,
                     observers_,
-                    OnActionIconsChanged());
+                    OnActionsChanged());
+}
+
+void SearchResult::SetIsInstalling(bool is_installing) {
+  if (is_installing_ == is_installing)
+    return;
+
+  is_installing_ = is_installing;
+  FOR_EACH_OBSERVER(SearchResultObserver,
+                    observers_,
+                    OnIsInstallingChanged());
+}
+
+void SearchResult::SetPercentDownloaded(int percent_downloaded) {
+  if (percent_downloaded_ == percent_downloaded)
+    return;
+
+  percent_downloaded_ = percent_downloaded;
+  FOR_EACH_OBSERVER(SearchResultObserver,
+                    observers_,
+                    OnPercentDownloadedChanged());
 }
 
 void SearchResult::AddObserver(SearchResultObserver* observer) {
