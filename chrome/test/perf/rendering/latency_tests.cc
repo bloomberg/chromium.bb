@@ -34,6 +34,10 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 // Run with --vmodule=latency_tests=1 to print verbose latency info.
 
 // How is latency measured?
@@ -273,6 +277,11 @@ void LatencyTest::RunTest(const std::vector<int>& behaviors) {
 #if defined(OS_WIN)
   // Latency test doesn't work on WinXP. crbug.com/128066
   if (base::win::OSInfo::GetInstance()->version() == base::win::VERSION_XP)
+    return;
+#endif
+#if defined(OS_MACOSX)
+  // Latency tests are flaky on 10.8 OSX gpu bots.  http://crbug.com/254542
+  if (base::mac::IsOSMountainLion())
     return;
 #endif
 
