@@ -54,6 +54,7 @@ WebEntities::WebEntities(bool xmlEntities)
 
 String WebEntities::entityNameByCode(int code) const
 {
+    // FIXME: We should use find so we only do one hash lookup.
     if (m_entitiesMap.contains(code))
         return m_entitiesMap.get(code);
     return "";
@@ -61,27 +62,23 @@ String WebEntities::entityNameByCode(int code) const
 
 String WebEntities::convertEntitiesInString(const String& value) const
 {
-    unsigned len = value.length();
-    const UChar* startPos = value.bloatedCharacters();
-    const UChar* curPos = startPos;
-
-    // FIXME: Optimize - create StringBuilder only if value has any entities.
     StringBuilder result;
-    while (len--) {
-        if (m_entitiesMap.contains(*curPos)) {
-            // Append content before entity code.
-            if (curPos > startPos)
-                result.append(String(startPos, curPos - startPos));
+    bool didConvertEntity = false;
+    unsigned length = value.length();
+    for (unsigned i = 0; i < length; ++i) {
+        UChar c = value[i];
+        // FIXME: We should use find so we only do one hash lookup.
+        if (m_entitiesMap.contains(c)) {
+            didConvertEntity = true;
             result.append('&');
-            result.append(m_entitiesMap.get(*curPos));
+            result.append(m_entitiesMap.get(c));
             result.append(';');
-            startPos = ++curPos;
-        } else
-            curPos++;
+        }
+        result.append(c);
     }
-    // Append the remaining content.
-    if (curPos > startPos)
-        result.append(String(startPos, curPos - startPos));
+
+    if (!didConvertEntity)
+        return value;
 
     return result.toString();
 }
