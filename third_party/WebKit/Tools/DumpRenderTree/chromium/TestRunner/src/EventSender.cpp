@@ -57,7 +57,7 @@
 #include <deque>
 
 #ifdef WIN32
-#include "win/WebInputEventFactory.h"
+#include "public/web/win/WebInputEventFactory.h"
 #endif
 
 // FIXME: layout before each event?

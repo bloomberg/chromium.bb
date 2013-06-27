@@ -82,9 +82,6 @@
             ],
             'include_dirs': [
                 '<(DEPTH)',
-                '../../../public/web',
-                '../chromium/TestRunner/public',
-                '../chromium/TestRunner/src',
                 '../../../Source',
                 '../../..',
             ],
@@ -93,8 +90,6 @@
             ],
             'direct_dependent_settings': {
                 'include_dirs': [
-                    '../chromium/TestRunner/public',
-                    '../../../Source',
                     '../../..',
                 ],
             },

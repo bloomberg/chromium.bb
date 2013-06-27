@@ -65,7 +65,7 @@
 #include <memory>
 
 #if defined(__linux__) || defined(ANDROID)
-#include "linux/WebFontRendering.h"
+#include "public/web/linux/WebFontRendering.h"
 #endif
 
 using namespace WebKit;

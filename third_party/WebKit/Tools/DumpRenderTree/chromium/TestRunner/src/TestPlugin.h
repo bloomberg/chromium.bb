@@ -26,11 +26,11 @@
 #ifndef TestPlugin_h
 #define TestPlugin_h
 
-#include "WebPlugin.h"
-#include "WebPluginContainer.h"
-#include <memory>
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebExternalTextureLayerClient.h"
+#include "public/web/WebPlugin.h"
+#include "public/web/WebPluginContainer.h"
+#include <memory>
 #include <string>
 
 namespace WebTestRunner {
