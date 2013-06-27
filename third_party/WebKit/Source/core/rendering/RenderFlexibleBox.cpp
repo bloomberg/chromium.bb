@@ -39,16 +39,6 @@
 
 namespace WebCore {
 
-// Normally, -1 and 0 are not valid in a HashSet, but these are relatively likely order: values. Instead,
-// we make the two smallest int values invalid order: values (in the css parser code we clamp them to
-// int min + 2).
-struct RenderFlexibleBox::OrderHashTraits : WTF::GenericHashTraits<int> {
-    static const bool emptyValueIsZero = false;
-    static int emptyValue() { return std::numeric_limits<int>::min(); }
-    static void constructDeletedValue(int& slot) { slot = std::numeric_limits<int>::min() + 1; }
-    static bool isDeletedValue(int value) { return value == std::numeric_limits<int>::min() + 1; }
-};
-
 RenderFlexibleBox::OrderIterator::OrderIterator(const RenderFlexibleBox* flexibleBox)
     : m_flexibleBox(flexibleBox)
     , m_currentChild(0)
@@ -56,11 +46,33 @@ RenderFlexibleBox::OrderIterator::OrderIterator(const RenderFlexibleBox* flexibl
 {
 }
 
-void RenderFlexibleBox::OrderIterator::setOrderValues(const OrderHashSet& orderValues)
+void RenderFlexibleBox::OrderIterator::setOrderValues(Vector<int>& orderValues)
 {
     reset();
-    copyToVector(orderValues, m_orderValues);
-    std::sort(m_orderValues.begin(), m_orderValues.end());
+    m_orderValues.clear();
+
+    if (orderValues.isEmpty())
+        return;
+
+    std::sort(orderValues.begin(), orderValues.end());
+
+
+    // This is inefficient if there are many repeated values, but
+    // saves a lot of allocations when the values are unique. By far,
+    // the common case is that there's exactly one item in the list
+    // (the default order value of 0).
+    m_orderValues.reserveInitialCapacity(orderValues.size());
+
+    int previous = orderValues[0];
+    m_orderValues.append(previous);
+    for (size_t i = 1; i < orderValues.size(); ++i) {
+        int current = orderValues[i];
+        if (current == previous)
+            continue;
+        m_orderValues.append(current);
+        previous = current;
+    }
+    m_orderValues.shrinkToFit();
 }
 
 RenderBox* RenderFlexibleBox::OrderIterator::first()
@@ -351,7 +363,7 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)
     RenderBlock::startDelayUpdateScrollInfo();
 
     Vector<LineContext> lineContexts;
-    OrderHashSet orderValues;
+    Vector<int> orderValues;
     computeMainAxisPreferredSizes(orderValues);
     m_orderIterator.setOrderValues(orderValues);
 
@@ -927,11 +939,17 @@ LayoutUnit RenderFlexibleBox::computeChildMarginValue(Length margin, RenderView*
     return minimumValueForLength(margin, availableSize, view);
 }
 
-void RenderFlexibleBox::computeMainAxisPreferredSizes(OrderHashSet& orderValues)
+void RenderFlexibleBox::computeMainAxisPreferredSizes(Vector<int>& orderValues)
 {
     RenderView* renderView = view();
+    bool anyChildHasDefaultOrderValue = false;
+
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
-        orderValues.add(child->style()->order());
+        // Avoid growing the vector for the common-case default value of 0.
+        if (int order = child->style()->order())
+            orderValues.append(child->style()->order());
+        else
+            anyChildHasDefaultOrderValue = true;
 
         if (child->isOutOfFlowPositioned())
             continue;
@@ -945,6 +963,13 @@ void RenderFlexibleBox::computeMainAxisPreferredSizes(OrderHashSet& orderValues)
             child->setMarginTop(computeChildMarginValue(child->style()->marginTop(), renderView));
             child->setMarginBottom(computeChildMarginValue(child->style()->marginBottom(), renderView));
         }
+    }
+
+    if (anyChildHasDefaultOrderValue) {
+        // Avoid growing the vector to the default capacity of 16 if we're only going to put one item in it.
+        if (orderValues.isEmpty())
+            orderValues.reserveInitialCapacity(1);
+        orderValues.append(0);
     }
 }
 

@@ -74,14 +74,11 @@ private:
         NoFlipForRowReverse,
     };
 
-    struct OrderHashTraits;
-    typedef HashSet<int, DefaultHash<int>::Hash, OrderHashTraits> OrderHashSet;
-
     class OrderIterator {
         WTF_MAKE_NONCOPYABLE(OrderIterator);
     public:
         OrderIterator(const RenderFlexibleBox*);
-        void setOrderValues(const OrderHashSet&);
+        void setOrderValues(Vector<int>&);
         RenderBox* currentChild() const { return m_currentChild; }
         RenderBox* first();
         RenderBox* next();
@@ -154,7 +151,7 @@ private:
     LayoutUnit marginBoxAscentForChild(RenderBox*);
 
     LayoutUnit computeChildMarginValue(Length margin, RenderView*);
-    void computeMainAxisPreferredSizes(OrderHashSet&);
+    void computeMainAxisPreferredSizes(Vector<int>&);
     LayoutUnit adjustChildSizeForMinAndMax(RenderBox*, LayoutUnit childSize);
     bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& preferredMainAxisExtent, double& totalFlexGrow, double& totalWeightedFlexShrink, LayoutUnit& minMaxAppliedMainAxisExtent, bool& hasInfiniteLineLength);
 
