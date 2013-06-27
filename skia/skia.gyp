@@ -279,16 +279,6 @@
             'SK_SUPPORT_GPU=0',
           ],
         }],
-        ['release_valgrind_build == 1', {
-          'defines': [
-            'SK_DEBUG_PATH_REF=1',
-          ],
-          'direct_dependent_settings': {
-            'defines': [
-              'SK_DEBUG_PATH_REF=1',
-            ],
-          },
-        }],
         #Settings for text blitting, chosen to approximate the system browser.
         [ 'OS == "linux"', {
           'defines': [
