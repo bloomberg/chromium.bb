@@ -1,0 +1,42 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * Test fixture for ../background.js.
+ * @constructor
+ * @extends {testing.Test}
+ */
+function GoogleNowBackgroundUnitTest () {
+  testing.Test.call(this);
+}
+
+GoogleNowBackgroundUnitTest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @override */
+  extraLibraries: [
+    'background_test_util.js',
+    'background.js'
+  ]
+};
+
+TEST_F('GoogleNowBackgroundUnitTest', 'AreTasksConflicting', function() {
+  function testTaskPair(newTaskName, scheduledTaskName, expected) {
+    assertTrue(areTasksConflicting(newTaskName, scheduledTaskName) == expected,
+               '(' + newTaskName + ', ' + scheduledTaskName + ')');
+  }
+
+  testTaskPair(UPDATE_CARDS_TASK_NAME, UPDATE_CARDS_TASK_NAME, true);
+  testTaskPair(UPDATE_CARDS_TASK_NAME, DISMISS_CARD_TASK_NAME, false);
+  testTaskPair(UPDATE_CARDS_TASK_NAME, RETRY_DISMISS_TASK_NAME, false);
+
+  testTaskPair(DISMISS_CARD_TASK_NAME, UPDATE_CARDS_TASK_NAME, false);
+  testTaskPair(DISMISS_CARD_TASK_NAME, DISMISS_CARD_TASK_NAME, false);
+  testTaskPair(DISMISS_CARD_TASK_NAME, RETRY_DISMISS_TASK_NAME, false);
+
+  testTaskPair(RETRY_DISMISS_TASK_NAME, UPDATE_CARDS_TASK_NAME, true);
+  testTaskPair(RETRY_DISMISS_TASK_NAME, DISMISS_CARD_TASK_NAME, true);
+  testTaskPair(RETRY_DISMISS_TASK_NAME, RETRY_DISMISS_TASK_NAME, true);
+});
+

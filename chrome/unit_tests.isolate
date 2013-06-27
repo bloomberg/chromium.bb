@@ -78,6 +78,7 @@
           '<(PRODUCT_DIR)/unit_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/test_data/chrome/browser/resources/google_now/',
           '<(PRODUCT_DIR)/test_data/chrome/browser/resources/print_preview/',
           '<(PRODUCT_DIR)/test_data/chrome/test/data/unit/',
           '<(PRODUCT_DIR)/test_data/ui/',
