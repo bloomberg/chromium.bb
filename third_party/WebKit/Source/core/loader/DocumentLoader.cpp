@@ -620,10 +620,8 @@ void DocumentLoader::ensureWriter()
 
 void DocumentLoader::ensureWriter(const String& mimeType)
 {
-    if (m_writer) {
-        ASSERT(m_writer->mimeType() == mimeType);
+    if (m_writer)
         return;
-    }
 
     String encoding = overrideEncoding().isNull() ? response().textEncodingName().impl() : overrideEncoding();
     bool userChosen = !overrideEncoding().isNull();
