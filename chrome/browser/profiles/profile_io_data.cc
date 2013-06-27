@@ -569,6 +569,14 @@ void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
   // future to more accurately capture this state.
   chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
                                             &enable_metrics_);
+#elif defined(OS_ANDROID)
+  // TODO(dwkang): rename or unify the pref for UMA once we have conclusion
+  // in crbugs.com/246495.
+  // Android has it's own preferences for metrics / crash uploading.
+  enable_metrics_.Init(prefs::kCrashReportingEnabled,
+                       g_browser_process->local_state());
+  enable_metrics_.MoveToThread(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #else
   // Prep the PrefMember and send it to the IO thread, since this value will be
   // read from there.
