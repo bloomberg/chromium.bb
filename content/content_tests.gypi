@@ -652,7 +652,7 @@
              'renderer/active_notification_tracker_unittest.cc',
            ],
         }],
-        ['use_x11 == 1', {
+        ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../dbus/dbus.gyp:dbus_test_support',
