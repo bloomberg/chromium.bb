@@ -1994,21 +1994,6 @@ void RenderBoxModelObject::drawBoxSideFromPath(GraphicsContext* graphicsContext,
     graphicsContext->drawRect(pixelSnappedIntRect(borderRect));
 }
 
-static void findInnerVertex(const FloatPoint& outerCorner, const FloatPoint& innerCorner, const FloatPoint& centerPoint, FloatPoint& result)
-{
-    // If the line between outer and inner corner is towards the horizontal, intersect with a vertical line through the center,
-    // otherwise with a horizontal line through the center. The points that form this line are arbitrary (we use 0, 100).
-    // Note that if findIntersection fails, it will leave result untouched.
-    float diffInnerOuterX = fabs(innerCorner.x() - outerCorner.x());
-    float diffInnerOuterY = fabs(innerCorner.y() - outerCorner.y());
-    float diffCenterOuterX = fabs(centerPoint.x() - outerCorner.x());
-    float diffCenterOuterY = fabs(centerPoint.y() - outerCorner.y());
-    if (diffInnerOuterY * diffCenterOuterX < diffCenterOuterY * diffInnerOuterX)
-        findIntersection(outerCorner, innerCorner, FloatPoint(centerPoint.x(), 0), FloatPoint(centerPoint.x(), 100), result);
-    else
-        findIntersection(outerCorner, innerCorner, FloatPoint(0, centerPoint.y()), FloatPoint(100, centerPoint.y()), result);
-}
-
 void RenderBoxModelObject::clipBorderSidePolygon(GraphicsContext* graphicsContext, const RoundedRect& outerBorder, const RoundedRect& innerBorder,
                                                  BoxSide side, bool firstEdgeMatches, bool secondEdgeMatches)
 {
@@ -2040,11 +2025,27 @@ void RenderBoxModelObject::clipBorderSidePolygon(GraphicsContext* graphicsContex
         quad[2] = innerRect.maxXMinYCorner();
         quad[3] = outerRect.maxXMinYCorner();
 
-        if (!innerBorder.radii().topLeft().isZero())
-            findInnerVertex(outerRect.minXMinYCorner(), innerRect.minXMinYCorner(), centerPoint, quad[1]);
+        if (!innerBorder.radii().topLeft().isZero()) {
+            findIntersection(quad[0], quad[1],
+                FloatPoint(
+                    quad[1].x() + innerBorder.radii().topLeft().width(),
+                    quad[1].y()),
+                FloatPoint(
+                    quad[1].x(),
+                    quad[1].y() + innerBorder.radii().topLeft().height()),
+                quad[1]);
+        }
 
-        if (!innerBorder.radii().topRight().isZero())
-            findInnerVertex(outerRect.maxXMinYCorner(), innerRect.maxXMinYCorner(), centerPoint, quad[2]);
+        if (!innerBorder.radii().topRight().isZero()) {
+            findIntersection(quad[3], quad[2],
+                FloatPoint(
+                    quad[2].x() - innerBorder.radii().topRight().width(),
+                    quad[2].y()),
+                FloatPoint(
+                    quad[2].x(),
+                    quad[2].y() + innerBorder.radii().topRight().height()),
+                quad[2]);
+        }
         break;
 
     case BSLeft:
@@ -2053,11 +2054,27 @@ void RenderBoxModelObject::clipBorderSidePolygon(GraphicsContext* graphicsContex
         quad[2] = innerRect.minXMaxYCorner();
         quad[3] = outerRect.minXMaxYCorner();
 
-        if (!innerBorder.radii().topLeft().isZero())
-            findInnerVertex(outerRect.minXMinYCorner(), innerRect.minXMinYCorner(), centerPoint, quad[1]);
+        if (!innerBorder.radii().topLeft().isZero()) {
+            findIntersection(quad[0], quad[1],
+                FloatPoint(
+                    quad[1].x() + innerBorder.radii().topLeft().width(),
+                    quad[1].y()),
+                FloatPoint(
+                    quad[1].x(),
+                    quad[1].y() + innerBorder.radii().topLeft().height()),
+                quad[1]);
+        }
 
-        if (!innerBorder.radii().bottomLeft().isZero())
-            findInnerVertex(outerRect.minXMaxYCorner(), innerRect.minXMaxYCorner(), centerPoint, quad[2]);
+        if (!innerBorder.radii().bottomLeft().isZero()) {
+            findIntersection(quad[3], quad[2],
+                FloatPoint(
+                    quad[2].x() + innerBorder.radii().bottomLeft().width(),
+                    quad[2].y()),
+                FloatPoint(
+                    quad[2].x(),
+                    quad[2].y() - innerBorder.radii().bottomLeft().height()),
+                quad[2]);
+        }
         break;
 
     case BSBottom:
@@ -2066,11 +2083,27 @@ void RenderBoxModelObject::clipBorderSidePolygon(GraphicsContext* graphicsContex
         quad[2] = innerRect.maxXMaxYCorner();
         quad[3] = outerRect.maxXMaxYCorner();
 
-        if (!innerBorder.radii().bottomLeft().isZero())
-            findInnerVertex(outerRect.minXMaxYCorner(), innerRect.minXMaxYCorner(), centerPoint, quad[1]);
+        if (!innerBorder.radii().bottomLeft().isZero()) {
+            findIntersection(quad[0], quad[1],
+                FloatPoint(
+                    quad[1].x() + innerBorder.radii().bottomLeft().width(),
+                    quad[1].y()),
+                FloatPoint(
+                    quad[1].x(),
+                    quad[1].y() - innerBorder.radii().bottomLeft().height()),
+                quad[1]);
+        }
 
-        if (!innerBorder.radii().bottomRight().isZero())
-            findInnerVertex(outerRect.maxXMaxYCorner(), innerRect.maxXMaxYCorner(), centerPoint, quad[2]);
+        if (!innerBorder.radii().bottomRight().isZero()) {
+            findIntersection(quad[3], quad[2],
+                FloatPoint(
+                    quad[2].x() - innerBorder.radii().bottomRight().width(),
+                    quad[2].y()),
+                FloatPoint(
+                    quad[2].x(),
+                    quad[2].y() - innerBorder.radii().bottomRight().height()),
+                quad[2]);
+        }
         break;
 
     case BSRight:
@@ -2079,11 +2112,27 @@ void RenderBoxModelObject::clipBorderSidePolygon(GraphicsContext* graphicsContex
         quad[2] = innerRect.maxXMaxYCorner();
         quad[3] = outerRect.maxXMaxYCorner();
 
-        if (!innerBorder.radii().topRight().isZero())
-            findInnerVertex(outerRect.maxXMinYCorner(), innerRect.maxXMinYCorner(), centerPoint, quad[1]);
+        if (!innerBorder.radii().topRight().isZero()) {
+            findIntersection(quad[0], quad[1],
+                FloatPoint(
+                    quad[1].x() - innerBorder.radii().topRight().width(),
+                    quad[1].y()),
+                FloatPoint(
+                    quad[1].x(),
+                    quad[1].y() + innerBorder.radii().topRight().height()),
+                quad[1]);
+        }
 
-        if (!innerBorder.radii().bottomRight().isZero())
-            findInnerVertex(outerRect.maxXMaxYCorner(), innerRect.maxXMaxYCorner(), centerPoint, quad[2]);
+        if (!innerBorder.radii().bottomRight().isZero()) {
+            findIntersection(quad[3], quad[2],
+                FloatPoint(
+                    quad[2].x() - innerBorder.radii().bottomRight().width(),
+                    quad[2].y()),
+                FloatPoint(
+                    quad[2].x(),
+                    quad[2].y() - innerBorder.radii().bottomRight().height()),
+                quad[2]);
+        }
         break;
     }
 
@@ -2094,22 +2143,41 @@ void RenderBoxModelObject::clipBorderSidePolygon(GraphicsContext* graphicsContex
         return;
     }
 
-    // Square off the end which shouldn't be affected by antialiasing, and clip.
+    // If antialiasing settings for the first edge and second edge is different,
+    // they have to be addressed separately. We do this by breaking the quad into
+    // two parallelograms, made by moving quad[1] and quad[2].
+    float ax = quad[1].x() - quad[0].x();
+    float ay = quad[1].y() - quad[0].y();
+    float bx = quad[2].x() - quad[1].x();
+    float by = quad[2].y() - quad[1].y();
+    float cx = quad[3].x() - quad[2].x();
+    float cy = quad[3].y() - quad[2].y();
+
+    const static float kEpsilon = 1e-2f;
+    float r1, r2;
+    if (fabsf(bx) < kEpsilon && fabsf(by) < kEpsilon) {
+        // The quad was actually a triangle.
+        r1 = r2 = 1.0f;
+    } else {
+        // Extend parallelogram a bit to hide calculation error
+        const static float kExtendFill = 1e-2f;
+
+        r1 = (-ax * by + ay * bx) / (cx * by - cy * bx) + kExtendFill;
+        r2 = (-cx * by + cy * bx) / (ax * by - ay * bx) + kExtendFill;
+    }
+
     FloatPoint firstQuad[4];
     firstQuad[0] = quad[0];
     firstQuad[1] = quad[1];
-    firstQuad[2] = side == BSTop || side == BSBottom ? FloatPoint(quad[3].x(), quad[2].y())
-        : FloatPoint(quad[2].x(), quad[3].y());
+    firstQuad[2] = FloatPoint(quad[3].x() + r2 * ax, quad[3].y() + r2 * ay);
     firstQuad[3] = quad[3];
     graphicsContext->clipConvexPolygon(4, firstQuad, !firstEdgeMatches);
 
     FloatPoint secondQuad[4];
     secondQuad[0] = quad[0];
-    secondQuad[1] = side == BSTop || side == BSBottom ? FloatPoint(quad[0].x(), quad[1].y())
-        : FloatPoint(quad[1].x(), quad[0].y());
+    secondQuad[1] = FloatPoint(quad[0].x() - r1 * cx, quad[0].y() - r1 * cy);
     secondQuad[2] = quad[2];
     secondQuad[3] = quad[3];
-    // Antialiasing affects the second side.
     graphicsContext->clipConvexPolygon(4, secondQuad, !secondEdgeMatches);
 }
 
