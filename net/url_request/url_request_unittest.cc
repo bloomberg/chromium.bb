@@ -5075,6 +5075,11 @@ TEST_F(HTTPSRequestTest, HSTSPreservesPosts) {
   EXPECT_EQ("https", req.url().scheme());
   EXPECT_EQ("POST", req.method());
   EXPECT_EQ(kData, d.data_received());
+
+  LoadTimingInfo load_timing_info;
+  network_delegate.GetLoadTimingInfoBeforeRedirect(&load_timing_info);
+  // LoadTimingInfo of HSTS redirects is similar to that of network cache hits
+  TestLoadTimingCacheHitNoNetwork(load_timing_info);
 }
 
 TEST_F(HTTPSRequestTest, SSLv3Fallback) {
