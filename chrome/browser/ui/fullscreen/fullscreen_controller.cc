@@ -79,8 +79,13 @@ bool FullscreenController::IsFullscreenCausedByTab() const {
 
 void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
                                                       bool enter_fullscreen) {
-  if (web_contents != browser_->tab_strip_model()->GetActiveWebContents())
+  if (fullscreened_tab_) {
+    if (web_contents != fullscreened_tab_)
+      return;
+  } else if (
+      web_contents != browser_->tab_strip_model()->GetActiveWebContents()) {
     return;
+  }
   if (IsFullscreenForTabOrPending() == enter_fullscreen)
     return;
 

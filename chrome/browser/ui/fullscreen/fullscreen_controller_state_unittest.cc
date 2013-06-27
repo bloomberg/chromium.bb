@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller_state_test.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -596,4 +597,51 @@ TEST_F(FullscreenControllerStateUnitTest, ExitFullscreenViaBrowserWindow) {
   ChangeWindowFullscreenState();
   EXPECT_EQ(FEB_TYPE_NONE,
             browser()->fullscreen_controller()->GetFullscreenExitBubbleType());
+}
+
+// Test that switching tabs takes the browser out of tab fullscreen.
+TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaSwitchingTab) {
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+
+  browser()->tab_strip_model()->SelectNextTab();
+  ChangeWindowFullscreenState();
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+}
+
+// Test that switching tabs via detaching the active tab (which is in tab
+// fullscreen) takes the browser out of tab fullscreen. This case can
+// occur if the user is in both tab fullscreen and immersive browser fullscreen.
+TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaDetachingTab) {
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+
+  scoped_ptr<content::WebContents> web_contents(
+      browser()->tab_strip_model()->DetachWebContentsAt(0));
+  ChangeWindowFullscreenState();
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+}
+
+// Test that replacing the web contents for a tab which is in tab fullscreen
+// takes the browser out of tab fullscreen. This can occur if the user
+// navigates to a prerendered page from a page which is tab fullscreen.
+TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaReplacingTab) {
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+  ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
+  ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+
+  content::WebContents* new_web_contents = content::WebContents::Create(
+      content::WebContents::CreateParams(profile()));
+  scoped_ptr<content::WebContents> old_web_contents(
+      browser()->tab_strip_model()->ReplaceWebContentsAt(
+          0, new_web_contents));
+  ChangeWindowFullscreenState();
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
 }
