@@ -23,22 +23,29 @@ are <b>name</b> and <b>version</b>.
   "<a href="#name">name</a>": "<em>My Extension</em>",
   "<a href="#version">version</a>": "<em>versionString</em>",
   "<a href="#manifest_version">manifest_version</a>": 2,
+{{?is_apps}}
+  "<a href="#app">app</a>": {...},
+{{/is_apps}}
 
   <em>// Recommended</em>
   "<a href="#description">description</a>": "<em>A plain text description</em>",
   "<a href="#icons">icons</a>": { ... },
   "<a href="#default_locale">default_locale</a>": "<em>en</em>",
+{{^is_apps}}
 
   <em>// Pick one (or none)</em>
   "<a href="browserAction.html">browser_action</a>": {...},
   "<a href="pageAction.html">page_action</a>": {...},
   "<a href="themes.html">theme</a>": {...},
   "<a href="#app">app</a>": {...},
+{{/is_apps}}
 
   <em>// Add any of these that you need</em>
   "<a href="event_pages.html">background</a>": {"persistent": false, ...},
   "<a href="background_pages.html">background</a>": {"persistent": true, ...},
+{{^is_apps}}
   "<a href="override.html">chrome_url_overrides</a>": {...},
+{{/is_apps}}
   "<a href="content_scripts.html">content_scripts</a>": [...],
 {{?is_apps}}
   "<a href="app_csp.html">content_security_policy</a>": "<em>policyString</em>",
@@ -56,7 +63,9 @@ are <b>name</b> and <b>version</b>.
   "<a href="#kiosk_enabled">kiosk_enabled</a>": true,
   "<a href="#offline_enabled">offline_enabled</a>": true,
   "<a href="omnibox.html">omnibox</a>": { "keyword": "<em>aString</em>" },
+{{^is_apps}}
   "<a href="options.html">options_page</a>": "<em>aFile</em>.html",
+{{/is_apps}}
   "<a href="declare_permissions.html">permissions</a>": [...],
   "<a href="npapi.html">plugins</a>": [...],
   "<a href="#requirements">requirements</a>": {...},
@@ -266,7 +275,7 @@ it is loaded during development.
 <b>Note:</b> You don't usually need to
 use this value. Instead, write your
 code so that the key value doesn't matter
-by using <a href="overview.html#relative-urls">relative paths</a>
+by using <a href="../extensions/overview.html#relative-urls">relative paths</a>
 and $ref:runtime.getURL.
 </p>
 

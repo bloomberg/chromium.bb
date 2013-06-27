@@ -299,8 +299,12 @@ A good reference is the DHTML Style Guide Working Group’s
 <p>
 A good way to ensure discoverability of keyboard shortcuts
 is to list them somewhere.
-Your extension’s
-<a href="options.html">Options page</a>
+{{?is_apps}}
+  Your application's options page
+{{:is_apps}}
+  Your extension's
+  <a href="options.html">Options page</a>
+{{/is_apps}}
 might be a good place to do this.
 </p>
 

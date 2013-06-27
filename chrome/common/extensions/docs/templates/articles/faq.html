@@ -16,7 +16,9 @@ try the
   <h4 id="general">General</h4>
   <ul>
     <li><a href="#faq-gen-01">What are Google Chrome Extensions?</a></li>
+{{^is_apps}}
     <li><a href="#faq-dev-01">How can I set up Chrome for extension development?</a></li>
+{{/is_apps}}
     <li><a href="#faq-gen-02">What technologies are used to write extensions for Chrome?</a></li>
     <li><a href="#faq-gen-03">Are extensions fetched from the web every time the browser is loaded?</a></li>
     <li><a href="#faq-dev-14">How do I determine which version of Chrome is deployed to which channel?</a></li>
@@ -34,8 +36,8 @@ try the
     <li><a href="#faq-dev-11">Can two extensions communicate with each other?</a></li>
 {{^is_apps}}
     <li><a href="#faq-dev-13">Can extensions use Google Analytics?</a></li>
-{{/is_apps}}
     <li><a href="#faq-dev-15">Can extensions modify chrome:// URLs?</a></li>
+{{/is_apps}}
     <li><a href="#faq-open-popups">Can extensions open browser/page action popups without user interaction?</a></li>
     <li><a href="#faq-persist-popups">Can extensions keep popups open after the user clicks away from them?</a></li>
     <li><a href="#faq-lifecycle-events">Can extensions be notified when they are installed/uninstalled?</a></li>
@@ -44,7 +46,9 @@ try the
   <ul>
     <li><a href="#faq-building-ui">How do I build a UI for my extension?</a>
     <li><a href="#faq-dev-09">How much data can I store in localStorage?</a></li>
+{{^is_apps}}
     <li><a href="#faq-dev-10">How do I create an options menu for my application?</a></li>
+{{/is_apps}}
     <li><a href="#faq-dev-12">What debugging tools are available to extension developers?</a></li>
     <li><a href="#faq-dev-16">Why do wildcard matches not work for top level domains (TLDs)?</a></li>
     <li><a href="#faq-management">Why does the management API not fire events when my extension is installed/uninstalled?</a></li>
@@ -66,6 +70,7 @@ try the
   party websites or services, and customized browsing experiences.
 </p>
 
+{{^is_apps}}
 <h3 id="faq-dev-01">How can I set up Chrome for extension development?</h3>
 <p>
   As long as you are using a version of Chrome that supports
@@ -86,6 +91,7 @@ try the
   and more. For a complete tutorial, see
   <a href="http://code.google.com/chrome/extensions/getstarted.html">Getting Started</a>.
 </p>
+{{/is_apps}}
 
 <h3 id="faq-gen-02">What technologies are used to write extensions for Chrome?</h3>
 <p>
@@ -240,6 +246,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
 </p>
 {{/is_apps}}
 
+{{^is_apps}}
 <h3 id="faq-dev-15">Can extensions modify chrome:// URLs?</h3>
 <p>
   No. The extensions APIs have been designed to minimize backwards
@@ -260,6 +267,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   functionality they want without depending on the browser's internal implementation
   to stay the same.
 </p>
+{{/is_apps}}
 
 <h3 id="faq-open-popups">Can extensions open browser/page action popups without
   user interaction?</h3>
@@ -303,6 +311,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   Extensions can store up to 5MB of data in localStorage.
 </p>
 
+{{^is_apps}}
 <h3 id="faq-dev-10">How do I create an options menu for my application?</h3>
 <p>
   You can let users set options for your extension by creating an
@@ -312,6 +321,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   to localStorage, or even send options to a web server so that they can be
   persisted across browsers.
 </p>
+{{/is_apps}}
 
 <h3 id="faq-dev-12">What debugging tools are available to extension developers?</h3>
 <p>
