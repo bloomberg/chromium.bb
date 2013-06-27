@@ -563,7 +563,7 @@ Page* InspectorOverlay::overlayPage()
     ASSERT(loader->activeDocumentLoader());
     DocumentWriter* writer = loader->activeDocumentLoader()->beginWriting("text/html", "UTF-8");
     writer->addData(reinterpret_cast<const char*>(InspectorOverlayPage_html), sizeof(InspectorOverlayPage_html));
-    writer->end();
+    loader->activeDocumentLoader()->endWriting(writer);
     v8::HandleScope handleScope;
     v8::Handle<v8::Context> frameContext = frame->script()->currentWorldContext();
     v8::Context::Scope contextScope(frameContext);
