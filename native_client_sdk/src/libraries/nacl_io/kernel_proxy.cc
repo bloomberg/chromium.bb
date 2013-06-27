@@ -332,8 +332,10 @@ ssize_t KernelProxy::read(int fd, void* buf, size_t nbytes) {
   AutoLock lock(&handle->lock_);
   int cnt = 0;
   error = handle->node_->Read(handle->offs_, buf, nbytes, &cnt);
-  if (error)
+  if (error) {
     errno = error;
+    return -1;
+  }
 
   if (cnt > 0)
     handle->offs_ += cnt;
@@ -352,8 +354,10 @@ ssize_t KernelProxy::write(int fd, const void* buf, size_t nbytes) {
   AutoLock lock(&handle->lock_);
   int cnt = 0;
   error = handle->node_->Write(handle->offs_, buf, nbytes, &cnt);
-  if (error)
+  if (error) {
     errno = error;
+    return -1;
+  }
 
   if (cnt > 0)
     handle->offs_ += cnt;
