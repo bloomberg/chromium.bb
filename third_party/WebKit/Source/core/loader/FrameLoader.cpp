@@ -35,6 +35,11 @@
 #include "config.h"
 #include "core/loader/FrameLoader.h"
 
+#include <wtf/CurrentTime.h>
+#include <wtf/MemoryInstrumentationHashSet.h>
+#include <wtf/StdLibExtras.h>
+#include <wtf/text/CString.h>
+#include <wtf/text/WTFString.h>
 #include "HTMLNames.h"
 #include "SVGNames.h"
 #include "bindings/v8/DOMWrapperWorld.h"
@@ -109,11 +114,7 @@
 #include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
+
 
 namespace WebCore {
 
@@ -1028,7 +1029,8 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBac
     }
 }
 
-void FrameLoader::loadURL(const ResourceRequest& request, const String& frameName, FrameLoadType newLoadType, PassRefPtr<Event> event, PassRefPtr<FormState> formState)
+void FrameLoader::loadURL(const ResourceRequest& request, const String& frameName, FrameLoadType newLoadType,
+    PassRefPtr<Event> event, PassRefPtr<FormState> formState)
 {
     if (m_inStopAllLoaders)
         return;

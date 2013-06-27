@@ -531,7 +531,7 @@ public:
     DocumentLoader* loader() const;
 
     void open(Document* ownerDocument = 0);
-    PassRefPtr<DocumentParser> implicitOpen();
+    void implicitOpen();
 
     // close() is the DOM API document.close()
     void close();

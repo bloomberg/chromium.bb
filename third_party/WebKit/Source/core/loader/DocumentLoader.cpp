@@ -30,7 +30,13 @@
 #include "config.h"
 #include "core/loader/DocumentLoader.h"
 
-#include "core/dom/DOMImplementation.h"
+#include <wtf/Assertions.h>
+#include <wtf/MemoryInstrumentationHashMap.h>
+#include <wtf/MemoryInstrumentationHashSet.h>
+#include <wtf/MemoryInstrumentationVector.h>
+#include <wtf/text/CString.h>
+#include <wtf/text/WTFString.h>
+#include <wtf/unicode/Unicode.h>
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/dom/Event.h"
@@ -44,7 +50,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ResourceLoader.h"
-#include "core/loader/SinkDocument.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
@@ -61,13 +66,6 @@
 #include "core/platform/Logging.h"
 #include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityPolicy.h"
-#include "wtf/Assertions.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
-#include "wtf/MemoryInstrumentationVector.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
-#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 
@@ -98,12 +96,14 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     : m_deferMainResourceDataLoad(true)
     , m_frame(0)
     , m_cachedResourceLoader(CachedResourceLoader::create(this))
+    , m_writer(m_frame)
     , m_originalRequest(req)
     , m_substituteData(substituteData)
     , m_originalRequestCopy(req)
     , m_request(req)
     , m_committed(false)
     , m_isStopping(false)
+    , m_gotFirstByte(false)
     , m_isClientRedirect(false)
     , m_wasOnloadHandled(false)
     , m_loadingMainResource(false)
@@ -297,6 +297,7 @@ void DocumentLoader::commitIfReady()
     if (!m_committed) {
         m_committed = true;
         frameLoader()->commitProvisionalLoad();
+        m_writer.setMIMEType(m_response.mimeType());
     }
 }
 
@@ -342,17 +343,14 @@ void DocumentLoader::finishedLoading(double finishTime)
     if (!frameLoader())
         return;
 
-    if (isArchiveMIMEType(m_response.mimeType())) {
-        createArchive();
-    } else {
+    if (!maybeCreateArchive()) {
         // If this is an empty document, it will not have actually been created yet. Commit dummy data so that
         // DocumentWriter::begin() gets called and creates the Document.
-        if (!m_writer)
+        if (!m_gotFirstByte)
             commitData(0, 0);
     }
 
-    endWriting(m_writer.get());
-
+    m_writer.end();
     if (!m_mainDocumentError.isNull())
         return;
     clearMainResourceLoader();
@@ -613,35 +611,34 @@ void DocumentLoader::stopLoadingForPolicyChange()
     cancelMainResourceLoad(error);
 }
 
-void DocumentLoader::ensureWriter()
-{
-    ensureWriter(m_response.mimeType());
-}
-
-void DocumentLoader::ensureWriter(const String& mimeType)
-{
-    if (m_writer) {
-        ASSERT(m_writer->mimeType() == mimeType);
-        return;
-    }
-
-    String encoding = overrideEncoding().isNull() ? response().textEncodingName().impl() : overrideEncoding();
-    bool userChosen = !overrideEncoding().isNull();
-    m_writer = createWriterFor(m_frame, 0, documentURL(), mimeType, encoding, false, false);
-    m_writer->setDocumentWasLoadedAsPartOfNavigation();
-
-    if (frameLoader()->stateMachine()->creatingInitialEmptyDocument())
-        return;
-
-    // Call receivedFirstData() exactly once per load.
-    frameLoader()->receivedFirstData();
-}
-
 void DocumentLoader::commitData(const char* bytes, size_t length)
 {
-    ensureWriter();
+    if (!m_gotFirstByte) {
+        m_gotFirstByte = true;
+        m_writer.begin(documentURL(), false);
+        m_writer.setDocumentWasLoadedAsPartOfNavigation();
+
+        if (frameLoader()->stateMachine()->creatingInitialEmptyDocument())
+            return;
+        
+        // The origin is the MHTML file, we need to set the base URL to the document encoded in the MHTML so
+        // relative URLs are resolved properly.
+        if (m_archive)
+            m_frame->document()->setBaseURLOverride(m_archive->mainResource()->url());
+
+        // Call receivedFirstData() exactly once per load.
+        frameLoader()->receivedFirstData();
+
+        bool userChosen = true;
+        String encoding = overrideEncoding();
+        if (encoding.isNull()) {
+            userChosen = false;
+            encoding = response().textEncodingName();
+        }
+        m_writer.setEncoding(encoding, userChosen);
+    }
     ASSERT(m_frame->document()->parsing());
-    m_writer->addData(bytes, length);
+    m_writer.addData(bytes, length);
 }
 
 void DocumentLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
@@ -712,8 +709,8 @@ void DocumentLoader::setFrame(Frame* frame)
     if (m_frame == frame)
         return;
     ASSERT(frame && !m_frame);
-    ASSERT(!m_writer);
     m_frame = frame;
+    m_writer.setFrame(frame);
 }
 
 void DocumentLoader::detachFromFrame()
@@ -764,21 +761,22 @@ bool DocumentLoader::isLoadingInAPISense() const
     return frameLoader()->subframeIsLoading();
 }
 
-void DocumentLoader::createArchive()
+bool DocumentLoader::maybeCreateArchive()
 {
+    // Give the archive machinery a crack at this document. If the MIME type is not an archive type, it will return 0.
+    if (!isArchiveMIMEType(m_response.mimeType()))
+        return false;
+
     m_archive = MHTMLArchive::create(m_response.url(), mainResourceData().get());
     ASSERT(m_archive);
     
     addAllArchiveResources(m_archive.get());
     ArchiveResource* mainResource = m_archive->mainResource();
-
-    ensureWriter(mainResource->mimeType());
-
-    // The origin is the MHTML file, we need to set the base URL to the document encoded in the MHTML so
-    // relative URLs are resolved properly.
-    m_frame->document()->setBaseURLOverride(m_archive->mainResource()->url());
-
+    m_writer.setMIMEType(mainResource->mimeType());
+    
+    ASSERT(m_frame->document());
     commitData(mainResource->data()->data(), mainResource->data()->size());
+    return true;
 }
 
 void DocumentLoader::addAllArchiveResources(MHTMLArchive* archive)
@@ -901,9 +899,9 @@ void DocumentLoader::addResourceLoader(ResourceLoader* loader)
     // The main resource's underlying ResourceLoader will ask to be added here.
     // It is much simpler to handle special casing of main resource loads if we don't
     // let it be added. In the main resource load case, mainResourceLoader()
-    // will still be null at this point, but document() should be zero here if and only
+    // will still be null at this point, but m_gotFirstByte should be false here if and only
     // if we are just starting the main resource load.
-    if (!document())
+    if (!m_gotFirstByte)
         return;
     ASSERT(!m_resourceLoaders.contains(loader));
     ASSERT(!mainResourceLoader() || mainResourceLoader() != loader);
@@ -1019,71 +1017,20 @@ void DocumentLoader::handledOnloadEvents()
 
 DocumentWriter* DocumentLoader::beginWriting(const String& mimeType, const String& encoding, const KURL& url)
 {
-    m_writer = createWriterFor(m_frame, 0, url, mimeType, encoding, false, true);
-    return m_writer.get();
-}
-
-void DocumentLoader::endWriting(DocumentWriter* writer)
-{
-    ASSERT_UNUSED(writer, m_writer == writer);
-    m_writer->end();
-    m_writer.clear();
-}
-
-
-PassOwnPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const Document* ownerDocument, const KURL& url, const String& mimeType, const String& encoding, bool userChosen, bool dispatch)
-{
-    // Create a new document before clearing the frame, because it may need to
-    // inherit an aliased security context.
-    RefPtr<Document> document = DOMImplementation::createDocument(mimeType, frame, url, frame->inViewSourceMode());
-    if (document->isPluginDocument() && document->isSandboxed(SandboxPlugins))
-        document = SinkDocument::create(frame, url);
-    bool shouldReuseDefaultView = frame->loader()->stateMachine()->isDisplayingInitialEmptyDocument() && frame->document()->isSecureTransitionTo(url);
-
-    RefPtr<DOMWindow> originalDOMWindow;
-    if (shouldReuseDefaultView)
-        originalDOMWindow = frame->domWindow();
-    frame->loader()->clear(!shouldReuseDefaultView, !shouldReuseDefaultView);
-
-    if (!shouldReuseDefaultView) {
-        frame->setDOMWindow(DOMWindow::create(frame));
-    } else {
-        // Note that the old Document is still attached to the DOMWindow; the
-        // setDocument() call below will detach the old Document.
-        ASSERT(originalDOMWindow);
-        frame->setDOMWindow(originalDOMWindow);
-    }
-
-    frame->loader()->setOutgoingReferrer(url);
-    frame->domWindow()->setDocument(document);
-
-    if (ownerDocument) {
-        document->setCookieURL(ownerDocument->cookieURL());
-        document->setSecurityOrigin(ownerDocument->securityOrigin());
-    }
-
-    frame->loader()->didBeginDocument(dispatch);
-
-    return DocumentWriter::create(document.get(), mimeType, encoding, userChosen);
+    m_writer.setMIMEType(mimeType);
+    m_writer.setEncoding(encoding, false);
+    m_writer.begin(url);
+    return &m_writer;
 }
 
 String DocumentLoader::mimeType() const
 {
-    if (m_writer)
-        return m_writer->mimeType();
-    return m_response.mimeType();
+    return m_writer.mimeType();
 }
 
-// This is only called by ScriptController::executeScriptIfJavaScriptURL
-// and always contains the result of evaluating a javascript: url.
-// This is the <iframe src="javascript:'html'"> case.
 void DocumentLoader::replaceDocument(const String& source, Document* ownerDocument)
 {
-    m_frame->loader()->stopAllLoaders();
-    m_writer = createWriterFor(m_frame, ownerDocument, m_frame->document()->url(), mimeType(), m_writer ? m_writer->encoding() : "",  m_writer ? m_writer->encodingWasChosenByUser() : false, true);
-    if (!source.isNull())
-        m_writer->appendReplacingData(source);
-    endWriting(m_writer.get());
+    m_writer.replaceDocument(source, ownerDocument);
 }
 
 } // namespace WebCore
