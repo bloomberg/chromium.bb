@@ -99,6 +99,9 @@ webkit.org/b/101362 [ Debug ] fast/dom/Window/customized-property-survives-gc.ht
 
 crbug.com/249707 [ Debug ] fast/dom/StyleSheet/gc-rule-children-wrappers.html [ Timeout Pass ]
 
+# Needs rebaseline.
+crbug.com/82280 fast/forms/select/listbox-appearance-basic.html [ Failure ]
+
 # This test os slow since r144263
 webkit.org/b/111054 [ Debug ] fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer.html [ Slow ]
 
