@@ -438,6 +438,22 @@ bool GetNoDisplayFromDesktopFile(const std::string& shortcut_contents) {
   return nodisplay;
 }
 
+// Gets the path to the Chrome executable or wrapper script.
+// Returns an empty path if the executable path could not be found.
+base::FilePath GetChromeExePath() {
+  // Try to get the name of the wrapper script that launched Chrome.
+  scoped_ptr<base::Environment> environment(base::Environment::Create());
+  std::string wrapper_script;
+  if (environment->GetVar("CHROME_WRAPPER", &wrapper_script)) {
+    return base::FilePath(wrapper_script);
+  }
+
+  // Just return the name of the executable path for Chrome.
+  base::FilePath chrome_exe_path;
+  PathService::Get(base::FILE_EXE, &chrome_exe_path);
+  return chrome_exe_path;
+}
+
 } // namespace
 
 // static
@@ -786,9 +802,8 @@ bool CreateDesktopShortcut(
 
   bool success = true;
 
-  // Get the path to the Chrome executable.
-  base::FilePath chrome_exe_path;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe_path)) {
+  base::FilePath chrome_exe_path = GetChromeExePath();
+  if (chrome_exe_path.empty()) {
     LOG(WARNING) << "Could not get executable path.";
     return false;
   }
