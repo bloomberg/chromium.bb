@@ -13,10 +13,6 @@
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/window_observer.h"
 
-namespace apps {
-class ShellWindow;
-}
-
 namespace aura {
 
 class Window;
@@ -28,6 +24,7 @@ class ActivationClient;
 }
 
 class ChromeLauncherController;
+class ShellWindow;
 class ShellWindowLauncherItemController;
 
 // ShellWindowLauncherController observes the Shell Window registry and the
@@ -42,10 +39,9 @@ class ShellWindowLauncherController
   virtual ~ShellWindowLauncherController();
 
   // Overridden from ShellWindowRegistry::Observer:
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowIconChanged(
-      apps::ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE;
+  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE;
+  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE;
+  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;
 
   // Overriden from aura::WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;

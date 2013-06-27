@@ -92,10 +92,9 @@ class WebAuthFlow : public content::NotificationObserver,
   friend class ::WebAuthFlowTest;
 
   // ShellWindowRegistry::Observer implementation.
-  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowIconChanged(apps::ShellWindow* shell_window)
-      OVERRIDE;
-  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE;
+  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE;
+  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE {}
+  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -133,7 +132,7 @@ class WebAuthFlow : public content::NotificationObserver,
   GURL provider_url_;
   Mode mode_;
 
-  apps::ShellWindow* shell_window_;
+  ShellWindow* shell_window_;
   std::string shell_window_key_;
   bool embedded_window_created_;
 

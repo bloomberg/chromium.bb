@@ -6,14 +6,15 @@
 #define CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_BROWSERTEST_UTIL_H_
 
 
-#include "apps/shell_window.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 
 namespace content {
 class WebContents;
 }
 
 class CommandLine;
+class ShellWindow;
 
 namespace extensions {
 class Extension;
@@ -40,7 +41,7 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
   // Gets the first shell window that is found (most tests only deal with one
   // platform app window, so this is good enough).
-  apps::ShellWindow* GetFirstShellWindow();
+  ShellWindow* GetFirstShellWindow();
 
   // Runs chrome.windows.getAll for the given extension and returns the number
   // of windows that the function returns.
@@ -63,18 +64,17 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   void SetCommandLineArg(const std::string& test_file);
 
   // Creates an empty shell window for |extension|.
-  apps::ShellWindow* CreateShellWindow(const Extension* extension);
+  ShellWindow* CreateShellWindow(const Extension* extension);
 
-  apps::ShellWindow* CreateShellWindowFromParams(
-      const Extension* extension,
-      const apps::ShellWindow::CreateParams& params);
+  ShellWindow* CreateShellWindowFromParams(
+      const Extension* extension, const ShellWindow::CreateParams& params);
 
   // Closes |window| and waits until it's gone.
-  void CloseShellWindow(apps::ShellWindow* window);
+  void CloseShellWindow(ShellWindow* window);
 
   // Call AdjustBoundsToBeVisibleOnScreen of |window|.
   void CallAdjustBoundsToBeVisibleOnScreenForShellWindow(
-      apps::ShellWindow* window,
+      ShellWindow* window,
       const gfx::Rect& cached_bounds,
       const gfx::Rect& cached_screen_bounds,
       const gfx::Rect& current_screen_bounds,
@@ -87,6 +87,6 @@ class ExperimentalPlatformAppBrowserTest : public PlatformAppBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 };
 
-}  // namespace extensions
+} // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_BROWSERTEST_UTIL_H_

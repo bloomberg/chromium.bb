@@ -8,7 +8,6 @@
 #include <limits>
 #include <vector>
 
-#include "apps/shell_window.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -35,7 +34,6 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
-#include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -43,6 +41,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -98,7 +97,6 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #endif
 
-using apps::ShellWindow;
 using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
@@ -587,9 +585,8 @@ bool WindowsCreateFunction::RunImpl() {
       create_params.window_type = ShellWindow::WINDOW_TYPE_V1_PANEL;
       create_params.bounds = window_bounds;
       create_params.focused = saw_focus_key && focused;
-      ShellWindow* shell_window = new ShellWindow(
-          window_profile, new chrome::ChromeShellWindowDelegate(),
-          GetExtension());
+      ShellWindow* shell_window =
+          new ShellWindow(window_profile, GetExtension());
       AshPanelContents* ash_panel_contents = new AshPanelContents(shell_window);
       shell_window->Init(urls[0], ash_panel_contents, create_params);
       SetResult(ash_panel_contents->GetExtensionWindowController()->

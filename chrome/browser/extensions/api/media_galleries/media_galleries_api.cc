@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "apps/shell_window.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/api/experimental_media_galleries.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/extensions/extension.h"
@@ -39,7 +39,6 @@
 #include "base/strings/sys_string_conversions.h"
 #endif
 
-using apps::ShellWindow;
 using chrome::MediaFileSystemInfo;
 using chrome::MediaFileSystemRegistry;
 using chrome::MediaFileSystemsCallback;

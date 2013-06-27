@@ -16,10 +16,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
-
-namespace apps {
 class ShellWindow;
-}
 
 namespace content {
 class DevToolsAgentHost;
@@ -40,17 +37,17 @@ class ShellWindowRegistry : public BrowserContextKeyedService {
   class Observer {
    public:
     // Called just after a shell window was added.
-    virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) = 0;
+    virtual void OnShellWindowAdded(ShellWindow* shell_window) = 0;
     // Called when the window icon changes.
-    virtual void OnShellWindowIconChanged(apps::ShellWindow* shell_window) = 0;
+    virtual void OnShellWindowIconChanged(ShellWindow* shell_window) = 0;
     // Called just after a shell window was removed.
-    virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) = 0;
+    virtual void OnShellWindowRemoved(ShellWindow* shell_window) = 0;
 
    protected:
     virtual ~Observer() {}
   };
 
-  typedef std::list<apps::ShellWindow*> ShellWindowList;
+  typedef std::list<ShellWindow*> ShellWindowList;
   typedef ShellWindowList::const_iterator const_iterator;
   typedef std::set<std::string> InspectedWindowSet;
 
@@ -61,11 +58,11 @@ class ShellWindowRegistry : public BrowserContextKeyedService {
   // a convenience wrapper around ShellWindowRegistry::Factory::GetForProfile.
   static ShellWindowRegistry* Get(Profile* profile);
 
-  void AddShellWindow(apps::ShellWindow* shell_window);
-  void ShellWindowIconChanged(apps::ShellWindow* shell_window);
+  void AddShellWindow(ShellWindow* shell_window);
+  void ShellWindowIconChanged(ShellWindow* shell_window);
   // Called by |shell_window| when it is activated.
-  void ShellWindowActivated(apps::ShellWindow* shell_window);
-  void RemoveShellWindow(apps::ShellWindow* shell_window);
+  void ShellWindowActivated(ShellWindow* shell_window);
+  void RemoveShellWindow(ShellWindow* shell_window);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -75,22 +72,19 @@ class ShellWindowRegistry : public BrowserContextKeyedService {
   const ShellWindowList& shell_windows() const { return shell_windows_; }
 
   // Helper functions to find shell windows with particular attributes.
-  apps::ShellWindow* GetShellWindowForRenderViewHost(
+  ShellWindow* GetShellWindowForRenderViewHost(
       content::RenderViewHost* render_view_host) const;
-  apps::ShellWindow* GetShellWindowForNativeWindow(
-      gfx::NativeWindow window) const;
+  ShellWindow* GetShellWindowForNativeWindow(gfx::NativeWindow window) const;
   // Returns an app window for the given app, or NULL if no shell windows are
   // open. If there is a window for the given app that is active, that one will
   // be returned, otherwise an arbitrary window will be returned.
-  apps::ShellWindow* GetCurrentShellWindowForApp(
-      const std::string& app_id) const;
+  ShellWindow* GetCurrentShellWindowForApp(const std::string& app_id) const;
   // Returns an app window for the given app and window key, or NULL if no shell
   // window with the key are open. If there is a window for the given app and
   // key that is active, that one will be returned, otherwise an arbitrary
   // window will be returned.
-  apps::ShellWindow* GetShellWindowForAppAndKey(
-      const std::string& app_id,
-      const std::string& window_key) const;
+  ShellWindow* GetShellWindowForAppAndKey(const std::string& app_id,
+                                          const std::string& window_key) const;
 
   // Returns whether a ShellWindow's ID was last known to have a DevToolsAgent
   // attached to it, which should be restored during a reload of a corresponding
@@ -98,7 +92,7 @@ class ShellWindowRegistry : public BrowserContextKeyedService {
   bool HadDevToolsAttached(content::RenderViewHost* render_view_host) const;
 
   // Returns the shell window for |window|, looking in all profiles.
-  static apps::ShellWindow* GetShellWindowForNativeWindowAnyProfile(
+  static ShellWindow* GetShellWindowForNativeWindowAnyProfile(
       gfx::NativeWindow window);
 
   // Returns true if the number of shell windows registered across all profiles
@@ -132,11 +126,11 @@ class ShellWindowRegistry : public BrowserContextKeyedService {
  private:
   // Ensures the specified |shell_window| is included in |shell_windows_|.
   // Otherwise adds |shell_window| to the back of |shell_windows_|.
-  void AddShellWindowToList(apps::ShellWindow* shell_window);
+  void AddShellWindowToList(ShellWindow* shell_window);
 
   // Bring |shell_window| to the front of |shell_windows_|. If it is not in the
   // list, add it first.
-  void BringToFront(apps::ShellWindow* shell_window);
+  void BringToFront(ShellWindow* shell_window);
 
   Profile* profile_;
   ShellWindowList shell_windows_;

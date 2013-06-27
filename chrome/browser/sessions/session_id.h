@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 
+class Browser;
+
 namespace content {
 class WebContents;
 }
