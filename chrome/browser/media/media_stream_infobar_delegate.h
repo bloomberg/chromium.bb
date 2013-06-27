@@ -31,6 +31,7 @@ class MediaStreamInfoBarDelegate : public ConfirmInfoBarDelegate {
                      const content::MediaResponseCallback& callback);
 
  private:
+  friend class MediaStreamInfobarTest;
   friend class WebrtcBrowserTest;
   friend class WebrtcVideoQualityBrowserTest;
 
