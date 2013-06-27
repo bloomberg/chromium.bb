@@ -1089,7 +1089,6 @@ crbug.com/b/242955 [ Linux ] compositing/gestures/gesture-tapHighlight-simple-lo
 
 webkit.org/b/98275 media/event-queue-crash.html [ Skip ]
 
-webkit.org/b/98699 [ Lion ] fast/writing-mode/vertical-subst-font-vert-no-dflt.html [ Crash ]
 webkit.org/b/98811 [ Mac ] fast/transforms/transformed-focused-text-input.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/99604 [ Win ] http/tests/workers/text-encoding.html [ Pass Timeout ]
