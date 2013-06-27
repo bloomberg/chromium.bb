@@ -310,6 +310,8 @@
                 'utility/itunes_library_parser.h',
                 'utility/media_galleries/picasa_album_table_reader.cc',
                 'utility/media_galleries/picasa_album_table_reader.h',
+                'utility/media_galleries/picasa_albums_indexer.cc',
+                'utility/media_galleries/picasa_albums_indexer.h',
                 'utility/media_galleries/pmp_column_reader.cc',
                 'utility/media_galleries/pmp_column_reader.h',
               ],
