@@ -48,7 +48,7 @@ class FileDragImageSource : public gfx::CanvasImageSource {
     // Paint the icon.
     canvas->DrawImageInt(icon_, (size().width() - icon_.width()) / 2, 0);
 
-    string16 name = file_name_.BaseName().LossyDisplayName();
+    base::string16 name = file_name_.BaseName().LossyDisplayName();
     const int flags = gfx::Canvas::TEXT_ALIGN_CENTER;
 #if defined(OS_WIN)
     // Paint the file name. We inset it one pixel to allow room for the halo.

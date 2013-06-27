@@ -147,8 +147,8 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   IDataObjectAsyncCapability* async_operation() const { return data_.get(); }
 
   // OSExchangeData::Provider methods.
-  virtual void SetString(const string16& data);
-  virtual void SetURL(const GURL& url, const string16& title);
+  virtual void SetString(const base::string16& data);
+  virtual void SetURL(const GURL& url, const base::string16& title);
   virtual void SetFilename(const base::FilePath& path);
   virtual void SetFilenames(
       const std::vector<OSExchangeData::FileInfo>& filenames);
@@ -156,10 +156,10 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
                               const Pickle& data);
   virtual void SetFileContents(const base::FilePath& filename,
                                const std::string& file_contents);
-  virtual void SetHtml(const string16& html, const GURL& base_url);
+  virtual void SetHtml(const base::string16& html, const GURL& base_url);
 
-  virtual bool GetString(string16* data) const;
-  virtual bool GetURLAndTitle(GURL* url, string16* title) const;
+  virtual bool GetString(base::string16* data) const;
+  virtual bool GetURLAndTitle(GURL* url, base::string16* title) const;
   virtual bool GetFilename(base::FilePath* path) const;
   virtual bool GetFilenames(
       std::vector<OSExchangeData::FileInfo>* filenames) const;
@@ -167,7 +167,7 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
                               Pickle* data) const;
   virtual bool GetFileContents(base::FilePath* filename,
                                std::string* file_contents) const;
-  virtual bool GetHtml(string16* html, GURL* base_url) const;
+  virtual bool GetHtml(base::string16* html, GURL* base_url) const;
   virtual bool HasString() const;
   virtual bool HasURL() const;
   virtual bool HasFile() const;

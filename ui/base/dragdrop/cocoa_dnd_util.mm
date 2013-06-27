@@ -16,7 +16,7 @@ NSString* const kChromeDragDummyPboardType = @"org.chromium.drag-dummy-type";
 NSString* const kChromeDragImageHTMLPboardType = @"org.chromium.image-html";
 
 BOOL PopulateURLAndTitleFromPasteboard(GURL* url,
-                                       string16* title,
+                                       base::string16* title,
                                        NSPasteboard* pboard,
                                        BOOL convert_filenames) {
   CHECK(url);

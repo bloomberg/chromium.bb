@@ -36,11 +36,11 @@ OSExchangeData::OSExchangeData(Provider* provider) : provider_(provider) {
 OSExchangeData::~OSExchangeData() {
 }
 
-void OSExchangeData::SetString(const string16& data) {
+void OSExchangeData::SetString(const base::string16& data) {
   provider_->SetString(data);
 }
 
-void OSExchangeData::SetURL(const GURL& url, const string16& title) {
+void OSExchangeData::SetURL(const GURL& url, const base::string16& title) {
   provider_->SetURL(url, title);
 }
 
@@ -58,11 +58,11 @@ void OSExchangeData::SetPickledData(const CustomFormat& format,
   provider_->SetPickledData(format, data);
 }
 
-bool OSExchangeData::GetString(string16* data) const {
+bool OSExchangeData::GetString(base::string16* data) const {
   return provider_->GetString(data);
 }
 
-bool OSExchangeData::GetURLAndTitle(GURL* url, string16* title) const {
+bool OSExchangeData::GetURLAndTitle(GURL* url, base::string16* title) const {
   return provider_->GetURLAndTitle(url, title);
 }
 
@@ -167,11 +167,11 @@ void OSExchangeData::SetInDragLoop(bool in_drag_loop) {
 #endif
 
 #if defined(OS_WIN) || defined(USE_AURA)
-void OSExchangeData::SetHtml(const string16& html, const GURL& base_url) {
+void OSExchangeData::SetHtml(const base::string16& html, const GURL& base_url) {
   provider_->SetHtml(html, base_url);
 }
 
-bool OSExchangeData::GetHtml(string16* html, GURL* base_url) const {
+bool OSExchangeData::GetHtml(base::string16* html, GURL* base_url) const {
   return provider_->GetHtml(html, base_url);
 }
 #endif

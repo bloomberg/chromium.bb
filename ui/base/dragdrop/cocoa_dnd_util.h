@@ -35,7 +35,7 @@ UI_EXPORT extern NSString* const kChromeDragImageHTMLPboardType;
 // the pasteboard, |NO| otherwise. If |convert_filenames| is |YES|, the function
 // will also attempt to convert filenames in |pboard| to file URLs.
 UI_EXPORT BOOL PopulateURLAndTitleFromPasteboard(GURL* url,
-                                                 string16* title,
+                                                 base::string16* title,
                                                  NSPasteboard* pboard,
                                                  BOOL convert_filenames);
 

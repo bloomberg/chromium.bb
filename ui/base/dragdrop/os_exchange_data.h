@@ -96,16 +96,16 @@ class UI_EXPORT OSExchangeData {
     Provider() {}
     virtual ~Provider() {}
 
-    virtual void SetString(const string16& data) = 0;
-    virtual void SetURL(const GURL& url, const string16& title) = 0;
+    virtual void SetString(const base::string16& data) = 0;
+    virtual void SetURL(const GURL& url, const base::string16& title) = 0;
     virtual void SetFilename(const base::FilePath& path) = 0;
     virtual void SetFilenames(
         const std::vector<FileInfo>& file_names) = 0;
     virtual void SetPickledData(const CustomFormat& format,
                                 const Pickle& data) = 0;
 
-    virtual bool GetString(string16* data) const = 0;
-    virtual bool GetURLAndTitle(GURL* url, string16* title) const = 0;
+    virtual bool GetString(base::string16* data) const = 0;
+    virtual bool GetURLAndTitle(GURL* url, base::string16* title) const = 0;
     virtual bool GetFilename(base::FilePath* path) const = 0;
     virtual bool GetFilenames(
         std::vector<FileInfo>* file_names) const = 0;
@@ -128,8 +128,8 @@ class UI_EXPORT OSExchangeData {
 #endif
 
 #if defined(OS_WIN) || defined(USE_AURA)
-    virtual void SetHtml(const string16& html, const GURL& base_url) = 0;
-    virtual bool GetHtml(string16* html, GURL* base_url) const = 0;
+    virtual void SetHtml(const base::string16& html, const GURL& base_url) = 0;
+    virtual bool GetHtml(base::string16* html, GURL* base_url) const = 0;
     virtual bool HasHtml() const = 0;
 #endif
 
@@ -165,9 +165,9 @@ class UI_EXPORT OSExchangeData {
   //            the order of enumeration in our IEnumFORMATETC implementation!
   //            This comes into play when selecting the best (most preferable)
   //            data type for insertion into a DropTarget.
-  void SetString(const string16& data);
+  void SetString(const base::string16& data);
   // A URL can have an optional title in some exchange formats.
-  void SetURL(const GURL& url, const string16& title);
+  void SetURL(const GURL& url, const base::string16& title);
   // A full path to a file.
   void SetFilename(const base::FilePath& path);
   // Full path to one or more files. See also SetFilenames() in Provider.
@@ -180,8 +180,8 @@ class UI_EXPORT OSExchangeData {
   // functions return and the result is in the out parameter. If the data does
   // not exist, the out parameter is not touched. The out parameter cannot be
   // NULL.
-  bool GetString(string16* data) const;
-  bool GetURLAndTitle(GURL* url, string16* title) const;
+  bool GetString(base::string16* data) const;
+  bool GetURLAndTitle(GURL* url, base::string16* title) const;
   // Return the path of a file, if available.
   bool GetFilename(base::FilePath* path) const;
   bool GetFilenames(
@@ -221,8 +221,8 @@ class UI_EXPORT OSExchangeData {
 #if defined(OS_WIN) || defined(USE_AURA)
   // Adds a snippet of HTML.  |html| is just raw html but this sets both
   // text/html and CF_HTML.
-  void SetHtml(const string16& html, const GURL& base_url);
-  bool GetHtml(string16* html, GURL* base_url) const;
+  void SetHtml(const base::string16& html, const GURL& base_url);
+  bool GetHtml(base::string16* html, GURL* base_url) const;
 #endif
 
  private:

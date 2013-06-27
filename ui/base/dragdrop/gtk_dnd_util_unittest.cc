@@ -27,7 +27,7 @@ TEST(GtkDndUtilTest, ExtractNamedURLValid) {
   data.length = pickle.size();
 
   GURL url;
-  string16 title;
+  base::string16 title;
   ASSERT_EQ(true, ui::ExtractNamedURL(&data, &url, &title));
   EXPECT_EQ(UTF8ToUTF16(kTitle), title);
   EXPECT_EQ(GURL(kUrl), url);
@@ -47,13 +47,13 @@ TEST(GtkDndUtilTest, ExtractNamedURLInvalidURL) {
   data.length = pickle.size();
 
   GURL url;
-  string16 title;
+  base::string16 title;
   EXPECT_FALSE(ui::ExtractNamedURL(&data, &url, &title));
 }
 
 TEST(GtkDndUtilTest, ExtractNamedURLInvalidInput) {
   GURL url;
-  string16 title;
+  base::string16 title;
   GtkSelectionData data;
   data.data = NULL;
   data.length = 0;

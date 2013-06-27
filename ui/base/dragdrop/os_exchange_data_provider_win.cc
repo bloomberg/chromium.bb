@@ -33,8 +33,8 @@ static STGMEDIUM* GetStorageForString(const std::basic_string<T>& data);
 static void GetInternetShortcutFileContents(const GURL& url, std::string* data);
 // Creates a valid file name given a suggested title and URL.
 static void CreateValidFileNameFromTitle(const GURL& url,
-                                         const string16& title,
-                                         string16* validated);
+                                         const base::string16& title,
+                                         base::string16* validated);
 // Creates a new STGMEDIUM object to hold a file.
 static STGMEDIUM* GetStorageForFileName(const base::FilePath& path);
 static STGMEDIUM* GetIDListStorageForFileName(const base::FilePath& path);
@@ -211,7 +211,7 @@ FormatEtcEnumerator* FormatEtcEnumerator::CloneFromOther(
 
 // static
 bool OSExchangeDataProviderWin::HasPlainTextURL(IDataObject* source) {
-  string16 plain_text;
+  base::string16 plain_text;
   return (ClipboardUtil::GetPlainText(source, &plain_text) &&
           !plain_text.empty() && GURL(plain_text).is_valid());
 }
@@ -219,7 +219,7 @@ bool OSExchangeDataProviderWin::HasPlainTextURL(IDataObject* source) {
 // static
 bool OSExchangeDataProviderWin::GetPlainTextURL(IDataObject* source,
                                                 GURL* url) {
-  string16 plain_text;
+  base::string16 plain_text;
   if (ClipboardUtil::GetPlainText(source, &plain_text) &&
       !plain_text.empty()) {
     GURL gurl(plain_text);
@@ -265,7 +265,7 @@ OSExchangeDataProviderWin::OSExchangeDataProviderWin()
 OSExchangeDataProviderWin::~OSExchangeDataProviderWin() {
 }
 
-void OSExchangeDataProviderWin::SetString(const string16& data) {
+void OSExchangeDataProviderWin::SetString(const base::string16& data) {
   STGMEDIUM* storage = GetStorageForString(data);
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       Clipboard::GetPlainTextWFormatType().ToFormatEtc(), storage));
@@ -277,7 +277,7 @@ void OSExchangeDataProviderWin::SetString(const string16& data) {
 }
 
 void OSExchangeDataProviderWin::SetURL(const GURL& url,
-                                       const string16& title) {
+                                       const base::string16& title) {
   // NOTE WELL:
   // Every time you change the order of the first two CLIPFORMATS that get
   // added here, you need to update the EnumerationViaCOM test case in
@@ -285,7 +285,7 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
   // will fail! It assumes an insertion order.
 
   // Add text/x-moz-url for drags from Firefox
-  string16 x_moz_url_str = UTF8ToUTF16(url.spec());
+  base::string16 x_moz_url_str = UTF8ToUTF16(url.spec());
   x_moz_url_str += '\n';
   x_moz_url_str += title;
   STGMEDIUM* storage = GetStorageForString(x_moz_url_str);
@@ -293,7 +293,7 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
       Clipboard::GetMozUrlFormatType().ToFormatEtc(), storage));
 
   // Add a .URL shortcut file for dragging to Explorer.
-  string16 valid_file_name;
+  base::string16 valid_file_name;
   CreateValidFileNameFromTitle(url, title, &valid_file_name);
   std::string shortcut_url_file_contents;
   GetInternetShortcutFileContents(url, &shortcut_url_file_contents);
@@ -361,7 +361,7 @@ void OSExchangeDataProviderWin::SetFileContents(
       Clipboard::GetFileContentZeroFormatType().ToFormatEtc(), storage));
 }
 
-void OSExchangeDataProviderWin::SetHtml(const string16& html,
+void OSExchangeDataProviderWin::SetHtml(const base::string16& html,
                                         const GURL& base_url) {
   // Add both MS CF_HTML and text/html format.  CF_HTML should be in utf-8.
   std::string utf8_html = UTF16ToUTF8(html);
@@ -378,13 +378,13 @@ void OSExchangeDataProviderWin::SetHtml(const string16& html,
       Clipboard::GetTextHtmlFormatType().ToFormatEtc(), storage_plain));
 }
 
-bool OSExchangeDataProviderWin::GetString(string16* data) const {
+bool OSExchangeDataProviderWin::GetString(base::string16* data) const {
   return ClipboardUtil::GetPlainText(source_object_, data);
 }
 
 bool OSExchangeDataProviderWin::GetURLAndTitle(GURL* url,
-                                               string16* title) const {
-  string16 url_str;
+                                               base::string16* title) const {
+  base::string16 url_str;
   bool success = ClipboardUtil::GetUrl(source_object_, &url_str, title, true);
   if (success) {
     GURL test_url(url_str);
@@ -403,7 +403,7 @@ bool OSExchangeDataProviderWin::GetURLAndTitle(GURL* url,
 }
 
 bool OSExchangeDataProviderWin::GetFilename(base::FilePath* path) const {
-  std::vector<string16> filenames;
+  std::vector<base::string16> filenames;
   bool success = ClipboardUtil::GetFilenames(source_object_, &filenames);
   if (success)
     *path = base::FilePath(filenames[0]);
@@ -412,7 +412,7 @@ bool OSExchangeDataProviderWin::GetFilename(base::FilePath* path) const {
 
 bool OSExchangeDataProviderWin::GetFilenames(
     std::vector<OSExchangeData::FileInfo>* filenames) const {
-  std::vector<string16> filenames_local;
+  std::vector<base::string16> filenames_local;
   bool success = ClipboardUtil::GetFilenames(source_object_, &filenames_local);
   if (success) {
     for (size_t i = 0; i < filenames_local.size(); ++i)
@@ -445,7 +445,7 @@ bool OSExchangeDataProviderWin::GetPickledData(
 bool OSExchangeDataProviderWin::GetFileContents(
     base::FilePath* filename,
     std::string* file_contents) const {
-  string16 filename_str;
+  base::string16 filename_str;
   if (!ClipboardUtil::GetFileContents(source_object_, &filename_str,
                                       file_contents)) {
     return false;
@@ -454,7 +454,7 @@ bool OSExchangeDataProviderWin::GetFileContents(
   return true;
 }
 
-bool OSExchangeDataProviderWin::GetHtml(string16* html,
+bool OSExchangeDataProviderWin::GetHtml(base::string16* html,
                                         GURL* base_url) const {
   std::string url;
   bool success = ClipboardUtil::GetHtml(source_object_, html, &url);
@@ -884,8 +884,8 @@ static void GetInternetShortcutFileContents(const GURL& url,
 }
 
 static void CreateValidFileNameFromTitle(const GURL& url,
-                                         const string16& title,
-                                         string16* validated) {
+                                         const base::string16& title,
+                                         base::string16* validated) {
   if (title.empty()) {
     if (url.is_valid()) {
       *validated = net::GetSuggestedFilename(url, "", "", "", "",
@@ -1008,7 +1008,7 @@ static STGMEDIUM* GetIDListStorageForFileName(const base::FilePath& path) {
 
 static STGMEDIUM* GetStorageForFileDescriptor(
     const base::FilePath& path) {
-  string16 file_name = path.value();
+  base::string16 file_name = path.value();
   DCHECK(!file_name.empty());
   HANDLE hdata = GlobalAlloc(GPTR, sizeof(FILEGROUPDESCRIPTOR));
   base::win::ScopedHGlobal<FILEGROUPDESCRIPTOR> locked_mem(hdata);

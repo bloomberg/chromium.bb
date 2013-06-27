@@ -154,7 +154,7 @@ void SetDestTargetList(GtkWidget* dest, const int* target_codes) {
 
 void WriteURLWithName(GtkSelectionData* selection_data,
                       const GURL& url,
-                      string16 title,
+                      base::string16 title,
                       int type) {
   if (title.empty()) {
     // We prefer to not have empty titles. Set it to the filename extracted
@@ -208,7 +208,7 @@ void WriteURLWithName(GtkSelectionData* selection_data,
 
 bool ExtractNamedURL(GtkSelectionData* selection_data,
                      GURL* url,
-                     string16* title) {
+                     base::string16* title) {
   if (!selection_data || gtk_selection_data_get_length(selection_data) <= 0)
     return false;
 
@@ -249,7 +249,7 @@ bool ExtractURIList(GtkSelectionData* selection_data, std::vector<GURL>* urls) {
 
 bool ExtractNetscapeURL(GtkSelectionData* selection_data,
                         GURL* url,
-                        string16* title) {
+                        base::string16* title) {
   if (!selection_data || gtk_selection_data_get_length(selection_data) <= 0)
     return false;
 

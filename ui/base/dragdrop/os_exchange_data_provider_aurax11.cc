@@ -102,7 +102,7 @@ SelectionFormatMap OSExchangeDataProviderAuraX11::GetFormatMap() const {
   return selection_owner_.selection_format_map();
 }
 
-void OSExchangeDataProviderAuraX11::SetString(const string16& text_data) {
+void OSExchangeDataProviderAuraX11::SetString(const base::string16& text_data) {
   std::string utf8 = UTF16ToUTF8(text_data);
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedString::TakeString(&utf8));
@@ -114,7 +114,7 @@ void OSExchangeDataProviderAuraX11::SetString(const string16& text_data) {
 }
 
 void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
-                                           const string16& title) {
+                                           const base::string16& title) {
   NOTIMPLEMENTED();
 }
 
@@ -133,7 +133,7 @@ void OSExchangeDataProviderAuraX11::SetPickledData(
   NOTIMPLEMENTED();
 }
 
-bool OSExchangeDataProviderAuraX11::GetString(string16* result) const {
+bool OSExchangeDataProviderAuraX11::GetString(base::string16* result) const {
   std::vector< ::Atom> text_atoms = ui::GetTextAtomsFrom(&atom_cache_);
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(text_atoms, GetTargets(), &requested_types);
@@ -148,8 +148,9 @@ bool OSExchangeDataProviderAuraX11::GetString(string16* result) const {
   return false;
 }
 
-bool OSExchangeDataProviderAuraX11::GetURLAndTitle(GURL* url,
-                                                   string16* title) const {
+bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
+    GURL* url,
+    base::string16* title) const {
   std::vector< ::Atom> url_atoms = ui::GetURLAtomsFrom(&atom_cache_);
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
@@ -162,10 +163,10 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(GURL* url,
 
     if (data.GetType() == atom_cache_.GetAtom(kMimeTypeMozillaURL)) {
       // Mozilla URLs are (UTF16: URL, newline, title).
-      string16 unparsed;
+      base::string16 unparsed;
       data.AssignTo(&unparsed);
 
-      std::vector<string16> tokens;
+      std::vector<base::string16> tokens;
       size_t num_tokens = Tokenize(unparsed, ASCIIToUTF16("\n"), &tokens);
       if (num_tokens >= 2) {
         *url = GURL(tokens[0]);
@@ -189,7 +190,7 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(GURL* url,
       }
 
       *url = GURL(tokens[0]);
-      *title = string16();
+      *title = base::string16();
 
       return true;
     }
@@ -245,12 +246,12 @@ bool OSExchangeDataProviderAuraX11::HasCustomFormat(
   return !requested_types.empty();
 }
 
-void OSExchangeDataProviderAuraX11::SetHtml(const string16& html,
+void OSExchangeDataProviderAuraX11::SetHtml(const base::string16& html,
                                             const GURL& base_url) {
   NOTIMPLEMENTED();
 }
 
-bool OSExchangeDataProviderAuraX11::GetHtml(string16* html,
+bool OSExchangeDataProviderAuraX11::GetHtml(base::string16* html,
                                             GURL* base_url) const {
   std::vector< ::Atom> url_atoms;
   url_atoms.push_back(atom_cache_.GetAtom(Clipboard::kMimeTypeHTML));
