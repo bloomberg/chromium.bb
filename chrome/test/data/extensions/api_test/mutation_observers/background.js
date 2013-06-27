@@ -16,7 +16,6 @@ window.addEventListener('DOMContentLoaded', function() {
   var success = false;
   var mutationsDelivered = false;
 
-  var MutationObserver = MutationObserver || WebKitMutationObserver;
   var observer = new MutationObserver(function() {
     mutationsDelivered = true;
     if (success)

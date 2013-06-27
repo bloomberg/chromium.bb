@@ -199,7 +199,7 @@ remoting.resetInfographics = function() {
  */
 remoting.initModalDialogs = function() {
   var dialogs = document.querySelectorAll('.kd-modaldialog');
-  var observer = new WebKitMutationObserver(confineOrRestoreFocus_);
+  var observer = new MutationObserver(confineOrRestoreFocus_);
   var options = {
     subtree: false,
     attributes: true

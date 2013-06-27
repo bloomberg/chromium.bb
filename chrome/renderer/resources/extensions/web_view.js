@@ -237,7 +237,7 @@ WebView.prototype.setupWebviewNodeObservers_ = function() {
   var handleMutation = $Function.bind(function(mutation) {
     this.handleWebviewAttributeMutation_(mutation);
   }, this);
-  var observer = new WebKitMutationObserver(function(mutations) {
+  var observer = new MutationObserver(function(mutations) {
     $Array.forEach(mutations, handleMutation);
   });
   observer.observe(
@@ -252,7 +252,7 @@ WebView.prototype.setupBrowserPluginNodeObservers_ = function() {
   var handleMutation = $Function.bind(function(mutation) {
     this.handleBrowserPluginAttributeMutation_(mutation);
   }, this);
-  var objectObserver = new WebKitMutationObserver(function(mutations) {
+  var objectObserver = new MutationObserver(function(mutations) {
     $Array.forEach(mutations, handleMutation);
   });
   objectObserver.observe(

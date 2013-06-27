@@ -183,7 +183,7 @@ AdView.prototype.setupAdviewNodeObservers_ = function() {
   var handleMutation = $Function.bind(function(mutation) {
     this.handleAdviewAttributeMutation_(mutation);
   }, this);
-  var observer = new WebKitMutationObserver(function(mutations) {
+  var observer = new MutationObserver(function(mutations) {
     $Array.forEach(mutations, handleMutation);
   });
   observer.observe(
@@ -200,7 +200,7 @@ AdView.prototype.setupAdviewNodeCustomObservers_ = function() {
   var handleMutation = $Function.bind(function(mutation) {
     this.handleAdviewCustomAttributeMutation_(mutation);
   }, this);
-  var observer = new WebKitMutationObserver(function(mutations) {
+  var observer = new MutationObserver(function(mutations) {
     $Array.forEach(mutations, handleMutation);
   });
   var customAttributeNames =
@@ -217,7 +217,7 @@ AdView.prototype.setupBrowserPluginNodeObservers_ = function() {
   var handleMutation = $Function.bind(function(mutation) {
     this.handleBrowserPluginAttributeMutation_(mutation);
   }, this);
-  var objectObserver = new WebKitMutationObserver(function(mutations) {
+  var objectObserver = new MutationObserver(function(mutations) {
     $Array.forEach(mutations, handleMutation);
   });
   objectObserver.observe(

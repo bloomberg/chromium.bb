@@ -16,7 +16,7 @@ function watchForTag(tagName, cb) {
   findChildTags(document.body);
 
   // Observe the tags added later.
-  var documentObserver = new WebKitMutationObserver(function(mutations) {
+  var documentObserver = new MutationObserver(function(mutations) {
     $Array.forEach(mutations, function(mutation) {
       $Array.forEach(mutation.addedNodes, function(addedNode) {
         if (addedNode.nodeType == Node.ELEMENT_NODE) {

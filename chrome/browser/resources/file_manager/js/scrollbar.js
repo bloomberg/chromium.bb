@@ -79,7 +79,7 @@ ScrollBar.prototype.attachToView = function(view) {
   this.view_ = view;
   this.view_.addEventListener('scroll', this.onScroll_.bind(this));
   this.view_.addEventListener('relayout', this.onRelayout_.bind(this));
-  this.domObserver_ = new WebKitMutationObserver(this.onDomChanged_.bind(this));
+  this.domObserver_ = new MutationObserver(this.onDomChanged_.bind(this));
   this.domObserver_.observe(this.view_, {subtree: true, attributes: true});
   this.onRelayout_();
 };

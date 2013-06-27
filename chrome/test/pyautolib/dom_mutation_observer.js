@@ -175,7 +175,7 @@ function(automation_id, observer_id, observer_type, xpath, attribute,
       return;
     }
 
-    var obs = new WebKitMutationObserver(addNodeCallback);
+    var obs = new MutationObserver(addNodeCallback);
     obs.observe(document,
         { childList: true,
           attributes: true,
@@ -196,7 +196,7 @@ function(automation_id, observer_id, observer_type, xpath, attribute,
       return;
     }
 
-    var obs = new WebKitMutationObserver(removeNodeCallback);
+    var obs = new MutationObserver(removeNodeCallback);
     obs.observe(document,
         { childList: true,
           attributes: true,
@@ -219,7 +219,7 @@ function(automation_id, observer_id, observer_type, xpath, attribute,
     }
     window.domAutomationController.send("success");
 
-    var obs = new WebKitMutationObserver(changeNodeCallback);
+    var obs = new MutationObserver(changeNodeCallback);
     obs.observe(node,
         { childList: true,
           attributes: true,
@@ -240,7 +240,7 @@ function(automation_id, observer_id, observer_type, xpath, attribute,
       return;
     }
 
-    var obs = new WebKitMutationObserver(existsNodeCallback);
+    var obs = new MutationObserver(existsNodeCallback);
     obs.observe(document,
         { childList: true,
           attributes: true,

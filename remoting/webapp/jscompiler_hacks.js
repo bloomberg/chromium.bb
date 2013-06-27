@@ -61,11 +61,11 @@ MutationRecord.prototype.type;
 
 /** @constructor
     @param {function(Array.<MutationRecord>):void} callback */
-var WebKitMutationObserver = function(callback) {};
+var MutationObserver = function(callback) {};
 
 /** @param {Element} element
     @param {Object} options */
-WebKitMutationObserver.prototype.observe = function(element, options) {};
+MutationObserver.prototype.observe = function(element, options) {};
 
 /** @type {Object} */
 chrome.storage = {};
