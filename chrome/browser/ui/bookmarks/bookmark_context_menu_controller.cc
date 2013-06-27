@@ -273,7 +273,7 @@ bool BookmarkContextMenuController::IsCommandIdChecked(int command_id) const {
 }
 
 bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
-  bool enabled;
+  bool enabled = false;
   if (IsPlatformCommandIdEnabled(command_id, &enabled))
     return enabled;
 
