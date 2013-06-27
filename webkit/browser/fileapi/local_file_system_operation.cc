@@ -239,14 +239,16 @@ LocalFileSystemOperation::AsLocalFileSystemOperation() {
   return this;
 }
 
-void LocalFileSystemOperation::SyncGetPlatformPath(
+base::PlatformFileError LocalFileSystemOperation::SyncGetPlatformPath(
     const FileSystemURL& url,
     base::FilePath* platform_path) {
   DCHECK(SetPendingOperationType(kOperationGetLocalPath));
   FileSystemFileUtil* file_util = file_system_context()->GetFileUtil(
       url.type());
-  DCHECK(file_util);
+  if (!file_util)
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
   file_util->GetLocalFilePath(operation_context_.get(), url, platform_path);
+  return base::PLATFORM_FILE_OK;
 }
 
 void LocalFileSystemOperation::CreateSnapshotFile(

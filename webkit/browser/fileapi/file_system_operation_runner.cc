@@ -442,9 +442,8 @@ base::PlatformFileError FileSystemOperationRunner::SyncGetPlatformPath(
   if (!operation)
     return error;
 
-  operation->AsLocalFileSystemOperation()->SyncGetPlatformPath(
+  return operation->AsLocalFileSystemOperation()->SyncGetPlatformPath(
       url, platform_path);
-  return base::PLATFORM_FILE_OK;
 }
 
 FileSystemOperationRunner::FileSystemOperationRunner(

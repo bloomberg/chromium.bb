@@ -152,8 +152,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSystemOperation
                      const StatusCallback& callback);
 
   // Synchronously gets the platform path for the given |url|.
-  void SyncGetPlatformPath(const FileSystemURL& url,
-                           base::FilePath* platform_path);
+  // This may fail if |file_system_context| returns NULL on GetFileUtil().
+  // In such a case, base::PLATFORM_FILE_ERROR_INVALID_OPERATION will be
+  // returned.
+  base::PlatformFileError SyncGetPlatformPath(const FileSystemURL& url,
+                                              base::FilePath* platform_path);
 
   FileSystemContext* file_system_context() const {
     return file_system_context_.get();
