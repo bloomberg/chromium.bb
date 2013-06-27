@@ -63,10 +63,6 @@ namespace {
 const base::TimeDelta kMaxInitDelay = base::TimeDelta::FromSeconds(200);
 const base::TimeDelta kMinInitDelay = base::TimeDelta::FromSeconds(20);
 
-bool IsGoogleUrl(const GURL& url) {
-  return google_util::IsGoogleHomePageUrl(url.possibly_invalid_spec());
-}
-
 bool IsBrandOrganic(const std::string& brand) {
   return brand.empty() || google_util::IsOrganic(brand);
 }
@@ -232,16 +228,17 @@ bool RLZTracker::InitRlzFromProfileDelayed(Profile* profile,
 
   PrefService* pref_service = profile->GetPrefs();
   bool is_google_homepage = google_util::IsGoogleHomePageUrl(
-      pref_service->GetString(prefs::kHomePage));
+      GURL(pref_service->GetString(prefs::kHomePage)));
 
   bool is_google_in_startpages = false;
   SessionStartupPref session_startup_prefs =
       StartupBrowserCreator::GetSessionStartupPref(
           *CommandLine::ForCurrentProcess(), profile);
   if (session_startup_prefs.type == SessionStartupPref::URLS) {
-    is_google_in_startpages = std::count_if(session_startup_prefs.urls.begin(),
-                                            session_startup_prefs.urls.end(),
-                                            IsGoogleUrl) > 0;
+    is_google_in_startpages =
+        std::count_if(session_startup_prefs.urls.begin(),
+                      session_startup_prefs.urls.end(),
+                      google_util::IsGoogleHomePageUrl) > 0;
   }
 
   if (!InitRlzDelayed(first_run, send_ping_immediately, delay,

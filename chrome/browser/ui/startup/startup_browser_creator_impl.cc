@@ -830,8 +830,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
     params.extension_app_id = tabs[i].app_id;
 
 #if defined(ENABLE_RLZ)
-    if (process_startup &&
-        google_util::IsGoogleHomePageUrl(tabs[i].url.spec())) {
+    if (process_startup && google_util::IsGoogleHomePageUrl(tabs[i].url)) {
       params.extra_headers = RLZTracker::GetAccessPointHttpHeader(
           RLZTracker::CHROME_HOME_PAGE);
     }

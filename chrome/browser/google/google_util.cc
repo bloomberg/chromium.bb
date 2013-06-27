@@ -152,10 +152,9 @@ bool GetReactivationBrand(std::string* brand) {
 
 #endif
 
-bool IsGoogleDomainUrl(const std::string& in_url,
+bool IsGoogleDomainUrl(const GURL& url,
                        SubdomainPermission subdomain_permission,
                        PortPermission port_permission) {
-  GURL url(in_url);
   return url.is_valid() && (url.SchemeIs("http") || url.SchemeIs("https")) &&
       (url.port().empty() || (port_permission == ALLOW_NON_STANDARD_PORTS)) &&
       google_util::IsGoogleHostname(url.host(), subdomain_permission);
@@ -177,15 +176,13 @@ bool IsGoogleHostname(const std::string& host,
   return LowerCaseEqualsASCII(host_minus_tld, "www.google.");
 }
 
-bool IsGoogleHomePageUrl(const std::string& url) {
-  GURL original_url(url);
-
+bool IsGoogleHomePageUrl(const GURL& url) {
   // First check to see if this has a Google domain.
   if (!IsGoogleDomainUrl(url, DISALLOW_SUBDOMAIN, DISALLOW_NON_STANDARD_PORTS))
     return false;
 
   // Make sure the path is a known home page path.
-  std::string path(original_url.path());
+  std::string path(url.path());
   if (path != "/" && path != "/webhp" &&
       !StartsWithASCII(path, "/ig", false)) {
     return false;
@@ -194,15 +191,13 @@ bool IsGoogleHomePageUrl(const std::string& url) {
   return true;
 }
 
-bool IsGoogleSearchUrl(const std::string& url) {
-  GURL original_url(url);
-
+bool IsGoogleSearchUrl(const GURL& url) {
   // First check to see if this has a Google domain.
   if (!IsGoogleDomainUrl(url, DISALLOW_SUBDOMAIN, DISALLOW_NON_STANDARD_PORTS))
     return false;
 
   // Make sure the path is a known search path.
-  std::string path(original_url.path());
+  std::string path(url.path());
   bool has_valid_path = false;
   bool is_home_page_base = false;
   if (path == "/search") {
@@ -218,8 +213,8 @@ bool IsGoogleSearchUrl(const std::string& url) {
 
   // Check for query parameter in URL parameter and hash fragment, depending on
   // the path type.
-  std::string query(original_url.query());
-  std::string ref(original_url.ref());
+  std::string query(url.query());
+  std::string ref(url.ref());
   return HasGoogleSearchQueryParam(ref) ||
       (!is_home_page_base && HasGoogleSearchQueryParam(query));
 }

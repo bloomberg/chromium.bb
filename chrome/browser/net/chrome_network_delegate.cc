@@ -136,8 +136,8 @@ std::string AddSafeSearchParameters(const std::string& query) {
 // Sets the query part of |new_url| with the new value of the parameters.
 void ForceGoogleSafeSearch(net::URLRequest* request,
                            GURL* new_url) {
-  if (!google_util::IsGoogleSearchUrl(request->url().spec()) &&
-      !google_util::IsGoogleHomePageUrl(request->url().spec()))
+  if (!google_util::IsGoogleSearchUrl(request->url()) &&
+      !google_util::IsGoogleHomePageUrl(request->url()))
     return;
 
   std::string query = request->url().query();

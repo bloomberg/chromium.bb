@@ -20,7 +20,7 @@ namespace {
 bool IsOmniboxGoogleSearchNavigation(const content::NavigationEntry& entry) {
   const content::PageTransition stripped_transition =
       PageTransitionStripQualifier(entry.GetTransitionType());
-  DCHECK(google_util::IsGoogleSearchUrl(entry.GetURL().spec()));
+  DCHECK(google_util::IsGoogleSearchUrl(entry.GetURL()));
   return stripped_transition == content::PAGE_TRANSITION_GENERATED;
 }
 
@@ -28,7 +28,7 @@ bool IsOmniboxGoogleSearchNavigation(const content::NavigationEntry& entry) {
 // App. This method assumes that we have already verified that |entry|'s URL is
 // a Google search URL.
 bool IsSearchAppGoogleSearchNavigation(const content::NavigationEntry& entry) {
-  DCHECK(google_util::IsGoogleSearchUrl(entry.GetURL().spec()));
+  DCHECK(google_util::IsGoogleSearchUrl(entry.GetURL()));
   return entry.GetURL().query().find("source=search_app") !=
          std::string::npos;
 }
@@ -60,7 +60,7 @@ void GoogleSearchCounter::ProcessCommittedEntry(
   const content::NavigationEntry& entry = *commit->entry;
 
   // First see if this is a Google search URL at all.
-  if (!google_util::IsGoogleSearchUrl(entry.GetURL().spec()))
+  if (!google_util::IsGoogleSearchUrl(entry.GetURL()))
     return;
 
   // If the commit is a GENERATED commit with a Google search URL, we know it's

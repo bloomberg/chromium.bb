@@ -10,317 +10,278 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using google_util::IsGoogleDomainUrl;
-using google_util::IsGoogleHomePageUrl;
-using google_util::IsGoogleSearchUrl;
+
+
+// Helpers --------------------------------------------------------------------
+
+namespace {
+
+// These functions merely provide brevity in the callers.
+
+bool IsHomePage(const std::string& url) {
+  return google_util::IsGoogleHomePageUrl(GURL(url));
+}
+
+bool IsSearch(const std::string& url) {
+  return google_util::IsGoogleSearchUrl(GURL(url));
+}
+
+}  // namespace
+
+
+// Actual tests ---------------------------------------------------------------
 
 TEST(GoogleUtilTest, GoodHomePagesNonSecure) {
   // Valid home page hosts.
-  EXPECT_TRUE(IsGoogleHomePageUrl(GoogleURLTracker::kDefaultGoogleHomepage));
-  EXPECT_TRUE(IsGoogleHomePageUrl("http://google.com"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("http://www.google.com"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("http://www.google.ca"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("http://www.google.co.uk"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("http://www.google.com:80/"));
+  EXPECT_TRUE(IsHomePage(GoogleURLTracker::kDefaultGoogleHomepage));
+  EXPECT_TRUE(IsHomePage("http://google.com"));
+  EXPECT_TRUE(IsHomePage("http://www.google.com"));
+  EXPECT_TRUE(IsHomePage("http://www.google.ca"));
+  EXPECT_TRUE(IsHomePage("http://www.google.co.uk"));
+  EXPECT_TRUE(IsHomePage("http://www.google.com:80/"));
 
   // Only the paths /, /webhp, and /ig.* are valid.  Query parameters are
   // ignored.
-  EXPECT_TRUE(IsGoogleHomePageUrl("http://www.google.com/"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("http://www.google.com/webhp"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("http://www.google.com/webhp?rlz=TEST"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("http://www.google.com/ig"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("http://www.google.com/ig/foo"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("http://www.google.com/ig?rlz=TEST"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("http://www.google.com/ig/foo?rlz=TEST"));
+  EXPECT_TRUE(IsHomePage("http://www.google.com/"));
+  EXPECT_TRUE(IsHomePage("http://www.google.com/webhp"));
+  EXPECT_TRUE(IsHomePage("http://www.google.com/webhp?rlz=TEST"));
+  EXPECT_TRUE(IsHomePage("http://www.google.com/ig"));
+  EXPECT_TRUE(IsHomePage("http://www.google.com/ig/foo"));
+  EXPECT_TRUE(IsHomePage("http://www.google.com/ig?rlz=TEST"));
+  EXPECT_TRUE(IsHomePage("http://www.google.com/ig/foo?rlz=TEST"));
 }
 
 TEST(GoogleUtilTest, GoodHomePagesSecure) {
   // Valid home page hosts.
-  EXPECT_TRUE(IsGoogleHomePageUrl("https://google.com"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("https://www.google.com"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("https://www.google.ca"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("https://www.google.co.uk"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("https://www.google.com:443/"));
+  EXPECT_TRUE(IsHomePage("https://google.com"));
+  EXPECT_TRUE(IsHomePage("https://www.google.com"));
+  EXPECT_TRUE(IsHomePage("https://www.google.ca"));
+  EXPECT_TRUE(IsHomePage("https://www.google.co.uk"));
+  EXPECT_TRUE(IsHomePage("https://www.google.com:443/"));
 
   // Only the paths /, /webhp, and /ig.* are valid.  Query parameters are
   // ignored.
-  EXPECT_TRUE(IsGoogleHomePageUrl("https://www.google.com/"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("https://www.google.com/webhp"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("https://www.google.com/webhp?rlz=TEST"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("https://www.google.com/ig"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("https://www.google.com/ig/foo"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("https://www.google.com/ig?rlz=TEST"));
-  EXPECT_TRUE(IsGoogleHomePageUrl("https://www.google.com/ig/foo?rlz=TEST"));
+  EXPECT_TRUE(IsHomePage("https://www.google.com/"));
+  EXPECT_TRUE(IsHomePage("https://www.google.com/webhp"));
+  EXPECT_TRUE(IsHomePage("https://www.google.com/webhp?rlz=TEST"));
+  EXPECT_TRUE(IsHomePage("https://www.google.com/ig"));
+  EXPECT_TRUE(IsHomePage("https://www.google.com/ig/foo"));
+  EXPECT_TRUE(IsHomePage("https://www.google.com/ig?rlz=TEST"));
+  EXPECT_TRUE(IsHomePage("https://www.google.com/ig/foo?rlz=TEST"));
 }
 
 TEST(GoogleUtilTest, BadHomePages) {
-  EXPECT_FALSE(IsGoogleHomePageUrl(std::string()));
+  EXPECT_FALSE(IsHomePage(std::string()));
 
   // If specified, only the "www" subdomain is OK.
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://maps.google.com"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://foo.google.com"));
+  EXPECT_FALSE(IsHomePage("http://maps.google.com"));
+  EXPECT_FALSE(IsHomePage("http://foo.google.com"));
 
   // No non-standard port numbers.
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://www.google.com:1234"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("https://www.google.com:5678"));
+  EXPECT_FALSE(IsHomePage("http://www.google.com:1234"));
+  EXPECT_FALSE(IsHomePage("https://www.google.com:5678"));
 
   // Invalid TLDs.
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://www.google.abc"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://www.google.com.abc"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://www.google.abc.com"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://www.google.ab.cd"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://www.google.uk.qq"));
+  EXPECT_FALSE(IsHomePage("http://www.google.abc"));
+  EXPECT_FALSE(IsHomePage("http://www.google.com.abc"));
+  EXPECT_FALSE(IsHomePage("http://www.google.abc.com"));
+  EXPECT_FALSE(IsHomePage("http://www.google.ab.cd"));
+  EXPECT_FALSE(IsHomePage("http://www.google.uk.qq"));
 
   // Must be http or https.
-  EXPECT_FALSE(IsGoogleHomePageUrl("ftp://www.google.com"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("file://does/not/exist"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("bad://www.google.com"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("www.google.com"));
+  EXPECT_FALSE(IsHomePage("ftp://www.google.com"));
+  EXPECT_FALSE(IsHomePage("file://does/not/exist"));
+  EXPECT_FALSE(IsHomePage("bad://www.google.com"));
+  EXPECT_FALSE(IsHomePage("www.google.com"));
 
   // Only the paths /, /webhp, and /ig.* are valid.
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://www.google.com/abc"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://www.google.com/webhpabc"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://www.google.com/webhp/abc"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://www.google.com/abcig"));
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://www.google.com/webhp/ig"));
+  EXPECT_FALSE(IsHomePage("http://www.google.com/abc"));
+  EXPECT_FALSE(IsHomePage("http://www.google.com/webhpabc"));
+  EXPECT_FALSE(IsHomePage("http://www.google.com/webhp/abc"));
+  EXPECT_FALSE(IsHomePage("http://www.google.com/abcig"));
+  EXPECT_FALSE(IsHomePage("http://www.google.com/webhp/ig"));
 
   // A search URL should not be identified as a home page URL.
-  EXPECT_FALSE(IsGoogleHomePageUrl("http://www.google.com/search?q=something"));
+  EXPECT_FALSE(IsHomePage("http://www.google.com/search?q=something"));
 
   // Path is case sensitive.
-  EXPECT_FALSE(IsGoogleHomePageUrl("https://www.google.com/WEBHP"));
+  EXPECT_FALSE(IsHomePage("https://www.google.com/WEBHP"));
 }
 
 TEST(GoogleUtilTest, GoodSearchPagesNonSecure) {
   // Queries with path "/search" need to have the query parameter in either
   // the url parameter or the hash fragment.
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/search?q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/search#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/search?name=bob&q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/search?name=bob#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/search?name=bob#age=24&q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.co.uk/search?q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/search?q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/search#q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/search?name=bob&q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/search?name=bob#q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/search?name=bob#age=24&q=thing"));
+  EXPECT_TRUE(IsSearch("http://www.google.co.uk/search?q=something"));
   // It's actually valid for both to have the query parameter.
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/search?q=something#q=other"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/search?q=something#q=other"));
 
   // Queries with path "/webhp", "/" or "" need to have the query parameter in
   // the hash fragment.
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/webhp#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/webhp#name=bob&q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/webhp?name=bob#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/webhp?name=bob#age=24&q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/webhp#q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/webhp#name=bob&q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/webhp?name=bob#q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/webhp?name=bob#age=24&q=thing"));
 
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/#name=bob&q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/?name=bob#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com/?name=bob#age=24&q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/#q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/#name=bob&q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/?name=bob#q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com/?name=bob#age=24&q=something"));
 
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com#name=bob&q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com?name=bob#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "http://www.google.com?name=bob#age=24&q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com#q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com#name=bob&q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com?name=bob#q=something"));
+  EXPECT_TRUE(IsSearch("http://www.google.com?name=bob#age=24&q=something"));
 }
 
 TEST(GoogleUtilTest, GoodSearchPagesSecure) {
   // Queries with path "/search" need to have the query parameter in either
   // the url parameter or the hash fragment.
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/search?q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/search#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/search?name=bob&q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/search?name=bob#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/search?name=bob#age=24&q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.co.uk/search?q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/search?q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/search#q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/search?name=bob&q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/search?name=bob#q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/search?name=bob#age=24&q=q"));
+  EXPECT_TRUE(IsSearch("https://www.google.co.uk/search?q=something"));
   // It's actually valid for both to have the query parameter.
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/search?q=something#q=other"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/search?q=something#q=other"));
 
   // Queries with path "/webhp", "/" or "" need to have the query parameter in
   // the hash fragment.
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/webhp#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/webhp#name=bob&q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/webhp?name=bob#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/webhp?name=bob#age=24&q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/webhp#q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/webhp#name=bob&q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/webhp?name=bob#q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/webhp?name=bob#age=24&q=thing"));
 
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/#name=bob&q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/?name=bob#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com/?name=bob#age=24&q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/#q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/#name=bob&q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/?name=bob#q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com/?name=bob#age=24&q=something"));
 
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com#name=bob&q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com?name=bob#q=something"));
-  EXPECT_TRUE(IsGoogleSearchUrl(
-      "https://www.google.com?name=bob#age=24&q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com#q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com#name=bob&q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com?name=bob#q=something"));
+  EXPECT_TRUE(IsSearch("https://www.google.com?name=bob#age=24&q=something"));
 }
 
 TEST(GoogleUtilTest, BadSearches) {
   // A home page URL should not be identified as a search URL.
-  EXPECT_FALSE(IsGoogleSearchUrl(GoogleURLTracker::kDefaultGoogleHomepage));
-  EXPECT_FALSE(IsGoogleSearchUrl("http://google.com"));
-  EXPECT_FALSE(IsGoogleSearchUrl("http://www.google.com"));
-  EXPECT_FALSE(IsGoogleSearchUrl("http://www.google.com/search"));
-  EXPECT_FALSE(IsGoogleSearchUrl("http://www.google.com/search?"));
+  EXPECT_FALSE(IsSearch(GoogleURLTracker::kDefaultGoogleHomepage));
+  EXPECT_FALSE(IsSearch("http://google.com"));
+  EXPECT_FALSE(IsSearch("http://www.google.com"));
+  EXPECT_FALSE(IsSearch("http://www.google.com/search"));
+  EXPECT_FALSE(IsSearch("http://www.google.com/search?"));
 
   // Must be http or https
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "ftp://www.google.com/search?q=something"));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "file://does/not/exist/search?q=something"));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "bad://www.google.com/search?q=something"));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "www.google.com/search?q=something"));
+  EXPECT_FALSE(IsSearch("ftp://www.google.com/search?q=something"));
+  EXPECT_FALSE(IsSearch("file://does/not/exist/search?q=something"));
+  EXPECT_FALSE(IsSearch("bad://www.google.com/search?q=something"));
+  EXPECT_FALSE(IsSearch("www.google.com/search?q=something"));
 
   // Can't have an empty query parameter.
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/search?q="));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/search?name=bob&q="));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/webhp#q="));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/webhp#name=bob&q="));
+  EXPECT_FALSE(IsSearch("http://www.google.com/search?q="));
+  EXPECT_FALSE(IsSearch("http://www.google.com/search?name=bob&q="));
+  EXPECT_FALSE(IsSearch("http://www.google.com/webhp#q="));
+  EXPECT_FALSE(IsSearch("http://www.google.com/webhp#name=bob&q="));
 
   // Home page searches without a hash fragment query parameter are invalid.
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/webhp?q=something"));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/webhp?q=something#no=good"));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/webhp?name=bob&q=something"));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/?q=something"));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com?q=something"));
+  EXPECT_FALSE(IsSearch("http://www.google.com/webhp?q=something"));
+  EXPECT_FALSE(IsSearch("http://www.google.com/webhp?q=something#no=good"));
+  EXPECT_FALSE(IsSearch("http://www.google.com/webhp?name=bob&q=something"));
+  EXPECT_FALSE(IsSearch("http://www.google.com/?q=something"));
+  EXPECT_FALSE(IsSearch("http://www.google.com?q=something"));
 
   // Some paths are outright invalid as searches.
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/notreal?q=something"));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/chrome?q=something"));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/search/nogood?q=something"));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/webhp/nogood#q=something"));
-  EXPECT_FALSE(IsGoogleSearchUrl(std::string()));
+  EXPECT_FALSE(IsSearch("http://www.google.com/notreal?q=something"));
+  EXPECT_FALSE(IsSearch("http://www.google.com/chrome?q=something"));
+  EXPECT_FALSE(IsSearch("http://www.google.com/search/nogood?q=something"));
+  EXPECT_FALSE(IsSearch("http://www.google.com/webhp/nogood#q=something"));
+  EXPECT_FALSE(IsSearch(std::string()));
 
   // Case sensitive paths.
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/SEARCH?q=something"));
-  EXPECT_FALSE(IsGoogleSearchUrl(
-      "http://www.google.com/WEBHP#q=something"));
+  EXPECT_FALSE(IsSearch("http://www.google.com/SEARCH?q=something"));
+  EXPECT_FALSE(IsSearch("http://www.google.com/WEBHP#q=something"));
 }
 
 TEST(GoogleUtilTest, GoogleDomains) {
   // Test some good Google domains (valid TLDs).
-  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.com"),
                                 google_util::ALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("http://google.com",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://google.com"),
                                 google_util::ALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.ca",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.ca"),
                                 google_util::ALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.biz.tj",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.biz.tj"),
                                 google_util::ALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com/search?q=something",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.com/search?q=thing"),
                                 google_util::ALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com/webhp",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.com/webhp"),
                                 google_util::ALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
 
   // Test some bad Google domains (invalid TLDs).
-  EXPECT_FALSE(IsGoogleDomainUrl("http://www.google.notrealtld",
+  EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://www.google.notrealtld"),
                                  google_util::ALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_FALSE(IsGoogleDomainUrl("http://www.google.faketld/search?q=something",
+  EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://www.google.faketld/search?q=q"),
                                  google_util::ALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_FALSE(IsGoogleDomainUrl("http://www.yahoo.com",
+  EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://www.yahoo.com"),
                                  google_util::ALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
 
   // Test subdomain checks.
-  EXPECT_TRUE(IsGoogleDomainUrl("http://images.google.com",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://images.google.com"),
                                 google_util::ALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_FALSE(IsGoogleDomainUrl("http://images.google.com",
+  EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://images.google.com"),
                                  google_util::DISALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("http://google.com",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://google.com"),
                                 google_util::DISALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.com"),
                                 google_util::DISALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
 
   // Port and scheme checks.
-  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com:80",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.com:80"),
                                 google_util::DISALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_FALSE(IsGoogleDomainUrl("http://www.google.com:123",
+  EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://www.google.com:123"),
                                  google_util::DISALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("https://www.google.com:443",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("https://www.google.com:443"),
                                 google_util::DISALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_FALSE(IsGoogleDomainUrl("http://www.google.com:123",
+  EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://www.google.com:123"),
                                  google_util::DISALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com:123",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.com:123"),
                                 google_util::DISALLOW_SUBDOMAIN,
                                 google_util::ALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("https://www.google.com:123",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("https://www.google.com:123"),
                                 google_util::DISALLOW_SUBDOMAIN,
                                 google_util::ALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com:80",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.com:80"),
                                 google_util::DISALLOW_SUBDOMAIN,
                                 google_util::ALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl("https://www.google.com:443",
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("https://www.google.com:443"),
                                 google_util::DISALLOW_SUBDOMAIN,
                                 google_util::ALLOW_NON_STANDARD_PORTS));
-  EXPECT_FALSE(IsGoogleDomainUrl("file://www.google.com",
+  EXPECT_FALSE(IsGoogleDomainUrl(GURL("file://www.google.com"),
                                  google_util::DISALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_FALSE(IsGoogleDomainUrl("doesnotexist://www.google.com",
+  EXPECT_FALSE(IsGoogleDomainUrl(GURL("doesnotexist://www.google.com"),
                                  google_util::DISALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
 }

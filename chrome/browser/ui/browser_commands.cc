@@ -375,8 +375,8 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
   // If the home page is a Google home page, add the RLZ header to the request.
   PrefService* pref_service = browser->profile()->GetPrefs();
   if (pref_service) {
-    std::string home_page = pref_service->GetString(prefs::kHomePage);
-    if (google_util::IsGoogleHomePageUrl(home_page)) {
+    if (google_util::IsGoogleHomePageUrl(
+        GURL(pref_service->GetString(prefs::kHomePage)))) {
       extra_headers = RLZTracker::GetAccessPointHttpHeader(
           RLZTracker::CHROME_HOME_PAGE);
     }

@@ -38,8 +38,7 @@ void VariationsHttpHeaderProvider::AppendHeaders(
   //    for this install of Chrome.
   // 4. For the X-Chrome-Variations, only include non-empty variation IDs.
   if (incognito ||
-      !google_util::IsGoogleDomainUrl(url.spec(),
-                                      google_util::ALLOW_SUBDOMAIN,
+      !google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
                                       google_util::ALLOW_NON_STANDARD_PORTS)) {
     return;
   }
