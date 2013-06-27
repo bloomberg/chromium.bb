@@ -1013,7 +1013,8 @@ class Segment {
   uint64 AddVideoTrack(int32 width, int32 height, int32 number);
 
   // This function must be called after Finalize() if you need a copy of the
-  // output with Cues written before the Clusters.
+  // output with Cues written before the Clusters. It will return false if the
+  // writer is not seekable of if chunking is set to true.
   // Input parameters:
   // reader - an IMkvReader object created with the same underlying file of the
   //          current writer object. Make sure to close the existing writer
