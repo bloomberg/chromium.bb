@@ -102,4 +102,9 @@ void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* dat
         m_inputs[portIndex]->didReceiveMIDIData(portIndex, data, length, timeStamp);
 }
 
+void MIDIAccess::stop()
+{
+    m_hasAccess = false;
+}
+
 } // namespace WebCore

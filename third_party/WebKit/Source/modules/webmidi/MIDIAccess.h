@@ -67,6 +67,7 @@ public:
 
     // ActiveDOMObject
     virtual bool canSuspend() const OVERRIDE { return true; }
+    virtual void stop();
 
     // MIDIAccessorClient
     virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
