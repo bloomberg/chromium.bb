@@ -154,7 +154,7 @@ TEST(StringBuilderTest, ToStringPreserveCapacity)
     ASSERT_EQ(capacity, builder.capacity());
     ASSERT_EQ(String("0123456789"), string);
     ASSERT_EQ(string.impl(), builder.toStringPreserveCapacity().impl());
-    ASSERT_EQ(string.characters(), builder.characters());
+    ASSERT_EQ(string.bloatedCharacters(), builder.characters());
 
     // Changing the StringBuilder should not affect the original result of toStringPreserveCapacity().
     builder.append("abcdefghijklmnopqrstuvwxyz");
@@ -165,7 +165,7 @@ TEST(StringBuilderTest, ToStringPreserveCapacity)
     capacity = builder.capacity();
     string = builder.toStringPreserveCapacity();
     ASSERT_EQ(capacity, builder.capacity());
-    ASSERT_EQ(string.characters(), builder.characters());
+    ASSERT_EQ(string.bloatedCharacters(), builder.characters());
     ASSERT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyz"), string);
     builder.append("ABC");
     ASSERT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyz"), string);
@@ -174,7 +174,7 @@ TEST(StringBuilderTest, ToStringPreserveCapacity)
     capacity = builder.capacity();
     String string1 = builder.toStringPreserveCapacity();
     ASSERT_EQ(capacity, builder.capacity());
-    ASSERT_EQ(string1.characters(), builder.characters());
+    ASSERT_EQ(string1.bloatedCharacters(), builder.characters());
     ASSERT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABC"), string1);
     string1.append("DEF");
     ASSERT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABC"), builder.toStringPreserveCapacity());
@@ -184,7 +184,7 @@ TEST(StringBuilderTest, ToStringPreserveCapacity)
     capacity = builder.capacity();
     string1 = builder.toStringPreserveCapacity();
     ASSERT_EQ(capacity, builder.capacity());
-    ASSERT_EQ(string.characters(), builder.characters());
+    ASSERT_EQ(string.bloatedCharacters(), builder.characters());
     builder.resize(10);
     builder.append("###");
     ASSERT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABC"), string1);

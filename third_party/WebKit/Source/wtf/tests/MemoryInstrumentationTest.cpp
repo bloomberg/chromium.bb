@@ -350,7 +350,7 @@ TEST(MemoryInstrumentationTest, visitStrings)
     { // 8-bit string with 16bit shadow.
         InstrumentationTestHelper helper;
         InstrumentedOwner<String> stringInstrumentedOwner("String");
-        stringInstrumentedOwner.m_value.characters();
+        stringInstrumentedOwner.m_value.bloatedCharacters();
         helper.addRootObject(stringInstrumentedOwner);
         EXPECT_EQ(sizeof(StringImpl) + stringInstrumentedOwner.m_value.length() * (sizeof(LChar) + sizeof(UChar)), helper.reportedSizeForAllTypes());
         EXPECT_EQ(2u, helper.visitedObjects());
@@ -359,7 +359,7 @@ TEST(MemoryInstrumentationTest, visitStrings)
     { // 16 bit string.
         InstrumentationTestHelper helper;
         String string("String");
-        InstrumentedOwner<String> stringInstrumentedOwner(String(string.characters(), string.length()));
+        InstrumentedOwner<String> stringInstrumentedOwner(String(string.bloatedCharacters(), string.length()));
         helper.addRootObject(stringInstrumentedOwner);
         EXPECT_EQ(sizeof(StringImpl) + stringInstrumentedOwner.m_value.length() * sizeof(UChar), helper.reportedSizeForAllTypes());
         EXPECT_EQ(1u, helper.visitedObjects());
@@ -386,7 +386,7 @@ TEST(MemoryInstrumentationTest, visitStrings)
     { // Substring
         InstrumentationTestHelper helper;
         String baseString("String");
-        baseString.characters(); // Force 16 shadow creation.
+        baseString.bloatedCharacters(); // Force 16 shadow creation.
         InstrumentedOwner<String> stringInstrumentedOwner(baseString.substringSharingImpl(1, 4));
         helper.addRootObject(stringInstrumentedOwner);
         EXPECT_EQ(sizeof(StringImpl) * 2 + baseString.length() * (sizeof(LChar) + sizeof(UChar)), helper.reportedSizeForAllTypes());
@@ -405,7 +405,7 @@ TEST(MemoryInstrumentationTest, visitStrings)
     {
         InstrumentationTestHelper helper;
         InstrumentedOwner<AtomicString> atomicStringInstrumentedOwner("AtomicString");
-        atomicStringInstrumentedOwner.m_value.string().characters(); // Force 16bit shadow creation.
+        atomicStringInstrumentedOwner.m_value.string().bloatedCharacters(); // Force 16bit shadow creation.
         helper.addRootObject(atomicStringInstrumentedOwner);
         EXPECT_EQ(sizeof(StringImpl) + atomicStringInstrumentedOwner.m_value.length() * (sizeof(LChar) + sizeof(UChar)), helper.reportedSizeForAllTypes());
         EXPECT_EQ(2u, helper.visitedObjects());

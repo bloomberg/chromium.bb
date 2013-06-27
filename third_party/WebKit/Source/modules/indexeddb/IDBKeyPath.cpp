@@ -43,8 +43,8 @@ public:
 
     explicit IDBKeyPathLexer(const String& s)
         : m_string(s)
-        , m_ptr(s.characters())
-        , m_end(s.characters() + s.length())
+        , m_ptr(s.bloatedCharacters())
+        , m_end(s.bloatedCharacters() + s.length())
         , m_currentTokenType(TokenError)
     {
     }
