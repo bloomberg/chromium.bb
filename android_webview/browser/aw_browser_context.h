@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "android_webview/browser/aw_autofill_manager_delegate.h"
 #include "android_webview/browser/aw_download_manager_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -110,7 +109,6 @@ class AwBrowserContext : public content::BrowserContext,
       geolocation_permission_context_;
   scoped_ptr<AwQuotaManagerBridge> quota_manager_bridge_;
   scoped_ptr<AwFormDatabaseService> form_database_service_;
-  scoped_ptr<AwAutofillManagerDelegate> autofill_manager_delegate_;
 
   AwDownloadManagerDelegate download_manager_delegate_;
 
