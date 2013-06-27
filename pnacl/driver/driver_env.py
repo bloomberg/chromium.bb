@@ -179,11 +179,8 @@ INITIAL_ENV = {
   'RANLIB'         : '${BINUTILS_BASE}ranlib${EXEC_EXT}',
   'READELF'        : '${BINUTILS_BASE}readelf${EXEC_EXT}',
   'STRIP'          : '${BINUTILS_BASE}strip${EXEC_EXT}',
-  # bitcode linker
-  'LD_GOLD'        : '${BINUTILS_BASE}ld.gold${EXEC_EXT}',
-  # final linker
-  'LD_old'     : '${BINUTILS_BASE}ld${EXEC_EXT}',
-  'LD_new'      : '${BINUTILS_BASE}ld.gold${EXEC_EXT}',
+  # linker (used for both bitcode and ELF linking)
+  'LD'        : '${BINUTILS_BASE}ld.gold${EXEC_EXT}',
 
   # Use the default command line arguments to the sandboxed translator.
   'USE_DEFAULT_CMD_LINE': '1',

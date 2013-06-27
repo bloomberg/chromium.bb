@@ -85,10 +85,6 @@ readonly PNACL_SUPPORT="${PNACL_ROOT}/support"
 readonly THIRD_PARTY="${NACL_ROOT}"/../third_party
 readonly NACL_SRC_THIRD_PARTY_MOD="${NACL_ROOT}/src/third_party_mod"
 
-# The location of Mercurial sources (absolute)
-readonly TC_SRC="${PNACL_ROOT}/src"
-readonly TC_SRC_GOLD="${TC_SRC}/gold"
-
 # Git sources
 readonly PNACL_GIT_ROOT="${PNACL_ROOT}/git"
 readonly TC_SRC_BINUTILS="${PNACL_GIT_ROOT}/binutils"
@@ -103,18 +99,17 @@ readonly TC_SRC_CLANG="${PNACL_GIT_ROOT}/clang"
 readonly SERVICE_RUNTIME_SRC="${NACL_ROOT}/src/trusted/service_runtime"
 readonly EXPORT_HEADER_SCRIPT="${SERVICE_RUNTIME_SRC}/export_header.py"
 readonly NACL_SYS_HEADERS="${SERVICE_RUNTIME_SRC}/include"
-readonly NACL_HEADERS_TS="${TC_SRC}/nacl.sys.timestamp"
 readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib/libc/include"
 
 # The location of each project. These should be absolute paths.
 readonly TC_BUILD="${PNACL_ROOT}/build"
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm_${HOST_ARCH}"
 readonly TC_BUILD_BINUTILS="${TC_BUILD}/binutils_${HOST_ARCH}"
-readonly TC_BUILD_GOLD="${TC_BUILD}/gold${HOST_ARCH}"
 readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
 readonly TC_BUILD_NEWLIB="${TC_BUILD}/newlib"
 readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
 readonly TC_BUILD_GCC="${TC_BUILD}/gcc"
+readonly NACL_HEADERS_TS="${TC_BUILD}/nacl.sys.timestamp"
 
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
@@ -267,15 +262,6 @@ get-sbtc-llvm-arches() {
 SBTC_ARCHES_LLVM=$(get-sbtc-llvm-arches)
 
 
-# Current milestones in each repo
-readonly GOLD_REV=05972fcedd1f
-
-# Repositories
-# NOTE: this is essentially another binutils repo but a much more
-#       recent revision to pull in all the latest gold changes
-# TODO(robertm): merge the two repos -- ideally when we migrate to git
-readonly REPO_GOLD="nacl-llvm-branches.gold"
-
 CC=${CC:-gcc}
 CXX=${CXX:-g++}
 AR=${AR:-ar}
@@ -351,19 +337,6 @@ setup-newlib-env() {
 ######################################################################
 ######################################################################
 
-#@-------------------------------------------------------------------------
-
-#@ hg-info-all         - Show status of repositories
-hg-info-all() {
-  hg-pull-all
-
-  hg-info "${TC_SRC_GOLD}"       ${GOLD_REV}
-}
-
-update-all() {
-  hg-update-gold
-}
-
 # Convert a path given on the command-line to an absolute path.
 # This takes into account the fact that we changed directories at the
 # beginning of this script. PWD_ON_ENTRY is used to remember the
@@ -376,102 +349,13 @@ ArgumentToAbsolutePath() {
   cd "${savepwd}"
 }
 
-hg-assert-safe-to-update() {
-  local name="$1"
-  local dir="$2"
-  local rev="$3"
-  local defstr=$(echo "${name}" | tr '[a-z]-' '[A-Z]_')
-
-  if ! hg-has-changes "${dir}"; then
-    return 0
-  fi
-
-  if hg-at-revision "${dir}" "${rev}" ; then
-    return 0
-  fi
-
-  Banner \
-    "                         ERROR                          " \
-    "                                                        " \
-    " Repository '${name}' needs to be updated to the stable " \
-    " revision but has local modifications.                  " \
-    "                                                        " \
-    " If your repository is behind stable, update it using:  " \
-    "                                                        " \
-    "   cd pnacl/src/${name}; hg update ${rev}               " \
-    "   (you may need to resolve conflicts)                  " \
-    "                                                        " \
-    " If your repository is ahead of stable, then modify:    " \
-    "   ${defstr}_REV   (in pnacl/build.sh)                  " \
-    " to suppress this error message.                        "
-  exit -1
-}
-
-hg-bot-sanity() {
-  local name="$1"
-  local dir="$2"
-
-  if ! hg-on-branch "${dir}" pnacl-sfi ||
-     hg-has-changes "${dir}" ; then
-    Banner "WARNING: ${name} repository is in an illegal state." \
-           "         Wiping and trying again."
-    rm -rf "${dir}"
-    hg-checkout-${name}
-  fi
-}
-
-hg-update-common() {
-  local name="$1"
-  local rev="$2"
-  local dir="$3"
-
-  if ${PNACL_BUILDBOT} ; then
-      hg-bot-sanity "${name}" "${dir}"
-  fi
-
-  # Make sure it is safe to update
-  hg-assert-branch "${dir}" pnacl-sfi
-  hg-assert-safe-to-update "${name}" "${dir}" "${rev}"
-
-  if hg-at-revision "${dir}" "${rev}" ; then
-    StepBanner "HG-UPDATE" "Repo ${name} already at ${rev}"
-  else
-    StepBanner "HG-UPDATE" "Updating ${name} to ${rev}"
-    hg-pull "${dir}"
-    hg-update "${dir}" ${rev}
-  fi
-}
-
-#@ hg-update-gold    - Update GOLD to the stable revision
-hg-update-gold() {
-  hg-update-common "gold" ${GOLD_REV} "${TC_SRC_GOLD}"
-}
-
-#@ hg-pull-all           - Pull all repos. (but do not update working copy)
-#@ hg-pull-REPO          - Pull repository REPO.
-#@                         (REPO can be llvm, binutils)
-hg-pull-all() {
-  StepBanner "HG-PULL" "Running 'hg pull' in all repos..."
-  hg-pull-gold
-}
-
-hg-pull-gold() {
-  hg-pull "${TC_SRC_GOLD}"
-}
-
-
-#@ checkout-all          - check out repos needed to build toolchain
-#@                          (skips repos which are already checked out)
-checkout-all() {
-  StepBanner "CHECKOUT-ALL"
-  hg-checkout-gold
+#@ sync-sources          - check out repos needed to build toolchain
+sync-sources() {
+  StepBanner "SYNC SOURCES"
+  mkdir -p "${INSTALL_ROOT}"
   llvm-unlink-clang # TODO(dschuff): check if this is still necessary
   git-sync
   llvm-link-clang
-}
-
-hg-checkout-gold() {
-  hg-checkout ${REPO_GOLD} "${TC_SRC_GOLD}" ${GOLD_REV}
 }
 
 git-sync() {
@@ -593,16 +477,7 @@ libs() {
 #@ everything            - Build and install untrusted SDK. no translator
 everything() {
   sync-sources
-
   build-all
-}
-
-#@ sync-sources         - Checkout everything from the repositories
-sync-sources() {
-  mkdir -p "${INSTALL_ROOT}"
-  checkout-all
-  StepBanner "Updating repositories"
-  update-all
 }
 
 #@ build-all does everything AFTER getting the sources
@@ -637,7 +512,6 @@ build-all() {
 build-host() {
   binutils
   llvm
-  binutils-gold
   if ${PNACL_PRUNE}; then
     prune-host
   fi
@@ -2371,128 +2245,6 @@ GetTranslatorBuildDir() {
 GetTranslatorInstallDir() {
   local arch="$1"
   echo "${INSTALL_TRANSLATOR}"/${arch}
-}
-
-#+-------------------------------------------------------------------------
-#+ binutils-gold - Build and install gold (unsandboxed)
-#+                 This is the replacement for the old
-#+                 final linker which was bfd based.
-#+                 It has nothing to do with the bitcode linker
-#+                 which is also gold based.
-binutils-gold() {
-  StepBanner "GOLD-NATIVE" "(libiberty + gold)"
-
-  local srcdir="${TC_SRC_GOLD}"
-  assert-dir "${srcdir}" "You need to checkout gold."
-
-  binutils-gold-clean
-  binutils-gold-configure
-  binutils-gold-make
-  binutils-gold-install
-}
-
-# binutils-gold-clean - Clean gold
-binutils-gold-clean() {
-  StepBanner "GOLD-NATIVE" "Clean"
-  local objdir="${TC_BUILD_GOLD}"
-
-  rm -rf "${objdir}"
-  mkdir -p "${objdir}"
-}
-
-# binutils-gold-configure - Configure binutils for gold (unsandboxed)
-binutils-gold-configure() {
-  local srcdir="${TC_SRC_GOLD}"
-  local objdir="${TC_BUILD_GOLD}"
-
-  local flags="-fno-exceptions"
-  StepBanner "GOLD-NATIVE" "Configure (libiberty)"
-  # Gold depends on liberty only for a few functions:
-  # xrealloc, lbasename, etc.
-  # we could remove these if necessary
-  mkdir -p "${objdir}/libiberty"
-  spushd "${objdir}/libiberty"
-  RunWithLog gold.configure \
-    env -i \
-    PATH="${PATH}" \
-    CC="${CC} ${flags}" \
-    CXX="${CXX} ${flags}" \
-    ${srcdir}/libiberty/configure --prefix="${BINUTILS_INSTALL_DIR}"
-
-  spopd
-
-  StepBanner "GOLD-NATIVE" "Configure (gold)"
-  # NOTE: we are still building one unnecessary target: "32bit big-endian"
-  # which is dragged in by targ_extra_big_endian=true in
-  # pnacl/src/gold/gold/configure.tgt
-  # removing it causes undefined symbols during linking of gold.
-  # The potential savings are guesstimated to be 300kB in binary size
-  local gold_targets="i686-pc-nacl,x86_64-pc-nacl,arm-pc-nacl,mips32-pc-nacl"
-
-  mkdir -p "${objdir}/gold"
-  spushd "${objdir}/gold"
-  RunWithLog gold.configure \
-    env -i \
-    PATH="${PATH}" \
-    CC="${CC}" \
-    CXX="${CXX}" \
-    ac_cv_search_zlibVersion=no \
-    ac_cv_header_sys_mman_h=no \
-    ac_cv_func_mmap=no \
-    ac_cv_func_mallinfo=no \
-    ${srcdir}/gold/configure --prefix="${BINUTILS_INSTALL_DIR}" \
-                                      --enable-targets=${gold_targets} \
-                                      --disable-nls \
-                                      --enable-plugins=no \
-                                      --disable-werror \
-                                      --with-sysroot="${NONEXISTENT_PATH}"
-  # Note: the extra ac_cv settings:
-  # * eliminate unnecessary use of zlib
-  # * eliminate use of mmap
-  # (those should not have much impact on the non-sandboxed
-  # version but help in the sandboxed case)
-
-  # There's no point in setting the correct path as sysroot, because we
-  # want the toolchain to be relocatable. The driver will use ld command-line
-  # option --sysroot= to override this value and set it to the correct path.
-  # However, we need to include --with-sysroot during configure to get this
-  # option. So fill in a non-sense, non-existent path.
-  spopd
-}
-
-# binutils-gold-make - Make binutils (unsandboxed)
-binutils-gold-make() {
-  local objdir="${TC_BUILD_GOLD}"
-  ts-touch-open "${objdir}/"
-
-  StepBanner "GOLD-NATIVE" "Make (liberty)"
-  spushd "${objdir}/libiberty"
-
-  RunWithLog gold.make \
-      env -i PATH="${PATH}" \
-      make ${MAKE_OPTS_HOST}
-  spopd
-
-  StepBanner "GOLD-NATIVE" "Make (gold)"
-  spushd "${objdir}/gold"
-  RunWithLog gold.make \
-      env -i PATH="${PATH}" \
-      make ${MAKE_OPTS_HOST} ld-new${EXEC_EXT}
-  spopd
-
-  ts-touch-commit "${objdir}"
-}
-
-# binutils-gold-install - Install gold
-binutils-gold-install() {
-  StepBanner "GOLD-NATIVE" "Install [${BINUTILS_INSTALL_DIR}]"
-  local src=${TC_BUILD_GOLD}/gold/ld-new
-  local dst=${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld
-  # Note, the "*" is for windows where ld-new is actually ld-new.exe
-  ls -l  ${src}*
-  # Note, this does the right thing on windows:
-  # "cp" has built-in smarts to deal with the ".exe" extension of ld-new
-  cp ${src} ${dst}
 }
 
 ### Sandboxed version of gold.

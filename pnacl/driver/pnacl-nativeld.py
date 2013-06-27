@@ -27,49 +27,27 @@ EXTRA_ENV = {
   'LLC_TRANSLATED_FILE' : '',
   'STDLIB': '1',
 
-  # Use the new gold by default, but allow it to be overridden for now.
-  # TODO(dschuff): eventually remove the old linker and clean up the scripts.
-  'LINKER': 'new',
-
-  # These are used only for the static cases
-  # For the shared/dynamic case it does not really make sense
-  # to change them as there are assumptions made all over the
-  # place about them.
-  'BASE_TEXT': '0x20000',
-  'BASE_RODATA': '0x10020000',
-
   # Determine if we should build nexes compatible with the IRT.
   'USE_IRT' : '1',
-
-  # NOTE: -Tdata is used as a hack in old gold to influence the placement
-  # of the ro segment.
-  'LD_FLAGS_old': '--rosegment --native-client ' +
-                  '--keep-headers-out-of-load-segment ' +
-                  '${USE_IRT ? -Tdata=${BASE_RODATA}} -Ttext=${BASE_TEXT}',
 
   # Upstream gold has the segment gap built in, but the gap can be modified
   # when not using the IRT. The gap does need to be at least one bundle so the
   # halt sled can be added for the TCB in case the segment ends up being a
   # multiple of 64k.
-  'LD_FLAGS_new': '${!USE_IRT ? --rosegment-gap=32} ',
-
   # --eh-frame-hdr asks the linker to generate an .eh_frame_hdr section,
   # which is a presorted list of registered frames. This section is
   # used by libgcc_eh/libgcc_s to avoid doing the sort during runtime.
   # http://www.airs.com/blog/archives/462
   #
-  'LD_FLAGS'    : '${LD_FLAGS_%LINKER%} ' +
-                  '-nostdlib ' +
+  'LD_FLAGS'    : '-nostdlib ' +
                   # Only relevant for ARM where it suppresses a warning.
                   # Ignored for other archs.
                   '--no-fix-cortex-a8 ' +
                   '-m ${LD_EMUL} ' +
                   '--eh-frame-hdr ' +
-                  '-static',
+                  '-static ' +
+                  '${!USE_IRT ? --rosegment-gap=32}',
 
-  # This may contain the metadata file, which is passed to LD with --metadata.
-  # It must be passed at the end of the link line.
-  'METADATA_FILE': '',
   'NEEDED_LIBRARIES': '',
 
   'LD_EMUL'        : '${LD_EMUL_%ARCH%}',
@@ -89,14 +67,13 @@ EXTRA_ENV = {
   'LIBS_MIPS32'      : '${BASE_LIB_NATIVE}mips32',
 
   # Note: this is only used in the unsandboxed case
-  'RUN_LD' : '${LD_%LINKER%} ${LD_FLAGS} ${inputs} -o ${output}'
+  'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o ${output}'
 }
 
 def PassThrough(*args):
   env.append('LD_FLAGS', *args)
 
 LDPatterns = [
-  ( '--pnacl-nativeld=(.+)', "env.set('LINKER', $0)"),
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
 
@@ -110,17 +87,10 @@ LDPatterns = [
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
   ( ('-L', '(.*)'),
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
-  # Note: we conflate '-Ttext' and '--section-start .text=' here
-  # This is not quite right but it is the intention of the tests
-  # using the flags which want to control the placement of the
-  # "rx" and "r" segments
-  # TODO(dschuff): clean this up when we go down to 1 linker
-  ( ('-Ttext','(.*)'),                  "env.set('BASE_TEXT', $0)"),
-  ( ('-Ttext=(.*)'),                    "env.set('BASE_TEXT', $0)"),
-  ( ('-Ttext-segment=(.*)'),            "env.set('BASE_TEXT', $0)"),
-  ( ('--section-start','.text=(.*)'),   "env.set('BASE_TEXT', $0)"),
-  ( ('--section-start','.rodata=(.*)'), "env.set('BASE_RODATA', $0)"),
 
+  # Note: we do not yet support all the flags such as '-Ttext',
+  # '--section-start .text=', etc because the corner cases of layout in gold may
+  # not all be worked out yet. They can be added (and tested!) as needed.
   ( ('(-e)','(.*)'),              PassThrough),
   ( '(--entry=.*)',               PassThrough),
   ( '(-M)',                       PassThrough),

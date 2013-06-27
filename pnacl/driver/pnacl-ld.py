@@ -95,13 +95,12 @@ EXTRA_ENV = {
   'LIBS_MIPS32'      : '${BASE_GLIBC}/lib-mips32',
   # HACK-END
 
-  'LD_GOLD_OFORMAT'        : '${LD_GOLD_OFORMAT_%ARCH%}',
-  'LD_GOLD_OFORMAT_ARM'    : 'elf32-littlearm',
-  'LD_GOLD_OFORMAT_X8632'  : 'elf32-i386-nacl',
-  'LD_GOLD_OFORMAT_X8664'  : 'elf64-x86-64-nacl',
-  'LD_GOLD_OFORMAT_MIPS32' : 'elf32-tradlittlemips',
+  'BCLD_OFORMAT'        : '${BCLD_OFORMAT_%ARCH%}',
+  'BCLD_OFORMAT_ARM'    : 'elf32-littlearm',
+  'BCLD_OFORMAT_X8632'  : 'elf32-i386-nacl',
+  'BCLD_OFORMAT_X8664'  : 'elf64-x86-64-nacl',
+  'BCLD_OFORMAT_MIPS32' : 'elf32-tradlittlemips',
 
-  'BCLD'                   : '${LD_GOLD}',
   'BCLD_ALLOW_UNRESOLVED'  :
     # The following functions are implemented in the native support library.
     # Before a .pexe is produced, they get rewritten to intrinsic calls.
@@ -131,10 +130,10 @@ EXTRA_ENV = {
       '--allow-unresolved=_Unwind_SetIP}',
 
   'BCLD_FLAGS':
-    '--oformat ${LD_GOLD_OFORMAT} -Ttext=0x20000 ' +
+    '--oformat ${BCLD_OFORMAT} -Ttext=0x20000 ' +
     '${!SHARED && !RELOCATABLE ? --undef-sym-check ${BCLD_ALLOW_UNRESOLVED}} ' +
     '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
-  'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} -o ${output}'),
+  'RUN_BCLD': ('${LD} ${BCLD_FLAGS} ${inputs} -o ${output}'),
 
   'ALLOW_CXX_EXCEPTIONS': '0',
   'ALLOW_NEXE_BUILD_ID': '0',

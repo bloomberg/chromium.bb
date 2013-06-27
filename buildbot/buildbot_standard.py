@@ -205,7 +205,6 @@ def RemoveGypBuildDirectories():
   RemoveDirectory('build/Release-x64')
 
   # Linux and Mac
-  RemoveDirectory('hg')
   RemoveDirectory('../xcodebuild')
   RemoveDirectory('../sconsbuild')
   RemoveDirectory('../out')
