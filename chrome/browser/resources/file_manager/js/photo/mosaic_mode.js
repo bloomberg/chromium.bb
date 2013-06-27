@@ -33,6 +33,11 @@ MosaicMode.prototype.getMosaic = function() { return this.mosaic_ };
 MosaicMode.prototype.getName = function() { return 'mosaic' };
 
 /**
+ * @return {string} Mode title.
+ */
+MosaicMode.prototype.getTitle = function() { return 'GALLERY_MOSAIC' };
+
+/**
  * Execute an action (this mode has no busy state).
  * @param {function} action Action to execute.
  */

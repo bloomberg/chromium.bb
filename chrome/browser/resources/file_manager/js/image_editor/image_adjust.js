@@ -135,7 +135,7 @@ ImageEditor.Mode.ColorFilter.prototype.getHistogram = function() {
  * @constructor
  */
 ImageEditor.Mode.Exposure = function() {
-  ImageEditor.Mode.ColorFilter.call(this, 'exposure');
+  ImageEditor.Mode.ColorFilter.call(this, 'exposure', 'GALLERY_EXPOSURE');
 };
 
 ImageEditor.Mode.Exposure.prototype =
@@ -146,8 +146,8 @@ ImageEditor.Mode.Exposure.prototype =
  * @param {ImageEditor.Toolbar} toolbar The toolbar to populate.
  */
 ImageEditor.Mode.Exposure.prototype.createTools = function(toolbar) {
-  toolbar.addRange('brightness', -1, 0, 1, 100);
-  toolbar.addRange('contrast', -1, 0, 1, 100);
+  toolbar.addRange('brightness', 'GALLERY_BRIGHTNESS', -1, 0, 1, 100);
+  toolbar.addRange('contrast', 'GALLERY_CONTRAST', -1, 0, 1, 100);
 };
 
 /**
@@ -155,7 +155,7 @@ ImageEditor.Mode.Exposure.prototype.createTools = function(toolbar) {
  * @constructor
  */
 ImageEditor.Mode.Autofix = function() {
-  ImageEditor.Mode.ColorFilter.call(this, 'autofix');
+  ImageEditor.Mode.ColorFilter.call(this, 'autofix', 'GALLERY_AUTOFIX');
   this.doneMessage_ = 'fixed';
 };
 
@@ -223,8 +223,8 @@ ImageEditor.Mode.Blur.prototype =
  * @param {ImageEditor.Toolbar} toolbar The toolbar to populate.
  */
 ImageEditor.Mode.Blur.prototype.createTools = function(toolbar) {
-  toolbar.addRange('strength', 0, 0, 1, 100);
-  toolbar.addRange('radius', 1, 1, 3);
+  toolbar.addRange('strength', 'GALLERY_STRENGTH', 0, 0, 1, 100);
+  toolbar.addRange('radius', 'GALLERY_RADIUS', 1, 1, 3);
 };
 
 /**
@@ -243,6 +243,6 @@ ImageEditor.Mode.Sharpen.prototype =
  * @param {ImageEditor.Toolbar} toolbar The toolbar to populate.
  */
 ImageEditor.Mode.Sharpen.prototype.createTools = function(toolbar) {
-  toolbar.addRange('strength', 0, 0, 1, 100);
-  toolbar.addRange('radius', 1, 1, 3);
+  toolbar.addRange('strength', 'GALLERY_STRENGTH', 0, 0, 1, 100);
+  toolbar.addRange('radius', 'GALLERY_RADIUS', 1, 1, 3);
 };

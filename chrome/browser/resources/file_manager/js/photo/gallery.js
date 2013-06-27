@@ -56,13 +56,7 @@ function Gallery(context) {
 
   this.dataModel_ = new cr.ui.ArrayDataModel([]);
   this.selectionModel_ = new cr.ui.ListSelectionModel();
-
-  var strf = context.displayStringFunction;
-  this.displayStringFunction_ = function(id, formatArgs) {
-    var args = Array.prototype.slice.call(arguments);
-    args[0] = 'GALLERY_' + id.toUpperCase();
-    return strf.apply(null, args);
-  };
+  this.displayStringFunction_ = context.displayStringFunction;
 
   this.initDom_();
   this.initListeners_();
@@ -326,14 +320,14 @@ Gallery.prototype.initDom_ = function() {
     cr.dispatchSimpleEvent(this, 'image-saved');
   }.bind(this));
 
-  this.printButton_ = this.createToolbarButton_('print', 'print');
+  this.printButton_ = this.createToolbarButton_('print', 'GALLERY_PRINT');
   this.printButton_.setAttribute('disabled', '');
   this.printButton_.addEventListener('click', this.print_.bind(this));
 
-  var deleteButton = this.createToolbarButton_('delete', 'delete');
+  var deleteButton = this.createToolbarButton_('delete', 'GALLERY_DELETE');
   deleteButton.addEventListener('click', this.delete_.bind(this));
 
-  this.shareButton_ = this.createToolbarButton_('share', 'share');
+  this.shareButton_ = this.createToolbarButton_('share', 'GALLERY_SHARE');
   this.shareButton_.setAttribute('disabled', '');
   this.shareButton_.addEventListener('click', this.toggleShare_.bind(this));
 
@@ -354,13 +348,13 @@ Gallery.prototype.initDom_ = function() {
 /**
  * Creates toolbar button.
  *
- * @param {string} clazz Class to add.
+ * @param {string} className Class to add.
  * @param {string} title Button title.
  * @return {HTMLElement} Newly created button.
  * @private
  */
-Gallery.prototype.createToolbarButton_ = function(clazz, title) {
-  var button = util.createChild(this.toolbar_, clazz, 'button');
+Gallery.prototype.createToolbarButton_ = function(className, title) {
+  var button = util.createChild(this.toolbar_, className, 'button');
   button.title = this.displayStringFunction_(title);
   return button;
 };
@@ -510,7 +504,7 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
     var oppositeMode =
         mode == this.slideMode_ ? this.mosaicMode_ : this.slideMode_;
     this.modeButton_.title =
-        this.displayStringFunction_(oppositeMode.getName());
+        this.displayStringFunction_(oppositeMode.getTitle());
   }
 
   // Printing is available only in the slide view.
@@ -611,12 +605,14 @@ Gallery.prototype.delete_ = function() {
     this.document_.body.addEventListener('keydown', this.keyDownBound_);
   }.bind(this);
 
-  cr.ui.dialogs.BaseDialog.OK_LABEL = this.displayStringFunction_('OK_LABEL');
+  cr.ui.dialogs.BaseDialog.OK_LABEL = this.displayStringFunction_(
+      'GALLERY_OK_LABEL');
   cr.ui.dialogs.BaseDialog.CANCEL_LABEL =
-      this.displayStringFunction_('CANCEL_LABEL');
+      this.displayStringFunction_('GALLERY_CANCEL_LABEL');
   var confirm = new cr.ui.dialogs.ConfirmDialog(this.container_);
-  confirm.show(this.displayStringFunction_(
-      plural ? 'CONFIRM_DELETE_SOME' : 'CONFIRM_DELETE_ONE', param),
+  confirm.show(
+      this.displayStringFunction_(plural ? 'GALLERY_CONFIRM_DELETE_SOME' :
+          'GALLERY_CONFIRM_DELETE_ONE', param),
       function() {
         restoreListener();
         this.selectionModel_.unselectAll();
@@ -768,7 +764,8 @@ Gallery.prototype.updateSelectionAndState_ = function() {
     path = this.context_.curDirEntry.fullPath;
     window.top.document.title = this.context_.curDirEntry.name;
     displayName =
-        this.displayStringFunction_('ITEMS_SELECTED', selectedItems.length);
+        this.displayStringFunction_('GALLERY_ITEMS_SELECTED',
+                                    selectedItems.length);
   }
 
   window.top.util.updateAppState(path,

@@ -9,7 +9,7 @@
  * @constructor
  */
 ImageEditor.Mode.Crop = function() {
-  ImageEditor.Mode.call(this, 'crop');
+  ImageEditor.Mode.call(this, 'crop', 'GALLERY_CROP');
 };
 
 ImageEditor.Mode.Crop.prototype = {__proto__: ImageEditor.Mode.prototype};

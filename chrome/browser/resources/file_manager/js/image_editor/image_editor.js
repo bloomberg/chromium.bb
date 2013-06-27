@@ -261,15 +261,18 @@ ImageEditor.prototype.onOptionsChange = function(options) {
 
 /**
  * ImageEditor.Mode represents a modal state dedicated to a specific operation.
- * Inherits from ImageBuffer.Overlay to simplify the drawing of
- * mode-specific tools.
+ * Inherits from ImageBuffer. Overlay to simplify the drawing of mode-specific
+ * tools.
+ *
  * @param {string} name The mode name.
+ * @param {string} title The mode title.
  * @constructor
  */
 
-ImageEditor.Mode = function(name) {
+ImageEditor.Mode = function(name, title) {
   this.name = name;
-  this.message_ = 'enter_when_done';
+  this.title = title;
+  this.message_ = 'GALLERY_ENTER_WHEN_DONE';
 };
 
 ImageEditor.Mode.prototype = {__proto__: ImageBuffer.Overlay.prototype };
@@ -365,12 +368,14 @@ ImageEditor.Mode.prototype.reset = function() {
 
 /**
  * One-click editor tool, requires no interaction, just executes the command.
+ *
  * @param {string} name The mode name.
+ * @param {string} title The mode title.
  * @param {Command} command The command to execute on click.
  * @constructor
  */
-ImageEditor.Mode.OneClick = function(name, command) {
-  ImageEditor.Mode.call(this, name);
+ImageEditor.Mode.OneClick = function(name, title, command) {
+  ImageEditor.Mode.call(this, name, title);
   this.instant = true;
   this.command_ = command;
 };
@@ -401,19 +406,28 @@ ImageEditor.prototype.createToolButtons = function() {
   this.actionNames_ = [];
 
   var self = this;
-  function createButton(name, handler) {
-    return self.mainToolbar_.addButton(name, handler, name);
+  function createButton(name, title, handler) {
+    return self.mainToolbar_.addButton(name,
+                                       title,
+                                       handler,
+                                       name /* opt_className */);
   }
 
   for (var i = 0; i != this.modes_.length; i++) {
     var mode = this.modes_[i];
-    mode.bind(this, createButton(mode.name, this.enterMode.bind(this, mode)));
+    mode.bind(this, createButton(mode.name,
+                                 mode.title,
+                                 this.enterMode.bind(this, mode)));
   }
 
-  this.undoButton_ = createButton('undo', this.undo.bind(this));
+  this.undoButton_ = createButton('undo',
+                                  'GALLERY_UNDO',
+                                  this.undo.bind(this));
   this.registerAction_('undo');
 
-  this.redoButton_ = createButton('redo', this.redo.bind(this));
+  this.redoButton_ = createButton('redo',
+                                  'GALLERY_REDO',
+                                  this.redo.bind(this));
   this.registerAction_('redo');
 };
 
@@ -921,19 +935,21 @@ ImageEditor.Toolbar.prototype.addLabel = function(name) {
 
 /**
  * Add a button.
+ *
  * @param {string} name Button name.
+ * @param {string} title Button title.
  * @param {function} handler onClick handler.
  * @param {string=} opt_class Extra class name.
  * @return {HTMLElement} The added button.
  */
 ImageEditor.Toolbar.prototype.addButton = function(
-    name, handler, opt_class) {
+    name, title, handler, opt_class) {
   var button = this.create_('button');
   if (opt_class) button.classList.add(opt_class);
   var label = this.create_('span');
-  label.textContent = this.displayStringFunction_(name);
+  label.textContent = this.displayStringFunction_(title);
   button.appendChild(label);
-  button.label = this.displayStringFunction_(name);
+  button.label = this.displayStringFunction_(title);
   button.addEventListener('click', handler, false);
   return this.add(button);
 };
@@ -942,6 +958,7 @@ ImageEditor.Toolbar.prototype.addButton = function(
  * Add a range control (scalar value picker).
  *
  * @param {string} name An option name.
+ * @param {string} title An option title.
  * @param {number} min Min value of the option.
  * @param {number} value Default value of the option.
  * @param {number} max Max value of the options.
@@ -951,7 +968,7 @@ ImageEditor.Toolbar.prototype.addButton = function(
  * @return {HTMLElement} Range element.
  */
 ImageEditor.Toolbar.prototype.addRange = function(
-    name, min, value, max, scale, opt_showNumeric) {
+    name, title, min, value, max, scale, opt_showNumeric) {
   var self = this;
 
   scale = scale || 1;
@@ -993,7 +1010,7 @@ ImageEditor.Toolbar.prototype.addRange = function(
   range.setValue(value);
 
   var label = this.create_('div');
-  label.textContent = this.displayStringFunction_(name);
+  label.textContent = this.displayStringFunction_(title);
   label.className = 'label ' + name;
   this.add(label);
   this.add(range);

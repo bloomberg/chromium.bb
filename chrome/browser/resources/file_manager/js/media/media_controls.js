@@ -1079,10 +1079,8 @@ VideoControls.prototype.toggleLoopedModeWithFeedback = function(on) {
     return;
   this.toggleLoopedMode(on);
   if (on) {
-    // TODO(mtomasz): Remove this hack - crbug.com/254317.
-    var inGallery = document.location.pathname == '/gallery.html';
-    this.showTextBanner_(inGallery ? 'VIDEO_LOOPED_MODE' :
-                                     'GALLERY_VIDEO_LOOPED_MODE');
+    // TODO(mtomasz): Simplify, crbug.com/254318.
+    this.showTextBanner_('GALLERY_VIDEO_LOOPED_MODE');
   }
 };
 
