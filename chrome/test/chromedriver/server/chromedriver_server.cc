@@ -116,6 +116,26 @@ int main(int argc, char *argv[]) {
   std::string url_base;
   int http_threads = 4;
   base::FilePath log_path;
+  Log::Level log_level = Log::kError;
+  if (cmd_line->HasSwitch("h") || cmd_line->HasSwitch("help")) {
+    std::string options;
+    const char* kOptionAndDescriptions[] = {
+        "port=PORT", "port to listen on",
+        "log-path=FILE", "write server log to file instead of stderr, "
+            "increases log level to INFO",
+        "verbose", "log verbosely",
+        "silent", "log nothing",
+        "url-base", "base URL path prefix for commands, e.g. wd/url",
+        "http-threads=THREAD_COUNT", "number of HTTP threads to spawn",
+    };
+    for (size_t i = 0; i < arraysize(kOptionAndDescriptions) - 1; i += 2) {
+      options += base::StringPrintf(
+          "  --%-30s%s\n",
+          kOptionAndDescriptions[i], kOptionAndDescriptions[i + 1]);
+    }
+    printf("Usage: %s [OPTIONS]\n\nOptions\n%s", argv[0], options.c_str());
+    return 0;
+  }
   if (cmd_line->HasSwitch("port"))
     port = cmd_line->GetSwitchValueASCII("port");
   if (cmd_line->HasSwitch("url-base"))
@@ -132,6 +152,7 @@ int main(int argc, char *argv[]) {
     }
   }
   if (cmd_line->HasSwitch("log-path")) {
+    log_level = Log::kLog;
     log_path = cmd_line->GetSwitchValuePath("log-path");
 #if defined(OS_WIN)
     FILE* redir_stderr = _wfreopen(log_path.value().c_str(), L"w", stderr);
@@ -143,6 +164,8 @@ int main(int argc, char *argv[]) {
       return 1;
     }
   }
+  if (cmd_line->HasSwitch("verbose"))
+    log_level = Log::kDebug;
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
@@ -154,11 +177,10 @@ int main(int argc, char *argv[]) {
                        false,  // enable_thread_id
                        false,  // enable_timestamp
                        false); // enable_tickcount
-  Log::Level level = Log::kLog;
-  if (cmd_line->HasSwitch("verbose"))
-    level = Log::kDebug;
+  if (!cmd_line->HasSwitch("verbose"))
+    logging::SetMinLogLevel(logging::LOG_FATAL);
 
-  scoped_ptr<Log> log(new Logger(level));
+  scoped_ptr<Log> log(new Logger(log_level));
   scoped_ptr<CommandExecutor> executor(new CommandExecutorImpl(log.get()));
   HttpHandler handler(
       log.get(), executor.Pass(), HttpHandler::CreateCommandMap(), url_base);
@@ -177,7 +199,7 @@ int main(int argc, char *argv[]) {
                                     &user_data,
                                     options.get());
   if (ctx == NULL) {
-    printf("Port already in use. Exiting...\n");
+    printf("Port not available. Exiting...\n");
     return 1;
   }
 
