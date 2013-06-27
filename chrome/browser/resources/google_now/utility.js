@@ -152,11 +152,32 @@ function buildTaskManager(areConflicting) {
    * @param {Error} error Error to report.
    */
   function sendErrorReport(error) {
-    var filteredStack = error.stack.replace(/.*\n/, '');
+    var filteredStack = error.stack.replace(/.*\n/, '\n');
+    var file;
+    var line;
+    var topFrameMatches = filteredStack.match(/\(.*\)/);
+    // topFrameMatches's example:
+    // (chrome-extension://pmofbkohncoogjjhahejjfbppikbjigm/utility.js:308:19)
+    var crashLocation = topFrameMatches && topFrameMatches[0];
+    if (crashLocation) {
+      var topFrameElements =
+          crashLocation.substring(1, crashLocation.length - 1).split(':');
+      // topFrameElements for the above example will look like:
+      // [0] chrome-extension
+      // [1] //pmofbkohncoogjjhahejjfbppikbjigm/utility.js
+      // [2] 308
+      // [3] 19
+      if (topFrameElements.length >= 3) {
+        file = topFrameElements[0] + ':' + topFrameElements[1];
+        line = topFrameElements[2];
+      }
+    }
     var requestParameters =
-        'name=' + escape(error.name) +
-        '&stack=' + escape(filteredStack);
-    var request = buildServerRequest('exception');
+        'error=' + encodeURIComponent(error.name) +
+        '&script=' + encodeURIComponent(file) +
+        '&line=' + encodeURIComponent(line) +
+        '&trace=' + encodeURIComponent(filteredStack);
+    var request = buildServerRequest('jserror');
     request.onloadend = function(event) {
       console.log('sendErrorReport status: ' + request.status);
     };
