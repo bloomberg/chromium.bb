@@ -27,6 +27,11 @@ ContentLayerUpdater::ContentLayerUpdater(
 
 ContentLayerUpdater::~ContentLayerUpdater() {}
 
+void ContentLayerUpdater::set_rendering_stats_instrumentation(
+    RenderingStatsInstrumentation* rsi) {
+  rendering_stats_instrumentation_ = rsi;
+}
+
 void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
                                         gfx::Rect content_rect,
                                         float contents_width_scale,

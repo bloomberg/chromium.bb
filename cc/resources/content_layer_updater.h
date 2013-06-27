@@ -20,6 +20,9 @@ class RenderingStatsInstrumentation;
 // SkPictureContentLayerUpdater that reduces code duplication between
 // their respective PaintContents implementations.
 class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
+ public:
+  void set_rendering_stats_instrumentation(RenderingStatsInstrumentation* rsi);
+
  protected:
   ContentLayerUpdater(scoped_ptr<LayerPainter> painter,
                       RenderingStatsInstrumentation* stats_instrumentation,

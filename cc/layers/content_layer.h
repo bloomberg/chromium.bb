@@ -15,7 +15,7 @@ class SkCanvas;
 namespace cc {
 
 class ContentLayerClient;
-class LayerUpdater;
+class ContentLayerUpdater;
 
 class CC_EXPORT ContentLayerPainter : public LayerPainter {
  public:
@@ -41,6 +41,7 @@ class CC_EXPORT ContentLayer : public TiledLayer {
   void ClearClient() { client_ = NULL; }
 
   virtual bool DrawsContent() const OVERRIDE;
+  virtual void SetLayerTreeHost(LayerTreeHost* layer_tree_host) OVERRIDE;
   virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
   virtual void Update(ResourceUpdateQueue* queue,
@@ -64,7 +65,7 @@ class CC_EXPORT ContentLayer : public TiledLayer {
   void UpdateCanUseLCDText();
 
   ContentLayerClient* client_;
-  scoped_refptr<LayerUpdater> updater_;
+  scoped_refptr<ContentLayerUpdater> updater_;
   bool can_use_lcd_text_last_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentLayer);
