@@ -48,7 +48,7 @@ static void DestroyWebPluginAndDelegate(
   if (delegate)
     delegate->PluginDestroyed();
 
-  delete webplugin;
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, webplugin);
 }
 
 WebPluginDelegateStub::WebPluginDelegateStub(
