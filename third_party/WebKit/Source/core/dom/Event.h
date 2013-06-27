@@ -166,8 +166,6 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
-    virtual PassRefPtr<Event> cloneFor(HTMLIFrameElement*) const;
-
 protected:
     Event();
     Event(const AtomicString& type, bool canBubble, bool cancelable);

@@ -98,8 +98,6 @@ public:
     virtual bool isDragEvent() const;
     virtual int which() const;
 
-    virtual PassRefPtr<Event> cloneFor(HTMLIFrameElement*) const OVERRIDE;
-
 protected:
     MouseEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>,
         int detail, int screenX, int screenY, int pageX, int pageY,
