@@ -121,6 +121,20 @@ TEST_F(FileSystemUtilTest, IsAbsolutePath) {
   EXPECT_FALSE(VirtualPath::IsAbsolute(FILE_PATH_LITERAL("foo/bar")));
 }
 
+TEST_F(FileSystemUtilTest, IsRootPath) {
+  EXPECT_TRUE(VirtualPath::IsRootPath(base::FilePath(FILE_PATH_LITERAL(""))));
+  EXPECT_TRUE(VirtualPath::IsRootPath(base::FilePath()));
+  EXPECT_TRUE(VirtualPath::IsRootPath(base::FilePath(FILE_PATH_LITERAL("/"))));
+  EXPECT_TRUE(VirtualPath::IsRootPath(base::FilePath(FILE_PATH_LITERAL("//"))));
+  EXPECT_FALSE(VirtualPath::IsRootPath(
+      base::FilePath(FILE_PATH_LITERAL("c:/"))));
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+  EXPECT_TRUE(VirtualPath::IsRootPath(base::FilePath(FILE_PATH_LITERAL("\\"))));
+  EXPECT_FALSE(VirtualPath::IsRootPath(
+      base::FilePath(FILE_PATH_LITERAL("c:\\"))));
+#endif
+}
+
 TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
   struct test_data {
     const base::FilePath::StringType path;

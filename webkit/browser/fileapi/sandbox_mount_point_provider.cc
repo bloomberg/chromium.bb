@@ -281,7 +281,7 @@ FilePermissionPolicy SandboxMountPointProvider::GetPermissionPolicy(
     return FILE_PERMISSION_ALWAYS_DENY;
 
   // Any write access is disallowed on the root path.
-  if ((url.path().empty() || VirtualPath::DirName(url.path()) == url.path())
+  if (VirtualPath::IsRootPath(url.path())
       && (permissions & ~kReadFilePermissions))
     return FILE_PERMISSION_ALWAYS_DENY;
 

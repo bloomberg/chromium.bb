@@ -59,6 +59,9 @@ class WEBKIT_STORAGE_COMMON_EXPORT VirtualPath {
 
   // Returns true if the given path begins with kRoot.
   static bool IsAbsolute(const base::FilePath::StringType& path);
+
+  // Returns true if the given path points to the root.
+  static bool IsRootPath(const base::FilePath& path);
 };
 
 // Returns the root URI of the filesystem that can be specified by a pair of

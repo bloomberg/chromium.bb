@@ -137,6 +137,14 @@ bool VirtualPath::IsAbsolute(const base::FilePath::StringType& path) {
   return path.find(kRoot) == 0;
 }
 
+bool VirtualPath::IsRootPath(const base::FilePath& path) {
+  std::vector<base::FilePath::StringType> components;
+  VirtualPath::GetComponents(path, &components);
+  return (path.empty() || components.empty() ||
+          (components.size() == 1 &&
+           components[0] == VirtualPath::kRoot));
+}
+
 GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
   // origin_url is based on a security origin, so http://foo.com or file:///
   // instead of the corresponding filesystem URL.
