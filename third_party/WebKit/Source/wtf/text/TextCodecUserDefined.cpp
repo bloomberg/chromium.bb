@@ -27,11 +27,11 @@
 #include "wtf/text/TextCodecUserDefined.h"
 
 #include <stdio.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuffer.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuffer.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace WTF {
 

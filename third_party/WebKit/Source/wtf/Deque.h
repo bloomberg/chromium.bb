@@ -34,8 +34,8 @@
 // Deque doesn't actually use Vector.
 
 #include <iterator>
-#include <wtf/PassTraits.h>
-#include <wtf/Vector.h>
+#include "wtf/PassTraits.h"
+#include "wtf/Vector.h"
 
 namespace WTF {
 

@@ -26,7 +26,7 @@
 
 #include "StdLibExtras.h"
 #include "ThreadingPrimitives.h"
-#include <wtf/DoublyLinkedList.h>
+#include "wtf/DoublyLinkedList.h"
 
 #if !USE(PTHREADS)
 

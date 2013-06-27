@@ -95,13 +95,13 @@
 #include "MainThread.h"
 #include "ThreadFunctionInvocation.h"
 #include <windows.h>
-#include <wtf/CurrentTime.h>
-#include <wtf/HashMap.h>
-#include <wtf/MathExtras.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RandomNumberSeed.h>
-#include <wtf/WTFThreadData.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/HashMap.h"
+#include "wtf/MathExtras.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RandomNumberSeed.h"
+#include "wtf/WTFThreadData.h"
 
 #if !USE(PTHREADS) && OS(WINDOWS)
 #include "ThreadSpecific.h"

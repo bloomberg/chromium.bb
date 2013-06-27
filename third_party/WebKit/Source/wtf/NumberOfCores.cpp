@@ -35,7 +35,7 @@
 #elif OS(LINUX) || OS(SOLARIS)
 #include <unistd.h>
 #elif OS(WINDOWS)
-#include <wtf/UnusedParam.h>
+#include "wtf/UnusedParam.h"
 #if OS(WINDOWS)
 #include <windows.h>
 #endif

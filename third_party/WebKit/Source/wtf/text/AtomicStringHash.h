@@ -29,8 +29,8 @@
 #ifndef AtomicStringHash_h
 #define AtomicStringHash_h
 
-#include <wtf/text/AtomicString.h>
-#include <wtf/HashTraits.h>
+#include "wtf/text/AtomicString.h"
+#include "wtf/HashTraits.h"
 
 namespace WTF {
 

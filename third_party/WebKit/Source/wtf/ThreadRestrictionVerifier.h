@@ -31,9 +31,9 @@
 #ifndef ThreadRestrictionVerifier_h
 #define ThreadRestrictionVerifier_h
 
-#include <wtf/Assertions.h>
-#include <wtf/Threading.h>
-#include <wtf/ThreadingPrimitives.h>
+#include "wtf/Assertions.h"
+#include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
 
 #if HAVE(DISPATCH_H)
 #include <dispatch/dispatch.h>

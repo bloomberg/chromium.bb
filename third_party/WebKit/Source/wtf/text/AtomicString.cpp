@@ -25,10 +25,10 @@
 #include "AtomicString.h"
 
 #include "StringHash.h"
-#include <wtf/HashSet.h>
-#include <wtf/Threading.h>
-#include <wtf/WTFThreadData.h>
-#include <wtf/unicode/UTF8.h>
+#include "wtf/HashSet.h"
+#include "wtf/Threading.h"
+#include "wtf/WTFThreadData.h"
+#include "wtf/unicode/UTF8.h"
 
 namespace WTF {
 

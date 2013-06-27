@@ -84,7 +84,7 @@
 #include <limits>
 #include <stdint.h>
 #include <time.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 #if OS(WINDOWS)
 #include <windows.h>

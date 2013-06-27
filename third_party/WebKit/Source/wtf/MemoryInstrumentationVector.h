@@ -31,8 +31,8 @@
 #ifndef MemoryInstrumentationVector_h
 #define MemoryInstrumentationVector_h
 
-#include <wtf/MemoryInstrumentationSequence.h>
-#include <wtf/Vector.h>
+#include "wtf/MemoryInstrumentationSequence.h"
+#include "wtf/Vector.h"
 
 namespace WTF {
 

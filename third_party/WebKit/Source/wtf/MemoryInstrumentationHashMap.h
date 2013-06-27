@@ -31,8 +31,8 @@
 #ifndef MemoryInstrumentationHashMap_h
 #define MemoryInstrumentationHashMap_h
 
-#include <wtf/HashMap.h>
-#include <wtf/MemoryInstrumentationSequence.h>
+#include "wtf/HashMap.h"
+#include "wtf/MemoryInstrumentationSequence.h"
 
 namespace WTF {
 

@@ -32,7 +32,7 @@
 #ifndef INTTYPES_WIN32_H
 #define INTTYPES_WIN32_H
 
-#include <wtf/Platform.h>
+#include "wtf/Platform.h"
 
 #if !COMPILER(MSVC)
 #error "This inttypes.h file should only be compiled with MSVC"

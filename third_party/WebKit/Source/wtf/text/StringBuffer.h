@@ -29,8 +29,8 @@
 #ifndef StringBuffer_h
 #define StringBuffer_h
 
-#include <wtf/Assertions.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/Assertions.h"
+#include "wtf/unicode/Unicode.h"
 #include <limits>
 
 namespace WTF {

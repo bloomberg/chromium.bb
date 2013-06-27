@@ -30,7 +30,7 @@
 
 #if ENABLE(THREADING_GENERIC)
 
-#include <wtf/NumberOfCores.h>
+#include "wtf/NumberOfCores.h"
 
 namespace WTF {
 

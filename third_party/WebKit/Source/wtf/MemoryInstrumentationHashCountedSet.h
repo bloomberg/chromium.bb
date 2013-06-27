@@ -31,8 +31,8 @@
 #ifndef MemoryInstrumentationHashCountedSet_h
 #define MemoryInstrumentationHashCountedSet_h
 
-#include <wtf/HashCountedSet.h>
-#include <wtf/MemoryInstrumentationSequence.h>
+#include "wtf/HashCountedSet.h"
+#include "wtf/MemoryInstrumentationSequence.h"
 
 namespace WTF {
 

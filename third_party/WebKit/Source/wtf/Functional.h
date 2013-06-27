@@ -26,11 +26,11 @@
 #ifndef WTF_Functional_h
 #define WTF_Functional_h
 
-#include <wtf/Assertions.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/ThreadSafeRefCounted.h>
-#include <wtf/WeakPtr.h>
+#include "wtf/Assertions.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/ThreadSafeRefCounted.h"
+#include "wtf/WeakPtr.h"
 
 namespace WTF {
 

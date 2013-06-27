@@ -31,12 +31,12 @@
 #include "config.h"
 #include "MemoryInstrumentation.h"
 
-#include <wtf/MemoryObjectInfo.h>
+#include "wtf/MemoryObjectInfo.h"
 #include <string.h>
 
 #if DEBUG_POINTER_INSTRUMENTATION
 #include <stdio.h>
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 #endif
 
 namespace WTF {

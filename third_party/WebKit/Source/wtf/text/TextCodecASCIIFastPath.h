@@ -27,7 +27,7 @@
 #ifndef TextCodecASCIIFastPath_h
 #define TextCodecASCIIFastPath_h
 
-#include <wtf/text/ASCIIFastPath.h>
+#include "wtf/text/ASCIIFastPath.h"
 
 namespace WTF {
 

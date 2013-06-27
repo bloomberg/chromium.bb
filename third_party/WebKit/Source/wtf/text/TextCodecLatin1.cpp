@@ -27,10 +27,10 @@
 #include "wtf/text/TextCodecLatin1.h"
 
 #include "wtf/text/TextCodecASCIIFastPath.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuffer.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuffer.h"
+#include "wtf/text/WTFString.h"
 
 using namespace WTF;
 

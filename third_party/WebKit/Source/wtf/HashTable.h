@@ -22,10 +22,10 @@
 #ifndef WTF_HashTable_h
 #define WTF_HashTable_h
 
-#include <wtf/Alignment.h>
-#include <wtf/Assertions.h>
-#include <wtf/FastMalloc.h>
-#include <wtf/HashTraits.h>
+#include "wtf/Alignment.h"
+#include "wtf/Assertions.h"
+#include "wtf/FastMalloc.h"
+#include "wtf/HashTraits.h"
 #include <string.h>
 
 #define DUMP_HASHTABLE_STATS 0
@@ -44,13 +44,13 @@
 
 #if CHECK_HASHTABLE_ITERATORS
 // Required for CHECK_HASHTABLE_ITERATORS.
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Threading.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Threading.h"
 #endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-#include <wtf/DataLog.h>
+#include "wtf/DataLog.h"
 #endif
 
 namespace WTF {
@@ -1415,6 +1415,6 @@ namespace WTF {
 
 } // namespace WTF
 
-#include <wtf/HashIterators.h>
+#include "wtf/HashIterators.h"
 
 #endif // WTF_HashTable_h

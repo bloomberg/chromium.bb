@@ -31,7 +31,7 @@
 #ifndef MemoryObjectInfo_h
 #define MemoryObjectInfo_h
 
-#include <wtf/MemoryInstrumentation.h>
+#include "wtf/MemoryInstrumentation.h"
 
 namespace WTF {
 

@@ -25,8 +25,8 @@
 #include "Base64.h"
 
 #include <limits.h>
-#include <wtf/StringExtras.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/StringExtras.h"
+#include "wtf/text/WTFString.h"
 
 namespace WTF {
 

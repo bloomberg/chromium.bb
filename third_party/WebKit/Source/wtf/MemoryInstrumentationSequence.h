@@ -31,8 +31,8 @@
 #ifndef MemoryInstrumentationSequence_h
 #define MemoryInstrumentationSequence_h
 
-#include <wtf/MemoryInstrumentation.h>
-#include <wtf/TypeTraits.h>
+#include "wtf/MemoryInstrumentation.h"
+#include "wtf/TypeTraits.h"
 
 namespace WTF {
 

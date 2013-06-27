@@ -26,7 +26,7 @@
 #ifndef FixedArray_h
 #define FixedArray_h
 
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WTF {
 

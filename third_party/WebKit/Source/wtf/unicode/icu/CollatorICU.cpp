@@ -27,18 +27,18 @@
  */
 
 #include "config.h"
-#include <wtf/unicode/Collator.h>
+#include "wtf/unicode/Collator.h"
 
 #if !UCONFIG_NO_COLLATION
 
-#include <wtf/Assertions.h>
-#include <wtf/StringExtras.h>
-#include <wtf/Threading.h>
+#include "wtf/Assertions.h"
+#include "wtf/StringExtras.h"
+#include "wtf/Threading.h"
 #include <unicode/ucol.h>
 #include <string.h>
 
 #if OS(DARWIN)
-#include <wtf/RetainPtr.h>
+#include "wtf/RetainPtr.h"
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 

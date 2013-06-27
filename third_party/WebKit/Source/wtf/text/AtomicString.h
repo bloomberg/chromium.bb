@@ -268,5 +268,5 @@ using WTF::xmlnsAtom;
 using WTF::xlinkAtom;
 #endif
 
-#include <wtf/text/StringConcatenate.h>
+#include "wtf/text/StringConcatenate.h"
 #endif // AtomicString_h

@@ -28,10 +28,10 @@
 #ifndef ParallelJobs_h
 #define ParallelJobs_h
 
-#include <wtf/Assertions.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Assertions.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 // Usage:
 //
@@ -56,10 +56,10 @@
 #endif
 
 #if ENABLE(THREADING_GENERIC)
-#include <wtf/ParallelJobsGeneric.h>
+#include "wtf/ParallelJobsGeneric.h"
 
 #elif ENABLE(THREADING_LIBDISPATCH)
-#include <wtf/ParallelJobsLibdispatch.h>
+#include "wtf/ParallelJobsLibdispatch.h"
 
 #else
 #error "No parallel processing API for ParallelJobs"

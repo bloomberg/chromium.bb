@@ -40,7 +40,7 @@
 
 */
 
-#include <wtf/Platform.h>
+#include "wtf/Platform.h"
 
 #include <stddef.h>
 

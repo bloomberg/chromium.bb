@@ -49,9 +49,9 @@
 
 #include <new>
 #include <stdint.h>
-#include <wtf/Assertions.h>
-#include <wtf/FastMalloc.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/Assertions.h"
+#include "wtf/FastMalloc.h"
+#include "wtf/StdLibExtras.h"
 
 // This needs to exist because some classes (e.g. StringImpl) want to use
 // fastMalloc() to return an object pointer and then have it deleted (as

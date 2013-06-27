@@ -29,7 +29,7 @@
 #define WTF_Platform_h
 
 /* Include compiler specific macros */
-#include <wtf/Compiler.h>
+#include "wtf/Compiler.h"
 
 /* ==== Platform adaptation macros: these describe properties of the target environment. ==== */
 

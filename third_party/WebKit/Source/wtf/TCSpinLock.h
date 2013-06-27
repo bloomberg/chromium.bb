@@ -34,7 +34,7 @@
 #ifndef TCMALLOC_INTERNAL_SPINLOCK_H__
 #define TCMALLOC_INTERNAL_SPINLOCK_H__
 
-#include <wtf/Atomics.h>
+#include "wtf/Atomics.h"
 #if OS(UNIX)
 #include <sched.h>
 #endif

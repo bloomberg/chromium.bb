@@ -25,7 +25,7 @@
 #ifndef TextPosition_h
 #define TextPosition_h
 
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WTF {
 

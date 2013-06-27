@@ -31,10 +31,10 @@
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncodingRegistry.h"
 #include <unicode/unorm.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WTF {
 

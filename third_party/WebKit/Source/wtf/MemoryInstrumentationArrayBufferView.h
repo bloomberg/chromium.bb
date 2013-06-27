@@ -31,8 +31,8 @@
 #ifndef MemoryInstrumentationArrayBufferView_h
 #define MemoryInstrumentationArrayBufferView_h
 
-#include <wtf/ArrayBufferView.h>
-#include <wtf/MemoryInstrumentation.h>
+#include "wtf/ArrayBufferView.h"
+#include "wtf/MemoryInstrumentation.h"
 
 namespace WTF {
 

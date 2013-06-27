@@ -31,8 +31,8 @@
 #ifndef WTF_StreamBuffer_h
 #define WTF_StreamBuffer_h
 
-#include <wtf/Deque.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/Deque.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WTF {
 

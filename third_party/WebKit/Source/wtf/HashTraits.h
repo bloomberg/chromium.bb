@@ -21,9 +21,9 @@
 #ifndef WTF_HashTraits_h
 #define WTF_HashTraits_h
 
-#include <wtf/HashFunctions.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/TypeTraits.h>
+#include "wtf/HashFunctions.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/TypeTraits.h"
 #include <utility>
 #include <limits>
 
