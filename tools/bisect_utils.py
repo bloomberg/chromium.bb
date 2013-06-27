@@ -28,7 +28,7 @@ GCLIENT_SPEC_DATA = [
     "safesync_url": "",
   },
 ]
-GCLIENT_ANDROID = "\ntarget_os = ['android']"
+GCLIENT_SPEC_ANDROID = "\ntarget_os = ['android']"
 GCLIENT_CUSTOM_DEPS_V8 = {"src/v8_bleeding_edge": "git://github.com/v8/v8.git"}
 FILE_DEPS_GIT = '.DEPS.git'
 
