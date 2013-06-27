@@ -1,55 +1,92 @@
 @hex:
-  # Test legacy instructions.
-  # aaa
   37
-  # aad
+@dis:
+     0:	37                                           	aaa    
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   D5 0A
-  # aam
+@dis:
+     0:	d5 0a                                        	aad    $0xa
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   D4 0A
-  # aas
+@dis:
+     0:	d4 0a                                        	aam    $0xa
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   3F
-  # bound %eax, (%eax)
+@dis:
+     0:	3f                                           	aas    
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   62 00
-  # daa
+@dis:
+     0:	62 00                                        	bound  %eax,(%eax)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   27
-  # das
+@dis:
+     0:	27                                           	daa    
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   2F
-  # xlat (%ebx,%al)
+@dis:
+     0:	2f                                           	das    
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   D7
-  
+@dis:
+     0:	d7                                           	xlat   %ds:(%ebx)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   # Some undocumented instructions
   # icebp
   F1
-  # salc
-  D6
-  
-  # Flags operations
-  # lahf
-  9F
-  # sahf
-  9E
 @dis:
-     0:	37                                           	aaa    
-     1:	d5 0a                                        	aad    $0xa
-     3:	d4 0a                                        	aam    $0xa
-     5:	3f                                           	aas    
-     6:	62 00                                        	bound  %eax,(%eax)
-     8:	27                                           	daa    
-     9:	2f                                           	das    
-     a:	d7                                           	xlat   %ds:(%ebx)
-     b:	f1                                           	icebp  
-     c:	d6                                           	(bad)  
-     d:	9f                                           	lahf   
-     e:	9e                                           	sahf   
+     0:	f1                                           	icebp  
 @rdfa_output:
   0: [0] unrecognized instruction
-  1: [1] unrecognized instruction
-  3: [2] unrecognized instruction
-  5: [3] unrecognized instruction
-  6: [4] unrecognized instruction
-  8: [5] unrecognized instruction
-  9: [6] unrecognized instruction
-  a: [7] unrecognized instruction
-  b: [8] unrecognized instruction
-  c: [9] unrecognized instruction
   return code: 1
+----------------------------------------------------------------------
+@hex:
+  # salc
+  D6
+@dis:
+     0:	d6                                           	(bad)  
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Flags operations
+  9F
+  9E
+@dis:
+     0:	9f                                           	lahf   
+     1:	9e                                           	sahf   
+@rdfa_output:
+  return code: 0
