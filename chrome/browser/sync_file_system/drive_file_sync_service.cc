@@ -1501,9 +1501,7 @@ void DriveFileSyncService::MaybeStartFetchChanges() {
 }
 
 void DriveFileSyncService::OnNotificationReceived() {
-  util::Log(logging::LOG_INFO,
-            FROM_HERE,
-            "Notification received to check for Google Drive updates");
+  VLOG(2) << "Notification received to check for Google Drive updates";
 
   // Likely indicating the network is enabled again.
   UpdateServiceState(REMOTE_SERVICE_OK, "Got push notification for Drive.");
@@ -1514,10 +1512,7 @@ void DriveFileSyncService::OnNotificationReceived() {
 }
 
 void DriveFileSyncService::OnPushNotificationEnabled(bool enabled) {
-  const char* status = (enabled ? "enabled" : "disabled");
-  util::Log(logging::LOG_INFO,
-            FROM_HERE,
-            "XMPP Push notification is %s", status);
+  VLOG(2) << "XMPP Push notification is " << (enabled ? "enabled" : "disabled");
 }
 
 void DriveFileSyncService::MaybeScheduleNextTask() {
