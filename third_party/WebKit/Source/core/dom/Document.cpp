@@ -4121,6 +4121,7 @@ PassRefPtr<HTMLCollection> Document::anchors()
 
 PassRefPtr<HTMLCollection> Document::all()
 {
+    UseCounter::count(this, UseCounter::DocumentAll);
     return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<HTMLAllCollection>(this, DocAll);
 }
 
