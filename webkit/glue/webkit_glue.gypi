@@ -278,8 +278,6 @@
         'network_list_observer.h',
         'resource_loader_bridge.cc',
         'resource_loader_bridge.h',
-        'resource_request_body.cc',
-        'resource_request_body.h',
         'resource_type.cc',
         'resource_type.h',
         'simple_webmimeregistry_impl.cc',

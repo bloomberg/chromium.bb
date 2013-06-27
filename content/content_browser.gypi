@@ -651,6 +651,8 @@
     'browser/loader/throttling_resource_handler.h',
     'browser/loader/transfer_navigation_resource_throttle.cc',
     'browser/loader/transfer_navigation_resource_throttle.h',
+    'browser/loader/upload_data_stream_builder.cc',
+    'browser/loader/upload_data_stream_builder.h',
     'browser/mach_broker_mac.mm',
     'browser/mach_broker_mac.h',
     'browser/media_devices_monitor.cc',

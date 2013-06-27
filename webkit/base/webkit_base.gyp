@@ -11,7 +11,7 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/net/net.gyp:net',
-        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
+        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink_minimal',
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
       'defines': ['WEBKIT_BASE_IMPLEMENTATION'],

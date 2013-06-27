@@ -15,7 +15,6 @@
 #include "net/spdy/spdy_header_block.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_netlog_params.h"
-#include "webkit/glue/resource_loader_bridge.h"
 
 namespace content {
 const size_t kMaxNumEntries = 1000;

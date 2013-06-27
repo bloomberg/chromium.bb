@@ -15,7 +15,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_info.h"
-#include "webkit/glue/resource_request_body.h"
+#include "webkit/common/resource_request_body.h"
 
 #ifndef CONTENT_COMMON_RESOURCE_MESSAGES_H_
 #define CONTENT_COMMON_RESOURCE_MESSAGES_H_

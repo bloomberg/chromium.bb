@@ -41,6 +41,7 @@
 #include "content/browser/loader/sync_resource_handler.h"
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/transfer_navigation_resource_throttle.h"
+#include "content/browser/loader/upload_data_stream_builder.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -88,7 +89,7 @@
 #include "webkit/browser/blob/blob_storage_controller.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 #include "webkit/common/blob/shareable_file_reference.h"
-#include "webkit/glue/resource_request_body.h"
+#include "webkit/common/resource_request_body.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -1024,12 +1025,12 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body.get()) {
-    request->set_upload(make_scoped_ptr(
-        request_data.request_body->ResolveElementsAndCreateUploadDataStream(
-            filter_->blob_storage_context()->controller(),
-            filter_->file_system_context(),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
-                .get())));
+    request->set_upload(UploadDataStreamBuilder::Build(
+        request_data.request_body,
+        filter_->blob_storage_context()->controller(),
+        filter_->file_system_context(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).
+            get()));
   }
 
   bool allow_download = request_data.allow_download &&

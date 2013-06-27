@@ -1,40 +1,28 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_RESOURCE_REQUEST_BODY_H_
-#define WEBKIT_GLUE_RESOURCE_REQUEST_BODY_H_
+#ifndef WEBKIT_COMMON_RESOURCE_REQUEST_BODY_H_
+#define WEBKIT_COMMON_RESOURCE_REQUEST_BODY_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/base/data_element.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/common/webkit_common_export.h"
 
 namespace base {
 class FilePath;
-class TaskRunner;
-}
-
-namespace fileapi {
-class FileSystemContext;
-}
-
-namespace net {
-class UploadDataStream;
-}
-
-namespace webkit_blob {
-class BlobStorageController;
 }
 
 namespace webkit_glue {
 
 // A struct used to represent upload data. The data field is populated by
 // WebURLLoader from the data given as WebHTTPBody.
-class WEBKIT_GLUE_EXPORT ResourceRequestBody
+class WEBKIT_COMMON_EXPORT ResourceRequestBody
     : public base::RefCounted<ResourceRequestBody>,
       public base::SupportsUserData {
  public:
@@ -49,16 +37,6 @@ class WEBKIT_GLUE_EXPORT ResourceRequestBody
   void AppendBlob(const GURL& blob_url);
   void AppendFileSystemFileRange(const GURL& url, uint64 offset, uint64 length,
                                  const base::Time& expected_modification_time);
-
-  // Creates a new UploadDataStream from this request body. This also resolves
-  // any blob references using given |blob_controller|. |file_system_context| is
-  // used to create FileStreamReader for files with filesystem URLs.
-  // |file_task_runner| is used to perform file operations when the data gets
-  // uploaded.
-  net::UploadDataStream* ResolveElementsAndCreateUploadDataStream(
-      webkit_blob::BlobStorageController* blob_controller,
-      fileapi::FileSystemContext* file_system_context,
-      base::TaskRunner* file_task_runner);
 
   const std::vector<Element>* elements() const { return &elements_; }
   std::vector<Element>* elements_mutable() { return &elements_; }
@@ -75,12 +53,6 @@ class WEBKIT_GLUE_EXPORT ResourceRequestBody
  private:
   friend class base::RefCounted<ResourceRequestBody>;
   virtual ~ResourceRequestBody();
-
-  // Resolves the |blob_url| using |blob_controller| and appends resolved
-  // items to |resolved_elements|.
-  void ResolveBlobReference(webkit_blob::BlobStorageController* blob_controller,
-                            const GURL& blob_url,
-                            std::vector<const Element*>* resolved_elements);
 
   std::vector<Element> elements_;
   int64 identifier_;

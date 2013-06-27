@@ -9,25 +9,6 @@
 
 namespace webkit_glue {
 
-ResourceDevToolsInfo::ResourceDevToolsInfo()
-    : http_status_code(0) {
-}
-
-ResourceDevToolsInfo::~ResourceDevToolsInfo() {}
-
-ResourceResponseInfo::ResourceResponseInfo()
-    : content_length(-1),
-      encoded_data_length(-1),
-      appcache_id(appcache::kNoCacheId),
-      was_fetched_via_spdy(false),
-      was_npn_negotiated(false),
-      was_alternate_protocol_available(false),
-      connection_info(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
-      was_fetched_via_proxy(false) {
-}
-
-ResourceResponseInfo::~ResourceResponseInfo() {}
-
 ResourceLoaderBridge::RequestInfo::RequestInfo()
     : referrer_policy(WebKit::WebReferrerPolicyDefault),
       load_flags(0),

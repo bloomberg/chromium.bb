@@ -17,131 +17,24 @@
 #define WEBKIT_GLUE_RESOURCE_LOADER_BRIDGE_H_
 
 #include <utility>
-#include <vector>
 
 #include "build/build_config.h"
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #endif
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
-#include "base/time.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/host_port_pair.h"
-#include "net/base/load_timing_info.h"
 #include "net/base/request_priority.h"
-#include "net/http/http_response_info.h"
-#include "net/url_request/url_request_status.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "webkit/common/resource_response_info.h"
 #include "webkit/glue/resource_type.h"
 #include "webkit/glue/webkit_glue_export.h"
 
-namespace net {
-class HttpResponseHeaders;
-}
-
 namespace webkit_glue {
 class ResourceRequestBody;
-
-struct ResourceDevToolsInfo : base::RefCounted<ResourceDevToolsInfo> {
-  typedef std::vector<std::pair<std::string, std::string> >
-      HeadersVector;
-
-  WEBKIT_GLUE_EXPORT ResourceDevToolsInfo();
-
-  int32 http_status_code;
-  std::string http_status_text;
-  HeadersVector request_headers;
-  HeadersVector response_headers;
-  std::string request_headers_text;
-  std::string response_headers_text;
-
- private:
-  friend class base::RefCounted<ResourceDevToolsInfo>;
-  WEBKIT_GLUE_EXPORT ~ResourceDevToolsInfo();
-};
-
-struct ResourceResponseInfo {
-  WEBKIT_GLUE_EXPORT ResourceResponseInfo();
-  WEBKIT_GLUE_EXPORT ~ResourceResponseInfo();
-
-  // The time at which the request was made that resulted in this response.
-  // For cached responses, this time could be "far" in the past.
-  base::Time request_time;
-
-  // The time at which the response headers were received.  For cached
-  // responses, this time could be "far" in the past.
-  base::Time response_time;
-
-  // The response headers or NULL if the URL type does not support headers.
-  scoped_refptr<net::HttpResponseHeaders> headers;
-
-  // The mime type of the response.  This may be a derived value.
-  std::string mime_type;
-
-  // The character encoding of the response or none if not applicable to the
-  // response's mime type.  This may be a derived value.
-  std::string charset;
-
-  // An opaque string carrying security information pertaining to this
-  // response.  This may include information about the SSL connection used.
-  std::string security_info;
-
-  // Content length if available. -1 if not available
-  int64 content_length;
-
-  // Length of the encoded data transferred over the network. In case there is
-  // no data, contains -1.
-  int64 encoded_data_length;
-
-  // The appcache this response was loaded from, or kNoCacheId.
-  int64 appcache_id;
-
-  // The manifest url of the appcache this response was loaded from.
-  // Note: this value is only populated for main resource requests.
-  GURL appcache_manifest_url;
-
-  // Detailed timing information used by the WebTiming, HAR and Developer
-  // Tools.  Includes socket ID and socket reuse information.
-  net::LoadTimingInfo load_timing;
-
-  // Actual request and response headers, as obtained from the network stack.
-  // Only present if request had LOAD_REPORT_RAW_HEADERS in load_flags, and
-  // requesting renderer had CanReadRowCookies permission.
-  scoped_refptr<ResourceDevToolsInfo> devtools_info;
-
-  // The path to a file that will contain the response body.  It may only
-  // contain a portion of the response body at the time that the ResponseInfo
-  // becomes available.
-  base::FilePath download_file_path;
-
-  // True if the response was delivered using SPDY.
-  bool was_fetched_via_spdy;
-
-  // True if the response was delivered after NPN is negotiated.
-  bool was_npn_negotiated;
-
-  // True if response could use alternate protocol. However, browser will
-  // ignore the alternate protocol when spdy is not enabled on browser side.
-  bool was_alternate_protocol_available;
-
-  // Information about the type of connection used to fetch this response.
-  net::HttpResponseInfo::ConnectionInfo connection_info;
-
-  // True if the response was fetched via an explicit proxy (as opposed to a
-  // transparent proxy). The proxy could be any type of proxy, HTTP or SOCKS.
-  // Note: we cannot tell if a transparent proxy may have been involved.
-  bool was_fetched_via_proxy;
-
-  // NPN protocol negotiated with the server.
-  std::string npn_negotiated_protocol;
-
-  // Remote address of the socket which fetched this resource.
-  net::HostPortPair socket_address;
-};
 
 class ResourceLoaderBridge {
  public:

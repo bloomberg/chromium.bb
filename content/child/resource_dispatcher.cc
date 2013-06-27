@@ -24,7 +24,6 @@
 #include "net/base/net_util.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
-#include "webkit/glue/resource_request_body.h"
 #include "webkit/glue/resource_type.h"
 
 using webkit_glue::ResourceLoaderBridge;
