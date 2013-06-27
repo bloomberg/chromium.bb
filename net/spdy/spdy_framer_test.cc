@@ -1438,7 +1438,7 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
   SpdySynStreamIR syn_ir_1(1);
   syn_ir_1.SetHeader(kHeader1, kValue1);
   syn_ir_1.SetHeader(kHeader2, kValue2);
-  scoped_ptr<SpdyFrame> syn_frame_1(send_framer.SerializeSynStream(syn_ir_1));
+  scoped_ptr<SpdyFrame> syn_frame_1(send_framer.SerializeFrame(syn_ir_1));
   EXPECT_TRUE(syn_frame_1.get() != NULL);
 
   // SYN_STREAM #2
@@ -2918,7 +2918,7 @@ TEST_P(SpdyFramerTest, SerializeBlocked) {
     0x00, 0x00, 0x00, 0x00,
   };
   SpdyBlockedIR blocked_ir(0);
-  scoped_ptr<SpdySerializedFrame> frame(framer.SerializeBlocked(blocked_ir));
+  scoped_ptr<SpdySerializedFrame> frame(framer.SerializeFrame(blocked_ir));
   CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
 
 }
@@ -4214,7 +4214,7 @@ TEST_P(SpdyFramerTest, OnBlocked) {
   EXPECT_CALL(visitor, OnBlocked(kStreamId));
 
   SpdyBlockedIR blocked_ir(0);
-  scoped_ptr<SpdySerializedFrame> frame(framer.SerializeBlocked(blocked_ir));
+  scoped_ptr<SpdySerializedFrame> frame(framer.SerializeFrame(blocked_ir));
   framer.ProcessInput(frame->data(), framer.GetBlockedSize());
 
   EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());

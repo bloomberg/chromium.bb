@@ -1947,6 +1947,63 @@ SpdySerializedFrame* SpdyFramer::SerializeDataFrameHeader(
   return builder.take();
 }
 
+namespace {
+
+class FrameSerializationVisitor : public SpdyFrameVisitor {
+ public:
+  explicit FrameSerializationVisitor(SpdyFramer* framer) : framer_(framer) {}
+  virtual ~FrameSerializationVisitor() {}
+
+  SpdySerializedFrame* ReleaseSerializedFrame() { return frame_.release(); }
+
+  virtual void VisitSynStream(const SpdySynStreamIR& syn_stream) OVERRIDE {
+    frame_.reset(framer_->SerializeSynStream(syn_stream));
+  }
+  virtual void VisitSynReply(const SpdySynReplyIR& syn_reply) OVERRIDE {
+    frame_.reset(framer_->SerializeSynReply(syn_reply));
+  }
+  virtual void VisitRstStream(const SpdyRstStreamIR& rst_stream) OVERRIDE {
+    frame_.reset(framer_->SerializeRstStream(rst_stream));
+  }
+  virtual void VisitSettings(const SpdySettingsIR& settings) OVERRIDE {
+    frame_.reset(framer_->SerializeSettings(settings));
+  }
+  virtual void VisitPing(const SpdyPingIR& ping) OVERRIDE {
+    frame_.reset(framer_->SerializePing(ping));
+  }
+  virtual void VisitGoAway(const SpdyGoAwayIR& goaway) OVERRIDE {
+    frame_.reset(framer_->SerializeGoAway(goaway));
+  }
+  virtual void VisitHeaders(const SpdyHeadersIR& headers) OVERRIDE {
+    frame_.reset(framer_->SerializeHeaders(headers));
+  }
+  virtual void VisitWindowUpdate(
+      const SpdyWindowUpdateIR& window_update) OVERRIDE {
+    frame_.reset(framer_->SerializeWindowUpdate(window_update));
+  }
+  virtual void VisitCredential(const SpdyCredentialIR& credential) OVERRIDE {
+    frame_.reset(framer_->SerializeCredential(credential));
+  }
+  virtual void VisitBlocked(const SpdyBlockedIR& blocked) OVERRIDE {
+    frame_.reset(framer_->SerializeBlocked(blocked));
+  }
+  virtual void VisitData(const SpdyDataIR& data) OVERRIDE {
+    frame_.reset(framer_->SerializeData(data));
+  }
+
+ private:
+  SpdyFramer* framer_;
+  scoped_ptr<SpdySerializedFrame> frame_;
+};
+
+}  // namespace
+
+SpdySerializedFrame* SpdyFramer::SerializeFrame(const SpdyFrameIR& frame) {
+  FrameSerializationVisitor visitor(this);
+  frame.Visit(&visitor);
+  return visitor.ReleaseSerializedFrame();
+}
+
 size_t SpdyFramer::GetSerializedLength(const SpdyHeaderBlock& headers) {
   const size_t uncompressed_length =
       GetSerializedLength(protocol_version(), &headers);

@@ -455,6 +455,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Serializes just the data frame header, excluding actual data payload.
   SpdySerializedFrame* SerializeDataFrameHeader(const SpdyDataIR& data) const;
 
+  // Serialize a frame of unknown type.
+  SpdySerializedFrame* SerializeFrame(const SpdyFrameIR& frame);
+
   // NOTES about frame compression.
   // We want spdy to compress headers across the entire session.  As long as
   // the session is over TCP, frames are sent serially.  The client & server

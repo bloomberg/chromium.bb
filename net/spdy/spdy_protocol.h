@@ -353,8 +353,7 @@ typedef uint32 SpdyPingId;
 class SpdyFrame;
 typedef SpdyFrame SpdySerializedFrame;
 
-class SpdyFramer;
-class SpdyFrameBuilder;
+class SpdyFrameVisitor;
 
 // Intermediate representation for SPDY frames.
 // TODO(hkhalil): Rename this class to SpdyFrame when the existing SpdyFrame is
@@ -362,6 +361,8 @@ class SpdyFrameBuilder;
 class SpdyFrameIR {
  public:
   virtual ~SpdyFrameIR() {}
+
+  virtual void Visit(SpdyFrameVisitor* visitor) const = 0;
 
  protected:
   SpdyFrameIR() {}
@@ -460,6 +461,8 @@ class NET_EXPORT_PRIVATE SpdyDataIR
     data_ = data;
   }
 
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
+
  private:
   // Used to store data that this SpdyDataIR should own.
   scoped_ptr<std::string> data_store_;
@@ -468,7 +471,8 @@ class NET_EXPORT_PRIVATE SpdyDataIR
   DISALLOW_COPY_AND_ASSIGN(SpdyDataIR);
 };
 
-class SpdySynStreamIR : public SpdyFrameWithNameValueBlockIR {
+class NET_EXPORT_PRIVATE SpdySynStreamIR
+    : public SpdyFrameWithNameValueBlockIR {
  public:
   explicit SpdySynStreamIR(SpdyStreamId stream_id)
       : SpdyFrameWithNameValueBlockIR(stream_id),
@@ -491,6 +495,8 @@ class SpdySynStreamIR : public SpdyFrameWithNameValueBlockIR {
     unidirectional_ = unidirectional;
   }
 
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
+
  private:
   SpdyStreamId associated_to_stream_id_;
   SpdyPriority priority_;
@@ -504,6 +510,8 @@ class SpdySynReplyIR : public SpdyFrameWithNameValueBlockIR {
  public:
   explicit SpdySynReplyIR(SpdyStreamId stream_id)
       : SpdyFrameWithNameValueBlockIR(stream_id) {}
+
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdySynReplyIR);
@@ -523,6 +531,8 @@ class SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
     DCHECK_LT(status, RST_STREAM_NUM_STATUS_CODES);
     status_ = status;
   }
+
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
 
  private:
   SpdyRstStreamStatus status_;
@@ -564,6 +574,8 @@ class SpdySettingsIR : public SpdyFrameIR {
     clear_settings_ = clear_settings;
   }
 
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
+
  private:
   ValueMap values_;
   bool clear_settings_;
@@ -575,6 +587,8 @@ class SpdyPingIR : public SpdyFrameIR {
  public:
   explicit SpdyPingIR(SpdyPingId id) : id_(id) {}
   SpdyPingId id() const { return id_; }
+
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
 
  private:
   SpdyPingId id_;
@@ -600,6 +614,8 @@ class SpdyGoAwayIR : public SpdyFrameIR {
     status_ = status;
   }
 
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
+
  private:
   SpdyStreamId last_good_stream_id_;
   SpdyGoAwayStatus status_;
@@ -611,6 +627,8 @@ class SpdyHeadersIR : public SpdyFrameWithNameValueBlockIR {
  public:
   explicit SpdyHeadersIR(SpdyStreamId stream_id)
       : SpdyFrameWithNameValueBlockIR(stream_id) {}
+
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdyHeadersIR);
@@ -628,6 +646,8 @@ class SpdyWindowUpdateIR : public SpdyFrameWithStreamIdIR {
     DCHECK_LE(delta, kSpdyMaximumWindowSize);
     delta_ = delta;
   }
+
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
 
  private:
   int32 delta_;
@@ -656,6 +676,8 @@ class SpdyCredentialIR : public SpdyFrameIR {
     certificates_.push_back(certificate.as_string());
   }
 
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
+
  private:
   int16 slot_;
   std::string proof_;
@@ -664,10 +686,13 @@ class SpdyCredentialIR : public SpdyFrameIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyCredentialIR);
 };
 
-class SpdyBlockedIR : public SpdyFrameWithStreamIdIR {
+class NET_EXPORT_PRIVATE SpdyBlockedIR
+    : public NON_EXPORTED_BASE(SpdyFrameWithStreamIdIR) {
   public:
    explicit SpdyBlockedIR(SpdyStreamId stream_id)
        : SpdyFrameWithStreamIdIR(stream_id) {}
+
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
 
   private:
    DISALLOW_COPY_AND_ASSIGN(SpdyBlockedIR);
@@ -714,6 +739,32 @@ class SpdyFrame {
   size_t size_;
   bool owns_buffer_;
   DISALLOW_COPY_AND_ASSIGN(SpdyFrame);
+};
+
+// This interface is for classes that want to process SpdyFrameIRs without
+// having to know what type they are.  An instance of this interface can be
+// passed to a SpdyFrameIR's Visit method, and the appropriate type-specific
+// method of this class will be called.
+class SpdyFrameVisitor {
+ public:
+  virtual void VisitSynStream(const SpdySynStreamIR& syn_stream) = 0;
+  virtual void VisitSynReply(const SpdySynReplyIR& syn_reply) = 0;
+  virtual void VisitRstStream(const SpdyRstStreamIR& rst_stream) = 0;
+  virtual void VisitSettings(const SpdySettingsIR& settings) = 0;
+  virtual void VisitPing(const SpdyPingIR& ping) = 0;
+  virtual void VisitGoAway(const SpdyGoAwayIR& goaway) = 0;
+  virtual void VisitHeaders(const SpdyHeadersIR& headers) = 0;
+  virtual void VisitWindowUpdate(const SpdyWindowUpdateIR& window_update) = 0;
+  virtual void VisitCredential(const SpdyCredentialIR& credential) = 0;
+  virtual void VisitBlocked(const SpdyBlockedIR& blocked) = 0;
+  virtual void VisitData(const SpdyDataIR& data) = 0;
+
+ protected:
+  SpdyFrameVisitor() {}
+  virtual ~SpdyFrameVisitor() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SpdyFrameVisitor);
 };
 
 }  // namespace net

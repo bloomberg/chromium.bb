@@ -186,6 +186,12 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                              const char* data,
                              uint32 len,
                              SpdyDataFlags flags);
+
+  // Serialize a frame of unknown type.
+  SpdySerializedFrame* SerializeFrame(const SpdyFrameIR& frame) {
+    return spdy_framer_.SerializeFrame(frame);
+  }
+
   SpdyPriority GetHighestPriority() const;
 
   size_t GetDataFrameMinimumSize() const {
