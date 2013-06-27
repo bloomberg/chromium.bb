@@ -666,6 +666,11 @@
         'module_dir': 'base'
       },
       'conditions': [
+        ['use_glib==1 or (OS == "android" and _toolset == "target")', {
+          'defines': [
+            'USE_SYMBOLIZE',
+          ],
+        }],
         ['OS == "android"', {
           'dependencies': [
             'android/jni_generator/jni_generator.gyp:jni_generator_tests',
