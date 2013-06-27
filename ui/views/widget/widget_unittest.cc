@@ -356,20 +356,20 @@ TEST_F(WidgetTest, WidgetInitParams) {
 
   // Widgets are not transparent by default.
   Widget::InitParams init1;
-  EXPECT_FALSE(init1.transparent);
+  EXPECT_EQ(Widget::InitParams::INFER_OPACITY, init1.opacity);
 
   // Non-window widgets are not transparent either.
   Widget::InitParams init2(Widget::InitParams::TYPE_MENU);
-  EXPECT_FALSE(init2.transparent);
+  EXPECT_EQ(Widget::InitParams::INFER_OPACITY, init2.opacity);
 
   // A ViewsDelegate can set windows transparent by default.
   views_delegate().SetUseTransparentWindows(true);
   Widget::InitParams init3;
-  EXPECT_TRUE(init3.transparent);
+  EXPECT_EQ(Widget::InitParams::TRANSLUCENT_WINDOW, init3.opacity);
 
   // Non-window widgets stay opaque.
   Widget::InitParams init4(Widget::InitParams::TYPE_MENU);
-  EXPECT_FALSE(init4.transparent);
+  EXPECT_EQ(Widget::InitParams::INFER_OPACITY, init4.opacity);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -342,6 +342,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   params.desktop_root_window_host =
       new ExternalTabRootWindowHost(widget_, native_widget, params.bounds);
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
 #endif
   widget_->Init(params);
 

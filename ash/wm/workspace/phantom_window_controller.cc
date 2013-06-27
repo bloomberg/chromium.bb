@@ -137,7 +137,7 @@ void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds) {
   DCHECK(!phantom_widget_);
   phantom_widget_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   // PhantomWindowController is used by FrameMaximizeButton to highlight the
   // launcher button. Put the phantom in the same window as the launcher so that
   // the phantom is visible.

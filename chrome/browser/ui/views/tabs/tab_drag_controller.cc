@@ -254,7 +254,7 @@ class TabDragController::DockDisplayer : public ui::AnimationDelegate {
         in_enable_area_(info.in_enable_area()) {
     popup_ = new views::Widget;
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-    params.transparent = true;
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.keep_on_top = true;
     params.bounds = info.GetPopupRect();
     popup_->Init(params);

@@ -572,7 +572,7 @@ void StatusBubbleViews::Init() {
     if (!expand_view_.get())
       expand_view_.reset(new StatusViewExpander(this, view_));
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-    params.transparent = true;
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.accept_events = false;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = frame->GetNativeView();

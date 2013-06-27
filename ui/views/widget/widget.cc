@@ -105,8 +105,9 @@ Widget::InitParams::InitParams()
       delegate(NULL),
       child(false),
       transient(false),
-      transparent(ViewsDelegate::views_delegate &&
-                  ViewsDelegate::views_delegate->UseTransparentWindows()),
+      opacity((ViewsDelegate::views_delegate &&
+               ViewsDelegate::views_delegate->UseTransparentWindows()) ?
+              TRANSLUCENT_WINDOW : INFER_OPACITY),
       accept_events(true),
       can_activate(true),
       keep_on_top(false),
@@ -130,9 +131,10 @@ Widget::InitParams::InitParams(Type type)
       delegate(NULL),
       child(type == TYPE_CONTROL),
       transient(type == TYPE_BUBBLE || type == TYPE_POPUP || type == TYPE_MENU),
-      transparent(type == TYPE_WINDOW &&
-                  ViewsDelegate::views_delegate &&
-                  ViewsDelegate::views_delegate->UseTransparentWindows()),
+      opacity((type == TYPE_WINDOW &&
+               ViewsDelegate::views_delegate &&
+               ViewsDelegate::views_delegate->UseTransparentWindows()) ?
+              TRANSLUCENT_WINDOW : INFER_OPACITY),
       accept_events(true),
       can_activate(type != TYPE_POPUP && type != TYPE_MENU),
       keep_on_top(type == TYPE_MENU),
@@ -312,14 +314,18 @@ void Widget::Init(const InitParams& in_params) {
        params.type != InitParams::TYPE_CONTROL &&
        params.type != InitParams::TYPE_TOOLTIP);
   params.top_level = is_top_level_;
+  if (params.opacity == InitParams::INFER_OPACITY) {
 #if defined(OS_WIN) && defined(USE_AURA)
-  // It'll need to be faded in if it's top level and not the main window.
-  // Maintain transparent if the creator of the Widget specified transparent
-  // already.
-  params.transparent =
-      params.transparent ||
-      (is_top_level_ && params.type != InitParams::TYPE_WINDOW);
+    // By default, make all top-level windows but the main window transparent
+    // initially so that they can be made to fade in.
+    if (is_top_level_ && params.type != InitParams::TYPE_WINDOW)
+      params.opacity = InitParams::TRANSLUCENT_WINDOW;
+    else
+      params.opacity = InitParams::OPAQUE_WINDOW;
+#else
+    params.opacity = InitParams::OPAQUE_WINDOW;
 #endif
+  }
 
   if (ViewsDelegate::views_delegate)
     ViewsDelegate::views_delegate->OnBeforeWidgetInit(&params, this);

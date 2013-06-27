@@ -43,7 +43,7 @@ Widget* DialogDelegate::CreateDialogWidget(DialogDelegate* dialog,
       dialog->UseNewStyleForThisDialog() : DialogDelegate::UseNewStyle();
   if (use_new_style) {
     // Note: Transparent widgets cannot host native Windows textfield controls.
-    params.transparent = true;
+    params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
     params.remove_standard_frame = true;
   }
   params.context = context;

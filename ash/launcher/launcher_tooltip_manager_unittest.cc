@@ -90,7 +90,7 @@ class LauncherTooltipManagerTest : public AshTestBase {
     widget_.reset(new views::Widget);
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.transparent = true;
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = Shell::GetContainer(
         Shell::GetPrimaryRootWindow(),

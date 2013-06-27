@@ -112,7 +112,7 @@ void PartialScreenshotView::Init(aura::RootWindow* root_window) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.delegate = this;
   // The partial screenshot rectangle has to be at the real top of
   // the screen.

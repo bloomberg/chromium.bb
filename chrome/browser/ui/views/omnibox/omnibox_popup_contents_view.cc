@@ -216,7 +216,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     popup_ = (new AutocompletePopupWidget)->AsWeakPtr();
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.can_activate = false;
-    params.transparent = true;
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.parent = popup_parent;
     params.bounds = GetPopupBounds();
     params.context = popup_parent;

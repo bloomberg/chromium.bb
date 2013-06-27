@@ -214,7 +214,7 @@ AppNonClientFrameViewAsh::AppNonClientFrameViewAsh(
   control_widget_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.parent = browser_view->GetNativeWindow();
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   control_widget_->Init(params);
   control_widget_->SetContentsView(control_view_);
   aura::Window* window = control_widget_->GetNativeView();

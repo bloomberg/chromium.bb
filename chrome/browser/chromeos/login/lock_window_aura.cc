@@ -43,7 +43,7 @@ void LockWindowAura::Init() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   // TODO(oshima): move the lock screen harness to ash.
   params.parent =
       ash::Shell::GetContainer(

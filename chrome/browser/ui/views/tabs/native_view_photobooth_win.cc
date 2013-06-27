@@ -36,7 +36,7 @@ gfx::Point GetCaptureWindowPosition() {
   return gfx::Point(point.x() - 1, point.y() - 1);
 }
 
-}
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // NativeViewPhotoboothWin, public:
@@ -152,7 +152,7 @@ void NativeViewPhotoboothWin::CreateCaptureWindow(HWND initial_hwnd) {
                            contents_rect.bottom - contents_rect.top);
   capture_window_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.bounds = capture_bounds;
   capture_window_->Init(params);
   // If the capture window isn't visible, blitting from the WebContents's

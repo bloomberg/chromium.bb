@@ -917,7 +917,7 @@ void UserView::ToggleAddUserMenuOption() {
   params.context = this->GetWidget()->GetNativeWindow();
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   add_menu_option_->Init(params);
   add_menu_option_->SetOpacity(0xFF);
   add_menu_option_->GetNativeWindow()->set_owned_by_parent(false);

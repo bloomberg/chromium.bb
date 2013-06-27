@@ -56,7 +56,7 @@ void CalculateWindowStylesFromInitParams(
   // 4- The windows must not have WM_SIZEBOX  in its style.
   // 5- When the window is created but before it is presented, call
   //    DwmExtendFrameIntoClientArea passing -1 as the margins.
-  if (params.transparent) {
+  if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW) {
 #if defined(USE_AURA)
     if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
       BOOL enabled = FALSE;

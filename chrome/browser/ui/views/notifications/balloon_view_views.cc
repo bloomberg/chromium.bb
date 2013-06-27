@@ -336,7 +336,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   frame_container_ = new views::Widget;
   params.delegate = this;
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.bounds = GetBoundsForFrameContainer();
   frame_container_->Init(params);
   frame_container_->SetContentsView(this);

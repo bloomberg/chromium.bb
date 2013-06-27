@@ -661,7 +661,7 @@ views::Widget* CreateWebContentsModalDialogViews(
             dialog,
             kWebContentsModalDialogHostObserverViewsKey);
 #if defined(USE_AURA)
-    params.transparent = true;
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
 #endif
   } else {
     params.parent = parent;

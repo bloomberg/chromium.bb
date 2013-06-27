@@ -67,7 +67,7 @@ void DropdownBarHost::Init(views::View* host_view,
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = browser_view_->GetWidget()->GetNativeView();
 #if defined(USE_AURA)
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
 #endif
   host_->Init(params);
   host_->SetContentsView(view_);

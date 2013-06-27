@@ -395,7 +395,7 @@ AutofillDialogViews::ErrorBubble::ErrorBubble(views::View* anchor,
       observer_(this) {
   widget_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   views::Widget* anchor_widget = anchor->GetWidget();
   DCHECK(anchor_widget);
   params.parent = anchor_widget->GetNativeView();

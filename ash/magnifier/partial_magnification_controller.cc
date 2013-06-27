@@ -144,7 +144,7 @@ void PartialMagnificationController::CreateMagnifierWindow() {
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.can_activate = false;
   params.accept_events = false;
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = root_window;
   zoom_widget_->Init(params);
   zoom_widget_->SetBounds(gfx::Rect(mouse.x() - kMagnifierWidth / 2,

@@ -490,7 +490,7 @@ TouchObserverHUD::TouchObserverHUD(aura::RootWindow* initial_root)
   widget_ = new views::Widget();
   views::Widget::InitParams
       params(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.can_activate = false;
   params.accept_events = false;
   params.bounds = gfx::Rect(display_size);

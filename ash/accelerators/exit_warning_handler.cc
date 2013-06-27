@@ -169,7 +169,7 @@ void ExitWarningHandler::Show() {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.transient = true;
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
   params.can_activate = false;
   params.keep_on_top = true;

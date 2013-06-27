@@ -41,7 +41,7 @@ views::Widget* CreateTouchSelectionPopupWidget(
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_TOOLTIP);
   params.can_activate = false;
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = context;
   params.delegate = widget_delegate;

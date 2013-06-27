@@ -49,7 +49,7 @@ views::Widget* CreateWidget(const gfx::Rect& bounds,
                             views::View* contents_view) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.transparent = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.can_activate = false;
   params.keep_on_top = true;
   // We set the context to the primary root window; this is OK because the ash

@@ -253,7 +253,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
                                  tooltip_controller_.get());
   root_window_->AddPreTargetHandler(tooltip_controller_.get());
 
-  if (params.type != Widget::InitParams::TYPE_WINDOW) {
+  if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW) {
     visibility_controller_.reset(new views::corewm::VisibilityController);
     aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(),
                                       visibility_controller_.get());

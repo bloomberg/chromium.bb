@@ -47,7 +47,9 @@ void MenuHost::InitMenuHost(Widget* parent,
   bool bubble_border = submenu_->GetScrollViewContainer() &&
                        submenu_->GetScrollViewContainer()->HasBubbleBorder();
   params.has_dropshadow = !bubble_border;
-  params.transparent = bubble_border || rounded_border;
+  params.opacity = (bubble_border || rounded_border) ?
+      Widget::InitParams::TRANSLUCENT_WINDOW :
+      Widget::InitParams::OPAQUE_WINDOW;
   params.parent = parent ? parent->GetNativeView() : NULL;
   params.bounds = bounds;
   Init(params);
