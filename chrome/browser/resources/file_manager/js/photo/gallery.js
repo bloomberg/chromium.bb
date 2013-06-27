@@ -339,10 +339,7 @@ Gallery.prototype.initDom_ = function() {
   this.dataModel_.addEventListener('content', this.onContentChange_.bind(this));
 
   this.selectionModel_.addEventListener('change', this.onSelection_.bind(this));
-
   this.slideMode_.addEventListener('useraction', this.onUserAction_.bind(this));
-
-  document.body.setAttribute('new-ui', '');
 };
 
 /**
