@@ -3454,7 +3454,18 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="InstantExtended.NewOptInState"
+    enum="InstantExtended_NewOptInState">
+  <summary>
+    Records, on startup, whether the user has chosen to opt-in to or opt-out of
+    InstantExtended via chrome://flags.
+  </summary>
+</histogram>
+
 <histogram name="InstantExtended.OptInState" enum="InstantExtended_OptInState">
+  <obsolete>
+    Deprecated 2013-06. As of m30 use InstantExtended.NewOptInState.
+  </obsolete>
   <summary>
     Records, on startup, whether the user has chosen to opt-in to or opt-out of
     InstantExtended via chrome://flags.
@@ -15259,7 +15270,16 @@ other types of suffix sets.
   <int value="4" label="Non-extended navigation"/>
 </enum>
 
+<enum name="InstantExtended_NewOptInState" type="int">
+  <int value="0" label="Default"/>
+  <int value="1" label="Opted in"/>
+  <int value="2" label="Opted out"/>
+</enum>
+
 <enum name="InstantExtended_OptInState" type="int">
+  <obsolete>
+    Deprecated 2013-06.
+  </obsolete>
   <int value="0" label="Default"/>
   <int value="1" label="Opted in"/>
   <int value="2" label="Opted out"/>

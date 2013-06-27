@@ -6525,12 +6525,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_INSTANT_EXTENDED_API_DESCRIPTION" desc="Description for the flag to enable the Instant extended API.">
         Enables the Instant Extended API which provides a deeper integration with your default search provider, including a renovated New Tab Page, extracting search query terms in the omnibox, a spruced-up omnibox dropdown and Instant previews of search results as you type in the omnibox.
       </message>
-      <message name="IDS_FLAGS_ENABLE_LOCAL_ONLY_INSTANT_EXTENDED_API" desc="Title for the flag to enable the local-only Instant extended API.">
-        Enable local-only Instant Extended API
-      </message>
-      <message name="IDS_FLAGS_ENABLE_LOCAL_ONLY_INSTANT_EXTENDED_API_DESCRIPTION" desc="Description for the flag to enable the Instant extended API.">
-        Enables the Instant Extended API using only local resources, including a renovated New Tab Page and a spruced-up omnibox dropdown, but without search query terms extraction or Instant search results.
-      </message>
       <message name="IDS_FLAGS_ENABLE_LOCAL_FIRST_LOAD_NTP" desc="Title for the flag to enable the local first load NTP.">
         Enable local first-load NTP in Instant Extended.
       </message>
@@ -7392,9 +7386,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_INSTANT_CHECKBOX_NO_EXTENDED_API" desc="Description of a preference that's disabled because the Instant Extended API is disabled.">
         Display Instant results (Instant Extended is disabled).
-      </message>
-      <message name="IDS_INSTANT_CHECKBOX_LOCAL_ONLY_EXTENDED_API" desc="Description of a preference that's disabled because the Instant Extended API is enabled in local-only mode.">
-        Display Instant results (Instant Extended is local-only).
       </message>
       <message name="IDS_INSTANT_CHECKBOX_NO_DEFAULT_SEARCH_PROVIDER" desc="Description of a preference that's disabled because there's no default search engine.">
         Display Instant results (no default search engine).

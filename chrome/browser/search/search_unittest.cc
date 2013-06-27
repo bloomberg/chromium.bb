@@ -141,7 +141,6 @@ class InstantExtendedAPIEnabledTest : public testing::Test {
 TEST_F(InstantExtendedAPIEnabledTest, EnabledViaCommandLineFlag) {
   GetCommandLine()->AppendSwitch(switches::kEnableInstantExtendedAPI);
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
 #if defined(OS_IOS) || defined(OS_ANDROID)
   EXPECT_EQ(1ul, EmbeddedSearchPageVersion());
 #else
@@ -154,7 +153,6 @@ TEST_F(InstantExtendedAPIEnabledTest, EnabledViaFinchFlag) {
   ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
       "InstantExtended/Group1 espv:42/"));
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
   EXPECT_EQ(42ul, EmbeddedSearchPageVersion());
   ValidateMetrics(INSTANT_EXTENDED_NOT_SET);
 }
@@ -164,110 +162,8 @@ TEST_F(InstantExtendedAPIEnabledTest, DisabledViaCommandLineFlag) {
   ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
       "InstantExtended/Group1 espv:2/"));
   EXPECT_FALSE(IsInstantExtendedAPIEnabled());
-  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
   EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
   ValidateMetrics(INSTANT_EXTENDED_OPT_OUT);
-}
-
-TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyEnabledViaCommandLineFlag) {
-  GetCommandLine()->AppendSwitch(switches::kEnableLocalOnlyInstantExtendedAPI);
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
-  ValidateMetrics(INSTANT_EXTENDED_OPT_IN_LOCAL);
-}
-
-TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyEnabledViaFinch) {
-  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
-      "InstantExtended/Group1 local_only:1/"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
-  ValidateMetrics(INSTANT_EXTENDED_NOT_SET);
-}
-
-TEST_F(InstantExtendedAPIEnabledTest, BothLocalAndRegularOptOutCommandLine) {
-  GetCommandLine()->AppendSwitch(switches::kDisableLocalOnlyInstantExtendedAPI);
-  GetCommandLine()->AppendSwitch(switches::kDisableInstantExtendedAPI);
-  EXPECT_FALSE(IsInstantExtendedAPIEnabled());
-  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
-  ValidateMetrics(INSTANT_EXTENDED_OPT_OUT_BOTH);
-}
-
-TEST_F(InstantExtendedAPIEnabledTest, BothLocalAndRegularOptInCommandLine) {
-  GetCommandLine()->AppendSwitch(switches::kEnableLocalOnlyInstantExtendedAPI);
-  GetCommandLine()->AppendSwitch(switches::kEnableInstantExtendedAPI);
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
-  ValidateMetrics(INSTANT_EXTENDED_OPT_IN_LOCAL);
-}
-
-TEST_F(InstantExtendedAPIEnabledTest,
-       LocalOnlyCommandLineTrumpedByCommandLine) {
-  GetCommandLine()->AppendSwitch(switches::kEnableLocalOnlyInstantExtendedAPI);
-  GetCommandLine()->AppendSwitch(switches::kDisableInstantExtendedAPI);
-  EXPECT_FALSE(IsInstantExtendedAPIEnabled());
-  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
-  ValidateMetrics(INSTANT_EXTENDED_OPT_OUT);
-}
-
-TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyCommandLineTrumpsFinch) {
-  GetCommandLine()->AppendSwitch(switches::kEnableLocalOnlyInstantExtendedAPI);
-  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
-      "InstantExtended/Group1 espv:2/"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
-  ValidateMetrics(INSTANT_EXTENDED_OPT_IN_LOCAL);
-}
-
-TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyFinchTrumpedByCommandLine) {
-  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
-      "InstantExtended/Group1 local_only:1/"));
-  GetCommandLine()->AppendSwitch(switches::kDisableInstantExtendedAPI);
-  EXPECT_FALSE(IsInstantExtendedAPIEnabled());
-  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
-  ValidateMetrics(INSTANT_EXTENDED_OPT_OUT);
-}
-
-TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyFinchTrumpsFinch) {
-  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
-      "InstantExtended/Group1 espv:1 local_only:1/"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_TRUE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
-  ValidateMetrics(INSTANT_EXTENDED_NOT_SET);
-}
-
-TEST_F(InstantExtendedAPIEnabledTest, LocalOnlyDisabledViaCommandLineFlag) {
-  GetCommandLine()->AppendSwitch(switches::kDisableLocalOnlyInstantExtendedAPI);
-  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
-      "InstantExtended/Group1 espv:2/"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_FALSE(IsLocalOnlyInstantExtendedAPIEnabled());
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
-  ValidateMetrics(INSTANT_EXTENDED_OPT_OUT_LOCAL);
-}
-
-class ShouldPreloadLocalOnlyNTPtest : public InstantExtendedAPIEnabledTest {
-};
-
-TEST_F(ShouldPreloadLocalOnlyNTPtest, PreloadByDefault) {
-  EXPECT_TRUE(ShouldPreloadLocalOnlyNTP());
-}
-
-TEST_F(ShouldPreloadLocalOnlyNTPtest, SuppressPreload) {
-  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
-      "InstantExtended/Group1 preload_local_only_ntp:0/"));
-  EXPECT_FALSE(ShouldPreloadLocalOnlyNTP());
-}
-
-TEST_F(ShouldPreloadLocalOnlyNTPtest, ForcePreload) {
-  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
-      "InstantExtended/Group1 preload_local_only_ntp:1/"));
-  EXPECT_TRUE(ShouldPreloadLocalOnlyNTP());
 }
 
 class SearchTest : public BrowserWithTestWindowTest {

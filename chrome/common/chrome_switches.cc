@@ -352,10 +352,6 @@ const char kDisableIPPooling[]              = "disable-ip-pooling";
 // Disable always using the local NTP for the first NTP load of a new window.
 const char kDisableLocalFirstLoadNTP[] = "disable-local-first-load-ntp";
 
-// Disable local-only Instant extended API.
-const char kDisableLocalOnlyInstantExtendedAPI[] =
-    "disable-local-only-instant-extended-api";
-
 // Disable the behavior that the second click on a launcher item (the click when
 // the item is already active) minimizes the item.
 const char kDisableMinimizeOnSecondLauncherItemClick[] =
@@ -582,10 +578,6 @@ const char kEnableIPPooling[]               = "enable-ip-pooling";
 
 // Enable always using the local NTP for the first NTP load of a new window.
 const char kEnableLocalFirstLoadNTP[] = "enable-local-first-load-ntp";
-
-// Enable Instant extended API, but use only the local omnibox popup and NTP.
-const char kEnableLocalOnlyInstantExtendedAPI[] =
-    "enable-local-only-instant-extended-api";
 
 // Enables support for user profiles that are managed by another user and can
 // have restrictions applied.

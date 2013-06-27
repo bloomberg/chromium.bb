@@ -1056,7 +1056,7 @@ void InstantController::SetInstantEnabled(bool instant_enabled,
 
   instant_enabled_ = instant_enabled;
   use_local_page_only_ = use_local_page_only;
-  preload_ntp_ = !use_local_page_only_ || chrome::ShouldPreloadLocalOnlyNTP();
+  preload_ntp_ = !use_local_page_only_;
 
   // Preload the overlay.
   HideInternal();

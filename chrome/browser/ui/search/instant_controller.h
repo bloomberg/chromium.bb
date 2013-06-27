@@ -287,8 +287,6 @@ class InstantController : public InstantPage::Delegate,
                            PreloadedNTPDoesntSupportInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UnrelatedSiteInstance);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalOnlyNTPIsPreloaded);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalOnlyNTPIsNotPreloaded);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OnDefaultSearchProviderChanged);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            AcceptingURLSearchDoesNotNavigate);

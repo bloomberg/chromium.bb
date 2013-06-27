@@ -5,7 +5,6 @@
 #include <sstream>
 
 #include "base/command_line.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -304,58 +303,6 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NTPIsPreloaded) {
   ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
   content::WebContents* ntp_contents = instant()->ntp_->contents();
   EXPECT_TRUE(ntp_contents);
-}
-
-// Test that the local NTP is preloaded.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, LocalOnlyNTPIsPreloaded) {
-  // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-
-  // The second argument says to use only the local overlay and NTP.
-  instant()->SetInstantEnabled(false, true);
-  FocusOmniboxAndWaitForInstantNTPSupport();
-
-  // NTP contents should be preloaded.
-  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
-  content::WebContents* ntp_contents = instant()->ntp_->contents();
-  EXPECT_NE(static_cast<content::WebContents*>(NULL), ntp_contents);
-  EXPECT_TRUE(instant()->ntp()->IsLocal());
-}
-
-// Test that the local NTP is not preloaded.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, LocalOnlyNTPIsNotPreloaded) {
-  // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
-      "InstantExtended/Group1 local_only:1 preload_local_only_ntp:0/"));
-
-  // The second argument says to use only the local overlay and NTP.
-  instant()->SetInstantEnabled(false, true);
-
-  // NTP contents should not be preloaded.
-  EXPECT_EQ(NULL, instant()->ntp());
-}
-
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInNewTab) {
-  // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantNTPSupport();
-
-  // NTP contents should be preloaded.
-  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
-  content::WebContents* ntp_contents = instant()->ntp_->contents();
-  EXPECT_TRUE(ntp_contents);
-
-  // Open new tab. Preloaded NTP contents should have been used.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(chrome::kChromeUINewTabURL),
-      NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(ntp_contents, active_tab);
-  EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInSameTab) {

@@ -62,8 +62,6 @@ const char kAllowInstantSearchResultsFlagName[] = "allow_instant";
 // Sets the default state for the Instant checkbox.
 const char kInstantSearchResultsFlagName[] = "instant";
 
-const char kLocalOnlyFlagName[] = "local_only";
-const char kPreloadLocalOnlyNTPFlagName[] = "preload_local_only_ntp";
 const char kUseRemoteNTPOnStartupFlagName[] = "use_remote_ntp_on_startup";
 const char kShowNtpFlagName[] = "show_ntp";
 const char kRecentTabsOnNTPFlagName[] = "show_recent_tabs";
@@ -126,29 +124,19 @@ bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
 }
 
 void RecordInstantExtendedOptInState() {
-  if (!instant_extended_opt_in_state_gate) {
-    instant_extended_opt_in_state_gate = true;
-    OptInState state = INSTANT_EXTENDED_NOT_SET;
-    const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(
-        switches::kDisableLocalOnlyInstantExtendedAPI)) {
-      if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI)) {
-        state = INSTANT_EXTENDED_OPT_OUT_BOTH;
-      } else {
-        state = INSTANT_EXTENDED_OPT_OUT_LOCAL;
-      }
-    } else if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI)) {
-      state = INSTANT_EXTENDED_OPT_OUT;
-    } else if (command_line->HasSwitch(
-        switches::kEnableLocalOnlyInstantExtendedAPI)) {
-      state = INSTANT_EXTENDED_OPT_IN_LOCAL;
-    } else if (command_line->HasSwitch(switches::kEnableInstantExtendedAPI)) {
-      state = INSTANT_EXTENDED_OPT_IN;
-    }
+  if (instant_extended_opt_in_state_gate)
+    return;
 
-    UMA_HISTOGRAM_ENUMERATION("InstantExtended.OptInState", state,
-                              INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT);
-  }
+  instant_extended_opt_in_state_gate = true;
+  OptInState state = INSTANT_EXTENDED_NOT_SET;
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI))
+    state = INSTANT_EXTENDED_OPT_OUT;
+  else if (command_line->HasSwitch(switches::kEnableInstantExtendedAPI))
+    state = INSTANT_EXTENDED_OPT_IN;
+
+  UMA_HISTOGRAM_ENUMERATION("InstantExtended.NewOptInState", state,
+                            INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT);
 }
 
 // Returns true if |contents| is rendered inside the Instant process for
@@ -246,16 +234,15 @@ bool IsInstantExtendedAPIEnabled() {
 #else
   // On desktop, query extraction is part of Instant extended, so if one is
   // enabled, the other is too.
-  return IsQueryExtractionEnabled() || IsLocalOnlyInstantExtendedAPIEnabled();
+  RecordInstantExtendedOptInState();
+  return IsQueryExtractionEnabled();
 #endif  // defined(OS_IOS) || defined(OS_ANDROID)
 }
 
 // Determine what embedded search page version to request from the user's
 // default search provider. If 0, the embedded search UI should not be enabled.
 uint64 EmbeddedSearchPageVersion() {
-  // No server-side changes if the local-only Instant Extended is enabled.
-  if (IsLocalOnlyInstantExtendedAPIEnabled())
-    return kEmbeddedPageVersionDisabled;
+  RecordInstantExtendedOptInState();
 
   // Check the command-line/about:flags setting first, which should have
   // precedence and allows the trial to not be reported (if it's never queried).
@@ -281,25 +268,6 @@ uint64 EmbeddedSearchPageVersion() {
 
 bool IsQueryExtractionEnabled() {
   return EmbeddedSearchPageVersion() != kEmbeddedPageVersionDisabled;
-}
-
-bool IsLocalOnlyInstantExtendedAPIEnabled() {
-  RecordInstantExtendedOptInState();
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableLocalOnlyInstantExtendedAPI) ||
-      command_line->HasSwitch(switches::kDisableInstantExtendedAPI)) {
-    return false;
-  }
-  if (command_line->HasSwitch(switches::kEnableLocalOnlyInstantExtendedAPI))
-    return true;
-
-  FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(kLocalOnlyFlagName, false, flags);
-  }
-  return false;
 }
 
 string16 GetSearchTermsFromURL(Profile* profile, const GURL& in_url) {
@@ -414,8 +382,8 @@ bool IsInstantCheckboxVisible() {
 }
 
 bool IsInstantCheckboxEnabled(Profile* profile) {
+  RecordInstantExtendedOptInState();
   return IsInstantExtendedAPIEnabled() &&
-         !IsLocalOnlyInstantExtendedAPIEnabled() &&
          DefaultSearchProviderSupportsInstant(profile) &&
          IsSuggestPrefEnabled(profile);
 }
@@ -440,11 +408,6 @@ bool IsInstantCheckboxChecked(Profile* profile) {
 string16 GetInstantCheckboxLabel(Profile* profile) {
   if (!IsInstantExtendedAPIEnabled())
     return l10n_util::GetStringUTF16(IDS_INSTANT_CHECKBOX_NO_EXTENDED_API);
-
-  if (IsLocalOnlyInstantExtendedAPIEnabled()) {
-    return l10n_util::GetStringUTF16(
-        IDS_INSTANT_CHECKBOX_LOCAL_ONLY_EXTENDED_API);
-  }
 
   if (!DefaultSearchProviderSupportsInstant(profile)) {
     const TemplateURL* provider = GetDefaultSearchProviderTemplateURL(profile);
@@ -528,7 +491,6 @@ bool ShouldPreferRemoteNTPOnStartup() {
   // precedence and allows the trial to not be reported (if it's never queried).
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI) ||
-      command_line->HasSwitch(switches::kEnableLocalOnlyInstantExtendedAPI) ||
       command_line->HasSwitch(switches::kEnableLocalFirstLoadNTP)) {
     return false;
   }
@@ -543,17 +505,6 @@ bool ShouldPreferRemoteNTPOnStartup() {
                                           flags);
   }
   return false;
-}
-
-bool ShouldPreloadLocalOnlyNTP() {
-  FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(kPreloadLocalOnlyNTPFlagName, false,
-                                          flags);
-  }
-  return true;
 }
 
 bool ShouldShowInstantNTP() {

@@ -29,20 +29,12 @@ class PrefRegistrySyncable;
 namespace chrome {
 
 enum OptInState {
-  // The user has not manually opted in/out of InstantExtended,
-  // either local or regular. The in/out for local or not may
-  // occur concurrently, but only once for each (local or not).
+  // The user has not manually opted in/out of InstantExtended.
   INSTANT_EXTENDED_NOT_SET,
   // The user has opted-in to InstantExtended.
   INSTANT_EXTENDED_OPT_IN,
   // The user has opted-out of InstantExtended.
   INSTANT_EXTENDED_OPT_OUT,
-  // The user has opted-in to Local InstantExtended.
-  INSTANT_EXTENDED_OPT_IN_LOCAL,
-  // The user has opted-out of Local InstantExtended.
-  INSTANT_EXTENDED_OPT_OUT_LOCAL,
-  // The user has opted-out of both Local and regular InstantExtended.
-  INSTANT_EXTENDED_OPT_OUT_BOTH,
   INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT,
 };
 
@@ -54,16 +46,12 @@ extern const int kDisableStartMargin;
 bool IsInstantExtendedAPIEnabled();
 
 // Returns the value to pass to the &espv CGI parameter when loading the
-// embedded search page from the user's default search provider. Will be
-// 0 if the Instant Extended API is not enabled, or if the local-only Instant
-// Extended API is enabled.
+// embedded search page from the user's default search provider. Returns 0 if
+// the Instant Extended API is not enabled.
 uint64 EmbeddedSearchPageVersion();
 
 // Returns whether query extraction is enabled.
 bool IsQueryExtractionEnabled();
-
-// Returns whether the local-only version of Instant Extended API is enabled.
-bool IsLocalOnlyInstantExtendedAPIEnabled();
 
 // Extracts and returns search terms from |url|. Returns empty string if the URL
 // is not secure or doesn't have a search term replacement key.  Does not
@@ -147,9 +135,6 @@ bool IsInstantEnabled(Profile* profile);
 // Returns true if 'use_remote_ntp_on_startup' flag is enabled in field trials
 // to always show the remote NTP on browser startup.
 bool ShouldPreferRemoteNTPOnStartup();
-
-// Should the Instant NTP be preloaded if local-only InstantExtended is enabled.
-bool ShouldPreloadLocalOnlyNTP();
 
 // Returns true if the Instant NTP should be shown and false if not.
 bool ShouldShowInstantNTP();

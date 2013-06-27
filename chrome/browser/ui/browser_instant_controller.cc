@@ -239,9 +239,7 @@ void BrowserInstantController::ToggleVoiceSearch() {
 
 void BrowserInstantController::ResetInstant(const std::string& pref_name) {
   bool instant_checkbox_checked = chrome::IsInstantCheckboxChecked(profile());
-  bool use_local_overlay_only =
-      chrome::IsLocalOnlyInstantExtendedAPIEnabled() ||
-      !chrome::IsInstantCheckboxEnabled(profile());
+  bool use_local_overlay_only = !chrome::IsInstantCheckboxEnabled(profile());
   instant_.SetInstantEnabled(instant_checkbox_checked, use_local_overlay_only);
 }
 
