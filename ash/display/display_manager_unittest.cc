@@ -374,6 +374,9 @@ TEST_F(DisplayManagerTest, ZeroOverscanInsets) {
 }
 
 TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
+  if (!SupportsHostWindowResize())
+    return;
+
   UpdateDisplay("1000x600");
   EXPECT_EQ(1,
             Shell::GetPrimaryRootWindow()->compositor()->device_scale_factor());

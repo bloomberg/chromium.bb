@@ -44,6 +44,10 @@ void RoundNearZero(gfx::Transform* transform) {
   }
 }
 
+// TODO(oshima): Transformers should be able to adjust itself
+// when the device scale factor is changed, instead of
+// precalculating the transform using fixed value.
+
 gfx::Transform CreateRotationTransform(aura::RootWindow* root_window,
                                        const gfx::Display& display) {
   DisplayInfo info =

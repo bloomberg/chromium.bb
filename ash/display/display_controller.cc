@@ -807,8 +807,8 @@ void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
 
   UpdateDisplayBoundsForLayout();
   aura::RootWindow* root = root_windows_[display.id()];
-  SetDisplayPropertiesOnHostWindow(root, display);
   root->SetHostBounds(display_info.bounds_in_pixel());
+  SetDisplayPropertiesOnHostWindow(root, display);
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {

@@ -99,6 +99,10 @@ class AshTestBase : public testing::Test {
   // or false otherwise (e.g. win8 bot).
   static bool SupportsMultipleDisplays();
 
+  // True if the running environment supports host window resize,
+  // or false otherwise (e.g. win8 bot).
+  static bool SupportsHostWindowResize();
+
   void RunAllPendingInMessageLoop();
 
   // Utility methods to emulate user logged in or not, session started or not

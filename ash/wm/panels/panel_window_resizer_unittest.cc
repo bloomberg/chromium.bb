@@ -221,12 +221,18 @@ class PanelWindowResizerTextDirectionTest
 // Verifies a window can be dragged from the panel and detached and then
 // reattached.
 TEST_F(PanelWindowResizerTest, PanelDetachReattachBottom) {
+ if (!SupportsHostWindowResize())
+    return;
+
   scoped_ptr<aura::Window> window(
       CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
   DetachReattachTest(window.get(), 0, -1);
 }
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachLeft) {
+ if (!SupportsHostWindowResize())
+    return;
+
   ash::Shell* shell = ash::Shell::GetInstance();
   shell->SetShelfAlignment(SHELF_ALIGNMENT_LEFT, shell->GetPrimaryRootWindow());
   scoped_ptr<aura::Window> window(
@@ -252,6 +258,9 @@ TEST_F(PanelWindowResizerTest, MAYBE_PanelDetachReattachRight) {
 }
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachTop) {
+ if (!SupportsHostWindowResize())
+    return;
+
   ash::Shell* shell = ash::Shell::GetInstance();
   shell->SetShelfAlignment(SHELF_ALIGNMENT_TOP, shell->GetPrimaryRootWindow());
   scoped_ptr<aura::Window> window(
@@ -432,6 +441,9 @@ TEST_F(PanelWindowResizerTest, DragMovesToPanelLayer) {
 }
 
 TEST_P(PanelWindowResizerTextDirectionTest, DragReordersPanelsHorizontal) {
+  if (!SupportsHostWindowResize())
+    return;
+
   DragAlongShelfReorder(base::i18n::IsRTL() ? 1 : -1, 0);
 }
 

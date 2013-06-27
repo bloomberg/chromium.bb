@@ -215,6 +215,9 @@ class DockedWindowLayoutManagerTest
 // Tests that a created window is successfully added to the dock
 // layout manager.
 TEST_P(DockedWindowLayoutManagerTest, AddOneWindow) {
+  if (!SupportsHostWindowResize())
+    return;
+
   gfx::Rect bounds(0, 0, 201, 201);
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);

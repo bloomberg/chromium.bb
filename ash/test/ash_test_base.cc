@@ -192,6 +192,15 @@ bool AshTestBase::SupportsMultipleDisplays() {
 #endif
 }
 
+// static
+bool AshTestBase::SupportsHostWindowResize() {
+#if defined(OS_WIN)
+  return base::win::GetVersion() < base::win::VERSION_WIN8;
+#else
+  return true;
+#endif
+}
+
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   DisplayManagerTestApi display_manager_test_api(
       Shell::GetInstance()->display_manager());

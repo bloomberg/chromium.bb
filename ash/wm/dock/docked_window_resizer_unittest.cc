@@ -223,6 +223,9 @@ class DockedWindowResizerTest
 
 // Verifies a window can be dragged and attached to the dock.
 TEST_P(DockedWindowResizerTest, AttachRightPrecise) {
+  if (!SupportsHostWindowResize())
+    return;
+
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
@@ -235,6 +238,9 @@ TEST_P(DockedWindowResizerTest, AttachRightPrecise) {
 // Verifies a window can be dragged and attached to the dock
 // even if we overshoot the screen edge by a few pixels (sticky edge)
 TEST_P(DockedWindowResizerTest, AttachRightOvershoot) {
+  if (!SupportsHostWindowResize())
+    return;
+
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), +4);
 
@@ -247,6 +253,9 @@ TEST_P(DockedWindowResizerTest, AttachRightOvershoot) {
 // Verifies a window can be dragged and then if not quite reaching the screen
 // edge it does not get docked to a screen edge and stays in the workspace.
 TEST_P(DockedWindowResizerTest, AttachRightUndershoot) {
+  if (!SupportsHostWindowResize())
+    return;
+
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), -1);
 
@@ -259,6 +268,9 @@ TEST_P(DockedWindowResizerTest, AttachRightUndershoot) {
 
 // Verifies a window can be dragged and attached to the dock.
 TEST_P(DockedWindowResizerTest, AttachLeftPrecise) {
+  if (!SupportsHostWindowResize())
+    return;
+
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), 0);
 
@@ -271,6 +283,9 @@ TEST_P(DockedWindowResizerTest, AttachLeftPrecise) {
 // Verifies a window can be dragged and attached to the dock
 // even if we overshoot the screen edge by a few pixels (sticky edge)
 TEST_P(DockedWindowResizerTest, AttachLeftOvershoot) {
+  if (!SupportsHostWindowResize())
+    return;
+
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), -4);
 
@@ -283,6 +298,9 @@ TEST_P(DockedWindowResizerTest, AttachLeftOvershoot) {
 // Verifies a window can be dragged and then if not quite reaching the screen
 // edge it does not get docked to a screen edge and stays in the workspace.
 TEST_P(DockedWindowResizerTest, AttachLeftUndershoot) {
+  if (!SupportsHostWindowResize())
+    return;
+
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), 1);
 
@@ -296,6 +314,9 @@ TEST_P(DockedWindowResizerTest, AttachLeftUndershoot) {
 // Dock on the right side, change shelf alignment, check that windows move to
 // the opposite side.
 TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
+  if (!SupportsHostWindowResize())
+    return;
+
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
@@ -332,6 +353,9 @@ TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
 
 // Dock on the right side, try to undock, then drag more to really undock
 TEST_P(DockedWindowResizerTest, AttachTryDetach) {
+  if (!SupportsHostWindowResize())
+    return;
+
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
@@ -366,6 +390,9 @@ TEST_P(DockedWindowResizerTest, AttachTryDetach) {
 
 // Minimize a docked window, then restore it and check that it is still docked.
 TEST_P(DockedWindowResizerTest, AttachMinimizeRestore) {
+  if (!SupportsHostWindowResize())
+    return;
+
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
@@ -452,6 +479,9 @@ TEST_P(DockedWindowResizerTest, AttachOnTwoSides)
 
 // Reverting drag
 TEST_P(DockedWindowResizerTest, RevertDragRestoresAttachment) {
+  if (!SupportsHostWindowResize())
+    return;
+
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
 
