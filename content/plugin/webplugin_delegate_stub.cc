@@ -41,12 +41,13 @@ static void DestroyWebPluginAndDelegate(
   if (scriptable_object.get())
     scriptable_object->DeleteSoon();
 
-  // Un-register the plugin instance as an object owner.
-  WebBindings::unregisterObjectOwner(delegate->GetPluginNPP());
+  if (delegate) {
+    // Un-register the plugin instance as an object owner.
+    WebBindings::unregisterObjectOwner(delegate->GetPluginNPP());
 
-  // WebPlugin must outlive WebPluginDelegate.
-  if (delegate)
+    // WebPlugin must outlive WebPluginDelegate.
     delegate->PluginDestroyed();
+  }
 
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, webplugin);
 }
