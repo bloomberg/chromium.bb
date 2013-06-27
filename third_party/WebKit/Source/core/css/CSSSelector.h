@@ -152,7 +152,6 @@ namespace WebCore {
             PseudoFullScreen,
             PseudoFullScreenDocument,
             PseudoFullScreenAncestor,
-            PseudoAnimatingFullScreenTransition,
             PseudoInRange,
             PseudoOutOfRange,
             PseudoUserAgentCustomElement,

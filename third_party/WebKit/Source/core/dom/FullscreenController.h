@@ -57,7 +57,6 @@ public:
     static Element* fullscreenElementFrom(Document*);
     static Element* currentFullScreenElementFrom(Document*);
     static bool isFullScreen(Document*);
-    static bool isAnimatingFullScreen(Document*);
     static bool isActiveFullScreenElement(const Element*);
 
     enum FullScreenCheckType {
@@ -85,8 +84,6 @@ public:
     bool fullScreenIsAllowedForElement(Element*) const;
     void fullScreenElementRemoved();
     void removeFullScreenElementOfSubtree(Node*, bool amongChildrenOnly = false);
-    bool isAnimatingFullScreen() const { return m_isAnimatingFullScreen; }
-    void setAnimatingFullScreen(bool);
 
     // W3C API
     static bool webkitFullscreenEnabled(Document*);
@@ -109,7 +106,6 @@ private:
     void fullScreenChangeDelayTimerFired(Timer<FullscreenController>*);
 
     bool m_areKeysEnabledInFullScreen;
-    bool m_isAnimatingFullScreen;
     RefPtr<Element> m_fullScreenElement;
     Vector<RefPtr<Element> > m_fullScreenElementStack;
     RenderFullScreen* m_fullScreenRenderer;

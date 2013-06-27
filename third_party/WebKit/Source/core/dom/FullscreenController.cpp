@@ -98,17 +98,9 @@ bool FullscreenController::isFullScreen(Document* document)
     return false;
 }
 
-bool FullscreenController::isAnimatingFullScreen(Document* document)
-{
-    if (FullscreenController* found = fromIfExists(document))
-        return found->isAnimatingFullScreen();
-    return false;
-}
-
 FullscreenController::FullscreenController(Document* document)
     : DocumentLifecycleObserver(document)
     , m_areKeysEnabledInFullScreen(false)
-    , m_isAnimatingFullScreen(false)
     , m_fullScreenRenderer(0)
     , m_fullScreenChangeDelayTimer(this, &FullscreenController::fullScreenChangeDelayTimerFired)
 {
@@ -537,18 +529,6 @@ void FullscreenController::removeFullScreenElementOfSubtree(Node* node, bool amo
 
     if (elementInSubtree)
         fullScreenElementRemoved();
-}
-
-void FullscreenController::setAnimatingFullScreen(bool flag)
-{
-    if (m_isAnimatingFullScreen == flag)
-        return;
-    m_isAnimatingFullScreen = flag;
-
-    if (m_fullScreenElement && m_fullScreenElement->isDescendantOf(document())) {
-        m_fullScreenElement->setNeedsStyleRecalc();
-        document()->scheduleForcedStyleRecalc();
-    }
 }
 
 void FullscreenController::clearFullscreenElementStack()

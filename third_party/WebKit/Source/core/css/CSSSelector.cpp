@@ -181,8 +181,6 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
         return FULL_SCREEN_DOCUMENT;
     case PseudoFullScreenAncestor:
         return FULL_SCREEN_ANCESTOR;
-    case PseudoAnimatingFullScreenTransition:
-        return ANIMATING_FULL_SCREEN_TRANSITION;
     case PseudoUnknown:
     case PseudoEmpty:
     case PseudoFirstChild:
@@ -326,7 +324,6 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
     DEFINE_STATIC_LOCAL(AtomicString, fullScreen, ("-webkit-full-screen", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, fullScreenDocument, ("-webkit-full-screen-document", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, fullScreenAncestor, ("-webkit-full-screen-ancestor", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, animatingFullScreenTransition, ("-webkit-animating-full-screen-transition", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, cue, ("cue(", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, futureCue, ("future", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, pastCue, ("past", AtomicString::ConstructFromLiteral));
@@ -407,7 +404,6 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
         nameToPseudoType->set(fullScreen.impl(), CSSSelector::PseudoFullScreen);
         nameToPseudoType->set(fullScreenDocument.impl(), CSSSelector::PseudoFullScreenDocument);
         nameToPseudoType->set(fullScreenAncestor.impl(), CSSSelector::PseudoFullScreenAncestor);
-        nameToPseudoType->set(animatingFullScreenTransition.impl(), CSSSelector::PseudoAnimatingFullScreenTransition);
         nameToPseudoType->set(cue.impl(), CSSSelector::PseudoCue);
         nameToPseudoType->set(futureCue.impl(), CSSSelector::PseudoFutureCue);
         nameToPseudoType->set(pastCue.impl(), CSSSelector::PseudoPastCue);
@@ -525,7 +521,6 @@ void CSSSelector::extractPseudoType() const
     case PseudoFullScreen:
     case PseudoFullScreenDocument:
     case PseudoFullScreenAncestor:
-    case PseudoAnimatingFullScreenTransition:
     case PseudoSeamlessDocument:
     case PseudoInRange:
     case PseudoOutOfRange:

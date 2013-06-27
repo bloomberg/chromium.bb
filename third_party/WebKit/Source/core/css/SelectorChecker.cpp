@@ -696,13 +696,6 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 return element == fullscreen->webkitCurrentFullScreenElement();
             }
             return false;
-        case CSSSelector::PseudoAnimatingFullScreenTransition:
-            if (FullscreenController* fullscreen = FullscreenController::fromIfExists(element->document())) {
-                if (!fullscreen->isAnimatingFullScreen())
-                    return false;
-                return element == fullscreen->webkitCurrentFullScreenElement();
-            }
-            return false;
         case CSSSelector::PseudoFullScreenAncestor:
             return element->containsFullScreenElement();
         case CSSSelector::PseudoFullScreenDocument:
