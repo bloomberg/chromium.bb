@@ -11,6 +11,9 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
+#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -18,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
@@ -233,6 +237,28 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallFromHostedApp) {
   EXPECT_FALSE(extension_service->extensions()->Contains(kTestExtensionId));
   RunTest("runTest");
   EXPECT_TRUE(extension_service->extensions()->Contains(kTestExtensionId));
+}
+
+IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
+                       InstallProhibitedForManagedUsers) {
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+
+  // Make the profile managed such that no extension installs are allowed.
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(browser()->profile());
+  service->Init();
+
+  ui_test_utils::NavigateToURL(
+      browser(), GenerateTestServerUrl(kAppDomain, "install_prohibited.html"));
+
+  RunTest("runTest");
+
+  // No error infobar should show up.
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  InfoBarService* info_bar_service = InfoBarService::FromWebContents(contents);
+  EXPECT_EQ(info_bar_service->infobar_count(), 0u);
 }
 
 // The unpack failure test needs to use a different install .crx, which is

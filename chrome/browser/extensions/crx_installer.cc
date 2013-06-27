@@ -448,6 +448,11 @@ void CrxInstaller::ConfirmInstall() {
 
   string16 error = installer_.CheckManagementPolicy();
   if (!error.empty()) {
+    // We don't want to show the error infobar for installs from the WebStore,
+    // because the WebStore already shows an error dialog itself.
+    // Note: |client_| can be NULL in unit_tests!
+    if (extension()->from_webstore() && client_)
+      client_->install_ui()->SetSkipPostInstallUI(true);
     ReportFailureFromUIThread(CrxInstallerError(error));
     return;
   }
