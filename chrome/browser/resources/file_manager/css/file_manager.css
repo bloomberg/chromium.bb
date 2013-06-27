@@ -486,7 +486,6 @@ body:not([type='full-page']) .dialog-header #maximize-button {
 }
 
 .dialog-footer .progress-bar {
-  -webkit-box-flex: 1;
   -webkit-margin-end: 20px;
   -webkit-margin-start: 20px;
 }
@@ -622,10 +621,11 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
 
 #search-box,
 #filename-input-box input {
-  border: 1px solid #d9d9d9;
+  border: 1px solid #c8c8c8;
   border-radius: 1px;
-  border-top: 1px solid #c0c0c0;
   box-sizing: border-box;
+  height: 31px;  /* border-box */
+  margin-right: 30px;
 }
 
 #search-box {
@@ -1450,13 +1450,6 @@ list .detail-name > .file-checkbox::before,
 
 body:not([type='saveas-file']) #filename-input-box {
   display: none;
-}
-
-/* A horizontal spring. */
-.horizontal-spacer {
-  -webkit-box-flex: 1;
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
 }
 
 /* A vertical spring. */

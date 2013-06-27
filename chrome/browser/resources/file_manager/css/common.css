@@ -116,7 +116,6 @@ input.common[type='checkbox']::after {
 }
 
 .buttonbar.right {
-  -webkit-box-flex: 1.0;
   -webkit-box-pack: end;
 }
 
