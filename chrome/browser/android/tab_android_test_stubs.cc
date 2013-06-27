@@ -6,6 +6,8 @@
 // needed to compile some tests.
 
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/auto_login_infobar_delegate.h"
 #include "chrome/browser/ui/auto_login_infobar_delegate_android.h"
 
@@ -45,3 +47,13 @@ bool AutoLoginInfoBarDelegateAndroid::Register(JNIEnv* env) {
   return false;
 }
 
+// static
+InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
+  NOTREACHED() << "ConfirmInfoBar: InfoBarFactory should be used on Android";
+  return NULL;
+}
+
+// static
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
+  return NULL;
+}

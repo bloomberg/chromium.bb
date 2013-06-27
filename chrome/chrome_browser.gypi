@@ -103,7 +103,6 @@
         'browser/android/favicon_helper.cc',
         'browser/android/favicon_helper.h',
         'browser/android/google_location_settings_helper.h',
-        'browser/android/infobar_stubs.cc',
         'browser/android/intent_helper.cc',
         'browser/android/intent_helper.h',
         'browser/android/intercept_download_resource_throttle.cc',

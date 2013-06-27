@@ -37,7 +37,7 @@ SkColor GetInfoBarBottomColor(InfoBarDelegate::Type infobar_type) {
 }
 
 // TODO(pkasting): Port Mac to use this.
-#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK) || defined(OS_ANDROID)
 
 InfoBar::InfoBar(InfoBarService* owner, InfoBarDelegate* delegate)
     : owner_(owner),
@@ -188,4 +188,4 @@ void InfoBar::MaybeDelete() {
   }
 }
 
-#endif  // TOOLKIT_VIEWS || TOOLKIT_GTK
+#endif  // TOOLKIT_VIEWS || TOOLKIT_GTK || OS_ANDROID

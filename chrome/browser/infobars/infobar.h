@@ -27,7 +27,7 @@ typedef std::pair<InfoBarDelegate*, bool> InfoBarRemovedDetails;
 typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> InfoBarReplacedDetails;
 
 // TODO(pkasting): Port Mac to use this.
-#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK) || defined(OS_ANDROID)
 
 class InfoBarContainer;
 class InfoBarService;
