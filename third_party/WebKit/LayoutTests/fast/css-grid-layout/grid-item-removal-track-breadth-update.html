@@ -12,23 +12,23 @@ if (window.testRunner)
 }
 
 .gridMinContentFixed {
-    grid-columns: minmax(-webkit-min-content, 100px);
-    grid-rows: minmax(-webkit-min-content, 40px);
+    grid-columns: minmax(min-content, 100px);
+    grid-rows: minmax(min-content, 40px);
 }
 
 .gridMaxContentFixed {
-    grid-columns: minmax(-webkit-max-content, 150px);
-    grid-rows: minmax(-webkit-max-content, 40px);
+    grid-columns: minmax(max-content, 150px);
+    grid-rows: minmax(max-content, 40px);
 }
 
 .gridFixedMinContent {
-    grid-columns: minmax(100px, -webkit-min-content);
-    grid-rows: minmax(40px, -webkit-min-content);
+    grid-columns: minmax(100px, min-content);
+    grid-rows: minmax(40px, min-content);
 }
 
 .gridFixedMaxContent {
-    grid-columns: minmax(100px, -webkit-max-content);
-    grid-rows: minmax(40px, -webkit-max-content);
+    grid-columns: minmax(100px, max-content);
+    grid-rows: minmax(40px, max-content);
 }
 
 .lessConstrainedContainer {

@@ -283,11 +283,11 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length)
             break;
         case MinContent:
             m_primitiveUnitType = CSS_VALUE_ID;
-            m_value.valueID = CSSValueWebkitMinContent;
+            m_value.valueID = CSSValueMinContent;
             break;
         case MaxContent:
             m_primitiveUnitType = CSS_VALUE_ID;
-            m_value.valueID = CSSValueWebkitMaxContent;
+            m_value.valueID = CSSValueMaxContent;
             break;
         case FillAvailable:
             m_primitiveUnitType = CSS_VALUE_ID;

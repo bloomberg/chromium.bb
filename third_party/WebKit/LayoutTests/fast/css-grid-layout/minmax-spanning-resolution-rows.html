@@ -18,12 +18,12 @@ if (window.testRunner)
 
 .gridMinMaxMin {
     grid-columns: 50px 100px;
-    grid-rows: minmax(-webkit-min-content, 50px) minmax(-webkit-max-content, 140px);
+    grid-rows: minmax(min-content, 50px) minmax(max-content, 140px);
 }
 
 .gridMinMaxMax {
     grid-columns: 50px 100px;
-    grid-rows: minmax(50px, -webkit-min-content) minmax(40px, -webkit-max-content);
+    grid-rows: minmax(50px, min-content) minmax(40px, max-content);
 }
 </style>
 <script src="../../resources/check-layout.js"></script>

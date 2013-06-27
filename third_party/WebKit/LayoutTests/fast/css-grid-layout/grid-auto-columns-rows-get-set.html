@@ -18,8 +18,8 @@ if (window.testRunner)
 }
 
 .gridAutoMinMaxContent {
-    grid-auto-rows: -webkit-min-content;
-    grid-auto-columns: -webkit-max-content;
+    grid-auto-rows: min-content;
+    grid-auto-columns: max-content;
 }
 </style>
 <script src="../js/resources/js-test-pre.js"></script>
@@ -41,8 +41,8 @@ shouldBe("getComputedStyle(gridAutoMinMax, '').getPropertyValue('grid-auto-rows'
 shouldBe("getComputedStyle(gridAutoMinMax, '').getPropertyValue('grid-auto-columns')", "'minmax(30%, 100px)'");
 
 var gridAutoMinMaxContent = document.getElementById("gridAutoMinMaxContent");
-shouldBe("getComputedStyle(gridAutoMinMaxContent, '').getPropertyValue('grid-auto-rows')", "'-webkit-min-content'");
-shouldBe("getComputedStyle(gridAutoMinMaxContent, '').getPropertyValue('grid-auto-columns')", "'-webkit-max-content'");
+shouldBe("getComputedStyle(gridAutoMinMaxContent, '').getPropertyValue('grid-auto-rows')", "'min-content'");
+shouldBe("getComputedStyle(gridAutoMinMaxContent, '').getPropertyValue('grid-auto-columns')", "'max-content'");
 
 debug("");
 debug("Test the initial value");
@@ -61,17 +61,17 @@ shouldBe("getComputedStyle(element, '').getPropertyValue('grid-auto-rows')", "'6
 
 element = document.createElement("div");
 document.body.appendChild(element);
-element.style.gridAutoColumns = "minmax(-webkit-min-content, 8vh)";
-element.style.gridAutoRows = "minmax(10vw, -webkit-min-content)";
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-auto-columns')", "'minmax(-webkit-min-content, 48px)'");
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-auto-rows')", "'minmax(80px, -webkit-min-content)'");
+element.style.gridAutoColumns = "minmax(min-content, 8vh)";
+element.style.gridAutoRows = "minmax(10vw, min-content)";
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-auto-columns')", "'minmax(min-content, 48px)'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-auto-rows')", "'minmax(80px, min-content)'");
 
 element = document.createElement("div");
 document.body.appendChild(element);
-element.style.gridAutoColumns = "minmax(-webkit-min-content, -webkit-max-content)";
-element.style.gridAutoRows = "minmax(-webkit-max-content, -webkit-min-content)";
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-auto-columns')", "'minmax(-webkit-min-content, -webkit-max-content)'");
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-auto-rows')", "'minmax(-webkit-max-content, -webkit-min-content)'");
+element.style.gridAutoColumns = "minmax(min-content, max-content)";
+element.style.gridAutoRows = "minmax(max-content, min-content)";
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-auto-columns')", "'minmax(min-content, max-content)'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-auto-rows')", "'minmax(max-content, min-content)'");
 
 debug("");
 debug("Test setting grid-auto-columns and grid-auto-rows to bad minmax value through JS");

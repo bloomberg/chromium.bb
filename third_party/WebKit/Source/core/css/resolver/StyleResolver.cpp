@@ -2182,12 +2182,12 @@ bool StyleResolver::useSVGZoomRules()
 
 static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, const StyleResolverState& state, GridLength& workingLength)
 {
-    if (primitiveValue->getValueID() == CSSValueWebkitMinContent) {
+    if (primitiveValue->getValueID() == CSSValueMinContent) {
         workingLength = Length(MinContent);
         return true;
     }
 
-    if (primitiveValue->getValueID() == CSSValueWebkitMaxContent) {
+    if (primitiveValue->getValueID() == CSSValueMaxContent) {
         workingLength = Length(MaxContent);
         return true;
     }

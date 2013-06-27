@@ -7,12 +7,12 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .gridMinMinContent {
-    grid-columns: minmax(-webkit-min-content, 40px);
+    grid-columns: minmax(min-content, 40px);
     grid-rows: 50px;
 }
 
 .gridMaxMinContent {
-    grid-columns: minmax(30px, -webkit-min-content);
+    grid-columns: minmax(30px, min-content);
     grid-rows: 20px;
 }
 

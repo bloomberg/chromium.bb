@@ -30,12 +30,12 @@ shouldBe("getComputedStyle(gridWithMinMax, '').getPropertyValue('grid-columns')"
 shouldBe("getComputedStyle(gridWithMinMax, '').getPropertyValue('grid-rows')", "'minmax(20px, 50%)'");
 
 var gridWithMinContent = document.getElementById("gridWithMinContent");
-shouldBe("getComputedStyle(gridWithMinContent, '').getPropertyValue('grid-columns')", "'-webkit-min-content'");
-shouldBe("getComputedStyle(gridWithMinContent, '').getPropertyValue('grid-rows')", "'-webkit-min-content'");
+shouldBe("getComputedStyle(gridWithMinContent, '').getPropertyValue('grid-columns')", "'min-content'");
+shouldBe("getComputedStyle(gridWithMinContent, '').getPropertyValue('grid-rows')", "'min-content'");
 
 var gridWithMaxContent = document.getElementById("gridWithMaxContent");
-shouldBe("getComputedStyle(gridWithMaxContent, '').getPropertyValue('grid-columns')", "'-webkit-max-content'");
-shouldBe("getComputedStyle(gridWithMaxContent, '').getPropertyValue('grid-rows')", "'-webkit-max-content'");
+shouldBe("getComputedStyle(gridWithMaxContent, '').getPropertyValue('grid-columns')", "'max-content'");
+shouldBe("getComputedStyle(gridWithMaxContent, '').getPropertyValue('grid-rows')", "'max-content'");
 
 var gridWithFraction = document.getElementById("gridWithFraction");
 shouldBe("getComputedStyle(gridWithFraction, '').getPropertyValue('grid-columns')", "'1fr'");
@@ -88,17 +88,17 @@ shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'150px'
 
 element = document.createElement("div");
 document.body.appendChild(element);
-element.style.gridColumns = "-webkit-min-content";
-element.style.gridRows = "-webkit-min-content";
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-columns')", "'-webkit-min-content'");
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'-webkit-min-content'");
+element.style.gridColumns = "min-content";
+element.style.gridRows = "min-content";
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-columns')", "'min-content'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'min-content'");
 
 element = document.createElement("div");
 document.body.appendChild(element);
-element.style.gridColumns = "-webkit-max-content";
-element.style.gridRows = "-webkit-max-content";
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-columns')", "'-webkit-max-content'");
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'-webkit-max-content'");
+element.style.gridColumns = "max-content";
+element.style.gridRows = "max-content";
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-columns')", "'max-content'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'max-content'");
 
 debug("");
 debug("Test getting and setting grid-columns and grid-rows to minmax() values through JS");
@@ -119,33 +119,33 @@ shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'minmax
 
 element = document.createElement("div");
 document.body.appendChild(element);
-element.style.gridColumns = "minmax(-webkit-min-content, 8vh)";
-element.style.gridRows = "minmax(10vw, -webkit-min-content)";
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-columns')", "'minmax(-webkit-min-content, 48px)'");
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'minmax(80px, -webkit-min-content)'");
+element.style.gridColumns = "minmax(min-content, 8vh)";
+element.style.gridRows = "minmax(10vw, min-content)";
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-columns')", "'minmax(min-content, 48px)'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'minmax(80px, min-content)'");
 
 element = document.createElement("div");
 document.body.appendChild(element);
 element.style.font = "10px Ahem";
-element.style.gridColumns = "minmax(22em, -webkit-max-content)";
-element.style.gridRows = "minmax(-webkit-max-content, 5em)";
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-columns')", "'minmax(220px, -webkit-max-content)'");
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'minmax(-webkit-max-content, 50px)'");
+element.style.gridColumns = "minmax(22em, max-content)";
+element.style.gridRows = "minmax(max-content, 5em)";
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-columns')", "'minmax(220px, max-content)'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'minmax(max-content, 50px)'");
 
 element = document.createElement("div");
 document.body.appendChild(element);
 element.style.font = "10px Ahem";
-element.style.gridColumns = "minmax(22em, -webkit-max-content)";
-element.style.gridRows = "minmax(-webkit-max-content, 5em)";
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-columns')", "'minmax(220px, -webkit-max-content)'");
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'minmax(-webkit-max-content, 50px)'");
+element.style.gridColumns = "minmax(22em, max-content)";
+element.style.gridRows = "minmax(max-content, 5em)";
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-columns')", "'minmax(220px, max-content)'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'minmax(max-content, 50px)'");
 
 element = document.createElement("div");
 document.body.appendChild(element);
-element.style.gridColumns = "minmax(-webkit-min-content, -webkit-max-content)";
-element.style.gridRows = "minmax(-webkit-max-content, -webkit-min-content)";
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-columns')", "'minmax(-webkit-min-content, -webkit-max-content)'");
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'minmax(-webkit-max-content, -webkit-min-content)'");
+element.style.gridColumns = "minmax(min-content, max-content)";
+element.style.gridRows = "minmax(max-content, min-content)";
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-columns')", "'minmax(min-content, max-content)'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-rows')", "'minmax(max-content, min-content)'");
 
 // Unit comparison should be case-insensitive.
 element = document.createElement("div");

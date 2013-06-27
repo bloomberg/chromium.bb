@@ -47,8 +47,8 @@ if (window.testRunner)
     grid-rows: -webkit-fitcontent -webkit-fit-available;
 }
 .gridWithMinMaxContent {
-    grid-columns: -webkit-min-content -webkit-max-content;
-    grid-rows: -webkit-max-content -webkit-min-content;
+    grid-columns: min-content max-content;
+    grid-rows: max-content min-content;
 }
 .gridWithMinMaxAndFixed {
     grid-columns: minmax(45px, 30%) 15px;
@@ -56,8 +56,8 @@ if (window.testRunner)
     font: 10px Ahem;
 }
 .gridWithMinMaxAndMinMaxContent {
-    grid-columns: minmax(-webkit-min-content, 30%) 15px;
-    grid-rows: 12em minmax(35%, -webkit-max-content);
+    grid-columns: minmax(min-content, 30%) 15px;
+    grid-rows: 12em minmax(35%, max-content);
     font: 10px Ahem;
 }
 .gridWithFractionFraction {
@@ -65,8 +65,8 @@ if (window.testRunner)
     grid-rows: 3fr 4fr;
 }
 .gridWithFractionMinMax {
-    grid-columns: minmax(-webkit-min-content, 45px) 2fr;
-    grid-rows: 3fr minmax(14px, -webkit-max-content);
+    grid-columns: minmax(min-content, 45px) 2fr;
+    grid-rows: 3fr minmax(14px, max-content);
 }
 </style>
 <script src="../js/resources/js-test-pre.js"></script>

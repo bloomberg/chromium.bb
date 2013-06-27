@@ -36,7 +36,7 @@ if (window.testRunner)
 <script>
     description('Test that setting and getting grid-auto-flow works as expected');
 
-    debug("Test getting -webkit-auto-flow set through CSS");
+    debug("Test getting auto-flow set through CSS");
     var gridAutoFlowNone = document.getElementById("gridAutoFlowNone");
     shouldBe("window.getComputedStyle(gridAutoFlowNone, '').getPropertyValue('grid-auto-flow')", "'none'");
 

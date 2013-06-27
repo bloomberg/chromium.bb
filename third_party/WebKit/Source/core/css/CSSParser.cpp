@@ -4661,7 +4661,7 @@ PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridTrackSize()
 
 PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridBreadth(CSSParserValue* currentValue)
 {
-    if (currentValue->id == CSSValueWebkitMinContent || currentValue->id == CSSValueWebkitMaxContent)
+    if (currentValue->id == CSSValueMinContent || currentValue->id == CSSValueMaxContent)
         return cssValuePool().createIdentifierValue(currentValue->id);
 
     if (currentValue->unit == CSSPrimitiveValue::CSS_FR) {

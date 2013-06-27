@@ -9,19 +9,19 @@
 <link href="../css-intrinsic-dimensions/resources/width-keyword-classes.css" rel=stylesheet>
 <style>
 .gridMinContentFixed {
-    grid-columns: minmax(-webkit-min-content, 40px) minmax(-webkit-min-content, 40px);
+    grid-columns: minmax(min-content, 40px) minmax(min-content, 40px);
     grid-rows: 10px;
     font: 10px/1 Ahem;
 }
 
 .gridFixedMinContent {
-    grid-columns: minmax(30px, -webkit-min-content) minmax(30px, -webkit-min-content);
+    grid-columns: minmax(30px, min-content) minmax(30px, min-content);
     grid-rows: 10px;
     font: 10px/1 Ahem;
 }
 
 .gridFixedMaxContent {
-    grid-columns: minmax(40px, -webkit-max-content) minmax(40px, -webkit-max-content);
+    grid-columns: minmax(40px, max-content) minmax(40px, max-content);
     grid-rows: 10px;
     font: 10px/1 Ahem;
 }

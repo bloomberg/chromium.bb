@@ -30,24 +30,24 @@ shouldBe("getComputedStyle(gridWithFitContentAndFitAvailable, '').getPropertyVal
 shouldBe("getComputedStyle(gridWithFitContentAndFitAvailable, '').getPropertyValue('grid-rows')", "'none'");
 
 var gridWithMinMaxContent = document.getElementById("gridWithMinMaxContent");
-shouldBe("getComputedStyle(gridWithMinMaxContent, '').getPropertyValue('grid-columns')", "'-webkit-min-content -webkit-max-content'");
-shouldBe("getComputedStyle(gridWithMinMaxContent, '').getPropertyValue('grid-rows')", "'-webkit-max-content -webkit-min-content'");
+shouldBe("getComputedStyle(gridWithMinMaxContent, '').getPropertyValue('grid-columns')", "'min-content max-content'");
+shouldBe("getComputedStyle(gridWithMinMaxContent, '').getPropertyValue('grid-rows')", "'max-content min-content'");
 
 var gridWithMinMaxAndFixed = document.getElementById("gridWithMinMaxAndFixed");
 shouldBe("getComputedStyle(gridWithMinMaxAndFixed, '').getPropertyValue('grid-columns')", "'minmax(45px, 30%) 15px'");
 shouldBe("getComputedStyle(gridWithMinMaxAndFixed, '').getPropertyValue('grid-rows')", "'120px minmax(35%, 10px)'");
 
 var gridWithMinMaxAndMinMaxContent = document.getElementById("gridWithMinMaxAndMinMaxContent");
-shouldBe("getComputedStyle(gridWithMinMaxAndMinMaxContent, '').getPropertyValue('grid-columns')", "'minmax(-webkit-min-content, 30%) 15px'");
-shouldBe("getComputedStyle(gridWithMinMaxAndMinMaxContent, '').getPropertyValue('grid-rows')", "'120px minmax(35%, -webkit-max-content)'");
+shouldBe("getComputedStyle(gridWithMinMaxAndMinMaxContent, '').getPropertyValue('grid-columns')", "'minmax(min-content, 30%) 15px'");
+shouldBe("getComputedStyle(gridWithMinMaxAndMinMaxContent, '').getPropertyValue('grid-rows')", "'120px minmax(35%, max-content)'");
 
 var gridWithFractionFraction = document.getElementById("gridWithFractionFraction");
 shouldBe("getComputedStyle(gridWithFractionFraction, '').getPropertyValue('grid-columns')", "'1fr 2fr'");
 shouldBe("getComputedStyle(gridWithFractionFraction, '').getPropertyValue('grid-rows')", "'3fr 4fr'");
 
 var gridWithFractionMinMax = document.getElementById("gridWithFractionMinMax");
-shouldBe("getComputedStyle(gridWithFractionMinMax, '').getPropertyValue('grid-columns')", "'minmax(-webkit-min-content, 45px) 2fr'");
-shouldBe("getComputedStyle(gridWithFractionMinMax, '').getPropertyValue('grid-rows')", "'3fr minmax(14px, -webkit-max-content)'");
+shouldBe("getComputedStyle(gridWithFractionMinMax, '').getPropertyValue('grid-columns')", "'minmax(min-content, 45px) 2fr'");
+shouldBe("getComputedStyle(gridWithFractionMinMax, '').getPropertyValue('grid-rows')", "'3fr minmax(14px, max-content)'");
 
 debug("");
 debug("Test the initial value");

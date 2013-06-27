@@ -3,7 +3,7 @@ Test that setting and getting grid-auto-flow works as expected
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-Test getting -webkit-auto-flow set through CSS
+Test getting auto-flow set through CSS
 PASS window.getComputedStyle(gridAutoFlowNone, '').getPropertyValue('grid-auto-flow') is 'none'
 PASS window.getComputedStyle(gridAutoFlowColumn, '').getPropertyValue('grid-auto-flow') is 'column'
 PASS window.getComputedStyle(gridAutoFlowRow, '').getPropertyValue('grid-auto-flow') is 'row'

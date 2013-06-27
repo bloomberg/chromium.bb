@@ -8,8 +8,8 @@ PASS getComputedStyle(gridAutoFixedFixed, '').getPropertyValue('grid-auto-rows')
 PASS getComputedStyle(gridAutoFixedFixed, '').getPropertyValue('grid-auto-columns') is '50px'
 PASS getComputedStyle(gridAutoMinMax, '').getPropertyValue('grid-auto-rows') is 'minmax(10%, 15px)'
 PASS getComputedStyle(gridAutoMinMax, '').getPropertyValue('grid-auto-columns') is 'minmax(30%, 100px)'
-PASS getComputedStyle(gridAutoMinMaxContent, '').getPropertyValue('grid-auto-rows') is '-webkit-min-content'
-PASS getComputedStyle(gridAutoMinMaxContent, '').getPropertyValue('grid-auto-columns') is '-webkit-max-content'
+PASS getComputedStyle(gridAutoMinMaxContent, '').getPropertyValue('grid-auto-rows') is 'min-content'
+PASS getComputedStyle(gridAutoMinMaxContent, '').getPropertyValue('grid-auto-columns') is 'max-content'
 
 Test the initial value
 PASS getComputedStyle(element, '').getPropertyValue('grid-auto-columns') is 'auto'
@@ -18,10 +18,10 @@ PASS getComputedStyle(element, '').getPropertyValue('grid-auto-rows') is 'auto'
 Test getting and setting grid-auto-columns and grid-auto-rows through JS
 PASS getComputedStyle(element, '').getPropertyValue('grid-auto-columns') is '180px'
 PASS getComputedStyle(element, '').getPropertyValue('grid-auto-rows') is '660px'
-PASS getComputedStyle(element, '').getPropertyValue('grid-auto-columns') is 'minmax(-webkit-min-content, 48px)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-auto-rows') is 'minmax(80px, -webkit-min-content)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-auto-columns') is 'minmax(-webkit-min-content, -webkit-max-content)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-auto-rows') is 'minmax(-webkit-max-content, -webkit-min-content)'
+PASS getComputedStyle(element, '').getPropertyValue('grid-auto-columns') is 'minmax(min-content, 48px)'
+PASS getComputedStyle(element, '').getPropertyValue('grid-auto-rows') is 'minmax(80px, min-content)'
+PASS getComputedStyle(element, '').getPropertyValue('grid-auto-columns') is 'minmax(min-content, max-content)'
+PASS getComputedStyle(element, '').getPropertyValue('grid-auto-rows') is 'minmax(max-content, min-content)'
 
 Test setting grid-auto-columns and grid-auto-rows to bad minmax value through JS
 PASS getComputedStyle(element, '').getPropertyValue('grid-auto-columns') is 'auto'
