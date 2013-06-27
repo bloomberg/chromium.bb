@@ -127,19 +127,15 @@ void MediaGalleriesDialogGtk::InitWidgets() {
                              checkbox_container);
   }
 
-  // Holds the "add gallery" and cancel/confirm buttons.
-  GtkWidget* add_folder_area = gtk_hbox_new(FALSE, ui::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(contents_.get()), add_folder_area,
-                     FALSE, FALSE, 0);
+  GtkWidget* bottom_area = gtk_hbox_new(FALSE, ui::kControlSpacing);
 
   // Add gallery button.
   GtkWidget* add_folder = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY).c_str());
   g_signal_connect(add_folder, "clicked", G_CALLBACK(OnAddFolderThunk), this);
-  gtk_box_pack_start(GTK_BOX(add_folder_area), add_folder, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(bottom_area), add_folder, FALSE, FALSE, 0);
 
   // Confirm/cancel button.
-  GtkWidget* bottom_area = gtk_hbox_new(FALSE, ui::kControlSpacing);
   confirm_ = gtk_button_new_with_label(l10n_util::GetStringUTF8(
       IDS_MEDIA_GALLERIES_DIALOG_CONFIRM).c_str());
   gtk_button_set_image(

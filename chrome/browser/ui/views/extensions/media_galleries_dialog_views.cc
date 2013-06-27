@@ -192,24 +192,6 @@ void MediaGalleriesDialogViews::InitChildViews() {
   layout->AddView(scroll_view, 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,
                   dialog_content_width, kScrollAreaHeight);
-
-  // Add location button.
-  add_gallery_button_ = new views::LabelButton(this,
-      l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY));
-  add_gallery_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  views::View* add_gallery_container = new views::View();
-  add_gallery_container->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  add_gallery_container->set_border(views::Border::CreateEmptyBorder(
-      views::kRelatedControlVerticalSpacing,
-      0,
-      views::kRelatedControlVerticalSpacing,
-      0));
-  add_gallery_container->AddChildView(add_gallery_button_);
-
-  layout->StartRowWithPadding(0, column_set_id,
-                              0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(add_gallery_container);
 }
 
 void MediaGalleriesDialogViews::UpdateGallery(
@@ -324,6 +306,14 @@ ui::ModalType MediaGalleriesDialogViews::GetModalType() const {
 #else
   return views::WidgetDelegate::GetModalType();
 #endif
+}
+
+views::View* MediaGalleriesDialogViews::CreateExtraView() {
+  DCHECK(!add_gallery_button_);
+  add_gallery_button_ = new views::LabelButton(this,
+      l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY));
+  add_gallery_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  return add_gallery_button_;
 }
 
 bool MediaGalleriesDialogViews::Cancel() {
