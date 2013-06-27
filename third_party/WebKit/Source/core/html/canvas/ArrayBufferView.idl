@@ -24,6 +24,7 @@
  */
 
 [
+    NoInterfaceObject,
     CustomToV8
 ] interface ArrayBufferView {
     readonly attribute ArrayBuffer buffer;
