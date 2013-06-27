@@ -715,7 +715,11 @@ def Main(argv):
     if build.gomacc:  # use goma build.
       returns = Queue.Queue()
       def CompileThread(filename, queue):
-        queue.put(build.Compile(filename))
+        try:
+          queue.put(build.Compile(filename))
+        except Exception:
+          # Put current exception info to the queue.
+          queue.put(sys.exc_info())
       build_threads = []
       # Start parallel build.
       for filename in files:
@@ -725,7 +729,12 @@ def Main(argv):
       for thr in build_threads:
         thr.join()
         out = returns.get()
-        if out:
+        # An exception raised in the thread may come through the queue.
+        # Raise it again here.
+        if (isinstance(out, tuple) and len(out) == 3 and
+            isinstance(out[1], Exception)):
+          raise out[0], None, out[2]
+        elif out:
           objs.append(out)
     else:  # slow path.
       for filename in files:
