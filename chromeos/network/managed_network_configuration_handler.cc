@@ -164,7 +164,7 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
     const base::DictionaryValue* policy,
     const base::DictionaryValue* settings) {
   scoped_ptr<base::DictionaryValue> effective;
-  onc::ONCSource onc_source;
+  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
   if (policy) {
     if (profile.type() == NetworkProfile::TYPE_SHARED) {
       effective = onc::MergeSettingsAndPoliciesToEffective(
