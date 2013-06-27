@@ -170,7 +170,8 @@ public:
     bool parseIntegerOrStringFromGridPosition(RefPtr<CSSPrimitiveValue>& numericValue, RefPtr<CSSPrimitiveValue>& gridLineName);
     bool parseGridItemPositionShorthand(CSSPropertyID, bool important);
     bool parseGridTrackList(CSSPropertyID, bool important);
-    PassRefPtr<CSSPrimitiveValue> parseGridTrackSize();
+    bool parseGridTrackRepeatFunction(CSSValueList&);
+    PassRefPtr<CSSPrimitiveValue> parseGridTrackSize(CSSParserValueList& inputList);
     PassRefPtr<CSSPrimitiveValue> parseGridBreadth(CSSParserValue*);
 
     bool parseClipShape(CSSPropertyID, bool important);
