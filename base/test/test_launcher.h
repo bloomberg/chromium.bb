@@ -72,7 +72,12 @@ class TestLauncherDelegate {
   virtual ~TestLauncherDelegate();
 };
 
+// Launches a child process (assumed to be gtest-based binary)
+// using |command_line|. If |wrapper| is not empty, it is prepended
+// to the final command line. If the child process is still running
+// after |timeout|, it is terminated and |*was_timeout| is set to true.
 int LaunchChildGTestProcess(const CommandLine& command_line,
+                            const std::string& wrapper,
                             base::TimeDelta timeout,
                             bool* was_timeout);
 

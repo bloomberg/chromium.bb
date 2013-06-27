@@ -95,9 +95,12 @@ int DoRunTestInternal(const testing::TestCase* test_case,
   new_cmd_line.AppendSwitchASCII("gtest_filter", test_name);
   new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
 
-  int exit_code = base::LaunchChildGTestProcess(new_cmd_line,
-                                                default_timeout,
-                                                was_timeout);
+  char* browser_wrapper = getenv("BROWSER_WRAPPER");
+  int exit_code = base::LaunchChildGTestProcess(
+      new_cmd_line,
+      browser_wrapper ? browser_wrapper : std::string(),
+      default_timeout,
+      was_timeout);
   if (*was_timeout) {
     LOG(ERROR) << "Test timeout (" << default_timeout.InMilliseconds()
                << " ms) exceeded for " << test_name;
@@ -130,18 +133,6 @@ int DoRunTest(TestLauncherDelegate* launcher_delegate,
   }
 
   CommandLine new_cmd_line(*CommandLine::ForCurrentProcess());
-
-  const char* browser_wrapper = getenv("BROWSER_WRAPPER");
-  if (browser_wrapper) {
-#if defined(OS_WIN)
-    new_cmd_line.PrependWrapper(ASCIIToWide(browser_wrapper));
-#elif defined(OS_POSIX)
-    new_cmd_line.PrependWrapper(browser_wrapper);
-#endif
-    VLOG(1) << "BROWSER_WRAPPER was set, prefixing command_line with "
-            << browser_wrapper;
-  }
-
   if (!launcher_delegate->AdjustChildProcessCommandLine(&new_cmd_line,
                                                         temp_dir.path())) {
     return -1;

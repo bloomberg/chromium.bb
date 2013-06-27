@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -350,6 +351,7 @@ TestLauncherDelegate::~TestLauncherDelegate() {
 }
 
 int LaunchChildGTestProcess(const CommandLine& command_line,
+                            const std::string& wrapper,
                             base::TimeDelta timeout,
                             bool* was_timeout) {
   CommandLine new_command_line(command_line.GetProgram());
@@ -366,6 +368,16 @@ int LaunchChildGTestProcess(const CommandLine& command_line,
        iter != switches.end(); ++iter) {
     new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
   }
+
+  // Prepend wrapper after last CommandLine quasi-copy operation. CommandLine
+  // does not really support removing switches well, and trying to do that
+  // on a CommandLine with a wrapper is known to break.
+  // TODO(phajdan.jr): Give it a try to support CommandLine removing switches.
+#if defined(OS_WIN)
+  new_command_line.PrependWrapper(ASCIIToWide(wrapper));
+#elif defined(OS_POSIX)
+  new_command_line.PrependWrapper(wrapper);
+#endif
 
   base::ProcessHandle process_handle;
   base::LaunchOptions options;
