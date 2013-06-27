@@ -228,7 +228,18 @@ class PageStateSerializationTest : public testing::Test {
     EXPECT_TRUE(base::Base64Decode(trimmed_contents, &encoded));
 
     ExplodedPageState output;
+#if defined(OS_ANDROID)
+    // Because version 11 of the file format unfortunately bakes in the device
+    // scale factor on Android, perform this test by assuming a preset device
+    // scale factor, ignoring the device scale factor of the current device.
+    const float kPresetDeviceScaleFactor = 2.0f;
+    EXPECT_TRUE(DecodePageStateWithDeviceScaleFactorForTesting(
+        encoded,
+        kPresetDeviceScaleFactor,
+        &output));
+#else
     EXPECT_TRUE(DecodePageState(encoded, &output));
+#endif
 
     ExplodedPageState expected;
     PopulatePageStateForBackwardsCompatTest(&expected);

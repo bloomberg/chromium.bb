@@ -76,6 +76,13 @@ CONTENT_EXPORT bool DecodePageState(const std::string& encoded,
 CONTENT_EXPORT bool EncodePageState(const ExplodedPageState& exploded,
                                     std::string* encoded);
 
+#if defined(OS_ANDROID)
+CONTENT_EXPORT bool DecodePageStateWithDeviceScaleFactorForTesting(
+    const std::string& encoded,
+    float device_scale_factor,
+    ExplodedPageState* exploded);
+#endif
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_PAGE_STATE_SERIALIZATION_H_

@@ -16,6 +16,10 @@
 namespace content {
 namespace {
 
+#if defined(OS_ANDROID)
+float g_device_scale_factor_for_testing = 0.0;
+#endif
+
 //-----------------------------------------------------------------------------
 
 void AppendDataToHttpBody(ExplodedHttpBody* http_body, const char* data,
@@ -543,15 +547,19 @@ void ReadFrameState(SerializeObject* obj, bool is_top,
     ReadReal(obj);
     ReadBoolean(obj);
 
-    // In this version, page_scale_factor included deviceScaleFactor and scroll
-    // offsets were premultiplied by pageScaleFactor.
+    // In this version, page_scale_factor included device_scale_factor and
+    // scroll offsets were premultiplied by pageScaleFactor.
     if (state->page_scale_factor) {
+      float device_scale_factor = g_device_scale_factor_for_testing;
+      if (!device_scale_factor) {
+        device_scale_factor =
+            gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().
+                device_scale_factor();
+      }
       state->scroll_offset =
           gfx::Point(state->scroll_offset.x() / state->page_scale_factor,
                      state->scroll_offset.y() / state->page_scale_factor);
-      state->page_scale_factor = (state->page_scale_factor /
-          gfx::Screen::GetNativeScreen()->GetPrimaryDisplay()
-              .device_scale_factor());
+      state->page_scale_factor /= device_scale_factor;
     }
   }
 #endif
@@ -658,5 +666,17 @@ bool EncodePageState(const ExplodedPageState& exploded, std::string* encoded) {
   *encoded = obj.GetAsString();
   return true;
 }
+
+#if defined(OS_ANDROID)
+bool DecodePageStateWithDeviceScaleFactorForTesting(
+    const std::string& encoded,
+    float device_scale_factor,
+    ExplodedPageState* exploded) {
+  g_device_scale_factor_for_testing = device_scale_factor;
+  bool rv = DecodePageState(encoded, exploded);
+  g_device_scale_factor_for_testing = 0.0;
+  return rv;
+}
+#endif
 
 }  // namespace content
