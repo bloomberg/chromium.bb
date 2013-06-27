@@ -586,10 +586,12 @@ void TrayAudio::OnMuteToggled() {
   if (tray_view())
       tray_view()->SetVisible(GetInitialVisibility());
 
-  if (volume_view_)
+  if (volume_view_) {
     volume_view_->Update();
-  else
+    SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
+  } else {
     PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
+  }
 }
 
 
@@ -613,9 +615,10 @@ void TrayAudio::OnOutputMuteChanged() {
   if (tray_view())
       tray_view()->SetVisible(GetInitialVisibility());
 
-  if (volume_view_)
+  if (volume_view_) {
     volume_view_->Update();
-  else {
+    SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
+  } else {
     pop_up_volume_view_ = true;
     PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
   }
