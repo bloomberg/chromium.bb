@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/adview/adview_constants.h"
+#include "chrome/browser/guestview/guestview_constants.h"
 
-namespace adview {
-
-// Events.
-const char kEventLoadCommit[] = "adview.onLoadCommit";
+namespace guestview {
 
 // Parameters/properties on events.
 const char kIsTopLevel[] = "isTopLevel";
 const char kUrl[] = "url";
 
+// Internal parameters/properties on events.
+const char kInternalCurrentEntryIndex[] = "currentEntryIndex";
+const char kInternalEntryCount[] = "entryCount";
+
 // Attributes.
 const char kAttributeApi[] = "api";
 
-}  // namespace adview
+}  // namespace guestview

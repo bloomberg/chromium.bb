@@ -4,13 +4,10 @@
 
 // Constants used for the WebView API.
 
-#ifndef CHROME_BROWSER_WEBVIEW_WEBVIEW_CONSTANTS_H_
-#define CHROME_BROWSER_WEBVIEW_WEBVIEW_CONSTANTS_H_
+#ifndef CHROME_BROWSER_GUESTVIEW_GUESTVIEW_CONSTANTS_H_
+#define CHROME_BROWSER_GUESTVIEW_GUESTVIEW_CONSTANTS_H_
 
-namespace webview {
-
-// Events.
-extern const char kEventLoadCommit[];
+namespace guestview {
 
 // Parameters/properties on events.
 extern const char kIsTopLevel[];
@@ -23,7 +20,7 @@ extern const char kInternalEntryCount[];
 // Attributes.
 extern const char kAttributeApi[];
 
-}  // namespace webview
+}  // namespace guestview
 
-#endif  // CHROME_BROWSER_WEBVIEW_WEBVIEW_CONSTANTS_H_
+#endif  // CHROME_BROWSER_GUESTVIEW_GUESTVIEW_CONSTANTS_H_
 

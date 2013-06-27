@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/webview/webview_api.h"
 
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/webview/webview_guest.h"
+#include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/common/extensions/api/webview.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"

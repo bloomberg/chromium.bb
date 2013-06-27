@@ -16,14 +16,6 @@
 
 using content::WebContents;
 
-namespace {
-
-typedef std::map<std::pair<int, int>, AdViewGuest*> AdViewGuestMap;
-base::LazyInstance<AdViewGuestMap> adview_guest_map =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 AdViewGuest::AdViewGuest(WebContents* guest_web_contents,
                          WebContents* embedder_web_contents,
                          const std::string& extension_id,

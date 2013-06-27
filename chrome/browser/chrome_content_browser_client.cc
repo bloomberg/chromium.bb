@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/app/breakpad_mac.h"
-#include "chrome/browser/adview/adview_guest.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
@@ -45,6 +44,9 @@
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/guestview/adview/adview_guest.h"
+#include "chrome/browser/guestview/guestview_constants.h"
+#include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
@@ -85,8 +87,6 @@
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
 #include "chrome/browser/validation_message_message_filter.h"
-#include "chrome/browser/webview/webview_constants.h"
-#include "chrome/browser/webview/webview_guest.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -716,7 +716,7 @@ void ChromeContentBrowserClient::GuestWebContentsAttached(
     return;
 
   std::string api_type;
-  extra_params.GetString(webview::kAttributeApi, &api_type);
+  extra_params.GetString(guestview::kAttributeApi, &api_type);
 
   // WebViewGuest and AdViewGuest's lifetimes iare tied to their associated
   // guest WebContents' lifetime. When the guest WebContents is destroyed, so is

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBVIEW_WEBVIEW_GUEST_H_
-#define CHROME_BROWSER_WEBVIEW_WEBVIEW_GUEST_H_
+#ifndef CHROME_BROWSER_GUESTVIEW_WEBVIEW_WEBVIEW_GUEST_H_
+#define CHROME_BROWSER_GUESTVIEW_WEBVIEW_WEBVIEW_GUEST_H_
 
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/guestview/guestview.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace extensions {
@@ -20,7 +21,8 @@ class ScriptExecutor;
 // a particular embedder WebContents. This happens on either initial navigation
 // or through the use of the New Window API, when a new window is attached to
 // a particular <webview>.
-class WebViewGuest : public content::WebContentsObserver {
+class WebViewGuest : public GuestView,
+                     public content::WebContentsObserver {
  public:
   WebViewGuest(content::WebContents* guest_web_contents,
                content::WebContents* embedder_web_contents,
@@ -30,19 +32,14 @@ class WebViewGuest : public content::WebContentsObserver {
 
   static WebViewGuest* From(int embedder_process_id, int instance_id);
 
-  content::WebContents* embedder_web_contents() const {
-    return embedder_web_contents_;
-  }
-
-  content::WebContents* web_contents() const {
-    return WebContentsObserver::web_contents();
-  }
+  // GuestView implementation.
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual WebViewGuest* AsWebView() OVERRIDE;
+  virtual AdViewGuest* AsAdView() OVERRIDE;
 
   // If possible, navigate the guest to |relative_index| entries away from the
   // current navigation entry.
   void Go(int relative_index);
-
-  int instance_id() const { return webview_instance_id_; }
 
   extensions::ScriptExecutor* script_executor() {
     return script_executor_.get();
@@ -50,9 +47,6 @@ class WebViewGuest : public content::WebContentsObserver {
 
  private:
   virtual ~WebViewGuest();
-
-  void DispatchEvent(const std::string& event_name,
-                     scoped_ptr<DictionaryValue> event);
 
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
@@ -67,19 +61,6 @@ class WebViewGuest : public content::WebContentsObserver {
   static void RemoveWebViewFromExtensionRendererState(
       content::WebContents* web_contents);
 
-  content::WebContents* embedder_web_contents_;
-  const std::string extension_id_;
-  const int embedder_render_process_id_;
-  // Profile and instance ID are cached here because |web_contents()| is
-  // null on destruction.
-  void* profile_;
-  // |guest_instance_id_| is a profile-wide unique identifier for a guest
-  // WebContents.
-  const int guest_instance_id_;
-  // |webview_instance_id_| is an identifier that's unique within a particular
-  // embedder RenderView for a particular <webview> instance.
-  const int webview_instance_id_;
-
   ObserverList<extensions::TabHelper::ScriptExecutionObserver>
       script_observers_;
   scoped_ptr<extensions::ScriptExecutor> script_executor_;
@@ -87,4 +68,4 @@ class WebViewGuest : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };
 
-#endif  // CHROME_BROWSER_WEBVIEW_WEBVIEW_GUEST_H_
+#endif  // CHROME_BROWSER_GUESTVIEW_WEBVIEW_WEBVIEW_GUEST_H_
