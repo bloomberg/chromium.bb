@@ -23,7 +23,6 @@
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/string.h"
 
 using ppapi::PpapiGlobals;
 using ppapi::StringVar;
