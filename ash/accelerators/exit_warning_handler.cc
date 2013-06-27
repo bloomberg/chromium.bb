@@ -26,7 +26,7 @@
 namespace ash {
 namespace {
 
-const int64 kTimeOutMilliseconds = 1000;
+const int64 kTimeOutMilliseconds = 2000;
 const SkColor kForegroundColor = 0xFFFFFFFF;
 const SkColor kBackgroundColor = 0xE0808080;
 const int kHorizontalMarginAroundText = 100;
