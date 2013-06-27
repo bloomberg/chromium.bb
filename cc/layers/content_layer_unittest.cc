@@ -50,8 +50,7 @@ TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale) {
                            gfx::Size(256, 256),
                            contents_scale,
                            contents_scale,
-                           &resulting_opaque_rect,
-                           NULL);
+                           &resulting_opaque_rect);
 
   EXPECT_EQ(opaque_rect_in_content_space.ToString(),
             resulting_opaque_rect.ToString());

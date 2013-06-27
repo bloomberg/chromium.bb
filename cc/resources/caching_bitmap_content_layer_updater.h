@@ -22,8 +22,7 @@ class CachingBitmapContentLayerUpdater : public BitmapContentLayerUpdater {
                                gfx::Size tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
-                               gfx::Rect* resulting_opaque_rect,
-                               RenderingStats* stats) OVERRIDE;
+                               gfx::Rect* resulting_opaque_rect) OVERRIDE;
 
   bool pixels_did_change() const {
     return pixels_did_change_;

@@ -233,8 +233,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
                            rect.size(),
                            contents_scale_x(),
                            contents_scale_y(),
-                           &painted_opaque_rect,
-                           stats);
+                           &painted_opaque_rect);
   if (!painter->pixels_did_change() &&
       resource->texture()->have_backing_texture()) {
     TRACE_EVENT_INSTANT0("cc",
@@ -249,7 +248,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
     resource->texture()->ReturnBackingTexture();
 
   gfx::Vector2d dest_offset(0, 0);
-  resource->Update(queue, rect, dest_offset, partial_updates_allowed, stats);
+  resource->Update(queue, rect, dest_offset, partial_updates_allowed);
 }
 
 gfx::Rect ScrollbarLayer::ScrollbarLayerRectToContentRect(

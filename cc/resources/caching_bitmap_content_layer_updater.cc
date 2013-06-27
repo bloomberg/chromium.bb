@@ -37,14 +37,12 @@ void CachingBitmapContentLayerUpdater::PrepareToUpdate(
     gfx::Size tile_size,
     float contents_width_scale,
     float contents_height_scale,
-    gfx::Rect* resulting_opaque_rect,
-    RenderingStats* stats) {
+    gfx::Rect* resulting_opaque_rect) {
   BitmapContentLayerUpdater::PrepareToUpdate(content_rect,
                                              tile_size,
                                              contents_width_scale,
                                              contents_height_scale,
-                                             resulting_opaque_rect,
-                                             stats);
+                                             resulting_opaque_rect);
 
   const SkBitmap& new_bitmap = canvas_->getDevice()->accessBitmap(false);
   SkAutoLockPixels lock(new_bitmap);

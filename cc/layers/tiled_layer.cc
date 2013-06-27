@@ -493,8 +493,7 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
                              tiler_->tile_size(),
                              1.f / width_scale,
                              1.f / height_scale,
-                             &painted_opaque_rect,
-                             stats);
+                             &painted_opaque_rect);
 
   for (int j = top; j <= bottom; ++j) {
     for (int i = left; i <= right; ++i) {
@@ -560,7 +559,7 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
       CHECK_LE(paint_offset.y() + source_rect.height(), paint_rect.height());
 
       tile->updater_resource()->Update(
-          queue, source_rect, dest_offset, tile->partial_update, stats);
+          queue, source_rect, dest_offset, tile->partial_update);
       if (occlusion) {
         occlusion->overdraw_metrics()->
             DidUpload(gfx::Transform(), source_rect, tile->opaque_rect());

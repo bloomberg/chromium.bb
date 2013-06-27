@@ -23,15 +23,14 @@ void BitmapSkPictureContentLayerUpdater::Resource::Update(
     ResourceUpdateQueue* queue,
     gfx::Rect source_rect,
     gfx::Vector2d dest_offset,
-    bool partial_update,
-    RenderingStats* stats) {
+    bool partial_update) {
   bitmap_.setConfig(
       SkBitmap::kARGB_8888_Config, source_rect.width(), source_rect.height());
   bitmap_.allocPixels();
   bitmap_.setIsOpaque(updater_->layer_is_opaque());
   SkDevice device(bitmap_);
   SkCanvas canvas(&device);
-  updater_->PaintContentsRect(&canvas, source_rect, stats);
+  updater_->PaintContentsRect(&canvas, source_rect);
 
   ResourceUpdate upload = ResourceUpdate::Create(
       texture(), &bitmap_, source_rect, source_rect, dest_offset);
@@ -71,8 +70,7 @@ BitmapSkPictureContentLayerUpdater::CreateResource(
 
 void BitmapSkPictureContentLayerUpdater::PaintContentsRect(
     SkCanvas* canvas,
-    gfx::Rect source_rect,
-    RenderingStats* stats) {
+    gfx::Rect source_rect) {
   // Translate the origin of content_rect to that of source_rect.
   canvas->translate(content_rect().x() - source_rect.x(),
                     content_rect().y() - source_rect.y());

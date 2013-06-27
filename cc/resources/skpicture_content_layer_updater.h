@@ -34,8 +34,7 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
                                gfx::Size tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
-                               gfx::Rect* resulting_opaque_rect,
-                               RenderingStats* stats) OVERRIDE;
+                               gfx::Rect* resulting_opaque_rect) OVERRIDE;
   void DrawPicture(SkCanvas* canvas);
 
   bool layer_is_opaque() const { return layer_is_opaque_; }

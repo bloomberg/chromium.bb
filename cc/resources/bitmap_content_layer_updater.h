@@ -30,8 +30,7 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
     virtual void Update(ResourceUpdateQueue* queue,
                         gfx::Rect source_rect,
                         gfx::Vector2d dest_offset,
-                        bool partial_update,
-                        RenderingStats* stats) OVERRIDE;
+                        bool partial_update) OVERRIDE;
 
    private:
     BitmapContentLayerUpdater* updater_;
@@ -50,8 +49,7 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
                                gfx::Size tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
-                               gfx::Rect* resulting_opaque_rect,
-                               RenderingStats* stats) OVERRIDE;
+                               gfx::Rect* resulting_opaque_rect) OVERRIDE;
   void UpdateTexture(ResourceUpdateQueue* queue,
                      PrioritizedResource* resource,
                      gfx::Rect source_rect,
@@ -71,6 +69,7 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
   gfx::Size canvas_size_;
   bool opaque_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(BitmapContentLayerUpdater);
 };
 

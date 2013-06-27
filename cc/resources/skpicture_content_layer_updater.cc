@@ -27,8 +27,7 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
     gfx::Size,
     float contents_width_scale,
     float contents_height_scale,
-    gfx::Rect* resulting_opaque_rect,
-    RenderingStats* stats) {
+    gfx::Rect* resulting_opaque_rect) {
   SkCanvas* canvas =
       picture_.beginRecording(content_rect.width(), content_rect.height());
   base::TimeTicks start_time =
@@ -37,8 +36,7 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
                 content_rect,
                 contents_width_scale,
                 contents_height_scale,
-                resulting_opaque_rect,
-                stats);
+                resulting_opaque_rect);
   base::TimeDelta duration =
       rendering_stats_instrumentation_->EndRecording(start_time);
   rendering_stats_instrumentation_->AddRecord(
