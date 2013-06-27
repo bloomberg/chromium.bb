@@ -5,7 +5,7 @@
 #ifndef CC_OUTPUT_BEGIN_FRAME_ARGS_H_
 #define CC_OUTPUT_BEGIN_FRAME_ARGS_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {

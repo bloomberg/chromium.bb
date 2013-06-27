@@ -4,7 +4,7 @@
 
 #include "cc/resources/raster_worker_pool.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

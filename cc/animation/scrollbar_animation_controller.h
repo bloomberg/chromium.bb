@@ -5,7 +5,7 @@
 #ifndef CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_H_
 #define CC_ANIMATION_SCROLLBAR_ANIMATION_CONTROLLER_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/vector2d_f.h"
 

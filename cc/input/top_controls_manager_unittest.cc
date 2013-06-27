@@ -5,7 +5,7 @@
 #include "cc/input/top_controls_manager.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cc/input/top_controls_manager_client.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"

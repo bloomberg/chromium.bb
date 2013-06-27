@@ -6,7 +6,7 @@
 #define CC_DEBUG_RENDERING_STATS_H_
 
 #include "base/basictypes.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {

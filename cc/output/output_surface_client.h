@@ -6,7 +6,7 @@
 #define CC_OUTPUT_OUTPUT_SURFACE_CLIENT_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/context_provider.h"

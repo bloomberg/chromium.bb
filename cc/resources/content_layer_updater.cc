@@ -5,7 +5,7 @@
 #include "cc/resources/content_layer_updater.h"
 
 #include "base/debug/trace_event.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "third_party/skia/include/core/SkCanvas.h"

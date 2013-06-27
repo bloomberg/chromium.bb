@@ -4,7 +4,7 @@
 
 #include "cc/resources/bitmap_skpicture_content_layer_updater.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "cc/resources/prioritized_resource.h"

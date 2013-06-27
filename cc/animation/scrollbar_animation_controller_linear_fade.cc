@@ -4,7 +4,7 @@
 
 #include "cc/animation/scrollbar_animation_controller_linear_fade.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cc/layers/layer_impl.h"
 
 namespace cc {

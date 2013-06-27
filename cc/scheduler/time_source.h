@@ -6,7 +6,7 @@
 #define CC_SCHEDULER_TIME_SOURCE_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {

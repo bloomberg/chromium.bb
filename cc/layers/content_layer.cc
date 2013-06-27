@@ -6,7 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/resources/bitmap_content_layer_updater.h"
 #include "cc/resources/bitmap_skpicture_content_layer_updater.h"
