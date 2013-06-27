@@ -252,6 +252,36 @@ TEST_F(GridLayoutTest, ColSpan4) {
   RemoveAll();
 }
 
+// Verifies the sizing of a view that doesn't start in the first column
+// and has a column span > 1 (crbug.com/254092).
+TEST_F(GridLayoutTest, ColSpanStartSecondColumn) {
+  ColumnSet* set = layout.AddColumnSet(0);
+
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
+                 GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
+                 GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
+                 GridLayout::FIXED, 10, 0);
+
+  SettableSizeView v1(gfx::Size(10, 10));
+  SettableSizeView v2(gfx::Size(20, 10));
+
+  layout.StartRow(0, 0);
+  layout.AddView(&v1);
+  layout.AddView(&v2, 2, 1);
+
+  GetPreferredSize();
+  EXPECT_EQ(gfx::Size(30, 10), pref);
+
+  host.SetBounds(0, 0, pref.width(), pref.height());
+  layout.Layout(&host);
+  ExpectViewBoundsEquals(0, 0, 10, 10, &v1);
+  ExpectViewBoundsEquals(10, 0, 20, 10, &v2);
+
+  RemoveAll();
+}
+
 TEST_F(GridLayoutTest, SameSizeColumns) {
   SettableSizeView v1(gfx::Size(50, 20));
   SettableSizeView v2(gfx::Size(10, 10));
