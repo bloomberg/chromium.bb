@@ -127,12 +127,12 @@ def CheckTodos(input_api, output_api):
   source_file_filter = lambda x: x
   for f in input_api.AffectedSourceFiles(source_file_filter):
     contents = input_api.ReadFile(f, 'rb')
-    if ('FIX'+'ME') in contents or re.search(r"TO(?:)DO[^(]", contents):
+    if ('FIX'+'ME') in contents:
       errors.append(f.LocalPath())
 
   if errors:
     return [output_api.PresubmitError(
-      'All TO'+'DO comments should be of the form TODO(name).',
+      'All TODO comments should be of the form TODO(name).',
       items=errors)]
   return []
 
