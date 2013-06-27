@@ -65,10 +65,8 @@ class CONTENT_EXPORT MediaPlayerManagerImpl
   virtual void OnError(int player_id, int error) OVERRIDE;
   virtual void OnVideoSizeChanged(
       int player_id, int width, int height) OVERRIDE;
-  virtual void OnReadFromDemuxer(
-      int player_id,
-      media::DemuxerStream::Type type,
-      bool seek_done) OVERRIDE;
+  virtual void OnReadFromDemuxer(int player_id,
+                                 media::DemuxerStream::Type type) OVERRIDE;
   virtual void RequestMediaResources(int player_id) OVERRIDE;
   virtual void ReleaseMediaResources(int player_id) OVERRIDE;
   virtual media::MediaResourceGetter* GetMediaResourceGetter() OVERRIDE;

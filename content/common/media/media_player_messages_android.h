@@ -133,10 +133,9 @@ IPC_MESSAGE_ROUTED3(MediaPlayerMsg_MediaSeekRequest,
                     uint32 /* seek_request_id */)
 
 // The media source player reads data from demuxer
-IPC_MESSAGE_ROUTED3(MediaPlayerMsg_ReadFromDemuxer,
+IPC_MESSAGE_ROUTED2(MediaPlayerMsg_ReadFromDemuxer,
                     int /* player_id */,
-                    media::DemuxerStream::Type /* type */,
-                    bool /* seek_done */)
+                    media::DemuxerStream::Type /* type */)
 
 // The player needs new config data
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_MediaConfigRequest,

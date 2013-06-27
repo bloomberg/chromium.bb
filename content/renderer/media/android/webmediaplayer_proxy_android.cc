@@ -207,11 +207,10 @@ void WebMediaPlayerProxyAndroid::DidCommitCompositorFrame() {
 
 void WebMediaPlayerProxyAndroid::OnReadFromDemuxer(
     int player_id,
-    media::DemuxerStream::Type type,
-    bool seek_done) {
+    media::DemuxerStream::Type type) {
   WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
-    player->OnReadFromDemuxer(type, seek_done);
+    player->OnReadFromDemuxer(type);
 }
 
 void WebMediaPlayerProxyAndroid::DemuxerReady(

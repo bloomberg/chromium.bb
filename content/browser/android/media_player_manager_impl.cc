@@ -194,9 +194,8 @@ void MediaPlayerManagerImpl::OnVideoSizeChanged(
 }
 
 void MediaPlayerManagerImpl::OnReadFromDemuxer(
-    int player_id, media::DemuxerStream::Type type, bool seek_done) {
-  Send(new MediaPlayerMsg_ReadFromDemuxer(
-      routing_id(), player_id, type, seek_done));
+    int player_id, media::DemuxerStream::Type type) {
+  Send(new MediaPlayerMsg_ReadFromDemuxer(routing_id(), player_id, type));
 }
 
 void MediaPlayerManagerImpl::RequestMediaResources(int player_id) {

@@ -97,8 +97,8 @@ class MEDIA_EXPORT MediaPlayerManager {
   virtual void DestroyAllMediaPlayers() = 0;
 
   // Callback when DemuxerStreamPlayer wants to read data from the demuxer.
-  virtual void OnReadFromDemuxer(
-      int player_id, media::DemuxerStream::Type type, bool seek_done) = 0;
+  virtual void OnReadFromDemuxer(int player_id,
+                                 media::DemuxerStream::Type type) = 0;
 
   // Called when player wants the media element to initiate a seek.
   virtual void OnMediaSeekRequest(int player_id, base::TimeDelta time_to_seek,

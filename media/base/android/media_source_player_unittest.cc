@@ -44,8 +44,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   virtual MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE { return NULL; }
   virtual MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE { return NULL; }
   virtual void DestroyAllMediaPlayers() OVERRIDE {}
-  virtual void OnReadFromDemuxer(int player_id, media::DemuxerStream::Type type,
-                                 bool seek_done) OVERRIDE {
+  virtual void OnReadFromDemuxer(int player_id,
+                                 media::DemuxerStream::Type type) OVERRIDE {
     num_requests_++;
     if (message_loop_.is_running())
       message_loop_.Quit();

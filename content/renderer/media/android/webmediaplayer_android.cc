@@ -1132,10 +1132,9 @@ bool WebMediaPlayerAndroid::InjectMediaStream(
 }
 #endif
 
-void WebMediaPlayerAndroid::OnReadFromDemuxer(
-    media::DemuxerStream::Type type, bool seek_done) {
+void WebMediaPlayerAndroid::OnReadFromDemuxer(media::DemuxerStream::Type type) {
   if (media_source_delegate_)
-    media_source_delegate_->OnReadFromDemuxer(type, seek_done);
+    media_source_delegate_->OnReadFromDemuxer(type);
   else
     NOTIMPLEMENTED();
 }

@@ -109,8 +109,7 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
   void OnPlayerPlay(int player_id);
   void OnPlayerPause(int player_id);
   void OnReadFromDemuxer(int player_id,
-                         media::DemuxerStream::Type type,
-                         bool seek_done);
+                         media::DemuxerStream::Type type);
   void OnMediaSeekRequest(int player_id,
                           base::TimeDelta time_to_seek,
                           unsigned seek_request_id);

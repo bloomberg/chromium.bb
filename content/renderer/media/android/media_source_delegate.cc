@@ -208,13 +208,10 @@ void MediaSourceDelegate::SetDuration(base::TimeDelta duration) {
     duration_change_cb_.Run(duration);
 }
 
-void MediaSourceDelegate::OnReadFromDemuxer(media::DemuxerStream::Type type,
-                                            bool seek_done) {
-  DVLOG(1) << "OnReadFromDemuxer(" << type << ", " << seek_done
-           << ") : " << player_id_;
-  if (seeking_ && !seek_done)
-      return;  // Drop the request during seeking.
-  seeking_ = false;
+void MediaSourceDelegate::OnReadFromDemuxer(media::DemuxerStream::Type type) {
+  DVLOG(1) << "OnReadFromDemuxer(" << type << ") : " << player_id_;
+  if (seeking_)
+    return;  // Drop the request during seeking.
 
   DCHECK(type == DemuxerStream::AUDIO || type == DemuxerStream::VIDEO);
   // The access unit size should have been initialized properly at this stage.

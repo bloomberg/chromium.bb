@@ -596,7 +596,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
 void MediaSourcePlayer::DecodeMoreAudio() {
   if (audio_access_unit_index_ >= received_audio_.access_units.size()) {
     if (!waiting_for_audio_data_) {
-      manager()->OnReadFromDemuxer(player_id(), DemuxerStream::AUDIO, true);
+      manager()->OnReadFromDemuxer(player_id(), DemuxerStream::AUDIO);
       received_audio_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
       audio_access_unit_index_ = 0;
       waiting_for_audio_data_ = true;
@@ -625,7 +625,7 @@ void MediaSourcePlayer::DecodeMoreAudio() {
 void MediaSourcePlayer::DecodeMoreVideo() {
   if (video_access_unit_index_ >= received_video_.access_units.size()) {
     if (!waiting_for_video_data_) {
-      manager()->OnReadFromDemuxer(player_id(), DemuxerStream::VIDEO, true);
+      manager()->OnReadFromDemuxer(player_id(), DemuxerStream::VIDEO);
       received_video_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
       video_access_unit_index_ = 0;
       waiting_for_video_data_ = true;
@@ -650,7 +650,6 @@ void MediaSourcePlayer::DecodeMoreVideo() {
       base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
                  weak_this_.GetWeakPtr(), false));
 }
-
 
 void MediaSourcePlayer::PlaybackCompleted(bool is_audio) {
   if (is_audio)

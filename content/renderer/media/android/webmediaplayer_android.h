@@ -234,7 +234,7 @@ class WebMediaPlayerAndroid
 #endif
 
   // Called when DemuxerStreamPlayer needs to read data from ChunkDemuxer.
-  void OnReadFromDemuxer(media::DemuxerStream::Type type, bool seek_done);
+  void OnReadFromDemuxer(media::DemuxerStream::Type type);
 
  protected:
   // Helper method to update the playing state.
