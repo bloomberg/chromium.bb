@@ -236,7 +236,6 @@ public:
     void fillRect(const FloatRect&, const Color&, CompositeOperator);
     void fillRoundedRect(const IntRect&, const IntSize& topLeft, const IntSize& topRight, const IntSize& bottomLeft, const IntSize& bottomRight, const Color&);
     void fillRoundedRect(const RoundedRect&, const Color&);
-    void fillRectWithRoundedHole(const IntRect&, const RoundedRect& roundedHoleRect, const Color&);
 
     void clearRect(const FloatRect&);
 
@@ -440,6 +439,8 @@ private:
     }
 
     void didDrawTextInRect(const SkRect& textRect);
+
+    void fillRectWithRoundedHole(const IntRect&, const RoundedRect& roundedHoleRect, const Color&);
 
     // null indicates painting is disabled. Never delete this object.
     SkCanvas* m_canvas;
