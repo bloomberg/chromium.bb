@@ -206,7 +206,7 @@ bool base64Decode(const char* data, unsigned len, Vector<char>& out, Base64Decod
 
 bool base64Decode(const String& in, Vector<char>& out, Base64DecodePolicy policy)
 {
-    return base64DecodeInternal<UChar>(in.characters(), in.length(), out, policy);
+    return base64DecodeInternal<UChar>(in.bloatedCharacters(), in.length(), out, policy);
 }
 
 } // namespace WTF

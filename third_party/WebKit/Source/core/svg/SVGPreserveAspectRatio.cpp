@@ -59,7 +59,7 @@ void SVGPreserveAspectRatio::setMeetOrSlice(unsigned short meetOrSlice, Exceptio
 
 void SVGPreserveAspectRatio::parse(const String& value)
 {
-    const UChar* begin = value.characters();
+    const UChar* begin = value.bloatedCharacters();
     parse(begin, begin + value.length(), true);
 }
 

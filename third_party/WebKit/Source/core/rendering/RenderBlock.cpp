@@ -8051,9 +8051,9 @@ TextRun RenderBlock::constructTextRun(RenderObject* context, const Font& font, c
 #if ENABLE(8BIT_TEXTRUN)
     if (length && string.is8Bit())
         return constructTextRunInternal(context, font, string.characters8(), length, style, expansion, flags);
-    return constructTextRunInternal(context, font, string.characters(), length, style, expansion, flags);
+    return constructTextRunInternal(context, font, string.characters16(), length, style, expansion, flags);
 #else
-    return constructTextRunInternal(context, font, string.characters(), length, style, expansion, flags);
+    return constructTextRunInternal(context, font, string.bloatedCharacters(), length, style, expansion, flags);
 #endif
 }
 

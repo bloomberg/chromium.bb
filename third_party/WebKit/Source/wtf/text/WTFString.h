@@ -161,8 +161,8 @@ public:
 
     // FIXME: We're in the process of renaming characters() to bloatedCharacters()
     // and then driving the number of callers to zero.
-    const UChar* bloatedCharacters() const { return characters(); }
-    const UChar* characters() const
+    const UChar* characters() const { return bloatedCharacters(); }
+    const UChar* bloatedCharacters() const
     {
         if (!m_impl)
             return 0;
@@ -569,7 +569,7 @@ inline bool codePointCompareLessThan(const String& a, const String& b)
 template<size_t inlineCapacity>
 inline void append(Vector<UChar, inlineCapacity>& vector, const String& string)
 {
-    vector.append(string.characters(), string.length());
+    vector.append(string.bloatedCharacters(), string.length());
 }
 
 template<typename CharacterType>
@@ -613,7 +613,7 @@ inline bool String::isAllSpecialCharacters() const
 
     if (is8Bit())
         return WTF::isAllSpecialCharacters<isSpecialCharacter, LChar>(characters8(), len);
-    return WTF::isAllSpecialCharacters<isSpecialCharacter, UChar>(characters(), len);
+    return WTF::isAllSpecialCharacters<isSpecialCharacter, UChar>(bloatedCharacters(), len);
 }
 
 // StringHash is the default hash for String

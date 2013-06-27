@@ -816,7 +816,7 @@ void XMLDocumentParser::doWrite(const String& parseString)
 
         switchToUTF16(context->context());
         XMLDocumentParserScope scope(document()->cachedResourceLoader());
-        xmlParseChunk(context->context(), reinterpret_cast<const char*>(parseString.characters()), sizeof(UChar) * parseString.length(), 0);
+        xmlParseChunk(context->context(), reinterpret_cast<const char*>(parseString.bloatedCharacters()), sizeof(UChar) * parseString.length(), 0);
 
         // JavaScript (which may be run under the xmlParseChunk callstack) may
         // cause the parser to be stopped or detached.
@@ -1441,7 +1441,7 @@ xmlDocPtr xmlDocPtrForString(CachedResourceLoader* cachedResourceLoader, const S
     const unsigned char BOMHighByte = *reinterpret_cast<const unsigned char*>(&BOM);
 
     XMLDocumentParserScope scope(cachedResourceLoader, errorFunc, 0);
-    xmlDocPtr sourceDoc = xmlReadMemory(reinterpret_cast<const char*>(source.characters()),
+    xmlDocPtr sourceDoc = xmlReadMemory(reinterpret_cast<const char*>(source.bloatedCharacters()),
                                         source.length() * sizeof(UChar),
                                         url.latin1().data(),
                                         BOMHighByte == 0xFF ? "UTF-16LE" : "UTF-16BE",
@@ -1578,7 +1578,7 @@ HashMap<String, String> parseAttributes(const String& string, bool& attrsOK)
     sax.initialized = XML_SAX2_MAGIC;
     RefPtr<XMLParserContext> parser = XMLParserContext::createStringParser(&sax, &state);
     String parseString = "<?xml version=\"1.0\"?><attrs " + string + " />";
-    xmlParseChunk(parser->context(), reinterpret_cast<const char*>(parseString.characters()), parseString.length() * sizeof(UChar), 1);
+    xmlParseChunk(parser->context(), reinterpret_cast<const char*>(parseString.bloatedCharacters()), parseString.length() * sizeof(UChar), 1);
     attrsOK = state.gotAttributes;
     return state.attributes;
 }

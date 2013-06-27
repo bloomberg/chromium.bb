@@ -126,7 +126,7 @@ void MediaFragmentURIParser::parseFragments()
         //  a. Decode percent-encoded octets in name and value as defined by RFC 3986. If either
         //     name or value are not valid percent-encoded strings, then remove the name-value pair
         //     from the list.
-        const UChar* fragmentStart = fragmentString.characters();
+        const UChar* fragmentStart = fragmentString.bloatedCharacters();
         String name = decodeURLEscapeSequences(String(fragmentStart + parameterStart, equalOffset - parameterStart));
         String value;
         if (equalOffset != parameterEnd)

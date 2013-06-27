@@ -156,7 +156,7 @@ static bool parsePoint(const String& s, FloatPoint& point)
 {
     if (s.isEmpty())
         return false;
-    const UChar* cur = s.characters();
+    const UChar* cur = s.bloatedCharacters();
     const UChar* end = cur + s.length();
     
     if (!skipOptionalSVGSpaces(cur, end))

@@ -72,7 +72,7 @@ String stripLeadingAndTrailingHTMLSpaces(const String& string)
     if (string.is8Bit())
         return stripLeadingAndTrailingHTMLSpaces(string, string.characters8(), length);
 
-    return stripLeadingAndTrailingHTMLSpaces(string, string.characters(), length);
+    return stripLeadingAndTrailingHTMLSpaces(string, string.characters16(), length);
 }
 
 String serializeForNumberType(const Decimal& number)
@@ -212,7 +212,7 @@ bool parseHTMLInteger(const String& input, int& value)
         return parseHTMLIntegerInternal(start, start + length, value);
     }
 
-    const UChar* start = input.characters();
+    const UChar* start = input.characters16();
     return parseHTMLIntegerInternal(start, start + length, value);
 }
 
@@ -273,7 +273,7 @@ bool parseHTMLNonNegativeInteger(const String& input, unsigned& value)
         return parseHTMLNonNegativeIntegerInternal(start, start + length, value);
     }
     
-    const UChar* start = input.characters();
+    const UChar* start = input.characters16();
     return parseHTMLNonNegativeIntegerInternal(start, start + length, value);
 }
 

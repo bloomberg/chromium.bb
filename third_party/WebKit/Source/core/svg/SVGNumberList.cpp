@@ -32,7 +32,7 @@ void SVGNumberList::parse(const String& value)
     clear();
 
     float number = 0;
-    const UChar* ptr = value.characters();
+    const UChar* ptr = value.bloatedCharacters();
     const UChar* end = ptr + value.length();
 
     // The spec strangely doesn't allow leading whitespace.  We might choose to violate that intentionally. (section 4.1)

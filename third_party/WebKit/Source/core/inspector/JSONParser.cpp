@@ -447,8 +447,8 @@ PassRefPtr<JSONValue> buildValue(const UChar* start, const UChar* end, const UCh
 
 PassRefPtr<JSONValue> parseJSON(const String& json)
 {
-    const UChar* start = json.characters();
-    const UChar* end = json.characters() + json.length();
+    const UChar* start = json.bloatedCharacters();
+    const UChar* end = json.bloatedCharacters() + json.length();
     const UChar *tokenEnd;
     RefPtr<JSONValue> value = buildValue(start, end, &tokenEnd, 0);
     if (!value || tokenEnd != end)
