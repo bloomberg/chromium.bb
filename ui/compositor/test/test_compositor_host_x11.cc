@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,11 @@
 
 namespace ui {
 
-class TestCompositorHostLinux : public TestCompositorHost,
-                                public CompositorDelegate {
+class TestCompositorHostX11 : public TestCompositorHost,
+                              public CompositorDelegate {
  public:
-  TestCompositorHostLinux(const gfx::Rect& bounds);
-  virtual ~TestCompositorHostLinux();
+  TestCompositorHostX11(const gfx::Rect& bounds);
+  virtual ~TestCompositorHostX11();
 
  private:
   // Overridden from TestCompositorHost:
@@ -41,20 +41,20 @@ class TestCompositorHostLinux : public TestCompositorHost,
 
   XID window_;
 
-  base::WeakPtrFactory<TestCompositorHostLinux> method_factory_;
+  base::WeakPtrFactory<TestCompositorHostX11> method_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestCompositorHostLinux);
+  DISALLOW_COPY_AND_ASSIGN(TestCompositorHostX11);
 };
 
-TestCompositorHostLinux::TestCompositorHostLinux(const gfx::Rect& bounds)
+TestCompositorHostX11::TestCompositorHostX11(const gfx::Rect& bounds)
     : bounds_(bounds),
       method_factory_(this) {
 }
 
-TestCompositorHostLinux::~TestCompositorHostLinux() {
+TestCompositorHostX11::~TestCompositorHostX11() {
 }
 
-void TestCompositorHostLinux::Show() {
+void TestCompositorHostX11::Show() {
   Display* display = GetXDisplay();
   XSetWindowAttributes swa;
   swa.event_mask = StructureNotifyMask | ExposureMask;
@@ -80,28 +80,28 @@ void TestCompositorHostLinux::Show() {
   compositor_->SetScaleAndSize(1.0f, bounds_.size());
 }
 
-ui::Compositor* TestCompositorHostLinux::GetCompositor() {
+ui::Compositor* TestCompositorHostX11::GetCompositor() {
   return compositor_.get();
 }
 
-void TestCompositorHostLinux::ScheduleDraw() {
+void TestCompositorHostX11::ScheduleDraw() {
   DCHECK(!ui::Compositor::WasInitializedWithThread());
   if (!method_factory_.HasWeakPtrs()) {
     base::MessageLoopForUI::current()->PostTask(
         FROM_HERE,
-        base::Bind(&TestCompositorHostLinux::Draw,
+        base::Bind(&TestCompositorHostX11::Draw,
                    method_factory_.GetWeakPtr()));
   }
 }
 
-void TestCompositorHostLinux::Draw() {
+void TestCompositorHostX11::Draw() {
   if (compositor_.get())
     compositor_->Draw();
 }
 
 // static
 TestCompositorHost* TestCompositorHost::Create(const gfx::Rect& bounds) {
-  return new TestCompositorHostLinux(bounds);
+  return new TestCompositorHostX11(bounds);
 }
 
 }  // namespace ui
