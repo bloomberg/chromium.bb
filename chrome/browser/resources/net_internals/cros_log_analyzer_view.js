@@ -67,6 +67,7 @@ var CrosLogAnalyzerView = (function() {
   CrosLogAnalyzerView.LOG_TABLE_ID = 'cros-log-analyzer-log-table';
   CrosLogAnalyzerView.LOG_FILTER_PNAME_ID = 'cros-log-analyzer-filter-pname';
   CrosLogAnalyzerView.LOG_SEARCH_INPUT_ID = 'cros-log-analyzer-search-input';
+  CrosLogAnalyzerView.LOG_SEARCH_SAVE_BTN_ID = 'cros-log-analyzer-save-btn';
   CrosLogAnalyzerView.LOG_VISUALIZER_CONTAINER_ID =
       'cros-log-analyzer-visualizer-container';
 
@@ -97,7 +98,22 @@ var CrosLogAnalyzerView = (function() {
       g_browser.addSystemLogObserver(this);
       $(CrosLogAnalyzerView.LOG_SEARCH_INPUT_ID).addEventListener('keyup',
           this.onSearchQueryChange_.bind(this));
+      $(CrosLogAnalyzerView.LOG_SEARCH_SAVE_BTN_ID).addEventListener(
+          'click', this.onSaveBtnClicked_.bind(this));
+    },
 
+    /**
+     * Called when the save button is clicked. Saves the current filter query
+     * to the mark history. And highlights the matched text with colors.
+     */
+    onSaveBtnClicked_: function() {
+      this.marker.addMarkHistory(this.currentQuery);
+      // Clears the filter query
+      $(CrosLogAnalyzerView.LOG_SEARCH_INPUT_ID).value = '';
+      this.currentQuery = '';
+      // Refresh the table
+      this.populateTable();
+      this.filterLog();
     },
 
     onSearchQueryChange_: function() {
@@ -114,8 +130,10 @@ var CrosLogAnalyzerView = (function() {
     populateTable: function() {
       var logTable = $(CrosLogAnalyzerView.LOG_TABLE_ID);
       logTable.innerHTML = '';
+      this.tableEntries.length = 0;
       // Create entries
       for (var i = 0; i < this.logEntries.length; i++) {
+        this.logEntries[i].rowNum = i;
         var row = this.createTableRow(this.logEntries[i]);
         logTable.appendChild(row);
       }
@@ -143,15 +161,15 @@ var CrosLogAnalyzerView = (function() {
 
       // Process name cell
       cells[2].className = LOG_CELL_PNAME_CLASSNAME;
-      cells[2].textContent = entry.processName;
+      this.marker.getHighlightedEntry(entry, 'processName', cells[2]);
 
       // Process ID cell
       cells[3].className = LOG_CELL_PID_CLASSNAME;
-      cells[3].textContent = entry.processID;
+      this.marker.getHighlightedEntry(entry, 'processID', cells[3]);
 
       // Description cell
       cells[4].className = LOG_CELL_DESCRIPTION_CLASSNAME;
-      cells[4].textContent = entry.description;
+      this.marker.getHighlightedEntry(entry, 'description', cells[4]);
 
       // Add the row into this.tableEntries for future reference
       this.tableEntries.push(row);
@@ -163,6 +181,7 @@ var CrosLogAnalyzerView = (function() {
      */
     refresh: function() {
       this.createFilter();
+      this.createLogMaker();
       this.populateTable();
       this.createVisualizer();
     },
@@ -300,6 +319,14 @@ var CrosLogAnalyzerView = (function() {
      */
     filterVisualizer: function() {
       this.visualizer.updateEvents(this.logEntries);
+    },
+
+    /**
+     * Called during the initialization. It creates the log marker that
+     * highlights log text.
+     */
+    createLogMaker: function() {
+      this.marker = new CrosLogMarker(this);
     },
 
     /**

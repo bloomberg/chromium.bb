@@ -112,9 +112,10 @@
   border-radius: 5px;
   font-size: 12px;
   margin-bottom: 5px;
+  margin-left: 720px;
   margin-top: -40px;
   padding: 5px;
-  width: 240px;
+  width: 280px;
 }
 
 #cros-log-analyzer-search-container input {
@@ -167,6 +168,54 @@
 
 .cros-log-analyzer-flash {
   -webkit-animation: fade 1s linear 1;
+}
+
+#cros-log-analyzer-marker-container {
+  background-color: rgb(242, 242, 242);
+  border: 1px solid rgb(211, 211, 211);
+  left: 1030px;
+  min-height: 320px;
+  padding: 10px;
+  position: absolute;
+  top: 63px;
+  width: 200px;
+}
+
+.cros-log-analyzer-marker-history-entry {
+  display: -webkit-flex;
+  height: 20px;
+}
+
+
+.cros-log-analyzer-marker-history-entry * {
+  display: block;
+}
+
+.cros-log-analyzer-marker-history-entry p {
+  font-size: 13px;
+  height: 15px;
+  margin: 0;
+  width: 98px;
+}
+
+.cros-log-analyzer-marker-history-entry a {
+  color: grey;
+  font-size: 11px;
+}
+
+.cros-log-analyzer-marker-history-color-tag {
+  border-radius: 10px;
+  height: 10px;
+  margin: 4px;
+  width: 10px;
+}
+
+.cros-log-analyzer-marker-highlight {
+  font-weight: bold;
+}
+
+#cros-log-analyzer-save-btn {
+  background-color: rgb(211, 211, 211);
 }
 
 @-webkit-keyframes fade {

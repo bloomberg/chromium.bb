@@ -51,6 +51,7 @@
 <include src="cros_log_analyzer_view.js"/>
 <include src="cros_log_entry.js"/>
 <include src="cros_log_visualizer.js" />
+<include src="cros_log_marker.js" />
 
 document.addEventListener('DOMContentLoaded', function() {
   MainView.getInstance();  // from main.js
