@@ -44,37 +44,9 @@ class WebContents;
   // The desired height of the overlay and units.
   CGFloat overlayHeight_;
   InstantSizeUnits overlayHeightUnits_;
-
-  // If true then a shadow is drawn below the overlay. This is used to make the
-  // overlay "float" over the tab's web contents.
-  BOOL drawDropShadow_;
-
-  // View responsible for drawing a drop shadow.
-  base::scoped_nsobject<NSView> dropShadowView_;
-
-  // View responsible for drawing a separator at the top. The separator is
-  // only visible when the overlay is positioned right next to the omnibox.
-  base::scoped_nsobject<NSView> topSeparatorView_;
-
-  BrowserWindowController* windowController_;
-
-  // The vertical offset between the top of the view and the active container.
-  // This is used to push the active container below the bookmark bar. Normally
-  // this is set to the height of the bookmark bar so that the bookmark bar is
-  // not obscured.
-  CGFloat activeContainerOffset_;
-
-  // The vertical offset between the top of the view and the overlay. This is
-  // used in presentation mode to push the overlay below the floating toolbar
-  // view.
-  CGFloat overlayContentsOffset_;
 }
 
 @property(readonly, nonatomic) NSView* activeContainer;
-@property(readonly, nonatomic) NSView* dropShadowView;
-@property(readonly, nonatomic) BOOL drawDropShadow;
-@property(assign, nonatomic) CGFloat activeContainerOffset;
-@property(assign, nonatomic) CGFloat overlayContentsOffset;
 
 // Initialization.
 - (id)initWithBrowser:(Browser*)browser
@@ -92,12 +64,9 @@ class WebContents;
 // if it's the overlay being activated (and adjust internal state accordingly).
 - (void)onActivateTabWithContents:(content::WebContents*)contents;
 
-// Returns YES if the overlay contents is currently showing.
-- (BOOL)isShowingOverlay;
-
 - (InstantOverlayControllerMac*)instantOverlayController;
 
-- (void)activeContentsCompositingIOSurfaceCreated;
+- (BOOL)isShowingOverlay;
 
 @end
 

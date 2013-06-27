@@ -672,7 +672,6 @@ extensions::ActiveTabPermissionGranter*
 
 void BrowserWindowCocoa::ModelChanged(const SearchModel::State& old_state,
                                       const SearchModel::State& new_state) {
-  [controller_ updateBookmarkBarStateForInstantOverlay];
 }
 
 void BrowserWindowCocoa::DestroyBrowser() {

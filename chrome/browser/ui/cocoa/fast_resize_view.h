@@ -16,19 +16,14 @@
 @interface FastResizeView : NSView {
  @private
   BOOL fastResizeMode_;
-
-  // Offset from the top of the view where the view's content starts. This is
-  // used to prevent this view from drawing white on non-content area.
-  CGFloat contentOffset_;
 }
-
-@property(assign, nonatomic) CGFloat contentOffset;
 
 // Turns fast resizing mode on or off, which determines how this view resizes
 // its subviews.  Turning fast resizing mode off has the effect of immediately
 // resizing subviews to fit; callers do not need to explictly call |setFrame:|
 // to trigger a resize.
 - (void)setFastResizeMode:(BOOL)fastResizeMode;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_FAST_RESIZE_VIEW_H_

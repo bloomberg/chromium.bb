@@ -1237,8 +1237,6 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(
     return true;
   }
 
-  bool should_post_notification = false;
-
   if (use_core_animation_) {
     if (!CreateCompositedIOSurfaceAndLayer()) {
       LOG(ERROR) << "Failed to create CompositingIOSurface or its layer";
@@ -1254,7 +1252,6 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(
       return false;
     }
   }
-  should_post_notification = true;
 
   if (!compositing_iosurface_->SetIOSurface(
           surface_handle, size, surface_scale_factor, latency_info)) {
@@ -1284,11 +1281,6 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(
         return false;
       }
     }
-  }
-
-  if (should_post_notification && [[cocoa_view_ delegate]
-          respondsToSelector:@selector(compositingIOSurfaceCreated)]) {
-    [[cocoa_view_ delegate] compositingIOSurfaceCreated];
   }
 
   return true;

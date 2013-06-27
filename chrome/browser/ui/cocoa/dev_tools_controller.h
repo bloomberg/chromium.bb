@@ -47,9 +47,6 @@ class WebContents;
 - (void)updateDevToolsForWebContents:(content::WebContents*)contents
                          withProfile:(Profile*)profile;
 
-- (CGFloat)topContentOffset;
-- (void)setTopContentOffset:(CGFloat)offset;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_DEV_TOOLS_CONTROLLER_H_

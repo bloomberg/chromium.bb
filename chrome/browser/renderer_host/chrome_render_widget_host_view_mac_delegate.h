@@ -58,7 +58,6 @@ class SpellCheckRenderViewObserver;
 - (void)setHasHorizontalScrollbar:(BOOL)hasHorizontalScrollbar;
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
                       isValidItem:(BOOL*)valid;
-- (void)compositingIOSurfaceCreated;
 
 @end
 

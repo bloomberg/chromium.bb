@@ -243,6 +243,7 @@ TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
 #endif
 
 namespace {
+
 // Verifies that the toolbar, infobar, tab content area, and download shelf
 // completely fill the area under the tabstrip.
 void CheckViewPositions(BrowserWindowController* controller) {
@@ -255,10 +256,7 @@ void CheckViewPositions(BrowserWindowController* controller) {
 
   EXPECT_EQ(NSMinY(contentView), NSMinY(download));
   EXPECT_EQ(NSMaxY(download), NSMinY(contentArea));
-
-  CGFloat min_toolbar_height = [[controller toolbarController]
-      desiredHeightForCompression:1];
-  EXPECT_EQ(NSMaxY(contentArea), NSMaxY(toolbar) - min_toolbar_height);
+  EXPECT_EQ(NSMaxY(contentArea), NSMinY(infobar));
 
   // Bookmark bar frame is random memory when hidden.
   if ([controller bookmarkBarVisible]) {
@@ -275,6 +273,7 @@ void CheckViewPositions(BrowserWindowController* controller) {
   // not necessarily fixed with respect to the content view.
   EXPECT_EQ(NSMinY(tabstrip), NSMaxY(toolbar));
 }
+
 }  // end namespace
 
 TEST_F(BrowserWindowControllerTest, TestAdjustWindowHeight) {

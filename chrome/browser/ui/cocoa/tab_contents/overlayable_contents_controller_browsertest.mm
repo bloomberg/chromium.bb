@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/tab_contents/instant_overlay_controller_mac.h"
-#include "chrome/browser/ui/cocoa/tab_contents/overlay_separator_view.h"
 #include "chrome/browser/ui/search/instant_overlay_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_source.h"
@@ -50,7 +49,6 @@ class OverlayableContentsControllerTest : public InProcessBrowserTest,
   void VerifyOverlayFrame(CGFloat expected_height,
                           InstantSizeUnits units) {
     NSRect container_bounds = [[controller_ view] bounds];
-    container_bounds.size.height -= [OverlayTopSeparatorView preferredHeight];
     NSRect overlay_frame =
         [web_contents_->GetView()->GetNativeView() frame];
 
@@ -117,48 +115,6 @@ IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, SizePixels) {
   VerifyOverlayFrame(expected_height, units);
 }
 
-// Verify that a bottom border is not shown when the overlay covers the entire
-// page or when the overlay is in NTP mode.
-IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, NoShadowFullHeight) {
-  SearchMode mode;
-  mode.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
-  instant_overlay_model_.SetOverlayState(mode, 100, INSTANT_SIZE_PERCENT);
-  EXPECT_FALSE([controller_ dropShadowView]);
-  EXPECT_FALSE([controller_ drawDropShadow]);
-
-  mode.mode = SearchMode::MODE_NTP;
-  instant_overlay_model_.SetOverlayState(mode, 10, INSTANT_SIZE_PERCENT);
-  EXPECT_FALSE([controller_ dropShadowView]);
-  EXPECT_FALSE([controller_ drawDropShadow]);
-}
-
-// Verify that a shadow is shown when the overlay is in search mode.
-IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, NoShadowNTP) {
-  SearchMode mode;
-  mode.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
-  instant_overlay_model_.SetOverlayState(mode, 10, INSTANT_SIZE_PERCENT);
-  EXPECT_TRUE([controller_ dropShadowView]);
-  EXPECT_TRUE([controller_ drawDropShadow]);
-  EXPECT_NSEQ([controller_ view], [[controller_ dropShadowView] superview]);
-
-  NSRect dropShadowFrame = [[controller_ dropShadowView] frame];
-  NSRect controllerBounds = [[controller_ view] bounds];
-  EXPECT_EQ(NSWidth(controllerBounds), NSWidth(dropShadowFrame));
-  EXPECT_EQ([OverlayBottomSeparatorView preferredHeight],
-            NSHeight(dropShadowFrame));
-}
-
-// Verify that the shadow is hidden when hiding the overlay.
-IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, HideShadow) {
-  SearchMode mode;
-  mode.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
-  instant_overlay_model_.SetOverlayState(mode, 10, INSTANT_SIZE_PERCENT);
-  EXPECT_TRUE([controller_ dropShadowView]);
-
-  [controller_ onActivateTabWithContents:web_contents_.get()];
-  EXPECT_FALSE([controller_ dropShadowView]);
-}
-
 // Verify that the web contents is not hidden when just the height changes.
 IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, HeightChangeNoHide) {
   SearchMode mode;
@@ -171,24 +127,4 @@ IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, HeightChangeNoHide) {
   EXPECT_EQ(0, visibility_changed_count_);
   instant_overlay_model_.SetOverlayState(mode, 11, INSTANT_SIZE_PERCENT);
   EXPECT_EQ(1, visibility_changed_count_);
-}
-
-IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, OverlayOffset) {
-  SearchMode mode;
-  mode.mode = SearchMode::MODE_NTP;
-  CGFloat expected_height = 10;
-  InstantSizeUnits units = INSTANT_SIZE_PIXELS;
-  instant_overlay_model_.SetOverlayState(mode, expected_height, units);
-
-  CGFloat separator_height = [OverlayTopSeparatorView preferredHeight];
-  NSView* overlay_view = web_contents_->GetView()->GetNativeView();
-  EXPECT_EQ(separator_height,
-            NSMaxY([[overlay_view superview] frame]) -
-            NSMaxY([overlay_view frame]));
-
-  CGFloat offset = 30;
-  [controller_ setOverlayContentsOffset:offset];
-  EXPECT_EQ(separator_height + offset,
-            NSMaxY([[overlay_view superview] frame]) -
-            NSMaxY([overlay_view frame]));
 }

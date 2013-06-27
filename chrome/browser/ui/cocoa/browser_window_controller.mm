@@ -1986,13 +1986,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [sheet orderOut:self];
 }
 
-- (void)updateBookmarkBarStateForInstantOverlay {
-  [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
-  [self updateContentOffsets];
-  [self updateSubviewZOrder:[self inPresentationMode]];
-  [self updateInfoBarTipVisibility];
-}
-
 - (void)onFindBarVisibilityChanged {
   [self updateAllowOverlappingViews:[self inPresentationMode]];
 }

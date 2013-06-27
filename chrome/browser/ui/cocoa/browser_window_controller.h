@@ -160,10 +160,6 @@ class WebContents;
   // handle.
   scoped_ptr<ExtensionKeybindingRegistryCocoa> extension_keybinding_registry_;
 
-  // The offset between the bottom of the toolbar and web contents. This is used
-  // to push the web contents below the bookmark bar.
-  CGFloat toolbarToWebContentsOffset_;
-
   // The number of history overlay views being shown.
   NSUInteger historyOverlayCount_;
 }
@@ -344,9 +340,6 @@ class WebContents;
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)code
             context:(void*)context;
-
-// Updates the bookmark bar visibility based on the instant overlay state.
-- (void)updateBookmarkBarStateForInstantOverlay;
 
 // Called when the find bar visibility changes. This is used to update the
 // allowOverlappingViews state.

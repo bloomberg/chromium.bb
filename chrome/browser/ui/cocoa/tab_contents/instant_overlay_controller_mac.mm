@@ -64,6 +64,4 @@ void InstantOverlayControllerMac::OverlayStateChanged(
       }
     }
   }
-
-  [window_ updateBookmarkBarStateForInstantOverlay];
 }

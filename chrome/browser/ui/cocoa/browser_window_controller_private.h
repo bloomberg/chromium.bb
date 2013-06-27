@@ -9,15 +9,6 @@
 
 namespace browser_window_controller {
 
-enum InstantUIState {
-  kInstantUINone,
-  // Instant suggestions are displayed in a overlay overlapping the tab
-  // contents.
-  kInstantUIOverlay,
-  // Instant suggestions are displayed in the main tab contents.
-  kInstantUIFullPageResults,
-};
-
 enum CoreAnimationStatus {
   kCoreAnimationDisabled,
   kCoreAnimationEnabledLazy,
@@ -161,15 +152,6 @@ enum CoreAnimationStatus {
 
 // The opacity for the toolbar divider; 0 means that it shouldn't be shown.
 - (CGFloat)toolbarDividerOpacity;
-
-// This is used to check if either the instant overlay or full page instant
-// search results are currently being displayed.
-- (browser_window_controller::InstantUIState)currentInstantUIState;
-
-// Updates the content offets of the tab strip controller and the overlayable
-// contents controller. This is used to adjust the overlap between those views
-// and the bookmark bar.
-- (void)updateContentOffsets;
 
 // Ensures the z-order of subviews is correct.
 - (void)updateSubviewZOrder:(BOOL)inPresentationMode;
