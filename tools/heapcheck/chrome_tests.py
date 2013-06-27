@@ -78,6 +78,7 @@ class ChromeTests(object):
     # The known list of tests.
     # Recognise the original abbreviations as well as full executable names.
     self._test_list = {
+      "app_list": self.TestAppList,     "app_list_unittests": self.TestAppList,
       "ash": self.TestAsh,              "ash_unittests": self.TestAsh,
       "aura": self.TestAura,            "aura_unittests": self.TestAura,
       "base": self.TestBase,            "base_unittests": self.TestBase,
@@ -96,6 +97,8 @@ class ChromeTests(object):
       "ipc": self.TestIpc,              "ipc_tests": self.TestIpc,
       "layout": self.TestLayout,        "layout_tests": self.TestLayout,
       "media": self.TestMedia,          "media_unittests": self.TestMedia,
+      "message_center": self.TestMessageCenter,
+      "message_center_unittests" : self.TestMessageCenter,
       "net": self.TestNet,              "net_unittests": self.TestNet,
       "printing": self.TestPrinting,    "printing_unittests": self.TestPrinting,
       "remoting": self.TestRemoting,    "remoting_unittests": self.TestRemoting,
@@ -247,6 +250,9 @@ class ChromeTests(object):
       os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
     return heapcheck_test.RunTool(cmd, supp, module)
 
+  def TestAppList(self):
+    return self.SimpleTest("app_list", "app_list_unittests")
+
   def TestAsh(self):
     return self.SimpleTest("ash", "ash_unittests")
 
@@ -291,6 +297,9 @@ class ChromeTests(object):
 
   def TestMedia(self):
     return self.SimpleTest("chrome", "media_unittests")
+
+  def TestMessageCenter(self):
+    return self.SimpleTest("message_center", "message_center_unittests")
 
   def TestNet(self):
     return self.SimpleTest("net", "net_unittests")

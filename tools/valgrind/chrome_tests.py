@@ -244,6 +244,9 @@ class ChromeTests:
     self.SetupLdPath(False)
     return tool.Run(cmd, None)
 
+  def TestAppList(self):
+    return self.SimpleTest("app_list", "app_list_unittests")
+
   def TestAsh(self):
     return self.SimpleTest("ash", "ash_unittests")
 
@@ -301,6 +304,9 @@ class ChromeTests:
 
   def TestMedia(self):
     return self.SimpleTest("chrome", "media_unittests")
+
+  def TestMessageCenter(self):
+    return self.SimpleTest("message_center", "message_center_unittests")
 
   def TestNet(self):
     return self.SimpleTest("net", "net_unittests")
@@ -509,6 +515,7 @@ class ChromeTests:
   # Recognise the original abbreviations as well as full executable names.
   _test_list = {
     "cmdline" : RunCmdLine,
+    "app_list": TestAppList,     "app_list_unittests": TestAppList,
     "ash": TestAsh,              "ash_unittests": TestAsh,
     "aura": TestAura,            "aura_unittests": TestAura,
     "automated_ui" : TestAutomatedUI,
@@ -532,6 +539,8 @@ class ChromeTests:
     "layout": TestLayout,        "layout_tests": TestLayout,
     "webkit": TestLayout,
     "media": TestMedia,          "media_unittests": TestMedia,
+    "message_center": TestMessageCenter,
+    "message_center_unittests" : TestMessageCenter,
     "net": TestNet,              "net_unittests": TestNet,
     "net_perf": TestNetPerf,     "net_perftests": TestNetPerf,
     "jingle": TestJingle,        "jingle_unittests": TestJingle,
