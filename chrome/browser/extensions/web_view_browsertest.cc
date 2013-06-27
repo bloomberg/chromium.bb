@@ -454,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestEventName) {
 
 // WebViewTest.Shim_TestDestroyOnEventListener is flaky, so disable it.
 // http://crbug.com/255106
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDestroyOnEventListener_DISABLED) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_Shim_TestDestroyOnEventListener) {
   TestHelper("testDestroyOnEventListener",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
