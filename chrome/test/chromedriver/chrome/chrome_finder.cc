@@ -25,6 +25,7 @@ namespace {
 
 #if defined(OS_WIN)
 void GetApplicationDirs(std::vector<base::FilePath>* locations) {
+  std::vector<base::FilePath> installation_locations;
   // Add user-level location.
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string home_dir;
@@ -36,15 +37,24 @@ void GetApplicationDirs(std::vector<base::FilePath>* locations) {
     } else {
       default_location = default_location.Append(L"AppData\\Local");
     }
-    locations->push_back(default_location);
+    installation_locations.push_back(default_location);
   }
 
   // Add the system-level location.
   std::string program_dir;
   if (env->GetVar("ProgramFiles", &program_dir))
-    locations->push_back(base::FilePath(UTF8ToWide(program_dir)));
+    installation_locations.push_back(base::FilePath(UTF8ToWide(program_dir)));
   if (env->GetVar("ProgramFiles(x86)", &program_dir))
-    locations->push_back(base::FilePath(UTF8ToWide(program_dir)));
+    installation_locations.push_back(base::FilePath(UTF8ToWide(program_dir)));
+
+  for (size_t i = 0; i < installation_locations.size(); ++i) {
+    locations->push_back(
+        installation_locations[i].Append(L"Google\\Chrome\\Application"));
+  }
+  for (size_t i = 0; i < installation_locations.size(); ++i) {
+    locations->push_back(
+        installation_locations[i].Append(L"Chromium\\Application"));
+  }
 }
 #elif defined(OS_LINUX)
 void GetApplicationDirs(std::vector<base::FilePath>* locations) {
@@ -88,8 +98,7 @@ void GetApplicationDirs(std::vector<base::FilePath>* locations);
 bool FindChrome(base::FilePath* browser_exe) {
 #if defined(OS_WIN)
   base::FilePath browser_exes_array[] = {
-      base::FilePath(L"Google\\Chrome\\Application\\chrome.exe"),
-      base::FilePath(L"Chromium\\Application\\chrome.exe")
+      base::FilePath(L"chrome.exe")
   };
 #elif defined(OS_MACOSX)
   base::FilePath browser_exes_array[] = {
@@ -107,6 +116,9 @@ bool FindChrome(base::FilePath* browser_exe) {
   std::vector<base::FilePath> browser_exes(
       browser_exes_array, browser_exes_array + arraysize(browser_exes_array));
   std::vector<base::FilePath> locations;
+  base::FilePath module_dir;
+  if (PathService::Get(base::DIR_MODULE, &module_dir))
+    locations.push_back(module_dir);
   GetApplicationDirs(&locations);
   return internal::FindExe(
       base::Bind(&file_util::PathExists),
