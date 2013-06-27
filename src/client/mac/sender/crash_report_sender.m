@@ -265,11 +265,13 @@ const int kEmailMaxLength = 64;
     }
   } else {
     // Create an alert panel to tell the user something happened
-    NSPanel* alert = NSGetAlertPanel([self shortDialogMessage],
-                                     [self explanatoryDialogText],
-                                     NSLocalizedString(@"sendReportButton", @""),
-                                     NSLocalizedString(@"cancelButton", @""),
-                                     nil);
+    NSPanel* alert =
+        NSGetAlertPanel([self shortDialogMessage],
+                        @"%@",
+                        NSLocalizedString(@"sendReportButton", @""),
+                        NSLocalizedString(@"cancelButton", @""),
+                        nil,
+                        [self explanatoryDialogText]);
 
     // Pop the alert with an automatic timeout, and wait for the response
     buttonPressed = [self runModalWindow:alert withTimeout:timeout];
