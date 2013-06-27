@@ -373,6 +373,12 @@ cr.define('ntp', function() {
 
   function setIncognitoMode(incognito) {
     isIncognito = incognito;
+    if (!isIncognito) {
+      chrome.send('getMostVisited');
+      chrome.send('getRecentlyClosedTabs');
+      chrome.send('getForeignSessions');
+      chrome.send('getPromotions');
+    }
   }
 
   /**
@@ -446,11 +452,6 @@ cr.define('ntp', function() {
 
     // Initialize virtual computers for the sync promo.
     createPromoVirtualComputers();
-
-    chrome.send('getMostVisited');
-    chrome.send('getRecentlyClosedTabs');
-    chrome.send('getForeignSessions');
-    chrome.send('getPromotions');
 
     setCurrentBookmarkFolderData(
         localStorage.getItem(DEFAULT_BOOKMARK_FOLDER_KEY));
