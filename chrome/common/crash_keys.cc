@@ -60,6 +60,8 @@ size_t RegisterChromeCrashKeys() {
     { mac::kSendAction, kMediumSize },
     { mac::kZombie, kMediumSize },
     { mac::kZombieTrace, kMediumSize },
+    { mac::kZoomBubbleWindowType, kSmallSize },
+    { mac::kZoomBubbleURL, kLargeSize },
     // content/:
     { "channel_error_bt", kMediumSize },
     { "remove_route_bt", kMediumSize },
@@ -88,6 +90,9 @@ const char kSendAction[] = "sendaction";
 
 const char kZombie[] = "zombie";
 const char kZombieTrace[] = "zombie_dealloc_bt";
+
+const char kZoomBubbleWindowType[] = "zoom_bubble_window_type";
+const char kZoomBubbleURL[] = "zoom_bubble_url";
 
 }  // namespace mac
 #endif
