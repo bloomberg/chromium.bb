@@ -6,44 +6,33 @@ Running: testSetUp
 Running: testGetterAndSetter
 {
     enumerable : true
-    name : "get foo"
-    value : {
+    getter : {
         description : "function () { return 1; }"
         objectId : <string>
         type : "function"
     }
-    writable : false
-}
-{
-    enumerable : true
-    name : "set foo"
-    value : {
+    isOwn : true
+    name : "foo"
+    setter : {
         description : "function (value) { }"
         objectId : <string>
         type : "function"
     }
+    wasThrown : false
     writable : false
 }
 
 Running: testGetterOnly
 {
     enumerable : true
-    name : "get foo"
-    value : {
+    getter : {
         description : "function () { return 1; }"
         objectId : <string>
         type : "function"
     }
-    writable : false
-}
-{
-    enumerable : true
-    name : "set foo"
-    value : {
-        description : "undefined"
-        objectId : <undefined>
-        type : "undefined"
-    }
+    isOwn : true
+    name : "foo"
+    wasThrown : false
     writable : false
 }
 
