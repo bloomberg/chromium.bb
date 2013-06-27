@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "crypto/capi_util.h"
-#include "crypto/rsa_private_key.h"
 #include "crypto/scoped_capi_types.h"
 #include "net/base/net_errors.h"
 
@@ -163,67 +162,6 @@ void X509Certificate::Initialize() {
     serial_bytes[i] = serial->pbData[serial->cbData - i - 1];
   serial_number_ = std::string(
       reinterpret_cast<char*>(serial_bytes.get()), serial->cbData);
-}
-
-// static
-X509Certificate* X509Certificate::CreateSelfSigned(
-    crypto::RSAPrivateKey* key,
-    const std::string& subject,
-    uint32 serial_number,
-    base::TimeDelta valid_duration) {
-  // Get the ASN.1 encoding of the certificate subject.
-  std::wstring w_subject = ASCIIToWide(subject);
-  DWORD encoded_subject_length = 0;
-  if (!CertStrToName(
-          X509_ASN_ENCODING,
-          w_subject.c_str(),
-          CERT_X500_NAME_STR, NULL, NULL, &encoded_subject_length, NULL)) {
-    return NULL;
-  }
-
-  scoped_ptr<BYTE[]> encoded_subject(new BYTE[encoded_subject_length]);
-  if (!CertStrToName(
-          X509_ASN_ENCODING,
-          w_subject.c_str(),
-          CERT_X500_NAME_STR, NULL,
-          encoded_subject.get(),
-          &encoded_subject_length, NULL)) {
-    return NULL;
-  }
-
-  CERT_NAME_BLOB subject_name;
-  memset(&subject_name, 0, sizeof(subject_name));
-  subject_name.cbData = encoded_subject_length;
-  subject_name.pbData = encoded_subject.get();
-
-  CRYPT_ALGORITHM_IDENTIFIER sign_algo;
-  memset(&sign_algo, 0, sizeof(sign_algo));
-  sign_algo.pszObjId = szOID_RSA_SHA1RSA;
-
-  base::Time not_before = base::Time::Now();
-  base::Time not_after = not_before + valid_duration;
-  base::Time::Exploded exploded;
-
-  // Create the system time structs representing our exploded times.
-  not_before.UTCExplode(&exploded);
-  SYSTEMTIME start_time;
-  ExplodedTimeToSystemTime(exploded, &start_time);
-  not_after.UTCExplode(&exploded);
-  SYSTEMTIME end_time;
-  ExplodedTimeToSystemTime(exploded, &end_time);
-
-  PCCERT_CONTEXT cert_handle =
-      CertCreateSelfSignCertificate(key->provider(), &subject_name,
-                                    CERT_CREATE_SELFSIGN_NO_KEY_INFO, NULL,
-                                    &sign_algo, &start_time, &end_time, NULL);
-  DCHECK(cert_handle) << "Failed to create self-signed certificate: "
-                      << GetLastError();
-  if (!cert_handle)
-    return NULL;
-
-  X509Certificate* cert = CreateFromHandle(cert_handle, OSCertHandles());
-  FreeOSCertHandle(cert_handle);
-  return cert;
 }
 
 void X509Certificate::GetSubjectAltName(

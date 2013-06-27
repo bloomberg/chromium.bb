@@ -49,15 +49,6 @@
             ],
           ],
         }, {  # os_posix != 1 or OS == "mac" or OS == "ios" or OS == "android"
-            'sources/': [
-              ['exclude', '_nss\.cc$'],
-              ['include', 'ec_private_key_nss\.cc$'],
-              ['include', 'ec_signature_creator_nss\.cc$'],
-              ['include', 'encryptor_nss\.cc$'],
-              ['include', 'hmac_nss\.cc$'],
-              ['include', 'signature_verifier_nss\.cc$'],
-              ['include', 'symmetric_key_nss\.cc$'],
-            ],
             'sources!': [
               'hmac_win.cc',
               'openpgp_symmetric_encryption.cc',
@@ -93,12 +84,6 @@
             },
           },
         ],
-        [ 'OS == "ios"', {
-          'sources!': [
-            # This class is stubbed out on iOS.
-            'rsa_private_key.cc',
-          ],
-        }],
         [ 'OS == "mac"', {
           'link_settings': {
             'libraries': [
@@ -228,11 +213,8 @@
         'random.cc',
         'rsa_private_key.cc',
         'rsa_private_key.h',
-        'rsa_private_key_ios.cc',
-        'rsa_private_key_mac.cc',
         'rsa_private_key_nss.cc',
         'rsa_private_key_openssl.cc',
-        'rsa_private_key_win.cc',
         'scoped_capi_types.h',
         'scoped_nss_types.h',
         'secure_hash.h',
@@ -241,10 +223,8 @@
         'sha2.cc',
         'sha2.h',
         'signature_creator.h',
-        'signature_creator_mac.cc',
         'signature_creator_nss.cc',
         'signature_creator_openssl.cc',
-        'signature_creator_win.cc',
         'signature_verifier.h',
         'signature_verifier_nss.cc',
         'signature_verifier_openssl.cc',
@@ -314,15 +294,6 @@
         [ 'OS == "mac" or OS == "ios" or OS == "win"', {
           'dependencies': [
             '../third_party/nss/nss.gyp:nss',
-          ],
-        }],
-        ['OS == "ios"', {
-          'sources!': [
-            # These tests are excluded because they test classes that are not
-            # implemented on iOS.
-            'rsa_private_key_unittest.cc',
-            'signature_creator_unittest.cc',
-            'signature_verifier_unittest.cc',
           ],
         }],
         [ 'OS == "mac"', {

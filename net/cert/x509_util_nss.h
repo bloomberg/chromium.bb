@@ -19,24 +19,10 @@ typedef struct CERTNameStr CERTName;
 typedef struct PK11SlotInfoStr PK11SlotInfo;
 typedef struct PLArenaPool PLArenaPool;
 typedef struct SECItemStr SECItem;
-typedef struct SECKEYPrivateKeyStr SECKEYPrivateKey;
-typedef struct SECKEYPublicKeyStr SECKEYPublicKey;
 
 namespace net {
 
 namespace x509_util {
-
-// Creates a self-signed certificate containing |public_key|.  Subject, serial
-// number and validity period are given as parameters.  The certificate is
-// signed by |private_key|. The hashing algorithm for the signature is SHA-1.
-// |subject| is a distinguished name defined in RFC4514.
-NET_EXPORT_PRIVATE CERTCertificate* CreateSelfSignedCert(
-    SECKEYPublicKey* public_key,
-    SECKEYPrivateKey* private_key,
-    const std::string& subject,
-    uint32 serial_number,
-    base::Time not_valid_before,
-    base::Time not_valid_after);
 
 #if defined(USE_NSS) || defined(OS_IOS)
 // Parses the Principal attribute from |name| and outputs the result in

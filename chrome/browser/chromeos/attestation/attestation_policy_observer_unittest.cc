@@ -19,7 +19,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_certificate.h"
-#include "net/cert/x509_util_nss.h"
+#include "net/cert/x509_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -220,19 +220,12 @@ class AttestationPolicyObserverTest : public ::testing::Test {
                                &kTestKeyData[arraysize(kTestKeyData)])));
     if (!test_key.get())
       return false;
-    net::X509Certificate::OSCertHandle handle =
-        net::x509_util::CreateSelfSignedCert(test_key->public_key(),
-                                             test_key->key(),
-                                             "CN=subject",
-                                             12345,
-                                             valid_start,
-                                             valid_expiry);
-
-    if (!handle)
-      return false;
-    bool result = net::X509Certificate::GetDEREncoded(handle, certificate);
-    net::X509Certificate::FreeOSCertHandle(handle);
-    return result;
+    return net::x509_util::CreateSelfSignedCert(test_key.get(),
+                                                "CN=subject",
+                                                12345,
+                                                valid_start,
+                                                valid_expiry,
+                                                certificate);
   }
 
   base::MessageLoop message_loop_;

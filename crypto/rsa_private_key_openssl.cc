@@ -67,12 +67,6 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
 }
 
 // static
-RSAPrivateKey* RSAPrivateKey::CreateSensitive(uint16 num_bits) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-// static
 RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
     const std::vector<uint8>& input) {
   if (input.empty())
@@ -99,20 +93,6 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
     return NULL;
 
   return result.release();
-}
-
-// static
-RSAPrivateKey* RSAPrivateKey::CreateSensitiveFromPrivateKeyInfo(
-    const std::vector<uint8>& input) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-// static
-RSAPrivateKey* RSAPrivateKey::FindFromPublicKeyInfo(
-    const std::vector<uint8>& input) {
-  NOTIMPLEMENTED();
-  return NULL;
 }
 
 RSAPrivateKey::RSAPrivateKey()

@@ -59,6 +59,16 @@ bool CreateDomainBoundCertEC(
   return false;
 }
 
+bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
+                          const std::string& common_name,
+                          uint32 serial_number,
+                          base::Time not_valid_before,
+                          base::Time not_valid_after,
+                          std::string* der_encoded) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool ParsePrincipalKeyAndValueByIndex(X509_NAME* name,
                                       int index,
                                       std::string* key,

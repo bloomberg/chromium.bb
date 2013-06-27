@@ -7,23 +7,17 @@
 
 #include "build/build_config.h"
 
-#if defined(USE_OPENSSL)
-// Forward declaration for openssl/*.h
-typedef struct env_md_ctx_st EVP_MD_CTX;
-#elif defined(USE_NSS)
-// Forward declaration.
-struct SGNContextStr;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-#include <Security/cssm.h>
-#endif
-
 #include <vector>
 
 #include "base/basictypes.h"
 #include "crypto/crypto_export.h"
 
-#if defined(OS_WIN)
-#include "crypto/scoped_capi_types.h"
+#if defined(USE_OPENSSL)
+// Forward declaration for openssl/*.h
+typedef struct env_md_ctx_st EVP_MD_CTX;
+#elif defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
+// Forward declaration.
+struct SGNContextStr;
 #endif
 
 namespace crypto {
@@ -54,12 +48,8 @@ class CRYPTO_EXPORT SignatureCreator {
 
 #if defined(USE_OPENSSL)
   EVP_MD_CTX* sign_context_;
-#elif defined(USE_NSS)
+#elif defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
   SGNContextStr* sign_context_;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-  CSSM_CC_HANDLE sig_handle_;
-#elif defined(OS_WIN)
-  ScopedHCRYPTHASH hash_object_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SignatureCreator);

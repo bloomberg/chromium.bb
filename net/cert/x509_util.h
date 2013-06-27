@@ -13,6 +13,7 @@
 
 namespace crypto {
 class ECPrivateKey;
+class RSAPrivateKey;
 }
 
 namespace net {
@@ -43,6 +44,31 @@ NET_EXPORT_PRIVATE bool CreateDomainBoundCertEC(
     base::Time not_valid_before,
     base::Time not_valid_after,
     std::string* der_cert);
+
+// Create a self-signed certificate containing the public key in |key|.
+// Subject, serial number and validity period are given as parameters.
+// The certificate is signed by the private key in |key|. The hashing
+// algorithm for the signature is SHA-1.
+//
+// |subject| is a distinguished name defined in RFC4514.
+//
+// An example:
+// CN=Michael Wong,O=FooBar Corporation,DC=foobar,DC=com
+//
+// SECURITY WARNING
+//
+// Using self-signed certificates has the following security risks:
+// 1. Encryption without authentication and thus vulnerable to
+//    man-in-the-middle attacks.
+// 2. Self-signed certificates cannot be revoked.
+//
+// Use this certificate only after the above risks are acknowledged.
+NET_EXPORT bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
+                                     const std::string& subject,
+                                     uint32 serial_number,
+                                     base::Time not_valid_before,
+                                     base::Time not_valid_after,
+                                     std::string* der_cert);
 
 // Comparator for use in STL algorithms that will sort client certificates by
 // order of preference.

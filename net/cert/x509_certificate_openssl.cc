@@ -362,17 +362,6 @@ X509Certificate::OSCertHandles X509Certificate::CreateOSCertHandlesFromBytes(
   return results;
 }
 
-// static
-X509Certificate* X509Certificate::CreateSelfSigned(
-    crypto::RSAPrivateKey* key,
-    const std::string& subject,
-    uint32 serial_number,
-    base::TimeDelta valid_duration) {
-  // TODO(port): Implement. See http://crbug.com/91512.
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 void X509Certificate::GetSubjectAltName(
     std::vector<std::string>* dns_names,
     std::vector<std::string>* ip_addrs) const {

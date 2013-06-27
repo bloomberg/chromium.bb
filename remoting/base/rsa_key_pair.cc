@@ -14,7 +14,7 @@
 #include "base/time.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/signature_creator.h"
-#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 
 namespace remoting {
 
@@ -92,19 +92,15 @@ std::string RsaKeyPair::SignMessage(const std::string& message) const {
 }
 
 std::string RsaKeyPair::GenerateCertificate() const {
-  scoped_refptr<net::X509Certificate> cert =
-      net::X509Certificate::CreateSelfSigned(
-          key_.get(), "CN=chromoting",
-          base::RandInt(1, std::numeric_limits<int>::max()),
-          base::TimeDelta::FromDays(1));
-  if (!cert.get())
-    return std::string();
-
-  std::string encoded;
-  bool result = net::X509Certificate::GetDEREncoded(cert->os_cert_handle(),
-                                                    &encoded);
-  CHECK(result);
-  return encoded;
+  std::string der_cert;
+  net::x509_util::CreateSelfSignedCert(
+      key_.get(),
+      "CN=chromoting",
+      base::RandInt(1, std::numeric_limits<int>::max()),
+      base::Time::Now(),
+      base::Time::Now() + base::TimeDelta::FromDays(1),
+      &der_cert);
+  return der_cert;
 }
 
 }  // namespace remoting

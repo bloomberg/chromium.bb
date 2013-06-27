@@ -85,18 +85,6 @@ bool X509Certificate::IsIssuedByEncoded(
       nss_chain.cert_chain(), issuers);
 }
 
-// static
-X509Certificate* X509Certificate::CreateSelfSigned(
-    crypto::RSAPrivateKey* key,
-    const std::string& subject,
-    uint32 serial_number,
-    base::TimeDelta valid_duration) {
-  DCHECK(key);
-  DCHECK(!subject.empty());
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 void X509Certificate::GetSubjectAltName(
     std::vector<std::string>* dns_names,
     std::vector<std::string>* ip_addrs) const {

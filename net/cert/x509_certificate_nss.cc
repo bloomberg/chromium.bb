@@ -20,7 +20,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "crypto/nss_util.h"
-#include "crypto/rsa_private_key.h"
 #include "crypto/scoped_nss_types.h"
 #include "net/cert/x509_util_nss.h"
 
@@ -112,30 +111,6 @@ std::string X509Certificate::GetDefaultNickname(CertType type) const {
       break;
   }
   return result;
-}
-
-// static
-X509Certificate* X509Certificate::CreateSelfSigned(
-    crypto::RSAPrivateKey* key,
-    const std::string& subject,
-    uint32 serial_number,
-    base::TimeDelta valid_duration) {
-  DCHECK(key);
-  base::Time not_valid_before = base::Time::Now();
-  base::Time not_valid_after = not_valid_before + valid_duration;
-  CERTCertificate* cert = x509_util::CreateSelfSignedCert(key->public_key(),
-                                                          key->key(),
-                                                          subject,
-                                                          serial_number,
-                                                          not_valid_before,
-                                                          not_valid_after);
-  if (!cert)
-    return NULL;
-
-  X509Certificate* x509_cert = X509Certificate::CreateFromHandle(
-      cert, X509Certificate::OSCertHandles());
-  CERT_DestroyCertificate(cert);
-  return x509_cert;
 }
 
 void X509Certificate::GetSubjectAltName(

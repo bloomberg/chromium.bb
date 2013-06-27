@@ -19,8 +19,7 @@
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 
-// TODO(rafaelw): Consider refactoring common functions and definitions from
-// rsa_private_key_win.cc or using NSS's ASN.1 encoder.
+// TODO(rafaelw): Consider using NSS's ASN.1 encoder.
 namespace {
 
 static bool ReadAttribute(SECKEYPrivateKey* key,
@@ -53,31 +52,32 @@ RSAPrivateKey::~RSAPrivateKey() {
 // static
 RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
   return CreateWithParams(num_bits,
-                          PR_FALSE /* not permanent */,
-                          PR_FALSE /* not sensitive */);
-}
-
-// static
-RSAPrivateKey* RSAPrivateKey::CreateSensitive(uint16 num_bits) {
-  return CreateWithParams(num_bits,
-                          PR_TRUE /* permanent */,
-                          PR_TRUE /* sensitive */);
+                          false /* not permanent */,
+                          false /* not sensitive */);
 }
 
 // static
 RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
     const std::vector<uint8>& input) {
   return CreateFromPrivateKeyInfoWithParams(input,
-                                            PR_FALSE /* not permanent */,
-                                            PR_FALSE /* not sensitive */);
+                                            false /* not permanent */,
+                                            false /* not sensitive */);
+}
+
+#if defined(USE_NSS)
+// static
+RSAPrivateKey* RSAPrivateKey::CreateSensitive(uint16 num_bits) {
+  return CreateWithParams(num_bits,
+                          true /* permanent */,
+                          true /* sensitive */);
 }
 
 // static
 RSAPrivateKey* RSAPrivateKey::CreateSensitiveFromPrivateKeyInfo(
     const std::vector<uint8>& input) {
   return CreateFromPrivateKeyInfoWithParams(input,
-                                            PR_TRUE /* permanent */,
-                                            PR_TRUE /* sensitive */);
+                                            true /* permanent */,
+                                            true /* sensitive */);
 }
 
 // static
@@ -153,6 +153,7 @@ RSAPrivateKey* RSAPrivateKey::FindFromPublicKeyInfo(
   // We didn't find the key.
   return NULL;
 }
+#endif
 
 RSAPrivateKey* RSAPrivateKey::Copy() const {
   RSAPrivateKey* copy = new RSAPrivateKey();
@@ -202,6 +203,13 @@ RSAPrivateKey::RSAPrivateKey() : key_(NULL), public_key_(NULL) {
 RSAPrivateKey* RSAPrivateKey::CreateWithParams(uint16 num_bits,
                                                bool permanent,
                                                bool sensitive) {
+#if !defined(USE_NSS)
+  if (permanent) {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
+#endif
+
   EnsureNSSInit();
 
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
@@ -230,6 +238,13 @@ RSAPrivateKey* RSAPrivateKey::CreateWithParams(uint16 num_bits,
 // static
 RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
     const std::vector<uint8>& input, bool permanent, bool sensitive) {
+#if !defined(USE_NSS)
+  if (permanent) {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
+#endif
+
   // This method currently leaks some memory.
   // See http://crbug.com/34742.
   ANNOTATE_SCOPED_MEMORY_LEAK;

@@ -24,6 +24,7 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
+#include "crypto/rsa_private_key.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/third_party/nss/chromium-nss.h"
 #include "net/cert/x509_certificate.h"
@@ -182,80 +183,6 @@ bool SignCertificate(
   return true;
 }
 
-bool CreateDomainBoundCertInternal(
-    SECKEYPublicKey* public_key,
-    SECKEYPrivateKey* private_key,
-    const std::string& domain,
-    uint32 serial_number,
-    base::Time not_valid_before,
-    base::Time not_valid_after,
-    std::string* der_cert) {
-  CERTCertificate* cert = CreateCertificate(public_key,
-                                            "CN=anonymous.invalid",
-                                            serial_number,
-                                            not_valid_before,
-                                            not_valid_after);
-
-  if (!cert)
-    return false;
-
-  // Create opaque handle used to add extensions later.
-  void* cert_handle;
-  if ((cert_handle = CERT_StartCertExtensions(cert)) == NULL) {
-    LOG(ERROR) << "Unable to get opaque handle for adding extensions";
-    CERT_DestroyCertificate(cert);
-    return false;
-  }
-
-  // Create SECItem for IA5String encoding.
-  SECItem domain_string_item = {
-    siAsciiString,
-    (unsigned char*)domain.data(),
-    static_cast<unsigned>(domain.size())
-  };
-
-  // IA5Encode and arena allocate SECItem
-  SECItem* asn1_domain_string = SEC_ASN1EncodeItem(
-      cert->arena, NULL, &domain_string_item,
-      SEC_ASN1_GET(SEC_IA5StringTemplate));
-  if (asn1_domain_string == NULL) {
-    LOG(ERROR) << "Unable to get ASN1 encoding for domain in domain_bound_cert"
-                  " extension";
-    CERT_DestroyCertificate(cert);
-    return false;
-  }
-
-  // Add the extension to the opaque handle
-  if (CERT_AddExtension(
-      cert_handle,
-      DomainBoundCertOIDWrapper::GetInstance()->domain_bound_cert_oid_tag(),
-      asn1_domain_string, PR_TRUE, PR_TRUE) != SECSuccess){
-    LOG(ERROR) << "Unable to add domain bound cert extension to opaque handle";
-    CERT_DestroyCertificate(cert);
-    return false;
-  }
-
-  // Copy extension into x509 cert
-  if (CERT_FinishExtensions(cert_handle) != SECSuccess){
-    LOG(ERROR) << "Unable to copy extension to X509 cert";
-    CERT_DestroyCertificate(cert);
-    return false;
-  }
-
-  if (!SignCertificate(cert, private_key)) {
-    CERT_DestroyCertificate(cert);
-    return false;
-  }
-
-  DCHECK(cert->derCert.len);
-  // XXX copied from X509Certificate::GetDEREncoded
-  der_cert->clear();
-  der_cert->append(reinterpret_cast<char*>(cert->derCert.data),
-                   cert->derCert.len);
-  CERT_DestroyCertificate(cert);
-  return true;
-}
-
 #if defined(USE_NSS) || defined(OS_IOS)
 // Callback for CERT_DecodeCertPackage(), used in
 // CreateOSCertHandlesFromBytes().
@@ -312,27 +239,30 @@ CERTName* CreateCertNameFromEncoded(PLArenaPool* arena,
 
 namespace x509_util {
 
-CERTCertificate* CreateSelfSignedCert(
-    SECKEYPublicKey* public_key,
-    SECKEYPrivateKey* private_key,
-    const std::string& subject,
-    uint32 serial_number,
-    base::Time not_valid_before,
-    base::Time not_valid_after) {
-  CERTCertificate* cert = CreateCertificate(public_key,
+bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
+                          const std::string& subject,
+                          uint32 serial_number,
+                          base::Time not_valid_before,
+                          base::Time not_valid_after,
+                          std::string* der_cert) {
+  DCHECK(key);
+  CERTCertificate* cert = CreateCertificate(key->public_key(),
                                             subject,
                                             serial_number,
                                             not_valid_before,
                                             not_valid_after);
   if (!cert)
-    return NULL;
+    return false;
 
-  if (!SignCertificate(cert, private_key)) {
+  if (!SignCertificate(cert, key->key())) {
     CERT_DestroyCertificate(cert);
-    return NULL;
+    return false;
   }
 
-  return cert;
+  der_cert->assign(reinterpret_cast<char*>(cert->derCert.data),
+                   cert->derCert.len);
+  CERT_DestroyCertificate(cert);
+  return true;
 }
 
 bool IsSupportedValidityRange(base::Time not_valid_before,
@@ -348,21 +278,80 @@ bool IsSupportedValidityRange(base::Time not_valid_before,
   return true;
 }
 
-bool CreateDomainBoundCertEC(
-    crypto::ECPrivateKey* key,
-    const std::string& domain,
-    uint32 serial_number,
-    base::Time not_valid_before,
-    base::Time not_valid_after,
-    std::string* der_cert) {
+bool CreateDomainBoundCertEC(crypto::ECPrivateKey* key,
+                             const std::string& domain,
+                             uint32 serial_number,
+                             base::Time not_valid_before,
+                             base::Time not_valid_after,
+                             std::string* der_cert) {
   DCHECK(key);
-  return CreateDomainBoundCertInternal(key->public_key(),
-                                       key->key(),
-                                       domain,
-                                       serial_number,
-                                       not_valid_before,
-                                       not_valid_after,
-                                       der_cert);
+
+  CERTCertificate* cert = CreateCertificate(key->public_key(),
+                                            "CN=anonymous.invalid",
+                                            serial_number,
+                                            not_valid_before,
+                                            not_valid_after);
+
+  if (!cert)
+    return false;
+
+  // Create opaque handle used to add extensions later.
+  void* cert_handle;
+  if ((cert_handle = CERT_StartCertExtensions(cert)) == NULL) {
+    LOG(ERROR) << "Unable to get opaque handle for adding extensions";
+    CERT_DestroyCertificate(cert);
+    return false;
+  }
+
+  // Create SECItem for IA5String encoding.
+  SECItem domain_string_item = {
+    siAsciiString,
+    (unsigned char*)domain.data(),
+    static_cast<unsigned>(domain.size())
+  };
+
+  // IA5Encode and arena allocate SECItem
+  SECItem* asn1_domain_string = SEC_ASN1EncodeItem(
+      cert->arena, NULL, &domain_string_item,
+      SEC_ASN1_GET(SEC_IA5StringTemplate));
+  if (asn1_domain_string == NULL) {
+    LOG(ERROR) << "Unable to get ASN1 encoding for domain in domain_bound_cert"
+                  " extension";
+    CERT_DestroyCertificate(cert);
+    return false;
+  }
+
+  // Add the extension to the opaque handle
+  if (CERT_AddExtension(
+      cert_handle,
+      DomainBoundCertOIDWrapper::GetInstance()->domain_bound_cert_oid_tag(),
+      asn1_domain_string,
+      PR_TRUE,
+      PR_TRUE) != SECSuccess){
+    LOG(ERROR) << "Unable to add domain bound cert extension to opaque handle";
+    CERT_DestroyCertificate(cert);
+    return false;
+  }
+
+  // Copy extension into x509 cert
+  if (CERT_FinishExtensions(cert_handle) != SECSuccess){
+    LOG(ERROR) << "Unable to copy extension to X509 cert";
+    CERT_DestroyCertificate(cert);
+    return false;
+  }
+
+  if (!SignCertificate(cert, key->key())) {
+    CERT_DestroyCertificate(cert);
+    return false;
+  }
+
+  DCHECK(cert->derCert.len);
+  // XXX copied from X509Certificate::GetDEREncoded
+  der_cert->clear();
+  der_cert->append(reinterpret_cast<char*>(cert->derCert.data),
+                   cert->derCert.len);
+  CERT_DestroyCertificate(cert);
+  return true;
 }
 
 #if defined(USE_NSS) || defined(OS_IOS)
