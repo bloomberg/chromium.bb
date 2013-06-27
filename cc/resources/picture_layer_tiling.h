@@ -29,6 +29,7 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual scoped_refptr<Tile> CreateTile(
     PictureLayerTiling* tiling,
     gfx::Rect content_rect) = 0;
+  virtual void DestroyTile(Tile* tile) = 0;
   virtual void UpdatePile(Tile* tile) = 0;
   virtual gfx::Size CalculateTileSize(
     gfx::Size content_bounds) const = 0;
