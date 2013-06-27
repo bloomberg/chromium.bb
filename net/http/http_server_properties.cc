@@ -27,6 +27,8 @@ const char* AlternateProtocolToString(AlternateProtocol protocol) {
     case NPN_SPDY_1:
     case NPN_SPDY_2:
     case NPN_SPDY_3:
+    case NPN_SPDY_3_1:
+    case NPN_SPDY_4A2:
     case QUIC:
       DCHECK_LT(static_cast<size_t>(protocol),
                 arraysize(kAlternateProtocolStrings));

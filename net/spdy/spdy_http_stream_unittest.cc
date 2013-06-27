@@ -167,15 +167,9 @@ INSTANTIATE_TEST_CASE_P(
     SpdyHttpStreamTest,
     testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2));
 
-// TODO(akalin): Don't early-exit in the tests below for values >
-// kProtoSPDY3.
-
 // SpdyHttpStream::GetUploadProgress() should still work even before the
 // stream is initialized.
 TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
@@ -192,9 +186,6 @@ TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
 }
 
 TEST_P(SpdyHttpStreamTest, SendRequest) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   MockWrite writes[] = {
@@ -259,9 +250,6 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
 }
 
 TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   scoped_ptr<SpdyFrame> req1(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> req2(
@@ -362,19 +350,12 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
 TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      framer.CreateWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
   scoped_ptr<SpdyFrame> body(
       framer.CreateDataFrame(1, kUploadData, kUploadDataSize, DATA_FLAG_FIN));
   std::vector<MockWrite> writes;
   int seq = 0;
-  if (GetParam() >= kProtoSPDY31) {
-    writes.push_back(CreateMockWrite(*initial_window_update, seq++));
-  }
   writes.push_back(CreateMockWrite(*req, seq++));
   writes.push_back(CreateMockWrite(*body, seq++));  // POST upload frame
 
@@ -437,9 +418,6 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
 // Test to ensure the SpdyStream state machine does not get confused when a
 // chunk becomes available while a write is pending.
 TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   const char kUploadData1[] = "12345678";
   const int kUploadData1Size = arraysize(kUploadData1)-1;
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
@@ -547,7 +525,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
 // Test the receipt of a WINDOW_UPDATE frame while waiting for a chunk to be
 // made available is handled correctly.
 TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
-  if (GetParam() != kProtoSPDY3)
+  if (GetParam() < kProtoSPDY3)
     return;
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
@@ -664,9 +642,6 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
 
 // Test case for bug: http://code.google.com/p/chromium/issues/detail?id=50058
 TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   const char * const full_url = "http://www.google.com/foo?query=what#anchor";
   const char * const base_url = "http://www.google.com/foo?query=what";
   scoped_ptr<SpdyFrame> req(
@@ -906,7 +881,7 @@ void SpdyHttpStreamTest::TestSendCredentials(
 }
 
 TEST_P(SpdyHttpStreamTest, SendCredentialsEC) {
-  if (GetParam() != kProtoSPDY3)
+  if (GetParam() < kProtoSPDY3)
     return;
 
   scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool =
@@ -926,7 +901,7 @@ TEST_P(SpdyHttpStreamTest, SendCredentialsEC) {
 }
 
 TEST_P(SpdyHttpStreamTest, DontSendCredentialsForHttpUrlsEC) {
-  if (GetParam() != kProtoSPDY3)
+  if (GetParam() < kProtoSPDY3)
     return;
 
   scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool =

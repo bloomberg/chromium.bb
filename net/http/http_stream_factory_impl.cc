@@ -226,7 +226,8 @@ PortAlternateProtocolPair HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
     return kNoAlternateProtocol;
 
   origin.set_port(alternate.port);
-  if (alternate.protocol >= NPN_SPDY_2 && alternate.protocol <= NPN_SPDY_3) {
+  if (alternate.protocol >= NPN_SPDY_MINIMUM_VERSION &&
+      alternate.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
     if (!spdy_enabled())
       return kNoAlternateProtocol;
 

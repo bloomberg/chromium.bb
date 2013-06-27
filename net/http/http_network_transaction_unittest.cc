@@ -101,12 +101,6 @@ std::vector<std::string> MakeNextProtos(const char* a, ...) {
   return ret;
 }
 
-// SpdyNextProtos returns a vector of NPN protocol strings for negotiating
-// SPDY.
-std::vector<std::string> SpdyNextProtos() {
-  return MakeNextProtos("http/1.1", "spdy/2", NULL);
-}
-
 int GetIdleSocketCountInTransportSocketPool(net::HttpNetworkSession* session) {
   return session->GetTransportSocketPool(
       net::HttpNetworkSession::NORMAL_SOCKET_POOL)->IdleSocketCount();
@@ -278,6 +272,14 @@ class HttpNetworkTransactionTest
     base::MessageLoop::current()->RunUntilIdle();
     HttpStreamFactory::set_use_alternate_protocols(false);
     HttpStreamFactory::SetNextProtos(std::vector<std::string>());
+  }
+
+  // This is the expected return from a current server advertising SPDY.
+  std::string GetAlternateProtocolHttpHeader() {
+    return
+        std::string("Alternate-Protocol: 443:") +
+        AlternateProtocolToString(AlternateProtocolFromNextProto(GetParam())) +
+        "\r\n\r\n";
   }
 
   // Either |write_failure| specifies a write failure or |read_failure|
@@ -528,10 +530,6 @@ CaptureGroupNameSSLSocketPool::CaptureGroupNameSocketPool(
 
 //-----------------------------------------------------------------------------
 
-// This is the expected return from a current server advertising SPDY.
-static const char kAlternateProtocolHttpHeader[] =
-    "Alternate-Protocol: 443:npn-spdy/2\r\n\r\n";
-
 // Helper functions for validating that AuthChallengeInfo's are correctly
 // configured for common cases.
 bool CheckBasicServerAuth(const AuthChallengeInfo* auth_challenge) {
@@ -575,9 +573,6 @@ bool CheckNTLMServerAuth(const AuthChallengeInfo* auth_challenge) {
 }
 
 }  // namespace
-
-// TODO(akalin): Don't early-exit in the tests below for values >
-// kProtoSPDY3.
 
 TEST_P(HttpNetworkTransactionTest, Basic) {
   scoped_ptr<HttpTransaction> trans(
@@ -2633,9 +2628,6 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxyGet) {
 
 // Test a SPDY get through an HTTPS Proxy.
 TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.google.com/");
@@ -2699,9 +2691,6 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGet) {
 
 // Test a SPDY get through an HTTPS Proxy.
 TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.google.com/");
@@ -2805,9 +2794,6 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyGetWithProxyAuth) {
 
 // Test a SPDY CONNECT through an HTTPS Proxy to an HTTPS (non-SPDY) Server.
 TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.google.com/");
@@ -2894,9 +2880,6 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
 
 // Test a SPDY CONNECT through an HTTPS Proxy to a SPDY server.
 TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.google.com/");
@@ -2985,9 +2968,6 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
 
 // Test a SPDY CONNECT failure through an HTTPS Proxy.
 TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.google.com/");
@@ -3047,9 +3027,6 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
 // HTTPS Proxy to different servers.
 TEST_P(HttpNetworkTransactionTest,
        HttpsProxySpdyConnectHttpsLoadTimingTwoRequestsTwoServers) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed(
       "https://proxy:70"));
@@ -3208,9 +3185,6 @@ TEST_P(HttpNetworkTransactionTest,
 // HTTPS Proxy to the same server.
 TEST_P(HttpNetworkTransactionTest,
        HttpsProxySpdyConnectHttpsLoadTimingTwoRequestsSameServer) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed(
       "https://proxy:70"));
@@ -3341,9 +3315,6 @@ TEST_P(HttpNetworkTransactionTest,
 // Proxy to different servers.
 TEST_P(HttpNetworkTransactionTest,
        HttpsProxySpdyLoadTimingTwoHttpRequests) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed(
       "https://proxy:70"));
@@ -5706,9 +5677,6 @@ TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
 
 // Test an HTTPS (SPDY) Proxy's ability to redirect a CONNECT request
 TEST_P(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixed("https://proxy:70"));
 
@@ -5817,9 +5785,6 @@ TEST_P(HttpNetworkTransactionTest,
 // Test that a SPDY proxy's response to a CONNECT request is filtered.
 TEST_P(HttpNetworkTransactionTest,
        ErrorResponseToHttpsConnectViaSpdyProxy) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.proxy_service.reset(
      ProxyService::CreateFixed("https://proxy:70"));
 
@@ -5880,9 +5845,6 @@ TEST_P(HttpNetworkTransactionTest,
 // Test the request-challenge-retry sequence for basic auth, through
 // a SPDY proxy over a single SPDY session.
 TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.google.com/");
@@ -6031,17 +5993,8 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
 // Test that an explicitly trusted SPDY proxy can push a resource from an
 // origin that is different from that of its associated resource.
 TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPush) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpRequestInfo request;
   HttpRequestInfo push_request;
-
-  static const unsigned char kPushBodyFrame[] = {
-    0x00, 0x00, 0x00, 0x02,                                      // header, ID
-    0x01, 0x00, 0x00, 0x06,                                      // FIN, length
-    'p', 'u', 's', 'h', 'e', 'd'                                 // "pushed"
-  };
 
   request.method = "GET";
   request.url = GURL("http://www.google.com/");
@@ -6078,13 +6031,16 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPush) {
                                     2,
                                     1,
                                     "http://www.another-origin.com/foo.dat"));
+  const char kPushedData[] = "pushed";
+  scoped_ptr<SpdyFrame> stream2_body(
+      spdy_util_.ConstructSpdyBodyFrame(
+          2, kPushedData, strlen(kPushedData), true));
 
   MockRead spdy_reads[] = {
     CreateMockRead(*stream1_reply, 2, ASYNC),
     CreateMockRead(*stream2_syn, 3, ASYNC),
     CreateMockRead(*stream1_body, 4, ASYNC),
-    MockRead(ASYNC, reinterpret_cast<const char*>(kPushBodyFrame),
-             arraysize(kPushBodyFrame), 5),
+    CreateMockRead(*stream2_body, 5, ASYNC),
     MockRead(ASYNC, ERR_IO_PENDING, 6),  // Force a pause
   };
 
@@ -6155,9 +6111,6 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPush) {
 
 // Test that an explicitly trusted SPDY proxy cannot push HTTPS content.
 TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpRequestInfo request;
 
   request.method = "GET";
@@ -7054,6 +7007,7 @@ struct GroupNameTest {
 };
 
 scoped_refptr<HttpNetworkSession> SetupSessionForGroupNameTests(
+    NextProto next_proto,
     SpdySessionDependencies* session_deps_) {
   scoped_refptr<HttpNetworkSession> session(CreateSession(session_deps_));
 
@@ -7061,7 +7015,7 @@ scoped_refptr<HttpNetworkSession> SetupSessionForGroupNameTests(
       session->http_server_properties();
   http_server_properties->SetAlternateProtocol(
       HostPortPair("host.with.alternate", 80), 443,
-      NPN_SPDY_2);
+      AlternateProtocolFromNextProto(next_proto));
 
   return session;
 }
@@ -7127,7 +7081,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
     session_deps_.proxy_service.reset(
         ProxyService::CreateFixed(tests[i].proxy_server));
     scoped_refptr<HttpNetworkSession> session(
-        SetupSessionForGroupNameTests(&session_deps_));
+        SetupSessionForGroupNameTests(GetParam(), &session_deps_));
 
     HttpNetworkSessionPeer peer(session);
     CaptureGroupNameTransportSocketPool* transport_conn_pool =
@@ -7190,7 +7144,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
     session_deps_.proxy_service.reset(
         ProxyService::CreateFixed(tests[i].proxy_server));
     scoped_refptr<HttpNetworkSession> session(
-        SetupSessionForGroupNameTests(&session_deps_));
+        SetupSessionForGroupNameTests(GetParam(), &session_deps_));
 
     HttpNetworkSessionPeer peer(session);
 
@@ -7260,7 +7214,7 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
     session_deps_.proxy_service.reset(
         ProxyService::CreateFixed(tests[i].proxy_server));
     scoped_refptr<HttpNetworkSession> session(
-        SetupSessionForGroupNameTests(&session_deps_));
+        SetupSessionForGroupNameTests(GetParam(), &session_deps_));
 
     HttpNetworkSessionPeer peer(session);
 
@@ -7968,9 +7922,12 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
   HttpStreamFactory::SetNextProtos(SpdyNextProtos());
   HttpStreamFactory::set_use_alternate_protocols(true);
 
+  std::string alternate_protocol_http_header =
+      GetAlternateProtocolHttpHeader();
+
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead(kAlternateProtocolHttpHeader),
+    MockRead(alternate_protocol_http_header.c_str()),
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
@@ -8017,7 +7974,7 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
       http_server_properties.GetAlternateProtocol(http_host_port_pair);
   PortAlternateProtocolPair expected_alternate;
   expected_alternate.port = 443;
-  expected_alternate.protocol = NPN_SPDY_2;
+  expected_alternate.protocol = AlternateProtocolFromNextProto(GetParam());
   EXPECT_TRUE(expected_alternate.Equals(alternate));
 
   HttpStreamFactory::SetNextProtos(std::vector<std::string>());
@@ -8055,7 +8012,7 @@ TEST_P(HttpNetworkTransactionTest,
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(request.url),
       666 /* port is ignored by MockConnect anyway */,
-      NPN_SPDY_2);
+      AlternateProtocolFromNextProto(GetParam()));
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8117,7 +8074,7 @@ TEST_P(HttpNetworkTransactionTest,
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(restricted_port_request.url),
       kUnrestrictedAlternatePort,
-      NPN_SPDY_2);
+      AlternateProtocolFromNextProto(GetParam()));
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8168,7 +8125,7 @@ TEST_P(HttpNetworkTransactionTest,
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(restricted_port_request.url),
       kUnrestrictedAlternatePort,
-      NPN_SPDY_3);
+      AlternateProtocolFromNextProto(GetParam()));
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8216,7 +8173,7 @@ TEST_P(HttpNetworkTransactionTest,
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(restricted_port_request.url),
       kRestrictedAlternatePort,
-      NPN_SPDY_2);
+      AlternateProtocolFromNextProto(GetParam()));
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8265,7 +8222,7 @@ TEST_P(HttpNetworkTransactionTest,
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(unrestricted_port_request.url),
       kRestrictedAlternatePort,
-      NPN_SPDY_2);
+      AlternateProtocolFromNextProto(GetParam()));
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8313,7 +8270,7 @@ TEST_P(HttpNetworkTransactionTest,
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(unrestricted_port_request.url),
       kUnrestrictedAlternatePort,
-      NPN_SPDY_2);
+      AlternateProtocolFromNextProto(GetParam()));
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8357,7 +8314,7 @@ TEST_P(HttpNetworkTransactionTest,
   http_server_properties->SetAlternateProtocol(
       HostPortPair::FromURL(request.url),
       kUnsafePort,
-      NPN_SPDY_2);
+      AlternateProtocolFromNextProto(GetParam()));
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8382,9 +8339,6 @@ TEST_P(HttpNetworkTransactionTest,
 }
 
 TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpStreamFactory::set_use_alternate_protocols(true);
   HttpStreamFactory::SetNextProtos(SpdyNextProtos());
 
@@ -8393,9 +8347,12 @@ TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
   request.url = GURL("http://www.google.com/");
   request.load_flags = 0;
 
+  std::string alternate_protocol_http_header =
+      GetAlternateProtocolHttpHeader();
+
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead(kAlternateProtocolHttpHeader),
+    MockRead(alternate_protocol_http_header.c_str()),
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
     MockRead(ASYNC, OK)
@@ -8472,9 +8429,6 @@ TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
 }
 
 TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpStreamFactory::set_use_alternate_protocols(true);
   HttpStreamFactory::SetNextProtos(SpdyNextProtos());
 
@@ -8483,9 +8437,12 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   request.url = GURL("http://www.google.com/");
   request.load_flags = 0;
 
+  std::string alternate_protocol_http_header =
+      GetAlternateProtocolHttpHeader();
+
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead(kAlternateProtocolHttpHeader),
+    MockRead(alternate_protocol_http_header.c_str()),
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
     MockRead(ASYNC, OK),
@@ -8597,9 +8554,12 @@ TEST_P(HttpNetworkTransactionTest, StallAlternateProtocolForNpnSpdy) {
   request.url = GURL("http://www.google.com/");
   request.load_flags = 0;
 
+  std::string alternate_protocol_http_header =
+      GetAlternateProtocolHttpHeader();
+
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead(kAlternateProtocolHttpHeader),
+    MockRead(alternate_protocol_http_header.c_str()),
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
     MockRead(ASYNC, OK),
@@ -8705,9 +8665,6 @@ class CapturingProxyResolver : public ProxyResolver {
 
 TEST_P(HttpNetworkTransactionTest,
        UseAlternateProtocolForTunneledNpnSpdy) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpStreamFactory::set_use_alternate_protocols(true);
   HttpStreamFactory::SetNextProtos(SpdyNextProtos());
 
@@ -8728,9 +8685,12 @@ TEST_P(HttpNetworkTransactionTest,
   request.url = GURL("http://www.google.com/");
   request.load_flags = 0;
 
+  std::string alternate_protocol_http_header =
+      GetAlternateProtocolHttpHeader();
+
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead(kAlternateProtocolHttpHeader),
+    MockRead(alternate_protocol_http_header.c_str()),
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
     MockRead(ASYNC, OK),
@@ -8827,9 +8787,6 @@ TEST_P(HttpNetworkTransactionTest,
 
 TEST_P(HttpNetworkTransactionTest,
        UseAlternateProtocolForNpnSpdyWithExistingSpdySession) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpStreamFactory::set_use_alternate_protocols(true);
   HttpStreamFactory::SetNextProtos(SpdyNextProtos());
 
@@ -8838,9 +8795,12 @@ TEST_P(HttpNetworkTransactionTest,
   request.url = GURL("http://www.google.com/");
   request.load_flags = 0;
 
+  std::string alternate_protocol_http_header =
+      GetAlternateProtocolHttpHeader();
+
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead(kAlternateProtocolHttpHeader),
+    MockRead(alternate_protocol_http_header.c_str()),
     MockRead("hello world"),
     MockRead(ASYNC, OK),
   };
@@ -9566,9 +9526,12 @@ TEST_P(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
               "Connection: keep-alive\r\n\r\n"),
   };
 
+  std::string alternate_protocol_http_header =
+      GetAlternateProtocolHttpHeader();
+
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead(kAlternateProtocolHttpHeader),
+    MockRead(alternate_protocol_http_header.c_str()),
     MockRead("hello world"),
     MockRead(SYNCHRONOUS, OK),
   };
@@ -9650,15 +9613,10 @@ TEST_P(HttpNetworkTransactionTest, SpdyPostNPNServerHangup) {
 }
 
 TEST_P(HttpNetworkTransactionTest, SpdyAlternateProtocolThroughProxy) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   // This test ensures that the URL passed into the proxy is upgraded
   // to https when doing an Alternate Protocol upgrade.
   HttpStreamFactory::set_use_alternate_protocols(true);
-  HttpStreamFactory::SetNextProtos(
-      MakeNextProtos(
-          "http/1.1", "http1.1", "spdy/2", "spdy", NULL));
+  HttpStreamFactory::SetNextProtos(SpdyNextProtos());
 
   session_deps_.proxy_service.reset(
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
@@ -10035,9 +9993,6 @@ TEST_P(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
 
 // Test for crbug.com/55424.
 TEST_P(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet("https://www.google.com", false, 1, LOWEST));
   MockWrite spdy_writes[] = { CreateMockWrite(*req) };
@@ -10492,9 +10447,6 @@ TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
 #define MAYBE_UseIPConnectionPooling UseIPConnectionPooling
 #endif
 WRAPPED_TEST_P(HttpNetworkTransactionTest, MAYBE_UseIPConnectionPooling) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpStreamFactory::set_use_alternate_protocols(true);
   HttpStreamFactory::SetNextProtos(SpdyNextProtos());
 
@@ -10595,9 +10547,6 @@ WRAPPED_TEST_P(HttpNetworkTransactionTest, MAYBE_UseIPConnectionPooling) {
 #undef MAYBE_UseIPConnectionPooling
 
 TEST_P(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpStreamFactory::set_use_alternate_protocols(true);
   HttpStreamFactory::SetNextProtos(SpdyNextProtos());
 
@@ -10735,9 +10684,6 @@ class OneTimeCachingHostResolver : public net::HostResolver {
 #endif
 WRAPPED_TEST_P(HttpNetworkTransactionTest,
                MAYBE_UseIPConnectionPoolingWithHostCacheExpiration) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
 // Times out on Win7 dbg(2) bot. http://crbug.com/124776 . (MAYBE_
 // prefix doesn't work with parametrized tests).
 #if defined(OS_WIN)
@@ -10892,9 +10838,6 @@ TEST_P(HttpNetworkTransactionTest, SendPipelineEvictionFallback) {
 }
 
 TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   const std::string https_url = "https://www.google.com/";
   const std::string http_url = "http://www.google.com:443/";
 
@@ -10976,9 +10919,6 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
 }
 
 TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   const std::string https_url = "https://www.google.com/";
   const std::string http_url = "http://www.google.com:443/";
 
@@ -11091,9 +11031,6 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
 }
 
 TEST_P(HttpNetworkTransactionTest, UseSpdySessionForHttpWhenForced) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpStreamFactory::set_force_spdy_always(true);
   const std::string https_url = "https://www.google.com/";
   const std::string http_url = "http://www.google.com:443/";
@@ -11166,9 +11103,6 @@ TEST_P(HttpNetworkTransactionTest, UseSpdySessionForHttpWhenForced) {
 // the certificate does not match the new origin.
 // http://crbug.com/134690
 TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   const std::string url1 = "http://www.google.com/";
   const std::string url2 = "https://mail.google.com/";
   const std::string ip_addr = "1.2.3.4";
@@ -11298,9 +11232,6 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
 // session. Verify that new url's from the same HttpNetworkSession (and a new
 // SpdySession) do work. http://crbug.com/224701
 TEST_P(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   const std::string https_url = "https://www.google.com/";
 
   MockRead reads1[] = {
@@ -11375,9 +11306,6 @@ TEST_P(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
 }
 
 TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   HttpStreamFactory::SetNextProtos(SpdyNextProtos());
   ClientSocketPoolManager::set_max_sockets_per_group(
       HttpNetworkSession::NORMAL_SOCKET_POOL, 1);

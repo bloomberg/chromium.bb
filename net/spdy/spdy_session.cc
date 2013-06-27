@@ -484,18 +484,6 @@ Error SpdySession::InitializeWithSocket(
   SendInitialSettings();
   UMA_HISTOGRAM_ENUMERATION("Net.SpdyVersion", protocol, kProtoMaximumVersion);
 
-  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
-    // Bump up the receive window size to the real initial value. This
-    // has to go here since the WINDOW_UPDATE frame sent by
-    // IncreaseRecvWindowSize() call uses |buffered_spdy_framer_|.
-    DCHECK_GT(kDefaultInitialRecvWindowSize, session_recv_window_size_);
-    // This condition implies that |kDefaultInitialRecvWindowSize| -
-    // |session_recv_window_size_| doesn't overflow.
-    DCHECK_GT(session_recv_window_size_, 0);
-    IncreaseRecvWindowSize(
-        kDefaultInitialRecvWindowSize - session_recv_window_size_);
-  }
-
   net_log_.AddEvent(
       NetLog::TYPE_SPDY_SESSION_INITIALIZED,
       connection_->socket()->NetLog().source().ToEventParametersCallback());
@@ -2083,7 +2071,7 @@ void SpdySession::SendStreamWindowUpdate(SpdyStreamId stream_id,
 }
 
 void SpdySession::SendInitialSettings() {
-  // First notify the server about the settings they should use when
+  // First, notify the server about the settings they should use when
   // communicating with us.
   if (GetProtocolVersion() >= 2 && enable_sending_initial_settings_) {
     SettingsMap settings_map;
@@ -2100,7 +2088,21 @@ void SpdySession::SendInitialSettings() {
     SendSettings(settings_map);
   }
 
-  // Next notify the server about the settings they have previously
+  // Next, notify the server about our initial recv window size.
+  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION &&
+      enable_sending_initial_settings_) {
+    // Bump up the receive window size to the real initial value. This
+    // has to go here since the WINDOW_UPDATE frame sent by
+    // IncreaseRecvWindowSize() call uses |buffered_spdy_framer_|.
+    DCHECK_GT(kDefaultInitialRecvWindowSize, session_recv_window_size_);
+    // This condition implies that |kDefaultInitialRecvWindowSize| -
+    // |session_recv_window_size_| doesn't overflow.
+    DCHECK_GT(session_recv_window_size_, 0);
+    IncreaseRecvWindowSize(
+        kDefaultInitialRecvWindowSize - session_recv_window_size_);
+  }
+
+  // Finally, notify the server about the settings they have previously
   // told us to use when communicating with them.
   const SettingsMap& settings_map =
       http_server_properties_->GetSpdySettings(host_port_pair());

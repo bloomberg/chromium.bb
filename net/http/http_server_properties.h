@@ -17,10 +17,12 @@ namespace net {
 
 enum AlternateProtocol {
   NPN_SPDY_1 = 0,
+  NPN_SPDY_MINIMUM_VERSION = NPN_SPDY_1,
   NPN_SPDY_2,
   NPN_SPDY_3,
   NPN_SPDY_3_1,
   NPN_SPDY_4A2,
+  NPN_SPDY_MAXIMUM_VERSION = NPN_SPDY_4A2,
   QUIC,
   NUM_ALTERNATE_PROTOCOLS,
   ALTERNATE_PROTOCOL_BROKEN,  // The alternate protocol is known to be broken.

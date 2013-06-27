@@ -134,9 +134,10 @@ class SpdyProxyClientSocketTest
   DISALLOW_COPY_AND_ASSIGN(SpdyProxyClientSocketTest);
 };
 
-INSTANTIATE_TEST_CASE_P(NextProto,
-                        SpdyProxyClientSocketTest,
-                        testing::Values(kProtoSPDY2, kProtoSPDY3));
+INSTANTIATE_TEST_CASE_P(
+    NextProto,
+    SpdyProxyClientSocketTest,
+    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2));
 
 SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
     : spdy_util_(GetParam()),

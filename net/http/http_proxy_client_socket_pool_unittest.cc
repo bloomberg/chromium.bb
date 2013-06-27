@@ -248,9 +248,6 @@ INSTANTIATE_TEST_CASE_P(
         HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY4a2),
         HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY4a2)));
 
-// TODO(akalin): Don't early-exit in the tests below for protocols >
-// kProtoSPDY3.
-
 TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
   Initialize(NULL, 0, NULL, 0, NULL, 0, NULL, 0);
 
@@ -265,9 +262,6 @@ TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
-  if (GetParam().protocol > kProtoSPDY3)
-    return;
-
   MockWrite writes[] = {
     MockWrite(ASYNC, 0, "CONNECT www.google.com:443 HTTP/1.1\r\n"
               "Host: www.google.com\r\n"
@@ -368,9 +362,6 @@ TEST_P(HttpProxyClientSocketPoolTest, HaveAuth) {
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
-  if (GetParam().protocol > kProtoSPDY3)
-    return;
-
   MockWrite writes[] = {
     MockWrite(ASYNC, 0, "CONNECT www.google.com:443 HTTP/1.1\r\n"
               "Host: www.google.com\r\n"
@@ -482,9 +473,6 @@ TEST_P(HttpProxyClientSocketPoolTest, SslClientAuth) {
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, TunnelUnexpectedClose) {
-  if (GetParam().protocol > kProtoSPDY3)
-    return;
-
   MockWrite writes[] = {
     MockWrite(ASYNC, 0,
               "CONNECT www.google.com:443 HTTP/1.1\r\n"
@@ -529,9 +517,6 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelUnexpectedClose) {
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupError) {
-  if (GetParam().protocol > kProtoSPDY3)
-    return;
-
   MockWrite writes[] = {
     MockWrite(ASYNC, 0,
               "CONNECT www.google.com:443 HTTP/1.1\r\n"
@@ -577,9 +562,6 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupError) {
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
-  if (GetParam().protocol > kProtoSPDY3)
-    return;
-
   const std::string redirectTarget = "https://foo.google.com/";
 
   const std::string responseText = "HTTP/1.1 302 Found\r\n"

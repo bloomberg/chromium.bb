@@ -219,13 +219,7 @@ INSTANTIATE_TEST_CASE_P(
     SpdySessionTest,
     testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2));
 
-// TODO(akalin): Don't early-exit in the tests below for values >
-// kProtoSPDY3.
-
 TEST_P(SpdySessionTest, GoAway) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -308,9 +302,6 @@ TEST_P(SpdySessionTest, GoAway) {
 }
 
 TEST_P(SpdySessionTest, ClientPing) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.enable_ping = true;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
@@ -367,9 +358,6 @@ TEST_P(SpdySessionTest, ClientPing) {
 }
 
 TEST_P(SpdySessionTest, ServerPing) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -412,9 +400,6 @@ TEST_P(SpdySessionTest, ServerPing) {
 }
 
 TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
@@ -471,9 +456,6 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
 }
 
 TEST_P(SpdySessionTest, FailedPing) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -536,9 +518,6 @@ TEST_P(SpdySessionTest, FailedPing) {
 }
 
 TEST_P(SpdySessionTest, CloseIdleSessions) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   MockConnect connect_data(SYNCHRONOUS, OK);
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
@@ -662,9 +641,6 @@ TEST_P(SpdySessionTest, CloseIdleSessions) {
 // Make sure nothing blows up.
 // http://crbug.com/57331
 TEST_P(SpdySessionTest, OnSettings) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   SettingsMap new_settings;
@@ -723,9 +699,6 @@ TEST_P(SpdySessionTest, OnSettings) {
 // settings frame setting max concurrent streams to 2 and which also clears the
 // persisted data. Verify that persisted data is correct.
 TEST_P(SpdySessionTest, ClearSettings) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   SettingsMap new_settings;
@@ -740,7 +713,7 @@ TEST_P(SpdySessionTest, ClearSettings) {
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(new_settings));
   uint8 flags = SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS;
-  test::SetFrameFlags(settings_frame.get(), flags, SPDY3);
+  test::SetFrameFlags(settings_frame.get(), flags, spdy_util_.spdy_version());
   MockRead reads[] = {
     CreateMockRead(*settings_frame),
     MockRead(SYNCHRONOUS, 0, 0)  // EOF
@@ -799,9 +772,6 @@ TEST_P(SpdySessionTest, ClearSettings) {
 // second stream creation.  Then cancel that one immediately.  Don't crash.
 // http://crbug.com/63532
 TEST_P(SpdySessionTest, CancelPendingCreateStream) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockRead reads[] = {
@@ -857,9 +827,6 @@ TEST_P(SpdySessionTest, CancelPendingCreateStream) {
 }
 
 TEST_P(SpdySessionTest, SendInitialSettingsOnNewSession) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockRead reads[] = {
@@ -879,13 +846,22 @@ TEST_P(SpdySessionTest, SendInitialSettingsOnNewSession) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
+  scoped_ptr<SpdyFrame> initial_window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   MockWrite writes[] = {
     CreateMockWrite(*settings_frame),
+    CreateMockWrite(*initial_window_update),
   };
   session_deps_.stream_initial_recv_window_size = kInitialRecvWindowSize;
+  int num_writes = arraysize(writes);
+  // We don't have session windows for SPDY versions less than 3.1.
+  if (spdy_util_.protocol() < kProtoSPDY31) {
+    --num_writes;
+  }
 
-  StaticSocketDataProvider data(
-      reads, arraysize(reads), writes, arraysize(writes));
+  StaticSocketDataProvider data(reads, arraysize(reads), writes, num_writes);
   data.set_connect_data(connect_data);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
@@ -904,9 +880,6 @@ TEST_P(SpdySessionTest, SendInitialSettingsOnNewSession) {
 }
 
 TEST_P(SpdySessionTest, SendSettingsOnNewSession) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockRead reads[] = {
@@ -1204,9 +1177,6 @@ TEST_P(SpdySessionTest, IPPoolingCloseIdleSessions) {
 }
 
 TEST_P(SpdySessionTest, ClearSettingsStorageOnIPAddressChanged) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   CreateNetworkSession();
 
   HttpServerProperties* test_http_server_properties =
@@ -1225,9 +1195,6 @@ TEST_P(SpdySessionTest, ClearSettingsStorageOnIPAddressChanged) {
 }
 
 TEST_P(SpdySessionTest, Initialize) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   CapturingBoundNetLog log;
   session_deps_.net_log = log.bound().net_log();
   session_deps_.host_resolver->set_synchronous_mode(true);
@@ -1277,9 +1244,6 @@ TEST_P(SpdySessionTest, Initialize) {
 }
 
 TEST_P(SpdySessionTest, CloseSessionOnError) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -1333,9 +1297,6 @@ TEST_P(SpdySessionTest, CloseSessionOnError) {
 // one. The high priority one should still send first and receive
 // first.
 TEST_P(SpdySessionTest, OutOfOrderSynStreams) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   // Construct the request.
   MockConnect connect_data(SYNCHRONOUS, OK);
   scoped_ptr<SpdyFrame> req_highest(
@@ -1418,9 +1379,6 @@ TEST_P(SpdySessionTest, OutOfOrderSynStreams) {
 }
 
 TEST_P(SpdySessionTest, CancelStream) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   MockConnect connect_data(SYNCHRONOUS, OK);
   // Request 1, at HIGHEST priority, will be cancelled before it writes data.
   // Request 2, at LOWEST priority, will be a full request and will be id 1.
@@ -1500,9 +1458,6 @@ TEST_P(SpdySessionTest, CancelStream) {
 // and then close the session. Nothing should blow up. Also a
 // regression test for http://crbug.com/139518 .
 TEST_P(SpdySessionTest, CloseSessionWithTwoCreatedSelfClosingStreams) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -1576,9 +1531,6 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoCreatedSelfClosingStreams) {
 // Create two streams that are set to close each other on close, and
 // then close the session. Nothing should blow up.
 TEST_P(SpdySessionTest, CloseSessionWithTwoCreatedMutuallyClosingStreams) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -1654,9 +1606,6 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoCreatedMutuallyClosingStreams) {
 // Create two streams that are set to re-close themselves on close,
 // activate them, and then close the session. Nothing should blow up.
 TEST_P(SpdySessionTest, CloseSessionWithTwoActivatedSelfClosingStreams) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -1740,9 +1689,6 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoActivatedSelfClosingStreams) {
 // Create two streams that are set to close each other on close,
 // activate them, and then close the session. Nothing should blow up.
 TEST_P(SpdySessionTest, CloseSessionWithTwoActivatedMutuallyClosingStreams) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -1826,9 +1772,6 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoActivatedMutuallyClosingStreams) {
 }
 
 TEST_P(SpdySessionTest, VerifyDomainAuthentication) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -1897,9 +1840,6 @@ TEST_P(SpdySessionTest, VerifyDomainAuthentication) {
 }
 
 TEST_P(SpdySessionTest, ConnectionPooledWithTlsChannelId) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -1969,9 +1909,6 @@ TEST_P(SpdySessionTest, ConnectionPooledWithTlsChannelId) {
 }
 
 TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   // TODO(rtenneti): Define a helper class/methods and move the common code in
   // this file.
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -2110,9 +2047,6 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
 }
 
 TEST_P(SpdySessionTest, CancelTwoStalledCreateStream) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   MockRead reads[] = {
@@ -2190,9 +2124,6 @@ TEST_P(SpdySessionTest, CancelTwoStalledCreateStream) {
 }
 
 TEST_P(SpdySessionTest, NeedsCredentials) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   MockConnect connect_data(SYNCHRONOUS, OK);
   MockRead reads[] = {
     MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
@@ -2252,7 +2183,7 @@ TEST_P(SpdySessionTest, NeedsCredentials) {
 }
 
 TEST_P(SpdySessionTest, SendCredentials) {
-  if (GetParam() > kProtoSPDY3)
+  if (GetParam() < kProtoSPDY3)
     return;
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -2272,7 +2203,7 @@ TEST_P(SpdySessionTest, SendCredentials) {
 
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
   ssl.channel_id_sent = true;
-  ssl.protocol_negotiated = kProtoSPDY3;
+  ssl.protocol_negotiated = GetParam();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   CreateNetworkSession();
@@ -2321,7 +2252,7 @@ TEST_P(SpdySessionTest, SendCredentials) {
 }
 
 TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
-  if (GetParam() != kProtoSPDY3)
+  if (GetParam() < kProtoSPDY3)
     return;
 
   // Set SETTINGS_INITIAL_WINDOW_SIZE to a small number so that WINDOW_UPDATE
@@ -2383,9 +2314,6 @@ TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
 // This test makes 32k - 1 bytes of data available on the socket for reading. It
 // then verifies that it has read all the available data without yielding.
 TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   MockConnect connect_data(SYNCHRONOUS, OK);
   BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
 
@@ -2475,9 +2403,6 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
 // that DoRead has yielded even though there is data available for it to read
 // (i.e, socket()->Read didn't return ERR_IO_PENDING during socket reads).
 TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   MockConnect connect_data(SYNCHRONOUS, OK);
   BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
 
@@ -2575,9 +2500,6 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
 // will read the results from the async read, and rest of the data
 // synchronously.
 TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   MockConnect connect_data(SYNCHRONOUS, OK);
   BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
 
@@ -2683,9 +2605,6 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
 // GoAway could delete the SpdySession from the SpdySessionPool and the last
 // reference to SpdySession.
 TEST_P(SpdySessionTest, GoAwayWhileInDoLoop) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   MockConnect connect_data(SYNCHRONOUS, OK);
   BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
 
@@ -2793,17 +2712,16 @@ TEST_P(SpdySessionTest, ProtocolNegotiation) {
               session->flow_control_state());
     EXPECT_EQ(kSpdySessionInitialWindowSize,
               session->session_send_window_size_);
-    EXPECT_EQ(kDefaultInitialRecvWindowSize,
+    EXPECT_EQ(kSpdySessionInitialWindowSize,
               session->session_recv_window_size_);
   }
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 }
 
 // SpdySession::{Increase,Decrease}RecvWindowSize should properly
-// adjust the session receive window size when the "enable_spdy_31"
-// flag is set. In addition, SpdySession::IncreaseRecvWindowSize
-// should trigger sending a WINDOW_UPDATE frame for a large enough
-// delta.
+// adjust the session receive window size for SPDY 3.1 and higher. In
+// addition, SpdySession::IncreaseRecvWindowSize should trigger
+// sending a WINDOW_UPDATE frame for a large enough delta.
 TEST_P(SpdySessionTest, AdjustRecvWindowSize) {
   if (GetParam() < kProtoSPDY31)
     return;
@@ -2814,19 +2732,14 @@ TEST_P(SpdySessionTest, AdjustRecvWindowSize) {
 
   MockConnect connect_data(SYNCHRONOUS, OK);
   MockRead reads[] = {
-    MockRead(ASYNC, 0, 2)  // EOF
+    MockRead(ASYNC, 0, 1)  // EOF
   };
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   scoped_ptr<SpdyFrame> window_update(
       spdy_util_.ConstructSpdyWindowUpdate(
           kSessionFlowControlStreamId,
           kSpdySessionInitialWindowSize + delta_window_size));
   MockWrite writes[] = {
-    CreateMockWrite(*initial_window_update, 0),
-    CreateMockWrite(*window_update, 1),
+    CreateMockWrite(*window_update, 0),
   };
   DeterministicSocketData data(reads, arraysize(reads),
                                writes, arraysize(writes));
@@ -2843,25 +2756,25 @@ TEST_P(SpdySessionTest, AdjustRecvWindowSize) {
   EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
             session->flow_control_state());
 
-  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
   session->IncreaseRecvWindowSize(delta_window_size);
-  EXPECT_EQ(kDefaultInitialRecvWindowSize + delta_window_size,
+  EXPECT_EQ(kSpdySessionInitialWindowSize + delta_window_size,
             session->session_recv_window_size_);
   EXPECT_EQ(delta_window_size, session->session_unacked_recv_window_bytes_);
 
   // Should trigger sending a WINDOW_UPDATE frame.
   session->IncreaseRecvWindowSize(kSpdySessionInitialWindowSize);
-  EXPECT_EQ(kDefaultInitialRecvWindowSize + delta_window_size +
+  EXPECT_EQ(kSpdySessionInitialWindowSize + delta_window_size +
             kSpdySessionInitialWindowSize,
             session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
-  data.RunFor(2);
+  data.RunFor(1);
 
   session->DecreaseRecvWindowSize(
-      kDefaultInitialRecvWindowSize + delta_window_size +
+      kSpdySessionInitialWindowSize + delta_window_size +
       kSpdySessionInitialWindowSize);
   EXPECT_EQ(0, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
@@ -2914,18 +2827,10 @@ TEST_P(SpdySessionTest, SessionFlowControlInactiveStream) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyBodyFrame(1, false));
   MockRead reads[] = {
-    CreateMockRead(*resp, 1),
-    MockRead(ASYNC, 0, 2)  // EOF
+    CreateMockRead(*resp, 0),
+    MockRead(ASYNC, 0, 1)  // EOF
   };
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  MockWrite writes[] = {
-    CreateMockWrite(*initial_window_update, 0),
-  };
-  DeterministicSocketData data(reads, arraysize(reads),
-                               writes, arraysize(writes));
+  DeterministicSocketData data(reads, arraysize(reads), NULL, 0);
   data.set_connect_data(connect_data);
   session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
@@ -2939,12 +2844,12 @@ TEST_P(SpdySessionTest, SessionFlowControlInactiveStream) {
   EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
             session->flow_control_state());
 
-  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
-  data.RunFor(3);
+  data.RunFor(2);
 
-  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 }
 
@@ -2975,10 +2880,6 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
 
   MockConnect connect_data(SYNCHRONOUS, OK);
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
           kStreamUrl, 1, msg_data_size, MEDIUM, NULL, 0));
@@ -2986,9 +2887,8 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
       spdy_util_.ConstructSpdyBodyFrame(
           1, msg_data.data(), msg_data_size, false));
   MockWrite writes[] = {
-    CreateMockWrite(*initial_window_update, 0),
-    CreateMockWrite(*req, 1),
-    CreateMockWrite(*msg, 3),
+    CreateMockWrite(*req, 0),
+    CreateMockWrite(*msg, 2),
   };
 
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -2999,9 +2899,9 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
       spdy_util_.ConstructSpdyWindowUpdate(
           kSessionFlowControlStreamId, msg_data_size));
   MockRead reads[] = {
-    CreateMockRead(*resp, 2),
-    CreateMockRead(*echo, 4),
-    MockRead(ASYNC, 0, 5)  // EOF
+    CreateMockRead(*resp, 1),
+    CreateMockRead(*echo, 3),
+    MockRead(ASYNC, 0, 4)  // EOF
   };
 
   // Create SpdySession and SpdyStream and send the request.
@@ -3034,15 +2934,15 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
             stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrl());
 
-  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
-  data.RunFor(5);
+  data.RunFor(4);
 
   EXPECT_TRUE(data.at_write_eof());
   EXPECT_TRUE(data.at_read_eof());
 
-  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
 
   stream->Close();
@@ -3050,7 +2950,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
 
   EXPECT_EQ(OK, delegate.WaitForClose());
 
-  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
 }
 
@@ -3068,22 +2968,17 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
 
   MockConnect connect_data(SYNCHRONOUS, OK);
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
           kStreamUrl, 1, msg_data_size, MEDIUM, NULL, 0));
   MockWrite writes[] = {
-    CreateMockWrite(*initial_window_update, 0),
-    CreateMockWrite(*req, 1),
+    CreateMockWrite(*req, 0),
   };
 
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-    CreateMockRead(*resp, 2),
-    MockRead(ASYNC, 0, 3)  // EOF
+    CreateMockRead(*resp, 1),
+    MockRead(ASYNC, 0, 2)  // EOF
   };
 
   // Create SpdySession and SpdyStream and send the request.
@@ -3118,7 +3013,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
 
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
 
-  data.RunFor(2);
+  data.RunFor(1);
 
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
 
@@ -3152,10 +3047,6 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
 
   MockConnect connect_data(SYNCHRONOUS, OK);
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
           kStreamUrl, 1, msg_data_size, MEDIUM, NULL, 0));
@@ -3163,9 +3054,8 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
       spdy_util_.ConstructSpdyBodyFrame(
           1, msg_data.data(), msg_data_size, false));
   MockWrite writes[] = {
-    CreateMockWrite(*initial_window_update, 0),
-    CreateMockWrite(*req, 1),
-    CreateMockWrite(*msg, 3),
+    CreateMockWrite(*req, 0),
+    CreateMockWrite(*msg, 2),
   };
 
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -3176,10 +3066,10 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
       spdy_util_.ConstructSpdyWindowUpdate(
           kSessionFlowControlStreamId, msg_data_size));
   MockRead reads[] = {
-    CreateMockRead(*resp, 2),
-    CreateMockRead(*echo, 4),
-    CreateMockRead(*window_update, 5),
-    MockRead(ASYNC, 0, 6)  // EOF
+    CreateMockRead(*resp, 1),
+    CreateMockRead(*echo, 3),
+    CreateMockRead(*window_update, 4),
+    MockRead(ASYNC, 0, 5)  // EOF
   };
 
   // Create SpdySession and SpdyStream and send the request.
@@ -3213,41 +3103,41 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
   EXPECT_TRUE(stream->HasUrl());
 
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
-  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
-  data.RunFor(2);
+  data.RunFor(1);
 
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
-  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
   data.RunFor(1);
 
   EXPECT_EQ(kSpdySessionInitialWindowSize - msg_data_size,
             session->session_send_window_size_);
-  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
   data.RunFor(1);
 
   EXPECT_EQ(kSpdySessionInitialWindowSize - msg_data_size,
             session->session_send_window_size_);
-  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
   data.RunFor(1);
 
   EXPECT_EQ(kSpdySessionInitialWindowSize - msg_data_size,
             session->session_send_window_size_);
-  EXPECT_EQ(kDefaultInitialRecvWindowSize - msg_data_size,
+  EXPECT_EQ(kSpdySessionInitialWindowSize - msg_data_size,
             session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
   data.RunFor(1);
 
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
-  EXPECT_EQ(kDefaultInitialRecvWindowSize - msg_data_size,
+  EXPECT_EQ(kSpdySessionInitialWindowSize - msg_data_size,
             session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
@@ -3259,7 +3149,7 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
   // Draining the delegate's read queue should increase the session's
   // receive window.
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
-  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
 
   stream->Close();
@@ -3268,7 +3158,7 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
   EXPECT_EQ(OK, delegate.WaitForClose());
 
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
-  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
 }
 
@@ -3283,19 +3173,14 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
           kStreamUrl, 1, kBodyDataSize, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> body(
       spdy_util_.ConstructSpdyBodyFrame(1, kBodyData, kBodyDataSize, true));
   MockWrite writes[] = {
-    CreateMockWrite(*initial_window_update, 0),
-    CreateMockWrite(*req, 1),
-    CreateMockWrite(*body, 2),
+    CreateMockWrite(*req, 0),
+    CreateMockWrite(*body, 1),
   };
 
   scoped_ptr<SpdyFrame> resp(
@@ -3303,8 +3188,8 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
   scoped_ptr<SpdyFrame> echo(
       spdy_util_.ConstructSpdyBodyFrame(1, kBodyData, kBodyDataSize, false));
   MockRead reads[] = {
-    CreateMockRead(*resp, 3),
-    MockRead(ASYNC, 0, 0, 4), // EOF
+    CreateMockRead(*resp, 2),
+    MockRead(ASYNC, 0, 0, 3), // EOF
   };
 
   DeterministicSocketData data(reads, arraysize(reads),
@@ -3341,7 +3226,7 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
 
   stall_fn.Run(session.get(), stream.get());
 
-  data.RunFor(2);
+  data.RunFor(1);
 
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
@@ -3443,10 +3328,6 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   scoped_ptr<SpdyFrame> req1(
       spdy_util_.ConstructSpdyPost(
           kStreamUrl, 1, kBodyDataSize, LOWEST, NULL, 0));
@@ -3458,19 +3339,18 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
   scoped_ptr<SpdyFrame> body2(
       spdy_util_.ConstructSpdyBodyFrame(3, kBodyData, kBodyDataSize, true));
   MockWrite writes[] = {
-    CreateMockWrite(*initial_window_update, 0),
-    CreateMockWrite(*req1, 1),
-    CreateMockWrite(*req2, 2),
-    CreateMockWrite(*body2, 3),
-    CreateMockWrite(*body1, 4),
+    CreateMockWrite(*req1, 0),
+    CreateMockWrite(*req2, 1),
+    CreateMockWrite(*body2, 2),
+    CreateMockWrite(*body1, 3),
   };
 
   scoped_ptr<SpdyFrame> resp1(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
   MockRead reads[] = {
-    CreateMockRead(*resp1, 5),
-    CreateMockRead(*resp2, 6),
-    MockRead(ASYNC, 0, 0, 7), // EOF
+    CreateMockRead(*resp1, 4),
+    CreateMockRead(*resp2, 5),
+    MockRead(ASYNC, 0, 0, 6), // EOF
   };
 
   DeterministicSocketData data(reads, arraysize(reads),
@@ -3519,7 +3399,7 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
   EXPECT_TRUE(stream1->HasUrl());
   EXPECT_EQ(kStreamUrl, stream1->GetUrl().spec());
 
-  data.RunFor(2);
+  data.RunFor(1);
   EXPECT_EQ(1u, stream1->stream_id());
   EXPECT_TRUE(stream1->send_stalled_by_flow_control());
 
@@ -3605,10 +3485,6 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   scoped_ptr<SpdyFrame> req1(
       spdy_util_.ConstructSpdyPost(
           kStreamUrl, 1, kBodyDataSize, LOWEST, NULL, 0));
@@ -3621,17 +3497,16 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
   scoped_ptr<SpdyFrame> body2(
       spdy_util_.ConstructSpdyBodyFrame(3, kBodyData, kBodyDataSize, true));
   MockWrite writes[] = {
-    CreateMockWrite(*initial_window_update, 0),
-    CreateMockWrite(*req1, 1),
-    CreateMockWrite(*req2, 2),
-    CreateMockWrite(*req3, 3),
-    CreateMockWrite(*body2, 4),
+    CreateMockWrite(*req1, 0),
+    CreateMockWrite(*req2, 1),
+    CreateMockWrite(*req3, 2),
+    CreateMockWrite(*body2, 3),
   };
 
   scoped_ptr<SpdyFrame> resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
   MockRead reads[] = {
-    CreateMockRead(*resp2, 5),
-    MockRead(ASYNC, 0, 0, 6), // EOF
+    CreateMockRead(*resp2, 4),
+    MockRead(ASYNC, 0, 0, 5), // EOF
   };
 
   DeterministicSocketData data(reads, arraysize(reads),
@@ -3691,7 +3566,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
   EXPECT_TRUE(stream1->HasUrl());
   EXPECT_EQ(kStreamUrl, stream1->GetUrl().spec());
 
-  data.RunFor(2);
+  data.RunFor(1);
   EXPECT_EQ(1u, stream1->stream_id());
   EXPECT_TRUE(stream1->send_stalled_by_flow_control());
 
@@ -3774,10 +3649,6 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   scoped_ptr<SpdyFrame> req1(
       spdy_util_.ConstructSpdyPost(
           kStreamUrl, 1, kBodyDataSize, LOWEST, NULL, 0));
@@ -3787,13 +3658,12 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
   scoped_ptr<SpdyFrame> body1(
       spdy_util_.ConstructSpdyBodyFrame(1, kBodyData, kBodyDataSize, false));
   MockWrite writes[] = {
-    CreateMockWrite(*initial_window_update, 0),
-    CreateMockWrite(*req1, 1),
-    CreateMockWrite(*req2, 2),
+    CreateMockWrite(*req1, 0),
+    CreateMockWrite(*req2, 1),
   };
 
   MockRead reads[] = {
-    MockRead(ASYNC, 0, 0, 3), // EOF
+    MockRead(ASYNC, 0, 0, 2), // EOF
   };
 
   DeterministicSocketData data(reads, arraysize(reads),
@@ -3842,7 +3712,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
   EXPECT_TRUE(stream1->HasUrl());
   EXPECT_EQ(kStreamUrl, stream1->GetUrl().spec());
 
-  data.RunFor(2);
+  data.RunFor(1);
   EXPECT_EQ(1u, stream1->stream_id());
   EXPECT_TRUE(stream1->send_stalled_by_flow_control());
 
@@ -3881,12 +3751,10 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
   EXPECT_TRUE(data.at_write_eof());
 }
 
+
 // Tests the case of a non-SPDY request closing an idle SPDY session when no
 // pointers to the idle session are currently held.
 TEST_P(SpdySessionTest, CloseOneIdleConnection) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   ClientSocketPoolManager::set_max_sockets_per_group(
       HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
   ClientSocketPoolManager::set_max_sockets_per_pool(
@@ -3942,9 +3810,6 @@ TEST_P(SpdySessionTest, CloseOneIdleConnection) {
 // pointers to the idle session are currently held, in the case the SPDY session
 // has an alias.
 TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   ClientSocketPoolManager::set_max_sockets_per_group(
       HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
   ClientSocketPoolManager::set_max_sockets_per_pool(
@@ -4029,9 +3894,6 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
 // Tests the case of a non-SPDY request closing an idle SPDY session when a
 // pointer to the idle session is still held.
 TEST_P(SpdySessionTest, CloseOneIdleConnectionSessionStillHeld) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   ClientSocketPoolManager::set_max_sockets_per_group(
       HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
   ClientSocketPoolManager::set_max_sockets_per_pool(
@@ -4091,9 +3953,6 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionSessionStillHeld) {
 // Tests that a non-SPDY request can't close a SPDY session that's currently in
 // use.
 TEST_P(SpdySessionTest, CloseOneIdleConnectionFailsWhenSessionInUse) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   ClientSocketPoolManager::set_max_sockets_per_group(
       HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
   ClientSocketPoolManager::set_max_sockets_per_pool(

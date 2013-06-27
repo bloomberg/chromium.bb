@@ -5,6 +5,9 @@
 #ifndef NET_SPDY_SPDY_TEST_UTIL_COMMON_H_
 #define NET_SPDY_SPDY_TEST_UTIL_COMMON_H_
 
+#include <string>
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "crypto/ec_private_key.h"
@@ -42,6 +45,10 @@ class SpdyStreamRequest;
 const char kDefaultURL[] = "http://www.google.com";
 const char kUploadData[] = "hello!";
 const int kUploadDataSize = arraysize(kUploadData)-1;
+
+// SpdyNextProtos returns a vector of NPN protocol strings for negotiating
+// SPDY.
+std::vector<std::string> SpdyNextProtos();
 
 // Chop a frame into an array of MockWrites.
 // |data| is the frame to chop.
@@ -247,6 +254,8 @@ NextProto NextProtoFromSpdyVersion(SpdyMajorVersion spdy_version);
 // TODO(akalin): Merge this with NPNToSpdyVersion() in
 // spdy_session.cc.
 SpdyMajorVersion SpdyVersionFromNextProto(NextProto next_proto);
+
+AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto);
 
 class SpdyTestUtil {
  public:

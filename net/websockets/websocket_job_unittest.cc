@@ -620,9 +620,6 @@ INSTANTIATE_TEST_CASE_P(
     WebSocketJobTest,
     testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2));
 
-// TODO(akalin): Don't early-exit in the tests below for values >
-// kProtoSPDY3.
-
 TEST_P(WebSocketJobTest, DelayedCookies) {
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   GURL url("ws://example.com/demo");
@@ -1070,17 +1067,11 @@ TEST_P(WebSocketJobTest, ConnectByWebSocketSpdyEnabled) {
 }
 
 TEST_P(WebSocketJobTest, ConnectBySpdy) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestConnectBySpdy(SPDY_OFF, THROTTLING_OFF);
 }
 
 TEST_P(WebSocketJobTest, ConnectBySpdySpdyEnabled) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestConnectBySpdy(SPDY_ON, THROTTLING_OFF);
 }
@@ -1096,17 +1087,11 @@ TEST_P(WebSocketJobTest, ThrottlingWebSocketSpdyEnabled) {
 }
 
 TEST_P(WebSocketJobTest, ThrottlingSpdy) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestConnectBySpdy(SPDY_OFF, THROTTLING_ON);
 }
 
 TEST_P(WebSocketJobTest, ThrottlingSpdySpdyEnabled) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   WebSocketJob::set_websocket_over_spdy_enabled(true);
   TestConnectBySpdy(SPDY_ON, THROTTLING_ON);
 }

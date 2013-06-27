@@ -325,13 +325,7 @@ const size_t SpdyWebSocketStreamTest::kMessageFrameLength =
 const size_t SpdyWebSocketStreamTest::kClosingFrameLength =
     arraysize(SpdyWebSocketStreamTest::kClosingFrame) - 1;
 
-// TODO(akalin): Don't early-exit in the tests below for values >
-// kProtoSPDY3.
-
 TEST_P(SpdyWebSocketStreamTest, Basic) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   Prepare(1);
   MockWrite writes[] = {
     CreateMockWrite(*request_frame_.get(), 1),
@@ -408,9 +402,6 @@ TEST_P(SpdyWebSocketStreamTest, Basic) {
 }
 
 TEST_P(SpdyWebSocketStreamTest, DestructionBeforeClose) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   Prepare(1);
   MockWrite writes[] = {
     CreateMockWrite(*request_frame_.get(), 1),
@@ -473,9 +464,6 @@ TEST_P(SpdyWebSocketStreamTest, DestructionBeforeClose) {
 }
 
 TEST_P(SpdyWebSocketStreamTest, DestructionAfterExplicitClose) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   Prepare(1);
   MockWrite writes[] = {
     CreateMockWrite(*request_frame_.get(), 1),
@@ -537,9 +525,6 @@ TEST_P(SpdyWebSocketStreamTest, DestructionAfterExplicitClose) {
 }
 
 TEST_P(SpdyWebSocketStreamTest, IOPending) {
-  if (GetParam() > kProtoSPDY3)
-    return;
-
   Prepare(1);
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(spdy_settings_to_send_));

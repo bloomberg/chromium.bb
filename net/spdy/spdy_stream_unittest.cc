@@ -137,13 +137,6 @@ TEST_P(SpdyStreamTest, SendDataAfterOpen) {
 
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    AddWrite(*initial_window_update);
-
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
           kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
@@ -206,13 +199,6 @@ TEST_P(SpdyStreamTest, PushedStream) {
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
   scoped_refptr<SpdySession> spdy_session(CreateSpdySession());
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    AddWrite(*initial_window_update);
-
   AddReadEOF();
 
   OrderedSocketData data(GetReads(), GetNumReads(),
@@ -266,13 +252,6 @@ TEST_P(SpdyStreamTest, StreamError) {
   GURL url(kStreamUrl);
 
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
-
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    AddWrite(*initial_window_update);
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
@@ -359,13 +338,6 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
 
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    AddWrite(*initial_window_update);
-
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
           kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
@@ -435,13 +407,6 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
 
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    AddWrite(*initial_window_update);
-
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
           kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
@@ -507,13 +472,6 @@ TEST_P(SpdyStreamTest, UpperCaseHeaders) {
   session_ =
       SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
 
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    AddWrite(*initial_window_update);
-
   scoped_ptr<SpdyFrame> syn(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   AddWrite(*syn);
@@ -557,10 +515,6 @@ TEST_P(SpdyStreamTest, UpperCaseHeaders) {
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
-  // For the initial window update.
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    data.RunFor(1);
-
   data.RunFor(4);
 
   EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, delegate.WaitForClose());
@@ -573,13 +527,6 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersOnPush) {
 
   session_ =
       SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
-
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    AddWrite(*initial_window_update);
 
   scoped_ptr<SpdyFrame> syn(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
@@ -628,10 +575,6 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersOnPush) {
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
-  // For the initial window update.
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    data.RunFor(1);
-
   data.RunFor(4);
 
   base::WeakPtr<SpdyStream> push_stream;
@@ -650,13 +593,6 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
 
   session_ =
       SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
-
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    AddWrite(*initial_window_update);
 
   scoped_ptr<SpdyFrame> syn(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
@@ -716,10 +652,6 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
-  // For the initial window update.
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    data.RunFor(1);
-
   data.RunFor(3);
 
   base::WeakPtr<SpdyStream> push_stream;
@@ -743,13 +675,6 @@ TEST_P(SpdyStreamTest, DuplicateHeaders) {
 
   session_ =
       SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
-
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    AddWrite(*initial_window_update);
 
   scoped_ptr<SpdyFrame> syn(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
@@ -809,10 +734,6 @@ TEST_P(SpdyStreamTest, DuplicateHeaders) {
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
-  // For the initial window update.
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    data.RunFor(1);
-
   data.RunFor(3);
 
   base::WeakPtr<SpdyStream> push_stream;
@@ -840,13 +761,6 @@ TEST_P(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
 
   session_ =
       SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
-
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    AddWrite(*initial_window_update);
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
@@ -888,10 +802,6 @@ TEST_P(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
             stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
-  // For the initial window update.
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    data.RunFor(1);
 
   data.RunFor(1);
 
@@ -941,20 +851,10 @@ void AdjustStreamSendWindowSize(const base::WeakPtr<SpdyStream>& stream,
 // and unstall.
 void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
     const UnstallFunction& unstall_function) {
-  if (spdy_util_.protocol() < kProtoSPDY3)
-    return;
-
   GURL url(kStreamUrl);
 
   session_ =
       SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
-
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    AddWrite(*initial_window_update);
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
@@ -1001,10 +901,6 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
 
   StallStream(stream);
 
-  // For the initial window update.
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    data.RunFor(1);
-
   data.RunFor(1);
 
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
@@ -1025,11 +921,17 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
 }
 
 TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeIncreaseRequestResponse) {
+  if (spdy_util_.protocol() < kProtoSPDY3)
+    return;
+
   RunResumeAfterUnstallRequestResponseTest(
       base::Bind(&IncreaseStreamSendWindowSize));
 }
 
 TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeAdjustRequestResponse) {
+  if (spdy_util_.protocol() < kProtoSPDY3)
+    return;
+
   RunResumeAfterUnstallRequestResponseTest(
       base::Bind(&AdjustStreamSendWindowSize));
 }
@@ -1039,20 +941,10 @@ TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeAdjustRequestResponse) {
 // and unstall.
 void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
     const UnstallFunction& unstall_function) {
-  if (spdy_util_.protocol() < kProtoSPDY3)
-    return;
-
   GURL url(kStreamUrl);
 
   session_ =
       SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
-
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    AddWrite(*initial_window_update);
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
@@ -1106,10 +998,6 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
 
   StallStream(stream);
 
-  // For the initial window update.
-  if (spdy_util_.protocol() >= kProtoSPDY31)
-    data.RunFor(1);
-
   data.RunFor(1);
 
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
@@ -1131,11 +1019,17 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
 }
 
 TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeIncreaseBidirectional) {
+  if (spdy_util_.protocol() < kProtoSPDY3)
+    return;
+
   RunResumeAfterUnstallBidirectionalTest(
       base::Bind(&IncreaseStreamSendWindowSize));
 }
 
 TEST_P(SpdyStreamTest, ResumeAfterSendWindowSizeAdjustBidirectional) {
+  if (spdy_util_.protocol() < kProtoSPDY3)
+    return;
+
   RunResumeAfterUnstallBidirectionalTest(
       base::Bind(&AdjustStreamSendWindowSize));
 }
