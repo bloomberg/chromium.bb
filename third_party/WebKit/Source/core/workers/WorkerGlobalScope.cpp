@@ -73,8 +73,7 @@ public:
 
     virtual void performTask(ScriptExecutionContext *context)
     {
-        ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
-        WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(context);
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
         // Notify parent that this context is closed. Parent is responsible for calling WorkerThread::stop().
         workerGlobalScope->thread()->workerReportingProxy().workerGlobalScopeClosed();
     }

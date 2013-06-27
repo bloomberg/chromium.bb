@@ -79,8 +79,7 @@ void ScheduledAction::execute(ScriptExecutionContext* context)
             return;
         execute(frame);
     } else {
-        ASSERT(context->isWorkerGlobalScope());
-        execute(static_cast<WorkerGlobalScope*>(context));
+        execute(toWorkerGlobalScope(context));
     }
 }
 

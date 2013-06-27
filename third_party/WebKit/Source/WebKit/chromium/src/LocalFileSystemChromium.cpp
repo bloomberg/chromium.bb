@@ -165,7 +165,7 @@ static void openFileSystemHelper(ScriptExecutionContext* context, FileSystemType
         else
             webFrame->client()->openFileSystem(webFrame, static_cast<WebFileSystemType>(type), size, create == CreateIfNotPresent, new WebFileSystemCallbacksImpl(callbacks));
     } else {
-        WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(context);
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
         WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerGlobalScope->thread()->workerLoaderProxy().toWebWorkerBase());
         if (!allowFileSystemForWorker())
             allowed = false;

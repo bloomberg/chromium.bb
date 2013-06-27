@@ -136,7 +136,7 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
 
         if (!tryCatch.CanContinue()) { // Result of TerminateExecution().
             if (context->isWorkerGlobalScope())
-                static_cast<WorkerGlobalScope*>(context)->script()->forbidExecution();
+                toWorkerGlobalScope(context)->script()->forbidExecution();
             return;
         }
         tryCatch.Reset();

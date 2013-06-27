@@ -180,6 +180,12 @@ namespace WebCore {
         double m_timeOrigin;
     };
 
+inline WorkerGlobalScope* toWorkerGlobalScope(ScriptExecutionContext* context)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!context || context->isWorkerGlobalScope());
+    return static_cast<WorkerGlobalScope*>(context);
+}
+
 } // namespace WebCore
 
 #endif // WorkerGlobalScope_h

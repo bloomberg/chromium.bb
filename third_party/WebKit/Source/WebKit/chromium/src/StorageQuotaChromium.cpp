@@ -79,7 +79,7 @@ void StorageQuota::queryUsageAndQuota(ScriptExecutionContext* scriptExecutionCon
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         webFrame->client()->queryStorageUsageAndQuota(webFrame, storageType, new WebStorageQuotaCallbacksImpl(successCallback, errorCallback));
     } else {
-        WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(scriptExecutionContext);
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(scriptExecutionContext);
         WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerGlobalScope->thread()->workerLoaderProxy().toWebWorkerBase());
         queryUsageAndQuotaFromWorker(webWorker->commonClient(), storageType, new WebStorageQuotaCallbacksImpl(successCallback, errorCallback));
     }

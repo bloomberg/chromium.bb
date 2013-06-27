@@ -216,7 +216,7 @@ PassOwnPtr<WorkerRunLoop::Task> WorkerRunLoop::Task::create(PassOwnPtr<ScriptExe
 
 void WorkerRunLoop::Task::performTask(const WorkerRunLoop& runLoop, ScriptExecutionContext* context)
 {
-    WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(context);
+    WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
     if ((!workerGlobalScope->isClosing() && !runLoop.terminated()) || m_task->isCleanupTask())
         m_task->performTask(context);
 }

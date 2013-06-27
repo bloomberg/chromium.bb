@@ -50,8 +50,7 @@ double WorkerPerformance::now() const
 {
     ScriptExecutionContext* context = scriptExecutionContext();
     ASSERT(context);
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
-    WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(context);
+    WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
     return 1000.0 * (monotonicallyIncreasingTime() - workerGlobalScope->timeOrigin());
 }
 

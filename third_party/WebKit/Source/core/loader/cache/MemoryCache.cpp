@@ -515,7 +515,7 @@ void MemoryCache::adjustSize(bool live, int delta)
 void MemoryCache::removeURLFromCache(ScriptExecutionContext* context, const KURL& url)
 {
     if (context->isWorkerGlobalScope()) {
-        WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(context);
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
         workerGlobalScope->thread()->workerLoaderProxy().postTaskToLoader(createCallbackTask(&removeURLFromCacheInternal, url));
         return;
     }

@@ -408,7 +408,7 @@ void WorkerFileSystemCallbacksBridge::didReadDirectoryOnMainThread(const WebVect
 WorkerFileSystemCallbacksBridge::WorkerFileSystemCallbacksBridge(WebCore::WorkerLoaderProxy* workerLoaderProxy, ScriptExecutionContext* scriptExecutionContext, WebFileSystemCallbacksImpl* callbacks)
     : m_workerLoaderProxy(workerLoaderProxy)
     , m_workerGlobalScope(scriptExecutionContext)
-    , m_workerGlobalScopeObserver(WorkerFileSystemContextObserver::create(static_cast<WorkerGlobalScope*>(m_workerGlobalScope), this).leakPtr())
+    , m_workerGlobalScopeObserver(WorkerFileSystemContextObserver::create(toWorkerGlobalScope(m_workerGlobalScope), this).leakPtr())
     , m_callbacksOnWorkerThread(callbacks)
 {
     ASSERT(m_workerGlobalScope->isContextThread());

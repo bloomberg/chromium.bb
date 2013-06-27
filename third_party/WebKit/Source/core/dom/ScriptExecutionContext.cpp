@@ -133,7 +133,7 @@ void ScriptExecutionContext::createdMessagePort(MessagePort* port)
 {
     ASSERT(port);
     ASSERT((isDocument() && isMainThread())
-        || (isWorkerGlobalScope() && static_cast<WorkerGlobalScope*>(this)->thread()->isCurrentThread()));
+        || (isWorkerGlobalScope() && toWorkerGlobalScope(this)->thread()->isCurrentThread()));
 
     m_messagePorts.add(port);
 }
@@ -142,7 +142,7 @@ void ScriptExecutionContext::destroyedMessagePort(MessagePort* port)
 {
     ASSERT(port);
     ASSERT((isDocument() && isMainThread())
-        || (isWorkerGlobalScope() && static_cast<WorkerGlobalScope*>(this)->thread()->isCurrentThread()));
+        || (isWorkerGlobalScope() && toWorkerGlobalScope(this)->thread()->isCurrentThread()));
 
     m_messagePorts.remove(port);
 }

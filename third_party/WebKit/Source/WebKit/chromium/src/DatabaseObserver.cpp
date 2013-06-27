@@ -143,7 +143,7 @@ bool DatabaseObserver::canEstablishDatabase(ScriptExecutionContext* scriptExecut
         if (webView->permissionClient())
             return webView->permissionClient()->allowDatabase(webFrame, name, displayName, estimatedSize);
     } else {
-        WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(scriptExecutionContext);
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(scriptExecutionContext);
         WebWorkerBase* webWorker = static_cast<WebWorkerBase*>(workerGlobalScope->thread()->workerLoaderProxy().toWebWorkerBase());
         WebView* view = webWorker->view();
         if (!view)

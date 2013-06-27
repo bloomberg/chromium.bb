@@ -143,7 +143,7 @@ void WorkerStorageQuotaCallbacksBridge::cleanUpAfterCallback()
 WorkerStorageQuotaCallbacksBridge::WorkerStorageQuotaCallbacksBridge(WebCore::WorkerLoaderProxy* workerLoaderProxy, WebCore::ScriptExecutionContext* workerGlobalScope, WebStorageQuotaCallbacksImpl* callbacks)
     : m_workerLoaderProxy(workerLoaderProxy)
     , m_workerGlobalScope(workerGlobalScope)
-    , m_workerGlobalScopeObserver(WorkerStorageQuotaContextObserver::create(static_cast<WorkerGlobalScope*>(m_workerGlobalScope), this).leakPtr())
+    , m_workerGlobalScopeObserver(WorkerStorageQuotaContextObserver::create(toWorkerGlobalScope(m_workerGlobalScope), this).leakPtr())
     , m_callbacksOnWorkerThread(callbacks)
 {
     ASSERT(m_workerGlobalScope->isContextThread());

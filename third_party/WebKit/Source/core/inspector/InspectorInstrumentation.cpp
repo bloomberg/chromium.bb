@@ -217,7 +217,7 @@ InstrumentingAgents* instrumentingAgentsForWorkerGlobalScope(WorkerGlobalScope* 
 InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ScriptExecutionContext* context)
 {
     if (context->isWorkerGlobalScope())
-        return instrumentationForWorkerGlobalScope(static_cast<WorkerGlobalScope*>(context));
+        return instrumentationForWorkerGlobalScope(toWorkerGlobalScope(context));
     return 0;
 }
 

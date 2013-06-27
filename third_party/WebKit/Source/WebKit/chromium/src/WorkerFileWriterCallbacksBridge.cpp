@@ -132,7 +132,7 @@ void WorkerFileWriterCallbacksBridge::didTruncate()
 static const char fileWriterOperationsMode[] = "fileWriterOperationsMode";
 
 WorkerFileWriterCallbacksBridge::WorkerFileWriterCallbacksBridge(const KURL& path, WorkerLoaderProxy* proxy, ScriptExecutionContext* scriptExecutionContext, AsyncFileWriterClient* client)
-    : WorkerGlobalScope::Observer(static_cast<WorkerGlobalScope*>(scriptExecutionContext))
+    : WorkerGlobalScope::Observer(toWorkerGlobalScope(scriptExecutionContext))
     , m_proxy(proxy)
     , m_workerGlobalScope(scriptExecutionContext)
     , m_clientOnWorkerThread(client)
@@ -141,7 +141,7 @@ WorkerFileWriterCallbacksBridge::WorkerFileWriterCallbacksBridge(const KURL& pat
 {
     ASSERT(m_workerGlobalScope->isContextThread());
     m_mode = fileWriterOperationsMode;
-    m_mode.append(String::number(static_cast<WorkerGlobalScope*>(scriptExecutionContext)->thread()->runLoop().createUniqueId()));
+    m_mode.append(String::number(toWorkerGlobalScope(scriptExecutionContext)->thread()->runLoop().createUniqueId()));
     postInitToMainThread(path);
 }
 
@@ -217,7 +217,7 @@ void WorkerFileWriterCallbacksBridge::dispatchTaskToWorkerThread(PassOwnPtr<Scri
 bool WorkerFileWriterCallbacksBridge::waitForOperationToComplete()
 {
     while (m_operationInProgress) {
-        WorkerGlobalScope* context = static_cast<WorkerGlobalScope*>(m_workerGlobalScope);
+        WorkerGlobalScope* context = toWorkerGlobalScope(m_workerGlobalScope);
         if (context->thread()->runLoop().runInMode(context, m_mode) == MessageQueueTerminated)
             return false;
     }

@@ -54,7 +54,7 @@ static const char fileSystemOperationsMode[] = "fileSystemOperationsMode";
 
 WorkerAsyncFileSystemChromium::WorkerAsyncFileSystemChromium(ScriptExecutionContext* context, FileSystemSynchronousType synchronousType)
     : m_scriptExecutionContext(context)
-    , m_workerGlobalScope(static_cast<WorkerGlobalScope*>(context))
+    , m_workerGlobalScope(toWorkerGlobalScope(context))
     , m_synchronousType(synchronousType)
 {
     ASSERT(m_scriptExecutionContext->isWorkerGlobalScope());

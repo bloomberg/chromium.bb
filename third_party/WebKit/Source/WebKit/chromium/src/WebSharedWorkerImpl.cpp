@@ -356,8 +356,7 @@ void WebSharedWorkerImpl::connectTask(ScriptExecutionContext* context, PassOwnPt
     // Wrap the passed-in channel in a MessagePort, and send it off via a connect event.
     RefPtr<MessagePort> port = MessagePort::create(*context);
     port->entangle(channel);
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
-    WorkerGlobalScope* workerGlobalScope = static_cast<WorkerGlobalScope*>(context);
+    WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
     ASSERT_WITH_SECURITY_IMPLICATION(workerGlobalScope->isSharedWorkerGlobalScope());
     workerGlobalScope->dispatchEvent(createConnectEvent(port));
 }
@@ -390,8 +389,7 @@ void WebSharedWorkerImpl::pauseWorkerContextOnStart()
 
 static void resumeWorkerContextTask(ScriptExecutionContext* context, bool)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
-    static_cast<WorkerGlobalScope*>(context)->workerInspectorController()->resume();
+    toWorkerGlobalScope(context)->workerInspectorController()->resume();
 }
 
 void WebSharedWorkerImpl::resumeWorkerContext()
@@ -403,8 +401,7 @@ void WebSharedWorkerImpl::resumeWorkerContext()
 
 static void connectToWorkerContextInspectorTask(ScriptExecutionContext* context, bool)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
-    static_cast<WorkerGlobalScope*>(context)->workerInspectorController()->connectFrontend();
+    toWorkerGlobalScope(context)->workerInspectorController()->connectFrontend();
 }
 
 void WebSharedWorkerImpl::attachDevTools()
@@ -414,8 +411,7 @@ void WebSharedWorkerImpl::attachDevTools()
 
 static void reconnectToWorkerContextInspectorTask(ScriptExecutionContext* context, const String& savedState)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
-    WorkerInspectorController* ic = static_cast<WorkerGlobalScope*>(context)->workerInspectorController();
+    WorkerInspectorController* ic = toWorkerGlobalScope(context)->workerInspectorController();
     ic->restoreInspectorStateFromCookie(savedState);
     ic->resume();
 }
@@ -427,8 +423,7 @@ void WebSharedWorkerImpl::reattachDevTools(const WebString& savedState)
 
 static void disconnectFromWorkerContextInspectorTask(ScriptExecutionContext* context, bool)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
-    static_cast<WorkerGlobalScope*>(context)->workerInspectorController()->disconnectFrontend();
+    toWorkerGlobalScope(context)->workerInspectorController()->disconnectFrontend();
 }
 
 void WebSharedWorkerImpl::detachDevTools()
@@ -438,8 +433,7 @@ void WebSharedWorkerImpl::detachDevTools()
 
 static void dispatchOnInspectorBackendTask(ScriptExecutionContext* context, const String& message)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isWorkerGlobalScope());
-    static_cast<WorkerGlobalScope*>(context)->workerInspectorController()->dispatchMessageFromFrontend(message);
+    toWorkerGlobalScope(context)->workerInspectorController()->dispatchMessageFromFrontend(message);
 }
 
 void WebSharedWorkerImpl::dispatchDevToolsMessage(const WebString& message)

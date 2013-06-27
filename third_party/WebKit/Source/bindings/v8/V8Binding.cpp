@@ -448,7 +448,7 @@ v8::Local<v8::Context> toV8Context(ScriptExecutionContext* context, DOMWrapperWo
             return frame->script()->windowShell(world)->context();
     } else if (context->isWorkerGlobalScope()) {
         ASSERT(!world);
-        if (WorkerScriptController* script = static_cast<WorkerGlobalScope*>(context)->script())
+        if (WorkerScriptController* script = toWorkerGlobalScope(context)->script())
             return script->context();
     }
     return v8::Local<v8::Context>();

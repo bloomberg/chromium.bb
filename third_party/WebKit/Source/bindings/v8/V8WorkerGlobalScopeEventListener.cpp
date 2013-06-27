@@ -60,8 +60,7 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ScriptExecutionContext* conte
 
     v8::HandleScope handleScope;
 
-    ASSERT(context->isWorkerGlobalScope());
-    WorkerScriptController* script = static_cast<WorkerGlobalScope*>(context)->script();
+    WorkerScriptController* script = toWorkerGlobalScope(context)->script();
     if (!script)
         return;
 
