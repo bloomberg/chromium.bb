@@ -119,6 +119,10 @@ extern const char kChromeUIGestureConfigHost[];
 extern const char kChromeUITabModalConfirmDialogURL[];
 #endif
 
+#if defined(ENABLE_WEBRTC)
+extern const char kChromeUIWebRtcLogsURL[];
+#endif
+
 // chrome components of URLs. Should be kept in sync with the full URLs above.
 extern const char kChromeUIAboutHost[];
 extern const char kChromeUIAboutPageFrameHost[];
@@ -261,6 +265,10 @@ extern const char kChromeUIFileManagerHost[];
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
 extern const char kChromeUITabModalConfirmDialogHost[];
+#endif
+
+#if defined(ENABLE_WEBRTC)
+extern const char kChromeUIWebRtcLogsHost[];
 #endif
 
 // Options sub-pages.

@@ -1585,8 +1585,8 @@
         'browser/ui/views/color_chooser_win.cc',
         'browser/ui/views/confirm_bubble_views.cc',
         'browser/ui/views/confirm_bubble_views.h',
-        'browser/ui/views/conflicting_module_view_win.cc',  
-        'browser/ui/views/conflicting_module_view_win.h',  
+        'browser/ui/views/conflicting_module_view_win.cc',
+        'browser/ui/views/conflicting_module_view_win.h',
         'browser/ui/views/constrained_web_dialog_delegate_views.cc',
         'browser/ui/views/constrained_window_views.cc',
         'browser/ui/views/constrained_window_views.h',
@@ -2102,6 +2102,8 @@
         'browser/ui/webui/inspect_ui.h',
         'browser/ui/webui/instant_ui.cc',
         'browser/ui/webui/instant_ui.h',
+        'browser/ui/webui/media/webrtc_logs_ui.cc',
+        'browser/ui/webui/media/webrtc_logs_ui.h',
         'browser/ui/webui/memory_internals/memory_internals_handler.cc',
         'browser/ui/webui/memory_internals/memory_internals_handler.h',
         'browser/ui/webui/memory_internals/memory_internals_proxy.cc',
@@ -3015,6 +3017,12 @@
           'sources!': [
             'browser/ui/webui/options/geolocation_options_handler.cc',
             'browser/ui/webui/options/geolocation_options_handler.h',
+          ],
+        }],
+        ['enable_webrtc==0', {
+          'sources!': [
+            'browser/ui/webui/media/webrtc_logs_ui.cc',
+            'browser/ui/webui/media/webrtc_logs_ui.h',
           ],
         }],
       ],

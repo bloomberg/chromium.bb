@@ -101,6 +101,9 @@ const char* const kPaths[] = {
   content::kChromeUINetworkViewCacheHost,
   content::kChromeUITracingHost,
   content::kChromeUIWebRTCInternalsHost,
+#if defined(ENABLE_WEBRTC)
+  chrome::kChromeUIWebRtcLogsHost,
+#endif
 };
 
 }  // namespace

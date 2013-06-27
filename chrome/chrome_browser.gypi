@@ -981,6 +981,8 @@
         'browser/media/media_stream_devices_controller.h',
         'browser/media/media_stream_infobar_delegate.cc',
         'browser/media/media_stream_infobar_delegate.h',
+        'browser/media/webrtc_log_upload_list.cc',
+        'browser/media/webrtc_log_upload_list.h',
         'browser/media/webrtc_log_uploader.cc',
         'browser/media/webrtc_log_uploader.h',
         'browser/media/webrtc_logging_handler_host.cc',
@@ -3148,6 +3150,8 @@
         }],
         ['enable_webrtc==0', {
           'sources!': [
+            'browser/media/webrtc_log_upload_list.cc',
+            'browser/media/webrtc_log_upload_list.h',
             'browser/media/webrtc_log_uploader.cc',
             'browser/media/webrtc_log_uploader.h',
             'browser/media/webrtc_logging_handler_host.cc',

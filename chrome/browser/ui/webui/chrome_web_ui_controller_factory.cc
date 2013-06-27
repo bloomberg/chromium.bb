@@ -72,6 +72,10 @@
 #include "chrome/browser/ui/webui/policy_ui.h"
 #endif
 
+#if defined(ENABLE_WEBRTC)
+#include "chrome/browser/ui/webui/media/webrtc_logs_ui.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/welcome_ui_android.h"
 #else
@@ -250,6 +254,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<UserActionsUI>;
   if (url.host() == chrome::kChromeUIVersionHost)
     return &NewWebUI<VersionUI>;
+#if defined(ENABLE_WEBRTC)
+  if (url.host() == chrome::kChromeUIWebRtcLogsHost)
+    return &NewWebUI<WebRtcLogsUI>;
+#endif
 
   /****************************************************************************
    * OS Specific #defines

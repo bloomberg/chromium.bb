@@ -7360,6 +7360,32 @@ Keep your key file in a safe place. You will need it to create new versions of y
         If enabled, application size and layout will adapt to the operating system's DPI settings.
       </message>
 
+      <!-- WebRTC logs -->
+      <message name="IDS_WEBRTC_LOGS_TITLE" desc="Title for the chrome://webrtc-logs page.">
+        Uploaded WebRTC logs
+      </message>
+      <message name="IDS_WEBRTC_LOGS_LOG_COUNT_BANNER_FORMAT" desc="Format for WebRTC log count banner on chrome://webrtc-logs">
+        Uploaded WebRTC logs (<ph name="WEBRTC_LOG_COUNT">$1<ex>3</ex></ph>)
+      </message>
+      <message name="IDS_WEBRTC_LOGS_LOG_HEADER_FORMAT" desc="Format for uploaded log entry headings on chrome://webrtc-logs">
+        WebRTC log ID <ph name="WEBRTC_LOG_ID">$1<ex>8fa95dbb6f2ec862</ex></ph>
+      </message>
+      <message name="IDS_WEBRTC_LOGS_LOG_TIME_FORMAT" desc="Format for uploaded log entry upload time on chrome://webrtc-logs">
+        Uploaded <ph name="WEBRTC_LOG_TIME">$1<ex>Tuesday, January 25, 2011 2:58:02 PM</ex></ph>
+      </message>
+      <message name="IDS_WEBRTC_LOGS_BUG_LINK_LABEL" desc="Link text for filing a bug on chrome://webrtc-logs">
+        File bug
+      </message>
+      <message name="IDS_WEBRTC_LOGS_NO_LOGS_MESSAGE" desc="The explanatory message for chrome://webrtc-logs when there are no uploaded logs">
+        You have no recently uploaded WebRTC logs.
+      </message>
+      <message name="IDS_WEBRTC_LOGS_DISABLED_HEADER" desc="The header for chrome://webrtc-logs when uploading is disabled">
+        Log capturing and uploading is disabled.
+      </message>
+      <message name="IDS_WEBRTC_LOGS_DISABLED_MESSAGE" desc="The explanatory message for chrome://webrtc-logs when uploading is disabled">
+        This page only shows information on your recently uploaded WebRTC logs if you <ph name="BEGIN_LINK">&lt;a href="https://www.google.com/support/chrome/bin/answer.py?answer=96817"&gt;</ph>enable crash reporting<ph name="END_LINK">&lt;/a&gt;</ph>.
+      </message>
+
       <!-- Custom dictionary page -->
       <message name="IDS_LANGUAGE_DICTIONARY_OVERLAY_TITLE" desc="Title for the chrome://settings/editDictionary page, where a user can add and remove words in the dictionary used for spelling">
         Custom spelling dictionary
@@ -15097,7 +15123,7 @@ You need to be signed in to use this feature.
 &#160;&#8226;&#160;manage other settings.
 
 Creating a supervised user does not create a Google Account, and their settings and data will not follow them to other devices with Chrome Sync. Currently, a supervised user applies only to this installation of Chrome, on this device.
-      
+
 After you create a new supervised user, you can manage their settings at any time, from any device, at www.chrome.com/manage.
     </message>
     <message name="IDS_NEW_MANAGED_USER_LEARN_MORE_DONE_BUTTON" desc="Text for the 'OK' button on the 'Learn more' dialog for the supervised user feature.">

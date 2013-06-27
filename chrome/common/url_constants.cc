@@ -126,6 +126,10 @@ const char kChromeUITabModalConfirmDialogURL[] =
     "chrome://tab-modal-confirm-dialog/";
 #endif
 
+#if defined(ENABLE_WEBRTC)
+const char kChromeUIWebRtcLogsURL[] = "chrome://webrtc-logs/";
+#endif
+
 // Add Chrome UI hosts here, in alphabetical order.
 // Add hosts to kChromePaths in browser_about_handler.cc to be listed by
 // chrome://chrome-urls (about:about) and the built-in AutocompleteProvider.
@@ -271,6 +275,10 @@ const char kChromeUIFileManagerHost[] = "files";
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
 const char kChromeUITabModalConfirmDialogHost[] = "tab-modal-confirm-dialog";
+#endif
+
+#if defined(ENABLE_WEBRTC)
+const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";
 #endif
 
 // Option sub pages.
