@@ -326,6 +326,11 @@ class MinidumpThread : public MinidumpObject {
   // Print a human-readable representation of the object to stdout.
   void Print();
 
+  // Returns the start address of the thread stack memory region.  Returns 0 if
+  // MinidumpThread is invalid.  Note that this method can be called even when
+  // the thread memory cannot be read and GetMemory returns NULL.
+  virtual uint64_t GetStartOfStackMemoryRange() const;
+
  protected:
   explicit MinidumpThread(Minidump* minidump);
 
@@ -586,13 +591,14 @@ class MinidumpMemoryList : public MinidumpStream {
 
   // Random access to memory regions.  Returns the region encompassing
   // the address identified by address.
-  MinidumpMemoryRegion* GetMemoryRegionForAddress(uint64_t address);
+  virtual MinidumpMemoryRegion* GetMemoryRegionForAddress(uint64_t address);
 
   // Print a human-readable representation of the object to stdout.
   void Print();
 
  private:
   friend class Minidump;
+  friend class MockMinidumpMemoryList;
 
   typedef vector<MDMemoryDescriptor>   MemoryDescriptors;
   typedef vector<MinidumpMemoryRegion> MemoryRegions;
@@ -932,7 +938,7 @@ class Minidump {
   // parameter).
   virtual MinidumpThreadList* GetThreadList();
   MinidumpModuleList* GetModuleList();
-  MinidumpMemoryList* GetMemoryList();
+  virtual MinidumpMemoryList* GetMemoryList();
   MinidumpException* GetException();
   MinidumpAssertion* GetAssertion();
   virtual MinidumpSystemInfo* GetSystemInfo();

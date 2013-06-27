@@ -122,6 +122,12 @@ ProcessResult MinidumpProcessor::Process(
   if (module_list)
     process_state->modules_ = module_list->Copy();
 
+  MinidumpMemoryList *memory_list = dump->GetMemoryList();
+  if (memory_list) {
+    BPLOG(INFO) << "Found " << memory_list->region_count()
+                << " memory regions.";
+  }
+
   MinidumpThreadList *threads = dump->GetThreadList();
   if (!threads) {
     BPLOG(ERROR) << "Minidump " << dump->path() << " has no thread list";
@@ -208,7 +214,17 @@ ProcessResult MinidumpProcessor::Process(
       }
     }
 
+    // If the memory region for the stack cannot be read using the RVA stored
+    // in the memory descriptor inside MINIDUMP_THREAD, try to locate and use
+    // a memory region (containing the stack) from the minidump memory list.
     MinidumpMemoryRegion *thread_memory = thread->GetMemory();
+    if (!thread_memory && memory_list) {
+      uint64_t start_stack_memory_range = thread->GetStartOfStackMemoryRange();
+      if (start_stack_memory_range) {
+        thread_memory = memory_list->GetMemoryRegionForAddress(
+           start_stack_memory_range);
+      }
+    }
     if (!thread_memory) {
       BPLOG(ERROR) << "No memory region for " << thread_string;
     }

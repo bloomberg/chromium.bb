@@ -70,6 +70,7 @@ class MockMinidump : public Minidump {
   MOCK_METHOD0(GetException, MinidumpException*());
   MOCK_METHOD0(GetAssertion, MinidumpAssertion*());
   MOCK_METHOD0(GetModuleList, MinidumpModuleList*());
+  MOCK_METHOD0(GetMemoryList, MinidumpMemoryList*());
 };
 
 class MockMinidumpThreadList : public MinidumpThreadList {
@@ -80,6 +81,13 @@ class MockMinidumpThreadList : public MinidumpThreadList {
   MOCK_CONST_METHOD1(GetThreadAtIndex, MinidumpThread*(unsigned int));
 };
 
+class MockMinidumpMemoryList : public MinidumpMemoryList {
+ public:
+  MockMinidumpMemoryList() : MinidumpMemoryList(NULL) {}
+
+  MOCK_METHOD1(GetMemoryRegionForAddress, MinidumpMemoryRegion*(uint64_t));
+};
+
 class MockMinidumpThread : public MinidumpThread {
  public:
   MockMinidumpThread() : MinidumpThread(NULL) {}
@@ -87,6 +95,7 @@ class MockMinidumpThread : public MinidumpThread {
   MOCK_CONST_METHOD1(GetThreadID, bool(uint32_t*));
   MOCK_METHOD0(GetContext, MinidumpContext*());
   MOCK_METHOD0(GetMemory, MinidumpMemoryRegion*());
+  MOCK_CONST_METHOD0(GetStartOfStackMemoryRange, uint64_t());
 };
 
 // This is crappy, but MinidumpProcessor really does want a
@@ -131,6 +140,7 @@ using google_breakpad::MinidumpSystemInfo;
 using google_breakpad::MinidumpThreadList;
 using google_breakpad::MinidumpThread;
 using google_breakpad::MockMinidump;
+using google_breakpad::MockMinidumpMemoryList;
 using google_breakpad::MockMinidumpMemoryRegion;
 using google_breakpad::MockMinidumpThread;
 using google_breakpad::MockMinidumpThreadList;
@@ -271,7 +281,7 @@ void TestSymbolSupplier::FreeSymbolData(const CodeModule *module) {
 // MDRawSystemInfo fed to it.
 class TestMinidumpSystemInfo : public MinidumpSystemInfo {
  public:
-  TestMinidumpSystemInfo(MDRawSystemInfo info) :
+  explicit TestMinidumpSystemInfo(MDRawSystemInfo info) :
       MinidumpSystemInfo(NULL) {
     valid_ = true;
     system_info_ = info;
@@ -282,8 +292,9 @@ class TestMinidumpSystemInfo : public MinidumpSystemInfo {
 // A test minidump context, just returns the MDRawContextX86
 // fed to it.
 class TestMinidumpContext : public MinidumpContext {
-public:
-  TestMinidumpContext(const MDRawContextX86& context) : MinidumpContext(NULL) {
+ public:
+  explicit TestMinidumpContext(const MDRawContextX86& context) :
+      MinidumpContext(NULL) {
     valid_ = true;
     context_.x86 = new MDRawContextX86(context);
     context_flags_ = MD_CONTEXT_X86;
@@ -308,16 +319,17 @@ TEST_F(MinidumpProcessorTest, TestCorruptMinidumps) {
 
   MDRawHeader fakeHeader;
   fakeHeader.time_date_stamp = 0;
-  EXPECT_CALL(dump, header()).WillOnce(Return((MDRawHeader*)NULL)).
+  EXPECT_CALL(dump, header()).
+      WillOnce(Return(reinterpret_cast<MDRawHeader*>(NULL))).
       WillRepeatedly(Return(&fakeHeader));
 
   EXPECT_EQ(processor.Process(&dump, &state),
             google_breakpad::PROCESS_ERROR_NO_MINIDUMP_HEADER);
 
   EXPECT_CALL(dump, GetThreadList()).
-      WillOnce(Return((MinidumpThreadList*)NULL));
+      WillOnce(Return(reinterpret_cast<MinidumpThreadList*>(NULL)));
   EXPECT_CALL(dump, GetSystemInfo()).
-    WillRepeatedly(Return((MinidumpSystemInfo*)NULL));
+      WillRepeatedly(Return(reinterpret_cast<MinidumpSystemInfo*>(NULL)));
 
   EXPECT_EQ(processor.Process(&dump, &state),
             google_breakpad::PROCESS_ERROR_NO_THREAD_LIST);
@@ -470,13 +482,23 @@ TEST_F(MinidumpProcessorTest, TestThreadMissingMemory) {
   EXPECT_CALL(dump, GetThreadList()).
       WillOnce(Return(&thread_list));
 
+  MockMinidumpMemoryList memory_list;
+  EXPECT_CALL(dump, GetMemoryList()).
+      WillOnce(Return(&memory_list));
+
   // Return a thread missing stack memory.
   MockMinidumpThread no_memory_thread;
   EXPECT_CALL(no_memory_thread, GetThreadID(_)).
     WillRepeatedly(DoAll(SetArgumentPointee<0>(1),
                          Return(true)));
   EXPECT_CALL(no_memory_thread, GetMemory()).
-    WillRepeatedly(Return((MinidumpMemoryRegion*)NULL));
+    WillRepeatedly(Return(reinterpret_cast<MinidumpMemoryRegion*>(NULL)));
+
+  const uint64_t kTestStartOfMemoryRange = 0x1234;
+  EXPECT_CALL(no_memory_thread, GetStartOfStackMemoryRange()).
+    WillRepeatedly(Return(kTestStartOfMemoryRange));
+  EXPECT_CALL(memory_list, GetMemoryRegionForAddress(kTestStartOfMemoryRange)).
+    WillRepeatedly(Return(reinterpret_cast<MinidumpMemoryRegion*>(NULL)));
 
   MDRawContextX86 no_memory_thread_raw_context;
   memset(&no_memory_thread_raw_context, 0,
@@ -493,7 +515,7 @@ TEST_F(MinidumpProcessorTest, TestThreadMissingMemory) {
   EXPECT_CALL(thread_list, GetThreadAtIndex(0)).
     WillOnce(Return(&no_memory_thread));
 
-  MinidumpProcessor processor((SymbolSupplier*)NULL, NULL);
+  MinidumpProcessor processor(reinterpret_cast<SymbolSupplier*>(NULL), NULL);
   ProcessState state;
   EXPECT_EQ(processor.Process(&dump, &state),
             google_breakpad::PROCESS_OK);
@@ -526,25 +548,33 @@ TEST_F(MinidumpProcessorTest, TestThreadMissingContext) {
   EXPECT_CALL(dump, GetThreadList()).
       WillOnce(Return(&thread_list));
 
+  MockMinidumpMemoryList memory_list;
+  EXPECT_CALL(dump, GetMemoryList()).
+      WillOnce(Return(&memory_list));
+
   // Return a thread missing a thread context.
   MockMinidumpThread no_context_thread;
   EXPECT_CALL(no_context_thread, GetThreadID(_)).
     WillRepeatedly(DoAll(SetArgumentPointee<0>(1),
                          Return(true)));
   EXPECT_CALL(no_context_thread, GetContext()).
-    WillRepeatedly(Return((MinidumpContext*)NULL));
+    WillRepeatedly(Return(reinterpret_cast<MinidumpContext*>(NULL)));
 
   // The memory contents don't really matter here, since it won't be used.
   MockMinidumpMemoryRegion no_context_thread_memory(0x1234, "xxx");
   EXPECT_CALL(no_context_thread, GetMemory()).
     WillRepeatedly(Return(&no_context_thread_memory));
+  EXPECT_CALL(no_context_thread, GetStartOfStackMemoryRange()).
+    Times(0);
+  EXPECT_CALL(memory_list, GetMemoryRegionForAddress(_)).
+    Times(0);
 
   EXPECT_CALL(thread_list, thread_count()).
     WillRepeatedly(Return(1));
   EXPECT_CALL(thread_list, GetThreadAtIndex(0)).
     WillOnce(Return(&no_context_thread));
 
-  MinidumpProcessor processor((SymbolSupplier*)NULL, NULL);
+  MinidumpProcessor processor(reinterpret_cast<SymbolSupplier*>(NULL), NULL);
   ProcessState state;
   EXPECT_EQ(processor.Process(&dump, &state),
             google_breakpad::PROCESS_OK);

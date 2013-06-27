@@ -1509,13 +1509,15 @@ bool MinidumpThread::Read() {
   }
 
   // Check for base + size overflow or undersize.
-  if (thread_.stack.memory.data_size == 0 ||
+  if (thread_.stack.memory.rva == 0 ||
+      thread_.stack.memory.data_size == 0 ||
       thread_.stack.memory.data_size > numeric_limits<uint64_t>::max() -
                                        thread_.stack.start_of_memory_range) {
     // This is ok, but log an error anyway.
     BPLOG(ERROR) << "MinidumpThread has a memory region problem, " <<
                     HexString(thread_.stack.start_of_memory_range) << "+" <<
-                    HexString(thread_.stack.memory.data_size);
+                    HexString(thread_.stack.memory.data_size) <<
+                    ", RVA 0x" << HexString(thread_.stack.memory.rva);
   } else {
     memory_ = new MinidumpMemoryRegion(minidump_);
     memory_->SetDescriptor(&thread_.stack);
@@ -1525,6 +1527,14 @@ bool MinidumpThread::Read() {
   return true;
 }
 
+uint64_t MinidumpThread::GetStartOfStackMemoryRange() const {
+  if (!valid_) {
+    BPLOG(ERROR) << "GetStartOfStackMemoryRange: Invalid MinidumpThread";
+    return 0;
+  }
+
+  return thread_.stack.start_of_memory_range;
+}
 
 MinidumpMemoryRegion* MinidumpThread::GetMemory() {
   if (!valid_) {
