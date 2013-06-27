@@ -1100,11 +1100,28 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
 
 void RenderWidgetHostImpl::ForwardGestureEvent(
     const WebKit::WebGestureEvent& gesture_event) {
+  ForwardGestureEventWithLatencyInfo(gesture_event, ui::LatencyInfo());
+}
+
+void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
+    const WebKit::WebGestureEvent& gesture_event,
+    const ui::LatencyInfo& ui_latency) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardGestureEvent");
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
-  ui::LatencyInfo latency_info = NewInputLatencyInfo();
+  ui::LatencyInfo latency_info;
+  // In Aura, gesture event will carry its original touch event's
+  // INPUT_EVENT_LATENCY_RWH_COMPONENT. For non-aura platform, we add the
+  // INPUT_EVENT_LATENCY_RWH_COMPONENT right here.
+  if (!ui_latency.HasLatencyComponent(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
+                                      GetLatencyComponentId()))
+    latency_info = NewInputLatencyInfo();
+
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_INJECTED_RWH_COMPONENT,
+                                GetLatencyComponentId(),
+                                ++last_input_number_);
+  latency_info.MergeWith(ui_latency);
 
   if (!IsInOverscrollGesture() &&
       !gesture_event_filter_->ShouldForward(
@@ -1279,6 +1296,8 @@ void RenderWidgetHostImpl::SendInputEvent(const WebInputEvent& input_event,
                                           int event_size,
                                           const ui::LatencyInfo& latency_info,
                                           bool is_keyboard_shortcut) {
+  DCHECK(latency_info.HasLatencyComponent(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
+                                          GetLatencyComponentId()));
   input_event_start_time_ = TimeTicks::Now();
   Send(new InputMsg_HandleInputEvent(
       routing_id_, &input_event, latency_info, is_keyboard_shortcut));

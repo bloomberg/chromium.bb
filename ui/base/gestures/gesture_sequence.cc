@@ -558,6 +558,13 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       pinch_distance_start_ = pinch_distance_current_;
     }
   }
+
+  const ui::LatencyInfo* touch_latency = event.latency();
+  Gestures::iterator it = gestures->begin();
+  for (; it != gestures->end(); it++) {
+    (*it)->latency()->MergeWith(*touch_latency);
+  }
+
   return gestures.release();
 }
 

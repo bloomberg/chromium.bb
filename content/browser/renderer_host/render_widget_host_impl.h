@@ -264,6 +264,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Forwards the given message to the renderer. These are called by the view
   // when it has received a message.
   void ForwardGestureEvent(const WebKit::WebGestureEvent& gesture_event);
+  void ForwardGestureEventWithLatencyInfo(
+      const WebKit::WebGestureEvent& gesture_event,
+      const ui::LatencyInfo& ui_latency);
   virtual void ForwardTouchEventWithLatencyInfo(
       const WebKit::WebTouchEvent& touch_event,
       const ui::LatencyInfo& ui_latency);

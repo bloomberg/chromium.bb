@@ -2904,7 +2904,8 @@ bool RenderWidgetHostViewWin::ForwardGestureEventToRenderer(
     render_widget_host_->ForwardGestureEvent(
         CreateFlingCancelEvent(gesture->time_stamp().InSecondsF()));
   }
-  render_widget_host_->ForwardGestureEvent(web_gesture);
+  render_widget_host_->ForwardGestureEventWithLatencyInfo(web_gesture,
+                                                          *gesture->latency());
   return true;
 }
 

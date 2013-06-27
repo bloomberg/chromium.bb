@@ -2534,7 +2534,7 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   if (gesture.type != WebKit::WebInputEvent::Undefined) {
-    host_->ForwardGestureEvent(gesture);
+    host_->ForwardGestureEventWithLatencyInfo(gesture, *event->latency());
 
     if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
         event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||

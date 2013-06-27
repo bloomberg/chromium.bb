@@ -82,6 +82,7 @@ class UI_EXPORT Event {
   }
 
   LatencyInfo* latency() { return &latency_; }
+  const LatencyInfo* latency() const { return &latency_; }
   void set_latency(const LatencyInfo& latency) { latency_ = latency; }
 
   // By default, events are "cancelable", this means any default processing that
