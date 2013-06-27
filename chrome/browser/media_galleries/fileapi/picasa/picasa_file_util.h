@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PICASA_FILE_UTIL_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PICASA_FILE_UTIL_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 
@@ -23,11 +24,11 @@ class PicasaFileUtil : public chrome::NativeMediaFileUtil {
  protected:
   // NativeMediaFileUtil overrides.
   virtual void GetFileInfoOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const GetFileInfoCallback& callback) OVERRIDE;
   virtual void ReadDirectoryOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const ReadDirectoryCallback& callback) OVERRIDE;
   virtual base::PlatformFileError GetFileInfoSync(
@@ -46,11 +47,11 @@ class PicasaFileUtil : public chrome::NativeMediaFileUtil {
 
  private:
   void GetFileInfoWithFreshDataProvider(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const GetFileInfoCallback& callback);
   void ReadDirectoryWithFreshDataProvider(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const ReadDirectoryCallback& callback);
 

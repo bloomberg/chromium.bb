@@ -4,6 +4,11 @@
 
 #include "chrome/browser/media_galleries/fileapi/itunes_file_util.h"
 
+#include <set>
+#include <string>
+#include <vector>
+
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_data_provider.h"
@@ -46,30 +51,33 @@ ItunesFileUtil::~ItunesFileUtil() {
 }
 
 void ItunesFileUtil::GetFileInfoOnTaskRunnerThread(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   GetDataProvider()->RefreshData(
       base::Bind(&ItunesFileUtil::GetFileInfoWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(), context, url, callback));
+                 weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                 callback));
 }
 
 void ItunesFileUtil::ReadDirectoryOnTaskRunnerThread(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   GetDataProvider()->RefreshData(
       base::Bind(&ItunesFileUtil::ReadDirectoryWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(), context, url, callback));
+                 weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                 callback));
 }
 
 void ItunesFileUtil::CreateSnapshotFileOnTaskRunnerThread(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   GetDataProvider()->RefreshData(
       base::Bind(&ItunesFileUtil::CreateSnapshotFileWithFreshDataProvider,
-                 weak_factory_.GetWeakPtr(), context, url, callback));
+                 weak_factory_.GetWeakPtr(), base::Passed(&context), url,
+                 callback));
 }
 
 // Contents of the iTunes media gallery:
@@ -262,7 +270,7 @@ base::PlatformFileError ItunesFileUtil::GetLocalFilePath(
 }
 
 void ItunesFileUtil::GetFileInfoWithFreshDataProvider(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback,
     bool valid_parse) {
@@ -276,11 +284,12 @@ void ItunesFileUtil::GetFileInfoWithFreshDataProvider(
     }
     return;
   }
-  NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(context, url, callback);
+  NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(context.Pass(), url,
+                                                     callback);
 }
 
 void ItunesFileUtil::ReadDirectoryWithFreshDataProvider(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback,
     bool valid_parse) {
@@ -294,11 +303,12 @@ void ItunesFileUtil::ReadDirectoryWithFreshDataProvider(
     }
     return;
   }
-  NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread(context, url, callback);
+  NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread(context.Pass(), url,
+                                                       callback);
 }
 
 void ItunesFileUtil::CreateSnapshotFileWithFreshDataProvider(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback,
     bool valid_parse) {
@@ -315,7 +325,7 @@ void ItunesFileUtil::CreateSnapshotFileWithFreshDataProvider(
     }
     return;
   }
-  NativeMediaFileUtil::CreateSnapshotFileOnTaskRunnerThread(context, url,
+  NativeMediaFileUtil::CreateSnapshotFileOnTaskRunnerThread(context.Pass(), url,
                                                             callback);
 }
 

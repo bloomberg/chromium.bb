@@ -89,36 +89,36 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
 
  protected:
   virtual void CreateDirectoryOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       bool exclusive,
       bool recursive,
       const StatusCallback& callback);
   virtual void GetFileInfoOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const GetFileInfoCallback& callback);
   virtual void ReadDirectoryOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const ReadDirectoryCallback& callback);
   virtual void CopyOrMoveFileLocalOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& src_url,
       const fileapi::FileSystemURL& dest_url,
       bool copy,
       const StatusCallback& callback);
   virtual void CopyInForeignFileOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const base::FilePath& src_file_path,
       const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback);
   virtual void DeleteDirectoryOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const StatusCallback& callback);
   virtual void CreateSnapshotFileOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const CreateSnapshotFileCallback& callback);
 
