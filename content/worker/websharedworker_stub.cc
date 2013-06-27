@@ -107,8 +107,10 @@ void WebSharedWorkerStub::OnStartWorkerContext(
 
 void WebSharedWorkerStub::OnConnect(int sent_message_port_id, int routing_id) {
   if (started_) {
-    WebKit::WebMessagePortChannel* channel = new WebMessagePortChannelImpl(
-        routing_id, sent_message_port_id, base::MessageLoopProxy::current());
+    WebKit::WebMessagePortChannel* channel =
+        new WebMessagePortChannelImpl(routing_id,
+                                      sent_message_port_id,
+                                      base::MessageLoopProxy::current().get());
     impl_->connect(channel, NULL);
   } else {
     // If two documents try to load a SharedWorker at the same time, the

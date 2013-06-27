@@ -565,7 +565,7 @@ void PolicyUIHandler::SendPolicyNames() const {
 
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    const extensions::Extension* extension = *it;
+    const extensions::Extension* extension = it->get();
     // Skip this extension if it's not an enterprise extension.
     if (!extension->manifest()->HasPath(
         extension_manifest_keys::kStorageManagedSchema))
@@ -612,7 +612,7 @@ void PolicyUIHandler::SendPolicyValues() const {
 
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    const extensions::Extension* extension = *it;
+    const extensions::Extension* extension = it->get();
     // Skip this extension if it's not an enterprise extension.
     if (!extension->manifest()->HasPath(
         extension_manifest_keys::kStorageManagedSchema))

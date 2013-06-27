@@ -143,9 +143,9 @@ void ShortcutManager::OnceOffCreateShortcuts() {
   const ExtensionSet* apps = extension_service->extensions();
   for (ExtensionSet::const_iterator it = apps->begin();
        it != apps->end(); ++it) {
-    if (ShouldCreateShortcutFor(*it))
+    if (ShouldCreateShortcutFor(it->get()))
       web_app::UpdateShortcutInfoAndIconForApp(
-          *(*it), profile_, base::Bind(&CreateShortcutsInApplicationsMenu));
+          *it->get(), profile_, base::Bind(&CreateShortcutsInApplicationsMenu));
   }
 }
 

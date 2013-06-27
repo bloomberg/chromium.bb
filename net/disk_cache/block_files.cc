@@ -450,7 +450,7 @@ bool BlockFiles::OpenBlockFile(int index) {
     return false;
   }
 
-  BlockHeader header(file);
+  BlockHeader header(file.get());
   if (kBlockMagic != header->magic || kBlockVersion2 != header->version) {
     LOG(ERROR) << "Invalid file version or magic " << name.value();
     return false;

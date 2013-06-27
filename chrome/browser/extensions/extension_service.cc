@@ -835,7 +835,7 @@ bool ExtensionService::UninstallExtension(
 
   delayed_installs_.Remove(extension_id);
 
-  PruneSharedModulesOnUninstall(extension);
+  PruneSharedModulesOnUninstall(extension.get());
 
   // Track the uninstallation.
   UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionUninstalled", 1, 2);
@@ -959,12 +959,12 @@ void ExtensionService::DisableUserExtensions() {
 
   for (ExtensionSet::const_iterator extension = extensions_.begin();
       extension != extensions_.end(); ++extension) {
-    if (management_policy->UserMayModifySettings(*extension, NULL))
+    if (management_policy->UserMayModifySettings(extension->get(), NULL))
       to_disable.push_back(*extension);
   }
   for (ExtensionSet::const_iterator extension = terminated_extensions_.begin();
       extension != terminated_extensions_.end(); ++extension) {
-    if (management_policy->UserMayModifySettings(*extension, NULL))
+    if (management_policy->UserMayModifySettings(extension->get(), NULL))
       to_disable.push_back(*extension);
   }
 
@@ -2261,7 +2261,8 @@ scoped_ptr<const ExtensionSet>
     set_to_check->InsertAll(extensions_);
     for (ExtensionSet::const_iterator iter = set_to_check->begin();
          iter != set_to_check->end(); ++iter) {
-      if (SharedModuleInfo::ImportsExtensionById(*iter, extension->id())) {
+      if (SharedModuleInfo::ImportsExtensionById(iter->get(),
+                                                 extension->id())) {
         dependents->Insert(*iter);
       }
     }

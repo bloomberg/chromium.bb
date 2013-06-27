@@ -93,7 +93,7 @@ PepperNetworkProxyHost::GetUIThreadDataOnUIThread(int render_process_id,
 void PepperNetworkProxyHost::DidGetUIThreadData(
     const UIThreadData& ui_thread_data) {
   is_allowed_ = ui_thread_data.is_allowed;
-  if (ui_thread_data.context_getter &&
+  if (ui_thread_data.context_getter.get() &&
       ui_thread_data.context_getter->GetURLRequestContext()) {
     proxy_service_ =
         ui_thread_data.context_getter->GetURLRequestContext()->proxy_service();

@@ -49,7 +49,7 @@ WebDatabaseService::WebDatabaseService(
   // WebDatabaseService should be instantiated on UI thread.
   DCHECK(ui_thread->BelongsToCurrentThread());
   // WebDatabaseService requires DB thread if instantiated.
-  DCHECK(db_thread);
+  DCHECK(db_thread.get());
 }
 
 WebDatabaseService::~WebDatabaseService() {

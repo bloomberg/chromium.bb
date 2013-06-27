@@ -445,7 +445,7 @@ MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
       new talk_base::RefCountedObject<MockVideoSource>();
   source->SetVideoCapturer(capturer);
 
-  return new talk_base::RefCountedObject<MockLocalVideoTrack>(id, source);
+  return new talk_base::RefCountedObject<MockLocalVideoTrack>(id, source.get());
 }
 
 scoped_refptr<webrtc::AudioTrackInterface>

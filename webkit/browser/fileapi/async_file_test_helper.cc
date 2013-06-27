@@ -51,7 +51,7 @@ void CreateSnapshotFileCallback(
     const base::PlatformFileInfo& file_info,
     const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
-  DCHECK(!file_ref);
+  DCHECK(!file_ref.get());
   *result_out = result;
   if (platform_path_out)
     *platform_path_out = platform_path;

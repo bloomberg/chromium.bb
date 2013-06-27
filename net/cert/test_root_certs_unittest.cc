@@ -33,13 +33,13 @@ const char kGoodCertificateFile[] = "ok_cert.pem";
 TEST(TestRootCertsTest, AddFromPointer) {
   scoped_refptr<X509Certificate> root_cert =
       ImportCertFromFile(GetTestCertsDirectory(), kRootCertificateFile);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert.get());
 
   TestRootCerts* test_roots = TestRootCerts::GetInstance();
   ASSERT_NE(static_cast<TestRootCerts*>(NULL), test_roots);
   EXPECT_TRUE(test_roots->IsEmpty());
 
-  EXPECT_TRUE(test_roots->Add(root_cert));
+  EXPECT_TRUE(test_roots->Add(root_cert.get()));
   EXPECT_FALSE(test_roots->IsEmpty());
 
   test_roots->Clear();
@@ -82,14 +82,14 @@ TEST(TestRootCertsTest, OverrideTrust) {
 
   scoped_refptr<X509Certificate> test_cert =
       ImportCertFromFile(GetTestCertsDirectory(), kGoodCertificateFile);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
 
   // Test that the good certificate fails verification, because the root
   // certificate should not yet be trusted.
   int flags = 0;
   CertVerifyResult bad_verify_result;
   scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
-  int bad_status = verify_proc->Verify(test_cert,
+  int bad_status = verify_proc->Verify(test_cert.get(),
                                        "127.0.0.1",
                                        flags,
                                        NULL,
@@ -106,7 +106,7 @@ TEST(TestRootCertsTest, OverrideTrust) {
   // Test that the certificate verification now succeeds, because the
   // TestRootCerts is successfully imbuing trust.
   CertVerifyResult good_verify_result;
-  int good_status = verify_proc->Verify(test_cert,
+  int good_status = verify_proc->Verify(test_cert.get(),
                                         "127.0.0.1",
                                         flags,
                                         NULL,
@@ -122,7 +122,7 @@ TEST(TestRootCertsTest, OverrideTrust) {
   // revert to their original state, and don't linger. If trust status
   // lingers, it will likely break other tests in net_unittests.
   CertVerifyResult restored_verify_result;
-  int restored_status = verify_proc->Verify(test_cert,
+  int restored_status = verify_proc->Verify(test_cert.get(),
                                             "127.0.0.1",
                                             flags,
                                             NULL,

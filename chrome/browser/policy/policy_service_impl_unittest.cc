@@ -630,10 +630,10 @@ TEST_F(PolicyServiceTest, IsInitializationComplete) {
 }
 
 TEST_F(PolicyServiceTest, RegisterPolicyDomain) {
-  EXPECT_FALSE(
-      policy_service_->GetPolicyDomainDescriptor(POLICY_DOMAIN_CHROME));
-  EXPECT_FALSE(
-      policy_service_->GetPolicyDomainDescriptor(POLICY_DOMAIN_EXTENSIONS));
+  EXPECT_FALSE(policy_service_->GetPolicyDomainDescriptor(POLICY_DOMAIN_CHROME)
+                   .get());
+  EXPECT_FALSE(policy_service_->GetPolicyDomainDescriptor(
+      POLICY_DOMAIN_EXTENSIONS).get());
 
   EXPECT_CALL(provider1_, RegisterPolicyDomain(_)).Times(AnyNumber());
   EXPECT_CALL(provider2_, RegisterPolicyDomain(_)).Times(AnyNumber());
@@ -644,9 +644,10 @@ TEST_F(PolicyServiceTest, RegisterPolicyDomain) {
   policy_service_->RegisterPolicyDomain(chrome_descriptor);
   Mock::VerifyAndClearExpectations(&provider0_);
 
-  EXPECT_TRUE(policy_service_->GetPolicyDomainDescriptor(POLICY_DOMAIN_CHROME));
-  EXPECT_FALSE(
-      policy_service_->GetPolicyDomainDescriptor(POLICY_DOMAIN_EXTENSIONS));
+  EXPECT_TRUE(policy_service_->GetPolicyDomainDescriptor(POLICY_DOMAIN_CHROME)
+                  .get());
+  EXPECT_FALSE(policy_service_->GetPolicyDomainDescriptor(
+      POLICY_DOMAIN_EXTENSIONS).get());
 
   // Register another namespace.
   std::string error;
@@ -672,9 +673,10 @@ TEST_F(PolicyServiceTest, RegisterPolicyDomain) {
   policy_service_->RegisterPolicyDomain(extensions_descriptor);
   Mock::VerifyAndClearExpectations(&provider0_);
 
-  EXPECT_TRUE(policy_service_->GetPolicyDomainDescriptor(POLICY_DOMAIN_CHROME));
-  EXPECT_TRUE(
-      policy_service_->GetPolicyDomainDescriptor(POLICY_DOMAIN_EXTENSIONS));
+  EXPECT_TRUE(policy_service_->GetPolicyDomainDescriptor(POLICY_DOMAIN_CHROME)
+                  .get());
+  EXPECT_TRUE(policy_service_->GetPolicyDomainDescriptor(
+      POLICY_DOMAIN_EXTENSIONS).get());
 
   // Remove those components.
   scoped_refptr<PolicyDomainDescriptor> empty_extensions_descriptor =

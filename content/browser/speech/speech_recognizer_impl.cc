@@ -568,7 +568,7 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
   audio_controller_ = AudioInputController::Create(
       audio_manager, this, input_parameters, device_id_);
 
-  if (!audio_controller_) {
+  if (!audio_controller_.get()) {
     return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO));
   }
 

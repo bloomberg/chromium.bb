@@ -137,7 +137,7 @@ void RemoveCookieTester::SetCookieCallback(bool result) {
 }
 
 void RemoveCookieTester::BlockUntilNotified() {
-  DCHECK(!runner_);
+  DCHECK(!runner_.get());
   if (waiting_callback_) {
     runner_ = new content::MessageLoopRunner;
     runner_->Run();
@@ -148,7 +148,7 @@ void RemoveCookieTester::BlockUntilNotified() {
 void RemoveCookieTester::Notify() {
   DCHECK(waiting_callback_);
   waiting_callback_ = false;
-  if (runner_)
+  if (runner_.get())
     runner_->Quit();
 }
 

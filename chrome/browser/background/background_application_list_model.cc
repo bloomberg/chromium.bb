@@ -43,7 +43,8 @@ using extensions::UpdatedExtensionPermissionsInfo;
 class ExtensionNameComparator {
  public:
   explicit ExtensionNameComparator(icu::Collator* collator);
-  bool operator()(const Extension* x, const Extension* y);
+  bool operator()(const scoped_refptr<const Extension>& x,
+                  const scoped_refptr<const Extension>& y);
 
  private:
   icu::Collator* collator_;
@@ -53,11 +54,11 @@ ExtensionNameComparator::ExtensionNameComparator(icu::Collator* collator)
   : collator_(collator) {
 }
 
-bool ExtensionNameComparator::operator()(const Extension* x,
-                                         const Extension* y) {
+bool ExtensionNameComparator::operator()(
+    const scoped_refptr<const Extension>& x,
+    const scoped_refptr<const Extension>& y) {
   return l10n_util::StringComparator<string16>(collator_)(
-    UTF8ToUTF16(x->name()),
-    UTF8ToUTF16(y->name()));
+      UTF8ToUTF16(x->name()), UTF8ToUTF16(y->name()));
 }
 
 // Background application representation, private to the

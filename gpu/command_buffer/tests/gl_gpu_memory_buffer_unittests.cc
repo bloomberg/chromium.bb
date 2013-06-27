@@ -42,7 +42,7 @@ class MockGpuMemoryBufferTest : public testing::Test {
     GLManager::Options options;
     image_manager_ = new ImageManager;
     image_factory_.reset(
-        new StrictMock<ImageFactoryMock>(image_manager_));
+        new StrictMock<ImageFactoryMock>(image_manager_.get()));
     options.image_manager = image_manager_.get();
     options.image_factory = image_factory_.get();
 

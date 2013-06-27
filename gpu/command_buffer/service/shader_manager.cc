@@ -117,7 +117,7 @@ Shader* ShaderManager::CreateShader(
 
 Shader* ShaderManager::GetShader(GLuint client_id) {
   ShaderMap::iterator it = shaders_.find(client_id);
-  return it != shaders_.end() ? it->second : NULL;
+  return it != shaders_.end() ? it->second.get() : NULL;
 }
 
 bool ShaderManager::GetClientId(GLuint service_id, GLuint* client_id) const {

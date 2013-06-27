@@ -217,7 +217,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     ASSERT_TRUE(current_texture_);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     ASSERT_FALSE(level);
-    ASSERT_TRUE(textures_[current_texture_]);
+    ASSERT_TRUE(textures_[current_texture_].get());
     ASSERT_EQ(textures_[current_texture_]->format, format);
     ASSERT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
     ASSERT_TRUE(pixels);
@@ -229,7 +229,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     ASSERT_TRUE(current_texture_);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     scoped_refptr<Texture> texture = textures_[current_texture_];
-    ASSERT_TRUE(texture);
+    ASSERT_TRUE(texture.get());
     if (param != GL_TEXTURE_MIN_FILTER)
       return;
     texture->filter = value;
@@ -264,7 +264,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   void GetPixels(gfx::Size size, WGC3Denum format, uint8_t* pixels) {
     ASSERT_TRUE(current_texture_);
     scoped_refptr<Texture> texture = textures_[current_texture_];
-    ASSERT_TRUE(texture);
+    ASSERT_TRUE(texture.get());
     ASSERT_EQ(texture->size, size);
     ASSERT_EQ(texture->format, format);
     memcpy(pixels, texture->data.get(), TextureSize(size, format));
@@ -273,7 +273,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   WGC3Denum GetTextureFilter() {
     DCHECK(current_texture_);
     scoped_refptr<Texture> texture = textures_[current_texture_];
-    DCHECK(texture);
+    DCHECK(texture.get());
     return texture->filter;
   }
 
@@ -291,7 +291,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   void AllocateTexture(gfx::Size size, WGC3Denum format) {
     ASSERT_TRUE(current_texture_);
     scoped_refptr<Texture> texture = textures_[current_texture_];
-    ASSERT_TRUE(texture);
+    ASSERT_TRUE(texture.get());
     texture->Reallocate(size, format);
   }
 
@@ -302,7 +302,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
                  const void* pixels) {
     ASSERT_TRUE(current_texture_);
     scoped_refptr<Texture> texture = textures_[current_texture_];
-    ASSERT_TRUE(texture);
+    ASSERT_TRUE(texture.get());
     ASSERT_TRUE(texture->data.get());
     ASSERT_TRUE(xoffset >= 0 && xoffset + width <= texture->size.width());
     ASSERT_TRUE(yoffset >= 0 && yoffset + height <= texture->size.height());

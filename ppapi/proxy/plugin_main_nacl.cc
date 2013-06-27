@@ -108,7 +108,8 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop)
   // NaCl sandbox.
   InitWithChannel(this, base::kNullProcessId, channel_handle,
                   false);  // Channel is server.
-  channel()->AddFilter(new tracing::ChildTraceMessageFilter(message_loop_));
+  channel()->AddFilter(
+      new tracing::ChildTraceMessageFilter(message_loop_.get()));
 }
 
 base::MessageLoopProxy* PpapiDispatcher::GetIPCMessageLoop() {

@@ -146,14 +146,13 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
         "chromeos/gdata/root_feed.json"));
 
     drive_uploader_ = new ::drive::DriveUploader(
-        fake_drive_service_, base::MessageLoopProxy::current());
+        fake_drive_service_, base::MessageLoopProxy::current().get());
 
     bool done = false;
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     bool created = false;
-    scoped_ptr<DriveMetadataStore> metadata_store(
-        new DriveMetadataStore(base_dir_.path(),
-                               base::MessageLoopProxy::current()));
+    scoped_ptr<DriveMetadataStore> metadata_store(new DriveMetadataStore(
+        base_dir_.path(), base::MessageLoopProxy::current().get()));
     metadata_store->Initialize(
         base::Bind(&DatabaseInitResultCallback, &done, &status, &created));
     FlushMessageLoop();
@@ -200,8 +199,9 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     if (!ContainsKey(file_systems_, origin)) {
       CannedSyncableFileSystem* file_system = new CannedSyncableFileSystem(
           origin,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
+              .get());
 
       bool done = false;
       SyncStatusCode status = SYNC_STATUS_UNKNOWN;

@@ -94,7 +94,7 @@ class CC_EXPORT TextureLayer : public Layer {
      public:
       explicit MainThreadReference(MailboxHolder* holder);
       ~MainThreadReference();
-      MailboxHolder* holder() { return holder_; }
+      MailboxHolder* holder() { return holder_.get(); }
 
      private:
       scoped_refptr<MailboxHolder> holder_;

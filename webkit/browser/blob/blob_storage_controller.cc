@@ -173,7 +173,7 @@ bool BlobStorageController::RemoveFromMapHelper(
 BlobData* BlobStorageController::GetBlobDataFromUrl(const GURL& url) {
   BlobMap::iterator found = blob_map_.find(
       BlobUrlHasRef(url) ? ClearBlobUrlRef(url).spec() : url.spec());
-  return (found != blob_map_.end()) ? found->second : NULL;
+  return (found != blob_map_.end()) ? found->second.get() : NULL;
 }
 
 void BlobStorageController::AppendStorageItems(

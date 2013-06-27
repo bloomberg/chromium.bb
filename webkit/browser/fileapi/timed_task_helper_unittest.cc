@@ -19,8 +19,7 @@ namespace {
 class Embedder {
  public:
   Embedder()
-      : timer_(base::MessageLoopProxy::current()),
-        timer_fired_(false) {}
+      : timer_(base::MessageLoopProxy::current().get()), timer_fired_(false) {}
 
   void OnTimerFired() {
     timer_fired_ = true;

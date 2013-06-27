@@ -158,7 +158,8 @@ const char* const unpacked = "cbcdidchbppangcjoddlpdjlenngjldk";
 const char* const updates_from_webstore = "akjooamlhcgeopfifcmlggaebeocgokj";
 
 struct ExtensionsOrder {
-  bool operator()(const Extension* a, const Extension* b) {
+  bool operator()(const scoped_refptr<const Extension>& a,
+                  const scoped_refptr<const Extension>& b) {
     return a->name() < b->name();
   }
 };
@@ -4008,7 +4009,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
       BrowserContext::GetDefaultStoragePartition(profile_.get())->
           GetIndexedDBContext();
   idb_context->SetTaskRunnerForTesting(
-      base::MessageLoop::current()->message_loop_proxy());
+      base::MessageLoop::current()->message_loop_proxy().get());
   base::FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
   EXPECT_TRUE(file_util::DirectoryExists(idb_path));
@@ -4125,7 +4126,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
       BrowserContext::GetDefaultStoragePartition(profile_.get())->
           GetIndexedDBContext();
   idb_context->SetTaskRunnerForTesting(
-      base::MessageLoop::current()->message_loop_proxy());
+      base::MessageLoop::current()->message_loop_proxy().get());
   base::FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
   EXPECT_TRUE(file_util::DirectoryExists(idb_path));

@@ -211,8 +211,9 @@ void WebMessagePortChannelImpl::OnMessage(
   if (!sent_message_port_ids.empty()) {
     msg.ports.resize(sent_message_port_ids.size());
     for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
-      msg.ports[i] = new WebMessagePortChannelImpl(
-          new_routing_ids[i], sent_message_port_ids[i], child_thread_loop_);
+      msg.ports[i] = new WebMessagePortChannelImpl(new_routing_ids[i],
+                                                   sent_message_port_ids[i],
+                                                   child_thread_loop_.get());
     }
   }
 

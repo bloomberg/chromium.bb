@@ -53,8 +53,8 @@ void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url,
 
   pending_update_notification_[usage_file_path] += delta;
   if (!delayed_cache_update_helper_) {
-    delayed_cache_update_helper_.reset(new TimedTaskHelper(
-            update_notify_runner_));
+    delayed_cache_update_helper_.reset(
+        new TimedTaskHelper(update_notify_runner_.get()));
     delayed_cache_update_helper_->Start(
         FROM_HERE,
         base::TimeDelta(),  // No delay.

@@ -107,7 +107,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
 
 bool LayerTreeHost::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-  if (impl_task_runner)
+  if (impl_task_runner.get())
     return InitializeProxy(ThreadProxy::Create(this, impl_task_runner));
   else
     return InitializeProxy(SingleThreadProxy::Create(this));

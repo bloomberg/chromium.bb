@@ -112,7 +112,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
         base::Bind(&IndexedDBBrowserTest::DidGetDiskUsage, this));
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
         BrowserMainLoop::GetInstance()->indexed_db_thread()
-            ->message_loop_proxy()));
+            ->message_loop_proxy().get()));
     EXPECT_TRUE(helper->Run());
     // Wait for DidGetDiskUsage to be called.
     base::MessageLoop::current()->RunUntilIdle();
@@ -258,7 +258,7 @@ class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
             &CopyLevelDBToProfile, shell(), context, EnclosingLevelDBDir()));
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
         BrowserMainLoop::GetInstance()->indexed_db_thread()
-            ->message_loop_proxy()));
+            ->message_loop_proxy().get()));
     ASSERT_TRUE(helper->Run());
   }
 

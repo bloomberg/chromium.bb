@@ -366,7 +366,7 @@ QueryManager::Query* QueryManager::CreateQuery(
 QueryManager::Query* QueryManager::GetQuery(
     GLuint client_id) {
   QueryMap::iterator it = queries_.find(client_id);
-  return it != queries_.end() ? it->second : NULL;
+  return it != queries_.end() ? it->second.get() : NULL;
 }
 
 void QueryManager::RemoveQuery(GLuint client_id) {

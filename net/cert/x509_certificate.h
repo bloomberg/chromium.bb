@@ -81,7 +81,8 @@ class NET_EXPORT X509Certificate
   // Predicate functor used in maps when X509Certificate is used as the key.
   class NET_EXPORT LessThan {
    public:
-    bool operator() (X509Certificate* lhs,  X509Certificate* rhs) const;
+    bool operator()(const scoped_refptr<X509Certificate>& lhs,
+                    const scoped_refptr<X509Certificate>& rhs) const;
   };
 
   enum Format {

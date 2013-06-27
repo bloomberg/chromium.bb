@@ -184,10 +184,11 @@ int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
   worker_pool_ = g_sequenced_worker_pool->GetTaskRunnerWithShutdownBehavior(
       SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
-  index_.reset(new SimpleIndex(MessageLoopProxy::current(), path_,
-                               make_scoped_ptr(new SimpleIndexFile(
-                                   cache_thread_.get(), worker_pool_.get(),
-                                   path_))));
+  index_.reset(
+      new SimpleIndex(MessageLoopProxy::current().get(),
+                      path_,
+                      make_scoped_ptr(new SimpleIndexFile(
+                          cache_thread_.get(), worker_pool_.get(), path_))));
   index_->ExecuteWhenReady(base::Bind(&RecordIndexLoad,
                                       base::TimeTicks::Now()));
 

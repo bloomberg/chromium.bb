@@ -314,7 +314,8 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
-  DriveUploader uploader(&mock_service, base::MessageLoopProxy::current());
+  DriveUploader uploader(&mock_service,
+                         base::MessageLoopProxy::current().get());
   std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
@@ -348,7 +349,8 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
-  DriveUploader uploader(&mock_service, base::MessageLoopProxy::current());
+  DriveUploader uploader(&mock_service,
+                         base::MessageLoopProxy::current().get());
   std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
@@ -384,15 +386,15 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceNoConnectionAtInitiate mock_service;
-  DriveUploader uploader(&mock_service, base::MessageLoopProxy::current());
-  uploader.UploadExistingFile(
-      kTestInitiateUploadResourceId,
-      local_path,
-      kTestMimeType,
-      std::string(),  // etag
-      test_util::CreateCopyResultCallback(
-          &error, &upload_location, &resource_entry),
-      google_apis::ProgressCallback());
+  DriveUploader uploader(&mock_service,
+                         base::MessageLoopProxy::current().get());
+  uploader.UploadExistingFile(kTestInitiateUploadResourceId,
+                              local_path,
+                              kTestMimeType,
+                              std::string(),  // etag
+                              test_util::CreateCopyResultCallback(
+                                  &error, &upload_location, &resource_entry),
+                              google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
@@ -411,15 +413,15 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
-  DriveUploader uploader(&mock_service, base::MessageLoopProxy::current());
-  uploader.UploadExistingFile(
-      kTestInitiateUploadResourceId,
-      local_path,
-      kTestMimeType,
-      kTestETag,
-      test_util::CreateCopyResultCallback(
-          &error, &upload_location, &resource_entry),
-      google_apis::ProgressCallback());
+  DriveUploader uploader(&mock_service,
+                         base::MessageLoopProxy::current().get());
+  uploader.UploadExistingFile(kTestInitiateUploadResourceId,
+                              local_path,
+                              kTestMimeType,
+                              kTestETag,
+                              test_util::CreateCopyResultCallback(
+                                  &error, &upload_location, &resource_entry),
+                              google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
@@ -438,15 +440,15 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
-  DriveUploader uploader(&mock_service, base::MessageLoopProxy::current());
-  uploader.UploadExistingFile(
-      kTestInitiateUploadResourceId,
-      local_path,
-      kTestMimeType,
-      kDestinationETag,
-      test_util::CreateCopyResultCallback(
-          &error, &upload_location, &resource_entry),
-      google_apis::ProgressCallback());
+  DriveUploader uploader(&mock_service,
+                         base::MessageLoopProxy::current().get());
+  uploader.UploadExistingFile(kTestInitiateUploadResourceId,
+                              local_path,
+                              kTestMimeType,
+                              kDestinationETag,
+                              test_util::CreateCopyResultCallback(
+                                  &error, &upload_location, &resource_entry),
+                              google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_CONFLICT, error);
@@ -464,15 +466,15 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceNoConnectionAtResume mock_service;
-  DriveUploader uploader(&mock_service, base::MessageLoopProxy::current());
-  uploader.UploadExistingFile(
-      kTestInitiateUploadResourceId,
-      local_path,
-      kTestMimeType,
-      std::string(),  // etag
-      test_util::CreateCopyResultCallback(
-          &error, &upload_location, &resource_entry),
-      google_apis::ProgressCallback());
+  DriveUploader uploader(&mock_service,
+                         base::MessageLoopProxy::current().get());
+  uploader.UploadExistingFile(kTestInitiateUploadResourceId,
+                              local_path,
+                              kTestMimeType,
+                              std::string(),  // etag
+                              test_util::CreateCopyResultCallback(
+                                  &error, &upload_location, &resource_entry),
+                              google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
@@ -485,12 +487,12 @@ TEST_F(DriveUploaderTest, NonExistingSourceFile) {
   scoped_ptr<ResourceEntry> resource_entry;
 
   DriveUploader uploader(NULL,  // NULL, the service won't be used.
-                         base::MessageLoopProxy::current());
+                         base::MessageLoopProxy::current().get());
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
       temp_dir_.path().AppendASCII("_this_path_should_not_exist_"),
       kTestMimeType,
-      std::string(),             // etag
+      std::string(),  // etag
       test_util::CreateCopyResultCallback(
           &error, &upload_location, &resource_entry),
       google_apis::ProgressCallback());
@@ -512,7 +514,8 @@ TEST_F(DriveUploaderTest, ResumeUpload) {
   scoped_ptr<ResourceEntry> resource_entry;
 
   MockDriveServiceWithUploadExpectation mock_service(local_path, data.size());
-  DriveUploader uploader(&mock_service, base::MessageLoopProxy::current());
+  DriveUploader uploader(&mock_service,
+                         base::MessageLoopProxy::current().get());
   // Emulate the situation that the only first part is successfully uploaded,
   // but not the latter half.
   mock_service.set_received_bytes(512 * 1024);

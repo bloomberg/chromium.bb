@@ -98,7 +98,7 @@ TEST_F(StreamWithoutArgsUIPolicyTest, Construct) {
                        .Set("version", "1.0.0")
                        .Set("manifest_version", 2))
           .Build();
-  extension_service_->AddExtension(extension);
+  extension_service_->AddExtension(extension.get());
   scoped_ptr<base::ListValue> args(new base::ListValue());
   policy->ProcessAction(ActivityLogPolicy::ACTION_API, extension->id(),
       std::string("tabs.testMethod"), GURL(), args.get(), NULL);
@@ -114,7 +114,7 @@ TEST_F(StreamWithoutArgsUIPolicyTest, LogAndFetchActions) {
                        .Set("version", "1.0.0")
                        .Set("manifest_version", 2))
           .Build();
-  extension_service_->AddExtension(extension);
+  extension_service_->AddExtension(extension.get());
   scoped_ptr<base::ListValue> args(new base::ListValue());
   GURL gurl("http://www.google.com");
 
@@ -139,7 +139,7 @@ TEST_F(StreamWithoutArgsUIPolicyTest, LogWithoutArguments) {
                        .Set("version", "1.0.0")
                        .Set("manifest_version", 2))
           .Build();
-  extension_service_->AddExtension(extension);
+  extension_service_->AddExtension(extension.get());
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Set(0, new base::StringValue("hello"));
   args->Set(1, new base::StringValue("world"));

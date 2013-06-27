@@ -169,12 +169,12 @@ TEST_F(DownloadFeedbackTest, CompleteUpload) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kSbDownloadFeedbackURL, kTestFeedbackURL);
 
-  DownloadFeedback* feedback = DownloadFeedback::Create(
-      url_request_context_getter_,
-      file_task_runner_,
-      upload_file_path_,
-      ping_request,
-      ping_response);
+  DownloadFeedback* feedback =
+      DownloadFeedback::Create(url_request_context_getter_.get(),
+                               file_task_runner_.get(),
+                               upload_file_path_,
+                               ping_request,
+                               ping_response);
   EXPECT_FALSE(uploader());
 
   feedback->Start(base::Bind(&DownloadFeedbackTest::FinishCallback,
@@ -216,12 +216,12 @@ TEST_F(DownloadFeedbackTest, CancelUpload) {
   std::string ping_response(
       expected_report_metadata.download_response().SerializeAsString());
 
-  DownloadFeedback* feedback = DownloadFeedback::Create(
-      url_request_context_getter_,
-      file_task_runner_,
-      upload_file_path_,
-      ping_request,
-      ping_response);
+  DownloadFeedback* feedback =
+      DownloadFeedback::Create(url_request_context_getter_.get(),
+                               file_task_runner_.get(),
+                               upload_file_path_,
+                               ping_request,
+                               ping_response);
   EXPECT_FALSE(uploader());
 
   feedback->Start(base::Bind(&DownloadFeedbackTest::FinishCallback,

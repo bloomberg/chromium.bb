@@ -229,7 +229,7 @@ void PixelBufferRasterWorkerPool::CheckForCompletedUploads() {
     TaskDeque tasks_with_uploads_to_force;
     TaskDeque::iterator it = tasks_with_pending_upload_.begin();
     while (it != tasks_with_pending_upload_.end()) {
-      internal::RasterWorkerPoolTask* task = *it;
+      internal::RasterWorkerPoolTask* task = it->get();
       DCHECK(pixel_buffer_tasks_.find(task) != pixel_buffer_tasks_.end());
 
       // Force all uploads required for activation to complete.
@@ -339,7 +339,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
     if (new_bytes_pending_upload > kMaxPendingUploadBytes)
       break;
 
-    internal::WorkerPoolTask* pixel_buffer_task = pixel_buffer_it->second;
+    internal::WorkerPoolTask* pixel_buffer_task = pixel_buffer_it->second.get();
 
     // If raster has finished, just update |bytes_pending_upload|.
     if (pixel_buffer_task && pixel_buffer_task->HasCompleted()) {

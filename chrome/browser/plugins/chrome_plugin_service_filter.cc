@@ -59,8 +59,7 @@ void ChromePluginServiceFilter::RestrictPluginToProfileAndOrigin(
     const GURL& origin) {
   base::AutoLock auto_lock(lock_);
   restricted_plugins_[plugin_path] =
-      std::make_pair(PluginPrefs::GetForProfile(profile),
-                     origin);
+      std::make_pair(PluginPrefs::GetForProfile(profile).get(), origin);
 }
 
 void ChromePluginServiceFilter::UnrestrictPlugin(

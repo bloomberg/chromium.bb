@@ -67,7 +67,7 @@ TEST_F(FileAPIMessageFilterTest, BuildEmptyBlob) {
   // channel proxy. Since OnMessageReceived is hidden on FileAPIMessageFilter,
   // cast it.
   IPC::ChannelProxy::MessageFilter* casted_filter =
-      static_cast<IPC::ChannelProxy::MessageFilter*>(filter);
+      static_cast<IPC::ChannelProxy::MessageFilter*>(filter.get());
 
   BlobHostMsg_StartBuildingBlob start_message(kUrl);
   EXPECT_TRUE(casted_filter->OnMessageReceived(start_message));

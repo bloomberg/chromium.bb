@@ -1586,7 +1586,7 @@ class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
     if (threaded) {
       impl_thread.reset(new base::Thread("LayerTreeTest"));
       ASSERT_TRUE(impl_thread->Start());
-      ASSERT_TRUE(impl_thread->message_loop_proxy());
+      ASSERT_TRUE(impl_thread->message_loop_proxy().get());
     }
 
     LayerTreeSettings settings;

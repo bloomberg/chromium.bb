@@ -50,7 +50,7 @@ void BufferManager::CreateBuffer(GLuint client_id, GLuint service_id) {
 Buffer* BufferManager::GetBuffer(
     GLuint client_id) {
   BufferMap::iterator it = buffers_.find(client_id);
-  return it != buffers_.end() ? it->second : NULL;
+  return it != buffers_.end() ? it->second.get() : NULL;
 }
 
 void BufferManager::RemoveBuffer(GLuint client_id) {

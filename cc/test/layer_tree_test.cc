@@ -393,7 +393,7 @@ void LayerTreeTest::PostSetVisibleToMainThread(bool visible) {
 void LayerTreeTest::DoBeginTest() {
   client_ = LayerTreeHostClientForTesting::Create(this);
 
-  DCHECK(!impl_thread_ || impl_thread_->message_loop_proxy());
+  DCHECK(!impl_thread_ || impl_thread_->message_loop_proxy().get());
   layer_tree_host_ = LayerTreeHostForTesting::Create(
       this,
       client_.get(),

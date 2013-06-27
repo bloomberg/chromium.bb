@@ -399,11 +399,15 @@ void HttpStreamFactoryImpl::Job::OnHttpsProxyTunnelResponseCallback(
 
 void HttpStreamFactoryImpl::Job::OnPreconnectsComplete() {
   DCHECK(!request_);
-  if (new_spdy_session_) {
-    stream_factory_->OnNewSpdySessionReady(
-        new_spdy_session_, spdy_session_direct_, server_ssl_config_,
-        proxy_info_, was_npn_negotiated(), protocol_negotiated(), using_spdy(),
-        net_log_);
+  if (new_spdy_session_.get()) {
+    stream_factory_->OnNewSpdySessionReady(new_spdy_session_,
+                                           spdy_session_direct_,
+                                           server_ssl_config_,
+                                           proxy_info_,
+                                           was_npn_negotiated(),
+                                           protocol_negotiated(),
+                                           using_spdy(),
+                                           net_log_);
   }
   stream_factory_->OnPreconnectsComplete(this);
   // |this| may be deleted after this call.
@@ -512,12 +516,11 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
 
     case OK:
       next_state_ = STATE_DONE;
-      if (new_spdy_session_) {
+      if (new_spdy_session_.get()) {
         base::MessageLoop::current()->PostTask(
             FROM_HERE,
-            base::Bind(
-                &Job::OnNewSpdySessionReadyCallback,
-                ptr_factory_.GetWeakPtr()));
+            base::Bind(&Job::OnNewSpdySessionReadyCallback,
+                       ptr_factory_.GetWeakPtr()));
       } else if (stream_factory_->for_websockets_) {
         DCHECK(websocket_stream_);
         base::MessageLoop::current()->PostTask(
@@ -1126,10 +1129,10 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     bool use_relative_url = direct || request_info_.url.SchemeIs("wss");
     websocket_stream_.reset(
         request_->websocket_stream_factory()->CreateSpdyStream(
-            spdy_session, use_relative_url));
+            spdy_session.get(), use_relative_url));
   } else {
     bool use_relative_url = direct || request_info_.url.SchemeIs("https");
-    stream_.reset(new SpdyHttpStream(spdy_session, use_relative_url));
+    stream_.reset(new SpdyHttpStream(spdy_session.get(), use_relative_url));
   }
   return OK;
 }

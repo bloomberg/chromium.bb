@@ -245,7 +245,7 @@ int32_t PepperInternalFileRefBackend::GetAbsolutePath(
 
 int32_t PepperInternalFileRefBackend::HasPermissions(int permissions) const {
   base::PlatformFileError error;
-  CheckFileSystemPermissionsForProcess(GetFileSystemContext(),
+  CheckFileSystemPermissionsForProcess(GetFileSystemContext().get(),
                                        render_process_id_,
                                        GetFileSystemURL(),
                                        permissions,

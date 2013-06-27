@@ -114,8 +114,8 @@ std::string NetErrorToString(int net_error) {
 // Struct to bind the Equals member function to an object for use in find_if.
 struct CertEquals {
   explicit CertEquals(const net::X509Certificate* cert) : cert_(cert) {}
-  bool operator()(const net::X509Certificate* cert) const {
-    return cert_->Equals(cert);
+  bool operator()(const scoped_refptr<net::X509Certificate> cert) const {
+    return cert_->Equals(cert.get());
   }
   const net::X509Certificate* cert_;
 };

@@ -1150,7 +1150,7 @@ Program* ProgramManager::CreateProgram(
 
 Program* ProgramManager::GetProgram(GLuint client_id) {
   ProgramMap::iterator it = programs_.find(client_id);
-  return it != programs_.end() ? it->second : NULL;
+  return it != programs_.end() ? it->second.get() : NULL;
 }
 
 bool ProgramManager::GetClientId(GLuint service_id, GLuint* client_id) const {

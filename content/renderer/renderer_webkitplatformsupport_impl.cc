@@ -306,7 +306,7 @@ bool RendererWebKitPlatformSupportImpl::isLinkVisited(
 
 WebKit::WebMessagePortChannel*
 RendererWebKitPlatformSupportImpl::createMessagePortChannel() {
-  return new WebMessagePortChannelImpl(child_thread_loop_);
+  return new WebMessagePortChannelImpl(child_thread_loop_.get());
 }
 
 void RendererWebKitPlatformSupportImpl::prefetchHostName(
@@ -679,31 +679,31 @@ Platform::FileHandle
 RendererWebKitPlatformSupportImpl::databaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {
   return DatabaseUtil::DatabaseOpenFile(
-      vfs_file_name, desired_flags, sync_message_filter_);
+      vfs_file_name, desired_flags, sync_message_filter_.get());
 }
 
 int RendererWebKitPlatformSupportImpl::databaseDeleteFile(
     const WebString& vfs_file_name, bool sync_dir) {
   return DatabaseUtil::DatabaseDeleteFile(
-      vfs_file_name, sync_dir, sync_message_filter_);
+      vfs_file_name, sync_dir, sync_message_filter_.get());
 }
 
 long RendererWebKitPlatformSupportImpl::databaseGetFileAttributes(
     const WebString& vfs_file_name) {
-  return DatabaseUtil::DatabaseGetFileAttributes(
-      vfs_file_name, sync_message_filter_);
+  return DatabaseUtil::DatabaseGetFileAttributes(vfs_file_name,
+                                                 sync_message_filter_.get());
 }
 
 long long RendererWebKitPlatformSupportImpl::databaseGetFileSize(
     const WebString& vfs_file_name) {
-  return DatabaseUtil::DatabaseGetFileSize(
-      vfs_file_name, sync_message_filter_);
+  return DatabaseUtil::DatabaseGetFileSize(vfs_file_name,
+                                           sync_message_filter_.get());
 }
 
 long long RendererWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
     const WebString& origin_identifier) {
-  return DatabaseUtil::DatabaseGetSpaceAvailable(
-      origin_identifier, sync_message_filter_);
+  return DatabaseUtil::DatabaseGetSpaceAvailable(origin_identifier,
+                                                 sync_message_filter_.get());
 }
 
 WebKit::WebSharedWorkerRepository*

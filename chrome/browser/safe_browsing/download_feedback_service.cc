@@ -177,7 +177,9 @@ void DownloadFeedbackService::BeginFeedbackOrDeleteFile(
   if (service) {
     service->BeginFeedback(ping_request, ping_response, path);
   } else {
-    base::FileUtilProxy::Delete(file_task_runner, path, false,
+    base::FileUtilProxy::Delete(file_task_runner.get(),
+                                path,
+                                false,
                                 base::FileUtilProxy::StatusCallback());
   }
 }
@@ -193,9 +195,12 @@ void DownloadFeedbackService::BeginFeedback(
     const std::string& ping_response,
     const base::FilePath& path) {
   DCHECK(CalledOnValidThread());
-  DownloadFeedback* feedback = DownloadFeedback::Create(
-      request_context_getter_, file_task_runner_, path,
-      ping_request, ping_response);
+  DownloadFeedback* feedback =
+      DownloadFeedback::Create(request_context_getter_.get(),
+                               file_task_runner_.get(),
+                               path,
+                               ping_request,
+                               ping_response);
   active_feedback_.push_back(feedback);
   UMA_HISTOGRAM_COUNTS_100("SBDownloadFeedback.ActiveFeedbacks",
                            active_feedback_.size());

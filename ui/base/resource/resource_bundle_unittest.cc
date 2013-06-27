@@ -265,8 +265,7 @@ TEST_F(ResourceBundleTest, DelegateLoadDataResourceBytes) {
   ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_NONE;
 
   EXPECT_CALL(delegate, LoadDataResourceBytes(resource_id, scale_factor))
-      .Times(1)
-      .WillOnce(Return(static_memory));
+      .Times(1).WillOnce(Return(static_memory.get()));
 
   scoped_refptr<base::RefCountedStaticMemory> result =
       resource_bundle->LoadDataResourceBytesForScale(resource_id, scale_factor);

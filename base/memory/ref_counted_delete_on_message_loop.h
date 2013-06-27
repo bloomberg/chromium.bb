@@ -35,7 +35,7 @@ class RefCountedDeleteOnMessageLoop : public subtle::RefCountedThreadSafeBase {
  public:
   RefCountedDeleteOnMessageLoop(
       const scoped_refptr<MessageLoopProxy>& proxy) : proxy_(proxy) {
-    DCHECK(proxy_);
+    DCHECK(proxy_.get());
   }
 
   void AddRef() const {

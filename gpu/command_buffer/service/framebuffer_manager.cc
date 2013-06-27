@@ -515,7 +515,7 @@ void Framebuffer::UnbindTexture(
 Framebuffer* FramebufferManager::GetFramebuffer(
     GLuint client_id) {
   FramebufferMap::iterator it = framebuffers_.find(client_id);
-  return it != framebuffers_.end() ? it->second : NULL;
+  return it != framebuffers_.end() ? it->second.get() : NULL;
 }
 
 void FramebufferManager::RemoveFramebuffer(GLuint client_id) {

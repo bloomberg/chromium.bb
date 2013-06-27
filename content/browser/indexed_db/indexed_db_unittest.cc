@@ -62,9 +62,9 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   {
     scoped_refptr<IndexedDBContextImpl> idb_context =
         new IndexedDBContextImpl(temp_dir.path(),
-                                 special_storage_policy_,
+                                 special_storage_policy_.get(),
                                  NULL,
-                                 task_runner_);
+                                 task_runner_.get());
 
     normal_path = idb_context->GetFilePathForTesting(
         webkit_database::GetIdentifierFromOrigin(kNormalOrigin));
@@ -96,9 +96,9 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
     // With the levelDB backend, these are directories.
     scoped_refptr<IndexedDBContextImpl> idb_context =
         new IndexedDBContextImpl(temp_dir.path(),
-                                 special_storage_policy_,
+                                 special_storage_policy_.get(),
                                  NULL,
-                                 task_runner_);
+                                 task_runner_.get());
 
     // Save session state. This should bypass the destruction-time deletion.
     idb_context->SetForceKeepSessionState();
@@ -155,9 +155,9 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
     scoped_refptr<IndexedDBContextImpl> idb_context =
         new IndexedDBContextImpl(temp_dir.path(),
-                                 special_storage_policy_,
+                                 special_storage_policy_.get(),
                                  NULL,
-                                 task_runner_);
+                                 task_runner_.get());
 
     test_path = idb_context->GetFilePathForTesting(
         webkit_database::GetIdentifierFromOrigin(kTestOrigin));

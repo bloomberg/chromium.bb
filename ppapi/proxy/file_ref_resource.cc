@@ -211,7 +211,7 @@ int32_t FileRefResource::ReadDirectoryEntriesInHost(
 }
 
 PP_Var FileRefResource::GetAbsolutePath() {
-  if (!absolute_path_var_) {
+  if (!absolute_path_var_.get()) {
     std::string absolute_path;
     int32_t result = SyncCall<PpapiPluginMsg_FileRef_GetAbsolutePathReply>(
         BROWSER, PpapiHostMsg_FileRef_GetAbsolutePath(), &absolute_path);

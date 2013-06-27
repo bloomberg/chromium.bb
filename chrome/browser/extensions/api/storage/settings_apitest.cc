@@ -454,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, PolicyDomainDescriptor) {
   policy::PolicyService* service = connector->policy_service();
   scoped_refptr<const policy::PolicyDomainDescriptor> descriptor =
       service->GetPolicyDomainDescriptor(policy::POLICY_DOMAIN_EXTENSIONS);
-  EXPECT_TRUE(descriptor);
+  EXPECT_TRUE(descriptor.get());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {

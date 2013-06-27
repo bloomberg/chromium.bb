@@ -185,7 +185,7 @@ TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
                      kPrivacyModeDisabled);
   EXPECT_EQ(OK, InitSession(reads, arraysize(reads), NULL, 0, host_port_pair));
 
-  SpdyHttpStream stream(session_, false);
+  SpdyHttpStream stream(session_.get(), false);
   UploadProgress progress = stream.GetUploadProgress();
   EXPECT_EQ(0u, progress.size());
   EXPECT_EQ(0u, progress.position());

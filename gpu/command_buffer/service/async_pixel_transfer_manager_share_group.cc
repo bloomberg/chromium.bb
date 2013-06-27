@@ -216,7 +216,8 @@ class TransferStateInternal
       : texture_id_(texture_id), define_params_(define_params) {}
 
   bool TransferIsInProgress() {
-    return pending_upload_task_ && pending_upload_task_->TaskIsInProgress();
+    return pending_upload_task_.get() &&
+           pending_upload_task_->TaskIsInProgress();
   }
 
   void BindTransfer() {
@@ -231,7 +232,7 @@ class TransferStateInternal
 
   void WaitForTransferCompletion() {
     TRACE_EVENT0("gpu", "WaitForTransferCompletion");
-    DCHECK(pending_upload_task_);
+    DCHECK(pending_upload_task_.get());
     if (!pending_upload_task_->TryRun()) {
       pending_upload_task_->WaitForTask();
     }
@@ -240,7 +241,7 @@ class TransferStateInternal
 
   void CancelUpload() {
     TRACE_EVENT0("gpu", "CancelUpload");
-    if (pending_upload_task_)
+    if (pending_upload_task_.get())
       pending_upload_task_->Cancel();
     pending_upload_task_ = NULL;
   }

@@ -416,7 +416,7 @@ nsPKCS12Blob_Export(std::string* output,
   if (srv) goto finish;
 
   for (size_t i=0; i<certs.size(); i++) {
-    DCHECK(certs[i]);
+    DCHECK(certs[i].get());
     CERTCertificate* nssCert = certs[i]->os_cert_handle();
     DCHECK(nssCert);
 

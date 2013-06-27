@@ -69,7 +69,7 @@ void PnaclCheckDone(
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!success) {
-    NotifyRendererOfError(nacl_host_message_filter, reply_msg);
+    NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
   } else {
     if (!BrowserThread::PostBlockingPoolTask(
             FROM_HERE,
@@ -77,7 +77,7 @@ void PnaclCheckDone(
                        nacl_host_message_filter,
                        filename,
                        reply_msg))) {
-      NotifyRendererOfError(nacl_host_message_filter, reply_msg);
+      NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     }
   }
 }

@@ -148,7 +148,7 @@ MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
 
 MediaStreamManager::~MediaStreamManager() {
   DCHECK(requests_.empty());
-  DCHECK(!device_loop_);
+  DCHECK(!device_loop_.get());
   DCHECK(!io_loop_);
 }
 
@@ -585,15 +585,15 @@ void MediaStreamManager::HandleRequest(const std::string& label) {
 
 void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (device_loop_)
+  if (device_loop_.get())
     return;
   device_loop_ = audio_manager_->GetMessageLoop();
 
   audio_input_device_manager_ = new AudioInputDeviceManager(audio_manager_);
-  audio_input_device_manager_->Register(this, device_loop_);
+  audio_input_device_manager_->Register(this, device_loop_.get());
 
   video_capture_manager_ = new VideoCaptureManager();
-  video_capture_manager_->Register(this, device_loop_);
+  video_capture_manager_->Register(this, device_loop_.get());
 
   // We want to be notified of IO message loop destruction to delete the thread
   // and the device managers.
@@ -937,7 +937,7 @@ void MediaStreamManager::UseFakeUI(scoped_ptr<FakeMediaStreamUIProxy> fake_ui) {
 void MediaStreamManager::WillDestroyCurrentMessageLoop() {
   DCHECK_EQ(base::MessageLoop::current(), io_loop_);
   DCHECK(requests_.empty());
-  if (device_loop_) {
+  if (device_loop_.get()) {
     StopMonitoring();
 
     video_capture_manager_->Unregister();

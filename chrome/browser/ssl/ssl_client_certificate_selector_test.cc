@@ -81,8 +81,7 @@ void SSLClientCertificateSelectorTestBase::SetUpOnIOThread() {
   url_request_ = MakeURLRequest(url_request_context_getter_.get());
 
   auth_requestor_ = new StrictMock<SSLClientAuthRequestorMock>(
-      url_request_,
-      cert_request_info_);
+      url_request_, cert_request_info_.get());
 
   io_loop_finished_event_.Signal();
 }

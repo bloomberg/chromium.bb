@@ -208,7 +208,8 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackComplete) {
   EXPECT_CALL(item, StealDangerousDownload(_))
       .WillOnce(SaveArg<0>(&download_discarded_callback));
 
-  DownloadFeedbackService service(request_context_getter_, file_task_runner_);
+  DownloadFeedbackService service(request_context_getter_.get(),
+                                  file_task_runner_.get());
   service.MaybeStorePingsForDownload(
       DownloadProtectionService::UNCOMMON, &item, ping_request, ping_response);
   ASSERT_TRUE(DownloadFeedbackService::IsEnabledForDownload(item));
@@ -255,7 +256,8 @@ TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
   }
 
   {
-    DownloadFeedbackService service(request_context_getter_, file_task_runner_);
+    DownloadFeedbackService service(request_context_getter_.get(),
+                                    file_task_runner_.get());
     for (size_t i = 0; i < num_downloads; ++i) {
       SCOPED_TRACE(i);
       service.BeginFeedbackForDownload(&item[i]);
@@ -323,7 +325,8 @@ TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
   }
 
   {
-    DownloadFeedbackService service(request_context_getter_, file_task_runner_);
+    DownloadFeedbackService service(request_context_getter_.get(),
+                                    file_task_runner_.get());
     for (size_t i = 0; i < num_downloads; ++i) {
       SCOPED_TRACE(i);
       service.BeginFeedbackForDownload(&item[i]);

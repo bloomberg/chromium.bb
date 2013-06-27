@@ -39,7 +39,7 @@ SpdyHttpStream::SpdyHttpStream(SpdySession* spdy_session, bool direct)
       buffered_read_callback_pending_(false),
       more_read_data_pending_(false),
       direct_(direct) {
-  DCHECK(spdy_session_);
+  DCHECK(spdy_session_.get());
 }
 
 SpdyHttpStream::~SpdyHttpStream() {

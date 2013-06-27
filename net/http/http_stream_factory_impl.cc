@@ -291,13 +291,17 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
       DCHECK(factory);
       bool use_relative_url = direct || request->url().SchemeIs("wss");
       request->OnWebSocketStreamReady(
-          NULL, used_ssl_config, used_proxy_info,
-          factory->CreateSpdyStream(spdy_session, use_relative_url));
+          NULL,
+          used_ssl_config,
+          used_proxy_info,
+          factory->CreateSpdyStream(spdy_session.get(), use_relative_url));
     } else {
       bool use_relative_url = direct || request->url().SchemeIs("https");
-      request->OnStreamReady(NULL, used_ssl_config, used_proxy_info,
-                             new SpdyHttpStream(spdy_session,
-                                                use_relative_url));
+      request->OnStreamReady(
+          NULL,
+          used_ssl_config,
+          used_proxy_info,
+          new SpdyHttpStream(spdy_session.get(), use_relative_url));
     }
   }
   // TODO(mbelshe): Alert other valid requests.

@@ -47,15 +47,15 @@ class IndexedDBQuotaClientTest : public testing::Test {
         new quota::MockQuotaManager(
             false /*in_memory*/,
             browser_context_->GetPath(),
-            base::MessageLoop::current()->message_loop_proxy(),
-            base::MessageLoop::current()->message_loop_proxy(),
+            base::MessageLoop::current()->message_loop_proxy().get(),
+            base::MessageLoop::current()->message_loop_proxy().get(),
             browser_context_->GetSpecialStoragePolicy());
 
     idb_context_ =
         new IndexedDBContextImpl(browser_context_->GetPath(),
                                  browser_context_->GetSpecialStoragePolicy(),
                                  quota_manager->proxy(),
-                                 task_runner_);
+                                 task_runner_.get());
     base::MessageLoop::current()->RunUntilIdle();
     setup_temp_dir();
   }

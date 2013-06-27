@@ -1101,7 +1101,7 @@ TextureRef* TextureManager::CreateTexture(
 TextureRef* TextureManager::GetTexture(
     GLuint client_id) const {
   TextureMap::const_iterator it = textures_.find(client_id);
-  return it != textures_.end() ? it->second : NULL;
+  return it != textures_.end() ? it->second.get() : NULL;
 }
 
 void TextureManager::RemoveTexture(GLuint client_id) {

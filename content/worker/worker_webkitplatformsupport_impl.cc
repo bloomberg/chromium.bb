@@ -133,7 +133,7 @@ bool WorkerWebKitPlatformSupportImpl::isLinkVisited(
 
 WebMessagePortChannel*
 WorkerWebKitPlatformSupportImpl::createMessagePortChannel() {
-  return new WebMessagePortChannelImpl(child_thread_loop_);
+  return new WebMessagePortChannelImpl(child_thread_loop_.get());
 }
 
 void WorkerWebKitPlatformSupportImpl::setCookies(
@@ -176,31 +176,31 @@ Platform::FileHandle
 WorkerWebKitPlatformSupportImpl::databaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {
   return DatabaseUtil::DatabaseOpenFile(
-      vfs_file_name, desired_flags, sync_message_filter_);
+      vfs_file_name, desired_flags, sync_message_filter_.get());
 }
 
 int WorkerWebKitPlatformSupportImpl::databaseDeleteFile(
     const WebString& vfs_file_name, bool sync_dir) {
   return DatabaseUtil::DatabaseDeleteFile(
-      vfs_file_name, sync_dir, sync_message_filter_);
+      vfs_file_name, sync_dir, sync_message_filter_.get());
 }
 
 long WorkerWebKitPlatformSupportImpl::databaseGetFileAttributes(
     const WebString& vfs_file_name) {
-  return DatabaseUtil::DatabaseGetFileAttributes(
-      vfs_file_name, sync_message_filter_);
+  return DatabaseUtil::DatabaseGetFileAttributes(vfs_file_name,
+                                                 sync_message_filter_.get());
 }
 
 long long WorkerWebKitPlatformSupportImpl::databaseGetFileSize(
     const WebString& vfs_file_name) {
-  return DatabaseUtil::DatabaseGetFileSize(
-      vfs_file_name, sync_message_filter_);
+  return DatabaseUtil::DatabaseGetFileSize(vfs_file_name,
+                                           sync_message_filter_.get());
 }
 
 long long WorkerWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
     const WebString& origin_identifier) {
-  return DatabaseUtil::DatabaseGetSpaceAvailable(
-      origin_identifier, sync_message_filter_);
+  return DatabaseUtil::DatabaseGetSpaceAvailable(origin_identifier,
+                                                 sync_message_filter_.get());
 }
 
 WebKit::WebIDBFactory* WorkerWebKitPlatformSupportImpl::idbFactory() {

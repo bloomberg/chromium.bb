@@ -35,9 +35,9 @@ namespace psm = mozilla_security_manager;
 namespace net {
 
 NSSCertDatabase::ImportCertFailure::ImportCertFailure(
-    X509Certificate* cert, int err)
-    : certificate(cert),
-      net_error(err) {}
+    const scoped_refptr<X509Certificate>& cert,
+    int err)
+    : certificate(cert), net_error(err) {}
 
 NSSCertDatabase::ImportCertFailure::~ImportCertFailure() {}
 

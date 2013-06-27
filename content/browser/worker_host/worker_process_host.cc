@@ -469,7 +469,7 @@ void WorkerProcessHost::RelayMessage(
 }
 
 void WorkerProcessHost::ShutdownSocketStreamDispatcherHostIfNecessary() {
-  if (!instances_.size() && socket_stream_dispatcher_host_) {
+  if (!instances_.size() && socket_stream_dispatcher_host_.get()) {
     // We can assume that this object is going to delete, because
     // currently a WorkerInstance will never be added to a WorkerProcessHost
     // once it is initialized.

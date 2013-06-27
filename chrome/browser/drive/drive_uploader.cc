@@ -200,9 +200,10 @@ CancelCallback DriveUploader::StartUploadFile(
 
   UploadFileInfo* info_ptr = upload_file_info.get();
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&file_util::GetFileSize, info_ptr->file_path,
+      base::Bind(&file_util::GetFileSize,
+                 info_ptr->file_path,
                  &info_ptr->content_length),
       base::Bind(&DriveUploader::StartUploadFileAfterGetFileSize,
                  weak_ptr_factory_.GetWeakPtr(),

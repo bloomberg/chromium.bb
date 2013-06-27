@@ -495,7 +495,7 @@ void RasterWorkerPool::SetRasterTaskGraph(RasterTaskGraph* graph) {
 
   scoped_refptr<internal::WorkerPoolTask> new_raster_finished_task(
       new RasterFinishedWorkerPoolTaskImpl(
-          base::MessageLoopProxy::current(),
+          base::MessageLoopProxy::current().get(),
           base::Bind(&RasterWorkerPool::OnRasterFinished,
                      weak_ptr_factory_.GetWeakPtr(),
                      schedule_raster_tasks_count_)));

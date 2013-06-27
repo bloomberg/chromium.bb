@@ -266,7 +266,7 @@ TEST_F(ExtensionSyncTypeTest, ExtensionWithPluginPermission) {
                                                 0, base::FilePath(),
                                                 Extension::NO_FLAGS, true));
   if (extension.get())
-    EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
+    EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
 }
 #endif // !defined(OS_CHROMEOS)
 

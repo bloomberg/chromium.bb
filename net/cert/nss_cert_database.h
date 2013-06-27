@@ -54,7 +54,7 @@ class NET_EXPORT NSSCertDatabase {
   // Stores per-certificate error codes for import failures.
   struct NET_EXPORT ImportCertFailure {
    public:
-    ImportCertFailure(X509Certificate* cert, int err);
+    ImportCertFailure(const scoped_refptr<X509Certificate>& cert, int err);
     ~ImportCertFailure();
 
     scoped_refptr<X509Certificate> certificate;

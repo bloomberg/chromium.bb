@@ -62,10 +62,9 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
   using SimpleIndexFile::Serialize;
 
   explicit WrappedSimpleIndexFile(const base::FilePath& index_file_directory)
-      : SimpleIndexFile(base::MessageLoopProxy::current(),
-                        base::MessageLoopProxy::current(),
-                        index_file_directory) {
-  }
+      : SimpleIndexFile(base::MessageLoopProxy::current().get(),
+                        base::MessageLoopProxy::current().get(),
+                        index_file_directory) {}
   virtual ~WrappedSimpleIndexFile() {
   }
 };
@@ -233,7 +232,7 @@ TEST_F(SimpleIndexFileTest, LoadCorruptIndex) {
   EXPECT_FALSE(WrappedSimpleIndexFile::IsIndexFileStale(index_path));
 
   WrappedSimpleIndexFile simple_index_file(temp_dir.path());
-  simple_index_file.LoadIndexEntries(base::MessageLoopProxy::current(),
+  simple_index_file.LoadIndexEntries(base::MessageLoopProxy::current().get(),
                                      GetCallback());
   base::RunLoop().RunUntilIdle();
 

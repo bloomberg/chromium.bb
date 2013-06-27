@@ -218,8 +218,9 @@ void SplitOnChar(const base::StringPiece& src,
 
 }  // namespace
 
-bool X509Certificate::LessThan::operator()(X509Certificate* lhs,
-                                           X509Certificate* rhs) const {
+bool X509Certificate::LessThan::operator()(
+    const scoped_refptr<X509Certificate>& lhs,
+    const scoped_refptr<X509Certificate>& rhs) const {
   if (lhs == rhs)
     return false;
 

@@ -231,8 +231,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   base::SequencedTaskRunner* idb_task_runner =
       BrowserThread::CurrentlyOn(BrowserThread::UI) &&
               BrowserMainLoop::GetInstance()
-          ? BrowserMainLoop::GetInstance()->indexed_db_thread()->
-                message_loop_proxy()
+          ? BrowserMainLoop::GetInstance()->indexed_db_thread()
+                ->message_loop_proxy().get()
           : NULL;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context =
       new IndexedDBContextImpl(path,

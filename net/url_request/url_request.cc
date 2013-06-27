@@ -373,7 +373,7 @@ void URLRequest::SetExtraRequestHeaders(
 }
 
 bool URLRequest::GetFullRequestHeaders(HttpRequestHeaders* headers) const {
-  if (!job_)
+  if (!job_.get())
     return false;
 
   return job_->GetFullRequestHeaders(headers);
