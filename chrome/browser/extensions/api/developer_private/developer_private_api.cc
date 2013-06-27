@@ -7,6 +7,7 @@
 #include "apps/app_load_service.h"
 #include "apps/app_restore_service.h"
 #include "apps/saved_files_service.h"
+#include "apps/shell_window.h"
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -32,7 +33,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -65,6 +65,7 @@
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
+using apps::ShellWindow;
 using content::RenderViewHost;
 
 namespace extensions {

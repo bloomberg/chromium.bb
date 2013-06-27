@@ -20,6 +20,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
+using apps::ShellWindow;
+
 namespace {
 
 // The timeout in milliseconds before we'll get the true window position with

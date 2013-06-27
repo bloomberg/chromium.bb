@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_NATIVE_APP_WINDOW_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_NATIVE_APP_WINDOW_VIEWS_H_
 
+#include "apps/shell_window.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/image/image_skia.h"
@@ -41,16 +41,18 @@ class NativeAppWindowViews : public NativeAppWindow,
                              public views::WidgetObserver,
                              public content::WebContentsObserver {
  public:
-  NativeAppWindowViews(ShellWindow* shell_window,
-                       const ShellWindow::CreateParams& params);
+  NativeAppWindowViews(apps::ShellWindow* shell_window,
+                       const apps::ShellWindow::CreateParams& params);
   virtual ~NativeAppWindowViews();
 
   bool frameless() const { return frameless_; }
   SkRegion* draggable_region() { return draggable_region_.get(); }
 
  private:
-  void InitializeDefaultWindow(const ShellWindow::CreateParams& create_params);
-  void InitializePanelWindow(const ShellWindow::CreateParams& create_params);
+  void InitializeDefaultWindow(
+      const apps::ShellWindow::CreateParams& create_params);
+  void InitializePanelWindow(
+      const apps::ShellWindow::CreateParams& create_params);
   void OnViewWasResized();
 
   bool ShouldUseChromeStyleFrame() const;
@@ -154,7 +156,7 @@ class NativeAppWindowViews : public NativeAppWindow,
     return shell_window_->extension();
   }
 
-  ShellWindow* shell_window_; // weak - ShellWindow owns NativeAppWindow.
+  apps::ShellWindow* shell_window_; // weak - ShellWindow owns NativeAppWindow.
   views::WebView* web_view_;
   views::Widget* window_;
   bool is_fullscreen_;

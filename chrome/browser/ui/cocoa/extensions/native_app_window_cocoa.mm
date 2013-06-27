@@ -20,6 +20,8 @@
 #include "content/public/browser/web_contents_view.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
+using apps::ShellWindow;
+
 @interface NSWindow (NSPrivateApis)
 - (void)setBottomCornerRounded:(BOOL)rounded;
 @end

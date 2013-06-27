@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/extensions/apps_metro_handler_win.h"
 
+#include "apps/shell_window.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -15,7 +15,7 @@ namespace chrome {
 
 bool VerifySwitchToMetroForApps(gfx::NativeWindow parent_window) {
   if (!extensions::ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(
-          ShellWindow::WINDOW_TYPE_DEFAULT)) {
+          apps::ShellWindow::WINDOW_TYPE_DEFAULT)) {
     return true;
   }
 

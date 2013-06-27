@@ -6,6 +6,7 @@
 
 #include "apps/app_lifetime_monitor_factory.h"
 #include "apps/app_shim/app_shim_messages.h"
+#include "apps/shell_window.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/chrome_notification_types.h"

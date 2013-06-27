@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
+#include "apps/shell_window.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -173,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegatePlatformAppBrowserTest,
   ASSERT_TRUE(shell_delegate);
 
   const extensions::Extension* extension = LoadAndLaunchPlatformApp("minimal");
-  ShellWindow* shell_window = CreateShellWindow(extension);
+  apps::ShellWindow* shell_window = CreateShellWindow(extension);
   NativeAppWindow* app_window = shell_window->GetBaseWindow();
   ASSERT_TRUE(shell_window->GetBaseWindow()->IsActive());
   EXPECT_FALSE(app_window->IsMaximized());

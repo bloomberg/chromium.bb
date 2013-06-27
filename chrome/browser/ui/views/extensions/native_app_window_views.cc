@@ -47,6 +47,8 @@
 #include "ui/aura/window.h"
 #endif
 
+using apps::ShellWindow;
+
 namespace {
 
 const int kMinPanelWidth = 100;
