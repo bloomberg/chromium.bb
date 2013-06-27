@@ -75,11 +75,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
                                   "api_tests_audio.html")) << message_;
 }
 
-// http://crbug.com/177163 -- for OS_WIN debug build flakiness
-// http://crbug.com/251863 -- for OS_LINUX (non-Aura) debug build flakiness
+// http://crbug.com/177163
 #if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_EndToEnd DISABLED_EndToEnd
-#elif defined(OS_LINUX) && !defined(USE_AURA) && !defined(NDEBUG)
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
 #define MAYBE_EndToEnd EndToEnd
