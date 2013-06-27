@@ -11,9 +11,8 @@ public class DevToolsServer {
 
     private int mNativeDevToolsServer = 0;
 
-    public DevToolsServer(boolean useBundledFrontendResources,
-                          String socketName) {
-        mNativeDevToolsServer = nativeInitRemoteDebugging(useBundledFrontendResources, socketName);
+    public DevToolsServer(String socketNamePrefix) {
+        mNativeDevToolsServer = nativeInitRemoteDebugging(socketNamePrefix);
     }
 
     public void destroy() {
@@ -29,8 +28,7 @@ public class DevToolsServer {
         nativeSetRemoteDebuggingEnabled(mNativeDevToolsServer, enabled);
     }
 
-    private native int nativeInitRemoteDebugging(boolean useBundledFrontendResources,
-            String socketName);
+    private native int nativeInitRemoteDebugging(String socketNamePrefix);
     private native void nativeDestroyRemoteDebugging(int devToolsServer);
     private native boolean nativeIsRemoteDebuggingEnabled(int devToolsServer);
     private native void nativeSetRemoteDebuggingEnabled(int devToolsServer, boolean enabled);

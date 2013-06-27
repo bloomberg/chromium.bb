@@ -17,8 +17,7 @@ class DevToolsHttpHandler;
 class DevToolsServer {
  public:
   DevToolsServer();
-  DevToolsServer(bool use_bundled_frontend_resources,
-                 const std::string& socket_name);
+  explicit DevToolsServer(const std::string& socket_name_prefix);
   ~DevToolsServer();
 
   // Opens linux abstract socket to be ready for remote debugging.
@@ -30,7 +29,6 @@ class DevToolsServer {
   bool IsStarted() const;
 
  private:
-  bool use_bundled_frontend_resources_;
   std::string socket_name_;
   content::DevToolsHttpHandler* protocol_handler_;
 

@@ -22,6 +22,8 @@ WEBKIT_USER_AGENT_EXPORT std::string GetWebKitVersion();
 WEBKIT_USER_AGENT_EXPORT int GetWebKitMajorVersion();
 WEBKIT_USER_AGENT_EXPORT int GetWebKitMinorVersion();
 
+WEBKIT_USER_AGENT_EXPORT std::string GetWebKitRevision();
+
 // Helper function to generate a full user agent string from a short
 // product name.
 WEBKIT_USER_AGENT_EXPORT std::string BuildUserAgentFromProduct(

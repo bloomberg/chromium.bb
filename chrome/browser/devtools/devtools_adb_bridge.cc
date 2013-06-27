@@ -38,7 +38,6 @@ using net::WebSocket;
 namespace {
 
 static const char kDevToolsAdbBridgeThreadName[] = "Chrome_DevToolsADBThread";
-static const char kDevToolsChannelPattern[] = "devtools_remote";
 static const char kHostDevicesCommand[] = "host:devices";
 static const char kDeviceModelCommand[] =
     "host:transport:%s|shell:getprop ro.product.model";
@@ -274,7 +273,8 @@ class AdbPagesCommand : public base::RefCounted<AdbPagesCommand> {
     socket_to_package_.clear();
     std::vector<std::string> entries;
     Tokenize(response, "\n", &entries);
-    const std::string channel_pattern = kDevToolsChannelPattern;
+    const std::string channel_pattern =
+        base::StringPrintf(kDevToolsChannelNameFormat, "");
     for (size_t i = 1; i < entries.size(); ++i) {
       std::vector<std::string> fields;
       Tokenize(entries[i], " ", &fields);
@@ -308,6 +308,8 @@ class AdbPagesCommand : public base::RefCounted<AdbPagesCommand> {
 };
 
 }  // namespace
+
+const char kDevToolsChannelNameFormat[] = "%s_devtools_remote";
 
 class AgentHostDelegate;
 

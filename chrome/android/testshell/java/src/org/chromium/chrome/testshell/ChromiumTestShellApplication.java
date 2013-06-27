@@ -22,7 +22,6 @@ public class ChromiumTestShellApplication extends Application {
         "en-US.pak",
         "resources.pak",
         "chrome_100_percent.pak",
-        "devtools_resources.pak",
     };
 
     @Override

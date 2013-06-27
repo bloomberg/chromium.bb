@@ -22,6 +22,9 @@ class Thread;
 
 class Profile;
 
+// The format used for constructing DevTools server socket names.
+extern const char kDevToolsChannelNameFormat[];
+
 class DevToolsAdbBridge {
  public:
   typedef base::Callback<void(int result,

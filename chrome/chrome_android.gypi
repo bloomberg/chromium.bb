@@ -68,7 +68,6 @@
         'native_lib_target': 'libchromiumtestshell',
         'additional_input_paths': [
           '<@(chrome_android_pak_output_resources)',
-          '<(chrome_android_pak_output_folder)/devtools_resources.pak',
         ],
       },
       'includes': [ '../build/java_apk.gypi', ],
@@ -155,7 +154,6 @@
           'destination': '<(chrome_android_pak_output_folder)',
           'files': [
             '<@(chrome_android_pak_input_resources)',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
           ],
         }
       ],

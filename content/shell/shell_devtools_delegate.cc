@@ -59,6 +59,8 @@ namespace content {
 
 ShellDevToolsDelegate::ShellDevToolsDelegate(BrowserContext* browser_context)
     : browser_context_(browser_context) {
+  // Note that Content Shell always used bundled DevTools frontend,
+  // even on Android, because the shell is used for running layout tests.
   devtools_http_handler_ =
       DevToolsHttpHandler::Start(CreateSocketFactory(), std::string(), this);
 }

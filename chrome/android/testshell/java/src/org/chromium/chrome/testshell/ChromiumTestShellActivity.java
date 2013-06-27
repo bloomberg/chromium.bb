@@ -75,7 +75,7 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
         mWindow.restoreInstanceState(savedInstanceState);
         mTabManager.setWindow(mWindow);
 
-        mDevToolsServer = new DevToolsServer(true, "chromium_testshell_devtools_remote");
+        mDevToolsServer = new DevToolsServer("chromium_testshell");
         mDevToolsServer.setRemoteDebuggingEnabled(true);
     }
 
