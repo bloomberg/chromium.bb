@@ -16,8 +16,21 @@
 
 namespace crypto {
 
+namespace {
+
+const EVP_MD* ToOpenSSLDigest(SignatureVerifier::HashAlgorithm hash_alg) {
+  switch (hash_alg) {
+    case SignatureVerifier::SHA1:
+      return EVP_sha1();
+    case SignatureVerifier::SHA256:
+      return EVP_sha256();
+  }
+  return EVP_md_null();
+}
+
+}  // namespace
+
 struct SignatureVerifier::VerifyContext {
-  ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free> public_key;
   ScopedOpenSSL<EVP_MD_CTX, EVP_MD_CTX_destroy> ctx;
 };
 
@@ -35,17 +48,77 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
                                    int signature_len,
                                    const uint8* public_key_info,
                                    int public_key_info_len) {
-  DCHECK(!verify_context_);
-  verify_context_ = new VerifyContext;
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-
   ScopedOpenSSL<X509_ALGOR, X509_ALGOR_free> algorithm(
       d2i_X509_ALGOR(NULL, &signature_algorithm, signature_algorithm_len));
   if (!algorithm.get())
     return false;
-
   const EVP_MD* digest = EVP_get_digestbyobj(algorithm.get()->algorithm);
+  if (!digest)
+    return false;
+
+  return CommonInit(digest, signature, signature_len, public_key_info,
+                    public_key_info_len, NULL);
+}
+
+bool SignatureVerifier::VerifyInitRSAPSS(HashAlgorithm hash_alg,
+                                         HashAlgorithm mask_hash_alg,
+                                         int salt_len,
+                                         const uint8* signature,
+                                         int signature_len,
+                                         const uint8* public_key_info,
+                                         int public_key_info_len) {
+  OpenSSLErrStackTracer err_tracer(FROM_HERE);
+  const EVP_MD* digest = ToOpenSSLDigest(hash_alg);
   DCHECK(digest);
+
+  EVP_PKEY_CTX* pkey_ctx;
+  if (!CommonInit(digest, signature, signature_len, public_key_info,
+                  public_key_info_len, &pkey_ctx)) {
+    return false;
+  }
+
+  int rv = EVP_PKEY_CTX_set_rsa_padding(pkey_ctx, RSA_PKCS1_PSS_PADDING);
+  if (rv != 1)
+    return false;
+  rv = EVP_PKEY_CTX_set_rsa_mgf1_md(pkey_ctx,
+                                    ToOpenSSLDigest(mask_hash_alg));
+  if (rv != 1)
+    return false;
+  rv = EVP_PKEY_CTX_set_rsa_pss_saltlen(pkey_ctx, salt_len);
+  return rv == 1;
+}
+
+void SignatureVerifier::VerifyUpdate(const uint8* data_part,
+                                     int data_part_len) {
+  DCHECK(verify_context_);
+  OpenSSLErrStackTracer err_tracer(FROM_HERE);
+  int rv = EVP_DigestVerifyUpdate(verify_context_->ctx.get(),
+                                  data_part, data_part_len);
+  DCHECK_EQ(rv, 1);
+}
+
+bool SignatureVerifier::VerifyFinal() {
+  DCHECK(verify_context_);
+  OpenSSLErrStackTracer err_tracer(FROM_HERE);
+  int rv = EVP_DigestVerifyFinal(verify_context_->ctx.get(),
+                                 vector_as_array(&signature_),
+                                 signature_.size());
+  DCHECK_GE(rv, 0);
+  Reset();
+  return rv == 1;
+}
+
+bool SignatureVerifier::CommonInit(const EVP_MD* digest,
+                                   const uint8* signature,
+                                   int signature_len,
+                                   const uint8* public_key_info,
+                                   int public_key_info_len,
+                                   EVP_PKEY_CTX** pkey_ctx) {
+  if (verify_context_)
+    return false;
+
+  verify_context_ = new VerifyContext;
 
   signature_.assign(signature, signature + signature_len);
 
@@ -56,32 +129,14 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
   if (!bio.get())
     return false;
 
-  verify_context_->public_key.reset(d2i_PUBKEY_bio(bio.get(), NULL));
-  if (!verify_context_->public_key.get())
+  ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free> public_key(
+      d2i_PUBKEY_bio(bio.get(), NULL));
+  if (!public_key.get())
     return false;
 
   verify_context_->ctx.reset(EVP_MD_CTX_create());
-  int rv = EVP_VerifyInit_ex(verify_context_->ctx.get(), digest, NULL);
-  return rv == 1;
-}
-
-void SignatureVerifier::VerifyUpdate(const uint8* data_part,
-                                     int data_part_len) {
-  DCHECK(verify_context_);
-  OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  int rv = EVP_VerifyUpdate(verify_context_->ctx.get(),
-                            data_part, data_part_len);
-  DCHECK_EQ(rv, 1);
-}
-
-bool SignatureVerifier::VerifyFinal() {
-  DCHECK(verify_context_);
-  OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  int rv = EVP_VerifyFinal(verify_context_->ctx.get(),
-                           vector_as_array(&signature_), signature_.size(),
-                           verify_context_->public_key.get());
-  DCHECK_GE(rv, 0);
-  Reset();
+  int rv = EVP_DigestVerifyInit(verify_context_->ctx.get(), pkey_ctx,
+                                digest, NULL, public_key.get());
   return rv == 1;
 }
 

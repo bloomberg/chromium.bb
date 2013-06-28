@@ -39,10 +39,19 @@
 
 // This file contains some functions we borrowed from NSS.
 
+#include <prtypes.h>
+#include <hasht.h>
 #include <keyhi.h>
 #include <secmod.h>
 
 #include "crypto/crypto_export.h"
+
+extern "C" SECStatus emsa_pss_verify(const unsigned char *mHash,
+                                     const unsigned char *em,
+                                     unsigned int emLen,
+                                     HASH_HashType hashAlg,
+                                     HASH_HashType maskHashAlg,
+                                     unsigned int sLen);
 
 // Like PK11_ImportEncryptedPrivateKeyInfo, but hardcoded for EC, and returns
 // the SECKEYPrivateKey.
