@@ -13,7 +13,7 @@
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chromeos/app_mode/kiosk_oem_manifest_parser.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"

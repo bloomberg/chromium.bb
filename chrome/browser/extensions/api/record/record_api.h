@@ -7,7 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 namespace {

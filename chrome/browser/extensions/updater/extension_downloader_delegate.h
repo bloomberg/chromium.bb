@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 
 class GURL;

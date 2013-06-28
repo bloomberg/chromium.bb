@@ -8,7 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/system_info/system_info_provider.h"
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_observer.h"
 #include "chrome/browser/storage_monitor/removable_storage_observer.h"

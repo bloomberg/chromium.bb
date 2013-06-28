@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_SOCKET_PROXY_PRIVATE_WEB_SOCKET_PROXY_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEB_SOCKET_PROXY_PRIVATE_WEB_SOCKET_PROXY_PRIVATE_API_H_
 
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

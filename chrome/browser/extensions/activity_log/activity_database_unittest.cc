@@ -9,7 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
 #include "chrome/browser/extensions/activity_log/api_actions.h"
 #include "chrome/browser/extensions/activity_log/blocked_actions.h"

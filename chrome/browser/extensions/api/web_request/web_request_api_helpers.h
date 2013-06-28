@@ -11,10 +11,10 @@
 #include <set>
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/auth.h"

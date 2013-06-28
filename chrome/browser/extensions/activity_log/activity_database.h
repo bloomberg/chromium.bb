@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/synchronization/lock.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/extensions/activity_log/api_actions.h"
 #include "chrome/browser/extensions/activity_log/blocked_actions.h"
 #include "chrome/browser/extensions/activity_log/dom_actions.h"

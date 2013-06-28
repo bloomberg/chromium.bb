@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/time.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"

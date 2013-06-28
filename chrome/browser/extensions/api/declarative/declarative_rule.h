@@ -19,7 +19,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/common/extensions/api/events.h"
 #include "extensions/common/matcher/url_matcher.h"
 

@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARM_MANAGER_H__
 #define CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARM_MANAGER_H__
 
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/alarms.h"

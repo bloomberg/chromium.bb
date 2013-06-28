@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 

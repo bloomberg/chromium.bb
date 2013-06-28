@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/settings/system_settings_provider.h"
 
 #include "base/strings/string16.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

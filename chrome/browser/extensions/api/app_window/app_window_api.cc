@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/app_window/app_window_api.h"
 
 #include "base/command_line.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"

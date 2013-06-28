@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/idle.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"

@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"

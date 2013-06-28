@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "sync/notifier/invalidation_handler.h"

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_UPGRADE_DETECTOR_CHROMEOS_H_
 
 #include "base/compiler_specific.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chromeos/dbus/update_engine_client.h"
 

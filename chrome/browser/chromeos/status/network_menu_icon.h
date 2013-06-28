@@ -35,7 +35,7 @@
 
 #include "ash/system/chromeos/network/network_icon_animation_observer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "ui/gfx/image/image_skia.h"
 

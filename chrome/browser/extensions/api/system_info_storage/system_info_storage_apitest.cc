@@ -4,7 +4,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"

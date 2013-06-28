@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/system_info/system_info_provider.h"
 #include "chrome/common/extensions/api/system_info_cpu.h"
 

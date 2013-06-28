@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/values_test_util.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"

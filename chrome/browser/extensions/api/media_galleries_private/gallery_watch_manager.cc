@@ -16,7 +16,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
 #include "content/public/browser/browser_thread.h"
 

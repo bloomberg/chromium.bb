@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/api/dial/dial_api_factory.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"

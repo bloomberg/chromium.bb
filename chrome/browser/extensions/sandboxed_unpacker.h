@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/utility_process_host_client.h"
 

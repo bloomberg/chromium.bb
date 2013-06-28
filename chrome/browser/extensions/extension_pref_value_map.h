@@ -11,7 +11,7 @@
 
 #include "base/observer_list.h"
 #include "base/prefs/pref_value_map.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "extensions/browser/extension_prefs_scope.h"
