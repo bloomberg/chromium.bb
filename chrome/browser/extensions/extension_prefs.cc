@@ -185,10 +185,6 @@ const char kPrefWasInstalledByDefault[] = "was_installed_by_default";
 // Key for Geometry Cache preference.
 const char kPrefGeometryCache[] = "geometry_cache";
 
-// Key for the path of the directory of the file last chosen by the user in
-// response to a chrome.fileSystem.chooseEntry() call.
-const char kLastChooseEntryDirectory[] = "last_choose_file_directory";
-
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -1657,25 +1653,6 @@ void ExtensionPrefs::SetGeometryCache(
     const std::string& extension_id,
     scoped_ptr<DictionaryValue> cache) {
   UpdateExtensionPref(extension_id, kPrefGeometryCache, cache.release());
-}
-
-bool ExtensionPrefs::GetLastChooseEntryDirectory(
-    const std::string& extension_id, base::FilePath* result) const {
-  const DictionaryValue* dictionary = GetExtensionPref(extension_id);
-  if (!dictionary)
-    return false;
-
-  const Value* value;
-  if (!dictionary->Get(kLastChooseEntryDirectory, &value))
-    return false;
-
-  return base::GetValueAsFilePath(*value, result);
-}
-
-void ExtensionPrefs::SetLastChooseEntryDirectory(
-    const std::string& extension_id, const base::FilePath& value) {
-  UpdateExtensionPref(extension_id, kLastChooseEntryDirectory,
-                      base::CreateFilePathValue(value));
 }
 
 ExtensionPrefs::ExtensionPrefs(

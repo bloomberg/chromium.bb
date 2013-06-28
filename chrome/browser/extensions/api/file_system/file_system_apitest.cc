@@ -7,22 +7,21 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 
-using extensions::FileSystemChooseEntryFunction;
+namespace extensions {
 
 namespace {
 
 class AppInstallObserver : public content::NotificationObserver {
  public:
   AppInstallObserver(
-      base::Callback<void(const extensions::Extension*)> callback)
+      base::Callback<void(const Extension*)> callback)
       : callback_(callback) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -33,40 +32,42 @@ class AppInstallObserver : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     EXPECT_EQ(chrome::NOTIFICATION_EXTENSION_LOADED, type);
-    callback_.Run(content::Details<const extensions::Extension>(details).ptr());
+    callback_.Run(content::Details<const Extension>(details).ptr());
   }
 
  private:
   content::NotificationRegistrar registrar_;
-  base::Callback<void(const extensions::Extension*)> callback_;
+  base::Callback<void(const Extension*)> callback_;
   DISALLOW_COPY_AND_ASSIGN(AppInstallObserver);
 };
 
 void SetLastChooseEntryDirectory(const base::FilePath& choose_entry_directory,
-                                 extensions::ExtensionPrefs* prefs,
-                                 const extensions::Extension* extension) {
-  prefs->SetLastChooseEntryDirectory(extension->id(), choose_entry_directory);
+                                 ExtensionPrefs* prefs,
+                                 const Extension* extension) {
+  file_system_api::SetLastChooseEntryDirectory(
+      prefs, extension->id(), choose_entry_directory);
 }
 
 void SetLastChooseEntryDirectoryToAppDirectory(
-    extensions::ExtensionPrefs* prefs,
-    const extensions::Extension* extension) {
-  prefs->SetLastChooseEntryDirectory(extension->id(), extension->path());
+    ExtensionPrefs* prefs,
+    const Extension* extension) {
+  file_system_api::SetLastChooseEntryDirectory(
+      prefs, extension->id(), extension->path());
 }
 
 void AddSavedEntry(const base::FilePath& path_to_save,
                    apps::SavedFilesService* service,
-                   const extensions::Extension* extension) {
+                   const Extension* extension) {
   service->RegisterFileEntry(
       extension->id(), "magic id", path_to_save, /* writable */ true);
 }
 
 }  // namespace
 
-class FileSystemApiTest : public extensions::PlatformAppBrowserTest {
+class FileSystemApiTest : public PlatformAppBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
+    PlatformAppBrowserTest::SetUpCommandLine(command_line);
     test_root_folder_ = test_data_dir_.AppendASCII("api_test")
         .AppendASCII("file_system");
     FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
@@ -75,7 +76,7 @@ class FileSystemApiTest : public extensions::PlatformAppBrowserTest {
 
   virtual void TearDown() OVERRIDE {
     FileSystemChooseEntryFunction::StopSkippingPickerForTest();
-    extensions::PlatformAppBrowserTest::TearDown();
+    PlatformAppBrowserTest::TearDown();
   };
 
  protected:
@@ -97,18 +98,17 @@ class FileSystemApiTest : public extensions::PlatformAppBrowserTest {
   }
 
   void CheckStoredDirectoryMatches(const base::FilePath& filename) {
-    const extensions::Extension* extension = GetSingleLoadedExtension();
+    const Extension* extension = GetSingleLoadedExtension();
     ASSERT_TRUE(extension);
     std::string extension_id = extension->id();
-    extensions::ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(
-        profile())->extension_service()->extension_prefs();
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
     base::FilePath stored_value;
     if (filename.empty()) {
-      EXPECT_FALSE(prefs->GetLastChooseEntryDirectory(extension_id,
-                                                      &stored_value));
+      EXPECT_FALSE(file_system_api::GetLastChooseEntryDirectory(
+          prefs, extension_id, &stored_value));
     } else {
-      EXPECT_TRUE(prefs->GetLastChooseEntryDirectory(extension_id,
-                                                     &stored_value));
+      EXPECT_TRUE(file_system_api::GetLastChooseEntryDirectory(
+          prefs, extension_id, &stored_value));
       EXPECT_EQ(base::MakeAbsoluteFilePath(filename.DirName()),
                 base::MakeAbsoluteFilePath(stored_value));
     }
@@ -182,8 +182,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     AppInstallObserver observer(
         base::Bind(SetLastChooseEntryDirectory,
                    test_file.DirName(),
-                   extensions::ExtensionSystem::Get(
-                       profile())->extension_service()->extension_prefs()));
+                   ExtensionPrefs::Get(profile())));
     ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
         << message_;
   }
@@ -203,8 +202,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
         SetLastChooseEntryDirectory,
         test_file.DirName().Append(
             base::FilePath::FromUTF8Unsafe("fake_directory_does_not_exist")),
-        extensions::ExtensionSystem::Get(
-            profile())->extension_service()->extension_prefs()));
+        ExtensionPrefs::Get(profile())));
     ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
         << message_;
   }
@@ -392,8 +390,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   {
     AppInstallObserver observer(
         base::Bind(SetLastChooseEntryDirectoryToAppDirectory,
-                   extensions::ExtensionSystem::Get(
-                       profile())->extension_service()->extension_prefs()));
+                   ExtensionPrefs::Get(profile())));
     ASSERT_TRUE(RunPlatformAppTest(
         "api_test/file_system/get_writable_file_entry_non_writable_file"))
         << message_;
@@ -499,10 +496,11 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   {
     AppInstallObserver observer(
         base::Bind(SetLastChooseEntryDirectoryToAppDirectory,
-                   extensions::ExtensionSystem::Get(
-                       profile())->extension_service()->extension_prefs()));
+                   ExtensionPrefs::Get(profile())));
     ASSERT_TRUE(RunPlatformAppTest(
         "api_test/file_system/open_writable_existing_non_writable"))
         << message_;
   }
 }
+
+}  // namespace extensions

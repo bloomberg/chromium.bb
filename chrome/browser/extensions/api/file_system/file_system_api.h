@@ -9,7 +9,29 @@
 #include "chrome/common/extensions/api/file_system.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace extensions {
+class ExtensionPrefs;
+
+namespace file_system_api {
+
+// Methods to get and set the path of the directory containing the last file
+// chosen by the user in response to a chrome.fileSystem.chooseEntry() call for
+// the given extension.
+
+// Returns true and populates result on success; false on failure.
+bool GetLastChooseEntryDirectory(const ExtensionPrefs* prefs,
+                                 const std::string& extension_id,
+                                 base::FilePath* path);
+
+void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
+                                 const std::string& extension_id,
+                                 const base::FilePath& path);
+
+}  // namespace file_system_api
 
 class FileSystemGetDisplayPathFunction : public SyncExtensionFunction {
  public:
