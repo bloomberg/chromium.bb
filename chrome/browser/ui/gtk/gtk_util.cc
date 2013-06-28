@@ -804,18 +804,18 @@ bool GrabAllInput(GtkWidget* widget) {
     return false;
 
   GdkWindow* gdk_window = gtk_widget_get_window(widget);
-  if (!gdk_pointer_grab(gdk_window,
-                        TRUE,
-                        GdkEventMask(GDK_BUTTON_PRESS_MASK |
-                                     GDK_BUTTON_RELEASE_MASK |
-                                     GDK_ENTER_NOTIFY_MASK |
-                                     GDK_LEAVE_NOTIFY_MASK |
-                                     GDK_POINTER_MOTION_MASK),
-                        NULL, NULL, time) == 0) {
+  if (gdk_pointer_grab(gdk_window,
+                       TRUE,
+                       GdkEventMask(GDK_BUTTON_PRESS_MASK |
+                                    GDK_BUTTON_RELEASE_MASK |
+                                    GDK_ENTER_NOTIFY_MASK |
+                                    GDK_LEAVE_NOTIFY_MASK |
+                                    GDK_POINTER_MOTION_MASK),
+                       NULL, NULL, time) != 0) {
     return false;
   }
 
-  if (!gdk_keyboard_grab(gdk_window, TRUE, time) == 0) {
+  if (gdk_keyboard_grab(gdk_window, TRUE, time) != 0) {
     gdk_display_pointer_ungrab(gdk_drawable_get_display(gdk_window), time);
     return false;
   }
