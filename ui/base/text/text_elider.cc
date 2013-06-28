@@ -21,13 +21,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/icu/public/common/unicode/rbbi.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
 #include "ui/gfx/font.h"
+#include "url/gurl.h"
 
 namespace ui {
 

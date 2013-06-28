@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_pump_dispatcher.h"
 #include "base/pickle.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/x/selection_owner.h"
 #include "ui/base/x/selection_requestor.h"
@@ -23,6 +22,7 @@
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/vector2d.h"
+#include "url/gurl.h"
 
 namespace ui {
 

@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_export.h"
+#include "url/gurl.h"
 
 namespace message_center {
 

@@ -4,8 +4,8 @@
 
 #include "ui/webui/web_ui_util.h"
 
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 TEST(WebUIUtilTest, ParsePathAndScale) {
   std::vector<ui::ScaleFactor> supported_scale_factors;

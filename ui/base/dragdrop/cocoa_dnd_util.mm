@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "googleurl/src/gurl.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "url/gurl.h"
 
 namespace ui {
 

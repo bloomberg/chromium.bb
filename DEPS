@@ -514,6 +514,7 @@ include_rules = [
 
   "+testing",
   "+third_party/icu/public",
+  "+url",
 ]
 
 

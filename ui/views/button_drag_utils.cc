@@ -5,7 +5,6 @@
 #include "ui/views/button_drag_utils.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "googleurl/src/gurl.h"
 #include "grit/ui_resources.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -14,6 +13,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/drag_utils.h"
+#include "url/gurl.h"
 
 namespace button_drag_utils {
 

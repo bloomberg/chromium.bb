@@ -9,10 +9,10 @@
 #include "base/path_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_ui_controller_factory.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/keyboard_constants.h"
 #include "ui/keyboard/keyboard_ui_controller.h"
+#include "url/gurl.h"
 
 namespace {
 

@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/size.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
+#include "url/gurl.h"
 
 namespace ui {
 namespace test {

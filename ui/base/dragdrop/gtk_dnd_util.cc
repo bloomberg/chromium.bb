@@ -9,14 +9,14 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/clipboard/custom_data_helper.h"
-
-static const int kBitsPerByte = 8;
+#include "url/gurl.h"
 
 namespace ui {
 
 namespace {
+
+const int kBitsPerByte = 8;
 
 void AddTargetToList(GtkTargetList* targets, int target_code) {
   switch (target_code) {

@@ -12,9 +12,9 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/web_dialogs/web_dialogs_export.h"
+#include "url/gurl.h"
 
 namespace content {
 class WebContents;
