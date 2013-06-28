@@ -36,6 +36,7 @@
         ],
         'isolate_dependency_untracked': [
           '../base/test/data/',
+          '../components/test/data/',
           '../extensions/test/data/',
           '../net/data/',
           '../net/tools/testserver/',
