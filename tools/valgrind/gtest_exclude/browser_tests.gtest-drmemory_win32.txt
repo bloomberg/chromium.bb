@@ -22,6 +22,8 @@ F*
 G*
 # H*: ~35  tests
 # I*: ~10  tests
+# DrM-i#1052-c#53
+InfoBarsTest.*
 # J*: 0    tests
 # K*: 1    tests
 L*
@@ -34,6 +36,8 @@ R*
 S*
 T*
 # U*: ~20  tests
+# DrM-i#1052-c#53
+UnloadTest.*
 # V*: 5    tests
 W*
 # X*: 0    tests
