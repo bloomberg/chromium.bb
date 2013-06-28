@@ -350,12 +350,11 @@ tablet_shell_create_client(struct wl_client *client,
 	tablet_client->shell = shell;
 	tablet_client->name = strdup(name);
 
-	tablet_client->resource = wl_client_add_object(client,
-						       &tablet_client_interface,
-						       &tablet_client_implementation,
-						       id, tablet_client);
-	wl_resource_set_destructor(tablet_client->resource,
-				   destroy_tablet_client);
+	tablet_client->resource =
+		wl_resource_create(client, &tablet_client_interface, 1, id);
+	wl_resource_set_implementation(tablet_client->resource,
+				       &tablet_client_implementation,
+				       tablet_client, destroy_tablet_client);
 
 	tablet_client->surface = NULL;
 	shell->current_client = tablet_client;
@@ -498,11 +497,11 @@ bind_tablet_shell(struct wl_client *client, void *data, uint32_t version,
 		 * tries to access the object?. */
 		return;
 
-	shell->resource = wl_client_add_object(client,
-					       &tablet_shell_interface,
-					       &tablet_shell_implementation,
-					       id, shell);
-	wl_resource_set_destructor(shell->resource, destroy_tablet_shell);
+	shell->resource =
+		wl_resource_create(client, &tablet_shell_interface, 1, id);
+	wl_resource_set_implementation(shell->resource,
+				       &tablet_shell_implementation,
+				       shell, destroy_tablet_shell);
 }
 
 static void

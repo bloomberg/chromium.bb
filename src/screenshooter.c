@@ -217,14 +217,17 @@ bind_shooter(struct wl_client *client,
 	struct screenshooter *shooter = data;
 	struct wl_resource *resource;
 
-	resource = wl_client_add_object(client, &screenshooter_interface,
-			     &screenshooter_implementation, id, data);
+	resource = wl_resource_create(client,
+				      &screenshooter_interface, 1, id);
 
 	if (client != shooter->client) {
 		wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "screenshooter failed: permission denied");
 		wl_resource_destroy(resource);
 	}
+
+	wl_resource_set_implementation(resource, &screenshooter_implementation,
+				       data, NULL);
 }
 
 static void

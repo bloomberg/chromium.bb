@@ -1186,10 +1186,11 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 	if (!seat->pointer)
 		return;
 
-        cr = wl_client_add_object(client, &wl_pointer_interface,
-				  &pointer_interface, id, seat->pointer);
+        cr = wl_resource_create(client, &wl_pointer_interface,
+				wl_resource_get_version(resource), id);
 	wl_list_insert(&seat->pointer->resource_list, wl_resource_get_link(cr));
-	wl_resource_set_destructor(cr, unbind_resource);
+	wl_resource_set_implementation(cr, &pointer_interface, seat->pointer,
+				       unbind_resource);
 
 	if (seat->pointer->focus &&
 	    wl_resource_get_client(seat->pointer->focus->resource) == client) {
@@ -1219,10 +1220,10 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 	if (!seat->keyboard)
 		return;
 
-        cr = wl_client_add_object(client, &wl_keyboard_interface, NULL, id,
-				  seat);
+        cr = wl_resource_create(client, &wl_keyboard_interface,
+				wl_resource_get_version(resource), id);
 	wl_list_insert(&seat->keyboard->resource_list, wl_resource_get_link(cr));
-	wl_resource_set_destructor(cr, unbind_resource);
+	wl_resource_set_implementation(cr, NULL, seat, unbind_resource);
 
 	if (seat->compositor->use_xkbcommon) {
 		wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
@@ -1254,9 +1255,10 @@ seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 	if (!seat->touch)
 		return;
 
-        cr = wl_client_add_object(client, &wl_touch_interface, NULL, id, seat);
+        cr = wl_resource_create(client, &wl_touch_interface,
+				wl_resource_get_version(resource), id);
 	wl_list_insert(&seat->touch->resource_list, wl_resource_get_link(cr));
-	wl_resource_set_destructor(cr, unbind_resource);
+	wl_resource_set_implementation(cr, NULL, seat, unbind_resource);
 }
 
 static const struct wl_seat_interface seat_interface = {
@@ -1272,10 +1274,11 @@ bind_seat(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	struct wl_resource *resource;
 	enum wl_seat_capability caps = 0;
 
-	resource = wl_client_add_object(client, &wl_seat_interface,
-					&seat_interface, id, data);
+	resource = wl_resource_create(client,
+				      &wl_seat_interface, MIN(version, 2), id);
 	wl_list_insert(&seat->base_resource_list, wl_resource_get_link(resource));
-	wl_resource_set_destructor(resource, unbind_resource);
+	wl_resource_set_implementation(resource, &seat_interface, data,
+				       unbind_resource);
 
 	if (seat->pointer)
 		caps |= WL_SEAT_CAPABILITY_POINTER;

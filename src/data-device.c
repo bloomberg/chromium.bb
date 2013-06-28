@@ -117,10 +117,11 @@ wl_data_source_send_offer(struct wl_data_source *source,
 	if (offer == NULL)
 		return NULL;
 
-	offer->resource = wl_client_new_object(wl_resource_get_client(target),
-					       &wl_data_offer_interface,
-					       &data_offer_interface, offer);
-	wl_resource_set_destructor(offer->resource, destroy_data_offer);
+	offer->resource =
+		wl_resource_create(wl_resource_get_client(target),
+				   &wl_data_offer_interface, 1, 0);
+	wl_resource_set_implementation(offer->resource, &data_offer_interface,
+				       offer, destroy_data_offer);
 
 	offer->source = source;
 	offer->source_destroy_listener.notify = destroy_offer_data_source;
@@ -545,11 +546,10 @@ create_data_source(struct wl_client *client,
 
 	wl_array_init(&source->mime_types);
 
-	source->resource = wl_client_add_object(client,
-						&wl_data_source_interface,
-						&data_source_interface,
-						id, source);
-	wl_resource_set_destructor(source->resource, destroy_data_source);
+	source->resource =
+		wl_resource_create(client, &wl_data_source_interface, 1, id);
+	wl_resource_set_implementation(source->resource, &data_source_interface,
+				       source, destroy_data_source);
 }
 
 static void unbind_data_device(struct wl_resource *resource)
@@ -565,12 +565,12 @@ get_data_device(struct wl_client *client,
 	struct weston_seat *seat = wl_resource_get_user_data(seat_resource);
 	struct wl_resource *resource;
 
-	resource = wl_client_add_object(client, &wl_data_device_interface,
-					&data_device_interface, id,
-					seat);
+	resource = wl_resource_create(client,
+				      &wl_data_device_interface, 1, id);
 
 	wl_list_insert(&seat->drag_resource_list, wl_resource_get_link(resource));
-	wl_resource_set_destructor(resource, unbind_data_device);
+	wl_resource_set_implementation(resource, &data_device_interface,
+				       seat, unbind_data_device);
 }
 
 static const struct wl_data_device_manager_interface manager_interface = {
@@ -582,8 +582,14 @@ static void
 bind_manager(struct wl_client *client,
 	     void *data, uint32_t version, uint32_t id)
 {
-	wl_client_add_object(client, &wl_data_device_manager_interface,
-			     &manager_interface, id, NULL);
+	struct wl_resource *resource;
+
+	resource =
+		wl_resource_create(client,
+				   &wl_data_device_manager_interface, 1, id);
+	if (resource)
+		wl_resource_set_implementation(resource, &manager_interface,
+					       NULL, NULL);
 }
 
 WL_EXPORT void

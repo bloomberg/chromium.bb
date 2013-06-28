@@ -191,8 +191,10 @@ bind_test(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	struct weston_test *test = data;
 	struct wl_resource *resource;
 
-	resource = wl_client_add_object(client, &wl_test_interface,
-					&test_implementation, id, test);
+	resource = wl_client_add_versioned_object(client, &wl_test_interface,
+						  1, id);
+	wl_resource_set_implementation(resource, &test_implementation,
+				       test, NULL);
 
 	notify_pointer_position(test, resource);
 }

@@ -53,8 +53,14 @@ static void
 bind_text_cursor_position(struct wl_client *client,
 	     void *data, uint32_t version, uint32_t id)
 {
-	wl_client_add_object(client, &text_cursor_position_interface,
-			     &text_cursor_position_implementation, id, data);
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client,
+				      &text_cursor_position_interface, 1, id);
+	if (resource)
+		wl_resource_set_implementation(resource,
+					       &text_cursor_position_implementation,
+					       data, NULL);
 }
 
 static void

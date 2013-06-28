@@ -594,7 +594,7 @@ struct weston_buffer {
 
 	union {
 		struct wl_shm_buffer *shm_buffer;
-		struct wl_buffer *legacy_buffer;
+		void *legacy_buffer;
 	};
 	int32_t width, height;
 	uint32_t busy_count;

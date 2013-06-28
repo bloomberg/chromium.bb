@@ -159,8 +159,10 @@ bind_xserver(struct wl_client *client,
 		return;
 
 	wxs->resource = 
-		wl_client_add_object(client, &xserver_interface,
-				     &xserver_implementation, id, wxs);
+		wl_resource_create(client, &xserver_interface,
+					       1, id);
+	wl_resource_set_implementation(wxs->resource, &xserver_implementation,
+				       wxs, NULL);
 
 	wxs->wm = weston_wm_create(wxs);
 	if (wxs->wm == NULL) {

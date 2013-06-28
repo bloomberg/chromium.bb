@@ -358,11 +358,11 @@ static void text_input_manager_create_text_input(struct wl_client *client,
 
 	text_input = calloc(1, sizeof *text_input);
 
-	text_input->resource = wl_client_add_object(client,
-						    &wl_text_input_interface,
-						    &text_input_implementation,
-						    id, text_input);
-	wl_resource_set_destructor(text_input->resource, destroy_text_input);
+	text_input->resource =
+		wl_resource_create(client, &wl_text_input_interface, 1, id);
+	wl_resource_set_implementation(text_input->resource,
+				       &text_input_implementation,
+				       text_input, destroy_text_input);
 
 	text_input->ec = text_input_manager->ec;
 
@@ -380,12 +380,16 @@ bind_text_input_manager(struct wl_client *client,
 			uint32_t id)
 {
 	struct text_input_manager *text_input_manager = data;
+	struct wl_resource *resource;
 
-	/* No checking for duplicate binding necessary.
-	 * No events have to be sent, so we don't need the return value. */
-	wl_client_add_object(client, &wl_text_input_manager_interface,
-			     &text_input_manager_implementation,
-			     id, text_input_manager);
+	/* No checking for duplicate binding necessary.  */
+	resource =
+		wl_resource_create(client,
+				   &wl_text_input_manager_interface, 1, id);
+	if (resource)
+		wl_resource_set_implementation(resource,
+					       &text_input_manager_implementation,
+					       text_input_manager, NULL);
 }
 
 static void
@@ -582,9 +586,8 @@ input_method_context_grab_keyboard(struct wl_client *client,
 	struct weston_seat *seat = context->input_method->seat;
 	struct weston_keyboard *keyboard = seat->keyboard;
 
-	cr = wl_client_add_object(client, &wl_keyboard_interface,
-				  NULL, id, context);
-	wl_resource_set_destructor(cr, unbind_keyboard);
+	cr = wl_resource_create(client, &wl_keyboard_interface, 1, id);
+	wl_resource_set_implementation(cr, NULL, context, unbind_keyboard);
 
 	context->keyboard = cr;
 
@@ -703,12 +706,12 @@ input_method_context_create(struct text_input *model,
 		return;
 
 	binding = input_method->input_method_binding;
-	context->resource = wl_client_new_object(wl_resource_get_client(binding),
-						 &wl_input_method_context_interface,
-						 &input_method_context_implementation,
-						 context);
-	wl_resource_set_destructor(context->resource,
-				   destroy_input_method_context);
+	context->resource =
+		wl_resource_create(wl_resource_get_client(binding),
+				   &wl_input_method_context_interface, 1, 0);
+	wl_resource_set_implementation(context->resource,
+				       &input_method_context_implementation,
+				       context, destroy_input_method_context);
 
 	context->model = model;
 	context->input_method = input_method;
@@ -756,9 +759,8 @@ bind_input_method(struct wl_client *client,
 	struct text_backend *text_backend = input_method->text_backend;
 	struct wl_resource *resource;
 
-	resource = wl_client_add_object(client, &wl_input_method_interface,
-					NULL,
-					id, input_method);
+	resource =
+		wl_resource_create(client, &wl_input_method_interface, 1, id);
 
 	if (input_method->input_method_binding != NULL) {
 		wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
@@ -774,7 +776,8 @@ bind_input_method(struct wl_client *client,
 		return;
 	}
 
-	wl_resource_set_destructor(resource, unbind_input_method);
+	wl_resource_set_implementation(resource, NULL, input_method,
+				       unbind_input_method);
 	input_method->input_method_binding = resource;
 
 	text_backend->input_method.binding = resource;

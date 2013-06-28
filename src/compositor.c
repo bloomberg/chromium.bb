@@ -1489,9 +1489,11 @@ surface_frame(struct wl_client *client,
 		return;
 	}
 
-	cb->resource = wl_client_add_object(client, &wl_callback_interface,
-					    NULL, callback, cb);
-	wl_resource_set_destructor(cb->resource, destroy_frame_callback);
+	cb->resource = wl_resource_create(client,
+						      &wl_callback_interface,
+						      1, callback);
+	wl_resource_set_implementation(cb->resource, NULL, cb,
+				       destroy_frame_callback);
 
 	wl_list_insert(surface->pending.frame_callback_list.prev, &cb->link);
 }
@@ -1688,10 +1690,11 @@ compositor_create_surface(struct wl_client *client,
 		return;
 	}
 
-	surface->resource = wl_client_add_object(client, &wl_surface_interface,
-						 &surface_interface,
-						 id, surface);
-	wl_resource_set_destructor(surface->resource, destroy_surface);
+	surface->resource =
+		wl_resource_create(client, &wl_surface_interface,
+				   wl_resource_get_version(resource), id);
+	wl_resource_set_implementation(surface->resource, &surface_interface,
+				       surface, destroy_surface);
 }
 
 static void
@@ -1751,9 +1754,10 @@ compositor_create_region(struct wl_client *client,
 
 	pixman_region32_init(&region->region);
 
-	region->resource = wl_client_add_object(client, &wl_region_interface,
-						&region_interface, id, region);
-	wl_resource_set_destructor(region->resource, destroy_region);
+	region->resource =
+		wl_resource_create(client, &wl_region_interface, 1, id);
+	wl_resource_set_implementation(region->resource, &region_interface,
+				       region, destroy_region);
 }
 
 static const struct wl_compositor_interface compositor_interface = {
@@ -2288,16 +2292,16 @@ weston_subsurface_create(uint32_t id, struct weston_surface *surface,
 	if (!sub)
 		return NULL;
 
-	sub->resource = wl_client_add_object(client,
-					     &wl_subsurface_interface,
-					     &subsurface_implementation,
-					     id, sub);
+	sub->resource =
+		wl_resource_create(client, &wl_subsurface_interface, 1, id);
 	if (!sub->resource) {
 		free(sub);
 		return NULL;
 	}
 
-	wl_resource_set_destructor(sub->resource, subsurface_resource_destroy);
+	wl_resource_set_implementation(sub->resource,
+				       &subsurface_implementation,
+				       sub, subsurface_resource_destroy);
 	weston_subsurface_link_surface(sub, surface);
 	weston_subsurface_link_parent(sub, parent);
 	weston_subsurface_cache_init(sub);
@@ -2408,9 +2412,14 @@ bind_subcompositor(struct wl_client *client,
 		   void *data, uint32_t version, uint32_t id)
 {
 	struct weston_compositor *compositor = data;
+	struct wl_resource *resource;
 
-	wl_client_add_object(client, &wl_subcompositor_interface,
-			     &subcompositor_interface, id, compositor);
+	resource =
+		wl_resource_create(client, &wl_subcompositor_interface, 1, id);
+	if (resource)
+		wl_resource_set_implementation(resource,
+					       &subcompositor_interface, 
+					       compositor, NULL);
 }
 
 static void
@@ -2522,11 +2531,11 @@ bind_output(struct wl_client *client,
 	struct weston_mode *mode;
 	struct wl_resource *resource;
 
-	resource = wl_client_add_object(client,
-					&wl_output_interface, NULL, id, data);
+	resource = wl_resource_create(client, &wl_output_interface,
+				      MIN(version, 2), id);
 
 	wl_list_insert(&output->resource_list, wl_resource_get_link(resource));
-	wl_resource_set_destructor(resource, unbind_resource);
+	wl_resource_set_implementation(resource, NULL, data, unbind_resource);
 
 	wl_output_send_geometry(resource,
 				output->x,
@@ -2742,9 +2751,13 @@ compositor_bind(struct wl_client *client,
 		void *data, uint32_t version, uint32_t id)
 {
 	struct weston_compositor *compositor = data;
+	struct wl_resource *resource;
 
-	wl_client_add_object(client, &wl_compositor_interface,
-			     &compositor_interface, id, compositor);
+	resource = wl_resource_create(client, &wl_compositor_interface,
+				      MIN(version, 3), id);
+	if (resource)
+		wl_resource_set_implementation(resource, &compositor_interface,
+					       compositor, NULL);
 }
 
 static void

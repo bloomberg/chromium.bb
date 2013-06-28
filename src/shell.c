@@ -1015,16 +1015,17 @@ bind_workspace_manager(struct wl_client *client,
 	struct desktop_shell *shell = data;
 	struct wl_resource *resource;
 
-	resource = wl_client_add_object(client, &workspace_manager_interface,
-					&workspace_manager_implementation,
-					id, shell);
+	resource = wl_resource_create(client,
+				      &workspace_manager_interface, 1, id);
 
 	if (resource == NULL) {
 		weston_log("couldn't add workspace manager object");
 		return;
 	}
 
-	wl_resource_set_destructor(resource, unbind_resource);
+	wl_resource_set_implementation(resource,
+				       &workspace_manager_implementation,
+				       shell, unbind_resource);
 	wl_list_insert(&shell->workspaces.client_list,
 		       wl_resource_get_link(resource));
 
@@ -2332,12 +2333,12 @@ shell_get_shell_surface(struct wl_client *client,
 		return;
 	}
 
-	shsurf->resource = wl_client_add_object(client,
-						&wl_shell_surface_interface,
-						&shell_surface_implementation,
-						id, shsurf);
-	wl_resource_set_destructor(shsurf->resource,
-				   shell_destroy_shell_surface);
+	shsurf->resource =
+		wl_resource_create(client,
+				   &wl_shell_surface_interface, 1, id);
+	wl_resource_set_implementation(shsurf->resource,
+				       &shell_surface_implementation,
+				       shsurf, shell_destroy_shell_surface);
 }
 
 static const struct wl_shell_interface shell_implementation = {
@@ -3598,9 +3599,12 @@ static void
 bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 {
 	struct desktop_shell *shell = data;
+	struct wl_resource *resource;
 
-	wl_client_add_object(client, &wl_shell_interface,
-			     &shell_implementation, id, shell);
+	resource = wl_resource_create(client, &wl_shell_interface, 1, id);
+	if (resource)
+		wl_resource_set_implementation(resource, &shell_implementation,
+					       shell, NULL);
 }
 
 static void
@@ -3622,12 +3626,13 @@ bind_desktop_shell(struct wl_client *client,
 	struct desktop_shell *shell = data;
 	struct wl_resource *resource;
 
-	resource = wl_client_add_object(client, &desktop_shell_interface,
-					&desktop_shell_implementation,
-					id, shell);
+	resource = wl_resource_create(client, &desktop_shell_interface,
+				      MIN(version, 2), id);
 
 	if (client == shell->child.client) {
-		wl_resource_set_destructor(resource, unbind_desktop_shell);
+		wl_resource_set_implementation(resource,
+					       &desktop_shell_implementation,
+					       shell, unbind_desktop_shell);
 		shell->child.desktop_shell = resource;
 
 		if (version < 2)
@@ -3700,12 +3705,12 @@ bind_screensaver(struct wl_client *client,
 	struct desktop_shell *shell = data;
 	struct wl_resource *resource;
 
-	resource = wl_client_add_object(client, &screensaver_interface,
-					&screensaver_implementation,
-					id, shell);
+	resource = wl_resource_create(client, &screensaver_interface, 1, id);
 
 	if (shell->screensaver.binding == NULL) {
-		wl_resource_set_destructor(resource, unbind_screensaver);
+		wl_resource_set_implementation(resource,
+					       &screensaver_implementation,
+					       shell, unbind_screensaver);
 		shell->screensaver.binding = resource;
 		return;
 	}
@@ -3894,13 +3899,13 @@ input_panel_get_input_panel_surface(struct wl_client *client,
 		return;
 	}
 
-	ipsurf->resource = wl_client_add_object(client,
-						&wl_input_panel_surface_interface,
-						&input_panel_surface_implementation,
-						id, ipsurf);
-
-	wl_resource_set_destructor(ipsurf->resource,
-				   destroy_input_panel_surface_resource);
+	ipsurf->resource =
+		wl_resource_create(client,
+				   &wl_input_panel_surface_interface, 1, id);
+	wl_resource_set_implementation(ipsurf->resource,
+				       &input_panel_surface_implementation,
+				       ipsurf,
+				       destroy_input_panel_surface_resource);
 }
 
 static const struct wl_input_panel_interface input_panel_implementation = {
@@ -3922,12 +3927,13 @@ bind_input_panel(struct wl_client *client,
 	struct desktop_shell *shell = data;
 	struct wl_resource *resource;
 
-	resource = wl_client_add_object(client, &wl_input_panel_interface,
-					&input_panel_implementation,
-					id, shell);
+	resource = wl_resource_create(client,
+				      &wl_input_panel_interface, 1, id);
 
 	if (shell->input_panel.binding == NULL) {
-		wl_resource_set_destructor(resource, unbind_input_panel);
+		wl_resource_set_implementation(resource,
+					       &input_panel_implementation,
+					       shell, unbind_input_panel);
 		shell->input_panel.binding = resource;
 		return;
 	}
