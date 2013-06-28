@@ -171,6 +171,11 @@ struct PageStdAllocator : public std::allocator<T> {
   };
 
  private:
+  // Silly workaround for the gcc from Android's ndk (gcc 4.6), which will
+  // otherwise complain that `other.allocator_` is private in the constructor
+  // code.
+  template<typename Other> friend struct PageStdAllocator;
+
   PageAllocator& allocator_;
 };
 
