@@ -113,14 +113,10 @@ void GetCertChainInfo(X509_STORE_CTX* store_ctx,
       int sig_alg = OBJ_obj2nid(cert->sig_alg->algorithm);
       if (sig_alg == NID_md2WithRSAEncryption) {
         verify_result->has_md2 = true;
-        if (i != 0)
-          verify_result->has_md2_ca = true;
       } else if (sig_alg == NID_md4WithRSAEncryption) {
         verify_result->has_md4 = true;
       } else if (sig_alg == NID_md5WithRSAEncryption) {
         verify_result->has_md5 = true;
-        if (i != 0)
-          verify_result->has_md5_ca = true;
       }
     }
   }

@@ -21,8 +21,6 @@ void CertVerifyResult::Reset() {
   has_md5 = false;
   has_md2 = false;
   has_md4 = false;
-  has_md5_ca = false;
-  has_md2_ca = false;
   is_issued_by_known_root = false;
   is_issued_by_additional_trust_anchor = false;
 

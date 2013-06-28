@@ -329,13 +329,9 @@ void GetCertChainInfo(PCCERT_CHAIN_CONTEXT chain_context,
     if (strcmp(algorithm, szOID_RSA_MD5RSA) == 0) {
       // md5WithRSAEncryption: 1.2.840.113549.1.1.4
       verify_result->has_md5 = true;
-      if (i != 0)
-        verify_result->has_md5_ca = true;
     } else if (strcmp(algorithm, szOID_RSA_MD2RSA) == 0) {
       // md2WithRSAEncryption: 1.2.840.113549.1.1.2
       verify_result->has_md2 = true;
-      if (i != 0)
-        verify_result->has_md2_ca = true;
     } else if (strcmp(algorithm, szOID_RSA_MD4RSA) == 0) {
       // md4WithRSAEncryption: 1.2.840.113549.1.1.3
       verify_result->has_md4 = true;

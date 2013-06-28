@@ -224,14 +224,10 @@ void GetCertChainInfo(CFArrayRef cert_chain,
     const CSSM_OID* alg_oid = &sig_algorithm->algorithm;
     if (CSSMOIDEqual(alg_oid, &CSSMOID_MD2WithRSA)) {
       verify_result->has_md2 = true;
-      if (i != 0)
-        verify_result->has_md2_ca = true;
     } else if (CSSMOIDEqual(alg_oid, &CSSMOID_MD4WithRSA)) {
       verify_result->has_md4 = true;
     } else if (CSSMOIDEqual(alg_oid, &CSSMOID_MD5WithRSA)) {
       verify_result->has_md5 = true;
-      if (i != 0)
-        verify_result->has_md5_ca = true;
     }
   }
   if (!verified_cert)

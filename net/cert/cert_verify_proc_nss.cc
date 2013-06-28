@@ -204,13 +204,9 @@ void GetCertChainInfo(CERTCertList* cert_list,
     switch (oid_tag) {
       case SEC_OID_PKCS1_MD5_WITH_RSA_ENCRYPTION:
         verify_result->has_md5 = true;
-        if (i != 0)
-          verify_result->has_md5_ca = true;
         break;
       case SEC_OID_PKCS1_MD2_WITH_RSA_ENCRYPTION:
         verify_result->has_md2 = true;
-        if (i != 0)
-          verify_result->has_md2_ca = true;
         break;
       case SEC_OID_PKCS1_MD4_WITH_RSA_ENCRYPTION:
         verify_result->has_md4 = true;
