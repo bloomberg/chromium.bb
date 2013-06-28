@@ -31,20 +31,21 @@
 
 #include "core/platform/SharedBuffer.h"
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
-#include "modules/indexeddb/IDBDatabaseError.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "public/platform/WebIDBCallbacks.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
+
+class DOMError;
 class IDBCursorBackendInterface;
 
 class IDBCallbacks : public RefCounted<IDBCallbacks> {
 public:
     virtual ~IDBCallbacks() { }
 
-    virtual void onError(PassRefPtr<IDBDatabaseError>) = 0;
+    virtual void onError(PassRefPtr<DOMError>) = 0;
     // From IDBFactory.webkitGetDatabaseNames()
     virtual void onSuccess(const Vector<String>&) = 0;
     // From IDBObjectStore/IDBIndex.openCursor(), IDBIndex.openKeyCursor()

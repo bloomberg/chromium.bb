@@ -26,6 +26,7 @@
 #include "config.h"
 #include "WebIDBDatabaseCallbacksImpl.h"
 
+#include "core/dom/DOMError.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "public/platform/WebString.h"
 

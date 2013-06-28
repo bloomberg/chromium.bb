@@ -43,6 +43,7 @@
 
 namespace WebCore {
 
+class DOMError;
 class ScriptExecutionContext;
 
 typedef int ExceptionCode;
@@ -77,7 +78,7 @@ public:
 
     // IDBDatabaseCallbacks
     virtual void onVersionChange(int64_t oldVersion, int64_t newVersion);
-    virtual void onAbort(int64_t, PassRefPtr<IDBDatabaseError>);
+    virtual void onAbort(int64_t, PassRefPtr<DOMError>);
     virtual void onComplete(int64_t);
 
     // ActiveDOMObject

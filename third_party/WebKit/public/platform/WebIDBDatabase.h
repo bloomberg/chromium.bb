@@ -51,7 +51,6 @@ public:
     virtual void forceClose() { WEBKIT_ASSERT_NOT_REACHED(); }
 
     virtual void abort(long long transactionId) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void abort(long long transactionId, const WebIDBDatabaseError&) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void commit(long long transactionId) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     virtual void createIndex(long long transactionId, long long objectStoreId, long long indexId, const WebString& name, const WebIDBKeyPath&, bool unique, bool multiEntry) { WEBKIT_ASSERT_NOT_REACHED(); }

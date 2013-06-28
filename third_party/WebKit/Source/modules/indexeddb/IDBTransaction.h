@@ -40,10 +40,10 @@
 
 namespace WebCore {
 
+class DOMError;
 class IDBCursor;
 class IDBDatabase;
 class IDBDatabaseBackendInterface;
-class IDBDatabaseError;
 class IDBObjectStore;
 class IDBOpenDBRequest;
 struct IDBObjectStoreMetadata;
@@ -99,7 +99,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    virtual void onAbort(PassRefPtr<IDBDatabaseError>);
+    virtual void onAbort(PassRefPtr<DOMError>);
     virtual void onComplete();
 
     // EventTarget

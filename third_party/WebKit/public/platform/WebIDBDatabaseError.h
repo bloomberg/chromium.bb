@@ -33,7 +33,7 @@
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 
-namespace WebCore { class IDBDatabaseError; }
+namespace WebCore { class DOMError; }
 
 namespace WebKit {
 
@@ -54,20 +54,15 @@ public:
     WEBKIT_EXPORT void assign(const WebIDBDatabaseError&);
     WEBKIT_EXPORT void reset();
 
-    WEBKIT_EXPORT unsigned short code() const;
-    WEBKIT_EXPORT WebString message() const;
-
 #if WEBKIT_IMPLEMENTATION
-    WebIDBDatabaseError(const WTF::PassRefPtr<WebCore::IDBDatabaseError>&);
-    WebIDBDatabaseError& operator=(const WTF::PassRefPtr<WebCore::IDBDatabaseError>&);
-    operator WTF::PassRefPtr<WebCore::IDBDatabaseError>() const;
+    operator WTF::PassRefPtr<WebCore::DOMError>() const;
 #endif
 
 private:
     WEBKIT_EXPORT void assign(unsigned short code);
     WEBKIT_EXPORT void assign(unsigned short code, const WebString& message);
 
-    WebPrivatePtr<WebCore::IDBDatabaseError> m_private;
+    WebPrivatePtr<WebCore::DOMError> m_private;
 };
 
 } // namespace WebKit

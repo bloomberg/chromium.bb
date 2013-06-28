@@ -30,6 +30,7 @@
 #include "modules/indexeddb/IDBRequest.h"
 
 #include "bindings/v8/IDBBindingUtilities.h"
+#include "core/dom/DOMError.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventQueue.h"
@@ -162,8 +163,7 @@ void IDBRequest::abort()
 
     m_error.clear();
     m_result.clear();
-    // FIXME: This should be DOMError.
-    onError(IDBDatabaseError::create(ABORT_ERR, "The transaction was aborted, so the request cannot be fulfilled."));
+    onError(DOMError::create(ABORT_ERR, "The transaction was aborted, so the request cannot be fulfilled."));
     m_requestAborted = true;
 }
 
@@ -235,14 +235,13 @@ bool IDBRequest::shouldEnqueueEvent() const
     return true;
 }
 
-// FIXME: This should be DOMError.
-void IDBRequest::onError(PassRefPtr<IDBDatabaseError> error)
+void IDBRequest::onError(PassRefPtr<DOMError> error)
 {
     IDB_TRACE("IDBRequest::onError()");
     if (!shouldEnqueueEvent())
         return;
 
-    m_error = DOMError::create(error->name(), error->message());
+    m_error = error;
     m_pendingCursor.clear();
     enqueueEvent(Event::create(eventNames().errorEvent, true, true));
 }

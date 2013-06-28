@@ -36,6 +36,7 @@
 #include "WebFrameImpl.h"
 #include "WebView.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/indexeddb/IDBDatabase.h"
@@ -93,7 +94,6 @@ public:
 
     virtual void commit(int64_t transactionId) OVERRIDE { }
     virtual void abort(int64_t transactionId) OVERRIDE { }
-    virtual void abort(int64_t transactionId, PassRefPtr<IDBDatabaseError>) OVERRIDE { }
 
     virtual void createIndex(int64_t transactionId, int64_t objectStoreId, int64_t indexId, const String& name, const IDBKeyPath&, bool unique, bool multiEntry) OVERRIDE { }
     virtual void deleteIndex(int64_t transactionId, int64_t objectStoreId, int64_t indexId) OVERRIDE { }
@@ -116,7 +116,7 @@ public:
     static PassRefPtr<FakeIDBDatabaseCallbacks> create() { return adoptRef(new FakeIDBDatabaseCallbacks()); }
     virtual void onVersionChange(int64_t oldVersion, int64_t newVersion) OVERRIDE { }
     virtual void onForcedClose() OVERRIDE { }
-    virtual void onAbort(int64_t transactionId, PassRefPtr<IDBDatabaseError> error) OVERRIDE { }
+    virtual void onAbort(int64_t transactionId, PassRefPtr<DOMError> error) OVERRIDE { }
     virtual void onComplete(int64_t transactionId) OVERRIDE { }
 private:
     FakeIDBDatabaseCallbacks() { }
@@ -147,7 +147,7 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
     // This will generate an abort() call to the back end which is dropped by the fake proxy,
     // so an explicit onAbort call is made.
     scriptExecutionContext()->stopActiveDOMObjects();
-    transaction->onAbort(IDBDatabaseError::create(ABORT_ERR, "Aborted"));
+    transaction->onAbort(DOMError::create(ABORT_ERR, "Aborted"));
 
     EXPECT_EQ(1, transaction->refCount());
 }

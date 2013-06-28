@@ -33,8 +33,8 @@
 #include "public/platform/WebIDBKey.h"
 #include "IDBCursorBackendProxy.h"
 #include "IDBDatabaseBackendProxy.h"
+#include "core/dom/DOMError.h"
 #include "modules/indexeddb/IDBCallbacks.h"
-#include "modules/indexeddb/IDBDatabaseError.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBMetadata.h"
 

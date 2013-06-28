@@ -29,6 +29,7 @@
 #include "WebFrameImpl.h"
 #include "WebIDBCallbacksImpl.h"
 #include "WebIDBDatabaseCallbacksImpl.h"
+#include "core/dom/DOMError.h"
 #include "modules/indexeddb/IDBCallbacks.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBKeyRange.h"
@@ -83,11 +84,6 @@ void IDBDatabaseBackendProxy::commit(int64_t transactionId)
 void IDBDatabaseBackendProxy::abort(int64_t transactionId)
 {
     m_webIDBDatabase->abort(transactionId);
-}
-
-void IDBDatabaseBackendProxy::abort(int64_t transactionId, PassRefPtr<IDBDatabaseError> error)
-{
-    m_webIDBDatabase->abort(transactionId, error);
 }
 
 void IDBDatabaseBackendProxy::openCursor(int64_t transactionId, int64_t objectStoreId, int64_t indexId, PassRefPtr<IDBKeyRange> keyRange, IndexedDB::CursorDirection direction, bool keyOnly, TaskType taskType, PassRefPtr<IDBCallbacks> callbacks)

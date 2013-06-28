@@ -32,6 +32,7 @@
 
 namespace WebCore {
 
+class DOMError;
 class IDBDatabase;
 
 class IDBDatabaseCallbacksImpl : public IDBDatabaseCallbacks {
@@ -43,7 +44,7 @@ public:
     virtual void onForcedClose();
     virtual void onVersionChange(int64_t oldVersion, int64_t newVersion);
 
-    virtual void onAbort(int64_t transactionId, PassRefPtr<IDBDatabaseError>);
+    virtual void onAbort(int64_t transactionId, PassRefPtr<DOMError>);
     virtual void onComplete(int64_t transactionId);
 
     void connect(IDBDatabase*);

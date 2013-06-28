@@ -35,7 +35,6 @@
 #include "core/platform/HistogramSupport.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
-#include "modules/indexeddb/IDBDatabaseError.h"
 #include "modules/indexeddb/IDBEventDispatcher.h"
 #include "modules/indexeddb/IDBHistograms.h"
 #include "modules/indexeddb/IDBIndex.h"
@@ -123,7 +122,7 @@ void IDBDatabase::transactionFinished(IDBTransaction* transaction)
         closeConnection();
 }
 
-void IDBDatabase::onAbort(int64_t transactionId, PassRefPtr<IDBDatabaseError> error)
+void IDBDatabase::onAbort(int64_t transactionId, PassRefPtr<DOMError> error)
 {
     ASSERT(m_transactions.contains(transactionId));
     m_transactions.get(transactionId)->onAbort(error);

@@ -63,7 +63,7 @@ void IDBDatabaseCallbacksImpl::connect(IDBDatabase* database)
     m_database = database;
 }
 
-void IDBDatabaseCallbacksImpl::onAbort(int64_t transactionId, PassRefPtr<IDBDatabaseError> error)
+void IDBDatabaseCallbacksImpl::onAbort(int64_t transactionId, PassRefPtr<DOMError> error)
 {
     if (m_database)
         m_database->onAbort(transactionId, error);

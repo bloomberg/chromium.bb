@@ -26,6 +26,7 @@
 #include "config.h"
 #include "modules/indexeddb/IDBTransaction.h"
 
+#include "core/dom/DOMError.h"
 #include "core/dom/EventQueue.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
@@ -277,15 +278,15 @@ void IDBTransaction::unregisterRequest(IDBRequest* request)
     m_requestList.remove(request);
 }
 
-void IDBTransaction::onAbort(PassRefPtr<IDBDatabaseError> prpError)
+void IDBTransaction::onAbort(PassRefPtr<DOMError> prpError)
 {
     IDB_TRACE("IDBTransaction::onAbort");
-    RefPtr<IDBDatabaseError> error = prpError;
+    RefPtr<DOMError> error = prpError;
     ASSERT(m_state != Finished);
 
     if (m_state != Finishing) {
         ASSERT(error.get());
-        setError(DOMError::create(error->name(), error->message()));
+        setError(error.release());
 
         // Abort was not triggered by front-end, so outstanding requests must
         // be aborted now.

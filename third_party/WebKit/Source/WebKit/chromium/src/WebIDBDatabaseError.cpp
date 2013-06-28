@@ -31,8 +31,8 @@
 #include "config.h"
 #include "public/platform/WebIDBDatabaseError.h"
 
+#include "core/dom/DOMError.h"
 #include "public/platform/WebString.h"
-#include "modules/indexeddb/IDBDatabaseError.h"
 
 using namespace WebCore;
 
@@ -45,12 +45,12 @@ void WebIDBDatabaseError::assign(const WebIDBDatabaseError& value)
 
 void WebIDBDatabaseError::assign(unsigned short code)
 {
-    m_private = IDBDatabaseError::create(code);
+    m_private = DOMError::create(code);
 }
 
 void WebIDBDatabaseError::assign(unsigned short code, const WebString& message)
 {
-    m_private = IDBDatabaseError::create(code, message);
+    m_private = DOMError::create(code, message);
 }
 
 void WebIDBDatabaseError::reset()
@@ -58,28 +58,7 @@ void WebIDBDatabaseError::reset()
     m_private.reset();
 }
 
-unsigned short WebIDBDatabaseError::code() const
-{
-    return m_private->exceptionCode();
-}
-
-WebString WebIDBDatabaseError::message() const
-{
-    return m_private->message();
-}
-
-WebIDBDatabaseError::WebIDBDatabaseError(const PassRefPtr<IDBDatabaseError>& value)
-    : m_private(value)
-{
-}
-
-WebIDBDatabaseError& WebIDBDatabaseError::operator=(const PassRefPtr<IDBDatabaseError>& value)
-{
-    m_private = value;
-    return *this;
-}
-
-WebIDBDatabaseError::operator PassRefPtr<IDBDatabaseError>() const
+WebIDBDatabaseError::operator PassRefPtr<DOMError>() const
 {
     return m_private.get();
 }

@@ -314,7 +314,6 @@
       'indexeddb/IDBDatabaseCallbacks.h',
       'indexeddb/IDBDatabaseCallbacksImpl.cpp',
       'indexeddb/IDBDatabaseCallbacksImpl.h',
-      'indexeddb/IDBDatabaseError.h',
       'indexeddb/IDBEventDispatcher.cpp',
       'indexeddb/IDBEventDispatcher.h',
       'indexeddb/IDBFactory.cpp',

@@ -79,7 +79,7 @@ public:
     void abort();
 
     // IDBCallbacks
-    virtual void onError(PassRefPtr<IDBDatabaseError>);
+    virtual void onError(PassRefPtr<DOMError>);
     virtual void onSuccess(const Vector<String>&);
     virtual void onSuccess(PassRefPtr<IDBCursorBackendInterface>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>);
     virtual void onSuccess(PassRefPtr<IDBKey>);
