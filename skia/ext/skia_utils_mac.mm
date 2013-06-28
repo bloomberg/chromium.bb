@@ -173,6 +173,18 @@ NSColor* SkColorToDeviceNSColor(SkColor color) {
                                alpha:SkColorGetA(color) / 255.0];
 }
 
+NSColor* SkColorToSRGBNSColor(SkColor color) {
+  const CGFloat components[] = {
+    SkColorGetR(color) / 255.0,
+    SkColorGetG(color) / 255.0,
+    SkColorGetB(color) / 255.0,
+    SkColorGetA(color) / 255.0
+  };
+  return [NSColor colorWithColorSpace:[NSColorSpace sRGBColorSpace]
+                           components:components
+                                count:4];
+}
+
 SkBitmap CGImageToSkBitmap(CGImageRef image) {
   if (!image)
     return SkBitmap();
