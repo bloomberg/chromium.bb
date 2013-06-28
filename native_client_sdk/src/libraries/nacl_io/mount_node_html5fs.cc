@@ -268,10 +268,12 @@ Error MountNodeHtml5Fs::Init(int perm) {
 
   // First query the FileRef to see if it is a file or directory.
   PP_FileInfo file_info;
-  mount_->ppapi()->GetFileRefInterface()->Query(fileref_resource_, &file_info,
-                                                PP_BlockUntilComplete());
+  int32_t query_result =
+      mount_->ppapi()->GetFileRefInterface()->Query(fileref_resource_,
+                                                    &file_info,
+                                                    PP_BlockUntilComplete());
   // If this is a directory, do not get a FileIO.
-  if (file_info.type == PP_FILETYPE_DIRECTORY)
+  if (query_result == PP_OK && file_info.type == PP_FILETYPE_DIRECTORY)
     return 0;
 
   fileio_resource_ = mount_->ppapi()->GetFileIoInterface()
