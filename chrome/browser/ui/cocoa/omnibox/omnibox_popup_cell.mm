@@ -17,9 +17,6 @@ const CGFloat kTextXOffset = 28.0;
 // Rounding radius of selection and hover background on popup items.
 const CGFloat kCellRoundingRadius = 2.0;
 
-NSColor* BackgroundColor() {
-  return [NSColor controlBackgroundColor];
-}
 NSColor* SelectedBackgroundColor() {
   return [NSColor selectedControlColor];
 }
@@ -48,8 +45,6 @@ NSColor* HoveredBackgroundColor() {
 // the title next to the image.  This spaces things out to line up
 // with the star button and autocomplete field.
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
-  [BackgroundColor() set];
-  NSRectFill(cellFrame);
   if ([self state] == NSOnState || [self isHighlighted]) {
     if ([self state] == NSOnState)
       [SelectedBackgroundColor() set];

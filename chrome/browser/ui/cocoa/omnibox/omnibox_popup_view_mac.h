@@ -11,26 +11,20 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_matrix.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "ui/gfx/font.h"
 
+class AutocompleteResult;
 class OmniboxEditModel;
-@class OmniboxPopupMatrix;
 class OmniboxPopupModel;
 class OmniboxView;
 
 // Implements OmniboxPopupView using a raw NSWindow containing an
 // NSTableView.
-//
-// TODO(rohitrao): This class is set up in a way that makes testing hard.
-// Refactor and write unittests.  http://crbug.com/9977
-
-class OmniboxPopupViewMac : public OmniboxPopupView {
+class OmniboxPopupViewMac : public OmniboxPopupView,
+                            public OmniboxPopupMatrixDelegate {
  public:
-  static OmniboxPopupView* Create(OmniboxView* omnibox_view,
-                                  OmniboxEditModel* edit_model,
-                                  NSTextField* field);
-
   OmniboxPopupViewMac(OmniboxView* omnibox_view,
                       OmniboxEditModel* edit_model,
                       NSTextField* field);
@@ -38,71 +32,56 @@ class OmniboxPopupViewMac : public OmniboxPopupView {
 
   // Overridden from OmniboxPopupView:
   virtual bool IsOpen() const OVERRIDE;
-  virtual void InvalidateLine(size_t line) OVERRIDE {
-    // TODO(shess): Verify that there is no need to implement this.
-    // This is currently used in two places in the model:
-    //
-    // When setting the selected line, the selected line is
-    // invalidated, then the selected line is changed, then the new
-    // selected line is invalidated, then PaintUpdatesNow() is called.
-    // For us PaintUpdatesNow() should be sufficient.
-    //
-    // Same thing happens when changing the hovered line, except with
-    // no call to PaintUpdatesNow().  Since this code does not
-    // currently support special display of the hovered line, there's
-    // nothing to do here.
-    //
-    // deanm indicates that this is an anti-flicker optimization,
-    // which we probably cannot utilize (and may not need) so long as
-    // we're using NSTableView to implement the popup contents.  We
-    // may need to move away from NSTableView to implement hover,
-    // though.
-  }
+  virtual void InvalidateLine(size_t line) OVERRIDE {}
   virtual void UpdatePopupAppearance() OVERRIDE;
-
   virtual gfx::Rect GetTargetBounds() OVERRIDE;
-
   // This is only called by model in SetSelectedLine() after updating
   // everything.  Popup should already be visible.
   virtual void PaintUpdatesNow() OVERRIDE;
-
   virtual void OnDragCanceled() OVERRIDE {}
 
-  // Set |line| to be selected.
-  void SetSelectedLine(size_t line);
+  // Overridden from OmniboxPopupMatrixDelegate:
+  virtual void OnMatrixRowSelected(OmniboxPopupMatrix* matrix,
+                                   size_t row) OVERRIDE;
+  virtual void OnMatrixRowClicked(OmniboxPopupMatrix* matrix,
+                                  size_t row) OVERRIDE;
+  virtual void OnMatrixRowMiddleClicked(OmniboxPopupMatrix* matrix,
+                                        size_t row) OVERRIDE;
 
-  // Opens the URL corresponding to the given |row|.  If |force_background| is
-  // true, forces the URL to open in a background tab.  Otherwise, determines
-  // the proper window open disposition from the modifier flags on |[NSApp
-  // currentEvent]|.
-  void OpenURLForRow(int row, bool force_background);
+  OmniboxPopupMatrix* matrix() { return matrix_; }
 
   // Return the text to show for the match, based on the match's
   // contents and description.  Result will be in |font|, with the
   // boldfaced version used for matches.
   static NSAttributedString* MatchText(const AutocompleteMatch& match,
                                        gfx::Font& font,
-                                       float cellWidth);
+                                       float cell_width);
 
-  // Helper for MatchText() to allow sharing code between the contents
-  // and description cases.  Returns NSMutableAttributedString as a
-  // convenience for MatchText().
+  // Applies the given font and colors to the match string based on
+  // classifications.
   static NSMutableAttributedString* DecorateMatchedString(
-      const string16 &matchString,
-      const AutocompleteMatch::ACMatchClassifications &classifications,
-      NSColor* textColor, NSColor* dimTextColor, gfx::Font& font);
+      const string16& match_string,
+      const AutocompleteMatch::ACMatchClassifications& classifications,
+      NSColor* text_color,
+      NSColor* dim_text_color,
+      gfx::Font& font);
 
   // Helper for MatchText() to elide a marked-up string using
-  // gfx::ElideText() as a model.  Modifies |aString| in place.
+  // gfx::ElideText() as a model.  Modifies |a_string| in place.
   // TODO(shess): Consider breaking AutocompleteButtonCell out of this
   // code, and modifying it to have something like -setMatch:, so that
   // these convolutions to expose internals for testing can be
   // cleaner.
   static NSMutableAttributedString* ElideString(
-      NSMutableAttributedString* aString,
-      const string16 originalString,
+      NSMutableAttributedString* a_string,
+      const string16& original_string,
       const gfx::Font& font,
-      const float cellWidth);
+      const float cell_width);
+
+ protected:
+  // Gets the autocomplete results. This is virtual so that it can be overriden
+  // by tests.
+  virtual const AutocompleteResult& GetResult() const;
 
  private:
   // Create the popup_ instance if needed.
@@ -119,17 +98,18 @@ class OmniboxPopupViewMac : public OmniboxPopupView {
   // Returns the NSImage that should be used as an icon for the given match.
   NSImage* ImageForMatch(const AutocompleteMatch& match);
 
-  // TODO(shess): |omnibox_view_| should already be accessible via
-  // |field_|, or perhaps via |model_|.  Consider refactoring.
+  // Opens the URL at the given row.
+  void OpenURLForRow(size_t row, WindowOpenDisposition disposition);
+
   OmniboxView* omnibox_view_;
   scoped_ptr<OmniboxPopupModel> model_;
   NSTextField* field_;  // owned by tab controller
 
   // Child window containing a matrix which implements the popup.
   base::scoped_nsobject<NSWindow> popup_;
-  NSRect targetPopupFrame_;
+  NSRect target_popup_frame_;
 
-  base::scoped_nsobject<OmniboxPopupMatrix> autocomplete_matrix_;
+  base::scoped_nsobject<OmniboxPopupMatrix> matrix_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupViewMac);
 };

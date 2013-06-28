@@ -7,22 +7,38 @@
 
 #import <Cocoa/Cocoa.h>
 
-class OmniboxPopupViewMac;
+#import "ui/base/cocoa/tracking_area.h"
+#include "ui/base/window_open_disposition.h"
 
+@class OmniboxPopupMatrix;
+
+class OmniboxPopupMatrixDelegate {
+ public:
+  // Called when the selection in the matrix changes.
+  virtual void OnMatrixRowSelected(OmniboxPopupMatrix* matrix, size_t row) = 0;
+
+  // Called when the user clicks on a row.
+  virtual void OnMatrixRowClicked(OmniboxPopupMatrix* matrix, size_t row) = 0;
+
+  // Called when the user middle clicks on a row.
+  virtual void OnMatrixRowMiddleClicked(OmniboxPopupMatrix* matrix,
+                                        size_t row) = 0;
+};
+
+// Sets up a tracking area to implement hover by highlighting the cell the mouse
+// is over.
 @interface OmniboxPopupMatrix : NSMatrix {
- @private
-  // Target for click and middle-click.
-  OmniboxPopupViewMac* popupView_;  // weak, owns us.
+  OmniboxPopupMatrixDelegate* delegate_;  // weak
+  ui::ScopedCrTrackingArea trackingArea_;
 }
 
-// Create a zero-size matrix initializing |popupView_|.
-- (id)initWithPopupView:(OmniboxPopupViewMac*)popupView;
+// Create a zero-size matrix.
+- (id)initWithDelegate:(OmniboxPopupMatrixDelegate*)delegate;
 
-// Set |popupView_|.
-- (void)setPopupView:(OmniboxPopupViewMac*)popupView;
+// Sets the delegate.
+- (void)setDelegate:(OmniboxPopupMatrixDelegate*)delegate;
 
-// Return the currently highlighted row.  Returns -1 if no row is
-// highlighted.
+// Return the currently highlighted row.  Returns -1 if no row is highlighted.
 - (NSInteger)highlightedRow;
 
 @end
