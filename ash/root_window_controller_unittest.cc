@@ -4,7 +4,6 @@
 
 #include "ash/root_window_controller.h"
 
-#include "ash/display/display_controller.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"

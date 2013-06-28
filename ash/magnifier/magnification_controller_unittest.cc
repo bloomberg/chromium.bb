@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"

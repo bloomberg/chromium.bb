@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
+#include "ash/display/display_layout.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "ui/aura/root_window_observer.h"

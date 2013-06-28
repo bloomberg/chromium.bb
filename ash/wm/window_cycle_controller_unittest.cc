@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/display/display_controller.h"
-#include "ash/display/display_manager.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"

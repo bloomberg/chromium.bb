@@ -4,8 +4,6 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
-#include "ash/display/display_controller.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"

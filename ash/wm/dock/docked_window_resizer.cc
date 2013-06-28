@@ -5,7 +5,6 @@
 #include "ash/wm/dock/docked_window_resizer.h"
 
 #include "ash/ash_switches.h"
-#include "ash/display/display_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
