@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/chrome_notification_types.h"
