@@ -16,9 +16,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
-#include "content/browser/indexed_db/webidbfactory_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/indexed_db_info.h"
 #include "content/public/common/content_switches.h"
@@ -106,15 +106,15 @@ IndexedDBContextImpl::IndexedDBContextImpl(
   }
 }
 
-WebIDBFactoryImpl* IndexedDBContextImpl::GetIDBFactory() {
+IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   if (!idb_factory_) {
     // Prime our cache of origins with existing databases so we can
     // detect when dbs are newly created.
     GetOriginSet();
-    idb_factory_.reset(new content::WebIDBFactoryImpl());
+    idb_factory_ = IndexedDBFactory::Create();
   }
-  return idb_factory_.get();
+  return idb_factory_;
 }
 
 std::vector<GURL> IndexedDBContextImpl::GetAllOrigins() {
@@ -288,10 +288,13 @@ quota::QuotaManagerProxy* IndexedDBContextImpl::quota_manager_proxy() {
 }
 
 IndexedDBContextImpl::~IndexedDBContextImpl() {
-  WebIDBFactoryImpl* factory = idb_factory_.release();
-  if (factory) {
-    if (!task_runner_->DeleteSoon(FROM_HERE, factory))
-      delete factory;
+  if (idb_factory_) {
+    IndexedDBFactory* factory = idb_factory_.get();
+    factory->AddRef();
+    idb_factory_ = NULL;
+    if (!task_runner_->ReleaseSoon(FROM_HERE, factory)) {
+      factory->Release();
+    }
   }
 
   if (data_path_.empty())

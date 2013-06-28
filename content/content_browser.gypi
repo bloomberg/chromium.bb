@@ -601,8 +601,6 @@
     'browser/indexed_db/webidbcursor_impl.h',
     'browser/indexed_db/webidbdatabase_impl.cc',
     'browser/indexed_db/webidbdatabase_impl.h',
-    'browser/indexed_db/webidbfactory_impl.cc',
-    'browser/indexed_db/webidbfactory_impl.h',
     'browser/loader/async_resource_handler.cc',
     'browser/loader/async_resource_handler.h',
     'browser/loader/buffered_resource_handler.cc',

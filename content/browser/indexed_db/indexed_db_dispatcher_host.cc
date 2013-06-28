@@ -216,11 +216,12 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
-  Context()->GetIDBFactory()->getDatabaseNames(
-      new IndexedDBCallbacks<std::vector<string16> >(
-          this, params.ipc_thread_id, params.ipc_callbacks_id),
+  Context()->GetIDBFactory()->GetDatabaseNames(
+      IndexedDBCallbacksWrapper::Create(
+          new IndexedDBCallbacks<std::vector<string16> >(
+              this, params.ipc_thread_id, params.ipc_callbacks_id)),
       base::UTF8ToUTF16(params.database_identifier),
-      indexed_db_path.AsUTF16Unsafe());
+      indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
@@ -235,33 +236,39 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
 
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
-  Context()->GetIDBFactory()
-      ->open(params.name,
-             params.version,
-             host_transaction_id,
-             new IndexedDBCallbacksDatabase(this,
-                                            params.ipc_thread_id,
-                                            params.ipc_callbacks_id,
-                                            params.ipc_database_callbacks_id,
-                                            host_transaction_id,
-                                            origin_url),
-             new IndexedDBDatabaseCallbacks(
-                 this, params.ipc_thread_id, params.ipc_database_callbacks_id),
-             base::UTF8ToUTF16(params.database_identifier),
-             indexed_db_path.AsUTF16Unsafe());
+  scoped_refptr<IndexedDBCallbacksWrapper> callbacks_proxy =
+      IndexedDBCallbacksWrapper::Create(
+          new IndexedDBCallbacksDatabase(this,
+                                         params.ipc_thread_id,
+                                         params.ipc_callbacks_id,
+                                         params.ipc_database_callbacks_id,
+                                         host_transaction_id,
+                                         origin_url));
+  scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks_proxy =
+      IndexedDBDatabaseCallbacksWrapper::Create(new IndexedDBDatabaseCallbacks(
+          this, params.ipc_thread_id, params.ipc_database_callbacks_id));
+  callbacks_proxy->SetDatabaseCallbacks(database_callbacks_proxy);
+  Context()->GetIDBFactory()->
+      Open(params.name,
+           params.version,
+           host_transaction_id,
+           callbacks_proxy,
+           database_callbacks_proxy,
+           base::UTF8ToUTF16(params.database_identifier),
+           indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
     const IndexedDBHostMsg_FactoryDeleteDatabase_Params& params) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
-
-  Context()->GetIDBFactory()
-      ->deleteDatabase(params.name,
-                       new IndexedDBCallbacks<std::vector<char> >(
-                           this, params.ipc_thread_id, params.ipc_callbacks_id),
-                       base::UTF8ToUTF16(params.database_identifier),
-                       indexed_db_path.AsUTF16Unsafe());
+  Context()->GetIDBFactory()->DeleteDatabase(
+      params.name,
+      IndexedDBCallbacksWrapper::Create(
+          new IndexedDBCallbacks<std::vector<char> >(
+              this, params.ipc_thread_id, params.ipc_callbacks_id)),
+      base::UTF8ToUTF16(params.database_identifier),
+      indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::FinishTransaction(int64 host_transaction_id,

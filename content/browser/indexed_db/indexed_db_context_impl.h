@@ -14,7 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/indexed_db/webidbfactory_impl.h"
+#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/common/quota/quota_types.h"
@@ -44,7 +44,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
                        quota::QuotaManagerProxy* quota_manager_proxy,
                        base::SequencedTaskRunner* task_runner);
 
-  WebIDBFactoryImpl* GetIDBFactory();
+  IndexedDBFactory* GetIDBFactory();
 
   // The indexed db directory.
   static const base::FilePath::CharType kIndexedDBDirectory[];
@@ -121,7 +121,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // Only for testing.
   void ResetCaches();
 
-  scoped_ptr<WebIDBFactoryImpl> idb_factory_;
+  scoped_refptr<IndexedDBFactory> idb_factory_;
   base::FilePath data_path_;
   // If true, nothing (not even session-only data) should be deleted on exit.
   bool force_keep_session_state_;
