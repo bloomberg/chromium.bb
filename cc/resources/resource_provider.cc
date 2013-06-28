@@ -748,7 +748,7 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
   list->clear();
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   if (!context3d || !context3d->makeContextCurrent()) {
-    // FIXME: Implement this path for software compositing.
+    // TODO(skaslev): Implement this path for software compositing.
     return;
   }
   bool need_sync_point = false;
@@ -781,7 +781,7 @@ void ResourceProvider::PrepareSendToChild(int child,
   list->clear();
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   if (!context3d || !context3d->makeContextCurrent()) {
-    // FIXME: Implement this path for software compositing.
+    // TODO(skaslev): Implement this path for software compositing.
     return;
   }
   Child& child_info = children_.find(child)->second;
@@ -818,7 +818,7 @@ void ResourceProvider::ReceiveFromChild(
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   if (!context3d || !context3d->makeContextCurrent()) {
-    // FIXME: Implement this path for software compositing.
+    // TODO(skaslev): Implement this path for software compositing.
     return;
   }
   Child& child_info = children_.find(child)->second;
@@ -855,7 +855,7 @@ void ResourceProvider::ReceiveFromParent(
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   if (!context3d || !context3d->makeContextCurrent()) {
-    // FIXME: Implement this path for software compositing.
+    // TODO(skaslev): Implement this path for software compositing.
     return;
   }
   for (TransferableResourceArray::const_iterator it = resources.begin();

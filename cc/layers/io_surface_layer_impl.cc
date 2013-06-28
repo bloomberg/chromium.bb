@@ -40,7 +40,7 @@ void IOSurfaceLayerImpl::DestroyTexture() {
 
   if (io_surface_texture_id_) {
     OutputSurface* output_surface = layer_tree_impl()->output_surface();
-    // FIXME: Implement this path for software compositing.
+    // TODO(skaslev): Implement this path for software compositing.
     WebKit::WebGraphicsContext3D* context3d = output_surface->context3d();
     if (context3d)
       context3d->deleteTexture(io_surface_texture_id_);
@@ -70,11 +70,11 @@ bool IOSurfaceLayerImpl::WillDraw(DrawMode draw_mode,
     WebKit::WebGraphicsContext3D* context3d =
         resource_provider->GraphicsContext3D();
     if (!context3d) {
-      // FIXME: Implement this path for software compositing.
+      // TODO(skaslev): Implement this path for software compositing.
       return false;
     }
 
-    // FIXME: Do this in a way that we can track memory usage.
+    // TODO(ernstm): Do this in a way that we can track memory usage.
     if (!io_surface_texture_id_) {
       io_surface_texture_id_ = context3d->createTexture();
       io_surface_resource_id_ =

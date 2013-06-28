@@ -172,13 +172,13 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
     quad_sink->Append(debug_border_quad.PassAs<DrawQuad>(), append_quads_data);
   }
 
-  // FIXME: By using the same RenderSurfaceImpl for both the content and its
-  // reflection, it's currently not possible to apply a separate mask to the
-  // reflection layer or correctly handle opacity in reflections (opacity must
-  // be applied after drawing both the layer and its reflection). The solution
-  // is to introduce yet another RenderSurfaceImpl to draw the layer and its
-  // reflection in. For now we only apply a separate reflection mask if the
-  // contents don't have a mask of their own.
+  // TODO(shawnsingh): By using the same RenderSurfaceImpl for both the content
+  // and its reflection, it's currently not possible to apply a separate mask to
+  // the reflection layer or correctly handle opacity in reflections (opacity
+  // must be applied after drawing both the layer and its reflection). The
+  // solution is to introduce yet another RenderSurfaceImpl to draw the layer
+  // and its reflection in. For now we only apply a separate reflection mask if
+  // the contents don't have a mask of their own.
   LayerImpl* mask_layer = owning_layer_->mask_layer();
   if (mask_layer &&
       (!mask_layer->DrawsContent() || mask_layer->bounds().IsEmpty()))

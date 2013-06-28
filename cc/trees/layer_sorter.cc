@@ -227,7 +227,7 @@ LayerShape::LayerShape(float width,
       MathUtil::MapPoint(draw_transform, gfx::Point3F(0.f, 1.f, 0.f), &clipped);
   gfx::Point3F c3 =
       MathUtil::MapPoint(draw_transform, gfx::Point3F(1.f, 0.f, 0.f), &clipped);
-  // FIXME: Deal with clipping.
+  // TODO(shawnsingh): Deal with clipping.
   gfx::Vector3dF c12 = c2 - c1;
   gfx::Vector3dF c13 = c3 - c1;
   layer_normal = gfx::CrossProduct(c13, c12);

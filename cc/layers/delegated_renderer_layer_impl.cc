@@ -190,7 +190,7 @@ void DelegatedRendererLayerImpl::SetRenderPasses(
 }
 
 void DelegatedRendererLayerImpl::ClearRenderPasses() {
-  // FIXME: Release the resources back to the nested compositor.
+  // TODO(danakj): Release the resources back to the nested compositor.
   render_passes_index_by_id_.clear();
   render_passes_in_draw_order_.clear();
 }

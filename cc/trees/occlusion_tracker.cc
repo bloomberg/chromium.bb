@@ -86,7 +86,7 @@ static Region TransformSurfaceOpaqueRegion(const Region& region,
   bool clipped;
   gfx::QuadF transformed_bounds_quad =
       MathUtil::MapQuad(transform, gfx::QuadF(region.bounds()), &clipped);
-  // FIXME: Find a rect interior to each transformed quad.
+  // TODO(danakj): Find a rect interior to each transformed quad.
   if (clipped || !transformed_bounds_quad.IsRectilinear())
     return Region();
 
@@ -425,7 +425,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
   bool clipped;
   gfx::QuadF visible_transformed_quad = MathUtil::MapQuad(
       layer->draw_transform(), gfx::QuadF(opaque_contents.bounds()), &clipped);
-  // FIXME: Find a rect interior to each transformed quad.
+  // TODO(danakj): Find a rect interior to each transformed quad.
   if (clipped || !visible_transformed_quad.IsRectilinear())
     return;
 

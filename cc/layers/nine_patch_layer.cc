@@ -40,8 +40,6 @@ void NinePatchLayer::SetTexturePriorities(
   if (resource_) {
     resource_->texture()->set_request_priority(
         PriorityCalculator::UIPriority(true));
-    // FIXME: Need to support swizzle in the shader for
-    // !PlatformColor::sameComponentOrder(texture_format)
     GLenum texture_format =
         layer_tree_host()->GetRendererCapabilities().best_texture_format;
     resource_->texture()->SetDimensions(

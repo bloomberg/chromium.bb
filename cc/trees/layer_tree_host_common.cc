@@ -449,8 +449,9 @@ gfx::Transform ComputeSizeDeltaCompensation(
     result_transform.PreconcatTransform(
         container_layer_space_to_target_surface_space);
   } else {
-    // FIXME: A non-invertible matrix could still make meaningful projection.
-    // For example ScaleZ(0) is non-invertible but the layer is still visible.
+    // TODO(shawnsingh): A non-invertible matrix could still make meaningful
+    // projection.  For example ScaleZ(0) is non-invertible but the layer is
+    // still visible.
     return gfx::Transform();
   }
 

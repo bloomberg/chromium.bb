@@ -575,8 +575,8 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 
   virtual WebString getString(WGC3Denum name) {
     // We allow querying the extension string.
-    // FIXME: It'd be better to check that we only do this before starting any
-    // other expensive work (like starting a compilation)
+    // TODO(enne): It'd be better to check that we only do this before starting
+    // any other expensive work (like starting a compilation)
     if (name != GL_EXTENSIONS)
       ADD_FAILURE();
     return WebString();

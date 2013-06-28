@@ -809,11 +809,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromAncestorLayer) {
   // the entire child1 surface, but the damage tracker still needs the correct
   // logic to compute the exposed region on the root surface.
 
-  // FIXME: the expectations of this test case should change when we add
-  //        support for a unique scissor_rect per RenderSurface. In that case,
-  //        the child1 surface should be completely unchanged, since we are
-  //        only transforming it, while the root surface would be damaged
-  //        appropriately.
+  // TODO(shawnsingh): the expectations of this test case should change when we
+  // add support for a unique scissor_rect per RenderSurface. In that case, the
+  // child1 surface should be completely unchanged, since we are only
+  // transforming it, while the root surface would be damaged appropriately.
 
   scoped_ptr<LayerImpl> root = CreateAndSetUpTestTreeWithTwoSurfaces();
   LayerImpl* child1 = root->children()[0];

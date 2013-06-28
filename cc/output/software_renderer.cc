@@ -345,7 +345,7 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
     return;
   }
 
-  // FIXME: Add support for non-premultiplied alpha.
+  // TODO(skaslev): Add support for non-premultiplied alpha.
   ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
                                                 quad->resource_id);
   const SkBitmap* bitmap = lock.sk_bitmap();
@@ -436,7 +436,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
     current_paint_.setRasterizer(mask_rasterizer.get());
     current_canvas_->drawRect(dest_rect, current_paint_);
   } else {
-    // FIXME: Apply background filters and blend with content
+    // TODO(skaslev): Apply background filters and blend with content
     current_canvas_->drawRect(dest_rect, current_paint_);
   }
 }

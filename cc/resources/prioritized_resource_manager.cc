@@ -188,10 +188,10 @@ void PrioritizedResourceManager::ClearPriorities() {
   DCHECK(proxy_->IsMainThread());
   for (TextureSet::iterator it = textures_.begin(); it != textures_.end();
        ++it) {
-    // FIXME: We should remove this and just set all priorities to
-    //        PriorityCalculator::lowestPriority() once we have priorities
-    //        for all textures (we can't currently calculate distances for
-    //        off-screen textures).
+    // TODO(reveman): We should remove this and just set all priorities to
+    // PriorityCalculator::lowestPriority() once we have priorities for all
+    // textures (we can't currently calculate distances for off-screen
+    // textures).
     (*it)->set_request_priority(
         PriorityCalculator::LingeringPriority((*it)->request_priority()));
   }

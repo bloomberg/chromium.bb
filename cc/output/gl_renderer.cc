@@ -296,7 +296,8 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
 }
 
 void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
-  // FIXME: Remove this once backbuffer is automatically recreated on first use
+  // TODO(aelias): Remove this once backbuffer is automatically recreated on
+  // first use
   EnsureBackbuffer();
 
   if (client_->DeviceViewport().IsEmpty())
@@ -586,22 +587,22 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   //
   // Pixel copies in this algorithm occur at steps 2, 3, 4, and 5.
 
-  // FIXME: When this algorithm changes, update
+  // TODO(danakj): When this algorithm changes, update
   // LayerTreeHost::PrioritizeTextures() accordingly.
 
   FilterOperations filters =
       RenderSurfaceFilters::Optimize(quad->background_filters);
   DCHECK(!filters.IsEmpty());
 
-  // FIXME: We only allow background filters on an opaque render surface because
-  // other surfaces may contain translucent pixels, and the contents behind
-  // those translucent pixels wouldn't have the filter applied.
+  // TODO(danakj): We only allow background filters on an opaque render surface
+  // because other surfaces may contain translucent pixels, and the contents
+  // behind those translucent pixels wouldn't have the filter applied.
   if (frame->current_render_pass->has_transparent_background)
     return scoped_ptr<ScopedResource>();
   DCHECK(!frame->current_texture);
 
-  // FIXME: Do a single readback for both the surface and replica and cache the
-  // filtered results (once filter textures are not reused).
+  // TODO(danakj): Do a single readback for both the surface and replica and
+  // cache the filtered results (once filter textures are not reused).
   gfx::Rect window_rect = gfx::ToEnclosingRect(MathUtil::MapClippedRect(
       contents_device_transform, SharedGeometryQuad().BoundingBox()));
 
@@ -722,8 +723,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       SetBlendEnabled(true);
   }
 
-  // FIXME: Cache this value so that we don't have to do it for both the surface
-  // and its replica.  Apply filters to the contents texture.
+  // TODO(senorblanco): Cache this value so that we don't have to do it for both
+  // the surface and its replica.  Apply filters to the contents texture.
   SkBitmap filter_bitmap;
   SkScalar color_matrix[20];
   bool use_color_matrix = false;
@@ -794,8 +795,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     mask_texture_id = mask_resource_lock->texture_id();
   }
 
-  // FIXME: use the background_texture and blend the background in with this
-  // draw instead of having a separate copy of the background texture.
+  // TODO(danakj): use the background_texture and blend the background in with
+  // this draw instead of having a separate copy of the background texture.
 
   scoped_ptr<ResourceProvider::ScopedReadLockGL> contents_resource_lock;
   if (filter_bitmap.getTexture()) {

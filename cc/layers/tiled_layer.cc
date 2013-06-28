@@ -201,7 +201,7 @@ void TiledLayer::PushPropertiesTo(LayerImpl* layer) {
     int i = iter->first.first;
     int j = iter->first.second;
     UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
-    // FIXME: This should not ever be null.
+    // TODO(enne): This should not ever be null.
     if (!tile)
       continue;
 
@@ -253,7 +253,7 @@ void TiledLayer::SetLayerTreeHost(LayerTreeHost* host) {
          iter != tiler_->tiles().end();
          ++iter) {
       UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
-      // FIXME: This should not ever be null.
+      // TODO(enne): This should not ever be null.
       if (!tile)
         continue;
       tile->managed_resource()->SetTextureManager(
@@ -301,7 +301,7 @@ void TiledLayer::InvalidateContentRect(gfx::Rect content_rect) {
        ++iter) {
     UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
     DCHECK(tile);
-    // FIXME: This should not ever be null.
+    // TODO(enne): This should not ever be null.
     if (!tile)
       continue;
     gfx::Rect bound = tiler_->TileRect(tile);
@@ -366,7 +366,7 @@ void TiledLayer::MarkOcclusionsAndRequestTextures(
     for (int i = left; i <= right; ++i) {
       UpdatableTile* tile = TileAt(i, j);
       DCHECK(tile);  // Did SetTexturePriorities get skipped?
-      // FIXME: This should not ever be null.
+      // TODO(enne): This should not ever be null.
       if (!tile)
         continue;
       // Did ResetUpdateState get skipped? Are we doing more than one occlusion
@@ -404,7 +404,7 @@ bool TiledLayer::HaveTexturesForTiles(int left,
     for (int i = left; i <= right; ++i) {
       UpdatableTile* tile = TileAt(i, j);
       DCHECK(tile);  // Did SetTexturePriorites get skipped?
-                     // FIXME: This should not ever be null.
+                     // TODO(enne): This should not ever be null.
       if (!tile)
         continue;
 
@@ -434,12 +434,12 @@ gfx::Rect TiledLayer::MarkTilesForUpdate(int left,
     for (int i = left; i <= right; ++i) {
       UpdatableTile* tile = TileAt(i, j);
       DCHECK(tile);  // Did SetTexturePriorites get skipped?
-                     // FIXME: This should not ever be null.
+                     // TODO(enne): This should not ever be null.
       if (!tile)
         continue;
       if (tile->occluded && !ignore_occlusions)
         continue;
-      // FIXME: Decide if partial update should be allowed based on cost
+      // TODO(reveman): Decide if partial update should be allowed based on cost
       // of update. https://bugs.webkit.org/show_bug.cgi?id=77376
       if (tile->is_dirty() && layer_tree_host() &&
           layer_tree_host()->buffered_updates()) {
@@ -499,7 +499,7 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
     for (int i = left; i <= right; ++i) {
       UpdatableTile* tile = TileAt(i, j);
       DCHECK(tile);  // Did SetTexturePriorites get skipped?
-                     // FIXME: This should not ever be null.
+                     // TODO(enne): This should not ever be null.
       if (!tile)
         continue;
 
@@ -586,8 +586,8 @@ bool TiledLayer::IsSmallAnimatedLayer() const {
 }
 
 namespace {
-// FIXME: Remove this and make this based on distance once distance can be
-// calculated for offscreen layers. For now, prioritize all small animated
+// TODO(epenner): Remove this and make this based on distance once distance can
+// be calculated for offscreen layers. For now, prioritize all small animated
 // layers after 512 pixels of pre-painting.
 void SetPriorityForTexture(gfx::Rect visible_rect,
                            gfx::Rect tile_rect,
@@ -643,7 +643,7 @@ void TiledLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
        iter != tiler_->tiles().end();
        ++iter) {
     UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
-    // FIXME: This should not ever be null.
+    // TODO(enne): This should not ever be null.
     if (!tile)
       continue;
     gfx::Rect tile_rect = tiler_->TileRect(tile);
@@ -672,7 +672,7 @@ void TiledLayer::ResetUpdateState() {
        iter != end;
        ++iter) {
     UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
-    // FIXME: This should not ever be null.
+    // TODO(enne): This should not ever be null.
     if (!tile)
       continue;
     tile->ResetUpdateState();

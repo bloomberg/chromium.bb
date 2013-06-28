@@ -110,8 +110,8 @@ void TextureLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   LayerImpl::DidDraw(resource_provider);
   if (uses_mailbox_ || !external_texture_resource_)
     return;
-  // FIXME: the following assert will not be true when sending resources to a
-  // parent compositor. A synchronization scheme (double-buffering or
+  // TODO(danakj): the following assert will not be true when sending resources
+  // to a parent compositor. A synchronization scheme (double-buffering or
   // pipelining of updates) for the client will need to exist to solve this.
   DCHECK(!resource_provider->InUseByConsumer(external_texture_resource_));
   resource_provider->DeleteResource(external_texture_resource_);

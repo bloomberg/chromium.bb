@@ -33,8 +33,8 @@ QuadCuller::QuadCuller(QuadList* quad_list,
 
 SharedQuadState* QuadCuller::UseSharedQuadState(
     scoped_ptr<SharedQuadState> shared_quad_state) {
-  // FIXME: If all quads are culled for the shared_quad_state, we can drop it
-  // from the list.
+  // TODO(danakj): If all quads are culled for the shared_quad_state, we can
+  // drop it from the list.
   current_shared_quad_state_ = shared_quad_state.get();
   shared_quad_state_list_->push_back(shared_quad_state.Pass());
   return current_shared_quad_state_;
