@@ -14,12 +14,12 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "skia/ext/convolver.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
-#include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkFontHost.h"
+#include "third_party/skia/include/core/SkRect.h"
 
 namespace skia {
 

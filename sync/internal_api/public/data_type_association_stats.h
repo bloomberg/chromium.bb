@@ -5,7 +5,7 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_DATA_TYPE_ASSOCIATION_STATS_H_
 #define SYNC_INTERNAL_API_PUBLIC_DATA_TYPE_ASSOCIATION_STATS_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "sync/base/sync_export.h"
 
 namespace syncer {

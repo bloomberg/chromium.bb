@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "sync/engine/apply_control_data_updates.h"
 #include "sync/engine/apply_updates_and_resolve_conflicts_command.h"

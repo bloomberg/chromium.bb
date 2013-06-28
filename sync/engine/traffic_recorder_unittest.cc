@@ -5,7 +5,7 @@
 #include "sync/engine/traffic_recorder.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/util/time.h"

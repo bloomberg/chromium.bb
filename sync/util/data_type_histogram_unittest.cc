@@ -4,7 +4,7 @@
 
 #include "sync/util/data_type_histogram.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

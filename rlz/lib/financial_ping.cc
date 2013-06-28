@@ -19,7 +19,7 @@
 #include "rlz/lib/string_utils.h"
 
 #if !defined(OS_WIN)
-#include "base/time.h"
+#include "base/time/time.h"
 #endif
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_WIN_INET)
@@ -47,7 +47,7 @@ class InternetHandle {
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"

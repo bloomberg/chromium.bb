@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "sync/base/sync_export.h"
 #include "sync/protocol/sync.pb.h"

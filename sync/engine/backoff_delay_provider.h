@@ -5,7 +5,7 @@
 #ifndef SYNC_ENGINE_BACKOFF_DELAY_PROVIDER_H_
 #define SYNC_ENGINE_BACKOFF_DELAY_PROVIDER_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "sync/base/sync_export.h"
 
 namespace syncer {

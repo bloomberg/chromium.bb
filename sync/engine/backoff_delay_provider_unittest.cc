@@ -5,7 +5,7 @@
 #include "sync/engine/backoff_delay_provider.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
 #include "sync/internal_api/public/sessions/model_neutral_state.h"
 #include "sync/internal_api/public/util/syncer_error.h"

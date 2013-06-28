@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/nudge_source.h"
 #include "sync/internal_api/public/base/model_type_invalidation_map.h"
