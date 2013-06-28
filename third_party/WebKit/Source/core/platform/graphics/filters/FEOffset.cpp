@@ -34,6 +34,7 @@
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
+#include "third_party/skia/include/core/SkDevice.h"
 
 namespace WebCore {
 

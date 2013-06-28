@@ -34,6 +34,7 @@
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
+#include "third_party/skia/include/core/SkDevice.h"
 
 namespace WebCore {
 

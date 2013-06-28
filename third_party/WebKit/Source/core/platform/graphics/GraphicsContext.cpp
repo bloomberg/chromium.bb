@@ -38,8 +38,11 @@
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
+#include "third_party/skia/include/effects/SkCornerPathEffect.h"
 #include "weborigin/KURL.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
@@ -84,6 +87,17 @@ GraphicsContext::~GraphicsContext()
     ASSERT(m_stateStack.size() == 1);
     ASSERT(!m_annotationCount);
     ASSERT(!m_transparencyCount);
+}
+
+const SkBitmap* GraphicsContext::bitmap() const
+{
+    TRACE_EVENT0("skia", "GraphicsContext::bitmap");
+    return &m_canvas->getDevice()->accessBitmap(false);
+}
+
+const SkBitmap& GraphicsContext::layerBitmap(AccessMode access) const
+{
+    return m_canvas->getTopDevice()->accessBitmap(access == ReadWrite);
 }
 
 SkDevice* GraphicsContext::createCompatibleDevice(const IntSize& size, bool hasAlpha) const
