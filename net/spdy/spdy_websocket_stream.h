@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/request_priority.h"
 #include "net/spdy/spdy_framer.h"

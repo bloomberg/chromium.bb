@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "base/metrics/histogram.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "googleurl/src/gurl.h"
 
 namespace net {

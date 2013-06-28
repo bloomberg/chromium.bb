@@ -11,10 +11,10 @@
 #include "base/metrics/stats_counters.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
-#include "net/base/net_log.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 #include "net/socket/client_socket_handle.h"
 
 using base::TimeDelta;

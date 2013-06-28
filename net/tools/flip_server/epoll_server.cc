@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 
 // Design notes: An efficient implementation of ready list has the following
 // desirable properties:

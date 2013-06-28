@@ -19,7 +19,7 @@
 #include "base/environment.h"
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/url_request/url_request_throttler_manager.h"
 #include "net/url_request/url_request_throttler_test_support.h"

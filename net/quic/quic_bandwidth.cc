@@ -5,7 +5,7 @@
 #include "net/quic/quic_bandwidth.h"
 
 #include "base/logging.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace net {
 
