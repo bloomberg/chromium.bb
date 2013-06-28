@@ -1,0 +1,4 @@
+EVENT(loadstart)
+EVENT(loadedmetadata)
+END OF TEST
+
