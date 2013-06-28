@@ -18,6 +18,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/sync_file_system/drive/api_util.h"
+#include "chrome/browser/sync_file_system/drive/fake_drive_service_helper.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
@@ -30,7 +31,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/id_util.h"
-#include "net/base/escape.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
@@ -45,8 +45,6 @@
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
-using ::testing::AnyNumber;
-using ::testing::AtLeast;
 using ::testing::StrictMock;
 using ::testing::_;
 
@@ -66,19 +64,6 @@ namespace {
 
 const char kExtensionName1[] = "example1";
 const char kExtensionName2[] = "example2";
-
-void DidRemoveResourceFromDirectory(GDataErrorCode error) {
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-}
-
-void DidAddNewResource(std::string* resource_id_out,
-                       GDataErrorCode error,
-                       scoped_ptr<ResourceEntry> entry) {
-  ASSERT_TRUE(resource_id_out);
-  ASSERT_EQ(google_apis::HTTP_CREATED, error);
-  ASSERT_TRUE(entry);
-  *resource_id_out = entry->resource_id();
-}
 
 void DidInitialize(bool* done, SyncStatusCode status, bool created) {
   EXPECT_FALSE(*done);
@@ -210,14 +195,19 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     RegisterSyncableFileSystem();
 
     fake_drive_service_ = new FakeDriveService;
+    DriveUploaderInterface* drive_uploader = new ::drive::DriveUploader(
+        fake_drive_service_, base::MessageLoopProxy::current().get());
+
+    fake_drive_helper_.reset(new drive::FakeDriveServiceHelper(
+        fake_drive_service_, drive_uploader));
 
     api_util_ = drive::APIUtil::CreateForTesting(
         profile_.get(),
         scoped_ptr<DriveServiceInterface>(fake_drive_service_),
-        scoped_ptr<DriveUploaderInterface>()).Pass();
-    ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
+        scoped_ptr<DriveUploaderInterface>(drive_uploader)).Pass();
     metadata_store_.reset(new DriveMetadataStore(
-        base_dir_.path(), base::MessageLoopProxy::current().get()));
+        fake_drive_helper_->base_dir_path(),
+        base::MessageLoopProxy::current().get()));
 
     bool done = false;
     metadata_store_->Initialize(base::Bind(&DidInitialize, &done));
@@ -228,12 +218,19 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
         "chromeos/sync_file_system/initialize.json");
     fake_drive_service()->LoadAccountMetadataForWapi(
         "chromeos/sync_file_system/account_metadata.json");
+
+    // Setup the sync root directory.
+    EXPECT_EQ(google_apis::HTTP_CREATED,
+              fake_drive_helper_->AddOrphanedFolder(
+                  drive::APIUtil::GetSyncRootDirectoryName(),
+                  &sync_root_resource_id_));
+    metadata_store()->SetSyncRootDirectory(sync_root_resource_id_);
   }
 
   void SetUpDriveSyncService(bool enabled) {
     sync_service_ = DriveFileSyncService::CreateForTesting(
         profile_.get(),
-        base_dir_.path(),
+        fake_drive_helper_->base_dir_path(),
         api_util_.PassAs<drive::APIUtilInterface>(),
         metadata_store_.Pass()).Pass();
     sync_service_->AddFileStatusObserver(&mock_file_status_observer_);
@@ -360,24 +357,10 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
   bool AppendIncrementalRemoteChangeByResourceId(
       const std::string& resource_id,
       const GURL& origin) {
-    bool done = false;
-    fake_drive_service()->GetResourceEntry(
-        resource_id,
-        base::Bind(&DriveFileSyncServiceFakeTest::DidGetEntryForRemoteChange,
-                   base::Unretained(this), origin, &done));
-    base::MessageLoop::current()->RunUntilIdle();
-    return done;
-  }
-
-  void DidGetEntryForRemoteChange(const GURL& origin,
-                                  bool* done_out,
-                                  GDataErrorCode error,
-                                  scoped_ptr<ResourceEntry> entry) {
-    ASSERT_TRUE(done_out);
-    ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-    ASSERT_TRUE(entry);
-    *done_out = sync_service_->AppendRemoteChange(origin, *entry, 12345);
-    base::MessageLoop::current()->RunUntilIdle();
+    scoped_ptr<ResourceEntry> entry;
+    EXPECT_EQ(google_apis::HTTP_SUCCESS,
+              fake_drive_helper_->GetResourceEntry(resource_id, &entry));
+    return sync_service_->AppendRemoteChange(origin, *entry, 12345);
   }
 
   bool AppendIncrementalRemoteChange(
@@ -393,63 +376,19 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
         SYNC_FILE_TYPE_FILE);
   }
 
-  // TODO(nhiroki): Factor out common setup routines into a shared helper class
-  // so that we can reuse them in other test classes like APIUtilTest.
-  void SetUpSyncRootDirectory() {
-    sync_root_resource_id_ =
-        AddNewDirectory(fake_drive_service()->GetRootResourceId(),
-                        drive::APIUtil::GetSyncRootDirectoryName());
-
-    ASSERT_TRUE(!sync_root_resource_id_.empty());
-    fake_drive_service()->RemoveResourceFromDirectory(
-        fake_drive_service()->GetRootResourceId(),
-        sync_root_resource_id_,
-        base::Bind(&DidRemoveResourceFromDirectory));
-    base::MessageLoop::current()->RunUntilIdle();
-
-    metadata_store()->SetSyncRootDirectory(sync_root_resource_id_);
-  }
-
-  // TODO(nhiroki): Factor out common setup routines into a shared helper class
-  // so that we can reuse them in other test classes like APIUtilTest.
   std::string SetUpOriginRootDirectory(const char* extension_name) {
     EXPECT_TRUE(!sync_root_resource_id_.empty());
-    std::string origin_root_resource_id =
-        AddNewDirectory(sync_root_resource_id_,
-                        ExtensionNameToId(extension_name));
+
+    std::string origin_root_resource_id;
+    EXPECT_EQ(google_apis::HTTP_CREATED,
+              fake_drive_helper_->AddFolder(
+                  sync_root_resource_id_,
+                  ExtensionNameToId(extension_name),
+                  &origin_root_resource_id));
 
     metadata_store()->AddIncrementalSyncOrigin(
         ExtensionNameToGURL(extension_name), origin_root_resource_id);
     return origin_root_resource_id;
-  }
-
-  std::string AddNewDirectory(const std::string& parent_resource_id,
-                              const std::string& directory_name) {
-    std::string resource_id;
-    fake_drive_service()->AddNewDirectory(
-        parent_resource_id,
-        directory_name,
-        base::Bind(&DidAddNewResource, &resource_id));
-    base::MessageLoop::current()->RunUntilIdle();
-    EXPECT_TRUE(!resource_id.empty());
-    return resource_id;
-  }
-
-  std::string AddNewFile(const std::string& content_data,
-                         const std::string& parent_resource_id,
-                         const std::string& title) {
-    std::string resource_id;
-    fake_drive_service()->AddNewFile(
-        "text/plain",
-        content_data,
-        parent_resource_id,
-        title,
-        false,  // shared_with_me
-        base::Bind(&DidAddNewResource, &resource_id));
-    base::MessageLoop::current()->RunUntilIdle();
-
-    EXPECT_TRUE(!resource_id.empty());
-    return resource_id;
   }
 
   void TestRegisterNewOrigin();
@@ -467,7 +406,6 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
-  base::ScopedTempDir base_dir_;
   scoped_ptr<TestingProfile> profile_;
 
   std::string sync_root_resource_id_;
@@ -484,6 +422,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
   ExtensionService* extension_service_;
 
   FakeDriveService* fake_drive_service_;
+  scoped_ptr<drive::FakeDriveServiceHelper> fake_drive_helper_;
 
   StrictMock<MockFileStatusObserver> mock_file_status_observer_;
   StrictMock<MockRemoteChangeProcessor> mock_remote_processor_;
@@ -497,8 +436,6 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
 #if !defined(OS_ANDROID)
 
 void DriveFileSyncServiceFakeTest::TestRegisterNewOrigin() {
-  SetUpSyncRootDirectory();
-
   SetUpDriveSyncService(true);
   bool done = false;
   sync_service()->RegisterOriginForTrackingChanges(
@@ -512,13 +449,19 @@ void DriveFileSyncServiceFakeTest::TestRegisterNewOrigin() {
 }
 
 void DriveFileSyncServiceFakeTest::TestRegisterExistingOrigin() {
-  SetUpSyncRootDirectory();
   const std::string origin_resource_id =
       SetUpOriginRootDirectory(kExtensionName1);
 
-  AddNewFile("data1", origin_resource_id, "1.txt");
-  AddNewFile("data2", origin_resource_id, "2.txt");
-  AddNewFile("data3", origin_resource_id, "3.txt");
+  std::string file_id;
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_helper_->AddFile(
+                origin_resource_id, "1.txt", "data1", &file_id));
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_helper_->AddFile(
+                origin_resource_id, "2.txt", "data2", &file_id));
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_helper_->AddFile(
+                origin_resource_id, "3.txt", "data3", &file_id));
 
   SetUpDriveSyncService(true);
 
@@ -537,8 +480,6 @@ void DriveFileSyncServiceFakeTest::TestRegisterExistingOrigin() {
 }
 
 void DriveFileSyncServiceFakeTest::TestRegisterOriginWithSyncDisabled() {
-  SetUpSyncRootDirectory();
-
   // Usually the sync service starts here, but since we're setting up a drive
   // service with sync disabled sync doesn't start (while register origin should
   // still return OK).
@@ -558,7 +499,6 @@ void DriveFileSyncServiceFakeTest::TestRegisterOriginWithSyncDisabled() {
 }
 
 void DriveFileSyncServiceFakeTest::TestUnregisterOrigin() {
-  SetUpSyncRootDirectory();
   SetUpOriginRootDirectory(kExtensionName1);
   SetUpOriginRootDirectory(kExtensionName2);
 
@@ -579,10 +519,8 @@ void DriveFileSyncServiceFakeTest::TestUnregisterOrigin() {
 }
 
 void DriveFileSyncServiceFakeTest::TestUpdateRegisteredOrigins() {
-  SetUpSyncRootDirectory();
   SetUpOriginRootDirectory(kExtensionName1);
   SetUpOriginRootDirectory(kExtensionName2);
-
   SetUpDriveSyncService(true);
 
   // [1] Both extensions and origins are enabled. Nothing to do.
@@ -611,8 +549,6 @@ void DriveFileSyncServiceFakeTest::TestUpdateRegisteredOrigins() {
 }
 
 void DriveFileSyncServiceFakeTest::TestRemoteChange_NoChange() {
-  SetUpSyncRootDirectory();
-
   SetUpDriveSyncService(true);
 
   ProcessRemoteChange(SYNC_STATUS_NO_CHANGE_TO_SYNC,
@@ -628,7 +564,6 @@ void DriveFileSyncServiceFakeTest::TestRemoteChange_Busy() {
   const char kFileName[] = "File 1.txt";
   const GURL origin = ExtensionNameToGURL(kExtensionName1);
 
-  SetUpSyncRootDirectory();
   const std::string origin_resource_id =
       SetUpOriginRootDirectory(kExtensionName1);
 
@@ -641,8 +576,10 @@ void DriveFileSyncServiceFakeTest::TestRemoteChange_Busy() {
 
   SetUpDriveSyncService(true);
 
-  const std::string resource_id =
-      AddNewFile("test data", origin_resource_id, kFileName);
+  std::string resource_id;
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_helper_->AddFile(
+                origin_resource_id, kFileName, "test data", &resource_id));
   EXPECT_TRUE(AppendIncrementalRemoteChangeByResourceId(resource_id, origin));
 
   ProcessRemoteChange(SYNC_STATUS_FILE_BUSY,
@@ -656,7 +593,6 @@ void DriveFileSyncServiceFakeTest::TestRemoteChange_NewFile() {
   const char kFileName[] = "File 1.txt";
   const GURL origin = ExtensionNameToGURL(kExtensionName1);
 
-  SetUpSyncRootDirectory();
   const std::string origin_resource_id =
       SetUpOriginRootDirectory(kExtensionName1);
 
@@ -673,8 +609,10 @@ void DriveFileSyncServiceFakeTest::TestRemoteChange_NewFile() {
 
   SetUpDriveSyncService(true);
 
-  const std::string resource_id =
-      AddNewFile("test data", origin_resource_id, kFileName);
+  std::string resource_id;
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_helper_->AddFile(
+                origin_resource_id, kFileName, "test data", &resource_id));
   EXPECT_TRUE(AppendIncrementalRemoteChangeByResourceId(resource_id, origin));
 
   ProcessRemoteChange(SYNC_STATUS_OK,
@@ -688,7 +626,6 @@ void DriveFileSyncServiceFakeTest::TestRemoteChange_UpdateFile() {
   const char kFileName[] = "File 1.txt";
   const GURL origin = ExtensionNameToGURL(kExtensionName1);
 
-  SetUpSyncRootDirectory();
   const std::string origin_resource_id =
       SetUpOriginRootDirectory(kExtensionName1);
 
@@ -705,8 +642,10 @@ void DriveFileSyncServiceFakeTest::TestRemoteChange_UpdateFile() {
 
   SetUpDriveSyncService(true);
 
-  const std::string resource_id =
-      AddNewFile("test data", origin_resource_id, kFileName);
+  std::string resource_id;
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_helper_->AddFile(
+                origin_resource_id, kFileName, "test data", &resource_id));
   EXPECT_TRUE(AppendIncrementalRemoteChangeByResourceId(resource_id, origin));
 
   ProcessRemoteChange(SYNC_STATUS_OK,
@@ -722,9 +661,7 @@ void DriveFileSyncServiceFakeTest::TestRemoteChange_Override() {
   const std::string kFileResourceId2("file:2_file_resource_id_2");
   const GURL origin = ExtensionNameToGURL(kExtensionName1);
 
-  SetUpSyncRootDirectory();
   SetUpOriginRootDirectory(kExtensionName1);
-
   SetUpDriveSyncService(true);
 
   EXPECT_TRUE(AppendIncrementalRemoteChange(
@@ -775,14 +712,15 @@ void DriveFileSyncServiceFakeTest::TestRemoteChange_Override() {
 }
 
 void DriveFileSyncServiceFakeTest::TestRemoteChange_Folder() {
-  SetUpSyncRootDirectory();
   const std::string origin_resource_id =
       SetUpOriginRootDirectory(kExtensionName1);
-
   SetUpDriveSyncService(true);
 
-  const std::string resource_id =
-      AddNewDirectory(origin_resource_id, "test_dir");
+  std::string resource_id;
+  EXPECT_EQ(google_apis::HTTP_CREATED,
+            fake_drive_helper_->AddFolder(
+                origin_resource_id, "test_dir", &resource_id));
+
   // Expect to drop this change for file.
   EXPECT_FALSE(AppendIncrementalRemoteChangeByResourceId(
       resource_id, ExtensionNameToGURL(kExtensionName1)));
