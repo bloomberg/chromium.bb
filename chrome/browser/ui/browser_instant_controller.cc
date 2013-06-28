@@ -233,6 +233,10 @@ void BrowserInstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
   instant_.SetOmniboxBounds(bounds);
 }
 
+void BrowserInstantController::UpdateLocationBar() {
+  browser_->window()->UpdateToolbar(GetActiveWebContents(), false);
+}
+
 void BrowserInstantController::ToggleVoiceSearch() {
   instant_.ToggleVoiceSearch();
 }

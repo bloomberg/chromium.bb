@@ -1179,6 +1179,13 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchReusesInstantTab) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantNTPSupport();
 
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
@@ -1226,6 +1233,13 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantNTPSupport();
 
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
   // Create an observer to wait for the instant tab to support Instant.
   content::WindowedNotificationObserver observer_1(
       chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
@@ -1257,6 +1271,13 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxMarginSetForSearchURLs) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // Create an observer to wait for the instant tab to support Instant.
   content::WindowedNotificationObserver observer(
@@ -1429,6 +1450,13 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   // Focus omnibox and confirm overlay isn't shown.
   FocusOmniboxAndWaitForInstantNTPSupport();
 
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
   // Create an observer to wait for the instant tab to support Instant.
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
@@ -1480,6 +1508,13 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
   // Focus omnibox and confirm overlay isn't shown.
   FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // Create an observer to wait for the instant tab to support Instant.
   content::WindowedNotificationObserver observer(
