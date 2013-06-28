@@ -221,7 +221,7 @@ TYPED_TEST(RendererPixelTest, SimpleGreenRect_NonRootRenderPass) {
 class VideoGLRendererPixelTest : public GLRendererPixelTest {
  protected:
   scoped_ptr<YUVVideoDrawQuad> CreateTestYUVVideoDrawQuad(
-      SharedQuadState* shared_state, bool with_alpha) {
+      SharedQuadState* shared_state, bool with_alpha, bool is_transparent) {
     gfx::Rect rect(this->device_viewport_size_);
     gfx::Rect opaque_rect(0, 0, 0, 0);
 
@@ -264,7 +264,7 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
     memset(u_plane.get(), 43, uv_plane_size);
     memset(v_plane.get(), 21, uv_plane_size);
     if (with_alpha)
-      memset(a_plane.get(), 128, y_plane_size);
+      memset(a_plane.get(), is_transparent ? 0 : 128, y_plane_size);
 
     resource_provider_->SetPixels(y_resource, y_plane.get(), rect, rect,
                                   gfx::Vector2d());
@@ -294,7 +294,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRect) {
       CreateTestSharedQuadState(gfx::Transform(), rect);
 
   scoped_ptr<YUVVideoDrawQuad> yuv_quad =
-      CreateTestYUVVideoDrawQuad(shared_state.get(), false);
+      CreateTestYUVVideoDrawQuad(shared_state.get(), false, false);
 
   pass->quad_list.push_back(yuv_quad.PassAs<DrawQuad>());
 
@@ -317,7 +317,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
       CreateTestSharedQuadState(gfx::Transform(), rect);
 
   scoped_ptr<YUVVideoDrawQuad> yuv_quad =
-      CreateTestYUVVideoDrawQuad(shared_state.get(), true);
+      CreateTestYUVVideoDrawQuad(shared_state.get(), true, false);
 
   pass->quad_list.push_back(yuv_quad.PassAs<DrawQuad>());
 
@@ -332,6 +332,34 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("green_alpha.png")),
+      ExactPixelComparator(true)));
+}
+
+TEST_F(VideoGLRendererPixelTest, FullyTransparentYUVARect) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  RenderPass::Id id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+
+  scoped_ptr<YUVVideoDrawQuad> yuv_quad =
+      CreateTestYUVVideoDrawQuad(shared_state.get(), true, true);
+
+  pass->quad_list.push_back(yuv_quad.PassAs<DrawQuad>());
+
+  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  color_quad->SetNew(shared_state.get(), rect, SK_ColorBLACK, false);
+
+  pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("black.png")),
       ExactPixelComparator(true)));
 }
 

@@ -1402,7 +1402,7 @@ std::string FragmentShaderYUVAVideo::GetShaderString(
       float a_raw = texture2D(a_texture, v_texCoord).x;
       vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned) + yuv_adj;
       vec3 rgb = yuv_matrix * yuv;
-      gl_FragColor = vec4(rgb, a_raw) * alpha;
+      gl_FragColor = vec4(rgb, float(1)) * (alpha * a_raw);
     }
   );  // NOLINT(whitespace/parens)
 }
