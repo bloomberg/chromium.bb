@@ -87,6 +87,8 @@
         'renderer/extensions/extension_groups.h',
         'renderer/extensions/extension_helper.cc',
         'renderer/extensions/extension_helper.h',
+        'renderer/extensions/extension_localization_peer.cc',
+        'renderer/extensions/extension_localization_peer.h',
         'renderer/extensions/feedback_private_custom_bindings.cc',
         'renderer/extensions/feedback_private_custom_bindings.h',
         'renderer/extensions/file_browser_handler_custom_bindings.cc',

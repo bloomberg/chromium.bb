@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_localization_peer.h"
+#include "chrome/renderer/extensions/extension_localization_peer.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
@@ -13,7 +13,6 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
-#include "webkit/glue/webkit_glue.h"
 
 ExtensionLocalizationPeer::ExtensionLocalizationPeer(
     webkit_glue::ResourceLoaderBridge::Peer* peer,

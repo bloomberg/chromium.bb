@@ -220,8 +220,6 @@
         'common/extensions/extension_icon_set.h',
         'common/extensions/extension_l10n_util.cc',
         'common/extensions/extension_l10n_util.h',
-        'common/extensions/extension_localization_peer.cc',
-        'common/extensions/extension_localization_peer.h',
         'common/extensions/extension_manifest_constants.cc',
         'common/extensions/extension_manifest_constants.h',
         'common/extensions/extension_messages.cc',
