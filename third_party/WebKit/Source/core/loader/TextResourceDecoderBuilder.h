@@ -42,14 +42,15 @@ class TextResourceDecoder;
 
 class TextResourceDecoderBuilder {
 public:
-    TextResourceDecoderBuilder();
+    TextResourceDecoderBuilder(const String& mimeType, const String& encoding, bool encodingUserChoosen);
     ~TextResourceDecoderBuilder();
 
     PassRefPtr<TextResourceDecoder> buildFor(Document*);
 
     const String& mimeType() const { return m_mimeType; }
-    void setMIMEType(const String& type) { m_mimeType = type; }
-    void setEncoding(const String& encoding, bool userChosen);
+    const String& encoding() const { return m_encoding; }
+    bool encodingWasChosenByUser() const { return m_encodingWasChosenByUser; }
+
     void clear();
 
 private:
@@ -57,8 +58,8 @@ private:
     void setupEncoding(TextResourceDecoder*, Document*);
 
     String m_mimeType;
-    bool m_encodingWasChosenByUser;
     String m_encoding;
+    bool m_encodingWasChosenByUser;
 };
 
 } // namespace WebCore

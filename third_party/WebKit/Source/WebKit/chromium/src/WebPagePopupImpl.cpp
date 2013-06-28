@@ -216,7 +216,7 @@ bool WebPagePopupImpl::initializePage()
 
     DocumentWriter* writer = frame->loader()->activeDocumentLoader()->beginWriting("text/html", "UTF-8");
     m_popupClient->writeDocument(*writer);
-    writer->end();
+    frame->loader()->activeDocumentLoader()->endWriting(writer);
     return true;
 }
 

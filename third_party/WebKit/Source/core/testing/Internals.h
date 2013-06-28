@@ -280,6 +280,7 @@ public:
     bool isSelectPopupVisible(Node*);
 
     PassRefPtr<ClientRect> selectionBounds(ExceptionCode&);
+    String baseURL(Document*, ExceptionCode&);
 
 private:
     explicit Internals(Document*);
