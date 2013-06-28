@@ -39,10 +39,17 @@ public:
         InternalFieldCount, // This entry must always be at the bottom.
     };
 
+    enum PromiseAlgorithm {
+        FulfillAlgorithm,
+        ResolveAlgorithm,
+        RejectAlgorithm,
+    };
+
     enum PromiseState {
         Pending,
         Fulfilled,
         Rejected,
+        PendingWithResolvedFlagSet,
     };
 
     enum SynchronousMode {
@@ -55,6 +62,8 @@ public:
 
     // |resolver| must be a PromiseResolver instance.
     static void fulfillResolver(v8::Handle<v8::Object> resolver, v8::Handle<v8::Value> result, SynchronousMode, v8::Isolate*);
+    // |resolver| must be a PromiseResolver instance.
+    static void resolveResolver(v8::Handle<v8::Object> resolver, v8::Handle<v8::Value> result, SynchronousMode, v8::Isolate*);
     // |resolver| must be a PromiseResolver instance.
     static void rejectResolver(v8::Handle<v8::Object> resolver, v8::Handle<v8::Value> result, SynchronousMode, v8::Isolate*);
 
