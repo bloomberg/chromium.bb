@@ -19,8 +19,19 @@
 
 #if defined(XRAY)
 
-#define RDTSC(_x)      __asm__ __volatile__ ("rdtsc" : "=A" (_x));
 #define FORCE_INLINE  __attribute__((always_inline))
+
+#if defined(__amd64__)
+FORCE_INLINE uint64_t RDTSC64() {
+  uint64_t a, d;
+  __asm__ __volatile__("rdtsc" : "=a" (a), "=d" (d));
+  return ((uint64_t)a) | (((uint64_t)d) << 32);
+}
+#define RDTSC(_x) _x = RDTSC64()
+#else
+#define RDTSC(_x)      __asm__ __volatile__ ("rdtsc" : "=A" (_x));
+#endif
+
 
 /* Use a TLS variable for cheap thread uid. */
 volatile __thread int g_xray_thread_id;
@@ -591,12 +602,12 @@ int XRayTraceBufferNextEntry(int index) {
 
 
 /* Dumps the trace report for a given frame. */
-void XRayTraceReport(FILE* f, int frame, char* label, float cutoff) {
+void XRayTraceReport(FILE* f, int frame, char* label,
+                     float percent_cutoff, int ticks_cutoff) {
   int index;
   int start;
   int end;
   float total;
-  int bad_depth = 0;
   char space[257];
   memset(space, ' ', 256);
   space[256] = 0;
@@ -626,8 +637,7 @@ void XRayTraceReport(FILE* f, int frame, char* label, float cutoff) {
       uint32_t ticks = (e->ticks);
       uint32_t annotation_index = (e->annotation_index);
       float percent = 100.0f * (float)ticks / total;
-      if (percent >= cutoff) {
-        if (depth > 250) bad_depth++;
+      if (percent >= percent_cutoff && ticks >= ticks_cutoff) {
         struct XRaySymbol* symbol;
         symbol = XRaySymbolTableLookup(g_xray.symbols, addr);
         symbol_name = XRaySymbolGetName(symbol);
@@ -724,11 +734,12 @@ void XRayFrameReport(FILE* f) {
 
 
 /* Dump a frame report followed by trace report(s) for each frame. */
-void XRayReport(FILE* f, float cutoff) {
+void XRayReport(FILE* f, float percent_cutoff, int ticks_cutoff) {
   int head;
   int index;
   int counter = 0;
-  fprintf(f, "Number of symbols: %d\n", XRaySymbolCount(g_xray.symbols));
+  if (g_xray.symbols)
+    fprintf(f, "Number of symbols: %d\n", XRaySymbolCount(g_xray.symbols));
   XRayFrameReport(f);
   fprintf(f, "\n");
   head = g_xray.frame.head;
@@ -737,8 +748,9 @@ void XRayReport(FILE* f, float cutoff) {
     char label[XRAY_MAX_LABEL];
     fprintf(f, "\n");
     XRayFrameMakeLabel(counter, label);
-    XRayTraceReport(f, index, label, cutoff);
+    XRayTraceReport(f, index, label, percent_cutoff, ticks_cutoff);
     index = XRayFrameNext(index);
+
     ++counter;
   }
   fprintf(f,
@@ -746,15 +758,18 @@ void XRayReport(FILE* f, float cutoff) {
 #if defined(XRAY_OUTPUT_HASH_COLLISIONS)
   XRayHashTableHisto(f);
 #endif
+  fflush(f);
 }
 
 
 /* Write a profile report to text file. */
-void XRaySaveReport(const char* filename, float cutoff) {
+void XRaySaveReport(const char* filename,
+                    float percent_cutoff,
+                    int ticks_cutoff) {
   FILE* f;
   f = fopen(filename, "wt");
   if (NULL != f) {
-    XRayReport(f, cutoff);
+    XRayReport(f, percent_cutoff, ticks_cutoff);
     fclose(f);
   }
 }
@@ -788,10 +803,9 @@ void XRayInit(int stack_depth, int buffer_size, int frame_count,
   XRayReset();
 
   /* Mapfile is optional; we don't need it for captures, only for reports. */
-  if (NULL != mapfilename) {
-    g_xray.symbols = XRaySymbolTableCreate(XRAY_DEFAULT_SYMBOL_TABLE_SIZE);
+  g_xray.symbols = XRaySymbolTableCreate(XRAY_DEFAULT_SYMBOL_TABLE_SIZE);
+  if (NULL != mapfilename)
     XRaySymbolTableParseMapfile(g_xray.symbols, mapfilename);
-  }
 }
 
 

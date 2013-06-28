@@ -14,7 +14,7 @@
         'xray.c'
       ],
       'CCFLAGS': [	
-        '-DXRAY -O2'	
+        '-DXRAY -DXRAY_ANNOTATE -O2'
       ]
     }
   ],

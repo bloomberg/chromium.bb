@@ -5,10 +5,16 @@
 
 /* XRay symbol table */
 
+#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if defined(__GLIBC__)
+#include <dlfcn.h>
+#endif
+
 #include "xray/xray_priv.h"
 
 #if defined(XRAY)
@@ -111,15 +117,6 @@ struct XRaySymbol* XRaySymbolTableAtIndex(struct XRaySymbolTable* symtab,
   return (struct XRaySymbol*)XRayHashTableAtIndex(symtab->hash_table, i);
 }
 
-
-struct XRaySymbol* XRaySymbolTableLookup(struct XRaySymbolTable* symtab,
-                                         uint32_t addr) {
-  void *x = XRayHashTableLookup(symtab->hash_table, addr);
-  struct XRaySymbol* r = (struct XRaySymbol*)x;
-  return r;
-}
-
-
 struct XRaySymbol* XRaySymbolTableAdd(struct XRaySymbolTable* symtab,
                                       struct XRaySymbol* symbol,
                                       uint32_t addr) {
@@ -127,6 +124,33 @@ struct XRaySymbol* XRaySymbolTableAdd(struct XRaySymbolTable* symtab,
     XRayHashTableInsert(symtab->hash_table, symbol, addr);
 }
 
+struct XRaySymbol* XRaySymbolTableAddByName(struct XRaySymbolTable* symtab,
+                                            const char* name, uint32_t addr) {
+  char* recorded_symbol;
+  struct XRaySymbol* symbol;
+  /* copy the symbol name into the string pool */
+  recorded_symbol = XRayStringPoolAppend(symtab->string_pool, name);
+  if (g_symtable_debug)
+    printf("adding symbol %s\n", recorded_symbol);
+  /* construct a symbol and put it in the symbol table */
+  symbol = XRaySymbolCreate(symtab->symbol_pool, recorded_symbol);
+  return XRaySymbolTableAdd(symtab, symbol, addr);
+}
+
+struct XRaySymbol* XRaySymbolTableLookup(struct XRaySymbolTable* symtab,
+                                         uint32_t addr) {
+  void *x = XRayHashTableLookup(symtab->hash_table, addr);
+  struct XRaySymbol* r = (struct XRaySymbol*)x;
+#if defined(__GLIBC__)
+  if (r == NULL) {
+    Dl_info info;
+    if (dladdr((const void*)addr, &info) != 0)
+      if (info.dli_sname)
+        r = XRaySymbolTableAddByName(symtab, info.dli_sname, addr);
+  }
+#endif
+  return r;
+}
 
 struct XRaySymbol* XRaySymbolTableCreateEntry(struct XRaySymbolTable* symtab,
                                               const char* line) {
@@ -135,8 +159,6 @@ struct XRaySymbol* XRaySymbolTableCreateEntry(struct XRaySymbolTable* symtab,
   char symbol_text[XRAY_LINE_SIZE];
   char* parsed_symbol;
   char* newln;
-  struct XRaySymbol* symbol;
-  char* recorded_symbol;
   sscanf(line,"%x %s", &uiaddr, symbol_text);
   if (uiaddr > 0x07FFFFFF) {
     printf("While parsing the mapfile, XRay encountered:\n");
@@ -151,13 +173,7 @@ struct XRaySymbol* XRaySymbolTableCreateEntry(struct XRaySymbolTable* symtab,
   if (NULL != newln) {
     *newln = 0;
   }
-  /* copy the parsed symbol name into the string pool */
-  recorded_symbol = XRayStringPoolAppend(symtab->string_pool, parsed_symbol);
-  if (g_symtable_debug)
-    printf("adding symbol %s\n", recorded_symbol);
-  /* construct a symbol and put it in the symbol table */
-  symbol = XRaySymbolCreate(symtab->symbol_pool, recorded_symbol);
-  return XRaySymbolTableAdd(symtab, symbol, addr);
+  return XRaySymbolTableAddByName(symtab, parsed_symbol, addr);
 }
 
 
