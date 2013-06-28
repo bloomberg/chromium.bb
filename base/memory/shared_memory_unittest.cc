@@ -11,7 +11,7 @@
 #include "base/sys_info.h"
 #include "base/test/multiprocess_test.h"
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 

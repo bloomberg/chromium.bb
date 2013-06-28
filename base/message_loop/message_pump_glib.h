@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump.h"
 #include "base/observer_list.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 typedef struct _GMainContext GMainContext;
 typedef struct _GPollFD GPollFD;

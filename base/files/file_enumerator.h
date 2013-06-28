@@ -11,7 +11,7 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)

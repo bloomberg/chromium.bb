@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 
 namespace base {
 

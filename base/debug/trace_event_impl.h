@@ -20,7 +20,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 
 // Older style trace macros with explicit id and extra data
 // Only these macros result in publishing data to ETW as currently implemented.

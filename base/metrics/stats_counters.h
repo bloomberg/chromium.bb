@@ -10,7 +10,7 @@
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/stats_table.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace base {
 

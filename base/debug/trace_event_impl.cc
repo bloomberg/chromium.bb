@@ -26,7 +26,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_local.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 #if defined(OS_WIN)
 #include "base/debug/trace_event_win.h"

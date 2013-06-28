@@ -5,7 +5,7 @@
 #include "base/build_time.h"
 
 #include "base/logging.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace base {
 
