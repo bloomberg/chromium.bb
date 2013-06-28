@@ -65,10 +65,10 @@ x {
     /* To be reported. */
     invalidproperty: blue;
     --invalidproperty: blue;
+    -unknownvendor-property: blue;
 
     /* To be ignored. */
     -webkit-invalidproperty: blue;
-    -vendor-specific-property: blue;
     scrollbar-arrow-color: fail;
     SCROLLBAR-ARROW-COLOR: fail;
 }
@@ -149,6 +149,31 @@ div.search input::invalid-pseudo-two {}
 div.search input::-webkit-input-placeholder {}
 div.search input:-moz-placeholder {}
 div.search input:-ms-input-placeholder {}
+
+.valid-vendor-secific-prefixes {
+    -ah-x: ?; -Ah-x: ?;
+    -atsc-x: ?; 
+    -epub-x: ?;
+    -hp-x: ?;
+    -ibooks-x: ?;
+    -khtml-x: ?;
+    -ms-x: ?;
+    -mso-x: ?;
+    -moz-x: ?; -moZ-x: ?;
+    -rim-x: ?;
+    -ro-x: ?;
+    -tc-x: ?;
+    -wap-x: ?; -wAp-x: ?;
+    -weasy-x: ?;
+    -xv-x: ?;
+}
+
+.invalid-vendor-specific-prefix {
+    -ibookss-x: ?;
+    -ibooks-: ?;
+    -ibookz-x: ?;
+    -m-x: ?;
+}
 </style>
 
 <script>

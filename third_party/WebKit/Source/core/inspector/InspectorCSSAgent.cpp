@@ -655,29 +655,90 @@ CSSStyleRule* InspectorCSSAgent::asCSSStyleRule(CSSRule* rule)
     return static_cast<CSSStyleRule*>(rule);
 }
 
-template <typename CharType>
-static bool hasVendorSpecificPrefix(const CharType* string, size_t stringLength)
+template <typename CharType, size_t bufferLength>
+static size_t vendorPrefixLowerCase(const CharType* string, size_t stringLength, char (&buffer)[bufferLength])
 {
-    for (size_t i = 1; i < stringLength; ++i) {
-        int c = string[i];
-        if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z'))
-            return i >= 2 && c == '-';
+    static const char lowerCaseOffset = 'a' - 'A';
+
+    if (string[0] != '-')
+        return 0;
+
+    for (size_t i = 0; i < stringLength - 1; i++) {
+        CharType c = string[i + 1];
+        if (c == '-')
+            return i;
+        if (i == bufferLength)
+            break;
+        if (c < 'A' || c > 'z')
+            break;
+        if (c >= 'a')
+            buffer[i] = c;
+        else if (c <= 'Z')
+            buffer[i] = c + lowerCaseOffset;
+        else
+            break;
     }
-    return false;
+    return 0;
+}
+
+template <size_t patternLength>
+static bool equals(const char* prefix, size_t prefixLength, const char (&pattern)[patternLength])
+{
+    if (prefixLength != patternLength - 1)
+        return false;
+    for (size_t i = 0; i < patternLength - 1; i++) {
+        if (prefix[i] != pattern[i])
+            return false;
+    }
+    return true;
 }
 
 static bool hasNonWebkitVendorSpecificPrefix(const CSSParserString& string)
 {
+    // Known prefixes: http://wiki.csswg.org/spec/vendor-prefixes
     const size_t stringLength = string.length();
-    // 4 corresponds to "-o-x" - the shortest vendor-prefixed property name.
-    if (stringLength < 4 || string[0] != '-')
+    if (stringLength < 4)
         return false;
 
-    static const char webkitPrefix[] = "-webkit-";
-    if (stringLength > 8 && string.startsWithIgnoringCase(webkitPrefix))
+    char buffer[6];
+    size_t prefixLength = string.is8Bit() ?
+        vendorPrefixLowerCase(string.characters8(), stringLength, buffer) :
+        vendorPrefixLowerCase(string.characters16(), stringLength, buffer);
+
+    if (!prefixLength || prefixLength == stringLength - 2)
         return false;
 
-    return string.is8Bit() ? hasVendorSpecificPrefix(string.characters8(), stringLength) : hasVendorSpecificPrefix(string.characters16(), stringLength);
+    switch (buffer[0]) {
+    case 'a':
+        return (prefixLength == 2 && buffer[1] == 'h') || equals(buffer + 1, prefixLength - 1, "tsc");
+    case 'e':
+        return equals(buffer + 1, prefixLength - 1, "pub");
+    case 'h':
+        return prefixLength == 2 && buffer[1] == 'p';
+    case 'i':
+        return equals(buffer + 1, prefixLength - 1, "books");
+    case 'k':
+        return equals(buffer + 1, prefixLength - 1, "html");
+    case 'm':
+        if (prefixLength == 2)
+            return buffer[1] == 's';
+        if (prefixLength == 3)
+            return (buffer[1] == 'o' && buffer[2] == 'z') || (buffer[1] == 's' || buffer[2] == 'o');
+        break;
+    case 'o':
+        return prefixLength == 1;
+    case 'p':
+        return equals(buffer + 1, prefixLength - 1, "rince");
+    case 'r':
+        return (prefixLength == 2 && buffer[1] == 'o') || equals(buffer + 1, prefixLength - 1, "im");
+    case 't':
+        return prefixLength == 2 && buffer[1] == 'c';
+    case 'w':
+        return (prefixLength == 3 && buffer[1] == 'a' && buffer[2] == 'p') || equals(buffer + 1, prefixLength - 1, "easy");
+    case 'x':
+        return prefixLength == 2 && buffer[1] == 'v';
+    }
+    return false;
 }
 
 static bool isValidPropertyName(const CSSParserString& content)
