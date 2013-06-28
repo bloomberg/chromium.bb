@@ -56,11 +56,11 @@ struct CSSParserString {
     void init(const String& string, unsigned startOffset, unsigned length)
     {
         m_length = length;
-        if (m_length && string.is8Bit()) {
+        if (!m_length || string.is8Bit()) {
             m_data.characters8 = const_cast<LChar*>(string.characters8()) + startOffset;
             m_is8Bit = true;
         } else {
-            m_data.characters16 = const_cast<UChar*>(string.bloatedCharacters()) + startOffset;
+            m_data.characters16 = const_cast<UChar*>(string.characters16()) + startOffset;
             m_is8Bit = false;
         }
     }
@@ -69,7 +69,7 @@ struct CSSParserString {
     {
         m_data.characters8 = 0;
         m_length = 0;
-        m_is8Bit = false;
+        m_is8Bit = true;
     }
 
     void trimTrailingWhitespace();
