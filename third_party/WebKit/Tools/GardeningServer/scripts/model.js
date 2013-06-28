@@ -156,6 +156,15 @@ model.latestRevisionWithNoBuildersInFlight = function()
     return revision;
 }
 
+model.latestRevisionByBuilder = function()
+{
+    var revision = {};
+    Object.keys(model.state.resultsByBuilder).forEach(function(builderName) {
+        revision[builderName] = model.state.resultsByBuilder[builderName].blink_revision;
+    });
+    return revision;
+}
+
 model.updateResultsByBuilder = function(callback)
 {
     var platformBuilders = config.currentBuilders();

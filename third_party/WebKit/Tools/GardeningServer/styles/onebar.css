@@ -70,3 +70,28 @@
 #gtest-label {
     vertical-align: top;
 }
+
+#onebar details {
+    padding-left: 2px;
+    padding-right: 2px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+#onebar details table, #revisionPopUp table {
+    font-size: 11px;
+    text-decoration: none;
+    border: 1px solid Gray;
+    padding: 2px 2px;
+}
+
+#revisionPopUp {
+    display: none;
+}
+
+#revisionPopUp.active {
+    background-color: white;
+    display: block;
+    box-shadow: 2px 2px #ccc;
+    z-index: 1;
+}

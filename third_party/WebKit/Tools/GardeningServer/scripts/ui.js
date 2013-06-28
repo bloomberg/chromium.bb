@@ -265,4 +265,80 @@ ui.StatusArea = base.extends('div',  {
     }
 });
 
+ui.revisionDetails = base.extends('span', {
+    init: function() {
+        var theSpan = this;
+        theSpan.appendChild(document.createTextNode('Latest revision processed by every bot: '));
+
+        var latestRevision = model.latestRevisionWithNoBuildersInFlight();
+        var latestRevisions = model.latestRevisionByBuilder();
+
+        // Get the list of builders sorted with the most recent one first.
+        var builders = Object.keys(latestRevisions);
+        builders.sort(function (a, b) { return parseInt(latestRevisions[b]) - parseInt(latestRevisions[a])});
+
+        var summaryNode = document.createElement('summary');
+        var summaryLinkNode = base.createLinkNode(trac.changesetURL(latestRevision), latestRevision);
+        summaryNode.appendChild(summaryLinkNode);
+
+        var revisionsTableNode = document.createElement('table');
+        builders.forEach(function(builderName) {
+            var trNode = document.createElement('tr');
+
+            var tdNode = document.createElement('td');
+            tdNode.appendChild(base.createLinkNode(ui.displayURLForBuilder(builderName), builderName.replace('WebKit ', '')));
+            trNode.appendChild(tdNode);
+
+            var tdNode = document.createElement('td');
+            tdNode.appendChild(document.createTextNode(latestRevisions[builderName]));
+            trNode.appendChild(tdNode)
+
+            revisionsTableNode.appendChild(trNode)
+        });
+
+        var revisionsNode = document.createElement('details');
+        revisionsNode.appendChild(summaryNode);
+        revisionsNode.appendChild(revisionsTableNode);
+        theSpan.appendChild(revisionsNode);
+
+        // This adds a pop-up when we hover over the summary if the details aren't being shown.
+        var revisionsPopUp = $('<span id="revisionPopUp">').appendTo(summaryLinkNode);
+        revisionsPopUp.append($(revisionsTableNode).clone());
+        $(summaryLinkNode).mouseover(function(ev) {
+            if (!revisionsNode.open) {
+                var tPosX = $(summaryNode).position().left;
+                var tPosY = $(summaryNode).position().top + 16;
+                $(revisionsPopUp).css({'position': 'absolute', 'top': tPosY, 'left': tPosX});
+                $(revisionsPopUp).addClass('active')
+            }
+        });
+        $(summaryLinkNode).mouseout(function(ev) {
+            if (!revisionsNode.open) {
+                $(revisionsPopUp).removeClass("active");
+            }
+        });
+
+        var totRevision = model.latestRevision();
+        theSpan.appendChild(document.createTextNode(', trunk is at '));
+        theSpan.appendChild(base.createLinkNode(trac.changesetURL(totRevision), totRevision));
+
+        checkout.lastBlinkRollRevision(function(revision) {
+            theSpan.appendChild(document.createTextNode(', last roll is to '));
+            theSpan.appendChild(base.createLinkNode(trac.changesetURL(totRevision), revision));
+        }, function() {});
+
+        rollbot.fetchCurrentRoll(function(roll) {
+            theSpan.appendChild(document.createTextNode(', current autoroll '));
+            if (roll) {
+                var linkText = "" + roll.fromRevision + ":" + roll.toRevision;
+                theSpan.appendChild(base.createLinkNode(roll.url, linkText));
+                if (roll.isStopped)
+                    theSpan.appendChild(document.createTextNode(' (STOPPED) '));
+            } else {
+                theSpan.appendChild(document.createTextNode(' None'));
+            }
+        });
+    }
+});
+
 })();

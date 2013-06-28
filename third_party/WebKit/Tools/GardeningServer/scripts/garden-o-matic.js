@@ -85,36 +85,7 @@ function update()
             updating.dismiss();
 
             g_revisionHint = new ui.notifications.Info('');
-
-            var latestRevisionSpan = document.createElement('span');
-            latestRevisionSpan.appendChild(document.createTextNode('Latest revision processed by every bot: '));
-
-            var latestRevision = model.latestRevisionWithNoBuildersInFlight();
-            latestRevisionSpan.appendChild(base.createLinkNode(trac.changesetURL(latestRevision), latestRevision));
-
-            var totRevision = model.latestRevision();
-            latestRevisionSpan.appendChild(document.createTextNode(', trunk is at '));
-            latestRevisionSpan.appendChild(base.createLinkNode(trac.changesetURL(totRevision), totRevision));
-
-            checkout.lastBlinkRollRevision(function(revision) {
-                latestRevisionSpan.appendChild(document.createTextNode(', last roll is to '));
-                latestRevisionSpan.appendChild(base.createLinkNode(trac.changesetURL(totRevision), revision));
-            }, function() {});
-
-            rollbot.fetchCurrentRoll(function(roll) {
-                latestRevisionSpan.appendChild(document.createTextNode(', current autoroll '));
-                if (roll) {
-                    var linkText = "" + roll.fromRevision + ":" + roll.toRevision;
-                    latestRevisionSpan.appendChild(base.createLinkNode(roll.url, linkText));
-                    if (roll.isStopped)
-                        latestRevisionSpan.appendChild(document.createTextNode(' (STOPPED) '));
-                } else {
-                    latestRevisionSpan.appendChild(document.createTextNode(' None'));
-                }
-            });
-
-            g_revisionHint.updateWithNode(latestRevisionSpan);
-
+            g_revisionHint.updateWithNode(new ui.revisionDetails());
             g_info.add(g_revisionHint);
         });
     });
