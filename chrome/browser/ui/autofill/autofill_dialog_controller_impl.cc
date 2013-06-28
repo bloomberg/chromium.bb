@@ -782,6 +782,10 @@ bool AutofillDialogControllerImpl::IsSubmitPausedOn(
 }
 
 void AutofillDialogControllerImpl::GetWalletItems() {
+  wallet_items_.reset();
+  // The "Loading..." page should be showing now, which should cause the
+  // account chooser to hide.
+  view_->UpdateAccountChooser();
   GetWalletClient()->GetWalletItems(source_url_);
 }
 
@@ -1888,9 +1892,9 @@ void AutofillDialogControllerImpl::Observe(
       content::Details<content::LoadCommittedDetails>(details).ptr();
   if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
     should_show_wallet_promo_ = false;
-    HideSignIn();
     account_chooser_model_.SelectActiveWalletAccount();
     GetWalletItems();
+    HideSignIn();
   }
 }
 
@@ -1981,9 +1985,9 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
     case wallet::CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS:
       choose_another_instrument_or_address_ = true;
       SetIsSubmitting(false);
+      GetWalletItems();
       view_->UpdateNotificationArea();
       view_->UpdateButtonStrip();
-      GetWalletItems();
       break;
 
     case wallet::VERIFY_CVV:

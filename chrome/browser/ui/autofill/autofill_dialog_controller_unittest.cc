@@ -2082,6 +2082,7 @@ TEST_F(AutofillDialogControllerTest, ChooseAnotherInstrumentOrAddress) {
       CreateFullWallet("choose_another_instrument_or_address"));
   EXPECT_EQ(1U, NotificationsOfType(
       DialogNotification::REQUIRED_ACTION).size());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
 
   controller()->OnAccept();
   EXPECT_EQ(0U, NotificationsOfType(

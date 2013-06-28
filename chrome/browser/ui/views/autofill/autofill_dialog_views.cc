@@ -559,6 +559,8 @@ AutofillDialogViews::AccountChooser::AccountChooser(
 AutofillDialogViews::AccountChooser::~AccountChooser() {}
 
 void AutofillDialogViews::AccountChooser::Update() {
+  SetVisible(!controller_->ShouldShowSpinner());
+
   gfx::Image icon = controller_->AccountChooserImage();
   image_->SetImage(icon.AsImageSkia());
   label_->SetText(controller_->AccountChooserText());
