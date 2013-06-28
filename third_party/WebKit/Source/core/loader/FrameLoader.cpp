@@ -965,18 +965,6 @@ void FrameLoader::prepareForHistoryNavigation()
     }
 }
 
-void FrameLoader::prepareForLoadStart()
-{
-    m_progressTracker->progressStarted();
-    m_client->dispatchDidStartProvisionalLoad();
-
-    // Notify accessibility.
-    if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache()) {
-        AXObjectCache::AXLoadingEvent loadingEvent = loadType() == FrameLoadTypeReload ? AXObjectCache::AXLoadingReloaded : AXObjectCache::AXLoadingStarted;
-        cache->frameLoadingEventNotification(m_frame, loadingEvent);
-    }
-}
-
 void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBackForwardList,
     PassRefPtr<Event> event, PassRefPtr<FormState> formState, ShouldSendReferrer shouldSendReferrer)
 {    
@@ -2111,16 +2099,14 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
     if (formState)
         m_client->dispatchWillSubmitForm(formState);
 
-    prepareForLoadStart();
+    m_progressTracker->progressStarted();
+    m_client->dispatchDidStartProvisionalLoad();
+    ASSERT(m_policyDocumentLoader);
 
-    // The load might be cancelled inside of prepareForLoadStart(), nulling out the m_provisionalDocumentLoader,
-    // so we need to null check it again.
-    if (!m_provisionalDocumentLoader)
-        return;
-
-    DocumentLoader* activeDocLoader = activeDocumentLoader();
-    if (activeDocLoader && activeDocLoader->isLoadingMainResource())
-        return;
+    if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache()) {
+        AXObjectCache::AXLoadingEvent loadingEvent = loadType() == FrameLoadTypeReload ? AXObjectCache::AXLoadingReloaded : AXObjectCache::AXLoadingStarted;
+        cache->frameLoadingEventNotification(m_frame, loadingEvent);
+    }
 
     m_provisionalDocumentLoader->startLoadingMainResource();
 }
