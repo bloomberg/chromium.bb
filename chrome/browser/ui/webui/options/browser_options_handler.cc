@@ -1730,7 +1730,8 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
   bool is_extension_controlled = (proxy_config &&
                                   proxy_config->IsExtensionControlled());
 
-  base::FundamentalValue disabled(!proxy_config->IsUserModifiable());
+  base::FundamentalValue disabled(proxy_config &&
+                                  !proxy_config->IsUserModifiable());
   base::FundamentalValue extension_controlled(is_extension_controlled);
   web_ui()->CallJavascriptFunction("BrowserOptions.setupProxySettingsSection",
                                    disabled, extension_controlled);
