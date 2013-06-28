@@ -289,6 +289,9 @@ class ProfileManager : public base::NonThreadSafe,
   // Returns true if the profile was added, false otherwise.
   bool AddProfile(Profile* profile);
 
+  // Schedules the profile at the given path to be deleted on shutdown.
+  void FinishDeletingProfile(const base::FilePath& profile_dir);
+
   // Registers profile with given info. Returns pointer to created ProfileInfo
   // entry.
   ProfileInfo* RegisterProfile(Profile* profile, bool created);
@@ -325,6 +328,17 @@ class ProfileManager : public base::NonThreadSafe,
   void RunCallbacks(const std::vector<CreateCallback>& callbacks,
                     Profile* profile,
                     Profile::CreateStatus status);
+
+  // If the |loaded_profile| has been loaded succesfully (according to |status|)
+  // and isn't already scheduled for deletion, then finishes adding
+  // |profile_to_delete_dir| to the queue of profiles to be deleted, and updates
+  // the kProfileLastUsed preference based on |last_non_managed_profile_path|.
+  void OnNewActiveProfileLoaded(
+      const base::FilePath& profile_to_delete_path,
+      const base::FilePath& last_non_managed_profile_path,
+      const CreateCallback& original_callback,
+      Profile* loaded_profile,
+      Profile::CreateStatus status);
 
   content::NotificationRegistrar registrar_;
 

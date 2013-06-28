@@ -16,6 +16,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "ui/base/work_area_watcher_observer.h"
 
+class AppControllerProfileObserver;
 class BookmarkMenuBridge;
 class CommandUpdater;
 class GURL;
@@ -38,6 +39,10 @@ class WorkAreaWatcherObserver;
   // The profile last used by a Browser. It is this profile that was used to
   // build the user-data specific main menu items.
   Profile* lastProfile_;
+
+  // The ProfileObserver observes the ProfileInfoCache and gets notified
+  // when a profile has been deleted.
+  scoped_ptr<AppControllerProfileObserver> profileInfoCacheObserver_;
 
   // Management of the bookmark menu which spans across all windows
   // (and Browser*s).
@@ -101,7 +106,7 @@ class WorkAreaWatcherObserver;
 - (IBAction)showPreferences:(id)sender;
 
 // Redirect in the menu item from the expected target of "File's
-// Owner" (NSAppliation) for a Branded About Box
+// Owner" (NSApplication) for a Branded About Box
 - (IBAction)orderFrontStandardAboutPanel:(id)sender;
 
 // Toggles the "Confirm to Quit" preference.

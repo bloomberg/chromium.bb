@@ -161,6 +161,11 @@ void QueueProfileDirectoryForDeletion(const base::FilePath& path) {
   ProfilesToDelete().push_back(path);
 }
 
+bool IsProfileMarkedForDeletion(const base::FilePath& profile_path) {
+  return std::find(ProfilesToDelete().begin(), ProfilesToDelete().end(),
+      profile_path) != ProfilesToDelete().end();
+}
+
 #if defined(OS_CHROMEOS)
 void CheckCryptohomeIsMounted(chromeos::DBusMethodCallStatus call_status,
                               bool is_mounted) {
@@ -494,8 +499,7 @@ void ProfileManager::CreateProfileAsync(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Make sure that this profile is not pending deletion.
-  if (std::find(ProfilesToDelete().begin(), ProfilesToDelete().end(),
-      profile_path) != ProfilesToDelete().end()) {
+  if (IsProfileMarkedForDeletion(profile_path)) {
     if (!callback.is_null())
       callback.Run(NULL, Profile::CREATE_STATUS_LOCAL_FAIL);
     return;
@@ -1042,23 +1046,28 @@ void ProfileManager::ScheduleProfileForDeletion(
     const base::FilePath& profile_dir,
     const CreateCallback& callback) {
   DCHECK(IsMultipleProfilesEnabled());
-
   PrefService* local_state = g_browser_process->local_state();
   ProfileInfoCache& cache = GetProfileInfoCache();
+
   if (profile_dir.BaseName().MaybeAsASCII() ==
       local_state->GetString(prefs::kProfileLastUsed)) {
     // Update the last used profile pref before closing browser windows. This
     // way the correct last used profile is set for any notification observers.
-    std::string last_non_managed_profile;
+    base::FilePath last_non_managed_profile_path;
     for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
       base::FilePath cur_path = cache.GetPathOfProfileAtIndex(i);
-      if (cur_path != profile_dir && !cache.ProfileIsManagedAtIndex(i)) {
-        last_non_managed_profile = cur_path.BaseName().MaybeAsASCII();
+      // Make sure that this profile is not pending deletion.
+      if (cur_path != profile_dir && !cache.ProfileIsManagedAtIndex(i) &&
+          !IsProfileMarkedForDeletion(cur_path)) {
+        last_non_managed_profile_path = cur_path;
         break;
       }
     }
+
     // If we're deleting the last (non-managed) profile, then create a new
     // profile in its place.
+    const std::string last_non_managed_profile =
+        last_non_managed_profile_path.BaseName().MaybeAsASCII();
     if (last_non_managed_profile.empty()) {
       base::FilePath new_path = GenerateNextProfileDirectoryPath();
       // Make sure the last used profile path is pointing at it. This way the
@@ -1071,13 +1080,62 @@ void ProfileManager::ScheduleProfileForDeletion(
                          string16(),
                          false);
     } else {
+      // On the Mac, the browser process is not killed when all browser windows
+      // are closed, so just in case we are deleting the active profile, and no
+      // other profile has been loaded, we must pre-load a next one.
+#if defined(OS_MACOSX)
+      CreateProfileAsync(last_non_managed_profile_path,
+                         base::Bind(&ProfileManager::OnNewActiveProfileLoaded,
+                                    base::Unretained(this),
+                                    profile_dir,
+                                    last_non_managed_profile_path,
+                                    callback),
+                         string16(),
+                         string16(),
+                         false);
+      return;
+#else
+      // For OS_MACOSX the pref is updated in the callback to make sure that
+      // it isn't used before the profile is actually loaded.
       local_state->SetString(prefs::kProfileLastUsed, last_non_managed_profile);
+#endif
     }
   }
+  FinishDeletingProfile(profile_dir);
+}
 
+void ProfileManager::OnNewActiveProfileLoaded(
+    const base::FilePath& profile_to_delete_path,
+    const base::FilePath& last_non_managed_profile_path,
+    const CreateCallback& original_callback,
+    Profile* loaded_profile,
+    Profile::CreateStatus status) {
+  DCHECK(status != Profile::CREATE_STATUS_LOCAL_FAIL &&
+         status != Profile::CREATE_STATUS_REMOTE_FAIL);
+
+  // Only run the code if the profile initialization has finished completely.
+  if (status == Profile::CREATE_STATUS_INITIALIZED) {
+    if (IsProfileMarkedForDeletion(last_non_managed_profile_path)) {
+      // If the profile we tried to load as the next active profile has been
+      // deleted, then retry deleting this profile to redo the logic to load
+      // the next available profile.
+      ScheduleProfileForDeletion(profile_to_delete_path, original_callback);
+    } else {
+      // Update the local state as promised in the ScheduleProfileForDeletion.
+      g_browser_process->local_state()->SetString(
+          prefs::kProfileLastUsed,
+          last_non_managed_profile_path.BaseName().MaybeAsASCII());
+      FinishDeletingProfile(profile_to_delete_path);
+    }
+  }
+}
+
+void ProfileManager::FinishDeletingProfile(const base::FilePath& profile_dir) {
+  ProfileInfoCache& cache = GetProfileInfoCache();
   // TODO(sail): Due to bug 88586 we don't delete the profile instance. Once we
   // start deleting the profile instance we need to close background apps too.
   Profile* profile = GetProfileByPath(profile_dir);
+
   if (profile) {
     BrowserList::CloseAllBrowsersWithProfile(profile);
 

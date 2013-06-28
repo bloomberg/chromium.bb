@@ -15,7 +15,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
@@ -97,7 +96,6 @@ class ProfileManagerTest : public testing::Test {
 
   ProfileManagerTest()
       : local_state_(TestingBrowserProcess::GetGlobal()),
-        extension_event_router_forwarder_(new extensions::EventRouterForwarder),
         ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {
@@ -120,6 +118,19 @@ class ProfileManagerTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
+  // Helper function to create a profile with |name| for a profile |manager|.
+  void CreateProfileAsync(ProfileManager* manager,
+                          const std::string& name,
+                          MockObserver* mock_observer) {
+    manager->CreateProfileAsync(
+        temp_dir_.path().AppendASCII(name),
+        base::Bind(&MockObserver::OnProfileCreated,
+                   base::Unretained(mock_observer)),
+        UTF8ToUTF16(name),
+        string16(),
+        false);
+  }
+
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
@@ -128,9 +139,6 @@ class ProfileManagerTest : public testing::Test {
   // The path to temporary directory used to contain the test operations.
   base::ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
-  scoped_refptr<extensions::EventRouterForwarder>
-      extension_event_router_forwarder_;
-
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
@@ -240,17 +248,12 @@ MATCHER(NotFail, "Profile creation failure status is not reported.") {
 // Tests asynchronous profile creation mechanism.
 // Crashes: http://crbug.com/89421
 TEST_F(ProfileManagerTest, DISABLED_CreateProfileAsync) {
-  base::FilePath dest_path =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("New Profile"));
-
   MockObserver mock_observer;
   EXPECT_CALL(mock_observer, OnProfileCreated(
       testing::NotNull(), NotFail())).Times(testing::AtLeast(1));
 
-  g_browser_process->profile_manager()->CreateProfileAsync(dest_path,
-      base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer)),
-      string16(), string16(), false);
+  CreateProfileAsync(g_browser_process->profile_manager(),
+                     "New Profile", &mock_observer);
 
   message_loop_.RunUntilIdle();
 }
@@ -262,9 +265,6 @@ MATCHER(SameNotNull, "The same non-NULL value for all calls.") {
 }
 
 TEST_F(ProfileManagerTest, CreateProfileAsyncMultipleRequests) {
-  base::FilePath dest_path =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("New Profile"));
-
   g_created_profile = NULL;
 
   MockObserver mock_observer1;
@@ -278,28 +278,17 @@ TEST_F(ProfileManagerTest, CreateProfileAsyncMultipleRequests) {
       SameNotNull(), NotFail())).Times(testing::AtLeast(1));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-
-  profile_manager->CreateProfileAsync(dest_path,
-      base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer1)),
-                 string16(), string16(), false);
-  profile_manager->CreateProfileAsync(dest_path,
-      base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer2)),
-                 string16(), string16(), false);
-  profile_manager->CreateProfileAsync(dest_path,
-      base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer3)),
-                 string16(), string16(), false);
+  const std::string profile_name = "New Profile";
+  CreateProfileAsync(profile_manager, profile_name, &mock_observer1);
+  CreateProfileAsync(profile_manager, profile_name, &mock_observer2);
+  CreateProfileAsync(profile_manager, profile_name, &mock_observer3);
 
   message_loop_.RunUntilIdle();
 }
 
 TEST_F(ProfileManagerTest, CreateProfilesAsync) {
-  base::FilePath dest_path1 =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("New Profile 1"));
-  base::FilePath dest_path2 =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("New Profile 2"));
+  const std::string profile_name1 = "New Profile 1";
+  const std::string profile_name2 = "New Profile 2";
 
   MockObserver mock_observer;
   EXPECT_CALL(mock_observer, OnProfileCreated(
@@ -307,14 +296,8 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
-  profile_manager->CreateProfileAsync(dest_path1,
-      base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer)),
-                 string16(), string16(), false);
-  profile_manager->CreateProfileAsync(dest_path2,
-      base::Bind(&MockObserver::OnProfileCreated,
-                 base::Unretained(&mock_observer)),
-                 string16(), string16(), false);
+  CreateProfileAsync(profile_manager, profile_name1, &mock_observer);
+  CreateProfileAsync(profile_manager, profile_name2, &mock_observer);
 
   message_loop_.RunUntilIdle();
 }
@@ -634,3 +617,155 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
   ASSERT_EQ(0U, last_opened_profiles.size());
 }
 #endif  // !defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+// There's no Browser object on Android and there's no multi-profiles on Chrome.
+TEST_F(ProfileManagerTest, ActiveProfileDeleted) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_TRUE(profile_manager);
+
+  // Create and load two profiles.
+  const std::string profile_name1 = "New Profile 1";
+  const std::string profile_name2 = "New Profile 2";
+  base::FilePath dest_path1 =
+      temp_dir_.path().AppendASCII(profile_name1);
+  base::FilePath dest_path2 =
+      temp_dir_.path().AppendASCII(profile_name2);
+
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer, OnProfileCreated(
+      testing::NotNull(), NotFail())).Times(testing::AtLeast(3));
+
+  CreateProfileAsync(profile_manager, profile_name1, &mock_observer);
+  CreateProfileAsync(profile_manager, profile_name2, &mock_observer);
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(2u, profile_manager->GetLoadedProfiles().size());
+  EXPECT_EQ(2u, profile_manager->GetProfileInfoCache().GetNumberOfProfiles());
+
+  // Set the active profile.
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kProfileLastUsed, profile_name1);
+
+  // Delete the active profile.
+  profile_manager->ScheduleProfileForDeletion(dest_path1,
+                                              ProfileManager::CreateCallback());
+  // Spin the message loop so that all the callbacks can finish running.
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(dest_path2, profile_manager->GetLastUsedProfile()->GetPath());
+  EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX)
+// These tests are for a Mac-only code path that assumes the browser
+// process isn't killed when all browser windows are closed.
+TEST_F(ProfileManagerTest, ActiveProfileDeletedNeedsToLoadNextProfile) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_TRUE(profile_manager);
+
+  // Create and load one profile, and just create a second profile.
+  const std::string profile_name1 = "New Profile 1";
+  const std::string profile_name2 = "New Profile 2";
+  base::FilePath dest_path1 =
+      temp_dir_.path().AppendASCII(profile_name1);
+  base::FilePath dest_path2 =
+      temp_dir_.path().AppendASCII(profile_name2);
+
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer, OnProfileCreated(
+      testing::NotNull(), NotFail())).Times(testing::AtLeast(2));
+  CreateProfileAsync(profile_manager, profile_name1, &mock_observer);
+  message_loop_.RunUntilIdle();
+
+  // Track the profile, but don't load it.
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  cache.AddProfileToCache(dest_path2, ASCIIToUTF16(profile_name2),
+                          string16(), 0, false);
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(1u, profile_manager->GetLoadedProfiles().size());
+  EXPECT_EQ(2u, cache.GetNumberOfProfiles());
+
+  // Set the active profile.
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kProfileLastUsed,
+                         dest_path1.BaseName().MaybeAsASCII());
+
+  // Delete the active profile. This should switch and load the unloaded
+  // profile.
+  profile_manager->ScheduleProfileForDeletion(dest_path1,
+                                              ProfileManager::CreateCallback());
+
+  // Spin the message loop so that all the callbacks can finish running.
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(dest_path2, profile_manager->GetLastUsedProfile()->GetPath());
+  EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
+}
+
+// This tests the recursive call in ProfileManager::OnNewActiveProfileLoaded
+// by simulating a scenario in which the profile that is being loaded as
+// the next active profile has also been marked for deletion, so the
+// ProfileManager needs to recursively select a different next profile.
+TEST_F(ProfileManagerTest, ActiveProfileDeletedNextProfileDeletedToo) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_TRUE(profile_manager);
+
+  // Create and load one profile, and create two more profiles.
+  const std::string profile_name1 = "New Profile 1";
+  const std::string profile_name2 = "New Profile 2";
+  const std::string profile_name3 = "New Profile 3";
+  base::FilePath dest_path1 =
+      temp_dir_.path().AppendASCII(profile_name1);
+  base::FilePath dest_path2 =
+      temp_dir_.path().AppendASCII(profile_name2);
+  base::FilePath dest_path3 =
+      temp_dir_.path().AppendASCII(profile_name3);
+
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer, OnProfileCreated(
+      testing::NotNull(), NotFail())).Times(testing::AtLeast(2));
+  CreateProfileAsync(profile_manager, profile_name1, &mock_observer);
+  message_loop_.RunUntilIdle();
+
+  // Create the other profiles, but don't load them. Assign a fake avatar icon
+  // to ensure that profiles in the info cache are sorted by the profile name,
+  // and not randomly by the avatar name.
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  cache.AddProfileToCache(dest_path2, ASCIIToUTF16(profile_name2),
+                          ASCIIToUTF16(profile_name2), 1, false);
+  cache.AddProfileToCache(dest_path3, ASCIIToUTF16(profile_name3),
+                          ASCIIToUTF16(profile_name3), 2, false);
+
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(1u, profile_manager->GetLoadedProfiles().size());
+  EXPECT_EQ(3u, cache.GetNumberOfProfiles());
+
+  // Set the active profile.
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kProfileLastUsed,
+                         dest_path1.BaseName().MaybeAsASCII());
+
+  // Delete the active profile, Profile1.
+  // This will post a CreateProfileAsync message, that tries to load Profile2,
+  // which checks that the profile is not being deleted, and then calls back
+  // FinishDeletingProfile for Profile1.
+  // Try to break this flow by setting the active profile to Profile2 in the
+  // middle (so after the first posted message), and trying to delete Profile2,
+  // so that the ProfileManager has to look for a different profile to load.
+  profile_manager->ScheduleProfileForDeletion(dest_path1,
+                                              ProfileManager::CreateCallback());
+  local_state->SetString(prefs::kProfileLastUsed,
+                         dest_path2.BaseName().MaybeAsASCII());
+  profile_manager->ScheduleProfileForDeletion(dest_path2,
+                                              ProfileManager::CreateCallback());
+  // Spin the message loop so that all the callbacks can finish running.
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(dest_path3, profile_manager->GetLastUsedProfile()->GetPath());
+  EXPECT_EQ(profile_name3, local_state->GetString(prefs::kProfileLastUsed));
+}
+#endif  // !defined(OS_MACOSX)
