@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_output_dispatcher_impl.h"

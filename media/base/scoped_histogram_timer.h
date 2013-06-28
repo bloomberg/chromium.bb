@@ -6,7 +6,7 @@
 #define MEDIA_BASE_SCOPED_HISTOGRAM_TIMER_H_
 
 #include "base/metrics/histogram.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 // Scoped class which logs its time on this earth as a UMA statistic.  Must be
 // a #define macro since UMA macros prevent variables as names.  The nested

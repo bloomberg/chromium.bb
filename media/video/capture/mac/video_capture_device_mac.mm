@@ -7,7 +7,7 @@
 #import <QTKit/QTKit.h>
 
 #include "base/logging.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/video/capture/mac/video_capture_device_qtkit_mac.h"
 
 namespace {

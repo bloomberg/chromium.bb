@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/base/vector_math.h"
 #include "media/base/vector_math_testing.h"
 #include "testing/gtest/include/gtest/gtest.h"

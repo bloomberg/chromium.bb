@@ -8,7 +8,7 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/audio/cras/audio_manager_cras.h"
 #include "media/audio/cras/cras_input.h"
 #include "testing/gmock/include/gmock/gmock.h"

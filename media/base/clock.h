@@ -6,7 +6,7 @@
 #define MEDIA_BASE_CLOCK_H_
 
 #include "base/basictypes.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/base/media_export.h"
 
 namespace base {

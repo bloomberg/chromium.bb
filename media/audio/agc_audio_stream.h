@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "media/audio/audio_io.h"
 
 // The template based AgcAudioStream implements platform-independent parts

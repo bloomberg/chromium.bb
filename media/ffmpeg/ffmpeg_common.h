@@ -9,12 +9,12 @@
 #include <cerrno>
 
 #include "base/compiler_specific.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
-#include "media/base/video_frame.h"
 #include "media/base/video_decoder_config.h"
+#include "media/base/video_frame.h"
 
 // Include FFmpeg header files.
 extern "C" {

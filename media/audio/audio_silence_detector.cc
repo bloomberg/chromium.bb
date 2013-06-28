@@ -5,7 +5,7 @@
 #include "media/audio/audio_silence_detector.h"
 
 #include "base/float_util.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/base/audio_bus.h"
 
 using base::AtomicRefCountDec;

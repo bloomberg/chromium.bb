@@ -5,7 +5,7 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_PLAYER_MANAGER_H_
 #define MEDIA_BASE_ANDROID_MEDIA_PLAYER_MANAGER_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"

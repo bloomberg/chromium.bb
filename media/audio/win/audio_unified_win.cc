@@ -11,7 +11,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #endif
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"

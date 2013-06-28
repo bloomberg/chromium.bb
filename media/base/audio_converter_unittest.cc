@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/base/audio_converter.h"
 #include "media/base/fake_audio_render_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"

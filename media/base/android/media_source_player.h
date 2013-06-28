@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_player_android.h"

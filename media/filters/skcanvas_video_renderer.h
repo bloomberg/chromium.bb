@@ -5,10 +5,10 @@
 #ifndef MEDIA_FILTERS_SKCANVAS_VIDEO_RENDERER_H_
 #define MEDIA_FILTERS_SKCANVAS_VIDEO_RENDERER_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/base/media_export.h"
-#include "ui/gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/rect.h"
 
 class SkCanvas;
 
