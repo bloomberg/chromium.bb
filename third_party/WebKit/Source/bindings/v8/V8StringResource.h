@@ -113,20 +113,38 @@ private:
 
 class WebCoreStringResource16 : public WebCoreStringResourceBase, public v8::String::ExternalStringResource {
 public:
-    explicit WebCoreStringResource16(const String& string) : WebCoreStringResourceBase(string) { }
-    explicit WebCoreStringResource16(const AtomicString& string) : WebCoreStringResourceBase(string) { }
+    explicit WebCoreStringResource16(const String& string)
+        : WebCoreStringResourceBase(string)
+    {
+        ASSERT(!string.is8Bit());
+    }
+
+    explicit WebCoreStringResource16(const AtomicString& string)
+        : WebCoreStringResourceBase(string)
+    {
+        ASSERT(!string.is8Bit());
+    }
 
     virtual size_t length() const OVERRIDE { return m_plainString.impl()->length(); }
     virtual const uint16_t* data() const OVERRIDE
     {
-        return reinterpret_cast<const uint16_t*>(m_plainString.impl()->bloatedCharacters());
+        return reinterpret_cast<const uint16_t*>(m_plainString.impl()->characters16());
     }
 };
 
 class WebCoreStringResource8 : public WebCoreStringResourceBase, public v8::String::ExternalAsciiStringResource {
 public:
-    explicit WebCoreStringResource8(const String& string) : WebCoreStringResourceBase(string) { }
-    explicit WebCoreStringResource8(const AtomicString& string) : WebCoreStringResourceBase(string) { }
+    explicit WebCoreStringResource8(const String& string)
+        : WebCoreStringResourceBase(string)
+    {
+        ASSERT(string.is8Bit());
+    }
+
+    explicit WebCoreStringResource8(const AtomicString& string)
+        : WebCoreStringResourceBase(string)
+    {
+        ASSERT(string.is8Bit());
+    }
 
     virtual size_t length() const OVERRIDE { return m_plainString.impl()->length(); }
     virtual const char* data() const OVERRIDE
