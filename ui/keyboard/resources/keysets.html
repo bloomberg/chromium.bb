@@ -6,7 +6,43 @@
 
 <template>
   <kb-keyset id="upper" toKeyset="lower">
-    <template>
+    <kb-row>
+      <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
+      <kb-key superscript="1" accents="Q">Q</kb-key>
+      <kb-key superscript="2" accents="W">W</kb-key>
+      <kb-key superscript="3" accents="E">E</kb-key>
+      <kb-key superscript="4" accents="R">R</kb-key>
+      <kb-key superscript="5" accents="T">T</kb-key>
+      <kb-key superscript="6" accents="Y">Y</kb-key>
+      <kb-key superscript="7" accents="U">U</kb-key>
+      <kb-key superscript="8" accents="I">I</kb-key>
+      <kb-key superscript="9" accents="O">O</kb-key>
+      <kb-key superscript="0" accents="P">P</kb-key>
+      <kb-key class="backspace dark" char="&#x0008;" repeat align="right">backspace</kb-key>
+    </kb-row>
+    <kb-row>
+      <kb-key class="mic dark" char="Mic"></kb-key>
+      <kb-key accents="A">A</kb-key><kb-key accents="S">S</kb-key><kb-key>D</kb-key>
+      <kb-key>F</kb-key><kb-key>G</kb-key><kb-key>H</kb-key><kb-key>J</kb-key>
+      <kb-key>K</kb-key><kb-key>L</kb-key>
+      <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
+    </kb-row>
+    <kb-row>
+      <kb-key class="left-shift dark" toKeyset="lower" char="Invalid" align="left">shift</kb-key>
+      <kb-key>Z</kb-key><kb-key>X</kb-key><kb-key accents="C">C</kb-key><kb-key>V</kb-key>
+      <kb-key>B</kb-key><kb-key accents="N">N</kb-key><kb-key>M</kb-key>
+      <kb-key invert superscript="!" char="!">,</kb-key>
+      <kb-key invert superscript="?" char="?">.</kb-key>
+      <kb-key class="right-shift dark" toKeyset="lower" char="Invalid" align="right">shift</kb-key>
+    </kb-row>
+    <kb-row>
+      <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="left">#123</kb-key>
+      <kb-key class="dotcom dark" align="left">.com</kb-key>
+      <kb-key char=" " class="space dark" toKeyset="upper"></kb-key>
+      <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="right">#123</kb-key>
+      <kb-key class="hide dark"></kb-key>
+    </kb-row>
+    <kb-accent-container hidden>
       <kb-accent-set id="Q" offset=1>
         <kb-accent-key>1</kb-accent-key>
         <kb-accent-key class="active">Q</kb-accent-key>
@@ -92,47 +128,46 @@
         <kb-accent-key>&#x00D1;</kb-accent-key>
         <kb-accent-key class="active">N</kb-accent-key>
       </kb-accent-set>
-    </template>
+    </kb-accent-container>
+  </kb-keyset>
+
+  <kb-keyset id="lower">
     <kb-row>
       <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
-      <kb-key superscript="1" accents="Q">Q</kb-key>
-      <kb-key superscript="2" accents="W">W</kb-key>
-      <kb-key superscript="3" accents="E">E</kb-key>
-      <kb-key superscript="4" accents="R">R</kb-key>
-      <kb-key superscript="5" accents="T">T</kb-key>
-      <kb-key superscript="6" accents="Y">Y</kb-key>
-      <kb-key superscript="7" accents="U">U</kb-key>
-      <kb-key superscript="8" accents="I">I</kb-key>
-      <kb-key superscript="9" accents="O">O</kb-key>
-      <kb-key superscript="0" accents="P">P</kb-key>
+      <kb-key superscript="1" accents="q">q</kb-key>
+      <kb-key superscript="2" accents="w">w</kb-key>
+      <kb-key superscript="3" accents="e">e</kb-key>
+      <kb-key superscript="4" accents="r">r</kb-key>
+      <kb-key superscript="5" accents="t">t</kb-key>
+      <kb-key superscript="6" accents="y">y</kb-key>
+      <kb-key superscript="7" accents="u">u</kb-key>
+      <kb-key superscript="8" accents="i">i</kb-key>
+      <kb-key superscript="9" accents="o">o</kb-key>
+      <kb-key superscript="0" accents="p">p</kb-key>
       <kb-key class="backspace dark" char="&#x0008;" repeat align="right">backspace</kb-key>
     </kb-row>
     <kb-row>
       <kb-key class="mic dark" char="Mic"></kb-key>
-      <kb-key accents="A">A</kb-key><kb-key accents="S">S</kb-key><kb-key>D</kb-key>
-      <kb-key>F</kb-key><kb-key>G</kb-key><kb-key>H</kb-key><kb-key>J</kb-key>
-      <kb-key>K</kb-key><kb-key>L</kb-key>
+      <kb-key accents="a">a</kb-key><kb-key accents="s">s</kb-key>
+      <kb-key>d</kb-key><kb-key>f</kb-key><kb-key>g</kb-key><kb-key>h</kb-key>
+      <kb-key>j</kb-key><kb-key>k</kb-key><kb-key>l</kb-key>
       <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="left-shift dark" toKeyset="lower" char="Invalid" align="left">shift</kb-key>
-      <kb-key>Z</kb-key><kb-key>X</kb-key><kb-key accents="C">C</kb-key><kb-key>V</kb-key>
-      <kb-key>B</kb-key><kb-key accents="N">N</kb-key><kb-key>M</kb-key>
-      <kb-key invert superscript="!" char="!">,</kb-key>
-      <kb-key invert superscript="?" char="?">.</kb-key>
-      <kb-key class="right-shift dark" toKeyset="lower" char="Invalid" align="right">shift</kb-key>
+      <kb-key class="left-shift dark" toKeyset="upper" char="Invalid" align="left">shift</kb-key>
+      <kb-key>z</kb-key><kb-key>x</kb-key><kb-key accents="c">c</kb-key><kb-key>v</kb-key>
+      <kb-key>b</kb-key><kb-key accents="n">n</kb-key><kb-key>m</kb-key>
+      <kb-key superscript="!">,</kb-key><kb-key superscript="?">.</kb-key>
+      <kb-key class="right-shift dark" toKeyset="upper" char="Invalid" align="right">shift</kb-key>
     </kb-row>
     <kb-row>
       <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="left">#123</kb-key>
       <kb-key class="dotcom dark" align="left">.com</kb-key>
-      <kb-key char=" " class="space dark" toKeyset="upper"></kb-key>
+      <kb-key class="space dark" char=" "></kb-key>
       <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="right">#123</kb-key>
       <kb-key class="hide dark"></kb-key>
     </kb-row>
-  </kb-keyset>
-
-  <kb-keyset id="lower">
-    <template>
+    <kb-accent-container hidden>
       <kb-accent-set id="q" offset=1>
         <kb-accent-key>1</kb-accent-key>
         <kb-accent-key class="active">q</kb-accent-key>
@@ -218,46 +253,41 @@
         <kb-accent-key>&#x00F1;</kb-accent-key>
         <kb-accent-key class="active">n</kb-accent-key>
       </kb-accent-set>
-    </template>
+    </kb-accent-container>
+  </kb-keyset>
+
+  <kb-keyset id="symbol">
     <kb-row>
       <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
-      <kb-key superscript="1" accents="q">q</kb-key>
-      <kb-key superscript="2" accents="w">w</kb-key>
-      <kb-key superscript="3" accents="e">e</kb-key>
-      <kb-key superscript="4" accents="r">r</kb-key>
-      <kb-key superscript="5" accents="t">t</kb-key>
-      <kb-key superscript="6" accents="y">y</kb-key>
-      <kb-key superscript="7" accents="u">u</kb-key>
-      <kb-key superscript="8" accents="i">i</kb-key>
-      <kb-key superscript="9" accents="o">o</kb-key>
-      <kb-key superscript="0" accents="p">p</kb-key>
+      <kb-key accents="one">1</kb-key><kb-key accents="two">2</kb-key>
+      <kb-key accents="three">3</kb-key><kb-key accents="four">4</kb-key>
+      <kb-key accents="five">5</kb-key><kb-key>6</kb-key><kb-key accents="seven">7</kb-key>
+      <kb-key>8</kb-key><kb-key>9</kb-key><kb-key accents="zero">0</kb-key>
       <kb-key class="backspace dark" char="&#x0008;" repeat align="right">backspace</kb-key>
     </kb-row>
     <kb-row>
       <kb-key class="mic dark" char="Mic"></kb-key>
-      <kb-key accents="a">a</kb-key><kb-key accents="s">s</kb-key>
-      <kb-key>d</kb-key><kb-key>f</kb-key><kb-key>g</kb-key><kb-key>h</kb-key>
-      <kb-key>j</kb-key><kb-key>k</kb-key><kb-key>l</kb-key>
+      <kb-key>@</kb-key><kb-key>#</kb-key><kb-key accents="dollar">$</kb-key>
+      <kb-key accents="percent">%</kb-key><kb-key>&</kb-key>
+      <kb-key accents="star">*</kb-key><kb-key accents="slash">/</kb-key>
+      <kb-key accents="lparen">(</kb-key><kb-key accents="rparen">)</kb-key>
       <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="left-shift dark" toKeyset="upper" char="Invalid" align="left">shift</kb-key>
-      <kb-key>z</kb-key><kb-key>x</kb-key><kb-key accents="c">c</kb-key><kb-key>v</kb-key>
-      <kb-key>b</kb-key><kb-key accents="n">n</kb-key><kb-key>m</kb-key>
-      <kb-key superscript="!">,</kb-key><kb-key superscript="?">.</kb-key>
-      <kb-key class="right-shift dark" toKeyset="upper" char="Invalid" align="right">shift</kb-key>
+      <kb-key class="left-more dark" toKeyset="more" char="Invalid" align="left">more</kb-key>
+      <kb-key>:</kb-key><kb-key>;</kb-key><kb-key accents="dash">-</kb-key><kb-key>'</kb-key>
+      <kb-key accents="doublequote">"</kb-key><kb-key accents="excla">!</kb-key>
+      <kb-key accents="quest">?</kb-key><kb-key>,</kb-key><kb-key>.</kb-key>
+      <kb-key class="right-more dark" toKeyset="more" char="Invalid" align="right">more</kb-key>
     </kb-row>
     <kb-row>
-      <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="left">#123</kb-key>
+      <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="left">abc</kb-key>
       <kb-key class="dotcom dark" align="left">.com</kb-key>
       <kb-key class="space dark" char=" "></kb-key>
-      <kb-key class="symbol dark" toKeyset="symbol" char="Invalid" align="right">#123</kb-key>
+      <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="right">abc</kb-key>
       <kb-key class="hide dark"></kb-key>
     </kb-row>
-  </kb-keyset>
-
-  <kb-keyset id="symbol">
-    <template>
+    <kb-accent-container>
       <kb-accent-set id="one" offset=1>
         <kb-accent-key>&#x00B9;</kb-accent-key>
         <kb-accent-key class="active">1</kb-accent-key>
@@ -346,37 +376,7 @@
         <kb-accent-key class="active">)</kb-accent-key>
         <kb-accent-key>]</kb-accent-key>
       </kb-accent-set>
-    </template>
-    <kb-row>
-      <kb-key class="tab dark" char="&#x0009;" align="left">tab</kb-key>
-      <kb-key accents="one">1</kb-key><kb-key accents="two">2</kb-key>
-      <kb-key accents="three">3</kb-key><kb-key accents="four">4</kb-key>
-      <kb-key accents="five">5</kb-key><kb-key>6</kb-key><kb-key accents="seven">7</kb-key>
-      <kb-key>8</kb-key><kb-key>9</kb-key><kb-key accents="zero">0</kb-key>
-      <kb-key class="backspace dark" char="&#x0008;" repeat align="right">backspace</kb-key>
-    </kb-row>
-    <kb-row>
-      <kb-key class="mic dark" char="Mic"></kb-key>
-      <kb-key>@</kb-key><kb-key>#</kb-key><kb-key accents="dollar">$</kb-key>
-      <kb-key accents="percent">%</kb-key><kb-key>&</kb-key>
-      <kb-key accents="star">*</kb-key><kb-key accents="slash">/</kb-key>
-      <kb-key accents="lparen">(</kb-key><kb-key accents="rparen">)</kb-key>
-      <kb-key class='return dark' char="&#x000A;" align="right">enter</kb-key>
-    </kb-row>
-    <kb-row>
-      <kb-key class="left-more dark" toKeyset="more" char="Invalid" align="left">more</kb-key>
-      <kb-key>:</kb-key><kb-key>;</kb-key><kb-key accents="dash">-</kb-key><kb-key>'</kb-key>
-      <kb-key accents="doublequote">"</kb-key><kb-key accents="excla">!</kb-key>
-      <kb-key accents="quest">?</kb-key><kb-key>,</kb-key><kb-key>.</kb-key>
-      <kb-key class="right-more dark" toKeyset="more" char="Invalid" align="right">more</kb-key>
-    </kb-row>
-    <kb-row>
-      <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="left">abc</kb-key>
-      <kb-key class="dotcom dark" align="left">.com</kb-key>
-      <kb-key class="space dark" char=" "></kb-key>
-      <kb-key class="symbol dark" toKeyset="lower" char="Invalid" align="right">abc</kb-key>
-      <kb-key class="hide dark"></kb-key>
-    </kb-row>
+    </kb-accent-container>
   </kb-keyset>
 
   <kb-keyset id="more">

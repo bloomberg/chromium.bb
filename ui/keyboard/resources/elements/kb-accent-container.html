@@ -6,6 +6,19 @@
 
 <element name="kb-accent-container" attributes="keyset" on-pointerup="up">
   <template>
+    <style>
+      @host {
+        * {
+          background-color: rgba(0, 0, 0, 0.6);
+          bottom: 0;
+          left: 0;
+          -webkit-box-flex: 1;
+          position: absolute;
+          right: 0;
+          top: 0;
+        }
+      }
+    </style>
     <content select="#{{keyset}}"></content>
   </template>
   <script>
