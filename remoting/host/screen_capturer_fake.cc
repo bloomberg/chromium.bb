@@ -5,7 +5,7 @@
 #include "remoting/host/screen_capturer_fake.h"
 
 #include "base/logging.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace remoting {

@@ -16,8 +16,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
-#include "base/timer.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/timer/timer.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 

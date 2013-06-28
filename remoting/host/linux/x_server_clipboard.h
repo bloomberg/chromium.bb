@@ -15,7 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 
 namespace remoting {
 

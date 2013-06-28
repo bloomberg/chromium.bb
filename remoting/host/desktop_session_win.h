@@ -7,8 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/win/scoped_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "remoting/host/desktop_session.h"

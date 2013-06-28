@@ -9,7 +9,7 @@
 #ifndef REMOTING_HOST_CAPTURE_SCHEDULER_H_
 #define REMOTING_HOST_CAPTURE_SCHEDULER_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "remoting/base/running_average.h"
 
 namespace remoting {

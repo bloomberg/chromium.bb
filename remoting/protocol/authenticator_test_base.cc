@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "net/base/test_data_directory.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/authenticator.h"

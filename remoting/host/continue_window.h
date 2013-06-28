@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "remoting/host/host_window.h"
 #include "remoting/host/ui_strings.h"
 

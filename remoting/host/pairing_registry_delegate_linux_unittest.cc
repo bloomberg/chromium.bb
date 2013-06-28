@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {

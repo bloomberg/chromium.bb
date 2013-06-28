@@ -7,7 +7,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "ipc/ipc_message.h"
 #include "remoting/host/chromoting_messages.h"

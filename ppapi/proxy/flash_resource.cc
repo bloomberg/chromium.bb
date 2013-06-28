@@ -9,7 +9,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"

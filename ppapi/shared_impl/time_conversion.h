@@ -5,7 +5,7 @@
 #ifndef PPAPI_SHARED_IMPL_TIME_CONVERSION_H_
 #define PPAPI_SHARED_IMPL_TIME_CONVERSION_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 

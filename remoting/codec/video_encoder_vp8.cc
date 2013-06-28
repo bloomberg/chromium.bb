@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/sys_info.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/base/yuv_convert.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/video.pb.h"

@@ -5,7 +5,7 @@
 #ifndef REMOTING_CODEC_VIDEO_ENCODER_VERBATIM_H_
 #define REMOTING_CODEC_VIDEO_ENCODER_VERBATIM_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/proto/video.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"

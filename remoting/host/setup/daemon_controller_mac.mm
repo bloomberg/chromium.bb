@@ -21,7 +21,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_launch_data.h"
 #include "base/threading/thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "remoting/host/constants_mac.h"
 #include "remoting/host/json_host_config.h"

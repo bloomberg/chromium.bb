@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "base/win/scoped_comptr.h"
 
 namespace remoting {

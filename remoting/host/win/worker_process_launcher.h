@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
 #include "net/base/backoff_entry.h"

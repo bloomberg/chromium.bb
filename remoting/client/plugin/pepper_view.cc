@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/graphics_2d_dev.h"
 #include "ppapi/cpp/dev/view_dev.h"

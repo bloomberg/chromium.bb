@@ -8,9 +8,9 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/timer.h"
-#include "net/base/network_change_notifier.h"
+#include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
+#include "net/base/network_change_notifier.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 
 namespace net {

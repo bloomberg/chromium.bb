@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/event.pb.h"
