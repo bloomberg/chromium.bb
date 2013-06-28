@@ -243,6 +243,20 @@ void RecordTTL(base::TimeDelta ttl) {
                              base::TimeDelta::FromDays(1), 100);
 }
 
+bool ConfigureAsyncDnsNoFallbackFieldTrial() {
+  const bool kDefault = false;
+
+  // Configure the AsyncDns field trial as follows:
+  // groups AsyncDnsNoFallbackA and AsyncDnsNoFallbackB: return true,
+  // groups AsyncDnsA and AsyncDnsB: return false,
+  // groups SystemDnsA and SystemDnsB: return false,
+  // otherwise (trial absent): return default.
+  std::string group_name = base::FieldTrialList::FindFullName("AsyncDns");
+  if (!group_name.empty())
+    return StartsWithASCII(group_name, "AsyncDnsNoFallback", false);
+  return kDefault;
+}
+
 //-----------------------------------------------------------------------------
 
 AddressList EnsurePortOnAddressList(const AddressList& list, uint16 port) {
@@ -1475,19 +1489,60 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job {
 
   void StartDnsTask() {
     DCHECK(resolver_->HaveDnsConfig());
+    base::TimeTicks start_time = base::TimeTicks::Now();
     dns_task_.reset(new DnsTask(
         resolver_->dns_client_.get(),
         key_,
-        base::Bind(&Job::OnDnsTaskComplete, base::Unretained(this),
-                   base::TimeTicks::Now()),
+        base::Bind(&Job::OnDnsTaskComplete, base::Unretained(this), start_time),
         net_log_));
 
     int rv = dns_task_->Start();
-    if (rv != ERR_IO_PENDING) {
-      DCHECK_NE(OK, rv);
+    if (rv == ERR_IO_PENDING)
+      return;  // Complete asynchronously.
+    DCHECK_NE(OK, rv);
+    base::TimeDelta duration = base::TimeTicks::Now() - start_time;
+    if (resolver_->fallback_to_proctask_) {
+      DNS_HISTOGRAM("AsyncDNS.ResolveFail", duration);
       dns_task_error_ = rv;
       dns_task_.reset();
       StartProcTask();
+    } else {
+      // We could be running within Resolve(), so make sure to complete
+      // asynchronously.
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&Job::OnDnsTaskFailure,
+                     base::Unretained(this),
+                     dns_task_->AsWeakPtr(),
+                     duration,
+                     rv));
+    }
+  }
+
+  // Called if DnsTask fails. It is posted from StartDnsTask, so Job may be
+  // deleted before this callback. In this case dns_task is deleted as well,
+  // so we use it as indicator whether Job is still valid.
+  void OnDnsTaskFailure(const base::WeakPtr<DnsTask>& dns_task,
+                        base::TimeDelta duration,
+                        int net_error) {
+    DNS_HISTOGRAM("AsyncDNS.ResolveFail", duration);
+
+    if (dns_task == NULL)
+      return;
+
+    dns_task_error_ = net_error;
+
+    // TODO(szym): Run ServeFromHosts now if nsswitch.conf says so.
+    // http://crbug.com/117655
+
+    // TODO(szym): Some net errors indicate lack of connectivity. Starting
+    // ProcTask in that case is a waste of time.
+    if (resolver_->fallback_to_proctask_) {
+      dns_task_.reset();
+      StartProcTask();
+    } else {
+      UmaAsyncDnsResolveStatus(RESOLVE_STATUS_FAIL);
+      CompleteRequestsWithError(net_error);
     }
   }
 
@@ -1500,17 +1555,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job {
 
     base::TimeDelta duration = base::TimeTicks::Now() - start_time;
     if (net_error != OK) {
-      DNS_HISTOGRAM("AsyncDNS.ResolveFail", duration);
-
-      dns_task_error_ = net_error;
-      dns_task_.reset();
-
-      // TODO(szym): Run ServeFromHosts now if nsswitch.conf says so.
-      // http://crbug.com/117655
-
-      // TODO(szym): Some net errors indicate lack of connectivity. Starting
-      // ProcTask in that case is a waste of time.
-      StartProcTask();
+      OnDnsTaskFailure(dns_task_->AsWeakPtr(), duration, net_error);
       return;
     }
     DNS_HISTOGRAM("AsyncDNS.ResolveSuccess", duration);
@@ -1704,7 +1749,8 @@ HostResolverImpl::HostResolverImpl(
       num_dns_failures_(0),
       ipv6_probe_monitoring_(false),
       resolved_known_ipv6_hostname_(false),
-      additional_resolver_flags_(0) {
+      additional_resolver_flags_(0),
+      fallback_to_proctask_(true) {
 
   DCHECK_GE(dispatcher_.num_priorities(), static_cast<size_t>(NUM_PRIORITIES));
 
@@ -1734,6 +1780,8 @@ HostResolverImpl::HostResolverImpl(
     NetworkChangeNotifier::GetDnsConfig(&dns_config);
     received_dns_config_ = dns_config.IsValid();
   }
+
+  fallback_to_proctask_ = !ConfigureAsyncDnsNoFallbackFieldTrial();
 }
 
 HostResolverImpl::~HostResolverImpl() {
