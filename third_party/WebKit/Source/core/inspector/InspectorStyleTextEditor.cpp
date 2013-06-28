@@ -68,13 +68,11 @@ void InspectorStyleTextEditor::insertProperty(unsigned index, const String& prop
     if (insertLast && !insertFirstInSource) {
         propertyStart = styleBodyLength;
         if (propertyStart && textToSet.length()) {
-            const UChar* characters = m_styleText.bloatedCharacters();
-
             long curPos = propertyStart - 1; // The last position of style declaration, since propertyStart points past one.
-            while (curPos && isHTMLSpace(characters[curPos]))
+            while (curPos && isHTMLSpace(m_styleText[curPos]))
                 --curPos;
             if (curPos) {
-                bool terminated = characters[curPos] == ';' || (characters[curPos] == '/' && characters[curPos - 1] == '*');
+                bool terminated = m_styleText[curPos] == ';' || (m_styleText[curPos] == '/' && m_styleText[curPos - 1] == '*');
                 if (!terminated) {
                     // Prepend a ";" to the property text if appending to a style declaration where
                     // the last property has no trailing ";".
