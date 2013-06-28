@@ -15913,6 +15913,7 @@ other types of suffix sets.
   <int value="16" label="UnlockFile"/>
   <int value="17" label="GetTestDirectory"/>
   <int value="18" label="NewLogger"/>
+  <int value="19" label="SyncParent"/>
 </enum>
 
 <enum name="LinkMonitorFailureType" type="int">
