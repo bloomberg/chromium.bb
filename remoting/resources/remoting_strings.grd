@@ -393,7 +393,7 @@
       <message desc="Message shown when user has attempted to continue past the manual install dialog, but the Host components are not yet installed." name="IDR_HOST_SETUP_INSTALL_PENDING">
         Please run the installer before continuing.
       </message>
-      <message desc="Message shown when host registration fails when enabling the host on local computer." name="IDR_HOST_SETUP_REGISTRATION_FAILED">
+      <message desc="Message shown when host registration fails when enabling the host on local computer." name="IDR_ERROR_HOST_REGISTRATION_FAILED">
         Failed to register this computer.
       </message>
       <message desc="Message shown after access to local computer has been enabled successfully." name="IDR_HOST_SETUP_STARTED">
