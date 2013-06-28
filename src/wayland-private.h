@@ -130,6 +130,9 @@ get_next_argument(const char *signature, struct argument_details *details);
 int
 arg_count_for_signature(const char *signature);
 
+int
+wl_message_get_since(const struct wl_message *message);
+
 void
 wl_argument_from_va_list(const char *signature, union wl_argument *args,
 			 int count, va_list ap);

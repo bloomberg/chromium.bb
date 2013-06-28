@@ -402,26 +402,57 @@ wl_connection_put_fd(struct wl_connection *connection, int32_t fd)
 const char *
 get_next_argument(const char *signature, struct argument_details *details)
 {
-	if (*signature == '?') {
-		details->nullable = 1;
-		signature++;
-	} else
-		details->nullable = 0;
-
-	details->type = *signature;
-	return signature + 1;
+	details->nullable = 0;
+	for(; *signature; ++signature) {
+		switch(*signature) {
+		case 'i':
+		case 'u':
+		case 'f':
+		case 's':
+		case 'o':
+		case 'n':
+		case 'a':
+		case 'h':
+			details->type = *signature;
+			return signature + 1;
+		case '?':
+			details->nullable = 1;
+		}
+	}
+	return signature;
 }
 
 int
 arg_count_for_signature(const char *signature)
 {
 	int count = 0;
-	while (*signature) {
-		if (*signature != '?')
-			count++;
-		signature++;
+	for(; *signature; ++signature) {
+		switch(*signature) {
+		case 'i':
+		case 'u':
+		case 'f':
+		case 's':
+		case 'o':
+		case 'n':
+		case 'a':
+		case 'h':
+			++count;
+		}
 	}
 	return count;
+}
+
+int
+wl_message_get_since(const struct wl_message *message)
+{
+	int since;
+
+	since = atoi(message->signature);
+
+	if (since == 0)
+		since = 1;
+
+	return since;
 }
 
 void
