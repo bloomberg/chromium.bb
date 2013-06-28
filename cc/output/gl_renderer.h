@@ -210,9 +210,16 @@ class CC_EXPORT GLRenderer
                       scoped_ptr<SkAutoLockPixels> lock,
                       scoped_ptr<CopyOutputRequest> request,
                       bool success);
-  void DeleteTextureReleaseCallback(unsigned texture_id,
-                                    unsigned sync_point,
-                                    bool lost_resource);
+
+  static void DeleteTextureReleaseCallback(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      base::WeakPtr<GLRenderer> gl_renderer,
+      unsigned texture_id,
+      unsigned sync_point,
+      bool lost_resource);
+  void DeleteTextureReleaseCallbackOnImplThread(unsigned texture_id,
+                                                unsigned sync_point,
+                                                bool lost_resource);
 
   void ReinitializeGrCanvas();
   void ReinitializeGLState();

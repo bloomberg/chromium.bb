@@ -2159,12 +2159,28 @@ void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
                          AsyncGetFramebufferPixelsCleanupCallback());
 }
 
-void GLRenderer::DeleteTextureReleaseCallback(unsigned texture_id,
-                                              unsigned sync_point,
-                                              bool lost_resource) {
+void GLRenderer::DeleteTextureReleaseCallbackOnImplThread(unsigned texture_id,
+                                                          unsigned sync_point,
+                                                          bool lost_resource) {
   if (sync_point)
     context_->waitSyncPoint(sync_point);
   context_->deleteTexture(texture_id);
+}
+
+// static
+void GLRenderer::DeleteTextureReleaseCallback(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    base::WeakPtr<GLRenderer> gl_renderer,
+    unsigned texture_id,
+    unsigned sync_point,
+    bool lost_resource) {
+  task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&GLRenderer::DeleteTextureReleaseCallbackOnImplThread,
+                 gl_renderer,
+                 texture_id,
+                 sync_point,
+                 lost_resource));
 }
 
 void GLRenderer::GetFramebufferPixelsAsync(
@@ -2211,6 +2227,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
     scoped_ptr<TextureMailbox> texture_mailbox = make_scoped_ptr(
         new TextureMailbox(mailbox,
                            base::Bind(&GLRenderer::DeleteTextureReleaseCallback,
+                                      base::MessageLoopProxy::current(),
                                       weak_factory_.GetWeakPtr(),
                                       texture_id),
                            GL_TEXTURE_2D,

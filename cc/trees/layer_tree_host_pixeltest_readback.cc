@@ -46,12 +46,14 @@ class LayerTreeHostReadbackPixelTest : public LayerTreePixelTest {
   }
 
   void ReadbackResultAsBitmap(scoped_ptr<CopyOutputResult> result) {
+    EXPECT_TRUE(proxy()->IsMainThread());
     EXPECT_TRUE(result->HasBitmap());
     result_bitmap_ = result->TakeBitmap().Pass();
     EndTest();
   }
 
   void ReadbackResultAsTexture(scoped_ptr<CopyOutputResult> result) {
+    EXPECT_TRUE(proxy()->IsMainThread());
     EXPECT_TRUE(result->HasTexture());
 
     scoped_ptr<TextureMailbox> texture_mailbox = result->TakeTexture().Pass();
@@ -60,9 +62,9 @@ class LayerTreeHostReadbackPixelTest : public LayerTreePixelTest {
 
     scoped_ptr<SkBitmap> bitmap =
         CopyTextureMailboxToBitmap(result->size(), *texture_mailbox);
-    ReadbackResultAsBitmap(CopyOutputResult::CreateBitmapResult(bitmap.Pass()));
-
     texture_mailbox->RunReleaseCallback(0, false);
+
+    ReadbackResultAsBitmap(CopyOutputResult::CreateBitmapResult(bitmap.Pass()));
   }
 
   gfx::Rect copy_subrect_;
