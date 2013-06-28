@@ -139,6 +139,10 @@ EXTRA_ENV = {
   'ALLOW_NEXE_BUILD_ID': '0',
   'DISABLE_ABI_CHECK': '0',
   'LLVM_PASSES_TO_DISABLE': '',
+  # Skip dev intrinsic checks in ABI verifier.  Used for pnacl-llc.pexe and
+  # gold.pexe, which currently use llvm.nacl.target.arch.
+  # TODO(jvoung): find way to stop using llvm.nacl.target.arch.
+  'ALLOW_DEV_INTRINSICS': '0',
 }
 
 def AddToBCLinkFlags(*args):
@@ -166,6 +170,7 @@ LDPatterns = [
   # required for ABI-stable pexes but can be omitted when the PNaCl
   # toolchain is used for producing native nexes.
   ( '--pnacl-disable-pass=(.+)', "env.append('LLVM_PASSES_TO_DISABLE', $0)"),
+  ( '--pnacl-allow-dev-intrinsics', "env.set('ALLOW_DEV_INTRINSICS', '1')"),
 
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
@@ -409,6 +414,9 @@ def main(argv):
             '-verify-pnaclabi-functions',
             # A flag for the above -verify-pnaclabi-* passes.
             '-pnaclabi-allow-debug-metadata']
+        if env.getbool('ALLOW_DEV_INTRINSICS'):
+          # A flag for the above -verify-pnaclabi-* passes.
+          postopt_passes += ['-pnaclabi-allow-dev-intrinsics']
       chain.add(DoLLVMPasses(postopt_passes),
                 'simplify_postopt.' + bitcode_type)
   else:
