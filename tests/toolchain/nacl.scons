@@ -381,3 +381,16 @@ nexe = env.ComponentProgram('method_pointer_repr', 'method_pointer_repr.cc',
 node = env.CommandSelLdrTestNacl('method_pointer_repr.out', nexe)
 env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
                        'run_method_pointer_repr_test')
+
+c99_env = env.Clone()
+c99_env.Append(CFLAGS=['-std=c99'])
+# VLA test is broken on nacl-gcc x86-64 (segfaults in test_two_recursion()).
+# http://code.google.com/p/nativeclient/issues/detail?id=3527
+vla_is_broken = not env.Bit('bitcode') and env.Bit('target_x86_64')
+nexe = c99_env.ComponentProgram('vla', 'vla.c',
+                                EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('vla.out', nexe,
+                                 stdout_golden=env.File('vla.stdout'))
+env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                       'run_vla_test',
+                       is_broken=vla_is_broken)
