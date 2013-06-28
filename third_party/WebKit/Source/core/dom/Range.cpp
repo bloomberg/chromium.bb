@@ -1062,7 +1062,7 @@ String Range::toString(ExceptionCode& ec) const
             int length = data.length();
             int start = (n == m_start.container()) ? min(max(0, m_start.offset()), length) : 0;
             int end = (n == m_end.container()) ? min(max(start, m_end.offset()), length) : length;
-            builder.append(data.bloatedCharacters() + start, end - start);
+            builder.append(data, start, end - start);
         }
     }
 
