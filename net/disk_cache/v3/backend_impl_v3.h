@@ -9,7 +9,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "net/disk_cache/block_files.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/eviction.h"

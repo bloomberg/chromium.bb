@@ -50,7 +50,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_byteorder.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"

@@ -6,7 +6,7 @@
 #define NET_BASE_BACKOFF_ENTRY_H_
 
 #include "base/threading/non_thread_safe.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/net_export.h"
 
 namespace net {

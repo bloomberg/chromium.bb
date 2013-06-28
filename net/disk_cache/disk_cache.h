@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/cache_type.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"

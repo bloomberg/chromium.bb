@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/time.h"
 #include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "net/base/net_export.h"
 
 namespace net {

@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/winsock_init.h"
 #include "net/dns/dns_config_service.h"
 

@@ -6,7 +6,7 @@
 #define NET_BASE_LOAD_TIMING_INFO_H_
 
 #include "base/basictypes.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/net_export.h"
 
 namespace net {

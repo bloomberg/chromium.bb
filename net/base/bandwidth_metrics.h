@@ -7,9 +7,9 @@
 
 #include <list>
 
-#include "base/metrics/histogram.h"
 #include "base/logging.h"
-#include "base/time.h"
+#include "base/metrics/histogram.h"
+#include "base/time/time.h"
 
 namespace net {
 
