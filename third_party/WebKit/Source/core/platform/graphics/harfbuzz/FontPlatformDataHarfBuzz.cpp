@@ -307,30 +307,4 @@ void FontPlatformData::querySystemForRenderStyle()
         m_style.useSubpixelRendering = useSkiaSubpixelRendering;
 }
 
-#if ENABLE(OPENTYPE_VERTICAL)
-static SkFontTableTag reverseByteOrder(uint32_t tableTag)
-{
-    return (tableTag >> 24) | ((tableTag >> 8) & 0xff00) | ((tableTag & 0xff00) << 8) | ((tableTag & 0xff) << 24);
-}
-
-PassRefPtr<OpenTypeVerticalData> FontPlatformData::verticalData() const
-{
-    return fontCache()->getVerticalData(uniqueID(), *this);
-}
-
-PassRefPtr<SharedBuffer> FontPlatformData::openTypeTable(uint32_t table) const
-{
-    RefPtr<SharedBuffer> buffer;
-
-    SkFontTableTag tag = reverseByteOrder(table);
-    const size_t tableSize = m_typeface->getTableSize(tag);
-    if (tableSize) {
-        Vector<char> tableBuffer(tableSize);
-        m_typeface->getTableData(tag, 0, tableSize, &tableBuffer[0]);
-        buffer = SharedBuffer::adoptVector(tableBuffer);
-    }
-    return buffer.release();
-}
-#endif
-
 } // namespace WebCore
