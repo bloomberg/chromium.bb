@@ -1162,6 +1162,7 @@ def TestVersionFiles(filter):
 
   ast = ParseFiles(testnames)
   errs = FindVersionError(ast.releases, ast)
+  errs += ast.errors
 
   if errs:
     ErrOut.Log("Failed version test.")

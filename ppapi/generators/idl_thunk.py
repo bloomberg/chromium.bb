@@ -502,7 +502,6 @@ class TGen(GeneratorByFile):
           build_list = filter(lambda r: child.InReleases([r]), build_list)
           if len(build_list) == 0:
             continue
-          assert(len(build_list) == 1)
           release = build_list[-1]
           include_version = not _IsNewestMember(child, members, releases)
           member = DefineMember(filenode, node, child, release, include_version,

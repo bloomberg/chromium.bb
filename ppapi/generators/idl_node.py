@@ -70,6 +70,7 @@ class IDLNode(IDLRelease):
     self.typelist = None
     self.parent = None
     self.property_node = IDLPropertyNode()
+    self.unique_releases = None
 
     # A list of unique releases for this node
     self.releases = None
@@ -297,9 +298,17 @@ class IDLNode(IDLRelease):
       remapped = self.first_release[rel]
       if not remapped: continue
       out |= set([remapped])
-    out = sorted(out)
-    return out
 
+    # Cache the most recent set of unique_releases
+    self.unique_releases = sorted(out)
+    return self.unique_releases
+
+  def LastRelease(self, release):
+    # Get the most recent release from the most recently generated set of
+    # cached unique releases.
+    if self.unique_releases and self.unique_releases[-1] > release:
+      return False
+    return True
 
   def GetRelease(self, version):
     filenode = self.GetProperty('FILE')

@@ -51,3 +51,16 @@ struct iX {
   [version=1.0] int32_t y;
 };
 
+
+/**
+  *  Typedef to generate M13-M14, M15
+  */
+typedef int32_t callback_t([in] int32_t x, [in, version=2.0] int32_t y);
+
+/*REL: M13 M14 M15 */
+interface iFooX {
+  /**
+   * Comment for function Bar
+   */
+  int32_t Bar([in, version=1.0] callback_t cb);
+};

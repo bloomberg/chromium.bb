@@ -276,11 +276,16 @@ class CGen(object):
 
     # If it's an enum, or typedef then return the Enum's name
     elif typeref.IsA('Enum', 'Typedef'):
+      if not typeref.LastRelease(release):
+        first = node.first_release[release]
+        ver = '_' + node.GetVersion(first).replace('.','_')
+      else:
+        ver = ''
       # The enum may have skipped having a typedef, we need prefix with 'enum'.
       if typeref.GetProperty('notypedef'):
-        name = 'enum %s%s' % (prefix, typeref.GetName())
+        name = 'enum %s%s%s' % (prefix, typeref.GetName(), ver)
       else:
-        name = '%s%s' % (prefix, typeref.GetName())
+        name = '%s%s%s' % (prefix, typeref.GetName(), ver)
 
     else:
       raise RuntimeError('Getting name of non-type %s.' % node)
@@ -386,6 +391,8 @@ class CGen(object):
     if callnode:
       callspec = []
       for param in callnode.GetListOf('Param'):
+        if not param.IsRelease(release):
+          continue
         mode = self.GetParamMode(param)
         ptype, pname, parray, pspec = self.GetComponents(param, release, mode)
         callspec.append((ptype, pname, parray, pspec))
@@ -460,13 +467,15 @@ class CGen(object):
     __pychecker__ = 'unusednames=comment'
     build_list = node.GetUniqueReleases(releases)
 
-    # TODO(noelallen) : Bug 157017 finish multiversion support
-    if len(build_list) != 1:
-      node.Error('Can not support multiple versions of node: %s' % build_list)
-    assert len(build_list) == 1
-
-    out = 'typedef %s;\n' % self.GetSignature(node, build_list[0], 'return',
-                                              prefix, True)
+    out = 'typedef %s;\n' % self.GetSignature(node, build_list[-1], 'return',
+                                              prefix, True,
+                                              include_version=False)
+    # Version mangle any other versions
+    for index, rel in enumerate(build_list[:-1]):
+      out += '\n'
+      out += 'typedef %s;\n' % self.GetSignature(node, rel, 'return',
+                                                 prefix, True,
+                                                 include_version=True)
     self.Log('DefineTypedef: %s' % out)
     return out
 
