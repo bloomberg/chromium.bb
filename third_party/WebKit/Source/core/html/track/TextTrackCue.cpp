@@ -759,7 +759,7 @@ void TextTrackCue::markFutureAndPastNodes(ContainerNode* root, double previousTi
             toWebVTTElement(child)->setIsPastNode(isPastNode);
             // Make an elemenet id match a cue id for style matching purposes.
             if (!m_id.isEmpty())
-                toElement(child)->setIdAttribute(AtomicString(m_id.bloatedCharacters(), m_id.length()));
+                toElement(child)->setIdAttribute(m_id);
         }
     }
 }
