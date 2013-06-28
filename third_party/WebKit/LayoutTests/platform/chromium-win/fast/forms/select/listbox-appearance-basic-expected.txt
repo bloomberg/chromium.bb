@@ -6,7 +6,17 @@ layer at (0,0) size 800x600
       RenderListBox {SELECT} at (4,4) size 38x69 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
       RenderText {#text} at (46,55) size 4x19
         text run at (46,55) width 4: " "
-      RenderBR {BR} at (50,55) size 0x19
+      RenderListBox {SELECT} at (54,4) size 39x69 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
+      RenderText {#text} at (97,55) size 4x19
+        text run at (97,55) width 4: " "
+      RenderText {#text} at (0,0) size 0x0
+      RenderListBox {SELECT} at (105,4) size 39x69 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
+      RenderText {#text} at (148,55) size 4x19
+        text run at (148,55) width 4: " "
+      RenderListBox {SELECT} at (156,4) size 39x69 [color=#808080] [bgcolor=#FFFFFF] [border: (1px inset #808080)]
+      RenderText {#text} at (199,55) size 4x19
+        text run at (199,55) width 4: " "
+      RenderBR {BR} at (203,55) size 0x19
       RenderListBox {SELECT} at (4,81) size 42x73 [bgcolor=#FFFFFF] [border: (3px solid #00FF00)]
       RenderText {#text} at (50,136) size 4x19
         text run at (50,136) width 4: " "

@@ -1266,7 +1266,6 @@ crbug.com/239811 webkit.org/b/112598 http/tests/security/mixedContent/insecure-a
 crbug.com/239811 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/data-url-iframe-in-main-frame.html [ Failure Pass ]
 
 # Need rebaseline
-crbug.com/89708 fast/repaint/slider-thumb-float.html [ ImageOnlyFailure ]
 
 crbug.com/230554 [ Linux Mac Debug ] plugins/drag-events.html [ Crash Pass ]
 
