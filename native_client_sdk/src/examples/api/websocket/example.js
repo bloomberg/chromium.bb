@@ -26,7 +26,8 @@ function doConnect(event) {
 function doSend() {
   // Send a request message. See also websocket.cc for the request format.
   var message = document.getElementById('message').value;
-  common.naclModule.postMessage('s;' + message);
+  var type = document.getElementById('is_binary').checked ? 'b;' : 't;';
+  common.naclModule.postMessage(type + message);
   event.preventDefault();
 }
 

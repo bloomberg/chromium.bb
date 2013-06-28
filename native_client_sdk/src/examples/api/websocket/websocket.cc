@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdio.h>
+#include <sstream>
+
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
@@ -21,7 +24,8 @@ class WebSocketInstance : public pp::Instance {
 
   void Open(const std::string& url);
   void Close();
-  void Send(const std::string& message);
+  void SendAsBinary(const std::string& message);
+  void SendAsText(const std::string& message);
   void Receive();
 
   void OnConnectCompletion(int32_t result);
@@ -35,6 +39,23 @@ class WebSocketInstance : public pp::Instance {
   pp::WebSocket* websocket_;
   pp::Var receive_var_;
 };
+
+#define MAX_TO_CONVERT 8
+#define BYTES_PER_CHAR 4
+#define TAIL_AND_NUL_SIZE 4
+
+static std::string ArrayToString(pp::VarArrayBuffer& array) {
+  char tmp[MAX_TO_CONVERT * BYTES_PER_CHAR + TAIL_AND_NUL_SIZE];
+  uint32_t offs = 0;
+  uint8_t* data = static_cast<uint8_t*>(array.Map());
+
+  for (offs = 0; offs < array.ByteLength() && offs < MAX_TO_CONVERT; offs++)
+    sprintf(&tmp[offs * BYTES_PER_CHAR], "%02Xh ", data[offs]);
+
+  sprintf(&tmp[offs * BYTES_PER_CHAR], "...");
+  array.Unmap();
+  return std::string(tmp);
+}
 
 void WebSocketInstance::HandleMessage(const pp::Var& var_message) {
   if (!var_message.is_string())
@@ -54,10 +75,15 @@ void WebSocketInstance::HandleMessage(const pp::Var& var_message) {
       // The command 'c' requests to close without any argument like "c;"
       Close();
       break;
-    case 's':
-      // The command 's' requests to send a message as a text frame. The message
-      // is passed as an argument like "s;message".
-      Send(message.substr(2));
+    case 'b':
+      // The command 'b' requests to send a message as a binary frame. The
+      // message is passed as an argument like "b;message".
+      SendAsBinary(message.substr(2));
+      break;
+    case 't':
+      // The command 't' requests to send a message as a text frame. The message
+      // is passed as an argument like "t;message".
+      SendAsText(message.substr(2));
       break;
   }
 }
@@ -87,11 +113,25 @@ void WebSocketInstance::Close() {
       PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, pp::Var("bye"), callback);
 }
 
-void WebSocketInstance::Send(const std::string& message) {
+void WebSocketInstance::SendAsBinary(const std::string& message) {
+  if (!IsConnected())
+    return;
+  uint32_t size = message.size();
+  pp::VarArrayBuffer array_buffer(size);
+  char* data = static_cast<char*>(array_buffer.Map());
+  for (uint32_t i = 0; i < size; ++i)
+    data[i] = message[i];
+  array_buffer.Unmap();
+  websocket_->SendMessage(array_buffer);
+  std::string message_text = ArrayToString(array_buffer);
+  PostMessage(pp::Var("send (binary): " + message_text));
+}
+
+void WebSocketInstance::SendAsText(const std::string& message) {
   if (!IsConnected())
     return;
   websocket_->SendMessage(pp::Var(message));
-  PostMessage(pp::Var(std::string("send: ") + message));
+  PostMessage(pp::Var("send (text): " + message));
 }
 
 void WebSocketInstance::Receive() {
@@ -116,10 +156,14 @@ void WebSocketInstance::OnCloseCompletion(int32_t result) {
 
 void WebSocketInstance::OnReceiveCompletion(int32_t result) {
   if (result == PP_OK) {
-    if (receive_var_.is_array_buffer())
-      PostMessage(pp::Var("receive: binary data"));
-    else
-      PostMessage(pp::Var(std::string("receive: ") + receive_var_.AsString()));
+    if (receive_var_.is_array_buffer()) {
+      pp::VarArrayBuffer array_buffer(receive_var_);
+      std::string message_text = ArrayToString(array_buffer);
+      PostMessage("receive (binary): " + message_text);
+    }
+    else {
+      PostMessage("receive (text): " + receive_var_.AsString());
+    }
   }
   Receive();
 }
