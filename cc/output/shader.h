@@ -131,15 +131,6 @@ class VertexShaderPosTexTransform {
   DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTexTransform);
 };
 
-class VertexShaderPosTexTransformFlip : public VertexShaderPosTexTransform {
- public:
-  VertexShaderPosTexTransformFlip() {}
-  std::string GetShaderString() const;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTexTransformFlip);
-};
-
 class VertexShaderQuad {
  public:
   VertexShaderQuad();

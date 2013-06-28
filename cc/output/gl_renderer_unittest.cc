@@ -93,7 +93,6 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
     EXPECT_PROGRAM_VALID(
         renderer()->GetRenderPassMaskColorMatrixProgram(precision));
     EXPECT_PROGRAM_VALID(renderer()->GetTextureProgram(precision));
-    EXPECT_PROGRAM_VALID(renderer()->GetTextureProgramFlip(precision));
     EXPECT_PROGRAM_VALID(renderer()->GetTextureIOSurfaceProgram(precision));
     EXPECT_PROGRAM_VALID(renderer()->GetVideoYUVProgram(precision));
     EXPECT_PROGRAM_VALID(renderer()->GetVideoYUVAProgram(precision));

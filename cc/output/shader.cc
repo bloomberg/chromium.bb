@@ -289,27 +289,6 @@ std::string VertexShaderPosTexTransform::GetShaderString() const {
   );  // NOLINT(whitespace/parens)
 }
 
-std::string VertexShaderPosTexTransformFlip::GetShaderString() const {
-  return VERTEX_SHADER(
-    attribute vec4 a_position;
-    attribute TexCoordPrecision vec2 a_texCoord;
-    attribute float a_index;
-    uniform mat4 matrix[8];
-    uniform TexCoordPrecision vec4 texTransform[8];
-    uniform float opacity[32];
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying float v_alpha;
-    void main() {
-      gl_Position = matrix[int(a_index * 0.25)] * a_position;  // NOLINT
-      TexCoordPrecision vec4 texTrans =
-          texTransform[int(a_index * 0.25)];  // NOLINT
-      v_texCoord = a_texCoord * texTrans.zw + texTrans.xy;
-      v_texCoord.y = 1.0 - v_texCoord.y;
-      v_alpha = opacity[int(a_index)];  // NOLINT
-    }
-  );  // NOLINT(whitespace/parens)
-}
-
 std::string VertexShaderPosTexIdentity::GetShaderString() const {
   return VERTEX_SHADER(
     attribute vec4 a_position;

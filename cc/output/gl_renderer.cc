@@ -87,6 +87,17 @@ bool NeedsIOSurfaceReadbackWorkaround() {
 #endif
 }
 
+Float4 UVTransform(const TextureDrawQuad* quad) {
+  gfx::PointF uv0 = quad->uv_top_left;
+  gfx::PointF uv1 = quad->uv_bottom_right;
+  Float4 xform = { { uv0.x(), uv0.y(), uv1.x() - uv0.x(), uv1.y() - uv0.y() } };
+  if (quad->flipped) {
+    xform.data[1] = 1.0f - xform.data[1];
+    xform.data[3] = -xform.data[3];
+  }
+  return xform;
+}
+
 // Smallest unit that impact anti-aliasing output. We use this to
 // determine when anti-aliasing is unnecessary.
 const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
@@ -1747,10 +1758,7 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
 
   // Choose the correct texture program binding
   TexTransformTextureProgramBinding binding;
-  if (quad->flipped)
-    binding.Set(GetTextureProgramFlip(tex_coord_precision), Context());
-  else
-    binding.Set(GetTextureProgram(tex_coord_precision), Context());
+  binding.Set(GetTextureProgram(tex_coord_precision), Context());
 
   int resource_id = quad->resource_id;
 
@@ -1772,10 +1780,7 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
   }
 
   // Generate the uv-transform
-  gfx::PointF uv0 = quad->uv_top_left;
-  gfx::PointF uv1 = quad->uv_bottom_right;
-  Float4 uv = { { uv0.x(), uv0.y(), uv1.x() - uv0.x(), uv1.y() - uv0.y() } };
-  draw_cache_.uv_xform_data.push_back(uv);
+  draw_cache_.uv_xform_data.push_back(UVTransform(quad));
 
   // Generate the vertex opacity
   const float opacity = quad->opacity();
@@ -1801,20 +1806,16 @@ void GLRenderer::DrawTextureQuad(const DrawingFrame* frame,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   TexTransformTextureProgramBinding binding;
-  if (quad->flipped)
-    binding.Set(GetTextureProgramFlip(tex_coord_precision), Context());
-  else
-    binding.Set(GetTextureProgram(tex_coord_precision), Context());
+  binding.Set(GetTextureProgram(tex_coord_precision), Context());
   SetUseProgram(binding.program_id);
   GLC(Context(), Context()->uniform1i(binding.sampler_location, 0));
-  gfx::PointF uv0 = quad->uv_top_left;
-  gfx::PointF uv1 = quad->uv_bottom_right;
+  Float4 uv_xform = UVTransform(quad);
   GLC(Context(),
       Context()->uniform4f(binding.tex_transform_location,
-                           uv0.x(),
-                           uv0.y(),
-                           uv1.x() - uv0.x(),
-                           uv1.y() - uv0.y()));
+                           uv_xform.data[0],
+                           uv_xform.data[1],
+                           uv_xform.data[2],
+                           uv_xform.data[3]));
 
   GLC(Context(),
       Context()->uniform1fv(
@@ -2810,20 +2811,6 @@ const GLRenderer::TextureProgram* GLRenderer::GetTextureProgram(
   return program.get();
 }
 
-const GLRenderer::TextureProgramFlip* GLRenderer::GetTextureProgramFlip(
-    TexCoordPrecision precision) {
-  scoped_ptr<TextureProgramFlip>& program =
-      (precision == TexCoordPrecisionHigh) ? texture_program_flip_highp_
-                                           : texture_program_flip_;
-  if (!program)
-    program = make_scoped_ptr(new TextureProgramFlip(context_, precision));
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::textureProgramFlip::initialize");
-    program->Initialize(context_, is_using_bind_uniform_);
-  }
-  return program.get();
-}
-
 const GLRenderer::TextureIOSurfaceProgram*
 GLRenderer::GetTextureIOSurfaceProgram(TexCoordPrecision precision) {
   scoped_ptr<TextureIOSurfaceProgram>& program =
@@ -2953,15 +2940,11 @@ void GLRenderer::CleanupSharedObjects() {
 
   if (texture_program_)
     texture_program_->Cleanup(context_);
-  if (texture_program_flip_)
-    texture_program_flip_->Cleanup(context_);
   if (texture_io_surface_program_)
     texture_io_surface_program_->Cleanup(context_);
 
   if (texture_program_highp_)
     texture_program_highp_->Cleanup(context_);
-  if (texture_program_flip_highp_)
-    texture_program_flip_highp_->Cleanup(context_);
   if (texture_io_surface_program_highp_)
     texture_io_surface_program_highp_->Cleanup(context_);
 
