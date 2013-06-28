@@ -84,11 +84,10 @@ private:
         RenderBox* next();
         void reset();
 
-        Vector<int> m_orderValues;
-
     private:
         const RenderFlexibleBox* m_flexibleBox;
         RenderBox* m_currentChild;
+        Vector<int> m_orderValues;
         Vector<int>::const_iterator m_orderValuesIterator;
     };
 
@@ -152,7 +151,7 @@ private:
     LayoutUnit marginBoxAscentForChild(RenderBox*);
 
     LayoutUnit computeChildMarginValue(Length margin, RenderView*);
-    void prepareOrderIteratorAndMargins();
+    void computeMainAxisPreferredSizes(Vector<int>&);
     LayoutUnit adjustChildSizeForMinAndMax(RenderBox*, LayoutUnit childSize);
     bool computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& preferredMainAxisExtent, double& totalFlexGrow, double& totalWeightedFlexShrink, LayoutUnit& minMaxAppliedMainAxisExtent, bool& hasInfiniteLineLength);
 
