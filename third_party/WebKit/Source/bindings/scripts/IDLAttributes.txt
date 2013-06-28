@@ -56,7 +56,7 @@ EnforceRange
 EventTarget
 GenerateIsReachable=*
 GetterRaisesException
-GlobalContext=*
+GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope
 Immutable
 ImplementedAs=*
 InitializedByEventConstructor
