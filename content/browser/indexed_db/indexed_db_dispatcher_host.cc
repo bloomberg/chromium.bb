@@ -27,13 +27,11 @@
 #include "content/public/common/result_codes.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/common/database/database_identifier.h"
 
 using webkit_database::DatabaseUtil;
-using WebKit::WebIDBDatabaseError;
 using WebKit::WebIDBKey;
 
 namespace content {
@@ -221,7 +219,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   Context()->GetIDBFactory()->getDatabaseNames(
       new IndexedDBCallbacks<std::vector<string16> >(
           this, params.ipc_thread_id, params.ipc_callbacks_id),
-      WebKit::WebString::fromUTF8(params.database_identifier),
+      base::UTF8ToUTF16(params.database_identifier),
       indexed_db_path.AsUTF16Unsafe());
 }
 
@@ -249,7 +247,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
                                             origin_url),
              new IndexedDBDatabaseCallbacks(
                  this, params.ipc_thread_id, params.ipc_database_callbacks_id),
-             WebKit::WebString::fromUTF8(params.database_identifier),
+             base::UTF8ToUTF16(params.database_identifier),
              indexed_db_path.AsUTF16Unsafe());
 }
 
@@ -262,7 +260,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
       ->deleteDatabase(params.name,
                        new IndexedDBCallbacks<std::vector<char> >(
                            this, params.ipc_thread_id, params.ipc_callbacks_id),
-                       WebKit::WebString::fromUTF8(params.database_identifier),
+                       base::UTF8ToUTF16(params.database_identifier),
                        indexed_db_path.AsUTF16Unsafe());
 }
 
@@ -350,7 +348,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::CloseAll() {
     if (database) {
       database->abort(
           transaction_id,
-          WebIDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError));
+          IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError));
     }
   }
   DCHECK(transaction_database_map_.empty());
@@ -424,7 +422,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
           database_url_map_[params.ipc_database_id])) {
     database->abort(
         host_transaction_id,
-        WebIDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError));
+        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError));
   }
 }
 
@@ -551,7 +549,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexKeys(
   if (params.index_ids.size() != params.index_keys.size()) {
     database->abort(
         host_transaction_id,
-        WebIDBDatabaseError(
+        IndexedDBDatabaseError(
             WebKit::WebIDBDatabaseExceptionUnknownError,
             "Malformed IPC message: index_ids.size() != index_keys.size()"));
     return;
@@ -691,7 +689,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCommit(
           transaction_url_map_[host_transaction_id], transaction_size)) {
     database->abort(
         host_transaction_id,
-        WebIDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError));
+        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError));
     return;
   }
 
@@ -719,7 +717,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateIndex(
           database_url_map_[params.ipc_database_id])) {
     database->abort(
         host_transaction_id,
-        WebIDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError));
+        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError));
   }
 }
 

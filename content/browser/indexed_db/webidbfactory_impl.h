@@ -6,10 +6,7 @@
 #define CONTENT_BROWSER_INDEXED_DB_WEBIDBFACTORY_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-
-namespace WebKit {
-class WebString;
-}
+#include "base/strings/string16.h"
 
 namespace content {
 
@@ -23,19 +20,19 @@ class WebIDBFactoryImpl {
   virtual ~WebIDBFactoryImpl();
 
   virtual void getDatabaseNames(IndexedDBCallbacksBase* callbacks,
-                                const WebKit::WebString& database_identifier,
-                                const WebKit::WebString& data_dir);
-  virtual void open(const WebKit::WebString& name,
+                                const string16& database_identifier,
+                                const string16& data_dir);
+  virtual void open(const string16& name,
                     long long version,
                     long long transaction_id,
                     IndexedDBCallbacksBase* callbacks,
                     IndexedDBDatabaseCallbacks* database_callbacks,
-                    const WebKit::WebString& database_identifier,
-                    const WebKit::WebString& data_dir);
-  virtual void deleteDatabase(const WebKit::WebString& name,
+                    const string16& database_identifier,
+                    const string16& data_dir);
+  virtual void deleteDatabase(const string16& name,
                               IndexedDBCallbacksBase* callbacks,
-                              const WebKit::WebString& database_identifier,
-                              const WebKit::WebString& data_dir);
+                              const string16& database_identifier,
+                              const string16& data_dir);
 
  private:
   scoped_refptr<IndexedDBFactory> idb_factory_backend_;

@@ -16,7 +16,6 @@
 using WebKit::WebData;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabase;
-using WebKit::WebIDBDatabaseError;
 using WebKit::WebIDBKey;
 
 namespace content {

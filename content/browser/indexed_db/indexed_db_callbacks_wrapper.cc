@@ -8,7 +8,6 @@
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/webidbcursor_impl.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 
 namespace content {
 
@@ -22,8 +21,7 @@ IndexedDBCallbacksWrapper::~IndexedDBCallbacksWrapper() {}
 
 void IndexedDBCallbacksWrapper::OnError(const IndexedDBDatabaseError& error) {
   DCHECK(callbacks_);
-  callbacks_->onError(
-      WebKit::WebIDBDatabaseError(error.code(), error.message()));
+  callbacks_->onError(error);
   callbacks_.reset();
 }
 

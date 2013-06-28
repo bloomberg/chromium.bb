@@ -11,10 +11,9 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
+class IndexedDBDatabaseError;
 class WebIDBCursorImpl;
 class WebIDBDatabaseImpl;
 struct IndexedDBDatabaseMetadata;
@@ -23,7 +22,7 @@ class IndexedDBCallbacksBase {
  public:
   virtual ~IndexedDBCallbacksBase();
 
-  virtual void onError(const WebKit::WebIDBDatabaseError& error);
+  virtual void onError(const IndexedDBDatabaseError& error);
   virtual void onBlocked(long long old_version);
 
   // implemented by subclasses, but need to be called later

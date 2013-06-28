@@ -7,14 +7,13 @@
 #include <algorithm>
 #include <vector>
 
+#include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "webkit/browser/quota/quota_manager.h"
 
-using WebKit::WebData;
 using WebKit::WebIDBCallbacks;
-using WebKit::WebString;
 
 namespace content {
 
@@ -32,7 +31,7 @@ IndexedDBCallbacksBase::IndexedDBCallbacksBase(
 
 IndexedDBCallbacksBase::~IndexedDBCallbacksBase() {}
 
-void IndexedDBCallbacksBase::onError(const WebKit::WebIDBDatabaseError& error) {
+void IndexedDBCallbacksBase::onError(const IndexedDBDatabaseError& error) {
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksError(
       ipc_thread_id_, ipc_callbacks_id_, error.code(), error.message()));
 }

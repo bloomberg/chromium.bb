@@ -21,8 +21,6 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
 
-using WebKit::WebIDBDatabaseError;
-
 namespace content {
 
 TEST(IndexedDBDatabaseTest, BackingStoreRetention) {

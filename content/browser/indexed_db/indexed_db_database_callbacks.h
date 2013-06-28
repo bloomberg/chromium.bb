@@ -7,11 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 
-namespace WebKit {
-class WebIDBDatabaseError;
-}
-
 namespace content {
+class IndexedDBDatabaseError;
 class IndexedDBDispatcherHost;
 
 class IndexedDBDatabaseCallbacks {
@@ -25,7 +22,7 @@ class IndexedDBDatabaseCallbacks {
   virtual void onForcedClose();
   virtual void onVersionChange(long long old_version, long long new_version);
   virtual void onAbort(long long host_transaction_id,
-                       const WebKit::WebIDBDatabaseError&);
+                       const IndexedDBDatabaseError& error);
   virtual void onComplete(long long host_transaction_id);
 
  private:

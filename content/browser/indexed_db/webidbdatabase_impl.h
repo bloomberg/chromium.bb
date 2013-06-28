@@ -10,16 +10,12 @@
 #include "content/browser/indexed_db/indexed_db_database_callbacks_wrapper.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 
-namespace WebKit {
-class WebIDBDatabaseError;
-class WebIDBDatabaseMetadata;
-}
-
 namespace content {
 class IndexedDBCallbacksBase;
 class IndexedDBDatabase;
 class IndexedDBDatabaseCallbacks;
 class IndexedDBDatabaseCallbacksWrapper;
+class IndexedDBDatabaseError;
 
 class CONTENT_EXPORT WebIDBDatabaseImpl {
  public:
@@ -32,7 +28,7 @@ class CONTENT_EXPORT WebIDBDatabaseImpl {
 
   virtual void createObjectStore(long long transaction_id,
                                  long long object_store_id,
-                                 const WebKit::WebString& name,
+                                 const string16& name,
                                  const IndexedDBKeyPath& key_path,
                                  bool auto_increment);
   virtual void deleteObjectStore(long long object_store_id,
@@ -45,7 +41,7 @@ class CONTENT_EXPORT WebIDBDatabaseImpl {
   virtual void close();
   virtual void abort(long long transaction_id);
   virtual void abort(long long transaction_id,
-                     const WebKit::WebIDBDatabaseError& error);
+                     const IndexedDBDatabaseError& error);
   virtual void commit(long long transaction_id);
 
   virtual void get(long long transaction_id,
@@ -94,7 +90,7 @@ class CONTENT_EXPORT WebIDBDatabaseImpl {
   virtual void createIndex(long long transaction_id,
                            long long object_store_id,
                            long long index_id,
-                           const WebKit::WebString& name,
+                           const string16& name,
                            const IndexedDBKeyPath& key_path,
                            bool unique,
                            bool multi_entry);

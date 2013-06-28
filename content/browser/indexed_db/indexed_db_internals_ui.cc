@@ -23,7 +23,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
 #include "grit/content_resources.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/zlib/google/zip.h"
 #include "webkit/common/database/database_identifier.h"
 

@@ -5,9 +5,9 @@
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 
 #include "base/memory/scoped_vector.h"
+#include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 
 namespace content {
 
@@ -34,7 +34,7 @@ void IndexedDBDatabaseCallbacks::onVersionChange(long long old_version,
 
 void IndexedDBDatabaseCallbacks::onAbort(
     long long host_transaction_id,
-    const WebKit::WebIDBDatabaseError& error) {
+    const IndexedDBDatabaseError& error) {
   dispatcher_host_->FinishTransaction(host_transaction_id, false);
   dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksAbort(
       ipc_thread_id_,

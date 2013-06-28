@@ -643,7 +643,10 @@ void IndexedDBDispatcher::OnError(int32 ipc_thread_id,
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
   if (!callbacks)
     return;
-  callbacks->onError(WebIDBDatabaseError(code, message));
+  if (message.empty())
+    callbacks->onError(WebIDBDatabaseError(code));
+  else
+    callbacks->onError(WebIDBDatabaseError(code, message));
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
 
@@ -657,7 +660,10 @@ void IndexedDBDispatcher::OnAbort(int32 ipc_thread_id,
       pending_database_callbacks_.Lookup(ipc_database_callbacks_id);
   if (!callbacks)
     return;
-  callbacks->onAbort(transaction_id, WebIDBDatabaseError(code, message));
+  if (message.empty())
+    callbacks->onAbort(transaction_id, WebIDBDatabaseError(code));
+  else
+    callbacks->onAbort(transaction_id, WebIDBDatabaseError(code, message));
 }
 
 void IndexedDBDispatcher::OnComplete(int32 ipc_thread_id,

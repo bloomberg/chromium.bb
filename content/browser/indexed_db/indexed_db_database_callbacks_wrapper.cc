@@ -30,9 +30,7 @@ void IndexedDBDatabaseCallbacksWrapper::OnAbort(
     const IndexedDBDatabaseError& error) {
   if (!callbacks_)
     return;
-  callbacks_->onAbort(
-      transaction_id,
-      WebKit::WebIDBDatabaseError(error.code(), error.message()));
+  callbacks_->onAbort(transaction_id, error);
 }
 void IndexedDBDatabaseCallbacksWrapper::OnComplete(int64 transaction_id) {
   if (!callbacks_)

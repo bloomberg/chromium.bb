@@ -8,18 +8,17 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 
 namespace content {
 
 class IndexedDBDatabaseError {
  public:
+  IndexedDBDatabaseError(uint16 code)
+      : code_(code) {}
   IndexedDBDatabaseError(uint16 code, const char* message)
       : code_(code), message_(ASCIIToUTF16(message)) {}
   IndexedDBDatabaseError(uint16 code, const string16& message)
       : code_(code), message_(message) {}
-  explicit IndexedDBDatabaseError(const WebKit::WebIDBDatabaseError& other)
-      : code_(other.code()), message_(other.message()) {}
   ~IndexedDBDatabaseError() {}
 
   uint16 code() const { return code_; }

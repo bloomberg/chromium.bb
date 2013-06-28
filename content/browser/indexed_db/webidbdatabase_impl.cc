@@ -11,13 +11,9 @@
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
+#include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-
-using WebKit::WebString;
-using WebKit::WebIDBDatabaseError;
 
 namespace content {
 
@@ -31,7 +27,7 @@ WebIDBDatabaseImpl::~WebIDBDatabaseImpl() {}
 
 void WebIDBDatabaseImpl::createObjectStore(long long transaction_id,
                                            long long object_store_id,
-                                           const WebString& name,
+                                           const string16& name,
                                            const IndexedDBKeyPath& key_path,
                                            bool auto_increment) {
   database_backend_->CreateObjectStore(transaction_id,
@@ -80,9 +76,9 @@ void WebIDBDatabaseImpl::abort(long long transaction_id) {
 }
 
 void WebIDBDatabaseImpl::abort(long long transaction_id,
-                               const WebIDBDatabaseError& error) {
+                               const IndexedDBDatabaseError& error) {
   if (database_backend_.get())
-    database_backend_->Abort(transaction_id, IndexedDBDatabaseError(error));
+    database_backend_->Abort(transaction_id, error);
 }
 
 void WebIDBDatabaseImpl::commit(long long transaction_id) {
@@ -217,7 +213,7 @@ void WebIDBDatabaseImpl::clear(long long transaction_id,
 void WebIDBDatabaseImpl::createIndex(long long transaction_id,
                                      long long object_store_id,
                                      long long index_id,
-                                     const WebString& name,
+                                     const string16& name,
                                      const IndexedDBKeyPath& key_path,
                                      bool unique,
                                      bool multi_entry) {

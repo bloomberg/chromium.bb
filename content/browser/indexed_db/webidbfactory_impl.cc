@@ -7,11 +7,9 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
+#include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
-
-using WebKit::WebString;
 
 namespace content {
 
@@ -21,21 +19,21 @@ WebIDBFactoryImpl::WebIDBFactoryImpl()
 WebIDBFactoryImpl::~WebIDBFactoryImpl() {}
 
 void WebIDBFactoryImpl::getDatabaseNames(IndexedDBCallbacksBase* callbacks,
-                                         const WebString& database_identifier,
-                                         const WebString& data_dir) {
+                                         const string16& database_identifier,
+                                         const string16& data_dir) {
   idb_factory_backend_->GetDatabaseNames(
       IndexedDBCallbacksWrapper::Create(callbacks),
       database_identifier,
       base::FilePath::FromUTF16Unsafe(data_dir));
 }
 
-void WebIDBFactoryImpl::open(const WebString& name,
+void WebIDBFactoryImpl::open(const string16& name,
                              long long version,
                              long long transaction_id,
                              IndexedDBCallbacksBase* callbacks,
                              IndexedDBDatabaseCallbacks* database_callbacks,
-                             const WebString& database_identifier,
-                             const WebString& data_dir) {
+                             const string16& database_identifier,
+                             const string16& data_dir) {
   scoped_refptr<IndexedDBCallbacksWrapper> callbacks_proxy =
       IndexedDBCallbacksWrapper::Create(callbacks);
   scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks_proxy =
@@ -51,10 +49,10 @@ void WebIDBFactoryImpl::open(const WebString& name,
                              base::FilePath::FromUTF16Unsafe(data_dir));
 }
 
-void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
+void WebIDBFactoryImpl::deleteDatabase(const string16& name,
                                        IndexedDBCallbacksBase* callbacks,
-                                       const WebString& database_identifier,
-                                       const WebString& data_dir) {
+                                       const string16& database_identifier,
+                                       const string16& data_dir) {
   idb_factory_backend_->DeleteDatabase(
       name,
       IndexedDBCallbacksWrapper::Create(callbacks),
