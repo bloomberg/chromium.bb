@@ -131,7 +131,8 @@ public:
 
     virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/)
     {
-        m_responseText = m_responseText.concatenateWith(m_decoder->flush());
+        if (m_decoder)
+            m_responseText = m_responseText.concatenateWith(m_decoder->flush());
         m_callback->sendSuccess(m_statusCode, buildObjectForHeaders(m_responseHeaders), m_responseText.flattenToString());
         dispose();
     }
