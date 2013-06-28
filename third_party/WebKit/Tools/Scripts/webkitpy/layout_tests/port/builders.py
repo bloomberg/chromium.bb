@@ -46,10 +46,10 @@ from webkitpy.common.memoized import memoized
 
 _exact_matches = {
     # These builders are on build.chromium.org.
-    "WebKit XP": {"port_name": "chromium-win-xp", "is_debug": False},
-    "WebKit Win7": {"port_name": "chromium-win-win7", "is_debug": False},
-    "WebKit Win7 (dbg)(1)": {"port_name": "chromium-win-win7", "is_debug": True},
-    "WebKit Win7 (dbg)(2)": {"port_name": "chromium-win-win7", "is_debug": True},
+    "WebKit XP": {"port_name": "win-xp", "is_debug": False},
+    "WebKit Win7": {"port_name": "win-win7", "is_debug": False},
+    "WebKit Win7 (dbg)(1)": {"port_name": "win-win7", "is_debug": True},
+    "WebKit Win7 (dbg)(2)": {"port_name": "win-win7", "is_debug": True},
     "WebKit Linux": {"port_name": "chromium-linux-x86_64", "is_debug": False},
     "WebKit Linux 32": {"port_name": "chromium-linux-x86", "is_debug": False},
     "WebKit Linux (dbg)": {"port_name": "chromium-linux-x86_64", "is_debug": True},
@@ -65,8 +65,8 @@ _exact_matches = {
 _deps_builders = {
     "chromium-linux-x86": "WebKit Linux (deps)",
     "chromium-linux-x86_64": "WebKit Linux (deps)",
-    "chromium-win-xp": "WebKit XP (deps)",
-    "chromium-win-win7": "WebKit XP (deps)",
+    "win-xp": "WebKit XP (deps)",
+    "win-win7": "WebKit XP (deps)",
     "chromium-mac-snowleopard": "WebKit Mac10.6 (deps)",
     "chromium-mac-lion": "WebKit Mac10.6 (deps)",
     "chromium-mac-mountainlion": "WebKit Mac10.6 (deps)",

@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Chromium Win implementation of the Port interface."""
+"""Windows implementation of the Port interface."""
 
 import os
 import logging
@@ -37,8 +37,8 @@ import chromium
 _log = logging.getLogger(__name__)
 
 
-class ChromiumWinPort(chromium.ChromiumPort):
-    port_name = 'chromium-win'
+class WinPort(chromium.ChromiumPort):
+    port_name = 'win'
 
     # FIXME: Figure out how to unify this with base.TestConfiguration.all_systems()?
     SUPPORTED_VERSIONS = ('xp', 'win7')
@@ -50,7 +50,7 @@ class ChromiumWinPort(chromium.ChromiumPort):
 
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
-        if port_name.endswith('-win'):
+        if port_name.endswith('win'):
             assert host.platform.is_win()
             # We don't maintain separate baselines for vista, so we pretend it is win7.
             if host.platform.os_version in ('vista', '7sp0', '7sp1', 'future'):
@@ -62,7 +62,7 @@ class ChromiumWinPort(chromium.ChromiumPort):
 
     def __init__(self, host, port_name, **kwargs):
         chromium.ChromiumPort.__init__(self, host, port_name, **kwargs)
-        self._version = port_name[port_name.index('chromium-win-') + len('chromium-win-'):]
+        self._version = port_name[port_name.index('win-') + len('win-'):]
         assert self._version in self.SUPPORTED_VERSIONS, "%s is not in %s" % (self._version, self.SUPPORTED_VERSIONS)
 
     def setup_environ_for_server(self, server_name=None):

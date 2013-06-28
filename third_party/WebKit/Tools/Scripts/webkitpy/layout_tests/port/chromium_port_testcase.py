@@ -36,7 +36,7 @@ from webkitpy.tool.mocktool import MockOptions
 import chromium_android
 import chromium_linux
 import chromium_mac
-import chromium_win
+import win
 
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
 from webkitpy.layout_tests.port import port_testcase
@@ -116,10 +116,10 @@ class ChromiumPortTestCase(port_testcase.PortTestCase):
             self.default_configuration_called = True
             return 'default'
 
-    class TestWinPort(chromium_win.ChromiumWinPort):
+    class TestWinPort(win.WinPort):
         def __init__(self, options=None):
             options = options or MockOptions()
-            chromium_win.ChromiumWinPort.__init__(self, MockSystemHost(os_name='win', os_version='xp'), 'chromium-win-xp', options=options)
+            win.WinPort.__init__(self, MockSystemHost(os_name='win', os_version='xp'), 'win-xp', options=options)
 
         def default_configuration(self):
             self.default_configuration_called = True

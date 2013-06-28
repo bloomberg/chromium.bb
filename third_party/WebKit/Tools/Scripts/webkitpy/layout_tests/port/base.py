@@ -495,7 +495,7 @@ class Port(object):
         suffix: file suffix of the expected results, including dot; e.g. '.txt'
             or '.png'.  This should not be None, but may be an empty string.
         platform: the most-specific directory name to use to build the
-            search list of directories, e.g., 'chromium-win', or
+            search list of directories, e.g., 'win', or
             'chromium-cg-mac-leopard' (we follow the WebKit format)
         return_default: if True, returns the path to the generic expectation if nothing
             else is found; if False, returns None.

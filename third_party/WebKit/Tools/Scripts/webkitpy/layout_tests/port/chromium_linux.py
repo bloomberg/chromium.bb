@@ -31,7 +31,7 @@ import re
 
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.port import chromium
-from webkitpy.layout_tests.port import chromium_win
+from webkitpy.layout_tests.port import win
 from webkitpy.layout_tests.port import config
 
 
@@ -43,7 +43,7 @@ class ChromiumLinuxPort(chromium.ChromiumPort):
 
     SUPPORTED_VERSIONS = ('x86', 'x86_64')
 
-    FALLBACK_PATHS = { 'x86_64': [ 'chromium-linux' ] + chromium_win.ChromiumWinPort.latest_platform_fallback_path() }
+    FALLBACK_PATHS = { 'x86_64': [ 'chromium-linux' ] + win.WinPort.latest_platform_fallback_path() }
     FALLBACK_PATHS['x86'] = ['chromium-linux-x86'] + FALLBACK_PATHS['x86_64']
 
     DEFAULT_BUILD_DIRECTORIES = ('sconsbuild', 'out')

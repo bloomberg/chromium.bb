@@ -75,7 +75,7 @@ class PortFactory(object):
         'chromium_android.ChromiumAndroidPort',
         'chromium_linux.ChromiumLinuxPort',
         'chromium_mac.ChromiumMacPort',
-        'chromium_win.ChromiumWinPort',
+        'win.WinPort',
         'mock_drt.MockDRTPort',
         'test.TestPort',
     )
@@ -90,7 +90,7 @@ class PortFactory(object):
         elif platform.is_mac():
             return 'chromium-mac'
         elif platform.is_win():
-            return 'chromium-win'
+            return 'win'
         raise NotImplementedError('unknown platform: %s' % platform)
 
     def get(self, port_name=None, options=None, **kwargs):
@@ -103,7 +103,12 @@ class PortFactory(object):
         # with '--platform chromium-mac' and '--platform chromium-linux' properly (we
         # can't look at the port_name prefix in this case).
         if port_name == 'chromium':
-            port_name = 'chromium-' + self._host.platform.os_name
+            # FIXME(steveblock): This hack will go away once all ports have
+            # been renamed to remove the 'chromium-' part.
+            if self._host.platform.os_name == 'win':
+                port_name = 'win'
+            else:
+                port_name = 'chromium-' + self._host.platform.os_name
 
         for port_class in self.PORT_CLASSES:
             module_name, class_name = port_class.rsplit('.', 1)
