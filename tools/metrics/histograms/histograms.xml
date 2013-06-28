@@ -14356,6 +14356,7 @@ other types of suffix sets.
   <int value="494" label="DIAGNOSTICS_SENDPACKET"/>
   <int value="495" label="METRICSPRIVATE_GETFIELDTRIAL"/>
   <int value="496" label="FILEBROWSERPRIVATE_ZOOM"/>
+  <int value="497" label="WEBVIEW_GO"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
