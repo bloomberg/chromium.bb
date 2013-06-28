@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_PROMPT_CONTROLLER_H_
 
 #include "base/basictypes.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/ui/browser_list_observer.h"

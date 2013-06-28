@@ -9,7 +9,7 @@
 
 #include <windows.h>
 #include "base/compiler_specific.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 
 class DisplaySettingsProviderWin : public DisplaySettingsProvider {
  public:

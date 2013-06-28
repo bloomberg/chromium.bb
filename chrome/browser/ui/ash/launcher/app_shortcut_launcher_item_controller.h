@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 

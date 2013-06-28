@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/search/history.h"
 #include "chrome/browser/ui/app_list/search/history_data.h"
 #include "chrome/browser/ui/app_list/search/history_data_observer.h"

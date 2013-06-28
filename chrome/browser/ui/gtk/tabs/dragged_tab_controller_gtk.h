@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/gtk/tabs/drag_data.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "content/public/browser/notification_observer.h"

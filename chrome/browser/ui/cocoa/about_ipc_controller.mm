@@ -7,7 +7,7 @@
 #include "base/mac/mac_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #import "chrome/browser/ui/cocoa/about_ipc_controller.h"
 #include "content/public/browser/browser_ipc_logging.h"
 

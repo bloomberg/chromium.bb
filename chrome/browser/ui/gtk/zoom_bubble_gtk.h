@@ -8,7 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

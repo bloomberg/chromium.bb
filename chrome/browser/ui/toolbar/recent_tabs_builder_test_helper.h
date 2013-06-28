@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/sessions/session_id.h"
 
 namespace browser_sync {

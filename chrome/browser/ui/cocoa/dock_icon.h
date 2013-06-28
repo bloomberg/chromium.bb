@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/time.h"
+#include "base/time/time.h"
 
 // A class representing the dock icon of the Chromium app. It's its own class
 // since several parts of the app want to manipulate the display of the dock

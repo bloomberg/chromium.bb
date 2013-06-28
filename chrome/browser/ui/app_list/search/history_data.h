@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/history_types.h"
 
 namespace app_list {

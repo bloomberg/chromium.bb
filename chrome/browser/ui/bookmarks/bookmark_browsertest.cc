@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"

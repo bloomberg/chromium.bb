@@ -9,14 +9,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
+#include "ui/base/models/simple_menu_model.h"
 
 class Browser;
 class GtkThemeService;

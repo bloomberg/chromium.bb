@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_PANELS_DISPLAY_SETTINGS_PROVIDER_H_
 
 #include "base/observer_list.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "ui/gfx/rect.h"
 
 // Encapsulates the logic to provide display settings support, including the

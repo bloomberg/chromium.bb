@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/protocol_dialog_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/gtk/gtk_signal.h"

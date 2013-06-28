@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_H_
 #define CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_EXIT_BUBBLE_H_
 
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/animation/animation_delegate.h"

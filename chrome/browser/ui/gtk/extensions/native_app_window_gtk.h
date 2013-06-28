@@ -8,7 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "base/observer_list.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"

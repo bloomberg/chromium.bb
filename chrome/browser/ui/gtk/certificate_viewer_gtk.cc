@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
