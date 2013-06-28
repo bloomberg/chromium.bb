@@ -86,7 +86,9 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
   // These are rather subjectively tuned.
   enum {
     kMfcInputBufferCount = 8,
-    kMfcInputBufferMaxSize = 512 * 1024,
+    // TODO(posciak): determine MFC input buffer size based on level limits.
+    // See http://crbug.com/255116.
+    kMfcInputBufferMaxSize = 1024 * 1024,
     kGscInputBufferCount = 4,
     // Number of output buffers to use for each VDA stage above what's required
     // by the decoder (e.g. DPB size, in H264).
