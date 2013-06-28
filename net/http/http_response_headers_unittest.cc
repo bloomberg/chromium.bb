@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"

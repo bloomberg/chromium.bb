@@ -12,8 +12,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
 
 namespace net {

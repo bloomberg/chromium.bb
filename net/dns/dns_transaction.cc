@@ -19,7 +19,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "net/base/big_endian.h"
 #include "net/base/completion_callback.h"

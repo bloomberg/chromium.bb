@@ -7,7 +7,7 @@
 #include "base/perftimer.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/proxy/mock_proxy_script_fetcher.h"

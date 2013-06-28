@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/proxy/proxy_config.h"

@@ -4,7 +4,7 @@
 
 #include "net/dns/dns_response.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_util.h"

@@ -11,7 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/worker_pool.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/dhcpcsvc_init_win.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"

@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/expiring_cache.h"

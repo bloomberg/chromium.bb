@@ -10,8 +10,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"

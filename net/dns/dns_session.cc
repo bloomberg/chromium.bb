@@ -11,7 +11,7 @@
 #include "base/metrics/sample_vector.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_config_service.h"

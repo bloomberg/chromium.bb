@@ -5,7 +5,7 @@
 #ifndef NET_FTP_FTP_RESPONSE_INFO_H_
 #define NET_FTP_FTP_RESPONSE_INFO_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 
 namespace net {

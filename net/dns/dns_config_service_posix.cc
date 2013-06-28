@@ -12,7 +12,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
 #include "net/dns/dns_hosts.h"

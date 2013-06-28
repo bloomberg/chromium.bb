@@ -17,7 +17,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/test/test_timeouts.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"

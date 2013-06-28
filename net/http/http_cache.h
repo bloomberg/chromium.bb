@@ -25,7 +25,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "net/base/cache_type.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
