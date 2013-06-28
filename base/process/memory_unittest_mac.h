@@ -5,8 +5,8 @@
 // This file contains helpers for the process_util_unittest to allow it to fully
 // test the Mac code.
 
-#ifndef BASE_PROCESS_UTIL_UNITTEST_MAC_H_
-#define BASE_PROCESS_UTIL_UNITTEST_MAC_H_
+#ifndef BASE_PROCESS_MEMORY_UNITTEST_MAC_H_
+#define BASE_PROCESS_MEMORY_UNITTEST_MAC_H_
 
 #include "base/basictypes.h"
 
@@ -29,4 +29,4 @@ void* AllocatePsychoticallyBigObjCObject();
 
 }  // namespace base
 
-#endif  // BASE_PROCESS_UTIL_UNITTEST_MAC_H_
+#endif  // BASE_PROCESS_MEMORY_UNITTEST_MAC_H_

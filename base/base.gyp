@@ -561,8 +561,9 @@
         'prefs/pref_value_store_unittest.cc',
         'process_util_unittest.cc',
         'process_util_unittest_ios.cc',
-        'process_util_unittest_mac.h',
-        'process_util_unittest_mac.mm',
+        'process/memory_unittest.cc',
+        'process/memory_unittest_mac.h',
+        'process/memory_unittest_mac.mm',
         'profiler/tracked_time_unittest.cc',
         'rand_util_unittest.cc',
         'safe_numerics_unittest.cc',
@@ -690,7 +691,8 @@
         ['OS == "ios" and _toolset != "host"', {
           'sources/': [
             # Only test the iOS-meaningful portion of process_utils.
-            ['exclude', '^process_util_unittest'],
+            ['exclude', '^process_util_unittest\\.cc$'],
+            ['exclude', '^process/memory_unittest'],
             ['include', '^process_util_unittest_ios\\.cc$'],
             # Requires spawning processes.
             ['exclude', '^metrics/stats_table_unittest\\.cc$'],

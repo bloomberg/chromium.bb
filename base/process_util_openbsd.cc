@@ -64,10 +64,4 @@ FilePath GetProcessExecutablePath(ProcessHandle process) {
   return FilePath();
 }
 
-void EnableTerminationOnOutOfMemory() {
-}
-
-void EnableTerminationOnHeapCorruption() {
-}
-
 }  // namespace base

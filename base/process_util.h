@@ -36,6 +36,7 @@ typedef struct _malloc_zone_t malloc_zone_t;
 #include "base/base_export.h"
 #include "base/files/file_path.h"
 #include "base/process.h"
+#include "base/process/memory.h"
 #include "base/process/process_iterator.h"
 #include "base/process/process_metrics.h"
 
@@ -59,10 +60,6 @@ enum TerminationStatus {
   TERMINATION_STATUS_MAX_ENUM
 };
 
-#if defined(USE_LINUX_BREAKPAD)
-BASE_EXPORT extern size_t g_oom_size;
-#endif
-
 #if defined(OS_WIN)
 // Output multi-process printf, cout, cerr, etc to the cmd.exe console that ran
 // chrome. This is not thread-safe: only call from main thread.
@@ -74,12 +71,6 @@ BASE_EXPORT ProcessId GetCurrentProcId();
 
 // Returns the ProcessHandle of the current process.
 BASE_EXPORT ProcessHandle GetCurrentProcessHandle();
-
-#if defined(OS_WIN)
-// Returns the module handle to which an address belongs. The reference count
-// of the module is not incremented.
-BASE_EXPORT HMODULE GetModuleFromAddress(void* address);
-#endif
 
 // Converts a PID to a process handle. This handle must be closed by
 // CloseProcessHandle when you are done with it. Returns true on success.
@@ -119,18 +110,6 @@ BASE_EXPORT FilePath GetProcessExecutablePath(ProcessHandle process);
 // done. This is mostly useful to guarantee being single-threaded.
 // Returns 0 on failure.
 BASE_EXPORT int GetNumberOfThreads(ProcessHandle process);
-
-// The maximum allowed value for the OOM score.
-const int kMaxOomScore = 1000;
-
-// This adjusts /proc/<pid>/oom_score_adj so the Linux OOM killer will
-// prefer to kill certain process types over others. The range for the
-// adjustment is [-1000, 1000], with [0, 1000] being user accessible.
-// If the Linux system doesn't support the newer oom_score_adj range
-// of [0, 1000], then we revert to using the older oom_adj, and
-// translate the given value into [0, 15].  Some aliasing of values
-// may occur in that case, of course.
-BASE_EXPORT bool AdjustOOMScore(ProcessId process, int score);
 
 // /proc/self/exe refers to the current executable.
 BASE_EXPORT extern const char kProcSelfExe[];
@@ -475,21 +454,6 @@ BASE_EXPORT void EnsureProcessTerminated(ProcessHandle process_handle);
 BASE_EXPORT void EnsureProcessGetsReaped(ProcessHandle process_handle);
 #endif
 
-// Enables low fragmentation heap (LFH) for every heaps of this process. This
-// won't have any effect on heaps created after this function call. It will not
-// modify data allocated in the heaps before calling this function. So it is
-// better to call this function early in initialization and again before
-// entering the main loop.
-// Note: Returns true on Windows 2000 without doing anything.
-BASE_EXPORT bool EnableLowFragmentationHeap();
-
-// Enables 'terminate on heap corruption' flag. Helps protect against heap
-// overflow. Has no effect if the OS doesn't provide the necessary facility.
-BASE_EXPORT void EnableTerminationOnHeapCorruption();
-
-// Turns on process termination if memory runs out.
-BASE_EXPORT void EnableTerminationOnOutOfMemory();
-
 // If supported on the platform, and the user has sufficent rights, increase
 // the current process's scheduling priority to a high priority.
 BASE_EXPORT void RaiseProcessToHighPriority();
@@ -503,20 +467,6 @@ BASE_EXPORT void RaiseProcessToHighPriority();
 // in the child after forking will restore the standard exception handler.
 // See http://crbug.com/20371/ for more details.
 void RestoreDefaultExceptionHandler();
-#endif  // defined(OS_MACOSX)
-
-#if defined(OS_MACOSX)
-// Very large images or svg canvases can cause huge mallocs.  Skia
-// does tricks on tcmalloc-based systems to allow malloc to fail with
-// a NULL rather than hit the oom crasher.  This replicates that for
-// OSX.
-//
-// IF YOU USE THIS WITHOUT CONSULTING YOUR FRIENDLY OSX DEVELOPER,
-// YOUR CODE IS LIKELY TO BE REVERTED.  THANK YOU.
-//
-// TODO(shess): Weird place to put it, but this is where the OOM
-// killer currently lives.
-BASE_EXPORT void* UncheckedMalloc(size_t size);
 #endif  // defined(OS_MACOSX)
 
 }  // namespace base

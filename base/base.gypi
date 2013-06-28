@@ -395,6 +395,10 @@
           'process_win.cc',
           'process/internal_linux.cc',
           'process/internal_linux.h',
+          'process/memory.h',
+          'process/memory_linux.cc',
+          'process/memory_mac.mm',
+          'process/memory_win.cc',
           'process/process_iterator.cc',
           'process/process_iterator.h',
           'process/process_iterator_freebsd.cc',
@@ -714,6 +718,7 @@
             'sources/': [
               ['include', '^files/file_path_watcher_linux\\.cc$'],
               ['include', '^process_util_linux\\.cc$'],
+              ['include', '^process/memory_linux\\.cc$'],
               ['include', '^process/internal_linux\\.cc$'],
               ['include', '^process/process_iterator\\.cc$'],
               ['include', '^process/process_iterator_linux\\.cc$'],
@@ -755,6 +760,10 @@
               # needed on iOS (mostly for unit tests).
               ['exclude', '^process_util'],
               ['include', '^process_util_ios\\.mm$'],
+              ['exclude', '^process/memory_mac\\.mm$'],
+            ],
+            'sources': [
+              'process/memory_stubs.cc',
             ],
             'sources!': [
               'message_loop/message_pump_libevent.cc'
@@ -829,6 +838,9 @@
             ],
           }],
           ['<(os_bsd)==1 and >(nacl_untrusted_build)==0', {
+            'sources': [
+              'process/memory_stubs.cc',
+            ],
             'sources/': [
               ['exclude', '^files/file_path_watcher_linux\\.cc$'],
               ['exclude', '^files/file_path_watcher_stub\\.cc$'],

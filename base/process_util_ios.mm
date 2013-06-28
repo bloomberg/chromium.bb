@@ -23,14 +23,6 @@ ProcessHandle GetCurrentProcessHandle() {
   return GetCurrentProcId();
 }
 
-void EnableTerminationOnHeapCorruption() {
-  // On iOS, there nothing to do AFAIK.
-}
-
-void EnableTerminationOnOutOfMemory() {
-  // iOS provides this for free!
-}
-
 void RaiseProcessToHighPriority() {
   // Impossible on iOS. Do nothing.
 }

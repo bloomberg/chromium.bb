@@ -52,17 +52,4 @@ FilePath GetProcessExecutablePath(ProcessHandle process) {
   return FilePath(std::string(pathname));
 }
 
-void EnableTerminationOnOutOfMemory() {
-  DLOG(WARNING) << "Not feasible.";
-}
-
-void EnableTerminationOnHeapCorruption() {
-  // Nothing to do.
-}
-
-bool AdjustOOMScore(ProcessId process, int score) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 }  // namespace base
