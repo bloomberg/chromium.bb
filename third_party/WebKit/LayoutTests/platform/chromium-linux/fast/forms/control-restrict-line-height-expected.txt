@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
       RenderBR {BR} at (0,0) size 0x0
       RenderButton {INPUT} at (2,46) size 310x22 [bgcolor=#DDDDDD] [border: (2px outset #DDDDDD)]
         RenderBlock (anonymous) at (8,3) size 294x16
-          RenderText at (0,0) size 294x16
+          RenderText {#text} at (0,0) size 294x16
             text run at (0,0) width 294: "This text should be centered vertically in the button"
       RenderText {#text} at (314,47) size 4x19
         text run at (314,47) width 4: " "

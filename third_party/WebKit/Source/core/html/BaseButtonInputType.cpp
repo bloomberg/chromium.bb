@@ -51,7 +51,7 @@ class NonSelectableText : public Text {
 
     virtual RenderText* createTextRenderer(RenderStyle*) OVERRIDE
     {
-        return new (document()->renderArena()) RenderTextFragment(document(), dataImpl());
+        return new (document()->renderArena()) RenderTextFragment(this, dataImpl());
     }
 
 public:

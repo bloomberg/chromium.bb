@@ -79,11 +79,11 @@ layer at (0,0) size 800x600
                   RenderBR {BR} at (367,18) size 1x0
                   RenderButton {INPUT} at (72,28) size 103x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                     RenderBlock (anonymous) at (8,3) size 86x16
-                      RenderText at (0,0) size 86x16
+                      RenderText {#text} at (0,0) size 86x16
                         text run at (0,0) width 86: "Google Search"
                   RenderButton {INPUT} at (178,28) size 118x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                     RenderBlock (anonymous) at (8,3) size 101x16
-                      RenderText at (0,0) size 101x16
+                      RenderText {#text} at (0,0) size 101x16
                         text run at (0,0) width 101: "I'm Feeling Lucky"
                 RenderTableCell {TD} at (551,0) size 183x36 [r=0 c=2 rs=1 cs=1]
                   RenderInline {FONT} at (0,0) size 74x36

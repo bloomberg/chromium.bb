@@ -23,7 +23,7 @@ layer at (0,0) size 785x2458
         RenderText {#text} at (0,0) size 0x0
         RenderButton {INPUT} at (10,56) size 200x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 184x16
-            RenderText at (86,0) size 12x16
+            RenderText {#text} at (86,0) size 12x16
               text run at (86,0) width 12: "Hi"
         RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,200) size 769x20
@@ -40,7 +40,7 @@ layer at (0,0) size 785x2458
         RenderText {#text} at (0,0) size 0x0
         RenderButton {INPUT} at (110,32) size 100x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 84x16
-            RenderText at (36,0) size 12x16
+            RenderText {#text} at (36,0) size 12x16
               text run at (36,0) width 12: "Hi"
         RenderText {#text} at (0,0) size 0x0
         RenderBR {BR} at (210,30) size 0x19
@@ -59,7 +59,7 @@ layer at (0,0) size 785x2458
           RenderText {#text} at (0,0) size 0x0
         RenderButton {INPUT} at (110,32) size 28x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 12x16
-            RenderText at (0,0) size 12x16
+            RenderText {#text} at (0,0) size 12x16
               text run at (0,0) width 12: "Hi"
         RenderBlock (anonymous) at (10,56) size 200x20
           RenderBR {BR} at (0,0) size 0x19
@@ -78,7 +78,7 @@ layer at (0,0) size 785x2458
           RenderText {#text} at (0,0) size 0x0
         RenderButton {INPUT} at (110,32) size 100x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 84x16
-            RenderText at (36,0) size 12x16
+            RenderText {#text} at (36,0) size 12x16
               text run at (36,0) width 12: "Hi"
         RenderBlock (anonymous) at (10,56) size 200x20
           RenderBR {BR} at (0,0) size 0x19

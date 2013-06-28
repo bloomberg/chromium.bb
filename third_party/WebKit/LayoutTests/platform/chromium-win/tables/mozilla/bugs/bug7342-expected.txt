@@ -60,7 +60,7 @@ layer at (0,0) size 800x600
                         RenderTableCell {TD} at (351,4) size 101x36 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
                           RenderButton {INPUT} at (7,7) size 57x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                             RenderBlock (anonymous) at (8,3) size 41x16
-                              RenderText at (0,0) size 41x16
+                              RenderText {#text} at (0,0) size 41x16
                                 text run at (0,0) width 41: "Search"
                           RenderText {#text} at (0,0) size 0x0
                       RenderTableRow {TR} at (0,44) size 456x30

@@ -20,7 +20,7 @@ layer at (0,0) size 800x600
               RenderTableCell {TD} at (467,2) size 88x24 [r=0 c=2 rs=1 cs=1]
                 RenderButton {INPUT} at (3,3) size 55x18 [bgcolor=#C0C0C0]
                   RenderBlock (anonymous) at (8,2) size 39x14
-                    RenderText at (0,0) size 39x13
+                    RenderText {#text} at (0,0) size 39x13
                       text run at (0,0) width 39: "Trigger"
             RenderTableRow {TR} at (0,29) size 557x24
               RenderTableCell {TD} at (2,31) size 107x20 [r=1 c=0 rs=1 cs=1]
@@ -36,7 +36,7 @@ layer at (0,0) size 800x600
               RenderTableCell {TD} at (467,29) size 88x24 [r=1 c=2 rs=1 cs=1]
                 RenderButton {INPUT} at (3,3) size 82x18 [bgcolor=#C0C0C0]
                   RenderBlock (anonymous) at (8,2) size 66x14
-                    RenderText at (0,0) size 66x13
+                    RenderText {#text} at (0,0) size 66x13
                       text run at (0,0) width 66: "Trigger case"
 layer at (125,74) size 342x13
   RenderBlock {DIV} at (3,3) size 342x13
