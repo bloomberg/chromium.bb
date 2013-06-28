@@ -61,12 +61,6 @@ struct wl_interface {
 	const struct wl_message *events;
 };
 
-struct wl_object {
-	const struct wl_interface *interface;
-	const void *implementation;
-	uint32_t id;
-};
-
 /**
  * wl_list - linked list
  *

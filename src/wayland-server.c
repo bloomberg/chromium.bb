@@ -102,6 +102,15 @@ struct wl_global {
 	struct wl_list link;
 };
 
+struct wl_resource {
+	struct wl_object object;
+	wl_resource_destroy_func_t destroy;
+	struct wl_list link;
+	struct wl_signal destroy_signal;
+	struct wl_client *client;
+	void *data;
+};
+
 static int wl_debug = 0;
 
 static void
@@ -372,6 +381,10 @@ wl_client_get_credentials(struct wl_client *client,
 	if (gid)
 		*gid = client->ucred.gid;
 }
+
+uint32_t
+wl_client_add_resource(struct wl_client *client,
+		       struct wl_resource *resource) WL_DEPRECATED;
 
 WL_EXPORT uint32_t
 wl_client_add_resource(struct wl_client *client,
@@ -996,9 +1009,15 @@ wl_client_add_object(struct wl_client *client,
 		return NULL;
 	}
 
-	wl_resource_init(resource, interface, implementation, id, data);
-	resource->client = client;
+	resource->object.id = id;
+	resource->object.interface = interface;
+	resource->object.implementation = implementation;
+
+	wl_signal_init(&resource->destroy_signal);
+
 	resource->destroy = NULL;
+	resource->client = client;
+	resource->data = data;
 
 	if (wl_map_insert_at(&client->objects, 0, resource->object.id, resource) < 0) {
 		wl_resource_post_error(client->display_resource,

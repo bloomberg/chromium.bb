@@ -283,6 +283,9 @@ wl_shm_buffer_create(struct wl_client *client,
 WL_EXPORT struct wl_shm_buffer *
 wl_shm_buffer_get(struct wl_resource *resource)
 {
+	if (resource == NULL)
+		return NULL;
+
 	if (wl_resource_instance_of(resource, &wl_buffer_interface,
 				    &shm_buffer_interface))
 		return wl_resource_get_user_data(resource);

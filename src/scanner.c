@@ -829,7 +829,7 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 			else if (is_interface && a->type == NEW_ID && a->interface_name == NULL)
 				printf("const char *interface, uint32_t version, uint32_t ");
 			else if (!is_interface && a->type == OBJECT && a->interface_name == NULL)
-				printf("struct wl_object *");
+				printf("void *");
 
 			else if (!is_interface && a->type == NEW_ID)
 				printf("struct %s *", a->interface_name);

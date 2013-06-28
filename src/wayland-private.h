@@ -26,6 +26,9 @@
 #define WAYLAND_PRIVATE_H
 
 #include <stdarg.h>
+
+#define WL_HIDE_DEPRECATED 1
+
 #include "wayland-util.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
@@ -38,6 +41,12 @@
 #define WL_MAP_CLIENT_SIDE 1
 #define WL_SERVER_ID_START 0xff000000
 #define WL_CLOSURE_MAX_ARGS 20
+
+struct wl_object {
+	const struct wl_interface *interface;
+	const void *implementation;
+	uint32_t id;
+};
 
 extern struct wl_object global_zombie_object;
 #define WL_ZOMBIE_OBJECT ((void*)&global_zombie_object)

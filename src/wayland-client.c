@@ -388,13 +388,14 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 
 static void
 display_handle_error(void *data,
-		     struct wl_display *display, struct wl_object *object,
+		     struct wl_display *display, void *object,
 		     uint32_t code, const char *message)
 {
+	struct wl_proxy *proxy = object;
 	int err;
 
 	wl_log("%s@%u: error %d: %s\n",
-	       object->interface->name, object->id, code, message);
+	       proxy->object.interface->name, proxy->object.id, code, message);
 
 	switch (code) {
 	case WL_DISPLAY_ERROR_INVALID_OBJECT:

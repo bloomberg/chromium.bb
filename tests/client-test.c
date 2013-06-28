@@ -31,8 +31,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "wayland-server.h"
 #include "wayland-private.h"
+#include "wayland-server.h"
 #include "test-runner.h"
 
 struct client_destroy_listener {

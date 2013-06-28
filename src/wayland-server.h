@@ -181,12 +181,14 @@ wl_signal_emit(struct wl_signal *signal, void *data)
 
 typedef void (*wl_resource_destroy_func_t)(struct wl_resource *resource);
 
-/* The wl_resource structure has be deprecated as a transparent structure.
- * While wl_resource will still exist, it will, in the future, be an opaque
- * pointer.  Instead of accessing wl_resource directly, it should be created by
- * wl_client_add_object and wl_client_new_object and only accessed by the
- * accessor functions provided.
- */
+#ifndef WL_HIDE_DEPRECATED
+
+struct wl_object {
+	const struct wl_interface *interface;
+	const void *implementation;
+	uint32_t id;
+};
+
 struct wl_resource {
 	struct wl_object object;
 	wl_resource_destroy_func_t destroy;
@@ -196,27 +198,17 @@ struct wl_resource {
 	void *data;
 };
 
-static inline void
-wl_resource_init(struct wl_resource *resource,
-		 const struct wl_interface *interface,
-		 const void *implementation, uint32_t id, void *data)
-{
-	resource->object.id = id;
-	resource->object.interface = interface;
-	resource->object.implementation = implementation;
-
-	wl_signal_init(&resource->destroy_signal);
-
-	resource->destroy = NULL;
-	resource->client = NULL;
-	resource->data = data;
-}
-
 struct wl_buffer {
 	struct wl_resource resource;
 	int32_t width, height;
 	uint32_t busy_count;
-};
+} WL_DEPRECATED;
+
+uint32_t
+wl_client_add_resource(struct wl_client *client,
+		       struct wl_resource *resource) WL_DEPRECATED;
+
+#endif
 
 /*
  * Post an event to the client's object referred to by 'resource'.
@@ -246,10 +238,6 @@ void wl_resource_post_error(struct wl_resource *resource,
 void wl_resource_post_no_memory(struct wl_resource *resource);
 
 #include "wayland-server-protocol.h"
-
-uint32_t
-wl_client_add_resource(struct wl_client *client,
-		       struct wl_resource *resource) WL_DEPRECATED;
 
 struct wl_display *
 wl_client_get_display(struct wl_client *client);
