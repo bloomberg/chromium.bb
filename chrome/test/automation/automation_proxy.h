@@ -15,7 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/automation/automation_handle_tracker.h"

@@ -21,7 +21,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"

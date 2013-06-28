@@ -14,7 +14,7 @@
 #include "base/sys_info.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_timeouts.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"

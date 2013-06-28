@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/chrome/console_logger.h"
 #include "chrome/test/chromedriver/chrome/performance_logger.h"

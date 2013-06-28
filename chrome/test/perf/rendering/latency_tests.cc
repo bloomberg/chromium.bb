@@ -11,7 +11,7 @@
 #include "base/test/test_switches.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/platform_thread.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "base/version.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

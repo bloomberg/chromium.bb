@@ -5,7 +5,7 @@
 #ifndef CHROME_TEST_DATA_WEBUI_HISTORY_UI_BROWSERTEST_H_
 #define CHROME_TEST_DATA_WEBUI_HISTORY_UI_BROWSERTEST_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 
 #include "chrome/test/base/web_ui_browsertest.h"
 

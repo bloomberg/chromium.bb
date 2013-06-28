@@ -18,7 +18,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/test/logging/win/log_file_reader.h"
 
 namespace {

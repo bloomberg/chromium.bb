@@ -9,7 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"

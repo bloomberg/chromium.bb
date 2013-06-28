@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 // Abstract class for logging entries with a level, timestamp, string message.
 class Log {

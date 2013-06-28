@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"

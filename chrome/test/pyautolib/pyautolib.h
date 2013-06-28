@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/test/test_timeouts.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui/ui_test_suite.h"
 

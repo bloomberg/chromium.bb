@@ -23,7 +23,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/test/automation/proxy_launcher.h"
 #include "googleurl/src/gurl.h"
 #include "testing/platform_test.h"
