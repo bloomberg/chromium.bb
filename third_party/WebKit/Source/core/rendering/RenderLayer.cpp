@@ -1882,8 +1882,10 @@ static inline const RenderLayer* accumulateOffsetTowardsAncestor(const RenderLay
             ancestorLayer->convertToLayerCoords(fixedPositionContainerLayer, ancestorCoords);
 
             location += (fixedContainerCoords - ancestorCoords);
-            return ancestorLayer;
+        } else {
+            location += toSize(layer->location());
         }
+        return ancestorLayer;
     }
     
     RenderLayer* parentLayer;

@@ -1660,9 +1660,6 @@ crbug.com/244225 inspector-protocol/dom/setFileInputFiles.html [ Skip ]
 crbug.com/244276 fast/images/gif-loop-count.html [ ImageOnlyFailure Pass ]
 crbug.com/244276 crbug.com/245189 virtual/deferred/fast/images/gif-loop-count.html [ ImageOnlyFailure Pass ]
 
-# Wrong fixed-position layout
-crbug.com/243967 compositing/gestures/gesture-tapHighlight-simple-div-boxshadow-fixed-nested2.html [ ImageOnlyFailure ]
-
 # New baselines are needed due to the switch to use bicubic filtering in Skia.
 crbug.com/229120 virtual/deferred/fast/images/imagemap-focus-ring-zero-outline-width.html [ ImageOnlyFailure ]
 crbug.com/229120 virtual/deferred/fast/images/jpeg-with-color-profile.html [ ImageOnlyFailure ]
