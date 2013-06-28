@@ -37,11 +37,18 @@
               'binaries/ppapi/mac_64/manifest.json',
             ],
           }],
-          [ 'OS == "win"', {
+          [ 'OS == "win" and target_arch == "ia32"', {
             'flapper_version_h_file%': 'symbols/ppapi/win/flapper_version.h',
             'flapper_binary_files%': [
               'binaries/ppapi/win/pepflashplayer.dll',
               'binaries/ppapi/win/manifest.json',
+            ],
+          }],
+          [ 'OS == "win" and target_arch == "x64"', {
+            'flapper_version_h_file%': 'symbols/ppapi/win_x64/flapper_version.h',
+            'flapper_binary_files%': [
+              'binaries/ppapi/win_x64/pepflashplayer.dll',
+              'binaries/ppapi/win_x64/manifest.json',
             ],
           }],
         ],
