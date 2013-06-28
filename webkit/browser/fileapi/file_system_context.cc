@@ -228,29 +228,13 @@ void FileSystemContext::OpenFileSystem(
     return;
   }
 
-  GURL root_url = GetFileSystemRootURI(origin_url, type);
+  GURL root_url;
+  if (type == kFileSystemTypeSyncable)
+    root_url = sync_file_system::GetSyncableFileSystemRootURI(origin_url);
+  else
+    root_url = GetFileSystemRootURI(origin_url, type);
   std::string name = GetFileSystemName(origin_url, type);
 
-  mount_point_provider->OpenFileSystem(
-      origin_url, type, mode,
-      base::Bind(&DidOpenFileSystem, callback, root_url, name));
-}
-
-void FileSystemContext::OpenSyncableFileSystem(
-    const GURL& origin_url,
-    FileSystemType type,
-    OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
-  DCHECK(!callback.is_null());
-
-  DCHECK(type == kFileSystemTypeSyncable);
-
-  GURL root_url = sync_file_system::GetSyncableFileSystemRootURI(origin_url);
-  std::string name = GetFileSystemName(origin_url, kFileSystemTypeSyncable);
-
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(type);
-  DCHECK(mount_point_provider);
   mount_point_provider->OpenFileSystem(
       origin_url, type, mode,
       base::Bind(&DidOpenFileSystem, callback, root_url, name));

@@ -142,7 +142,7 @@ void SyncFileSystemRequestFileSystemFunction::DidInitializeFileSystemContext(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      Bind(&fileapi::FileSystemContext::OpenSyncableFileSystem,
+      Bind(&fileapi::FileSystemContext::OpenFileSystem,
            GetFileSystemContext(),
            source_url().GetOrigin(),
            fileapi::kFileSystemTypeSyncable,

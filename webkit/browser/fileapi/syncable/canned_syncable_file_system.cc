@@ -265,7 +265,7 @@ FileSystemURL CannedSyncableFileSystem::URL(const std::string& path) const {
 PlatformFileError CannedSyncableFileSystem::OpenFileSystem() {
   EXPECT_TRUE(is_filesystem_set_up_);
   EXPECT_FALSE(is_filesystem_opened_);
-  file_system_context_->OpenSyncableFileSystem(
+  file_system_context_->OpenFileSystem(
       origin_, type_,
       fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&CannedSyncableFileSystem::DidOpenFileSystem,

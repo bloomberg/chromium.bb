@@ -167,17 +167,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
       OpenFileSystemMode mode,
       const OpenFileSystemCallback& callback);
 
-  // Opens a syncable filesystem for the given |origin_url|.
-  // The file system is internally mounted as an external file system at the
-  // given |mount_name|.
-  // Currently only kFileSystemTypeSyncable type is supported.
-  // TODO(kinuko): Deprecate this method. (http://crbug.com/177137)
-  void OpenSyncableFileSystem(
-      const GURL& origin_url,
-      FileSystemType type,
-      OpenFileSystemMode mode,
-      const OpenFileSystemCallback& callback);
-
   // Deletes the filesystem for the given |origin_url| and |type|. This should
   // be called on the IO Thread.
   void DeleteFileSystem(
