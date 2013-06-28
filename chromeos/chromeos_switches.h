@@ -67,6 +67,7 @@ CHROMEOS_EXPORT extern const char kLoginProfile[];
 CHROMEOS_EXPORT extern const char kLoginUser[];
 CHROMEOS_EXPORT extern const char kNaturalScrollDefault[];
 CHROMEOS_EXPORT extern const char kNoDiscardTabs[];
+CHROMEOS_EXPORT extern const char kNoSwapMetrics[];
 #ifndef NDEBUG
 CHROMEOS_EXPORT extern const char kOobeSkipPostLogin[];
 #endif

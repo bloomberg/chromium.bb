@@ -32,6 +32,7 @@ class ScreensaverController;
 class SessionManagerObserver;
 class StorageMonitorCros;
 class SuspendObserver;
+class SwapMetrics;
 class UserActivityNotifier;
 class VideoActivityNotifier;
 
@@ -87,6 +88,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<StorageMonitorCros> storage_monitor_;
   scoped_ptr<IdleActionWarningObserver> idle_action_warning_observer_;
   scoped_ptr<system::DeviceChangeHandler> device_change_handler_;
+  scoped_ptr<SwapMetrics> swap_metrics_;
 
   scoped_ptr<internal::DBusServices> dbus_services_;
 

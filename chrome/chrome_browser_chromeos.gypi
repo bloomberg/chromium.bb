@@ -743,6 +743,8 @@
         'browser/chromeos/status/network_menu.h',
         'browser/chromeos/status/network_menu_icon.cc',
         'browser/chromeos/status/network_menu_icon.h',
+        'browser/chromeos/swap_metrics.cc',
+        'browser/chromeos/swap_metrics.h',
         'browser/chromeos/system/ash_system_tray_delegate.cc',
         'browser/chromeos/system/ash_system_tray_delegate.h',
         'browser/chromeos/system/automatic_reboot_manager.cc',
