@@ -358,7 +358,8 @@ include_rules = [
     '+ipc',
     '+library_loaders',
     '+testing',
-    '+third_party/icu/public'
+    '+third_party/icu/public',
+    '+url'
 ]
 
 skip_child_includes = [
