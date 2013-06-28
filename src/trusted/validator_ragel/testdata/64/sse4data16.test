@@ -3,27 +3,49 @@
   # Since two prefixes are not allowed, 16-bit form of these perfectly safe
   # instructions is invalid.
   
-  # popcnt %ax, %bx
   66 f3 0f b8 d8
-  f3 66 0f b8 d8
-  # lzcnt %cx, %dx
-  66 f3 0f bd d1
-  f3 66 0f bd d1
-  # tzcnt %bp, %bx
-  66 f3 0f bc dd
-  f3 66 0f bc dd
 @dis:
      0:	66 f3 0f b8 d8                               	popcnt %ax,%bx
-     5:	f3 66 0f b8 d8                               	popcnt %ax,%bx
-     a:	66 f3 0f bd d1                               	lzcnt  %cx,%dx
-     f:	f3 66 0f bd d1                               	lzcnt  %cx,%dx
-    14:	66 f3 0f bc dd                               	repz bsf %bp,%bx
-    19:	f3 66 0f bc dd                               	repz bsf %bp,%bx
 @rdfa_output:
   0: [0] unrecognized instruction
-  5: [1] unrecognized instruction
-  a: [2] unrecognized instruction
-  f: [3] unrecognized instruction
-  14: [4] unrecognized instruction
-  19: [5] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  f3 66 0f b8 d8
+@dis:
+     0:	f3 66 0f b8 d8                               	popcnt %ax,%bx
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  66 f3 0f bd d1
+@dis:
+     0:	66 f3 0f bd d1                               	lzcnt  %cx,%dx
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  f3 66 0f bd d1
+@dis:
+     0:	f3 66 0f bd d1                               	lzcnt  %cx,%dx
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  66 f3 0f bc dd
+@dis:
+     0:	66 f3 0f bc dd                               	repz bsf %bp,%bx
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  f3 66 0f bc dd
+@dis:
+     0:	f3 66 0f bc dd                               	repz bsf %bp,%bx
+@rdfa_output:
+  0: [0] unrecognized instruction
   return code: 1

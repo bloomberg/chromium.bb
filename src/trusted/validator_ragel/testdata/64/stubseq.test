@@ -1,31 +1,31 @@
 @hex:
-  # Sample stubout code, with multiple stubouts.
-  #
-  # add %al, %al
   00 c0
-  # add &rsp, %r15; -- stub out!
   4c 01 fc
-  # add %ebx, %r8d
-  44 01 c3
-  # test %rax, %rax
-  48 85 c0
-  # inc [%rip+0x397614]; -- stub out!
-  67 ff 05 a4 76 39 00
-  # mov %r9, %rdx
-  49 89 d1
-  # mov [%rbp+0x63e470], %rax; -- stub out!
-  67 48 89 84 25 70 e4 63 00
-  
 @dis:
      0:	00 c0                                        	add    %al,%al
      2:	4c 01 fc                                     	add    %r15,%rsp
-     5:	44 01 c3                                     	add    %r8d,%ebx
-     8:	48 85 c0                                     	test   %rax,%rax
-     b:	67 ff 05 a4 76 39 00                         	addr32 incl 0x3976a4(%eip)        # 0x3976b6
-    12:	49 89 d1                                     	mov    %rdx,%r9
-    15:	67 48 89 84 25 70 e4 63 00                   	addr32 mov %rax,0x63e470(%ebp,%eiz,1)
 @rdfa_output:
   2: [0] improper %rsp sandboxing
-  b: [0] unrecognized instruction
-  15: [1] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  44 01 c3
+  48 85 c0
+  67 ff 05 a4 76 39 00
+@dis:
+     0:	44 01 c3                                     	add    %r8d,%ebx
+     3:	48 85 c0                                     	test   %rax,%rax
+     6:	67 ff 05 a4 76 39 00                         	addr32 incl 0x3976a4(%eip)        # 0x3976b1
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  49 89 d1
+  67 48 89 84 25 70 e4 63 00
+@dis:
+     0:	49 89 d1                                     	mov    %rdx,%r9
+     3:	67 48 89 84 25 70 e4 63 00                   	addr32 mov %rax,0x63e470(%ebp,%eiz,1)
+@rdfa_output:
+  3: [0] unrecognized instruction
   return code: 1
