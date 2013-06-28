@@ -157,24 +157,15 @@ WebColor WebLayerImpl::backgroundColor() const {
 }
 
 void WebLayerImpl::setFilters(const WebFilterOperations& filters) {
-#if WEB_FILTER_OPERATIONS_IS_VIRTUAL
   const WebFilterOperationsImpl& filters_impl =
       static_cast<const WebFilterOperationsImpl&>(filters);
   layer_->SetFilters(filters_impl.AsFilterOperations());
-#else
-  layer_->SetFilters(ConvertWebFilterOperationsToFilterOperations(filters));
-#endif
 }
 
 void WebLayerImpl::setBackgroundFilters(const WebFilterOperations& filters) {
-#if WEB_FILTER_OPERATIONS_IS_VIRTUAL
   const WebFilterOperationsImpl& filters_impl =
       static_cast<const WebFilterOperationsImpl&>(filters);
   layer_->SetBackgroundFilters(filters_impl.AsFilterOperations());
-#else
-  layer_->SetBackgroundFilters(
-      ConvertWebFilterOperationsToFilterOperations(filters));
-#endif
 }
 
 void WebLayerImpl::setFilter(SkImageFilter* filter) {

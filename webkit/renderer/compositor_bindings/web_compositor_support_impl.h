@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "third_party/WebKit/public/platform/WebCompositorSupport.h"
-#include "third_party/WebKit/public/platform/WebFilterOperations.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebTransformOperations.h"
 
@@ -44,9 +43,7 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
   virtual WebKit::WebFloatAnimationCurve* createFloatAnimationCurve();
   virtual WebKit::WebTransformAnimationCurve* createTransformAnimationCurve();
   virtual WebKit::WebTransformOperations* createTransformOperations();
-#if WEB_FILTER_OPERATIONS_IS_VIRTUAL
   virtual WebKit::WebFilterOperations* createFilterOperations();
-#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebCompositorSupportImpl);

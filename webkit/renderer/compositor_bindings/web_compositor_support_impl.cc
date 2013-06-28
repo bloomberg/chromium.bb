@@ -101,10 +101,8 @@ WebTransformOperations* WebCompositorSupportImpl::createTransformOperations() {
   return new WebTransformOperationsImpl();
 }
 
-#if WEB_FILTER_OPERATIONS_IS_VIRTUAL
 WebFilterOperations* WebCompositorSupportImpl::createFilterOperations() {
   return new WebFilterOperationsImpl();
 }
-#endif
 
 }  // namespace webkit

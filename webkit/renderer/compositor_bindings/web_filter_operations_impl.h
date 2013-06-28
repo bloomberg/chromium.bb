@@ -11,7 +11,6 @@
 
 namespace webkit {
 
-#if WEB_FILTER_OPERATIONS_IS_VIRTUAL
 class WebFilterOperationsImpl : public WebKit::WebFilterOperations {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebFilterOperationsImpl();
@@ -43,10 +42,6 @@ class WebFilterOperationsImpl : public WebKit::WebFilterOperations {
 
   DISALLOW_COPY_AND_ASSIGN(WebFilterOperationsImpl);
 };
-#else
-cc::FilterOperations ConvertWebFilterOperationsToFilterOperations(
-    const WebKit::WebFilterOperations& web_filter_operations);
-#endif  // WEB_FILTER_OPERATIONS_IS_VIRTUAL
 
 }  // namespace webkit
 
