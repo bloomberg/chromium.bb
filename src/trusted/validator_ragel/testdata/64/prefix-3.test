@@ -1,50 +1,84 @@
 @hex:
-  # lock add %r15w, (%rsp)
   66 F0 44 01 3C 24
   F0 66 44 01 3C 24
-  # fs mov %ax,%r8w
-  64 66 41 89 C0
-  66 64 41 89 C0
-  # mov %edi,%edi
-  # lea (%r15,%rdi),%rdi
-  # 0x66 rep stos %rax,%es:(%rdi)
-  89 FF
-  49 8D 3C 3F
-  66 F3 48 AB
-  89 FF
-  49 8D 3C 3F
-  F3 66 48 AB
-  # 66 nop
-  66 90
-  # 66 66 nop
-  66 66 90
-  # 66 66 66 nop
-  66 66 66 90
-  # white-listed nop
-  66 66 66 2E 0F 1F 84 00 00 00 00 00
 @dis:
      0:	66 f0 44 01 3c 24                            	lock add %r15w,(%rsp)
      6:	f0 66 44 01 3c 24                            	lock add %r15w,(%rsp)
-     c:	64                                           	fs
-     d:	66 41 89 c0                                  	mov    %ax,%r8w
-    11:	66                                           	data16
-    12:	64                                           	fs
-    13:	41 89 c0                                     	mov    %eax,%r8d
-    16:	89 ff                                        	mov    %edi,%edi
-    18:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-    1c:	66 f3 48 ab                                  	rep stos %rax,%es:(%rdi)
-    20:	89 ff                                        	mov    %edi,%edi
-    22:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-    26:	f3 66 48 ab                                  	rep stos %rax,%es:(%rdi)
-    2a:	66 90                                        	xchg   %ax,%ax
-    2c:	66 66 90                                     	xchg   %ax,%ax
-    2f:	66 66 66 90                                  	xchg   %ax,%ax
-    33:	66 66 66 2e 0f 1f 84 00 00 00 00 00          	nopw   %cs:0x0(%rax,%rax,1)
 @rdfa_output:
-  c: [0] unrecognized instruction
-  11: [1] unrecognized instruction
-  1c: [2] unrecognized instruction
-  26: [0] unrecognized instruction
-  2c: [1] unrecognized instruction
-  2f: [2] unrecognized instruction
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  64 66 41 89 C0
+@dis:
+     0:	64                                           	fs
+     1:	66 41 89 c0                                  	mov    %ax,%r8w
+@rdfa_output:
+  0: [0] unrecognized instruction
   return code: 1
+----------------------------------------------------------------------
+@hex:
+  66 64 41 89 C0
+@dis:
+     0:	66                                           	data16
+     1:	64                                           	fs
+     2:	41 89 c0                                     	mov    %eax,%r8d
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # DATA16 prefix together with REP
+  89 FF
+  49 8D 3C 3F
+  66 F3 48 AB
+@dis:
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	66 f3 48 ab                                  	rep stos %rax,%es:(%rdi)
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # REP prefix together with DATA16
+  89 FF
+  49 8D 3C 3F
+  F3 66 48 AB
+@dis:
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	f3 66 48 ab                                  	rep stos %rax,%es:(%rdi)
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  66 90
+@dis:
+     0:	66 90                                        	xchg   %ax,%ax
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  66 66 90
+@dis:
+     0:	66 66 90                                     	xchg   %ax,%ax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  66 66 66 90
+@dis:
+     0:	66 66 66 90                                  	xchg   %ax,%ax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # white-listed nop
+  66 66 66 2E 0F 1F 84 00 00 00 00 00
+@dis:
+     0:	66 66 66 2e 0f 1f 84 00 00 00 00 00          	nopw   %cs:0x0(%rax,%rax,1)
+@rdfa_output:
+  return code: 0

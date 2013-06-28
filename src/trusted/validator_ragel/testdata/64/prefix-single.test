@@ -4,22 +4,19 @@
   # mov %edi,%edi
   # lea (%r15,%rdi),%rdi
   # rep stos %eax,%es:(%rdi)
-  89 FF
-  49 8D 3C 3F
+  89 FF \\
+  49 8D 3C 3F \\
   F3 AB
   # mov %edi,%edi
   # lea (%r15,%rdi),%rdi
   # repne scas %es:(%rdi),%al
-  89 FF
-  49 8D 3C 3F
+  89 FF \\
+  49 8D 3C 3F \\
   F2 AE
   # mov %ax, %ax
   66 89 C0
   # rex jmp $
   40 EB FD
-  # Branch prediction prefixes. (for jz).
-  2e 74 02
-  3e 74 02
 @dis:
      0:	f0 01 04 24                                  	lock add %eax,(%rsp)
      4:	89 ff                                        	mov    %edi,%edi
@@ -30,145 +27,214 @@
     12:	f2 ae                                        	repnz scas %es:(%rdi),%al
     14:	66 89 c0                                     	mov    %ax,%ax
     17:	40 eb fd                                     	rex jmp    0x17
-    1a:	2e 74 02                                     	je,pn  0x1f
-    1d:	3e 74 02                                     	je,pt  0x22
 @rdfa_output:
-  1a: [0] bad jump target
-  1d: [0] direct jump out of range
-  return code: 1
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Branch prediction prefixes. (for jz).
+  2e 74 00
+  3e 74 00
+@dis:
+     0:	2e 74 00                                     	je,pn  0x3
+     3:	3e 74 00                                     	je,pt  0x6
+@rdfa_output:
+  return code: 0
 ----------------------------------------------------------------------
 @hex:
   # Forbidden prefixes.
-  # rep push %eax
   F3 50
-  # mov %edi,%edi
-  # lea (%r15,%rdi),%rdi
-  # repne stos %eax,%es:(%rdi)
+@dis:
+     0:	f3 50                                        	repz push %rax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # stos allows rep, not repnz
   89 FF
   49 8D 3C 3F
   F2 AB
 @dis:
-     0:	f3 50                                        	repz push %rax
-     2:	89 ff                                        	mov    %edi,%edi
-     4:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-     8:	f2 ab                                        	repnz stos %eax,%es:(%rdi)
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	f2 ab                                        	repnz stos %eax,%es:(%rdi)
 @rdfa_output:
-  0: [0] unrecognized instruction
-  8: [1] unrecognized instruction
+  6: [0] unrecognized instruction
   return code: 1
 ----------------------------------------------------------------------
 @hex:
-  # fs mov %eax,%eax
+  # MOVs with segment prefixes
   64 89 C0
-  # gs mov %eax,%eax
-  65 89 C0
 @dis:
      0:	64                                           	fs
      1:	89 c0                                        	mov    %eax,%eax
-     3:	65                                           	gs
-     4:	89 c0                                        	mov    %eax,%eax
 @rdfa_output:
   0: [0] unrecognized instruction
-  3: [1] unrecognized instruction
   return code: 1
 ----------------------------------------------------------------------
 @hex:
-  # mov %eax,%cs:(%rsp)
+  65 89 C0
+@dis:
+     0:	65                                           	gs
+     1:	89 c0                                        	mov    %eax,%eax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   2E 89 04 24
-  # mov %eax,%ss:(%rsp)
-  36 89 04 24
-  # mov %eax,%ds:(%rsp)
-  3E 89 04 24
-  # mov %eax,%es:(%rsp)
-  26 89 04 24
-  # mov %eax,%fs:(%rsp)
-  64 89 04 24
-  # mov %eax,%gs:(%rsp)
-  65 89 04 24
-  # mov %eax,(%esp)
-  67 89 04 24
 @dis:
      0:	2e 89 04 24                                  	mov    %eax,%cs:(%rsp)
-     4:	36 89 04 24                                  	mov    %eax,%ss:(%rsp)
-     8:	3e 89 04 24                                  	mov    %eax,%ds:(%rsp)
-     c:	26 89 04 24                                  	mov    %eax,%es:(%rsp)
-    10:	64 89 04 24                                  	mov    %eax,%fs:(%rsp)
-    14:	65 89 04 24                                  	mov    %eax,%gs:(%rsp)
-    18:	67 89 04 24                                  	addr32 mov %eax,(%esp)
 @rdfa_output:
   0: [0] unrecognized instruction
-  4: [1] unrecognized instruction
-  8: [2] unrecognized instruction
-  c: [3] unrecognized instruction
-  10: [4] unrecognized instruction
-  14: [5] unrecognized instruction
-  18: [6] unrecognized instruction
   return code: 1
 ----------------------------------------------------------------------
 @hex:
-  # cs jmp $
+  36 89 04 24
+@dis:
+     0:	36 89 04 24                                  	mov    %eax,%ss:(%rsp)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  3E 89 04 24
+@dis:
+     0:	3e 89 04 24                                  	mov    %eax,%ds:(%rsp)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  26 89 04 24
+@dis:
+     0:	26 89 04 24                                  	mov    %eax,%es:(%rsp)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  64 89 04 24
+@dis:
+     0:	64 89 04 24                                  	mov    %eax,%fs:(%rsp)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  65 89 04 24
+@dis:
+     0:	65 89 04 24                                  	mov    %eax,%gs:(%rsp)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  67 89 04 24
+@dis:
+     0:	67 89 04 24                                  	addr32 mov %eax,(%esp)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Jumps with segment prefixes.
   2E EB FD
-  # ss jmp $
-  36 EB FD
-  # ds jmp $
-  3E EB FD
-  # es jmp $
-  26 EB FD
-  # fs jmp $
-  64 EB FD
-  # gs jmp $
-  65 EB FD
-  # jmp dword $
-  66 EB FD
-  # ss jz $
-  36 74 02
-  # fs jz $
-  64 74 02
-  # gs jz $
-  65 74 02
-  
-  # nops for bundle alignment
-  90 90
-  
-  # es jz $
-  26 74 02
 @dis:
      0:	2e                                           	cs
      1:	eb fd                                        	jmp    0x0
-     3:	36                                           	ss
-     4:	eb fd                                        	jmp    0x3
-     6:	3e                                           	ds
-     7:	eb fd                                        	jmp    0x6
-     9:	26                                           	es
-     a:	eb fd                                        	jmp    0x9
-     c:	64                                           	fs
-     d:	eb fd                                        	jmp    0xc
-     f:	65                                           	gs
-    10:	eb fd                                        	jmp    0xf
-    12:	66                                           	data16
-    13:	eb fd                                        	jmp    0x12
-    15:	36                                           	ss
-    16:	74 02                                        	je     0x1a
-    18:	64                                           	fs
-    19:	74 02                                        	je     0x1d
-    1b:	65                                           	gs
-    1c:	74 02                                        	je     0x20
-    1e:	90                                           	nop
-    1f:	90                                           	nop
-    20:	26                                           	es
-    21:	74 02                                        	je     0x25
 @rdfa_output:
   0: [0] unrecognized instruction
-  3: [1] unrecognized instruction
-  6: [2] unrecognized instruction
-  9: [3] unrecognized instruction
-  c: [4] unrecognized instruction
-  f: [5] unrecognized instruction
-  12: [6] unrecognized instruction
-  15: [7] unrecognized instruction
-  18: [8] unrecognized instruction
-  1b: [9] unrecognized instruction
-  20: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  36 EB FD
+@dis:
+     0:	36                                           	ss
+     1:	eb fd                                        	jmp    0x0
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  3E EB FD
+@dis:
+     0:	3e                                           	ds
+     1:	eb fd                                        	jmp    0x0
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  26 EB FD
+@dis:
+     0:	26                                           	es
+     1:	eb fd                                        	jmp    0x0
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  64 EB FD
+@dis:
+     0:	64                                           	fs
+     1:	eb fd                                        	jmp    0x0
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  65 EB FD
+@dis:
+     0:	65                                           	gs
+     1:	eb fd                                        	jmp    0x0
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  66 EB FD
+@dis:
+     0:	66                                           	data16
+     1:	eb fd                                        	jmp    0x0
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  36 74 02
+@dis:
+     0:	36                                           	ss
+     1:	74 02                                        	je     0x5
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  64 74 02
+@dis:
+     0:	64                                           	fs
+     1:	74 02                                        	je     0x5
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  65 74 02
+@dis:
+     0:	65                                           	gs
+     1:	74 02                                        	je     0x5
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  26 74 02
+@dis:
+     0:	26                                           	es
+     1:	74 02                                        	je     0x5
+@rdfa_output:
+  0: [0] unrecognized instruction
   return code: 1
 ----------------------------------------------------------------------
 @hex:
