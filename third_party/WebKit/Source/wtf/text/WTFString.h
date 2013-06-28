@@ -268,7 +268,8 @@ public:
     size_t reverseFind(const String& str, unsigned start, bool caseSensitive) const
         { return caseSensitive ? reverseFind(str, start) : reverseFindIgnoringCase(str, start); }
 
-    const UChar* charactersWithNullTermination();
+    // FIXME: Remove the rest of the machinery around the old charactersWithNullTermination implementation.
+    Vector<UChar> charactersWithNullTermination() const;
     
     UChar32 characterStartingAt(unsigned) const; // Ditto.
     

@@ -38,7 +38,7 @@ namespace WebCore {
 
 String pathGetFileName(const String& path)
 {
-    return String(PathFindFileName(String(path).charactersWithNullTermination()));
+    return String(PathFindFileName(path.charactersWithNullTermination().data()));
 }
 
 } // namespace WebCore

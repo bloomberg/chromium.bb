@@ -374,15 +374,6 @@ TEST(MemoryInstrumentationTest, visitStrings)
         EXPECT_EQ(1u, helper.visitedObjects());
     }
 
-    { // Zero terminated internal buffer.
-        InstrumentationTestHelper helper;
-        InstrumentedOwner<String> stringInstrumentedOwner("string");
-        stringInstrumentedOwner.m_value.charactersWithNullTermination();
-        helper.addRootObject(stringInstrumentedOwner);
-        EXPECT_EQ(sizeof(StringImpl) + (stringInstrumentedOwner.m_value.length() + 1) * (sizeof(LChar) + sizeof(UChar)), helper.reportedSizeForAllTypes());
-        EXPECT_EQ(2u, helper.visitedObjects());
-    }
-
     { // Substring
         InstrumentationTestHelper helper;
         String baseString("String");
