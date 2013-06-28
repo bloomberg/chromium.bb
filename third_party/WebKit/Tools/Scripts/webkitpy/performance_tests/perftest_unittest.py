@@ -391,35 +391,6 @@ class TestReplayPerfTest(unittest.TestCase):
         self.assertEqual(actual_stderr, '')
         self.assertEqual(actual_logs, "Web page replay didn't start.\n")
 
-    def test_run_single_fails_when_output_has_error(self):
-        output_capture = OutputCapture()
-        output_capture.capture_output()
-
-        loaded_pages = []
-
-        def run_test(test_input, stop_when_done):
-            loaded_pages.append(test_input)
-            self._add_file(port, '/path/some-dir', 'some-test.wpr', 'wpr content')
-            return DriverOutput('actual text', 'actual image', 'actual checksum',
-                audio=None, crash=False, timeout=False, error='some error')
-
-        test, port = self._setup_test(run_test)
-        test._archive_path = '/path/some-dir.wpr'
-        test._url = 'http://some-test/'
-
-        try:
-            driver = port.create_driver(worker_number=1, no_timeout=True)
-            self.assertEqual(test.run_single(driver, '/path/some-dir/some-test.replay', time_out_ms=100), None)
-        finally:
-            actual_stdout, actual_stderr, actual_logs = output_capture.restore_output()
-
-        self.assertEqual(len(loaded_pages), 2)
-        self.assertEqual(loaded_pages[0].test_name, test.force_gc_test)
-        self.assertEqual(loaded_pages[1].test_name, 'http://some-test/')
-        self.assertEqual(actual_stdout, '')
-        self.assertEqual(actual_stderr, '')
-        self.assertEqual(actual_logs, 'error: some-test.replay\nsome error\n')
-
     def test_prepare(self):
         output_capture = OutputCapture()
         output_capture.capture_output()
