@@ -100,8 +100,6 @@ include_rules = [
   "-ui/views",
 
   "+webkit",
-  "-webkit/dom_storage",
-  "+webkit/dom_storage/dom_storage_types.h",
 
   # For generated JNI includes.
   "+jni",

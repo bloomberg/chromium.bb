@@ -53,9 +53,6 @@ include_rules = [
   # TODO(stuartmorgan): Remove these by refactoring necessary code out of
   # webkit/. See crbug.com/146251
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
-  "+webkit/base/origin_url_conversions.h",
-  "+webkit/common/cursors/webcursor.h",
-  "+webkit/dom_storage/dom_storage_types.h",
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.
 
   # TODO(kinuko): Remove all other webkit/* dependencies after we cleaned
@@ -71,7 +68,6 @@ include_rules = [
   # grouped like the other webkit/ files, and can therefore be tackled one at
   # a time.
   "+webkit/glue/resource_type.h",
-  "+webkit/glue/webkit_glue.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   "-chrome/browser/ui/views",
