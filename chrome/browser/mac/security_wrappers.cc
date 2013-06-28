@@ -340,7 +340,14 @@ CrSKeychainItemAttributesAndData* CrSKeychainItemCopyAttributesAndData(
     case kSecGenericPasswordItemClass:
       item_id = CSSM_DL_DB_RECORD_GENERIC_PASSWORD;
       break;
+    // kSecInternetPasswordItemClass is marked as deprecated in the 10.9 sdk,
+    // but the files in libsecurity_keychain from 10.7 referenced above still
+    // use it. Also see rdar://14281375 /
+    // http://openradar.appspot.com/radar?id=3143412 .
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     case kSecAppleSharePasswordItemClass:
+#pragma clang diagnostic pop
       item_id = CSSM_DL_DB_RECORD_APPLESHARE_PASSWORD;
       break;
     default:
