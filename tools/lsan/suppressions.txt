@@ -1,0 +1,8 @@
+# False positives in libfontconfig. http://crbug.com/39050
+leak:*libfontconfig*
+
+# HeapCheck sanity test
+leak:base::ToolsSanityTest_MemoryLeak_Test::TestBody
+
+# http://crbug.com/99304
+leak:v8::internal::Heap::ReserveSpace
