@@ -14,19 +14,19 @@
 
 #include "courgette/ensemble.h"
 
-#include <vector>
 #include <limits>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
-#include "courgette/third_party/bsdiff.h"
 #include "courgette/crc.h"
 #include "courgette/difference_estimator.h"
-#include "courgette/streams.h"
 #include "courgette/region.h"
 #include "courgette/simple_delta.h"
+#include "courgette/streams.h"
+#include "courgette/third_party/bsdiff.h"
 
 #include "courgette/patcher_x86_32.h"
 #include "courgette/patch_generator_x86_32.h"

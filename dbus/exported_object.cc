@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"

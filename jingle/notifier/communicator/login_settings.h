@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "jingle/notifier/base/server_information.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "talk/xmpp/xmppclientsettings.h"

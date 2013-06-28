@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/threading/thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/mocks.h"
 

@@ -7,7 +7,7 @@
 
 #if !defined(__native_client__)
 
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace gpu {
 

@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "dbus/dbus_export.h"
 #include "dbus/object_path.h"
 

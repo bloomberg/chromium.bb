@@ -12,7 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "dbus/object_manager.h"
