@@ -7,6 +7,7 @@
 #include <shellapi.h>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -21,7 +22,6 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_process_finder_win.h"
@@ -93,24 +93,6 @@ BOOL CALLBACK BrowserWindowEnumeration(HWND window, LPARAM param) {
   return !*result;
 }
 
-// This function thunks to the object's version of the windowproc, taking in
-// consideration that there are several messages being dispatched before
-// WM_NCCREATE which we let windows handle.
-LRESULT CALLBACK ThunkWndProc(HWND hwnd, UINT message,
-                              WPARAM wparam, LPARAM lparam) {
-  ProcessSingleton* singleton =
-      reinterpret_cast<ProcessSingleton*>(ui::GetWindowUserData(hwnd));
-  if (message == WM_NCCREATE) {
-    CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lparam);
-    singleton = reinterpret_cast<ProcessSingleton*>(cs->lpCreateParams);
-    CHECK(singleton);
-    ui::SetWindowUserData(hwnd, singleton);
-  } else if (!singleton) {
-    return ::DefWindowProc(hwnd, message, wparam, lparam);
-  }
-  return singleton->WndProc(hwnd, message, wparam, lparam);
-}
-
 bool ParseCommandLine(const COPYDATASTRUCT* cds,
                       CommandLine* parsed_command_line,
                       base::FilePath* current_directory) {
@@ -169,6 +151,31 @@ bool ParseCommandLine(const COPYDATASTRUCT* cds,
     return true;
   }
   return false;
+}
+
+bool ProcessLaunchNotification(
+    const ProcessSingleton::NotificationCallback& notification_callback,
+    UINT message,
+    WPARAM wparam,
+    LPARAM lparam,
+    LRESULT* result) {
+  if (message != WM_COPYDATA)
+    return false;
+
+  // Handle the WM_COPYDATA message from another process.
+  HWND hwnd = reinterpret_cast<HWND>(wparam);
+  const COPYDATASTRUCT* cds = reinterpret_cast<COPYDATASTRUCT*>(lparam);
+
+  CommandLine parsed_command_line(CommandLine::NO_PROGRAM);
+  base::FilePath current_directory;
+  if (!ParseCommandLine(cds, &parsed_command_line, &current_directory)) {
+    *result = TRUE;
+    return true;
+  }
+
+  *result = notification_callback.Run(parsed_command_line, current_directory) ?
+      TRUE : FALSE;
+  return true;
 }
 
 // Returns true if Chrome needs to be relaunched into Windows 8 immersive mode.
@@ -260,20 +267,12 @@ bool ProcessSingleton::EscapeVirtualization(
 ProcessSingleton::ProcessSingleton(
     const base::FilePath& user_data_dir,
     const NotificationCallback& notification_callback)
-    : window_(NULL), notification_callback_(notification_callback),
+    : notification_callback_(notification_callback),
       is_virtualized_(false), lock_file_(INVALID_HANDLE_VALUE),
       user_data_dir_(user_data_dir) {
 }
 
 ProcessSingleton::~ProcessSingleton() {
-  // We need to unregister the window as late as possible so that we can detect
-  // another instance of chrome running. Otherwise we may end up writing out
-  // data while a new chrome is starting up.
-  if (window_) {
-    ::DestroyWindow(window_);
-    ::UnregisterClass(chrome::kMessageWindowClass,
-                      base::GetModuleFromAddress(&ThunkWndProc));
-  }
   if (lock_file_ != INVALID_HANDLE_VALUE)
     ::CloseHandle(lock_file_);
 }
@@ -439,22 +438,12 @@ bool ProcessSingleton::Create() {
           << "Lock file can not be created! Error code: " << error;
 
       if (lock_file_ != INVALID_HANDLE_VALUE) {
-        HINSTANCE hinst = base::GetModuleFromAddress(&ThunkWndProc);
-
-        WNDCLASSEX wc = {0};
-        wc.cbSize = sizeof(wc);
-        wc.lpfnWndProc = base::win::WrappedWindowProc<ThunkWndProc>;
-        wc.hInstance = hinst;
-        wc.lpszClassName = chrome::kMessageWindowClass;
-        ATOM clazz = ::RegisterClassEx(&wc);
-        DCHECK(clazz);
-
         // Set the window's title to the path of our user data directory so
         // other Chrome instances can decide if they should forward to us.
-        window_ = ::CreateWindow(MAKEINTATOM(clazz),
-                                 user_data_dir_.value().c_str(),
-                                 0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, this);
-        CHECK(window_);
+        bool result = window_.CreateNamed(
+            base::Bind(&ProcessLaunchNotification, notification_callback_),
+            user_data_dir_.value());
+        CHECK(result && window_.hwnd());
       }
 
       if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
@@ -468,30 +457,8 @@ bool ProcessSingleton::Create() {
     }
   }
 
-  return window_ != NULL;
+  return window_.hwnd() != NULL;
 }
 
 void ProcessSingleton::Cleanup() {
-}
-
-LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
-  CommandLine parsed_command_line(CommandLine::NO_PROGRAM);
-  base::FilePath current_directory;
-  if (!ParseCommandLine(cds, &parsed_command_line, &current_directory))
-    return TRUE;
-  return notification_callback_.Run(parsed_command_line, current_directory) ?
-      TRUE : FALSE;
-}
-
-LRESULT ProcessSingleton::WndProc(HWND hwnd, UINT message,
-                                  WPARAM wparam, LPARAM lparam) {
-  switch (message) {
-    case WM_COPYDATA:
-      return OnCopyData(reinterpret_cast<HWND>(wparam),
-                        reinterpret_cast<COPYDATASTRUCT*>(lparam));
-    default:
-      break;
-  }
-
-  return ::DefWindowProc(hwnd, message, wparam, lparam);
 }

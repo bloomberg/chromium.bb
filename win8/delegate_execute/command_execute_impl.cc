@@ -12,6 +12,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/message_window.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_handle.h"
@@ -253,9 +254,8 @@ STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
   // New Aura/Ash world we don't want to go throgh FindWindow path
   // and instead take decision based on launch mode.
 #if !defined(USE_AURA)
-  HWND chrome_window = ::FindWindowEx(HWND_MESSAGE, NULL,
-                                      chrome::kMessageWindowClass,
-                                      user_data_dir.value().c_str());
+  HWND chrome_window = base::win::MessageWindow::FindWindow(
+      user_data_dir.value());
   if (chrome_window) {
     AtlTrace("Found chrome window %p\n", chrome_window);
     // The failure cases below are deemed to happen due to the inherently racy

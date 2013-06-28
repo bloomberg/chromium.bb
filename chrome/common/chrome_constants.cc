@@ -138,7 +138,6 @@ const base::FilePath::CharType kMetroDriverDll[] = FPL("metro_driver.dll");
 const wchar_t kStatusTrayWindowClass[] = L"Chrome_StatusTrayWindow";
 #endif  // defined(OS_WIN)
 
-const wchar_t kMessageWindowClass[] = L"Chrome_MessageWindow";
 const wchar_t kCrashReportLog[] = L"Reported Crashes.txt";
 const wchar_t kTestingInterfaceDLL[] = L"testing_interface.dll";
 const char    kInitialProfile[] = "Default";

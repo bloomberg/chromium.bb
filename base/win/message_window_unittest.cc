@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/message_window.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,6 +32,7 @@ TEST(MessageWindowTest, Create) {
   EXPECT_TRUE(window.Create(base::Bind(&HandleMessage)));
 }
 
+// Checks that a named window can be created.
 TEST(MessageWindowTest, CreateNamed) {
   win::MessageWindow window;
   EXPECT_TRUE(window.CreateNamed(base::Bind(&HandleMessage),
@@ -43,6 +45,17 @@ TEST(MessageWindowTest, SendMessage) {
   EXPECT_TRUE(window.Create(base::Bind(&HandleMessage)));
 
   EXPECT_EQ(SendMessage(window.hwnd(), WM_USER, 100, 0), 100);
+}
+
+// Verifies that a named window can be found by name.
+TEST(MessageWindowTest, FindWindow) {
+  string16 name = UTF8ToUTF16(base::GenerateGUID());
+  win::MessageWindow window;
+  EXPECT_TRUE(window.CreateNamed(base::Bind(&HandleMessage), name));
+
+  HWND hwnd = win::MessageWindow::FindWindow(name);
+  EXPECT_TRUE(hwnd != NULL);
+  EXPECT_EQ(SendMessage(hwnd, WM_USER, 200, 0), 200);
 }
 
 }  // namespace base
