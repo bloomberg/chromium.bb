@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/location/location_manager.h"
 #include "chrome/common/extensions/api/location.h"
+#include "extensions/common/error_utils.h"
 
 // TODO(vadimt): add tests.
 
@@ -15,14 +16,43 @@ namespace ClearWatch = location::ClearWatch;
 
 namespace extensions {
 
+const char kMustBePositive[] = "'*' must be 0 or greater.";
+const char kMinDistanceInMeters[] = "minDistanceInMeters";
+const char kMinTimeInMilliseconds[] = "minTimeInMilliseconds";
+
+bool IsNegative(double* value) {
+  return value && *value < 0.0;
+}
+
 bool LocationWatchLocationFunction::RunImpl() {
   scoped_ptr<WatchLocation::Params> params(
       WatchLocation::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  // TODO(vadimt): validate and use params->request_info.
+  double* min_distance_in_meters =
+      params->request_info.min_distance_in_meters.get();
+  if (IsNegative(min_distance_in_meters)) {
+    error_ = ErrorUtils::FormatErrorMessage(
+        kMustBePositive,
+        kMinDistanceInMeters);
+    return false;
+  }
+
+  double* min_time_in_milliseconds =
+      params->request_info.min_time_in_milliseconds.get();
+  if (IsNegative(min_time_in_milliseconds)) {
+    error_ = ErrorUtils::FormatErrorMessage(
+        kMustBePositive,
+        kMinTimeInMilliseconds);
+    return false;
+  }
+
+  // TODO(vadimt): validate and use params->request_info.maximumAge
   LocationManager::Get(profile())->AddLocationRequest(
-      extension_id(), params->name);
+      extension_id(),
+      params->name,
+      min_distance_in_meters,
+      min_time_in_milliseconds);
 
   return true;
 }

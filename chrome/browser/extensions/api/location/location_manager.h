@@ -43,8 +43,11 @@ class LocationManager
 
   // Adds location request for the given extension, and starts the location
   // tracking.
-  void AddLocationRequest(const std::string& extension_id,
-                          const std::string& request_name);
+  void AddLocationRequest(
+      const std::string& extension_id,
+      const std::string& request_name,
+      const double* distance_update_threshold_meters,
+      const double* time_between_updates_ms);
 
   // Cancels and removes the request with the given |name| for the given
   // extension.
