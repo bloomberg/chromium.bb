@@ -16,7 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/message_window.h"
 #include "base/win/metro.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
@@ -94,12 +93,13 @@ std::string EscapeQueryParamValue(const std::string& text, bool use_plus) {
 
 // END COPY from net/base/escape.cc
 
-}  // namespace
+}
 
 namespace chrome {
 
 HWND FindRunningChromeWindow(const base::FilePath& user_data_dir) {
-  return base::win::MessageWindow::FindWindow(user_data_dir.value());
+  return FindWindowEx(HWND_MESSAGE, NULL, chrome::kMessageWindowClass,
+                      user_data_dir.value().c_str());
 }
 
 NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window) {

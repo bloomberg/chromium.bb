@@ -28,10 +28,6 @@
 #include "base/files/scoped_temp_dir.h"
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
-#if defined(OS_WIN)
-#include "base/win/message_window.h"
-#endif  // defined(OS_WIN)
-
 class CommandLine;
 
 // ProcessSingleton ----------------------------------------------------------
@@ -88,6 +84,10 @@ class ProcessSingleton : public base::NonThreadSafe {
   // Clear any lock state during shutdown.
   void Cleanup();
 
+#if defined(OS_WIN)
+  LRESULT WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+#endif
+
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   static void DisablePromptForTesting();
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
@@ -123,10 +123,13 @@ class ProcessSingleton : public base::NonThreadSafe {
   NotificationCallback notification_callback_;  // Handler for notifications.
 
 #if defined(OS_WIN)
+  // This ugly behemoth handles startup commands sent from another process.
+  LRESULT OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds);
+
   bool EscapeVirtualization(const base::FilePath& user_data_dir);
 
   HWND remote_window_;  // The HWND_MESSAGE of another browser.
-  base::win::MessageWindow window_;  // The message-only window.
+  HWND window_;  // The HWND_MESSAGE window.
   bool is_virtualized_;  // Stuck inside Microsoft Softricity VM environment.
   HANDLE lock_file_;
   base::FilePath user_data_dir_;
