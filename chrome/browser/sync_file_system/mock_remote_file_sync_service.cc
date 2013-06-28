@@ -19,7 +19,7 @@ using ::testing::Return;
 namespace sync_file_system {
 
 MockRemoteFileSyncService::MockRemoteFileSyncService()
-    : conflict_resolution_policy_(CONFLICT_RESOLUTION_MANUAL) {
+    : conflict_resolution_policy_(CONFLICT_RESOLUTION_POLICY_MANUAL) {
   typedef MockRemoteFileSyncService self;
   ON_CALL(*this, AddServiceObserver(_))
       .WillByDefault(Invoke(this, &self::AddServiceObserverStub));

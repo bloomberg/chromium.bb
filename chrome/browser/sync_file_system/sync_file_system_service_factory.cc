@@ -68,7 +68,7 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(kDisableLastWriteWin)) {
     remote_file_service->SetConflictResolutionPolicy(
-        CONFLICT_RESOLUTION_MANUAL);
+        CONFLICT_RESOLUTION_POLICY_MANUAL);
   }
 
   service->Initialize(local_file_service.Pass(),

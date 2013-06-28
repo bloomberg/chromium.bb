@@ -90,7 +90,7 @@ void SyncFileCallbackAdapter(
 }  // namespace
 
 ConflictResolutionPolicy DriveFileSyncService::kDefaultPolicy =
-    CONFLICT_RESOLUTION_LAST_WRITE_WIN;
+    CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN;
 
 struct DriveFileSyncService::ProcessRemoteChangeParam {
   RemoteChangeHandler::RemoteChange remote_change;
@@ -858,10 +858,10 @@ ConflictResolutionResult DriveFileSyncService::ResolveConflictForLocalSync(
   if (remote_file_type == SYNC_FILE_TYPE_DIRECTORY)
     return CONFLICT_RESOLUTION_REMOTE_WIN;
 
-  if (conflict_resolution_ == CONFLICT_RESOLUTION_MANUAL)
+  if (conflict_resolution_ == CONFLICT_RESOLUTION_POLICY_MANUAL)
     return CONFLICT_RESOLUTION_MARK_CONFLICT;
 
-  DCHECK_EQ(CONFLICT_RESOLUTION_LAST_WRITE_WIN, conflict_resolution_);
+  DCHECK_EQ(CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN, conflict_resolution_);
   if (local_updated_time >= remote_updated_time ||
       remote_file_type == SYNC_FILE_TYPE_UNKNOWN) {
     return CONFLICT_RESOLUTION_LOCAL_WIN;
@@ -1214,7 +1214,7 @@ void DriveFileSyncService::HandleConflictForRemoteSync(
   const FileSystemURL& url = param->remote_change.url;
   SyncFileMetadata& local_metadata = param->local_metadata;
   DriveMetadata& drive_metadata = param->drive_metadata;
-  if (conflict_resolution_ == CONFLICT_RESOLUTION_MANUAL) {
+  if (conflict_resolution_ == CONFLICT_RESOLUTION_POLICY_MANUAL) {
     param->sync_action = SYNC_ACTION_NONE;
     MarkConflict(url, &drive_metadata,
                  base::Bind(&DriveFileSyncService::CompleteRemoteSync,
@@ -1222,7 +1222,7 @@ void DriveFileSyncService::HandleConflictForRemoteSync(
     return;
   }
 
-  DCHECK_EQ(CONFLICT_RESOLUTION_LAST_WRITE_WIN, conflict_resolution_);
+  DCHECK_EQ(CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN, conflict_resolution_);
   if (param->remote_change.updated_time.is_null()) {
     // Get remote file time and call this method again.
     const std::string& resource_id = param->remote_change.resource_id;

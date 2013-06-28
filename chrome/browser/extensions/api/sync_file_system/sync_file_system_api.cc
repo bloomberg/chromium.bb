@@ -357,7 +357,7 @@ bool SyncFileSystemSetConflictResolutionPolicyFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &policy_string));
   ConflictResolutionPolicy policy = ExtensionEnumToConflictResolutionPolicy(
       api::sync_file_system::ParseConflictResolutionPolicy(policy_string));
-  if (policy == sync_file_system::CONFLICT_RESOLUTION_UNKNOWN) {
+  if (policy == sync_file_system::CONFLICT_RESOLUTION_POLICY_UNKNOWN) {
     SetError(base::StringPrintf(kUnsupportedConflictResolutionPolicy,
                                 policy_string.c_str()));
     return false;

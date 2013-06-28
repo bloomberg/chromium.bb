@@ -77,25 +77,25 @@ ExtensionEnumToConflictResolutionPolicy(
     api::sync_file_system::ConflictResolutionPolicy policy) {
   switch (policy) {
     case api::sync_file_system::CONFLICT_RESOLUTION_POLICY_NONE:
-      return sync_file_system::CONFLICT_RESOLUTION_UNKNOWN;
+      return sync_file_system::CONFLICT_RESOLUTION_POLICY_UNKNOWN;
     case api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN:
-      return sync_file_system::CONFLICT_RESOLUTION_LAST_WRITE_WIN;
+      return sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN;
     case api::sync_file_system::CONFLICT_RESOLUTION_POLICY_MANUAL:
-      return sync_file_system::CONFLICT_RESOLUTION_MANUAL;
+      return sync_file_system::CONFLICT_RESOLUTION_POLICY_MANUAL;
   }
   NOTREACHED() << "Invalid conflict resolution policy: " << policy;
-  return sync_file_system::CONFLICT_RESOLUTION_UNKNOWN;
+  return sync_file_system::CONFLICT_RESOLUTION_POLICY_UNKNOWN;
 }
 
 api::sync_file_system::ConflictResolutionPolicy
 ConflictResolutionPolicyToExtensionEnum(
     sync_file_system::ConflictResolutionPolicy policy) {
   switch (policy) {
-    case sync_file_system::CONFLICT_RESOLUTION_UNKNOWN:
+    case sync_file_system::CONFLICT_RESOLUTION_POLICY_UNKNOWN:
       return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_NONE;
-    case sync_file_system::CONFLICT_RESOLUTION_LAST_WRITE_WIN:
+    case sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN:
         return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN;
-    case sync_file_system::CONFLICT_RESOLUTION_MANUAL:
+    case sync_file_system::CONFLICT_RESOLUTION_POLICY_MANUAL:
       return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_MANUAL;
   }
   NOTREACHED() << "Invalid conflict resolution policy: " << policy;
