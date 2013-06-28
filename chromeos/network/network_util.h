@@ -15,7 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {

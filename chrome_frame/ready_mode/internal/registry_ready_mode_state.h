@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome_frame/ready_mode/internal/ready_mode_state.h"
 
 // Defines the possible Ready Mode states.

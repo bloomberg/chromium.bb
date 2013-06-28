@@ -14,7 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/win/registry.h"
 #include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"

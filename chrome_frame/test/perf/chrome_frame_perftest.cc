@@ -21,7 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/win/event_trace_consumer.h"
 #include "base/win/event_trace_controller.h"
 #include "base/win/registry.h"

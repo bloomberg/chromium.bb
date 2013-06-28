@@ -4,7 +4,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cloud_print/service/win/service_listener.h"
 #include "cloud_print/service/win/service_utils.h"
 #include "cloud_print/service/win/setup_listener.h"

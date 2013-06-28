@@ -11,7 +11,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chromeos/display/output_util.h"
 #include "chromeos/display/real_output_configurator_delegate.h"
 

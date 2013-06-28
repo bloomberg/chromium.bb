@@ -16,7 +16,7 @@
 #include "base/memory/scoped_handle.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/chrome_frame_delegate.h"

@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cloud_print/gcp20/prototype/printer.h"
 
 namespace {

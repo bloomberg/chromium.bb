@@ -11,10 +11,10 @@
 
 #include "base/basictypes.h"
 #include "base/event_types.h"
-#include "base/observer_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/timer.h"
+#include "base/observer_list.h"
+#include "base/timer/timer.h"
 #include "chromeos/chromeos_export.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

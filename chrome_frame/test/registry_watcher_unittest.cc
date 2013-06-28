@@ -5,7 +5,7 @@
 #include "chrome_frame/registry_watcher.h"
 
 #include "base/synchronization/waitable_event.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/win/registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

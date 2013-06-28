@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/memory/linked_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

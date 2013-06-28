@@ -6,7 +6,7 @@
 #define CHROMEOS_NETWORK_GEOLOCATION_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/network/network_handler.h"

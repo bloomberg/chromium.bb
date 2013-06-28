@@ -5,7 +5,7 @@
 #ifndef CHROME_FRAME_TURNDOWN_PROMPT_RESHOW_STATE_H_
 #define CHROME_FRAME_TURNDOWN_PROMPT_RESHOW_STATE_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace turndown_prompt {
 

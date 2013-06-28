@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/test_process_killer_win.h"
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/ie_event_sink.h"

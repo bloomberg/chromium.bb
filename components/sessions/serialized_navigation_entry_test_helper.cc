@@ -5,7 +5,7 @@
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"

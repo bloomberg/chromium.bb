@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 #include "chrome_frame/infobars/infobar_content.h"
 #include "chrome_frame/infobars/infobar_manager.h"
