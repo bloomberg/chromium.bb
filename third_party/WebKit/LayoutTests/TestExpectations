@@ -1573,7 +1573,7 @@ crbug.com/243663 [ Win7 ] compositing/reflections/nested-reflection-transition.h
 crbug.com/243683 [ Linux Mac Win ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Pass Failure ]
 crbug.com/243353 animations/play-state-suspend.html [ Failure Pass ]
 crbug.com/243353 animations/play-state.html [ Failure Pass ]
-crbug.com/243701 editing/execCommand/apply-style-command-crash.html [ Failure Pass Timeout ]
+crbug.com/243701 editing/execCommand/apply-style-command-crash.html [ Pass Timeout ]
 crbug.com/243725 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure Pass ]
 crbug.com/243730 [ Mac ] fast/dom/HTMLMeterElement/meter-optimums.html [ Timeout ImageOnlyFailure Pass ]
 crbug.com/243730 [ Linux Mac Win ] fast/dom/HTMLMeterElement/meter-element.html [ Timeout Pass ]
