@@ -269,7 +269,8 @@ void RenderView::layout()
                     || child->style()->logicalMaxHeight().isPercent()
                     || child->style()->logicalHeight().isViewportPercentage()
                     || child->style()->logicalMinHeight().isViewportPercentage()
-                    || child->style()->logicalMaxHeight().isViewportPercentage())
+                    || child->style()->logicalMaxHeight().isViewportPercentage()
+                    || child->isSVGRoot())
                 child->setChildNeedsLayout(true, MarkOnlyThis);
         }
     }
