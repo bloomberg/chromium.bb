@@ -313,6 +313,8 @@ private:
 
     void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation);
 
+    void prepareForLoadStart();
+
     bool didOpenURL();
 
     void scheduleCheckCompleted();

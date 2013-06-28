@@ -235,6 +235,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("setAudioData", &TestRunner::setAudioData);
     bindMethod("dumpFrameLoadCallbacks", &TestRunner::dumpFrameLoadCallbacks);
     bindMethod("dumpUserGestureInFrameLoadCallbacks", &TestRunner::dumpUserGestureInFrameLoadCallbacks);
+    bindMethod("setStopProvisionalFrameLoads", &TestRunner::setStopProvisionalFrameLoads);
     bindMethod("dumpTitleChanges", &TestRunner::dumpTitleChanges);
     bindMethod("dumpCreateView", &TestRunner::dumpCreateView);
     bindMethod("setCanOpenWindows", &TestRunner::setCanOpenWindows);
@@ -390,6 +391,7 @@ void TestRunner::reset()
     m_dumpAsAudio = false;
     m_dumpFrameLoadCallbacks = false;
     m_dumpUserGestureInFrameLoadCallbacks = false;
+    m_stopProvisionalFrameLoads = false;
     m_dumpTitleChanges = false;
     m_dumpCreateView = false;
     m_canOpenWindows = false;
@@ -516,6 +518,11 @@ void TestRunner::setShouldDumpFrameLoadCallbacks(bool value)
 bool TestRunner::shouldDumpUserGestureInFrameLoadCallbacks() const
 {
     return m_testIsRunning && m_dumpUserGestureInFrameLoadCallbacks;
+}
+
+bool TestRunner::stopProvisionalFrameLoads() const
+{
+    return m_stopProvisionalFrameLoads;
 }
 
 bool TestRunner::shouldDumpTitleChanges() const
@@ -1898,6 +1905,12 @@ void TestRunner::dumpUserGestureInFrameLoadCallbacks(const CppArgumentList&, Cpp
 {
     m_dumpUserGestureInFrameLoadCallbacks = true;
     result->setNull();
+}
+
+void TestRunner::setStopProvisionalFrameLoads(const CppArgumentList&, CppVariant* result)
+{
+    result->setNull();
+    m_stopProvisionalFrameLoads = true;
 }
 
 void TestRunner::dumpTitleChanges(const CppArgumentList&, CppVariant* result)

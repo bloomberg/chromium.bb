@@ -1187,6 +1187,12 @@ void WebTestProxyBase::didStartProvisionalLoad(WebFrame* frame)
 
     if (m_testInterfaces->testRunner()->shouldDumpUserGestureInFrameLoadCallbacks())
         printFrameUserGestureStatus(m_delegate, frame, " - in didStartProvisionalLoadForFrame\n");
+
+    if (m_testInterfaces->testRunner()->stopProvisionalFrameLoads()) {
+        printFrameDescription(m_delegate, frame);
+        m_delegate->printMessage(" - stopping load in didStartProvisionalLoadForFrame callback\n");
+        frame->stopLoading();
+    }
 }
 
 void WebTestProxyBase::didReceiveServerRedirectForProvisionalLoad(WebFrame* frame)
