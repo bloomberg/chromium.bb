@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"

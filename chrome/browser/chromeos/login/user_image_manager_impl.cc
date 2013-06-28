@@ -15,7 +15,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/threading/worker_pool.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"

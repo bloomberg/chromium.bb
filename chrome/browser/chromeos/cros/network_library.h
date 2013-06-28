@@ -15,7 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/network_constants.h"
 #include "chromeos/network/network_ip_config.h"

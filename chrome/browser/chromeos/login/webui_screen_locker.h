@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/login/lock_window.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/screen_locker_delegate.h"

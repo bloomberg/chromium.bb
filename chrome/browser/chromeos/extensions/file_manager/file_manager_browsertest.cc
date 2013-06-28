@@ -15,7 +15,7 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/extensions/file_manager/drive_test_util.h"

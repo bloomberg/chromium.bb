@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_DELAYABLE_WIDGET_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_DELAYABLE_WIDGET_H_
 
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {

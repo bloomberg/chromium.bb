@@ -6,7 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"

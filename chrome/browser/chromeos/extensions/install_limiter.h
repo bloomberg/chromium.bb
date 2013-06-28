@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"

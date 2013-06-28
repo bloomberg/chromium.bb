@@ -8,7 +8,7 @@
 #include "ash/wm/user_activity_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

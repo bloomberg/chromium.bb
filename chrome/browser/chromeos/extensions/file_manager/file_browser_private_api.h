@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/extensions/file_manager/zip_file_creator.h"

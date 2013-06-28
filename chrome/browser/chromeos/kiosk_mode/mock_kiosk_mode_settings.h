@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace base {
 template <typename T> struct DefaultLazyInstanceTraits;

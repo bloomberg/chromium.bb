@@ -10,7 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "content/public/browser/browser_thread.h"

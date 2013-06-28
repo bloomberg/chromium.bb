@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "net/url_request/url_fetcher_delegate.h"

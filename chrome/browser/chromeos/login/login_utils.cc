@@ -26,7 +26,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"

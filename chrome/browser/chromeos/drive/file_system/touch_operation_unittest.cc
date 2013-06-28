@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/drive/file_system/touch_operation.h"
 
 #include "base/files/file_path.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"

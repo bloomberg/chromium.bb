@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_NETWORK_LIBRARY_IMPL_CROS_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_NETWORK_LIBRARY_IMPL_CROS_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_base.h"
 
 namespace chromeos {

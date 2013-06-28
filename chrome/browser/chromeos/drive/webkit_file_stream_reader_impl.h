@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
 #include "net/base/completion_callback.h"
 #include "webkit/browser/blob/file_stream_reader.h"

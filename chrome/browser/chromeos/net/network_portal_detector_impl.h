@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chromeos/network/network_state_handler_observer.h"

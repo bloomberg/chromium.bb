@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_METADATA_H_
 
 #include "base/basictypes.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 
 namespace drive {

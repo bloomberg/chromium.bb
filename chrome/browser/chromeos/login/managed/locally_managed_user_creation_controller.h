@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_authenticator.h"
 #include "chrome/browser/managed_mode/managed_user_registration_service.h"
 

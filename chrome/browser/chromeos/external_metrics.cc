@@ -24,7 +24,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/perftimer.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "content/public/browser/browser_thread.h"

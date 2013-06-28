@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
 #include "content/public/browser/browser_thread.h"

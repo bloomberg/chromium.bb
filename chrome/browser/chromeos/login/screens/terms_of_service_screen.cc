@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"

@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 

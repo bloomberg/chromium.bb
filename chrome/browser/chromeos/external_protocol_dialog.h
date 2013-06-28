@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class GURL;

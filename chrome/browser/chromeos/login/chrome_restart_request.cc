@@ -17,7 +17,7 @@
 #include "base/process_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_process.h"
