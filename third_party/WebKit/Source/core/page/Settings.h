@@ -156,6 +156,11 @@ public:
     void setOpenGLMultisamplingEnabled(bool flag);
     bool openGLMultisamplingEnabled();
 
+    // FIXME: This is a temporary flag and should be removed once accelerated
+    // overflow scroll is ready (crbug.com/254111).
+    void setCompositorDrivenAcceleratedScrollingEnabled(bool enabled) { m_compositorDrivenAcceleratedScrollingEnabled = enabled; }
+    bool isCompositorDrivenAcceleratedScrollingEnabled() const { return m_compositorDrivenAcceleratedScrollingEnabled; }
+
 private:
     explicit Settings(Page*);
 
@@ -190,6 +195,10 @@ private:
 
     bool m_touchEventEmulationEnabled : 1;
     bool m_openGLMultisamplingEnabled : 1;
+
+    // FIXME: This is a temporary flag and should be removed once accelerated
+    // overflow scroll is ready (crbug.com/254111).
+    bool m_compositorDrivenAcceleratedScrollingEnabled : 1;
 
     Timer<Settings> m_setImageLoadingSettingsTimer;
     void imageLoadingSettingsTimerFired(Timer<Settings>*);

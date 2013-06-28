@@ -506,6 +506,14 @@ bool RenderLayer::acceleratedCompositingForOverflowScrollEnabled() const
     return settings && settings->acceleratedCompositingForOverflowScrollEnabled();
 }
 
+// FIXME: This is a temporary flag and should be removed once accelerated
+// overflow scroll is ready (crbug.com/254111).
+bool RenderLayer::compositorDrivenAcceleratedScrollingEnabled() const
+{
+    const Settings* settings = renderer()->document()->settings();
+    return settings && settings->isCompositorDrivenAcceleratedScrollingEnabled();
+}
+
 // Determine whether the current layer can be promoted to a stacking container.
 // We do this by computing what positive and negative z-order lists would look
 // like before and after promotion, and ensuring that proper stacking order is

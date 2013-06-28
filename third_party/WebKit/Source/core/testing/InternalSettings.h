@@ -101,6 +101,10 @@ public:
     void setTouchEventEmulationEnabled(bool, ExceptionCode&);
     void setUsesOverlayScrollbars(bool, ExceptionCode&);
 
+    // FIXME: This is a temporary flag and should be removed once accelerated
+    // overflow scroll is ready (crbug.com/254111).
+    void setCompositorDrivenAcceleratedScrollingEnabled(bool, ExceptionCode&);
+
     // FIXME: The following are RuntimeEnabledFeatures and likely
     // cannot be changed after process start. These setters should
     // be removed or moved onto internals.runtimeFlags:

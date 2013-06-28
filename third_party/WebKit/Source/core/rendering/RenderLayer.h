@@ -851,6 +851,9 @@ private:
     void dirtyAncestorChainHasOutOfFlowPositionedDescendantStatus();
 
     bool acceleratedCompositingForOverflowScrollEnabled() const;
+    // FIXME: This is a temporary flag and should be removed once accelerated
+    // overflow scroll is ready (crbug.com/254111).
+    bool compositorDrivenAcceleratedScrollingEnabled() const;
     void updateCanBeStackingContainer();
     void collectBeforePromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListBeforePromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListBeforePromote);
     void collectAfterPromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListAfterPromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListAfterPromote);

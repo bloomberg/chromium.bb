@@ -190,6 +190,14 @@ void InternalSettings::setTouchEventEmulationEnabled(bool enabled, ExceptionCode
     settings()->setTouchEventEmulationEnabled(enabled);
 }
 
+// FIXME: This is a temporary flag and should be removed once accelerated
+// overflow scroll is ready (crbug.com/254111).
+void InternalSettings::setCompositorDrivenAcceleratedScrollingEnabled(bool enabled, ExceptionCode& ec)
+{
+    InternalSettingsGuardForSettings();
+    settings()->setCompositorDrivenAcceleratedScrollingEnabled(enabled);
+}
+
 typedef void (Settings::*SetFontFamilyFunction)(const AtomicString&, UScriptCode);
 static void setFontFamily(Settings* settings, const String& family, const String& script, SetFontFamilyFunction setter)
 {
