@@ -1500,7 +1500,7 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken* token)
 {
     // The adoption agency algorithm is N^2. We limit the number of iterations
     // to stop from hanging the whole browser. This limit is specified in the
-    // adoption agency algorithm: 
+    // adoption agency algorithm:
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#parsing-main-inbody
     static const int outerIterationLimit = 8;
     static const int innerIterationLimit = 3;
@@ -1591,6 +1591,47 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken* token)
     }
 }
 
+bool HTMLTreeBuilder::emptyInnerHTMLRequiresParser(HTMLElement* contextElement)
+{
+    // If the implied mode for the tag is InBodyMode we know that
+    // parsing an empty string is not going to create any extra elements
+    // and thus we don't need to bother to spin up a parser for
+    // element.innerHTML = ''
+    bool ignored;
+    return impliedInsertionModeForTag(contextElement->tagQName(), ignored) != InBodyMode;
+}
+
+HTMLTreeBuilder::InsertionMode HTMLTreeBuilder::impliedInsertionModeForTag(const QualifiedName& tagName, bool& wasExplicit)
+{
+    wasExplicit = true;
+
+    if (tagName.matches(selectTag))
+        return InSelectMode;
+    if (tagName.matches(tdTag) || tagName.matches(thTag))
+        return InCellMode;
+    if (tagName.matches(trTag))
+        return InRowMode;
+    if (tagName.matches(tbodyTag) || tagName.matches(theadTag) || tagName.matches(tfootTag))
+        return InTableBodyMode;
+    if (tagName.matches(captionTag))
+        return InCaptionMode;
+    if (tagName.matches(colgroupTag))
+        return InColumnGroupMode;
+    if (tagName.matches(tableTag))
+        return InTableMode;
+    if (tagName.matches(headTag))
+        return InHeadMode;
+    if (tagName.matches(bodyTag))
+        return InBodyMode;
+    if (tagName.matches(framesetTag))
+        return InFramesetMode;
+    if (tagName.matches(htmlTag))
+        return BeforeHeadMode;
+
+    wasExplicit = false;
+    return InBodyMode;
+}
+
 void HTMLTreeBuilder::resetInsertionModeAppropriately()
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#reset-the-insertion-mode-appropriately
@@ -1603,38 +1644,22 @@ void HTMLTreeBuilder::resetInsertionModeAppropriately()
             last = true;
             item = HTMLStackItem::create(m_fragmentContext.contextElement(), HTMLStackItem::ItemForContextElement);
         }
-        if (item->hasTagName(templateTag))
+
+        QualifiedName tagName(nullAtom, item->localName(), item->namespaceURI());
+        bool wasExplicit = false;
+        InsertionMode insertionMode = impliedInsertionModeForTag(tagName, wasExplicit);
+        ASSERT(!isParsingFragment() || !tagName.matches(htmlTag));
+
+        // Fragments treat <head> as in-body-mode when it's the context element.
+        if (insertionMode == InHeadMode && m_fragmentContext.fragment() && m_fragmentContext.contextElement() == item->node())
+            return setInsertionMode(InBodyMode);
+        if (tagName.matches(templateTag))
             return setInsertionMode(m_templateInsertionModes.last());
-        if (item->hasTagName(selectTag)) {
-            return setInsertionMode(InSelectMode);
-        }
-        if (item->hasTagName(tdTag) || item->hasTagName(thTag))
-            return setInsertionMode(InCellMode);
-        if (item->hasTagName(trTag))
-            return setInsertionMode(InRowMode);
-        if (item->hasTagName(tbodyTag) || item->hasTagName(theadTag) || item->hasTagName(tfootTag))
-            return setInsertionMode(InTableBodyMode);
-        if (item->hasTagName(captionTag))
-            return setInsertionMode(InCaptionMode);
-        if (item->hasTagName(colgroupTag)) {
-            return setInsertionMode(InColumnGroupMode);
-        }
-        if (item->hasTagName(tableTag))
-            return setInsertionMode(InTableMode);
-        if (item->hasTagName(headTag)) {
-            if (!m_fragmentContext.fragment() || m_fragmentContext.contextElement() != item->node())
-                return setInsertionMode(InHeadMode);
-            return setInsertionMode(InBodyMode);
-        }
-        if (item->hasTagName(bodyTag))
-            return setInsertionMode(InBodyMode);
-        if (item->hasTagName(framesetTag)) {
-            return setInsertionMode(InFramesetMode);
-        }
-        if (item->hasTagName(htmlTag)) {
-            ASSERT(isParsingFragment());
-            return setInsertionMode(BeforeHeadMode);
-        }
+
+        // If this element does not explicitly imply an insertion mode, then we may want
+        // to look at the parent elements first.
+        if (wasExplicit)
+            return setInsertionMode(insertionMode);
         if (last) {
             ASSERT(isParsingFragment());
             return setInsertionMode(InBodyMode);
