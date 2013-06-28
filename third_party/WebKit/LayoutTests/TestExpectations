@@ -1832,3 +1832,4 @@ crbug.com/253619 fast/loader/subresource-load-failed-crash.html [ Skip ]
 
 crbug.com/254219 [ MountainLion ] fast/multicol/newmulticol/columns-shorthand-parsing.html [ ImageOnlyFailure ]
 crbug.com/254985 [ Win ] fast/events/space-scroll-event.html [ Crash Pass ]
+crbug.com/255359 [ Debug ] fast/events/resize-events-count.html [ Pass Failure ]
