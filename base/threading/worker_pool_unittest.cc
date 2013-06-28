@@ -9,10 +9,10 @@
 #include "base/location.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/test_timeouts.h"
-#include "base/time.h"
-#include "base/threading/thread_checker_impl.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/test_timeouts.h"
+#include "base/threading/thread_checker_impl.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

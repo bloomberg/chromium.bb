@@ -15,7 +15,7 @@
 #include "base/synchronization/spin_wait.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_collision_warner.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

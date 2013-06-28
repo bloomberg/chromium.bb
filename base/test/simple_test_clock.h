@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
-#include "base/time.h"
 #include "base/time/clock.h"
+#include "base/time/time.h"
 
 namespace base {
 

@@ -45,7 +45,7 @@
 #ifndef BASE_TEST_MOCK_TIME_PROVIDER_H_
 #define BASE_TEST_MOCK_TIME_PROVIDER_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {

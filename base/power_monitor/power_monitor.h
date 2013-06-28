@@ -22,7 +22,7 @@
 #endif  // !OS_WIN
 
 #if defined(ENABLE_BATTERY_MONITORING)
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #endif  // defined(ENABLE_BATTERY_MONITORING)
 
 #if defined(OS_IOS)

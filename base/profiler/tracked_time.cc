@@ -55,7 +55,7 @@ TrackedTime TrackedTime::Now() {
   // Use lock-free accessor to 32 bit time.
   // Note that TimeTicks::Now() is built on this, so we have "compatible"
   // times when we down-convert a TimeTicks sample.
-  // TODO(jar): Surface this interface via something in base/time.h.
+  // TODO(jar): Surface this interface via something in base/time/time.h.
   return TrackedTime(static_cast<int32>(timeGetTime()));
 #else
   // Posix has nice cheap 64 bit times, so we just down-convert it.

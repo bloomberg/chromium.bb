@@ -9,7 +9,7 @@
 #define BASE_PROCESS_UTIL_H_
 
 #include "base/basictypes.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
