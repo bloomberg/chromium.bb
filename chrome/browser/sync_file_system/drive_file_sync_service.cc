@@ -23,7 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/drive/api_util.h"
-#include "chrome/browser/sync_file_system/drive/local_change_processor_delegate.h"
+#include "chrome/browser/sync_file_system/drive/local_sync_delegate.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
@@ -646,7 +646,7 @@ void DriveFileSyncService::DoApplyLocalChange(
   }
 
   DCHECK(!running_local_sync_task_);
-  running_local_sync_task_.reset(new drive::LocalChangeProcessorDelegate(
+  running_local_sync_task_.reset(new drive::LocalSyncDelegate(
       this, local_file_change, local_file_path, local_file_metadata, url));
   running_local_sync_task_->Run(base::Bind(
       &DriveFileSyncService::DidApplyLocalChange, AsWeakPtr(), callback));

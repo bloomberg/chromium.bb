@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive/local_change_processor_delegate.h"
+#include "chrome/browser/sync_file_system/drive/local_sync_delegate.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -15,7 +15,7 @@
 namespace sync_file_system {
 namespace drive {
 
-LocalChangeProcessorDelegate::LocalChangeProcessorDelegate(
+LocalSyncDelegate::LocalSyncDelegate(
     DriveFileSyncService* sync_service,
     const FileChange& local_change,
     const base::FilePath& local_path,
@@ -31,9 +31,9 @@ LocalChangeProcessorDelegate::LocalChangeProcessorDelegate(
       has_remote_change_(false),
       weak_factory_(this) {}
 
-LocalChangeProcessorDelegate::~LocalChangeProcessorDelegate() {}
+LocalSyncDelegate::~LocalSyncDelegate() {}
 
-void LocalChangeProcessorDelegate::Run(const SyncStatusCallback& callback) {
+void LocalSyncDelegate::Run(const SyncStatusCallback& callback) {
   // TODO(nhiroki): support directory operations (http://crbug.com/161442).
   DCHECK(IsSyncFSDirectoryOperationEnabled() || !local_change_.IsDirectory());
   operation_ = SYNC_OPERATION_NONE;
@@ -46,12 +46,12 @@ void LocalChangeProcessorDelegate::Run(const SyncStatusCallback& callback) {
 
   sync_service_->EnsureOriginRootDirectory(
       url_.origin(),
-      base::Bind(&LocalChangeProcessorDelegate::DidGetOriginRoot,
+      base::Bind(&LocalSyncDelegate::DidGetOriginRoot,
                  weak_factory_.GetWeakPtr(),
                  callback));
 }
 
-void LocalChangeProcessorDelegate::DidGetOriginRoot(
+void LocalSyncDelegate::DidGetOriginRoot(
     const SyncStatusCallback& callback,
     SyncStatusCode status,
     const std::string& origin_resource_id) {
@@ -113,7 +113,7 @@ void LocalChangeProcessorDelegate::DidGetOriginRoot(
       return;
     case SYNC_OPERATION_DELETE_METADATA:
       DeleteMetadata(base::Bind(
-          &LocalChangeProcessorDelegate::DidApplyLocalChange,
+          &LocalSyncDelegate::DidApplyLocalChange,
           weak_factory_.GetWeakPtr(), callback, google_apis::HTTP_SUCCESS));
       return;
     case SYNC_OPERATION_FAIL: {
@@ -125,17 +125,16 @@ void LocalChangeProcessorDelegate::DidGetOriginRoot(
   callback.Run(SYNC_STATUS_FAILED);
 }
 
-void LocalChangeProcessorDelegate::UploadNewFile(
-    const SyncStatusCallback& callback) {
+void LocalSyncDelegate::UploadNewFile(const SyncStatusCallback& callback) {
   api_util()->UploadNewFile(
       origin_resource_id_,
       local_path_,
       DriveFileSyncService::PathToTitle(url_.path()),
-      base::Bind(&LocalChangeProcessorDelegate::DidUploadNewFile,
+      base::Bind(&LocalSyncDelegate::DidUploadNewFile,
                  weak_factory_.GetWeakPtr(), callback));
 }
 
-void LocalChangeProcessorDelegate::DidUploadNewFile(
+void LocalSyncDelegate::DidUploadNewFile(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     const std::string& resource_id,
@@ -144,7 +143,7 @@ void LocalChangeProcessorDelegate::DidUploadNewFile(
     case google_apis::HTTP_CREATED:
       UpdateMetadata(
           resource_id, md5, DriveMetadata::RESOURCE_TYPE_FILE,
-          base::Bind(&LocalChangeProcessorDelegate::DidApplyLocalChange,
+          base::Bind(&LocalSyncDelegate::DidApplyLocalChange,
                      weak_factory_.GetWeakPtr(), callback, error));
       sync_service_->NotifyObserversFileStatusChanged(
           url_,
@@ -161,17 +160,16 @@ void LocalChangeProcessorDelegate::DidUploadNewFile(
   }
 }
 
-void LocalChangeProcessorDelegate::CreateDirectory(
-    const SyncStatusCallback& callback) {
+void LocalSyncDelegate::CreateDirectory(const SyncStatusCallback& callback) {
   DCHECK(IsSyncFSDirectoryOperationEnabled());
   api_util()->CreateDirectory(
       origin_resource_id_,
       DriveFileSyncService::PathToTitle(url_.path()),
-      base::Bind(&LocalChangeProcessorDelegate::DidCreateDirectory,
+      base::Bind(&LocalSyncDelegate::DidCreateDirectory,
                  weak_factory_.GetWeakPtr(), callback));
 }
 
-void LocalChangeProcessorDelegate::DidCreateDirectory(
+void LocalSyncDelegate::DidCreateDirectory(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     const std::string& resource_id) {
@@ -180,7 +178,7 @@ void LocalChangeProcessorDelegate::DidCreateDirectory(
     case google_apis::HTTP_CREATED: {
       UpdateMetadata(
           resource_id, std::string(), DriveMetadata::RESOURCE_TYPE_FOLDER,
-          base::Bind(&LocalChangeProcessorDelegate::DidApplyLocalChange,
+          base::Bind(&LocalSyncDelegate::DidApplyLocalChange,
                      weak_factory_.GetWeakPtr(), callback, error));
       sync_service_->NotifyObserversFileStatusChanged(
           url_,
@@ -200,8 +198,7 @@ void LocalChangeProcessorDelegate::DidCreateDirectory(
   }
 }
 
-void LocalChangeProcessorDelegate::UploadExistingFile(
-    const SyncStatusCallback& callback) {
+void LocalSyncDelegate::UploadExistingFile(const SyncStatusCallback& callback) {
   DCHECK(has_drive_metadata_);
   if (drive_metadata_.resource_id().empty()) {
     UploadNewFile(callback);
@@ -212,11 +209,11 @@ void LocalChangeProcessorDelegate::UploadExistingFile(
       drive_metadata_.resource_id(),
       drive_metadata_.md5_checksum(),
       local_path_,
-      base::Bind(&LocalChangeProcessorDelegate::DidUploadExistingFile,
+      base::Bind(&LocalSyncDelegate::DidUploadExistingFile,
                  weak_factory_.GetWeakPtr(), callback));
 }
 
-void LocalChangeProcessorDelegate::DidUploadExistingFile(
+void LocalSyncDelegate::DidUploadExistingFile(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     const std::string& resource_id,
@@ -226,7 +223,7 @@ void LocalChangeProcessorDelegate::DidUploadExistingFile(
     case google_apis::HTTP_SUCCESS:
       UpdateMetadata(
           resource_id, md5, DriveMetadata::RESOURCE_TYPE_FILE,
-          base::Bind(&LocalChangeProcessorDelegate::DidApplyLocalChange,
+          base::Bind(&LocalSyncDelegate::DidApplyLocalChange,
                      weak_factory_.GetWeakPtr(), callback, error));
       sync_service_->NotifyObserversFileStatusChanged(
           url_,
@@ -254,8 +251,7 @@ void LocalChangeProcessorDelegate::DidUploadExistingFile(
   }
 }
 
-void LocalChangeProcessorDelegate::Delete(
-    const SyncStatusCallback& callback) {
+void LocalSyncDelegate::Delete(const SyncStatusCallback& callback) {
   if (!has_drive_metadata_) {
     callback.Run(SYNC_STATUS_OK);
     return;
@@ -269,11 +265,11 @@ void LocalChangeProcessorDelegate::Delete(
   api_util()->DeleteFile(
       drive_metadata_.resource_id(),
       drive_metadata_.md5_checksum(),
-      base::Bind(&LocalChangeProcessorDelegate::DidDelete,
+      base::Bind(&LocalSyncDelegate::DidDelete,
                  weak_factory_.GetWeakPtr(), callback));
 }
 
-void LocalChangeProcessorDelegate::DidDelete(
+void LocalSyncDelegate::DidDelete(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error) {
   DCHECK(has_drive_metadata_);
@@ -282,7 +278,7 @@ void LocalChangeProcessorDelegate::DidDelete(
     case google_apis::HTTP_SUCCESS:
     case google_apis::HTTP_NOT_FOUND:
       DeleteMetadata(base::Bind(
-          &LocalChangeProcessorDelegate::DidApplyLocalChange,
+          &LocalSyncDelegate::DidApplyLocalChange,
           weak_factory_.GetWeakPtr(), callback, google_apis::HTTP_SUCCESS));
       sync_service_->NotifyObserversFileStatusChanged(
           url_,
@@ -295,7 +291,7 @@ void LocalChangeProcessorDelegate::DidDelete(
       // Delete |drive_metadata| on the conflict case.
       // Conflicted remote change should be applied as a future remote change.
       DeleteMetadata(base::Bind(
-          &LocalChangeProcessorDelegate::DidDeleteMetadataForDeletionConflict,
+          &LocalSyncDelegate::DidDeleteMetadataForDeletionConflict,
           weak_factory_.GetWeakPtr(), callback));
       sync_service_->NotifyObserversFileStatusChanged(
           url_,
@@ -313,14 +309,13 @@ void LocalChangeProcessorDelegate::DidDelete(
   }
 }
 
-void LocalChangeProcessorDelegate::DidDeleteMetadataForDeletionConflict(
+void LocalSyncDelegate::DidDeleteMetadataForDeletionConflict(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
   callback.Run(SYNC_STATUS_OK);
 }
 
-void LocalChangeProcessorDelegate::ResolveToLocal(
-    const SyncStatusCallback& callback) {
+void LocalSyncDelegate::ResolveToLocal(const SyncStatusCallback& callback) {
   if (drive_metadata_.resource_id().empty()) {
     DidDeleteFileToResolveToLocal(callback, google_apis::HTTP_NOT_FOUND);
     return;
@@ -330,11 +325,11 @@ void LocalChangeProcessorDelegate::ResolveToLocal(
       drive_metadata_.resource_id(),
       drive_metadata_.md5_checksum(),
       base::Bind(
-          &LocalChangeProcessorDelegate::DidDeleteFileToResolveToLocal,
+          &LocalSyncDelegate::DidDeleteFileToResolveToLocal,
           weak_factory_.GetWeakPtr(), callback));
 }
 
-void LocalChangeProcessorDelegate::DidDeleteFileToResolveToLocal(
+void LocalSyncDelegate::DidDeleteFileToResolveToLocal(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error) {
   if (error != google_apis::HTTP_SUCCESS &&
@@ -354,7 +349,7 @@ void LocalChangeProcessorDelegate::DidDeleteFileToResolveToLocal(
   CreateDirectory(callback);
 }
 
-void LocalChangeProcessorDelegate::ResolveToRemote(
+void LocalSyncDelegate::ResolveToRemote(
     const SyncStatusCallback& callback,
     SyncFileType remote_file_type) {
   // Mark the file as to-be-fetched.
@@ -363,13 +358,13 @@ void LocalChangeProcessorDelegate::ResolveToRemote(
   SetMetadataToBeFetched(
       DriveFileSyncService::SyncFileTypeToDriveMetadataResourceType(
           remote_file_type),
-      base::Bind(&LocalChangeProcessorDelegate::DidResolveToRemote,
+      base::Bind(&LocalSyncDelegate::DidResolveToRemote,
                  weak_factory_.GetWeakPtr(), callback));
   // The synced notification will be dispatched when the remote file is
   // downloaded.
 }
 
-void LocalChangeProcessorDelegate::DidResolveToRemote(
+void LocalSyncDelegate::DidResolveToRemote(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
   DCHECK(has_drive_metadata_);
@@ -386,7 +381,7 @@ void LocalChangeProcessorDelegate::DidResolveToRemote(
   callback.Run(status);
 }
 
-void LocalChangeProcessorDelegate::DidApplyLocalChange(
+void LocalSyncDelegate::DidApplyLocalChange(
     const SyncStatusCallback& callback,
     const google_apis::GDataErrorCode error,
     SyncStatusCode status) {
@@ -404,7 +399,7 @@ void LocalChangeProcessorDelegate::DidApplyLocalChange(
   callback.Run(status);
 }
 
-void LocalChangeProcessorDelegate::UpdateMetadata(
+void LocalSyncDelegate::UpdateMetadata(
     const std::string& resource_id,
     const std::string& md5,
     DriveMetadata::ResourceType type,
@@ -418,14 +413,13 @@ void LocalChangeProcessorDelegate::UpdateMetadata(
   metadata_store()->UpdateEntry(url_, drive_metadata_, callback);
 }
 
-void LocalChangeProcessorDelegate::ResetMetadataMD5(
-    const SyncStatusCallback& callback) {
+void LocalSyncDelegate::ResetMetadataMD5(const SyncStatusCallback& callback) {
   has_drive_metadata_ = true;
   drive_metadata_.set_md5_checksum(std::string());
   metadata_store()->UpdateEntry(url_, drive_metadata_, callback);
 }
 
-void LocalChangeProcessorDelegate::SetMetadataToBeFetched(
+void LocalSyncDelegate::SetMetadataToBeFetched(
     DriveMetadata::ResourceType type,
     const SyncStatusCallback& callback) {
   has_drive_metadata_ = true;
@@ -436,7 +430,7 @@ void LocalChangeProcessorDelegate::SetMetadataToBeFetched(
   metadata_store()->UpdateEntry(url_, drive_metadata_, callback);
 }
 
-void LocalChangeProcessorDelegate::SetMetadataConflict(
+void LocalSyncDelegate::SetMetadataConflict(
     const SyncStatusCallback& callback) {
   has_drive_metadata_ = true;
   drive_metadata_.set_conflicted(true);
@@ -444,12 +438,11 @@ void LocalChangeProcessorDelegate::SetMetadataConflict(
   metadata_store()->UpdateEntry(url_, drive_metadata_, callback);
 }
 
-void LocalChangeProcessorDelegate::DeleteMetadata(
-    const SyncStatusCallback& callback) {
+void LocalSyncDelegate::DeleteMetadata(const SyncStatusCallback& callback) {
   metadata_store()->DeleteEntry(url_, callback);
 }
 
-void LocalChangeProcessorDelegate::HandleCreationConflict(
+void LocalSyncDelegate::HandleCreationConflict(
     const std::string& resource_id,
     DriveMetadata::ResourceType type,
     const SyncStatusCallback& callback) {
@@ -469,17 +462,16 @@ void LocalChangeProcessorDelegate::HandleCreationConflict(
   HandleConflict(callback);
 }
 
-void LocalChangeProcessorDelegate::HandleConflict(
-    const SyncStatusCallback& callback) {
+void LocalSyncDelegate::HandleConflict(const SyncStatusCallback& callback) {
   DCHECK(!drive_metadata_.resource_id().empty());
   api_util()->GetResourceEntry(
       drive_metadata_.resource_id(),
       base::Bind(
-          &LocalChangeProcessorDelegate::DidGetEntryForConflictResolution,
+          &LocalSyncDelegate::DidGetEntryForConflictResolution,
           weak_factory_.GetWeakPtr(), callback));
 }
 
-void LocalChangeProcessorDelegate::DidGetEntryForConflictResolution(
+void LocalSyncDelegate::DidGetEntryForConflictResolution(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
@@ -520,7 +512,7 @@ void LocalChangeProcessorDelegate::DidGetEntryForConflictResolution(
   callback.Run(SYNC_STATUS_FAILED);
 }
 
-void LocalChangeProcessorDelegate::HandleManualResolutionCase(
+void LocalSyncDelegate::HandleManualResolutionCase(
     const SyncStatusCallback& callback) {
   if (drive_metadata_.conflicted()) {
     callback.Run(SYNC_STATUS_HAS_CONFLICT);
@@ -528,12 +520,12 @@ void LocalChangeProcessorDelegate::HandleManualResolutionCase(
   }
 
   SetMetadataConflict(
-      base::Bind(&LocalChangeProcessorDelegate::DidApplyLocalChange,
+      base::Bind(&LocalSyncDelegate::DidApplyLocalChange,
                  weak_factory_.GetWeakPtr(), callback,
                  google_apis::HTTP_CONFLICT));
 }
 
-void LocalChangeProcessorDelegate::HandleLocalWinCase(
+void LocalSyncDelegate::HandleLocalWinCase(
     const SyncStatusCallback& callback) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "Resolving conflict for local sync: %s: LOCAL WIN",
@@ -545,11 +537,11 @@ void LocalChangeProcessorDelegate::HandleLocalWinCase(
     return;
   }
 
-  ResetMetadataMD5(base::Bind(&LocalChangeProcessorDelegate::StartOver,
+  ResetMetadataMD5(base::Bind(&LocalSyncDelegate::StartOver,
                               weak_factory_.GetWeakPtr(), callback));
 }
 
-void LocalChangeProcessorDelegate::HandleRemoteWinCase(
+void LocalSyncDelegate::HandleRemoteWinCase(
     const SyncStatusCallback& callback,
     SyncFileType remote_file_type) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
@@ -558,7 +550,7 @@ void LocalChangeProcessorDelegate::HandleRemoteWinCase(
   ResolveToRemote(callback, remote_file_type);
 }
 
-void LocalChangeProcessorDelegate::StartOver(const SyncStatusCallback& callback,
+void LocalSyncDelegate::StartOver(const SyncStatusCallback& callback,
                                              SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
     callback.Run(status);
@@ -570,20 +562,20 @@ void LocalChangeProcessorDelegate::StartOver(const SyncStatusCallback& callback,
 }
 
 SyncStatusCode
-LocalChangeProcessorDelegate::GDataErrorCodeToSyncStatusCodeWrapper(
+LocalSyncDelegate::GDataErrorCodeToSyncStatusCodeWrapper(
     google_apis::GDataErrorCode error) {
   return sync_service_->GDataErrorCodeToSyncStatusCodeWrapper(error);
 }
 
-DriveMetadataStore* LocalChangeProcessorDelegate::metadata_store() {
+DriveMetadataStore* LocalSyncDelegate::metadata_store() {
   return sync_service_->metadata_store_.get();
 }
 
-APIUtilInterface* LocalChangeProcessorDelegate::api_util() {
+APIUtilInterface* LocalSyncDelegate::api_util() {
   return sync_service_->api_util_.get();
 }
 
-RemoteChangeHandler* LocalChangeProcessorDelegate::remote_change_handler() {
+RemoteChangeHandler* LocalSyncDelegate::remote_change_handler() {
   return &sync_service_->remote_change_handler_;
 }
 

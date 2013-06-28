@@ -44,7 +44,7 @@ class Location;
 namespace sync_file_system {
 
 namespace drive {
-class LocalChangeProcessorDelegate;
+class LocalSyncDelegate;
 }
 
 class SyncTaskManager;
@@ -147,7 +147,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
  private:
   friend class SyncTaskManager;
-  friend class drive::LocalChangeProcessorDelegate;
+  friend class drive::LocalSyncDelegate;
 
   friend class DriveFileSyncServiceFakeTest;
   friend class DriveFileSyncServiceSyncTest;
@@ -386,7 +386,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   scoped_ptr<SyncTaskManager> task_manager_;
 
-  scoped_ptr<drive::LocalChangeProcessorDelegate> running_local_sync_task_;
+  scoped_ptr<drive::LocalSyncDelegate> running_local_sync_task_;
 
   // The current remote service state. This does NOT reflect the
   // sync_enabled_ flag, while GetCurrentState() DOES reflect the flag

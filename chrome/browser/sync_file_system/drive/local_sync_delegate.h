@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_LOCAL_CHANGE_PROCESSOR_DELEGATE_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_LOCAL_CHANGE_PROCESSOR_DELEGATE_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_LOCAL_SYNC_DELEGATE_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_LOCAL_SYNC_DELEGATE_H_
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -26,17 +26,16 @@ class APIUtil;
 // represents single ApplyLocalChange operation.
 // The caller is responsible to own the instance, and can cancel operation by
 // deleting the instance or |sync_service|.
-class LocalChangeProcessorDelegate {
+class LocalSyncDelegate {
  public:
   typedef RemoteChangeHandler::RemoteChange RemoteChange;
 
-  LocalChangeProcessorDelegate(
-      DriveFileSyncService* sync_service,
-      const FileChange& change,
-      const base::FilePath& local_file_path,
-      const SyncFileMetadata& local_file_metadata,
-      const fileapi::FileSystemURL& url);
-  ~LocalChangeProcessorDelegate();
+  LocalSyncDelegate(DriveFileSyncService* sync_service,
+                    const FileChange& change,
+                    const base::FilePath& local_file_path,
+                    const SyncFileMetadata& local_file_metadata,
+                    const fileapi::FileSystemURL& url);
+  ~LocalSyncDelegate();
 
   void Run(const SyncStatusCallback& callback);
 
@@ -129,12 +128,12 @@ class LocalChangeProcessorDelegate {
 
   std::string origin_resource_id_;
 
-  base::WeakPtrFactory<LocalChangeProcessorDelegate> weak_factory_;
+  base::WeakPtrFactory<LocalSyncDelegate> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalChangeProcessorDelegate);
+  DISALLOW_COPY_AND_ASSIGN(LocalSyncDelegate);
 };
 
 }  // namespace drive
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_LOCAL_CHANGE_PROCESSOR_DELEGATE_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_LOCAL_SYNC_DELEGATE_H_
