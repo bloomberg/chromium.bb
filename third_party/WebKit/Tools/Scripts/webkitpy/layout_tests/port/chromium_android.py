@@ -153,25 +153,6 @@ class SharedDriverDetails(object):
     def device_fifo_directory(self):
         return '/data/data/' + self.package_name() + '/files/'
 
-# Information required when running layout tests using DumpRenderTree as the test runner.
-class DumpRenderTreeDriverDetails(SharedDriverDetails):
-    def apk_name(self):
-        return 'DumpRenderTree_apk/DumpRenderTree-debug.apk'
-    def package_name(self):
-        return 'org.chromium.native_test'
-    def activity_name(self):
-        return self.package_name() + '/.ChromeNativeTestActivity'
-    def library_name(self):
-        return 'libDumpRenderTree.so'
-    def additional_resources(self):
-        return ['DumpRenderTree.pak', 'DumpRenderTree_resources']
-    def command_line_file(self):
-        return '/data/local/tmp/chrome-native-tests-command-line'
-    def additional_command_line_flags(self):
-        return ['--create-stdin-fifo', '--separate-stderr-fifo', '--disable-impl-side-painting']
-    def device_directory(self):
-        return DEVICE_SOURCE_ROOT_DIR + 'drt/'
-
 # Information required when running layout tests using content_shell as the test runner.
 class ContentShellDriverDetails(SharedDriverDetails):
     def apk_name(self):
@@ -187,7 +168,7 @@ class ContentShellDriverDetails(SharedDriverDetails):
     def command_line_file(self):
         return '/data/local/tmp/content-shell-command-line'
     def additional_command_line_flags(self):
-        return ['--dump-render-tree']
+        return ['--dump-render-tree', '--encode-binary']
     def device_directory(self):
         return DEVICE_SOURCE_ROOT_DIR + 'content_shell/'
 
@@ -384,10 +365,10 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
         self._host_port = factory.PortFactory(host).get('chromium', **kwargs)
         self._server_process_constructor = self._android_server_process_constructor
 
-        if self.driver_name() == 'content_shell':
-            self._driver_details = ContentShellDriverDetails()
-        else:
-            self._driver_details = DumpRenderTreeDriverDetails()
+        if self.driver_name() != self.CONTENT_SHELL_NAME:
+            raise AssertionError('Layout tests on Android only support content_shell as the driver.')
+
+        self._driver_details = ContentShellDriverDetails()
 
         # Initialize the AndroidDevices class which tracks available devices.
         default_device = None
@@ -415,12 +396,7 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
         return False
 
     def additional_drt_flag(self):
-        # Chromium for Android always uses the hardware GPU path.
-        flags = ['--encode-binary', '--enable-hardware-gpu',
-                 '--force-compositing-mode',
-                 '--enable-accelerated-fixed-position']
-        flags += self._driver_details.additional_command_line_flags()
-        return flags
+        return self._driver_details.additional_command_line_flags()
 
     def default_timeout_ms(self):
         # Android platform has less computing power than desktop platforms.
@@ -431,13 +407,6 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
     def driver_stop_timeout(self):
         # The driver doesn't respond to closing stdin, so we might as well stop the driver immediately.
         return 0.0
-
-    def driver_name(self):
-        if self.get_option('driver_name'):
-            return self.get_option('driver_name')
-        if self.get_option('content_shell'):
-            return self.CONTENT_SHELL_NAME
-        return 'DumpRenderTree'
 
     def default_child_processes(self):
         usable_device_count = len(self._devices.usable_devices(self._executive))

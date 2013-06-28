@@ -144,13 +144,9 @@ class ChromiumAndroidPortTest(chromium_port_testcase.ChromiumPortTestCase):
         port._executive = MockExecutive2(run_command_fn=port._mock_adb.run_command)
         return port
 
-    # Test that the right driver details will be set for DumpRenderTree vs. content_shell
-    def test_driver_details(self):
-        port_dump_render_tree = self.make_port()
-        port_content_shell = self.make_port(options=optparse.Values({'driver_name': 'content_shell'}))
-
-        self.assertIsInstance(port_dump_render_tree._driver_details, chromium_android.DumpRenderTreeDriverDetails)
-        self.assertIsInstance(port_content_shell._driver_details, chromium_android.ContentShellDriverDetails)
+    # Test that content_shell currently is the only supported driver.
+    def test_non_content_shell_driver(self):
+        self.assertRaises(self.make_port, options=optparse.Values({'driver_name': 'foobar'}))
 
     # Test that the number of child processes to create depends on the devices.
     def test_default_child_processes(self):
@@ -213,9 +209,9 @@ class ChromiumAndroidDriverTwoDriversTest(unittest.TestCase):
 
         port = chromium_android.ChromiumAndroidPort(MockSystemHost(executive=mock_executive), 'chromium-android')
         driver0 = chromium_android.ChromiumAndroidDriver(port, worker_number=0, pixel_tests=True,
-            driver_details=chromium_android.DumpRenderTreeDriverDetails(), android_devices=port._devices)
+            driver_details=chromium_android.ContentShellDriverDetails(), android_devices=port._devices)
         driver1 = chromium_android.ChromiumAndroidDriver(port, worker_number=1, pixel_tests=True,
-            driver_details=chromium_android.DumpRenderTreeDriverDetails(), android_devices=port._devices)
+            driver_details=chromium_android.ContentShellDriverDetails(), android_devices=port._devices)
 
         self.assertEqual(['adb', '-s', '123456789ABCDEF0', 'shell'], driver0.cmd_line(True, []))
         self.assertEqual(['adb', '-s', '123456789ABCDEF1', 'shell'], driver1.cmd_line(True, ['anything']))
