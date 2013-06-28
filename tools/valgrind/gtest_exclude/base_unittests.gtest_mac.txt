@@ -9,10 +9,10 @@ FileUtilTest.NormalizeFilePathSymlinks
 CancellationFlagTest.SetOnDifferentThreadDeathTest
 
 # Fails on Valgrind/Mac, see http://crbug.com/93722
-ProcessUtilTest.MacTerminateOnHeapCorruption
+ProcessMemoryTest.MacTerminateOnHeapCorruption
 
 # Fails on Valgrind/Mac, see http://crbug.com/122080
-ProcessUtilTest.MacMallocFailureDoesNotTerminate
+ProcessMemoryTest.MacMallocFailureDoesNotTerminate
 
 # Times out on Valgrind/Mac, see http://crbug.com/172044
 MessageLoopTest.RecursivePosts
