@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chromeos/chromeos_constants.h"

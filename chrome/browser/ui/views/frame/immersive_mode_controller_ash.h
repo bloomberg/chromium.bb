@@ -7,7 +7,7 @@
 
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"

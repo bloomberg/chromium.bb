@@ -9,8 +9,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/url_data_source.h"

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UPGRADE_DETECTOR_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/net/network_time_tracker.h"
 #include "chrome/browser/upgrade_detector.h"
 

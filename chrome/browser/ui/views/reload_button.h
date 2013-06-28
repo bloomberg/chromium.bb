@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/button_dropdown.h"
 

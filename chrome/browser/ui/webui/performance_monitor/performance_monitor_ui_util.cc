@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/performance_monitor/metric.h"
 
 namespace performance_monitor {

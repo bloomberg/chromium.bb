@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_ASH_TAB_SCRUBBER_H_
 #define CHROME_BROWSER_UI_VIEWS_ASH_TAB_SCRUBBER_H_
 
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "content/public/browser/notification_observer.h"

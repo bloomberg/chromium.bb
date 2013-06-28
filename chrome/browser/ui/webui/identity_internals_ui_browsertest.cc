@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/identity_internals_ui_browsertest.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

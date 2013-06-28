@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_HISTORY_UI_H_
 
 #include "base/strings/string16.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_service.h"

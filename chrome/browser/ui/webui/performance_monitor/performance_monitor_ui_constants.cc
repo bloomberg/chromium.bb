@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui_constants.h"
 
 #include "base/logging.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/performance_monitor/constants.h"
 
 namespace performance_monitor {

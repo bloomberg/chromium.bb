@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/performance_monitor/metric.h"
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

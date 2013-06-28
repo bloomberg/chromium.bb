@@ -7,7 +7,7 @@
 
 #include "ash/system/chromeos/network/network_icon_animation_observer.h"
 #include "base/basictypes.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "ui/gfx/native_widget_types.h"

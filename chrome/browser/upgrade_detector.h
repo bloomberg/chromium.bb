@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UPGRADE_DETECTOR_H_
 #define CHROME_BROWSER_UPGRADE_DETECTOR_H_
 
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/idle.h"
 #include "ui/gfx/image/image.h"
 
