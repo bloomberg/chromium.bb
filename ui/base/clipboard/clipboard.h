@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/process.h"
 #include "base/strings/string16.h"
@@ -37,7 +38,11 @@
 
 namespace base {
 class FilePath;
-}
+
+namespace win {
+class MessageWindow;
+}  // namespace win
+}  // namespace base
 
 namespace gfx {
 class Size;
@@ -365,10 +370,8 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   HWND GetClipboardWindow() const;
 
   // Mark this as mutable so const methods can still do lazy initialization.
-  mutable HWND clipboard_owner_;
+  mutable scoped_ptr<base::win::MessageWindow> clipboard_owner_;
 
-  // True if we can create a window.
-  bool create_window_;
 #elif defined(TOOLKIT_GTK)
   // The public API is via WriteObjects() which dispatches to multiple
   // Write*() calls, but on GTK we must write all the clipboard types

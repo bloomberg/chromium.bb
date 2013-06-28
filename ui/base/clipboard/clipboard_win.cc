@@ -11,6 +11,7 @@
 #include <shellapi.h>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
@@ -21,9 +22,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/message_window.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
-#include "base/win/wrapped_window_proc.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -94,12 +95,10 @@ class ScopedClipboard {
   bool opened_;
 };
 
-LRESULT CALLBACK ClipboardOwnerWndProc(HWND hwnd,
-                                       UINT message,
-                                       WPARAM wparam,
-                                       LPARAM lparam) {
-  LRESULT lresult = 0;
-
+bool ClipboardOwnerWndProc(UINT message,
+                           WPARAM wparam,
+                           LPARAM lparam,
+                           LRESULT* result) {
   switch (message) {
   case WM_RENDERFORMAT:
     // This message comes when SetClipboardData was sent a null data handle
@@ -119,10 +118,11 @@ LRESULT CALLBACK ClipboardOwnerWndProc(HWND hwnd,
   case WM_CHANGECBCHAIN:
     break;
   default:
-    lresult = DefWindowProc(hwnd, message, wparam, lparam);
-    break;
+    return false;
   }
-  return lresult;
+
+  *result = 0;
+  return true;
 }
 
 template <typename charT>
@@ -203,26 +203,12 @@ bool Clipboard::FormatType::operator<(const FormatType& other) const {
   return ToUINT() < other.ToUINT();
 }
 
-Clipboard::Clipboard() : create_window_(false) {
-  if (base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI) {
-    // Make a dummy HWND to be the clipboard's owner.
-    WNDCLASSEX window_class;
-    base::win::InitializeWindowClass(
-        L"ClipboardOwnerWindowClass",
-        &base::win::WrappedWindowProc<ClipboardOwnerWndProc>,
-        0, 0, 0, NULL, NULL, NULL, NULL, NULL,
-        &window_class);
-    ::RegisterClassEx(&window_class);
-    create_window_ = true;
-  }
-
-  clipboard_owner_ = NULL;
+Clipboard::Clipboard() {
+  if (base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI)
+    clipboard_owner_.reset(new base::win::MessageWindow());
 }
 
 Clipboard::~Clipboard() {
-  if (clipboard_owner_)
-    ::DestroyWindow(clipboard_owner_);
-  clipboard_owner_ = NULL;
 }
 
 void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
@@ -283,7 +269,7 @@ void Clipboard::WriteBookmark(const char* title_data,
 }
 
 void Clipboard::WriteWebSmartPaste() {
-  DCHECK(clipboard_owner_);
+  DCHECK(clipboard_owner_->hwnd() != NULL);
   ::SetClipboardData(GetWebKitSmartPasteFormatType().ToUINT(), NULL);
 }
 
@@ -378,7 +364,7 @@ void Clipboard::WriteData(const FormatType& format,
 }
 
 void Clipboard::WriteToClipboard(unsigned int format, HANDLE handle) {
-  DCHECK(clipboard_owner_);
+  DCHECK(clipboard_owner_->hwnd() != NULL);
   if (handle && !::SetClipboardData(format, handle)) {
     DCHECK(ERROR_CLIPBOARD_NOT_OPEN != GetLastError());
     FreeData(format, handle);
@@ -832,14 +818,13 @@ void Clipboard::FreeData(unsigned int format, HANDLE data) {
 }
 
 HWND Clipboard::GetClipboardWindow() const {
-  if (!clipboard_owner_ && create_window_) {
-    clipboard_owner_ = ::CreateWindow(L"ClipboardOwnerWindowClass",
-                                      L"ClipboardOwnerWindow",
-                                      0, 0, 0, 0, 0,
-                                      HWND_MESSAGE,
-                                      0, 0, 0);
-  }
-  return clipboard_owner_;
+  if (!clipboard_owner_)
+    return NULL;
+
+  if (clipboard_owner_->hwnd() == NULL)
+    clipboard_owner_->Create(base::Bind(&ClipboardOwnerWndProc));
+
+  return clipboard_owner_->hwnd();
 }
 
 }  // namespace ui
