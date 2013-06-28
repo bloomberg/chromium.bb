@@ -67,6 +67,8 @@ public:
     bool hasRotationRateAlpha : 1;
     bool hasRotationRateBeta : 1;
     bool hasRotationRateGamma : 1;
+
+    bool allAvailableSensorsAreActive : 1;
 };
 
 #if WEBKIT_IMPLEMENTATION
