@@ -676,7 +676,7 @@ string16 AutofillDialogControllerImpl::SaveLocallyText() const {
 }
 
 string16 AutofillDialogControllerImpl::LegalDocumentsText() {
-  if (!IsPayingWithWallet())
+  if (!IsPayingWithWallet() || autocheckout_state_ != AUTOCHECKOUT_NOT_STARTED)
     return string16();
 
   EnsureLegalDocumentsText();
@@ -2879,6 +2879,7 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
       view_->UpdateButtonStrip();
       view_->UpdateAutocheckoutStepsArea();
       view_->UpdateDetailArea();
+      view_->UpdateAccountChooser();
     }
   }
 
