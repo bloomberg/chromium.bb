@@ -186,31 +186,3 @@ TEST(ImageDecoderTest, clearCacheExceptFramePreverveClearExceptFrame)
             EXPECT_EQ(ImageFrame::FrameEmpty, decoderFrameBufferCache[i].status());
     }
 }
-
-TEST(ImageDecoderTest, clearCacheExceptFramePreverveRequiredFrame)
-{
-    const size_t numFrames = 10;
-    OwnPtr<TestImageDecoder> decoder(adoptPtr(new TestImageDecoder()));
-    decoder->initFrames(numFrames);
-    Vector<ImageFrame, 1>& decoderFrameBufferCache = decoder->frameBufferCache();
-    for (size_t i = 0; i < numFrames; ++i)
-        decoderFrameBufferCache[i].setStatus(ImageFrame::FrameComplete);
-
-    decoderFrameBufferCache[2].setStatus(ImageFrame::FrameComplete);
-    decoderFrameBufferCache[3].clearPixelData();
-    decoderFrameBufferCache[4].setDisposalMethod(ImageFrame::DisposeOverwritePrevious);
-    decoderFrameBufferCache[5].setDisposalMethod(ImageFrame::DisposeOverwritePrevious);
-    decoderFrameBufferCache[6].clearPixelData();
-    decoder->resetRequiredPreviousFrames();
-
-    // 6 which is empty requires 3 which is empty, and 3 requires 2 which is complete,
-    // so 2 will be required by the next request of 6 and needs to be preserved.
-    decoder->clearCacheExceptFrame(6);
-    for (size_t i = 0; i < numFrames; ++i) {
-        SCOPED_TRACE(testing::Message() << i);
-        if (i == 2)
-            EXPECT_EQ(ImageFrame::FrameComplete, decoderFrameBufferCache[i].status());
-        else
-            EXPECT_EQ(ImageFrame::FrameEmpty, decoderFrameBufferCache[i].status());
-    }
-}

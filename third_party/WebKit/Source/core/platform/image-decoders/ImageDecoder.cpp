@@ -146,14 +146,6 @@ size_t ImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame)
     if (m_frameBufferCache.size() <= 1)
         return 0;
 
-    // We need to preserve frames such that:
-    //  1. We don't clear |clearExceptFrame|;
-    //  2. We don't clear any frame from which a future initFrameBuffer() call
-    //     will copy bitmap data.
-    // All other frames can be cleared.
-    while ((clearExceptFrame < m_frameBufferCache.size()) && (m_frameBufferCache[clearExceptFrame].status() == ImageFrame::FrameEmpty))
-        clearExceptFrame = m_frameBufferCache[clearExceptFrame].requiredPreviousFrameIndex();
-
     size_t frameBytesCleared = 0;
     for (size_t i = 0; i < m_frameBufferCache.size(); ++i) {
         if (i != clearExceptFrame) {

@@ -372,6 +372,7 @@
                         '<(DEPTH)/third_party/icu/icu.gyp:*',
                         '<(DEPTH)/third_party/libjpeg_turbo/libjpeg.gyp:libjpeg',
                         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
+                        '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
                         '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
                         '<(DEPTH)/third_party/libxslt/libxslt.gyp:libxslt',
                         '<(DEPTH)/third_party/modp_b64/modp_b64.gyp:modp_b64',

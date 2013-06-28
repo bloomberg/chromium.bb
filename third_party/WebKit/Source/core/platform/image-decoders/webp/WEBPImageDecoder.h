@@ -32,8 +32,12 @@
 #include "core/platform/image-decoders/ImageDecoder.h"
 
 #include "webp/decode.h"
-#if USE(QCMSLIB) && (WEBP_DECODER_ABI_VERSION > 0x200)
+#if (WEBP_DECODER_ABI_VERSION > 0x200)
+#include "webp/demux.h"
+#define WEBP_ICC_ANIMATION_SUPPORT
+#if USE(QCMSLIB)
 #define QCMS_WEBP_COLOR_CORRECTION
+#endif
 #endif
 
 namespace WebCore {
@@ -43,31 +47,53 @@ public:
     WEBPImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption);
     virtual ~WEBPImageDecoder();
 
-    virtual String filenameExtension() const { return "webp"; }
-    virtual bool isSizeAvailable();
-    virtual ImageFrame* frameBufferAtIndex(size_t);
+    virtual String filenameExtension() const OVERRIDE { return "webp"; }
+    virtual bool isSizeAvailable() OVERRIDE;
+    virtual size_t frameCount() OVERRIDE;
+    virtual ImageFrame* frameBufferAtIndex(size_t) OVERRIDE;
+#ifdef WEBP_ICC_ANIMATION_SUPPORT
+    virtual void setData(SharedBuffer* data, bool allDataReceived) OVERRIDE;
+    virtual int repetitionCount() const OVERRIDE;
+    virtual bool frameIsCompleteAtIndex(size_t) const OVERRIDE;
+    virtual float frameDurationAtIndex(size_t) const OVERRIDE;
+    virtual size_t clearCacheExceptFrame(size_t) OVERRIDE;
+#endif
 
 private:
-    bool decode(bool onlySize);
+    bool decode(const uint8_t* dataBytes, size_t dataSize, bool onlySize, size_t frameIndex);
 
     WebPIDecoder* m_decoder;
     WebPDecBuffer m_decoderBuffer;
-    bool m_hasAlpha;
     int m_formatFlags;
+    bool m_frameBackgroundHasAlpha;
 
 #ifdef QCMS_WEBP_COLOR_CORRECTION
     qcms_transform* colorTransform() const { return m_transform; }
     void createColorTransform(const char* data, size_t);
-    void readColorProfile(const uint8_t* data, size_t);
-    void applyColorProfile(const uint8_t* data, size_t, ImageFrame&);
+    void readColorProfile();
 
     bool m_haveReadProfile;
     qcms_transform* m_transform;
+#endif
+
+#ifdef WEBP_ICC_ANIMATION_SUPPORT
+    bool updateDemuxer();
+    bool initFrameBuffer(const WebPIterator&, size_t frameIndex);
+    void applyPostProcessing(size_t frameIndex);
+    virtual void clearFrameBuffer(size_t frameIndex) OVERRIDE;
+
+    WebPDemuxer* m_demux;
+    WebPDemuxState m_demuxState;
+    bool m_haveAlreadyParsedThisData;
+    bool m_haveReadAnimationParameters;
+    int m_repetitionCount;
     int m_decodedHeight;
 #else
-    void applyColorProfile(const uint8_t*, size_t, ImageFrame&) { };
+    void applyPostProcessing(size_t) { };
 #endif
+
     void clear();
+    void clearDecoder();
 };
 
 } // namespace WebCore

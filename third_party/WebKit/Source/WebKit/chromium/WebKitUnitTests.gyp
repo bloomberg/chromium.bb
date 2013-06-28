@@ -50,6 +50,7 @@
                 '<(DEPTH)/base/base.gyp:test_support_base',
                 '<(DEPTH)/testing/gmock.gyp:gmock',
                 '<(DEPTH)/testing/gtest.gyp:gtest',
+                '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
                 '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
                 '<(DEPTH)/url/url.gyp:url_lib',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',

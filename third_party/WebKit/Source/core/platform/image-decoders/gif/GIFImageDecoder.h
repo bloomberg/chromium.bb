@@ -50,6 +50,7 @@ namespace WebCore {
         virtual ImageFrame* frameBufferAtIndex(size_t) OVERRIDE;
         virtual bool frameIsCompleteAtIndex(size_t) const OVERRIDE;
         virtual float frameDurationAtIndex(size_t) const OVERRIDE;
+        virtual size_t clearCacheExceptFrame(size_t) OVERRIDE;
         // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid
         // accessing deleted memory, especially when calling this from inside
         // GIFImageReader!

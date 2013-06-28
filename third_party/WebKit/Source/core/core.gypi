@@ -3673,6 +3673,7 @@
             'platform/graphics/chromium/test/MockImageDecoder.h',
             'platform/image-decoders/ImageDecoderTest.cpp',
             'platform/image-decoders/gif/GIFImageDecoderTest.cpp',
+            'platform/image-decoders/webp/WEBPImageDecoderTest.cpp',
             'platform/text/DateTimeFormatTest.cpp',
             'tests/HeapGraphSerializerTest.cpp',
             'tests/LayoutUnit.cpp',

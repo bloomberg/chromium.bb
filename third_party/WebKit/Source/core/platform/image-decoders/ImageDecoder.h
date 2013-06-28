@@ -215,6 +215,8 @@ namespace WebCore {
             *dest = SkPackARGB32NoCheck(a, r, g, b);
         }
 
+        void zeroFillFrameRect(const IntRect&);
+
     private:
         int width() const
         {
@@ -229,10 +231,9 @@ namespace WebCore {
         RefPtr<NativeImageSkia> m_bitmap;
         SkBitmap::Allocator* m_allocator;
         bool m_hasAlpha;
-        IntRect m_originalFrameRect; // This will always just be the entire
-                                     // buffer except for GIF frames whose
-                                     // original rect was smaller than the
-                                     // overall image size.
+        // This will always just be the entire buffer except for GIF or WebP
+        // frames whose original rect was smaller than the overall image size.
+        IntRect m_originalFrameRect;
         FrameStatus m_status;
         unsigned m_duration;
         FrameDisposalMethod m_disposalMethod;
@@ -291,9 +292,9 @@ namespace WebCore {
 
         // This will only differ from size() for ICO (where each frame is a
         // different icon) or other formats where different frames are different
-        // sizes.  This does NOT differ from size() for GIF, since decoding GIFs
-        // composites any smaller frames against previous frames to create full-
-        // size frames.
+        // sizes. This does NOT differ from size() for GIF or WebP, since
+        // decoding GIF or WebP composites any smaller frames against previous
+        // frames to create full-size frames.
         virtual IntSize frameSizeAtIndex(size_t) const
         {
             return size();
@@ -404,13 +405,11 @@ namespace WebCore {
 
         bool failed() const { return m_failed; }
 
-        // Clears decoded pixel data from all frames except the provided frame,
-        // unless that frame has status FrameEmpty, in which case we instead
-        // preserve the most recent frame whose data is required in order to
-        // decode this frame. Callers may pass WTF::notFound to clear all frames.
-        //
+        // Clears decoded pixel data from all frames except the provided frame.
+        // Callers may pass WTF::notFound to clear all frames.
+        // Note: If |m_frameBufferCache| contains only one frame, it won't be cleared.
         // Returns the number of bytes of frame data actually cleared.
-        size_t clearCacheExceptFrame(size_t);
+        virtual size_t clearCacheExceptFrame(size_t);
 
         // If the image has a cursor hot-spot, stores it in the argument
         // and returns true. Otherwise returns false.
