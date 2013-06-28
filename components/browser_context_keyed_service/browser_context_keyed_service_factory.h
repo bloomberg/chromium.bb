@@ -62,10 +62,11 @@ class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
 
   // Common implementation that maps |context| to some service object. Deals
   // with incognito contexts per subclass instructions with
-  // ServiceRedirectedInIncognito() and ServiceHasOwnInstanceInIncognito()
-  // through the GetBrowserContextToUse() method on the base.
-  // If |create| is true, the service will be created using
-  // BuildServiceInstanceFor() if it doesn't already exist.
+  // GetBrowserContextRedirectedInIncognito() and
+  // GetBrowserContextOwnInstanceInIncognito() through the
+  // GetBrowserContextToUse() method on the base.  If |create| is true, the
+  // service will be created using BuildServiceInstanceFor() if it doesn't
+  // already exist.
   BrowserContextKeyedService* GetServiceForBrowserContext(
       content::BrowserContext* context,
       bool create);
