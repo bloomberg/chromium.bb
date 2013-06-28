@@ -1,7 +1,13 @@
 tables: hu-hu-g1.ctb, hyph_hu_HU.dic
 
 testmode: hyphenate
+adásszalagokat
+
+testmode: hyphenate
 adásszerű
+
+testmode: hyphenate
+adásszöveg
 
 testmode: hyphenate
 adásszünet
@@ -172,6 +178,9 @@ testmode: hyphenate
 berendezésszett
 
 testmode: hyphenate
+bemutatkozásszámba
+
+testmode: hyphenate
 Békésszentandrás
 
 testmode: hyphenate
@@ -179,6 +188,12 @@ bélésszövet
 
 testmode: hyphenate
 bélyeggyűjtemény
+
+testmode: hyphenate
+benzinnyom
+
+testmode: hyphenate
+benzinnyomás
 
 testmode: hyphenate
 bércsüveg
@@ -447,7 +462,13 @@ testmode: hyphenate
 emelésszerű
 
 testmode: hyphenate
+emigránsszervezetek
+
+testmode: hyphenate
 enyveszsinór
+
+testmode: hyphenate
+erdőssztyepp
 
 testmode: hyphenate
 erőforrászabáló
@@ -534,6 +555,9 @@ testmode: hyphenate
 fásszárú
 
 testmode: hyphenate
+fáziszár
+
+testmode: hyphenate
 fázisszögnek
 
 testmode: hyphenate
@@ -579,6 +603,9 @@ testmode: hyphenate
 fémesszürke
 
 testmode: hyphenate
+fétisszínész
+
+testmode: hyphenate
 filccsizma
 
 testmode: hyphenate
@@ -616,6 +643,9 @@ fosszínű
 
 testmode: hyphenate
 földcsuszamlásszerűen
+
+testmode: hyphenate
+földművesszövetkezet
 
 testmode: hyphenate
 fölélesszem
@@ -745,6 +775,12 @@ hamisszínes
 
 testmode: hyphenate
 hallászavar
+
+testmode: hyphenate
+halmazsorozat
+
+testmode: hyphenate
+halmazsorozatot
 
 testmode: hyphenate
 halottasszekér
@@ -963,6 +999,12 @@ testmode: hyphenate
 ingyennyelvoktatás
 
 testmode: hyphenate
+intrikusszerepeiben
+
+testmode: hyphenate
+ionnyaláb
+
+testmode: hyphenate
 ínnyújtó
 
 testmode: hyphenate
@@ -991,6 +1033,9 @@ járásszékhely
 
 testmode: hyphenate
 jáspisszobor
+
+testmode: hyphenate
+játékosszám
 
 testmode: hyphenate
 jegeccsoport
@@ -1129,6 +1174,9 @@ kérdészápor
 
 testmode: hyphenate
 kérésszerűen
+
+testmode: hyphenate
+késszerű
 
 testmode: hyphenate
 késszúrás
@@ -1491,6 +1539,9 @@ testmode: hyphenate
 magánnyugdíjpénztár
 
 testmode: hyphenate
+maggyár
+
+testmode: hyphenate
 maggyűjteményről
 
 testmode: hyphenate
@@ -1761,6 +1812,9 @@ testmode: hyphenate
 nyereggyártók
 
 testmode: hyphenate
+nyéllyukas
+
+testmode: hyphenate
 nyikkanásszerű
 
 testmode: hyphenate
@@ -1878,6 +1932,9 @@ testmode: hyphenate
 ötvösszakmai
 
 testmode: hyphenate
+őzsaláta
+
+testmode: hyphenate
 őzsebesen
 
 testmode: hyphenate
@@ -1897,6 +1954,9 @@ palócság
 
 testmode: hyphenate
 paprikásszalonna
+
+testmode: hyphenate
+panteonnyi
 
 testmode: hyphenate
 papirosszeletre
@@ -1959,6 +2019,9 @@ testmode: hyphenate
 periódusszámának
 
 testmode: hyphenate
+pestisszobrot
+
+testmode: hyphenate
 piaccsarnok
 
 testmode: hyphenate
@@ -1966,6 +2029,9 @@ Pilisszántó
 
 testmode: hyphenate
 Pilisszentkereszt
+
+testmode: hyphenate
+piramisszöveg
 
 testmode: hyphenate
 pirítósszeleteken
@@ -2115,6 +2181,12 @@ testmode: hyphenate
 repülősszárny
 
 testmode: hyphenate
+rézkarcsorozat
+
+testmode: hyphenate
+rézkarcsorozatokat
+
+testmode: hyphenate
 rézsut
 
 testmode: hyphenate
@@ -2166,6 +2238,12 @@ testmode: hyphenate
 ruhásszobámé
 
 testmode: hyphenate
+ruggyanta
+
+testmode: hyphenate
+rugósszerű
+
+testmode: hyphenate
 szanitéccsoport
 
 testmode: hyphenate
@@ -2176,6 +2254,9 @@ sasszárnyú
 
 testmode: hyphenate
 sasszeg
+
+testmode: hyphenate
+sasszobrai
 
 testmode: hyphenate
 sásszéna
@@ -2209,6 +2290,9 @@ sertészsír
 
 testmode: hyphenate
 szénnyomokat
+
+testmode: hyphenate
+szlenggyanús
 
 testmode: hyphenate
 sonkásszelet
@@ -2263,6 +2347,9 @@ szállodásszövetség
 
 testmode: hyphenate
 Szamosszeg
+
+testmode: hyphenate
+szalaggyár
 
 testmode: hyphenate
 szárazság
@@ -2364,6 +2451,9 @@ testmode: hyphenate
 szűzsült
 
 testmode: hyphenate
+tanulásszeretetét
+
+testmode: hyphenate
 taxisszurkálás
 
 testmode: hyphenate
@@ -2374,6 +2464,9 @@ társalgásszámba
 
 testmode: hyphenate
 taggyűlés
+
+testmode: hyphenate
+taggyülekezet
 
 testmode: hyphenate
 tánccsoport
@@ -2409,10 +2502,16 @@ testmode: hyphenate
 templomosszakértő
 
 testmode: hyphenate
+termésszerű
+
+testmode: hyphenate
 tetszészaj
 
 testmode: hyphenate
 tetszészsivaj
+
+testmode: hyphenate
+tetoválásszerű
 
 testmode: hyphenate
 tigrisszemek
@@ -2443,6 +2542,9 @@ titkosszolgálat
 
 testmode: hyphenate
 tizedesszállás
+
+testmode: hyphenate
+tizedesszám
 
 testmode: hyphenate
 tízgallonnyi
@@ -2476,6 +2578,9 @@ töltésszerűen
 
 testmode: hyphenate
 töltésszakasz
+
+testmode: hyphenate
+töltésszimmetria
 
 testmode: hyphenate
 törészónán
@@ -2592,6 +2697,9 @@ testmode: hyphenate
 ütészápor
 
 testmode: hyphenate
+ütközésszimulátor
+
+testmode: hyphenate
 üveggyapot
 
 testmode: hyphenate
@@ -2659,6 +2767,9 @@ Vaszar
 
 testmode: hyphenate
 Vázsnok
+
+testmode: hyphenate
+verbunkoszene
 
 testmode: hyphenate
 végiggyalogolhatja

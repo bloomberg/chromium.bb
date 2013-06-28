@@ -5,10 +5,20 @@ accessibility
 testmode: backtranslate
 accessibility
 
+adásszalagokat
+
+testmode: backtranslate
+adásszalagokat
+
 adásszerű
 
 testmode: backtranslate
 adásszerű
+
+adásszöveg
+
+testmode: backtranslate
+adásszöveg
 
 adásszünet
 
@@ -285,6 +295,11 @@ bekezdésszintű
 testmode: backtranslate
 bekezdésszintű
 
+bemutatkozásszámba
+
+testmode: backtranslate
+bemutatkozásszámba
+
 Békésszentandrás
 
 testmode: backtranslate
@@ -299,6 +314,11 @@ bélyeggyűjtemény
 
 testmode: backtranslate
 bélyeggyűjtemény
+
+benzinnyom
+
+testmode: backtranslate
+benzinnyom
 
 bércsüveg
 
@@ -740,6 +760,11 @@ emelésszerű
 testmode: backtranslate
 emelésszerű
 
+emigránsszervezetek
+
+testmode: backtranslate
+emigránsszervezetek
+
 enyveszsinór
 
 testmode: backtranslate
@@ -749,6 +774,11 @@ eposszal
 
 testmode: backtranslate
 eposszal
+
+erdőssztyepp
+
+testmode: backtranslate
+erdőssztyepp
 
 érccsapadék, érccsengés, érccsatorna 
 
@@ -865,6 +895,11 @@ fásszárú
 testmode: backtranslate
 fásszárú
 
+fáziszár
+
+testmode: backtranslate
+fáziszár
+
 fázisszögnek
 
 testmode: backtranslate
@@ -934,6 +969,11 @@ fémesszürke
 
 testmode: backtranslate
 fémesszürke
+
+fétisszínész
+
+testmode: backtranslate
+fétisszínész
 
 filccsizma
 
@@ -1009,6 +1049,11 @@ földcsuszamlásszerűen
 
 testmode: backtranslate
 földcsuszamlásszerűen
+
+földművesszövetkezet
+
+testmode: backtranslate
+földművesszövetkezet
 
 fölélesszem
 
@@ -1225,6 +1270,11 @@ hallászavar
 testmode: backtranslate
 hallászavar
 
+halmazsorozat
+
+testmode: backtranslate
+halmazsorozat
+
 halottasszekér 
 
 testmode: backtranslate
@@ -1580,10 +1630,20 @@ ingyennyelvoktatás
 testmode: backtranslate
 ingyennyelvoktatás
 
-ínnyújtó,
+intrikusszerepeiben
 
 testmode: backtranslate
-ínnyújtó,
+intrikusszerepeiben
+
+ionnyaláb
+
+testmode: backtranslate
+ionnyaláb
+
+ínnyújtó
+
+testmode: backtranslate
+ínnyújtó
 
 ínnyújtót 
 
@@ -1595,10 +1655,10 @@ testmode: backtranslate
 testmode: backtranslate
 ínyencség
 
-írásszeretet,
+írásszeretet
 
 testmode: backtranslate
-írásszeretet,
+írásszeretet
 
 ismétlésszám
 
@@ -1629,6 +1689,11 @@ jáspisszobor
 
 testmode: backtranslate
 jáspisszobor
+
+játékosszám
+
+testmode: vacktranslate
+játékosszám
 
 jegeccsoport
 
@@ -1855,6 +1920,11 @@ kerítésszaggató
 
 testmode: backtranslate
 kerítésszaggató
+
+késszerű
+
+testmode: backtranslate
+késszerű
 
 késszúrás
 
@@ -2460,6 +2530,11 @@ magasszárú
 testmode: backtranslate
 magasszárú
 
+maggyár
+
+testmode: backtranslate
+maggyár
+
 maggyűjteményről
 
 testmode: backtranslate
@@ -2910,6 +2985,11 @@ nyereggyártók
 testmode: backtranslate
 nyereggyártók
 
+nyéllyukas
+
+testmode: backtranslate
+nyéllyukas
+
 nyikkanásszerű
 
 testmode: backtranslate
@@ -3095,6 +3175,11 @@ testmode: backtranslate
 testmode: backtranslate
 ötvösszakmai
 
+őzsaláta
+
+testmode: backtranslate
+őzsaláta
+
 őzsebesen
 
 testmode: backtranslate
@@ -3124,6 +3209,11 @@ palócság
 
 testmode: backtranslate
 palócság
+
+panteonnyi
+
+testmode: backtranslate
+panteonnyi
 
 papirosszeletre
 
@@ -3230,6 +3320,11 @@ periódusszámának
 testmode: backtranslate
 periódusszámának
 
+pestisszobrot
+
+testmode: backtranslate
+pestisszobrot
+
 piaccsarnok
 
 testmode: backtranslate
@@ -3244,6 +3339,11 @@ Pilisszentkereszt
 
 testmode: backtranslate
 Pilisszentkereszt
+
+piramisszöveg
+
+testmode: backtranslate
+piramisszöveg
 
 pirítósszeleteken
 
@@ -3517,6 +3617,11 @@ repülősszárny
 testmode: backtranslate
 repülősszárny
 
+rézkarcsorozat
+
+testmode: backtranslate
+rézkarcsorozat
+
 rézsut
 
 testmode: backtranslate
@@ -3602,6 +3707,16 @@ ruhásszobámé
 testmode: backtranslate
 ruhásszobámé
 
+ruggyanta
+
+testmode: backtranslate
+ruggyanta
+
+rugósszerű
+
+testmode: backtranslate
+rugósszerű
+
 rúzsosszájú
 
 testmode: backtranslate
@@ -3621,6 +3736,11 @@ sasszeg
 
 testmode: backtranslate
 sasszeg
+
+sasszobrai
+
+testmode: backtranslate
+sasszobrai
 
 sásszéna
 
@@ -3646,6 +3766,11 @@ szalaggyakorlatát
 
 testmode: backtranslate
 szalaggyakorlatát
+
+szalaggyár
+
+testmode: backtranslate
+szalaggyár
 
 szalaggyűjtemény
 
@@ -3686,6 +3811,11 @@ szénnyomokat
 
 testmode: backtranslate
 szénnyomokat
+
+szlenggyanús
+
+testmode: backtranslate
+szlenggyanús
 
 szociálisszálláshely-program
 
@@ -3952,6 +4082,11 @@ szűzsült
 testmode: backtranslate
 szűzsült
 
+tanulásszeretetét
+
+testmode: backtranslate
+tanulásszeretetét
+
 taxisszurkálás
 
 testmode: backtranslate
@@ -3966,6 +4101,11 @@ taggyűlés
 
 testmode: backtranslate
 taggyűlés
+
+taggyülekezet
+
+testmode: backtranslate
+taggyülekezet
 
 tánccsoport
 
@@ -4027,6 +4167,16 @@ templomosszakértő
 testmode: backtranslate
 templomosszakértő
 
+terhesszexet
+
+testmode: backtranslate
+terhesszexet
+
+termésszerű
+
+testmode: backtranslate
+termésszerű
+
 tetszészaj
 
 testmode: backtranslate
@@ -4036,6 +4186,11 @@ tetszészsivaj
 
 testmode: backtranslate
 tetszészsivaj 
+
+tetoválásszerű
+
+testmode: backtranslate
+tetoválásszerű
 
 tigrisszemek 
 
@@ -4086,6 +4241,11 @@ tizedesszállás
 
 testmode: backtranslate
 tizedesszállás
+
+tizedesszám
+
+testmode: backtranslate
+tizedesszám
 
 tízgallonnyi
 
@@ -4141,6 +4301,11 @@ töltésszakasz
 
 testmode: backtranslate
 töltésszakasz
+
+töltésszimmetria
+
+testmode: backtranslate
+töltésszimmetria
 
 törészónán
 
@@ -4331,6 +4496,11 @@ testmode: backtranslate
 
 testmode: backtranslate
 ütészápor 
+
+ütközésszimulátor
+
+testmode: backtranslate
+ütközésszimulátor
 
 üveggyapot
 
@@ -4446,6 +4616,11 @@ Vázsnok
 
 testmode: backtranslate
 Vázsnok
+
+verbunkoszene
+
+testmode: backtranslate
+verbunkoszene
 
 végiggyakorolni
 

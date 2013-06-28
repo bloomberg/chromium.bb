@@ -8,8 +8,16 @@
     {
       "data": [
         {
+          "input": "adásszalagokat", 
+          "output": "adássza-la-go-kat"
+        }, 
+        {
           "input": "adásszerű", 
           "output": "adás-sze-rű"
+        }, 
+        {
+          "input": "adásszöveg", 
+          "output": "adás-szö-veg"
         }, 
         {
           "input": "adásszünet", 
@@ -236,6 +244,10 @@
           "output": "be-ren-de-zés-szett"
         }, 
         {
+          "input": "bemutatkozásszámba", 
+          "output": "be-mu-tat-ko-zás-szám-ba"
+        }, 
+        {
           "input": "Békésszentandrás", 
           "output": "Bé-kés-szent-and-rás"
         }, 
@@ -246,6 +258,14 @@
         {
           "input": "bélyeggyűjtemény", 
           "output": "bé-lyeg-gyűj-te-mény"
+        }, 
+        {
+          "input": "benzinnyom", 
+          "output": "ben-zin-nyom"
+        }, 
+        {
+          "input": "benzinnyomás", 
+          "output": "ben-zin-nyo-más"
         }, 
         {
           "input": "bércsüveg", 
@@ -604,8 +624,16 @@
           "output": "eme-lés-sze-rű"
         }, 
         {
+          "input": "emigránsszervezetek", 
+          "output": "emig-ráns-szer-ve-ze-tek"
+        }, 
+        {
           "input": "enyveszsinór", 
           "output": "eny-ves-zsi-nór"
+        }, 
+        {
+          "input": "erdőssztyepp", 
+          "output": "er-dős-sztyepp"
         }, 
         {
           "input": "erőforrászabáló", 
@@ -720,6 +748,10 @@
           "output": "fás-szá-rú"
         }, 
         {
+          "input": "fáziszár", 
+          "output": "fá-zis-zár"
+        }, 
+        {
           "input": "fázisszögnek", 
           "output": "fá-zis-szög-nek"
         }, 
@@ -780,6 +812,10 @@
           "output": "fé-mes-szür-ke"
         }, 
         {
+          "input": "fétisszínész", 
+          "output": "fé-tis-szí-nész"
+        }, 
+        {
           "input": "filccsizma", 
           "output": "filc-csiz-ma"
         }, 
@@ -830,6 +866,10 @@
         {
           "input": "földcsuszamlásszerűen", 
           "output": "föld-csu-szam-lás-sze-rű-en"
+        }, 
+        {
+          "input": "földművesszövetkezet", 
+          "output": "föld-mű-ves-szö-vet-ke-zet"
         }, 
         {
           "input": "fölélesszem", 
@@ -1002,6 +1042,14 @@
         {
           "input": "hallászavar", 
           "output": "hal-lás-za-var"
+        }, 
+        {
+          "input": "halmazsorozat", 
+          "output": "hal-maz-so-ro-zat"
+        }, 
+        {
+          "input": "halmazsorozatot", 
+          "output": "hal-maz-so-ro-za-tot"
         }, 
         {
           "input": "halottasszekér", 
@@ -1292,6 +1340,14 @@
           "output": "in-gyen-nyelv-ok-ta-tás"
         }, 
         {
+          "input": "intrikusszerepeiben", 
+          "output": "int-ri-kus-sze-re-pe-i-ben"
+        }, 
+        {
+          "input": "ionnyaláb", 
+          "output": "ion-nya-láb"
+        }, 
+        {
           "input": "ínnyújtó", 
           "output": "ín-nyúj-tó"
         }, 
@@ -1330,6 +1386,10 @@
         {
           "input": "jáspisszobor", 
           "output": "jás-pis-szo-bor"
+        }, 
+        {
+          "input": "játékosszám", 
+          "output": "já-té-kos-szám"
         }, 
         {
           "input": "jegeccsoport", 
@@ -1514,6 +1574,10 @@
         {
           "input": "kérésszerűen", 
           "output": "ké-réssze-rű-en"
+        }, 
+        {
+          "input": "késszerű", 
+          "output": "kés-sze-rű"
         }, 
         {
           "input": "késszúrás", 
@@ -1996,6 +2060,10 @@
           "output": "ma-gán-nyug-díj-pénz-tár"
         }, 
         {
+          "input": "maggyár", 
+          "output": "mag-gyár"
+        }, 
+        {
           "input": "maggyűjteményről", 
           "output": "mag-gyűj-te-mény-ről"
         }, 
@@ -2356,6 +2424,10 @@
           "output": "nye-reg-gyár-tók"
         }, 
         {
+          "input": "nyéllyukas", 
+          "output": "nyél-lyu-kas"
+        }, 
+        {
           "input": "nyikkanásszerű", 
           "output": "nyik-ka-nás-sze-rű"
         }, 
@@ -2512,6 +2584,10 @@
           "output": "öt-vös-szak-mai"
         }, 
         {
+          "input": "őzsaláta", 
+          "output": "őz-sa-lá-ta"
+        }, 
+        {
           "input": "őzsebesen", 
           "output": "őz-se-be-sen"
         }, 
@@ -2538,6 +2614,10 @@
         {
           "input": "paprikásszalonna", 
           "output": "pap-ri-kássza-lon-na"
+        }, 
+        {
+          "input": "panteonnyi", 
+          "output": "pan-te-onnyi"
         }, 
         {
           "input": "papirosszeletre", 
@@ -2620,6 +2700,10 @@
           "output": "pe-ri-ó-dus-szá-má-nak"
         }, 
         {
+          "input": "pestisszobrot", 
+          "output": "pes-tis-szob-rot"
+        }, 
+        {
           "input": "piaccsarnok", 
           "output": "pi-ac-csar-nok"
         }, 
@@ -2630,6 +2714,10 @@
         {
           "input": "Pilisszentkereszt", 
           "output": "Pi-lis-szent-ke-reszt"
+        }, 
+        {
+          "input": "piramisszöveg", 
+          "output": "pi-ra-mis-szö-veg"
         }, 
         {
           "input": "pirítósszeleteken", 
@@ -2828,6 +2916,14 @@
           "output": "re-pü-lős-szárny"
         }, 
         {
+          "input": "rézkarcsorozat", 
+          "output": "réz-karc-so-ro-zat"
+        }, 
+        {
+          "input": "rézkarcsorozatokat", 
+          "output": "réz-karc-so-ro-za-to-kat"
+        }, 
+        {
           "input": "rézsut", 
           "output": "rézsut"
         }, 
@@ -2896,6 +2992,14 @@
           "output": "ru-hás-szo-bá-mé"
         }, 
         {
+          "input": "ruggyanta", 
+          "output": "rug-gyan-ta"
+        }, 
+        {
+          "input": "rugósszerű", 
+          "output": "ru-gós-sze-rű"
+        }, 
+        {
           "input": "szanitéccsoport", 
           "output": "sza-ni-téc-cso-port"
         }, 
@@ -2910,6 +3014,10 @@
         {
           "input": "sasszeg", 
           "output": "sas-szeg"
+        }, 
+        {
+          "input": "sasszobrai", 
+          "output": "sas-szob-rai"
         }, 
         {
           "input": "sásszéna", 
@@ -2954,6 +3062,10 @@
         {
           "input": "szénnyomokat", 
           "output": "szén-nyo-mo-kat"
+        }, 
+        {
+          "input": "szlenggyanús", 
+          "output": "szlenggya-nús"
         }, 
         {
           "input": "sonkásszelet", 
@@ -3026,6 +3138,10 @@
         {
           "input": "Szamosszeg", 
           "output": "Sza-mos-szeg"
+        }, 
+        {
+          "input": "szalaggyár", 
+          "output": "sza-lag-gyár"
         }, 
         {
           "input": "szárazság", 
@@ -3160,6 +3276,10 @@
           "output": "szűz-sült"
         }, 
         {
+          "input": "tanulásszeretetét", 
+          "output": "ta-nu-lás-sze-re-te-tét"
+        }, 
+        {
           "input": "taxisszurkálás", 
           "output": "ta-xis-szur-ká-lás"
         }, 
@@ -3174,6 +3294,10 @@
         {
           "input": "taggyűlés", 
           "output": "tag-gyű-lés"
+        }, 
+        {
+          "input": "taggyülekezet", 
+          "output": "tag-gyü-le-ke-zet"
         }, 
         {
           "input": "tánccsoport", 
@@ -3220,12 +3344,20 @@
           "output": "temp-lo-mos-szak-ér-tő"
         }, 
         {
+          "input": "termésszerű", 
+          "output": "ter-méssze-rű"
+        }, 
+        {
           "input": "tetszészaj", 
           "output": "tet-szés-zaj"
         }, 
         {
           "input": "tetszészsivaj", 
           "output": "tet-szés-z-si-vaj"
+        }, 
+        {
+          "input": "tetoválásszerű", 
+          "output": "te-to-vá-lás-sze-rű"
         }, 
         {
           "input": "tigrisszemek", 
@@ -3266,6 +3398,10 @@
         {
           "input": "tizedesszállás", 
           "output": "ti-ze-desszál-lás"
+        }, 
+        {
+          "input": "tizedesszám", 
+          "output": "ti-ze-desszám"
         }, 
         {
           "input": "tízgallonnyi", 
@@ -3310,6 +3446,10 @@
         {
           "input": "töltésszakasz", 
           "output": "töl-tés-sza-kasz"
+        }, 
+        {
+          "input": "töltésszimmetria", 
+          "output": "töl-tés-szim-met-ria"
         }, 
         {
           "input": "törészónán", 
@@ -3464,6 +3604,10 @@
           "output": "ütés-zá-por"
         }, 
         {
+          "input": "ütközésszimulátor", 
+          "output": "üt-kö-zés-szi-mu-lá-tor"
+        }, 
+        {
           "input": "üveggyapot", 
           "output": "üveg-gya-pot"
         }, 
@@ -3554,6 +3698,10 @@
         {
           "input": "Vázsnok", 
           "output": "Vázs-nok"
+        }, 
+        {
+          "input": "verbunkoszene", 
+          "output": "ver-bun-kos-ze-ne"
         }, 
         {
           "input": "végiggyalogolhatja", 
