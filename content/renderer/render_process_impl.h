@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_RENDER_PROCESS_IMPL_H_
 #define CONTENT_RENDERER_RENDER_PROCESS_IMPL_H_
 
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "content/renderer/render_process.h"
 
 class SkCanvas;

@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_GPU_GPU_RENDERING_STATS_H_
 #define CONTENT_COMMON_GPU_GPU_RENDERING_STATS_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cc/debug/rendering_stats.h"
 #include "content/common/content_export.h"
 

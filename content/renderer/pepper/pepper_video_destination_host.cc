@@ -4,7 +4,7 @@
 
 #include "content/renderer/pepper/pepper_video_destination_host.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"

@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_INDEXED_DB_INFO_H_
 
 #include "base/files/file_path.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 

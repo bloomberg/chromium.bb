@@ -9,7 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "jni/NestedSystemMessageHandler_jni.h"
 
 namespace {

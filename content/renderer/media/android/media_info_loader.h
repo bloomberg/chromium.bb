@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"

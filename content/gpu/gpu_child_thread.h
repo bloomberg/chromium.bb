@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/child/child_thread.h"
 #include "content/common/gpu/gpu_channel.h"

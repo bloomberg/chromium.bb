@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_TEST_MOCK_DOWNLOAD_ITEM_H_
 
 #include "base/callback.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"

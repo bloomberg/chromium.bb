@@ -22,7 +22,7 @@
 #include "base/test/test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/test/test_timeouts.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/app/startup_helper_win.h"

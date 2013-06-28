@@ -16,7 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/shared_memory.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "skia/ext/refptr.h"

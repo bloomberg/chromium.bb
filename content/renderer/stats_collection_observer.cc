@@ -4,7 +4,7 @@
 
 #include "content/renderer/stats_collection_observer.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/renderer/render_view_impl.h"
 
 namespace content {

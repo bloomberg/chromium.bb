@@ -35,7 +35,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"

@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_STATS_COLLECTION_OBSERVER_H_
 #define CONTENT_RENDERER_STATS_COLLECTION_OBSERVER_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/public/renderer/render_view_observer.h"
 
 namespace content {

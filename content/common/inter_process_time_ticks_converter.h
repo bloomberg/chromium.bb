@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_INTER_PROCESS_TIME_TICKS_CONVERTER_H_
 #define CONTENT_COMMON_INTER_PROCESS_TIME_TICKS_CONVERTER_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 
 namespace content {

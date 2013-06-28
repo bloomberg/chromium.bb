@@ -18,7 +18,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"

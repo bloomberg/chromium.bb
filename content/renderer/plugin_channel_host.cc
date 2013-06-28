@@ -5,7 +5,7 @@
 #include "content/renderer/plugin_channel_host.h"
 
 #include "base/metrics/histogram.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/child/child_process.h"
 #include "content/child/npobject_base.h"
 #include "content/child/plugin_messages.h"

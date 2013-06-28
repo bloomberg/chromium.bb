@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_LOAD_NOTIFICATION_DETAILS_H_
 #define CONTENT_PUBLIC_BROWSER_LOAD_NOTIFICATION_DETAILS_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"

@@ -4,7 +4,7 @@
 
 #include "content/common/inter_process_time_ticks_converter.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeTicks;

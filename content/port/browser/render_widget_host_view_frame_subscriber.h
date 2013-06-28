@@ -6,7 +6,7 @@
 #define CONTENT_PORT_BROWSER_RENDER_WIDGET_HOST_VIEW_FRAME_SUBSCRIBER_H_
 
 #include "base/callback.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace gfx {
 class Rect;

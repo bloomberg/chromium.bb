@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/output_surface.h"
 #include "ipc/ipc_sync_message_filter.h"

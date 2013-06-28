@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_RENDER_MEDIA_LOG_H_
 
 #include <vector>
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/base/media_log.h"
 
 namespace base {
