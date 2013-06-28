@@ -384,6 +384,10 @@ cr.define('options', function() {
         };
       }
 
+      // Download section.
+      $('disable-drive-row').hidden =
+          UIAccountTweaks.loggedInAsLocallyManagedUser();
+
       // HTTPS/SSL section.
       if (cr.isWindows || cr.isMac) {
         $('certificatesManageButton').onclick = function(event) {
