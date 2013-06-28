@@ -125,11 +125,13 @@ namespace options {
 
 namespace {
 
-bool ShouldShowMultiProfilesUserList() {
+bool ShouldShowMultiProfilesUserList(chrome::HostDesktopType desktop_type) {
 #if defined(OS_CHROMEOS)
   // On Chrome OS we use different UI for multi-profiles.
   return false;
 #else
+  if (desktop_type != chrome::HOST_DESKTOP_TYPE_NATIVE)
+    return false;
   return ProfileManager::IsMultipleProfilesEnabled();
 #endif
 }
@@ -506,7 +508,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       g_browser_process->profile_manager()->GetNumberOfProfiles() > 1);
 #endif
 
-  if (ShouldShowMultiProfilesUserList())
+  if (ShouldShowMultiProfilesUserList(GetDesktopType()))
     values->Set("profilesInfo", GetProfilesInfoList().release());
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -1085,7 +1087,7 @@ scoped_ptr<ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
 }
 
 void BrowserOptionsHandler::SendProfilesInfo() {
-  if (!ShouldShowMultiProfilesUserList())
+  if (!ShouldShowMultiProfilesUserList(GetDesktopType()))
     return;
   web_ui()->CallJavascriptFunction("BrowserOptions.setProfilesInfo",
                                    *GetProfilesInfoList());
