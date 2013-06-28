@@ -393,8 +393,8 @@ const StylePropertyShorthand& webkitMarginCollapseShorthand()
 const StylePropertyShorthand& gridColumnShorthand()
 {
     static const CSSPropertyID gridColumnProperties[] = {
-        CSSPropertyGridStart,
-        CSSPropertyGridEnd
+        CSSPropertyGridColumnStart,
+        CSSPropertyGridColumnEnd
     };
     DEFINE_STATIC_LOCAL(StylePropertyShorthand, gridColumnLonghands, (CSSPropertyGridColumn, gridColumnProperties, WTF_ARRAY_LENGTH(gridColumnProperties)));
     return gridColumnLonghands;
@@ -403,8 +403,8 @@ const StylePropertyShorthand& gridColumnShorthand()
 const StylePropertyShorthand& gridRowShorthand()
 {
     static const CSSPropertyID gridRowProperties[] = {
-        CSSPropertyGridBefore,
-        CSSPropertyGridAfter
+        CSSPropertyGridRowStart,
+        CSSPropertyGridRowEnd
     };
     DEFINE_STATIC_LOCAL(StylePropertyShorthand, gridRowLonghands, (CSSPropertyGridRow, gridRowProperties, WTF_ARRAY_LENGTH(gridRowProperties)));
     return gridRowLonghands;
@@ -413,10 +413,10 @@ const StylePropertyShorthand& gridRowShorthand()
 const StylePropertyShorthand& gridAreaShorthand()
 {
     static const CSSPropertyID gridAreaProperties[] = {
-        CSSPropertyGridStart,
-        CSSPropertyGridBefore,
-        CSSPropertyGridEnd,
-        CSSPropertyGridAfter
+        CSSPropertyGridColumnStart,
+        CSSPropertyGridRowStart,
+        CSSPropertyGridColumnEnd,
+        CSSPropertyGridRowEnd
     };
     DEFINE_STATIC_LOCAL(StylePropertyShorthand, gridAreaLonghands, (CSSPropertyGridArea, gridAreaProperties, WTF_ARRAY_LENGTH(gridAreaProperties)));
     return gridAreaLonghands;
@@ -866,14 +866,14 @@ const Vector<StylePropertyShorthand> matchingShorthandsForLonghand(CSSPropertyID
         Vector<StylePropertyShorthand, 2> grid;
         grid.uncheckedAppend(gridAreaShorthand());
         grid.uncheckedAppend(gridColumnShorthand());
-        map.set(CSSPropertyGridStart, grid);
-        map.set(CSSPropertyGridEnd, grid);
+        map.set(CSSPropertyGridColumnStart, grid);
+        map.set(CSSPropertyGridColumnEnd, grid);
 
         Vector<StylePropertyShorthand, 2> gridAfter;
         gridAfter.uncheckedAppend(gridAreaShorthand());
         gridAfter.uncheckedAppend(gridRowShorthand());
-        map.set(CSSPropertyGridBefore, gridAfter);
-        map.set(CSSPropertyGridAfter, gridAfter);
+        map.set(CSSPropertyGridRowStart, gridAfter);
+        map.set(CSSPropertyGridRowEnd, gridAfter);
 
         Vector<StylePropertyShorthand, 1> marginCollapse;
         marginCollapse.uncheckedAppend(webkitMarginCollapseShorthand());

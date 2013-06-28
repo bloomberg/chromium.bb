@@ -2441,10 +2441,10 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             return false;
         return parseGridTrackList(propId, important);
 
-    case CSSPropertyGridStart:
-    case CSSPropertyGridEnd:
-    case CSSPropertyGridBefore:
-    case CSSPropertyGridAfter:
+    case CSSPropertyGridColumnEnd:
+    case CSSPropertyGridColumnStart:
+    case CSSPropertyGridRowEnd:
+    case CSSPropertyGridRowStart:
         if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
             return false;
         parsedValue = parseGridPosition();

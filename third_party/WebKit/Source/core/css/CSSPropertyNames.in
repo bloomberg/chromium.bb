@@ -289,17 +289,17 @@ justify-content
 -webkit-justify-content alias_for=justify-content
 -webkit-font-size-delta
 grid-auto-columns
+grid-auto-flow
 grid-auto-rows
+grid-area
+grid-column
+grid-column-end
+grid-column-start
 grid-definition-columns
 grid-definition-rows
-grid-start
-grid-end
-grid-before
-grid-after
-grid-column
 grid-row
-grid-auto-flow
-grid-area
+grid-row-end
+grid-row-start
 -webkit-highlight
 -webkit-hyphenate-character
 -webkit-hyphenate-limit-after

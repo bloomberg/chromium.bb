@@ -6,20 +6,20 @@ function checkColumnRowValues(gridItem, columnValue, rowValue)
     this.gridColumnValue = columnValue;
     this.gridRowValue = rowValue;
 
-    var gridStartEndValues = columnValue.split("/")
-    this.gridStartValue = gridStartEndValues[0].trim();
-    this.gridEndValue = gridStartEndValues[1].trim();
+    var gridColumnStartEndValues = columnValue.split("/")
+    this.gridColumnStartValue = gridColumnStartEndValues[0].trim();
+    this.gridColumnEndValue = gridColumnStartEndValues[1].trim();
 
-    var gridBeforeAfterValues = rowValue.split("/")
-    this.gridBeforeValue = gridBeforeAfterValues[0].trim();
-    this.gridAfterValue = gridBeforeAfterValues[1].trim();
+    var gridRowStartEndValues = rowValue.split("/")
+    this.gridRowStartValue = gridRowStartEndValues[0].trim();
+    this.gridRowEndValue = gridRowStartEndValues[1].trim();
 
     shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-column')", "gridColumnValue");
-    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-start')", "gridStartValue");
-    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-end')", "gridEndValue");
+    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-column-start')", "gridColumnStartValue");
+    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-column-end')", "gridColumnEndValue");
     shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-row')", "gridRowValue");
-    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-before')", "gridBeforeValue");
-    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-after')", "gridAfterValue");
+    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-row-start')", "gridRowStartValue");
+    shouldBe("getComputedStyle(gridItem, '').getPropertyValue('grid-row-end')", "gridRowEndValue");
 }
 
 window.testColumnRowCSSParsing = function(id, columnValue, rowValue)
@@ -40,36 +40,36 @@ window.testColumnRowJSParsing = function(columnValue, rowValue, expectedColumnVa
     document.body.removeChild(gridItem);
 }
 
-window.testStartBeforeJSParsing = function(startValue, beforeValue, expectedStartValue, expectedBeforeValue)
+window.testColumnStartRowStartJSParsing = function(columnStartValue, rowStartValue, expectedColumnStartValue, expectedRowStartValue)
 {
     var gridItem = document.createElement("div");
     document.body.appendChild(gridItem);
-    gridItem.style.gridStart = startValue;
-    gridItem.style.gridBefore = beforeValue;
+    gridItem.style.gridColumnStart = columnStartValue;
+    gridItem.style.gridRowStart = rowStartValue;
 
-    if (expectedStartValue === undefined)
-        expectedStartValue = startValue;
-    if (expectedBeforeValue === undefined)
-        expectedBeforeValue = beforeValue;
+    if (expectedColumnStartValue === undefined)
+        expectedColumnStartValue = columnStartValue;
+    if (expectedRowStartValue === undefined)
+        expectedRowStartValue = rowStartValue;
 
-    checkColumnRowValues(gridItem, expectedStartValue + " / auto", expectedBeforeValue + " / auto");
+    checkColumnRowValues(gridItem, expectedColumnStartValue + " / auto", expectedRowStartValue + " / auto");
 
     document.body.removeChild(gridItem);
 }
 
-window.testEndAfterJSParsing = function(endValue, afterValue, expectedEndValue, expectedAfterValue)
+window.testColumnEndRowEndJSParsing = function(columnEndValue, rowEndValue, expectedColumnEndValue, expectedRowEndValue)
 {
     var gridItem = document.createElement("div");
     document.body.appendChild(gridItem);
-    gridItem.style.gridEnd = endValue;
-    gridItem.style.gridAfter = afterValue;
+    gridItem.style.gridColumnEnd = columnEndValue;
+    gridItem.style.gridRowEnd = rowEndValue;
 
-    if (expectedEndValue === undefined)
-        expectedEndValue = endValue;
-    if (expectedAfterValue === undefined)
-        expectedAfterValue = afterValue;
+    if (expectedColumnEndValue === undefined)
+        expectedColumnEndValue = columnEndValue;
+    if (expectedRowEndValue === undefined)
+        expectedRowEndValue = rowEndValue;
 
-    checkColumnRowValues(gridItem, "auto / " + expectedEndValue, "auto / " + expectedAfterValue);
+    checkColumnRowValues(gridItem, "auto / " + expectedColumnEndValue, "auto / " + expectedRowEndValue);
 
     document.body.removeChild(gridItem);
 }
@@ -86,19 +86,19 @@ window.testColumnRowInvalidJSParsing = function(columnValue, rowValue)
     document.body.removeChild(gridItem);
 }
 
-var placeholderParentStartValueForInherit = "6";
-var placeholderParentEndValueForInherit = "span 2";
-var placeholderParentColumnValueForInherit = placeholderParentStartValueForInherit + " / " + placeholderParentEndValueForInherit;
-var placeholderParentBeforeValueForInherit = "span 1";
-var placeholderParentAfterValueForInherit = "7";
-var placeholderParentRowValueForInherit = placeholderParentBeforeValueForInherit + " / " + placeholderParentAfterValueForInherit;
+var placeholderParentColumnStartValueForInherit = "6";
+var placeholderParentColumnEndValueForInherit = "span 2";
+var placeholderParentColumnValueForInherit = placeholderParentColumnStartValueForInherit + " / " + placeholderParentColumnEndValueForInherit;
+var placeholderParentRowStartValueForInherit = "span 1";
+var placeholderParentRowEndValueForInherit = "7";
+var placeholderParentRowValueForInherit = placeholderParentRowStartValueForInherit + " / " + placeholderParentRowEndValueForInherit;
 
-var placeholderStartValueForInitial = "1";
-var placeholderEndValueForInitial = "span 2";
-var placeholderColumnValueForInitial = placeholderStartValueForInitial + " / " + placeholderEndValueForInitial;
-var placeholderBeforeValueForInitial = "span 3";
-var placeholderAfterValueForInitial = "5";
-var placeholderRowValueForInitial = placeholderBeforeValueForInitial + " / " + placeholderAfterValueForInitial;
+var placeholderColumnStartValueForInitial = "1";
+var placeholderColumnEndValueForInitial = "span 2";
+var placeholderColumnValueForInitial = placeholderColumnStartValueForInitial + " / " + placeholderColumnEndValueForInitial;
+var placeholderRowStartValueForInitial = "span 3";
+var placeholderRowEndValueForInitial = "5";
+var placeholderRowValueForInitial = placeholderRowStartValueForInitial + " / " + placeholderRowEndValueForInitial;
 
 function setupInheritTest()
 {
@@ -135,31 +135,31 @@ window.testColumnRowInheritJSParsing = function(columnValue, rowValue)
     document.body.removeChild(parentElement);
 }
 
-window.testStartBeforeInheritJSParsing = function(startValue, beforeValue)
+window.testColumnStartRowStartInheritJSParsing = function(columnStartValue, rowStartValue)
 {
     var parentElement = setupInheritTest();
     var gridItem = parentElement.firstChild;
-    gridItem.style.gridStart = startValue;
-    gridItem.style.gridBefore = beforeValue;
+    gridItem.style.gridColumnStart = columnStartValue;
+    gridItem.style.gridRowStart = rowStartValue;
 
     // Initial value is 'auto' but we shouldn't touch the opposite grid line.
-    var columnValueForInherit = (startValue !== "inherit" ? startValue : placeholderParentStartValueForInherit) + " / auto";
-    var rowValueForInherit = (beforeValue !== "inherit" ? beforeValue : placeholderParentBeforeValueForInherit) + " / auto";
+    var columnValueForInherit = (columnStartValue !== "inherit" ? columnStartValue : placeholderParentColumnStartValueForInherit) + " / auto";
+    var rowValueForInherit = (rowStartValue !== "inherit" ? rowStartValue : placeholderParentRowStartValueForInherit) + " / auto";
     checkColumnRowValues(parentElement.firstChild, columnValueForInherit, rowValueForInherit);
 
     document.body.removeChild(parentElement);
 }
 
-window.testEndAfterInheritJSParsing = function(endValue, afterValue)
+window.testColumnEndRowEndInheritJSParsing = function(columnEndValue, rowEndValue)
 {
     var parentElement = setupInheritTest();
     var gridItem = parentElement.firstChild;
-    gridItem.style.gridEnd = endValue;
-    gridItem.style.gridAfter = afterValue;
+    gridItem.style.gridColumnEnd = columnEndValue;
+    gridItem.style.gridRowEnd = rowEndValue;
 
     // Initial value is 'auto' but we shouldn't touch the opposite grid line.
-    var columnValueForInherit = "auto / " + (endValue !== "inherit" ? endValue : placeholderParentEndValueForInherit);
-    var rowValueForInherit = "auto / " + (afterValue !== "inherit" ? afterValue : placeholderParentAfterValueForInherit);
+    var columnValueForInherit = "auto / " + (columnEndValue !== "inherit" ? columnEndValue : placeholderParentColumnEndValueForInherit);
+    var rowValueForInherit = "auto / " + (rowEndValue !== "inherit" ? rowEndValue : placeholderParentRowEndValueForInherit);
     checkColumnRowValues(parentElement.firstChild, columnValueForInherit, rowValueForInherit);
 
     document.body.removeChild(parentElement);
@@ -178,15 +178,15 @@ window.testColumnRowInitialJSParsing = function()
     document.body.removeChild(gridItem);
 }
 
-window.testStartBeforeInitialJSParsing = function()
+window.testColumnStartRowStartInitialJSParsing = function()
 {
     var gridItem = setupInitialTest();
 
-    gridItem.style.gridStart = "initial";
-    checkColumnRowValues(gridItem, "auto / " + placeholderEndValueForInitial, placeholderRowValueForInitial);
+    gridItem.style.gridColumnStart = "initial";
+    checkColumnRowValues(gridItem, "auto / " + placeholderColumnEndValueForInitial, placeholderRowValueForInitial);
 
-    gridItem.style.gridBefore = "initial";
-    checkColumnRowValues(gridItem,  "auto / " + placeholderEndValueForInitial, "auto / " + placeholderAfterValueForInitial);
+    gridItem.style.gridRowStart = "initial";
+    checkColumnRowValues(gridItem,  "auto / " + placeholderColumnEndValueForInitial, "auto / " + placeholderRowEndValueForInitial);
 
     document.body.removeChild(gridItem);
 }
@@ -195,11 +195,11 @@ window.testEndAfterInitialJSParsing = function()
 {
     var gridItem = setupInitialTest();
 
-    gridItem.style.gridEnd = "initial";
-    checkColumnRowValues(gridItem, placeholderStartValueForInitial + " / auto", placeholderRowValueForInitial);
+    gridItem.style.gridColumnEnd = "initial";
+    checkColumnRowValues(gridItem, placeholderColumnStartValueForInitial + " / auto", placeholderRowValueForInitial);
 
-    gridItem.style.gridAfter = "initial";
-    checkColumnRowValues(gridItem, placeholderStartValueForInitial + " / auto", placeholderBeforeValueForInitial + " / auto");
+    gridItem.style.gridRowEnd = "initial";
+    checkColumnRowValues(gridItem, placeholderColumnStartValueForInitial + " / auto", placeholderRowStartValueForInitial + " / auto");
 
     document.body.removeChild(gridItem);
 }

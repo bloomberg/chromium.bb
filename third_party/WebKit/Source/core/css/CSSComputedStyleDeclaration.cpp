@@ -259,12 +259,12 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyGridAutoColumns,
     CSSPropertyGridAutoFlow,
     CSSPropertyGridAutoRows,
+    CSSPropertyGridColumnEnd,
+    CSSPropertyGridColumnStart,
     CSSPropertyGridDefinitionColumns,
     CSSPropertyGridDefinitionRows,
-    CSSPropertyGridStart,
-    CSSPropertyGridEnd,
-    CSSPropertyGridBefore,
-    CSSPropertyGridAfter,
+    CSSPropertyGridRowEnd,
+    CSSPropertyGridRowStart,
     CSSPropertyWebkitHighlight,
     CSSPropertyWebkitHyphenateCharacter,
     CSSPropertyWebkitHyphenateLimitAfter,
@@ -1947,14 +1947,14 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyGridDefinitionRows:
             return valueForGridTrackList(style->gridDefinitionRows(), style->namedGridRowLines(), style.get(), m_node->document()->renderView());
 
-        case CSSPropertyGridStart:
-            return valueForGridPosition(style->gridStart());
-        case CSSPropertyGridEnd:
-            return valueForGridPosition(style->gridEnd());
-        case CSSPropertyGridBefore:
-            return valueForGridPosition(style->gridBefore());
-        case CSSPropertyGridAfter:
-            return valueForGridPosition(style->gridAfter());
+        case CSSPropertyGridColumnStart:
+            return valueForGridPosition(style->gridColumnStart());
+        case CSSPropertyGridColumnEnd:
+            return valueForGridPosition(style->gridColumnEnd());
+        case CSSPropertyGridRowStart:
+            return valueForGridPosition(style->gridRowStart());
+        case CSSPropertyGridRowEnd:
+            return valueForGridPosition(style->gridRowEnd());
         case CSSPropertyGridColumn:
             return getCSSPropertyValuesForGridShorthand(gridColumnShorthand());
         case CSSPropertyGridRow:

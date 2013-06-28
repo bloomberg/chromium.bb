@@ -33,10 +33,10 @@ namespace WebCore {
 class GridTrack;
 
 enum GridPositionSide {
-    StartSide,
-    EndSide,
-    BeforeSide,
-    AfterSide
+    ColumnStartSide,
+    ColumnEndSide,
+    RowStartSide,
+    RowEndSide
 };
 
 class RenderGrid FINAL : public RenderBlock {

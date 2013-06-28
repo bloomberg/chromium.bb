@@ -36,18 +36,18 @@ if (window.testRunner)
         return gridPosition === undefined ? "auto" : gridPosition;
     }
 
-    function checkColumnRowValues(gridItem, gridStart, gridBefore, gridEnd, gridAfter)
+    function checkColumnRowValues(gridItem, gridColumnStart, gridRowStart, gridColumnEnd, gridRowEnd)
     {
         this.gridItem = gridItem;
-        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-start')", gridStart);
-        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-before')", valueOrDefaultGridPosition(gridBefore));
-        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-end')", valueOrDefaultGridPosition(gridEnd));
-        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-after')", valueOrDefaultGridPosition(gridAfter));
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-column-start')", gridColumnStart);
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-row-start')", valueOrDefaultGridPosition(gridRowStart));
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-column-end')", valueOrDefaultGridPosition(gridColumnEnd));
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-row-end')", valueOrDefaultGridPosition(gridRowEnd));
     }
 
-    function testGridAreaCSSParsing(gridItemId, gridStart, gridBefore, gridEnd, gridAfter)
+    function testGridAreaCSSParsing(gridItemId, gridColumnStart, gridRowStart, gridColumnEnd, gridRowEnd)
     {
-        checkColumnRowValues(document.getElementById(gridItemId), gridStart, gridBefore, gridEnd, gridAfter);
+        checkColumnRowValues(document.getElementById(gridItemId), gridColumnStart, gridRowStart, gridColumnEnd, gridRowEnd);
     }
 
     function testGridAreaJSParsing(gridAreaValue)
@@ -60,10 +60,10 @@ if (window.testRunner)
 
         // Get the different values.
         var gridColumnRowValues = gridAreaValue.split("/");
-        var gridBefore = gridColumnRowValues[1] ? gridColumnRowValues[1].trim() : undefined;
-        var gridEnd = gridColumnRowValues[2] ? gridColumnRowValues[2].trim() : undefined;
-        var gridAfter = gridColumnRowValues[3] ? gridColumnRowValues[3].trim() : undefined;
-        checkColumnRowValues(element, gridColumnRowValues[0].trim(), gridBefore, gridEnd, gridAfter);
+        var gridRowStart = gridColumnRowValues[1] ? gridColumnRowValues[1].trim() : undefined;
+        var gridColumnEnd = gridColumnRowValues[2] ? gridColumnRowValues[2].trim() : undefined;
+        var gridRowEnd = gridColumnRowValues[3] ? gridColumnRowValues[3].trim() : undefined;
+        checkColumnRowValues(element, gridColumnRowValues[0].trim(), gridRowStart, gridColumnEnd, gridRowEnd);
         document.body.removeChild(element);
     }
 

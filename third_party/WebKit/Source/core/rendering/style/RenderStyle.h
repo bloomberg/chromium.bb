@@ -747,10 +747,10 @@ public:
     const GridTrackSize& gridAutoColumns() const { return rareNonInheritedData->m_grid->m_gridAutoColumns; }
     const GridTrackSize& gridAutoRows() const { return rareNonInheritedData->m_grid->m_gridAutoRows; }
 
-    const GridPosition& gridStart() const { return rareNonInheritedData->m_gridItem->m_gridStart; }
-    const GridPosition& gridEnd() const { return rareNonInheritedData->m_gridItem->m_gridEnd; }
-    const GridPosition& gridBefore() const { return rareNonInheritedData->m_gridItem->m_gridBefore; }
-    const GridPosition& gridAfter() const { return rareNonInheritedData->m_gridItem->m_gridAfter; }
+    const GridPosition& gridColumnStart() const { return rareNonInheritedData->m_gridItem->m_gridColumnStart; }
+    const GridPosition& gridColumnEnd() const { return rareNonInheritedData->m_gridItem->m_gridColumnEnd; }
+    const GridPosition& gridRowStart() const { return rareNonInheritedData->m_gridItem->m_gridRowStart; }
+    const GridPosition& gridRowEnd() const { return rareNonInheritedData->m_gridItem->m_gridRowEnd; }
 
     const ShadowData* boxShadow() const { return rareNonInheritedData->m_boxShadow.get(); }
     void getBoxShadowExtent(LayoutUnit& top, LayoutUnit& right, LayoutUnit& bottom, LayoutUnit& left) const { getShadowExtent(boxShadow(), top, right, bottom, left); }
@@ -1196,10 +1196,10 @@ public:
     void setNamedGridRowLines(const NamedGridLinesMap& namedGridRowLines) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridRowLines, namedGridRowLines); }
     void setGridAutoFlow(GridAutoFlow flow) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridAutoFlow, flow); }
 
-    void setGridStart(const GridPosition& startPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridStart, startPosition); }
-    void setGridEnd(const GridPosition& endPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridEnd, endPosition); }
-    void setGridBefore(const GridPosition& beforePosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridBefore, beforePosition); }
-    void setGridAfter(const GridPosition& afterPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridAfter, afterPosition); }
+    void setGridColumnStart(const GridPosition& columnStartPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridColumnStart, columnStartPosition); }
+    void setGridColumnEnd(const GridPosition& columnEndPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridColumnEnd, columnEndPosition); }
+    void setGridRowStart(const GridPosition& rowStartPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridRowStart, rowStartPosition); }
+    void setGridRowEnd(const GridPosition& rowEndPosition) { SET_VAR(rareNonInheritedData.access()->m_gridItem, m_gridRowEnd, rowEndPosition); }
 
     void setMarqueeIncrement(Length f) { SET_VAR(rareNonInheritedData.access()->m_marquee, increment, f); }
     void setMarqueeSpeed(int f) { SET_VAR(rareNonInheritedData.access()->m_marquee, speed, f); }
@@ -1607,10 +1607,10 @@ public:
     static NamedGridLinesMap initialNamedGridRowLines() { return NamedGridLinesMap(); }
 
     // 'auto' is the default.
-    static GridPosition initialGridStart() { return GridPosition(); }
-    static GridPosition initialGridEnd() { return GridPosition(); }
-    static GridPosition initialGridBefore() { return GridPosition(); }
-    static GridPosition initialGridAfter() { return GridPosition(); }
+    static GridPosition initialGridColumnStart() { return GridPosition(); }
+    static GridPosition initialGridColumnEnd() { return GridPosition(); }
+    static GridPosition initialGridRowStart() { return GridPosition(); }
+    static GridPosition initialGridRowEnd() { return GridPosition(); }
 
     static unsigned initialTabSize() { return 8; }
 

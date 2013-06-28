@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2012 Google, Inc. All rights reserved.
  *
@@ -296,10 +297,10 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitFontSizeDelta: return 241;
     case CSSPropertyGridDefinitionColumns: return 242;
     case CSSPropertyGridDefinitionRows: return 243;
-    case CSSPropertyGridStart: return 244;
-    case CSSPropertyGridEnd: return 245;
-    case CSSPropertyGridBefore: return 246;
-    case CSSPropertyGridAfter: return 247;
+    case CSSPropertyGridColumnStart: return 244;
+    case CSSPropertyGridColumnEnd: return 245;
+    case CSSPropertyGridRowStart: return 246;
+    case CSSPropertyGridRowEnd: return 247;
     case CSSPropertyGridColumn: return 248;
     case CSSPropertyGridRow: return 249;
     case CSSPropertyGridAutoFlow: return 250;

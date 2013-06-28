@@ -1666,14 +1666,14 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
 void StyleResolver::adjustGridItemPosition(RenderStyle* style) const
 {
     // If opposing grid-placement properties both specify a grid span, they both compute to ‘auto’.
-    if (style->gridStart().isSpan() && style->gridEnd().isSpan()) {
-        style->setGridStart(GridPosition());
-        style->setGridEnd(GridPosition());
+    if (style->gridColumnStart().isSpan() && style->gridColumnEnd().isSpan()) {
+        style->setGridColumnStart(GridPosition());
+        style->setGridColumnEnd(GridPosition());
     }
 
-    if (style->gridBefore().isSpan() && style->gridAfter().isSpan()) {
-        style->setGridBefore(GridPosition());
-        style->setGridAfter(GridPosition());
+    if (style->gridRowStart().isSpan() && style->gridRowEnd().isSpan()) {
+        style->setGridRowStart(GridPosition());
+        style->setGridRowEnd(GridPosition());
     }
 }
 
@@ -2978,37 +2978,37 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         return;
     }
 
-    case CSSPropertyGridStart: {
-        HANDLE_INHERIT_AND_INITIAL(gridStart, GridStart);
+    case CSSPropertyGridColumnStart: {
+        HANDLE_INHERIT_AND_INITIAL(gridColumnStart, GridColumnStart);
         GridPosition startPosition;
         if (!createGridPosition(value, startPosition))
             return;
-        state.style()->setGridStart(startPosition);
+        state.style()->setGridColumnStart(startPosition);
         return;
     }
-    case CSSPropertyGridEnd: {
-        HANDLE_INHERIT_AND_INITIAL(gridEnd, GridEnd);
+    case CSSPropertyGridColumnEnd: {
+        HANDLE_INHERIT_AND_INITIAL(gridColumnEnd, GridColumnEnd);
         GridPosition endPosition;
         if (!createGridPosition(value, endPosition))
             return;
-        state.style()->setGridEnd(endPosition);
+        state.style()->setGridColumnEnd(endPosition);
         return;
     }
 
-    case CSSPropertyGridBefore: {
-        HANDLE_INHERIT_AND_INITIAL(gridBefore, GridBefore);
+    case CSSPropertyGridRowStart: {
+        HANDLE_INHERIT_AND_INITIAL(gridRowStart, GridRowStart);
         GridPosition beforePosition;
         if (!createGridPosition(value, beforePosition))
             return;
-        state.style()->setGridBefore(beforePosition);
+        state.style()->setGridRowStart(beforePosition);
         return;
     }
-    case CSSPropertyGridAfter: {
-        HANDLE_INHERIT_AND_INITIAL(gridAfter, GridAfter);
+    case CSSPropertyGridRowEnd: {
+        HANDLE_INHERIT_AND_INITIAL(gridRowEnd, GridRowEnd);
         GridPosition afterPosition;
         if (!createGridPosition(value, afterPosition))
             return;
-        state.style()->setGridAfter(afterPosition);
+        state.style()->setGridRowEnd(afterPosition);
         return;
     }
 

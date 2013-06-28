@@ -572,18 +572,18 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyFlexShrink:
     case CSSPropertyFlexWrap:
     case CSSPropertyWebkitFontSizeDelta:
-    case CSSPropertyGridAfter:
+    case CSSPropertyGridArea:
     case CSSPropertyGridAutoColumns:
     case CSSPropertyGridAutoFlow:
     case CSSPropertyGridAutoRows:
-    case CSSPropertyGridBefore:
     case CSSPropertyGridColumn:
+    case CSSPropertyGridColumnEnd:
+    case CSSPropertyGridColumnStart:
     case CSSPropertyGridDefinitionColumns:
     case CSSPropertyGridDefinitionRows:
-    case CSSPropertyGridEnd:
     case CSSPropertyGridRow:
-    case CSSPropertyGridStart:
-    case CSSPropertyGridArea:
+    case CSSPropertyGridRowEnd:
+    case CSSPropertyGridRowStart:
     case CSSPropertyJustifyContent:
     case CSSPropertyWebkitLineClamp:
     case CSSPropertyWebkitLogicalHeight:

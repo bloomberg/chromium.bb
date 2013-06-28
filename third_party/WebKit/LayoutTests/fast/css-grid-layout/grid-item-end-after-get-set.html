@@ -7,40 +7,40 @@ if (window.testRunner)
 </script>
 <style>
 .gridItemWithPositiveInteger {
-    grid-end: 10;
-    grid-after: 15;
+    grid-column-end: 10;
+    grid-row-end: 15;
 }
 .gridItemWithNegativeInteger {
-    grid-end: -10;
-    grid-after: -15;
+    grid-column-end: -10;
+    grid-row-end: -15;
 }
 .gridItemWithBeforeSpan {
-    grid-end: span 2;
-    grid-after: span 9;
+    grid-column-end: span 2;
+    grid-row-end: span 9;
 }
 .gridItemWithAfterSpan {
-    grid-end: 2 span;
-    grid-after: 9 span;
+    grid-column-end: 2 span;
+    grid-row-end: 9 span;
 }
 .gridItemWithOnlySpan {
-    grid-end: span;
-    grid-after: span;
+    grid-column-end: span;
+    grid-row-end: span;
 }
 .gridItemWithAuto {
-    grid-end: auto;
-    grid-after: auto;
+    grid-column-end: auto;
+    grid-row-end: auto;
 }
 .gridItemWithString {
-    grid-end: "first";
-    grid-after: "last";
+    grid-column-end: "first";
+    grid-row-end: "last";
 }
 .gridItemWithSpanString {
-    grid-end: "first" span;
-    grid-after: span "last";
+    grid-column-end: "first" span;
+    grid-row-end: span "last";
 }
 .gridItemWithSpanNumberString {
-    grid-end: 2 "first" span;
-    grid-after: "last" 3 span;
+    grid-column-end: 2 "first" span;
+    grid-row-end: "last" 3 span;
 }
 </style>
 <script src="resources/grid-item-column-row-parsing-utils.js"></script>
@@ -59,9 +59,9 @@ if (window.testRunner)
 <div class="gridItemWithSpanString" id="gridItemWithSpanStringElement"></div>
 <div class="gridItemWithSpanNumberString" id="gridItemWithSpanNumberStringElement"></div>
 <script>
-    description('Test that setting and getting grid-end and grid-after works as expected');
+    description('Test that setting and getting grid-column-end and grid-row-end works as expected');
 
-    debug("Test getting grid-end and grid-after set through CSS");
+    debug("Test getting grid-column-end and grid-row-end set through CSS");
     testColumnRowCSSParsing("gridElement", "auto / auto", "auto / auto");
     testColumnRowCSSParsing("gridItemWithPositiveInteger", "auto / 10", "auto / 15");
     testColumnRowCSSParsing("gridItemWithNegativeInteger", "auto / -10", "auto / -15");
@@ -77,43 +77,43 @@ if (window.testRunner)
     debug("Test the initial value");
     var element = document.createElement("div");
     document.body.appendChild(element);
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-end')", "'auto'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-column-end')", "'auto'");
     shouldBe("getComputedStyle(element, '').getPropertyValue('grid-column')", "'auto / auto'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-after')", "'auto'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-row-end')", "'auto'");
     shouldBe("getComputedStyle(element, '').getPropertyValue('grid-row')", "'auto / auto'");
 
     debug("");
-    debug("Test getting and setting grid-end and grid-after through JS");
-    testEndAfterJSParsing("18", "66");
-    testEndAfterJSParsing("-55", "-40");
-    testEndAfterJSParsing("'first'", "'last'", "1 first", "1 last");
-    testEndAfterJSParsing("span 7", "span 2");
-    testEndAfterJSParsing("span 'first'", "span 'last'", "span 1 first", "span 1 last");
-    testEndAfterJSParsing("auto", "auto");
+    debug("Test getting and setting grid-column-end and grid-row-end through JS");
+    testColumnEndRowEndJSParsing("18", "66");
+    testColumnEndRowEndJSParsing("-55", "-40");
+    testColumnEndRowEndJSParsing("'first'", "'last'", "1 first", "1 last");
+    testColumnEndRowEndJSParsing("span 7", "span 2");
+    testColumnEndRowEndJSParsing("span 'first'", "span 'last'", "span 1 first", "span 1 last");
+    testColumnEndRowEndJSParsing("auto", "auto");
 
     debug("");
-    debug("Test setting grid-start and grid-before to 'inherit' through JS");
-    testEndAfterInheritJSParsing("inherit", "18");
-    testEndAfterInheritJSParsing("2", "inherit");
-    testEndAfterInheritJSParsing("inherit", "inherit");
+    debug("Test setting grid-column-start and grid-row-start to 'inherit' through JS");
+    testColumnEndRowEndInheritJSParsing("inherit", "18");
+    testColumnEndRowEndInheritJSParsing("2", "inherit");
+    testColumnEndRowEndInheritJSParsing("inherit", "inherit");
 
     debug("");
-    debug("Test setting grid-start and grid-before to 'initial' through JS");
+    debug("Test setting grid-column-start and grid-row-start to 'initial' through JS");
     testEndAfterInitialJSParsing();
 
     debug("");
-    debug("Test setting grid-end and grid-after back to 'auto' through JS");
-    element.style.gridEnd = "18";
-    element.style.gridAfter = "66";
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-end')", "'18'");
+    debug("Test setting grid-column-end and grid-row-end back to 'auto' through JS");
+    element.style.gridColumnEnd = "18";
+    element.style.gridRowEnd = "66";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-column-end')", "'18'");
     shouldBe("getComputedStyle(element, '').getPropertyValue('grid-column')", "'auto / 18'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-after')", "'66'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-row-end')", "'66'");
     shouldBe("getComputedStyle(element, '').getPropertyValue('grid-row')", "'auto / 66'");
-    element.style.gridEnd = "auto";
-    element.style.gridAfter = "auto";
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-end')", "'auto'");
+    element.style.gridColumnEnd = "auto";
+    element.style.gridRowEnd = "auto";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-column-end')", "'auto'");
     shouldBe("getComputedStyle(element, '').getPropertyValue('grid-column')", "'auto / auto'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-after')", "'auto'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-row-end')", "'auto'");
     shouldBe("getComputedStyle(element, '').getPropertyValue('grid-row')", "'auto / auto'");
 </script>
 <script src="../js/resources/js-test-post.js"></script>
