@@ -542,6 +542,24 @@ ReplayableCall.prototype = {
     },
 
     /**
+     * @return {string}
+     */
+    propertyName: function()
+    {
+        console.assert(this.isPropertySetter());
+        return /** @type {string} */ (this._args[0]);
+    },
+
+    /**
+     * @return {*}
+     */
+    propertyValue: function()
+    {
+        console.assert(this.isPropertySetter());
+        return this._args[1];
+    },
+
+    /**
      * @return {Array.<ReplayableResource|*>}
      */
     args: function()
@@ -2663,8 +2681,8 @@ CallFormatter.prototype = {
             if (this._drawingMethodNames[functionName])
                 result.isDrawingCall = true;
         } else {
-            result.property = replayableCall.args()[0];
-            result.value = this.formatValue(replayableCall.args()[1]);
+            result.property = replayableCall.propertyName();
+            result.value = this.formatValue(replayableCall.propertyValue());
         }
         return result;
     },
@@ -3512,6 +3530,47 @@ InjectedCanvasModule.prototype = {
             return "Error: Resource with the given ID has not been replayed yet.";
 
         return this._makeResourceState(stringResourceId, traceLogId, resource.toDataURL());
+    },
+
+    /**
+     * @param {CanvasAgent.TraceLogId} traceLogId
+     * @param {number} callIndex
+     * @param {number} argumentIndex
+     * @param {string} objectGroup
+     * @return {!Object|string}
+     * @suppress {checkTypes}
+     */
+    evaluateTraceLogCallArgument: function(traceLogId, callIndex, argumentIndex, objectGroup)
+    {
+        var traceLog = this._traceLogs[traceLogId];
+        if (!traceLog)
+            return "Error: Trace log with the given ID not found.";
+
+        var replayableCall = traceLog.replayableCalls()[callIndex];
+        if (!replayableCall)
+            return "Error: No call found at index " + callIndex;
+
+        var value;
+        if (replayableCall.isPropertySetter())
+            value = replayableCall.propertyValue();
+        else if (argumentIndex === -1)
+            value = replayableCall.result();
+        else {
+            var args = replayableCall.args();
+            if (argumentIndex < 0 || argumentIndex >= args.length)
+                return "Error: No argument found at index " + argumentIndex + " for call at index " + callIndex;
+            value = args[argumentIndex];
+        }
+
+        if (value instanceof ReplayableResource) {
+            var traceLogPlayer = this._traceLogPlayers[traceLogId];
+            var resource = traceLogPlayer && traceLogPlayer.replayWorldResource(value.id());
+            var resourceState = this._makeResourceState(CallFormatter.makeStringResourceId(value.id()), traceLogId, resource ? resource.toDataURL() : "");
+            return { resourceState: resourceState };
+        }
+
+        var remoteObject = injectedScript.wrapObject(value, objectGroup, true, false);
+        return { result: remoteObject };
     },
 
     /**

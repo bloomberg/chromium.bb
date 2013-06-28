@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ScriptState.h"
 #include "core/inspector/InjectedScriptModule.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -61,6 +61,7 @@ public:
     void replayTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, RefPtr<TypeBuilder::Canvas::ResourceState>*);
     void resourceInfo(ErrorString*, const TypeBuilder::Canvas::ResourceId&, RefPtr<TypeBuilder::Canvas::ResourceInfo>*);
     void resourceState(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, const TypeBuilder::Canvas::ResourceId&, RefPtr<TypeBuilder::Canvas::ResourceState>*);
+    void evaluateTraceLogCallArgument(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, int, const String&, RefPtr<TypeBuilder::Runtime::RemoteObject>*, RefPtr<TypeBuilder::Canvas::ResourceState>*);
 
 private:
     ScriptObject callWrapContextFunction(const String&, const ScriptObject&);

@@ -29,8 +29,6 @@
  */
 
 #include "config.h"
-
-
 #include "core/inspector/InjectedScriptCanvasModule.h"
 
 #include "InjectedScriptCanvasModuleSource.h"
@@ -43,6 +41,7 @@ using WebCore::TypeBuilder::Canvas::ResourceInfo;
 using WebCore::TypeBuilder::Canvas::ResourceState;
 using WebCore::TypeBuilder::Canvas::TraceLog;
 using WebCore::TypeBuilder::Canvas::TraceLogId;
+using WebCore::TypeBuilder::Runtime::RemoteObject;
 
 namespace WebCore {
 
@@ -196,5 +195,29 @@ void InjectedScriptCanvasModule::resourceState(ErrorString* errorString, const T
     *result = ResourceState::runtimeCast(resultValue);
 }
 
-} // namespace WebCore
+void InjectedScriptCanvasModule::evaluateTraceLogCallArgument(ErrorString* errorString, const TraceLogId& traceLogId, int callIndex, int argumentIndex, const String& objectGroup, RefPtr<RemoteObject>* result, RefPtr<ResourceState>* resourceState)
+{
+    ScriptFunctionCall function(injectedScriptObject(), "evaluateTraceLogCallArgument");
+    function.appendArgument(traceLogId);
+    function.appendArgument(callIndex);
+    function.appendArgument(argumentIndex);
+    function.appendArgument(objectGroup);
+    RefPtr<JSONValue> resultValue;
+    makeCall(function, &resultValue);
+    if (!resultValue || resultValue->type() != JSONValue::TypeObject) {
+        if (!resultValue->asString(errorString))
+            *errorString = "Internal error: evaluateTraceLogCallArgument";
+        return;
+    }
+    RefPtr<JSONObject> resultObject = resultValue->asObject();
+    RefPtr<JSONObject> remoteObject = resultObject->getObject("result");
+    if (remoteObject)
+        *result = RemoteObject::runtimeCast(remoteObject);
+    RefPtr<JSONObject> resourceStateObject = resultObject->getObject("resourceState");
+    if (resourceStateObject)
+        *resourceState = ResourceState::runtimeCast(resourceStateObject);
+    if (!remoteObject && !resourceStateObject)
+        *errorString = "Internal error: no result and no resource state";
+}
 
+} // namespace WebCore

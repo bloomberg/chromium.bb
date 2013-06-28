@@ -55,6 +55,7 @@ using WebCore::TypeBuilder::Canvas::ResourceState;
 using WebCore::TypeBuilder::Canvas::TraceLog;
 using WebCore::TypeBuilder::Canvas::TraceLogId;
 using WebCore::TypeBuilder::Network::FrameId;
+using WebCore::TypeBuilder::Runtime::RemoteObject;
 
 namespace WebCore {
 
@@ -188,6 +189,13 @@ void InspectorCanvasAgent::getResourceState(ErrorString* errorString, const Trac
     InjectedScriptCanvasModule module = injectedScriptCanvasModule(errorString, traceLogId);
     if (!module.hasNoValue())
         module.resourceState(errorString, traceLogId, resourceId, &result);
+}
+
+void InspectorCanvasAgent::evaluateTraceLogCallArgument(ErrorString* errorString, const TraceLogId& traceLogId, int callIndex, int argumentIndex, const String* objectGroup, RefPtr<RemoteObject>& result, RefPtr<ResourceState>& resourceState)
+{
+    InjectedScriptCanvasModule module = injectedScriptCanvasModule(errorString, traceLogId);
+    if (!module.hasNoValue())
+        module.evaluateTraceLogCallArgument(errorString, traceLogId, callIndex, argumentIndex, objectGroup ? *objectGroup : String(), &result, &resourceState);
 }
 
 ScriptObject InspectorCanvasAgent::wrapCanvas2DRenderingContextForInstrumentation(const ScriptObject& context)
