@@ -30,6 +30,7 @@
 #define SQLError_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -60,6 +61,8 @@ public:
         CONSTRAINT_ERR = 6,
         TIMEOUT_ERR = 7
     };
+
+    static SQLErrorCode ExceptionCodeToSQLErrorCode(ExceptionCode);
 
 private:
     SQLError(unsigned code, const String& message) : m_code(code), m_message(message.isolatedCopy())

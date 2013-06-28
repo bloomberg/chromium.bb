@@ -245,7 +245,6 @@ RangeError
 Rect
 ReferenceError
 RegExp
-SQLException
 SVGAElement
 SVGAltGlyphDefElement
 SVGAltGlyphElement

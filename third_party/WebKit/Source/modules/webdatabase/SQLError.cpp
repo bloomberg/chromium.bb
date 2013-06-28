@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,45 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SQLException_h
-#define SQLException_h
-
-#include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ExceptionBase.h"
+#include "config.h"
+#include "modules/webdatabase/SQLError.h"
 
 namespace WebCore {
 
-class SQLException : public ExceptionBase, public ScriptWrappable {
-public:
-    static PassRefPtr<SQLException> create(const ExceptionCodeDescription& description)
-    {
-        return adoptRef(new SQLException(description));
+SQLError::SQLErrorCode SQLError::ExceptionCodeToSQLErrorCode(ExceptionCode ec)
+{
+    switch (ec) {
+    case SQLUnknownError:
+        return UNKNOWN_ERR;
+    case SQLDatabaseError:
+        return DATABASE_ERR;
+    case SQLVersionError:
+        return VERSION_ERR;
+    case SQLTooLargeError:
+        return TOO_LARGE_ERR;
+    case SQLQuotaExceededError:
+        return QUOTA_ERR;
+    case SQLSyntaxError:
+        return SYNTAX_ERR;
+    case SQLConstraintError:
+        return CONSTRAINT_ERR;
+    case SQLTimeoutError:
+        return TIMEOUT_ERR;
+    default:
+        ASSERT_NOT_REACHED();
+        return UNKNOWN_ERR;
     }
-
-    static const int SQLExceptionOffset = 1000;
-    static const int SQLExceptionMax = 1099;
-
-    enum SQLExceptionCode {
-        UNKNOWN_ERR = SQLExceptionOffset,
-        DATABASE_ERR = SQLExceptionOffset + 1,
-        VERSION_ERR = SQLExceptionOffset + 2,
-        TOO_LARGE_ERR = SQLExceptionOffset + 3,
-        QUOTA_ERR = SQLExceptionOffset + 4,
-        SYNTAX_ERR = SQLExceptionOffset + 5,
-        CONSTRAINT_ERR = SQLExceptionOffset + 6,
-        TIMEOUT_ERR = SQLExceptionOffset + 7
-    };
-
-    static bool initializeDescription(ExceptionCode, ExceptionCodeDescription*);
-
-private:
-    explicit SQLException(const ExceptionCodeDescription& description)
-        : ExceptionBase(description)
-    {
-        ScriptWrappable::init(this);
-    }
-};
+}
 
 } // namespace WebCore
-
-#endif // SQLException_h

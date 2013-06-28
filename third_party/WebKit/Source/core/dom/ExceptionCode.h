@@ -90,6 +90,17 @@ namespace WebCore {
         FSTypeMismatchError,
         FSPathExistsError,
 
+        // SQL
+        // FIXME: Consolidate these once https://crbug.com/252233 is fixed.
+        SQLUnknownError,
+        SQLDatabaseError,
+        SQLVersionError,
+        SQLTooLargeError,
+        SQLQuotaExceededError,
+        SQLSyntaxError,
+        SQLConstraintError,
+        SQLTimeoutError,
+
         // WebIDL exception types, handled by the binding layer.
         // FIXME: Add GeneralError, EvalError, etc. when implemented in the bindings.
         TypeError,

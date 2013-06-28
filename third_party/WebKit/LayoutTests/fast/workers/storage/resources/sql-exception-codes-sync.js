@@ -1,29 +1,30 @@
 var dbName = "SQLExceptionCodesTest" + (new Date()).getTime();
 
-function testTransaction(db, executeStatementsCallback, expectedErrorCodeName)
+function testTransaction(db, executeStatementsCallback, expectedError)
 {
     db.transaction(function(tx) {
         try {
             executeStatementsCallback(tx);
-            postMessage("FAIL: an exception (" + expectedErrorCodeName + ") should've been thrown.");
+            postMessage("FAIL: an exception (" + expectedError + ") should've been thrown.");
         } catch (err) {
-            if (err.code == err[expectedErrorCodeName])
-                postMessage("PASS: expected and got error code " + expectedErrorCodeName);
+            if (typeof err == "string" && err == expectedError)
+                postMessage("PASS: expected and got error with message " + expectedError);
+            else if (err.name == expectedError)
+                postMessage("PASS: expected and got error name " + expectedError);
             else
-                postMessage("FAIL: expected error code " + expectedErrorCodeName + " (" +
-                            err[expectedErrorCodeName] + "), got " + err.code);
+                postMessage("FAIL: expected error name " + expectedError + ", got " + err);
         }
       });
 }
 
 function testTransactionThrowsException(db)
 {
-    testTransaction(db, function(tx) { throw "Exception thrown in transaction callback."; }, "UNKNOWN_ERR");
+    testTransaction(db, function(tx) { throw "Exception thrown in transaction callback."; }, "Exception thrown in transaction callback.");
 }
 
 function testInvalidStatement(db)
 {
-    testTransaction(db, function(tx) { tx.executeSql("BAD STATEMENT"); }, "SYNTAX_ERR");
+    testTransaction(db, function(tx) { tx.executeSql("BAD STATEMENT"); }, "SyntaxError");
 }
 
 function testIncorrectNumberOfBindParameters(db)
@@ -32,7 +33,7 @@ function testIncorrectNumberOfBindParameters(db)
                     function(tx) {
                         tx.executeSql("CREATE TABLE IF NOT EXISTS BadBindNumberTest (Foo INT, Bar INT)");
                         tx.executeSql("INSERT INTO BadBindNumberTest VALUES (?, ?)", [1]);
-                    }, "SYNTAX_ERR");
+                    }, "SyntaxError");
 }
 
 function testBindParameterOfWrongType(db)
@@ -43,7 +44,7 @@ function testBindParameterOfWrongType(db)
     testTransaction(db, function(tx) {
         tx.executeSql("CREATE TABLE IF NOT EXISTS BadBindTypeTest (Foo TEXT)");
         tx.executeSql("INSERT INTO BadBindTypeTest VALUES (?)", [badString]);
-    }, "UNKNOWN_ERR");
+    }, "Cannot call toString() on this object.");
 }
 
 function testQuotaExceeded(db)
@@ -55,10 +56,10 @@ function testQuotaExceeded(db)
                         function(tx) {
                             tx.executeSql("CREATE TABLE IF NOT EXISTS QuotaTest (Foo BLOB)");
                             tx.executeSql("INSERT INTO QuotaTest VALUES (ZEROBLOB(10 * 1024 * 1024))");
-                        }, "QUOTA_ERR");
+                        }, "QuotaExceededError");
         postMessage("FAIL: Transaction should've been rolled back by SQLite.");
     } catch (err) {
-        if (err.code == err["DATABASE_ERR"])
+        if (err.name == "DatabaseError")
             postMessage("PASS: Transaction was rolled back by SQLite as expected.");
         else
             postMessage("FAIL: An unexpected exception was thrown: " + err);
@@ -72,7 +73,7 @@ function testVersionMismatch(db)
     testTransaction(db,
                     function(tx) {
                         tx.executeSql("THIS STATEMENT SHOULD NEVER GET EXECUTED");
-                    }, "VERSION_ERR");
+                    }, "VersionError");
 }
 
 var db = openDatabaseSync(dbName, "1.0", "Tests the exception codes.", 1);

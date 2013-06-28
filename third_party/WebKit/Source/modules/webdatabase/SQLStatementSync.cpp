@@ -30,11 +30,11 @@
 #include "config.h"
 #include "modules/webdatabase/SQLStatementSync.h"
 
+#include "core/dom/ExceptionCode.h"
 #include "core/platform/sql/SQLValue.h"
 #include "core/platform/sql/SQLiteDatabase.h"
 #include "core/platform/sql/SQLiteStatement.h"
 #include "modules/webdatabase/DatabaseSync.h"
-#include "modules/webdatabase/SQLException.h"
 #include "modules/webdatabase/SQLResultSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -58,13 +58,13 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionCo
     SQLiteStatement statement(*database, m_statement);
     int result = statement.prepare();
     if (result != SQLResultOk) {
-        ec = (result == SQLResultInterrupt ? SQLException::DATABASE_ERR : SQLException::SYNTAX_ERR);
+        ec = (result == SQLResultInterrupt ? SQLDatabaseError : SQLSyntaxError);
         db->setLastErrorMessage("could not prepare statement", result, database->lastErrorMsg());
         return 0;
     }
 
     if (statement.bindParameterCount() != m_arguments.size()) {
-        ec = (db->isInterrupted()? SQLException::DATABASE_ERR : SQLException::SYNTAX_ERR);
+        ec = (db->isInterrupted()? SQLDatabaseError : SQLSyntaxError);
         db->setLastErrorMessage("number of '?'s in statement string does not match argument count");
         return 0;
     }
@@ -72,13 +72,13 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionCo
     for (unsigned i = 0; i < m_arguments.size(); ++i) {
         result = statement.bindValue(i + 1, m_arguments[i]);
         if (result == SQLResultFull) {
-            ec = SQLException::QUOTA_ERR;
+            ec = SQLQuotaExceededError;
             db->setLastErrorMessage("there was not enough remaining storage space");
             return 0;
         }
 
         if (result != SQLResultOk) {
-            ec = SQLException::DATABASE_ERR;
+            ec = SQLDatabaseError;
             db->setLastErrorMessage("could not bind value", result, database->lastErrorMsg());
             return 0;
         }
@@ -103,7 +103,7 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionCo
         } while (result == SQLResultRow);
 
         if (result != SQLResultDone) {
-            ec = SQLException::DATABASE_ERR;
+            ec = SQLDatabaseError;
             db->setLastErrorMessage("could not iterate results", result, database->lastErrorMsg());
             return 0;
         }
@@ -113,15 +113,15 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionCo
             resultSet->setInsertId(database->lastInsertRowID());
     } else if (result == SQLResultFull) {
         // Quota error, the delegate will be asked for more space and this statement might be re-run.
-        ec = SQLException::QUOTA_ERR;
+        ec = SQLQuotaExceededError;
         db->setLastErrorMessage("there was not enough remaining storage space");
         return 0;
     } else if (result == SQLResultConstraint) {
-        ec = SQLException::CONSTRAINT_ERR;
+        ec = SQLConstraintError;
         db->setLastErrorMessage("statement failed due to a constraint failure");
         return 0;
     } else {
-        ec = SQLException::DATABASE_ERR;
+        ec = SQLDatabaseError;
         db->setLastErrorMessage("could not execute statement", result, database->lastErrorMsg());
         return 0;
     }

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseSync.h"
 
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/Logging.h"
 #include "modules/webdatabase/DatabaseBackendContext.h"
@@ -39,7 +40,7 @@
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTracker.h"
-#include "modules/webdatabase/SQLException.h"
+#include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLTransactionSync.h"
 #include "modules/webdatabase/SQLTransactionSyncCallback.h"
 #include "weborigin/SecurityOrigin.h"
@@ -78,9 +79,9 @@ void DatabaseSync::changeVersion(const String& oldVersion, const String& newVers
     ASSERT(m_scriptExecutionContext->isContextThread());
 
     if (sqliteDatabase().transactionInProgress()) {
-        reportChangeVersionResult(1, SQLException::DATABASE_ERR, 0);
+        reportChangeVersionResult(1, SQLError::ExceptionCodeToSQLErrorCode(SQLDatabaseError), 0);
         setLastErrorMessage("unable to changeVersion from within a transaction");
-        ec = SQLException::DATABASE_ERR;
+        ec = SQLDatabaseError;
         return;
     }
 
@@ -92,16 +93,16 @@ void DatabaseSync::changeVersion(const String& oldVersion, const String& newVers
 
     String actualVersion;
     if (!getVersionFromDatabase(actualVersion)) {
-        reportChangeVersionResult(2, SQLException::UNKNOWN_ERR, sqliteDatabase().lastError());
+        reportChangeVersionResult(2, SQLError::ExceptionCodeToSQLErrorCode(SQLUnknownError), sqliteDatabase().lastError());
         setLastErrorMessage("unable to read the current version", sqliteDatabase().lastError(), sqliteDatabase().lastErrorMsg());
-        ec = SQLException::UNKNOWN_ERR;
+        ec = SQLUnknownError;
         return;
     }
 
     if (actualVersion != oldVersion) {
-        reportChangeVersionResult(3, SQLException::VERSION_ERR, 0);
+        reportChangeVersionResult(3, SQLError::ExceptionCodeToSQLErrorCode(SQLVersionError), 0);
         setLastErrorMessage("current version of the database and `oldVersion` argument do not match");
-        ec = SQLException::VERSION_ERR;
+        ec = SQLVersionError;
         return;
     }
 
@@ -111,9 +112,9 @@ void DatabaseSync::changeVersion(const String& oldVersion, const String& newVers
     }
 
     if (!setVersionInDatabase(newVersion)) {
-        reportChangeVersionResult(4, SQLException::UNKNOWN_ERR, sqliteDatabase().lastError());
+        reportChangeVersionResult(4, SQLError::ExceptionCodeToSQLErrorCode(SQLUnknownError), sqliteDatabase().lastError());
         setLastErrorMessage("unable to set the new version", sqliteDatabase().lastError(), sqliteDatabase().lastErrorMsg());
-        ec = SQLException::UNKNOWN_ERR;
+        ec = SQLUnknownError;
         return;
     }
 
@@ -145,7 +146,7 @@ void DatabaseSync::runTransaction(PassRefPtr<SQLTransactionSyncCallback> callbac
 
     if (sqliteDatabase().transactionInProgress()) {
         setLastErrorMessage("unable to start a transaction from within a transaction");
-        ec = SQLException::DATABASE_ERR;
+        ec = SQLDatabaseError;
         return;
     }
 
