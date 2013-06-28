@@ -34,7 +34,8 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
+
+// SearchProviderTest ---------------------------------------------------------
 
 // The following environment is configured for these tests:
 // . The TemplateURL default_t_url_ is set as the default provider.
@@ -48,26 +49,6 @@ using content::BrowserThread;
 class SearchProviderTest : public testing::Test,
                            public AutocompleteProviderListener {
  public:
-  SearchProviderTest()
-      : default_t_url_(NULL),
-        term1_(ASCIIToUTF16("term1")),
-        keyword_t_url_(NULL),
-        keyword_term_(ASCIIToUTF16("keyword")),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        io_thread_(BrowserThread::IO),
-        quit_when_done_(false) {
-    io_thread_.Start();
-  }
-
-  static void SetUpTestCase();
-
-  static void TearDownTestCase();
-
-  // See description above class for what this registers.
-  virtual void SetUp();
-
-  virtual void TearDown();
-
   struct ResultInfo {
     ResultInfo() : result_type(AutocompleteMatchType::NUM_TYPES) {
     }
@@ -78,15 +59,35 @@ class SearchProviderTest : public testing::Test,
         result_type(result_type),
         fill_into_edit(fill_into_edit) {
     }
+
     const GURL gurl;
     const AutocompleteMatch::Type result_type;
     const string16 fill_into_edit;
   };
+
   struct TestData {
     const string16 input;
     const size_t num_results;
     const ResultInfo output[3];
   };
+
+  SearchProviderTest()
+      : default_t_url_(NULL),
+        term1_(ASCIIToUTF16("term1")),
+        keyword_t_url_(NULL),
+        keyword_term_(ASCIIToUTF16("keyword")),
+        ui_thread_(content::BrowserThread::UI, &message_loop_),
+        io_thread_(content::BrowserThread::IO),
+        quit_when_done_(false) {
+    io_thread_.Start();
+  }
+
+  static void SetUpTestCase();
+  static void TearDownTestCase();
+
+  // See description above class for what this registers.
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   void RunTest(TestData* cases, int num_cases, bool prefer_keyword);
 
@@ -165,8 +166,6 @@ class SearchProviderTest : public testing::Test,
 
 // static
 base::FieldTrialList* SearchProviderTest::field_trial_list_ = NULL;
-
-// static
 const std::string SearchProviderTest::kNotApplicable = "Not Applicable";
 
 // static
@@ -236,6 +235,41 @@ void SearchProviderTest::SetUp() {
   provider_->kMinimumTimeBetweenSuggestQueriesMs = 0;
 }
 
+void SearchProviderTest::TearDown() {
+  message_loop_.RunUntilIdle();
+
+  // Shutdown the provider before the profile.
+  provider_ = NULL;
+}
+
+void SearchProviderTest::RunTest(TestData* cases,
+                                 int num_cases,
+                                 bool prefer_keyword) {
+  ACMatches matches;
+  for (int i = 0; i < num_cases; ++i) {
+    AutocompleteInput input(cases[i].input, string16::npos, string16(), GURL(),
+                            false, prefer_keyword, true,
+                            AutocompleteInput::ALL_MATCHES);
+    provider_->Start(input, false);
+    matches = provider_->matches();
+    string16 diagnostic_details = ASCIIToUTF16("Input was: ") + cases[i].input +
+        ASCIIToUTF16("; prefer_keyword was: ") +
+        (prefer_keyword ? ASCIIToUTF16("true") : ASCIIToUTF16("false"));
+    EXPECT_EQ(cases[i].num_results, matches.size()) << diagnostic_details;
+    if (matches.size() == cases[i].num_results) {
+      for (size_t j = 0; j < cases[i].num_results; ++j) {
+        EXPECT_EQ(cases[i].output[j].gurl, matches[j].destination_url) <<
+            diagnostic_details;
+        EXPECT_EQ(cases[i].output[j].result_type, matches[j].type) <<
+            diagnostic_details;
+        EXPECT_EQ(cases[i].output[j].fill_into_edit,
+                  matches[j].fill_into_edit) <<
+            diagnostic_details;
+      }
+    }
+  }
+}
+
 void SearchProviderTest::OnProviderUpdate(bool updated_matches) {
   if (quit_when_done_ && provider_->done()) {
     quit_when_done_ = false;
@@ -294,41 +328,6 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
       wyt_match));
 }
 
-void SearchProviderTest::TearDown() {
-  message_loop_.RunUntilIdle();
-
-  // Shutdown the provider before the profile.
-  provider_ = NULL;
-}
-
-void SearchProviderTest::RunTest(TestData* cases,
-                                 int num_cases,
-                                 bool prefer_keyword) {
-  ACMatches matches;
-  for (int i = 0; i < num_cases; ++i) {
-    AutocompleteInput input(cases[i].input, string16::npos, string16(), GURL(),
-                            false, prefer_keyword, true,
-                            AutocompleteInput::ALL_MATCHES);
-    provider_->Start(input, false);
-    matches = provider_->matches();
-    string16 diagnostic_details = ASCIIToUTF16("Input was: ") + cases[i].input +
-        ASCIIToUTF16("; prefer_keyword was: ") +
-        (prefer_keyword ? ASCIIToUTF16("true") : ASCIIToUTF16("false"));
-    EXPECT_EQ(cases[i].num_results, matches.size()) << diagnostic_details;
-    if (matches.size() == cases[i].num_results) {
-      for (size_t j = 0; j < cases[i].num_results; ++j) {
-        EXPECT_EQ(cases[i].output[j].gurl, matches[j].destination_url) <<
-            diagnostic_details;
-        EXPECT_EQ(cases[i].output[j].result_type, matches[j].type) <<
-            diagnostic_details;
-        EXPECT_EQ(cases[i].output[j].fill_into_edit,
-                  matches[j].fill_into_edit) <<
-            diagnostic_details;
-      }
-    }
-  }
-}
-
 GURL SearchProviderTest::AddSearchToHistory(TemplateURL* t_url,
                                             string16 term,
                                             int visit_count) {
@@ -380,7 +379,8 @@ void SearchProviderTest::FinishDefaultSuggestQuery() {
   default_fetcher->delegate()->OnURLFetchComplete(default_fetcher);
 }
 
-// Tests -----------------------------------------------------------------------
+
+// Actual Tests ---------------------------------------------------------------
 
 // Make sure we query history for the default provider and a URLFetcher is
 // created for the default provider suggest results.

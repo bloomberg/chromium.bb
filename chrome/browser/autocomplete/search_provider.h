@@ -60,23 +60,30 @@ class SearchProvider : public AutocompleteProvider,
 
   SearchProvider(AutocompleteProviderListener* listener, Profile* profile);
 
-  // Returns an AutocompleteMatch representing a search for |query_string|
-  // using the provider identified by |keyword|. |is_keyword| should be true if
-  // |input| represents a keyword search (even if it's for the default search
-  // provider). |input_text| (the original input text) and |accepted_suggestion|
-  // are used to generate Assisted Query Stats.
-  // Returns a match with an invalid destination_url in case of any errors.
+  // Returns an AutocompleteMatch with the given |autocomplete_provider|,
+  // |relevance|, and |type|, which represents a search via |template_url| for
+  // |query_string|.  If |template_url| is NULL, returns a match with an invalid
+  // destination URL.
+  //
+  // |input_text| is the original user input, which may differ from
+  // |query_string|; e.g. the user typed "foo" and got a search suggestion of
+  // "food", which we're now marking up.  This is used to highlight portions of
+  // the match contents to distinguish locally-typed text from suggested text.
+  //
+  // |input| and |is_keyword| are necessary for various other details, like
+  // whether we should allow inline autocompletion and what the transition type
+  // should be.  |accepted_suggestion| and |omnibox_start_margin| are used along
+  // with |input_text| to generate Assisted Query Stats.
   static AutocompleteMatch CreateSearchSuggestion(
-      Profile* profile,
       AutocompleteProvider* autocomplete_provider,
-      const AutocompleteInput& input,
-      const string16& query_string,
-      const string16& input_text,
       int relevance,
       AutocompleteMatch::Type type,
-      int accepted_suggestion,
+      const TemplateURL* template_url,
+      const string16& query_string,
+      const string16& input_text,
+      const AutocompleteInput& input,
       bool is_keyword,
-      const string16& keyword,
+      int accepted_suggestion,
       int omnibox_start_margin);
 
   // AutocompleteProvider:

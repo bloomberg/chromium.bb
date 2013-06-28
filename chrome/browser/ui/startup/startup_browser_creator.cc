@@ -45,9 +45,7 @@
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -384,22 +382,17 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     const base::FilePath& cur_dir,
     Profile* profile) {
   std::vector<GURL> urls;
-  const CommandLine::StringVector& params = command_line.GetArgs();
 
+  const CommandLine::StringVector& params = command_line.GetArgs();
   for (size_t i = 0; i < params.size(); ++i) {
     base::FilePath param = base::FilePath(params[i]);
     // Handle Vista way of searching - "? <search-term>"
-    if (param.value().size() > 2 &&
-        param.value()[0] == '?' && param.value()[1] == ' ') {
-      const TemplateURL* default_provider =
-          TemplateURLServiceFactory::GetForProfile(profile)->
-          GetDefaultSearchProvider();
-      if (default_provider) {
-        const TemplateURLRef& search_url = default_provider->url_ref();
-        DCHECK(search_url.SupportsReplacement());
-        string16 search_term = param.LossyDisplayName().substr(2);
-        urls.push_back(GURL(search_url.ReplaceSearchTerms(
-            TemplateURLRef::SearchTermsArgs(search_term))));
+    if ((param.value().size() > 2) && (param.value()[0] == '?') &&
+        (param.value()[1] == ' ')) {
+      GURL url(GetDefaultSearchURLForSearchTerms(
+          profile, param.LossyDisplayName().substr(2)));
+      if (url.is_valid()) {
+        urls.push_back(url);
         continue;
       }
     }
@@ -436,9 +429,9 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     // If we are in Windows 8 metro mode and were launched as a result of the
     // search charm or via a url navigation in metro, then fetch the
     // corresponding url.
-    GURL url = chrome::GetURLToOpen(profile);
+    GURL url(chrome::GetURLToOpen(profile));
     if (url.is_valid())
-      urls.push_back(GURL(url));
+      urls.push_back(url);
   }
 #endif  // OS_WIN
   return urls;

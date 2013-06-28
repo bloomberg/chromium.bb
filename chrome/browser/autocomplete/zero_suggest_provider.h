@@ -101,21 +101,22 @@ class ZeroSuggestProvider : public AutocompleteProvider,
                    SearchProvider::SuggestResults* suggest_results,
                    SearchProvider::NavigationResults* navigation_results);
 
-  // Creates AutocompleteMatches for "Search |provider_keyword| for
-  // <suggestion>" for all suggestions in |results|, and adds them to |map|.
+  // Creates AutocompleteMatches to search |template_url| for "<suggestion>" for
+  // all suggestions in |results|, and adds them to |map|.
   void AddSuggestResultsToMap(const SearchProvider::SuggestResults& results,
-                              const string16& provider_keyword,
+                              const TemplateURL* template_url,
                               SearchProvider::MatchMap* map);
 
-  // Creates an AutocompleteMatch for "Search |provider_keyword| for
-  // |query_string|".  The supplied |relevance| and |type| and
-  // |accepted_suggestion| will also be used to create the AutocompleteMatch.
+  // Creates an AutocompleteMatch with the provided |relevance| and |type| to
+  // search |template_url| for |query_string|.  |accepted_suggestion| will be
+  // used to generate Assisted Query Stats.
+  //
   // Adds this match to |map|; if such a match already exists, whichever one
   // has lower relevance is eliminated.
-  void AddMatchToMap(const string16& query_string,
-                     const string16& provider_keyword,
-                     int relevance,
+  void AddMatchToMap(int relevance,
                      AutocompleteMatch::Type type,
+                     const TemplateURL* template_url,
+                     const string16& query_string,
                      int accepted_suggestion,
                      SearchProvider::MatchMap* map);
 

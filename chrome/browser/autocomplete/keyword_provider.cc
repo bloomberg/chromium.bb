@@ -86,9 +86,8 @@ class CompareQuality {
   // probably better rankings than the fraction of the keyword typed.  We should
   // always put any exact matches first no matter what, since the code in
   // Start() assumes this (and it makes sense).
-  bool operator()(const string16& keyword1,
-                  const string16& keyword2) const {
-    return keyword1.length() < keyword2.length();
+  bool operator()(const TemplateURL* t_url1, const TemplateURL* t_url2) const {
+    return t_url1->keyword().length() < t_url2->keyword().length();
   }
 };
 
@@ -216,8 +215,9 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
     const string16& text,
     const string16& keyword,
     const AutocompleteInput& input) {
-  return CreateAutocompleteMatch(GetTemplateURLService(), keyword, input,
-      keyword.size(), SplitReplacementStringFromInput(text, true), 0);
+  return CreateAutocompleteMatch(
+      GetTemplateURLService()->GetTemplateURLForKeyword(keyword), input,
+      keyword.length(), SplitReplacementStringFromInput(text, true), 0);
 }
 
 void KeywordProvider::Start(const AutocompleteInput& input,
@@ -253,8 +253,6 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   if (!ExtractKeywordFromInput(input, &keyword, &remaining_input))
     return;
 
-  TemplateURLService* model = GetTemplateURLService();
-
   // Get the best matches for this keyword.
   //
   // NOTE: We could cache the previous keywords and reuse them here in the
@@ -265,27 +263,26 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   // TODO(pkasting): http://b/893701 We should remember the user's use of a
   // search query both from the autocomplete popup and from web pages
   // themselves.
-  std::vector<string16> keyword_matches;
-  model->FindMatchingKeywords(keyword,
-                              !remaining_input.empty(),
-                              &keyword_matches);
+  TemplateURLService::TemplateURLVector matches;
+  GetTemplateURLService()->FindMatchingKeywords(
+      keyword, !remaining_input.empty(), &matches);
 
-  for (std::vector<string16>::iterator i(keyword_matches.begin());
-       i != keyword_matches.end(); ) {
-    const TemplateURL* template_url = model->GetTemplateURLForKeyword(*i);
+  for (TemplateURLService::TemplateURLVector::iterator i(matches.begin());
+       i != matches.end(); ) {
+    const TemplateURL* template_url = *i;
 
     // Prune any extension keywords that are disallowed in incognito mode (if
     // we're incognito), or disabled.
     if (profile_ && template_url->IsExtensionKeyword()) {
       ExtensionService* service = extensions::ExtensionSystem::Get(profile_)->
           extension_service();
-      const extensions::Extension* extension = service->GetExtensionById(
-          template_url->GetExtensionId(), false);
+      const extensions::Extension* extension =
+          service->GetExtensionById(template_url->GetExtensionId(), false);
       bool enabled =
           extension && (!profile_->IsOffTheRecord() ||
                         service->IsIncognitoEnabled(extension->id()));
       if (!enabled) {
-        i = keyword_matches.erase(i);
+        i = matches.erase(i);
         continue;
       }
     }
@@ -293,22 +290,22 @@ void KeywordProvider::Start(const AutocompleteInput& input,
     // Prune any substituting keywords if there is no substitution.
     if (template_url->SupportsReplacement() && remaining_input.empty() &&
         !input.allow_exact_keyword_match()) {
-      i = keyword_matches.erase(i);
+      i = matches.erase(i);
       continue;
     }
 
     ++i;
   }
-  if (keyword_matches.empty())
+  if (matches.empty())
     return;
-  std::sort(keyword_matches.begin(), keyword_matches.end(), CompareQuality());
+  std::sort(matches.begin(), matches.end(), CompareQuality());
 
   // Limit to one exact or three inexact matches, and mark them up for display
   // in the autocomplete popup.
   // Any exact match is going to be the highest quality match, and thus at the
   // front of our vector.
-  if (keyword_matches.front() == keyword) {
-    const TemplateURL* template_url = model->GetTemplateURLForKeyword(keyword);
+  if (matches.front()->keyword() == keyword) {
+    const TemplateURL* template_url = matches.front();
     const bool is_extension_keyword = template_url->IsExtensionKeyword();
 
     // Only create an exact match if |remaining_input| is empty or if
@@ -321,9 +318,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
 
     // TODO(pkasting): We should probably check that if the user explicitly
     // typed a scheme, that scheme matches the one in |template_url|.
-    matches_.push_back(CreateAutocompleteMatch(model, keyword, input,
-                                               keyword.length(),
-                                               remaining_input, -1));
+    matches_.push_back(CreateAutocompleteMatch(
+        template_url, input, keyword.length(), remaining_input, -1));
 
     if (profile_ && is_extension_keyword) {
       if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
@@ -364,15 +360,12 @@ void KeywordProvider::Start(const AutocompleteInput& input,
       }
     }
   } else {
-    if (keyword_matches.size() > kMaxMatches) {
-      keyword_matches.erase(keyword_matches.begin() + kMaxMatches,
-                            keyword_matches.end());
-    }
-    for (std::vector<string16>::const_iterator i(keyword_matches.begin());
-         i != keyword_matches.end(); ++i) {
-      matches_.push_back(CreateAutocompleteMatch(model, *i,
-                                                 input, keyword.length(),
-                                                 remaining_input, -1));
+    if (matches.size() > kMaxMatches)
+      matches.erase(matches.begin() + kMaxMatches, matches.end());
+    for (TemplateURLService::TemplateURLVector::const_iterator i(
+         matches.begin()); i != matches.end(); ++i) {
+      matches_.push_back(CreateAutocompleteMatch(
+          *i, input, keyword.length(), remaining_input, -1));
     }
   }
 }
@@ -400,10 +393,32 @@ bool KeywordProvider::ExtractKeywordFromInput(const AutocompleteInput& input,
 }
 
 // static
-void KeywordProvider::FillInURLAndContents(
-    const string16& remaining_input,
-    const TemplateURL* element,
-    AutocompleteMatch* match) {
+int KeywordProvider::CalculateRelevance(AutocompleteInput::Type type,
+                                        bool complete,
+                                        bool supports_replacement,
+                                        bool prefer_keyword,
+                                        bool allow_exact_keyword_match) {
+  // This function is responsible for scoring suggestions of keywords
+  // themselves and the suggestion of the verbatim query on an
+  // extension keyword.  SearchProvider::CalculateRelevanceForKeywordVerbatim()
+  // scores verbatim query suggestions for non-extension keywords.
+  // These two functions are currently in sync, but there's no reason
+  // we couldn't decide in the future to score verbatim matches
+  // differently for extension and non-extension keywords.  If you
+  // make such a change, however, you should update this comment to
+  // describe it, so it's clear why the functions diverge.
+  if (!complete)
+    return (type == AutocompleteInput::URL) ? 700 : 450;
+  if (!supports_replacement || (allow_exact_keyword_match && prefer_keyword))
+    return 1500;
+  return (allow_exact_keyword_match && (type == AutocompleteInput::QUERY)) ?
+      1450 : 1100;
+}
+
+// static
+void KeywordProvider::FillInURLAndContents(const string16& remaining_input,
+                                           const TemplateURL* element,
+                                           AutocompleteMatch* match) {
   DCHECK(!element->short_name().empty());
   const TemplateURLRef& element_ref = element->url_ref();
   DCHECK(element_ref.IsValid());
@@ -442,56 +457,27 @@ void KeywordProvider::FillInURLAndContents(
                                                       element->short_name(),
                                                       remaining_input,
                                                       &content_param_offsets));
-    if (content_param_offsets.size() == 2) {
-      AutocompleteMatch::ClassifyLocationInString(content_param_offsets[1],
-          remaining_input.length(), match->contents.length(),
-          ACMatchClassification::NONE, &match->contents_class);
-    } else {
-      // See comments on an identical NOTREACHED() in search_provider.cc.
-      NOTREACHED();
-    }
+    DCHECK_EQ(2U, content_param_offsets.size());
+    AutocompleteMatch::ClassifyLocationInString(content_param_offsets[1],
+        remaining_input.length(), match->contents.length(),
+        ACMatchClassification::NONE, &match->contents_class);
   }
 }
 
-// static
-int KeywordProvider::CalculateRelevance(AutocompleteInput::Type type,
-                                        bool complete,
-                                        bool supports_replacement,
-                                        bool prefer_keyword,
-                                        bool allow_exact_keyword_match) {
-  // This function is responsible for scoring suggestions of keywords
-  // themselves and the suggestion of the verbatim query on an
-  // extension keyword.  SearchProvider::CalculateRelevanceForKeywordVerbatim()
-  // scores verbatim query suggestions for non-extension keywords.
-  // These two functions are currently in sync, but there's no reason
-  // we couldn't decide in the future to score verbatim matches
-  // differently for extension and non-extension keywords.  If you
-  // make such a change, however, you should update this comment to
-  // describe it, so it's clear why the functions diverge.
-  if (!complete)
-    return (type == AutocompleteInput::URL) ? 700 : 450;
-  if (!supports_replacement || (allow_exact_keyword_match && prefer_keyword))
-    return 1500;
-  return (allow_exact_keyword_match && (type == AutocompleteInput::QUERY)) ?
-      1450 : 1100;
-}
-
 AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
-    TemplateURLService* model,
-    const string16& keyword,
+    const TemplateURL* template_url,
     const AutocompleteInput& input,
     size_t prefix_length,
     const string16& remaining_input,
     int relevance) {
-  DCHECK(model);
-  // Get keyword data from data store.
-  TemplateURL* element = model->GetTemplateURLForKeyword(keyword);
-  DCHECK(element);
-  const bool supports_replacement = element->url_ref().SupportsReplacement();
+  DCHECK(template_url);
+  const bool supports_replacement =
+      template_url->url_ref().SupportsReplacement();
 
   // Create an edit entry of "[keyword] [remaining input]".  This is helpful
   // even when [remaining input] is empty, as the user can select the popup
   // choice and immediately begin typing in query input.
+  const string16& keyword = template_url->keyword();
   const bool keyword_complete = (prefix_length == keyword.length());
   if (relevance < 0) {
     relevance =
@@ -505,7 +491,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   AutocompleteMatch match(this, relevance, false,
       supports_replacement ? AutocompleteMatchType::SEARCH_OTHER_ENGINE :
                              AutocompleteMatchType::HISTORY_KEYWORD);
-  match.fill_into_edit.assign(keyword);
+  match.fill_into_edit = keyword;
   if (!remaining_input.empty() || !keyword_complete || supports_replacement)
     match.fill_into_edit.push_back(L' ');
   match.fill_into_edit.append(remaining_input);
@@ -518,7 +504,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
 
   // Create destination URL and popup entry content by substituting user input
   // into keyword templates.
-  FillInURLAndContents(remaining_input, element, &match);
+  FillInURLAndContents(remaining_input, template_url, &match);
 
   match.keyword = keyword;
   match.transition = content::PAGE_TRANSITION_KEYWORD;
@@ -567,10 +553,10 @@ void KeywordProvider::Observe(int type,
         return;  // This is an old result. Just ignore.
 
       string16 keyword, remaining_input;
-      if (!ExtractKeywordFromInput(input, &keyword, &remaining_input)) {
-        NOTREACHED();
-        return;
-      }
+      bool result = ExtractKeywordFromInput(input, &keyword, &remaining_input);
+      DCHECK(result);
+      const TemplateURL* template_url =
+          model->GetTemplateURLForKeyword(keyword);
 
       // TODO(mpcomplete): consider clamping the number of suggestions to
       // AutocompleteProvider::kMaxMatches.
@@ -585,7 +571,7 @@ void KeywordProvider::Observe(int type,
         int first_relevance = CalculateRelevance(input.type(), true, true,
             input.prefer_keyword(), input.allow_exact_keyword_match());
         extension_suggest_matches_.push_back(CreateAutocompleteMatch(
-            model, keyword, input, keyword.length(),
+            template_url, input, keyword.length(),
             UTF8ToUTF16(suggestion.content), first_relevance - (i + 1)));
 
         AutocompleteMatch* match = &extension_suggest_matches_.back();

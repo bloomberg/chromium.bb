@@ -134,22 +134,22 @@ TEST_F(KeywordProviderTest, Edit) {
 TEST_F(KeywordProviderTest, URL) {
   test_data<GURL> url_cases[] = {
     // No query input -> empty destination URL.
-    {ASCIIToUTF16("z"),               1, {GURL()}},
-    {ASCIIToUTF16("z    \t"),         1, {GURL()}},
+    {ASCIIToUTF16("z"),           1, {GURL()}},
+    {ASCIIToUTF16("z    \t"),     1, {GURL()}},
 
     // Check that tokenization only collapses whitespace between first tokens
     // and query input, but not rest of URL, is escaped.
-    {ASCIIToUTF16("w  bar +baz"),     2, {GURL(" +%2B?=bar+%2Bbazfoo "),
-                                          GURL("bar+%2Bbaz=z")}},
+    {ASCIIToUTF16("w  bar +baz"), 2, {GURL(" +%2B?=bar+%2Bbazfoo "),
+                                      GURL("bar+%2Bbaz=z")}},
 
     // Substitution should work with various locations of the "%s".
-    {ASCIIToUTF16("aaa 1a2b"),        2, {GURL("http://aaaa/?aaaa=1&b=1a2b&c"),
-                                          GURL("1a2b")}},
-    {ASCIIToUTF16("a 1 2 3"),         3, {GURL("aa.com?foo=1+2+3"),
-                                          GURL("bogus URL 1+2+3"),
-                                        GURL("http://aaaa/?aaaa=1&b=1+2+3&c")}},
-    {ASCIIToUTF16("www.w w"),         2, {GURL(" +%2B?=wfoo "),
-                                          GURL("weaselwweasel")}},
+    {ASCIIToUTF16("aaa 1a2b"),    2, {GURL("http://aaaa/?aaaa=1&b=1a2b&c"),
+                                      GURL("1a2b")}},
+    {ASCIIToUTF16("a 1 2 3"),     3, {GURL("aa.com?foo=1+2+3"),
+                                      GURL("bogus URL 1+2+3"),
+                                      GURL("http://aaaa/?aaaa=1&b=1+2+3&c")}},
+    {ASCIIToUTF16("www.w w"),     2, {GURL(" +%2B?=wfoo "),
+                                      GURL("weaselwweasel")}},
   };
 
   RunTest<GURL>(url_cases, arraysize(url_cases),
@@ -190,26 +190,6 @@ TEST_F(KeywordProviderTest, Contents) {
 
   RunTest<string16>(contents_cases, arraysize(contents_cases),
                         &AutocompleteMatch::contents);
-}
-
-TEST_F(KeywordProviderTest, DISABLED_Description) {
-  test_data<string16> description_cases[] = {
-    // Whole keyword should be returned for both exact and inexact matches.
-    {ASCIIToUTF16("z foo"),           1, {ASCIIToUTF16("(Keyword: z)")}},
-    {ASCIIToUTF16("a foo"),           3, {ASCIIToUTF16("(Keyword: aa)"),
-                                          ASCIIToUTF16("(Keyword: ab)"),
-                                          ASCIIToUTF16("(Keyword: aaaa)")}},
-    {ASCIIToUTF16("ftp://www.www w"), 0, {}},
-    {ASCIIToUTF16("http://www.ab w"), 1, {ASCIIToUTF16("(Keyword: ab)")}},
-
-    // Keyword should be returned regardless of query input.
-    {ASCIIToUTF16("z"),               1, {ASCIIToUTF16("(Keyword: z)")}},
-    {ASCIIToUTF16("z    \t"),         1, {ASCIIToUTF16("(Keyword: z)")}},
-    {ASCIIToUTF16("z   a   b   c++"), 1, {ASCIIToUTF16("(Keyword: z)")}},
-  };
-
-  RunTest<string16>(description_cases, arraysize(description_cases),
-                        &AutocompleteMatch::description);
 }
 
 TEST_F(KeywordProviderTest, AddKeyword) {

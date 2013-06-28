@@ -152,36 +152,35 @@ bool IsRenderedInInstantProcess(const content::WebContents* contents,
   return instant_service->IsInstantProcess(process_host->GetID());
 }
 
+// Returns true if |url| passes some basic checks that must succeed for it to be
+// usable as an instant URL:
+// (1) It contains the search terms replacement key of |template_url|, which is
+//     expected to be the TemplateURL* for the default search provider.
+// (2) It has a secure scheme.
+bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url) {
+  return template_url->HasSearchTermsReplacementKey(url) &&
+      url.SchemeIsSecure();
+}
+
 // Returns true if |url| can be used as an Instant URL for |profile|.
 bool IsInstantURL(const GURL& url, Profile* profile) {
+  if (!url.is_valid())
+    return false;
+
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
   if (!template_url)
     return false;
 
-  const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
   const bool extended_api_enabled = IsInstantExtendedAPIEnabled();
-
-  if (!url.is_valid())
+  if (extended_api_enabled && !IsSuitableURLForInstant(url, template_url))
     return false;
 
-  if (extended_api_enabled && !url.SchemeIsSecure())
-    return false;
-
-  if (extended_api_enabled && !template_url->HasSearchTermsReplacementKey(url))
-    return false;
-
+  const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
   const GURL instant_url =
       TemplateURLRefToGURL(instant_url_ref, kDisableStartMargin);
-  if (!instant_url.is_valid())
-    return false;
-
-  if (MatchesOriginAndPath(url, instant_url))
-    return true;
-
-  if (extended_api_enabled && MatchesAnySearchURL(url, template_url))
-    return true;
-
-  return false;
+  return instant_url.is_valid() &&
+      (MatchesOriginAndPath(url, instant_url) ||
+       (extended_api_enabled && MatchesAnySearchURL(url, template_url)));
 }
 
 string16 GetSearchTermsImpl(const content::WebContents* contents,
@@ -200,7 +199,7 @@ string16 GetSearchTermsImpl(const content::WebContents* contents,
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   if (!IsRenderedInInstantProcess(contents, profile) &&
-      (contents->GetController().GetLastCommittedEntry() == entry ||
+      ((entry == contents->GetController().GetLastCommittedEntry()) ||
        !ShouldAssignURLToInstantRenderer(entry->GetURL(), profile)))
     return string16();
 #endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
@@ -262,14 +261,9 @@ bool IsQueryExtractionEnabled() {
 
 string16 GetSearchTermsFromURL(Profile* profile, const GURL& url) {
   string16 search_terms;
-
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
-  if (!template_url)
-    return string16();
-
-  if (url.SchemeIsSecure() && template_url->HasSearchTermsReplacementKey(url))
+  if (template_url && IsSuitableURLForInstant(url, template_url))
     template_url->ExtractSearchTermsFromURL(url, &search_terms);
-
   return search_terms;
 }
 
@@ -437,24 +431,22 @@ GURL GetInstantURL(Profile* profile, int start_margin) {
   if (!IsInstantCheckboxEnabled(profile))
     return GURL();
 
-  const bool extended_api_enabled = IsInstantExtendedAPIEnabled();
-
   // In non-extended mode, the checkbox must be checked.
+  const bool extended_api_enabled = IsInstantExtendedAPIEnabled();
   if (!extended_api_enabled && !IsInstantCheckboxChecked(profile))
     return GURL();
 
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
   GURL instant_url =
       TemplateURLRefToGURL(template_url->instant_url_ref(), start_margin);
-  if (extended_api_enabled && !instant_url.SchemeIsSecure()) {
-    // Extended mode requires HTTPS. Force it if necessary.
-    const std::string secure_scheme = chrome::kHttpsScheme;
-    GURL::Replacements replacements;
-    replacements.SetSchemeStr(secure_scheme);
-    instant_url = instant_url.ReplaceComponents(replacements);
-  }
 
-  return instant_url;
+  // Extended mode requires HTTPS.  Force it.
+  if (!extended_api_enabled || instant_url.SchemeIsSecure())
+    return instant_url;
+  GURL::Replacements replacements;
+  const std::string secure_scheme(chrome::kHttpsScheme);
+  replacements.SetSchemeStr(secure_scheme);
+  return instant_url.ReplaceComponents(replacements);
 }
 
 GURL GetLocalInstantURL(Profile* profile) {

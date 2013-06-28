@@ -410,7 +410,7 @@ bool TemplateURLService::CanReplaceKeyword(
 void TemplateURLService::FindMatchingKeywords(
     const string16& prefix,
     bool support_replacement_only,
-    std::vector<string16>* matches) const {
+    TemplateURLVector* matches) const {
   // Sanity check args.
   if (prefix.empty())
     return;
@@ -434,7 +434,7 @@ void TemplateURLService::FindMatchingKeywords(
   for (KeywordToTemplateMap::const_iterator i(match_range.first);
        i != match_range.second; ++i) {
     if (!support_replacement_only || i->second->url_ref().SupportsReplacement())
-      matches->push_back(i->first);
+      matches->push_back(i->second);
   }
 }
 

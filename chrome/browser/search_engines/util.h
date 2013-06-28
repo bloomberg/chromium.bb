@@ -23,6 +23,10 @@ class WebDataService;
 // none is set. |profile| may be NULL.
 string16 GetDefaultSearchEngineName(Profile* profile);
 
+// Returns a GURL that searches for |terms| using the default search engine of
+// |profile|.
+GURL GetDefaultSearchURLForSearchTerms(Profile* profile, const string16& terms);
+
 // Modifies |prepopulated_url| so that it contains user-modified fields from
 // |original_turl|. Both URLs must have the same prepopulate_id.
 void MergeIntoPrepopulatedEngineData(TemplateURLData* prepopulated_url,

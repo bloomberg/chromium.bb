@@ -69,6 +69,11 @@ enum PortPermission {
   DISALLOW_NON_STANDARD_PORTS,
 };
 
+// True if |host| is "[www.]google.<TLD>" with a valid TLD. If
+// |subdomain_permission| is ALLOW_SUBDOMAIN, we check against host
+// "*.google.<TLD>" instead.
+bool IsGoogleHostname(const std::string& host,
+                      SubdomainPermission subdomain_permission);
 // True if |url| is a valid URL with a host that returns true for
 // IsGoogleHostname(), and an HTTP or HTTPS scheme.  If |port_permission| is
 // DISALLOW_NON_STANDARD_PORTS, this also requires |url| to use the standard
@@ -76,11 +81,6 @@ enum PortPermission {
 bool IsGoogleDomainUrl(const GURL& url,
                        SubdomainPermission subdomain_permission,
                        PortPermission port_permission);
-// True if |host| is "[www.]google.<TLD>" with a valid TLD. If
-// |subdomain_permission| is ALLOW_SUBDOMAIN, we check against host
-// "*.google.<TLD>" instead.
-bool IsGoogleHostname(const std::string& host,
-                      SubdomainPermission subdomain_permission);
 // True if |url| represents a valid Google home page URL.
 bool IsGoogleHomePageUrl(const GURL& url);
 // True if |url| represents a valid Google search URL.

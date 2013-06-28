@@ -14,9 +14,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -466,22 +464,11 @@ void BrowserFrameWin::HandleMetroNavSearchRequest(WPARAM w_param,
   DCHECK(browser);
 
   GURL request_url;
-
   if (w_param) {
-    const wchar_t* url = reinterpret_cast<const wchar_t*>(w_param);
-    request_url = GURL(url);
+    request_url = GURL(reinterpret_cast<const wchar_t*>(w_param));
   } else if (l_param) {
-    const wchar_t* search_string =
-        reinterpret_cast<const wchar_t*>(l_param);
-    const TemplateURL* default_provider =
-        TemplateURLServiceFactory::GetForProfile(browser->profile())->
-        GetDefaultSearchProvider();
-    if (default_provider) {
-      const TemplateURLRef& search_url = default_provider->url_ref();
-      DCHECK(search_url.SupportsReplacement());
-      request_url = GURL(search_url.ReplaceSearchTerms(
-          TemplateURLRef::SearchTermsArgs(search_string)));
-    }
+    request_url = GetDefaultSearchURLForSearchTerms(
+        browser->profile(), reinterpret_cast<const wchar_t*>(l_param));
   }
   if (request_url.is_valid()) {
     browser->OpenURL(OpenURLParams(request_url, Referrer(), NEW_FOREGROUND_TAB,

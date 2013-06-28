@@ -189,7 +189,7 @@ class AutocompleteProviderTest : public testing::Test,
   scoped_ptr<AutocompleteController> controller_;
 
  private:
-  // content::NotificationObserver
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -435,7 +435,7 @@ TEST_F(AutocompleteProviderTest, Query) {
 
   // Make sure the default match gets set to the highest relevance match.  The
   // highest relevance matches should come from the second provider.
-  EXPECT_EQ(kResultsPerProvider * 2, result_.size());  // two providers
+  EXPECT_EQ(kResultsPerProvider * 2, result_.size());
   ASSERT_NE(result_.end(), result_.default_match());
   EXPECT_EQ(provider2, result_.default_match()->provider);
 }
@@ -445,7 +445,7 @@ TEST_F(AutocompleteProviderTest, AssistedQueryStats) {
   ResetControllerWithTestProviders(false, NULL, NULL);
   RunTest();
 
-  EXPECT_EQ(kResultsPerProvider * 2, result_.size());  // two providers
+  ASSERT_EQ(kResultsPerProvider * 2, result_.size());
 
   // Now, check the results from the second provider, as they should not have
   // assisted query stats set.

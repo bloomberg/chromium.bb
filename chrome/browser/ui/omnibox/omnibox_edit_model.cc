@@ -896,24 +896,7 @@ void OmniboxEditModel::OnControlKeyChanged(bool pressed) {
 
 void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
   // NOTE: This purposefully doesn't trigger any code that resets paste_state_.
-  if (!popup_model()->IsOpen()) {
-    if (!query_in_progress()) {
-      // The popup is neither open nor working on a query already.  So, start an
-      // autocomplete query for the current text.  This also sets
-      // user_input_in_progress_ to true, which we want: if the user has started
-      // to interact with the popup, changing the permanent_text_ shouldn't
-      // change the displayed text.
-      // Note: This does not force the popup to open immediately.
-      // TODO(pkasting): We should, in fact, force this particular query to open
-      // the popup immediately.
-      if (!user_input_in_progress_)
-        InternalSetUserText(permanent_text_);
-      view_->UpdatePopup();
-    } else {
-      // TODO(pkasting): The popup is working on a query but is not open.  We
-      // should force it to open immediately.
-    }
-  } else {
+  if (popup_model()->IsOpen()) {
 #if defined(HTML_INSTANT_EXTENDED_POPUP)
     InstantController* instant = GetInstantController();
     if (instant && instant->OnUpOrDownKeyPressed(count)) {
@@ -922,14 +905,33 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
       // irrelevant, so don't process the key press ourselves. However, do stop
       // the autocomplete system from changing the results.
       autocomplete_controller()->Stop(false);
-    } else
-#endif
-    {
-      // The popup is open, so the user should be able to interact with it
-      // normally.
-      popup_model()->Move(count);
+      return;
     }
+#endif
+
+    // The popup is open, so the user should be able to interact with it
+    // normally.
+    popup_model()->Move(count);
+    return;
   }
+
+  if (!query_in_progress()) {
+    // The popup is neither open nor working on a query already.  So, start an
+    // autocomplete query for the current text.  This also sets
+    // user_input_in_progress_ to true, which we want: if the user has started
+    // to interact with the popup, changing the permanent_text_ shouldn't change
+    // the displayed text.
+    // Note: This does not force the popup to open immediately.
+    // TODO(pkasting): We should, in fact, force this particular query to open
+    // the popup immediately.
+    if (!user_input_in_progress_)
+      InternalSetUserText(permanent_text_);
+    view_->UpdatePopup();
+    return;
+  }
+
+  // TODO(pkasting): The popup is working on a query but is not open.  We should
+  // force it to open immediately.
 }
 
 void OmniboxEditModel::OnPopupDataChanged(
@@ -1235,11 +1237,11 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
             TemplateURLServiceFactory::GetForProfile(profile_)->
                 GetDefaultSearchProvider();
         if (default_provider && default_provider->SupportsReplacement()) {
-          *match = SearchProvider::CreateSearchSuggestion(profile_,
-              autocomplete_controller()->search_provider(), input, text, text,
-              0, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-              TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, false,
-              default_provider->keyword(),
+          *match = SearchProvider::CreateSearchSuggestion(
+              autocomplete_controller()->search_provider(), 0,
+              AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, default_provider,
+              text, text, input, false,
+              TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
               controller_->GetOmniboxBounds().x());
         } else {
           // Can't create a new search match. Leave |match| as is, with an

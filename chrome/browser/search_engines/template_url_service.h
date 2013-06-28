@@ -118,12 +118,12 @@ class TemplateURLService : public WebDataServiceConsumer,
                          const GURL& url,
                          TemplateURL** template_url_to_replace);
 
-  // Returns (in |matches|) all keywords beginning with |prefix|, sorted
-  // shortest-first. If support_replacement_only is true, only keywords that
-  // support replacement are returned.
+  // Returns (in |matches|) all TemplateURLs whose keywords begin with |prefix|,
+  // sorted shortest keyword-first. If |support_replacement_only| is true, only
+  // TemplateURLs that support replacement are returned.
   void FindMatchingKeywords(const string16& prefix,
                             bool support_replacement_only,
-                            std::vector<string16>* matches) const;
+                            TemplateURLVector* matches) const;
 
   // Looks up |keyword| and returns the element it maps to.  Returns NULL if
   // the keyword was not found.

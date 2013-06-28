@@ -59,8 +59,10 @@ class TemplateURLRef {
 
     // The search terms (query).
     const string16 search_terms;
+
     // The original (input) query.
     string16 original_query;
+
     // The optional assisted query stats, aka AQS, used for logging purposes.
     // This string contains impressions of all autocomplete matches shown
     // at the query submission time.  For privacy reasons, we require the

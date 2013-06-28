@@ -256,24 +256,21 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
 
 // static
 AutocompleteMatch SearchProvider::CreateSearchSuggestion(
-    Profile* profile,
     AutocompleteProvider* autocomplete_provider,
-    const AutocompleteInput& input,
-    const string16& query_string,
-    const string16& input_text,
     int relevance,
     AutocompleteMatch::Type type,
-    int accepted_suggestion,
+    const TemplateURL* template_url,
+    const string16& query_string,
+    const string16& input_text,
+    const AutocompleteInput& input,
     bool is_keyword,
-    const string16& keyword,
+    int accepted_suggestion,
     int omnibox_start_margin) {
   AutocompleteMatch match(autocomplete_provider, relevance, false, type);
 
-  // Bail out now if we don't actually have a valid provider.
-  match.keyword = keyword;
-  const TemplateURL* provider_url = match.GetTemplateURL(profile, false);
-  if (provider_url == NULL)
+  if (!template_url)
     return match;
+  match.keyword = template_url->keyword();
 
   match.contents.assign(query_string);
   // We do intra-string highlighting for suggestions - the suggested segment
@@ -329,7 +326,7 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
   }
   match.fill_into_edit.append(query_string);
 
-  const TemplateURLRef& search_url = provider_url->url_ref();
+  const TemplateURLRef& search_url = template_url->url_ref();
   DCHECK(search_url.SupportsReplacement());
   match.search_terms_args.reset(
       new TemplateURLRef::SearchTermsArgs(query_string));
@@ -1373,11 +1370,11 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
                                    int accepted_suggestion,
                                    bool is_keyword,
                                    MatchMap* map) {
-  const string16& keyword = is_keyword ?
-      providers_.keyword_provider() : providers_.default_provider();
-  AutocompleteMatch match = CreateSearchSuggestion(profile_, this, input_,
-      query_string, input_text, relevance, type, accepted_suggestion,
-      is_keyword, keyword, omnibox_start_margin_);
+  const TemplateURL* template_url = is_keyword ?
+      providers_.GetKeywordProviderURL() : providers_.GetDefaultProviderURL();
+  AutocompleteMatch match = CreateSearchSuggestion(this, relevance, type,
+      template_url, query_string, input_text, input_, is_keyword,
+      accepted_suggestion, omnibox_start_margin_);
   if (!match.destination_url.is_valid())
     return;
   match.RecordAdditionalInfo(kRelevanceFromServerKey,

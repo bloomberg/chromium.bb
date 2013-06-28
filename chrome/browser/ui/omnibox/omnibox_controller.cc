@@ -25,23 +25,6 @@
 #include "extensions/common/constants.h"
 #include "ui/gfx/rect.h"
 
-using predictors::AutocompleteActionPredictor;
-
-namespace {
-
-string16 GetDefaultSearchProviderKeyword(Profile* profile) {
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile);
-  if (template_url_service) {
-    TemplateURL* template_url =
-        template_url_service->GetDefaultSearchProvider();
-    if (template_url)
-      return template_url->keyword();
-  }
-  return string16();
-}
-
-}  // namespace
 
 OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
                                      Profile* profile)
@@ -229,7 +212,7 @@ void OmniboxController::DoPreconnect(const AutocompleteMatch& match) {
     if (profile_->GetNetworkPredictor()) {
       profile_->GetNetworkPredictor()->AnticipateOmniboxUrl(
           match.destination_url,
-          AutocompleteActionPredictor::IsPreconnectable(match));
+          predictors::AutocompleteActionPredictor::IsPreconnectable(match));
     }
     // We could prefetch the alternate nav URL, if any, but because there
     // can be many of these as a user types an initial series of characters,
@@ -271,11 +254,17 @@ void OmniboxController::CreateAndSetInstantMatch(
     string16 query_string,
     string16 input_text,
     AutocompleteMatchType::Type match_type) {
-  string16 keyword = GetDefaultSearchProviderKeyword(profile_);
-  if (keyword.empty())
-    return;  // CreateSearchSuggestion needs a keyword.
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  if (!template_url_service)
+    return;
+
+  TemplateURL* template_url =
+      template_url_service->GetDefaultSearchProvider();
+  if (!template_url)
+    return;
 
   current_match_ = SearchProvider::CreateSearchSuggestion(
-      profile_, NULL, AutocompleteInput(), query_string, input_text, 0,
-      match_type, 0, false, keyword, -1);
+      NULL, 0, match_type, template_url, query_string, input_text,
+      AutocompleteInput(), false, 0, -1);
 }

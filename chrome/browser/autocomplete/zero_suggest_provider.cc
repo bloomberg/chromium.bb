@@ -296,29 +296,26 @@ void ZeroSuggestProvider::FillResults(
 
 void ZeroSuggestProvider::AddSuggestResultsToMap(
     const SearchProvider::SuggestResults& results,
-    const string16& provider_keyword,
+    const TemplateURL* template_url,
     SearchProvider::MatchMap* map) {
   for (size_t i = 0; i < results.size(); ++i) {
-    AddMatchToMap(results[i].suggestion(),
-                  provider_keyword,
-                  results[i].relevance(),
-                  AutocompleteMatchType::SEARCH_SUGGEST, i, map);
+    AddMatchToMap(results[i].relevance(), AutocompleteMatchType::SEARCH_SUGGEST,
+                  template_url, results[i].suggestion(), i, map);
   }
 }
 
-void ZeroSuggestProvider::AddMatchToMap(const string16& query_string,
-                                        const string16& provider_keyword,
-                                        int relevance,
+void ZeroSuggestProvider::AddMatchToMap(int relevance,
                                         AutocompleteMatch::Type type,
+                                        const TemplateURL* template_url,
+                                        const string16& query_string,
                                         int accepted_suggestion,
                                         SearchProvider::MatchMap* map) {
   // Pass in query_string as the input_text since we don't want any bolding.
   // TODO(samarth|melevin): use the actual omnibox margin here as well instead
   // of passing in -1.
   AutocompleteMatch match = SearchProvider::CreateSearchSuggestion(
-      profile_, this, AutocompleteInput(),
-      query_string, query_string, relevance, type, accepted_suggestion,
-      false, provider_keyword, -1);
+      this, relevance, type, template_url, query_string, query_string,
+      AutocompleteInput(), false, accepted_suggestion, -1);
   if (!match.destination_url.is_valid())
     return;
 
@@ -415,9 +412,8 @@ void ZeroSuggestProvider::ParseSuggestResults(const Value& root_val) {
               &suggest_results, &navigation_results_);
 
   query_matches_map_.clear();
-  const TemplateURL* default_provider =
-     template_url_service_->GetDefaultSearchProvider();
-  AddSuggestResultsToMap(suggest_results, default_provider->keyword(),
+  AddSuggestResultsToMap(suggest_results,
+                         template_url_service_->GetDefaultSearchProvider(),
                          &query_matches_map_);
 }
 

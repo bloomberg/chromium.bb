@@ -39,6 +39,20 @@ string16 GetDefaultSearchEngineName(Profile* profile) {
   return default_provider->short_name();
 }
 
+GURL GetDefaultSearchURLForSearchTerms(Profile* profile,
+                                       const string16& terms) {
+  DCHECK(profile);
+  const TemplateURL* default_provider =
+      TemplateURLServiceFactory::GetForProfile(profile)->
+      GetDefaultSearchProvider();
+  if (!default_provider)
+    return GURL();
+  const TemplateURLRef& search_url = default_provider->url_ref();
+  DCHECK(search_url.SupportsReplacement());
+  TemplateURLRef::SearchTermsArgs search_terms_args(terms);
+  return GURL(search_url.ReplaceSearchTerms(search_terms_args));
+}
+
 void RemoveDuplicatePrepopulateIDs(
     WebDataService* service,
     const ScopedVector<TemplateURL>& prepopulated_urls,

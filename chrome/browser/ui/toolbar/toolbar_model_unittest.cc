@@ -256,14 +256,11 @@ void ToolbarModelTest::NavigateAndCheckTextImpl(const GURL& url,
 TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionDisabled) {
   ASSERT_FALSE(chrome::IsQueryExtractionEnabled())
       << "This test expects query extraction to be disabled.";
-  ResetDefaultTemplateURL();
   AddTab(browser(), GURL(content::kAboutBlankURL));
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url,
-                         test_item.expected_text,
-                         test_item.expected_replace_text_inactive,
-                         false,
+    NavigateAndCheckText(test_item.url, test_item.expected_text,
+                         test_item.expected_replace_text_inactive, false,
                          test_item.should_display);
   }
 }
@@ -271,15 +268,12 @@ TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionDisabled) {
 // Test that we replace URLs when the query extraction API is enabled.
 TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionEnabled) {
   chrome::EnableInstantExtendedAPIForTesting();
-  ResetDefaultTemplateURL();
   AddTab(browser(), GURL(content::kAboutBlankURL));
   for (size_t i = 0; i < arraysize(test_items); ++i) {
     const TestItem& test_item = test_items[i];
-    NavigateAndCheckText(test_item.url,
-                         test_item.expected_text,
+    NavigateAndCheckText(test_item.url, test_item.expected_text,
                          test_item.expected_replace_text_active,
-                         test_item.would_replace,
-                         test_item.should_display);
+                         test_item.would_replace, test_item.should_display);
   }
 }
 
