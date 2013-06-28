@@ -84,8 +84,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/',
       ],
       'sources': [
-        'browser/aw_autofill_manager_delegate.cc',
-        'browser/aw_autofill_manager_delegate.h',
         'browser/aw_browser_context.cc',
         'browser/aw_browser_context.h',
         'browser/aw_browser_main_parts.cc',

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill;
+package org.chromium.ui.autofill;
 
 import android.content.Context;
 import android.graphics.Paint;
@@ -17,7 +17,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import org.chromium.chrome.R;
+import org.chromium.ui.R;
 import org.chromium.ui.ViewAndroidDelegate;
 
 /**
@@ -140,7 +140,6 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
         setAdapter(new AutofillListAdapter(mContext, cleanedData));
         // Once the mAnchorRect is resized and placed correctly, it will show the Autofill popup.
         mAnchorWidth = Math.max(getDesiredWidth(cleanedData), mAnchorWidth);
-
         mViewAndroidDelegate.setAnchorViewPosition(mAnchorView, mAnchorX, mAnchorY, mAnchorWidth,
                 mAnchorHeight);
     }

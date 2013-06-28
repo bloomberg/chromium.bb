@@ -153,6 +153,8 @@ public class AwContents {
     private boolean mContainerViewFocused;
     private boolean mWindowFocused;
 
+    private AwAutofillManagerDelegate mAwAutofillManagerDelegate;
+
     private static final class DestroyRunnable implements Runnable {
         private int mNativeAwContents;
         private DestroyRunnable(int nativeAwContents) {
@@ -1330,6 +1332,14 @@ public class AwContents {
         return mContentViewCore.performAccessibilityAction(action, arguments);
     }
 
+    /**
+     * @see android.webkit.WebView#clearFormData()
+     */
+    public void hideAutofillPopup() {
+        if (mAwAutofillManagerDelegate != null)
+            mAwAutofillManagerDelegate.hideAutofillPopup();
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Methods called from native via JNI
     //--------------------------------------------------------------------------------------------
@@ -1467,6 +1477,12 @@ public class AwContents {
     @CalledByNative
     private void scrollContainerViewTo(int x, int y) {
         mScrollOffsetManager.scrollContainerViewTo(x, y);
+    }
+
+    @CalledByNative
+    private void setAwAutofillManagerDelegate(AwAutofillManagerDelegate delegate) {
+        mAwAutofillManagerDelegate = delegate;
+        delegate.init(mContentViewCore, mDIPScale);
     }
 
     // -------------------------------------------------------------------------------------------

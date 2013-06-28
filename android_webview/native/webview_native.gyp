@@ -34,6 +34,8 @@
         'android_protocol_handler.h',
         'android_webview_jni_registrar.cc',
         'android_webview_jni_registrar.h',
+        'aw_autofill_manager_delegate.cc',
+        'aw_autofill_manager_delegate.h',
         'aw_browser_dependency_factory.cc',
         'aw_browser_dependency_factory.h',
         'aw_contents.cc',
@@ -85,6 +87,7 @@
       'type': 'none',
       'sources': [
           '../java/src/org/chromium/android_webview/AndroidProtocolHandler.java',
+          '../java/src/org/chromium/android_webview/AwAutofillManagerDelegate.java',
           '../java/src/org/chromium/android_webview/AwContents.java',
           '../java/src/org/chromium/android_webview/AwContentsClientBridge.java',
           '../java/src/org/chromium/android_webview/AwContentsIoThreadClient.java',

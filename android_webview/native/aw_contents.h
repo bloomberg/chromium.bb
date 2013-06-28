@@ -158,6 +158,8 @@ class AwContents : public FindHelper::Listener,
 
   void SetSaveFormData(bool enabled);
 
+  // Sets the java delegate
+  void SetAwAutofillManagerDelegate(jobject delegate);
  private:
   void InitAutofillIfNecessary(bool enabled);
 
