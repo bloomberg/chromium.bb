@@ -436,9 +436,10 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
     return DispatchEventForRootWindow(event);
 
   switch (xev->type) {
-    case EnterNotify: {
-      ui::MouseEvent mouseenter_event(xev);
-      TranslateAndDispatchMouseEvent(&mouseenter_event);
+    case EnterNotify:
+    case LeaveNotify: {
+      ui::MouseEvent mouse_event(xev);
+      TranslateAndDispatchMouseEvent(&mouse_event);
       break;
     }
     case Expose: {
