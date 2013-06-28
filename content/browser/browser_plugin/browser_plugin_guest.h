@@ -338,9 +338,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   // Instructs the guest to execute an edit command decoded in the embedder.
   void OnExecuteEditCommand(int instance_id,
                             const std::string& command);
-  // If possible, navigate the guest to |relative_index| entries away from the
-  // current navigation entry.
-  virtual void OnGo(int instance_id, int relative_index);
   // Overriden in tests.
   virtual void OnHandleInputEvent(int instance_id,
                                   const gfx::Rect& guest_window_rect,

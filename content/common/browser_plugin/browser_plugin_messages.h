@@ -173,12 +173,6 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_Attach,
 IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_TerminateGuest,
                     int /* instance_id */)
 
-// Tells the guest to navigate to an entry |relative_index| away from the
-// current navigation entry.
-IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_Go,
-                    int /* instance_id */,
-                    int /* relative_index */)
-
 // Tells the guest to focus or defocus itself.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetFocus,
                     int /* instance_id */,

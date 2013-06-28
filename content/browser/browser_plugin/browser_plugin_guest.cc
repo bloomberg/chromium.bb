@@ -351,7 +351,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
                         OnDragStatusUpdate)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ExecuteEditCommand,
                         OnExecuteEditCommand)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Go, OnGo)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_HandleInputEvent,
                         OnHandleInputEvent)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_LockMouse_ACK, OnLockMouseAck)
@@ -999,7 +998,6 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_CompositorFrameACK::ID:
     case BrowserPluginHostMsg_DragStatusUpdate::ID:
     case BrowserPluginHostMsg_ExecuteEditCommand::ID:
-    case BrowserPluginHostMsg_Go::ID:
     case BrowserPluginHostMsg_HandleInputEvent::ID:
     case BrowserPluginHostMsg_LockMouse_ACK::ID:
     case BrowserPluginHostMsg_NavigateGuest::ID:
@@ -1152,10 +1150,6 @@ void BrowserPluginGuest::OnDragStatusUpdate(int instance_id,
 void BrowserPluginGuest::OnExecuteEditCommand(int instance_id,
                                               const std::string& name) {
   Send(new InputMsg_ExecuteEditCommand(routing_id(), name, std::string()));
-}
-
-void BrowserPluginGuest::OnGo(int instance_id, int relative_index) {
-  GetWebContents()->GetController().GoToOffset(relative_index);
 }
 
 void BrowserPluginGuest::OnHandleInputEvent(
