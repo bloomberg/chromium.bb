@@ -1,30 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- TODO(arv): Check in Closue unit tests and make this run as part of the
-     tests -->
-<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
-<script src="../cr.js"></script>
-<script src="link_controller.js"></script>
-<script>
-
-goog.require('goog.testing.MockControl');
-goog.require('goog.testing.PropertyReplacer');
-goog.require('goog.testing.jsunit');
-goog.require('goog.testing.mockmatchers');
-
-</script>
+<script src="webui_resource_test.js"></script>
+<script src="mock_controller.js"></script>
 </head>
 <body>
 <script>
 
-var mockControl, propertyReplacer, mockWindow;
+var mockControl, mockWindow, oldIsMac;
 var chrome = chrome || {};
 chrome.tabs = chrome.tabs || {};
 chrome.windows = chrome.windows || {};
-
-var ObjectEqualsMatcher = goog.testing.mockmatchers.ObjectEquals;
-var SaveArgumentMatcher = goog.testing.mockmatchers.SaveArgument;
 
 var MSG = 'MSG';
 var localStrings = {
@@ -36,31 +22,33 @@ var localStrings = {
 
 var URL1 = 'http://chromium.org/';
 var URL2 = '#hash';
-var WINDOW_ID = 'WINDOW_ID';
+var BASE = 'http://www.google.com/';
 
 function setUp() {
-  mockControl = new goog.testing.MockControl;
-  chrome.tabs.create = mockControl.createFunctionMock();
-  chrome.windows.create = mockControl.createFunctionMock();
 
-  propertyReplacer = new goog.testing.PropertyReplacer;
+  mockController = new MockController();
+  mockController.createFunctionMock(chrome.tabs, 'create');
+  mockController.createFunctionMock(chrome.windows, 'create');
+  oldIsMac = cr.isMac;
 
   mockWindow = {
-    confirm: mockControl.createFunctionMock(),
+    confirm: mockController.createFunctionMock(),
     location: {
       get href() {
-        return 'http://www.google.com/';
+        return BASE;
       },
       set href(url) {
         assertEquals(URL1, url);
       }
     }
   };
+  mockWindow.confirm.returnValue = false;
 }
 
 function tearDown() {
-  mockControl.$tearDown();
-  propertyReplacer.reset();
+  mockController.verifyMocks();
+  mockController.reset();
+  cr.isMac = oldIsMac;
 }
 
 function testGetWarningMessage() {
@@ -72,16 +60,11 @@ function testGetWarningMessage() {
 function openUrlFromEventHelper(event, isMac, expectedKind) {
   var lc = new cr.LinkController(localStrings);
 
-  lc.openUrls = mockControl.createFunctionMock();
-  lc.openUrls([URL1], expectedKind);
+  cr.isMac = isMac;
 
-  propertyReplacer.set(cr, 'isMac', isMac);
-
-  mockControl.$replayAll();
-
+  var mock = lc.openUrls = mockController.createFunctionMock();
+  mock.addExpectation([URL1], expectedKind);
   lc.openUrlFromEvent(URL1, event);
-
-  mockControl.$verifyAll();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -223,14 +206,10 @@ function testOpenUrlFromEventSelfEnter() {
 
 function testOpenUrl() {
   var lc = new cr.LinkController(localStrings);
-  lc.openUrls = mockControl.createFunctionMock();
 
-  lc.openUrls(new ObjectEqualsMatcher([URL1]), cr.LinkKind.SELF);
-  mockControl.$replayAll();
-
+  var mock = mockController.createFunctionMock(lc, 'openUrls');
+  mock.addExpectation([URL1], cr.LinkKind.SELF);
   lc.openUrl(URL1, cr.LinkKind.SELF);
-
-  mockControl.$verifyAll();
 }
 
 /////////////////////////////// OpenUrls //////////////////////////////////////
@@ -238,114 +217,76 @@ function testOpenUrl() {
 function testOpenUrlsTooFew() {
   var lc = new cr.LinkController(localStrings);
 
-  mockControl.$replayAll();
-
   lc.openUrls([], cr.LinkKind.SELF);
-
-  mockControl.$verifyAll();
 }
-
 
 function testOpenUrlsTooMany() {
   var lc = new cr.LinkController(localStrings);
   lc.warningLimit = 9;
 
   var urls = new Array(lc.warningLimit + 1);
-  lc.window = mockWindow;
 
-  lc.window.confirm('MSG10').$returns(false);
-  mockControl.$replayAll();
+  lc.window = mockWindow;
+  lc.window.confirm.addExpectation('MSG10');
 
   lc.openUrls(urls, cr.LinkKind.SELF);
-
-  mockControl.$verifyAll();
 }
 
 function testOpenUrlsSelf() {
   var lc = new cr.LinkController(localStrings);
   lc.window = mockWindow;
 
-  mockControl.$replayAll();
-
   lc.openUrls([URL1], cr.LinkKind.SELF);
-
-  mockControl.$verifyAll();
 }
 
 function testOpenUrlsForegroundTab() {
   var lc = new cr.LinkController(localStrings);
   lc.window = mockWindow;
 
-  chrome.tabs.create(new ObjectEqualsMatcher({url: URL1, selected: true}));
-  chrome.tabs.create(new ObjectEqualsMatcher({
-    url: 'http://www.google.com/#hash',
+  chrome.tabs.create.addExpectation({url: URL1, selected: true});
+  chrome.tabs.create.addExpectation({
+    url: BASE + URL2,
     selected: false
-  }));
-
-  mockControl.$replayAll();
+  });
 
   lc.openUrls([URL1, URL2], cr.LinkKind.FOREGROUND_TAB);
-
-  mockControl.$verifyAll();
 }
 
 function testOpenUrlsBackgroundTab() {
   var lc = new cr.LinkController(localStrings);
   lc.window = mockWindow;
 
-  chrome.tabs.create(new ObjectEqualsMatcher({url: URL1, selected: false}));
-  chrome.tabs.create(new ObjectEqualsMatcher({
-    url: 'http://www.google.com/#hash',
+  chrome.tabs.create.addExpectation({url: URL1, selected: false});
+  chrome.tabs.create.addExpectation({
+    url: BASE + URL2,
     selected: false
-  }));
-
-  mockControl.$replayAll();
+  });
 
   lc.openUrls([URL1, URL2], cr.LinkKind.BACKGROUND_TAB);
-
-  mockControl.$verifyAll();
 }
 
 function testOpenUrlsWindow() {
   var lc = new cr.LinkController(localStrings);
   lc.window = mockWindow;
 
-  var callbackMatcher = new SaveArgumentMatcher;
-  chrome.windows.create(new ObjectEqualsMatcher({url: URL1, incognito: false}),
-                        callbackMatcher);
-  chrome.tabs.create(new ObjectEqualsMatcher({
-    url: 'http://www.google.com/#hash',
-    windowId: WINDOW_ID,
-    selected: false
-  }));
-
-  mockControl.$replayAll();
+  chrome.windows.create.addExpectation({
+     url: [URL1, BASE + URL2],
+     incognito: false
+  });
 
   lc.openUrls([URL1, URL2], cr.LinkKind.WINDOW);
-  callbackMatcher.arg({id: WINDOW_ID});
-
-  mockControl.$verifyAll();
 }
 
 function testOpenUrlsIncognito() {
   var lc = new cr.LinkController(localStrings);
   lc.window = mockWindow;
 
-  var callbackMatcher = new SaveArgumentMatcher;
-  chrome.windows.create(new ObjectEqualsMatcher({url: URL1, incognito: true}),
-                        callbackMatcher);
-  chrome.tabs.create(new ObjectEqualsMatcher({
-    url: 'http://www.google.com/#hash',
-    windowId: WINDOW_ID,
-    selected: false
-  }));
-
-  mockControl.$replayAll();
+  chrome.windows.create.addExpectation({
+     url: [URL1, BASE + URL2],
+     incognito: true
+  });
 
   lc.openUrls([URL1, URL2], cr.LinkKind.INCOGNITO);
-  callbackMatcher.arg({id: WINDOW_ID});
-
-  mockControl.$verifyAll();
 }
 
 </script>

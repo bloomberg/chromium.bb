@@ -96,6 +96,26 @@ function assertArrayEquals(expected, observed) {
 }
 
 /**
+ * Verifies that the expected and observed result have the same content.
+ * @param {*} expected The expected result.
+ * @param {*} observed The actual result.
+ */
+function assertDeepEquals(expected, observed, opt_message) {
+  if (typeof expected == 'object' && expected != null) {
+    assertNotEqual(null, observed);
+    for (var key in expected) {
+      assertTrue(key in observed, opt_message);
+      assertDeepEquals(expected[key], observed[key], opt_message);
+    }
+    for (var key in observed) {
+      assertTrue(key in expected, opt_message);
+    }
+  } else {
+    assertEquals(expected, observed, opt_message);
+  }
+}
+
+/**
  * Defines runTests.
  */
 (function(exports) {
