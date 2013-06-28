@@ -20,6 +20,10 @@ struct ImportedBookmarkEntry;
 struct ImportedFaviconUsage;
 class ImporterHost;
 
+namespace importer {
+struct URLKeywordInfo;
+}
+
 class InProcessImporterBridge : public ImporterBridge {
  public:
   InProcessImporterBridge(ProfileWriter* writer,
@@ -43,8 +47,12 @@ class InProcessImporterBridge : public ImporterBridge {
   virtual void SetHistoryItems(const history::URLRows& rows,
                                history::VisitSource visit_source) OVERRIDE;
 
-  virtual void SetKeywords(const std::vector<TemplateURL*>& template_urls,
-                           bool unique_on_host_and_path) OVERRIDE;
+  virtual void SetKeywords(
+      const std::vector<importer::URLKeywordInfo>& url_keywords,
+      bool unique_on_host_and_path) OVERRIDE;
+
+  virtual void SetFirefoxSearchEnginesXMLData(
+      const std::vector<std::string>& search_engine_data) OVERRIDE;
 
   virtual void SetPasswordForm(
       const content::PasswordForm& form) OVERRIDE;

@@ -13,8 +13,6 @@
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/in_process_importer_bridge.h"
 #include "chrome/browser/importer/profile_import_process_messages.h"
-#include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "grit/generated_resources.h"
@@ -103,6 +101,8 @@ bool ExternalProcessImporterClient::OnMessageReceived(
                         OnPasswordFormImportReady)
     IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyKeywordsReady,
                         OnKeywordsImportReady)
+    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyFirefoxSearchEngData,
+                        OnFirefoxSearchEngineDataReceived)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -229,13 +229,18 @@ void ExternalProcessImporterClient::OnPasswordFormImportReady(
 }
 
 void ExternalProcessImporterClient::OnKeywordsImportReady(
-    const std::vector<TemplateURL*>& template_urls,
+    const std::vector<importer::URLKeywordInfo>& url_keywords,
     bool unique_on_host_and_path) {
   if (cancelled_)
     return;
+  bridge_->SetKeywords(url_keywords, unique_on_host_and_path);
+}
 
-  bridge_->SetKeywords(template_urls, unique_on_host_and_path);
-  // The pointers in |template_urls| have now been deleted.
+void ExternalProcessImporterClient::OnFirefoxSearchEngineDataReceived(
+    const std::vector<std::string> search_engine_data) {
+  if (cancelled_)
+    return;
+  bridge_->SetFirefoxSearchEnginesXMLData(search_engine_data);
 }
 
 ExternalProcessImporterClient::~ExternalProcessImporterClient() {}

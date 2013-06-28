@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/importer/importer_type.h"
+#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context_getter.h"
 
 // Types needed for importing data from other browsers and the Google Toolbar.
@@ -45,6 +46,13 @@ struct SourceProfile {
 
   // The URLRequestContextGetter is only used for Google Toolbar.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter;
+};
+
+// Contains information needed for importing bookmarks/search engine urls, etc.
+struct URLKeywordInfo {
+  GURL url;
+  string16 keyword;
+  string16 display_name;
 };
 
 }  // namespace importer

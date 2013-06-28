@@ -197,84 +197,33 @@ struct ParamTraits<ImportedFaviconUsage> {
   }
 };  // ParamTraits<ImportedFaviconUsage>
 
-// Traits for TemplateURLData
+// Traits for importer::URLKeywordInfo
 template <>
-struct ParamTraits<TemplateURLData> {
-  typedef TemplateURLData param_type;
+struct ParamTraits<importer::URLKeywordInfo> {
+  typedef importer::URLKeywordInfo param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.short_name);
-    WriteParam(m, p.keyword());
-    WriteParam(m, p.url());
-    WriteParam(m, p.suggestions_url);
-    WriteParam(m, p.instant_url);
-    WriteParam(m, p.favicon_url);
-    WriteParam(m, p.originating_url);
-    WriteParam(m, p.show_in_default_list);
-    WriteParam(m, p.safe_for_autoreplace);
-    WriteParam(m, p.input_encodings);
-    WriteParam(m, p.id);
-    WriteParam(m, p.date_created);
-    WriteParam(m, p.last_modified);
-    WriteParam(m, p.created_by_policy);
-    WriteParam(m, p.usage_count);
-    WriteParam(m, p.prepopulate_id);
-    WriteParam(m, p.sync_guid);
+    WriteParam(m, p.url);
+    WriteParam(m, p.keyword);
+    WriteParam(m, p.display_name);
   }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
-    string16 keyword;
-    std::string url;
-    if (!ReadParam(m, iter, &p->short_name) ||
-        !ReadParam(m, iter, &keyword) ||
-        !ReadParam(m, iter, &url) ||
-        !ReadParam(m, iter, &p->suggestions_url) ||
-        !ReadParam(m, iter, &p->instant_url) ||
-        !ReadParam(m, iter, &p->favicon_url) ||
-        !ReadParam(m, iter, &p->originating_url) ||
-        !ReadParam(m, iter, &p->show_in_default_list) ||
-        !ReadParam(m, iter, &p->safe_for_autoreplace) ||
-        !ReadParam(m, iter, &p->input_encodings) ||
-        !ReadParam(m, iter, &p->id) ||
-        !ReadParam(m, iter, &p->date_created) ||
-        !ReadParam(m, iter, &p->last_modified) ||
-        !ReadParam(m, iter, &p->created_by_policy) ||
-        !ReadParam(m, iter, &p->usage_count) ||
-        !ReadParam(m, iter, &p->prepopulate_id) ||
-        !ReadParam(m, iter, &p->sync_guid))
-      return false;
-    p->SetKeyword(keyword);
-    p->SetURL(url);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("<TemplateURLData>");
-  }
-};
 
-// Traits for TemplateURL*.
-// WARNING: These will cause us to allocate a new TemplateURL on the heap on the
-// receiver side.  Any messages using this type must have handlers that are
-// careful to properly take ownership and avoid leaks!  See warning below on
-// ProfileImportProcessHostMsg_NotifyKeywordsReady.
-template <>
-struct ParamTraits<TemplateURL*> {
-  typedef TemplateURL* param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p->data());
-  }
   static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
-    TemplateURLData data;
-    if (!ReadParam(m, iter, &data))
-      return false;
-    // Since we don't have access to a Profile*, just supply NULL.  The caller
-    // can create a new TemplateURL or modify this one (e.g. via
-    // TemplateURLService::AddAndSetProfile()) to correct this later.
-    *p = new TemplateURL(NULL, data);
-    return true;
+    return
+        ReadParam(m, iter, &p->url) &&
+        ReadParam(m, iter, &p->keyword) &&
+        ReadParam(m, iter, &p->display_name);
   }
+
   static void Log(const param_type& p, std::string* l) {
-    l->append("<TemplateURL*>");
+    l->append("(");
+    LogParam(p.url, l);
+    l->append(", ");
+    LogParam(p.keyword, l);
+    l->append(", ");
+    LogParam(p.display_name, l);
+    l->append(")");
   }
-};
+};  // ParamTraits<importer::URLKeywordInfo>
 
 }  // namespace IPC
 
@@ -341,9 +290,10 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportGroup,
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyPasswordFormReady,
                      content::PasswordForm)
 
-// WARNING: The TemplateURL*s in the following message get heap-allocated on the
-// receiving end.  The message handler for this message MUST take ownership of
-// these pointers and ensure they're properly freed!
 IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyKeywordsReady,
-                     std::vector<TemplateURL*>,
+                     std::vector<importer::URLKeywordInfo>, // url_keywords
                      bool  /* unique on host and path */)
+
+IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFirefoxSearchEngData,
+                     std::vector<std::string>) // search_engine_data
+

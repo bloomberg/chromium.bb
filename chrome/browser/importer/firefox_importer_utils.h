@@ -71,11 +71,6 @@ void ParseProfileINI(const base::FilePath& file, base::DictionaryValue* root);
 // with a unsupported scheme.
 bool CanImportURL(const GURL& url);
 
-// Parses the OpenSearch XML files in |xml_files| and populates |search_engines|
-// with the resulting TemplateURLs.
-void ParseSearchEnginesFromXMLFiles(const std::vector<base::FilePath>& xml_files,
-                                    std::vector<TemplateURL*>* search_engines);
-
 // Returns the home page set in Firefox in a particular profile.
 GURL GetHomepage(const base::FilePath& profile_path);
 

@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/favicon/imported_favicon_usage.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_import_process_messages.h"
 #include "content/public/common/password_form.h"
 #include "ipc/ipc_sender.h"
@@ -126,11 +127,16 @@ void ExternalProcessImporterBridge::SetHistoryItems(
 }
 
 void ExternalProcessImporterBridge::SetKeywords(
-    const std::vector<TemplateURL*>& template_urls,
+    const std::vector<importer::URLKeywordInfo>& url_keywords,
     bool unique_on_host_and_path) {
-  Send(new ProfileImportProcessHostMsg_NotifyKeywordsReady(template_urls,
-      unique_on_host_and_path));
-  STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
+  Send(new ProfileImportProcessHostMsg_NotifyKeywordsReady(
+      url_keywords, unique_on_host_and_path));
+}
+
+void ExternalProcessImporterBridge::SetFirefoxSearchEnginesXMLData(
+    const std::vector<std::string>& search_engine_data) {
+  Send(new ProfileImportProcessHostMsg_NotifyFirefoxSearchEngData(
+      search_engine_data));
 }
 
 void ExternalProcessImporterBridge::SetPasswordForm(

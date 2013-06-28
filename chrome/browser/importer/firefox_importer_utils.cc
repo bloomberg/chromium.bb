@@ -16,38 +16,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_parser.h"
-#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-// FirefoxURLParameterFilter is used to remove parameter mentioning Firefox from
-// the search URL when importing search engines.
-class FirefoxURLParameterFilter : public TemplateURLParser::ParameterFilter {
- public:
-  FirefoxURLParameterFilter() {}
-  virtual ~FirefoxURLParameterFilter() {}
-
-  // TemplateURLParser::ParameterFilter method.
-  virtual bool KeepParameter(const std::string& key,
-                             const std::string& value) OVERRIDE {
-    std::string low_value = StringToLowerASCII(value);
-    if (low_value.find("mozilla") != std::string::npos ||
-        low_value.find("firefox") != std::string::npos ||
-        low_value.find("moz:") != std::string::npos )
-      return false;
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FirefoxURLParameterFilter);
-};
-}  // namespace
 
 base::FilePath GetFirefoxProfilePath() {
   base::FilePath ini_file = GetProfilesINI();
@@ -147,53 +118,6 @@ bool CanImportURL(const GURL& url) {
   }
 
   return true;
-}
-
-void ParseSearchEnginesFromXMLFiles(
-    const std::vector<base::FilePath>& xml_files,
-    std::vector<TemplateURL*>* search_engines) {
-  DCHECK(search_engines);
-
-  typedef std::map<std::string, TemplateURL*> SearchEnginesMap;
-  SearchEnginesMap search_engine_for_url;
-  std::string content;
-  // The first XML file represents the default search engine in Firefox 3, so we
-  // need to keep it on top of the list.
-  SearchEnginesMap::const_iterator default_turl = search_engine_for_url.end();
-  for (std::vector<base::FilePath>::const_iterator file_iter =
-           xml_files.begin(); file_iter != xml_files.end(); ++file_iter) {
-    file_util::ReadFileToString(*file_iter, &content);
-    FirefoxURLParameterFilter param_filter;
-    TemplateURL* template_url = TemplateURLParser::Parse(NULL, true,
-        content.data(), content.length(), &param_filter);
-    if (template_url) {
-      SearchEnginesMap::iterator iter =
-          search_engine_for_url.find(template_url->url());
-      if (iter == search_engine_for_url.end()) {
-        iter = search_engine_for_url.insert(
-            std::make_pair(template_url->url(), template_url)).first;
-      } else {
-        // We have already found a search engine with the same URL.  We give
-        // priority to the latest one found, as GetSearchEnginesXMLFiles()
-        // returns a vector with first Firefox default search engines and then
-        // the user's ones.  We want to give priority to the user ones.
-        delete iter->second;
-        iter->second = template_url;
-      }
-      if (default_turl == search_engine_for_url.end())
-        default_turl = iter;
-    }
-    content.clear();
-  }
-
-  // Put the results in the |search_engines| vector.
-  for (SearchEnginesMap::iterator t_iter = search_engine_for_url.begin();
-       t_iter != search_engine_for_url.end(); ++t_iter) {
-    if (t_iter == default_turl)
-      search_engines->insert(search_engines->begin(), default_turl->second);
-    else
-      search_engines->push_back(t_iter->second);
-  }
 }
 
 bool ReadPrefFile(const base::FilePath& path, std::string* content) {

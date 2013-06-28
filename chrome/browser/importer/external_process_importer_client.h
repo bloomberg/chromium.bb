@@ -21,11 +21,14 @@ class ExternalProcessImporterHost;
 struct ImportedBookmarkEntry;
 struct ImportedFaviconUsage;
 class InProcessImporterBridge;
-class TemplateURL;
 
 namespace content {
 struct PasswordForm;
 class UtilityProcessHost;
+}
+
+namespace importer {
+struct URLKeywordInfo;
 }
 
 // This class is the client for the out of process profile importing.  It
@@ -65,10 +68,11 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   void OnFaviconsImportGroup(
       const std::vector<ImportedFaviconUsage>& favicons_group);
   void OnPasswordFormImportReady(const content::PasswordForm& form);
-  // WARNING: This function takes ownership of (and deletes) the pointers in
-  // |template_urls|!
-  void OnKeywordsImportReady(const std::vector<TemplateURL*>& template_urls,
-                             bool unique_on_host_and_path);
+  void OnKeywordsImportReady(
+      const std::vector<importer::URLKeywordInfo>& url_keywords,
+      bool unique_on_host_and_path);
+  void OnFirefoxSearchEngineDataReceived(
+      const std::vector<std::string> search_engine_data);
 
  protected:
   virtual ~ExternalProcessImporterClient();

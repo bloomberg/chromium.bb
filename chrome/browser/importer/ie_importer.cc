@@ -36,9 +36,6 @@
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/pstore_declarations.h"
-#include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "components/webdata/encryptor/ie7_password.h"
@@ -686,7 +683,7 @@ void IEImporter::ImportSearchEngines() {
   // Software\Microsoft\Internet Explorer\SearchScopes
   // Each key represents a search engine. The URL value contains the URL and
   // the DisplayName the name.
-  typedef std::map<std::string, TemplateURL*> SearchEnginesMap;
+  typedef std::map<std::string, string16> SearchEnginesMap;
   SearchEnginesMap search_engines_map;
   for (base::win::RegistryKeyIterator key_iter(HKEY_CURRENT_USER,
        kSearchScopePath); key_iter.Valid(); ++key_iter) {
@@ -719,24 +716,20 @@ void IEImporter::ImportSearchEngines() {
       // First time we see that URL.
       GURL gurl(url);
       if (gurl.is_valid()) {
-        TemplateURLData data;
-        data.short_name = name;
-        data.SetKeyword(TemplateURLService::GenerateKeyword(gurl));
-        data.SetURL(url);
-        data.show_in_default_list = true;
-        t_iter = search_engines_map.insert(std::make_pair(url,
-            new TemplateURL(NULL, data))).first;
+        t_iter = search_engines_map.insert(std::make_pair(url, name)).first;
       }
     }
   }
-
   // ProfileWriter::AddKeywords() requires a vector and we have a map.
-  std::vector<TemplateURL*> search_engines;
+  std::vector<importer::URLKeywordInfo> url_keywords;
   for (SearchEnginesMap::iterator i = search_engines_map.begin();
-       i != search_engines_map.end(); ++i)
-    search_engines.push_back(i->second);
-
-  bridge_->SetKeywords(search_engines, true);
+       i != search_engines_map.end(); ++i) {
+    importer::URLKeywordInfo url_keyword_info;
+    url_keyword_info.url = GURL(i->first);
+    url_keyword_info.display_name = i->second;
+    url_keywords.push_back(url_keyword_info);
+  }
+  bridge_->SetKeywords(url_keywords, true);
 }
 
 void IEImporter::ImportHomepage() {
