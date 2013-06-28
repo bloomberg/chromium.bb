@@ -313,6 +313,7 @@ public:
     virtual void setShowDebugBorders(bool);
     virtual void setShowFPSCounter(bool);
     virtual void setContinuousPaintingEnabled(bool);
+    virtual void setShowScrollBottleneckRects(bool);
 
     // WebViewImpl
 
@@ -846,6 +847,7 @@ private:
     bool m_showPaintRects;
     bool m_showDebugBorders;
     bool m_continuousPaintingEnabled;
+    bool m_showScrollBottleneckRects;
 };
 
 } // namespace WebKit

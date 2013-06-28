@@ -95,6 +95,7 @@ static const char pageAgentShowFPSCounter[] = "pageAgentShowFPSCounter";
 static const char pageAgentContinuousPaintingEnabled[] = "pageAgentContinuousPaintingEnabled";
 static const char pageAgentShowPaintRects[] = "pageAgentShowPaintRects";
 static const char pageAgentShowDebugBorders[] = "pageAgentShowDebugBorders";
+static const char pageAgentShowScrollBottleneckRects[] = "pageAgentShowScrollBottleneckRects";
 static const char touchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char pageAgentEmulatedMedia[] = "pageAgentEmulatedMedia";
 static const char showSizeOnResize[] = "showSizeOnResize";
@@ -363,6 +364,8 @@ void InspectorPageAgent::restore()
         setEmulatedMedia(0, emulatedMedia);
         bool continuousPaintingEnabled = m_state->getBoolean(PageAgentState::pageAgentContinuousPaintingEnabled);
         setContinuousPaintingEnabled(0, continuousPaintingEnabled);
+        bool showScrollBottleneckRects = m_state->getBoolean(PageAgentState::pageAgentShowScrollBottleneckRects);
+        setShowScrollBottleneckRects(0, showScrollBottleneckRects);
 
         int currentWidth = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenWidthOverride));
         int currentHeight = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenHeightOverride));
@@ -399,6 +402,7 @@ void InspectorPageAgent::disable(ErrorString*)
     setShowFPSCounter(0, false);
     setEmulatedMedia(0, "");
     setContinuousPaintingEnabled(0, false);
+    setShowScrollBottleneckRects(0, false);
     setShowViewportSizeOnResize(0, false, 0);
     if (m_didForceCompositingMode)
         setForceCompositingMode(0, false);
@@ -727,6 +731,12 @@ void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString*, bool enabled
     m_client->setContinuousPaintingEnabled(enabled);
 
     updateOverridesTopOffset();
+}
+
+void InspectorPageAgent::setShowScrollBottleneckRects(ErrorString*, bool show)
+{
+    m_state->setBoolean(PageAgentState::pageAgentShowScrollBottleneckRects, show);
+    m_client->setShowScrollBottleneckRects(show);
 }
 
 void InspectorPageAgent::getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum* status)

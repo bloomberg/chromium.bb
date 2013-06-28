@@ -432,6 +432,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_showPaintRects(false)
     , m_showDebugBorders(false)
     , m_continuousPaintingEnabled(false)
+    , m_showScrollBottleneckRects(false)
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = &m_chromeClientImpl;
@@ -883,6 +884,13 @@ void WebViewImpl::setContinuousPaintingEnabled(bool enabled)
     }
     m_continuousPaintingEnabled = enabled;
     m_client->scheduleAnimation();
+}
+
+void WebViewImpl::setShowScrollBottleneckRects(bool show)
+{
+    if (m_layerTreeView)
+        m_layerTreeView->setShowScrollBottleneckRects(show);
+    m_showScrollBottleneckRects = show;
 }
 
 bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
@@ -3978,6 +3986,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             m_layerTreeView->setShowPaintRects(m_showPaintRects);
             m_layerTreeView->setShowDebugBorders(m_showDebugBorders);
             m_layerTreeView->setContinuousPaintingEnabled(m_continuousPaintingEnabled);
+            m_layerTreeView->setShowScrollBottleneckRects(m_showScrollBottleneckRects);
         } else {
             m_isAcceleratedCompositingActive = false;
             m_client->didDeactivateCompositor();

@@ -106,6 +106,7 @@ public:
     virtual void setShowDebugBorders(ErrorString*, bool show);
     virtual void setShowFPSCounter(ErrorString*, bool show);
     virtual void setContinuousPaintingEnabled(ErrorString*, bool enabled);
+    virtual void setShowScrollBottleneckRects(ErrorString*, bool show);
     virtual void getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum*);
     virtual void setScriptExecutionDisabled(ErrorString*, bool);
     virtual void setGeolocationOverride(ErrorString*, const double*, const double*, const double*);

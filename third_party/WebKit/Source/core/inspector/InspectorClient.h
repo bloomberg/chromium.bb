@@ -61,6 +61,7 @@ public:
     virtual void setShowDebugBorders(bool) { }
     virtual void setShowFPSCounter(bool) { }
     virtual void setContinuousPaintingEnabled(bool) { }
+    virtual void setShowScrollBottleneckRects(bool) { }
 
     virtual void getAllocatedObjects(HashSet<const void*>&) { }
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&) { }
