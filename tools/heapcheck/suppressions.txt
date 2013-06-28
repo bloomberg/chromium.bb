@@ -864,7 +864,7 @@
    fun:cc::LayerTreeHost::Initialize
    fun:cc::LayerTreeHost::Create
    fun:Compositor
-   fun:ui::TestCompositorHostLinux::Show
+   fun:ui::TestCompositorHostX11::Show
    fun:SetUp
 }
 {
