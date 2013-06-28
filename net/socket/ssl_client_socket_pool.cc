@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -19,6 +20,8 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_info.h"
 
 namespace net {
 
@@ -336,6 +339,10 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
 
     SSLInfo ssl_info;
     ssl_socket_->GetSSLInfo(&ssl_info);
+
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_CipherSuite",
+                                SSLConnectionStatusToCipherSuite(
+                                    ssl_info.connection_status));
 
     if (ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME) {
       UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_Resume_Handshake",
