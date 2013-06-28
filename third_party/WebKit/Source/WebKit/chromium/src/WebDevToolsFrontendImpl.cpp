@@ -88,15 +88,6 @@ private:
     WebDevToolsFrontendImpl* m_webDevToolsFrontendImpl;
 };
 
-static v8::Local<v8::String> ToV8String(const String& s)
-{
-    if (s.isNull())
-        return v8::Local<v8::String>();
-
-    // FIXME: Call v8String from the Bindings layer.
-    return v8::String::New(reinterpret_cast<const uint16_t*>(s.bloatedCharacters()), s.length());
-}
-
 WebDevToolsFrontend* WebDevToolsFrontend::create(
     WebView* view,
     WebDevToolsFrontendClient* client,
@@ -159,6 +150,7 @@ void WebDevToolsFrontendImpl::maybeDispatch(WebCore::Timer<WebDevToolsFrontendIm
 void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& message)
 {
     WebFrameImpl* frame = m_webViewImpl->mainFrameImpl();
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope;
     v8::Handle<v8::Context> frameContext = frame->frame() ? frame->frame()->script()->currentWorldContext() : v8::Local<v8::Context>();
     v8::Context::Scope contextScope(frameContext);
@@ -172,7 +164,7 @@ void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& mes
         return;
     v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(dispatchFunction);
     Vector< v8::Handle<v8::Value> > args;
-    args.append(ToV8String(message));
+    args.append(v8String(message, isolate));
     v8::TryCatch tryCatch;
     tryCatch.SetVerbose(true);
     ScriptController::callFunctionWithInstrumentation(frame->frame() ? frame->frame()->document() : 0, function, inspectorFrontendApi, args.size(), args.data());
