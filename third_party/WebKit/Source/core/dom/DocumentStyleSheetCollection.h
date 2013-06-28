@@ -29,6 +29,7 @@
 #define DocumentStyleSheetCollection_h
 
 #include "core/dom/Document.h"
+#include "core/dom/DocumentOrderedList.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"
@@ -138,8 +139,7 @@ private:
     bool m_hadActiveLoadingStylesheet;
     bool m_needsUpdateActiveStylesheetsOnStyleRecalc;
 
-    typedef ListHashSet<Node*, 32> StyleSheetCandidateListHashSet;
-    StyleSheetCandidateListHashSet m_styleSheetCandidateNodes;
+    DocumentOrderedList m_styleSheetCandidateNodes;
 
     String m_preferredStylesheetSetName;
     String m_selectedStylesheetSetName;

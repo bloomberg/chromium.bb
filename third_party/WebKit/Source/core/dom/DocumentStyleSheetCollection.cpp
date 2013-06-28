@@ -226,33 +226,17 @@ void DocumentStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool c
 {
     if (!node->inDocument())
         return;
-    
+
     // Until the <body> exists, we have no choice but to compare document positions,
     // since styles outside of the body and head continue to be shunted into the head
     // (and thus can shift to end up before dynamically added DOM content that is also
     // outside the body).
-    if ((createdByParser && m_document->body()) || m_styleSheetCandidateNodes.isEmpty()) {
-        m_styleSheetCandidateNodes.add(node);
+    if (createdByParser && m_document->body()) {
+        m_styleSheetCandidateNodes.parserAdd(node);
         return;
     }
 
-    // Determine an appropriate insertion point.
-    StyleSheetCandidateListHashSet::iterator begin = m_styleSheetCandidateNodes.begin();
-    StyleSheetCandidateListHashSet::iterator end = m_styleSheetCandidateNodes.end();
-    StyleSheetCandidateListHashSet::iterator it = end;
-    Node* followingNode = 0;
-    do {
-        --it;
-        Node* n = *it;
-        unsigned short position = n->compareDocumentPositionInternal(node, Node::TreatShadowTreesAsComposed);
-        if (position & Node::DOCUMENT_POSITION_FOLLOWING) {
-            m_styleSheetCandidateNodes.insertBefore(followingNode, node);
-            return;
-        }
-        followingNode = n;
-    } while (it != begin);
-    
-    m_styleSheetCandidateNodes.insertBefore(followingNode, node);
+    m_styleSheetCandidateNodes.add(node);
 }
 
 void DocumentStyleSheetCollection::removeStyleSheetCandidateNode(Node* node)
@@ -265,9 +249,9 @@ void DocumentStyleSheetCollection::collectActiveStyleSheets(Vector<RefPtr<StyleS
     if (m_document->settings() && !m_document->settings()->authorAndUserStylesEnabled())
         return;
 
-    StyleSheetCandidateListHashSet::iterator begin = m_styleSheetCandidateNodes.begin();
-    StyleSheetCandidateListHashSet::iterator end = m_styleSheetCandidateNodes.end();
-    for (StyleSheetCandidateListHashSet::iterator it = begin; it != end; ++it) {
+    DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
+    DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
+    for (DocumentOrderedList::iterator it = begin; it != end; ++it) {
         Node* n = *it;
         StyleSheet* sheet = 0;
         if (n->nodeType() == Node::PROCESSING_INSTRUCTION_NODE) {

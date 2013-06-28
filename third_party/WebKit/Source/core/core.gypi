@@ -1751,6 +1751,8 @@
             'dom/DocumentLifecycleObserver.h',
             'dom/DocumentMarkerController.cpp',
             'dom/DocumentMarker.cpp',
+            'dom/DocumentOrderedList.cpp',
+            'dom/DocumentOrderedList.h',
             'dom/DocumentOrderedMap.cpp',
             'dom/DocumentParser.cpp',
             'dom/DocumentSharedObjectPool.cpp',
