@@ -37,6 +37,14 @@
 
 namespace WebCore {
 
+WebSocketExtensionParser::ParserStateBackup::~ParserStateBackup()
+{
+    if (!m_isDisposed) {
+        m_parser->m_current = m_current;
+        m_parser->m_end = m_end;
+    }
+}
+
 bool WebSocketExtensionParser::finished()
 {
     return m_current >= m_end;
@@ -62,14 +70,14 @@ void WebSocketExtensionParser::skipSpaces()
 
 bool WebSocketExtensionParser::consumeToken()
 {
+    ParserStateBackup backup(this);
     skipSpaces();
     const char* start = m_current;
-    const char* current = m_current;
-    while (current < m_end && isASCIIPrintable(*current) && !isSeparator(*current))
-        ++current;
-    if (start < current) {
-        m_currentToken = String(start, current - start);
-        m_current = current;
+    while (m_current < m_end && isASCIIPrintable(*m_current) && !isSeparator(*m_current))
+        ++m_current;
+    if (start < m_current) {
+        m_currentToken = String(start, m_current - start);
+        backup.dispose();
         return true;
     }
     return false;
@@ -77,42 +85,45 @@ bool WebSocketExtensionParser::consumeToken()
 
 bool WebSocketExtensionParser::consumeQuotedString()
 {
+    ParserStateBackup backup(this);
     skipSpaces();
-    const char* current = m_current;
-    if (current >= m_end || *current != '"')
+    if (m_current >= m_end || *m_current != '"')
         return false;
 
     Vector<char> buffer;
-    ++current;
-    while (current < m_end && *current != '"') {
-        if (*current == '\\' && ++current >= m_end)
+    ++m_current;
+    while (m_current < m_end && *m_current != '"') {
+        if (*m_current == '\\' && ++m_current >= m_end)
             return false;
         // RFC6455 requires that the value after quoted-string unescaping
         // MUST conform to the 'token' ABNF.
-        if (!isASCIIPrintable(*current) || isSeparator(*current))
+        if (!isASCIIPrintable(*m_current) || isSeparator(*m_current))
             return false;
-        buffer.append(*current);
-        ++current;
+        buffer.append(*m_current);
+        ++m_current;
     }
-    if (current >= m_end || *current != '"' || buffer.isEmpty())
+    if (m_current >= m_end || *m_current != '"' || buffer.isEmpty())
         return false;
     m_currentToken = String::fromUTF8(buffer.data(), buffer.size());
-    m_current = ++current;
+    ++m_current;
+    backup.dispose();
     return true;
 }
 
 bool WebSocketExtensionParser::consumeQuotedStringOrToken()
 {
-    // This is ok because consumeQuotedString() doesn't update m_current or
-    // makes it same as m_end on failure.
+    // This is ok because consumeQuotedString() restores m_current
+    // on failure.
     return consumeQuotedString() || consumeToken();
 }
 
 bool WebSocketExtensionParser::consumeCharacter(char character)
 {
+    ParserStateBackup backup(this);
     skipSpaces();
     if (m_current < m_end && *m_current == character) {
         ++m_current;
+        backup.dispose();
         return true;
     }
     return false;
@@ -120,6 +131,7 @@ bool WebSocketExtensionParser::consumeCharacter(char character)
 
 bool WebSocketExtensionParser::parseExtension(String& extensionToken, HashMap<String, String>& extensionParameters)
 {
+    ParserStateBackup backup(this);
     // Parse extension-token.
     if (!consumeToken())
         return false;
@@ -141,9 +153,11 @@ bool WebSocketExtensionParser::parseExtension(String& extensionToken, HashMap<St
             extensionParameters.add(parameterToken, String());
         }
     }
+    skipSpaces();
     if (!finished() && !consumeCharacter(','))
         return false;
 
+    backup.dispose();
     return true;
 }
 

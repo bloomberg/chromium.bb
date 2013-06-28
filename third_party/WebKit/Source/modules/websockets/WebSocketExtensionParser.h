@@ -49,6 +49,22 @@ public:
     bool parseExtension(String& extensionToken, HashMap<String, String>& parameters);
 
 private:
+    class ParserStateBackup {
+    public:
+        ParserStateBackup(WebSocketExtensionParser* parser)
+            : m_parser(parser)
+            , m_current(parser->m_current)
+            , m_end(parser->m_end)
+            , m_isDisposed(false) { }
+        ~ParserStateBackup();
+
+        void dispose() { m_isDisposed = true; }
+    private:
+        WebSocketExtensionParser* m_parser;
+        const char* m_current;
+        const char* m_end;
+        bool m_isDisposed;
+    };
     const String& currentToken() { return m_currentToken; }
 
     // The following member functions basically follow the grammar defined
