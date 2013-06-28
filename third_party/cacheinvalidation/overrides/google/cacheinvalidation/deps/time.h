@@ -5,7 +5,7 @@
 #ifndef GOOGLE_CACHEINVALIDATION_DEPS_TIME_H_
 #define GOOGLE_CACHEINVALIDATION_DEPS_TIME_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace invalidation {
 typedef base::Time Time;
