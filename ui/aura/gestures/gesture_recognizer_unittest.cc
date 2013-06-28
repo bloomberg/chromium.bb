@@ -6,7 +6,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"

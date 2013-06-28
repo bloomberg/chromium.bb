@@ -9,8 +9,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 

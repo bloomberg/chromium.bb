@@ -4,7 +4,7 @@
 
 #include "ui/views/controls/throbber.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"

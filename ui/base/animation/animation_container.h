@@ -8,8 +8,8 @@
 #include <set>
 
 #include "base/memory/ref_counted.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {

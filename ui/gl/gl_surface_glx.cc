@@ -19,7 +19,7 @@ extern "C" {
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "third_party/mesa/src/include/GL/osmesa.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gl/gl_bindings.h"

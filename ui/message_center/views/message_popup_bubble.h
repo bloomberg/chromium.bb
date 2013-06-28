@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_bubble_base.h"
 

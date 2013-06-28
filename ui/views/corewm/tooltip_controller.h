@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/events/event_handler.h"

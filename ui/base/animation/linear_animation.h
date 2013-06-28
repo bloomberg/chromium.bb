@@ -5,7 +5,7 @@
 #ifndef UI_BASE_ANIMATION_LINEAR_ANIMATION_H_
 #define UI_BASE_ANIMATION_LINEAR_ANIMATION_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ui/base/animation/animation.h"
 
 namespace ui {

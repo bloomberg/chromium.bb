@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
 #include "skia/ext/skia_utils_mac.h"

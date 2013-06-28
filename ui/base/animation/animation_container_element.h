@@ -5,7 +5,7 @@
 #ifndef UI_BASE_ANIMATION_ANIMATION_CONTAINER_ELEMENT_H_
 #define UI_BASE_ANIMATION_ANIMATION_CONTAINER_ELEMENT_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {

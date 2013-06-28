@@ -5,7 +5,7 @@
 #ifndef UI_COMPOSITOR_COMPOSITOR_OBSERVER_H_
 #define UI_COMPOSITOR_COMPOSITOR_OBSERVER_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace ui {

@@ -7,7 +7,7 @@
 #include "ui/base/events/event_constants.h"
 
 #include "base/logging.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/win/win_util.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "ui/base/ui_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
