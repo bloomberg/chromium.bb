@@ -5,12 +5,12 @@
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_NAVIGATION_CONTROLLER_IMPL_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_NAVIGATION_CONTROLLER_IMPL_H_
 
-#include "build/build_config.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"

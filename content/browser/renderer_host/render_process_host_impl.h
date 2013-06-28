@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"

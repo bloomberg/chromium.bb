@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/browser/histogram_subscriber.h"
 
 namespace base {

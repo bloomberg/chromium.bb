@@ -8,8 +8,8 @@
 #include <map>
 
 #include "base/memory/weak_ptr.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 
 struct ViewHostMsg_BeginSmoothScroll_Params;

@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"

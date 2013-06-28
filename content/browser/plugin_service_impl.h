@@ -18,7 +18,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/ppapi_plugin_process_host.h"

@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_SMOOTH_SCROLL_CALCULATOR_H_
 #define CONTENT_BROWSER_RENDERER_HOST_SMOOTH_SCROLL_CALCULATOR_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace content {
 

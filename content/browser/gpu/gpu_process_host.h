@@ -14,7 +14,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"

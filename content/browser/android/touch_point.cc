@@ -5,8 +5,8 @@
 #include "content/browser/android/touch_point.h"
 
 #include "base/debug/debugger.h"
-#include "base/time.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 
 #include "jni/TouchPoint_jni.h"
 

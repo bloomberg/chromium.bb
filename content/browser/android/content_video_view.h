@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 
 namespace content {
 

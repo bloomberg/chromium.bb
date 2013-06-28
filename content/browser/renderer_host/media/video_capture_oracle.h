@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 
 namespace content {

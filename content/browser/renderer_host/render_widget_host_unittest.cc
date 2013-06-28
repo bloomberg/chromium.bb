@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/gesture_event_filter.h"

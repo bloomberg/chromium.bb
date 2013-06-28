@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_BASIC_MOUSE_WHEEL_SMOOTH_SCROLL_GESTURE_
 #define CONTENT_BROWSER_RENDERER_HOST_BASIC_MOUSE_WHEEL_SMOOTH_SCROLL_GESTURE_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/browser/renderer_host/smooth_scroll_calculator.h"
 #include "content/port/browser/smooth_scroll_gesture.h"
 

@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_CONTROLLER_EVENT_HANDLER_H_
 
 #include "base/shared_memory.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 
 namespace content {

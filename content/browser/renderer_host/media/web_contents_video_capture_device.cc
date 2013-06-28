@@ -69,7 +69,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/browser/renderer_host/media/video_capture_oracle.h"
 #include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"

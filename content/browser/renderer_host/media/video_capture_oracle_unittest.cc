@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/media/video_capture_oracle.h"
 
 #include "base/strings/stringprintf.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "content/port/browser/event_with_latency_info.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/transform.h"

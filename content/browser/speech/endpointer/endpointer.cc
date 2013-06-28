@@ -4,7 +4,7 @@
 
 #include "content/browser/speech/endpointer/endpointer.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/browser/speech/audio_buffer.h"
 
 using base::Time;

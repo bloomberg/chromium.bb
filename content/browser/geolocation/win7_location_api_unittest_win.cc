@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/browser/geolocation/win7_location_api_win.h"
 #include "content/public/common/geoposition.h"
 #include "testing/gmock/include/gmock/gmock.h"

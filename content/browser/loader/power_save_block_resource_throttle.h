@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "content/public/browser/resource_throttle.h"
 
 namespace content {

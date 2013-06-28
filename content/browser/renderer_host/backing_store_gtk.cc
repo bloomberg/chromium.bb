@@ -24,7 +24,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"

@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
 #include "content/public/common/content_switches.h"
@@ -22,8 +22,8 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
 using net::URLFetcher;

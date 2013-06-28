@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "base/win/win_util.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"

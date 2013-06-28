@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_TAP_SUPPRESSION_CONTROLLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_TAP_SUPPRESSION_CONTROLLER_H_
 
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 
 namespace content {

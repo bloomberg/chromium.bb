@@ -7,7 +7,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/text_input_client_messages.h"
 

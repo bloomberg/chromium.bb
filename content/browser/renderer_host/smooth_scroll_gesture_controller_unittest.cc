@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/smooth_scroll_gesture_controller.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
