@@ -109,6 +109,7 @@ struct wl_resource {
 	struct wl_signal destroy_signal;
 	struct wl_client *client;
 	void *data;
+	int version;
 };
 
 static int wl_debug = 0;
@@ -510,6 +511,12 @@ wl_resource_get_user_data(struct wl_resource *resource)
 	return resource->data;
 }
 
+WL_EXPORT int
+wl_resource_get_version(struct wl_resource *resource)
+{
+	return resource->version;
+}
+
 WL_EXPORT void
 wl_resource_set_destructor(struct wl_resource *resource,
 			   wl_resource_destroy_func_t destroy)
@@ -603,8 +610,7 @@ display_sync(struct wl_client *client,
 	struct wl_resource *callback;
 	uint32_t serial;
 
-	callback = wl_client_add_object(client,
-					&wl_callback_interface, NULL, id, NULL);
+	callback = wl_resource_create(client, &wl_callback_interface, 1, id);
 	serial = wl_display_get_serial(client->display);
 	wl_callback_send_done(callback, serial);
 	wl_resource_destroy(callback);
@@ -626,9 +632,10 @@ display_get_registry(struct wl_client *client,
 	struct wl_global *global;
 
 	registry_resource =
-		wl_client_add_object(client, &wl_registry_interface,
-				     &registry_interface, id, display);
-	registry_resource->destroy = unbind_resource;
+		wl_resource_create(client, &wl_registry_interface, 1, id);
+	wl_resource_set_implementation(registry_resource,
+				       &registry_interface,
+				       display, unbind_resource);
 
 	wl_list_insert(&display->registry_resource_list,
 		       &registry_resource->link);
@@ -660,11 +667,10 @@ bind_display(struct wl_client *client,
 	struct wl_display *display = data;
 
 	client->display_resource =
-		wl_client_add_object(client, &wl_display_interface,
-				     &display_interface, id, display);
-
-	if(client->display_resource)
-		client->display_resource->destroy = destroy_client_display_resource;
+		wl_resource_create(client, &wl_display_interface, 1, id);
+	wl_resource_set_implementation(client->display_resource,
+				       &display_interface, display,
+				       destroy_client_display_resource);
 }
 
 WL_EXPORT struct wl_display *
@@ -998,8 +1004,31 @@ wl_display_get_destroy_listener(struct wl_display *display,
 WL_EXPORT struct wl_resource *
 wl_client_add_object(struct wl_client *client,
 		     const struct wl_interface *interface,
-		     const void *implementation,
-		     uint32_t id, void *data)
+		     const void *implementation, uint32_t id, void *data)
+{
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client, interface, -1, id);
+	wl_resource_set_implementation(resource, implementation, data, NULL);
+
+	return resource;
+}
+
+WL_EXPORT void
+wl_resource_set_implementation(struct wl_resource *resource,
+			       const void *implementation,
+			       void *data, wl_resource_destroy_func_t destroy)
+{
+	resource->object.implementation = implementation;
+	resource->data = data;
+	resource->destroy = destroy;
+}
+
+
+WL_EXPORT struct wl_resource *
+wl_resource_create(struct wl_client *client,
+		   const struct wl_interface *interface,
+		   int version, uint32_t id)
 {
 	struct wl_resource *resource;
 
@@ -1009,15 +1038,19 @@ wl_client_add_object(struct wl_client *client,
 		return NULL;
 	}
 
+	if (id == 0)
+		id = wl_map_insert_new(&client->objects, 0, NULL);
+
 	resource->object.id = id;
 	resource->object.interface = interface;
-	resource->object.implementation = implementation;
+	resource->object.implementation = NULL;
 
 	wl_signal_init(&resource->destroy_signal);
 
 	resource->destroy = NULL;
 	resource->client = client;
-	resource->data = data;
+	resource->data = NULL;
+	resource->version = version;
 
 	if (wl_map_insert_at(&client->objects, 0, resource->object.id, resource) < 0) {
 		wl_resource_post_error(client->display_resource,
@@ -1036,12 +1069,12 @@ wl_client_new_object(struct wl_client *client,
 		     const struct wl_interface *interface,
 		     const void *implementation, void *data)
 {
-	uint32_t id;
+	struct wl_resource *resource;
 
-	id = wl_map_insert_new(&client->objects, 0, NULL);
-	return wl_client_add_object(client,
-				    interface, implementation, id, data);
+	resource = wl_resource_create(client, interface, -1, 0);
+	wl_resource_set_implementation(resource, implementation, data, NULL);
 
+	return resource;
 }
 
 WL_EXPORT void

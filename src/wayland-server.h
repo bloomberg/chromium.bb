@@ -242,6 +242,16 @@ void wl_resource_post_no_memory(struct wl_resource *resource);
 struct wl_display *
 wl_client_get_display(struct wl_client *client);
 
+struct wl_resource *
+wl_resource_create(struct wl_client *client,
+		   const struct wl_interface *interface,
+		   int version, uint32_t id);
+void
+wl_resource_set_implementation(struct wl_resource *resource,
+			       const void *implementation,
+			       void *data,
+			       wl_resource_destroy_func_t destroy);
+
 void
 wl_resource_destroy(struct wl_resource *resource);
 uint32_t
@@ -258,6 +268,8 @@ void
 wl_resource_set_user_data(struct wl_resource *resource, void *data);
 void *
 wl_resource_get_user_data(struct wl_resource *resource);
+int
+wl_resource_get_version(struct wl_resource *resource);
 void
 wl_resource_set_destructor(struct wl_resource *resource,
 			   wl_resource_destroy_func_t destroy);

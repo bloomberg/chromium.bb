@@ -127,10 +127,11 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 	buffer->pool = pool;
 	pool->refcount++;
 
-	buffer->resource = wl_client_add_object(client, &wl_buffer_interface,
-						&shm_buffer_interface,
-						id, buffer);
-	wl_resource_set_destructor(buffer->resource, destroy_buffer);
+	buffer->resource =
+		wl_resource_create(client, &wl_buffer_interface, 1, id);
+	wl_resource_set_implementation(buffer->resource,
+				       &shm_buffer_interface,
+				       buffer, destroy_buffer);
 }
 
 static void
@@ -204,12 +205,14 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 	}
 	close(fd);
 
-	pool->resource = wl_client_add_object(client, &wl_shm_pool_interface,
-					      &shm_pool_interface, id, pool);
+	pool->resource =
+		wl_resource_create(client, &wl_shm_pool_interface, 1, id);
 	if (!pool->resource)
 		goto err_free;
 
-	wl_resource_set_destructor(pool->resource, destroy_pool);
+	wl_resource_set_implementation(pool->resource,
+				       &shm_pool_interface,
+				       pool, destroy_pool);
 
 	return;
 
@@ -229,8 +232,8 @@ bind_shm(struct wl_client *client,
 {
 	struct wl_resource *resource;
 
-	resource = wl_client_add_object(client, &wl_shm_interface,
-					&shm_interface, id, data);
+	resource = wl_resource_create(client, &wl_shm_interface, 1, id);
+	wl_resource_set_implementation(resource, &shm_interface, data, NULL);
 
 	wl_shm_send_format(resource, WL_SHM_FORMAT_ARGB8888);
 	wl_shm_send_format(resource, WL_SHM_FORMAT_XRGB8888);
@@ -271,11 +274,11 @@ wl_shm_buffer_create(struct wl_client *client,
 	buffer->offset = 0;
 	buffer->pool = NULL;
 
-
-	buffer->resource = wl_client_add_object(client, &wl_buffer_interface,
-						&shm_buffer_interface,
-						id, buffer);
-	wl_resource_set_destructor(buffer->resource, destroy_buffer);
+	buffer->resource =
+		wl_resource_create(client, &wl_buffer_interface, 1, id);
+	wl_resource_set_implementation(buffer->resource,
+				       &shm_buffer_interface,
+				       buffer, destroy_buffer);
 
 	return buffer;
 }
