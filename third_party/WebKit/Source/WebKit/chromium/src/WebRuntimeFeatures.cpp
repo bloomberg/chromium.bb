@@ -602,4 +602,14 @@ bool WebRuntimeFeatures::isInputTypeColorEnabled()
     return RuntimeEnabledFeatures::inputTypeColorEnabled();
 }
 
+void WebRuntimeFeatures::enableInputModeAttribute(bool enable)
+{
+    RuntimeEnabledFeatures::setInputModeAttributeEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isInputModeAttributeEnabled()
+{
+    return RuntimeEnabledFeatures::inputModeAttributeEnabled();
+}
+
 } // namespace WebKit

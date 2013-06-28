@@ -49,6 +49,7 @@ HTMLImports status=test
 HighResolutionTimeInWorkers status=experimental
 IMEAPI status=test
 IndexedDB status=stable
+InputModeAttribute status=test
 InputTypeColor status=stable
 InputTypeWeek status=stable
 JavaScriptI18NAPI status=stable
