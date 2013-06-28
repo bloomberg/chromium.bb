@@ -66,7 +66,6 @@ def _GetDataFilesForTestSuite(test_suite_basename):
         'chrome/test/data/web_database',
         'chrome/test/data/webui/',
         'chrome/third_party/mock4js/',
-        'components/test/data/',
         'net/data/ssl/certificates',
         'third_party/accessibility-developer-tools/gen/axs_testing.js',
         'third_party/zlib/google/test/data',
