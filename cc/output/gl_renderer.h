@@ -222,8 +222,9 @@ class CC_EXPORT GLRenderer
   // implementation.
   virtual void onMemoryAllocationChanged(
       WebKit::WebGraphicsMemoryAllocation allocation) OVERRIDE;
-  void DiscardBackbuffer();
-  void EnsureBackbuffer();
+
+  virtual void DiscardBackbuffer() OVERRIDE;
+  virtual void EnsureBackbuffer() OVERRIDE;
   void EnforceMemoryPolicy();
 
   RendererCapabilities capabilities_;

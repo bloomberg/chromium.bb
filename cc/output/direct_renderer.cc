@@ -205,6 +205,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order) {
       root_render_pass->damage_rect : root_render_pass->output_rect;
   frame.root_damage_rect.Intersect(gfx::Rect(client_->DeviceViewport().size()));
 
+  EnsureBackbuffer();
+
   // Only reshape when we know we are going to draw. Otherwise, the reshape
   // can leave the window at the wrong size if we never draw and the proper
   // viewport size is never set.

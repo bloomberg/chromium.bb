@@ -307,10 +307,6 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
 }
 
 void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
-  // TODO(aelias): Remove this once backbuffer is automatically recreated on
-  // first use
-  EnsureBackbuffer();
-
   if (client_->DeviceViewport().IsEmpty())
     return;
 

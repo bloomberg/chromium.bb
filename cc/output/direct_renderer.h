@@ -113,6 +113,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual bool FlippedFramebuffer() const = 0;
   virtual void EnsureScissorTestEnabled() = 0;
   virtual void EnsureScissorTestDisabled() = 0;
+  virtual void DiscardBackbuffer() {}
+  virtual void EnsureBackbuffer() {}
 
   virtual void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
