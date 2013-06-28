@@ -64,6 +64,11 @@ protected:
 private:
     virtual bool isSVGGraphicsElement() const OVERRIDE { return true; }
 
+    // SVGTests
+    virtual void synchronizeRequiredFeatures() { SVGTests::synchronizeRequiredFeatures(this); }
+    virtual void synchronizeRequiredExtensions() { SVGTests::synchronizeRequiredExtensions(this); }
+    virtual void synchronizeSystemLanguage() { SVGTests::synchronizeSystemLanguage(this); }
+
     // Used by <animateMotion>
     OwnPtr<AffineTransform> m_supplementalTransform;
 };
