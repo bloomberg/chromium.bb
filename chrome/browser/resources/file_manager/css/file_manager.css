@@ -1524,13 +1524,6 @@ menu.chrome-menu hr {
   font-size: 0;
 }
 
-input.common.pin[type='checkbox']:checked::after {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/pin.png') 1x,
-    url('../images/files/ui/2x/pin.png') 2x);
-  background-position: 4px 0;
-}
-
 div.offline {
   -webkit-box-pack: center;
   display: -webkit-box;
