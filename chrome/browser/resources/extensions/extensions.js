@@ -153,11 +153,6 @@ cr.define('extensions', function() {
      */
     handleLoadUnpackedExtension_: function(e) {
       chrome.send('extensionSettingsLoadUnpackedExtension');
-
-      // TODO(jhawkins): Refactor metrics support out of options and use it
-      // in extensions.html.
-      chrome.send('coreOptionsUserMetricsAction',
-                  ['Options_LoadUnpackedExtension']);
     },
 
     /**
@@ -167,7 +162,7 @@ cr.define('extensions', function() {
      */
     handlePackExtension_: function(e) {
       ExtensionSettings.showOverlay($('packExtensionOverlay'));
-      chrome.send('coreOptionsUserMetricsAction', ['Options_PackExtension']);
+      chrome.send('metricsHandler:recordAction', ['Options_PackExtension']);
     },
 
     /**
@@ -177,7 +172,7 @@ cr.define('extensions', function() {
      */
     showExtensionCommandsConfigUi_: function(e) {
       ExtensionSettings.showOverlay($('extensionCommandsOverlay'));
-      chrome.send('coreOptionsUserMetricsAction',
+      chrome.send('metricsHandler:recordAction',
                   ['Options_ExtensionCommands']);
     },
 

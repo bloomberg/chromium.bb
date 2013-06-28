@@ -65,6 +65,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
@@ -885,6 +886,8 @@ void ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage(
       base::FilePath::StringType(),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
       NULL);
+
+  content::RecordComputedAction("Options_LoadUnpackedExtension");
 }
 
 void ExtensionSettingsHandler::ShowAlert(const std::string& message) {

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(dbeam): test for loading upacked extensions?
+
 /**
  * TestFixture for extension settings WebUI testing.
  * @extends {testing.Test}
@@ -12,10 +14,46 @@ function ExtensionSettingsWebUITest() {}
 ExtensionSettingsWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
+  /**
+   * A URL to load before starting each test.
+   * @type {string}
+   * @const
+   */
   browsePreload: 'chrome://extensions-frame/',
 };
 
-// Test opening extension settings has correct location.
-TEST_F('ExtensionSettingsWebUITest', 'testOpenExtensionSettings', function() {
+TEST_F('ExtensionSettingsWebUITest', 'testChromeSendHandled', function() {
   assertEquals(this.browsePreload, document.location.href);
+
+  // This dialog should be hidden at first.
+  assertFalse($('packExtensionOverlay').classList.contains('showing'));
+
+  // Show the dialog, which triggers a chrome.send() for metrics purposes.
+  cr.dispatchSimpleEvent($('pack-extension'), 'click');
+  assertTrue($('packExtensionOverlay').classList.contains('showing'));
+});
+
+/**
+ * TestFixture for extension settings WebUI testing (commands config edition).
+ * @extends {testing.Test}
+ * @constructor
+ */
+function ExtensionSettingsCommandsConfigWebUITest() {}
+
+ExtensionSettingsCommandsConfigWebUITest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /**
+   * A URL to load before starting each test.
+   * @type {string}
+   * @const
+   */
+  browsePreload: 'chrome://extensions-frame/configureCommands',
+};
+
+TEST_F('ExtensionSettingsCommandsConfigWebUITest', 'testChromeSendHandler',
+    function() {
+  // Just navigating to the page should trigger the chrome.send().
+  assertEquals(this.browsePreload, document.location.href);
+  assertTrue($('extensionCommandsOverlay').classList.contains('showing'));
 });
