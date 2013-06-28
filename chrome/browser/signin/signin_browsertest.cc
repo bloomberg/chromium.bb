@@ -148,7 +148,13 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, NotTrustedAfterRedirect) {
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
 
-  // Navigating away should change the process.
+  // Navigating in a different tab should not affect the sign-in process.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(kNonSigninURL), NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
+
+  // Navigating away should clear the sign-in process.
   GURL redirect_url("https://accounts.google.com/server-redirect?"
       "https://foo.com?service=chromiumsync");
   ui_test_utils::NavigateToURL(browser(), redirect_url);
