@@ -579,6 +579,7 @@
           '../third_party/skia/include/pdf',
           '../third_party/skia/include/gpu',
           '../third_party/skia/include/gpu/gl',
+          '../third_party/skia/include/lazy',
           '../third_party/skia/include/pathops',
           '../third_party/skia/include/pipe',
           '../third_party/skia/include/ports',
