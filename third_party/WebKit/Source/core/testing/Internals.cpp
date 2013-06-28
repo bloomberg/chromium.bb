@@ -1948,16 +1948,6 @@ String Internals::getImageSourceURL(Element* element, ExceptionCode& ec)
     return element->imageSourceURL();
 }
 
-String Internals::baseURL(Document* document, ExceptionCode& ec)
-{
-    if (!document) {
-        ec = INVALID_ACCESS_ERR;
-        return String();
-    }
-
-    return document->baseURL().string();
-}
-
 bool Internals::isSelectPopupVisible(Node* node)
 {
     if (!isHTMLSelectElement(node))

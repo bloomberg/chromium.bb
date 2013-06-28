@@ -235,8 +235,6 @@
 
     [RaisesException] DOMString markerTextForListItem(Element element);
 
-    [RaisesException] DOMString baseURL(Document document);
-
     SerializedScriptValue deserializeBuffer(ArrayBuffer buffer);
     ArrayBuffer serializeObject(SerializedScriptValue obj);
 

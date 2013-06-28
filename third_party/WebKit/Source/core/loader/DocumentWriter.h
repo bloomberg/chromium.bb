@@ -44,40 +44,46 @@ class TextResourceDecoder;
 class DocumentWriter {
     WTF_MAKE_NONCOPYABLE(DocumentWriter);
 public:
-    static PassOwnPtr<DocumentWriter> create(Document*, const String& mimeType = "", const String& encoding = "", bool encodingUserChoosen = false);
-
-    ~DocumentWriter();
-
-    void end();
+    explicit DocumentWriter(Frame*);
 
     // This is only called by ScriptController::executeScriptIfJavaScriptURL
     // and always contains the result of evaluating a javascript: url.
     void replaceDocument(const String&, Document* ownerDocument);
 
+    void begin();
+    void begin(const KURL&, bool dispatchWindowObjectAvailable = true, Document* ownerDocument = 0);
     void addData(const char* bytes, size_t length);
+    void end();
     
+    void setFrame(Frame* frame) { m_frame = frame; }
+
     const String& mimeType() const { return m_decoderBuilder.mimeType(); }
-    const String& encoding() const { return m_decoderBuilder.encoding(); }
-    bool encodingWasChosenByUser() const { return m_decoderBuilder.encodingWasChosenByUser(); }
+    void setMIMEType(const String& type) { m_decoderBuilder.setMIMEType(type); }
+    void setEncoding(const String& encoding, bool userChosen) { m_decoderBuilder.setEncoding(encoding, userChosen); }
 
     // Exposed for DocumentParser::appendBytes.
     void reportDataReceived();
-    // Exposed for DocumentLoader::replaceDocument.
-    void appendReplacingData(const String&);
 
     void setDocumentWasLoadedAsPartOfNavigation();
 
 private:
-    DocumentWriter(Document*, const String& mimeType, const String& encoding, bool encodingUserChoosen);
-
     PassRefPtr<Document> createDocument(const KURL&);
+    void clear();
 
-    Document* m_document;
+    Frame* m_frame;
+
     bool m_hasReceivedSomeData;
     TextResourceDecoderBuilder m_decoderBuilder;
 
     RefPtr<TextResourceDecoder> m_decoder;
     RefPtr<DocumentParser> m_parser;
+
+    enum WriterState {
+        NotStartedWritingState,
+        StartedWritingState,
+        FinishedWritingState,
+    };
+    WriterState m_state;
 };
 
 } // namespace WebCore
