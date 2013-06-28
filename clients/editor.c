@@ -380,10 +380,10 @@ text_input_keysym(void *data,
 		text_entry_commit_and_reset(entry);
 
 		start = utf8_prev_char(entry->text, entry->text + entry->cursor);
-		end = utf8_next_char(start);
-
 		if (start == NULL)
 			return;
+
+		end = utf8_next_char(start);
 
 		text_entry_delete_text(entry,
 				       start - entry->text,
