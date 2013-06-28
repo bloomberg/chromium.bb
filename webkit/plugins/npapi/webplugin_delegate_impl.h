@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/native_widget_types.h"

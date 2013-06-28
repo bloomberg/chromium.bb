@@ -6,7 +6,7 @@
 #define WEBKIT_BROWSER_FILEAPI_SYNCABLE_SYNC_FILE_METADATA_H_
 
 #include "base/basictypes.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/syncable/file_change.h"
 #include "webkit/browser/webkit_storage_browser_export.h"

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/message_loop.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"

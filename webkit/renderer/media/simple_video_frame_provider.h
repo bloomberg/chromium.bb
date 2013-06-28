@@ -5,7 +5,7 @@
 #ifndef WEBKIT_RENDERER_MEDIA_SIMPLE_VIDEO_FRAME_PROVIDER_H_
 #define WEBKIT_RENDERER_MEDIA_SIMPLE_VIDEO_FRAME_PROVIDER_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "ui/gfx/size.h"
 #include "webkit/renderer/media/video_frame_provider.h"
 

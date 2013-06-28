@@ -5,7 +5,7 @@
 #ifndef WEBKIT_RENDERER_MEDIA_WEBMEDIAPLAYER_UTIL_H_
 #define WEBKIT_RENDERER_MEDIA_WEBMEDIAPLAYER_UTIL_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
 #include "third_party/WebKit/public/web/WebMediaPlayer.h"

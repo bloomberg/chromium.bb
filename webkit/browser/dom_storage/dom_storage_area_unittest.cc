@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/dom_storage/dom_storage_area.h"
 #include "webkit/browser/dom_storage/dom_storage_database.h"

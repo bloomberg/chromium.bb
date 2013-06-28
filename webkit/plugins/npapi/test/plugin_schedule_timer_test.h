@@ -6,7 +6,7 @@
 #define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_SCHEDULE_TIMER_TEST_H
 
 #include "base/compiler_specific.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "webkit/plugins/npapi/test/plugin_test.h"
 
 namespace NPAPIClient {

@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/platform_file.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/layout.h"

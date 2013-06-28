@@ -6,7 +6,7 @@
 #define WEBKIT_BROWSER_FILEAPI_SANDBOX_ORIGIN_DATABASE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "webkit/browser/fileapi/sandbox_origin_database_interface.h"
 
 namespace leveldb {

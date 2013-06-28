@@ -24,7 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "grit/webkit_chromium_resources.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"

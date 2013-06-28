@@ -5,8 +5,8 @@
 #include "webkit/renderer/dom_storage/dom_storage_cached_area.h"
 
 #include "base/basictypes.h"
-#include "base/time.h"
 #include "base/metrics/histogram.h"
+#include "base/time/time.h"
 #include "webkit/common/dom_storage/dom_storage_map.h"
 #include "webkit/renderer/dom_storage/dom_storage_proxy.h"
 
