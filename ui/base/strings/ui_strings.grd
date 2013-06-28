@@ -437,7 +437,7 @@ need to be translated for each locale.-->
       </message>
 
       <!-- Message center -->
-      <message name="IDS_MESSAGE_CENTER_ACCESSIBLE_NAME" desc="The button label to enter quiet mode in one day.">
+      <message name="IDS_MESSAGE_CENTER_ACCESSIBLE_NAME" desc="The accessible name for the Notification Center window.">
         Notification Center
       </message>
       <message name="IDS_MESSAGE_CENTER_EXTENSIONS_DISABLE" desc="The menu entry for disabling extensions from a notification.">
@@ -465,26 +465,26 @@ need to be translated for each locale.-->
         Clear All
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP" desc="The tooltip text for the quiet mode button.">
+        <message name="IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP" desc="The tooltip text for the do not disturb button.">
           Do not disturb
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP" desc="In Title Case: The tooltip text for the quiet mode button.">
+        <message name="IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP" desc="In Title Case: The tooltip text for the do not disturb button.">
           Do Not Disturb
         </message>
       </if>
       <message name="IDS_MESSAGE_CENTER_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
         Nothing to see here, move along.
       </message>
-      <message name="IDS_MESSAGE_CENTER_QUIET_MODE" desc="The button label for quiet mode.">
-        Quiet mode
+      <message name="IDS_MESSAGE_CENTER_QUIET_MODE" desc="The button label for do not disturb mode.">
+        Do not disturb
       </message>
-      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_1HOUR" desc="The button label to enter quiet mode in one hour.">
-        Quiet mode for one hour
+      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_1HOUR" desc="The button label to enter do not disturb mode in one hour.">
+        Do not disturb for one hour
       </message>
-      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_1DAY" desc="The button label to enter quiet mode in one day.">
-        Quiet mode for one day
+      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_1DAY" desc="The button label to enter do not disturb mode in one day.">
+        Do not disturb for one day
       </message>
       <message name="IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the close button in a notification. Usually 'button' is suffixed to this text automatically.">
 	Notification close
