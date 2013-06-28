@@ -82,7 +82,7 @@ public:
     PassRefPtr<SerializedScriptValue> release();
 
     String toWireString() const { return m_data; }
-    Vector<uint8_t> toWireBytes() const;
+    void toWireBytes(Vector<char>&) const;
 
     // Deserializes the value (in the current context). Returns a null value in
     // case of failure.

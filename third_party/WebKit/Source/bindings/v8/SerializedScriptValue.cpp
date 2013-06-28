@@ -2337,18 +2337,23 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::numberValue(double valu
     return adoptRef(new SerializedScriptValue(wireData));
 }
 
-Vector<uint8_t> SerializedScriptValue::toWireBytes() const
+// Convert serialized string to big endian wire data.
+void SerializedScriptValue::toWireBytes(Vector<char>& result) const
 {
-    // Convert serialized string to big endian wire data.
+    ASSERT(result.isEmpty());
     size_t length = m_data.length();
-    Vector<uint8_t> result(length * sizeof(UChar));
-
-    const UChar* src = m_data.bloatedCharacters();
+    result.resize(length * sizeof(UChar));
     UChar* dst = reinterpret_cast<UChar*>(result.data());
-    for (size_t i = 0; i < length; i++)
-        dst[i] = htons(src[i]);
 
-    return result;
+    if (m_data.is8Bit()) {
+        const LChar* src = m_data.characters8();
+        for (size_t i = 0; i < length; i++)
+            dst[i] = htons(static_cast<UChar>(src[i]));
+    } else {
+        const UChar* src = m_data.characters16();
+        for (size_t i = 0; i < length; i++)
+            dst[i] = htons(src[i]);
+    }
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::release()
