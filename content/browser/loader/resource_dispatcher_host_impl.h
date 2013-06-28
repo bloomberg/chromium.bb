@@ -379,15 +379,16 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       ResourceContext* context);
 
   // Relationship of resource being authenticated with the top level page.
-  enum HttpAuthResourceType {
-    HTTP_AUTH_RESOURCE_TOP,            // Top-level page itself
-    HTTP_AUTH_RESOURCE_SAME_DOMAIN,    // Sub-content from same domain
-    HTTP_AUTH_RESOURCE_BLOCKED_CROSS,  // Blocked Sub-content from cross domain
-    HTTP_AUTH_RESOURCE_ALLOWED_CROSS,  // Allowed Sub-content per command line
-    HTTP_AUTH_RESOURCE_LAST
+  enum HttpAuthRelationType {
+    HTTP_AUTH_RELATION_TOP,            // Top-level page itself
+    HTTP_AUTH_RELATION_SAME_DOMAIN,    // Sub-content from same domain
+    HTTP_AUTH_RELATION_BLOCKED_CROSS,  // Blocked Sub-content from cross domain
+    HTTP_AUTH_RELATION_ALLOWED_CROSS,  // Allowed Sub-content per command line
+    HTTP_AUTH_RELATION_LAST
   };
 
-  HttpAuthResourceType HttpAuthResourceTypeOf(net::URLRequest* request);
+  HttpAuthRelationType HttpAuthRelationTypeOf(const GURL& request_url,
+                                              const GURL& first_party);
 
   // Returns whether the URLRequest identified by |transferred_request_id| is
   // currently in the process of being transferred to a different renderer.
@@ -405,6 +406,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                                        ResourceMessageDelegate* delegate);
   void UnregisterResourceMessageDelegate(const GlobalRequestID& id,
                                          ResourceMessageDelegate* delegate);
+
+  int BuildLoadFlagsForRequest(const ResourceHostMsg_Request& request_data,
+                               int child_id,
+                               bool is_sync_load);
 
   LoaderMap pending_loaders_;
 

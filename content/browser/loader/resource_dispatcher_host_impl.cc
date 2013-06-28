@@ -245,49 +245,6 @@ net::Error CallbackAndReturn(
   return net_error;
 }
 
-int BuildLoadFlagsForRequest(
-    const ResourceHostMsg_Request& request_data,
-    int child_id,
-    bool is_sync_load) {
-  int load_flags = request_data.load_flags;
-
-  // Although EV status is irrelevant to sub-frames and sub-resources, we have
-  // to perform EV certificate verification on all resources because an HTTP
-  // keep-alive connection created to load a sub-frame or a sub-resource could
-  // be reused to load a main frame.
-  load_flags |= net::LOAD_VERIFY_EV_CERT;
-  if (request_data.resource_type == ResourceType::MAIN_FRAME) {
-    load_flags |= net::LOAD_MAIN_FRAME;
-  } else if (request_data.resource_type == ResourceType::SUB_FRAME) {
-    load_flags |= net::LOAD_SUB_FRAME;
-  } else if (request_data.resource_type == ResourceType::PREFETCH) {
-    load_flags |= (net::LOAD_PREFETCH | net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
-  } else if (request_data.resource_type == ResourceType::FAVICON) {
-    load_flags |= net::LOAD_DO_NOT_PROMPT_FOR_LOGIN;
-  }
-
-  if (is_sync_load)
-    load_flags |= net::LOAD_IGNORE_LIMITS;
-
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanSendCookiesForOrigin(child_id, request_data.url)) {
-    load_flags |= (net::LOAD_DO_NOT_SEND_COOKIES |
-                   net::LOAD_DO_NOT_SEND_AUTH_DATA |
-                   net::LOAD_DO_NOT_SAVE_COOKIES);
-  }
-
-  // Raw headers are sensitive, as they include Cookie/Set-Cookie, so only
-  // allow requesting them if requester has ReadRawCookies permission.
-  if ((load_flags & net::LOAD_REPORT_RAW_HEADERS)
-      && !policy->CanReadRawCookies(child_id)) {
-    VLOG(1) << "Denied unauthorized request for raw headers";
-    load_flags &= ~net::LOAD_REPORT_RAW_HEADERS;
-  }
-
-  return load_flags;
-}
-
 int GetCertID(net::URLRequest* request, int child_id) {
   if (request->ssl_info().cert.get()) {
     return CertStore::GetInstance()->StoreCert(request->ssl_info().cert.get(),
@@ -653,21 +610,6 @@ bool ResourceDispatcherHostImpl::AcceptAuthRequest(
     net::AuthChallengeInfo* auth_info) {
   if (delegate_ && !delegate_->AcceptAuthRequest(loader->request(), auth_info))
     return false;
-
-  // Prevent third-party content from prompting for login, unless it is
-  // a proxy that is trying to authenticate.  This is often the foundation
-  // of a scam to extract credentials for another domain from the user.
-  if (!auth_info->is_proxy) {
-    HttpAuthResourceType resource_type =
-        HttpAuthResourceTypeOf(loader->request());
-    UMA_HISTOGRAM_ENUMERATION("Net.HttpAuthResource",
-                              resource_type,
-                              HTTP_AUTH_RESOURCE_LAST);
-
-    // TODO(tsepez): Return false on HTTP_AUTH_RESOURCE_BLOCKED_CROSS.
-    // The code once did this, but was changed due to http://crbug.com/174129.
-    // http://crbug.com/174179 has been filed to track this issue.
-  }
 
   return true;
 }
@@ -1798,22 +1740,22 @@ void ResourceDispatcherHostImpl::ProcessBlockedRequestsForRoute(
   delete loaders;
 }
 
-ResourceDispatcherHostImpl::HttpAuthResourceType
-ResourceDispatcherHostImpl::HttpAuthResourceTypeOf(net::URLRequest* request) {
-  // Use the same critera as for cookies to determine the sub-resource type
-  // that is requesting to be authenticated.
-  if (!request->first_party_for_cookies().is_valid())
-    return HTTP_AUTH_RESOURCE_TOP;
+ResourceDispatcherHostImpl::HttpAuthRelationType
+ResourceDispatcherHostImpl::HttpAuthRelationTypeOf(
+    const GURL& request_url,
+    const GURL& first_party) {
+  if (!first_party.is_valid())
+    return HTTP_AUTH_RELATION_TOP;
 
   if (net::registry_controlled_domains::SameDomainOrHost(
-          request->first_party_for_cookies(), request->url(),
+          first_party, request_url,
           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES))
-    return HTTP_AUTH_RESOURCE_SAME_DOMAIN;
+    return HTTP_AUTH_RELATION_SAME_DOMAIN;
 
   if (allow_cross_origin_auth_prompt())
-    return HTTP_AUTH_RESOURCE_ALLOWED_CROSS;
+    return HTTP_AUTH_RELATION_ALLOWED_CROSS;
 
-  return HTTP_AUTH_RESOURCE_BLOCKED_CROSS;
+  return HTTP_AUTH_RELATION_BLOCKED_CROSS;
 }
 
 bool ResourceDispatcherHostImpl::allow_cross_origin_auth_prompt() {
@@ -1862,6 +1804,64 @@ void ResourceDispatcherHostImpl::UnregisterResourceMessageDelegate(
     delete it->second;
     delegate_map_.erase(it);
   }
+}
+
+int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
+    const ResourceHostMsg_Request& request_data,
+    int child_id,
+    bool is_sync_load) {
+  int load_flags = request_data.load_flags;
+
+  // Although EV status is irrelevant to sub-frames and sub-resources, we have
+  // to perform EV certificate verification on all resources because an HTTP
+  // keep-alive connection created to load a sub-frame or a sub-resource could
+  // be reused to load a main frame.
+  load_flags |= net::LOAD_VERIFY_EV_CERT;
+  if (request_data.resource_type == ResourceType::MAIN_FRAME) {
+    load_flags |= net::LOAD_MAIN_FRAME;
+  } else if (request_data.resource_type == ResourceType::SUB_FRAME) {
+    load_flags |= net::LOAD_SUB_FRAME;
+  } else if (request_data.resource_type == ResourceType::PREFETCH) {
+    load_flags |= (net::LOAD_PREFETCH | net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
+  } else if (request_data.resource_type == ResourceType::FAVICON) {
+    load_flags |= net::LOAD_DO_NOT_PROMPT_FOR_LOGIN;
+  } else if (request_data.resource_type == ResourceType::IMAGE) {
+    // Prevent third-party image content from prompting for login, as this
+    // is often a scam to extract credentials for another domain from the user.
+    // Only block image loads, as the attack applies largely to the "src"
+    // property of the <img> tag. It is common for web properties to allow
+    // untrusted values for <img src>; this is considered a fair thing for an
+    // HTML sanitizer to do. Conversely, any HTML sanitizer that didn't
+    // filter sources for <script>, <link>, <embed>, <object>, <iframe> tags
+    // would be considered vulnerable in and of itself.
+    HttpAuthRelationType relation_type = HttpAuthRelationTypeOf(
+        request_data.url, request_data.first_party_for_cookies);
+    if (relation_type == HTTP_AUTH_RELATION_BLOCKED_CROSS) {
+      load_flags |= (net::LOAD_DO_NOT_SEND_AUTH_DATA |
+                     net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
+    }
+  }
+
+  if (is_sync_load)
+    load_flags |= net::LOAD_IGNORE_LIMITS;
+
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->CanSendCookiesForOrigin(child_id, request_data.url)) {
+    load_flags |= (net::LOAD_DO_NOT_SEND_COOKIES |
+                   net::LOAD_DO_NOT_SEND_AUTH_DATA |
+                   net::LOAD_DO_NOT_SAVE_COOKIES);
+  }
+
+  // Raw headers are sensitive, as they include Cookie/Set-Cookie, so only
+  // allow requesting them if requester has ReadRawCookies permission.
+  if ((load_flags & net::LOAD_REPORT_RAW_HEADERS)
+      && !policy->CanReadRawCookies(child_id)) {
+    VLOG(1) << "Denied unauthorized request for raw headers";
+    load_flags &= ~net::LOAD_REPORT_RAW_HEADERS;
+  }
+
+  return load_flags;
 }
 
 }  // namespace content

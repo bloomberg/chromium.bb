@@ -753,10 +753,9 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, NoLoginPromptForFavicon) {
   EXPECT_TRUE(test_server()->Stop());
 }
 
-// Block crossdomain subresource login prompting as a phishing defense.
-// Disabled per http://crbug.com/174179.
+// Block crossdomain image login prompting as a phishing defense.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
-                       DISABLED_BlockCrossdomainPrompt) {
+                       BlockCrossdomainPrompt) {
   const char* kTestPage = "files/login/load_img_from_b.html";
 
   host_resolver()->AddRule("www.a.com", "127.0.0.1");
@@ -800,6 +799,54 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
     // Change the host from 127.0.0.1 to www.b.com so that when the
     // page tries to load from b, it will be same-origin.
     std::string new_host("www.b.com");
+    GURL::Replacements replacements;
+    replacements.SetHostStr(new_host);
+    test_page = test_page.ReplaceComponents(replacements);
+
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    browser()->OpenURL(OpenURLParams(
+        test_page, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
+        false));
+    auth_needed_waiter.Wait();
+    ASSERT_EQ(1u, observer.handlers_.size());
+
+    while (!observer.handlers_.empty()) {
+      WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+      LoginHandler* handler = *observer.handlers_.begin();
+
+      ASSERT_TRUE(handler);
+      handler->CancelAuth();
+      auth_cancelled_waiter.Wait();
+    }
+  }
+
+  EXPECT_EQ(1, observer.auth_needed_count_);
+  EXPECT_TRUE(test_server()->Stop());
+}
+
+// Allow crossdomain iframe login prompting despite the above.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
+                       AllowCrossdomainPrompt) {
+  const char* kTestPage = "files/login/load_iframe_from_b.html";
+
+  host_resolver()->AddRule("www.a.com", "127.0.0.1");
+  host_resolver()->AddRule("www.b.com", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  // Load a page that has a cross-domain iframe authentication.
+  {
+    GURL test_page = test_server()->GetURL(kTestPage);
+    ASSERT_EQ("127.0.0.1", test_page.host());
+
+    // Change the host from 127.0.0.1 to www.a.com so that when the
+    // page tries to load from b, it will be cross-origin.
+    std::string new_host("www.a.com");
     GURL::Replacements replacements;
     replacements.SetHostStr(new_host);
     test_page = test_page.ReplaceComponents(replacements);
