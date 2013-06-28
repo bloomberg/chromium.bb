@@ -31,7 +31,28 @@
 #include "config.h"
 #include "V8PromiseResolver.h"
 
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/custom/V8PromiseCustom.h"
 #include <v8.h>
 
 namespace WebCore {
+
+void V8PromiseResolver::fulfillMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::Value> result = v8::Undefined();
+    if (args.Length() > 0)
+        result = args[0];
+    V8PromiseCustom::fulfillResolver(args.This(), result, V8PromiseCustom::Asynchronous, isolate);
+}
+
+void V8PromiseResolver::rejectMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::Value> result = v8::Undefined();
+    if (args.Length() > 0)
+        result = args[0];
+    V8PromiseCustom::rejectResolver(args.This(), result, V8PromiseCustom::Asynchronous, isolate);
+}
+
 } // namespace WebCore

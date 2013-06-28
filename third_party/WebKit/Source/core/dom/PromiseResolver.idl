@@ -31,4 +31,6 @@
 [
    EnabledAtRuntime=promise
 ] interface PromiseResolver {
+   [Custom] void fulfill(optional any value);
+   [Custom] void reject(optional any value);
 };
