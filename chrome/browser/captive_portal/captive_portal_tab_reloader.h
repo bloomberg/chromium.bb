@@ -9,8 +9,8 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 
 class Profile;

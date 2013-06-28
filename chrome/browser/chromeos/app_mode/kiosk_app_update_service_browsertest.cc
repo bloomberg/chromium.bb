@@ -16,7 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"

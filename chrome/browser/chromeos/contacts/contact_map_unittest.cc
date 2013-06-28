@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "chrome/browser/chromeos/contacts/contact_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

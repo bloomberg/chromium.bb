@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/attestation/attestation_key_payload.pb.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

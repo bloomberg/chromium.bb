@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROME_BROWSER_FIELD_TRIALS_MOBILE_H_
 
 #include "base/basictypes.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 class CommandLine;
 class PrefService;

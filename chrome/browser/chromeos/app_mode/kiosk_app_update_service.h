@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager_observer.h"
 #include "chrome/browser/extensions/update_observer.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"

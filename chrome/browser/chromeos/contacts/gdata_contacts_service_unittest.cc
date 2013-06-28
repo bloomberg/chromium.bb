@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "chrome/browser/chromeos/contacts/contact_test_util.h"
 #include "chrome/browser/google_apis/auth_service.h"

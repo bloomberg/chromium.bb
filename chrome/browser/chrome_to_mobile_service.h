@@ -16,7 +16,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"

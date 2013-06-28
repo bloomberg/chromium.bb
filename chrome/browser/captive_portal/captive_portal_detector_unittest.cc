@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/captive_portal/testing_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "googleurl/src/gurl.h"

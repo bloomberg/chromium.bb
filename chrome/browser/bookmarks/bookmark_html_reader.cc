@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/favicon/imported_favicon_usage.h"
