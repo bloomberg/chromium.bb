@@ -6,7 +6,7 @@
 #define CHROME_COMMON_THUMBNAIL_SCORE_H_
 
 #include <string>
-#include "base/time.h"
+#include "base/time/time.h"
 
 // A set of metadata about a Thumbnail.
 struct ThumbnailScore {

@@ -4,10 +4,10 @@
 
 #include "chrome/installer/gcapi/gcapi_reactivation.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/win/registry.h"
-#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/gcapi/gcapi.h"
+#include "chrome/installer/util/google_update_constants.h"
 
 using base::Time;
 using base::win::RegKey;

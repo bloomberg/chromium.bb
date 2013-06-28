@@ -9,7 +9,7 @@
 
 #include "base/files/memory_mapped_file.h"
 #include "base/metrics/histogram.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/renderer/render_thread.h"

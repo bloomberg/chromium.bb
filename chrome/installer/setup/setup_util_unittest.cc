@@ -15,7 +15,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_paths.h"

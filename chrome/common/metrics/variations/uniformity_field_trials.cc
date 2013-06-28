@@ -6,7 +6,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 
 namespace {

@@ -9,7 +9,7 @@
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/multiprocess_test.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/common/multi_process_lock.h"
 #include "testing/multiprocess_func_list.h"
 

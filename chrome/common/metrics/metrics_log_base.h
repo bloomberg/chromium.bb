@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/common/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "content/public/common/page_transition_types.h"
 

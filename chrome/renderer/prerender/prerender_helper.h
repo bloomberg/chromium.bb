@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_PRERENDER_PRERENDER_HELPER_H_
 
 #include "base/compiler_specific.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 

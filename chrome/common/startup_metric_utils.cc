@@ -11,7 +11,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace {
 

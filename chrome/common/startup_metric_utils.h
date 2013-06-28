@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/time.h"
+#include "base/time/time.h"
 
 // Utility functions to support metric collection for browser startup.
 

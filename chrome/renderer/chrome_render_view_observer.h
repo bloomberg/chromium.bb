@@ -11,7 +11,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "content/public/common/top_controls_state.h"
 #include "content/public/renderer/render_view_observer.h"
