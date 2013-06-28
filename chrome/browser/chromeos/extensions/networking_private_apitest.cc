@@ -141,10 +141,7 @@ class ExtensionNetworkingPrivateApiTest :
     service_test->SetServiceProperty("stub_wifi2",
                                      flimflam::kSignalStrengthProperty,
                                      base::FundamentalValue(80));
-    service_test->SetServiceProperty("stub_wifi2",
-                                     flimflam::kProfileProperty,
-                                     base::StringValue(kUser1ProfilePath));
-    profile_test->AddService("stub_wifi2");
+    profile_test->AddService(kUser1ProfilePath, "stub_wifi2");
 
     service_test->AddService("stub_cellular1", "cellular1",
                              flimflam::kTypeCellular, flimflam::kStateIdle,
@@ -250,7 +247,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
   ShillProfileClient::TestInterface* profile_test =
       DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
   // Update the profile entry.
-  profile_test->AddService("stub_wifi2");
+  profile_test->AddService(kUser1ProfilePath, "stub_wifi2");
 
   content::RunAllPendingInMessageLoop();
 

@@ -50,7 +50,8 @@ class CHROMEOS_EXPORT ShillProfileClient {
     virtual void AddEntry(const std::string& profile_path,
                           const std::string& entry_path,
                           const base::DictionaryValue& properties) = 0;
-    virtual bool AddService(const std::string& service_path) = 0;
+    virtual bool AddService(const std::string& profile_path,
+                            const std::string& service_path) = 0;
 
    protected:
     virtual ~TestInterface() {}

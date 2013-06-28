@@ -42,6 +42,8 @@ void PassDictionary(
 
 ShillProfileClientStub::ShillProfileClientStub() {
   AddProfile(kSharedProfilePath, std::string());
+  // TODO(stevenjb): Remove implicit dependency on Service stub implementation.
+  AddService(kSharedProfilePath, "wifi2");
 }
 
 ShillProfileClientStub::~ShillProfileClientStub() {
@@ -109,9 +111,15 @@ void ShillProfileClientStub::DeleteEntry(const dbus::ObjectPath& profile_path,
     return;
 
   if (!profile->entries.RemoveWithoutPathExpansion(entry_path, NULL)) {
-    error_callback.Run("Error.InvalidProfileEntry", "Invalid profile entry");
+    error_callback.Run("Error.InvalidProfileEntry", entry_path);
     return;
   }
+
+  base::StringValue profile_path_value("");
+  DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface()->
+      SetServiceProperty(entry_path,
+                         flimflam::kProfileProperty,
+                         profile_path_value);
 
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
@@ -143,21 +151,38 @@ void ShillProfileClientStub::AddEntry(const std::string& profile_path,
                                            properties.DeepCopy());
 }
 
-bool ShillProfileClientStub::AddService(const std::string& service_path) {
+bool ShillProfileClientStub::AddService(const std::string& profile_path,
+                                        const std::string& service_path) {
+  ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path),
+                                          ErrorCallback());
+  if (!profile) {
+    LOG(ERROR) << "No matching profile: " << profile_path;
+    return false;
+  }
+
   ShillServiceClient::TestInterface* service_test =
       DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
-  const base::DictionaryValue* properties =
+  const base::DictionaryValue* service_properties =
       service_test->GetServiceProperties(service_path);
-  std::string profile_path;
-  if (!properties)
+  if (!service_properties) {
+    LOG(ERROR) << "No matching service: " << service_path;
     return false;
-
-  properties->GetStringWithoutPathExpansion(flimflam::kProfileProperty,
-                                            &profile_path);
-  if (profile_path.empty())
+  }
+  std::string service_profile_path;
+  service_properties->GetStringWithoutPathExpansion(flimflam::kProfileProperty,
+                                                    &service_profile_path);
+  if (!service_profile_path.empty() && service_profile_path != profile_path) {
+    LOG(ERROR) << "Service has non matching profile path: "
+               << service_profile_path;
     return false;
+  }
 
-  AddEntry(profile_path, service_path, *properties);
+  base::StringValue profile_path_value(profile_path);
+  service_test->SetServiceProperty(service_path,
+                                   flimflam::kProfileProperty,
+                                   profile_path_value);
+  profile->entries.SetWithoutPathExpansion(service_path,
+                                           service_properties->DeepCopy());
   return true;
 }
 

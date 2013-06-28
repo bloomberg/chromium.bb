@@ -147,8 +147,8 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual ShillDeviceClient* GetShillDeviceClient() = 0;
   virtual ShillIPConfigClient* GetShillIPConfigClient() = 0;
   virtual ShillManagerClient* GetShillManagerClient() = 0;
-  virtual ShillProfileClient* GetShillProfileClient() = 0;
   virtual ShillServiceClient* GetShillServiceClient() = 0;
+  virtual ShillProfileClient* GetShillProfileClient() = 0;
   virtual SMSClient* GetSMSClient() = 0;
   virtual SystemClockClient* GetSystemClockClient() = 0;
   virtual UpdateEngineClient* GetUpdateEngineClient() = 0;

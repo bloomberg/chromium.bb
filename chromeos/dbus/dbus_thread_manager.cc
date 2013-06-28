@@ -102,16 +102,18 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     debug_daemon_client_.reset(
         DebugDaemonClient::Create(client_type_, system_bus_.get()));
 
+    // Construction order of the Stub implementations of the Shill clients
+    // matters; stub clients may depend only on clients previously constructed.
     shill_manager_client_.reset(
         ShillManagerClient::Create(client_type_override_, system_bus_.get()));
     shill_device_client_.reset(
         ShillDeviceClient::Create(client_type_override_, system_bus_.get()));
     shill_ipconfig_client_.reset(
         ShillIPConfigClient::Create(client_type_override_, system_bus_.get()));
-    shill_profile_client_.reset(
-        ShillProfileClient::Create(client_type_override_, system_bus_.get()));
     shill_service_client_.reset(
         ShillServiceClient::Create(client_type_override_, system_bus_.get()));
+    shill_profile_client_.reset(
+        ShillProfileClient::Create(client_type_override_, system_bus_.get()));
     gsm_sms_client_.reset(
         GsmSMSClient::Create(client_type_override_, system_bus_.get()));
 
@@ -271,12 +273,12 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return shill_manager_client_.get();
   }
 
-  virtual ShillProfileClient* GetShillProfileClient() OVERRIDE {
-    return shill_profile_client_.get();
-  }
-
   virtual ShillServiceClient* GetShillServiceClient() OVERRIDE {
     return shill_service_client_.get();
+  }
+
+  virtual ShillProfileClient* GetShillProfileClient() OVERRIDE {
+    return shill_profile_client_.get();
   }
 
   virtual GsmSMSClient* GetGsmSMSClient() OVERRIDE {
@@ -390,8 +392,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<ShillDeviceClient> shill_device_client_;
   scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;
   scoped_ptr<ShillManagerClient> shill_manager_client_;
-  scoped_ptr<ShillProfileClient> shill_profile_client_;
   scoped_ptr<ShillServiceClient> shill_service_client_;
+  scoped_ptr<ShillProfileClient> shill_profile_client_;
   scoped_ptr<GsmSMSClient> gsm_sms_client_;
   scoped_ptr<ImageBurnerClient> image_burner_client_;
   scoped_ptr<IntrospectableClient> introspectable_client_;

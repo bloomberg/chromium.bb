@@ -48,7 +48,8 @@ class ShillProfileClientStub : public ShillProfileClient,
   virtual void AddEntry(const std::string& profile_path,
                         const std::string& entry_path,
                         const base::DictionaryValue& properties) OVERRIDE;
-  virtual bool AddService(const std::string& service_path) OVERRIDE;
+  virtual bool AddService(const std::string& profile_path,
+                          const std::string& service_path) OVERRIDE;
 
  private:
   struct ProfileProperties;

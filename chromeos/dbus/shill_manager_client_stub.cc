@@ -227,9 +227,14 @@ void ShillManagerClientStub::ConfigureService(
     service_client->SetServiceProperty(service_path, iter.key(), iter.value());
   }
 
-  ShillProfileClient::TestInterface* profile_test =
-      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
-  profile_test->AddService(service_path);
+  // If the Profile property is set, add it to ProfileClient.
+  std::string profile_path;
+  merged_properties->GetStringWithoutPathExpansion(flimflam::kProfileProperty,
+                                                   &profile_path);
+  if (!profile_path.empty()) {
+    DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
+        AddService(profile_path, service_path);
+  }
 
   if (!callback.is_null()) {
     base::MessageLoop::current()->PostTask(
@@ -398,6 +403,8 @@ void ShillManagerClientStub::AddManagerService(const std::string& service_path,
       base::Value::CreateStringValue(service_path))) {
     CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
   }
+  GetListProperty(shill::kServiceCompleteListProperty)->AppendIfNotPresent(
+      base::Value::CreateStringValue(service_path));
   if (add_to_watch_list)
     AddServiceToWatchList(service_path);
 }
@@ -409,6 +416,8 @@ void ShillManagerClientStub::RemoveManagerService(
       service_path_value, NULL)) {
     CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
   }
+  GetListProperty(shill::kServiceCompleteListProperty)->Remove(
+      service_path_value, NULL);
   if (GetListProperty(flimflam::kServiceWatchListProperty)->Remove(
       service_path_value, NULL)) {
     CallNotifyObserversPropertyChanged(
@@ -418,6 +427,7 @@ void ShillManagerClientStub::RemoveManagerService(
 
 void ShillManagerClientStub::ClearManagerServices() {
   GetListProperty(flimflam::kServicesProperty)->Clear();
+  GetListProperty(shill::kServiceCompleteListProperty)->Clear();
   GetListProperty(flimflam::kServiceWatchListProperty)->Clear();
   CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
   CallNotifyObserversPropertyChanged(flimflam::kServiceWatchListProperty, 0);
@@ -472,6 +482,9 @@ void ShillManagerClientStub::PassStubProperties(
   stub_properties->SetWithoutPathExpansion(
       flimflam::kServicesProperty,
       GetEnabledServiceList(flimflam::kServicesProperty));
+  stub_properties->SetWithoutPathExpansion(
+      shill::kServiceCompleteListProperty,
+      GetEnabledServiceList(shill::kServiceCompleteListProperty));
   stub_properties->SetWithoutPathExpansion(
       flimflam::kServiceWatchListProperty,
       GetEnabledServiceList(flimflam::kServiceWatchListProperty));
