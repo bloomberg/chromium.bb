@@ -15,7 +15,7 @@
 #include "base/mac/scoped_nsexception_enabler.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"

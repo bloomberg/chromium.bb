@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 
 // A helper object for recording spell-check related histograms.
 // This class encapsulates histogram names and metrics API.

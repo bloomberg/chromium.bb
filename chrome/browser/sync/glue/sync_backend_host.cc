@@ -18,7 +18,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "chrome/browser/invalidation/invalidator_storage.h"

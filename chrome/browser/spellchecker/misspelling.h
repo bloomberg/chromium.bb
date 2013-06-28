@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/spellchecker/spellcheck_action.h"
 
 // Spellcheck misspelling.

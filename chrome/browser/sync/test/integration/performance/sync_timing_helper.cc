@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -11,7 +11,7 @@
 #include "base/android/jni_helper.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "google_apis/gaia/google_service_auth_error.h"

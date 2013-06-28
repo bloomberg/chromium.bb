@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_RETRY_VERIFIER_H_
 #define CHROME_BROWSER_SYNC_RETRY_VERIFIER_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 
 // TODO(akalin): Move this to somewhere in sync/ and make
 // sync/engine/polling_constants.h private.

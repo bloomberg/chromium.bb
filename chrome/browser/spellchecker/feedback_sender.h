@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/spellchecker/feedback.h"
 #include "chrome/browser/spellchecker/misspelling.h"
 #include "googleurl/src/gurl.h"

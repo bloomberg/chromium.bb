@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
 
 class TranslateURLFetcher;

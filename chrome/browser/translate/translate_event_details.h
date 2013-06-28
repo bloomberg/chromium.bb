@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/time.h"
+#include "base/time/time.h"
 
 struct TranslateEventDetails {
   TranslateEventDetails(const std::string& in_filename,

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"

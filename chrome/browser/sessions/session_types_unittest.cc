@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
