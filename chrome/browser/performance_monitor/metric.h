@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_METRIC_H_
 
 #include <string>
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace performance_monitor {
 

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_CONSTANTS_H_
 
 #include "base/basictypes.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace performance_monitor {
 
@@ -34,7 +34,7 @@ const int64 kBytesPerMegabyte = kBytesPerKilobyte * (1 << 10);
 const int64 kBytesPerGigabyte = kBytesPerMegabyte * (1 << 10);
 const int64 kBytesPerTerabyte = kBytesPerGigabyte * (1 << 10);
 
-// Time measurements - Most of these are imported from base/time.h
+// Time measurements - Most of these are imported from base/time/time.h
 // These units are used for display (and it's related calculations), not for
 // any mathematical analysis. Thus we can estimate for values without an exact
 // conversion.

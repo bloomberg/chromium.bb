@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_COMMON_H_
 #define CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCH_COMMON_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;

@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/policy/mock_policy_service.h"
 #include "chrome/browser/policy/policy_map.h"

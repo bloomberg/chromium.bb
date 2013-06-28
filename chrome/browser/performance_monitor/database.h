@@ -13,7 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/performance_monitor/constants.h"
 #include "chrome/browser/performance_monitor/event.h"
 #include "chrome/browser/performance_monitor/metric.h"

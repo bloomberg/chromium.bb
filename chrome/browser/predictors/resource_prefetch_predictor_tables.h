@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/predictors/predictor_table_base.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "googleurl/src/gurl.h"

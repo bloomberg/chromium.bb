@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/rate_limiter.h"

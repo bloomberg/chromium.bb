@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_UTIL_H_
 
 #include "base/callback.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/event.h"

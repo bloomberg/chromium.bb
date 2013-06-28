@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/net/url_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

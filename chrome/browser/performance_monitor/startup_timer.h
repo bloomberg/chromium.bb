@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_STARTUP_TIMER_H_
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_STARTUP_TIMER_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

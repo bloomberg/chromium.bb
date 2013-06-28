@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_EVENT_H_
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_EVENT_H_
 
-#include "base/values.h"
-#include "base/time.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
+#include "base/values.h"
 
 namespace performance_monitor {
 

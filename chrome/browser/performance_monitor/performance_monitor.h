@@ -15,7 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/process.h"
 #include "base/process_util.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/event.h"
 #include "content/public/browser/notification_details.h"

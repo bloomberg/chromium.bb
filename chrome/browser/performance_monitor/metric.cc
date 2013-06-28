@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/performance_monitor/constants.h"
 
 namespace performance_monitor {
