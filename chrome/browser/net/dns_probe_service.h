@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/net/dns_probe_job.h"
 #include "chrome/common/net/net_error_info.h"
 #include "net/base/network_change_notifier.h"

@@ -7,8 +7,8 @@
 
 #include "base/bind.h"
 #include "base/gtest_prod_util.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 
 class PrefService;
 

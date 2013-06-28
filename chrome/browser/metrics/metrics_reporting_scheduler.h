@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 
 // Scheduler task to drive a MetricsService object's uploading.
 class MetricsReportingScheduler {

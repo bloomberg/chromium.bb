@@ -6,7 +6,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"

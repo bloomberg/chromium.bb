@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/common/metrics/proto/perf_data.pb.h"
 
 namespace metrics {

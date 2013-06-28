@@ -8,7 +8,7 @@
 #include <list>
 
 #include "base/threading/non_thread_safe.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "googleurl/src/gurl.h"

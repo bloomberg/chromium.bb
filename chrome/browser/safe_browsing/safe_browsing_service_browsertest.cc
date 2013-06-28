@@ -17,7 +17,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/test/thread_test_helper.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"

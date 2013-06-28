@@ -9,7 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"

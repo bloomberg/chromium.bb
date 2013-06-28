@@ -76,8 +76,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
-#include "base/time.h"
-#include "base/timer.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/process_singleton_dialog.h"
 #endif

@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"

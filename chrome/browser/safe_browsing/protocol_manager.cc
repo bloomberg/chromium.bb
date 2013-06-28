@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
