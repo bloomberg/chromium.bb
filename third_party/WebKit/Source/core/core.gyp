@@ -212,6 +212,7 @@
       'hard_dependency': 1,
       'dependencies': [
         'webcore_prerequisites',
+        '../bindings/derived_sources.gyp:bindings_derived_sources',
         'core_derived_sources.gyp:make_derived_sources',
         'inspector_overlay_page',
         'inspector_protocol_sources',
@@ -354,8 +355,8 @@
         'inspector_overlay_page',
         'inspector_protocol_sources',
         'inspector_instrumentation_sources',
-        'core_derived_sources.gyp:make_derived_sources',
         '../bindings/derived_sources.gyp:bindings_derived_sources',
+        'core_derived_sources.gyp:make_derived_sources',
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
         '../weborigin/weborigin.gyp:weborigin',

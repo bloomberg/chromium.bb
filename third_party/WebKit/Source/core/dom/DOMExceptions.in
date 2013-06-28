@@ -1,4 +1,4 @@
 namespace=DOMException
 
-core/dom/DOMException implementedAs=DOMCoreException
+core/dom/DOMException ImplementedAs=DOMCoreException
 modules/webdatabase/SQLException

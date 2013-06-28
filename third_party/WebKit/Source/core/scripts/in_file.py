@@ -75,6 +75,7 @@ class InFile(object):
 
     def _parse(self, lines):
         parsing_parameters = True
+        indices = {}
         for line in lines:
             if _is_comment(line):
                 continue
@@ -84,7 +85,40 @@ class InFile(object):
             if parsing_parameters:
                 self._parse_parameter(line)
             else:
-                self.name_dictionaries.append(self._parse_line(line))
+                entry = self._parse_line(line)
+                name = entry['name']
+                if name in indices:
+                    entry = self._merge_entries(entry, self.name_dictionaries[indices[name]])
+                    entry['name'] = name
+                    self.name_dictionaries[indices[name]] = entry
+                else:
+                    indices[name] = len(self.name_dictionaries)
+                    self.name_dictionaries.append(entry)
+
+
+    def _merge_entries(self, one, two):
+        merged = {}
+        for key in one:
+            if key not in two:
+                self._fatal("Expected key '%s' not found in entry: %s" % (key, two))
+            if one[key] and two[key]:
+                val_one = one[key]
+                val_two = two[key]
+                if isinstance(val_one, list) and isinstance(val_two, list):
+                    val = val_one + val_two
+                elif isinstance(val_one, list):
+                    val = val_one + [val_two]
+                elif isinstance(val_two, list):
+                    val = [val_one] + val_two
+                else:
+                    val = [val_one, val_two]
+                merged[key] = val
+            elif one[key]:
+                merged[key] = one[key]
+            else:
+                merged[key] = two[key]
+        return merged
+
 
     def _parse_parameter(self, line):
         if '=' in line:

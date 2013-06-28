@@ -3,7 +3,7 @@ namespace="EventTarget"
 core/css/FontLoader
 core/dom/MessagePort
 core/dom/Node
-core/dom/WebKitNamedFlow implementedAs=NamedFlow
+core/dom/WebKitNamedFlow ImplementedAs=NamedFlow
 core/fileapi/FileReader
 core/html/MediaController
 core/html/track/TextTrack
@@ -12,7 +12,7 @@ core/html/track/TextTrackList
 core/loader/appcache/DOMApplicationCache
 core/page/EventSource
 core/page/Performance
-core/page/Window implementedAs=DOMWindow
+core/page/Window ImplementedAs=DOMWindow
 core/svg/SVGElementInstance
 core/workers/DedicatedWorkerGlobalScope
 core/workers/SharedWorker
@@ -20,7 +20,7 @@ core/workers/SharedWorkerGlobalScope
 core/workers/Worker
 core/xml/XMLHttpRequest
 core/xml/XMLHttpRequestUpload
-modules/encryptedmedia/MediaKeySession conditional=ENCRYPTED_MEDIA_V2
+modules/encryptedmedia/MediaKeySession Conditional=ENCRYPTED_MEDIA_V2
 modules/filesystem/FileWriter
 modules/indexeddb/IDBDatabase
 modules/indexeddb/IDBOpenDBRequest
@@ -36,11 +36,11 @@ modules/mediastream/MediaStreamTrack
 modules/mediastream/RTCDTMFSender
 modules/mediastream/RTCDataChannel
 modules/mediastream/RTCPeerConnection
-modules/notifications/Notification conditional=NOTIFICATIONS
+modules/notifications/Notification Conditional=NOTIFICATIONS
 modules/speech/SpeechRecognition
 modules/speech/SpeechSynthesisUtterance
-modules/webaudio/AudioContext conditional=WEB_AUDIO
-modules/webaudio/AudioNode conditional=WEB_AUDIO
+modules/webaudio/AudioContext Conditional=WEB_AUDIO
+modules/webaudio/AudioNode Conditional=WEB_AUDIO
 modules/webmidi/MIDIAccess
 modules/webmidi/MIDIInput
 modules/webmidi/MIDIPort

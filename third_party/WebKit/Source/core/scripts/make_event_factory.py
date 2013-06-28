@@ -57,9 +57,9 @@ PassRefPtr<%(class_name)s> %(class_name)sFactory::create(const String& type)
 
 class EventFactoryWriter(name_macros.Writer):
     defaults = {
-        'implementedAs': None,
-        'conditional': None,
-        'runtimeConditional': None,
+        'ImplementedAs': None,
+        'Conditional': None,
+        'EnabledAtRuntime': None,
     }
     default_parameters = {
         'namespace': '',
@@ -74,8 +74,8 @@ class EventFactoryWriter(name_macros.Writer):
 
     def _factory_implementation(self, event):
         runtime_condition = ''
-        if event['runtimeConditional']:
-            runtime_condition = ' && RuntimeEnabledFeatures::' + event['runtimeConditional'] + '()'
+        if event['EnabledAtRuntime']:
+            runtime_condition = ' && RuntimeEnabledFeatures::' + event['EnabledAtRuntime'] + '()'
         name = os.path.basename(event['name'])
         class_name = self._class_name_for_entry(event)
         implementation = """    if (type == "%(name)s"%(runtime_condition)s)
@@ -84,7 +84,7 @@ class EventFactoryWriter(name_macros.Writer):
             'runtime_condition': runtime_condition,
             'class_name': class_name,
         }
-        return self.wrap_with_condition(implementation, event['conditional'])
+        return self.wrap_with_condition(implementation, event['Conditional'])
 
     def generate_implementation(self):
         return IMPLEMENTATION_TEMPLATE % {

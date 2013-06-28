@@ -81,7 +81,7 @@ class Writer(in_generator.Writer):
     def _sort_entries_by_conditional(self):
         unconditional_names = set()
         for entry in self.in_file.name_dictionaries:
-            conditional = entry['conditional']
+            conditional = entry['Conditional']
             if not conditional:
                 name = self._class_name_for_entry(entry)
                 if name in unconditional_names:
@@ -93,22 +93,22 @@ class Writer(in_generator.Writer):
             name = self._class_name_for_entry(entry)
             if name in unconditional_names:
                 continue
-            conditional = entry['conditional']
+            conditional = entry['Conditional']
             if not conditional in self._entries_by_conditional:
                 self._entries_by_conditional[conditional] = []
             self._entries_by_conditional[conditional].append(entry)
 
     def _class_name_for_entry(self, entry):
-        if entry['implementedAs']:
-            return entry['implementedAs']
+        if entry['ImplementedAs']:
+            return entry['ImplementedAs']
         return os.path.basename(entry['name'])
 
     def _headers_header_include_path(self, entry):
-        if entry['implementedAs']:
+        if entry['ImplementedAs']:
             path = os.path.dirname(entry['name'])
             if len(path):
                 path += '/'
-            path += entry['implementedAs']
+            path += entry['ImplementedAs']
         else:
             path = entry['name']
         return path + '.h'
@@ -124,7 +124,7 @@ class Writer(in_generator.Writer):
                 'path': self._headers_header_include_path(entry),
                 'js_name': os.path.basename(entry['name']),
             }
-            includes[class_name] = self.wrap_with_condition(include, entry['conditional'])
+            includes[class_name] = self.wrap_with_condition(include, entry['Conditional'])
         return includes.values()
 
     def generate_headers_header(self):

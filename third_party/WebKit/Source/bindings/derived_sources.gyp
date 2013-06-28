@@ -114,6 +114,7 @@
          '<(SHARED_INTERMEDIATE_DIR)/WorkerGlobalScopeConstructors.idl',
          '<(SHARED_INTERMEDIATE_DIR)/SharedWorkerGlobalScopeConstructors.idl',
          '<(SHARED_INTERMEDIATE_DIR)/DedicatedWorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/EventNames.in',
        ],
        'msvs_cygwin_shell': 0,
        'action': [
@@ -131,6 +132,8 @@
          '<(SHARED_INTERMEDIATE_DIR)/SharedWorkerGlobalScopeConstructors.idl',
          '--dedicatedworkerglobalscope-constructors-file',
          '<(SHARED_INTERMEDIATE_DIR)/DedicatedWorkerGlobalScopeConstructors.idl',
+         '--event-names-file',
+         '<(SHARED_INTERMEDIATE_DIR)/EventNames.in',
          '<@(write_file_only_if_changed)',
        ],
        'message': 'Resolving partial interfaces dependencies in all IDL files',

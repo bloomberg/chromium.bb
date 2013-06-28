@@ -102,8 +102,8 @@ ExceptionCodeDescription::ExceptionCodeDescription(ExceptionCode ec)
 
 class ExceptionCodeDescriptionWriter(name_macros.Writer):
     defaults = {
-        'implementedAs': None,
-        'conditional': None,
+        'ImplementedAs': None,
+        'Conditional': None,
     }
     default_parameters = {
         'namespace': '',
@@ -118,7 +118,7 @@ class ExceptionCodeDescriptionWriter(name_macros.Writer):
         return self.in_file.name_dictionaries
 
     def _exception_type(self, exception):
-        return self.wrap_with_condition('    ' + self._class_name_for_entry(exception) + 'Type,', exception['conditional'])
+        return self.wrap_with_condition('    ' + self._class_name_for_entry(exception) + 'Type,', exception['Conditional'])
 
     def generate_header(self):
         return HEADER_TEMPLATE % {
@@ -129,7 +129,7 @@ class ExceptionCodeDescriptionWriter(name_macros.Writer):
 
     def _include(self, exception):
         include = '#include "' + self._headers_header_include_path(exception) + '"'
-        return self.wrap_with_condition(include, exception['conditional'])
+        return self.wrap_with_condition(include, exception['Conditional'])
 
     def _description_initalization(self, exception):
         name = os.path.basename(exception['name'])
@@ -137,7 +137,7 @@ class ExceptionCodeDescriptionWriter(name_macros.Writer):
             return ''  # DOMException needs to be last because it's a catch-all.
         description_initalization = """    if (%(name)s::initializeDescription(ec, this))
         return;""" % {'name': name}
-        return self.wrap_with_condition(description_initalization, exception['conditional'])
+        return self.wrap_with_condition(description_initalization, exception['Conditional'])
 
     def generate_implementation(self):
         return IMPLEMENTATION_TEMPLATE % {
