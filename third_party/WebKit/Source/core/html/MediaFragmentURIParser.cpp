@@ -111,12 +111,12 @@ void MediaFragmentURIParser::parseFragments()
         //    name-value pairs, where name and value are both octet string. In accordance 
         //    with RFC 3986, the name and value components must be parsed and separated before
         //    percent-encoded octets are decoded.
-        size_t parameterStart = offset;
-        size_t parameterEnd = fragmentString.find('&', offset);
+        unsigned parameterStart = offset;
+        unsigned parameterEnd = fragmentString.find('&', offset);
         if (parameterEnd == notFound)
             parameterEnd = end;
 
-        size_t equalOffset = fragmentString.find('=', offset);
+        unsigned equalOffset = fragmentString.find('=', offset);
         if (equalOffset == notFound || equalOffset > parameterEnd) {
             offset = parameterEnd + 1;
             continue;
@@ -126,11 +126,10 @@ void MediaFragmentURIParser::parseFragments()
         //  a. Decode percent-encoded octets in name and value as defined by RFC 3986. If either
         //     name or value are not valid percent-encoded strings, then remove the name-value pair
         //     from the list.
-        const UChar* fragmentStart = fragmentString.bloatedCharacters();
-        String name = decodeURLEscapeSequences(String(fragmentStart + parameterStart, equalOffset - parameterStart));
+        String name = decodeURLEscapeSequences(fragmentString.substring(parameterStart, equalOffset - parameterStart));
         String value;
         if (equalOffset != parameterEnd)
-            value = decodeURLEscapeSequences(String(fragmentStart + equalOffset + 1, parameterEnd - equalOffset - 1));
+            value = decodeURLEscapeSequences(fragmentString.substring(equalOffset + 1, parameterEnd - equalOffset - 1));
         
         //  b. Convert name and value to Unicode strings by interpreting them as UTF-8. If either
         //     name or value are not valid UTF-8 strings, then remove the name-value pair from the list.
