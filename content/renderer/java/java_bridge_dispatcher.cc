@@ -18,7 +18,8 @@
 namespace content {
 
 JavaBridgeDispatcher::JavaBridgeDispatcher(RenderView* render_view)
-    : RenderViewObserver(render_view) {
+    : RenderViewObserver(render_view), owner_id_(new struct _NPP) {
+  WebKit::WebBindings::registerObjectOwner(owner_id_.get());
 }
 
 void JavaBridgeDispatcher::EnsureChannelIsSetUp() {
@@ -31,6 +32,9 @@ void JavaBridgeDispatcher::EnsureChannelIsSetUp() {
 
   channel_ = JavaBridgeChannel::GetJavaBridgeChannel(
       channel_handle, ChildProcess::current()->io_message_loop_proxy());
+
+  // All objects received from the Browser process belong to us.
+  channel_->SetDefaultNPObjectOwner(owner_id_.get());
 }
 
 JavaBridgeDispatcher::~JavaBridgeDispatcher() {
@@ -38,6 +42,8 @@ JavaBridgeDispatcher::~JavaBridgeDispatcher() {
       iter != objects_.end(); ++iter) {
     WebKit::WebBindings::releaseObject(NPVARIANT_TO_OBJECT(iter->second));
   }
+
+  WebKit::WebBindings::unregisterObjectOwner(owner_id_.get());
 }
 
 bool JavaBridgeDispatcher::OnMessageReceived(const IPC::Message& msg) {
