@@ -506,19 +506,9 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
                                 const base::FilePath& path,
                                 const std::string& file_id,
                                 CannedSyncableFileSystem* file_system) {
-    // TODO(tzik): Verify file content after FakeDriveService supports
-    // file contents upload.
-
-    scoped_ptr<google_apis::ResourceEntry> entry = GetRemoteFile(file_id);
-
     fileapi::FileSystemURL url(CreateSyncableFileSystemURL(origin, path));
-    base::PlatformFileInfo info;
-    base::FilePath platform_path;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              file_system->GetMetadataAndPlatformPath(
-                  url, &info, &platform_path));
-
-    EXPECT_EQ(info.size, entry->file_size());
+              file_system->VerifyFile(url, ReadRemoteFile(file_id)));
   }
 
   std::string GetSyncRootFolderID() {
@@ -613,6 +603,29 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
         base::Bind(&ResourceEntryResultCallback, &done, &error, &file));
     FlushMessageLoop();
     return file.Pass();
+  }
+
+  std::string ReadRemoteFile(const std::string& file_id) {
+    scoped_ptr<google_apis::ResourceEntry> file = GetRemoteFile(file_id);
+    if (!file)
+      return std::string();
+
+    bool done = false;
+    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    base::FilePath temp_file;
+    EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_, &temp_file));
+    fake_drive_service_->DownloadFile(
+        temp_file, file->download_url(),
+        base::Bind(&DownloadResultCallback, &done, &error),
+        google_apis::GetContentCallback(),
+        google_apis::ProgressCallback());
+    FlushMessageLoop();
+    EXPECT_TRUE(done);
+    EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
+
+    std::string result;
+    EXPECT_TRUE(file_util::ReadFileToString(temp_file, &result));
+    return result;
   }
 
   base::FilePath WriteToTempFile(const std::string& content) {
