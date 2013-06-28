@@ -64,6 +64,7 @@
 #include "core/xml/XMLTreeViewer.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
 #include "weborigin/SecurityOrigin.h"
+#include "wtf/TemporaryChange.h"
 
 using namespace std;
 
@@ -533,16 +534,38 @@ static inline void setAttributes(Element* element, Vector<Attribute>& attributeV
     element->parserSetAttributes(attributeVector);
 }
 
-static void switchToUTF16(xmlParserCtxtPtr ctxt)
+static void switchEncoding(xmlParserCtxtPtr ctxt, bool is8Bit)
 {
     // Hack around libxml2's lack of encoding overide support by manually
     // resetting the encoding to UTF-16 before every chunk.  Otherwise libxml
     // will detect <?xml version="1.0" encoding="<encoding name>"?> blocks
     // and switch encodings, causing the parse to fail.
+    if (is8Bit) {
+        xmlSwitchEncoding(ctxt, XML_CHAR_ENCODING_8859_1);
+        return;
+    }
+
     const UChar BOM = 0xFEFF;
     const unsigned char BOMHighByte = *reinterpret_cast<const unsigned char*>(&BOM);
     xmlSwitchEncoding(ctxt, BOMHighByte == 0xFF ? XML_CHAR_ENCODING_UTF16LE : XML_CHAR_ENCODING_UTF16BE);
 }
+
+static void parseChunk(xmlParserCtxtPtr ctxt, const String& chunk)
+{
+    bool is8Bit = chunk.is8Bit();
+    switchEncoding(ctxt, is8Bit);
+    if (is8Bit)
+        xmlParseChunk(ctxt, reinterpret_cast<const char*>(chunk.characters8()), sizeof(LChar) * chunk.length(), 0);
+    else
+        xmlParseChunk(ctxt, reinterpret_cast<const char*>(chunk.characters16()), sizeof(UChar) * chunk.length(), 0);
+}
+
+static void finishParsing(xmlParserCtxtPtr ctxt)
+{
+    xmlParseChunk(ctxt, 0, 0, 1);
+}
+
+#define xmlParseChunk #error "Use parseChunk instead to select the correct encoding."
 
 static bool shouldAllowExternalLoad(const KURL& url)
 {
@@ -657,11 +680,8 @@ PassRefPtr<XMLParserContext> XMLParserContext::createStringParser(xmlSAXHandlerP
     xmlParserCtxtPtr parser = xmlCreatePushParserCtxt(handlers, 0, 0, 0, 0);
     parser->_private = userData;
     parser->replaceEntities = true;
-    switchToUTF16(parser);
-
     return adoptRef(new XMLParserContext(parser));
 }
-
 
 // Chunk should be encoded in UTF-8
 PassRefPtr<XMLParserContext> XMLParserContext::createMemoryParser(xmlSAXHandlerPtr handlers, void* userData, const CString& chunk)
@@ -712,6 +732,7 @@ XMLDocumentParser::XMLDocumentParser(Document* document, FrameView* frameView)
     , m_view(frameView)
     , m_context(0)
     , m_currentNode(document)
+    , m_isCurrentlyParsing8BitChunk(false)
     , m_sawError(false)
     , m_sawCSS(false)
     , m_sawXSLTransform(false)
@@ -734,6 +755,7 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parent
     , m_view(0)
     , m_context(0)
     , m_currentNode(fragment)
+    , m_isCurrentlyParsing8BitChunk(false)
     , m_sawError(false)
     , m_sawCSS(false)
     , m_sawXSLTransform(false)
@@ -810,15 +832,15 @@ void XMLDocumentParser::doWrite(const String& parseString)
 
     // libXML throws an error if you try to switch the encoding for an empty string.
     if (parseString.length()) {
-        // JavaScript may cause the parser to detach during xmlParseChunk
+        // JavaScript may cause the parser to detach during parseChunk
         // keep this alive until this function is done.
         RefPtr<XMLDocumentParser> protect(this);
 
-        switchToUTF16(context->context());
         XMLDocumentParserScope scope(document()->cachedResourceLoader());
-        xmlParseChunk(context->context(), reinterpret_cast<const char*>(parseString.bloatedCharacters()), sizeof(UChar) * parseString.length(), 0);
+        TemporaryChange<bool> encodingScope(m_isCurrentlyParsing8BitChunk, parseString.is8Bit());
+        parseChunk(context->context(), parseString);
 
-        // JavaScript (which may be run under the xmlParseChunk callstack) may
+        // JavaScript (which may be run under the parseChunk callstack) may
         // cause the parser to be stopped or detached.
         if (isStopped())
             return;
@@ -1316,8 +1338,9 @@ static xmlEntityPtr getEntityHandler(void* closure, const xmlChar* name)
 static void startDocumentHandler(void* closure)
 {
     xmlParserCtxt* ctxt = static_cast<xmlParserCtxt*>(closure);
-    switchToUTF16(ctxt);
-    getParser(closure)->startDocument(toString(ctxt->version), toString(ctxt->encoding), ctxt->standalone);
+    XMLDocumentParser* parser = getParser(closure);
+    switchEncoding(ctxt, parser->isCurrentlyParsing8BitChunk());
+    parser->startDocument(toString(ctxt->version), toString(ctxt->encoding), ctxt->standalone);
     xmlSAX2StartDocument(closure);
 }
 
@@ -1400,7 +1423,7 @@ void XMLDocumentParser::doEnd()
             // Tell libxml we're done.
             {
                 XMLDocumentParserScope scope(document()->cachedResourceLoader());
-                xmlParseChunk(context(), 0, 0, 1);
+                finishParsing(context());
             }
 
             m_context = 0;
@@ -1578,7 +1601,8 @@ HashMap<String, String> parseAttributes(const String& string, bool& attrsOK)
     sax.initialized = XML_SAX2_MAGIC;
     RefPtr<XMLParserContext> parser = XMLParserContext::createStringParser(&sax, &state);
     String parseString = "<?xml version=\"1.0\"?><attrs " + string + " />";
-    xmlParseChunk(parser->context(), reinterpret_cast<const char*>(parseString.bloatedCharacters()), parseString.length() * sizeof(UChar), 1);
+    parseChunk(parser->context(), parseString);
+    finishParsing(parser->context());
     attrsOK = state.gotAttributes;
     return state.attributes;
 }

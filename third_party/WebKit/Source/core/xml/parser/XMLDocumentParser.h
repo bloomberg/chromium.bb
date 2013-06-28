@@ -83,6 +83,8 @@ class Text;
         void setIsXHTMLDocument(bool isXHTML) { m_isXHTMLDocument = isXHTML; }
         bool isXHTMLDocument() const { return m_isXHTMLDocument; }
 
+        bool isCurrentlyParsing8BitChunk() { return m_isCurrentlyParsing8BitChunk; }
+
         static bool parseDocumentFragment(const String&, DocumentFragment*, Element* parent = 0, ParserContentPolicy = AllowScriptingContent);
 
         // Used by the XMLHttpRequest to check if the responseXML was well formed.
@@ -165,6 +167,7 @@ class Text;
 
         RefPtr<Text> m_leafTextNode;
 
+        bool m_isCurrentlyParsing8BitChunk;
         bool m_sawError;
         bool m_sawCSS;
         bool m_sawXSLTransform;
