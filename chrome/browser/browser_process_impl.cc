@@ -704,6 +704,11 @@ BackgroundModeManager* BrowserProcessImpl::background_mode_manager() {
 #endif
 }
 
+void BrowserProcessImpl::set_background_mode_manager_for_test(
+    scoped_ptr<BackgroundModeManager> manager) {
+  background_mode_manager_ = manager.Pass();
+}
+
 StatusTray* BrowserProcessImpl::status_tray() {
   DCHECK(CalledOnValidThread());
   if (!status_tray_.get())

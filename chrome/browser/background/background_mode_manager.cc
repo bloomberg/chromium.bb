@@ -309,7 +309,12 @@ void BackgroundModeManager::Observe(
           // treated as new installs.
           if (extensions::ExtensionSystem::Get(profile)->extension_service()->
                   is_ready()) {
-            OnBackgroundAppInstalled(extension);
+            bool is_being_reloaded = false;
+            CheckReloadStatus(extension, &is_being_reloaded);
+            // No need to show the notification if we showed to the user
+            // previously for this app.
+            if (!is_being_reloaded)
+              OnBackgroundAppInstalled(extension);
           }
         }
       }
@@ -623,8 +628,25 @@ void BackgroundModeManager::OnBackgroundAppInstalled(
   CreateStatusTrayIcon();
 
   // Notify the user that a background app has been installed.
-  if (extension)  // NULL when called by unit tests.
+  if (extension) {  // NULL when called by unit tests.
     DisplayAppInstalledNotification(extension);
+  }
+}
+
+void BackgroundModeManager::CheckReloadStatus(
+    const Extension* extension,
+    bool* is_being_reloaded) {
+    // Walk the BackgroundModeData for all profiles to see if one of their
+    // extensions is being reloaded.
+    for (BackgroundModeInfoMap::const_iterator it =
+             background_mode_data_.begin();
+         it != background_mode_data_.end();
+         ++it) {
+      Profile* profile = it->first;
+      // If the extension is being reloaded, no need to show a notification.
+      if (profile->GetExtensionService()->IsBeingReloaded(extension->id()))
+        *is_being_reloaded = true;
+    }
 }
 
 void BackgroundModeManager::CreateStatusTrayIcon() {

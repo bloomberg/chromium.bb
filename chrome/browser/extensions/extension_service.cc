@@ -669,7 +669,7 @@ bool ExtensionService::UpdateExtension(const std::string& id,
   return true;
 }
 
-void ExtensionService::ReloadExtension(const std::string& extension_id) {
+void ExtensionService::ReloadExtension(const std::string extension_id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If the extension is already reloading, don't reload again.
@@ -713,12 +713,15 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
   // If we're reloading a component extension, use the component extension
   // loader's reloader.
   if (component_loader_->Exists(extension_id)) {
+    SetBeingReloaded(extension_id, true);
     component_loader_->Reload(extension_id);
+    SetBeingReloaded(extension_id, false);
     return;
   }
 
   // Check the installed extensions to see if what we're reloading was already
   // installed.
+  SetBeingReloaded(extension_id, true);
   scoped_ptr<ExtensionInfo> installed_extension(
       extension_prefs_->GetInstalledExtensionInfo(extension_id));
   if (installed_extension.get() &&
@@ -731,6 +734,8 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
     CHECK(!path.empty());
     extensions::UnpackedInstaller::Create(this)->Load(path);
   }
+  // When reloading is done, mark this extension as done reloading.
+  SetBeingReloaded(extension_id, false);
 }
 
 bool ExtensionService::UninstallExtension(
@@ -2861,6 +2866,27 @@ bool ExtensionService::IsBeingUpgraded(const Extension* extension) const {
 void ExtensionService::SetBeingUpgraded(const Extension* extension,
                                         bool value) {
   extension_runtime_data_[extension->id()].being_upgraded = value;
+}
+
+bool ExtensionService::IsBeingReloaded(
+    const std::string& extension_id) const {
+  return ContainsKey(extensions_being_reloaded_, extension_id);
+}
+
+void ExtensionService::SetBeingReloaded(const std::string& extension_id,
+                                         bool isBeingReloaded) {
+  LOG(INFO) << "****** " << __FUNCTION__;
+  LOG(INFO) << "****** " << __FUNCTION__ << " extension_id is: "
+            << extension_id << " and isBeingReloaded is " << isBeingReloaded;
+  LOG(INFO) << "****** " << __FUNCTION__ << " Set size is "
+            << extensions_being_reloaded_.size();
+  if (isBeingReloaded) {
+    extensions_being_reloaded_.insert(extension_id);
+    LOG(INFO) << "****** " << __FUNCTION__ << " insert succeeded.";
+  } else {
+    extensions_being_reloaded_.erase(extension_id);
+    LOG(INFO) << "****** " << __FUNCTION__ << " erase succeeded.";
+  }
 }
 
 bool ExtensionService::HasUsedWebRequest(const Extension* extension) const {

@@ -85,6 +85,9 @@ class BackgroundModeManager
                            ProfileInfoCacheStorage);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            ProfileInfoCacheObserver);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundAppBrowserTest,
+                           ReloadBackgroundApp);
+
   class BackgroundModeData : public ui::SimpleMenuModel::Delegate {
    public:
     explicit BackgroundModeData(
@@ -183,7 +186,15 @@ class BackgroundModeManager
   // Invoked when an extension is installed so we can ensure that
   // launch-on-startup is enabled if appropriate. |extension| can be NULL when
   // called from unit tests.
-  void OnBackgroundAppInstalled(const extensions::Extension* extension);
+  void OnBackgroundAppInstalled(
+      const extensions::Extension* extension);
+
+  // Walk the list of profiles and see if an extension or app is being
+  // currently upgraded or reloaded by any profile.  If so, update the
+  // output variables appropriately.
+  void CheckReloadStatus(
+      const extensions::Extension* extension,
+      bool* is_being_reloaded);
 
   // Called to make sure that our launch-on-startup mode is properly set.
   // (virtual so we can override for tests).
@@ -191,7 +202,8 @@ class BackgroundModeManager
 
   // Invoked when a background app is installed so we can display a
   // platform-specific notification to the user.
-  void DisplayAppInstalledNotification(const extensions::Extension* extension);
+  virtual void DisplayAppInstalledNotification(
+      const extensions::Extension* extension);
 
   // Invoked to put Chrome in KeepAlive mode - chrome runs in the background
   // and has a status bar icon.

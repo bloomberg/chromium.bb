@@ -249,6 +249,11 @@ class ExtensionService
   bool IsBeingUpgraded(const extensions::Extension* extension) const;
   void SetBeingUpgraded(const extensions::Extension* extension, bool value);
 
+  // Getter and setter for the flag that specifies whether the extension is
+  // being reloaded.
+  bool IsBeingReloaded(const std::string& extension_name) const;
+  void SetBeingReloaded(const std::string& extension_id, bool value);
+
   // Getter and setter for the flag that specifies if the extension has used
   // the webrequest API.
   // TODO(mpcomplete): remove. http://crbug.com/100411
@@ -311,7 +316,7 @@ class ExtensionService
 
   // Reloads the specified extension, sending the onLaunched() event to it if it
   // currently has any window showing.
-  void ReloadExtension(const std::string& extension_id);
+  void ReloadExtension(const std::string extension_id);
 
   // Uninstalls the specified extension. Callers should only call this method
   // with extensions that exist. |external_uninstall| is a magical parameter
@@ -916,6 +921,10 @@ class ExtensionService
   extensions::ExtensionSyncBundle extension_sync_bundle_;
 
   extensions::ProcessMap process_map_;
+
+  // A set of the extension ids currently being reloaded.  We use this to
+  // avoid showing a "new install" notice for an extension reinstall.
+  std::set<std::string> extensions_being_reloaded_;
 
   scoped_ptr<ExtensionErrorUI> extension_error_ui_;
   // Sequenced task runner for extension related file operations.

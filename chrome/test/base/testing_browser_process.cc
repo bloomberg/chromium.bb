@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
@@ -147,6 +148,11 @@ TestingBrowserProcess::GetRenderWidgetSnapshotTaker() {
 
 BackgroundModeManager* TestingBrowserProcess::background_mode_manager() {
   return NULL;
+}
+
+void TestingBrowserProcess::set_background_mode_manager_for_test(
+    scoped_ptr<BackgroundModeManager> manager) {
+  NOTREACHED();
 }
 
 StatusTray* TestingBrowserProcess::status_tray() {
