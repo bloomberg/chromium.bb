@@ -190,13 +190,11 @@ namespace WebCore {
 
         inline void setRGBAPremultiply(PixelData* dest, unsigned r, unsigned g, unsigned b, unsigned a)
         {
-            ASSERT(m_premultiplyAlpha);
-
-            if (!a) {
-                *dest = 0;
-                return;
-            }
             if (a < 255) {
+                if (!a) {
+                    *dest = 0;
+                    return;
+                }
                 unsigned alphaMult = a * fixPointMult;
                 r = fixPointUnsignedMultiply(r, alphaMult);
                 g = fixPointUnsignedMultiply(g, alphaMult);
@@ -210,8 +208,6 @@ namespace WebCore {
 
         inline void setRGBARaw(PixelData* dest, unsigned r, unsigned g, unsigned b, unsigned a)
         {
-            ASSERT(!m_premultiplyAlpha);
-
             *dest = SkPackARGB32NoCheck(a, r, g, b);
         }
 
