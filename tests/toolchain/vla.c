@@ -5,7 +5,7 @@
  */
 
 /*
- * Simple test to verify that C99 VLAs work.
+ * Simple test to verify that C99 VLAs (variable length arrays) work.
  */
 #include <stdio.h>
 
@@ -62,10 +62,15 @@ void test_two_in_loops(int size) {
          size, size, size, vla1[size - 1]);
 }
 
-/* Just like test_two_in_loops, but with recursion. */
+/*
+ * Just like test_two_in_loops, but with recursion.
+ * Make test_two_recursion_help() "noinline" to ensure that there really
+ * is a function call within the loop (to adjust the stack), and the
+ * recursive call doesn't get optimized into a loop.
+ */
 void test_two_recursion_help(int size,
                              int counter,
-                             volatile int* arr) __attribute__((noinline));
+                             volatile int *arr) __attribute__((noinline));
 void test_two_recursion(int size) {
   volatile int vla1[size];
   for (int i = 0; i < size; i++) {
@@ -81,14 +86,14 @@ void test_two_recursion(int size) {
          size, size, size, vla1[size - 1]);
 }
 
-void test_two_recursion_help(int size, int counter, volatile int* arr) {
+void test_two_recursion_help(int size, int counter, volatile int *arr) {
   if (counter < size) {
     arr[counter] = counter;
     test_two_recursion_help(size, ++counter, arr);
   }
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   volatile int one_iter = 1;
   volatile int ten_iters = 10;
   test_basic_vla(one_iter);
@@ -99,4 +104,5 @@ int main(int argc, char* argv[]) {
   test_two_in_loops(ten_iters);
   test_two_recursion(one_iter);
   test_two_recursion(ten_iters);
+  return 0;
 }
