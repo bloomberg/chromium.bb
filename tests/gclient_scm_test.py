@@ -684,6 +684,7 @@ class BaseGitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
       self.force = False
       self.reset = False
       self.nohooks = False
+      self.upstream = False
       self.merge = False
       self.jobs = 1
       self.delete_unversioned_trees = False

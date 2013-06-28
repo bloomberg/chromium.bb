@@ -430,7 +430,10 @@ class GitWrapper(SCMWrapper):
 
     # This is a big hammer, debatable if it should even be here...
     if options.force or options.reset:
-      self._Run(['reset', '--hard', 'HEAD'], options)
+      target = 'HEAD'
+      if options.upstream and upstream_branch:
+        target = upstream_branch
+      self._Run(['reset', '--hard', target], options)
 
     if current_type == 'detached':
       # case 0
@@ -578,6 +581,10 @@ class GitWrapper(SCMWrapper):
       return self.update(options, [], file_list)
 
     default_rev = "refs/heads/master"
+    if options.upstream:
+      if self._GetCurrentBranch():
+        upstream_branch = scm.GIT.GetUpstreamBranch(self.checkout_path)
+        default_rev = upstream_branch or default_rev
     _, deps_revision = gclient_utils.SplitUrlRevision(self.url)
     if not deps_revision:
       deps_revision = default_rev

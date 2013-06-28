@@ -1541,6 +1541,8 @@ def CMDsync(parser, args):
   parser.add_option('-m', '--manually_grab_svn_rev', action='store_true',
                     help='Skip svn up whenever possible by requesting '
                          'actual HEAD revision from the repository')
+  parser.add_option('--upstream', action='store_true',
+                    help='Make repo state match upstream branch.')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
 
@@ -1590,6 +1592,8 @@ def CMDrevert(parser, args):
                          'references')
   parser.add_option('-n', '--nohooks', action='store_true',
                     help='don\'t run hooks after the revert is complete')
+  parser.add_option('--upstream', action='store_true',
+                    help='Make repo state match upstream branch.')
   (options, args) = parser.parse_args(args)
   # --force is implied.
   options.force = True
