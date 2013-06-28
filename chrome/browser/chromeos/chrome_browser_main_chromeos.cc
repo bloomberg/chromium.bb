@@ -98,7 +98,6 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/ime/input_method_manager.h"
@@ -107,7 +106,6 @@
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_handler.h"
-#include "chromeos/power/power_manager_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/power_save_blocker.h"
@@ -472,8 +470,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
        AudioPrefHandler::Create(g_browser_process->local_state()));
   }
 
-  PowerManagerHandler::Initialize();
-
   if (!StartupUtils::IsOobeCompleted())
     system::StatisticsProvider::GetInstance()->LoadOemManifest();
 
@@ -802,8 +798,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   } else {
     AudioHandler::Shutdown();
   }
-
-  PowerManagerHandler::Shutdown();
 
   WebSocketProxyController::Shutdown();
 

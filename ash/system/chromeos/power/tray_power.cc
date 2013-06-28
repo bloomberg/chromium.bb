@@ -40,7 +40,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-using chromeos::PowerManagerHandler;
 using chromeos::PowerSupplyStatus;
 using message_center::MessageCenter;
 using message_center::Notification;
@@ -211,14 +210,11 @@ TrayPower::TrayPower(SystemTray* system_tray, MessageCenter* message_center)
       power_tray_(NULL),
       notification_view_(NULL),
       notification_state_(NOTIFICATION_NONE) {
-  // Tests may not have a PowerManagerHandler.
-  if (PowerManagerHandler::IsInitialized())
-    PowerManagerHandler::Get()->AddObserver(this);
+  PowerStatus::Get()->AddObserver(this);
 }
 
 TrayPower::~TrayPower() {
-  if (PowerManagerHandler::IsInitialized())
-    PowerManagerHandler::Get()->RemoveObserver(this);
+  PowerStatus::Get()->RemoveObserver(this);
 }
 
 // static
@@ -349,8 +345,7 @@ views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
   // There may not be enough information when this is created about whether
   // there is a battery or not. So always create this, and adjust visibility as
   // necessary.
-  PowerSupplyStatus power_status =
-      PowerManagerHandler::Get()->GetPowerSupplyStatus();
+  PowerSupplyStatus power_status = PowerStatus::Get()->GetPowerSupplyStatus();
   CHECK(power_tray_ == NULL);
   power_tray_ = new tray::PowerTrayView();
   power_tray_->UpdatePowerStatus(power_status, false);
@@ -365,8 +360,7 @@ views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
 
 views::View* TrayPower::CreateNotificationView(user::LoginStatus status) {
   CHECK(notification_view_ == NULL);
-  PowerSupplyStatus power_status =
-      PowerManagerHandler::Get()->GetPowerSupplyStatus();
+  PowerSupplyStatus power_status = PowerStatus::Get()->GetPowerSupplyStatus();
   if (!power_status.battery_is_present)
     return NULL;
 
@@ -419,7 +413,7 @@ void TrayPower::OnPowerStatusChanged(
 }
 
 void TrayPower::RequestStatusUpdate() const {
-  PowerManagerHandler::Get()->RequestStatusUpdate();
+  PowerStatus::Get()->RequestStatusUpdate();
 }
 
 bool TrayPower::MaybeShowUsbChargerNotification(

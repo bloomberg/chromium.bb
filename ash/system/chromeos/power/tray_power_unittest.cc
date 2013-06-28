@@ -5,8 +5,8 @@
 #include "ash/system/chromeos/power/tray_power.h"
 
 #include "ash/ash_switches.h"
+#include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_ptr.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center.h"
 
 using chromeos::PowerSupplyStatus;
@@ -43,7 +43,7 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
 namespace ash {
 namespace internal {
 
-class TrayPowerTest : public testing::Test {
+class TrayPowerTest : public test::AshTestBase {
  public:
   TrayPowerTest() {}
   virtual ~TrayPowerTest() {}
@@ -51,10 +51,17 @@ class TrayPowerTest : public testing::Test {
   MockMessageCenter* message_center() { return message_center_.get(); }
   TrayPower* tray_power() { return tray_power_.get(); }
 
-  // testing::Test overrides:
+  // test::AshTestBase::SetUp() overrides:
   virtual void SetUp() OVERRIDE {
+    test::AshTestBase::SetUp();
     message_center_.reset(new MockMessageCenter());
     tray_power_.reset(new TrayPower(NULL, message_center_.get()));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    tray_power_.reset();
+    message_center_.reset();
+    test::AshTestBase::TearDown();
   }
 
   TrayPower::NotificationState notification_state() const {

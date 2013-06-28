@@ -32,7 +32,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/power/power_manager_handler.h"
 #endif
 
 namespace {
@@ -108,7 +107,6 @@ void ViewEventTestBase::SetUp() {
   message_center::MessageCenter::Initialize();
 #if defined(OS_CHROMEOS)
   chromeos::CrasAudioHandler::InitializeForTesting();
-  chromeos::PowerManagerHandler::Initialize();
 #endif
   ash::Shell::CreateInstance(new ash::test::TestShellDelegate());
   context = ash::Shell::GetPrimaryRootWindow();
@@ -138,7 +136,6 @@ void ViewEventTestBase::TearDown() {
 #else
   ash::Shell::DeleteInstance();
 #if defined(OS_CHROMEOS)
-  chromeos::PowerManagerHandler::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
 #endif
   // Ash Shell can't just live on its own without a browser process, we need to

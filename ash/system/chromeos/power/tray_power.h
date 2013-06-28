@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_CHROMEOS_POWER_TRAY_POWER_H_
 #define ASH_SYSTEM_CHROMEOS_POWER_TRAY_POWER_H_
 
+#include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/tray/system_tray_item.h"
-#include "chromeos/power/power_manager_handler.h"
 
 class SkBitmap;
 
@@ -33,7 +33,7 @@ enum IconSet {
 };
 
 class ASH_EXPORT TrayPower : public SystemTrayItem,
-                             public chromeos::PowerManagerHandler::Observer {
+                             public PowerStatus::Observer {
  public:
   // Visible for testing.
   enum NotificationState {
@@ -97,7 +97,7 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   virtual void UpdateAfterShelfAlignmentChange(
       ShelfAlignment alignment) OVERRIDE;
 
-  // Overridden from chromeos::PowerManagerHandler::Observer.
+  // Overridden from PowerStatus::Observer.
   virtual void OnPowerStatusChanged(
       const chromeos::PowerSupplyStatus& status) OVERRIDE;
 

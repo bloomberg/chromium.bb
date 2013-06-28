@@ -107,7 +107,8 @@
 #include "ash/accelerators/nested_dispatcher_controller.h"
 #endif
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
+#if defined(USE_X11)
 #include "ash/ash_constants.h"
 #include "ash/display/display_change_observer_x11.h"
 #include "ash/display/display_error_dialog.h"
@@ -118,6 +119,8 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_type.h"
+#endif  // defined(USE_X11)
+#include "ash/system/chromeos/power/power_status.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -233,6 +236,10 @@ Shell::Shell(ShellDelegate* delegate)
       output_configurator());
 #endif  // defined(OS_CHROMEOS)
   AddPreTargetHandler(this);
+
+#if defined(OS_CHROMEOS)
+  internal::PowerStatus::Initialize();
+#endif
 }
 
 Shell::~Shell() {
@@ -324,6 +331,10 @@ Shell::~Shell() {
       output_configurator());
   display_change_observer_.reset();
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+  internal::PowerStatus::Shutdown();
+#endif
 
   DCHECK(instance_ == this);
   instance_ = NULL;

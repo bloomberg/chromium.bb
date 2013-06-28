@@ -5,6 +5,7 @@
 #include "ash/system/chromeos/settings/tray_settings.h"
 
 #include "ash/shell.h"
+#include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/power/power_status_view.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
@@ -12,7 +13,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -59,7 +59,7 @@ class SettingsDefaultView : public ActionableView {
     }
 
     chromeos::PowerSupplyStatus power_status =
-        chromeos::PowerManagerHandler::Get()->GetPowerSupplyStatus();
+        PowerStatus::Get()->GetPowerSupplyStatus();
     if (power_status.battery_is_present) {
       power_status_view_ = new ash::internal::PowerStatusView(
           ash::internal::PowerStatusView::VIEW_DEFAULT, power_view_right_align);
@@ -125,12 +125,11 @@ class SettingsDefaultView : public ActionableView {
 TraySettings::TraySettings(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       default_view_(NULL) {
-  chromeos::PowerManagerHandler::Get()->AddObserver(this);
+  PowerStatus::Get()->AddObserver(this);
 }
 
 TraySettings::~TraySettings() {
-  if (chromeos::PowerManagerHandler::IsInitialized())
-    chromeos::PowerManagerHandler::Get()->RemoveObserver(this);
+  PowerStatus::Get()->RemoveObserver(this);
 }
 
 views::View* TraySettings::CreateTrayView(user::LoginStatus status) {
@@ -139,9 +138,7 @@ views::View* TraySettings::CreateTrayView(user::LoginStatus status) {
 
 views::View* TraySettings::CreateDefaultView(user::LoginStatus status) {
   if ((status == user::LOGGED_IN_NONE || status == user::LOGGED_IN_LOCKED) &&
-      (chromeos::PowerManagerHandler::IsInitialized() &&
-       !chromeos::PowerManagerHandler::Get()->
-           GetPowerSupplyStatus().battery_is_present))
+      !PowerStatus::Get()->GetPowerSupplyStatus().battery_is_present)
     return NULL;
 
   CHECK(default_view_ == NULL);

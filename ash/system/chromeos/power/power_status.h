@@ -1,35 +1,32 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_POWER_POWER_MANAGER_HANDLER_H_
-#define CHROMEOS_POWER_POWER_MANAGER_HANDLER_H_
+#ifndef ASH_SYSTEM_CHROMEOS_POWER_POWER_STATUS_H_
+#define ASH_SYSTEM_CHROMEOS_POWER_POWER_STATUS_H_
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power_supply_status.h"
 
-namespace chromeos {
+namespace ash {
+namespace internal {
 
-class PowerManagerHandlerTest;
-
-class CHROMEOS_EXPORT PowerManagerHandler
-    : public PowerManagerClient::Observer {
+class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
  public:
   class Observer {
    public:
-    // Called when power status changed.
+    // Called when the power status changes.
     virtual void OnPowerStatusChanged(
-        const PowerSupplyStatus& power_status);
+        const chromeos::PowerSupplyStatus& power_status) = 0;
 
    protected:
-    Observer();
-    virtual ~Observer();
-    DISALLOW_COPY_AND_ASSIGN(Observer);
+    virtual ~Observer() {}
   };
 
-  virtual ~PowerManagerHandler();
+  virtual ~PowerStatus();
 
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize();
@@ -41,7 +38,7 @@ class CHROMEOS_EXPORT PowerManagerHandler
   static bool IsInitialized();
 
   // Gets the global instance. Initialize must be called first.
-  static PowerManagerHandler* Get();
+  static PowerStatus* Get();
 
   // Adds an observer.
   virtual void AddObserver(Observer* observer);
@@ -53,28 +50,25 @@ class CHROMEOS_EXPORT PowerManagerHandler
   void RequestStatusUpdate();
 
   // Gets the current power supply status.
-  PowerSupplyStatus GetPowerSupplyStatus() const;
+  chromeos::PowerSupplyStatus GetPowerSupplyStatus() const;
 
  protected:
-  PowerManagerHandler();
+  PowerStatus();
 
  private:
-  friend class PowerManagerHandlerTest;
-  FRIEND_TEST_ALL_PREFIXES(PowerManagerHandlerTest,
-                           PowerManagerInitializeAndUpdate);
-
   // Overriden from PowerManagerClient::Observer.
   virtual void PowerChanged(
-      const PowerSupplyStatus& power_status) OVERRIDE;
+      const chromeos::PowerSupplyStatus& power_status) OVERRIDE;
 
   ObserverList<Observer> observers_;
 
   // PowerSupplyStatus state.
-  PowerSupplyStatus power_supply_status_;
+  chromeos::PowerSupplyStatus power_supply_status_;
 
-  DISALLOW_COPY_AND_ASSIGN(PowerManagerHandler);
+  DISALLOW_COPY_AND_ASSIGN(PowerStatus);
 };
 
-}  // namespace chromeos
+}  // namespace internal
+}  // namespace ash
 
-#endif  // CHROMEOS_POWER_POWER_MANAGER_HANDLER_H_
+#endif  // ASH_SYSTEM_CHROMEOS_POWER_POWER_STATUS_H_
