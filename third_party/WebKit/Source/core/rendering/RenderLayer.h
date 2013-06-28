@@ -45,6 +45,7 @@
 #define RenderLayer_h
 
 #include "core/platform/ScrollableArea.h"
+#include "core/rendering/CompositingReasons.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 
@@ -78,56 +79,6 @@ enum RepaintStatus {
     NeedsFullRepaint = 1 << 0,
     NeedsFullRepaintForPositionedMovementLayout = 1 << 1
 };
-
-enum {
-    CompositingReasonNone                                   = 0,
-
-    // Intrinsic reasons that can be known right away by the layer
-    CompositingReason3DTransform                            = 1 << 0,
-    CompositingReasonVideo                                  = 1 << 1,
-    CompositingReasonCanvas                                 = 1 << 2,
-    CompositingReasonPlugin                                 = 1 << 3,
-    CompositingReasonIFrame                                 = 1 << 4,
-    CompositingReasonBackfaceVisibilityHidden               = 1 << 5,
-    CompositingReasonAnimation                              = 1 << 6,
-    CompositingReasonFilters                                = 1 << 7,
-    CompositingReasonPositionFixed                          = 1 << 8,
-    CompositingReasonPositionSticky                         = 1 << 9,
-    CompositingReasonOverflowScrollingTouch                 = 1 << 10,
-    CompositingReasonBlending                               = 1 << 11,
-
-    // Overlap reasons that require knowing what's behind you in paint-order before knowing the answer
-    CompositingReasonAssumedOverlap                         = 1 << 12,
-    CompositingReasonOverlap                                = 1 << 13,
-    CompositingReasonNegativeZIndexChildren                 = 1 << 14,
-
-    // Subtree reasons that require knowing what the status of your subtree is before knowing the answer
-    CompositingReasonTransformWithCompositedDescendants     = 1 << 15,
-    CompositingReasonOpacityWithCompositedDescendants       = 1 << 16,
-    CompositingReasonMaskWithCompositedDescendants          = 1 << 17,
-    CompositingReasonReflectionWithCompositedDescendants    = 1 << 18,
-    CompositingReasonFilterWithCompositedDescendants        = 1 << 19,
-    CompositingReasonBlendingWithCompositedDescendants      = 1 << 20,
-    CompositingReasonClipsCompositingDescendants            = 1 << 21,
-    CompositingReasonPerspective                            = 1 << 22,
-    CompositingReasonPreserve3D                             = 1 << 23,
-    CompositingReasonReflectionOfCompositedParent           = 1 << 24,
-
-    // The root layer is a special case that may be forced to be a layer, but also it needs to be
-    // a layer if anything else in the subtree is composited.
-    CompositingReasonRoot                                   = 1 << 25,
-
-    // RenderLayerBacking internal hierarchy reasons
-    CompositingReasonLayerForClip                           = 1 << 26,
-    CompositingReasonLayerForScrollbar                      = 1 << 27,
-    CompositingReasonLayerForScrollingContainer             = 1 << 28,
-    CompositingReasonLayerForForeground                     = 1 << 29,
-    CompositingReasonLayerForBackground                     = 1 << 30,
-    CompositingReasonLayerForMask                           = 1 << 31,
-
-    // Note: if you add more reasons here, you will need to update the WebCompositingReasons enum as well.
-};
-typedef unsigned CompositingReasons;
 
 class ClipRect {
 public:

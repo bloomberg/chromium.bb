@@ -1268,6 +1268,7 @@
             'rendering/AutoTableLayout.h',
             'rendering/BidiRun.cpp',
             'rendering/BidiRun.h',
+            'rendering/CompositingReasons.h',
             'rendering/CounterNode.cpp',
             'rendering/CounterNode.h',
             'rendering/EllipsisBox.cpp',
