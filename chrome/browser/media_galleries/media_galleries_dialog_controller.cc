@@ -90,8 +90,9 @@ string16 MediaGalleriesDialogController::GetHeader() const {
 
 string16 MediaGalleriesDialogController::GetSubtext() const {
   std::string extension_name(extension_ ? extension_->name() : std::string());
-  return l10n_util::GetStringFUTF16(IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT,
-                                    UTF8ToUTF16(extension_name));
+  return l10n_util::GetStringFUTF16(
+      IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_ONLY,
+      UTF8ToUTF16(extension_name));
 }
 
 string16 MediaGalleriesDialogController::GetUnattachedLocationsHeader() const {
