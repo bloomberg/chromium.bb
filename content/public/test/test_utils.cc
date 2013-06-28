@@ -189,7 +189,7 @@ WindowedNotificationObserver::WindowedNotificationObserver(
 WindowedNotificationObserver::~WindowedNotificationObserver() {}
 
 void WindowedNotificationObserver::Wait() {
-  if (callback_.is_null() ? seen_ : callback_.Run())
+  if (seen_)
     return;
 
   running_ = true;
@@ -204,8 +204,11 @@ void WindowedNotificationObserver::Observe(
     const NotificationDetails& details) {
   source_ = source;
   details_ = details;
+  if (!callback_.is_null() && !callback_.Run())
+    return;
+
   seen_ = true;
-  if (!running_ || (!callback_.is_null() && !callback_.Run()))
+  if (!running_)
     return;
 
   message_loop_runner_->Quit();
