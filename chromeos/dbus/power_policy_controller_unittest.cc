@@ -48,7 +48,8 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   prefs.battery_screen_dim_delay_ms = 300000;
   prefs.battery_screen_off_delay_ms = 360000;
   prefs.battery_idle_delay_ms = 420000;
-  prefs.idle_action = PowerPolicyController::ACTION_SUSPEND;
+  prefs.ac_idle_action = PowerPolicyController::ACTION_SUSPEND;
+  prefs.battery_idle_action = PowerPolicyController::ACTION_STOP_SESSION;
   prefs.lid_closed_action = PowerPolicyController::ACTION_SHUT_DOWN;
   prefs.use_audio_activity = true;
   prefs.use_video_activity = true;
@@ -68,8 +69,10 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.mutable_battery_delays()->set_screen_lock_ms(-1);
   expected_policy.mutable_battery_delays()->set_idle_warning_ms(-1);
   expected_policy.mutable_battery_delays()->set_idle_ms(420000);
-  expected_policy.set_idle_action(
+  expected_policy.set_ac_idle_action(
       power_manager::PowerManagementPolicy_Action_SUSPEND);
+  expected_policy.set_battery_idle_action(
+      power_manager::PowerManagementPolicy_Action_STOP_SESSION);
   expected_policy.set_lid_closed_action(
       power_manager::PowerManagementPolicy_Action_SHUT_DOWN);
   expected_policy.set_use_audio_activity(true);
@@ -137,12 +140,12 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
                 fake_power_client_.get_policy()));
 
   // Set the "allow screen wake locks" pref to false.  The system should be
-  // prevented from suspending due to user inactivity but the pref-supplied
-  // screen-related delays should be left untouched.
+  // prevented from suspending due to user inactivity on AC power but the
+  // pref-supplied screen-related delays should be left untouched.
   prefs.allow_screen_wake_locks = false;
   policy_controller_->ApplyPrefs(prefs);
   policy_controller_->AddScreenWakeLock("Screen");
-  expected_policy.set_idle_action(
+  expected_policy.set_ac_idle_action(
       power_manager::PowerManagementPolicy_Action_DO_NOTHING);
   expected_policy.set_reason("Prefs, Screen");
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
@@ -155,7 +158,9 @@ TEST_F(PowerPolicyControllerTest, WakeLocks) {
   const int system_id =
       policy_controller_->AddSystemWakeLock(kSystemWakeLockReason);
   power_manager::PowerManagementPolicy expected_policy;
-  expected_policy.set_idle_action(
+  expected_policy.set_ac_idle_action(
+      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
+  expected_policy.set_battery_idle_action(
       power_manager::PowerManagementPolicy_Action_DO_NOTHING);
   expected_policy.set_reason(kSystemWakeLockReason);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),

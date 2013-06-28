@@ -76,7 +76,8 @@ PowerPolicyController::PrefValues::PrefValues()
       battery_screen_lock_delay_ms(-1),
       battery_idle_warning_delay_ms(-1),
       battery_idle_delay_ms(-1),
-      idle_action(ACTION_SUSPEND),
+      ac_idle_action(ACTION_SUSPEND),
+      battery_idle_action(ACTION_SUSPEND),
       lid_closed_action(ACTION_SUSPEND),
       use_audio_activity(true),
       use_video_activity(true),
@@ -93,8 +94,10 @@ std::string PowerPolicyController::GetPolicyDebugString(
     APPEND_DELAYS(str, policy.ac_delays(), "ac");
   if (policy.has_battery_delays())
     APPEND_DELAYS(str, policy.battery_delays(), "battery");
-  if (policy.has_idle_action())
-    str += base::StringPrintf("idle=%d ", policy.idle_action());
+  if (policy.has_ac_idle_action())
+    str += base::StringPrintf("ac_idle=%d ", policy.ac_idle_action());
+  if (policy.has_battery_idle_action())
+    str += base::StringPrintf("battery_idle=%d ", policy.battery_idle_action());
   if (policy.has_lid_closed_action())
     str += base::StringPrintf("lid_closed=%d ", policy.lid_closed_action());
   if (policy.has_use_audio_activity())
@@ -170,7 +173,9 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
       lock_ms < delays->idle_ms())
     delays->set_screen_lock_ms(lock_ms);
 
-  prefs_policy_.set_idle_action(GetProtoAction(values.idle_action));
+  prefs_policy_.set_ac_idle_action(GetProtoAction(values.ac_idle_action));
+  prefs_policy_.set_battery_idle_action(
+      GetProtoAction(values.battery_idle_action));
   prefs_policy_.set_lid_closed_action(GetProtoAction(values.lid_closed_action));
   prefs_policy_.set_use_audio_activity(values.use_audio_activity);
   prefs_policy_.set_use_video_activity(values.use_video_activity);
@@ -232,11 +237,17 @@ void PowerPolicyController::SendCurrentPolicy() {
     policy.mutable_battery_delays()->set_screen_lock_ms(0);
   }
 
-  if ((!screen_wake_locks_.empty() || !system_wake_locks_.empty()) &&
-      (!policy.has_idle_action() || policy.idle_action() ==
-       power_manager::PowerManagementPolicy_Action_SUSPEND)) {
-    policy.set_idle_action(
-        power_manager::PowerManagementPolicy_Action_DO_NOTHING);
+  if (!screen_wake_locks_.empty() || !system_wake_locks_.empty()) {
+    if (!policy.has_ac_idle_action() || policy.ac_idle_action() ==
+        power_manager::PowerManagementPolicy_Action_SUSPEND) {
+      policy.set_ac_idle_action(
+          power_manager::PowerManagementPolicy_Action_DO_NOTHING);
+    }
+    if (!policy.has_battery_idle_action() || policy.battery_idle_action() ==
+        power_manager::PowerManagementPolicy_Action_SUSPEND) {
+      policy.set_battery_idle_action(
+          power_manager::PowerManagementPolicy_Action_DO_NOTHING);
+    }
   }
 
   for (WakeLockMap::const_iterator it = screen_wake_locks_.begin();

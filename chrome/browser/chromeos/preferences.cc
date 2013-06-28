@@ -875,7 +875,10 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     values.battery_idle_warning_delay_ms =
         power_battery_idle_warning_delay_ms_.GetValue();
     values.battery_idle_delay_ms = power_battery_idle_delay_ms_.GetValue();
-    values.idle_action = static_cast<PowerPolicyController::Action>(
+    // TODO(bartfab): Use separate prefs for AC and battery idle actions.
+    values.ac_idle_action = static_cast<PowerPolicyController::Action>(
+        power_idle_action_.GetValue());
+    values.battery_idle_action = static_cast<PowerPolicyController::Action>(
         power_idle_action_.GetValue());
     values.lid_closed_action = static_cast<PowerPolicyController::Action>(
         power_lid_closed_action_.GetValue());

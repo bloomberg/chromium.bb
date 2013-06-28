@@ -47,7 +47,8 @@ class CHROMEOS_EXPORT PowerPolicyController
     int battery_screen_lock_delay_ms;
     int battery_idle_warning_delay_ms;
     int battery_idle_delay_ms;
-    Action idle_action;
+    Action ac_idle_action;
+    Action battery_idle_action;
     Action lid_closed_action;
     bool use_audio_activity;
     bool use_video_activity;
