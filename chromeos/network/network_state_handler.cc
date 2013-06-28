@@ -360,24 +360,15 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
     DCHECK(!path.empty());
     std::map<std::string, ManagedState*>::iterator found =
         managed_map.find(path);
-    bool request_properties = false;
     ManagedState* managed;
-    bool is_observing = shill_property_handler_->IsObservingNetwork(path);
     if (found == managed_map.end()) {
-      request_properties = true;
       managed = ManagedState::Create(type, path);
       managed_list->push_back(managed);
     } else {
       managed = found->second;
       managed_list->push_back(managed);
       managed_map.erase(found);
-      if (!managed->is_observed() && is_observing)
-        request_properties = true;
     }
-    if (is_observing)
-      managed->set_is_observed(true);
-    if (request_properties)
-      shill_property_handler_->RequestProperties(type, path);
   }
   // Delete any remaning entries in managed_map.
   STLDeleteContainerPairSecondPointers(managed_map.begin(), managed_map.end());

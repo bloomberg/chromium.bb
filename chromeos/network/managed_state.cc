@@ -16,7 +16,6 @@ namespace chromeos {
 ManagedState::ManagedState(ManagedType type, const std::string& path)
     : managed_type_(type),
       path_(path),
-      is_observed_(false),
       update_requested_(false) {
 }
 

@@ -120,11 +120,6 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   void RequestProperties(ManagedState::ManagedType type,
                          const std::string& path);
 
-  // Returns true if |service_path| is being observed.
-  bool IsObservingNetwork(const std::string& service_path) {
-    return observed_networks_.count(service_path) != 0;
-  }
-
   // ShillPropertyChangedObserver overrides
   virtual void OnPropertyChanged(const std::string& key,
                                  const base::Value& value) OVERRIDE;
