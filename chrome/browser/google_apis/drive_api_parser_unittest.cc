@@ -4,7 +4,7 @@
 
 #include "chrome/browser/google_apis/drive_api_parser.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"

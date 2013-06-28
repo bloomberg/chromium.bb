@@ -7,7 +7,7 @@
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/user_activity_detector.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 void CalculateIdleTime(IdleTimeCallback notify) {
   base::TimeDelta idle_time = base::TimeTicks::Now() -

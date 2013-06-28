@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/common/search_types.h"
 #include "content/public/browser/notification_observer.h"

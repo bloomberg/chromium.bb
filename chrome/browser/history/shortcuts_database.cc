@@ -11,7 +11,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "sql/statement.h"

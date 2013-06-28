@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace history {
 

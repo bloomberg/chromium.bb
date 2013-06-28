@@ -15,7 +15,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/win/metro.h"
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/common/chrome_constants.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/history/android/android_history_provider_service.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/history/android/android_history_types.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"

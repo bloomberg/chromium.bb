@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "googleurl/src/gurl.h"
 // TODO(kochi): Eliminate this dependency once dependency to EntryKind is gone.
 // http://crbug.com/142293

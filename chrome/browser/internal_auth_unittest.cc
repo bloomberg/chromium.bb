@@ -8,7 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome {

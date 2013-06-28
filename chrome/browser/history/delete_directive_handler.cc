@@ -6,7 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/rand_util.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_db_task.h"

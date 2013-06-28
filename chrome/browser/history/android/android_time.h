@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_ANDROID_ANDROID_TIME_H_
 #define CHROME_BROWSER_HISTORY_ANDROID_ANDROID_TIME_H_
 
-#include "base/time.h"
+#include "base/time/time.h"
 
 namespace history {
 

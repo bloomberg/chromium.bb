@@ -6,7 +6,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time.h"
+#include "base/time/time.h"
 #include "chrome/browser/history/shortcuts_database.h"
 #include "chrome/test/base/testing_profile.h"
 #include "sql/statement.h"
