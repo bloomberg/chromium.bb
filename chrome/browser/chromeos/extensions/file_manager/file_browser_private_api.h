@@ -782,21 +782,6 @@ class ValidatePathNameLengthFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Implements the chrome.fileBrowserPrivate.newWindow method.
-class OpenNewWindowFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.openNewWindow",
-                             FILEBROWSERPRIVATE_OPENNEWWINDOW)
-
-  OpenNewWindowFunction();
-
- protected:
-  virtual ~OpenNewWindowFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
 class ZoomFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.zoom",

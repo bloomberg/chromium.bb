@@ -625,7 +625,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         Commands.newFolderCommand, this, this.directoryModel_);
 
     CommandUtil.registerCommand(doc, 'newwindow',
-        Commands.newWindowCommand, this);
+        Commands.newWindowCommand, this, this.directoryModel_);
 
     CommandUtil.registerCommand(doc, 'change-default-app',
         Commands.changeDefaultAppCommand, this);
@@ -790,11 +790,19 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initStrings_ = function(callback) {
-    chrome.fileBrowserPrivate.getStrings(function(strings) {
-      loadTimeData.data = strings;
-      this.loadTimeDataAvailable = true;
-      callback();
-    });
+    // Fetch the strings via the private api if running in the browser window.
+    // Otherwise, read cached strings from the local storage.
+    if (util.platform.runningInBrowser()) {
+      chrome.fileBrowserPrivate.getStrings(function(strings) {
+        loadTimeData.data = strings;
+        callback();
+      });
+    } else {
+      chrome.storage.local.get('strings', function(items) {
+        loadTimeData.data = items['strings'];
+        callback();
+      });
+    }
   };
 
   /**

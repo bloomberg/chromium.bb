@@ -387,10 +387,12 @@ function reopenFileManagers() {
 }
 
 /**
+ * Executes a file browser task.
+ *
  * @param {string} action Task id.
  * @param {Object} details Details object.
  */
-function executeFileBrowserTask(action, details) {
+function onExecute(action, details) {
   var urls = details.entries.map(function(e) { return e.toURL() });
 
   switch (action) {
@@ -469,9 +471,9 @@ function launchVideoPlayer(url) {
 }
 
 /**
- * Launch the app.
+ * Launches the app.
  */
-function launch() {
+function onLaunched() {
   if (nextFileManagerWindowID == 0) {
     // The app just launched. Remove window state records that are not needed
     // any more.
@@ -491,10 +493,38 @@ function launch() {
 /**
  * Restarted the app, restore windows.
  */
-function restart() {
+function onRestarted() {
   reopenFileManagers();
   audioPlayer.reopen();
   videoPlayer.reopen();
+}
+
+/**
+ * Handles clicks on a custom item on the launcher context menu.
+ * @param {OnClickData} info Event details.
+ */
+function onContextMenuClicked(info) {
+  if (info.menuItemId == 'new-window') {
+    // Find the focused window (if any) and use it's current path for the
+    // new window. If not found, then launch with the default path.
+    for (var key in appWindows) {
+      try {
+        if (appWindows[key].contentWindow.isFocused()) {
+          var appState = {
+            defaultPath: appWindows[key].contentWindow.appState.defaultPath
+          };
+          launchFileManager(appState);
+          return;
+        }
+      } catch (ignore) {
+        // The isFocused method may not be defined during initialization.
+        // Therefore, wrapped with a try-catch block.
+      }
+    }
+
+    // Launch with the default path.
+    launchFileManager();
+  }
 }
 
 /**
@@ -506,11 +536,42 @@ function maybeCloseBackgroundPage() {
     close();
 }
 
-chrome.app.runtime.onLaunched.addListener(launch);
-chrome.app.runtime.onRestarted.addListener(restart);
-
-function addExecuteHandler() {
-  chrome.fileBrowserHandler.onExecute.addListener(executeFileBrowserTask);
+/**
+ * Initializes the context menu. Recreates if already exists.
+ * @param {Object} strings Hash array of strings.
+ */
+function initContextMenu(strings) {
+  try {
+    chrome.contextMenus.remove('new-window');
+  } catch (ignore) {
+    // There is no way to detect if the context menu is already added, therefore
+    // try to recreate it every time.
+  }
+  chrome.contextMenus.create({
+    id: 'new-window',
+    contexts: ['launcher'],
+    title: strings['NEW_WINDOW_BUTTON_LABEL']
+  });
 }
 
-addExecuteHandler();
+/**
+ * Initializes the background page of Files.app.
+ */
+function initApp() {
+  // Initialize handlers.
+  chrome.fileBrowserHandler.onExecute.addListener(onExecute);
+  chrome.app.runtime.onLaunched.addListener(onLaunched);
+  chrome.app.runtime.onRestarted.addListener(onRestarted);
+  chrome.contextMenus.onClicked.addListener(onContextMenuClicked);
+
+  // Fetch strings and initialize the context menu.
+  queue.run(function(callback) {
+    chrome.fileBrowserPrivate.getStrings(function(strings) {
+      initContextMenu(strings);
+      chrome.storage.local.set({strings: strings}, callback);
+    });
+  });
+}
+
+// Initialize Files.app.
+initApp();

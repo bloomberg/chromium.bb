@@ -257,8 +257,13 @@ Commands.newFolderCommand = {
  * Initiates new window creation.
  */
 Commands.newWindowCommand = {
-  execute: function(event, fileManager) {
-    chrome.fileBrowserPrivate.openNewWindow(document.location.href);
+  execute: function(event, fileManager, directoryModel) {
+    chrome.runtime.getBackgroundPage(function(background) {
+      var appState = {
+        defaultPath: directoryModel.getCurrentDirPath()
+      };
+      background.launchFileManager(appState);
+    });
   },
   canExecute: function(event, fileManager) {
     event.canExecute = (fileManager.dialogType == DialogType.FULL_PAGE);

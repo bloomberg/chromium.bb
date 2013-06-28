@@ -16,6 +16,7 @@
     "256": "images/icon256.png"
   },
   "permissions": [
+    "contextMenus",
     "experimental",
     "storage",
     "fileBrowserHandler",

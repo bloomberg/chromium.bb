@@ -452,7 +452,6 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<SetLastModifiedFunction>();
   registry->RegisterFunction<ZipSelectionFunction>();
   registry->RegisterFunction<ValidatePathNameLengthFunction>();
-  registry->RegisterFunction<OpenNewWindowFunction>();
   registry->RegisterFunction<ZoomFunction>();
   event_router_->ObserveFileSystemEvents();
 }
@@ -3082,17 +3081,6 @@ void ValidatePathNameLengthFunction::OnFilePathLimitRetrieved(
     size_t max_length) {
   SetResult(new base::FundamentalValue(current_length <= max_length));
   SendResponse(true);
-}
-
-OpenNewWindowFunction::OpenNewWindowFunction() {}
-
-OpenNewWindowFunction::~OpenNewWindowFunction() {}
-
-bool OpenNewWindowFunction::RunImpl() {
-  std::string url;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
-  file_manager_util::OpenNewWindow(profile_, GURL(url));
-  return true;
 }
 
 bool ZoomFunction::RunImpl() {
