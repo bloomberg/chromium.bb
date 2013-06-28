@@ -1046,7 +1046,7 @@ bool DownloadsAcceptDangerFunction::RunImpl() {
   DownloadItem* download_item = GetDownloadIfInProgress(
       profile(), include_incognito(), params->download_id);
   content::WebContents* web_contents =
-      dispatcher()->delegate()->GetAssociatedWebContents();
+      dispatcher()->delegate()->GetVisibleWebContents();
   if (!download_item ||
       !download_item->IsDangerous() ||
       !web_contents) {
@@ -1128,7 +1128,7 @@ bool DownloadsDragFunction::RunImpl() {
   DownloadItem* download_item = GetDownload(
       profile(), include_incognito(), params->download_id);
   content::WebContents* web_contents =
-      dispatcher()->delegate()->GetAssociatedWebContents();
+      dispatcher()->delegate()->GetVisibleWebContents();
   if (!download_item || !web_contents) {
     error_ = download_extension_errors::kInvalidOperationError;
     return false;

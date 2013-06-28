@@ -226,6 +226,11 @@ ExtensionFunctionDispatcher::Delegate::GetAssociatedWebContents() const {
   return NULL;
 }
 
+content::WebContents*
+ExtensionFunctionDispatcher::Delegate::GetVisibleWebContents() const {
+  return GetAssociatedWebContents();
+}
+
 void ExtensionFunctionDispatcher::GetAllFunctionNames(
     std::vector<std::string>* names) {
   ExtensionFunctionRegistry::GetInstance()->GetAllNames(names);

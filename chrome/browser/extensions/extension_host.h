@@ -29,6 +29,10 @@
 #include "chrome/browser/ui/android/extensions/extension_view_android.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
+#endif
+
 class Browser;
 class PrefsTabHelper;
 
@@ -47,6 +51,9 @@ class WindowController;
 // privileges available to extensions.  It may have a view to be shown in the
 // browser UI, or it may be hidden.
 class ExtensionHost : public content::WebContentsDelegate,
+#if !defined(OS_ANDROID)
+                      public ChromeWebModalDialogManagerDelegate,
+#endif
                       public content::WebContentsObserver,
                       public ExtensionFunctionDispatcher::Delegate,
                       public content::NotificationObserver {
@@ -110,6 +117,7 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // ExtensionFunctionDispatcher::Delegate
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
+  virtual content::WebContents* GetVisibleWebContents() const OVERRIDE;
   void SetAssociatedWebContents(content::WebContents* web_contents);
 
   // Returns true if the render view is initialized and didn't crash.

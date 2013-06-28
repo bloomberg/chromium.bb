@@ -55,6 +55,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if !defined(OS_ANDROID)
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#endif
+
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using content::NativeWebKeyboardEvent;
@@ -191,6 +195,15 @@ WebContents* ExtensionHost::GetAssociatedWebContents() const {
   return associated_web_contents_;
 }
 
+WebContents* ExtensionHost::GetVisibleWebContents() const {
+  if (associated_web_contents_)
+    return associated_web_contents_;
+  if ((extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) ||
+      (extension_host_type_ == VIEW_TYPE_PANEL))
+    return host_contents_.get();
+  return NULL;
+}
+
 void ExtensionHost::SetAssociatedWebContents(
     content::WebContents* web_contents) {
   associated_web_contents_ = web_contents;
@@ -251,6 +264,16 @@ void ExtensionHost::LoadInitialURL() {
                    content::Source<Extension>(extension_));
     return;
   }
+
+#if !defined(OS_ANDROID)
+  if ((extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) ||
+      (extension_host_type_ == VIEW_TYPE_PANEL)) {
+    web_modal::WebContentsModalDialogManager::CreateForWebContents(
+        host_contents_.get());
+    web_modal::WebContentsModalDialogManager::FromWebContents(
+        host_contents_.get())->set_delegate(this);
+  }
+#endif
 
   host_contents_->GetController().LoadURL(
       initial_url_, content::Referrer(), content::PAGE_TRANSITION_LINK,

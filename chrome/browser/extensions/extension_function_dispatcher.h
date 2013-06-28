@@ -57,10 +57,15 @@ class ExtensionFunctionDispatcher
     virtual extensions::WindowController* GetExtensionWindowController() const;
 
     // Asks the delegate for any relevant WebContents associated with this
-    // context. For example, the WebbContents in which an infobar or
+    // context. For example, the WebContents in which an infobar or
     // chrome-extension://<id> URL are being shown. Callers must check for a
     // NULL return value (as in the case of a background page).
     virtual content::WebContents* GetAssociatedWebContents() const;
+
+    // If the associated web contents is not null, returns that. Otherwise,
+    // returns the next most relevant visible web contents. Callers must check
+    // for a NULL return value (as in the case of a background page).
+    virtual content::WebContents* GetVisibleWebContents() const;
 
    protected:
     virtual ~Delegate() {}
