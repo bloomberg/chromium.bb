@@ -42,23 +42,29 @@ class Gsutil(object):
     self.timeout = timeout
     self.boto_path = boto_path
 
-  def call(self, *args):
+  def get_sub_env(self):
     env = os.environ.copy()
     if self.boto_path:
       env['AWS_CREDENTIAL_FILE'] = self.boto_path
+    else:
+      custompath = env.get('AWS_CREDENTIAL_FILE', '~/.boto') + '.depot_tools'
+      custompath = os.path.expanduser(custompath)
+      if os.path.exists(custompath):
+        env['AWS_CREDENTIAL_FILE'] = custompath
+
+    return env
+
+  def call(self, *args):
     return subprocess2.call((sys.executable, self.path) + args,
-                            env=env,
+                            env=self.get_sub_env(),
                             timeout=self.timeout)
 
   def check_call(self, *args):
-    env = os.environ.copy()
-    if self.boto_path:
-      env['AWS_CREDENTIAL_FILE'] = self.boto_path
     ((out, err), code) = subprocess2.communicate(
         (sys.executable, self.path) + args,
         stdout=subprocess2.PIPE,
         stderr=subprocess2.PIPE,
-        env=env,
+        env=self.get_sub_env(),
         timeout=self.timeout)
 
     # Parse output.
