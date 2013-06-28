@@ -121,19 +121,19 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [CallWith=ScriptState, RaisesException] void withScriptStateVoidException();
     [CallWith=ScriptState, RaisesException] TestObject withScriptStateObjException();
     [CallWith=ScriptExecutionContext] void withScriptExecutionContext();
-    [CallWith=ScriptExecutionContext|ScriptState] void withScriptExecutionContextAndScriptState();
-    [CallWith=ScriptExecutionContext|ScriptState, RaisesException] TestObject withScriptExecutionContextAndScriptStateObjException();
-    [CallWith=  ScriptExecutionContext  |  ScriptState  ] TestObject withScriptExecutionContextAndScriptStateWithSpaces();
-    [CallWith=ActiveWindow|FirstWindow] void withActiveWindowAndFirstWindow();
+    [CallWith=ScriptExecutionContext&ScriptState] void withScriptExecutionContextAndScriptState();
+    [CallWith=ScriptExecutionContext&ScriptState, RaisesException] TestObject withScriptExecutionContextAndScriptStateObjException();
+    [CallWith=  ScriptExecutionContext  &  ScriptState  ] TestObject withScriptExecutionContextAndScriptStateWithSpaces();
+    [CallWith=ActiveWindow&FirstWindow] void withActiveWindowAndFirstWindow();
 
     [CallWith=ScriptState] attribute long withScriptStateAttribute;
     [CallWith=ScriptExecutionContext] attribute TestObject withScriptExecutionContextAttribute;
-    [SetterCallWith=ActiveWindow|FirstWindow] attribute TestObject withActiveWindowAndFirstWindowAttribute;
+    [SetterCallWith=ActiveWindow&FirstWindow] attribute TestObject withActiveWindowAndFirstWindowAttribute;
     [CallWith=ScriptState, GetterRaisesException] attribute TestObject withScriptStateAttributeRaises;
     [CallWith=ScriptExecutionContext, GetterRaisesException] attribute TestObject withScriptExecutionContextAttributeRaises;
-    [CallWith=ScriptExecutionContext|ScriptState] attribute TestObject withScriptExecutionContextAndScriptStateAttribute;
-    [CallWith=ScriptExecutionContext|ScriptState, GetterRaisesException] attribute TestObject withScriptExecutionContextAndScriptStateAttributeRaises;
-    [CallWith=  ScriptExecutionContext  |  ScriptState  ] attribute TestObject withScriptExecutionContextAndScriptStateWithSpacesAttribute;
+    [CallWith=ScriptExecutionContext&ScriptState] attribute TestObject withScriptExecutionContextAndScriptStateAttribute;
+    [CallWith=ScriptExecutionContext&ScriptState, GetterRaisesException] attribute TestObject withScriptExecutionContextAndScriptStateAttributeRaises;
+    [CallWith=  ScriptExecutionContext  &  ScriptState  ] attribute TestObject withScriptExecutionContextAndScriptStateWithSpacesAttribute;
 
     // optional parameters
     void    methodWithOptionalArg(optional long opt);
