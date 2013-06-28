@@ -43,7 +43,6 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8Collection.h"
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -5031,7 +5030,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
         {"enabledAtRuntimeAttr2", TestObjV8Internal::enabledAtRuntimeAttr2AttrGetterCallback, TestObjV8Internal::enabledAtRuntimeAttr2AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate, currentWorldType);
     }
-    desc->InstanceTemplate()->SetIndexedPropertyHandler(TestObjV8Internal::indexedPropertyGetterCallback, 0, 0, 0, nodeCollectionIndexedPropertyEnumerator<TestObj>);
+    desc->InstanceTemplate()->SetIndexedPropertyHandler(TestObjV8Internal::indexedPropertyGetterCallback, 0, 0, 0, indexedPropertyEnumerator<TestObj>);
     desc->InstanceTemplate()->SetNamedPropertyHandler(TestObjV8Internal::namedPropertyGetterCallback, 0, TestObjV8Internal::namedPropertyQueryCallback, 0, TestObjV8Internal::namedPropertyEnumeratorCallback);
 
     // Custom Signature 'voidMethodWithArgs'

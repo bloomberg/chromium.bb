@@ -61,7 +61,7 @@ class BindingsTests:
             exit_code = e.exit_code
         return exit_code
 
-    def generate_supplemental_dependency(self, input_directory, supplemental_dependency_file, window_constructors_file, workerglobalscope_constructors_file, sharedworkerglobalscope_constructors_file, dedicatedworkerglobalscope_constructors_file):
+    def generate_supplemental_dependency(self, input_directory, supplemental_dependency_file, window_constructors_file, workerglobalscope_constructors_file, sharedworkerglobalscope_constructors_file, dedicatedworkerglobalscope_constructors_file, event_names_file):
         idl_files_list = tempfile.mkstemp()
         for input_file in os.listdir(input_directory):
             (name, extension) = os.path.splitext(input_file)
@@ -78,6 +78,7 @@ class BindingsTests:
                '--workerglobalscope-constructors-file', workerglobalscope_constructors_file,
                '--sharedworkerglobalscope-constructors-file', sharedworkerglobalscope_constructors_file,
                '--dedicatedworkerglobalscope-constructors-file', dedicatedworkerglobalscope_constructors_file,
+               '--event-names-file', event_names_file,
                '--write-file-only-if-changed', '0']
 
         exit_code = 0
@@ -156,9 +157,15 @@ class BindingsTests:
         workerglobalscope_constructors_file = tempfile.mkstemp()[1]
         sharedworkerglobalscope_constructors_file = tempfile.mkstemp()[1]
         dedicatedworkerglobalscope_constructors_file = tempfile.mkstemp()[1]
-        if self.generate_supplemental_dependency(input_directory, supplemental_dependency_file, window_constructors_file, workerglobalscope_constructors_file, sharedworkerglobalscope_constructors_file, dedicatedworkerglobalscope_constructors_file):
+        event_names_file = tempfile.mkstemp()[1]
+        if self.generate_supplemental_dependency(input_directory, supplemental_dependency_file, window_constructors_file, workerglobalscope_constructors_file, sharedworkerglobalscope_constructors_file, dedicatedworkerglobalscope_constructors_file, event_names_file):
             print 'Failed to generate a supplemental dependency file.'
             os.remove(supplemental_dependency_file)
+            os.remove(window_constructors_file)
+            os.remove(workerglobalscope_constructors_file)
+            os.remove(sharedworkerglobalscope_constructors_file)
+            os.remove(dedicatedworkerglobalscope_constructors_file)
+            os.remove(event_names_file)
             return -1
 
         input_directory = os.path.join('bindings', 'tests', 'idls')
@@ -167,6 +174,11 @@ class BindingsTests:
             all_tests_passed = False
 
         os.remove(supplemental_dependency_file)
+        os.remove(window_constructors_file)
+        os.remove(workerglobalscope_constructors_file)
+        os.remove(sharedworkerglobalscope_constructors_file)
+        os.remove(dedicatedworkerglobalscope_constructors_file)
+        os.remove(event_names_file)
         print ''
         if all_tests_passed:
             print 'All tests PASS!'
