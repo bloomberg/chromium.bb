@@ -40,23 +40,18 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem,
 
   // Overridden from SystemTrayItem.
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateNotificationView(
-      user::LoginStatus status) OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
-  virtual void DestroyNotificationView() OVERRIDE;
-  virtual bool ShouldShowLauncher() const OVERRIDE;
 
   // Overridden from DisplayControllerObserver:
   virtual void OnDisplayConfigurationChanged() OVERRIDE;
 
   // Test accessors.
   base::string16 GetDefaultViewMessage();
+  base::string16 GetNotificationMessage();
+  void CloseNotificationForTest();
   views::View* default_view() { return default_; }
-  const string16& current_message() const { return current_message_; }
 
   views::View* default_;
-  DisplayNotificationView* notification_;
-  string16 current_message_;
   DisplayInfoMap display_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDisplay);

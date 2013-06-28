@@ -310,31 +310,37 @@ Press Ctrl+Alt+Z to disable.
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING" desc="The label used in the tray to show that the current status is mirroring.">
-	Mirroring to <ph name="DISPLAY_NAME">$1</ph>
+        Mirroring to <ph name="DISPLAY_NAME">$1</ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED" desc="The label used in the tray to show that the current status is extended.">
-	Extending screen to <ph name="DISPLAY_NAME">$1</ph>
+        Extending screen to <ph name="DISPLAY_NAME">$1</ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING_NO_INTERNAL" desc="The label used in the tray to show that the current status is mirroring and the device doesn't have the internal display.">
-	Mirroring
+        Mirroring
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL" desc="The label used in the tray to show that the current status is extended and the device doesn't have the internal display.">
-	Extending screen
+        Extending screen
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED" desc="The label used in the tray to show that the current status is docked mode.">
-	Dock mode
+        Dock mode
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED" desc="The label used in the tray to notify that the display resolution settings has changed.">
-	<ph name="DISPLAY_NAME">$1</ph> has been resized to <ph name="RESOLUTION">$2</ph>
+        <ph name="DISPLAY_NAME">$1</ph> has been resized to <ph name="RESOLUTION">$2</ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED" desc="The label used in the tray to notify that the display rotation settings has changed.">
-	<ph name="DISPLAY_NAME">$1</ph> has been rotated
+        <ph name="DISPLAY_NAME">$1</ph> has been rotated
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY" desc="The label used in the tray to show the current display's configuration if there is a single display">
-	<ph name="DISPLAY_NAME">$1</ph>: <ph name="RESOLUTION">$2</ph>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY" desc="The label used in the tray to show a single display's configuration">
+        <ph name="DISPLAY_NAME">$1</ph>: <ph name="ANNOTATION">$2</ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME" desc="Label shown in tray for a display whose name is unknown.">
-	Unknown Display
+        Unknown Display
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION" desc="Label used to annotate the display's status like resolution or overscan flag.">
+        <ph name="RESOLUTION">$1</ph>, <ph name="OVERSCAN">$2</ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION_OVERSCAN" desc="Label used to describe that the system notice that this display device may have overscan area.">
+        overscan
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DRIVE_SYNCING" desc="The label in the tray to indicate onoing file sync operations.">
         Syncing <ph name="count">$1<ex>3</ex></ph> file(s)
@@ -510,13 +516,13 @@ Press Shift + Alt to switch.
         Minimize
       </message>
       <message name="IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING" desc="An error message to show that the system failed to enter the mirroring mode.">
-	Could not mirror displays since no supported resolutions found. Entered extended desktop instead.
+        Could not mirror displays since no supported resolutions found. Entered extended desktop instead.
       </message>
       <message name="IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING" desc="An error message to show that the system failed to enter the extended desktop mode or unknown status. Please translate the parentized text.">
-	Dear Monitor, it's not working out between us. (That monitor is not supported)
+        Dear Monitor, it's not working out between us. (That monitor is not supported)
       </message>
       <message name="IDS_ASH_INTERNAL_DISPLAY_NAME" desc="The name of the internal display which is shown in the display settings.">
-	Internal Display
+        Internal Display
       </message>
       <message name="IDS_ASH_LOW_PERIPHERAL_BATTERY_NOTIFICATION_TEXT" desc="The text of the notification when a peripheral device is in low battery condition.">
         Battery low (<ph name="percentage">$1<ex>56</ex></ph>%)
@@ -542,7 +548,7 @@ Press Shift + Alt to switch.
 
       <!-- ChromeOS-specific strings -->
       <if expr="pp_ifdef('chromeos')">
-	<part file="ash_chromeos_strings.grdp" />
+        <part file="ash_chromeos_strings.grdp" />
       </if>
 
     </messages>
