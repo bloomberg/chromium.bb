@@ -797,8 +797,8 @@ void RichMessageListView::AnimateClearingOneNotification() {
 
   clear_all_started_ = true;
 
-  views::View* child = clearing_all_views_.front();
-  clearing_all_views_.pop_front();
+  views::View* child = clearing_all_views_.back();
+  clearing_all_views_.pop_back();
 
   // Slide from left to right.
   gfx::Rect new_bounds = child->bounds();
