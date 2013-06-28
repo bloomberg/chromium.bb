@@ -226,20 +226,25 @@ FcSubstDestroy (FcSubst *s)
 FcExpr *
 FcConfigAllocExpr (FcConfig *config)
 {
-  if (!config->expr_pool || config->expr_pool->next == config->expr_pool->end)
-  {
-    FcExprPage *new_page;
+    FcExpr *e;
 
-    new_page = malloc (sizeof (FcExprPage));
-    if (!new_page)
-      return 0;
+    if (!config->expr_pool || config->expr_pool->next == config->expr_pool->end)
+    {
+	FcExprPage *new_page;
 
-    new_page->next_page = config->expr_pool;
-    new_page->next = new_page->exprs;
-    config->expr_pool = new_page;
-  }
+	new_page = malloc (sizeof (FcExprPage));
+	if (!new_page)
+	    return 0;
 
-  return config->expr_pool->next++;
+	new_page->next_page = config->expr_pool;
+	new_page->next = new_page->exprs;
+	config->expr_pool = new_page;
+    }
+
+    e = config->expr_pool->next++;
+    FcRefInit (&e->ref, 1);
+
+    return e;
 }
 
 FcConfig *

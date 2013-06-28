@@ -223,10 +223,23 @@ FcExprCreateOp (FcConfig *config, FcExpr *left, FcOp op, FcExpr *right)
     return e;
 }
 
+static FcExpr *
+FcExprReference (FcExpr *e)
+{
+    if (e)
+    {
+	FcRefInc (&e->ref);
+    }
+
+    return e;
+}
+
 static void
 FcExprDestroy (FcExpr *e)
 {
     if (!e)
+	return;
+    if (FcRefDec (&e->ref) != 1)
 	return;
     switch (FC_OP_GET_OP (e->op)) {
     case FcOpInteger:
@@ -725,6 +738,21 @@ FcTestCreate (FcConfigParse *parse,
 	    FcTypecheckExpr (parse, expr, o->type);
     }
     return test;
+}
+
+static FcTest *
+FcTestDuplicate (FcTest *test)
+{
+    FcTest *retval = (FcTest *) malloc (sizeof (FcTest));
+
+    if (retval)
+    {
+	memcpy (retval, test, sizeof (FcTest));
+	retval->next = NULL;
+	retval->expr = FcExprReference (test->expr);
+    }
+
+    return retval;
 }
 
 static FcEdit *
@@ -2401,7 +2429,7 @@ FcParseMatch (FcConfigParse *parse)
     FcVStack	    *vstack;
     FcBool           tested = FcFalse;
     FcSubstStack    *sstack = NULL;
-    int              len, pos = 0;
+    int              len, pos = 0, i;
 
     kind_name = FcConfigGetAttribute (parse, "target");
     if (!kind_name)
@@ -2438,6 +2466,13 @@ FcParseMatch (FcConfigParse *parse)
 	    test = vstack->u.test;
 	    vstack->tag = FcVStackNone;
 	    tested = FcTrue;
+	    for (i = 0; i < pos; i++)
+	    {
+		FcTest *t = FcTestDuplicate(test);
+
+		t->next = sstack[i].test;
+		sstack[i].test = t;
+	    }
 	    break;
 	case FcVStackEdit:
 	    /* due to the reverse traversal, <edit> node appears faster than

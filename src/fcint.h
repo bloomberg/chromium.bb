@@ -240,6 +240,7 @@ typedef struct _FcExprName {
 
 typedef struct _FcExpr {
     FcOp   op;
+    FcRef  ref;
     union {
 	int	    ival;
 	double	    dval;
