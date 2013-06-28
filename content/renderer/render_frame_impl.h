@@ -31,36 +31,36 @@ class CONTENT_EXPORT RenderFrameImpl
   // WebKit::WebFrameClient implementation -------------------------------------
   virtual WebKit::WebPlugin* createPlugin(
       WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params) OVERRIDE;
+      const WebKit::WebPluginParams& params);
   virtual WebKit::WebSharedWorker* createSharedWorker(
       WebKit::WebFrame* frame,
       const WebKit::WebURL& url,
       const WebKit::WebString& name,
-      unsigned long long document_id) OVERRIDE;
+      unsigned long long document_id);
   virtual WebKit::WebMediaPlayer* createMediaPlayer(
       WebKit::WebFrame* frame,
       const WebKit::WebURL& url,
-      WebKit::WebMediaPlayerClient* client) OVERRIDE;
+      WebKit::WebMediaPlayerClient* client);
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebFrame* frame,
-      WebKit::WebApplicationCacheHostClient* client) OVERRIDE;
-  virtual WebKit::WebCookieJar* cookieJar(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void didAccessInitialDocument(WebKit::WebFrame* frame) OVERRIDE;
+      WebKit::WebApplicationCacheHostClient* client);
+  virtual WebKit::WebCookieJar* cookieJar(WebKit::WebFrame* frame);
+  virtual void didAccessInitialDocument(WebKit::WebFrame* frame);
   virtual void didCreateFrame(WebKit::WebFrame* parent,
-                              WebKit::WebFrame* child) OVERRIDE;
-  virtual void didDisownOpener(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void frameDetached(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void willClose(WebKit::WebFrame* frame) OVERRIDE;
+                              WebKit::WebFrame* child);
+  virtual void didDisownOpener(WebKit::WebFrame* frame);
+  virtual void frameDetached(WebKit::WebFrame* frame);
+  virtual void willClose(WebKit::WebFrame* frame);
   virtual void didChangeName(WebKit::WebFrame* frame,
-                             const WebKit::WebString& name) OVERRIDE;
+                             const WebKit::WebString& name);
   virtual void loadURLExternally(WebKit::WebFrame* frame,
                                  const WebKit::WebURLRequest& request,
-                                 WebKit::WebNavigationPolicy policy) OVERRIDE;
+                                 WebKit::WebNavigationPolicy policy);
   virtual void loadURLExternally(
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationPolicy policy,
-      const WebKit::WebString& suggested_name) OVERRIDE;
+      const WebKit::WebString& suggested_name);
   // The WebDataSource::ExtraData* is assumed to be a DocumentState* subclass.
   virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
       WebKit::WebFrame* frame,
@@ -75,135 +75,135 @@ class CONTENT_EXPORT RenderFrameImpl
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationType type,
       WebKit::WebNavigationPolicy default_policy,
-      bool is_redirect) OVERRIDE;
+      bool is_redirect);
   virtual WebKit::WebURLError cannotHandleRequestError(
       WebKit::WebFrame* frame,
-      const WebKit::WebURLRequest& request) OVERRIDE;
+      const WebKit::WebURLRequest& request);
   virtual WebKit::WebURLError cancelledError(
       WebKit::WebFrame* frame,
-      const WebKit::WebURLRequest& request) OVERRIDE;
+      const WebKit::WebURLRequest& request);
   virtual void unableToImplementPolicyWithError(
       WebKit::WebFrame* frame,
-      const WebKit::WebURLError& error) OVERRIDE;
+      const WebKit::WebURLError& error);
   virtual void willSendSubmitEvent(WebKit::WebFrame* frame,
-                                   const WebKit::WebFormElement& form) OVERRIDE;
+                                   const WebKit::WebFormElement& form);
   virtual void willSubmitForm(WebKit::WebFrame* frame,
-                              const WebKit::WebFormElement& form) OVERRIDE;
+                              const WebKit::WebFormElement& form);
   virtual void willPerformClientRedirect(WebKit::WebFrame* frame,
                                          const WebKit::WebURL& from,
                                          const WebKit::WebURL& to,
                                          double interval,
-                                         double fire_time) OVERRIDE;
-  virtual void didCancelClientRedirect(WebKit::WebFrame* frame) OVERRIDE;
+                                         double fire_time);
+  virtual void didCancelClientRedirect(WebKit::WebFrame* frame);
   virtual void didCompleteClientRedirect(WebKit::WebFrame* frame,
-                                         const WebKit::WebURL& from) OVERRIDE;
+                                         const WebKit::WebURL& from);
   virtual void didCreateDataSource(WebKit::WebFrame* frame,
-                                   WebKit::WebDataSource* datasource) OVERRIDE;
-  virtual void didStartProvisionalLoad(WebKit::WebFrame* frame) OVERRIDE;
+                                   WebKit::WebDataSource* datasource);
+  virtual void didStartProvisionalLoad(WebKit::WebFrame* frame);
   virtual void didReceiveServerRedirectForProvisionalLoad(
-      WebKit::WebFrame* frame) OVERRIDE;
+      WebKit::WebFrame* frame);
   virtual void didFailProvisionalLoad(
       WebKit::WebFrame* frame,
-      const WebKit::WebURLError& error) OVERRIDE;
+      const WebKit::WebURLError& error);
   virtual void didReceiveDocumentData(WebKit::WebFrame* frame,
                                       const char* data,
                                       size_t length,
-                                      bool& prevent_default) OVERRIDE;
+                                      bool& prevent_default);
   virtual void didCommitProvisionalLoad(WebKit::WebFrame* frame,
-                                        bool is_new_navigation) OVERRIDE;
-  virtual void didClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void didCreateDocumentElement(WebKit::WebFrame* frame) OVERRIDE;
+                                        bool is_new_navigation);
+  virtual void didClearWindowObject(WebKit::WebFrame* frame);
+  virtual void didCreateDocumentElement(WebKit::WebFrame* frame);
   virtual void didReceiveTitle(WebKit::WebFrame* frame,
                                const WebKit::WebString& title,
-                               WebKit::WebTextDirection direction) OVERRIDE;
+                               WebKit::WebTextDirection direction);
   virtual void didChangeIcon(WebKit::WebFrame* frame,
-                             WebKit::WebIconURL::Type icon_type) OVERRIDE;
-  virtual void didFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void didHandleOnloadEvents(WebKit::WebFrame* frame) OVERRIDE;
+                             WebKit::WebIconURL::Type icon_type);
+  virtual void didFinishDocumentLoad(WebKit::WebFrame* frame);
+  virtual void didHandleOnloadEvents(WebKit::WebFrame* frame);
   virtual void didFailLoad(WebKit::WebFrame* frame,
-                           const WebKit::WebURLError& error) OVERRIDE;
-  virtual void didFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
+                           const WebKit::WebURLError& error);
+  virtual void didFinishLoad(WebKit::WebFrame* frame);
   virtual void didNavigateWithinPage(WebKit::WebFrame* frame,
-                                     bool is_new_navigation) OVERRIDE;
-  virtual void didUpdateCurrentHistoryItem(WebKit::WebFrame* frame) OVERRIDE;
+                                     bool is_new_navigation);
+  virtual void didUpdateCurrentHistoryItem(WebKit::WebFrame* frame);
   virtual void willSendRequest(
       WebKit::WebFrame* frame,
       unsigned identifier,
       WebKit::WebURLRequest& request,
-      const WebKit::WebURLResponse& redirect_response) OVERRIDE;
+      const WebKit::WebURLResponse& redirect_response);
   virtual void didReceiveResponse(
       WebKit::WebFrame* frame,
       unsigned identifier,
-      const WebKit::WebURLResponse& response) OVERRIDE;
+      const WebKit::WebURLResponse& response);
   virtual void didFinishResourceLoad(WebKit::WebFrame* frame,
-                                     unsigned identifier) OVERRIDE;
+                                     unsigned identifier);
   virtual void didFailResourceLoad(WebKit::WebFrame* frame,
                                    unsigned identifier,
-                                   const WebKit::WebURLError& error) OVERRIDE;
+                                   const WebKit::WebURLError& error);
   virtual void didLoadResourceFromMemoryCache(
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& request,
-      const WebKit::WebURLResponse& response) OVERRIDE;
-  virtual void didDisplayInsecureContent(WebKit::WebFrame* frame) OVERRIDE;
+      const WebKit::WebURLResponse& response);
+  virtual void didDisplayInsecureContent(WebKit::WebFrame* frame);
   virtual void didRunInsecureContent(WebKit::WebFrame* frame,
                                      const WebKit::WebSecurityOrigin& origin,
-                                     const WebKit::WebURL& target) OVERRIDE;
+                                     const WebKit::WebURL& target);
   virtual void didExhaustMemoryAvailableForScript(
-      WebKit::WebFrame* frame) OVERRIDE;
+      WebKit::WebFrame* frame);
   virtual void didCreateScriptContext(WebKit::WebFrame* frame,
                                       v8::Handle<v8::Context> context,
                                       int extension_group,
-                                      int world_id) OVERRIDE;
+                                      int world_id);
   virtual void willReleaseScriptContext(WebKit::WebFrame* frame,
                                         v8::Handle<v8::Context> context,
-                                        int world_id) OVERRIDE;
-  virtual void didFirstVisuallyNonEmptyLayout(WebKit::WebFrame* frame) OVERRIDE;
+                                        int world_id);
+  virtual void didFirstVisuallyNonEmptyLayout(WebKit::WebFrame* frame);
   virtual void didChangeContentsSize(WebKit::WebFrame* frame,
-                                     const WebKit::WebSize& size) OVERRIDE;
-  virtual void didChangeScrollOffset(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void willInsertBody(WebKit::WebFrame* frame) OVERRIDE;
+                                     const WebKit::WebSize& size);
+  virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
+  virtual void willInsertBody(WebKit::WebFrame* frame);
   virtual void reportFindInPageMatchCount(int request_id,
                                           int count,
-                                          bool final_update) OVERRIDE;
+                                          bool final_update);
   virtual void reportFindInPageSelection(int request_id,
                                          int active_match_ordinal,
-                                         const WebKit::WebRect& sel) OVERRIDE;
+                                         const WebKit::WebRect& sel);
   virtual void openFileSystem(
       WebKit::WebFrame* frame,
       WebKit::WebFileSystemType type,
       long long size,
       bool create,
-      WebKit::WebFileSystemCallbacks* callbacks) OVERRIDE;
+      WebKit::WebFileSystemCallbacks* callbacks);
   virtual void deleteFileSystem(
       WebKit::WebFrame* frame,
       WebKit::WebFileSystemType type,
-      WebKit::WebFileSystemCallbacks* callbacks) OVERRIDE;
+      WebKit::WebFileSystemCallbacks* callbacks);
   virtual void queryStorageUsageAndQuota(
       WebKit::WebFrame* frame,
       WebKit::WebStorageQuotaType type,
-      WebKit::WebStorageQuotaCallbacks* callbacks) OVERRIDE;
+      WebKit::WebStorageQuotaCallbacks* callbacks);
   virtual void requestStorageQuota(
       WebKit::WebFrame* frame,
       WebKit::WebStorageQuotaType type,
       unsigned long long requested_size,
-      WebKit::WebStorageQuotaCallbacks* callbacks) OVERRIDE;
+      WebKit::WebStorageQuotaCallbacks* callbacks);
   virtual void willOpenSocketStream(
-      WebKit::WebSocketStreamHandle* handle) OVERRIDE;
+      WebKit::WebSocketStreamHandle* handle);
   virtual void willStartUsingPeerConnectionHandler(
       WebKit::WebFrame* frame,
-      WebKit::WebRTCPeerConnectionHandler* handler) OVERRIDE;
+      WebKit::WebRTCPeerConnectionHandler* handler);
   virtual bool willCheckAndDispatchMessageEvent(
       WebKit::WebFrame* sourceFrame,
       WebKit::WebFrame* targetFrame,
       WebKit::WebSecurityOrigin targetOrigin,
-      WebKit::WebDOMMessageEvent event) OVERRIDE;
+      WebKit::WebDOMMessageEvent event);
   virtual WebKit::WebString userAgentOverride(
       WebKit::WebFrame* frame,
-      const WebKit::WebURL& url) OVERRIDE;
-  virtual WebKit::WebString doNotTrackValue(WebKit::WebFrame* frame) OVERRIDE;
-  virtual bool allowWebGL(WebKit::WebFrame* frame, bool default_value) OVERRIDE;
+      const WebKit::WebURL& url);
+  virtual WebKit::WebString doNotTrackValue(WebKit::WebFrame* frame);
+  virtual bool allowWebGL(WebKit::WebFrame* frame, bool default_value);
   virtual void didLoseWebGLContext(WebKit::WebFrame* frame,
-                                   int arb_robustness_status_code) OVERRIDE;
+                                   int arb_robustness_status_code);
 
   // RenderFrameImpl methods
   int routing_id() { return routing_id_; }
