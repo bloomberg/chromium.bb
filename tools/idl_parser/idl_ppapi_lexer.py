@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -40,10 +41,28 @@ class IDLPPAPILexer(IDLLexer):
   # Return a "preprocessor" inline block
   def __init__(self):
     IDLLexer.__init__(self)
-    self._AddTokens(['LSHIFT', 'RSHIFT', 'INLINE'])
-    self._AddKeywords(['label', 'namespace', 'struct'])
+    self._AddTokens(['INLINE', 'LSHIFT', 'RSHIFT'])
+    self._AddKeywords(['label'])
+
+    # Add number types
+    self._AddKeywords(['char', 'int8_t', 'int16_t', 'int32_t', 'int64_t']);
+    self._AddKeywords(['uint8_t', 'uint16_t', 'uint32_t', 'uint64_t']);
+    self._AddKeywords(['double_t', 'float_t']);
+
+    # Add handle types
+    self._AddKeywords(['handle_t', 'PP_FileHandle']);
+
+    # Add pointer types (void*, char*, const char*, const void*)
+    self._AddKeywords(['mem_t', 'str_t', 'cstr_t', 'interface_t']);
+
+    # Remove JS types
+    self._DelKeywords(['boolean', 'byte', 'Date', 'DOMString', 'double',
+                       'float', 'long', 'object', 'octet', 'short', 'unsigned'])
 
 
 # If run by itself, attempt to build the lexer
 if __name__ == '__main__':
   lexer = IDLPPAPILexer()
+  lexer.Tokenize(open('test_parser/inline_ppapi.idl').read())
+  for tok in lexer.GetTokens():
+    print '\n' + str(tok)

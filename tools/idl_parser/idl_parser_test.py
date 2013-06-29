@@ -8,6 +8,8 @@ import unittest
 
 from idl_lexer import IDLLexer
 from idl_parser import IDLParser, ParseFile
+from idl_ppapi_lexer import IDLPPAPILexer
+from idl_ppapi_parser import IDLPPAPIParser
 
 def ParseCommentTest(comment):
   comment = comment.strip()
@@ -18,7 +20,7 @@ def ParseCommentTest(comment):
 class WebIDLParser(unittest.TestCase):
   def setUp(self):
     self.parser = IDLParser(IDLLexer(), mute_error=True)
-    self.filenames = glob.glob('test_parser/*.idl')
+    self.filenames = glob.glob('test_parser/*_web.idl')
 
   def _TestNode(self, node):
     comments = node.GetListOf('Comment')
@@ -55,6 +57,46 @@ class WebIDLParser(unittest.TestCase):
       for node in filenode.GetChildren()[2:]:
         self._TestNode(node)
 
+
+class PepperIDLParser(unittest.TestCase):
+  def setUp(self):
+    self.parser = IDLPPAPIParser(IDLPPAPILexer(), mute_error=True)
+    self.filenames = glob.glob('test_parser/*_ppapi.idl')
+
+  def _TestNode(self, node):
+    comments = node.GetListOf('Comment')
+    for comment in comments:
+      check, value = ParseCommentTest(comment.GetName())
+      if check == 'BUILD':
+        msg = 'Expecting %s, but found %s.\n' % (value, str(node))
+        self.assertEqual(value, str(node), msg)
+
+      if check == 'ERROR':
+        msg = node.GetLogLine('Expecting\n\t%s\nbut found \n\t%s\n' % (
+                              value, str(node)))
+        self.assertEqual(value, node.GetName(), msg)
+
+      if check == 'PROP':
+        key, expect = value.split('=')
+        actual = str(node.GetProperty(key))
+        msg = 'Mismatched property %s: %s vs %s.\n' % (key, expect, actual)
+        self.assertEqual(expect, actual, msg)
+
+      if check == 'TREE':
+        quick = '\n'.join(node.Tree())
+        lineno = node.GetProperty('LINENO')
+        msg = 'Mismatched tree at line %d:\n%sVS\n%s' % (lineno, value, quick)
+        self.assertEqual(value, quick, msg)
+
+  def testExpectedNodes(self):
+    for filename in self.filenames:
+      filenode = ParseFile(self.parser, filename)
+      children = filenode.GetChildren()
+      self.assertTrue(len(children) > 2, 'Expecting children in %s.' %
+                      filename)
+
+      for node in filenode.GetChildren()[2:]:
+        self._TestNode(node)
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)

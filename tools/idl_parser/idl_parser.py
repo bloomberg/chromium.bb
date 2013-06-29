@@ -751,7 +751,7 @@ class IDLParser(object):
     """TypeSuffix : '[' integer ']' TypeSuffix
                   | '[' ']' TypeSuffix
                   | '?' TypeSuffixStartingWithArray
-                  |"""
+                  | """
     if len(p) == 5:
       p[0] = self.BuildNamed('Array', p, 2, p[4])
 
@@ -981,7 +981,7 @@ class IDLParser(object):
 
     try:
       self.lexer.Tokenize(data, filename)
-      nodes = self.yaccobj.parse(lexer=self.lexer)
+      nodes = self.yaccobj.parse(lexer=self.lexer) or []
       name = self.BuildAttribute('NAME', filename)
       return IDLNode('File', filename, 0, 0, nodes + [name])
 
@@ -1002,7 +1002,7 @@ def ParseFile(parser, filename):
 
     except Exception as e:
       last = parser.LastToken()
-      sys.stderr.write('%s(%d) : Internal parsing error - %s.' % (
+      sys.stderr.write('%s(%d) : Internal parsing error\n\t%s.\n' % (
                        filename, last.lineno, str(e)))
 
 
@@ -1012,15 +1012,15 @@ def main(argv):
   errors = 0
   for filename in argv:
     filenode = ParseFile(parser, filename)
-    errors += filenode.GetProperty('ERRORS')
-    nodes.append(filenode)
+    if (filenode):
+      errors += filenode.GetProperty('ERRORS')
+      nodes.append(filenode)
 
   ast = IDLNode('AST', '__AST__', 0, 0, nodes)
 
   print '\n'.join(ast.Tree(accept_props=['PROD']))
   if errors:
     print '\nFound %d errors.\n' % errors
-
 
   return errors
 

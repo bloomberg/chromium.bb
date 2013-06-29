@@ -257,6 +257,11 @@ class IDLLexer(object):
       self._AddToken(value)
       self.keywords[key] = value
 
+  def _DelKeywords(self, keywords):
+    for key in keywords:
+      self.tokens.remove(key.upper())
+      del self.keywords[key]
+
   def __init__(self):
     self.index = [0]
     self._lex_errors = 0
