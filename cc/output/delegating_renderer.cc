@@ -11,6 +11,7 @@
 #include "base/debug/trace_event.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -68,7 +69,11 @@ bool DelegatingRenderer::Initialize() {
   if (!context3d->makeContextCurrent())
     return false;
 
-  context3d->pushGroupMarkerEXT("CompositorContext");
+  std::string unique_context_name = base::StringPrintf(
+      "%s-%p",
+      Settings().compositor_name.c_str(),
+      context3d);
+  context3d->pushGroupMarkerEXT(unique_context_name.c_str());
 
   std::string extensions_string =
       UTF16ToASCII(context3d->getString(GL_EXTENSIONS));

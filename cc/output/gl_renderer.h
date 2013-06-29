@@ -78,6 +78,7 @@ class CC_EXPORT GLRenderer
                           int line);
 
   bool CanUseSkiaGPUBackend() const;
+  void LazyLabelOffscreenContext();
 
  protected:
   GLRenderer(RendererClient* client,
@@ -434,6 +435,7 @@ class CC_EXPORT GLRenderer
   TexturedQuadDrawCache draw_cache_;
   int highp_threshold_min_;
   int highp_threshold_cache_;
+  bool offscreen_context_labelled_;
 
   struct PendingAsyncReadPixels;
   ScopedPtrVector<PendingAsyncReadPixels> pending_async_read_pixels_;

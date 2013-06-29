@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/video_layer_impl.h"
@@ -148,6 +149,7 @@ GLRenderer::GLRenderer(RendererClient* client,
       is_scissor_enabled_(false),
       highp_threshold_min_(highp_threshold_min),
       highp_threshold_cache_(0),
+      offscreen_context_labelled_(false),
       on_demand_tile_raster_resource_id_(0),
       weak_factory_(this) {
   DCHECK(context_);
@@ -157,7 +159,11 @@ bool GLRenderer::Initialize() {
   if (!context_->makeContextCurrent())
     return false;
 
-  context_->pushGroupMarkerEXT(Settings().compositor_name.c_str());
+  std::string unique_context_name = base::StringPrintf(
+      "%s-%p",
+      Settings().compositor_name.c_str(),
+      context_);
+  context_->pushGroupMarkerEXT(unique_context_name.c_str());
 
   std::string extensions_string =
       UTF16ToASCII(context_->getString(GL_EXTENSIONS));
@@ -470,6 +476,9 @@ static inline SkBitmap ApplyFilters(GLRenderer* renderer,
   // Make sure skia uses the correct GL context.
   offscreen_contexts->Context3d()->makeContextCurrent();
 
+  // Lazily label this context.
+  renderer->LazyLabelOffscreenContext();
+
   SkBitmap source =
       RenderSurfaceFilters::Apply(filters,
                                   lock.texture_id(),
@@ -510,6 +519,9 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
 
   // Make sure skia uses the correct GL context.
   offscreen_contexts->Context3d()->makeContextCurrent();
+
+  // Lazily label this context.
+  renderer->LazyLabelOffscreenContext();
 
   // Wrap the source texture in a Ganesh platform texture.
   GrBackendTextureDesc backend_texture_description;
@@ -3029,5 +3041,18 @@ bool GLRenderer::CanUseSkiaGPUBackend() const {
 bool GLRenderer::IsContextLost() {
   return (context_->getGraphicsResetStatusARB() != GL_NO_ERROR);
 }
+
+void GLRenderer::LazyLabelOffscreenContext() {
+  if (offscreen_context_labelled_)
+    return;
+  offscreen_context_labelled_ = true;
+  std::string unique_context_name = base::StringPrintf(
+      "%s-Offscreen-%p",
+      Settings().compositor_name.c_str(),
+      context_);
+  resource_provider()->offscreen_context_provider()->Context3d()->
+    pushGroupMarkerEXT(unique_context_name.c_str());
+}
+
 
 }  // namespace cc

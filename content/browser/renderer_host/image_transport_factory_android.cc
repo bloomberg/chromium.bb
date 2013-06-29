@@ -58,7 +58,8 @@ DirectGLImageTransportFactory::DirectGLImageTransportFactory() {
       CreateViewContext(attrs, NULL);
   if (context_->makeContextCurrent())
     context_->pushGroupMarkerEXT(
-        base::StringPrintf("DirectGLImageTransportFactory-%p", this).c_str());
+        base::StringPrintf("DirectGLImageTransportFactory-%p",
+                           context_.get()).c_str());
 }
 
 DirectGLImageTransportFactory::~DirectGLImageTransportFactory() {
@@ -116,7 +117,8 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
 
   if (context_->makeContextCurrent())
     context_->pushGroupMarkerEXT(
-        base::StringPrintf("CmdBufferImageTransportFactory-%p", this).c_str());
+        base::StringPrintf("CmdBufferImageTransportFactory-%p",
+                           context_.get()).c_str());
 }
 
 CmdBufferImageTransportFactory::~CmdBufferImageTransportFactory() {
