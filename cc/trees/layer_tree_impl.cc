@@ -297,23 +297,6 @@ void LayerTreeImpl::UpdateDrawProperties() {
       "CalcDrawProperties should not set_needs_update_draw_properties()";
 }
 
-static void ClearRenderSurfacesOnLayerImplRecursive(LayerImpl* current) {
-  DCHECK(current);
-  for (size_t i = 0; i < current->children().size(); ++i)
-    ClearRenderSurfacesOnLayerImplRecursive(current->children()[i]);
-  current->ClearRenderSurface();
-}
-
-void LayerTreeImpl::ClearRenderSurfaces() {
-  if (root_layer() == NULL) {
-    DCHECK(render_surface_layer_list_.empty());
-    return;
-  }
-  ClearRenderSurfacesOnLayerImplRecursive(root_layer());
-  render_surface_layer_list_.clear();
-  set_needs_update_draw_properties();
-}
-
 const LayerImplList& LayerTreeImpl::RenderSurfaceLayerList() const {
   // If this assert triggers, then the list is dirty.
   DCHECK(!needs_update_draw_properties_);

@@ -227,7 +227,6 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
     input_handler_client_ = NULL;
   }
 
-  ClearRenderSurfaces();
   // The layer trees must be destroyed before the layer tree host. We've
   // made a contract with our animation controllers that the registrar
   // will outlive them, and we must make good.
@@ -1390,7 +1389,6 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   // tree, rename the pending tree the recycle tree so we can reuse it on the
   // next sync.
   pending_tree_.swap(recycle_tree_);
-  recycle_tree_->ClearRenderSurfaces();
 
   active_tree_->SetRootLayerScrollOffsetDelegate(
       root_layer_scroll_offset_delegate_);
@@ -1445,8 +1443,6 @@ ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
 
 void LayerTreeHostImpl::ReleaseTreeResources() {
   if (active_tree_->root_layer())
-    ClearRenderSurfaces();
-  if (active_tree_->root_layer())
     SendReleaseResourcesRecursive(active_tree_->root_layer());
   if (pending_tree_ && pending_tree_->root_layer())
     SendReleaseResourcesRecursive(pending_tree_->root_layer());
@@ -1472,8 +1468,10 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
         SoftwareRenderer::Create(this, output_surface, resource_provider);
   }
 
-  if (renderer_)
+  if (renderer_) {
     renderer_->SetVisible(visible_);
+    SetFullRootLayerDamage();
+  }
 }
 
 void LayerTreeHostImpl::EnforceZeroBudget(bool zero_budget) {
@@ -2159,12 +2157,6 @@ void LayerTreeHostImpl::SendReleaseResourcesRecursive(LayerImpl* current) {
     SendReleaseResourcesRecursive(current->replica_layer());
   for (size_t i = 0; i < current->children().size(); ++i)
     SendReleaseResourcesRecursive(current->children()[i]);
-}
-
-void LayerTreeHostImpl::ClearRenderSurfaces() {
-  active_tree_->ClearRenderSurfaces();
-  if (pending_tree_)
-    pending_tree_->ClearRenderSurfaces();
 }
 
 std::string LayerTreeHostImpl::LayerTreeAsJson() const {

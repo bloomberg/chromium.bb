@@ -427,7 +427,6 @@ class CC_EXPORT LayerTreeHostImpl
   bool CalculateRenderPasses(FrameData* frame);
 
   void SendReleaseResourcesRecursive(LayerImpl* current);
-  void ClearRenderSurfaces();
   bool EnsureRenderSurfaceLayerList();
   void ClearCurrentlyScrollingLayer();
 

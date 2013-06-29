@@ -149,8 +149,6 @@ class CC_EXPORT LayerTreeImpl {
   void set_needs_full_tree_sync(bool needs) { needs_full_tree_sync_ = needs; }
   bool needs_full_tree_sync() const { return needs_full_tree_sync_; }
 
-  void ClearRenderSurfaces();
-
   const LayerImplList& RenderSurfaceLayerList() const;
 
   // These return the size of the root scrollable area and the size of
@@ -235,6 +233,7 @@ class CC_EXPORT LayerTreeImpl {
 
   ui::LatencyInfo latency_info_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);
 };
 
