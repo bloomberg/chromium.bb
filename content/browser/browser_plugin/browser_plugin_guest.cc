@@ -415,10 +415,6 @@ void BrowserPluginGuest::Initialize(
   renderer_prefs->browser_handles_all_top_level_requests = false;
 
   notification_registrar_.Add(
-      this, NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      Source<WebContents>(GetWebContents()));
-
-  notification_registrar_.Add(
       this, NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       Source<WebContents>(GetWebContents()));
 
@@ -523,11 +519,6 @@ void BrowserPluginGuest::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
   switch (type) {
-    case NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
-      DCHECK_EQ(Source<WebContents>(source).ptr(), GetWebContents());
-      LoadHandlerCalled();
-      break;
-    }
     case NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
       DCHECK_EQ(Source<WebContents>(source).ptr(), GetWebContents());
       ResourceRedirectDetails* resource_redirect_details =
@@ -819,10 +810,6 @@ void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
   }
   msg->set_routing_id(embedder_web_contents_->GetRoutingID());
   embedder_web_contents_->Send(msg);
-}
-
-void BrowserPluginGuest::LoadHandlerCalled() {
-  SendMessageToEmbedder(new BrowserPluginMsg_LoadHandlerCalled(instance_id()));
 }
 
 void BrowserPluginGuest::DragSourceEndedAt(int client_x, int client_y,

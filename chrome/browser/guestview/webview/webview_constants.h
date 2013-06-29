@@ -10,6 +10,7 @@
 namespace webview {
 
 // Events.
+extern const char kEventContentLoad[];
 extern const char kEventLoadCommit[];
 extern const char kEventLoadStop[];
 

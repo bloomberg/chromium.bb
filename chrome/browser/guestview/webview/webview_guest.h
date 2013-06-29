@@ -8,6 +8,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/guestview/guestview.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace extensions {
@@ -22,6 +23,7 @@ class ScriptExecutor;
 // or through the use of the New Window API, when a new window is attached to
 // a particular <webview>.
 class WebViewGuest : public GuestView,
+                     public content::NotificationObserver,
                      public content::WebContentsObserver {
  public:
   explicit WebViewGuest(content::WebContents* guest_web_contents);
@@ -37,6 +39,11 @@ class WebViewGuest : public GuestView,
   virtual WebViewGuest* AsWebView() OVERRIDE;
   virtual AdViewGuest* AsAdView() OVERRIDE;
 
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // If possible, navigate the guest to |relative_index| entries away from the
   // current navigation entry.
   void Go(int relative_index);
@@ -48,6 +55,7 @@ class WebViewGuest : public GuestView,
  private:
   virtual ~WebViewGuest();
 
+  // WebContentsObserver implementation.
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,
@@ -59,6 +67,9 @@ class WebViewGuest : public GuestView,
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;
 
+  // Called after the load handler is called in the guest's main frame.
+  void LoadHandlerCalled();
+
   void AddWebViewToExtensionRendererState();
   static void RemoveWebViewFromExtensionRendererState(
       content::WebContents* web_contents);
@@ -66,6 +77,8 @@ class WebViewGuest : public GuestView,
   ObserverList<extensions::TabHelper::ScriptExecutionObserver>
       script_observers_;
   scoped_ptr<extensions::ScriptExecutor> script_executor_;
+
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };

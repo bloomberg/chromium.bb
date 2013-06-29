@@ -324,12 +324,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_GuestContentWindowReady,
                      int /* instance_id */,
                      int /* source_routing_id */)
 
-// After the load handler of the guest's main frame is called, the browser
-// process informs the embedder through the BrowserPluginMsg_LoadHandlerCalled
-// message.
-IPC_MESSAGE_CONTROL1(BrowserPluginMsg_LoadHandlerCalled,
-                     int /* instance_id */)
-
 // When the guest begins to load a page, the browser process informs the
 // embedder through the BrowserPluginMsg_LoadStart message.
 IPC_MESSAGE_CONTROL3(BrowserPluginMsg_LoadStart,

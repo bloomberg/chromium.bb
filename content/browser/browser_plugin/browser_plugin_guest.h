@@ -298,9 +298,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   base::SharedMemory* GetDamageBufferFromEmbedder(
       const BrowserPluginHostMsg_ResizeGuest_Params& params);
 
-  // Called after the load handler is called in the guest's main frame.
-  void LoadHandlerCalled();
-
   // Called when a redirect notification occurs.
   void LoadRedirect(const GURL& old_url,
                     const GURL& new_url,

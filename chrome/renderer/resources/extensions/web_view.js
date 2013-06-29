@@ -27,13 +27,10 @@ var WEB_VIEW_API_METHODS = [
 var WEB_VIEW_EVENTS = {
   'close': [],
   'consolemessage': ['level', 'message', 'line', 'sourceId'],
-  'contentload' : [],
   'exit' : ['processId', 'reason'],
   'loadabort' : ['url', 'isTopLevel', 'reason'],
-  'loadcommit' : ['url', 'isTopLevel'],
   'loadredirect' : ['oldUrl', 'newUrl', 'isTopLevel'],
   'loadstart' : ['url', 'isTopLevel'],
-  'loadstop' : [],
   'responsive' : ['processId'],
   'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
   'unresponsive' : ['processId']
@@ -44,8 +41,30 @@ var createEvent = function(name) {
   return new eventBindings.Event(name, undefined, eventOpts);
 };
 
+var contentLoadEvent = createEvent('webview.onContentLoad');
 var loadCommitEvent = createEvent('webview.onLoadCommit');
 var loadStopEvent = createEvent('webview.onLoadStop');
+
+var WEB_VIEW_EXT_EVENTS = {
+  'contentload': {
+    evt: contentLoadEvent,
+    fields: []
+  },
+  'loadcommit': {
+    customHandler: function(WebView, event) {
+      WebView.currentEntryIndex_ = event.currentEntryIndex;
+      WebView.entryCount_ = event.entryCount;
+    },
+    evt: loadCommitEvent,
+    fields: ['url', 'isTopLevel']
+  }
+  ,
+  'loadstop': {
+    evt: loadStopEvent,
+    fields: []
+  }
+};
+
 
 // The <webview> tags we wish to watch for (watchForTag) does not belong to the
 // current scope's "document" reference. We need to wait until the document
@@ -304,30 +323,13 @@ WebView.prototype.handleBrowserPluginAttributeMutation_ = function(mutation) {
 WebView.prototype.setupWebviewNodeEvents_ = function() {
   var self = this;
   var webviewNode = this.webviewNode_;
-  // TODO(fsamuel): Generalize this further as we add more events.
-  var onAttached = function(e) {
+  this.browserPluginNode_.addEventListener('-internal-attached', function(e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
-    loadCommitEvent.addListener(function(event) {
-      var webviewEvent = new Event('loadcommit', {bubbles: true});
-      var attribs = WEB_VIEW_EVENTS['loadcommit'];
-      $Array.forEach(attribs, function(attribName) {
-        webviewEvent[attribName] = event[attribName];
-      });
-      self.currentEntryIndex_ = event.currentEntryIndex;
-      self.entryCount_ = event.entryCount;
-      webviewNode.dispatchEvent(webviewEvent);
-    }, {instanceId: detail.windowId});
-
-    loadStopEvent.addListener(function(event) {
-      var webviewEvent = new Event('loadstop', {bubbles: true});
-      var attribs = WEB_VIEW_EVENTS['loadstop'];
-      $Array.forEach(attribs, function(attribName) {
-        webviewEvent[attribName] = event[attribName];
-      });
-      webviewNode.dispatchEvent(webviewEvent);
-    }, {instanceId: detail.windowId});
-  };
-  this.browserPluginNode_.addEventListener('-internal-attached', onAttached);
+    self.instanceId_ = detail.windowId;
+    for (var eventName in WEB_VIEW_EXT_EVENTS) {
+      self.setupExtEvent_(eventName, WEB_VIEW_EXT_EVENTS[eventName]);
+    }
+  });
 
   for (var eventName in WEB_VIEW_EVENTS) {
     this.setupEvent_(eventName, WEB_VIEW_EVENTS[eventName]);
@@ -339,11 +341,29 @@ WebView.prototype.setupWebviewNodeEvents_ = function() {
 /**
  * @private
  */
-WebView.prototype.setupEvent_ = function(eventname, attribs) {
+WebView.prototype.setupExtEvent_ = function(eventName, eventInfo) {
+  var self = this;
   var webviewNode = this.webviewNode_;
-  var internalname = '-internal-' + eventname;
+  eventInfo.evt.addListener(function(event) {
+    var webviewEvent = new Event(eventName, {bubbles: true});
+    $Array.forEach(eventInfo.fields, function(field) {
+      webviewEvent[field] = event[field];
+    });
+    if (eventInfo.customHandler) {
+      eventInfo.customHandler(self, event);
+    }
+    webviewNode.dispatchEvent(webviewEvent);
+  }, {instanceId: self.instanceId_});
+};
+
+/**
+ * @private
+ */
+WebView.prototype.setupEvent_ = function(eventName, attribs) {
+  var webviewNode = this.webviewNode_;
+  var internalname = '-internal-' + eventName;
   this.browserPluginNode_.addEventListener(internalname, function(e) {
-    var evt = new Event(eventname, { bubbles: true });
+    var evt = new Event(eventName, { bubbles: true });
     var detail = e.detail ? JSON.parse(e.detail) : {};
     $Array.forEach(attribs, function(attribName) {
       evt[attribName] = detail[attribName];

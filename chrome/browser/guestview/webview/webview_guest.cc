@@ -11,6 +11,8 @@
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "chrome/browser/guestview/webview/webview_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -35,6 +37,9 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents)
       WebContentsObserver(guest_web_contents),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)) {
+  notification_registrar_.Add(
+      this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::Source<WebContents>(guest_web_contents));
 }
 
 // static
@@ -66,6 +71,23 @@ WebViewGuest* WebViewGuest::AsWebView() {
 
 AdViewGuest* WebViewGuest::AsAdView() {
   return NULL;
+}
+
+void WebViewGuest::Observe(int type,
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
+  switch (type) {
+    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
+      DCHECK_EQ(content::Source<WebContents>(source).ptr(),
+                guest_web_contents());
+      if (content::Source<WebContents>(source).ptr() == guest_web_contents())
+        LoadHandlerCalled();
+      break;
+    }
+    default:
+      NOTREACHED() << "Unexpected notification sent.";
+      break;
+  }
 }
 
 void WebViewGuest::Go(int relative_index) {
@@ -107,6 +129,11 @@ void WebViewGuest::WebContentsDestroyed(WebContents* web_contents) {
           embedder_render_process_id(),
           view_instance_id()));
   delete this;
+}
+
+void WebViewGuest::LoadHandlerCalled() {
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  DispatchEvent(new GuestView::Event(webview::kEventContentLoad, args.Pass()));
 }
 
 void WebViewGuest::AddWebViewToExtensionRendererState() {

@@ -169,7 +169,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestUnresponsive, OnGuestUnresponsive)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadAbort, OnLoadAbort)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadCommit, OnLoadCommit)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadHandlerCalled, OnLoadHandlerCalled)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadRedirect, OnLoadRedirect)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStart, OnLoadStart)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_RequestPermission, OnRequestPermission)
@@ -582,10 +581,6 @@ void BrowserPlugin::OnLoadCommit(
   guest_crashed_ = false;
   if (params.is_top_level)
     UpdateDOMAttribute(browser_plugin::kAttributeSrc, params.url.spec());
-}
-
-void BrowserPlugin::OnLoadHandlerCalled(int guest_instance_id) {
-  TriggerEvent(browser_plugin::kEventContentLoad, NULL);
 }
 
 void BrowserPlugin::OnLoadRedirect(int guest_instance_id,
@@ -1296,7 +1291,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_GuestUnresponsive::ID:
     case BrowserPluginMsg_LoadAbort::ID:
     case BrowserPluginMsg_LoadCommit::ID:
-    case BrowserPluginMsg_LoadHandlerCalled::ID:
     case BrowserPluginMsg_LoadRedirect::ID:
     case BrowserPluginMsg_LoadStart::ID:
     case BrowserPluginMsg_RequestPermission::ID:

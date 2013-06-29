@@ -347,7 +347,6 @@ class CONTENT_EXPORT BrowserPlugin :
                    const std::string& type);
   void OnLoadCommit(int instance_id,
                     const BrowserPluginMsg_LoadCommit_Params& params);
-  void OnLoadHandlerCalled(int instance_id);
   void OnLoadRedirect(int instance_id,
                       const GURL& old_url,
                       const GURL& new_url,
