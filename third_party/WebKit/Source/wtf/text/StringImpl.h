@@ -148,7 +148,7 @@ private:
         , m_buffer(0)
         , m_refCount(s_refCountFlagIsStaticString)
         , m_length(length)
-        , m_hashAndFlags(s_hashFlagIsIdentifier | BufferOwned)
+        , m_hashAndFlags(BufferOwned)
     {
         // Ensure that the hash is computed so that AtomicStringHash can call existingHash()
         // with impunity. The empty string is special because it is never entered into
@@ -166,7 +166,7 @@ private:
         , m_buffer(0)
         , m_refCount(s_refCountFlagIsStaticString)
         , m_length(length)
-        , m_hashAndFlags(s_hashFlag8BitBuffer | s_hashFlagIsIdentifier | BufferOwned)
+        , m_hashAndFlags(s_hashFlag8BitBuffer | BufferOwned)
     {
         // Ensure that the hash is computed so that AtomicStringHash can call existingHash()
         // with impunity. The empty string is special because it is never entered into
@@ -449,15 +449,6 @@ public:
 
     bool has16BitShadow() const { return m_hashAndFlags & s_hashFlagHas16BitShadow; }
     void upconvertCharacters(unsigned, unsigned) const;
-    bool isIdentifier() const { return m_hashAndFlags & s_hashFlagIsIdentifier; }
-    void setIsIdentifier(bool isIdentifier)
-    {
-        ASSERT(!isStatic());
-        if (isIdentifier)
-            m_hashAndFlags |= s_hashFlagIsIdentifier;
-        else
-            m_hashAndFlags &= ~s_hashFlagIsIdentifier;
-    }
 
     bool isEmptyUnique() const
     {
@@ -714,7 +705,6 @@ private:
     static const unsigned s_hashFlagHasTerminatingNullCharacter = 1u << 5;
     static const unsigned s_hashFlagIsAtomic = 1u << 4;
     static const unsigned s_hashFlagDidReportCost = 1u << 3;
-    static const unsigned s_hashFlagIsIdentifier = 1u << 2;
     static const unsigned s_hashMaskBufferOwnership = 1u | (1u << 1);
 
 #ifdef STRING_STATS
