@@ -468,7 +468,7 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
 
     scrollbar_layer->SetTexturePriorities(calculator);
     layer_tree_host_->contents_texture_manager()->PrioritizeTextures();
-    scrollbar_layer->Update(&queue, &occlusion_tracker, NULL);
+    scrollbar_layer->Update(&queue, &occlusion_tracker);
     EXPECT_EQ(0u, queue.FullUploadSize());
     EXPECT_EQ(expected_resources, queue.PartialUploadSize());
 
@@ -547,7 +547,7 @@ class ScaledScrollbarLayerTestResourceCreation : public testing::Test {
 
     scrollbar_layer->SetTexturePriorities(calculator);
     layer_tree_host_->contents_texture_manager()->PrioritizeTextures();
-    scrollbar_layer->Update(&queue, &occlusion_tracker, NULL);
+    scrollbar_layer->Update(&queue, &occlusion_tracker);
     EXPECT_EQ(expected_resources, queue.PartialUploadSize());
 
     // Verify that we have not generated any content uploads that are larger

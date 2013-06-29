@@ -50,7 +50,6 @@ class RenderingStatsInstrumentation;
 class ResourceUpdateQueue;
 class ScrollbarLayer;
 struct AnimationEvent;
-struct RenderingStats;
 
 // Base class for composited layers. Special layer types are derived from
 // this class.
@@ -286,8 +285,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual bool DrawsContent() const;
   virtual void SavePaintProperties();
   virtual void Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion,
-                      RenderingStats* stats) {}
+                      const OcclusionTracker* occlusion) {}
   virtual bool NeedMoreUpdates();
   virtual void SetIsMask(bool is_mask) {}
   virtual void ReduceMemoryUsage() {}

@@ -945,9 +945,8 @@ class ContentLayerWithUpdateTracking : public ContentLayer {
   void ResetPaintContentsCount() { paint_contents_count_ = 0; }
 
   virtual void Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* occlusion,
-                      RenderingStats* stats) OVERRIDE {
-    ContentLayer::Update(queue, occlusion, stats);
+                      const OcclusionTracker* occlusion) OVERRIDE {
+    ContentLayer::Update(queue, occlusion);
     paint_contents_count_++;
   }
 
@@ -1608,8 +1607,7 @@ class EvictionTestLayer : public Layer {
   }
 
   virtual void Update(ResourceUpdateQueue*,
-                      const OcclusionTracker*,
-                      RenderingStats*) OVERRIDE;
+                      const OcclusionTracker*) OVERRIDE;
   virtual bool DrawsContent() const OVERRIDE { return true; }
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
@@ -1669,8 +1667,7 @@ void EvictionTestLayer::SetTexturePriorities(const PriorityCalculator&) {
 }
 
 void EvictionTestLayer::Update(ResourceUpdateQueue* queue,
-                               const OcclusionTracker*,
-                               RenderingStats*) {
+                               const OcclusionTracker*) {
   CreateTextureIfNeeded();
   if (!texture_)
     return;

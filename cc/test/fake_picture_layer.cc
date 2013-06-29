@@ -24,9 +24,8 @@ scoped_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
 }
 
 void FakePictureLayer::Update(ResourceUpdateQueue* queue,
-                              const OcclusionTracker* occlusion,
-                              RenderingStats* stats) {
-  PictureLayer::Update(queue, occlusion, stats);
+                              const OcclusionTracker* occlusion) {
+  PictureLayer::Update(queue, occlusion);
   update_count_++;
 }
 

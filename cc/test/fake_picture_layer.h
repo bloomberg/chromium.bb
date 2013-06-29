@@ -25,8 +25,7 @@ class FakePictureLayer : public PictureLayer {
 
   virtual void Update(
       ResourceUpdateQueue* queue,
-      const OcclusionTracker* occlusion,
-      RenderingStats* stats) OVERRIDE;
+      const OcclusionTracker* occlusion) OVERRIDE;
 
  private:
   explicit FakePictureLayer(ContentLayerClient* client);

@@ -32,10 +32,6 @@ class CC_EXPORT RenderingStatsInstrumentation {
   base::TimeTicks StartRecording() const;
   base::TimeDelta EndRecording(base::TimeTicks start_time) const;
 
-  // TODO(egraether): Remove after switching Layer::update() to use this class.
-  // Used in LayerTreeHost::paintLayerContents().
-  void AddStats(const RenderingStats& other);
-
   void IncrementAnimationFrameCount();
   void SetScreenFrameCount(int64 count);
   void SetDroppedFrameCount(int64 count);

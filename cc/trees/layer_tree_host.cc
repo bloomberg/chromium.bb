@@ -880,8 +880,7 @@ size_t LayerTreeHost::CalculateMemoryForRenderSurfaces(
 }
 
 bool LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,
-                                               ResourceUpdateQueue* queue,
-                                               RenderingStats* stats) {
+                                               ResourceUpdateQueue* queue) {
   // Note: Masks and replicas only exist for layers that own render surfaces. If
   // we reach this point in code, we already know that at least something will
   // be drawn into this render surface, so the mask and replica should be
@@ -890,7 +889,7 @@ bool LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,
   bool need_more_updates = false;
   Layer* mask_layer = render_surface_layer->mask_layer();
   if (mask_layer) {
-    mask_layer->Update(queue, NULL, stats);
+    mask_layer->Update(queue, NULL);
     need_more_updates |= mask_layer->NeedMoreUpdates();
   }
 
@@ -898,7 +897,7 @@ bool LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,
       render_surface_layer->replica_layer() ?
       render_surface_layer->replica_layer()->mask_layer() : NULL;
   if (replica_mask_layer) {
-    replica_mask_layer->Update(queue, NULL, stats);
+    replica_mask_layer->Update(queue, NULL);
     need_more_updates |= replica_mask_layer->NeedMoreUpdates();
   }
   return need_more_updates;
@@ -926,11 +925,6 @@ bool LayerTreeHost::PaintLayerContents(
   PrioritizeTextures(render_surface_layer_list,
                      occlusion_tracker.overdraw_metrics());
 
-  // TODO(egraether): Use RenderingStatsInstrumentation in Layer::update()
-  RenderingStats stats;
-  RenderingStats* stats_ptr =
-      debug_state_.RecordRenderingStats() ? &stats : NULL;
-
   in_paint_layer_contents_ = true;
 
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
@@ -944,10 +938,10 @@ bool LayerTreeHost::PaintLayerContents(
     if (it.represents_target_render_surface()) {
       DCHECK(it->render_surface()->draw_opacity() ||
              it->render_surface()->draw_opacity_is_animating());
-      need_more_updates |= PaintMasksForRenderSurface(*it, queue, stats_ptr);
+      need_more_updates |= PaintMasksForRenderSurface(*it, queue);
     } else if (it.represents_itself()) {
       DCHECK(!it->paint_properties().bounds.IsEmpty());
-      it->Update(queue, &occlusion_tracker, stats_ptr);
+      it->Update(queue, &occlusion_tracker);
       need_more_updates |= it->NeedMoreUpdates();
     }
 
@@ -955,8 +949,6 @@ bool LayerTreeHost::PaintLayerContents(
   }
 
   in_paint_layer_contents_ = false;
-
-  rendering_stats_instrumentation_->AddStats(stats);
 
   occlusion_tracker.overdraw_metrics()->RecordMetrics(this);
 

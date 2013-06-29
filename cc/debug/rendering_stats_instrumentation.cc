@@ -36,14 +36,6 @@ base::TimeDelta RenderingStatsInstrumentation::EndRecording(
   return base::TimeDelta();
 }
 
-void RenderingStatsInstrumentation::AddStats(const RenderingStats& other) {
-  if (!record_rendering_stats_)
-    return;
-
-  base::AutoLock scoped_lock(lock_);
-  rendering_stats_.Add(other);
-}
-
 void RenderingStatsInstrumentation::IncrementAnimationFrameCount() {
   if (!record_rendering_stats_)
     return;

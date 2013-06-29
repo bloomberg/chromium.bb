@@ -322,7 +322,6 @@ bool TiledLayer::UpdateTiles(int left,
                              int bottom,
                              ResourceUpdateQueue* queue,
                              const OcclusionTracker* occlusion,
-                             RenderingStats* stats,
                              bool* did_paint) {
   *did_paint = false;
   CreateUpdaterIfNeeded();
@@ -344,7 +343,7 @@ bool TiledLayer::UpdateTiles(int left,
 
   *did_paint = true;
   UpdateTileTextures(
-      paint_rect, left, top, right, bottom, queue, occlusion, stats);
+      paint_rect, left, top, right, bottom, queue, occlusion);
   return true;
 }
 
@@ -470,8 +469,7 @@ void TiledLayer::UpdateTileTextures(gfx::Rect paint_rect,
                                     int right,
                                     int bottom,
                                     ResourceUpdateQueue* queue,
-                                    const OcclusionTracker* occlusion,
-                                    RenderingStats* stats) {
+                                    const OcclusionTracker* occlusion) {
   // The update_rect should be in layer space. So we have to convert the
   // paint_rect from content space to layer space.
   float width_scale =
@@ -726,14 +724,13 @@ void TiledLayer::UpdateScrollPrediction() {
 }
 
 void TiledLayer::Update(ResourceUpdateQueue* queue,
-                        const OcclusionTracker* occlusion,
-                        RenderingStats* stats) {
+                        const OcclusionTracker* occlusion) {
   DCHECK(!skips_draw_ && !failed_update_);  // Did ResetUpdateState get skipped?
   {
     base::AutoReset<bool> ignore_set_needs_commit(&ignore_set_needs_commit_,
                                                   true);
 
-    ContentsScalingLayer::Update(queue, occlusion, stats);
+    ContentsScalingLayer::Update(queue, occlusion);
     UpdateBounds();
   }
 
@@ -752,7 +749,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
                                      &top,
                                      &right,
                                      &bottom);
-    UpdateTiles(left, top, right, bottom, queue, NULL, stats, &did_paint);
+    UpdateTiles(left, top, right, bottom, queue, NULL, &did_paint);
     if (did_paint)
       return;
     // This was an attempt to paint the entire layer so if we fail it's okay,
@@ -770,7 +767,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
       predicted_visible_rect_, &left, &top, &right, &bottom);
   MarkOcclusionsAndRequestTextures(left, top, right, bottom, occlusion);
   skips_draw_ = !UpdateTiles(
-      left, top, right, bottom, queue, occlusion, stats, &did_paint);
+      left, top, right, bottom, queue, occlusion, &did_paint);
   if (skips_draw_)
     tiler_->reset();
   if (skips_draw_ || did_paint)
@@ -783,7 +780,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
     return;
 
   // Prepaint anything that was occluded but inside the layer's visible region.
-  if (!UpdateTiles(left, top, right, bottom, queue, NULL, stats, &did_paint) ||
+  if (!UpdateTiles(left, top, right, bottom, queue, NULL, &did_paint) ||
       did_paint)
     return;
 
@@ -813,7 +810,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
       while (bottom < prepaint_bottom) {
         ++bottom;
         if (!UpdateTiles(
-                left, bottom, right, bottom, queue, NULL, stats, &did_paint) ||
+                left, bottom, right, bottom, queue, NULL, &did_paint) ||
             did_paint)
           return;
       }
@@ -822,7 +819,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
       while (top > prepaint_top) {
         --top;
         if (!UpdateTiles(
-                left, top, right, top, queue, NULL, stats, &did_paint) ||
+                left, top, right, top, queue, NULL, &did_paint) ||
             did_paint)
           return;
       }
@@ -831,7 +828,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
       while (left > prepaint_left) {
         --left;
         if (!UpdateTiles(
-                left, top, left, bottom, queue, NULL, stats, &did_paint) ||
+                left, top, left, bottom, queue, NULL, &did_paint) ||
             did_paint)
           return;
       }
@@ -840,7 +837,7 @@ void TiledLayer::Update(ResourceUpdateQueue* queue,
       while (right < prepaint_right) {
         ++right;
         if (!UpdateTiles(
-                right, top, right, bottom, queue, NULL, stats, &did_paint) ||
+                right, top, right, bottom, queue, NULL, &did_paint) ||
             did_paint)
           return;
       }
