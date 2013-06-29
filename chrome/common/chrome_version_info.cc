@@ -16,6 +16,12 @@
 
 namespace chrome {
 
+std::string VersionInfo::ProductNameAndVersionForUserAgent() const {
+  if (!is_valid())
+    return std::string();
+  return "Chrome/" + Version();
+}
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // On Windows and Mac, we get the Chrome version info by querying
 // FileVersionInfo for the current module.

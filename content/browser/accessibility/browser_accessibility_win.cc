@@ -8,6 +8,7 @@
 #include <UIAutomationCoreApi.h>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/enum_variant.h"
@@ -867,8 +868,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_appName(BSTR* app_name) {
   if (!app_name)
     return E_INVALIDARG;
 
-  std::string product_name = GetContentClient()->GetProduct();
-  *app_name = SysAllocString(UTF8ToUTF16(product_name).c_str());
+  // GetProduct() returns a string like "Chrome/aa.bb.cc.dd", split out
+  // the part before the "/".
+  std::vector<std::string> product_components;
+  base::SplitString(GetContentClient()->GetProduct(), '/', &product_components);
+  DCHECK_EQ(2U, product_components.size());
+  if (product_components.size() != 2)
+    return E_FAIL;
+  *app_name = SysAllocString(UTF8ToUTF16(product_components[0]).c_str());
   DCHECK(*app_name);
   return *app_name ? S_OK : E_FAIL;
 }
@@ -880,8 +887,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_appVersion(BSTR* app_version) {
   if (!app_version)
     return E_INVALIDARG;
 
-  std::string user_agent = GetContentClient()->GetUserAgent();
-  *app_version = SysAllocString(UTF8ToUTF16(user_agent).c_str());
+  // GetProduct() returns a string like "Chrome/aa.bb.cc.dd", split out
+  // the part after the "/".
+  std::vector<std::string> product_components;
+  base::SplitString(GetContentClient()->GetProduct(), '/', &product_components);
+  DCHECK_EQ(2U, product_components.size());
+  if (product_components.size() != 2)
+    return E_FAIL;
+  *app_version = SysAllocString(UTF8ToUTF16(product_components[1]).c_str());
   DCHECK(*app_version);
   return *app_version ? S_OK : E_FAIL;
 }

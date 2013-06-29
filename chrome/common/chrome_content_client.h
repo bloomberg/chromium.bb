@@ -19,9 +19,6 @@ class ChromeContentClient : public content::ContentClient {
   static const char* const kNaClPluginName;
   static const char* const kNaClOldPluginName;
 
-  // This is what the ContentClient::GetProduct implementation calls.
-  static std::string GetProductImpl();
-
   virtual void SetActiveURL(const GURL& url) OVERRIDE;
   virtual void SetGpuInfo(const gpu::GPUInfo& gpu_info) OVERRIDE;
   virtual void AddPepperPlugins(

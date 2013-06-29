@@ -387,13 +387,6 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
 
 namespace chrome {
 
-std::string ChromeContentClient::GetProductImpl() {
-  chrome::VersionInfo version_info;
-  std::string product("Chrome/");
-  product += version_info.is_valid() ? version_info.Version() : "0.0.0.0";
-  return product;
-}
-
 void ChromeContentClient::SetActiveURL(const GURL& url) {
   child_process_logging::SetActiveURL(url);
 }
@@ -439,7 +432,9 @@ bool ChromeContentClient::CanHandleWhileSwappedOut(
 }
 
 std::string ChromeContentClient::GetProduct() const {
-  return GetProductImpl();
+  chrome::VersionInfo version_info;
+  return version_info.is_valid() ?
+      version_info.ProductNameAndVersionForUserAgent() : std::string();
 }
 
 std::string ChromeContentClient::GetUserAgent() const {

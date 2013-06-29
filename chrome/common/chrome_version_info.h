@@ -36,6 +36,9 @@ class VersionInfo {
   // check is_valid().
   bool is_valid() const;
 
+  // E.g. "Chrome/a.b.c.d"
+  std::string ProductNameAndVersionForUserAgent() const;
+
   // E.g. "Chromium" or "Google Chrome".
   std::string Name() const;
 
