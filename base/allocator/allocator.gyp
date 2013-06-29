@@ -458,11 +458,6 @@
             'NO_HEAP_CHECK',
            ],
         }],
-        [ 'clang==1', {
-          'cflags': [
-            '-Wno-non-literal-null-conversion',
-          ],
-        }],
         ['order_profiling != 0', {
           'target_conditions' : [
             ['_toolset=="target"', {
