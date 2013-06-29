@@ -370,7 +370,11 @@ void Preferences::RegisterUserPrefs(
       600000,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
-      prefs::kPowerIdleAction,
+      prefs::kPowerAcIdleAction,
+      PowerPolicyController::ACTION_SUSPEND,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kPowerBatteryIdleAction,
       PowerPolicyController::ACTION_SUSPEND,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
@@ -521,7 +525,9 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kPowerBatteryIdleWarningDelayMs, prefs, callback);
   power_battery_idle_delay_ms_.Init(
       prefs::kPowerBatteryIdleDelayMs, prefs, callback);
-  power_idle_action_.Init(prefs::kPowerIdleAction, prefs, callback);
+  power_ac_idle_action_.Init(prefs::kPowerAcIdleAction, prefs, callback);
+  power_battery_idle_action_.Init(
+      prefs::kPowerBatteryIdleAction, prefs, callback);
   power_lid_closed_action_.Init(prefs::kPowerLidClosedAction, prefs, callback);
   power_use_audio_activity_.Init(
       prefs::kPowerUseAudioActivity, prefs, callback);
@@ -851,7 +857,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       *pref_name == prefs::kPowerBatteryScreenLockDelayMs ||
       *pref_name == prefs::kPowerBatteryIdleWarningDelayMs ||
       *pref_name == prefs::kPowerBatteryIdleDelayMs ||
-      *pref_name == prefs::kPowerIdleAction ||
+      *pref_name == prefs::kPowerAcIdleAction ||
+      *pref_name == prefs::kPowerBatteryIdleAction ||
       *pref_name == prefs::kPowerLidClosedAction ||
       *pref_name == prefs::kPowerUseAudioActivity ||
       *pref_name == prefs::kPowerUseVideoActivity ||
@@ -875,11 +882,10 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     values.battery_idle_warning_delay_ms =
         power_battery_idle_warning_delay_ms_.GetValue();
     values.battery_idle_delay_ms = power_battery_idle_delay_ms_.GetValue();
-    // TODO(bartfab): Use separate prefs for AC and battery idle actions.
     values.ac_idle_action = static_cast<PowerPolicyController::Action>(
-        power_idle_action_.GetValue());
+        power_ac_idle_action_.GetValue());
     values.battery_idle_action = static_cast<PowerPolicyController::Action>(
-        power_idle_action_.GetValue());
+        power_battery_idle_action_.GetValue());
     values.lid_closed_action = static_cast<PowerPolicyController::Action>(
         power_lid_closed_action_.GetValue());
     values.use_audio_activity = power_use_audio_activity_.GetValue();

@@ -180,7 +180,8 @@ class Preferences : public PrefServiceSyncableObserver {
   IntegerPrefMember power_battery_screen_lock_delay_ms_;
   IntegerPrefMember power_battery_idle_warning_delay_ms_;
   IntegerPrefMember power_battery_idle_delay_ms_;
-  IntegerPrefMember power_idle_action_;
+  IntegerPrefMember power_ac_idle_action_;
+  IntegerPrefMember power_battery_idle_action_;
   IntegerPrefMember power_lid_closed_action_;
   BooleanPrefMember power_use_audio_activity_;
   BooleanPrefMember power_use_video_activity_;

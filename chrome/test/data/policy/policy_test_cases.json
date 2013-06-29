@@ -1663,11 +1663,19 @@
     ]
   },
 
-  "IdleAction": {
+  "IdleActionAC": {
     "os": ["chromeos"],
-    "test_policy": { "IdleAction": 0 },
+    "test_policy": { "IdleActionAC": 0 },
     "pref_mappings": [
-      { "pref": "power.idle_action" }
+      { "pref": "power.ac_idle_action" }
+    ]
+  },
+
+  "IdleActionBattery": {
+    "os": ["chromeos"],
+    "test_policy": { "IdleActionBattery": 0 },
+    "pref_mappings": [
+      { "pref": "power.battery_idle_action" }
     ]
   },
 

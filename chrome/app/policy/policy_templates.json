@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 221
+#   For your editing convenience: highest ID currently used: 222
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4247,7 +4247,7 @@
           The policy value should be specified in milliseconds.''',
         },
         {
-          'name': 'IdleAction',
+          'name': 'IdleActionAC',
           'type': 'int-enum',
           'schema': {
             'type': 'integer',
@@ -4262,7 +4262,7 @@
             {
               'name': 'IdleActionLogout',
               'value': 1,
-              'caption': '''Log out the user''',
+              'caption': '''Log the user out''',
             },
             {
               'name': 'IdleActionShutdown',
@@ -4275,15 +4275,60 @@
               'caption': '''Do nothing''',
             },
           ],
-          'supported_on': ['chrome_os:26-'],
+          'supported_on': ['chrome_os:30-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
           },
           'example_value': 0,
           'id': 180,
-          'caption': '''Action to take when the idle delay is reached''',
-          'desc': '''Specify the action to take when the idle delay is reached.
+          'caption': '''Action to take when the idle delay is reached while running on AC power''',
+          'desc': '''Specify the action to take when the idle delay is reached while running on AC power.
+
+          When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
+
+          When this policy is unset, the default action is taken, which is suspend.
+
+          If the action is suspend, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can separately be configured to either lock or not lock the screen before suspending.''',
+        },
+        {
+          'name': 'IdleActionBattery',
+          'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 0, 1, 2, 3 ],
+          },
+          'items': [
+            {
+              'name': 'IdleActionSuspend',
+              'value': 0,
+              'caption': '''Suspend''',
+            },
+            {
+              'name': 'IdleActionLogout',
+              'value': 1,
+              'caption': '''Log the user out''',
+            },
+            {
+              'name': 'IdleActionShutdown',
+              'value': 2,
+              'caption': '''Shut down''',
+            },
+            {
+              'name': 'IdleActionDoNothing',
+              'value': 3,
+              'caption': '''Do nothing''',
+            },
+          ],
+          'supported_on': ['chrome_os:30-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 0,
+          'id': 222,
+          'caption': '''Action to take when the idle delay is reached while running on battery power''',
+          'desc': '''Specify the action to take when the idle delay is reached while running on battery power.
 
           When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
 
@@ -4307,7 +4352,7 @@
             {
               'name': 'LidCloseActionLogout',
               'value': 1,
-              'caption': '''Log out the user''',
+              'caption': '''Log the user out''',
             },
             {
               'name': 'LidCloseActionShutdown',

@@ -527,8 +527,13 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
           0, INT_MAX, true));
   handlers_.push_back(
       new IntRangePolicyHandler(
-          key::kIdleAction,
-          prefs::kPowerIdleAction,
+          key::kIdleActionAC,
+          prefs::kPowerAcIdleAction,
+          0, 3, false));
+  handlers_.push_back(
+      new IntRangePolicyHandler(
+          key::kIdleActionBattery,
+          prefs::kPowerBatteryIdleAction,
           0, 3, false));
   handlers_.push_back(
       new IntRangePolicyHandler(

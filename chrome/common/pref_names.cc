@@ -836,7 +836,7 @@ const char kSessionLengthLimit[] = "session.length_limit";
 // Inactivity time in milliseconds while the system is on AC power before
 // the screen should be dimmed, turned off, or locked, before an
 // IdleActionImminent D-Bus signal should be sent, or before
-// kPowerIdleAction should be performed.  0 disables the delay (N/A for
+// kPowerAcIdleAction should be performed.  0 disables the delay (N/A for
 // kPowerAcIdleDelayMs).
 const char kPowerAcScreenDimDelayMs[] = "power.ac_screen_dim_delay_ms";
 const char kPowerAcScreenOffDelayMs[] = "power.ac_screen_off_delay_ms";
@@ -856,9 +856,11 @@ const char kPowerBatteryIdleWarningDelayMs[] =
 const char kPowerBatteryIdleDelayMs[] =
     "power.battery_idle_delay_ms";
 
-// Action that should be performed when the idle delay is reached.
+// Action that should be performed when the idle delay is reached while the
+// system is on AC power or battery power.
 // Values are from the chromeos::PowerPolicyController::Action enum.
-const char kPowerIdleAction[] = "power.idle_action";
+const char kPowerAcIdleAction[] = "power.ac_idle_action";
+const char kPowerBatteryIdleAction[] = "power.battery_idle_action";
 
 // Action that should be performed when the lid is closed.
 // Values are from the chromeos::PowerPolicyController::Action enum.

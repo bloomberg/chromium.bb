@@ -86,10 +86,17 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyBrowserTest, SetPowerPolicy) {
       original_power_management_policy;
   power_management_policy.set_ac_idle_action(
       pm::PowerManagementPolicy::STOP_SESSION);
+  SetUserPolicy(
+      key::kIdleActionAC,
+      base::Value::CreateIntegerValue(pm::PowerManagementPolicy::STOP_SESSION));
+  EXPECT_EQ(GetDebugString(power_management_policy),
+            GetDebugString(power_manager_client_->get_policy()));
+
+  power_management_policy = original_power_management_policy;
   power_management_policy.set_battery_idle_action(
       pm::PowerManagementPolicy::STOP_SESSION);
   SetUserPolicy(
-      key::kIdleAction,
+      key::kIdleActionBattery,
       base::Value::CreateIntegerValue(pm::PowerManagementPolicy::STOP_SESSION));
   EXPECT_EQ(GetDebugString(power_management_policy),
             GetDebugString(power_manager_client_->get_policy()));
