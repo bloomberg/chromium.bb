@@ -13,29 +13,110 @@ import android.os.StrictMode;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import org.chromium.base.ObserverList;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
+import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
+
 /**
- * A helper class to handle the current status of sync for Chrome in Android-land.
+ * A helper class to handle the current status of sync for Chrome in Android settings.
  *
- * It also has a helper class to be used by observers whenever sync settings change.
+ * It also provides an observer to be used whenever Android sync settings change.
  *
  * To retrieve an instance of this class, call SyncStatusHelper.get(someContext).
  */
+@ThreadSafe
 public class SyncStatusHelper {
-    // TODO(dsmyers): remove the downstream version of this constant.
+
+    /**
+     * In-memory holder of the sync configurations for a given account. On each
+     * access, updates the cache if the account has changed. This lazy-updating
+     * model is appropriate as the account changes rarely but may not be known
+     * when initially constructed. So long as we keep a single account, no
+     * expensive calls to Android are made.
+     */
+    @NotThreadSafe
+    private class CachedAccountSyncSettings {
+        private Account mAccount;
+        private boolean mSyncAutomatically;
+        private int mIsSyncable;
+
+        private void ensureSettingsAreForAccount(Account account) {
+            assert account != null;
+            if (account.equals(mAccount)) return;
+            updateSyncSettingsForAccount(account);
+        }
+
+        public void updateSyncSettingsForAccount(Account account) {
+            if (account == null) return;
+            mAccount = account;
+
+            StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
+            mSyncAutomatically = mSyncContentResolverWrapper.getSyncAutomatically(
+                    account, mContractAuthority);
+            mIsSyncable = mSyncContentResolverWrapper.getIsSyncable(account, mContractAuthority);
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+
+        public boolean getSyncAutomatically(Account account) {
+            ensureSettingsAreForAccount(account);
+            return mSyncAutomatically;
+        }
+
+        public void setIsSyncable(Account account) {
+            ensureSettingsAreForAccount(account);
+            if (mIsSyncable == 0) return;
+
+            mIsSyncable = 1;
+            StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
+            mSyncContentResolverWrapper.setIsSyncable(account, mContractAuthority, 1);
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+
+        public void setSyncAutomatically(Account account, boolean value) {
+            ensureSettingsAreForAccount(account);
+            if (mSyncAutomatically == value) return;
+
+            mSyncAutomatically = value;
+            StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
+            mSyncContentResolverWrapper.setSyncAutomatically(account, mContractAuthority, value);
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+    }
+
     public static final String AUTH_TOKEN_TYPE_SYNC = "chromiumsync";
 
     public static final String TAG = SyncStatusHelper.class.getSimpleName();
 
-    private static final Object LOCK = new Object();
+    /**
+     * Lock for ensuring singleton instantiation across threads.
+     */
+    private static final Object INSTANCE_LOCK = new Object();
 
     private static SyncStatusHelper sSyncStatusHelper;
+
+    private final String mContractAuthority;
 
     private final Context mApplicationContext;
 
     private final SyncContentResolverDelegate mSyncContentResolverWrapper;
+
+    private boolean mCachedMasterSyncAutomatically;
+
+    // Instantiation of SyncStatusHelper is guarded by a lock so volatile is unneeded.
+    private final CachedAccountSyncSettings mCachedSettings = new CachedAccountSyncSettings();
+
+    private final ObserverList<SyncSettingsChangedObserver> mObservers =
+            new ObserverList<SyncSettingsChangedObserver>();
+
+    /**
+     * Provides notifications when Android sync settings have changed.
+     */
+    public interface SyncSettingsChangedObserver {
+        public void syncSettingsChanged();
+    }
 
     /**
      * @param context the context
@@ -45,6 +126,23 @@ public class SyncStatusHelper {
             SyncContentResolverDelegate syncContentResolverWrapper) {
         mApplicationContext = context.getApplicationContext();
         mSyncContentResolverWrapper = syncContentResolverWrapper;
+        mContractAuthority =
+                InvalidationController.get(mApplicationContext).getContractAuthority();
+
+        updateMasterSyncAutomaticallySetting();
+
+        mSyncContentResolverWrapper.addStatusChangeListener(
+                ContentResolver.SYNC_OBSERVER_TYPE_SETTINGS,
+                new AndroidSyncSettingsChangedObserver());
+    }
+
+    private void updateMasterSyncAutomaticallySetting() {
+        StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
+        synchronized (mCachedSettings) {
+            mCachedMasterSyncAutomatically = mSyncContentResolverWrapper
+                    .getMasterSyncAutomatically();
+        }
+        StrictMode.setThreadPolicy(oldPolicy);
     }
 
     /**
@@ -54,11 +152,11 @@ public class SyncStatusHelper {
      * instance of the SyncStatusHelper by calling overrideSyncStatusHelperForTests(...) with
      * your SyncContentResolverWrapper.
      *
-     * @param context the ApplicationContext is retreived from the context used as an argument.
+     * @param context the ApplicationContext is retrieved from the context used as an argument.
      * @return a singleton instance of the SyncStatusHelper
      */
     public static SyncStatusHelper get(Context context) {
-        synchronized (LOCK) {
+        synchronized (INSTANCE_LOCK) {
             if (sSyncStatusHelper == null) {
                 sSyncStatusHelper = new SyncStatusHelper(context,
                         new SystemSyncContentResolverDelegate());
@@ -77,7 +175,7 @@ public class SyncStatusHelper {
     @VisibleForTesting
     public static void overrideSyncStatusHelperForTests(Context context,
             SyncContentResolverDelegate syncContentResolverWrapper) {
-        synchronized (LOCK) {
+        synchronized (INSTANCE_LOCK) {
             if (sSyncStatusHelper != null) {
                 throw new IllegalStateException("SyncStatusHelper already exists");
             }
@@ -89,16 +187,15 @@ public class SyncStatusHelper {
      * Wrapper method for the ContentResolver.addStatusChangeListener(...) when we are only
      * interested in the settings type.
      */
-    public Object registerContentResolverObserver(SyncStatusObserver observer) {
-        return mSyncContentResolverWrapper.addStatusChangeListener(
-                ContentResolver.SYNC_OBSERVER_TYPE_SETTINGS, observer);
+    public void registerContentResolverObserver(SyncSettingsChangedObserver observer) {
+        mObservers.addObserver(observer);
     }
 
     /**
      * Wrapper method for the ContentResolver.removeStatusChangeListener(...).
      */
-    public void unregisterContentResolverObserver(Object observerHandle) {
-        mSyncContentResolverWrapper.removeStatusChangeListener(observerHandle);
+    public void unregisterContentResolverObserver(SyncSettingsChangedObserver observer) {
+        mObservers.removeObserver(observer);
     }
 
     /**
@@ -110,14 +207,10 @@ public class SyncStatusHelper {
      * @return true if sync is on, false otherwise
      */
     public boolean isSyncEnabled(Account account) {
-        StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
-        String contractAuthority =
-                InvalidationController.get(mApplicationContext).getContractAuthority();
-        boolean enabled = account != null &&
-                mSyncContentResolverWrapper.getMasterSyncAutomatically() &&
-                mSyncContentResolverWrapper.getSyncAutomatically(account, contractAuthority);
-        StrictMode.setThreadPolicy(oldPolicy);
-        return enabled;
+        if (account == null) return false;
+        synchronized (mCachedSettings) {
+            return mCachedMasterSyncAutomatically && mCachedSettings.getSyncAutomatically(account);
+        }
     }
 
     /**
@@ -142,13 +235,10 @@ public class SyncStatusHelper {
      * @return true if sync is on, false otherwise
      */
     public boolean isSyncEnabledForChrome(Account account) {
-        StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
-        String contractAuthority =
-                InvalidationController.get(mApplicationContext).getContractAuthority();
-        boolean enabled = account != null &&
-                mSyncContentResolverWrapper.getSyncAutomatically(account, contractAuthority);
-        StrictMode.setThreadPolicy(oldPolicy);
-        return enabled;
+        if (account == null) return false;
+        synchronized (mCachedSettings) {
+            return mCachedSettings.getSyncAutomatically(account);
+        }
     }
 
     /**
@@ -157,10 +247,9 @@ public class SyncStatusHelper {
      * @return true if the global master sync is on, false otherwise
      */
     public boolean isMasterSyncAutomaticallyEnabled() {
-        StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
-        boolean enabled = mSyncContentResolverWrapper.getMasterSyncAutomatically();
-        StrictMode.setThreadPolicy(oldPolicy);
-        return enabled;
+        synchronized (mCachedSettings) {
+            return mCachedMasterSyncAutomatically;
+        }
     }
 
     /**
@@ -169,14 +258,11 @@ public class SyncStatusHelper {
      * @param account the account to enable sync on
      */
     public void enableAndroidSync(Account account) {
-        StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
         makeSyncable(account);
-        String contractAuthority =
-                InvalidationController.get(mApplicationContext).getContractAuthority();
-        if (!mSyncContentResolverWrapper.getSyncAutomatically(account, contractAuthority)) {
-            mSyncContentResolverWrapper.setSyncAutomatically(account, contractAuthority, true);
+
+        synchronized (mCachedSettings) {
+            mCachedSettings.setSyncAutomatically(account, true);
         }
-        StrictMode.setThreadPolicy(oldPolicy);
     }
 
     /**
@@ -185,13 +271,9 @@ public class SyncStatusHelper {
      * @param account the account to disable Chrome sync on
      */
     public void disableAndroidSync(Account account) {
-        StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
-        String contractAuthority =
-                InvalidationController.get(mApplicationContext).getContractAuthority();
-        if (mSyncContentResolverWrapper.getSyncAutomatically(account, contractAuthority)) {
-            mSyncContentResolverWrapper.setSyncAutomatically(account, contractAuthority, false);
+        synchronized (mCachedSettings) {
+            mCachedSettings.setSyncAutomatically(account, false);
         }
-        StrictMode.setThreadPolicy(oldPolicy);
     }
 
     /**
@@ -201,31 +283,25 @@ public class SyncStatusHelper {
      * @param account the account to enable Chrome sync on
      */
     private void makeSyncable(Account account) {
-        String contractAuthority =
-                InvalidationController.get(mApplicationContext).getContractAuthority();
-        if (hasFinishedFirstSync(account)) {
-            mSyncContentResolverWrapper.setIsSyncable(account, contractAuthority, 1);
+        synchronized (mCachedSettings) {
+            mCachedSettings.setIsSyncable(account);
         }
-        // Disable the syncability of Chrome for all other accounts
+
+        StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
+        // Disable the syncability of Chrome for all other accounts. Don't use
+        // our cache as we're touching many accounts that aren't signed in, so this saves
+        // extra calls to Android sync configuration.
         Account[] googleAccounts = AccountManagerHelper.get(mApplicationContext).
                 getGoogleAccounts();
         for (Account accountToSetNotSyncable : googleAccounts) {
             if (!accountToSetNotSyncable.equals(account) &&
                     mSyncContentResolverWrapper.getIsSyncable(
-                            accountToSetNotSyncable, contractAuthority) > 0) {
+                            accountToSetNotSyncable, mContractAuthority) > 0) {
                 mSyncContentResolverWrapper.setIsSyncable(accountToSetNotSyncable,
-                        contractAuthority, 0);
+                        mContractAuthority, 0);
             }
         }
-    }
-
-    /**
-     * Returns whether the given account has ever been synced.
-     */
-    boolean hasFinishedFirstSync(Account account) {
-        String contractAuthority =
-                InvalidationController.get(mApplicationContext).getContractAuthority();
-        return mSyncContentResolverWrapper.getIsSyncable(account, contractAuthority) <= 0;
+        StrictMode.setThreadPolicy(oldPolicy);
     }
 
     /**
@@ -233,16 +309,23 @@ public class SyncStatusHelper {
      *
      * To register the observer, call SyncStatusHelper.registerObserver(...).
      */
-    public static abstract class SyncSettingsChangedObserver implements SyncStatusObserver {
-
+    private class AndroidSyncSettingsChangedObserver implements SyncStatusObserver {
         @Override
         public void onStatusChanged(int which) {
             if (ContentResolver.SYNC_OBSERVER_TYPE_SETTINGS == which) {
-                syncSettingsChanged();
+                // Sync settings have changed; update our in-memory caches
+                updateMasterSyncAutomaticallySetting();
+                synchronized (mCachedSettings) {
+                    mCachedSettings.updateSyncSettingsForAccount(
+                            ChromeSigninController.get(mApplicationContext).getSignedInUser());
+                }
+
+                // Notify anyone else that's interested
+                for (SyncSettingsChangedObserver observer: mObservers) {
+                    observer.syncSettingsChanged();
+                }
             }
         }
-
-        protected abstract void syncSettingsChanged();
     }
 
     /**
