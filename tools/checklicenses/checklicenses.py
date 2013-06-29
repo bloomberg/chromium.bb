@@ -292,9 +292,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/libvpx/source/libvpx/examples/includes': [
         'GPL (v2 or later)',
     ],
-    'third_party/libwebp': [  # http://crbug.com/98448
-        'UNKNOWN',
-    ],
     'third_party/libxml': [
         'UNKNOWN',
     ],
