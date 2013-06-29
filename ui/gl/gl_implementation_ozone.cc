@@ -2,17 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/base_paths.h"
-#include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/logging.h"
-#include "base/native_library.h"
-#include "base/path_service.h"
 #include "ui/base/ozone/surface_factory_ozone.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_implementation_linux.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
 
 namespace gfx {
@@ -32,6 +27,7 @@ void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
   impls->push_back(kGLImplementationEGLGLES2);
+  impls->push_back(kGLImplementationOSMesaGL);
 }
 
 bool InitializeGLBindings(GLImplementation implementation) {
@@ -42,6 +38,8 @@ bool InitializeGLBindings(GLImplementation implementation) {
     return true;
 
   switch (implementation) {
+    case kGLImplementationOSMesaGL:
+      return InitializeGLBindingsOSMesaGL();
     case kGLImplementationEGLGLES2:
       if (!ui::SurfaceFactoryOzone::GetInstance()->LoadEGLGLES2Bindings())
         return false;
@@ -62,7 +60,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
     }
     default:
       NOTIMPLEMENTED()
-          << "Unsupported GL type for NativeSurfaceLinux GL implementation";
+          << "Unsupported GL type for Ozone surface implementation";
       return false;
   }
 
@@ -72,6 +70,10 @@ bool InitializeGLBindings(GLImplementation implementation) {
 bool InitializeGLExtensionBindings(GLImplementation implementation,
                                    GLContext* context) {
   switch (implementation) {
+    case kGLImplementationOSMesaGL:
+      InitializeGLExtensionBindingsGL(context);
+      InitializeGLExtensionBindingsOSMESA(context);
+      break;
     case kGLImplementationEGLGLES2:
       InitializeGLExtensionBindingsGL(context);
       InitializeGLExtensionBindingsEGL(context);

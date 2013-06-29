@@ -79,6 +79,8 @@
         'gl_implementation.cc',
         'gl_implementation.h',
         'gl_implementation_android.cc',
+        'gl_implementation_linux.cc',
+        'gl_implementation_linux.h',
         'gl_implementation_ozone.cc',
         'gl_implementation_mac.cc',
         'gl_implementation_win.cc',

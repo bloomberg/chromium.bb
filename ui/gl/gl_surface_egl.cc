@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This include must be here so that the includes provided transitively
+// by gl_surface_egl.h don't make it impossible to compile this code.
+#include "third_party/mesa/src/include/GL/osmesa.h"
+
 #include "ui/gl/gl_surface_egl.h"
 
 #if defined(OS_ANDROID)
@@ -15,6 +19,7 @@
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/scoped_make_current.h"
 
@@ -562,8 +567,40 @@ PbufferGLSurfaceEGL::~PbufferGLSurfaceEGL() {
 
 #if defined(ANDROID) || defined(USE_OZONE)
 
+// A thin subclass of |GLSurfaceOSMesa| that can be used in place
+// of a native hardware-provided surface when a native surface
+// provider is not available.
+class GLSurfaceOSMesaHeadless : public GLSurfaceOSMesa {
+ public:
+  explicit GLSurfaceOSMesaHeadless(gfx::AcceleratedWidget window);
+
+  virtual bool IsOffscreen() OVERRIDE;
+  virtual bool SwapBuffers() OVERRIDE;
+
+ protected:
+  virtual ~GLSurfaceOSMesaHeadless();
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(GLSurfaceOSMesaHeadless);
+};
+
+bool GLSurfaceOSMesaHeadless::IsOffscreen() { return false; }
+
+bool GLSurfaceOSMesaHeadless::SwapBuffers() { return true; }
+
+GLSurfaceOSMesaHeadless::GLSurfaceOSMesaHeadless(gfx::AcceleratedWidget window)
+    : GLSurfaceOSMesa(OSMESA_BGRA, gfx::Size(1, 1)) {
+  DCHECK(window);
+}
+
+GLSurfaceOSMesaHeadless::~GLSurfaceOSMesaHeadless() { Destroy(); }
+
 // static
 bool GLSurface::InitializeOneOffInternal() {
+  if (GetGLImplementation() == kGLImplementationOSMesaGL) {
+    return true;
+  }
   DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
 
   if (!GLSurfaceEGL::InitializeOneOff()) {
@@ -576,6 +613,13 @@ bool GLSurface::InitializeOneOffInternal() {
 // static
 scoped_refptr<GLSurface>
 GLSurface::CreateViewGLSurface(gfx::AcceleratedWidget window) {
+
+  if (GetGLImplementation() == kGLImplementationOSMesaGL) {
+    scoped_refptr<GLSurface> surface(new GLSurfaceOSMesaHeadless(window));
+    if (!surface->Initialize())
+      return NULL;
+    return surface;
+  }
   DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
   if (window) {
     scoped_refptr<NativeViewGLSurfaceEGL> surface;
@@ -601,6 +645,13 @@ GLSurface::CreateViewGLSurface(gfx::AcceleratedWidget window) {
 scoped_refptr<GLSurface>
 GLSurface::CreateOffscreenGLSurface(const gfx::Size& size) {
   switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL: {
+      scoped_refptr<GLSurface> surface(new GLSurfaceOSMesa(1, size));
+      if (!surface->Initialize())
+        return NULL;
+
+      return surface;
+    }
     case kGLImplementationEGLGLES2: {
       scoped_refptr<PbufferGLSurfaceEGL> surface(
           new PbufferGLSurfaceEGL(size));

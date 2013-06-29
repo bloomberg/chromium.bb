@@ -4,18 +4,15 @@
 
 #include <vector>
 
-#include "base/base_paths.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/native_library.h"
-#include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_glx_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_implementation_linux.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
 #include "ui/gl/gl_switches.h"
 
@@ -31,22 +28,6 @@ void GL_BINDING_CALL MarshalClearDepthToClearDepthf(GLclampd depth) {
 void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
                                                     GLclampd z_far) {
   glDepthRangef(static_cast<GLclampf>(z_near), static_cast<GLclampf>(z_far));
-}
-
-// Load a library, printing an error message on failure.
-base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
-  std::string error;
-  base::NativeLibrary library = base::LoadNativeLibrary(filename,
-                                                        &error);
-  if (!library) {
-    DVLOG(1) << "Failed to load " << filename.MaybeAsASCII() << ": " << error;
-    return NULL;
-  }
-  return library;
-}
-
-base::NativeLibrary LoadLibrary(const char* filename) {
-  return LoadLibrary(base::FilePath(filename));
 }
 
 }  // namespace
@@ -71,36 +52,8 @@ bool InitializeGLBindings(GLImplementation implementation) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   switch (implementation) {
-    case kGLImplementationOSMesaGL: {
-      base::FilePath module_path;
-      if (!PathService::Get(base::DIR_MODULE, &module_path)) {
-        LOG(ERROR) << "PathService::Get failed.";
-        return false;
-      }
-
-      base::NativeLibrary library = LoadLibrary(
-          module_path.Append("libosmesa.so"));
-      if (!library)
-        return false;
-
-      GLGetProcAddressProc get_proc_address =
-          reinterpret_cast<GLGetProcAddressProc>(
-              base::GetFunctionPointerFromNativeLibrary(
-                  library, "OSMesaGetProcAddress"));
-      if (!get_proc_address) {
-        LOG(ERROR) << "OSMesaGetProcAddress not found.";
-        base::UnloadNativeLibrary(library);
-        return false;
-      }
-
-      SetGLGetProcAddressProc(get_proc_address);
-      AddGLNativeLibrary(library);
-      SetGLImplementation(kGLImplementationOSMesaGL);
-
-      InitializeGLBindingsGL();
-      InitializeGLBindingsOSMESA();
-      break;
-    }
+    case kGLImplementationOSMesaGL:
+      return InitializeGLBindingsOSMesaGL();
     case kGLImplementationDesktopGL: {
       base::NativeLibrary library = NULL;
       const CommandLine* command_line = CommandLine::ForCurrentProcess();

@@ -14,6 +14,8 @@ namespace gfx {
 scoped_refptr<GLImage> GLImage::CreateGLImage(gfx::PluginWindowHandle window) {
   TRACE_EVENT0("gpu", "GLImage::CreateGLImage");
   switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL:
+      return NULL;
     case kGLImplementationEGLGLES2:
       return NULL;
     case kGLImplementationMockGL:
@@ -28,6 +30,8 @@ scoped_refptr<GLImage> GLImage::CreateGLImageForGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle buffer, gfx::Size size) {
   TRACE_EVENT0("gpu", "GLImage::CreateGLImageForGpuMemoryBuffer");
   switch (GetGLImplementation()) {
+    case kGLImplementationOSMesaGL:
+      return NULL;
     case kGLImplementationEGLGLES2:
       return NULL;
     case kGLImplementationMockGL:

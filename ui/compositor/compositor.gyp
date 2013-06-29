@@ -117,6 +117,7 @@
         'test/layer_animator_test_controller.h',
         'test/test_compositor_host.h',
         'test/test_compositor_host_mac.mm',
+        'test/test_compositor_host_ozone.cc',
         'test/test_compositor_host_win.cc',
         'test/test_compositor_host_x11.cc',
         'test/test_layer_animation_delegate.cc',
