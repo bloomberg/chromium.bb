@@ -45,16 +45,21 @@ static void initProtocolHandlerWhitelist()
     protocolWhitelist = new HashSet<String>;
     static const char* protocols[] = {
         "bitcoin",
+        "geo",
         "irc",
         "mailto",
+        "magnet",
         "mms",
         "news",
         "nntp",
+        "sip",
         "sms",
         "smsto",
+        "ssh",
         "tel",
         "urn",
         "webcal",
+        "xmpp",
     };
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(protocols); ++i)
         protocolWhitelist->add(protocols[i]);
