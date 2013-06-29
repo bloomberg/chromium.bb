@@ -645,10 +645,10 @@ void ContentDecryptorDelegate::KeyMessage(PP_Var key_system_var,
   ArrayBufferVar* message_array_buffer =
       ArrayBufferVar::FromPPVar(message_var);
 
-  std::string message;
+  std::vector<uint8> message;
   if (message_array_buffer) {
-    const char* data = static_cast<const char*>(message_array_buffer->Map());
-    message.assign(data, message_array_buffer->ByteLength());
+    const uint8* data = static_cast<const uint8*>(message_array_buffer->Map());
+    message.assign(data, data + message_array_buffer->ByteLength());
   }
 
   StringVar* default_url_string = StringVar::FromPPVar(default_url_var);

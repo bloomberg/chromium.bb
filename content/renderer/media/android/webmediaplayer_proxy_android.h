@@ -6,7 +6,9 @@
 #define CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_PROXY_ANDROID_H_
 
 #include <string>
+#include <vector>
 
+#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "googleurl/src/gurl.h"
@@ -121,7 +123,7 @@ class WebMediaPlayerProxyAndroid : public RenderViewObserver {
                   int system_code);
   void OnKeyMessage(int media_keys_id,
                     const std::string& session_id,
-                    const std::string& message,
+                    const std::vector<uint8>& message,
                     const std::string& destination_url);
 
   WebMediaPlayerManagerAndroid* manager_;

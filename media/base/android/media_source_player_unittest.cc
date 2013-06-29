@@ -66,7 +66,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
                           int system_code) OVERRIDE {}
   virtual void OnKeyMessage(int key_id,
                             const std::string& session_id,
-                            const std::string& message,
+                            const std::vector<uint8>& message,
                             const std::string& destination_url) OVERRIDE {}
 
   int num_requests() const { return num_requests_; }

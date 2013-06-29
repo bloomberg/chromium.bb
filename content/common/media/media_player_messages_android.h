@@ -6,7 +6,9 @@
 // Multiply-included message file, hence no include guard.
 
 #include <string>
+#include <vector>
 
+#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
@@ -247,5 +249,5 @@ IPC_MESSAGE_ROUTED4(MediaKeysMsg_KeyError,
 IPC_MESSAGE_ROUTED4(MediaKeysMsg_KeyMessage,
                     int /* media_keys_id */,
                     std::string /* session_id */,
-                    std::string /* message */,
+                    std::vector<uint8> /* message */,
                     std::string /* destination_url */)

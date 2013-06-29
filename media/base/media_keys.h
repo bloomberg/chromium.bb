@@ -6,6 +6,7 @@
 #define MEDIA_BASE_MEDIA_KEYS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -76,7 +77,7 @@ typedef base::Callback<void(const std::string& session_id,
                             int system_code)> KeyErrorCB;
 
 typedef base::Callback<void(const std::string& session_id,
-                            const std::string& message,
+                            const std::vector<uint8>& message,
                             const std::string& default_url)> KeyMessageCB;
 
 typedef base::Callback<void(const std::string& session_id,

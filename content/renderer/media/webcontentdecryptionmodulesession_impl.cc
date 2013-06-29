@@ -71,11 +71,9 @@ void WebContentDecryptionModuleSessionImpl::KeyError(
 }
 
 void WebContentDecryptionModuleSessionImpl::KeyMessage(
-    const std::string& message,
+    const std::vector<uint8>& message,
     const std::string& destination_url) {
-  client_->keyMessage(reinterpret_cast<const uint8*>(message.data()),
-                      message.length(),
-                      GURL(destination_url));
+  client_->keyMessage(&message[0], message.size(), GURL(destination_url));
 }
 
 }  // namespace content

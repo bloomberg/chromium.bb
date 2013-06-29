@@ -77,7 +77,7 @@ class FakeEncryptedMedia {
     }
 
     virtual void KeyMessage(const std::string& session_id,
-                            const std::string& message,
+                            const std::vector<uint8>& message,
                             const std::string& default_url) = 0;
 
     virtual void NeedKey(const std::string& session_id,
@@ -112,7 +112,7 @@ class FakeEncryptedMedia {
   }
 
   void KeyMessage(const std::string& session_id,
-                  const std::string& message,
+                  const std::vector<uint8>& message,
                   const std::string& default_url) {
     app_->KeyMessage(session_id, message, default_url);
   }
@@ -137,7 +137,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   }
 
   virtual void KeyMessage(const std::string& session_id,
-                          const std::string& message,
+                          const std::vector<uint8>& message,
                           const std::string& default_url) OVERRIDE {
     EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());
@@ -184,7 +184,7 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
   }
 
   virtual void KeyMessage(const std::string& session_id,
-                          const std::string& message,
+                          const std::vector<uint8>& message,
                           const std::string& default_url) OVERRIDE {
     EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());

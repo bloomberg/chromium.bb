@@ -6,6 +6,7 @@
 #define WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_CLEAR_KEY_CDM_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -78,7 +79,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
 
     Status status() { return status_; }
     const std::string& session_id() { return session_id_; }
-    const std::string& key_message() { return key_message_; }
+    const std::vector<uint8>& key_message() { return key_message_; }
     const std::string& default_url() { return default_url_; }
 
     // Resets the Client to a clean state.
@@ -89,13 +90,13 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
                   media::MediaKeys::KeyError error_code,
                   int system_code);
     void KeyMessage(const std::string& session_id,
-                    const std::string& message,
+                    const std::vector<uint8>& message,
                     const std::string& default_url);
 
    private:
     Status status_;
     std::string session_id_;
-    std::string key_message_;
+    std::vector<uint8> key_message_;
     std::string default_url_;
   };
 

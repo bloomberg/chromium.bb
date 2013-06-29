@@ -192,11 +192,9 @@ void MediaDrmBridge::OnKeyMessage(JNIEnv* env,
   std::string session_id = ConvertJavaStringToUTF8(env, j_session_id);
   std::vector<uint8> message;
   JavaByteArrayToByteVector(env, j_message, &message);
-  std::string message_string(message.begin(), message.end());
   std::string destination_url = ConvertJavaStringToUTF8(env, j_destination_url);
 
-  manager_->OnKeyMessage(
-      media_keys_id_, session_id, message_string, destination_url);
+  manager_->OnKeyMessage(media_keys_id_, session_id, message, destination_url);
 }
 
 void MediaDrmBridge::OnDrmEvent(JNIEnv* env,

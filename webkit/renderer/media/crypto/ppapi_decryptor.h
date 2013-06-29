@@ -6,7 +6,9 @@
 #define WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_DECRYPTOR_H_
 
 #include <string>
+#include <vector>
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
@@ -91,7 +93,7 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
                 media::MediaKeys::KeyError error_code,
                 int system_code);
   void KeyMessage(const std::string& session_id,
-                  const std::string& message,
+                  const std::vector<uint8>& message,
                   const std::string& default_url);
 
   // Hold a reference of the plugin instance to make sure the plugin outlives

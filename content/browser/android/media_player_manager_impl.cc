@@ -293,15 +293,15 @@ void MediaPlayerManagerImpl::OnKeyError(int media_keys_id,
                                         media::MediaKeys::KeyError error_code,
                                         int system_code) {
   Send(new MediaKeysMsg_KeyError(routing_id(), media_keys_id,
-                                   session_id, error_code, system_code));
+                                 session_id, error_code, system_code));
 }
 
 void MediaPlayerManagerImpl::OnKeyMessage(int media_keys_id,
                                           const std::string& session_id,
-                                          const std::string& message,
+                                          const std::vector<uint8>& message,
                                           const std::string& destination_url) {
-  Send(new MediaKeysMsg_KeyMessage(routing_id(), media_keys_id, session_id,
-                                     message, destination_url));
+  Send(new MediaKeysMsg_KeyMessage(routing_id(), media_keys_id,
+                                   session_id, message, destination_url));
 }
 
 #if defined(GOOGLE_TV)

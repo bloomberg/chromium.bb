@@ -295,7 +295,7 @@ void WebMediaPlayerProxyAndroid::OnKeyError(
 void WebMediaPlayerProxyAndroid::OnKeyMessage(
     int media_keys_id,
     const std::string& session_id,
-    const std::string& message,
+    const std::vector<uint8>& message,
     const std::string& destination_url) {
   WebMediaPlayerAndroid* player = GetWebMediaPlayer(media_keys_id);
   if (player)

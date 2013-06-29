@@ -143,11 +143,9 @@ bool AesDecryptor::GenerateKeyRequest(const std::string& type,
 
   // For now, the AesDecryptor does not care about |type|;
   // just fire the event with the |init_data| as the request.
-  std::string message;
-  if (init_data && init_data_length) {
-    message = std::string(reinterpret_cast<const char*>(init_data),
-                          init_data_length);
-  }
+  std::vector<uint8> message;
+  if (init_data && init_data_length)
+    message.assign(init_data, init_data + init_data_length);
 
   key_message_cb_.Run(session_id_string, message, std::string());
   return true;

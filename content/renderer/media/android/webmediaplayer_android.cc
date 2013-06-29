@@ -1093,7 +1093,7 @@ void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
 }
 
 void WebMediaPlayerAndroid::OnKeyMessage(const std::string& session_id,
-                                         const std::string& message,
+                                         const std::vector<uint8>& message,
                                          const std::string& destination_url) {
   const GURL destination_url_gurl(destination_url);
   DLOG_IF(WARNING, !destination_url.empty() && !destination_url_gurl.is_valid())
@@ -1101,7 +1101,7 @@ void WebMediaPlayerAndroid::OnKeyMessage(const std::string& session_id,
 
   client_->keyMessage(current_key_system_,
                       WebString::fromUTF8(session_id),
-                      reinterpret_cast<const uint8*>(message.data()),
+                      &message[0],
                       message.size(),
                       destination_url_gurl);
 }

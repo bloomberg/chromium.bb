@@ -16,12 +16,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::ElementsAreArray;
 using ::testing::Gt;
 using ::testing::IsNull;
 using ::testing::NotNull;
 using ::testing::SaveArg;
 using ::testing::StrEq;
 using ::testing::StrNe;
+
+MATCHER(IsEmpty, "") { return arg.empty(); }
 
 namespace media {
 
@@ -239,12 +242,9 @@ class AesDecryptorTest : public testing::Test {
 
  protected:
   void GenerateKeyRequest(const uint8* key_id, int key_id_size) {
-    std::string key_id_string(reinterpret_cast<const char*>(key_id),
-                              key_id_size);
-    EXPECT_CALL(
-        *this,
-        KeyMessage(StrNe(std::string()), StrEq(key_id_string), ""))
-        .WillOnce(SaveArg<1>(&session_id_string_));
+    EXPECT_CALL(*this, KeyMessage(
+        StrNe(std::string()), ElementsAreArray(key_id, key_id_size), ""))
+        .WillOnce(SaveArg<0>(&session_id_string_));
     EXPECT_TRUE(decryptor_.GenerateKeyRequest(
         std::string(), key_id, key_id_size));
   }
@@ -313,7 +313,7 @@ class AesDecryptorTest : public testing::Test {
   MOCK_METHOD3(KeyError, void(const std::string&,
                               MediaKeys::KeyError, int));
   MOCK_METHOD3(KeyMessage, void(const std::string& session_id,
-                                const std::string& message,
+                                const std::vector<uint8>& message,
                                 const std::string& default_url));
 
   AesDecryptor decryptor_;
@@ -323,7 +323,7 @@ class AesDecryptorTest : public testing::Test {
 };
 
 TEST_F(AesDecryptorTest, GenerateKeyRequestWithNullInitData) {
-  EXPECT_CALL(*this, KeyMessage(StrNe(std::string()), "", ""));
+  EXPECT_CALL(*this, KeyMessage(StrNe(std::string()), IsEmpty(), ""));
   EXPECT_TRUE(decryptor_.GenerateKeyRequest(std::string(), NULL, 0));
 }
 

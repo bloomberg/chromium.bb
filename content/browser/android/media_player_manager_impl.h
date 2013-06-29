@@ -6,7 +6,10 @@
 #define CONTENT_BROWSER_ANDROID_MEDIA_PLAYER_MANAGER_IMPL_H_
 
 #include <map>
+#include <string>
+#include <vector>
 
+#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -85,7 +88,7 @@ class CONTENT_EXPORT MediaPlayerManagerImpl
                           int system_code) OVERRIDE;
   virtual void OnKeyMessage(int media_keys_id,
                             const std::string& session_id,
-                            const std::string& message,
+                            const std::vector<uint8>& message,
                             const std::string& destination_url) OVERRIDE;
 
 #if defined(GOOGLE_TV)

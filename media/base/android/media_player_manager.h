@@ -5,6 +5,10 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_PLAYER_MANAGER_H_
 #define MEDIA_BASE_ANDROID_MEDIA_PLAYER_MANAGER_H_
 
+#include <string>
+#include <vector>
+
+#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/media_export.h"
@@ -127,7 +131,7 @@ class MEDIA_EXPORT MediaPlayerManager {
   // Called when the DRM engine wants to send a KeyMessage.
   virtual void OnKeyMessage(int key_id,
                             const std::string& session_id,
-                            const std::string& message,
+                            const std::vector<uint8>& message,
                             const std::string& destination_url) = 0;
 };
 

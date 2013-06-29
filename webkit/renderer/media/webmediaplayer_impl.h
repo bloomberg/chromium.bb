@@ -21,7 +21,9 @@
 #define WEBKIT_RENDERER_MEDIA_WEBMEDIAPLAYER_IMPL_H_
 
 #include <string>
+#include <vector>
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -193,7 +195,7 @@ class WebMediaPlayerImpl
                   media::MediaKeys::KeyError error_code,
                   int system_code);
   void OnKeyMessage(const std::string& session_id,
-                    const std::string& message,
+                    const std::vector<uint8>& message,
                     const std::string& default_url);
   void OnNeedKey(const std::string& type,
                  const std::string& session_id,

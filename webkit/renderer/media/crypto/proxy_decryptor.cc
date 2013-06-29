@@ -145,7 +145,7 @@ void ProxyDecryptor::KeyError(const std::string& session_id,
 }
 
 void ProxyDecryptor::KeyMessage(const std::string& session_id,
-                                const std::string& message,
+                                const std::vector<uint8>& message,
                                 const std::string& default_url) {
   key_message_cb_.Run(session_id, message, default_url);
 }

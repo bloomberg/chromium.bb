@@ -571,7 +571,7 @@ class CdmWrapper : public pp::Instance,
   void KeyAdded(int32_t result, const SessionInfo& session_info);
   void KeyMessage(int32_t result,
                   const SessionInfo& session_info,
-                  const std::string& message,
+                  const std::vector<uint8>& message,
                   const std::string& default_url);
   void KeyError(int32_t result,
                 const SessionInfo& session_info,
@@ -923,7 +923,7 @@ void CdmWrapper::SendKeyMessage(
       &CdmWrapper::KeyMessage,
       SessionInfo(key_system_,
                   std::string(session_id, session_id_length)),
-      std::string(message, message_length),
+      std::vector<uint8>(message, message + message_length),
       std::string(default_url, default_url_length)));
 }
 
@@ -975,7 +975,7 @@ void CdmWrapper::KeyAdded(int32_t result, const SessionInfo& session_info) {
 
 void CdmWrapper::KeyMessage(int32_t result,
                             const SessionInfo& session_info,
-                            const std::string& message,
+                            const std::vector<uint8>& message,
                             const std::string& default_url) {
   PP_DCHECK(result == PP_OK);
   PP_DCHECK(!session_info.key_system.empty());

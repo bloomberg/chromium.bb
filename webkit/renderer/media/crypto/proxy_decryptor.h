@@ -6,7 +6,9 @@
 #define WEBKIT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_
 
 #include <string>
+#include <vector>
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -71,7 +73,7 @@ class ProxyDecryptor : public media::MediaKeys {
                 media::MediaKeys::KeyError error_code,
                 int system_code);
   void KeyMessage(const std::string& session_id,
-                  const std::string& message,
+                  const std::vector<uint8>& message,
                   const std::string& default_url);
 
   base::WeakPtrFactory<ProxyDecryptor> weak_ptr_factory_;

@@ -6,6 +6,8 @@
 #define CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_
 
 #include <jni.h>
+#include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -219,7 +221,7 @@ class WebMediaPlayerAndroid
                   media::MediaKeys::KeyError error_code,
                   int system_code);
   void OnKeyMessage(const std::string& session_id,
-                    const std::string& message,
+                    const std::vector<uint8>& message,
                     const std::string& destination_url);
 
   void OnNeedKey(const std::string& type,

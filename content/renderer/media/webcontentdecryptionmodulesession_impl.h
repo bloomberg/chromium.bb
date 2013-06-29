@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_WEBCONTENTDECRYPTIONMODULESESSION_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -43,7 +44,7 @@ class WebContentDecryptionModuleSessionImpl
   // Callbacks.
   void KeyAdded();
   void KeyError(media::MediaKeys::KeyError error_code, int system_code);
-  void KeyMessage(const std::string& message,
+  void KeyMessage(const std::vector<uint8>& message,
                   const std::string& destination_url);
 
  private:

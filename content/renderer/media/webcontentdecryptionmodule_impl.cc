@@ -5,6 +5,7 @@
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -46,7 +47,7 @@ class SessionIdAdapter {
                 media::MediaKeys::KeyError error_code,
                 int system_code);
   void KeyMessage(const std::string& session_id,
-                  const std::string& message,
+                  const std::vector<uint8>& message,
                   const std::string& destination_url);
 
   // Helper function of the callbacks.
@@ -119,7 +120,7 @@ void SessionIdAdapter::KeyError(const std::string& session_id,
 }
 
 void SessionIdAdapter::KeyMessage(const std::string& session_id,
-                                  const std::string& message,
+                                  const std::vector<uint8>& message,
                                   const std::string& destination_url) {
   GetSession(session_id)->KeyMessage(message, destination_url);
 }

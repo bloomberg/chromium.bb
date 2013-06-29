@@ -173,7 +173,7 @@ void ClearKeyCdm::Client::KeyError(const std::string& session_id,
 }
 
 void ClearKeyCdm::Client::KeyMessage(const std::string& session_id,
-                                     const std::string& message,
+                                     const std::vector<uint8>& message,
                                      const std::string& default_url) {
   status_ = kKeyMessage;
   session_id_ = session_id;
@@ -215,7 +215,8 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type, int type_size,
 
   host_->SendKeyMessage(
       client_.session_id().data(), client_.session_id().size(),
-      client_.key_message().data(), client_.key_message().size(),
+      reinterpret_cast<const char*>(&client_.key_message()[0]),
+      client_.key_message().size(),
       client_.default_url().data(), client_.default_url().size());
 
   // Only save the latest session ID for heartbeat messages.
