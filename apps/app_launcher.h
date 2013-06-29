@@ -12,6 +12,9 @@ namespace apps {
 // Returns whether the app launcher has been enabled.
 bool IsAppLauncherEnabled();
 
+// Returns whether the app launcher promo should be shown.
+bool ShouldShowAppLauncherPromo();
+
 }  // namespace apps
 
 #endif  // APPS_APP_LAUNCHER_H_

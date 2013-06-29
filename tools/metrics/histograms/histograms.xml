@@ -178,6 +178,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppLauncherPromo" enum="AppLauncherPromo">
+  <summary>Interactions with the App Launcher promo dialog.</summary>
+</histogram>
+
 <histogram name="AsyncDNS.ConfigChange" enum="BooleanSuccess">
   <summary>
     Whether DnsConfigService::OnConfigChange actually corresponded to a change
@@ -12340,6 +12344,13 @@ other types of suffix sets.
   <int value="1" label="LAUNCH_PANEL"/>
   <int value="2" label="LAUNCH_TAB"/>
   <int value="3" label="LAUNCH_NONE (v2 packaged apps)"/>
+</enum>
+
+<enum name="AppLauncherPromo" type="int">
+  <int value="0" label="Already installed"/>
+  <int value="1" label="Shown"/>
+  <int value="2" label="Dismissed"/>
+  <int value="3" label="Learn more"/>
 </enum>
 
 <enum name="AppPromoAction" type="int">

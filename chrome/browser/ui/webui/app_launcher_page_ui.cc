@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/app_launcher_page_ui.h"
 
+#include "apps/app_launcher.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_resource_cache_factory.h"
@@ -108,6 +110,16 @@ void AppLauncherPageUI::HTMLSource::StartDataRequest(
   bool is_incognito = render_host->GetBrowserContext()->IsOffTheRecord();
   scoped_refptr<base::RefCountedMemory> html_bytes(
       resource->GetNewTabHTML(is_incognito));
+
+  if (!is_incognito) {
+    if (apps::IsAppLauncherEnabled()) {
+      AppLauncherHandler::RecordAppLauncherPromoHistogram(
+          apps::APP_LAUNCHER_PROMO_ALREADY_INSTALLED);
+    } else if (apps::ShouldShowAppLauncherPromo()){
+      AppLauncherHandler::RecordAppLauncherPromoHistogram(
+          apps::APP_LAUNCHER_PROMO_SHOWN);
+    }
+  }
 
   callback.Run(html_bytes.get());
 }

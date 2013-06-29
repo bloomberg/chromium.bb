@@ -122,6 +122,8 @@ cr.define('ntp', function() {
       if (loadTimeData.getBoolean('showAppLauncherPromo')) {
         $('app-launcher-promo-close-button').addEventListener('click',
             function() { chrome.send('stopShowingAppLauncherPromo'); });
+        $('apps-promo-learn-more').addEventListener('click',
+            function() { chrome.send('onLearnMore'); });
       }
     }
     if (loadTimeData.getBoolean('isDiscoveryInNTPEnabled'))

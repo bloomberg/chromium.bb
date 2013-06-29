@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "apps/metrics_names.h"
 #include "apps/pref_names.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -211,6 +212,9 @@ void AppLauncherHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("stopShowingAppLauncherPromo",
       base::Bind(&AppLauncherHandler::StopShowingAppLauncherPromo,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("onLearnMore",
+      base::Bind(&AppLauncherHandler::OnLearnMore,
                  base::Unretained(this)));
 }
 
@@ -694,6 +698,11 @@ void AppLauncherHandler::StopShowingAppLauncherPromo(
     const base::ListValue* args) {
   g_browser_process->local_state()->SetBoolean(
       apps::prefs::kShowAppLauncherPromo, false);
+  RecordAppLauncherPromoHistogram(apps::APP_LAUNCHER_PROMO_DISMISSED);
+}
+
+void AppLauncherHandler::OnLearnMore(const base::ListValue* args) {
+  RecordAppLauncherPromoHistogram(apps::APP_LAUNCHER_PROMO_LEARN_MORE);
 }
 
 void AppLauncherHandler::OnFaviconForApp(
@@ -758,6 +767,7 @@ void AppLauncherHandler::CleanupAfterUninstall() {
 void AppLauncherHandler::RecordAppLaunchType(
     extension_misc::AppLaunchBucket bucket,
     extensions::Manifest::Type app_type) {
+  DCHECK_LT(bucket, extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
   if (app_type == extensions::Manifest::TYPE_PLATFORM_APP) {
     UMA_HISTOGRAM_ENUMERATION(extension_misc::kPlatformAppLaunchHistogram,
         bucket, extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
@@ -787,6 +797,14 @@ void AppLauncherHandler::RecordAppListMainLaunch(const Extension* extension) {
   else if (extension->id() == extension_misc::kChromeAppId)
     bucket = extension_misc::APP_LAUNCH_APP_LIST_MAIN_CHROME;
   AppLauncherHandler::RecordAppLaunchType(bucket, extension->GetType());
+}
+
+// static
+void AppLauncherHandler::RecordAppLauncherPromoHistogram(
+      apps::AppLauncherPromoHistogramValues value) {
+  DCHECK_LT(value, apps::APP_LAUNCHER_PROMO_MAX);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Apps.AppLauncherPromo", value, apps::APP_LAUNCHER_PROMO_MAX);
 }
 
 // static

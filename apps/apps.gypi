@@ -48,6 +48,7 @@
         'app_shim/extension_app_shim_handler_mac.h',
         'field_trial_names.cc',
         'field_trial_names.h',
+        'metrics_names.h',
         'pref_names.cc',
         'pref_names.h',
         'prefs.cc',
