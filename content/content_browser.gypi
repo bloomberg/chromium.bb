@@ -597,8 +597,6 @@
     'browser/indexed_db/leveldb/leveldb_transaction.h',
     'browser/indexed_db/leveldb/leveldb_write_batch.cc',
     'browser/indexed_db/leveldb/leveldb_write_batch.h',
-    'browser/indexed_db/webidbcursor_impl.cc',
-    'browser/indexed_db/webidbcursor_impl.h',
     'browser/indexed_db/webidbdatabase_impl.cc',
     'browser/indexed_db/webidbdatabase_impl.h',
     'browser/loader/async_resource_handler.cc',

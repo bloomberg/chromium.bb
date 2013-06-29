@@ -59,7 +59,7 @@ void IndexedDBCallbacksBase::onUpgradeNeeded(
   NOTREACHED();
 }
 
-void IndexedDBCallbacksBase::onSuccess(WebIDBCursorImpl* idb_object,
+void IndexedDBCallbacksBase::onSuccess(IndexedDBCursor* idb_object,
                                        const IndexedDBKey& key,
                                        const IndexedDBKey& primaryKey,
                                        std::vector<char>* value) {
@@ -152,8 +152,8 @@ void IndexedDBCallbacksDatabase::onUpgradeNeeded(
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksUpgradeNeeded(params));
 }
 
-void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(
-    WebIDBCursorImpl* idb_cursor,
+void IndexedDBCallbacks<IndexedDBCursor>::onSuccess(
+    IndexedDBCursor* idb_cursor,
     const IndexedDBKey& key,
     const IndexedDBKey& primaryKey,
     std::vector<char>* value) {
@@ -171,7 +171,7 @@ void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIDBCursor(params));
 }
 
-void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(std::vector<char>* value) {
+void IndexedDBCallbacks<IndexedDBCursor>::onSuccess(std::vector<char>* value) {
   std::vector<char> value_copy;
   if (value && !value->empty())
     std::swap(value_copy, *value);
@@ -182,12 +182,12 @@ void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(std::vector<char>* value) {
       value_copy));
 }
 
-void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(
+void IndexedDBCallbacks<IndexedDBCursor>::onSuccess(
     const IndexedDBKey& key,
     const IndexedDBKey& primaryKey,
     std::vector<char>* value) {
   DCHECK_NE(ipc_cursor_id_, -1);
-  WebIDBCursorImpl* idb_cursor =
+  IndexedDBCursor* idb_cursor =
       dispatcher_host()->GetCursorFromId(ipc_cursor_id_);
 
   DCHECK(idb_cursor);
@@ -207,7 +207,7 @@ void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(
       new IndexedDBMsg_CallbacksSuccessCursorContinue(params));
 }
 
-void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccessWithPrefetch(
+void IndexedDBCallbacks<IndexedDBCursor>::onSuccessWithPrefetch(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primaryKeys,
     const std::vector<std::vector<char> >& values) {

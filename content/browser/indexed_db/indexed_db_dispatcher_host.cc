@@ -14,10 +14,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
-#include "content/browser/indexed_db/webidbcursor_impl.h"
-#include "content/browser/indexed_db/webidbcursor_impl.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
@@ -115,9 +114,8 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
-int32 IndexedDBDispatcherHost::Add(WebIDBCursorImpl* idb_cursor) {
+int32 IndexedDBDispatcherHost::Add(IndexedDBCursor* idb_cursor) {
   if (!cursor_dispatcher_host_) {
-    delete idb_cursor;
     return 0;
   }
   return cursor_dispatcher_host_->map_.Add(idb_cursor);
@@ -163,7 +161,7 @@ int64 IndexedDBDispatcherHost::RendererTransactionId(
   return host_transaction_id & 0xffffffff;
 }
 
-WebIDBCursorImpl* IndexedDBDispatcherHost::GetCursorFromId(
+IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(
     int32 ipc_cursor_id) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   return cursor_dispatcher_host_->map_.Lookup(ipc_cursor_id);
@@ -316,8 +314,23 @@ ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
 }
 
 template <typename ObjectType>
+ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
+    RefIDMap<ObjectType>* map,
+    int32 ipc_return_object_id) {
+  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  ObjectType* return_object = map->Lookup(ipc_return_object_id);
+  if (!return_object) {
+    NOTREACHED() << "Uh oh, couldn't find object with id "
+                 << ipc_return_object_id;
+    RecordAction(UserMetricsAction("BadMessageTerminate_IDBMF"));
+    BadMessageReceived();
+  }
+  return return_object;
+}
+
+template <typename MapType>
 void IndexedDBDispatcherHost::DestroyObject(
-    IDMap<ObjectType, IDMapOwnPointer>* map,
+    MapType* map,
     int32 ipc_object_id) {
   GetOrTerminateProcess(map, ipc_object_id);
   map->Remove(ipc_object_id);
@@ -595,7 +608,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpenCursor(
     return;
 
   scoped_ptr<IndexedDBCallbacksBase> callbacks(
-      new IndexedDBCallbacks<WebIDBCursorImpl>(
+      new IndexedDBCallbacks<IndexedDBCursor>(
           parent_, params.ipc_thread_id, params.ipc_callbacks_id, -1));
   database->openCursor(parent_->HostTransactionId(params.transaction_id),
                        params.object_store_id,
@@ -787,15 +800,15 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnAdvance(
     unsigned long count) {
   DCHECK(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  WebIDBCursorImpl* idb_cursor =
+  IndexedDBCursor* idb_cursor =
       parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
   if (!idb_cursor)
     return;
 
-  idb_cursor->advance(
+  idb_cursor->Advance(
       count,
-      new IndexedDBCallbacks<WebIDBCursorImpl>(
-          parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
+      IndexedDBCallbacksWrapper::Create(new IndexedDBCallbacks<IndexedDBCursor>(
+          parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id)));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
@@ -805,15 +818,15 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
     const IndexedDBKey& key) {
   DCHECK(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  WebIDBCursorImpl* idb_cursor =
+  IndexedDBCursor* idb_cursor =
       parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
   if (!idb_cursor)
     return;
 
-  idb_cursor->continueFunction(
-      key,
-      new IndexedDBCallbacks<WebIDBCursorImpl>(
-          parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
+  idb_cursor->ContinueFunction(
+      make_scoped_ptr(new IndexedDBKey(key)),
+      IndexedDBCallbacksWrapper::Create(new IndexedDBCallbacks<IndexedDBCursor>(
+          parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id)));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetch(
@@ -823,15 +836,15 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetch(
     int n) {
   DCHECK(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  WebIDBCursorImpl* idb_cursor =
+  IndexedDBCursor* idb_cursor =
       parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
   if (!idb_cursor)
     return;
 
-  idb_cursor->prefetchContinue(
+  idb_cursor->PrefetchContinue(
       n,
-      new IndexedDBCallbacks<WebIDBCursorImpl>(
-          parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
+      IndexedDBCallbacksWrapper::Create(new IndexedDBCallbacks<IndexedDBCursor>(
+          parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id)));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetchReset(
@@ -840,12 +853,12 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetchReset(
     int unused_prefetches) {
   DCHECK(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  WebIDBCursorImpl* idb_cursor =
+  IndexedDBCursor* idb_cursor =
       parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
   if (!idb_cursor)
     return;
 
-  idb_cursor->prefetchReset(used_prefetches, unused_prefetches);
+  idb_cursor->PrefetchReset(used_prefetches, unused_prefetches);
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnDestroyed(

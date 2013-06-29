@@ -6,7 +6,6 @@
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
-#include "content/browser/indexed_db/webidbcursor_impl.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
 
 namespace content {
@@ -36,7 +35,7 @@ void IndexedDBCallbacksWrapper::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
                                           const IndexedDBKey& primary_key,
                                           std::vector<char>* value) {
   DCHECK(callbacks_);
-  callbacks_->onSuccess(new WebIDBCursorImpl(cursor), key, primary_key, value);
+  callbacks_->onSuccess(cursor, key, primary_key, value);
   callbacks_.reset();
 }
 

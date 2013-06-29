@@ -13,8 +13,8 @@
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 
 namespace content {
+class IndexedDBCursor;
 class IndexedDBDatabaseError;
-class WebIDBCursorImpl;
 class WebIDBDatabaseImpl;
 struct IndexedDBDatabaseMetadata;
 
@@ -33,7 +33,7 @@ class IndexedDBCallbacksBase {
                                WebIDBDatabaseImpl* database,
                                const IndexedDBDatabaseMetadata&,
                                WebKit::WebIDBCallbacks::DataLoss data_loss);
-  virtual void onSuccess(WebIDBCursorImpl* idb_object,
+  virtual void onSuccess(IndexedDBCursor* idb_object,
                          const IndexedDBKey& key,
                          const IndexedDBKey& primaryKey,
                          std::vector<char>* value);
@@ -102,8 +102,8 @@ class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksDatabase);
 };
 
-// WebIDBCursorImpl uses:
-// * onSuccess(WebIDBCursorImpl*, WebIDBKey, WebIDBKey, WebData)
+// IndexedDBCursor uses:
+// * onSuccess(IndexedDBCursor*, WebIDBKey, WebIDBKey, WebData)
 //   when an openCursor()/openKeyCursor() call has succeeded,
 // * onSuccess(WebIDBKey, WebIDBKey, WebData)
 //   when an advance()/continue() call has succeeded, or
@@ -111,7 +111,7 @@ class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
 //   to indicate it does not contain any data, i.e., there is no key within
 //   the key range, or it has reached the end.
 template <>
-class IndexedDBCallbacks<WebIDBCursorImpl> : public IndexedDBCallbacksBase {
+class IndexedDBCallbacks<IndexedDBCursor> : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                      int32 ipc_thread_id,
@@ -122,7 +122,7 @@ class IndexedDBCallbacks<WebIDBCursorImpl> : public IndexedDBCallbacksBase {
                                ipc_callbacks_id),
         ipc_cursor_id_(ipc_cursor_id) {}
 
-  virtual void onSuccess(WebIDBCursorImpl* idb_object,
+  virtual void onSuccess(IndexedDBCursor* idb_object,
                          const IndexedDBKey& key,
                          const IndexedDBKey& primaryKey,
                          std::vector<char>* value);

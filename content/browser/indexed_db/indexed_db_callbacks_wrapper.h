@@ -22,7 +22,6 @@ class IndexedDBCallbacksBase;
 class IndexedDBDatabaseCallbacksWrapper;
 class IndexedDBCursor;
 class IndexedDBDatabase;
-class WebIDBCursorImpl;
 class WebIDBDatabaseImpl;
 struct IndexedDBDatabaseMetadata;
 

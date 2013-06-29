@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
+#include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_message_filter.h"
 
 class GURL;
@@ -29,10 +30,10 @@ struct IndexedDBHostMsg_FactoryOpen_Params;
 
 namespace content {
 class IndexedDBContextImpl;
+class IndexedDBCursor;
 class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
-class WebIDBCursorImpl;
 class WebIDBDatabaseImpl;
 struct IndexedDBDatabaseMetadata;
 
@@ -61,14 +62,14 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   // The various IndexedDBCallbacks children call these methods to add the
   // results into the applicable map.  See below for more details.
-  int32 Add(WebIDBCursorImpl* idb_cursor);
+  int32 Add(IndexedDBCursor* idb_cursor);
   int32 Add(WebIDBDatabaseImpl* idb_database,
             int32 ipc_thread_id,
             const GURL& origin_url);
 
   void RegisterTransactionId(int64 host_transaction_id, const GURL& origin_url);
 
-  WebIDBCursorImpl* GetCursorFromId(int32 ipc_cursor_id);
+  IndexedDBCursor* GetCursorFromId(int32 ipc_cursor_id);
 
   int64 HostTransactionId(int64 transaction_id);
   int64 RendererTransactionId(int64 host_transaction_id);
@@ -91,14 +92,47 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   void ResetDispatcherHosts();
 
+  // IDMap for RefCounted types
+  template <typename RefCountedType>
+  class RefIDMap {
+   private:
+    typedef int32 KeyType;
+
+   public:
+    RefIDMap() {}
+    ~RefIDMap() {}
+
+    KeyType Add(RefCountedType* data) {
+      return map_.Add(new scoped_refptr<RefCountedType>(data));
+    }
+
+    RefCountedType* Lookup(KeyType id) {
+      scoped_refptr<RefCountedType>* ptr = map_.Lookup(id);
+      if (ptr == NULL)
+        return NULL;
+      return ptr->get();
+    }
+
+    void Remove(KeyType id) { map_.Remove(id); }
+
+    void set_check_on_null_data(bool value) {
+      map_.set_check_on_null_data(value);
+    }
+
+   private:
+    IDMap<scoped_refptr<RefCountedType>, IDMapOwnPointer> map_;
+  };
+
   // Helper templates.
   template <class ReturnType>
   ReturnType* GetOrTerminateProcess(IDMap<ReturnType, IDMapOwnPointer>* map,
                                     int32 ipc_return_object_id);
+  template <class ReturnType>
+  ReturnType* GetOrTerminateProcess(RefIDMap<ReturnType>* map,
+                                    int32 ipc_return_object_id);
 
-  template <typename ObjectType>
-  void DestroyObject(IDMap<ObjectType, IDMapOwnPointer>* map,
-                     int32 ipc_object_id);
+  template <typename MapType>
+  void DestroyObject(MapType* map, int32 ipc_object_id);
 
   // Used in nested classes.
   typedef std::map<int32, GURL> WebIDBObjectIDToURLMap;
@@ -189,7 +223,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnDestroyed(int32 ipc_cursor_id);
 
     IndexedDBDispatcherHost* parent_;
-    IDMap<WebIDBCursorImpl, IDMapOwnPointer> map_;
+    RefIDMap<IndexedDBCursor> map_;
   };
 
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
