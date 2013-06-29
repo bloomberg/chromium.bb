@@ -26,6 +26,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/FastMalloc.h"
 #include "wtf/HashTraits.h"
+#include "wtf/text/StringHash.h"
 #include <string.h>
 
 #define DUMP_HASHTABLE_STATS 0

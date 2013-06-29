@@ -122,7 +122,7 @@ void HTMLFormControlsCollection::updateNameCache() const
     if (hasNameCache())
         return;
 
-    HashSet<AtomicStringImpl*> foundInputElements;
+    HashSet<StringImpl*> foundInputElements;
 
     const Vector<FormAssociatedElement*>& elementsArray = formControlElements();
 

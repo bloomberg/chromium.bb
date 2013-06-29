@@ -157,7 +157,7 @@ private:
     // are any invalid controls in this form.
     bool checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >*, HTMLFormControlElement::CheckValidityDispatchEvents = HTMLFormControlElement::CheckValidityDispatchEventsAllowed);
 
-    typedef HashMap<RefPtr<AtomicStringImpl>, RefPtr<Node> > AliasMap;
+    typedef HashMap<RefPtr<StringImpl>, RefPtr<Node> > AliasMap;
 
     FormSubmission::Attributes m_attributes;
     OwnPtr<AliasMap> m_elementAliases;

@@ -62,7 +62,7 @@ struct SVGAnimatedPropertyDescription {
     }
 
     SVGElement* m_element;
-    AtomicStringImpl* m_attributeName;
+    StringImpl* m_attributeName;
 };
 
 struct SVGAnimatedPropertyDescriptionHash {

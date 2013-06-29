@@ -3017,9 +3017,9 @@ void Element::clearHasPendingResources()
 
 struct PresentationAttributeCacheKey {
     PresentationAttributeCacheKey() : tagName(0) { }
-    AtomicStringImpl* tagName;
+    StringImpl* tagName;
     // Only the values need refcounting.
-    Vector<pair<AtomicStringImpl*, AtomicString>, 3> attributesAndValues;
+    Vector<pair<StringImpl*, AtomicString>, 3> attributesAndValues;
 };
 
 struct PresentationAttributeCacheEntry {
@@ -3239,7 +3239,7 @@ void Element::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
         inlineStyle->addSubresourceStyleURLs(urls, document()->elementSheet()->contents());
 }
 
-static inline bool attributeNameSort(const pair<AtomicStringImpl*, AtomicString>& p1, const pair<AtomicStringImpl*, AtomicString>& p2)
+static inline bool attributeNameSort(const pair<StringImpl*, AtomicString>& p1, const pair<StringImpl*, AtomicString>& p2)
 {
     // Sort based on the attribute name pointers. It doesn't matter what the order is as long as it is always the same.
     return p1.first < p2.first;

@@ -96,7 +96,7 @@ public:
 
 private:
     typedef ListHashSet<RefPtr<HTMLFormControlElementWithState>, 64> FormElementListHashSet;
-    typedef HashMap<RefPtr<AtomicStringImpl>, OwnPtr<SavedFormState> > SavedFormStateMap;
+    typedef HashMap<RefPtr<StringImpl>, OwnPtr<SavedFormState> > SavedFormStateMap;
 
     FormController();
     static PassOwnPtr<SavedFormStateMap> createSavedFormStateMap(const FormElementListHashSet&);

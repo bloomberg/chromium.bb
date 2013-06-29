@@ -273,7 +273,7 @@ static void collectFeaturesFromRuleData(RuleFeatureSet& features, const RuleData
         features.uncommonAttributeRules.append(RuleFeature(ruleData.rule(), ruleData.selectorIndex(), ruleData.hasDocumentSecurityOrigin()));
 }
     
-void RuleSet::addToRuleSet(AtomicStringImpl* key, PendingRuleMap& map, const RuleData& ruleData)
+void RuleSet::addToRuleSet(StringImpl* key, PendingRuleMap& map, const RuleData& ruleData)
 {
     if (!key)
         return;

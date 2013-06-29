@@ -56,9 +56,9 @@ struct RuleFeatureSet {
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
-    HashSet<AtomicStringImpl*> idsInRules;
-    HashSet<AtomicStringImpl*> classesInRules;
-    HashSet<AtomicStringImpl*> attrsInRules;
+    HashSet<StringImpl*> idsInRules;
+    HashSet<StringImpl*> classesInRules;
+    HashSet<StringImpl*> attrsInRules;
     Vector<RuleFeature> siblingRules;
     Vector<RuleFeature> uncommonAttributeRules;
     bool usesFirstLineRules;

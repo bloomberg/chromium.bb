@@ -110,10 +110,10 @@ public:
 
     const RuleFeatureSet& features() const { return m_features; }
 
-    const RuleData* idRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_idRules.get(key); }
-    const RuleData* classRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_classRules.get(key); }
-    const RuleData* tagRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_tagRules.get(key); }
-    const RuleData* shadowPseudoElementRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_shadowPseudoElementRules.get(key); }
+    const RuleData* idRules(StringImpl* key) const { ASSERT(!m_pendingRules); return m_idRules.get(key); }
+    const RuleData* classRules(StringImpl* key) const { ASSERT(!m_pendingRules); return m_classRules.get(key); }
+    const RuleData* tagRules(StringImpl* key) const { ASSERT(!m_pendingRules); return m_tagRules.get(key); }
+    const RuleData* shadowPseudoElementRules(StringImpl* key) const { ASSERT(!m_pendingRules); return m_shadowPseudoElementRules.get(key); }
     const Vector<RuleData>* linkPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_linkPseudoClassRules; }
     const Vector<RuleData>* cuePseudoRules() const { ASSERT(!m_pendingRules); return &m_cuePseudoRules; }
     const Vector<RuleData>* focusPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_focusPseudoClassRules; }
@@ -143,15 +143,15 @@ public:
     Vector<RuleSetSelectorPair> m_regionSelectorsAndRuleSets;
 
 private:
-    typedef HashMap<AtomicStringImpl*, OwnPtr<LinkedStack<RuleData> > > PendingRuleMap;
-    typedef HashMap<AtomicStringImpl*, OwnPtr<RuleData> > CompactRuleMap;
+    typedef HashMap<StringImpl*, OwnPtr<LinkedStack<RuleData> > > PendingRuleMap;
+    typedef HashMap<StringImpl*, OwnPtr<RuleData> > CompactRuleMap;
 
     RuleSet()
         : m_ruleCount(0)
     {
     }
 
-    void addToRuleSet(AtomicStringImpl* key, PendingRuleMap&, const RuleData&);
+    void addToRuleSet(StringImpl* key, PendingRuleMap&, const RuleData&);
     void addPageRule(StyleRulePage*);
     void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
 
