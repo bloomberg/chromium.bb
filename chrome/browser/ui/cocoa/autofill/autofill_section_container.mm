@@ -126,7 +126,6 @@ void BreakSuggestionText(const string16& text,
 - (void)loadView {
   inputs_.reset([[self makeInputControls] retain]);
   string16 labelText = controller_->LabelForSection(section_);
-
   label_.reset([[self makeDetailSectionLabel:
                    base::SysUTF16ToNSString(labelText)] retain]);
 
@@ -141,6 +140,9 @@ void BreakSuggestionText(const string16& text,
 }
 
 - (NSSize)preferredSize {
+  if ([view_ isHidden])
+    return NSMakeSize(0, 0);
+
   NSSize labelSize = [label_ frame].size;  // Assumes sizeToFit was called.
   CGFloat controlHeight = [inputs_ preferredHeightForWidth:kDetailsWidth];
   if ([inputs_ isHidden])
@@ -154,6 +156,9 @@ void BreakSuggestionText(const string16& text,
 }
 
 - (void)performLayout {
+  if ([view_ isHidden])
+    return;
+
   NSSize buttonSize = [suggestButton_ frame].size;  // Assume sizeToFit.
   NSSize labelSize = [label_ frame].size;  // Assumes sizeToFit was called.
   CGFloat controlHeight = [inputs_ preferredHeightForWidth:kDetailsWidth];
@@ -203,7 +208,6 @@ void BreakSuggestionText(const string16& text,
       [[NSFontManager sharedFontManager] convertFont:[label font]
                                          toHaveTrait:NSBoldFontMask]];
   [label setStringValue:labelText];
-  [label sizeToFit];
   [label setEditable:NO];
   [label setBordered:NO];
   [label sizeToFit];
@@ -326,6 +330,7 @@ void BreakSuggestionText(const string16& text,
     [suggestContainer_ showTextfield:extraText withIcon:extraIcon];
   }
   [view_ setShouldHighlightOnHover:showSuggestions];
+  [view_ setHidden:!controller_->SectionIsActive(section_)];
 }
 
 - (void)update {

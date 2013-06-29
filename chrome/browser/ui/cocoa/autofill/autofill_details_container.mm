@@ -31,7 +31,7 @@
   [self addSection:autofill::SECTION_EMAIL];
   [self addSection:autofill::SECTION_CC];
   [self addSection:autofill::SECTION_BILLING];
-  // TODO(groby): Add SECTION_CC_BILLING once toggling is enabled.
+  [self addSection:autofill::SECTION_CC_BILLING];
   [self addSection:autofill::SECTION_SHIPPING];
 
   [self setView:[[NSView alloc] init]];
@@ -43,7 +43,6 @@
 
 - (NSSize)preferredSize {
   NSSize size = NSMakeSize(0, 0);
-
   for (AutofillSectionContainer* container in details_.get()) {
     NSSize containerSize = [container preferredSize];
     size.height += containerSize.height;
@@ -56,9 +55,11 @@
   NSRect rect = NSZeroRect;
   for (AutofillSectionContainer* container in
       [details_ reverseObjectEnumerator]) {
-    [container performLayout];
-    [[container view] setFrameOrigin:NSMakePoint(0, NSMaxY(rect))];
-    rect = NSUnionRect(rect, [[container view] frame]);
+    if (![[container view] isHidden]) {
+      [container performLayout];
+      [[container view] setFrameOrigin:NSMakePoint(0, NSMaxY(rect))];
+      rect = NSUnionRect(rect, [[container view] frame]);
+    }
   }
 
   [[self view] setFrameSize:[self preferredSize]];
