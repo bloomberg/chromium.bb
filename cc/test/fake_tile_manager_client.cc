@@ -6,9 +6,4 @@
 
 namespace cc {
 
-bool FakeTileManagerClient::
-    ShouldForceTileUploadsRequiredForActivationToComplete() const {
-  return false;
-}
-
 }  // namespace cc

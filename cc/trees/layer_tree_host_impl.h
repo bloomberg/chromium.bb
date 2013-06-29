@@ -194,8 +194,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   // TileManagerClient implementation.
   virtual void DidInitializeVisibleTile() OVERRIDE;
-  virtual bool ShouldForceTileUploadsRequiredForActivationToComplete() const
-      OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
 
   // OutputSurfaceClient implementation.

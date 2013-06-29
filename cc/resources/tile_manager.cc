@@ -177,7 +177,7 @@ void TileManager::UnregisterTile(Tile* tile) {
 }
 
 bool TileManager::ShouldForceTasksRequiredForActivationToComplete() const {
-  return client_->ShouldForceTileUploadsRequiredForActivationToComplete();
+  return GlobalState().tree_priority != SMOOTHNESS_TAKES_PRIORITY;
 }
 
 class BinComparator {

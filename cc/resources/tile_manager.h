@@ -27,8 +27,6 @@ class TileVersion;
 class CC_EXPORT TileManagerClient {
  public:
   virtual void DidInitializeVisibleTile() = 0;
-  virtual bool
-      ShouldForceTileUploadsRequiredForActivationToComplete() const = 0;
   virtual void NotifyReadyToActivate() = 0;
 
  protected:

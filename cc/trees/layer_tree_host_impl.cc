@@ -1009,18 +1009,6 @@ void LayerTreeHostImpl::DidInitializeVisibleTile() {
     client_->DidInitializeVisibleTileOnImplThread();
 }
 
-bool LayerTreeHostImpl::
-    ShouldForceTileUploadsRequiredForActivationToComplete() const {
-  // During shutdown of TileManager, it will attempt to flush its job queue,
-  // which can call this function while this is NULL.
-  if (!tile_manager_)
-    return false;
-
-  TreePriority tree_priority = tile_manager_->GlobalState().tree_priority;
-  return tree_priority != SMOOTHNESS_TAKES_PRIORITY &&
-         animation_registrar_->active_animation_controllers().empty();
-}
-
 void LayerTreeHostImpl::NotifyReadyToActivate() {
   if (pending_tree_)
     ActivatePendingTree();
