@@ -1029,12 +1029,19 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
     DCHECK(!chunk_demuxer_);
     DCHECK(!data_source_);
 
+    media::AddTextTrackCB add_text_track_cb;
+
+    if (cmd_line->HasSwitch(switches::kEnableInbandTextTracks)) {
+      add_text_track_cb =
+          base::Bind(&WebMediaPlayerImpl::OnTextTrack, base::Unretained(this));
+    }
+
     scoped_ptr<WebKit::WebMediaSource> ms(media_source);
     chunk_demuxer_ = new media::ChunkDemuxer(
         BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnDemuxerOpened,
                               base::Passed(&ms)),
         BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnNeedKey, ""),
-        base::Bind(&WebMediaPlayerImpl::OnTextTrack, base::Unretained(this)),
+        add_text_track_cb,
         base::Bind(&LogMediaSourceError, media_log_));
     demuxer_.reset(chunk_demuxer_);
 

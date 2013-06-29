@@ -177,7 +177,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
   cur_size -= result;
   bytes_parsed += result;
 
-  WebMTracksParser tracks_parser(log_cb_);
+  WebMTracksParser tracks_parser(log_cb_, add_text_track_cb_.is_null());
   result = tracks_parser.Parse(cur, cur_size);
 
   if (result <= 0)

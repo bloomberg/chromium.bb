@@ -16,6 +16,8 @@ MEDIA_EXPORT extern const char kAudioBufferSize[];
 
 MEDIA_EXPORT extern const char kEnableEac3Playback[];
 
+MEDIA_EXPORT extern const char kEnableInbandTextTracks[];
+
 MEDIA_EXPORT extern const char kEnableOpusPlayback[];
 
 MEDIA_EXPORT extern const char kEnableVp8AlphaPlayback[];

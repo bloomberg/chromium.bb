@@ -28,11 +28,12 @@ static TextKind CodecIdToTextKind(const std::string& codec_id) {
   return kTextNone;
 }
 
-WebMTracksParser::WebMTracksParser(const LogCB& log_cb)
+WebMTracksParser::WebMTracksParser(const LogCB& log_cb, bool ignore_text_tracks)
     : track_type_(-1),
       track_num_(-1),
       audio_track_num_(-1),
       video_track_num_(-1),
+      ignore_text_tracks_(ignore_text_tracks),
       log_cb_(log_cb),
       audio_client_(log_cb),
       video_client_(log_cb) {
@@ -185,10 +186,15 @@ bool WebMTracksParser::OnListEnd(int id) {
       }
     } else if (track_type_ == kWebMTrackTypeSubtitlesOrCaptions ||
                track_type_ == kWebMTrackTypeDescriptionsOrMetadata) {
-      TextTrackInfo& text_track_info = text_tracks_[track_num_];
-      text_track_info.kind = text_track_kind;
-      text_track_info.name = track_name_;
-      text_track_info.language = track_language_;
+      if (ignore_text_tracks_) {
+        MEDIA_LOG(log_cb_) << "Ignoring text track " << track_num_;
+        ignored_tracks_.insert(track_num_);
+      } else {
+        TextTrackInfo& text_track_info = text_tracks_[track_num_];
+        text_track_info.kind = text_track_kind;
+        text_track_info.name = track_name_;
+        text_track_info.language = track_language_;
+      }
     } else {
       MEDIA_LOG(log_cb_) << "Unexpected TrackType " << track_type_;
       return false;

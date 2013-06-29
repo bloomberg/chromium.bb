@@ -28,7 +28,7 @@ static void VerifyTextTrackInfo(const uint8* buffer,
                                 TextKind text_kind,
                                 const std::string& name,
                                 const std::string& language) {
-  scoped_ptr<WebMTracksParser> parser(new WebMTracksParser(LogCB()));
+  scoped_ptr<WebMTracksParser> parser(new WebMTracksParser(LogCB(), false));
 
   int result = parser->Parse(buffer, buffer_size);
   EXPECT_GT(result, 0);
@@ -88,6 +88,38 @@ TEST_F(WebMTracksParserTest, TestSubtitleYesNameYesLang) {
 
   const std::vector<uint8> buf = tb.Finish();
   VerifyTextTrackInfo(&buf[0], buf.size(), kTextSubtitles, "Picard", "fre");
+}
+
+TEST_F(WebMTracksParserTest, TestIgnoringTextTracks) {
+  InSequence s;
+
+  TracksBuilder tb;
+  tb.AddTrack(1, kWebMTrackTypeSubtitlesOrCaptions,
+              kWebMCodecSubtitles, "Subtitles", "fre");
+  tb.AddTrack(2, kWebMTrackTypeSubtitlesOrCaptions,
+              kWebMCodecSubtitles, "Commentary", "fre");
+
+  const std::vector<uint8> buf = tb.Finish();
+  scoped_ptr<WebMTracksParser> parser(new WebMTracksParser(LogCB(), true));
+
+  int result = parser->Parse(&buf[0], buf.size());
+  EXPECT_GT(result, 0);
+  EXPECT_EQ(result, static_cast<int>(buf.size()));
+
+  EXPECT_EQ(parser->text_tracks().size(), 0u);
+
+  const std::set<int64>& ignored_tracks = parser->ignored_tracks();
+  EXPECT_TRUE(ignored_tracks.find(1) != ignored_tracks.end());
+  EXPECT_TRUE(ignored_tracks.find(2) != ignored_tracks.end());
+
+  // Test again w/o ignoring the test tracks.
+  parser.reset(new WebMTracksParser(LogCB(), false));
+
+  result = parser->Parse(&buf[0], buf.size());
+  EXPECT_GT(result, 0);
+
+  EXPECT_EQ(parser->ignored_tracks().size(), 0u);
+  EXPECT_EQ(parser->text_tracks().size(), 2u);
 }
 
 }  // namespace media

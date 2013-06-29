@@ -26,7 +26,7 @@ namespace media {
 // Parser for WebM Tracks element.
 class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
  public:
-  explicit WebMTracksParser(const LogCB& log_cb);
+  explicit WebMTracksParser(const LogCB& log_cb, bool ignore_text_tracks);
   virtual ~WebMTracksParser();
 
   // Parses a WebM Tracks element in |buf|.
@@ -87,6 +87,7 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
 
   int64 audio_track_num_;
   int64 video_track_num_;
+  bool ignore_text_tracks_;
   TextTracks text_tracks_;
   std::set<int64> ignored_tracks_;
   std::string audio_encryption_key_id_;
