@@ -523,9 +523,6 @@ const char kEnableDesktopGuestMode[]        = "enable-desktop-guest-mode";
 // If true devtools experimental settings are enabled.
 const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 
-// Enable draggable menu button.
-const char kEnableDraggableMenuButton[]     = "enable-draggable-menu-button";
-
 // Enables extensions to be easily installed from sites other than the web
 // store. Without this flag, they can still be installed, but must be manually
 // dragged onto chrome://extensions/.
