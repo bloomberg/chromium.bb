@@ -8,8 +8,8 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 namespace {
 

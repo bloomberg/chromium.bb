@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "url/gurl.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
 namespace quota {

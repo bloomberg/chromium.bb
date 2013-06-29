@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/quota/quota_client.h"
 
 namespace quota {

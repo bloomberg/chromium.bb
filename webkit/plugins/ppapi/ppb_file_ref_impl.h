@@ -10,12 +10,12 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/linked_ptr.h"
-#include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/shared_impl/ppb_file_ref_shared.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/var.h"
+#include "url/gurl.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {

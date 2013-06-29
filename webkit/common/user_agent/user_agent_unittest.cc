@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 

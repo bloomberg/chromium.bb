@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace appcache {

@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/base/data_element.h"
 #include "webkit/common/webkit_common_export.h"
 

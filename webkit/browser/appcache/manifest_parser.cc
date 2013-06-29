@@ -35,7 +35,7 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace appcache {
 

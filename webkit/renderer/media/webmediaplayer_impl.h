@@ -27,7 +27,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "cc/layers/video_frame_provider.h"
-#include "googleurl/src/gurl.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
@@ -40,6 +39,7 @@
 #include "third_party/WebKit/public/web/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
+#include "url/gurl.h"
 #include "webkit/renderer/media/crypto/proxy_decryptor.h"
 
 class RenderAudioSourceProvider;

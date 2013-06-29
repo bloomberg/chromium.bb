@@ -4,7 +4,7 @@
 
 #include "webkit/plugins/npapi/plugin_string_stream.h"
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace webkit {
 namespace npapi {

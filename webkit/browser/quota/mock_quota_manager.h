@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/quota/quota_client.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/quota_task.h"

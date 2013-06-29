@@ -11,10 +11,10 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_info.h"
+#include "url/gurl.h"
 #include "webkit/common/resource_devtools_info.h"
 
 namespace webkit_glue {

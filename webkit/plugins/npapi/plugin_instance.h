@@ -16,12 +16,12 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 namespace base {
 class MessageLoop;

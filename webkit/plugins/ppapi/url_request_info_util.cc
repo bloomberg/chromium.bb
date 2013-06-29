@@ -6,8 +6,6 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_util.h"
 #include "net/http/http_util.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/var.h"
@@ -18,6 +16,8 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "url/gurl.h"
+#include "url/url_util.h"
 #include "webkit/glue/weburlrequest_extradata_impl.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"

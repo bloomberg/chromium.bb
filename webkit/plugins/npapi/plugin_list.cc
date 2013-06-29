@@ -13,8 +13,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
+#include "url/gurl.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/plugin_switches.h"
 

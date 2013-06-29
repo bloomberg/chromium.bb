@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/quota/quota_manager.h"
 
 #define UMA_HISTOGRAM_MBYTES(name, sample)          \

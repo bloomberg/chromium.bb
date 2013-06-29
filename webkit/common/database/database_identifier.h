@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/common/webkit_storage_common_export.h"
 
 namespace webkit_database {

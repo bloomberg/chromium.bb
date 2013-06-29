@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace sync_file_system {
 

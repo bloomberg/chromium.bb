@@ -5,9 +5,9 @@
 #ifndef WEBKIT_PLUGINS_NPAPI_PLUGIN_STREAM_URL_H_
 #define WEBKIT_PLUGINS_NPAPI_PLUGIN_STREAM_URL_H_
 
+#include "url/gurl.h"
 #include "webkit/plugins/npapi/plugin_stream.h"
 #include "webkit/plugins/npapi/webplugin.h"
-#include "googleurl/src/gurl.h"
 
 namespace webkit {
 namespace npapi {

@@ -9,9 +9,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/http/http_response_info.h"
+#include "url/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 

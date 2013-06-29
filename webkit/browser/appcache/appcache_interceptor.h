@@ -6,8 +6,8 @@
 #define WEBKIT_BROWSER_APPCACHE_APPCACHE_INTERCEPTOR_H_
 
 #include "base/memory/singleton.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/glue/resource_type.h"
 

@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "googleurl/src/gurl.h"
-#include "third_party/WebKit/public/web/WebApplicationCacheHostClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/web/WebApplicationCacheHostClient.h"
+#include "url/gurl.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 #include "webkit/renderer/webkit_storage_renderer_export.h"
 

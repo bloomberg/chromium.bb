@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/common/blob/blob_data.h"
 

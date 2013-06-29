@@ -6,7 +6,7 @@
 #define WEBKIT_BROWSER_APPCACHE_MOCK_APPCACHE_POLICY_H_
 
 #include "base/compiler_specific.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/appcache/appcache_policy.h"
 
 namespace appcache {

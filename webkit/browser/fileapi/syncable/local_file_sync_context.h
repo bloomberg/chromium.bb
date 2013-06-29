@@ -19,7 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_status.h"
 #include "webkit/browser/fileapi/syncable/sync_callbacks.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"

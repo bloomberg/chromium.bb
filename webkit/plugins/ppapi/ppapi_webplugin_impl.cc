@@ -8,7 +8,6 @@
 
 #include "base/debug/crash_logging.h"
 #include "base/message_loop.h"
-#include "googleurl/src/gurl.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -24,6 +23,7 @@
 #include "third_party/WebKit/public/web/WebPrintParams.h"
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "url/gurl.h"
 #include "webkit/plugins/ppapi/message_channel.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"

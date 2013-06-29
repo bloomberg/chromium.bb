@@ -11,7 +11,7 @@
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/common/webkit_storage_common_export.h"
 
 namespace dom_storage {

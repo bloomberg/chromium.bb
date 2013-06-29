@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace net {

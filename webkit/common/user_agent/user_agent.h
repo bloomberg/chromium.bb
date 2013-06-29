@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/common/user_agent/webkit_user_agent_export.h"
 
 namespace webkit_glue {

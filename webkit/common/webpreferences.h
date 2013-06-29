@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/common/webkit_common_export.h"
 
 namespace WebKit {

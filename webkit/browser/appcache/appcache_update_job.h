@@ -13,10 +13,10 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/appcache/appcache_response.h"

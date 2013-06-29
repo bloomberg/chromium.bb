@@ -10,9 +10,9 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "googleurl/src/gurl.h"
 #include "media/base/data_source.h"
 #include "media/base/ranges.h"
+#include "url/gurl.h"
 #include "webkit/renderer/media/buffered_resource_loader.h"
 #include "webkit/renderer/media/preload.h"
 

@@ -12,7 +12,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/test/test_support_android.h"
-#include "googleurl/src/gurl.h"
 #include "grit/webkit_resources.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
@@ -20,6 +19,7 @@
 #include "ui/android/ui_jni_registrar.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gl/android/gl_jni_registrar.h"
+#include "url/gurl.h"
 #include "webkit/support/test_webkit_platform_support.h"
 
 namespace {

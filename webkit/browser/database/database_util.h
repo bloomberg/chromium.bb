@@ -7,7 +7,7 @@
 
 #include <string>
 #include "base/strings/string16.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {

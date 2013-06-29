@@ -7,8 +7,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/upload_element_reader.h"
+#include "url/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace webkit_blob {

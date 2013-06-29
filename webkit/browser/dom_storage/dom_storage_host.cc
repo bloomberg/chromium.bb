@@ -4,7 +4,7 @@
 
 #include "webkit/browser/dom_storage/dom_storage_host.h"
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/dom_storage/dom_storage_area.h"
 #include "webkit/browser/dom_storage/dom_storage_context.h"
 #include "webkit/browser/dom_storage/dom_storage_namespace.h"

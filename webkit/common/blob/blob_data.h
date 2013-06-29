@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/base/data_element.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/webkit_storage_common_export.h"

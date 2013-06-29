@@ -5,8 +5,8 @@
 #include "webkit/browser/fileapi/syncable/local_file_sync_status.h"
 
 #include "base/basictypes.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using fileapi::FileSystemURL;
 

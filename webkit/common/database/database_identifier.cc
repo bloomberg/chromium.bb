@@ -6,7 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "googleurl/src/url_canon.h"
+#include "url/url_canon.h"
 
 namespace webkit_database {
 

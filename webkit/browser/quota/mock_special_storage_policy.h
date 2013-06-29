@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
 namespace quota {

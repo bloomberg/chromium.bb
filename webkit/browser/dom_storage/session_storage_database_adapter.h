@@ -6,7 +6,7 @@
 #define WEBKIT_BROWSER_DOM_STORAGE_SESSION_STORAGE_DATABASE_ADAPTER_H_
 
 #include "base/memory/ref_counted.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/dom_storage/dom_storage_database_adapter.h"
 
 namespace dom_storage {

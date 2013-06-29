@@ -5,7 +5,7 @@
 #include "webkit/browser/blob/blob_storage_controller.h"
 
 #include "base/logging.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/common/blob/blob_data.h"
 
 namespace webkit_blob {

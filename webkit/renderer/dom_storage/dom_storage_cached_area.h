@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/nullable_string16.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/renderer/webkit_storage_renderer_export.h"
 
 namespace dom_storage {

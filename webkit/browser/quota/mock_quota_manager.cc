@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace quota {
 

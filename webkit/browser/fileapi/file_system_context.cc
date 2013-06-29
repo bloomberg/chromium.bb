@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/external_mount_points.h"

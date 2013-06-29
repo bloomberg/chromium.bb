@@ -6,9 +6,9 @@
 #define WEBKIT_RENDERER_MEDIA_TEST_RESPONSE_GENERATOR_H_
 
 #include "base/basictypes.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "url/gurl.h"
 
 namespace webkit_media {
 

@@ -5,8 +5,8 @@
 #include "webkit/common/fileapi/file_system_util.h"
 
 #include "base/files/file_path.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace fileapi {
 namespace {
