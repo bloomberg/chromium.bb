@@ -324,22 +324,23 @@ void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs) {
   //   keep auto-translated.
   DictionaryPrefUpdate update(user_prefs, kPrefTranslateWhitelists);
   DictionaryValue* dict = update.Get();
-  if (!dict || dict->empty())
-    return;
-  DictionaryValue::Iterator iter(*dict);
-  while (!iter.IsAtEnd()) {
-    const ListValue* list = NULL;
-    if (!iter.value().GetAsList(&list) || !list)
-      break;  // Dictionary has either been migrated or new format.
-    std::string key = iter.key();
-    // Advance the iterator before removing the current element.
-    iter.Advance();
-    std::string target_lang;
-    if (list->empty() || !list->GetString(list->GetSize() - 1, &target_lang) ||
-        target_lang.empty()) {
-      dict->Remove(key, NULL);
-    } else {
-      dict->SetString(key, target_lang);
+  if (dict && !dict->empty()) {
+    DictionaryValue::Iterator iter(*dict);
+    while (!iter.IsAtEnd()) {
+      const ListValue* list = NULL;
+      if (!iter.value().GetAsList(&list) || !list)
+        break;  // Dictionary has either been migrated or new format.
+      std::string key = iter.key();
+      // Advance the iterator before removing the current element.
+      iter.Advance();
+      std::string target_lang;
+      if (list->empty() ||
+          !list->GetString(list->GetSize() - 1, &target_lang) ||
+          target_lang.empty()) {
+        dict->Remove(key, NULL);
+      } else {
+        dict->SetString(key, target_lang);
+      }
     }
   }
 
