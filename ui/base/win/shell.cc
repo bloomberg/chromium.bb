@@ -9,6 +9,7 @@
 #include <propkey.h>
 #include <shellapi.h>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "base/strings/string_util.h"
@@ -16,6 +17,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace ui {
 namespace win {
@@ -115,6 +117,14 @@ void SetRelaunchDetailsForWindow(const string16& relaunch_command,
 }
 
 bool IsAeroGlassEnabled() {
+  // For testing in Win8 (where it is not possible to disable composition) the
+  // user can specify this command line switch to mimic the behavior.  In this
+  // mode, cross-HWND transparency is not supported and various types of
+  // widgets fallback to more simplified rendering behavior.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableDwmComposition))
+    return false;
+
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return false;
   // If composition is not enabled, we behave like on XP.

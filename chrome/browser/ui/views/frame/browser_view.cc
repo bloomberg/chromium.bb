@@ -534,6 +534,10 @@ BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {
   return static_cast<BrowserView*>(browser->window());
 }
 
+void BrowserView::InitStatusBubble() {
+  status_bubble_.reset(new StatusBubbleViews(contents_container_));
+}
+
 gfx::Rect BrowserView::GetToolbarBounds() const {
   gfx::Rect toolbar_bounds(toolbar_->bounds());
   if (toolbar_bounds.IsEmpty())
@@ -2032,7 +2036,7 @@ void BrowserView::InitViews() {
   AddChildView(contents_split_);
   set_contents_view(contents_split_);
 
-  status_bubble_.reset(new StatusBubbleViews(contents_container_));
+  InitStatusBubble();
 
   // Top container holds tab strip and toolbar and lives at the front of the
   // view hierarchy.

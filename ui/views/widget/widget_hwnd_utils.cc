@@ -13,6 +13,10 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/win/hwnd_message_handler.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -58,15 +62,8 @@ void CalculateWindowStylesFromInitParams(
   //    DwmExtendFrameIntoClientArea passing -1 as the margins.
   if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW) {
 #if defined(USE_AURA)
-    if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-      BOOL enabled = FALSE;
-      HRESULT hr = DwmIsCompositionEnabled(&enabled);
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableDwmComposition))
-        enabled = FALSE;
-      if (SUCCEEDED(hr) && (enabled == TRUE))
-        *ex_style |= WS_EX_COMPOSITED;
-    }
+    if (ui::win::IsAeroGlassEnabled())
+      *ex_style |= WS_EX_COMPOSITED;
 #else
     *ex_style |= WS_EX_LAYERED;
 #endif

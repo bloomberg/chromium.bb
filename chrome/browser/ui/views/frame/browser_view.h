@@ -128,6 +128,12 @@ class BrowserView : public BrowserWindow,
   // Returns a Browser instance of this view.
   Browser* browser() { return browser_.get(); }
 
+  // Initializes (or re-initializes) the status bubble.  We try to only create
+  // the bubble once and re-use it for the life of the browser, but certain
+  // events (such as changing enabling/disabling Aero on Win) can force a need
+  // to change some of the bubble's creation parameters.
+  void InitStatusBubble();
+
   // Returns the apparent bounds of the toolbar, in BrowserView coordinates.
   // These differ from |toolbar_.bounds()| in that they match where the toolbar
   // background image is drawn -- slightly outside the "true" bounds
