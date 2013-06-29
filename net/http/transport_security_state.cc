@@ -109,17 +109,7 @@ void TransportSecurityState::EnableHost(const std::string& host,
   if (canonicalized_host.empty())
     return;
 
-  DomainState existing_state;
-
-  // Use the original creation date if we already have this host. (But note
-  // that statically-defined states have no |created| date. Therefore, we do
-  // not bother to search the SNI-only static states.)
   DomainState state_copy(state);
-  if (GetDomainState(host, false /* sni_enabled */, &existing_state) &&
-      !existing_state.created.is_null()) {
-    state_copy.created = existing_state.created;
-  }
-
   // No need to store this value since it is redundant. (|canonicalized_host|
   // is the map key.)
   state_copy.domain.clear();
@@ -158,6 +148,7 @@ bool TransportSecurityState::GetDomainState(const std::string& host,
   bool has_preload = GetStaticDomainState(canonicalized_host, sni_enabled,
                                           &state);
   std::string canonicalized_preload = CanonicalizeHost(state.domain);
+  GetDynamicDomainState(host, &state);
 
   base::Time current_time(base::Time::Now());
 
@@ -625,6 +616,7 @@ bool TransportSecurityState::AddHSTSHeader(const std::string& host,
   base::Time now = base::Time::Now();
   base::TimeDelta max_age;
   TransportSecurityState::DomainState domain_state;
+  GetDynamicDomainState(host, &domain_state);
   if (ParseHSTSHeader(value, &max_age, &domain_state.sts_include_subdomains)) {
     // Handle max-age == 0
     if (max_age.InSeconds() == 0)
@@ -647,10 +639,11 @@ bool TransportSecurityState::AddHPKPHeader(const std::string& host,
   base::Time now = base::Time::Now();
   base::TimeDelta max_age;
   TransportSecurityState::DomainState domain_state;
+  GetDynamicDomainState(host, &domain_state);
   if (ParseHPKPHeader(value, ssl_info.public_key_hashes,
-                      &max_age, &domain_state.dynamic_spki_hashes)) {
-    // TODO(palmer): http://crbug.com/243865 handle max-age == 0
-    // and includeSubdomains.
+                      &max_age, &domain_state.pkp_include_subdomains,
+                      &domain_state.dynamic_spki_hashes)) {
+    // TODO(palmer): http://crbug.com/243865 handle max-age == 0.
     domain_state.created = now;
     domain_state.dynamic_spki_hashes_expiry = now + max_age;
     EnableHost(host, domain_state);
@@ -789,6 +782,50 @@ bool TransportSecurityState::GetStaticDomainState(
   return false;
 }
 
+bool TransportSecurityState::GetDynamicDomainState(const std::string& host,
+                                                   DomainState* result) {
+  DCHECK(CalledOnValidThread());
+
+  DomainState state;
+  const std::string canonicalized_host = CanonicalizeHost(host);
+  if (canonicalized_host.empty())
+    return false;
+
+  base::Time current_time(base::Time::Now());
+
+  for (size_t i = 0; canonicalized_host[i]; i += canonicalized_host[i] + 1) {
+    std::string host_sub_chunk(&canonicalized_host[i],
+                               canonicalized_host.size() - i);
+    DomainStateMap::iterator j =
+        enabled_hosts_.find(HashHost(host_sub_chunk));
+    if (j == enabled_hosts_.end())
+      continue;
+
+    if (current_time > j->second.upgrade_expiry &&
+        current_time > j->second.dynamic_spki_hashes_expiry) {
+      enabled_hosts_.erase(j);
+      DirtyNotify();
+      continue;
+    }
+
+    state = j->second;
+    state.domain = DNSDomainToString(host_sub_chunk);
+
+    // Succeed if we matched the domain exactly or if subdomain matches are
+    // allowed.
+    if (i == 0 || j->second.sts_include_subdomains ||
+        j->second.pkp_include_subdomains) {
+      *result = state;
+      return true;
+    }
+
+    return false;
+  }
+
+  return false;
+}
+
+
 void TransportSecurityState::AddOrUpdateEnabledHosts(
     const std::string& hashed_host, const DomainState& state) {
   DCHECK(CalledOnValidThread());
@@ -796,7 +833,7 @@ void TransportSecurityState::AddOrUpdateEnabledHosts(
 }
 
 TransportSecurityState::DomainState::DomainState()
-    : upgrade_mode(MODE_FORCE_HTTPS),
+    : upgrade_mode(MODE_DEFAULT),
       created(base::Time::Now()),
       sts_include_subdomains(false),
       pkp_include_subdomains(false) {

@@ -257,9 +257,11 @@ void FilterDisabledTests() {
     // certs. So these tests time out waiting for user input. The
     // functionality they test (HTTP Strict Transport Security and
     // HTTP-based Public Key Pinning) does not work in Chrome Frame anyway.
+    "URLRequestTestHTTP.ProcessPKP",
     "URLRequestTestHTTP.ProcessSTS",
     "URLRequestTestHTTP.ProcessSTSOnce",
     "URLRequestTestHTTP.ProcessSTSAndPKP",
+    "URLRequestTestHTTP.ProcessSTSAndPKP2",
 
     // These tests have been disabled as the Chrome cookie policies don't make
     // sense or have not been implemented for the host network stack.

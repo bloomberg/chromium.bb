@@ -136,7 +136,8 @@ class NET_EXPORT TransportSecurityState
     // The following members are not valid when stored in |enabled_hosts_|:
 
     // The domain which matched during a search for this DomainState entry.
-    // Updated by |GetDomainState| and |GetStaticDomainState|.
+    // Updated by |GetDomainState|, |GetDynamicDomainState|, and
+    // |GetStaticDomainState|.
     std::string domain;
   };
 
@@ -261,6 +262,8 @@ class NET_EXPORT TransportSecurityState
 
  private:
   friend class TransportSecurityStateTest;
+  FRIEND_TEST_ALL_PREFIXES(HttpSecurityHeadersTest,
+                           UpdateDynamicPKPOnly);
 
   typedef std::map<std::string, DomainState> DomainStateMap;
 
@@ -297,6 +300,20 @@ class NET_EXPORT TransportSecurityState
   bool GetStaticDomainState(const std::string& host,
                             bool sni_enabled,
                             DomainState* result);
+
+  // Returns true and updates |*result| iff there is a dynamic DomainState for
+  // |host|.
+  //
+  // |GetDynamicDomainState| is identical to |GetDomainState| except that it
+  // searches only the dynamically-added transport security state, ignoring
+  // all statically-defined DomainStates.
+  //
+  // If |host| matches both an exact entry and is a subdomain of another
+  // entry, the exact match determines the return value.
+  //
+  // Note that this method is not const because it opportunistically removes
+  // entries that have expired.
+  bool GetDynamicDomainState(const std::string& host, DomainState* result);
 
   // The set of hosts that have enabled TransportSecurity.
   DomainStateMap enabled_hosts_;

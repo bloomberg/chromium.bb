@@ -276,8 +276,10 @@ bool ParseHSTSHeader(const std::string& value,
 bool ParseHPKPHeader(const std::string& value,
                      const HashValueVector& chain_hashes,
                      base::TimeDelta* max_age,
+                     bool* include_subdomains,
                      HashValueVector* hashes) {
   bool parsed_max_age = false;
+  bool include_subdomains_candidate = false;
   uint32 max_age_candidate = 0;
   HashValueVector pins;
 
@@ -304,6 +306,8 @@ bool ParseHPKPHeader(const std::string& value,
     } else if (LowerCaseEqualsASCII(equals.first, "pin-sha256")) {
       if (!ParseAndAppendPin(equals.second, HASH_VALUE_SHA256, &pins))
         return false;
+    } else if (LowerCaseEqualsASCII(equals.first, "includesubdomains")) {
+      include_subdomains_candidate = true;
     } else {
       // Silently ignore unknown directives for forward compatibility.
     }
@@ -318,6 +322,7 @@ bool ParseHPKPHeader(const std::string& value,
     return false;
 
   *max_age = base::TimeDelta::FromSeconds(max_age_candidate);
+  *include_subdomains = include_subdomains_candidate;
   for (HashValueVector::const_iterator i = pins.begin();
        i != pins.end(); ++i) {
     hashes->push_back(*i);

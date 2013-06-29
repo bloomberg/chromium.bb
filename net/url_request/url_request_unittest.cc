@@ -3933,6 +3933,53 @@ TEST_F(URLRequestTestHTTP, ProcessSTS) {
             domain_state.upgrade_mode);
   EXPECT_TRUE(domain_state.sts_include_subdomains);
   EXPECT_FALSE(domain_state.pkp_include_subdomains);
+#if defined(OS_ANDROID)
+  // Android's CertVerifyProc does not (yet) handle pins.
+#else
+  EXPECT_FALSE(domain_state.HasPublicKeyPins());
+#endif
+}
+
+// Android's CertVerifyProc does not (yet) handle pins. Therefore, it will
+// reject HPKP headers, and a test setting only HPKP headers will fail (no
+// DomainState present because header rejected).
+#if defined(OS_ANDROID)
+#define MAYBE_ProcessPKP DISABLED_ProcessPKP
+#else
+#define MAYBE_ProcessPKP ProcessPKP
+#endif
+
+// Tests that enabling HPKP on a domain does not affect the HSTS
+// validity/expiration.
+TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKP) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer https_test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
+  ASSERT_TRUE(https_test_server.Start());
+
+  TestDelegate d;
+  URLRequest request(
+      https_test_server.GetURL("files/hpkp-headers.html"),
+      &d,
+      &default_context_);
+  request.Start();
+  base::MessageLoop::current()->Run();
+
+  TransportSecurityState* security_state =
+      default_context_.transport_security_state();
+  bool sni_available = true;
+  TransportSecurityState::DomainState domain_state;
+  EXPECT_TRUE(security_state->GetDomainState(
+      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
+  EXPECT_EQ(TransportSecurityState::DomainState::MODE_DEFAULT,
+            domain_state.upgrade_mode);
+  EXPECT_FALSE(domain_state.sts_include_subdomains);
+  EXPECT_FALSE(domain_state.pkp_include_subdomains);
+  EXPECT_TRUE(domain_state.HasPublicKeyPins());
+  EXPECT_NE(domain_state.upgrade_expiry,
+            domain_state.dynamic_spki_hashes_expiry);
 }
 
 TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
@@ -4001,6 +4048,44 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
   // the *second* such header, and we MUST process only the first.
   EXPECT_FALSE(domain_state.sts_include_subdomains);
   // includeSubdomains does not occur in the test HPKP header.
+  EXPECT_FALSE(domain_state.pkp_include_subdomains);
+}
+
+// Tests that when multiple HPKP headers are present, asserting different
+// policies, that only the first such policy is processed.
+TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP2) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer https_test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
+  ASSERT_TRUE(https_test_server.Start());
+
+  TestDelegate d;
+  URLRequest request(
+      https_test_server.GetURL("files/hsts-and-hpkp-headers2.html"),
+      &d,
+      &default_context_);
+  request.Start();
+  base::MessageLoop::current()->Run();
+
+  TransportSecurityState* security_state =
+      default_context_.transport_security_state();
+  bool sni_available = true;
+  TransportSecurityState::DomainState domain_state;
+  EXPECT_TRUE(security_state->GetDomainState(
+      SpawnedTestServer::kLocalhost, sni_available, &domain_state));
+  EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
+            domain_state.upgrade_mode);
+#if defined(OS_ANDROID)
+  // Android's CertVerifyProc does not (yet) handle pins.
+#else
+  EXPECT_TRUE(domain_state.HasPublicKeyPins());
+#endif
+  EXPECT_NE(domain_state.upgrade_expiry,
+            domain_state.dynamic_spki_hashes_expiry);
+
+  EXPECT_TRUE(domain_state.sts_include_subdomains);
   EXPECT_FALSE(domain_state.pkp_include_subdomains);
 }
 
