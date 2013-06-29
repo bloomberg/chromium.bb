@@ -15227,7 +15227,18 @@ Do you accept?
     <message name="IDS_FLAGS_DESKTOP_GUEST_MODE_DESCRIPTION" desc="Description of about:flags option to turn on desktop guest mode">
       When enabled, a guest user will be available in desktop Chrome.
     </message>
-
+    <message name="IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_NAME" desc="Title for the flag to enable the new profile management.">
+      Enable new profile management system
+    </message>
+    <message name="IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_DESCRIPTION" desc="Description for the flag to enable the new profile management">
+      Enables the new profile management system, including profile sign-out and the new avatar menu UI.
+    </message>
+    <message name="IDS_FLAGS_ENABLE_GAIA_PROFILE_INFO_NAME" desc="Title for the flag to enable the gaia profile information">
+      Enable GAIA profile name and icon
+    </message>
+    <message name="IDS_FLAGS_ENABLE_GAIA_PROFILE_INFO_DESCRIPTION" desc="Description for the flag to enable the gaia profile information">
+      Enables using GAIA information to populate the profile name and icon in the avatar menu.
+    </message>
     <message name="IDS_FLAGS_ENABLE_GOOGLE_NOW_INTEGRATION_NAME" desc="Name of about:flags option to turn on Google Now integration">
       Google Now
     </message>

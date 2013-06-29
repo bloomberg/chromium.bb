@@ -1580,6 +1580,20 @@ const Experiment kExperiments[] = {
     kOsMac,
     SINGLE_VALUE_TYPE(switches::kEnableWebMIDI)
   },
+  {
+    "enable-new-profile-management",
+    IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_NAME,
+    IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_DESCRIPTION,
+    kOsWin,
+    SINGLE_VALUE_TYPE(switches::kNewProfileManagement)
+  },
+  {
+    "enable-gaia-profile-info",
+    IDS_FLAGS_ENABLE_GAIA_PROFILE_INFO_NAME,
+    IDS_FLAGS_ENABLE_GAIA_PROFILE_INFO_DESCRIPTION,
+    kOsMac | kOsWin,
+    SINGLE_VALUE_TYPE(switches::kGaiaProfileInfo)
+  },
 };
 
 const Experiment* experiments = kExperiments;
