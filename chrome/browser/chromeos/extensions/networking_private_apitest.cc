@@ -128,6 +128,14 @@ class ExtensionNetworkingPrivateApiTest :
     service_test->SetServiceProperty("stub_wifi1",
                                      flimflam::kSecurityProperty,
                                      base::StringValue(flimflam::kSecurityWep));
+    base::ListValue frequencies1;
+    frequencies1.AppendInteger(2400);
+    service_test->SetServiceProperty("stub_wifi1",
+                                     shill::kWifiFrequencyListProperty,
+                                     frequencies1);
+    service_test->SetServiceProperty("stub_wifi1",
+                                     flimflam::kWifiFrequency,
+                                     base::FundamentalValue(2400));
 
     service_test->AddService("stub_wifi2", "wifi2_PSK",
                              flimflam::kTypeWifi, flimflam::kStateIdle,
@@ -141,6 +149,18 @@ class ExtensionNetworkingPrivateApiTest :
     service_test->SetServiceProperty("stub_wifi2",
                                      flimflam::kSignalStrengthProperty,
                                      base::FundamentalValue(80));
+    base::ListValue frequencies2;
+    frequencies2.AppendInteger(2400);
+    frequencies2.AppendInteger(5000);
+    service_test->SetServiceProperty("stub_wifi2",
+                                     shill::kWifiFrequencyListProperty,
+                                     frequencies2);
+    service_test->SetServiceProperty("stub_wifi2",
+                                     flimflam::kWifiFrequency,
+                                     base::FundamentalValue(5000));
+    service_test->SetServiceProperty("stub_wifi2",
+                                     flimflam::kProfileProperty,
+                                     base::StringValue(kUser1ProfilePath));
     profile_test->AddService(kUser1ProfilePath, "stub_wifi2");
 
     service_test->AddService("stub_cellular1", "cellular1",

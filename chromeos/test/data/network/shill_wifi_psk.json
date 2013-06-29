@@ -6,5 +6,7 @@
    "SSID": "OpenWrt",
    "Security": "psk",
    "Type": "wifi",
-   "WiFi.HiddenSSID": false
+   "WiFi.HiddenSSID": false,
+   "WiFi.Frequency": 2412,
+   "WiFi.FrequencyList": [2412, 5180]
 }

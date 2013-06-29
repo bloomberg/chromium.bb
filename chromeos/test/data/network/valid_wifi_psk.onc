@@ -25,6 +25,8 @@
     "Type": "WiFi",
     "WiFi": {
         "AutoConnect": true,
+        "Frequency": 2412,
+        "FrequencyList": [2412, 5180],
         "HiddenSSID": false,
         "Passphrase": "some passphrase",
         "SSID": "OpenWrt",

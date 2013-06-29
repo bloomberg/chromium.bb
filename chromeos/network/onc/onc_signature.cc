@@ -25,6 +25,9 @@ const OncValueSignature kIntegerSignature = {
 const OncValueSignature kStringListSignature = {
   Value::TYPE_LIST, NULL, &kStringSignature
 };
+const OncValueSignature kIntegerListSignature = {
+  Value::TYPE_LIST, NULL, &kIntegerSignature
+};
 const OncValueSignature kIPConfigListSignature = {
   Value::TYPE_LIST, NULL, &kIPConfigSignature
 };
@@ -189,6 +192,8 @@ const OncFieldSignature wifi_fields[] = {
 
 const OncFieldSignature wifi_with_state_fields[] = {
   { wifi::kBSSID, &kStringSignature },
+  { wifi::kFrequency, &kIntegerSignature },
+  { wifi::kFrequencyList, &kIntegerListSignature },
   { wifi::kSignalStrength, &kIntegerSignature },
   { NULL }
 };

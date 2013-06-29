@@ -139,6 +139,8 @@ namespace wifi {
 CHROMEOS_EXPORT extern const char kAutoConnect[];
 CHROMEOS_EXPORT extern const char kBSSID[];
 CHROMEOS_EXPORT extern const char kEAP[];
+CHROMEOS_EXPORT extern const char kFrequency[];
+CHROMEOS_EXPORT extern const char kFrequencyList[];
 CHROMEOS_EXPORT extern const char kHiddenSSID[];
 CHROMEOS_EXPORT extern const char kNone[];
 CHROMEOS_EXPORT extern const char kPassphrase[];

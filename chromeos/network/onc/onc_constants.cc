@@ -95,7 +95,7 @@ namespace connection_state {
 const char kConnected[] = "Connected";
 const char kConnecting[] = "Connecting";
 const char kNotConnected[] = "NotConnected";
-}  // namespace status
+}  // namespace connection_state
 
 namespace ethernet {
 const char kAuthentication[] = "Authentication";
@@ -117,6 +117,8 @@ namespace wifi {
 const char kAutoConnect[] = "AutoConnect";
 const char kBSSID[] = "BSSID";
 const char kEAP[] = "EAP";
+const char kFrequency[] = "Frequency";
+const char kFrequencyList[] = "FrequencyList";
 const char kHiddenSSID[] = "HiddenSSID";
 const char kNone[] = "None";
 const char kPassphrase[] = "Passphrase";

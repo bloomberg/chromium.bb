@@ -99,6 +99,8 @@ const FieldTranslationEntry vpn_fields[] = {
 const FieldTranslationEntry wifi_fields[] = {
   { wifi::kAutoConnect, flimflam::kAutoConnectProperty },
   { wifi::kBSSID, flimflam::kWifiBSsid },
+  { wifi::kFrequency, flimflam::kWifiFrequency },
+  { wifi::kFrequencyList, shill::kWifiFrequencyListProperty },
   { wifi::kHiddenSSID, flimflam::kWifiHiddenSsid },
   { wifi::kPassphrase, flimflam::kPassphraseProperty },
   { wifi::kSSID, flimflam::kSSIDProperty },

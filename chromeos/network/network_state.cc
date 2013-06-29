@@ -100,6 +100,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
       base::JSONWriter::Write(frequencies, &str);
       NET_LOG_DEBUG("WifiFrequencies for " + path(), str);
     }
+    return true;
   } else if (key == flimflam::kErrorProperty) {
     return GetStringValue(key, value, &error_);
   } else if (key == shill::kErrorDetailsProperty) {
