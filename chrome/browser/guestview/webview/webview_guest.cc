@@ -4,6 +4,7 @@
 
 #include "chrome/browser/guestview/webview/webview_guest.h"
 
+#include "base/debug/stack_trace.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/script_executor.h"
@@ -29,20 +30,11 @@ void RemoveWebViewEventListenersOnIOThread(
 
 }  // namespace
 
-WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
-                           WebContents* embedder_web_contents,
-                           const std::string& extension_id,
-                           int webview_instance_id,
-                           const base::DictionaryValue& args)
-    : GuestView(guest_web_contents,
-                embedder_web_contents,
-                extension_id,
-                webview_instance_id,
-                args),
+WebViewGuest::WebViewGuest(WebContents* guest_web_contents)
+    : GuestView(guest_web_contents),
       WebContentsObserver(guest_web_contents),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)) {
-  AddWebViewToExtensionRendererState();
 }
 
 // static
@@ -54,8 +46,18 @@ WebViewGuest* WebViewGuest::From(int embedder_process_id,
   return guest->AsWebView();
 }
 
-WebContents* WebViewGuest::GetWebContents() const {
-  return WebContentsObserver::web_contents();
+void WebViewGuest::Attach(WebContents* embedder_web_contents,
+                          const std::string& extension_id,
+                          int view_instance_id,
+                          const base::DictionaryValue& args) {
+  GuestView::Attach(
+      embedder_web_contents, extension_id, view_instance_id, args);
+
+  AddWebViewToExtensionRendererState();
+}
+
+GuestView::Type WebViewGuest::GetViewType() const {
+  return GuestView::WEBVIEW;
 }
 
 WebViewGuest* WebViewGuest::AsWebView() {
@@ -67,7 +69,7 @@ AdViewGuest* WebViewGuest::AsAdView() {
 }
 
 void WebViewGuest::Go(int relative_index) {
-  web_contents()->GetController().GoToOffset(relative_index);
+  guest_web_contents()->GetController().GoToOffset(relative_index);
 }
 
 WebViewGuest::~WebViewGuest() {
@@ -79,14 +81,19 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
     const GURL& url,
     content::PageTransition transition_type,
     content::RenderViewHost* render_view_host) {
-  scoped_ptr<DictionaryValue> event(new DictionaryValue());
-  event->SetString(guestview::kUrl, url.spec());
-  event->SetBoolean(guestview::kIsTopLevel, is_main_frame);
-  event->SetInteger(guestview::kInternalCurrentEntryIndex,
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  args->SetString(guestview::kUrl, url.spec());
+  args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
+  args->SetInteger(guestview::kInternalCurrentEntryIndex,
       web_contents()->GetController().GetCurrentEntryIndex());
-  event->SetInteger(guestview::kInternalEntryCount,
+  args->SetInteger(guestview::kInternalEntryCount,
       web_contents()->GetController().GetEntryCount());
-  DispatchEvent(webview::kEventLoadCommit, event.Pass());
+  DispatchEvent(new GuestView::Event(webview::kEventLoadCommit, args.Pass()));
+}
+
+void WebViewGuest::DidStopLoading(content::RenderViewHost* render_view_host) {
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  DispatchEvent(new GuestView::Event(webview::kEventLoadStop, args.Pass()));
 }
 
 void WebViewGuest::WebContentsDestroyed(WebContents* web_contents) {
@@ -114,8 +121,8 @@ void WebViewGuest::AddWebViewToExtensionRendererState() {
       base::Bind(
           &ExtensionRendererState::AddWebView,
           base::Unretained(ExtensionRendererState::GetInstance()),
-          GetWebContents()->GetRenderProcessHost()->GetID(),
-          GetWebContents()->GetRoutingID(),
+          guest_web_contents()->GetRenderProcessHost()->GetID(),
+          guest_web_contents()->GetRoutingID(),
           webview_info));
 }
 

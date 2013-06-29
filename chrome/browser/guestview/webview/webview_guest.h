@@ -24,16 +24,16 @@ class ScriptExecutor;
 class WebViewGuest : public GuestView,
                      public content::WebContentsObserver {
  public:
-  WebViewGuest(content::WebContents* guest_web_contents,
-               content::WebContents* embedder_web_contents,
-               const std::string& extension_id,
-               int webview_instance_id,
-               const base::DictionaryValue& args);
+  explicit WebViewGuest(content::WebContents* guest_web_contents);
 
   static WebViewGuest* From(int embedder_process_id, int instance_id);
 
   // GuestView implementation.
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual void Attach(content::WebContents* embedder_web_contents,
+                      const std::string& extension_id,
+                      int view_instance_id,
+                      const base::DictionaryValue& args) OVERRIDE;
+  virtual GuestView::Type GetViewType() const OVERRIDE;
   virtual WebViewGuest* AsWebView() OVERRIDE;
   virtual AdViewGuest* AsAdView() OVERRIDE;
 
@@ -53,6 +53,8 @@ class WebViewGuest : public GuestView,
       bool is_main_frame,
       const GURL& url,
       content::PageTransition transition_type,
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;

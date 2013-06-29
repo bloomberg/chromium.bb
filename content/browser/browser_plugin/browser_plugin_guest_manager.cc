@@ -41,7 +41,8 @@ BrowserPluginGuestManager* BrowserPluginGuestManager::Create() {
 BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
     SiteInstance* embedder_site_instance,
     int instance_id,
-    const BrowserPluginHostMsg_Attach_Params& params) {
+    const BrowserPluginHostMsg_Attach_Params& params,
+    scoped_ptr<base::DictionaryValue> extra_params) {
   SiteInstance* guest_site_instance = NULL;
   // Validate that the partition id coming from the renderer is valid UTF-8,
   // since we depend on this in other parts of the code, such as FilePath
@@ -99,7 +100,8 @@ BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
   return WebContentsImpl::CreateGuest(
       embedder_site_instance->GetBrowserContext(),
       guest_site_instance,
-      instance_id);
+      instance_id,
+      extra_params.Pass());
 }
 
 BrowserPluginGuest* BrowserPluginGuestManager::GetGuestByInstanceID(

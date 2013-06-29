@@ -179,25 +179,31 @@ void BrowserPluginEmbedder::OnAttach(
 
 
   if (guest) {
+    // There is an implicit order expectation here:
+    // 1. The content embedder is made aware of the attachment.
+    // 2. BrowserPluginGuest::Attach is called.
+    // 3. The content embedder issues queued events if any that happened
+    //    prior to attachment.
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         web_contents(),
         params.browser_plugin_instance_id,
         extra_params);
-
     guest->Attach(static_cast<WebContentsImpl*>(web_contents()), params);
     return;
   }
 
+  scoped_ptr<base::DictionaryValue> copy_extra_params(extra_params.DeepCopy());
   guest = GetBrowserPluginGuestManager()->CreateGuest(
-      web_contents()->GetSiteInstance(), instance_id, params);
+      web_contents()->GetSiteInstance(),
+      instance_id, params,
+      copy_extra_params.Pass());
   if (guest) {
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),
         web_contents(),
         params.browser_plugin_instance_id,
         extra_params);
-
     guest->Initialize(static_cast<WebContentsImpl*>(web_contents()), params);
   }
 }

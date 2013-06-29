@@ -20,6 +20,9 @@ extern const char kInternalEntryCount[];
 // Attributes.
 extern const char kAttributeApi[];
 
+// Other.
+extern const int kInstanceIDNone;
+
 }  // namespace guestview
 
 #endif  // CHROME_BROWSER_GUESTVIEW_GUESTVIEW_CONSTANTS_H_

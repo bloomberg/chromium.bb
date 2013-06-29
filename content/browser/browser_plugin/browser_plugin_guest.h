@@ -28,7 +28,7 @@
 #include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/shared_memory.h"
-#include "base/time/time.h"
+#include "base/values.h"
 #include "content/common/browser_plugin/browser_plugin_message_enums.h"
 #include "content/common/edit_command.h"
 #include "content/port/common/input_event_ack_state.h"
@@ -92,7 +92,8 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   static BrowserPluginGuest* Create(
       int instance_id,
-      WebContentsImpl* web_contents);
+      WebContentsImpl* web_contents,
+      scoped_ptr<base::DictionaryValue> extra_params);
 
   static BrowserPluginGuest* CreateWithOpener(
       int instance_id,

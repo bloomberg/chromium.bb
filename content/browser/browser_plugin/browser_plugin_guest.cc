@@ -473,11 +473,19 @@ BrowserPluginGuest::~BrowserPluginGuest() {
 // static
 BrowserPluginGuest* BrowserPluginGuest::Create(
     int instance_id,
-    WebContentsImpl* web_contents) {
+    WebContentsImpl* web_contents,
+    scoped_ptr<base::DictionaryValue> extra_params) {
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Create"));
-  if (factory_)
-    return factory_->CreateBrowserPluginGuest(instance_id, web_contents);
-  return new BrowserPluginGuest(instance_id, web_contents, NULL, false);
+  BrowserPluginGuest* guest = NULL;
+  if (factory_) {
+    guest = factory_->CreateBrowserPluginGuest(instance_id, web_contents);
+  } else {
+    guest = new BrowserPluginGuest(instance_id, web_contents, NULL, false);
+  }
+  web_contents->SetBrowserPluginGuest(guest);
+  GetContentClient()->browser()->GuestWebContentsCreated(
+      web_contents, NULL, extra_params.Pass());
+  return guest;
 }
 
 // static
@@ -486,10 +494,14 @@ BrowserPluginGuest* BrowserPluginGuest::CreateWithOpener(
     WebContentsImpl* web_contents,
     BrowserPluginGuest* opener,
     bool has_render_view) {
-  return new BrowserPluginGuest(instance_id,
-                                web_contents,
-                                opener,
-                                has_render_view);
+  BrowserPluginGuest* guest =
+      new BrowserPluginGuest(
+          instance_id, web_contents, opener, has_render_view);
+  web_contents->SetBrowserPluginGuest(guest);
+  GetContentClient()->browser()->GuestWebContentsCreated(
+      web_contents, opener->GetWebContents(),
+      scoped_ptr<base::DictionaryValue>());
+  return guest;
 }
 
 RenderWidgetHostView* BrowserPluginGuest::GetEmbedderRenderWidgetHostView() {
@@ -937,7 +949,6 @@ void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
     render_view_host->ExecuteJavascriptInWebFrame(string16(),
                                                   ASCIIToUTF16(script));
   }
-  SendMessageToEmbedder(new BrowserPluginMsg_LoadStop(instance_id()));
 }
 
 void BrowserPluginGuest::RenderViewReady() {

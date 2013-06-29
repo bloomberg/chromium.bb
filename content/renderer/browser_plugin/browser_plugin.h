@@ -353,7 +353,6 @@ class CONTENT_EXPORT BrowserPlugin :
                       const GURL& new_url,
                       bool is_top_level);
   void OnLoadStart(int instance_id, const GURL& url, bool is_top_level);
-  void OnLoadStop(int instance_id);
   // Requests permission from the embedder.
   void OnRequestPermission(int instance_id,
                            BrowserPluginPermissionType permission_type,

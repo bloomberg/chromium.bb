@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/supports_user_data.h"
+#include "base/values.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 
@@ -60,7 +61,8 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
   BrowserPluginGuest* CreateGuest(
       SiteInstance* embedder_site_instance,
       int instance_id,
-      const BrowserPluginHostMsg_Attach_Params& params);
+      const BrowserPluginHostMsg_Attach_Params& params,
+      scoped_ptr<base::DictionaryValue> extra_params);
 
   // Returns a BrowserPluginGuest given an |instance_id|. Returns NULL if the
   // guest wasn't found.  If the embedder is not permitted to access the given

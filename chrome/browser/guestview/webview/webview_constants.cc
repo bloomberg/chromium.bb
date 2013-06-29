@@ -8,5 +8,6 @@ namespace webview {
 
 // Events.
 const char kEventLoadCommit[] = "webview.onLoadCommit";
+const char kEventLoadStop[] = "webview.onLoadStop";
 
 }  // namespace webview

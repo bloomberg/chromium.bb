@@ -10,9 +10,6 @@ function loadAbort(evt) {
 function loadStart(evt) {
   document.title = JSON.parse(evt.detail).url;
 }
-function loadStop(evt) {
-  document.title = "loadStop";
-}
 
 var redirectOldUrl;
 var redirectNewUrl;
@@ -79,6 +76,5 @@ function receiveMessage(event) {
   plugin.addEventListener('-internal-loadabort', loadAbort);
   plugin.addEventListener('-internal-loadredirect', loadRedirect);
   window.addEventListener('message', receiveMessage, false);
-  plugin.addEventListener('-internal-loadstop', loadStop);
   plugin.addEventListener('-internal-sizechanged', sizeChanged);
 </script>

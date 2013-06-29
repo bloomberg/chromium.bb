@@ -172,7 +172,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadHandlerCalled, OnLoadHandlerCalled)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadRedirect, OnLoadRedirect)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStart, OnLoadStart)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStop, OnLoadStop)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_RequestPermission, OnRequestPermission)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
@@ -608,10 +607,6 @@ void BrowserPlugin::OnLoadStart(int guest_instance_id,
   props[browser_plugin::kIsTopLevel] = new base::FundamentalValue(is_top_level);
 
   TriggerEvent(browser_plugin::kEventLoadStart, &props);
-}
-
-void BrowserPlugin::OnLoadStop(int guest_instance_id) {
-  TriggerEvent(browser_plugin::kEventLoadStop, NULL);
 }
 
 void BrowserPlugin::OnRequestPermission(
@@ -1304,7 +1299,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_LoadHandlerCalled::ID:
     case BrowserPluginMsg_LoadRedirect::ID:
     case BrowserPluginMsg_LoadStart::ID:
-    case BrowserPluginMsg_LoadStop::ID:
     case BrowserPluginMsg_RequestPermission::ID:
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:

@@ -361,11 +361,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_LoadCommit,
                      int /* instance_id */,
                      BrowserPluginMsg_LoadCommit_Params)
 
-// When the guest page has completed loading (including subframes), the browser
-// process informs the embedder through the BrowserPluginMsg_LoadStop message.
-IPC_MESSAGE_CONTROL1(BrowserPluginMsg_LoadStop,
-                     int /* instance_id */)
-
 // When the guest crashes, the browser process informs the embedder through this
 // message.
 IPC_MESSAGE_CONTROL3(BrowserPluginMsg_GuestGone,

@@ -423,13 +423,14 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
 BrowserPluginGuest* WebContentsImpl::CreateGuest(
     BrowserContext* browser_context,
     SiteInstance* site_instance,
-    int guest_instance_id) {
+    int guest_instance_id,
+    scoped_ptr<base::DictionaryValue> extra_params) {
   WebContentsImpl* new_contents = new WebContentsImpl(browser_context, NULL);
 
   // This makes |new_contents| act as a guest.
   // For more info, see comment above class BrowserPluginGuest.
-  new_contents->browser_plugin_guest_.reset(
-      BrowserPluginGuest::Create(guest_instance_id, new_contents));
+  BrowserPluginGuest::Create(
+      guest_instance_id, new_contents, extra_params.Pass());
 
   WebContents::CreateParams create_params(browser_context, site_instance);
   new_contents->Init(create_params);
@@ -1492,9 +1493,8 @@ void WebContentsImpl::CreateNewWindow(
     int instance_id = GetBrowserPluginGuestManager()->get_next_instance_id();
     WebContentsImpl* new_contents_impl =
         static_cast<WebContentsImpl*>(new_contents);
-    new_contents_impl->browser_plugin_guest_.reset(
-        BrowserPluginGuest::CreateWithOpener(instance_id, new_contents_impl,
-            GetBrowserPluginGuest(), !!new_contents_impl->opener()));
+    BrowserPluginGuest::CreateWithOpener(instance_id, new_contents_impl,
+        GetBrowserPluginGuest(), !!new_contents_impl->opener());
   }
   new_contents->Init(create_params);
 
@@ -3672,6 +3672,11 @@ RenderViewHostImpl* WebContentsImpl::GetRenderViewHostImpl() {
 
 BrowserPluginGuest* WebContentsImpl::GetBrowserPluginGuest() const {
   return browser_plugin_guest_.get();
+}
+
+void WebContentsImpl::SetBrowserPluginGuest(BrowserPluginGuest* guest) {
+  CHECK(!browser_plugin_guest_);
+  browser_plugin_guest_.reset(guest);
 }
 
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {

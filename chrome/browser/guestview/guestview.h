@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_GUESTVIEW_GUESTVIEW_H_
 #define CHROME_BROWSER_GUESTVIEW_GUESTVIEW_H_
 
+#include <queue>
+
 #include "base/values.h"
 #include "content/public/browser/web_contents.h"
 
@@ -17,26 +19,56 @@ class WebViewGuest;
 // them to the embedder.
 class GuestView {
  public:
-  GuestView(content::WebContents* guest_web_contents,
-            content::WebContents* embedder_web_contents,
-            const std::string& extension_id,
-            int view_instance_id,
-            const base::DictionaryValue& args);
+  enum Type {
+    WEBVIEW,
+    ADVIEW,
+    UNKNOWN
+  };
+
+  class Event {
+   public:
+     Event(const std::string& event_name, scoped_ptr<DictionaryValue> args);
+     ~Event();
+
+    const std::string& event_name() const { return event_name_; }
+
+    scoped_ptr<DictionaryValue> GetArguments();
+
+   private:
+    const std::string event_name_;
+    scoped_ptr<DictionaryValue> args_;
+  };
+
+  explicit GuestView(content::WebContents* guest_web_contents);
+
+  static GuestView* FromWebContents(content::WebContents* web_contents);
 
   static GuestView* From(int embedder_process_id, int instance_id);
+
+  virtual void Attach(content::WebContents* embedder_web_contents,
+                      const std::string& extension_id,
+                      int view_instance_id,
+                      const base::DictionaryValue& args);
 
   content::WebContents* embedder_web_contents() const {
     return embedder_web_contents_;
   }
 
   // Returns the guest WebContents.
-  virtual content::WebContents* GetWebContents() const = 0;
+  content::WebContents* guest_web_contents() const {
+    return guest_web_contents_;
+  }
+
+  virtual Type GetViewType() const;
 
   // Returns a WebViewGuest if this GuestView belongs to a <webview>.
   virtual WebViewGuest* AsWebView() = 0;
 
   // Returns an AdViewGuest if the GuestView belongs to an <adview>.
   virtual AdViewGuest* AsAdView() = 0;
+
+  // Returns whether this guest has an associated embedder.
+  bool attached() const { return !!embedder_web_contents_; }
 
   // Returns the instance ID of the <*view> element.
   int view_instance_id() const { return view_instance_id_; }
@@ -57,22 +89,26 @@ class GuestView {
   virtual ~GuestView();
 
   // Dispatches an event |event_name| to the embedder with the |event| fields.
-  void DispatchEvent(const std::string& event_name,
-                     scoped_ptr<DictionaryValue> event);
+  void DispatchEvent(Event* event);
 
  private:
+  void SendQueuedEvents();
+
+  content::WebContents* guest_web_contents_;
   content::WebContents* embedder_web_contents_;
-  const std::string extension_id_;
-  const int embedder_render_process_id_;
-  // Profile and instance ID are cached here because |guest_web_contents| may be
-  // null on destruction.
+  std::string extension_id_;
+  int embedder_render_process_id_;
   content::BrowserContext* browser_context_;
   // |guest_instance_id_| is a profile-wide unique identifier for a guest
   // WebContents.
   const int guest_instance_id_;
   // |view_instance_id_| is an identifier that's unique within a particular
   // embedder RenderViewHost for a particular <*view> instance.
-  const int view_instance_id_;
+  int view_instance_id_;
+
+  // This is a queue of Events that are destined to be sent to the embedder once
+  // the guest is attached to a particular embedder.
+  std::queue<Event*> pending_events_;
 
   DISALLOW_COPY_AND_ASSIGN(GuestView);
 };

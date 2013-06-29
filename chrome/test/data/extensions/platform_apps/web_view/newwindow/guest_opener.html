@@ -23,6 +23,7 @@
       };
 
       var openWindowBlankRedirect = function(url, frameName) {
+        console.log('redirect');
         var w = window.open('', frameName);
         w.opener = null;
         w.document.write(

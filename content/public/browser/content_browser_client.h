@@ -14,6 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/values.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/file_descriptor_info.h"
 #include "content/public/common/content_client.h"
@@ -134,6 +135,19 @@ class CONTENT_EXPORT ContentBrowserClient {
   // own the delegate.
   virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents);
+
+  // Notifies that a guest WebContents has been created. A guest WebContents
+  // represents a renderer that's hosted within a BrowserPlugin. Creation can
+  // occur an arbitrary length of time before attachment. If the new guest has
+  // an |opener_web_contents|, then it's a new window created by that opener.
+  // If the guest was created via navigation, then |extra_params| will be
+  // non-NULL. |extra_params| are parameters passed to the BrowserPlugin object
+  // element by the content embedder. These parameters may include the API to
+  // enable for the given guest.
+  virtual void GuestWebContentsCreated(
+      WebContents* guest_web_contents,
+      WebContents* opener_web_contents,
+      scoped_ptr<base::DictionaryValue> extra_params) {}
 
   // Notifies that a guest WebContents has been attached to a BrowserPlugin.
   // A guest is attached to a BrowserPlugin when the guest has acquired an

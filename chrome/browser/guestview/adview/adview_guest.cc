@@ -10,16 +10,8 @@
 
 using content::WebContents;
 
-AdViewGuest::AdViewGuest(WebContents* guest_web_contents,
-                         WebContents* embedder_web_contents,
-                         const std::string& extension_id,
-                         int adview_instance_id,
-                         const base::DictionaryValue& args)
-    : GuestView(guest_web_contents,
-                embedder_web_contents,
-                extension_id,
-                adview_instance_id,
-                args),
+AdViewGuest::AdViewGuest(WebContents* guest_web_contents)
+    : GuestView(guest_web_contents),
       WebContentsObserver(guest_web_contents) {
 }
 
@@ -32,8 +24,8 @@ AdViewGuest* AdViewGuest::From(int embedder_process_id,
   return guest->AsAdView();
 }
 
-WebContents* AdViewGuest::GetWebContents() const {
-  return WebContentsObserver::web_contents();
+GuestView::Type AdViewGuest::GetViewType() const {
+  return GuestView::ADVIEW;
 }
 
 WebViewGuest* AdViewGuest::AsWebView() {
@@ -53,10 +45,10 @@ void AdViewGuest::DidCommitProvisionalLoadForFrame(
     const GURL& url,
     content::PageTransition transition_type,
     content::RenderViewHost* render_view_host) {
-  scoped_ptr<DictionaryValue> event(new DictionaryValue());
-  event->SetString(guestview::kUrl, url.spec());
-  event->SetBoolean(guestview::kIsTopLevel, is_main_frame);
-  DispatchEvent(adview::kEventLoadCommit, event.Pass());
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  args->SetString(guestview::kUrl, url.spec());
+  args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
+  DispatchEvent(new GuestView::Event(adview::kEventLoadCommit, args.Pass()));
 }
 
 void AdViewGuest::WebContentsDestroyed(WebContents* web_contents) {

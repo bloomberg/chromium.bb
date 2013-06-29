@@ -19,16 +19,12 @@
 class AdViewGuest : public GuestView,
                     public content::WebContentsObserver {
  public:
-  AdViewGuest(content::WebContents* guest_web_contents,
-              content::WebContents* embedder_web_contents,
-              const std::string& extension_id,
-              int adview_instance_id,
-              const base::DictionaryValue& args);
+  explicit AdViewGuest(content::WebContents* guest_web_contents);
 
   static AdViewGuest* From(int embedder_process_id, int instance_id);
 
   // GuestView implementation.
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual GuestView::Type GetViewType() const OVERRIDE;
   virtual WebViewGuest* AsWebView() OVERRIDE;
   virtual AdViewGuest* AsAdView() OVERRIDE;
 

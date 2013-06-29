@@ -59,6 +59,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool* in_memory) OVERRIDE;
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) OVERRIDE;
+  virtual void GuestWebContentsCreated(
+      content::WebContents* guest_web_contents,
+      content::WebContents* opener_web_contents,
+      scoped_ptr<base::DictionaryValue> extra_params) OVERRIDE;
   virtual void GuestWebContentsAttached(
       content::WebContents* guest_web_contents,
       content::WebContents* embedder_web_contents,

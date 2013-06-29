@@ -17,4 +17,7 @@ const char kInternalEntryCount[] = "entryCount";
 // Attributes.
 const char kAttributeApi[] = "api";
 
+// Other.
+const int kInstanceIDNone = 0;
+
 }  // namespace guestview

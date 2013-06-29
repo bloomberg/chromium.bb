@@ -972,23 +972,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStop) {
-  const char* kEmbedderURL = "/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, std::string());
-
-  const string16 expected_title = ASCIIToUTF16("loadStop");
-  content::TitleWatcher title_watcher(
-     test_embedder()->web_contents(), expected_title);
-  // Renavigate the guest to |kHTMLForGuest|.
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh,
-                        base::StringPrintf("SetSrc('%s');", kHTMLForGuest));
-
-  string16 actual_title = title_watcher.WaitAndGetTitle();
-  EXPECT_EQ(expected_title, actual_title);
-}
-
 // This test verifies that if a browser plugin is hidden before navigation,
 // the guest starts off hidden.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, HiddenBeforeNavigation) {
@@ -1177,58 +1160,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, GetRenderViewHostAtPositionTest) {
   test_embedder()->WaitForRenderViewHostAtPosition(150, 150);
   ASSERT_EQ(test_embedder()->web_contents()->GetRenderViewHost(),
             test_embedder()->last_rvh_at_position_response());
-}
-
-// Flaky on Win Aura Tests (1) bot.  See http://crbug.com/233087.
-#if defined(OS_WIN) && defined(USE_AURA)
-#define MAYBE_ChangeWindowName DISABLED_ChangeWindowName
-#else
-#define MAYBE_ChangeWindowName ChangeWindowName
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_ChangeWindowName) {
-  const char kEmbedderURL[] = "/browser_plugin_naming_embedder.html";
-  const char* kGuestURL = "/browser_plugin_naming_guest.html";
-  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, std::string());
-
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      test_embedder()->web_contents()->GetRenderViewHost());
-  // Verify that the plugin's name is properly initialized.
-  {
-    scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
-        rvh, "document.getElementById('plugin').name");
-    std::string result;
-    EXPECT_TRUE(value->GetAsString(&result));
-    EXPECT_EQ("start", result);
-  }
-  {
-    // Open a channel with the guest, wait until it replies,
-    // then verify that the plugin's name has been updated.
-    const string16 expected_title = ASCIIToUTF16("guest");
-    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
-                                        expected_title);
-    ExecuteSyncJSFunction(rvh, "OpenCommChannel();");
-    string16 actual_title = title_watcher.WaitAndGetTitle();
-    EXPECT_EQ(expected_title, actual_title);
-
-    scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
-        rvh, "document.getElementById('plugin').name");
-    std::string result;
-    EXPECT_TRUE(value->GetAsString(&result));
-    EXPECT_EQ("guest", result);
-  }
-  {
-    // Set the plugin's name and verify that the window.name of the guest
-    // has been updated.
-    const string16 expected_title = ASCIIToUTF16("foobar");
-    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
-                                        expected_title);
-    ExecuteSyncJSFunction(rvh,
-        "document.getElementById('plugin').name = 'foobar';");
-    string16 actual_title = title_watcher.WaitAndGetTitle();
-    EXPECT_EQ(expected_title, actual_title);
-
-  }
 }
 
 // This test verifies that all autosize attributes can be removed

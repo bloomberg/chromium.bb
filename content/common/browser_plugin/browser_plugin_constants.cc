@@ -48,7 +48,6 @@ const char kEventExit[] = "exit";
 const char kEventLoadAbort[] = "loadabort";
 const char kEventLoadRedirect[] = "loadredirect";
 const char kEventLoadStart[] = "loadstart";
-const char kEventLoadStop[] = "loadstop";
 const char kEventNewWindow[] = "newwindow";
 const char kEventRequestPermission[] = "permissionrequest";
 const char kEventResponsive[] = "responsive";

@@ -698,6 +698,49 @@ static bool IsExtensionActivityLogEnabledForProfile(Profile* profile) {
   return extensions::ActivityLog::IsLogEnabledOnAnyProfile();
 }
 
+void ChromeContentBrowserClient::GuestWebContentsCreated(
+    WebContents* guest_web_contents,
+    WebContents* opener_web_contents,
+    scoped_ptr<base::DictionaryValue> extra_params) {
+  if (opener_web_contents) {
+    GuestView* guest = GuestView::FromWebContents(opener_web_contents);
+    if (!guest) {
+      NOTREACHED();
+      return;
+    }
+
+    switch (guest->GetViewType()) {
+      case GuestView::WEBVIEW: {
+        new WebViewGuest(guest_web_contents);
+        break;
+      }
+      case GuestView::ADVIEW: {
+        new AdViewGuest(guest_web_contents);
+        break;
+      }
+      default:
+        NOTREACHED();
+        break;
+    }
+    return;
+  }
+
+  if (!extra_params) {
+    NOTREACHED();
+    return;
+  }
+  std::string api_type;
+  extra_params->GetString(guestview::kAttributeApi, &api_type);
+
+  if (api_type == "adview") {
+    new AdViewGuest(guest_web_contents);
+  } else if (api_type == "webview") {
+    new WebViewGuest(guest_web_contents);
+  } else {
+    NOTREACHED();
+  }
+}
+
 void ChromeContentBrowserClient::GuestWebContentsAttached(
     WebContents* guest_web_contents,
     WebContents* embedder_web_contents,
@@ -707,35 +750,27 @@ void ChromeContentBrowserClient::GuestWebContentsAttached(
       embedder_web_contents->GetBrowserContext());
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
+  if (!service) {
+    NOTREACHED();
     return;
+  }
   const GURL& url = embedder_web_contents->GetSiteInstance()->GetSiteURL();
   const Extension* extension = service->extensions()->
       GetExtensionOrAppByURL(ExtensionURLInfo(url));
-  if (!extension)
-    return;
-
-  std::string api_type;
-  extra_params.GetString(guestview::kAttributeApi, &api_type);
-
-  // WebViewGuest and AdViewGuest's lifetimes iare tied to their associated
-  // guest WebContents' lifetime. When the guest WebContents is destroyed, so is
-  // the attached WebViewGuest or AdViewGuest.
-  if (api_type == "adview") {
-    new AdViewGuest(guest_web_contents,
-                    embedder_web_contents,
-                    extension->id(),
-                    browser_plugin_instance_id,
-                    extra_params);
-  } else if (api_type == "webview") {
-    new WebViewGuest(guest_web_contents,
-                     embedder_web_contents,
-                     extension->id(),
-                     browser_plugin_instance_id,
-                     extra_params);
-  } else {
+  if (!extension) {
     NOTREACHED();
+    return;
   }
+
+  GuestView* guest = GuestView::FromWebContents(guest_web_contents);
+  if (!guest) {
+    NOTREACHED();
+    return;
+  }
+  guest->Attach(embedder_web_contents,
+                extension->id(),
+                browser_plugin_instance_id,
+                extra_params);
 }
 
 void ChromeContentBrowserClient::RenderProcessHostCreated(

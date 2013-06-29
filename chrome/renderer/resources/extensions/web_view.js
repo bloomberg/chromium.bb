@@ -45,6 +45,7 @@ var createEvent = function(name) {
 };
 
 var loadCommitEvent = createEvent('webview.onLoadCommit');
+var loadStopEvent = createEvent('webview.onLoadStop');
 
 // The <webview> tags we wish to watch for (watchForTag) does not belong to the
 // current scope's "document" reference. We need to wait until the document
@@ -316,6 +317,15 @@ WebView.prototype.setupWebviewNodeEvents_ = function() {
       });
       self.currentEntryIndex_ = event.currentEntryIndex;
       self.entryCount_ = event.entryCount;
+      webviewNode.dispatchEvent(webviewEvent);
+    }, {instanceId: detail.windowId});
+
+    loadStopEvent.addListener(function(event) {
+      var webviewEvent = new Event('loadstop', {bubbles: true});
+      var attribs = WEB_VIEW_EVENTS['loadstop'];
+      $Array.forEach(attribs, function(attribName) {
+        webviewEvent[attribName] = event[attribName];
+      });
       webviewNode.dispatchEvent(webviewEvent);
     }, {instanceId: detail.windowId});
   };

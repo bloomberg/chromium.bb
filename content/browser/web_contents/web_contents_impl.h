@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/process.h"
+#include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/web_contents/frame_tree_node.h"
@@ -91,7 +92,8 @@ class CONTENT_EXPORT WebContentsImpl
   static BrowserPluginGuest* CreateGuest(
       BrowserContext* browser_context,
       content::SiteInstance* site_instance,
-      int guest_instance_id);
+      int guest_instance_id,
+      scoped_ptr<base::DictionaryValue> extra_params);
 
   // Returns the content specific prefs for the given RVH.
   static WebPreferences GetWebkitPrefs(
@@ -158,9 +160,16 @@ class CONTENT_EXPORT WebContentsImpl
   // Returns guest browser plugin object, or NULL if this WebContents is not a
   // guest.
   BrowserPluginGuest* GetBrowserPluginGuest() const;
+
+  // Sets a BrowserPluginGuest object for this WebContents. If this WebContents
+  // has a BrowserPluginGuest then that implies that it is being hosted by
+  // a BrowserPlugin object in an embedder renderer process.
+  void SetBrowserPluginGuest(BrowserPluginGuest* guest);
+
   // Returns embedder browser plugin object, or NULL if this WebContents is not
   // an embedder.
   BrowserPluginEmbedder* GetBrowserPluginEmbedder() const;
+
   // Returns the BrowserPluginGuestManager object, or NULL if this web contents
   // does not have a BrowserPluginGuestManager.
   BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
