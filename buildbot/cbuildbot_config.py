@@ -928,36 +928,45 @@ chromium_info_daisy.add_config('daisy-webrtc-chromium-pfq-informational',
   archive_build_debug=True,
 )
 
-arm_generic_full = \
-full_prebuilts.add_config('arm-generic-full', arm,
-  boards=['arm-generic'],
-)
+_arm_full_boards = frozenset([
+  'arm-generic',
+  'daisy',
+  'daisy_spring',
+])
 
-arm_generic_full.add_config('daisy-full',
-  boards=['daisy'],
-)
+_x86_full_boards = frozenset([
+  'amd64-generic',
+  'butterfly',
+  'parrot',
+  'link',
+  'lumpy',
+  'stout',
+  'stout32',
+  'stumpy',
+  'x32-generic',
+  'x86-alex',
+  'x86-generic',
+  'x86-mario',
+  'x86-pineview',
+  'x86-zgb',
+])
 
-x86_generic_full = \
-full_prebuilts.add_config('x86-generic-full',
-  boards=['x86-generic'],
-  upload_hw_test_artifacts=True,
-)
+def _AddFullConfigs():
+  """Add x86 and arm full configs."""
+  for board in _x86_full_boards:
+    full_prebuilts.add_config('%s-%s' % (board, CONFIG_TYPE_FULL),
+      boards=[board],
+      upload_hw_test_artifacts=True,
+    )
 
-x86_generic_full.add_config('x86-pineview-full',
-  boards=['x86-pineview'],
-)
+  for board in _arm_full_boards:
+    full_prebuilts.add_config('%s-%s' % (board, CONFIG_TYPE_FULL),
+      arm,
+      boards=[board],
+      upload_hw_test_artifacts=True,
+    )
 
-full_prebuilts.add_config('x86-mario-full',
-  boards=['x86-mario'],
-)
-
-full_prebuilts.add_config('x86-alex-full',
-  boards=['x86-alex'],
-)
-
-full_prebuilts.add_config('stumpy-full',
-  boards=['stumpy'],
-)
+_AddFullConfigs()
 
 _toolchain_major = _cros_sdk.add_config('toolchain-major',
   latest_toolchain=True,
@@ -971,14 +980,6 @@ _toolchain_minor = _cros_sdk.add_config('toolchain-minor',
   prebuilts=False,
   gcc_githash='gcc.gnu.org/branches/google/gcc-4_8-mobile',
   description='Test next minor toolchain revision',
-)
-
-full_prebuilts.add_config('amd64-generic-full',
-  boards=['amd64-generic'],
-)
-
-full_prebuilts.add_config('x32-generic-full',
-  boards=['x32-generic'],
 )
 
 incremental.add_config('x86-generic-asan',
