@@ -5,14 +5,23 @@
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_GTK2_UTIL_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_GTK2_UTIL_H_
 
+#include <string>
+
 typedef struct _GdkPixbuf GdkPixbuf;
 
 class CommandLine;
 class SkBitmap;
 
+namespace base {
+class Environment;
+}
+
 namespace libgtk2ui {
 
 void GtkInitFromCommandLine(const CommandLine& command_line);
+
+// Returns the name of the ".desktop" file associated with our running process.
+std::string GetDesktopName(base::Environment* env);
 
 const SkBitmap GdkPixbufToImageSkia(GdkPixbuf* pixbuf);
 

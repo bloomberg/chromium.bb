@@ -56,6 +56,11 @@ class LINUX_UI_EXPORT LinuxUI : public LinuxShellDialog {
   // Returns whether we should be using the native theme provided by this
   // object by default.
   virtual bool GetDefaultUsesSystemTheme() const = 0;
+
+  // Sets visual properties in the desktop environment related to download
+  // progress, if available.
+  virtual void SetDownloadCount(int count) const = 0;
+  virtual void SetProgressFraction(float percentage) const = 0;
 };
 
 }  // namespace ui

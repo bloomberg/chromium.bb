@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/platform_canvas.h"
@@ -41,6 +42,23 @@ namespace libgtk2ui {
 
 void GtkInitFromCommandLine(const CommandLine& command_line) {
   CommonInitFromCommandLine(command_line, gtk_init);
+}
+
+// TODO(erg): This method was copied out of shell_integration_linux.cc. Because
+// of how this library is structured as a stand alone .so, we can't call code
+// from browser and above.
+std::string GetDesktopName(base::Environment* env) {
+#if defined(GOOGLE_CHROME_BUILD)
+  return "google-chrome.desktop";
+#else  // CHROMIUM_BUILD
+  // Allow $CHROME_DESKTOP to override the built-in value, so that development
+  // versions can set themselves as the default without interfering with
+  // non-official, packaged versions using the built-in value.
+  std::string name;
+  if (env->GetVar("CHROME_DESKTOP", &name) && !name.empty())
+    return name;
+  return "chromium-browser.desktop";
+#endif
 }
 
 const SkBitmap GdkPixbufToImageSkia(GdkPixbuf* pixbuf) {

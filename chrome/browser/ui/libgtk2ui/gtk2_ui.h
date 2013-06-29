@@ -45,6 +45,8 @@ class Gtk2UI : public ui::LinuxUI {
   virtual bool HasCustomImage(int id) const OVERRIDE;
   virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
   virtual bool GetDefaultUsesSystemTheme() const OVERRIDE;
+  virtual void SetDownloadCount(int count) const OVERRIDE;
+  virtual void SetProgressFraction(float percentage) const OVERRIDE;
 
  private:
   typedef std::map<int, SkColor> ColorMap;

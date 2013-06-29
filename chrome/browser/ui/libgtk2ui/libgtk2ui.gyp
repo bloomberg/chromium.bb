@@ -50,6 +50,8 @@
         'select_file_dialog_impl_kde.cc',
         'skia_utils_gtk2.cc',
         'skia_utils_gtk2.h',
+        'unity_service.cc',
+        'unity_service.h',
       ],
     },
   ],

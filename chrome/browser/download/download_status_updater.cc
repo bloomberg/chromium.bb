@@ -10,6 +10,10 @@
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_util.h"
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/linux_ui/linux_ui.h"
+#endif
+
 namespace {
 
 // DownloadStatusUpdater::UpdateAppIconDownloadProgress() expects to only be
@@ -133,7 +137,16 @@ void DownloadStatusUpdater::OnDownloadUpdated(
 #if defined(USE_AURA) || defined(OS_ANDROID)
 void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
     content::DownloadItem* download) {
-  // TODO(davemoore): Implement once UX for aura download is decided <104742>
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
+  if (linux_ui) {
+    float progress = 0;
+    int download_count = 0;
+    GetProgress(&progress, &download_count);
+    linux_ui->SetDownloadCount(download_count);
+    linux_ui->SetProgressFraction(progress);
+  }
+#endif
   // TODO(avi): Implement for Android?
 }
 #endif
