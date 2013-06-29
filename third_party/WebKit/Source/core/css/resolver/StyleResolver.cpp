@@ -184,6 +184,7 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
     , m_viewportStyleResolver(ViewportStyleResolver::create(document))
     , m_styleBuilder(DeprecatedStyleBuilder::sharedStyleBuilder())
     , m_styleMap(this)
+    , m_customFilterProgramCache(StyleCustomFilterProgramCache::create())
 {
     Element* root = document->documentElement();
 
@@ -3472,8 +3473,6 @@ void StyleResolver::loadPendingShaders()
             // meaning that we get a new StyleCustomFilterProgram here that is not yet in the cache, but already has loaded StyleShaders.
             if (!program->hasPendingShaders() && program->inCache())
                 continue;
-            if (!m_customFilterProgramCache)
-                m_customFilterProgramCache = adoptPtr(new StyleCustomFilterProgramCache());
             RefPtr<StyleCustomFilterProgram> styleProgram = m_customFilterProgramCache->lookup(program);
             if (styleProgram.get())
                 customFilter->setProgram(styleProgram.release());

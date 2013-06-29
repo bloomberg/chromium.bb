@@ -42,7 +42,7 @@ class CustomFilterProgramInfo;
 class StyleCustomFilterProgramCache {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    StyleCustomFilterProgramCache();
+    static PassOwnPtr<StyleCustomFilterProgramCache> create();
     ~StyleCustomFilterProgramCache();
 
     // Lookups a StyleCustomFilterProgram that has similar parameters with the specified program.
@@ -53,6 +53,8 @@ public:
     void remove(StyleCustomFilterProgram*);
 
 private:
+    StyleCustomFilterProgramCache() { }
+
     typedef HashMap<CustomFilterProgramInfo, StyleCustomFilterProgram*> CacheMap;
     CacheMap m_cache;
 };

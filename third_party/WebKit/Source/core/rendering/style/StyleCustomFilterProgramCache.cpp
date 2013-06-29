@@ -43,8 +43,9 @@ static CustomFilterProgramInfo programCacheKey(StyleCustomFilterProgram* program
         program->programType(), program->mixSettings(), program->meshType());
 }
 
-StyleCustomFilterProgramCache::StyleCustomFilterProgramCache()
+PassOwnPtr<StyleCustomFilterProgramCache> StyleCustomFilterProgramCache::create()
 {
+    return adoptPtr(new StyleCustomFilterProgramCache());
 }
 
 StyleCustomFilterProgramCache::~StyleCustomFilterProgramCache()
