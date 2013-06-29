@@ -140,8 +140,7 @@ TEST_F(CertVerifyProcTest, WithoutRevocationChecking) {
 #else
 #define MAYBE_EVVerification EVVerification
 #endif
-TEST_F(CertVerifyProcTest, DISABLED_EVVerification) {
-  // DISABLED: This certificate expired Jun 21, 2013.
+TEST_F(CertVerifyProcTest, MAYBE_EVVerification) {
   CertificateList certs = CreateCertificateListFromFile(
       GetTestCertsDirectory(),
       "comodo.chain.pem",
@@ -396,28 +395,38 @@ TEST_F(CertVerifyProcTest, RejectWeakKeys) {
   }
 }
 
-// Test for bug 108514.
-// The certificate will expire on 2012-07-20. The test will still
-// pass if error == ERR_CERT_DATE_INVALID.  TODO(rsleevi): generate test
-// certificates for this unit test.  http://crbug.com/111730
-TEST_F(CertVerifyProcTest, ExtraneousMD5RootCert) {
+// Regression test for http://crbug.com/108514.
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+// Disabled on OS X - Security.framework doesn't ignore superflous certificates
+// provided by servers. See CertVerifyProcTest.CybertrustGTERoot for further
+// details.
+#define MAYBE_ExtraneousMD5RootCert DISABLED_ExtraneousMD5RootCert
+#elif defined(USE_OPENSSL) || defined(OS_ANDROID)
+// Disabled for OpenSSL / Android - Android and OpenSSL do not attempt to find
+// a minimal certificate chain, thus prefer the MD5 root over the SHA-1 root.
+#define MAYBE_ExtraneousMD5RootCert DISABLED_ExtraneousMD5RootCert
+#else
+#define MAYBE_ExtraneousMD5RootCert ExtraneousMD5RootCert
+#endif
+TEST_F(CertVerifyProcTest, MAYBE_ExtraneousMD5RootCert) {
   base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> server_cert =
-      ImportCertFromFile(certs_dir, "images_etrade_wallst_com.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert);
+      ImportCertFromFile(certs_dir, "cross-signed-leaf.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert.get());
 
-  scoped_refptr<X509Certificate> intermediate_cert =
-      ImportCertFromFile(certs_dir, "globalsign_orgv1_ca.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert);
+  scoped_refptr<X509Certificate> extra_cert =
+      ImportCertFromFile(certs_dir, "cross-signed-root-md5.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), extra_cert.get());
 
-  scoped_refptr<X509Certificate> md5_root_cert =
-      ImportCertFromFile(certs_dir, "globalsign_root_ca_md5.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), md5_root_cert);
+  scoped_refptr<X509Certificate> root_cert =
+      ImportCertFromFile(certs_dir, "cross-signed-root-sha1.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert.get());
+
+  ScopedTestRoot scoped_root(root_cert.get());
 
   X509Certificate::OSCertHandles intermediates;
-  intermediates.push_back(intermediate_cert->os_cert_handle());
-  intermediates.push_back(md5_root_cert->os_cert_handle());
+  intermediates.push_back(extra_cert->os_cert_handle());
   scoped_refptr<X509Certificate> cert_chain =
       X509Certificate::CreateFromHandle(server_cert->os_cert_handle(),
                                         intermediates);
@@ -425,13 +434,20 @@ TEST_F(CertVerifyProcTest, ExtraneousMD5RootCert) {
   CertVerifyResult verify_result;
   int flags = 0;
   int error = Verify(cert_chain.get(),
-                     "images.etrade.wallst.com",
+                     "127.0.0.1",
                      flags,
                      NULL,
                      empty_cert_list_,
                      &verify_result);
-  if (error != OK)
-    EXPECT_EQ(ERR_CERT_DATE_INVALID, error);
+  EXPECT_EQ(OK, error);
+
+  // The extra MD5 root should be discarded
+  ASSERT_TRUE(verify_result.verified_cert.get());
+  ASSERT_EQ(1u,
+            verify_result.verified_cert->GetIntermediateCertificates().size());
+  EXPECT_TRUE(X509Certificate::IsSameOSCert(
+        verify_result.verified_cert->GetIntermediateCertificates().front(),
+        root_cert->os_cert_handle()));
 
   EXPECT_FALSE(verify_result.has_md5);
 }

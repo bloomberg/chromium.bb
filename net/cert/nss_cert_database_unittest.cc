@@ -360,7 +360,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
 
 TEST_F(CertDatabaseNSSTest, ImportCA_NotCACert) {
   CertificateList certs = CreateCertificateListFromFile(
-      GetTestCertsDirectory(), "google.single.pem",
+      GetTestCertsDirectory(), "ok_cert.pem",
       X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, certs.size());
   EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);

@@ -81,10 +81,11 @@ unit tests.
      net/data/ssl/scripts/generate-weak-test-chains.sh and used in the
      RejectWeakKeys test in net/base/x509_certificate_unittest.cc.
 
-- images_etrade_wallst_com.pem
-- globalsign_orgv1_ca.pem
-- globalsign_root_ca_md5.pem : A certificate chain for the regression test
-      of http://crbug.com/108514
+- cross-signed-leaf.pem
+- cross-signed-root-md5.pem
+- cross-signed-root-sha1.pem
+     A certificate chain for regression testing http://crbug.com/108514,
+     generated via scripts/generate-cross-signed-certs.sh
 
 - redundant-validated-chain.pem
 - redundant-server-chain.pem
