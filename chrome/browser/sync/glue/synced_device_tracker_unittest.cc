@@ -4,7 +4,9 @@
 
 #include <string>
 
+#include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/sync/glue/device_info.h"
@@ -17,6 +19,21 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
+
+namespace {
+
+void ConvertDeviceInfoSpecifics(
+    const DeviceInfo& device_info,
+    const std::string& guid,
+    sync_pb::DeviceInfoSpecifics* specifics) {
+  specifics->set_cache_guid(guid);
+  specifics->set_client_name(device_info.client_name());
+  specifics->set_chrome_version(device_info.chrome_version());
+  specifics->set_sync_user_agent(device_info.sync_user_agent());
+  specifics->set_device_type(device_info.device_type());
+}
+
+}  // namespace
 
 class SyncedDeviceTrackerTest : public ::testing::Test {
  protected:
@@ -50,6 +67,13 @@ class SyncedDeviceTrackerTest : public ::testing::Test {
   // Expose the private method to our tests.
   void WriteLocalDeviceInfo(const DeviceInfo& info) {
     synced_device_tracker_->WriteLocalDeviceInfo(info);
+  }
+
+  void WriteDeviceInfo(const DeviceInfo& device_info,
+                       const std::string& guid) {
+    sync_pb::DeviceInfoSpecifics specifics;
+    ConvertDeviceInfoSpecifics(device_info, guid, &specifics);
+    synced_device_tracker_->WriteDeviceInfo(specifics, guid);
   }
 
   void ResetObservedChangesCounter() {
@@ -153,6 +177,31 @@ TEST_F(SyncedDeviceTrackerTest, UpdateExistingDeviceInfo) {
 
   // The update write should have sent a nudge.
   EXPECT_EQ(1, GetObservedChangesCounter());
+}
+
+// Test retrieving DeviceInfos for all the syncing devices.
+TEST_F(SyncedDeviceTrackerTest, GetAllDeviceInfo) {
+  DeviceInfo device_info1(
+      "abc Device", "XYZ v1", "XYZ SyncAgent v1",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+
+  std::string guid1 = base::GenerateGUID();
+
+  DeviceInfo device_info2(
+      "def Device", "XYZ v2", "XYZ SyncAgent v2",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+
+  std::string guid2 = base::GenerateGUID();
+
+  WriteDeviceInfo(device_info1, guid1);
+  WriteDeviceInfo(device_info2, guid2);
+
+  ScopedVector<DeviceInfo> device_info;
+  synced_device_tracker_->GetAllSyncedDeviceInfo(&device_info);
+
+  EXPECT_EQ(device_info.size(), 2U);
+  EXPECT_TRUE(device_info[0]->Equals(device_info1));
+  EXPECT_TRUE(device_info[1]->Equals(device_info2));
 }
 
 }  // namespace

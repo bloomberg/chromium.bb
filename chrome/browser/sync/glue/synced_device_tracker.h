@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 
@@ -42,6 +43,8 @@ class SyncedDeviceTracker : public ChangeProcessor {
   virtual void InitLocalDeviceInfo(const base::Closure& callback);
   virtual scoped_ptr<DeviceInfo> ReadDeviceInfo(
       const std::string& client_id) const;
+  virtual void GetAllSyncedDeviceInfo(
+      ScopedVector<DeviceInfo>* device_info) const;
 
  private:
   friend class SyncedDeviceTrackerTest;
@@ -51,6 +54,11 @@ class SyncedDeviceTracker : public ChangeProcessor {
 
   // Helper to write specifics into our node.  Also useful for testing.
   void WriteLocalDeviceInfo(const DeviceInfo& info);
+
+  // Helper to write arbitrary device info. Useful for writing local device
+  // info and also used by test cases to write arbitrary device infos.
+  void WriteDeviceInfo(const sync_pb::DeviceInfoSpecifics& specifics,
+                       const std::string& tag);
 
   base::WeakPtrFactory<SyncedDeviceTracker> weak_factory_;
 
