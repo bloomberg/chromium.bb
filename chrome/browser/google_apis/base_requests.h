@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher.h"
@@ -143,6 +144,9 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   // the status of the URLFetcher.
   static GDataErrorCode GetErrorCode(const net::URLFetcher* source);
 
+  // Returns true if called on the thread where the constructor was called.
+  bool CalledOnValidThread();
+
   // By default, no temporary file will be saved. Derived classes can set
   // this to true in their constructors, if they want to save the downloaded
   // content to a temporary file.
@@ -173,9 +177,13 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   bool save_temp_file_;
   base::FilePath output_file_path_;
 
+  base::ThreadChecker thread_checker_;
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<UrlFetchRequestBase> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(UrlFetchRequestBase);
 };
 
 //============================ EntryActionRequest ============================
@@ -248,6 +256,7 @@ class GetDataRequest : public UrlFetchRequestBase {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<GetDataRequest> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(GetDataRequest);
 };
 
@@ -364,6 +373,7 @@ class UploadRangeRequestBase : public UrlFetchRequestBase {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<UploadRangeRequestBase> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(UploadRangeRequestBase);
 };
 

@@ -98,7 +98,6 @@ UrlFetchRequestBase::UrlFetchRequestBase(
       sender_(sender),
       save_temp_file_(false),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 UrlFetchRequestBase::~UrlFetchRequestBase() {}
@@ -106,7 +105,7 @@ UrlFetchRequestBase::~UrlFetchRequestBase() {}
 void UrlFetchRequestBase::Start(const std::string& access_token,
                                 const std::string& custom_user_agent,
                                 const ReAuthenticateCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   DCHECK(url_request_context_getter_);
   DCHECK(!access_token.empty());
   DCHECK(!callback.is_null());
@@ -232,6 +231,10 @@ GDataErrorCode UrlFetchRequestBase::GetErrorCode(const URLFetcher* source) {
   return code;
 }
 
+bool UrlFetchRequestBase::CalledOnValidThread() {
+  return thread_checker_.CalledOnValidThread();
+}
+
 void UrlFetchRequestBase::OnProcessURLFetchResultsComplete(bool result) {
   sender_->RequestFinished(this);
 }
@@ -307,7 +310,7 @@ GetDataRequest::~GetDataRequest() {}
 
 void GetDataRequest::ParseResponse(GDataErrorCode fetch_error_code,
                                    const std::string& data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 
   VLOG(1) << "JSON received from " << GetURL().spec() << ": "
           << data.size() << " bytes";
@@ -341,10 +344,9 @@ void GetDataRequest::RunCallbackOnPrematureFailure(
   callback_.Run(fetch_error_code, scoped_ptr<base::Value>());
 }
 
-void GetDataRequest::OnDataParsed(
-    GDataErrorCode fetch_error_code,
-    scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void GetDataRequest::OnDataParsed(GDataErrorCode fetch_error_code,
+                                  scoped_ptr<base::Value> value) {
+  DCHECK(CalledOnValidThread());
 
   bool success = true;
   if (!value.get()) {
@@ -360,7 +362,7 @@ void GetDataRequest::OnDataParsed(
 
 void GetDataRequest::RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
                                           scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
   callback_.Run(fetch_error_code, value.Pass());
 }
 
@@ -506,7 +508,7 @@ void UploadRangeRequestBase::ProcessURLFetchResults(
 
 void UploadRangeRequestBase::OnDataParsed(GDataErrorCode code,
                                           scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 
   OnRangeRequestComplete(UploadRangeResponse(code, -1, -1), value.Pass());
   OnProcessURLFetchResultsComplete(
