@@ -76,9 +76,10 @@ void ScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
 bool ScrollbarLayerImpl::WillDraw(DrawMode draw_mode,
                                   ResourceProvider* resource_provider) {
-  LayerImpl::WillDraw(draw_mode, resource_provider);
-  return draw_mode != DRAW_MODE_RESOURCELESS_SOFTWARE ||
-         layer_tree_impl()->settings().solid_color_scrollbars;
+  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE &&
+      !layer_tree_impl()->settings().solid_color_scrollbars)
+    return false;
+  return LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
 void ScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,

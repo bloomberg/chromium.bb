@@ -90,7 +90,8 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
     return false;
   }
 
-  LayerImpl::WillDraw(draw_mode, resource_provider);
+  if (!LayerImpl::WillDraw(draw_mode, resource_provider))
+    return false;
 
   if (!updater_)
     updater_.reset(new VideoResourceUpdater(resource_provider));
