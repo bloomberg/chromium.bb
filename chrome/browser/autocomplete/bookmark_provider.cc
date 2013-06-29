@@ -188,7 +188,7 @@ AutocompleteMatch BookmarkProvider::TitleMatchToACMatch(
   // use the sum to figure out a value between the base score and the maximum
   // score.
   //
-  // The factor for each term is calculated based on:
+  // The factor for each term is the product of:
   //
   //  1) how much of the bookmark's title has been matched by the term:
   //       (term length / title length).
@@ -209,8 +209,13 @@ AutocompleteMatch BookmarkProvider::TitleMatchToACMatch(
   //     a partial factor of (14-6)/14 = 0.571 ).
   //
   // Once all term factors have been calculated they are summed. The resulting
-  // sum will never be greater than 1.0. This sum is then multiplied against
-  // the scoring range available, which is 299. The 299 is calculated by
+  // sum will never be greater than 1.0 because of the way the bookmark model
+  // matches and removes overlaps. (In particular, the bookmark model only
+  // matches terms to the beginning of words and it removes all overlapping
+  // matches, keeping only the longest. Together these mean that each
+  // character is included in at most one match. This property ensures the
+  // sum of factors is at most 1.) This sum is then multiplied against the
+  // scoring range available, which is 299. The 299 is calculated by
   // subtracting the minimum possible score, 900, from the maximum possible
   // score, 1199. This product, ranging from 0 to 299, is added to the minimum
   // possible score, 900, giving the preliminary score.
