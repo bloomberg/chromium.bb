@@ -13,7 +13,6 @@
 
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
-#include "native_client/src/untrusted/pthread/futex.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
@@ -109,7 +108,8 @@ static int mutex_lock_nonrecursive(pthread_mutex_t *mutex, int try_only) {
           __sync_val_compare_and_swap(&mutex->mutex_state,
                                       LOCKED_WITHOUT_WAITERS,
                                       LOCKED_WITH_WAITERS) != UNLOCKED) {
-        __nc_futex_wait(&mutex->mutex_state, LOCKED_WITH_WAITERS, NULL);
+        __nc_irt_futex.futex_wait_abs(&mutex->mutex_state,
+                                      LOCKED_WITH_WAITERS, NULL);
       }
       /*
        * Try again to claim the mutex.  On this try, we must set
@@ -214,7 +214,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
      */
     mutex->mutex_state = UNLOCKED;
     int woken;
-    __nc_futex_wake(&mutex->mutex_state, 1, &woken);
+    __nc_irt_futex.futex_wake(&mutex->mutex_state, 1, &woken);
   }
   return 0;
 }

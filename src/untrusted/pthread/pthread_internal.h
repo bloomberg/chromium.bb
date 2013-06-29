@@ -12,6 +12,7 @@
 
 struct nc_combined_tdb;
 
+extern struct nacl_irt_futex __nc_irt_futex;
 extern struct nacl_irt_mutex __nc_irt_mutex;
 extern struct nacl_irt_cond __nc_irt_cond;
 extern struct nacl_irt_sem __nc_irt_sem;

@@ -18,11 +18,11 @@
 
 #include "native_client/src/include/nacl_base.h"
 
+#include "native_client/src/untrusted/irt/irt_futex.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/tls_params.h"
-#include "native_client/src/untrusted/pthread/futex.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"

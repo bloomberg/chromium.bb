@@ -21,7 +21,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 /* TODO(bradchen): fix this include once it is moved to the right place */
 #include "native_client/src/untrusted/nacl/gc_hooks.h"
-#include "native_client/src/untrusted/pthread/pthread_internal.h"
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/tests/gc_instrumentation/gc_instrumentation.h"
 
 
@@ -143,62 +143,74 @@ void test_syscall_wrappers(void) {
   CHECK_SYSCALL_WRAPPED();
 
   /*
-   * This initializes __nc_irt_mutex, __nc_irt_cond and __nc_irt_sem
-   * as a side effect.
+   * We only test the following threading-related interfaces when
+   * using the IRT, because it is awkward to test this when using
+   * nacl_sys_private, and it doesn't really matter whether
+   * nacl_sys_private supports the "blockhooks" (a.k.a. "gc_hooks")
+   * interface because nacl_sys_private bypasses NaCl's stable ABI and
+   * is not officially supported.
    */
-  struct nacl_irt_thread irt_thread;
-  __nc_initialize_interfaces(&irt_thread);
+#if TESTS_USE_IRT
+  struct nacl_irt_mutex irt_mutex;
+  struct nacl_irt_cond irt_cond;
+  struct nacl_irt_sem irt_sem;
+  __libnacl_mandatory_irt_query(NACL_IRT_MUTEX_v0_1,
+                                &irt_mutex, sizeof(irt_mutex));
+  __libnacl_mandatory_irt_query(NACL_IRT_COND_v0_1,
+                                &irt_cond, sizeof(irt_cond));
+  __libnacl_mandatory_irt_query(NACL_IRT_SEM_v0_1,
+                                &irt_sem, sizeof(irt_sem));
 
   /* Check the IRT's mutex interface */
 
   int mutex_handle;
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_mutex.mutex_create(&mutex_handle) == 0);
+  CHECK(irt_mutex.mutex_create(&mutex_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_mutex.mutex_lock(mutex_handle) == 0);
+  CHECK(irt_mutex.mutex_lock(mutex_handle) == 0);
   CHECK_SYSCALL_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_mutex.mutex_trylock(mutex_handle) == EBUSY);
+  CHECK(irt_mutex.mutex_trylock(mutex_handle) == EBUSY);
   CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_mutex.mutex_unlock(mutex_handle) == 0);
+  CHECK(irt_mutex.mutex_unlock(mutex_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_mutex.mutex_destroy(mutex_handle) == 0);
+  CHECK(irt_mutex.mutex_destroy(mutex_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
 
   /* Check the IRT's condvar interface */
 
   int cond_handle;
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_cond.cond_create(&cond_handle) == 0);
+  CHECK(irt_cond.cond_create(&cond_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_cond.cond_signal(cond_handle) == 0);
+  CHECK(irt_cond.cond_signal(cond_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_cond.cond_broadcast(cond_handle) == 0);
+  CHECK(irt_cond.cond_broadcast(cond_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
 
-  CHECK(__nc_irt_mutex.mutex_create(&mutex_handle) == 0);
-  CHECK(__nc_irt_mutex.mutex_lock(mutex_handle) == 0);
+  CHECK(irt_mutex.mutex_create(&mutex_handle) == 0);
+  CHECK(irt_mutex.mutex_lock(mutex_handle) == 0);
   struct timespec abstime = { 0, 0 };
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_cond.cond_timed_wait_abs(cond_handle, mutex_handle,
-                                          &abstime) == ETIMEDOUT);
+  CHECK(irt_cond.cond_timed_wait_abs(cond_handle, mutex_handle, &abstime)
+        == ETIMEDOUT);
   CHECK_SYSCALL_WRAPPED();
-  CHECK(__nc_irt_mutex.mutex_unlock(mutex_handle) == 0);
-  CHECK(__nc_irt_mutex.mutex_destroy(mutex_handle) == 0);
+  CHECK(irt_mutex.mutex_unlock(mutex_handle) == 0);
+  CHECK(irt_mutex.mutex_destroy(mutex_handle) == 0);
 
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_cond.cond_destroy(cond_handle) == 0);
+  CHECK(irt_cond.cond_destroy(cond_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
 
   /* Check the IRT's semaphore interface */
@@ -206,20 +218,21 @@ void test_syscall_wrappers(void) {
   /* Semaphore with value 1 (we're the only user of it) */
   int sem_handle;
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_sem.sem_create(&sem_handle, 1) == 0);
+  CHECK(irt_sem.sem_create(&sem_handle, 1) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_sem.sem_wait(sem_handle) == 0);
+  CHECK(irt_sem.sem_wait(sem_handle) == 0);
   CHECK_SYSCALL_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_sem.sem_post(sem_handle) == 0);
+  CHECK(irt_sem.sem_post(sem_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
-  CHECK(__nc_irt_sem.sem_destroy(sem_handle) == 0);
+  CHECK(irt_sem.sem_destroy(sem_handle) == 0);
   CHECK_SYSCALL_NOT_WRAPPED();
+#endif
 }
 
 /* Make sure the function doesn't inline so we still get a prologue */

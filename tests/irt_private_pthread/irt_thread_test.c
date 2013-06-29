@@ -16,7 +16,7 @@
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/tls.h"
-#include "native_client/src/untrusted/pthread/futex.h"
+#include "native_client/src/untrusted/pthread/pthread_internal.h"
 
 
 __thread int tls_var = 123;
@@ -58,7 +58,7 @@ static void force_futex_condvar_alloc(void) {
   int desc_count = get_descriptor_count();
   int dummy_val = 0;
   struct timespec abstime = { 0, 0 };
-  int rc = __nc_futex_wait(&dummy_val, dummy_val, &abstime);
+  int rc = __nc_irt_futex.futex_wait_abs(&dummy_val, dummy_val, &abstime);
   assert(rc == ETIMEDOUT);
   /* Verify that a descriptor did actually get created. */
   assert(get_descriptor_count() == desc_count + 1);

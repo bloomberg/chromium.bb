@@ -8,7 +8,6 @@
   ],
   'variables': {
     'common_sources': [
-      'futex.c',
       'nc_thread.c',
       'nc_mutex.c',
       'nc_condvar.c',

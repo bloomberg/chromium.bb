@@ -18,7 +18,7 @@
 #include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
 
 #if !TEST_IRT_FUTEX && !defined(__GLIBC__)
-# include "native_client/src/untrusted/pthread/futex.h"
+# include "native_client/src/untrusted/irt/irt_futex.h"
 #endif
 
 
@@ -81,13 +81,15 @@ static int futex_wake(volatile int *addr, int nwake, int *count) {
 
 #else
 
+#include "native_client/src/untrusted/pthread/pthread_internal.h"
+
 static int futex_wait(volatile int *addr, int val,
                       const struct timespec *abstime) {
-  return __nc_futex_wait(addr, val, abstime);
+  return __nc_irt_futex.futex_wait_abs(addr, val, abstime);
 }
 
 static int futex_wake(volatile int *addr, int nwake, int *count) {
-  return __nc_futex_wake(addr, nwake, count);
+  return __nc_irt_futex.futex_wake(addr, nwake, count);
 }
 
 #endif
