@@ -42,11 +42,16 @@ static void DestroyWebPluginAndDelegate(
     scriptable_object->DeleteSoon();
 
   if (delegate) {
-    // Un-register the plugin instance as an object owner.
-    WebBindings::unregisterObjectOwner(delegate->GetPluginNPP());
+    // Save the object owner Id so we can unregister it as a valid owner
+    // after the instance has been destroyed.
+    NPP owner = delegate->GetPluginNPP();
 
     // WebPlugin must outlive WebPluginDelegate.
     delegate->PluginDestroyed();
+
+    // PluginDestroyed can call into script, so only unregister as an object
+    // owner after that has completed.
+    WebBindings::unregisterObjectOwner(owner);
   }
 
   delete webplugin;
