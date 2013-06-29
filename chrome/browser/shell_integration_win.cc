@@ -23,6 +23,7 @@
 #include "base/win/scoped_propvariant.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -96,6 +97,8 @@ string16 GetExpectedAppId(const CommandLine& command_line,
     user_data_dir = command_line.GetSwitchValuePath(switches::kUserDataDir);
   else
     chrome::GetDefaultUserDataDirectory(&user_data_dir);
+  // Adjust with any policy that overrides any other way to set the path.
+  policy::path_parser::CheckUserDataDirPolicy(&user_data_dir);
   DCHECK(!user_data_dir.empty());
 
   base::FilePath profile_subdir;
