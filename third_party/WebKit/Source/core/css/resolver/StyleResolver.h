@@ -187,7 +187,6 @@ public:
     }
 
 private:
-    void initElement(Element*);
     RenderStyle* locateSharedStyle();
     bool styleSharingCandidateMatchesRuleSet(RuleSet*);
     Node* locateCousinList(Element* parent, unsigned& visitedNodeCount) const;

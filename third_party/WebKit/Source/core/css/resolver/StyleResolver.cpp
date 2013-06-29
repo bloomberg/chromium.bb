@@ -516,17 +516,6 @@ void StyleResolver::matchAllRules(ElementRuleCollector& collector, bool matchAut
         collector.matchedResult().isCacheable = false;
 }
 
-inline void StyleResolver::initElement(Element* e)
-{
-    if (m_state.element() != e) {
-        m_state.initElement(e);
-        if (e && e == e->document()->documentElement()) {
-            e->document()->setDirectionSetOnDocumentElement(false);
-            e->document()->setWritingModeSetOnDocumentElement(false);
-        }
-    }
-}
-
 static const unsigned cStyleSearchThreshold = 10;
 static const unsigned cStyleSearchLevelThreshold = 10;
 
@@ -1052,7 +1041,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     }
 
     StyleResolverState& state = m_state;
-    initElement(element);
     state.initForStyleResolve(document(), element, defaultParent, regionForStyling);
     if (sharingBehavior == AllowStyleSharing && !state.distributedToInsertionPoint()) {
         RenderStyle* sharedStyle = locateSharedStyle();
@@ -1192,7 +1180,6 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
     const Vector<RefPtr<StyleKeyframe> >& keyframes = keyframesRule->keyframes();
     for (unsigned i = 0; i < keyframes.size(); ++i) {
         // Apply the declaration to the style. This is a simplified version of the logic in styleForElement
-        initElement(e);
         m_state.initForStyleResolve(document(), e);
 
         const StyleKeyframe* keyframe = keyframes[i].get();
@@ -1242,8 +1229,6 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
         return 0;
 
     StyleResolverState& state = m_state;
-
-    initElement(e);
 
     state.initForStyleResolve(document(), e, parentStyle);
 
@@ -1738,7 +1723,6 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
     if (!e || !e->document()->haveStylesheetsLoaded())
         return 0;
 
-    initElement(e);
     m_state.initForStyleResolve(document(), e, 0);
 
     ElementRuleCollector collector(this, m_state);
@@ -2156,7 +2140,6 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
 
 void StyleResolver::applyPropertyToStyle(CSSPropertyID id, CSSValue* value, RenderStyle* style)
 {
-    initElement(0);
     m_state.initForStyleResolve(document(), 0, style);
     m_state.setStyle(style);
     applyPropertyToCurrentStyle(id, value);

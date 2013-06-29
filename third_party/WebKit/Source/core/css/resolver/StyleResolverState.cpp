@@ -53,15 +53,26 @@ void StyleResolverState::clear()
     m_pendingSVGDocuments.clear();
 }
 
-void StyleResolverState::initElement(Element* e)
+void StyleResolverState::initElement(Element* element)
 {
-    m_element = e;
-    m_styledElement = e && e->isStyledElement() ? e : 0;
-    m_elementLinkState = e ? e->document()->visitedLinkState()->determineLinkState(e) : NotInsideLink;
+    if (m_element == element)
+        return;
+
+    m_element = element;
+    m_styledElement = element && element->isStyledElement() ? element : 0;
+    m_elementLinkState = element ? element->document()->visitedLinkState()->determineLinkState(element) : NotInsideLink;
+
+    if (!element || element != element->document()->documentElement())
+        return;
+
+    element->document()->setDirectionSetOnDocumentElement(false);
+    element->document()->setWritingModeSetOnDocumentElement(false);
 }
 
 void StyleResolverState::initForStyleResolve(Document* document, Element* e, RenderStyle* parentStyle, RenderRegion* regionForStyling)
 {
+    initElement(e);
+
     m_regionForStyling = regionForStyling;
 
     if (e) {

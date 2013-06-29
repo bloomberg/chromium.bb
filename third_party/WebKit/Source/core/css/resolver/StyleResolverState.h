@@ -63,8 +63,7 @@ public:
     , m_hasUAAppearance(false)
     , m_backgroundData(BackgroundFillLayer) { }
 
-    public:
-    void initElement(Element*);
+public:
     void initForStyleResolve(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
     void clear();
 
@@ -119,6 +118,8 @@ public:
     bool useSVGZoomRules() const { return m_element && m_element->isSVGElement(); }
 
 private:
+    void initElement(Element*);
+
     Element* m_element;
     RefPtr<RenderStyle> m_style;
     Element* m_styledElement;
