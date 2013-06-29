@@ -31,24 +31,12 @@
 
 #include "core/platform/PlatformInstrumentation.h"
 
-#ifdef QCMS_WEBP_COLOR_CORRECTION
+#if USE(QCMSLIB)
 #include "qcms.h"
 #endif
 
-#ifdef WEBP_ICC_ANIMATION_SUPPORT
 #include "RuntimeEnabledFeatures.h"
 #include "webp/format_constants.h"
-#endif
-
-#if (WEBP_DECODER_ABI_VERSION < 0x0163)
-// Backward emulation for versions earlier than 0.1.99.
-#define MODE_rgbA MODE_RGBA
-#define MODE_bgrA MODE_BGRA
-#define ALPHA_FLAG 0
-#elif (WEBP_DECODER_ABI_VERSION <= 0x0200)
-// Backward emulation for versions earlier than 0.3.0.
-#define ALPHA_FLAG 0x000010
-#endif
 
 #if CPU(BIG_ENDIAN) || CPU(MIDDLE_ENDIAN)
 inline WEBP_CSP_MODE outputMode(bool hasAlpha) { return hasAlpha ? MODE_rgbA : MODE_RGBA; }
@@ -66,18 +54,16 @@ WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption,
     , m_decoder(0)
     , m_formatFlags(0)
     , m_frameBackgroundHasAlpha(false)
-#ifdef QCMS_WEBP_COLOR_CORRECTION
+#if USE(QCMSLIB)
     , m_haveReadProfile(false)
     , m_transform(0)
 #endif
-#ifdef WEBP_ICC_ANIMATION_SUPPORT
     , m_demux(0)
     , m_demuxState(WEBP_DEMUX_PARSING_HEADER)
     , m_haveAlreadyParsedThisData(false)
     , m_haveReadAnimationParameters(false)
     , m_repetitionCount(cAnimationLoopOnce)
     , m_decodedHeight(0)
-#endif
 {
 }
 
@@ -88,15 +74,13 @@ WEBPImageDecoder::~WEBPImageDecoder()
 
 void WEBPImageDecoder::clear()
 {
-#ifdef QCMS_WEBP_COLOR_CORRECTION
+#if USE(QCMSLIB)
     if (m_transform)
         qcms_transform_release(m_transform);
     m_transform = 0;
 #endif
-#ifdef WEBP_ICC_ANIMATION_SUPPORT
     WebPDemuxDelete(m_demux);
     m_demux = 0;
-#endif
     clearDecoder();
 }
 
@@ -104,35 +88,22 @@ void WEBPImageDecoder::clearDecoder()
 {
     WebPIDelete(m_decoder);
     m_decoder = 0;
-#ifdef WEBP_ICC_ANIMATION_SUPPORT
     m_decodedHeight = 0;
     m_frameBackgroundHasAlpha = false;
-#endif
 }
 
 bool WEBPImageDecoder::isSizeAvailable()
 {
     if (!ImageDecoder::isSizeAvailable()) {
-#ifdef WEBP_ICC_ANIMATION_SUPPORT
         updateDemuxer();
-#else
-        decode(reinterpret_cast<const uint8_t*>(m_data->data()), m_data->size(), true, 0);
-#endif
     }
     return ImageDecoder::isSizeAvailable();
 }
 
 size_t WEBPImageDecoder::frameCount()
 {
-#ifdef WEBP_ICC_ANIMATION_SUPPORT
     if (!updateDemuxer())
         return 0;
-#else
-    if (m_frameBufferCache.isEmpty()) {
-        m_frameBufferCache.resize(1);
-        m_frameBufferCache[0].setPremultiplyAlpha(m_premultiplyAlpha);
-    }
-#endif
     return m_frameBufferCache.size();
 }
 
@@ -145,7 +116,6 @@ ImageFrame* WEBPImageDecoder::frameBufferAtIndex(size_t index)
     if (frame.status() == ImageFrame::FrameComplete)
         return &frame;
 
-#ifdef WEBP_ICC_ANIMATION_SUPPORT
     if (RuntimeEnabledFeatures::animatedWebPEnabled()) {
         Vector<size_t> framesToDecode;
         size_t frameToDecode = index;
@@ -181,7 +151,6 @@ ImageFrame* WEBPImageDecoder::frameBufferAtIndex(size_t index)
 
         return &frame;
     }
-#endif
 
     ASSERT(!index);
     PlatformInstrumentation::willDecodeImage("WEBP");
@@ -189,8 +158,6 @@ ImageFrame* WEBPImageDecoder::frameBufferAtIndex(size_t index)
     PlatformInstrumentation::didDecodeImage();
     return &frame;
 }
-
-#ifdef WEBP_ICC_ANIMATION_SUPPORT
 
 void WEBPImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
 {
@@ -356,9 +323,7 @@ void WEBPImageDecoder::clearFrameBuffer(size_t frameIndex)
     ImageDecoder::clearFrameBuffer(frameIndex);
 }
 
-#endif // WEBP_ICC_ANIMATION_SUPPORT
-
-#ifdef QCMS_WEBP_COLOR_CORRECTION
+#if USE(QCMSLIB)
 
 void WEBPImageDecoder::createColorTransform(const char* data, size_t size)
 {
@@ -409,9 +374,8 @@ void WEBPImageDecoder::readColorProfile()
     WebPDemuxReleaseChunkIterator(&chunkIterator);
 }
 
-#endif // QCMS_WEBP_COLOR_CORRECTION
+#endif // USE(QCMSLIB)
 
-#ifdef WEBP_ICC_ANIMATION_SUPPORT
 void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
 {
     ImageFrame& buffer = m_frameBufferCache[frameIndex];
@@ -428,7 +392,7 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
     const int left = frameRect.x();
     const int top = frameRect.y();
 
-#ifdef QCMS_WEBP_COLOR_CORRECTION
+#if USE(QCMSLIB)
     if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile()) {
         if (!m_haveReadProfile) {
             readColorProfile();
@@ -446,7 +410,7 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
             }
         }
     }
-#endif // QCMS_WEBP_COLOR_CORRECTION
+#endif // USE(QCMSLIB)
 
     // During the decoding of current frame, we may have set some pixels to be transparent (i.e. alpha < 255).
     // However, the value of each of these pixels should have been determined by blending it against the value
@@ -496,7 +460,6 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
 
     m_decodedHeight = decodedHeight;
 }
-#endif // WEBP_ICC_ANIMATION_SUPPORT
 
 bool WEBPImageDecoder::decode(const uint8_t* dataBytes, size_t dataSize, bool onlySize, size_t frameIndex)
 {
@@ -508,18 +471,12 @@ bool WEBPImageDecoder::decode(const uint8_t* dataBytes, size_t dataSize, bool on
         if (dataSize < imageHeaderSize)
             return false;
         int width, height;
-#if (WEBP_DECODER_ABI_VERSION >= 0x0163)
         WebPBitstreamFeatures features;
         if (WebPGetFeatures(dataBytes, dataSize, &features) != VP8_STATUS_OK)
             return setFailed();
         width = features.width;
         height = features.height;
         m_formatFlags = features.has_alpha ? ALPHA_FLAG : 0;
-#else
-        // Earlier version won't be able to display WebP files with alpha.
-        if (!WebPGetInfo(dataBytes, dataSize, &width, &height))
-            return setFailed();
-#endif
         if (!setSize(width, height))
             return setFailed();
     }
@@ -547,7 +504,7 @@ bool WEBPImageDecoder::decode(const uint8_t* dataBytes, size_t dataSize, bool on
         WEBP_CSP_MODE mode = outputMode(m_formatFlags & ALPHA_FLAG);
         if (!m_premultiplyAlpha)
             mode = outputMode(false);
-#ifdef QCMS_WEBP_COLOR_CORRECTION
+#if USE(QCMSLIB)
         if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile())
             mode = MODE_RGBA; // Decode to RGBA for input to libqcms.
 #endif

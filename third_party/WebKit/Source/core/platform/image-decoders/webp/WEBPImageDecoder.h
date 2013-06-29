@@ -32,13 +32,7 @@
 #include "core/platform/image-decoders/ImageDecoder.h"
 
 #include "webp/decode.h"
-#if (WEBP_DECODER_ABI_VERSION > 0x200)
 #include "webp/demux.h"
-#define WEBP_ICC_ANIMATION_SUPPORT
-#if USE(QCMSLIB)
-#define QCMS_WEBP_COLOR_CORRECTION
-#endif
-#endif
 
 namespace WebCore {
 
@@ -51,13 +45,11 @@ public:
     virtual bool isSizeAvailable() OVERRIDE;
     virtual size_t frameCount() OVERRIDE;
     virtual ImageFrame* frameBufferAtIndex(size_t) OVERRIDE;
-#ifdef WEBP_ICC_ANIMATION_SUPPORT
     virtual void setData(SharedBuffer* data, bool allDataReceived) OVERRIDE;
     virtual int repetitionCount() const OVERRIDE;
     virtual bool frameIsCompleteAtIndex(size_t) const OVERRIDE;
     virtual float frameDurationAtIndex(size_t) const OVERRIDE;
     virtual size_t clearCacheExceptFrame(size_t) OVERRIDE;
-#endif
 
 private:
     bool decode(const uint8_t* dataBytes, size_t dataSize, bool onlySize, size_t frameIndex);
@@ -67,7 +59,7 @@ private:
     int m_formatFlags;
     bool m_frameBackgroundHasAlpha;
 
-#ifdef QCMS_WEBP_COLOR_CORRECTION
+#if USE(QCMSLIB)
     qcms_transform* colorTransform() const { return m_transform; }
     void createColorTransform(const char* data, size_t);
     void readColorProfile();
@@ -76,7 +68,6 @@ private:
     qcms_transform* m_transform;
 #endif
 
-#ifdef WEBP_ICC_ANIMATION_SUPPORT
     bool updateDemuxer();
     bool initFrameBuffer(const WebPIterator&, size_t frameIndex);
     void applyPostProcessing(size_t frameIndex);
@@ -88,9 +79,6 @@ private:
     bool m_haveReadAnimationParameters;
     int m_repetitionCount;
     int m_decodedHeight;
-#else
-    void applyPostProcessing(size_t) { };
-#endif
 
     void clear();
     void clearDecoder();
