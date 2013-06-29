@@ -43,7 +43,9 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
 
   virtual void SendManagedMemoryStats(size_t bytes_visible,
                                       size_t bytes_visible_and_nearby,
-                                      size_t bytes_allocated) OVERRIDE {}
+                                      size_t bytes_allocated) OVERRIDE;
+
+  virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE;
 
  private:
   DelegatingRenderer(RendererClient* client,

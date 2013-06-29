@@ -73,7 +73,6 @@ class CC_EXPORT FakeWebGraphicsContext3D
       WebKit::WGC3Denum target,
       WebKit::WGC3Dsizei num_attachments,
       const WebKit::WGC3Denum* attachments) {}
-  virtual void ensureFramebufferCHROMIUM() {}
 
   virtual void setMemoryAllocationChangedCallbackCHROMIUM(
       WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) {}

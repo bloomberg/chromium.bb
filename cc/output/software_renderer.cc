@@ -490,4 +490,10 @@ void SoftwareRenderer::SetVisible(bool visible) {
   visible_ = visible;
 }
 
+void SoftwareRenderer::SetDiscardBackBufferWhenNotVisible(bool discard) {
+  // TODO(piman, skaslev): Can we release the backbuffer? We don't currently
+  // receive memory policy yet anyway.
+  NOTIMPLEMENTED();
+}
+
 }  // namespace cc

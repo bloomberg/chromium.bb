@@ -52,6 +52,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       times_map_buffer_chromium_succeeds_(-1),
       context_lost_callback_(NULL),
       swap_buffers_callback_(NULL),
+      memory_allocation_changed_callback_(NULL),
       max_texture_size_(1024),
       width_(0),
       height_(0),
@@ -78,6 +79,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D(
       times_map_buffer_chromium_succeeds_(-1),
       context_lost_callback_(NULL),
       swap_buffers_callback_(NULL),
+      memory_allocation_changed_callback_(NULL),
       max_texture_size_(1024),
       width_(0),
       height_(0),
@@ -368,6 +370,11 @@ void TestWebGraphicsContext3D::setSwapBuffersCompleteCallbackCHROMIUM(
     swap_buffers_callback_ = callback;
 }
 
+void TestWebGraphicsContext3D::setMemoryAllocationChangedCallbackCHROMIUM(
+    WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) {
+  memory_allocation_changed_callback_ = callback;
+}
+
 void TestWebGraphicsContext3D::prepareTexture() {
   if (swap_buffers_callback_) {
     base::MessageLoop::current()->PostTask(
@@ -529,6 +536,13 @@ WebKit::WGC3Duint TestWebGraphicsContext3D::NextImageId() {
   DCHECK(image_id < (1 << 17));
   image_id |= context_id_ << 17;
   return image_id;
+}
+
+void TestWebGraphicsContext3D::SetMemoryAllocation(
+    WebKit::WebGraphicsMemoryAllocation allocation) {
+  if (!memory_allocation_changed_callback_)
+    return;
+  memory_allocation_changed_callback_->onMemoryAllocationChanged(allocation);
 }
 
 TestWebGraphicsContext3D::Buffer::Buffer() : target(0) {}

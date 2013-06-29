@@ -1030,6 +1030,19 @@ bool LayerTreeHostImpl::ShouldClearRootRenderPass() const {
   return settings_.should_clear_root_render_pass;
 }
 
+void LayerTreeHostImpl::SetMemoryPolicy(
+    const ManagedMemoryPolicy& policy,
+    bool discard_backbuffer_when_not_visible) {
+  if (policy.bytes_limit_when_visible) {
+    // Just ignore the memory manager when it says to set the limit to zero
+    // bytes. This will happen when the memory manager thinks that the renderer
+    // is not visible (which the renderer knows better).
+    SetManagedMemoryPolicy(policy);
+  }
+  renderer_->SetDiscardBackBufferWhenNotVisible(
+      discard_backbuffer_when_not_visible);
+}
+
 void LayerTreeHostImpl::SetManagedMemoryPolicy(
     const ManagedMemoryPolicy& policy) {
   if (managed_memory_policy_ == policy)

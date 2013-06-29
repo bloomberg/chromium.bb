@@ -41,8 +41,6 @@ class PixelTest::PixelTestRendererClient
     return settings_;
   }
   virtual void SetFullRootLayerDamage() OVERRIDE {}
-  virtual void SetManagedMemoryPolicy(
-      const ManagedMemoryPolicy& policy) OVERRIDE {}
   virtual bool HasImplThread() const OVERRIDE { return false; }
   virtual bool ShouldClearRootRenderPass() const OVERRIDE { return true; }
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const
@@ -66,6 +64,8 @@ class PixelTest::PixelTestRendererClient
                                           gfx::Rect viewport) OVERRIDE {
     device_viewport_ = viewport;
   }
+  virtual void SetMemoryPolicy(
+      const ManagedMemoryPolicy& policy, bool discard) OVERRIDE {}
 
  private:
   gfx::Rect device_viewport_;

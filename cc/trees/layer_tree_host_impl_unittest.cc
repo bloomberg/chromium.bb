@@ -71,7 +71,9 @@ class LayerTreeHostImplTest : public testing::Test,
         did_request_commit_(false),
         did_request_redraw_(false),
         did_upload_visible_tile_(false),
-        reduce_memory_result_(true) {
+        reduce_memory_result_(true),
+        current_limit_bytes_(0),
+        current_priority_cutoff_value_(0) {
     media::InitializeMediaLibraryForTesting();
   }
 
@@ -123,6 +125,8 @@ class LayerTreeHostImplTest : public testing::Test,
       base::Time wall_clock_time) OVERRIDE {}
   virtual bool ReduceContentsTextureMemoryOnImplThread(
       size_t limit_bytes, int priority_cutoff) OVERRIDE {
+    current_limit_bytes_ = limit_bytes;
+    current_priority_cutoff_value_ = priority_cutoff;
     return reduce_memory_result_;
   }
   virtual void ReduceWastedContentsTextureMemoryOnImplThread() OVERRIDE {}
@@ -286,6 +290,8 @@ class LayerTreeHostImplTest : public testing::Test,
   bool did_upload_visible_tile_;
   bool reduce_memory_result_;
   base::TimeDelta requested_scrollbar_animation_delay_;
+  size_t current_limit_bytes_;
+  int current_priority_cutoff_value_;
 };
 
 class TestWebGraphicsContext3DMakeCurrentFails
@@ -331,16 +337,16 @@ TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
   // Toggle contents textures purged without causing any evictions,
   // and make sure that it does not change can_draw.
   set_reduce_memory_result(false);
-  host_impl_->SetManagedMemoryPolicy(ManagedMemoryPolicy(
-      host_impl_->memory_allocation_limit_bytes() - 1));
+  host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
+      host_impl_->memory_allocation_limit_bytes() - 1), true);
   EXPECT_TRUE(host_impl_->CanDraw());
   EXPECT_FALSE(on_can_draw_state_changed_called_);
   on_can_draw_state_changed_called_ = false;
 
   // Toggle contents textures purged to make sure it toggles can_draw.
   set_reduce_memory_result(true);
-  host_impl_->SetManagedMemoryPolicy(ManagedMemoryPolicy(
-      host_impl_->memory_allocation_limit_bytes() - 1));
+  host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
+      host_impl_->memory_allocation_limit_bytes() - 1), true);
   EXPECT_FALSE(host_impl_->CanDraw());
   EXPECT_TRUE(on_can_draw_state_changed_called_);
   on_can_draw_state_changed_called_ = false;
@@ -4693,8 +4699,8 @@ TEST_F(LayerTreeHostImplTest, ReleaseContentsTextureShouldTriggerCommit) {
   set_reduce_memory_result(false);
   host_impl_->set_max_memory_needed_bytes(
       host_impl_->memory_allocation_limit_bytes() - 1);
-  host_impl_->SetManagedMemoryPolicy(ManagedMemoryPolicy(
-      host_impl_->memory_allocation_limit_bytes() - 1));
+  host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
+      host_impl_->memory_allocation_limit_bytes() - 1), true);
   EXPECT_FALSE(did_request_commit_);
   did_request_commit_ = false;
 
@@ -4704,8 +4710,8 @@ TEST_F(LayerTreeHostImplTest, ReleaseContentsTextureShouldTriggerCommit) {
   set_reduce_memory_result(false);
   host_impl_->set_max_memory_needed_bytes(
       host_impl_->memory_allocation_limit_bytes());
-  host_impl_->SetManagedMemoryPolicy(ManagedMemoryPolicy(
-      host_impl_->memory_allocation_limit_bytes() - 1));
+  host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
+      host_impl_->memory_allocation_limit_bytes() - 1), true);
   EXPECT_TRUE(did_request_commit_);
   did_request_commit_ = false;
 
@@ -4713,15 +4719,15 @@ TEST_F(LayerTreeHostImplTest, ReleaseContentsTextureShouldTriggerCommit) {
   // to re-commit.
   set_reduce_memory_result(true);
   host_impl_->set_max_memory_needed_bytes(1);
-  host_impl_->SetManagedMemoryPolicy(ManagedMemoryPolicy(
-      host_impl_->memory_allocation_limit_bytes() - 1));
+  host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
+      host_impl_->memory_allocation_limit_bytes() - 1), true);
   EXPECT_TRUE(did_request_commit_);
   did_request_commit_ = false;
 
   // But if we set it to the same value that it was before, we shouldn't
   // re-commit.
-  host_impl_->SetManagedMemoryPolicy(ManagedMemoryPolicy(
-      host_impl_->memory_allocation_limit_bytes()));
+  host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
+      host_impl_->memory_allocation_limit_bytes()), true);
   EXPECT_FALSE(did_request_commit_);
 }
 
@@ -4765,8 +4771,6 @@ class TestRenderer : public GLRenderer, public RendererClient {
     return settings_;
   }
   virtual void SetFullRootLayerDamage() OVERRIDE {}
-  virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
-      OVERRIDE {}
   virtual bool HasImplThread() const OVERRIDE { return false; }
   virtual bool ShouldClearRootRenderPass() const OVERRIDE { return true; }
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const
@@ -6023,6 +6027,67 @@ TEST_F(LayerTreeHostImplTest, DeferredInitializeSmoke) {
 
   // Defer intialized GL draw.
   DrawFrame();
+}
+
+class ContextThatDoesNotSupportMemoryManagmentExtensions
+    : public TestWebGraphicsContext3D {
+ public:
+  // WebGraphicsContext3D methods.
+  virtual WebKit::WebString getString(WebKit::WGC3Denum name) {
+    return WebKit::WebString();
+  }
+};
+
+// Checks that we have a non-0 default allocation if we pass a context that
+// doesn't support memory management extensions.
+TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
+  LayerTreeSettings settings;
+  host_impl_ = LayerTreeHostImpl::Create(settings,
+                                         this,
+                                         &proxy_,
+                                         &stats_instrumentation_);
+
+  host_impl_->InitializeRenderer(FakeOutputSurface::Create3d(
+      scoped_ptr<WebKit::WebGraphicsContext3D>(
+          new ContextThatDoesNotSupportMemoryManagmentExtensions))
+      .PassAs<OutputSurface>());
+  EXPECT_LT(0ul, host_impl_->memory_allocation_limit_bytes());
+}
+
+TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
+  ManagedMemoryPolicy policy1(
+      456, ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
+      123, ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE);
+  int visible_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
+      policy1.priority_cutoff_when_visible);
+  int not_visible_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
+      policy1.priority_cutoff_when_not_visible);
+
+  host_impl_->SetVisible(true);
+  host_impl_->SetMemoryPolicy(policy1, false);
+  EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
+  EXPECT_EQ(visible_cutoff_value, current_priority_cutoff_value_);
+
+  host_impl_->SetVisible(false);
+  EXPECT_EQ(policy1.bytes_limit_when_not_visible, current_limit_bytes_);
+  EXPECT_EQ(not_visible_cutoff_value, current_priority_cutoff_value_);
+
+  host_impl_->SetVisible(true);
+  EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
+  EXPECT_EQ(visible_cutoff_value, current_priority_cutoff_value_);
+
+  // A policy with a 0 allocation is discarded.
+  ManagedMemoryPolicy actual_policy = host_impl_->ActualManagedMemoryPolicy();
+  ManagedMemoryPolicy policy2(
+      0, ManagedMemoryPolicy::CUTOFF_ALLOW_REQUIRED_ONLY,
+      0, ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING);
+  host_impl_->SetMemoryPolicy(policy2, false);
+  EXPECT_EQ(actual_policy, host_impl_->ActualManagedMemoryPolicy());
+  EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
+  EXPECT_EQ(visible_cutoff_value, current_priority_cutoff_value_);
+  host_impl_->SetVisible(false);
+  EXPECT_EQ(policy1.bytes_limit_when_not_visible, current_limit_bytes_);
+  EXPECT_EQ(not_visible_cutoff_value, current_priority_cutoff_value_);
 }
 
 }  // namespace

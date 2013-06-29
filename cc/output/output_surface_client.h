@@ -19,6 +19,7 @@ class Transform;
 namespace cc {
 
 class CompositorFrameAck;
+struct ManagedMemoryPolicy;
 
 class CC_EXPORT OutputSurfaceClient {
  public:
@@ -33,6 +34,8 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void DidLoseOutputSurface() = 0;
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
                                           gfx::Rect viewport) = 0;
+  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy,
+                               bool discard_backbuffer_when_not_visible) = 0;
 
  protected:
   virtual ~OutputSurfaceClient() {}

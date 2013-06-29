@@ -1562,8 +1562,8 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
         // Reduce the memory limit to only fit the root layer and one render
         // surface. This prevents any contents drawing into surfaces
         // from being allocated.
-        host_impl->SetManagedMemoryPolicy(
-            ManagedMemoryPolicy(100 * 100 * 4 * 2));
+        host_impl->SetMemoryPolicy(
+            ManagedMemoryPolicy(100 * 100 * 4 * 2), true);
         break;
       case 1:
         EXPECT_FALSE(renderer->HaveCachedResourcesForRenderPassId(
@@ -2180,11 +2180,12 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
             layer_tree_host()->contents_texture_manager()->MemoryUseBytes());
         // Set a new policy that will kick out 1 of the 3 resources.
         // Because a resource was evicted, a commit will be kicked off.
-        host_impl->SetManagedMemoryPolicy(
+        host_impl->SetMemoryPolicy(
             ManagedMemoryPolicy(100 * 100 * 4 * 2,
                                 ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
                                 100 * 100 * 4 * 1,
-                                ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING));
+                                ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING),
+            true);
         break;
       case 2:
         // Only two backings should have memory.

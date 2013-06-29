@@ -36,11 +36,7 @@ class GeometryBinding;
 class ScopedEnsureFramebufferAllocation;
 
 // Class that handles drawing of composited render layers using GL.
-class CC_EXPORT GLRenderer
-  : public DirectRenderer,
-    public NON_EXPORTED_BASE(
-        WebKit::WebGraphicsContext3D::
-            WebGraphicsMemoryAllocationChangedCallbackCHROMIUM) {
+class CC_EXPORT GLRenderer : public DirectRenderer {
  public:
   static scoped_ptr<GLRenderer> Create(RendererClient* client,
                                        OutputSurface* output_surface,
@@ -71,6 +67,8 @@ class CC_EXPORT GLRenderer
   virtual void SendManagedMemoryStats(size_t bytes_visible,
                                       size_t bytes_visible_and_nearby,
                                       size_t bytes_allocated) OVERRIDE;
+
+  virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE;
 
   static void DebugGLCall(WebKit::WebGraphicsContext3D* context,
                           const char* command,
@@ -125,8 +123,6 @@ class CC_EXPORT GLRenderer
   friend class GLRendererShaderTest;
 
   static void ToGLMatrix(float* gl_matrix, const gfx::Transform& transform);
-  static ManagedMemoryPolicy::PriorityCutoff PriorityCutoff(
-      WebKit::WebGraphicsMemoryAllocation::PriorityCutoff priority_cutoff);
 
   void DrawCheckerboardQuad(const DrawingFrame* frame,
                             const CheckerboardDrawQuad* quad);
@@ -224,12 +220,6 @@ class CC_EXPORT GLRenderer
 
   void ReinitializeGrCanvas();
   void ReinitializeGLState();
-
-  // WebKit::
-  // WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM
-  // implementation.
-  virtual void onMemoryAllocationChanged(
-      WebKit::WebGraphicsMemoryAllocation allocation) OVERRIDE;
 
   virtual void DiscardBackbuffer() OVERRIDE;
   virtual void EnsureBackbuffer() OVERRIDE;

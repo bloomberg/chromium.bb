@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/test_simple_task_runner.h"
+#include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
@@ -10,6 +11,8 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using WebKit::WebGraphicsMemoryAllocation;
 
 namespace cc {
 namespace {
@@ -81,7 +84,9 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
       : begin_frame_count_(0),
         deferred_initialize_result_(true),
         deferred_initialize_called_(false),
-        did_lose_output_surface_called_(false) {}
+        did_lose_output_surface_called_(false),
+        memory_policy_(0),
+        discard_backbuffer_when_not_visible_(false) {}
 
   virtual bool DeferredInitialize(
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE {
@@ -98,6 +103,12 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   }
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
                                           gfx::Rect viewport) OVERRIDE {}
+  virtual void SetMemoryPolicy(
+      const ManagedMemoryPolicy& policy,
+      bool discard_backbuffer_when_not_visible) OVERRIDE {
+    memory_policy_ = policy;
+    discard_backbuffer_when_not_visible_ = discard_backbuffer_when_not_visible;
+  }
 
   int begin_frame_count() {
     return begin_frame_count_;
@@ -115,11 +126,19 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
     return did_lose_output_surface_called_;
   }
 
+  const ManagedMemoryPolicy& memory_policy() const { return memory_policy_; }
+
+  bool discard_backbuffer_when_not_visible() const {
+    return discard_backbuffer_when_not_visible_;
+  }
+
  private:
   int begin_frame_count_;
   bool deferred_initialize_result_;
   bool deferred_initialize_called_;
   bool did_lose_output_surface_called_;
+  ManagedMemoryPolicy memory_policy_;
+  bool discard_backbuffer_when_not_visible_;
 };
 
 TEST(OutputSurfaceTest, ClientPointerIndicatesBindToClientSuccess) {
@@ -350,6 +369,51 @@ TEST(OutputSurfaceTest, OptimisticAndRetroactiveBeginFrames) {
   // ...and retroactively triggered by OnSwapBuffersComplete
   output_surface.OnSwapBuffersCompleteForTesting();
   EXPECT_EQ(client.begin_frame_count(), 4);
+}
+
+TEST(OutputSurfaceTest, MemoryAllocation) {
+  scoped_ptr<TestWebGraphicsContext3D> scoped_context =
+      TestWebGraphicsContext3D::Create();
+  TestWebGraphicsContext3D* context = scoped_context.get();
+
+  TestOutputSurface output_surface(
+      scoped_context.PassAs<WebKit::WebGraphicsContext3D>());
+
+  FakeOutputSurfaceClient client;
+  EXPECT_TRUE(output_surface.BindToClient(&client));
+
+  WebGraphicsMemoryAllocation allocation;
+  allocation.suggestHaveBackbuffer = true;
+  allocation.bytesLimitWhenVisible = 1234;
+  allocation.priorityCutoffWhenVisible =
+      WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleOnly;
+  allocation.bytesLimitWhenNotVisible = 4567;
+  allocation.priorityCutoffWhenNotVisible =
+      WebGraphicsMemoryAllocation::PriorityCutoffAllowNothing;
+
+  context->SetMemoryAllocation(allocation);
+
+  EXPECT_EQ(1234u, client.memory_policy().bytes_limit_when_visible);
+  EXPECT_EQ(ManagedMemoryPolicy::CUTOFF_ALLOW_REQUIRED_ONLY,
+            client.memory_policy().priority_cutoff_when_visible);
+  EXPECT_EQ(4567u, client.memory_policy().bytes_limit_when_not_visible);
+  EXPECT_EQ(ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING,
+            client.memory_policy().priority_cutoff_when_not_visible);
+  EXPECT_FALSE(client.discard_backbuffer_when_not_visible());
+
+  allocation.suggestHaveBackbuffer = false;
+  context->SetMemoryAllocation(allocation);
+  EXPECT_TRUE(client.discard_backbuffer_when_not_visible());
+
+  allocation.priorityCutoffWhenVisible =
+      WebGraphicsMemoryAllocation::PriorityCutoffAllowEverything;
+  allocation.priorityCutoffWhenNotVisible =
+      WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleAndNearby;
+  context->SetMemoryAllocation(allocation);
+  EXPECT_EQ(ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
+            client.memory_policy().priority_cutoff_when_visible);
+  EXPECT_EQ(ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE,
+            client.memory_policy().priority_cutoff_when_not_visible);
 }
 
 }  // namespace

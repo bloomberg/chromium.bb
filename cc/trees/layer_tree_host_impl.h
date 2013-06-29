@@ -20,6 +20,7 @@
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/render_pass_sink.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/render_pass.h"
@@ -186,8 +187,6 @@ class CC_EXPORT LayerTreeHostImpl
   virtual const LayerTreeSettings& Settings() const OVERRIDE;
  public:
   virtual void SetFullRootLayerDamage() OVERRIDE;
-  virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
-      OVERRIDE;
   virtual bool HasImplThread() const OVERRIDE;
   virtual bool ShouldClearRootRenderPass() const OVERRIDE;
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const OVERRIDE;
@@ -203,12 +202,14 @@ class CC_EXPORT LayerTreeHostImpl
   virtual bool DeferredInitialize(
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
   virtual void SetNeedsRedrawRect(gfx::Rect rect) OVERRIDE;
-  virtual void BeginFrame(const BeginFrameArgs& args)
-      OVERRIDE;
+  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
                                           gfx::Rect viewport) OVERRIDE;
   virtual void DidLoseOutputSurface() OVERRIDE;
   virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE;
+  virtual void SetMemoryPolicy(
+      const ManagedMemoryPolicy& policy,
+      bool discard_backbuffer_when_not_visible) OVERRIDE;
 
   // Called from LayerTreeImpl.
   void OnCanDrawStateChangedForTree();
@@ -438,6 +439,7 @@ class CC_EXPORT LayerTreeHostImpl
   void UpdateCurrentFrameTime(base::TimeTicks* ticks, base::Time* now) const;
 
   void StartScrollbarAnimationRecursive(LayerImpl* layer, base::TimeTicks time);
+  void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
   void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
 
   scoped_ptr<OutputSurface> output_surface_;

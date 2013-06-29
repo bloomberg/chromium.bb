@@ -74,7 +74,6 @@ struct CC_EXPORT RendererCapabilities {
   unsigned best_texture_format;
   bool using_partial_swap;
   bool using_set_visibility;
-  bool using_gpu_memory_manager;
   bool using_egl_image;
   bool allow_partial_texture_updates;
   bool using_offscreen_context3d;

@@ -32,7 +32,6 @@
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/layer_quad.h"
-#include "cc/resources/priority_calculator.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/resources/sync_point_helper.h"
 #include "cc/trees/damage_tracker.h"
@@ -181,12 +180,6 @@ bool GLRenderer::Initialize() {
 
   if (extensions.count("GL_CHROMIUM_iosurface") > 0)
     DCHECK_GT(extensions.count("GL_ARB_texture_rectangle"), 0u);
-
-  capabilities_.using_gpu_memory_manager =
-      extensions.count("GL_CHROMIUM_gpu_memory_manager") > 0 &&
-      Settings().use_memory_management;
-  if (capabilities_.using_gpu_memory_manager)
-    context_->setMemoryAllocationChangedCallbackCHROMIUM(this);
 
   capabilities_.using_egl_image =
       extensions.count("GL_OES_EGL_image_external") > 0;
@@ -2052,42 +2045,9 @@ void GLRenderer::SwapBuffers() {
   resource_provider_->SetReadLockFence(new SimpleSwapFence());
 }
 
-void GLRenderer::onMemoryAllocationChanged(
-    WebGraphicsMemoryAllocation allocation) {
-  // Just ignore the memory manager when it says to set the limit to zero
-  // bytes. This will happen when the memory manager thinks that the renderer
-  // is not visible (which the renderer knows better).
-  if (allocation.bytesLimitWhenVisible) {
-    ManagedMemoryPolicy policy(
-        allocation.bytesLimitWhenVisible,
-        PriorityCutoff(allocation.priorityCutoffWhenVisible),
-        allocation.bytesLimitWhenNotVisible,
-        PriorityCutoff(allocation.priorityCutoffWhenNotVisible));
-
-    client_->SetManagedMemoryPolicy(policy);
-  }
-
-  discard_backbuffer_when_not_visible_ = !allocation.suggestHaveBackbuffer;
+void GLRenderer::SetDiscardBackBufferWhenNotVisible(bool discard) {
+  discard_backbuffer_when_not_visible_ = discard;
   EnforceMemoryPolicy();
-}
-
-ManagedMemoryPolicy::PriorityCutoff GLRenderer::PriorityCutoff(
-    WebKit::WebGraphicsMemoryAllocation::PriorityCutoff priority_cutoff) {
-  // This is simple a 1:1 map, the names differ only because the WebKit names
-  // should be to match the cc names.
-  switch (priority_cutoff) {
-    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowNothing:
-      return ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
-    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleOnly:
-      return ManagedMemoryPolicy::CUTOFF_ALLOW_REQUIRED_ONLY;
-    case WebKit::WebGraphicsMemoryAllocation::
-        PriorityCutoffAllowVisibleAndNearby:
-      return ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE;
-    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowEverything:
-      return ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING;
-  }
-  NOTREACHED();
-  return ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
 }
 
 void GLRenderer::EnforceMemoryPolicy() {

@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/quads/render_pass.h"
-#include "cc/resources/managed_memory_policy.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
@@ -27,7 +26,6 @@ class CC_EXPORT RendererClient {
   virtual float DeviceScaleFactor() const = 0;
   virtual const LayerTreeSettings& Settings() const = 0;
   virtual void SetFullRootLayerDamage() = 0;
-  virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
   virtual bool HasImplThread() const = 0;
   virtual bool ShouldClearRootRenderPass() const = 0;
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const = 0;
@@ -75,6 +73,8 @@ class CC_EXPORT Renderer {
   virtual void SendManagedMemoryStats(size_t bytes_visible,
                                       size_t bytes_visible_and_nearby,
                                       size_t bytes_allocated) = 0;
+
+  virtual void SetDiscardBackBufferWhenNotVisible(bool discard) = 0;
 
  protected:
   explicit Renderer(RendererClient* client)

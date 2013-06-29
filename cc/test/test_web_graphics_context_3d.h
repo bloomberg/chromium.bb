@@ -114,6 +114,9 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   virtual void setSwapBuffersCompleteCallbackCHROMIUM(
       WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback);
 
+  virtual void setMemoryAllocationChangedCallbackCHROMIUM(
+      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback);
+
   virtual void prepareTexture();
   virtual void finish();
   virtual void flush();
@@ -196,6 +199,8 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   virtual WebKit::WebGLId NextImageId();
 
+  void SetMemoryAllocation(WebKit::WebGraphicsMemoryAllocation allocation);
+
  protected:
   TestWebGraphicsContext3D();
   TestWebGraphicsContext3D(
@@ -220,6 +225,8 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   int times_map_buffer_chromium_succeeds_;
   WebGraphicsContextLostCallback* context_lost_callback_;
   WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* swap_buffers_callback_;
+  WebGraphicsMemoryAllocationChangedCallbackCHROMIUM*
+      memory_allocation_changed_callback_;
   std::vector<WebGraphicsSyncPointCallback*> sync_point_callbacks_;
   std::vector<WebKit::WebGLId> textures_;
   base::hash_set<WebKit::WebGLId> used_textures_;

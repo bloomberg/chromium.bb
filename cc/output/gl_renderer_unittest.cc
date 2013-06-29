@@ -112,19 +112,14 @@ namespace {
 TEST_F(GLRendererShaderPixelTest, AllShadersCompile) { TestShaders(); }
 #endif
 
-class FrameCountingMemoryAllocationSettingContext
-    : public TestWebGraphicsContext3D {
+class FrameCountingContext : public TestWebGraphicsContext3D {
  public:
-  FrameCountingMemoryAllocationSettingContext() : frame_(0) {}
+  FrameCountingContext() : frame_(0) {}
 
   // WebGraphicsContext3D methods.
 
   // This method would normally do a glSwapBuffers under the hood.
   virtual void prepareTexture() { frame_++; }
-  virtual void setMemoryAllocationChangedCallbackCHROMIUM(
-      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) {
-    memory_allocation_changed_callback_ = callback;
-  }
   virtual WebString getString(WebKit::WGC3Denum name) {
     if (name == GL_EXTENSIONS)
       return WebString(
@@ -135,14 +130,9 @@ class FrameCountingMemoryAllocationSettingContext
 
   // Methods added for test.
   int frame_count() { return frame_; }
-  void SetMemoryAllocation(WebGraphicsMemoryAllocation allocation) {
-    memory_allocation_changed_callback_->onMemoryAllocationChanged(allocation);
-  }
 
  private:
   int frame_;
-  WebGraphicsMemoryAllocationChangedCallbackCHROMIUM*
-    memory_allocation_changed_callback_;
 };
 
 class FakeRendererClient : public RendererClient {
@@ -150,10 +140,7 @@ class FakeRendererClient : public RendererClient {
   FakeRendererClient()
       : host_impl_(&proxy_),
         set_full_root_layer_damage_count_(0),
-        last_call_was_set_visibility_(0),
         root_layer_(LayerImpl::Create(host_impl_.active_tree(), 1)),
-        memory_allocation_limit_bytes_(
-            PrioritizedResourceManager::DefaultMemoryAllocationLimit()),
         viewport_size_(gfx::Size(1, 1)),
         scale_factor_(1.f) {
     root_layer_->CreateRenderSurface();
@@ -180,12 +167,6 @@ class FakeRendererClient : public RendererClient {
   virtual void SetFullRootLayerDamage() OVERRIDE {
     set_full_root_layer_damage_count_++;
   }
-  virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
-      OVERRIDE {
-    memory_allocation_limit_bytes_ = policy.bytes_limit_when_visible;
-    if (last_call_was_set_visibility_)
-      *last_call_was_set_visibility_ = false;
-  }
   virtual bool HasImplThread() const OVERRIDE { return false; }
   virtual bool ShouldClearRootRenderPass() const OVERRIDE { return true; }
   virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const OVERRIDE {
@@ -199,10 +180,6 @@ class FakeRendererClient : public RendererClient {
   int set_full_root_layer_damage_count() const {
     return set_full_root_layer_damage_count_;
   }
-  void set_last_call_was_set_visibility_pointer(
-      bool* last_call_was_set_visibility) {
-    last_call_was_set_visibility_ = last_call_was_set_visibility;
-  }
   void set_viewport_and_scale(
       gfx::Size viewport_size, float scale_factor) {
     viewport_size_ = viewport_size;
@@ -214,18 +191,12 @@ class FakeRendererClient : public RendererClient {
     return &render_passes_in_draw_order_;
   }
 
-  size_t memory_allocation_limit_bytes() const {
-    return memory_allocation_limit_bytes_;
-  }
-
  private:
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
   int set_full_root_layer_damage_count_;
-  bool* last_call_was_set_visibility_;
   scoped_ptr<LayerImpl> root_layer_;
   RenderPassList render_passes_in_draw_order_;
-  size_t memory_allocation_limit_bytes_;
   gfx::Size viewport_size_;
   float scale_factor_;
 };
@@ -250,11 +221,9 @@ class FakeRendererGL : public GLRenderer {
 class GLRendererTest : public testing::Test {
  protected:
   GLRendererTest()
-      : suggest_have_backbuffer_yes_(1, true),
-        suggest_have_backbuffer_no_(1, false),
-        output_surface_(FakeOutputSurface::Create3d(
+      : output_surface_(FakeOutputSurface::Create3d(
             scoped_ptr<WebKit::WebGraphicsContext3D>(
-                new FrameCountingMemoryAllocationSettingContext()))),
+                new FrameCountingContext()))),
         resource_provider_(ResourceProvider::Create(output_surface_.get(), 0)),
         renderer_(&mock_client_,
                   output_surface_.get(),
@@ -264,13 +233,9 @@ class GLRendererTest : public testing::Test {
 
   void SwapBuffers() { renderer_.SwapBuffers(); }
 
-  FrameCountingMemoryAllocationSettingContext* Context() {
-    return static_cast<FrameCountingMemoryAllocationSettingContext*>(
-        output_surface_->context3d());
+  FrameCountingContext* Context() {
+    return static_cast<FrameCountingContext*>(output_surface_->context3d());
   }
-
-  WebGraphicsMemoryAllocation suggest_have_backbuffer_yes_;
-  WebGraphicsMemoryAllocation suggest_have_backbuffer_no_;
 
   scoped_ptr<OutputSurface> output_surface_;
   FakeRendererClient mock_client_;
@@ -421,7 +386,7 @@ namespace {
 // Suggest recreating framebuffer when one already exists.
 // Expected: it does nothing.
 TEST_F(GLRendererTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing) {
-  Context()->SetMemoryAllocation(suggest_have_backbuffer_yes_);
+  renderer_.SetDiscardBackBufferWhenNotVisible(false);
   EXPECT_EQ(0, mock_client_.set_full_root_layer_damage_count());
   EXPECT_FALSE(renderer_.IsBackbufferDiscarded());
 
@@ -437,7 +402,7 @@ TEST_F(
     GLRendererTest,
     SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLayerIfNotVisible) {
   renderer_.SetVisible(false);
-  Context()->SetMemoryAllocation(suggest_have_backbuffer_no_);
+  renderer_.SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_EQ(1, mock_client_.set_full_root_layer_damage_count());
   EXPECT_TRUE(renderer_.IsBackbufferDiscarded());
 }
@@ -447,7 +412,7 @@ TEST_F(
 // Expected: the allocation is ignored.
 TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible) {
   renderer_.SetVisible(true);
-  Context()->SetMemoryAllocation(suggest_have_backbuffer_no_);
+  renderer_.SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_EQ(0, mock_client_.set_full_root_layer_damage_count());
   EXPECT_FALSE(renderer_.IsBackbufferDiscarded());
 }
@@ -457,11 +422,11 @@ TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible) {
 // Expected: it does nothing.
 TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing) {
   renderer_.SetVisible(false);
-  Context()->SetMemoryAllocation(suggest_have_backbuffer_no_);
+  renderer_.SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_EQ(1, mock_client_.set_full_root_layer_damage_count());
   EXPECT_TRUE(renderer_.IsBackbufferDiscarded());
 
-  Context()->SetMemoryAllocation(suggest_have_backbuffer_no_);
+  renderer_.SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_EQ(1, mock_client_.set_full_root_layer_damage_count());
   EXPECT_TRUE(renderer_.IsBackbufferDiscarded());
 }
@@ -471,7 +436,7 @@ TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing) {
 // Expected: will recreate framebuffer.
 TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration) {
   renderer_.SetVisible(false);
-  Context()->SetMemoryAllocation(suggest_have_backbuffer_no_);
+  renderer_.SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_TRUE(renderer_.IsBackbufferDiscarded());
   EXPECT_EQ(1, mock_client_.set_full_root_layer_damage_count());
 
@@ -485,7 +450,7 @@ TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration) {
 
 TEST_F(GLRendererTest, FramebufferDiscardedAfterReadbackWhenNotVisible) {
   renderer_.SetVisible(false);
-  Context()->SetMemoryAllocation(suggest_have_backbuffer_no_);
+  renderer_.SetDiscardBackBufferWhenNotVisible(true);
   EXPECT_TRUE(renderer_.IsBackbufferDiscarded());
   EXPECT_EQ(1, mock_client_.set_full_root_layer_damage_count());
 
@@ -702,37 +667,6 @@ TEST(GLRendererTest2, InitializationWithQuicklyLostContextDoesNotAssert) {
   renderer.Initialize();
 }
 
-class ContextThatDoesNotSupportMemoryManagmentExtensions
-    : public TestWebGraphicsContext3D {
- public:
-  ContextThatDoesNotSupportMemoryManagmentExtensions() {}
-
-  // WebGraphicsContext3D methods.
-
-  // This method would normally do a glSwapBuffers under the hood.
-  virtual void prepareTexture() {}
-  virtual void setMemoryAllocationChangedCallbackCHROMIUM(
-      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) {}
-  virtual WebString getString(WebKit::WGC3Denum name) { return WebString(); }
-};
-
-TEST(
-    GLRendererTest2,
-    InitWithoutGpuMemManagerExtensionSupportShouldDefaultToNonZeroAllocation) {
-  FakeRendererClient mock_client;
-  scoped_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(
-          new ContextThatDoesNotSupportMemoryManagmentExtensions)));
-  scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(), 0));
-  FakeRendererGL renderer(
-      &mock_client, output_surface.get(), resource_provider.get());
-
-  renderer.Initialize();
-
-  EXPECT_GT(mock_client.memory_allocation_limit_bytes(), 0ul);
-}
-
 class ClearCountingContext : public TestWebGraphicsContext3D {
  public:
   ClearCountingContext() : clear_(0) {}
@@ -795,30 +729,33 @@ class VisibilityChangeIsLastCallTrackingContext
     : public TestWebGraphicsContext3D {
  public:
   VisibilityChangeIsLastCallTrackingContext()
-      : last_call_was_set_visibility_(0) {}
+      : last_call_was_set_visibility_(false) {}
 
   // WebGraphicsContext3D methods.
   virtual void setVisibilityCHROMIUM(bool visible) {
-    if (!last_call_was_set_visibility_)
-      return;
-    DCHECK(*last_call_was_set_visibility_ == false);
-    *last_call_was_set_visibility_ = true;
+    DCHECK(last_call_was_set_visibility_ == false);
+    last_call_was_set_visibility_ = true;
   }
   virtual void flush() {
-    if (last_call_was_set_visibility_)
-      *last_call_was_set_visibility_ = false;
+    last_call_was_set_visibility_ = false;
   }
   virtual void deleteTexture(WebGLId) {
-    if (last_call_was_set_visibility_)
-      *last_call_was_set_visibility_ = false;
+    last_call_was_set_visibility_ = false;
   }
   virtual void deleteFramebuffer(WebGLId) {
-    if (last_call_was_set_visibility_)
-      *last_call_was_set_visibility_ = false;
+    last_call_was_set_visibility_ = false;
+  }
+  virtual void deleteQueryEXT(WebGLId) {
+    last_call_was_set_visibility_ = false;
   }
   virtual void deleteRenderbuffer(WebGLId) {
-    if (last_call_was_set_visibility_)
-      *last_call_was_set_visibility_ = false;
+    last_call_was_set_visibility_ = false;
+  }
+  virtual void discardBackbufferCHROMIUM() {
+    last_call_was_set_visibility_ = false;
+  }
+  virtual void ensureBackbufferCHROMIUM() {
+    last_call_was_set_visibility_ = false;
   }
 
   // This method would normally do a glSwapBuffers under the hood.
@@ -831,13 +768,12 @@ class VisibilityChangeIsLastCallTrackingContext
   }
 
   // Methods added for test.
-  void set_last_call_was_set_visibility_pointer(
-      bool* last_call_was_set_visibility) {
-    last_call_was_set_visibility_ = last_call_was_set_visibility;
+  bool last_call_was_set_visibility() const {
+    return last_call_was_set_visibility_;
   }
 
  private:
-  bool* last_call_was_set_visibility_;
+  bool last_call_was_set_visibility_;
 };
 
 TEST(GLRendererTest2, VisibilityChangeIsLastCall) {
@@ -855,20 +791,15 @@ TEST(GLRendererTest2, VisibilityChangeIsLastCall) {
 
   EXPECT_TRUE(renderer.Initialize());
 
-  bool last_call_was_set_visiblity = false;
   // Ensure that the call to setVisibilityCHROMIUM is the last call issue to the
   // GPU process, after glFlush is called, and after the RendererClient's
   // SetManagedMemoryPolicy is called. Plumb this tracking between both the
   // RenderClient and the Context by giving them both a pointer to a variable on
   // the stack.
-  context->set_last_call_was_set_visibility_pointer(
-      &last_call_was_set_visiblity);
-  mock_client.set_last_call_was_set_visibility_pointer(
-      &last_call_was_set_visiblity);
   renderer.SetVisible(true);
   renderer.DrawFrame(mock_client.render_passes_in_draw_order());
   renderer.SetVisible(false);
-  EXPECT_TRUE(last_call_was_set_visiblity);
+  EXPECT_TRUE(context->last_call_was_set_visibility());
 }
 
 class TextureStateTrackingContext : public TestWebGraphicsContext3D {

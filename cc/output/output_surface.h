@@ -29,6 +29,7 @@ namespace cc {
 
 class CompositorFrame;
 class CompositorFrameAck;
+struct ManagedMemoryPolicy;
 class OutputSurfaceClient;
 class OutputSurfaceCallbacks;
 
@@ -178,6 +179,8 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   friend class OutputSurfaceCallbacks;
 
   void SetContext3D(scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
+  void SetMemoryPolicy(const ManagedMemoryPolicy& policy,
+                       bool discard_backbuffer_when_not_visible);
 
   BeginFrameArgs skipped_begin_frame_args_;
 

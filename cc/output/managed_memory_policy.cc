@@ -1,8 +1,8 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/managed_memory_policy.h"
+#include "cc/output/managed_memory_policy.h"
 
 #include "base/logging.h"
 #include "cc/resources/priority_calculator.h"

@@ -58,7 +58,6 @@ class COMPOSITOR_EXPORT TestWebGraphicsContext3D :
   virtual void discardFramebufferEXT(WebKit::WGC3Denum target,
                                      WebKit::WGC3Dsizei numAttachments,
                                      const WebKit::WGC3Denum* attachments) {}
-  virtual void ensureFramebufferCHROMIUM() {}
   virtual void setMemoryAllocationChangedCallbackCHROMIUM(
       WebGraphicsMemoryAllocationChangedCallbackCHROMIUM*) { }
   virtual WebKit::WebString getRequestableExtensionsCHROMIUM();

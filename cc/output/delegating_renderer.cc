@@ -52,8 +52,6 @@ DelegatingRenderer::DelegatingRenderer(
 
 bool DelegatingRenderer::Initialize() {
   capabilities_.using_partial_swap = false;
-  // TODO(danakj): Throttling - we may want to only allow 1 outstanding frame,
-  // but the parent compositor may pipeline for us.
   capabilities_.max_texture_size = resource_provider_->max_texture_size();
   capabilities_.best_texture_format = resource_provider_->best_texture_format();
   capabilities_.allow_partial_texture_updates = false;
@@ -105,11 +103,7 @@ bool DelegatingRenderer::Initialize() {
   if (has_io_surface)
     DCHECK(has_arb_texture_rect);
 
-  // TODO(piman): loop visibility to GPU process?
   capabilities_.using_set_visibility = has_set_visibility;
-
-  // TODO(danakj): Support GpuMemoryManager.
-  capabilities_.using_gpu_memory_manager = false;
 
   capabilities_.using_egl_image = has_egl_image;
 
@@ -175,7 +169,6 @@ void DelegatingRenderer::ReceiveSwapBuffersAck(
   resource_provider_->ReceiveFromParent(ack.resources);
 }
 
-
 bool DelegatingRenderer::IsContextLost() {
   WebGraphicsContext3D* context3d = resource_provider_->GraphicsContext3D();
   if (!context3d)
@@ -184,7 +177,45 @@ bool DelegatingRenderer::IsContextLost() {
 }
 
 void DelegatingRenderer::SetVisible(bool visible) {
+  if (visible == visible_)
+    return;
+
   visible_ = visible;
+  WebGraphicsContext3D* context = resource_provider_->GraphicsContext3D();
+  if (!visible_) {
+    TRACE_EVENT0("cc", "DelegatingRenderer::SetVisible dropping resources");
+    resource_provider_->ReleaseCachedData();
+    if (context)
+      context->flush();
+  }
+  if (capabilities_.using_set_visibility) {
+    // We loop visibility to the GPU process, since that's what manages memory.
+    // That will allow it to feed us with memory allocations that we can act
+    // upon.
+    DCHECK(context);
+    context->setVisibilityCHROMIUM(visible);
+  }
+}
+
+void DelegatingRenderer::SendManagedMemoryStats(size_t bytes_visible,
+                                                size_t bytes_visible_and_nearby,
+                                                size_t bytes_allocated) {
+  WebGraphicsContext3D* context = resource_provider_->GraphicsContext3D();
+  if (!context) {
+    // TODO(piman): software path.
+    NOTIMPLEMENTED();
+    return;
+  }
+  WebKit::WebGraphicsManagedMemoryStats stats;
+  stats.bytesVisible = bytes_visible;
+  stats.bytesVisibleAndNearby = bytes_visible_and_nearby;
+  stats.bytesAllocated = bytes_allocated;
+  stats.backbufferRequested = false;
+  context->sendManagedMemoryStatsCHROMIUM(&stats);
+}
+
+void DelegatingRenderer::SetDiscardBackBufferWhenNotVisible(bool discard) {
+  // Nothing to do, we don't have a back buffer.
 }
 
 }  // namespace cc

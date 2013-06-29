@@ -47,7 +47,6 @@ RendererCapabilities::RendererCapabilities()
     : best_texture_format(0),
       using_partial_swap(false),
       using_set_visibility(false),
-      using_gpu_memory_manager(false),
       using_egl_image(false),
       allow_partial_texture_updates(false),
       using_offscreen_context3d(false),

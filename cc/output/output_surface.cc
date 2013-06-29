@@ -15,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -28,11 +29,35 @@ using std::string;
 using std::vector;
 
 namespace cc {
+namespace {
+
+ManagedMemoryPolicy::PriorityCutoff ConvertPriorityCutoff(
+    WebKit::WebGraphicsMemoryAllocation::PriorityCutoff priority_cutoff) {
+  // This is simple a 1:1 map, the names differ only because the WebKit names
+  // should be to match the cc names.
+  switch (priority_cutoff) {
+    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowNothing:
+      return ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
+    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleOnly:
+      return ManagedMemoryPolicy::CUTOFF_ALLOW_REQUIRED_ONLY;
+    case WebKit::WebGraphicsMemoryAllocation::
+        PriorityCutoffAllowVisibleAndNearby:
+      return ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE;
+    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowEverything:
+      return ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING;
+  }
+  NOTREACHED();
+  return ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
+}
+
+}  // anonymous namespace
 
 class OutputSurfaceCallbacks
     : public WebKit::WebGraphicsContext3D::
         WebGraphicsSwapBuffersCompleteCallbackCHROMIUM,
-      public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+      public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback,
+    public WebKit::WebGraphicsContext3D::
+      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM {
  public:
   explicit OutputSurfaceCallbacks(OutputSurface* client)
       : client_(client) {
@@ -44,6 +69,17 @@ class OutputSurfaceCallbacks
 
   // WK:WGC3D::WGContextLostCallback implementation.
   virtual void onContextLost() { client_->DidLoseOutputSurface(); }
+
+  // WK:WGC3D::WGMemoryAllocationChangedCallbackCHROMIUM implementation.
+  virtual void onMemoryAllocationChanged(
+      WebKit::WebGraphicsMemoryAllocation allocation) {
+    ManagedMemoryPolicy policy(
+        allocation.bytesLimitWhenVisible,
+        ConvertPriorityCutoff(allocation.priorityCutoffWhenVisible),
+        allocation.bytesLimitWhenNotVisible,
+        ConvertPriorityCutoff(allocation.priorityCutoffWhenNotVisible));
+    client_->SetMemoryPolicy(policy, !allocation.suggestHaveBackbuffer);
+  }
 
  private:
   OutputSurface* client_;
@@ -303,6 +339,7 @@ void OutputSurface::SetContext3D(
   callbacks_.reset(new OutputSurfaceCallbacks(this));
   context3d_->setSwapBuffersCompleteCallbackCHROMIUM(callbacks_.get());
   context3d_->setContextLostCallback(callbacks_.get());
+  context3d_->setMemoryAllocationChangedCallbackCHROMIUM(callbacks_.get());
 }
 
 void OutputSurface::EnsureBackbuffer() {
@@ -375,6 +412,14 @@ void OutputSurface::PostSwapBuffersComplete() {
        base::Bind(&OutputSurface::OnSwapBuffersComplete,
                   weak_ptr_factory_.GetWeakPtr(),
                   static_cast<CompositorFrameAck*>(NULL)));
+}
+
+void OutputSurface::SetMemoryPolicy(const ManagedMemoryPolicy& policy,
+                                    bool discard_backbuffer_when_not_visible) {
+  TRACE_EVENT2("cc", "OutputSurface::SetMemoryPolicy",
+               "bytes_limit_when_visible", policy.bytes_limit_when_visible,
+               "discard_backbuffer", discard_backbuffer_when_not_visible);
+  client_->SetMemoryPolicy(policy, discard_backbuffer_when_not_visible);
 }
 
 }  // namespace cc
