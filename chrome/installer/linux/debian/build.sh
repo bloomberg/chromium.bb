@@ -295,7 +295,7 @@ ADDITION_DEPS="ca-certificates, libcurl3, \
 # exists, but it was moved to "universe" repository, which isn't installed by
 # default).
 DPKG_SHLIB_DEPS=$(sed \
-    's/\(libnspr4-0d ([^)]*)\), /\1 | libnspr4 (>= 4.8.7-0ubuntu1), /g' \
+    's/\(libnspr4-0d ([^)]*)\), /\1 | libnspr4 (>= 4.9.5-0ubuntu0), /g' \
     <<< $DPKG_SHLIB_DEPS)
 
 # Fix-up libudev dependency because Ubuntu 13.04 has libudev1 instead of
