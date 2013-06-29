@@ -54,10 +54,10 @@ void SafeITunesLibraryParser::StartProcessOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(INITIAL_STATE, parser_state_);
 
-  base::MessageLoopProxy* message_loop_proxy =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get();
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   utility_process_host_ =
-      UtilityProcessHost::Create(this, message_loop_proxy)->AsWeakPtr();
+      UtilityProcessHost::Create(this, message_loop_proxy.get())->AsWeakPtr();
   // Wait for the startup notification before sending the main IPC to the
   // utility process, so that we can dup the file handle.
   utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);
