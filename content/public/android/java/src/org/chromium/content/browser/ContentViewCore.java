@@ -1375,6 +1375,7 @@ import java.util.Map;
     void hideSelectActionBar() {
         if (mActionMode != null) {
             mActionMode.finish();
+            mActionMode = null;
         }
     }
 
