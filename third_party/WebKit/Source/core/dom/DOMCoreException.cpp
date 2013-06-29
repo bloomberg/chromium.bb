@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/dom/DOMCoreException.h"
 
-#include "DOMException.h"
 #include "ExceptionCode.h"
 
 namespace WebCore {
@@ -108,18 +107,34 @@ static const CoreException* getErrorEntry(ExceptionCode ec)
     return tableIndex < tableSize ? &coreExceptions[tableIndex] : 0;
 }
 
-bool DOMCoreException::initializeDescription(ExceptionCode ec, ExceptionCodeDescription* description)
+DOMCoreException::DOMCoreException(ExceptionCode ec)
 {
     const CoreException* entry = getErrorEntry(ec);
-    if (!entry)
-        return false;
+    ASSERT(entry);
+    if (!entry) {
+        m_code = 0;
+        m_name = "UnknownError";
+        m_message = "Unknown Error";
+    } else {
+        m_code = entry->code;
+        if (entry->name)
+            m_name = entry->name;
+        else
+            m_name = "Error";
+        m_message = entry->message;
+    }
 
-    description->type = DOMCoreExceptionType;
-    description->name = entry->name;
-    description->message = entry->message;
-    description->code = entry->code;
+    ScriptWrappable::init(this);
+}
 
-    return true;
+PassRefPtr<DOMCoreException> DOMCoreException::create(ExceptionCode ec)
+{
+    return adoptRef(new DOMCoreException(ec));
+}
+
+String DOMCoreException::toString() const
+{
+    return name() + ": " + message();
 }
 
 String DOMCoreException::getErrorName(ExceptionCode ec)
@@ -142,7 +157,7 @@ String DOMCoreException::getErrorMessage(ExceptionCode ec)
     return entry->message;
 }
 
-int DOMCoreException::getLegacyErrorCode(ExceptionCode ec)
+unsigned short DOMCoreException::getLegacyErrorCode(ExceptionCode ec)
 {
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);

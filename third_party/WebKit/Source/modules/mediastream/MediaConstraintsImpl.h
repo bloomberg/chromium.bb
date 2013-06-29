@@ -31,13 +31,15 @@
 #ifndef MediaConstraintsImpl_h
 #define MediaConstraintsImpl_h
 
-#include "core/dom/ExceptionBase.h"
 #include "core/platform/mediastream/MediaConstraints.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
+
 class Dictionary;
+
+typedef int ExceptionCode;
 
 class MediaConstraintsImpl : public MediaConstraints {
 public:

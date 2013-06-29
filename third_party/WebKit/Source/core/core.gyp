@@ -277,8 +277,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/EventInterfaces.h',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/EventTargetHeaders.h',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/EventTargetInterfaces.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/DOMException.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/DOMException.h',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/UserAgentStyleSheetsData.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/V8HTMLElementWrapperFactory.cpp',

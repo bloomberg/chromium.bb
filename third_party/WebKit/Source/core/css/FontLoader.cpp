@@ -34,6 +34,7 @@
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/DOMCoreException.h"
 #include "core/dom/Document.h"
 #include "core/page/FrameView.h"
 #include "core/platform/HistogramSupport.h"
@@ -227,7 +228,7 @@ void FontLoader::loadError(CSSFontFaceRule* rule, CSSFontFaceSource* source)
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;
     // FIXME: We should report NetworkError in case of timeout, etc.
-    String errorName = (source && source->isDecodeError()) ? "InvalidFontDataError" : ExceptionCodeDescription(NOT_FOUND_ERR).name;
+    String errorName = (source && source->isDecodeError()) ? "InvalidFontDataError" : DOMCoreException::getErrorName(NOT_FOUND_ERR);
     scheduleEvent(CSSFontFaceLoadEvent::createForError(rule, DOMError::create(errorName)));
     queueDoneEvent(rule);
 }

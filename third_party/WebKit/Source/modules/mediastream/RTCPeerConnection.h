@@ -35,7 +35,6 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
-#include "core/dom/ExceptionBase.h"
 #include "core/platform/Timer.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
@@ -55,6 +54,8 @@ class RTCSessionDescription;
 class RTCSessionDescriptionCallback;
 class RTCStatsCallback;
 class VoidCallback;
+
+typedef int ExceptionCode;
 
 class RTCPeerConnection : public RefCounted<RTCPeerConnection>, public ScriptWrappable, public RTCPeerConnectionHandlerClient, public EventTarget, public ActiveDOMObject {
 public:

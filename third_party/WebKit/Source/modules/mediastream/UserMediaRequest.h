@@ -32,7 +32,6 @@
 #define UserMediaRequest_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/ExceptionBase.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
@@ -48,6 +47,8 @@ class MediaConstraints;
 class MediaConstraintsImpl;
 class MediaStreamDescriptor;
 class UserMediaController;
+
+typedef int ExceptionCode;
 
 class UserMediaRequest : public RefCounted<UserMediaRequest>, public ContextLifecycleObserver {
 public:

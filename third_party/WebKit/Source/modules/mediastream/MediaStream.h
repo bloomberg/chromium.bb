@@ -29,7 +29,6 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/EventTarget.h"
-#include "core/dom/ExceptionBase.h"
 #include "core/html/URLRegistry.h"
 #include "core/platform/Timer.h"
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
@@ -38,6 +37,8 @@
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
+
+typedef int ExceptionCode;
 
 class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public MediaStreamDescriptorClient, public EventTarget, public ContextLifecycleObserver {
 public:

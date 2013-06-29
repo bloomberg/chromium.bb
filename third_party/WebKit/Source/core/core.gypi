@@ -1784,8 +1784,6 @@
             'dom/EventQueue.h',
             'dom/EventSender.h',
             'dom/EventTarget.cpp',
-            'dom/ExceptionBase.cpp',
-            'dom/ExceptionBase.h',
             'dom/ExceptionCodePlaceholder.cpp',
             'dom/FocusEvent.cpp',
             'dom/FocusEvent.h',

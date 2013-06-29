@@ -33,6 +33,7 @@
 
 #include "core/inspector/DOMEditor.h"
 
+#include "core/dom/DOMCoreException.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
@@ -399,10 +400,8 @@ bool DOMEditor::setNodeValue(Node* node, const String& value, ExceptionCode& ec)
 
 static void populateErrorString(const ExceptionCode& ec, ErrorString* errorString)
 {
-    if (ec) {
-        ExceptionCodeDescription description(ec);
-        *errorString = description.name;
-    }
+    if (ec)
+        *errorString = DOMCoreException::getErrorName(ec);
 }
 
 bool DOMEditor::insertBefore(Node* parentNode, PassRefPtr<Node> node, Node* anchorNode, ErrorString* errorString)

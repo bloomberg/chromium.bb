@@ -25,9 +25,10 @@
 #include "config.h"
 #include "bindings/v8/V8ThrowException.h"
 
-#include "DOMExceptionHeaders.h"
-#include "DOMExceptionInterfaces.h"
+#include "V8DOMException.h"
 #include "bindings/v8/V8Binding.h"
+#include "core/dom/DOMCoreException.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 
@@ -43,11 +44,6 @@ static void domExceptionStackSetter(v8::Local<v8::String> name, v8::Local<v8::Va
     info.Data()->ToObject()->Set(v8::String::NewSymbol("stack"), value);
 }
 
-#define TRY_TO_CREATE_EXCEPTION(interfaceName) \
-    case interfaceName##Type: \
-        exception = toV8(interfaceName::create(description), v8::Handle<v8::Object>(), isolate); \
-        break;
-
 v8::Handle<v8::Value> V8ThrowException::setDOMException(int ec, v8::Isolate* isolate)
 {
     if (ec <= 0 || v8::V8::IsExecutionTerminating())
@@ -57,26 +53,20 @@ v8::Handle<v8::Value> V8ThrowException::setDOMException(int ec, v8::Isolate* iso
     if (ec == TypeError)
         return V8ThrowException::throwTypeError(0, isolate);
 
-    ExceptionCodeDescription description(ec);
-
-    v8::Handle<v8::Value> exception;
-    switch (description.type) {
-        DOM_EXCEPTION_INTERFACES_FOR_EACH(TRY_TO_CREATE_EXCEPTION)
-    }
+    RefPtr<DOMCoreException> domException = DOMCoreException::create(ec);
+    v8::Handle<v8::Value> exception = toV8(domException, v8::Handle<v8::Object>(), isolate);
 
     if (exception.IsEmpty())
         return v8Undefined();
 
     // Attach an Error object to the DOMException. This is then lazily used to get the stack value.
-    v8::Handle<v8::Value> error = v8::Exception::Error(v8String(description.message, isolate));
+    v8::Handle<v8::Value> error = v8::Exception::Error(v8String(domException->message(), isolate));
     ASSERT(!error.IsEmpty());
     ASSERT(exception->IsObject());
     exception->ToObject()->SetAccessor(v8::String::NewSymbol("stack"), domExceptionStackGetter, domExceptionStackSetter, error);
 
     return v8::ThrowException(exception);
 }
-
-#undef TRY_TO_CREATE_EXCEPTION
 
 v8::Handle<v8::Value> V8ThrowException::throwError(V8ErrorType type, const char* message, v8::Isolate* isolate)
 {

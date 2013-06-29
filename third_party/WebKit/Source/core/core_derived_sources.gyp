@@ -388,27 +388,6 @@
           ],
         },
         {
-          'action_name': 'ExceptionCodeDescription',
-          'inputs': [
-            '<@(scripts_for_in_files)',
-            'scripts/make_dom_exceptions.py',
-            'dom/DOMExceptions.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/DOMException.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/DOMException.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/DOMExceptionHeaders.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/DOMExceptionInterfaces.h',
-          ],
-          'action': [
-            'python',
-            'scripts/make_dom_exceptions.py',
-            'dom/DOMExceptions.in',
-            '--output_dir',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
-          ],
-        },
-        {
           'action_name': 'MathMLNames',
           'inputs': [
             'scripts/Hasher.pm',

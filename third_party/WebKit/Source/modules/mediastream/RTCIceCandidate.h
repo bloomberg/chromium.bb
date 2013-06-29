@@ -32,7 +32,6 @@
 #define RTCIceCandidate_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ExceptionBase.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -42,6 +41,8 @@
 namespace WebCore {
 
 class Dictionary;
+
+typedef int ExceptionCode;
 
 class RTCIceCandidate : public RefCounted<RTCIceCandidate>, public ScriptWrappable {
 public:

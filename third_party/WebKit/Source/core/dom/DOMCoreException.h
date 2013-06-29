@@ -30,28 +30,33 @@
 #define DOMCoreException_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ExceptionBase.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class DOMCoreException : public ExceptionBase, public ScriptWrappable {
-public:
-    static PassRefPtr<DOMCoreException> create(const ExceptionCodeDescription& description)
-    {
-        return adoptRef(new DOMCoreException(description));
-    }
+typedef int ExceptionCode;
 
-    static bool initializeDescription(ExceptionCode, ExceptionCodeDescription*);
+class DOMCoreException : public RefCounted<DOMCoreException>, public ScriptWrappable {
+public:
+    static PassRefPtr<DOMCoreException> create(ExceptionCode);
+
+    unsigned short code() const { return m_code; }
+    String name() const { return m_name; }
+    String message() const { return m_message; }
+
+    String toString() const;
+
     static String getErrorName(ExceptionCode);
     static String getErrorMessage(ExceptionCode);
-    static int getLegacyErrorCode(ExceptionCode);
+    static unsigned short getLegacyErrorCode(ExceptionCode);
 
 private:
-    explicit DOMCoreException(const ExceptionCodeDescription& description)
-        : ExceptionBase(description)
-    {
-        ScriptWrappable::init(this);
-    }
+    explicit DOMCoreException(ExceptionCode);
+
+    unsigned short m_code;
+    String m_name;
+    String m_message;
 };
 
 } // namespace WebCore

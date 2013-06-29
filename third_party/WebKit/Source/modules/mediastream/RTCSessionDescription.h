@@ -32,7 +32,7 @@
 #define RTCSessionDescription_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ExceptionBase.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -41,6 +41,8 @@
 namespace WebCore {
 
 class Dictionary;
+
+typedef int ExceptionCode;
 
 class RTCSessionDescription : public RefCounted<RTCSessionDescription>, public ScriptWrappable {
 public:
