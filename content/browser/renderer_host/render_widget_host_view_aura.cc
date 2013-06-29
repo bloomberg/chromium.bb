@@ -2968,6 +2968,7 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
     cursor_client->AddObserver(this);
     NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
   }
+  UpdateExternalTexture();
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
@@ -2979,13 +2980,12 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   event_filter_for_popup_exit_.reset();
   window_->GetRootWindow()->RemoveRootWindowObserver(this);
   host_->ParentChanged(0);
-  // We are about to disconnect ourselves from the compositor, we need to issue
-  // the callbacks now, because we won't get notified when the frame is done.
-  // TODO(piman): this might in theory cause a race where the GPU process starts
-  // drawing to the buffer we haven't yet displayed. This will only show for 1
-  // frame though, because we will reissue a new frame right away without that
-  // composited data.
   ui::Compositor* compositor = GetCompositor();
+  // We can't get notification for commits after this point, which would
+  // guarantee that the compositor isn't using an old texture any more, so
+  // instead we force the texture to NULL which synchronizes with the compositor
+  // thread, and makes it safe to run the callback.
+  window_->layer()->SetExternalTexture(NULL);
   RunOnCommitCallbacks();
   resize_lock_.reset();
   host_->WasResized();
