@@ -591,7 +591,8 @@ void ContentCaptureSubscription::Observe(
 
   // This message occurs on window resizes and visibility changes even when
   // accelerated compositing is active, so we need to filter out these cases.
-  if (!rwh || !rwh->GetView() || rwh->is_accelerated_compositing_active())
+  if (!rwh || !rwh->GetView() || (rwh->is_accelerated_compositing_active() &&
+                                  rwh->GetView()->IsSurfaceAvailableForCopy()))
     return;
 
   TRACE_EVENT1("mirroring", "ContentCaptureSubscription::Observe",
