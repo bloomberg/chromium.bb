@@ -783,7 +783,7 @@ void RenderFlexibleBox::layoutFlexItems(bool relayoutChildren, Vector<LineContex
     LayoutUnit crossAxisOffset = flowAwareBorderBefore() + flowAwarePaddingBefore();
     bool hasInfiniteLineLength = false;
     while (computeNextFlexLine(orderedChildren, sumFlexBaseSize, totalFlexGrow, totalWeightedFlexShrink, sumHypotheticalMainSize, hasInfiniteLineLength)) {
-        LayoutUnit containerMainInnerSize = mainAxisContentExtent(sumFlexBaseSize);
+        LayoutUnit containerMainInnerSize = mainAxisContentExtent(sumHypotheticalMainSize);
         LayoutUnit availableFreeSpace = containerMainInnerSize - sumFlexBaseSize;
         FlexSign flexSign = (sumHypotheticalMainSize < containerMainInnerSize) ? PositiveFlexibility : NegativeFlexibility;
         InflexibleFlexItemSize inflexibleItems;
