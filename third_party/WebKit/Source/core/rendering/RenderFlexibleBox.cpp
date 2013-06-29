@@ -774,17 +774,18 @@ LayoutUnit RenderFlexibleBox::preferredMainAxisContentExtentForChild(RenderBox* 
 void RenderFlexibleBox::layoutFlexItems(bool relayoutChildren, Vector<LineContext>& lineContexts)
 {
     OrderedFlexItemList orderedChildren;
-    LayoutUnit preferredMainAxisExtent;
+    LayoutUnit sumFlexBaseSize;
     double totalFlexGrow;
     double totalWeightedFlexShrink;
-    LayoutUnit minMaxAppliedMainAxisExtent;
+    LayoutUnit sumHypotheticalMainSize;
 
     m_orderIterator.first();
     LayoutUnit crossAxisOffset = flowAwareBorderBefore() + flowAwarePaddingBefore();
     bool hasInfiniteLineLength = false;
-    while (computeNextFlexLine(orderedChildren, preferredMainAxisExtent, totalFlexGrow, totalWeightedFlexShrink, minMaxAppliedMainAxisExtent, hasInfiniteLineLength)) {
-        LayoutUnit availableFreeSpace = mainAxisContentExtent(preferredMainAxisExtent) - preferredMainAxisExtent;
-        FlexSign flexSign = (minMaxAppliedMainAxisExtent < preferredMainAxisExtent + availableFreeSpace) ? PositiveFlexibility : NegativeFlexibility;
+    while (computeNextFlexLine(orderedChildren, sumFlexBaseSize, totalFlexGrow, totalWeightedFlexShrink, sumHypotheticalMainSize, hasInfiniteLineLength)) {
+        LayoutUnit containerMainInnerSize = mainAxisContentExtent(sumFlexBaseSize);
+        LayoutUnit availableFreeSpace = containerMainInnerSize - sumFlexBaseSize;
+        FlexSign flexSign = (sumHypotheticalMainSize < containerMainInnerSize) ? PositiveFlexibility : NegativeFlexibility;
         InflexibleFlexItemSize inflexibleItems;
         Vector<LayoutUnit> childSizes;
         while (!resolveFlexibleLengths(flexSign, orderedChildren, availableFreeSpace, totalFlexGrow, totalWeightedFlexShrink, inflexibleItems, childSizes, hasInfiniteLineLength)) {
@@ -989,12 +990,12 @@ LayoutUnit RenderFlexibleBox::adjustChildSizeForMinAndMax(RenderBox* child, Layo
     return std::max(childSize, minExtent);
 }
 
-bool RenderFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& preferredMainAxisExtent, double& totalFlexGrow, double& totalWeightedFlexShrink, LayoutUnit& minMaxAppliedMainAxisExtent, bool& hasInfiniteLineLength)
+bool RenderFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool& hasInfiniteLineLength)
 {
     orderedChildren.clear();
-    preferredMainAxisExtent = 0;
+    sumFlexBaseSize = 0;
     totalFlexGrow = totalWeightedFlexShrink = 0;
-    minMaxAppliedMainAxisExtent = 0;
+    sumHypotheticalMainSize = 0;
 
     if (!m_orderIterator.currentChild())
         return false;
@@ -1011,19 +1012,20 @@ bool RenderFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
         }
 
         LayoutUnit childMainAxisExtent = preferredMainAxisContentExtentForChild(child, hasInfiniteLineLength);
-        LayoutUnit childMainAxisMarginBoxExtent = mainAxisBorderAndPaddingExtentForChild(child) + childMainAxisExtent;
-        childMainAxisMarginBoxExtent += isHorizontalFlow() ? child->marginWidth() : child->marginHeight();
+        LayoutUnit childMainAxisMarginBorderPadding = mainAxisBorderAndPaddingExtentForChild(child)
+            + (isHorizontalFlow() ? child->marginWidth() : child->marginHeight());
+        LayoutUnit childMainAxisMarginBoxExtent = childMainAxisExtent + childMainAxisMarginBorderPadding;
 
-        if (isMultiline() && preferredMainAxisExtent + childMainAxisMarginBoxExtent > lineBreakLength && lineHasInFlowItem)
+        if (isMultiline() && sumFlexBaseSize + childMainAxisMarginBoxExtent > lineBreakLength && lineHasInFlowItem)
             break;
         orderedChildren.append(child);
         lineHasInFlowItem  = true;
-        preferredMainAxisExtent += childMainAxisMarginBoxExtent;
+        sumFlexBaseSize += childMainAxisMarginBoxExtent;
         totalFlexGrow += child->style()->flexGrow();
         totalWeightedFlexShrink += child->style()->flexShrink() * childMainAxisExtent;
 
         LayoutUnit childMinMaxAppliedMainAxisExtent = adjustChildSizeForMinAndMax(child, childMainAxisExtent);
-        minMaxAppliedMainAxisExtent += childMinMaxAppliedMainAxisExtent - childMainAxisExtent + childMainAxisMarginBoxExtent;
+        sumHypotheticalMainSize += childMinMaxAppliedMainAxisExtent + childMainAxisMarginBorderPadding;
     }
     return true;
 }
