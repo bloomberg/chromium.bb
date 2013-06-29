@@ -1,0 +1,4 @@
+namespace="Event"
+
+Source/bindings/tests/idls/TestEvent 
+Source/bindings/tests/idls/TestExtendedEvent ImplementedAs=Event, Conditional=TEST, EnabledAtRuntime=testEnabled

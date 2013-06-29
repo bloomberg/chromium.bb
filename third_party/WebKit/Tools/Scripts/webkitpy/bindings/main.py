@@ -32,6 +32,20 @@ from webkitpy.common.checkout.scm.detection import detect_scm_system
 from webkitpy.common.system.executive import ScriptError
 
 
+class ScopedTempFileProvider:
+    def __init__(self):
+        self.files = []
+
+    def __del__(self):
+        for f in self.files:
+            os.remove(f)
+
+    def newtempfile(self):
+        path = tempfile.mkstemp()[1]
+        self.files.append(path)
+        return path
+
+
 class BindingsTests:
 
     def __init__(self, reset_results, executive):
@@ -81,6 +95,9 @@ class BindingsTests:
                '--event-names-file', event_names_file,
                '--write-file-only-if-changed', '0']
 
+        if self.reset_results:
+            print "Reset results: EventNames.in"
+
         exit_code = 0
         try:
             output = self.executive.run_command(cmd)
@@ -92,34 +109,46 @@ class BindingsTests:
         os.remove(idl_files_list[1])
         return exit_code
 
+    def detect_changes_in_file(self, work_file, reference_file):
+        cmd = ['diff',
+               '-u',
+               '-N',
+               os.path.join(reference_file),
+               os.path.join(work_file)]
+
+        changes_found = False
+        exit_code = 0
+        try:
+            output = self.executive.run_command(cmd)
+        except ScriptError, e:
+            output = e.output
+            exit_code = e.exit_code
+
+        if exit_code or output:
+            print 'FAIL: %s' % (os.path.basename(reference_file))
+            print output
+            changes_found = True
+        else:
+            print 'PASS: %s' % (os.path.basename(reference_file))
+
+        return changes_found
+
+
     def detect_changes(self, work_directory, reference_directory):
         changes_found = False
         for output_file in os.listdir(work_directory):
-            cmd = ['diff',
-                   '-u',
-                   '-N',
-                   os.path.join(reference_directory, output_file),
-                   os.path.join(work_directory, output_file)]
-
-            exit_code = 0
-            try:
-                output = self.executive.run_command(cmd)
-            except ScriptError, e:
-                output = e.output
-                exit_code = e.exit_code
-
-            if exit_code or output:
-                print 'FAIL: %s' % (output_file)
-                print output
+            if self.detect_changes_in_file(os.path.join(reference_directory, output_file), os.path.join(work_directory, output_file)):
                 changes_found = True
-            else:
-                print 'PASS: %s' % (output_file)
         return changes_found
 
-    def run_tests(self, input_directory, reference_directory, supplemental_dependency_file):
+    def run_tests(self, input_directory, reference_directory, supplemental_dependency_file, event_names_file):
         work_directory = reference_directory
 
         passed = True
+
+        if not self.reset_results and self.detect_changes_in_file(event_names_file, os.path.join(reference_directory, 'EventNames.in')):
+            passed = False
+
         for input_file in os.listdir(input_directory):
             (name, extension) = os.path.splitext(input_file)
             if extension != '.idl':
@@ -151,34 +180,29 @@ class BindingsTests:
 
         all_tests_passed = True
 
-        input_directory = os.path.join('bindings', 'tests', 'idls')
-        supplemental_dependency_file = tempfile.mkstemp()[1]
-        window_constructors_file = tempfile.mkstemp()[1]
-        workerglobalscope_constructors_file = tempfile.mkstemp()[1]
-        sharedworkerglobalscope_constructors_file = tempfile.mkstemp()[1]
-        dedicatedworkerglobalscope_constructors_file = tempfile.mkstemp()[1]
-        event_names_file = tempfile.mkstemp()[1]
-        if self.generate_supplemental_dependency(input_directory, supplemental_dependency_file, window_constructors_file, workerglobalscope_constructors_file, sharedworkerglobalscope_constructors_file, dedicatedworkerglobalscope_constructors_file, event_names_file):
-            print 'Failed to generate a supplemental dependency file.'
-            os.remove(supplemental_dependency_file)
-            os.remove(window_constructors_file)
-            os.remove(workerglobalscope_constructors_file)
-            os.remove(sharedworkerglobalscope_constructors_file)
-            os.remove(dedicatedworkerglobalscope_constructors_file)
-            os.remove(event_names_file)
-            return -1
+        provider = ScopedTempFileProvider()
 
         input_directory = os.path.join('bindings', 'tests', 'idls')
         reference_directory = os.path.join('bindings', 'tests', 'results')
-        if not self.run_tests(input_directory, reference_directory, supplemental_dependency_file):
+
+        supplemental_dependency_file = provider.newtempfile()
+        window_constructors_file = provider.newtempfile()
+        workerglobalscope_constructors_file = provider.newtempfile()
+        sharedworkerglobalscope_constructors_file = provider.newtempfile()
+        dedicatedworkerglobalscope_constructors_file = provider.newtempfile()
+
+        if self.reset_results:
+            event_names_file = os.path.join(reference_directory, 'EventNames.in')
+        else:
+            event_names_file = provider.newtempfile()
+
+        if self.generate_supplemental_dependency(input_directory, supplemental_dependency_file, window_constructors_file, workerglobalscope_constructors_file, sharedworkerglobalscope_constructors_file, dedicatedworkerglobalscope_constructors_file, event_names_file):
+            print 'Failed to generate a supplemental dependency file.'
+            return -1
+
+        if not self.run_tests(input_directory, reference_directory, supplemental_dependency_file, event_names_file):
             all_tests_passed = False
 
-        os.remove(supplemental_dependency_file)
-        os.remove(window_constructors_file)
-        os.remove(workerglobalscope_constructors_file)
-        os.remove(sharedworkerglobalscope_constructors_file)
-        os.remove(dedicatedworkerglobalscope_constructors_file)
-        os.remove(event_names_file)
         print ''
         if all_tests_passed:
             print 'All tests PASS!'
