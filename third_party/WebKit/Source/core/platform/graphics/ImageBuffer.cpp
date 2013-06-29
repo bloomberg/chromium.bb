@@ -238,11 +238,6 @@ bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DOb
     return true;
 }
 
-void ImageBuffer::clip(GraphicsContext* context, const FloatRect& rect) const
-{
-    context->beginLayerClippedToImage(rect, this);
-}
-
 static bool drawNeedsCopy(GraphicsContext* src, GraphicsContext* dst)
 {
     return (src == dst);

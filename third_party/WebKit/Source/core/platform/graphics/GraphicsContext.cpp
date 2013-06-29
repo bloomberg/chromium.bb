@@ -433,7 +433,7 @@ void GraphicsContext::endTransparencyLayer()
 #endif
 }
 
-void GraphicsContext::beginLayerClippedToImage(const FloatRect& rect, const ImageBuffer* imageBuffer)
+void GraphicsContext::clipToImageBuffer(const ImageBuffer* imageBuffer, const FloatRect& rect)
 {
     if (paintingDisabled())
         return;
@@ -1412,11 +1412,6 @@ void GraphicsContext::clipConvexPolygon(size_t numPoints, const FloatPoint* poin
     SkPath path;
     setPathFromConvexPoints(&path, numPoints, points);
     clipPath(path, antialiased ? AntiAliased : NotAntiAliased);
-}
-
-void GraphicsContext::clipToImageBuffer(ImageBuffer* buffer, const FloatRect& rect)
-{
-    buffer->clip(this, rect);
 }
 
 void GraphicsContext::clipOutRoundedRect(const RoundedRect& rect)

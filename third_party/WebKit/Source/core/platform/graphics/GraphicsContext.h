@@ -276,7 +276,7 @@ public:
     void clipOutRoundedRect(const RoundedRect&);
     void clipPath(const Path&, WindRule = RULE_EVENODD);
     void clipConvexPolygon(size_t numPoints, const FloatPoint*, bool antialias = true);
-    void clipToImageBuffer(ImageBuffer*, const FloatRect&);
+    void clipToImageBuffer(const ImageBuffer*, const FloatRect&);
     bool clipRect(const SkRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
 
     void drawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);
@@ -293,10 +293,6 @@ public:
 
     void beginTransparencyLayer(float opacity);
     void endTransparencyLayer();
-    // Begins a layer that is clipped to the image |imageBuffer| at the location
-    // |rect|. This layer is implicitly restored when the next restore is invoked.
-    // NOTE: |imageBuffer| may be deleted before the |restore| is invoked.
-    void beginLayerClippedToImage(const FloatRect&, const ImageBuffer*);
 
     bool hasShadow() const;
     void setShadow(const FloatSize& offset, float blur, const Color&,
