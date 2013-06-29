@@ -106,14 +106,14 @@ protected:
         event.button = button;
         setCurrentInputEventForTest(&event);
         m_chromeClientImpl->setScrollbarsVisible(!asPopup);
-        m_chromeClientImpl->show();
+        m_chromeClientImpl->show(WebCore::NavigationPolicyIgnore);
         setCurrentInputEventForTest(0);
         return m_result;
     }
 
     bool isNavigationPolicyPopup()
     {
-        m_chromeClientImpl->show();
+        m_chromeClientImpl->show(WebCore::NavigationPolicyIgnore);
         return m_result == WebNavigationPolicyNewPopup;
     }
 

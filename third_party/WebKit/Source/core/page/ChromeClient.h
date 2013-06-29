@@ -25,6 +25,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/NavigationPolicy.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/FocusDirection.h"
 #include "core/platform/Cursor.h"
@@ -105,8 +106,8 @@ public:
     // created Page has its show method called.
     // The FrameLoadRequest parameter is only for ChromeClient to check if the
     // request could be fulfilled. The ChromeClient should not load the request.
-    virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, const NavigationAction&) = 0;
-    virtual void show() = 0;
+    virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, const NavigationAction&, NavigationPolicy = NavigationPolicyIgnore) = 0;
+    virtual void show(NavigationPolicy) = 0;
 
     virtual bool canRunModal() = 0;
     virtual void runModal() = 0;

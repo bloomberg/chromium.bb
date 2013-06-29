@@ -31,6 +31,7 @@
 
 #include "core/dom/Event.h"
 #include "core/loader/FrameLoaderTypes.h"
+#include "core/loader/NavigationPolicy.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
@@ -52,7 +53,9 @@ namespace WebCore {
         const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
 
         NavigationType type() const { return m_type; }
-        const Event* event() const { return m_event.get(); }
+        Event* event() const { return m_event.get(); }
+
+        bool specifiesNavigationPolicy(NavigationPolicy*) const;
 
     private:
         ResourceRequest m_resourceRequest;

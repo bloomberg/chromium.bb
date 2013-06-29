@@ -81,8 +81,8 @@ public:
     virtual void takeFocus(WebCore::FocusDirection);
     virtual void focusedNodeChanged(WebCore::Node*);
     virtual WebCore::Page* createWindow(
-        WebCore::Frame*, const WebCore::FrameLoadRequest&, const WebCore::WindowFeatures&, const WebCore::NavigationAction&);
-    virtual void show();
+        WebCore::Frame*, const WebCore::FrameLoadRequest&, const WebCore::WindowFeatures&, const WebCore::NavigationAction&, WebCore::NavigationPolicy);
+    virtual void show(WebCore::NavigationPolicy);
     virtual bool canRunModal();
     virtual void runModal();
     virtual void setToolbarsVisible(bool);
@@ -198,8 +198,6 @@ private:
     bool m_menubarVisible;
     bool m_resizable;
 
-    // The policy for how the next webview to be created will be shown.
-    WebNavigationPolicy m_nextNewWindowNavigationPolicy;
     WebCore::PagePopupDriver* m_pagePopupDriver;
 };
 

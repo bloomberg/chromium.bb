@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/loader/NavigationAction.h"
 
-#include "core/dom/Event.h"
+#include "core/dom/MouseEvent.h"
 #include "core/loader/FrameLoader.h"
 
 namespace WebCore {
@@ -85,6 +85,19 @@ NavigationAction::NavigationAction(const ResourceRequest& resourceRequest, Frame
     , m_type(navigationType(frameLoadType, isFormSubmission, event))
     , m_event(event)
 {
+}
+
+bool NavigationAction::specifiesNavigationPolicy(NavigationPolicy* policy) const
+{
+    const MouseEvent* event = 0;
+    if (m_type == NavigationTypeLinkClicked && m_event->isMouseEvent())
+        event = toMouseEvent(m_event.get());
+    else if (m_type == NavigationTypeFormSubmitted && m_event && m_event->underlyingEvent() && m_event->underlyingEvent()->isMouseEvent())
+        event = toMouseEvent(m_event->underlyingEvent());
+
+    if (!event)
+        return false;
+    return navigationPolicyFromMouseEvent(event->button(), event->ctrlKey(), event->shiftKey(), event->altKey(), event->metaKey(), policy);
 }
 
 }

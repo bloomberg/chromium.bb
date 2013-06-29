@@ -22,6 +22,7 @@
 #ifndef Chrome_h
 #define Chrome_h
 
+#include "core/loader/NavigationPolicy.h"
 #include "core/page/FocusDirection.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/HostWindow.h"
@@ -87,7 +88,7 @@ public:
 
     void focusedNodeChanged(Node*) const;
 
-    void show() const;
+    void show(NavigationPolicy = NavigationPolicyIgnore) const;
 
     bool canRunModal() const;
     bool canRunModalNow() const;

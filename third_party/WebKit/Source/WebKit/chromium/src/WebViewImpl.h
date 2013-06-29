@@ -438,16 +438,6 @@ public:
         return m_maxAutoSize;
     }
 
-    // Set the disposition for how this webview is to be initially shown.
-    void setInitialNavigationPolicy(WebNavigationPolicy policy)
-    {
-        m_initialNavigationPolicy = policy;
-    }
-    WebNavigationPolicy initialNavigationPolicy() const
-    {
-        return m_initialNavigationPolicy;
-    }
-
     // Sets the emulated text zoom factor
     // (may not be 1 in the device metrics emulation mode).
     void setEmulatedTextZoomFactor(float);
@@ -460,16 +450,6 @@ public:
     }
 
     void updatePageDefinedPageScaleConstraints(const WebCore::ViewportArguments&);
-
-    // Determines whether a page should e.g. be opened in a background tab.
-    // Returns false if it has no opinion, in which case it doesn't set *policy.
-    static bool navigationPolicyFromMouseEvent(
-        unsigned short button,
-        bool ctrl,
-        bool shift,
-        bool alt,
-        bool meta,
-        WebNavigationPolicy*);
 
     // Start a system drag and drop operation.
     void startDragging(
@@ -743,9 +723,6 @@ private:
     // associated WM_CHAR event if the keydown was handled. We emulate
     // this behavior by setting this flag if the keyDown was handled.
     bool m_suppressNextKeypressEvent;
-
-    // The policy for how this webview is to be initially shown.
-    WebNavigationPolicy m_initialNavigationPolicy;
 
     // Represents whether or not this object should process incoming IME events.
     bool m_imeAcceptEvents;

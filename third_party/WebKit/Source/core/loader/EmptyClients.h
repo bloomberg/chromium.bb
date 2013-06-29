@@ -85,8 +85,8 @@ public:
     virtual void takeFocus(FocusDirection) OVERRIDE { }
 
     virtual void focusedNodeChanged(Node*) OVERRIDE { }
-    virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, const NavigationAction&) OVERRIDE { return 0; }
-    virtual void show() OVERRIDE { }
+    virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, const NavigationAction&, NavigationPolicy) OVERRIDE { return 0; }
+    virtual void show(NavigationPolicy) OVERRIDE { }
 
     virtual bool canRunModal() OVERRIDE { return false; }
     virtual void runModal() OVERRIDE { }
@@ -213,10 +213,6 @@ public:
     virtual void dispatchDidFinishLoad() OVERRIDE { }
     virtual void dispatchDidLayout(LayoutMilestones) OVERRIDE { }
 
-    virtual Frame* dispatchCreatePage(const NavigationAction&) OVERRIDE { return 0; }
-    virtual void dispatchShow() OVERRIDE { }
-
-    virtual PolicyAction policyForNewWindowAction(const NavigationAction&, const String&) OVERRIDE;
     virtual PolicyAction decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&) OVERRIDE;
 
     virtual void dispatchUnableToImplementPolicy(const ResourceError&) OVERRIDE { }

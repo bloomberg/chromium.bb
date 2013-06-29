@@ -136,7 +136,6 @@ ChromeClientImpl::ChromeClientImpl(WebViewImpl* webView)
     , m_scrollbarsVisible(true)
     , m_menubarVisible(true)
     , m_resizable(true)
-    , m_nextNewWindowNavigationPolicy(WebNavigationPolicyIgnore)
     , m_pagePopupDriver(webView)
 {
 }
@@ -231,19 +230,13 @@ void ChromeClientImpl::focusedNodeChanged(Node* node)
 }
 
 Page* ChromeClientImpl::createWindow(
-    Frame* frame, const FrameLoadRequest& r, const WindowFeatures& features, const NavigationAction& action)
+    Frame* frame, const FrameLoadRequest& r, const WindowFeatures& features, const NavigationAction& action, NavigationPolicy navigationPolicy)
 {
     if (!m_webView->client())
         return 0;
 
-    // FrameLoaderClientImpl may have given us a policy to use for the next new
-    // window navigation. If not, determine the policy using the same logic as
-    // show().
-    WebNavigationPolicy policy;
-    if (m_nextNewWindowNavigationPolicy != WebNavigationPolicyIgnore) {
-        policy = m_nextNewWindowNavigationPolicy;
-        m_nextNewWindowNavigationPolicy = WebNavigationPolicyIgnore;
-    } else
+    WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
+    if (policy == WebNavigationPolicyIgnore)
         policy = getNavigationPolicy();
 
     WrappedResourceRequest request;
@@ -255,11 +248,10 @@ Page* ChromeClientImpl::createWindow(
         m_webView->client()->createView(WebFrameImpl::fromFrame(frame), request, features, r.frameName(), policy));
     if (!newView)
         return 0;
-
     return newView->page();
 }
 
-static inline void updatePolicyForEvent(const WebInputEvent* inputEvent, WebNavigationPolicy* policy)
+static inline void updatePolicyForEvent(const WebInputEvent* inputEvent, NavigationPolicy* policy)
 {
     if (!inputEvent || inputEvent->type != WebInputEvent::MouseUp)
         return;
@@ -285,10 +277,10 @@ static inline void updatePolicyForEvent(const WebInputEvent* inputEvent, WebNavi
     bool alt = mouseEvent->modifiers & WebMouseEvent::AltKey;
     bool meta = mouseEvent->modifiers & WebMouseEvent::MetaKey;
 
-    WebNavigationPolicy userPolicy = *policy;
-    WebViewImpl::navigationPolicyFromMouseEvent(buttonNumber, ctrl, shift, alt, meta, &userPolicy);
+    NavigationPolicy userPolicy = *policy;
+    navigationPolicyFromMouseEvent(buttonNumber, ctrl, shift, alt, meta, &userPolicy);
     // User and app agree that we want a new window; let the app override the decorations.
-    if (userPolicy == WebNavigationPolicyNewWindow && *policy == WebNavigationPolicyNewPopup)
+    if (userPolicy == NavigationPolicyNewWindow && *policy == NavigationPolicyNewPopup)
         return;
     *policy = userPolicy;
 }
@@ -304,20 +296,23 @@ WebNavigationPolicy ChromeClientImpl::getNavigationPolicy()
         || !m_menubarVisible
         || !m_resizable;
 
-    WebNavigationPolicy policy = WebNavigationPolicyNewForegroundTab;
+    NavigationPolicy policy = NavigationPolicyNewForegroundTab;
     if (asPopup)
-        policy = WebNavigationPolicyNewPopup;
+        policy = NavigationPolicyNewPopup;
     updatePolicyForEvent(WebViewImpl::currentInputEvent(), &policy);
 
-    return policy;
+    return static_cast<WebNavigationPolicy>(policy);
 }
 
-void ChromeClientImpl::show()
+void ChromeClientImpl::show(NavigationPolicy navigationPolicy)
 {
     if (!m_webView->client())
         return;
 
-    m_webView->client()->show(getNavigationPolicy());
+    WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
+    if (policy == WebNavigationPolicyIgnore)
+        policy = getNavigationPolicy();
+    m_webView->client()->show(policy);
 }
 
 bool ChromeClientImpl::canRunModal()
@@ -757,11 +752,6 @@ void ChromeClientImpl::setCursor(const WebCursorInfo& cursor)
 void ChromeClientImpl::setCursorForPlugin(const WebCursorInfo& cursor)
 {
     setCursor(cursor);
-}
-
-void ChromeClientImpl::setNewWindowNavigationPolicy(WebNavigationPolicy policy)
-{
-    m_nextNewWindowNavigationPolicy = policy;
 }
 
 void ChromeClientImpl::formStateDidChange(const Node* node)

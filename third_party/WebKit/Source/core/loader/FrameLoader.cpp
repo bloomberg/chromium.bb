@@ -2133,23 +2133,33 @@ void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formStat
     if (!DOMWindow::allowPopUp(m_frame))
         return;
 
-    PolicyAction policy = m_client->policyForNewWindowAction(action, frameName);
-    ASSERT(policy != PolicyIgnore);
-    if (policy == PolicyDownload) {
+    NavigationPolicy navigationPolicy = NavigationPolicyNewForegroundTab;
+    action.specifiesNavigationPolicy(&navigationPolicy);
+
+    if (navigationPolicy == NavigationPolicyDownload) {
         m_client->startDownload(action.resourceRequest());
         return;
     }
 
     RefPtr<Frame> frame = m_frame;
-    RefPtr<Frame> mainFrame = m_client->dispatchCreatePage(action);
-    if (!mainFrame)
-        return;
+    RefPtr<Frame> mainFrame = m_frame;
+
+    if (!m_frame->settings() || m_frame->settings()->supportsMultipleWindows()) {
+        struct WindowFeatures features;
+        Page* newPage = m_frame->page()->chrome().client()->createWindow(m_frame, FrameLoadRequest(m_frame->document()->securityOrigin()),
+            features, action, navigationPolicy);
+
+        // createWindow can return null (e.g., popup blocker denies the window).
+        if (!newPage)
+            return;
+        mainFrame = newPage->mainFrame();
+    }
 
     if (frameName != "_blank")
         mainFrame->tree()->setName(frameName);
 
     mainFrame->page()->setOpenedByDOM();
-    mainFrame->loader()->m_client->dispatchShow();
+    mainFrame->page()->chrome().show(navigationPolicy);
     if (!m_suppressOpenerInNewFrame) {
         mainFrame->loader()->setOpener(frame.get());
         mainFrame->document()->setReferrerPolicy(frame->document()->referrerPolicy());

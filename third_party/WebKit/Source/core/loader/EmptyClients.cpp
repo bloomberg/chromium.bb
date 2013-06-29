@@ -91,11 +91,6 @@ String EmptyChromeClient::acceptLanguages()
     return String();
 }
 
-PolicyAction EmptyFrameLoaderClient::policyForNewWindowAction(const NavigationAction&, const String&)
-{
-    return PolicyUse;
-}
-
 PolicyAction EmptyFrameLoaderClient::decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&)
 {
     return PolicyUse;

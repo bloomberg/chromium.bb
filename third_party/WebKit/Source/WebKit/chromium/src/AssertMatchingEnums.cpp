@@ -52,6 +52,7 @@
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
+#include "public/web/WebNavigationPolicy.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/StringImpl.h"
 #include "WebAccessibilityNotification.h"
@@ -92,6 +93,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
+#include "core/loader/NavigationPolicy.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/PageVisibilityState.h"
@@ -620,6 +622,14 @@ COMPILE_ASSERT_MATCHING_ENUM(WebURLRequest::PriorityLow, ResourceLoadPriorityLow
 COMPILE_ASSERT_MATCHING_ENUM(WebURLRequest::PriorityMedium, ResourceLoadPriorityMedium);
 COMPILE_ASSERT_MATCHING_ENUM(WebURLRequest::PriorityHigh, ResourceLoadPriorityHigh);
 COMPILE_ASSERT_MATCHING_ENUM(WebURLRequest::PriorityVeryHigh, ResourceLoadPriorityVeryHigh);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebNavigationPolicyIgnore, NavigationPolicyIgnore);
+COMPILE_ASSERT_MATCHING_ENUM(WebNavigationPolicyDownload, NavigationPolicyDownload);
+COMPILE_ASSERT_MATCHING_ENUM(WebNavigationPolicyCurrentTab, NavigationPolicyCurrentTab);
+COMPILE_ASSERT_MATCHING_ENUM(WebNavigationPolicyNewBackgroundTab, NavigationPolicyNewBackgroundTab);
+COMPILE_ASSERT_MATCHING_ENUM(WebNavigationPolicyNewForegroundTab, NavigationPolicyNewForegroundTab);
+COMPILE_ASSERT_MATCHING_ENUM(WebNavigationPolicyNewWindow, NavigationPolicyNewWindow);
+COMPILE_ASSERT_MATCHING_ENUM(WebNavigationPolicyNewPopup, NavigationPolicyNewPopup);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelDebug, DebugMessageLevel);
 COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelLog, LogMessageLevel);

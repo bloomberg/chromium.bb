@@ -106,7 +106,6 @@ enum {
 
 FrameLoaderClientImpl::FrameLoaderClientImpl(WebFrameImpl* frame)
     : m_webFrame(frame)
-    , m_nextNavigationPolicy(WebNavigationPolicyIgnore)
 {
 }
 
@@ -734,66 +733,6 @@ void FrameLoaderClientImpl::dispatchDidLayout(LayoutMilestones milestones)
         m_webFrame->client()->didFirstVisuallyNonEmptyLayout(m_webFrame);
 }
 
-Frame* FrameLoaderClientImpl::dispatchCreatePage(const NavigationAction& action)
-{
-    // Make sure that we have a valid disposition.  This should have been set in
-    // the preceeding call to dispatchDecidePolicyForNewWindowAction.
-    ASSERT(m_nextNavigationPolicy != WebNavigationPolicyIgnore);
-    WebNavigationPolicy policy = m_nextNavigationPolicy;
-    m_nextNavigationPolicy = WebNavigationPolicyIgnore;
-
-    // Store the disposition on the opener ChromeClientImpl so that we can pass
-    // it to WebViewClient::createView.
-    ChromeClientImpl* chromeClient = static_cast<ChromeClientImpl*>(m_webFrame->frame()->page()->chrome().client());
-    chromeClient->setNewWindowNavigationPolicy(policy);
-
-    if (m_webFrame->frame()->settings() && !m_webFrame->frame()->settings()->supportsMultipleWindows())
-        return m_webFrame->frame();
-
-    struct WindowFeatures features;
-    Page* newPage = chromeClient->createWindow(m_webFrame->frame(), FrameLoadRequest(m_webFrame->frame()->document()->securityOrigin()), features, action);
-
-    // createWindow can return null (e.g., popup blocker denies the window).
-    if (!newPage)
-        return 0;
-
-    // Also give the disposition to the new window.
-    WebViewImpl::fromPage(newPage)->setInitialNavigationPolicy(policy);
-    return newPage->mainFrame();
-}
-
-void FrameLoaderClientImpl::dispatchShow()
-{
-    WebViewImpl* webView = m_webFrame->viewImpl();
-    if (webView && webView->client())
-        webView->client()->show(webView->initialNavigationPolicy());
-}
-
-PolicyAction FrameLoaderClientImpl::policyForNewWindowAction(
-    const NavigationAction& action,
-    const String& frameName)
-{
-    WebNavigationPolicy navigationPolicy;
-    if (!actionSpecifiesNavigationPolicy(action, &navigationPolicy))
-        navigationPolicy = WebNavigationPolicyNewForegroundTab;
-
-    if (navigationPolicy == WebNavigationPolicyDownload)
-        return PolicyDownload;
-
-    // Remember the disposition for when dispatchCreatePage is called.  It is
-    // unfortunate that WebCore does not provide us with any context when
-    // creating or showing the new window that would allow us to avoid having
-    // to keep this state.
-    m_nextNavigationPolicy = navigationPolicy;
-
-    // Store the disposition on the opener ChromeClientImpl so that we can pass
-    // it to WebViewClient::createView.
-    ChromeClientImpl* chromeClient = static_cast<ChromeClientImpl*>(m_webFrame->frame()->page()->chrome().client());
-    chromeClient->setNewWindowNavigationPolicy(navigationPolicy);
-
-    return PolicyUse;
-}
-
 PolicyAction FrameLoaderClientImpl::decidePolicyForNavigationAction(
     const NavigationAction& action,
     const ResourceRequest& request) {
@@ -803,8 +742,9 @@ PolicyAction FrameLoaderClientImpl::decidePolicyForNavigationAction(
     // The null check here is to fix a crash that seems strange
     // (see - https://bugs.webkit.org/show_bug.cgi?id=23554).
     if (m_webFrame->client() && !request.url().isNull()) {
-        WebNavigationPolicy navigationPolicy = WebNavigationPolicyCurrentTab;
-        actionSpecifiesNavigationPolicy(action, &navigationPolicy);
+        NavigationPolicy policy = NavigationPolicyCurrentTab;
+        action.specifiesNavigationPolicy(&policy);
+        WebNavigationPolicy navigationPolicy = static_cast<WebNavigationPolicy>(policy);
 
         // Give the delegate a chance to change the navigation policy.
         const WebDataSourceImpl* ds = m_webFrame->provisionalDataSourceImpl();
@@ -1197,28 +1137,6 @@ ObjectContentType FrameLoaderClientImpl::objectContentType(
         return ObjectContentFrame;
 
     return ObjectContentNone;
-}
-
-bool FrameLoaderClientImpl::actionSpecifiesNavigationPolicy(
-    const NavigationAction& action,
-    WebNavigationPolicy* policy)
-{
-    const MouseEvent* event = 0;
-    if (action.type() == NavigationTypeLinkClicked
-        && action.event()->isMouseEvent())
-        event = static_cast<const MouseEvent*>(action.event());
-    else if (action.type() == NavigationTypeFormSubmitted
-             && action.event()
-             && action.event()->underlyingEvent()
-             && action.event()->underlyingEvent()->isMouseEvent())
-        event = static_cast<const MouseEvent*>(action.event()->underlyingEvent());
-
-    if (!event)
-        return false;
-
-    return WebViewImpl::navigationPolicyFromMouseEvent(
-        event->button(), event->ctrlKey(), event->shiftKey(), event->altKey(),
-        event->metaKey(), policy);
 }
 
 PassOwnPtr<WebPluginLoadObserver> FrameLoaderClientImpl::pluginLoadObserver()

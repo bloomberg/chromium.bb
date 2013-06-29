@@ -396,7 +396,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_doingDragAndDrop(false)
     , m_ignoreInputEvents(false)
     , m_suppressNextKeypressEvent(false)
-    , m_initialNavigationPolicy(WebNavigationPolicyIgnore)
     , m_imeAcceptEvents(true)
     , m_operationsAllowed(WebDragOperationNone)
     , m_dragOperation(WebDragOperationNone)
@@ -3695,34 +3694,6 @@ void WebViewImpl::setEmulatedTextZoomFactor(float textZoomFactor)
     Frame* frame = mainFrameImpl()->frame();
     if (frame)
         frame->setPageAndTextZoomFactors(frame->pageZoomFactor(), m_emulatedTextZoomFactor);
-}
-
-bool WebViewImpl::navigationPolicyFromMouseEvent(unsigned short button,
-                                                 bool ctrl, bool shift,
-                                                 bool alt, bool meta,
-                                                 WebNavigationPolicy* policy)
-{
-#if OS(DARWIN)
-    const bool newTabModifier = (button == 1) || meta;
-#else
-    const bool newTabModifier = (button == 1) || ctrl;
-#endif
-    if (!newTabModifier && !shift && !alt)
-      return false;
-
-    ASSERT(policy);
-    if (newTabModifier) {
-        if (shift)
-          *policy = WebNavigationPolicyNewForegroundTab;
-        else
-          *policy = WebNavigationPolicyNewBackgroundTab;
-    } else {
-        if (shift)
-          *policy = WebNavigationPolicyNewWindow;
-        else
-          *policy = WebNavigationPolicyDownload;
-    }
-    return true;
 }
 
 void WebViewImpl::startDragging(Frame* frame,

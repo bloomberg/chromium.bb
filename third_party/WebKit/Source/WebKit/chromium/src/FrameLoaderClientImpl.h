@@ -96,9 +96,6 @@ public:
     virtual void dispatchDidFinishDocumentLoad();
     virtual void dispatchDidFinishLoad();
     virtual void dispatchDidLayout(WebCore::LayoutMilestones);
-    virtual WebCore::Frame* dispatchCreatePage(const WebCore::NavigationAction&);
-    virtual void dispatchShow();
-    virtual WebCore::PolicyAction policyForNewWindowAction(const WebCore::NavigationAction& action, const WTF::String& frame_name);
     virtual WebCore::PolicyAction decidePolicyForNavigationAction(const WebCore::NavigationAction& action, const WebCore::ResourceRequest& request);
     virtual void dispatchUnableToImplementPolicy(const WebCore::ResourceError&);
     virtual void dispatchWillRequestResource(WebCore::CachedResourceRequest*);
@@ -193,9 +190,6 @@ private:
     // Both should be empty if unused.
     WebCore::KURL m_expectedClientRedirectSrc;
     WebCore::KURL m_expectedClientRedirectDest;
-
-    // The navigation policy to use for the next call to dispatchCreatePage.
-    WebNavigationPolicy m_nextNavigationPolicy;
 };
 
 } // namespace WebKit

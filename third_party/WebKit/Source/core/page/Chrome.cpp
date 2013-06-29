@@ -147,9 +147,9 @@ void Chrome::focusedNodeChanged(Node* node) const
     m_client->focusedNodeChanged(node);
 }
 
-void Chrome::show() const
+void Chrome::show(NavigationPolicy policy) const
 {
-    m_client->show();
+    m_client->show(policy);
 }
 
 bool Chrome::canRunModal() const
