@@ -1,33 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- TODO(arv): Check in Closue unit tests and make this run as part of the
-     tests -->
-<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
-<script src="../cr.js"></script>
-<script src="promise.js"></script>
-<script>
-
-goog.require('goog.testing.jsunit');
-goog.require('goog.testing.MockClock');
-
-</script>
+<script src="webui_resource_test.js"></script>
+<script src="mock_timer.js"></script>
 </head>
 <body>
 <script>
 
-var mockClock;
+var mockTimer;
+var Promise;
 
 function setUp() {
-  mockClock = new goog.testing.MockClock();
-  mockClock.install();
+  mockTimer = new MockTimer();
+  mockTimer.install();
+  Promise = cr.Promise;
 }
 
 function tearDown() {
-  mockClock.uninstall();
+  mockTimer.uninstall();
 }
-
-const Promise = cr.Promise;
 
 function testCallbacks() {
   var calls1 = 0;
@@ -119,7 +110,7 @@ function testThisInCallback() {
   function f(v) {
     calls++;
     assertEquals(V, v);
-    assertNotEquals(p, this);
+    assertNotEqual(p, this);
   }
   var p = new Promise;
   p.addListener(f);
@@ -175,9 +166,9 @@ function testWait() {
   const S = {};
   var p = Promise.wait(1000, S);
   assertFalse(p.done);
-  mockClock.tick(500);
+  mockTimer.tick(500);
   assertFalse(p.done);
-  mockClock.tick(500);
+  mockTimer.tick(500);
   assertTrue(p.done);
   assertEquals(S, p.value);
 }
