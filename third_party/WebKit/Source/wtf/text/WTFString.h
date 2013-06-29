@@ -570,7 +570,17 @@ inline bool codePointCompareLessThan(const String& a, const String& b)
 template<size_t inlineCapacity>
 inline void append(Vector<UChar, inlineCapacity>& vector, const String& string)
 {
-    vector.append(string.bloatedCharacters(), string.length());
+    unsigned length = string.length();
+    if (!length)
+        return;
+    if (string.is8Bit()) {
+        const LChar* characters8 = string.characters8();
+        vector.reserveCapacity(vector.size() + length);
+        for (size_t i = 0; i < length; ++i)
+            vector.uncheckedAppend(characters8[i]);
+    } else {
+        vector.append(string.characters16(), length);
+    }
 }
 
 template<typename CharacterType>
