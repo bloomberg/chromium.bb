@@ -19,6 +19,11 @@ namespace {
 
 NSString* const kNSProgressAppBundleIdentifierKey =
     @"NSProgressAppBundleIdentifierKey";
+NSString* const kNSProgressEstimatedTimeRemainingKey =
+    @"NSProgressEstimatedTimeRemainingKey";
+
+// NSProgressEstimatedTimeKey is 10.8 SPI only; it became
+// NSProgressEstimatedTimeRemainingKey when NSProgress became API in 10.9.
 NSString* const kNSProgressEstimatedTimeKey =
     @"NSProgressEstimatedTimeKey";
 NSString* const kNSProgressFileCompletedCountKey =
@@ -67,8 +72,19 @@ NSString* ProgressString(NSString* string) {
   NSString* result = [cache objectForKey:string];
   if (!result) {
     NSString** ref = static_cast<NSString**>(
-        CFBundleGetDataPointerForName(foundation,
-                                      base::mac::NSToCFCast(string)));
+        CFBundleGetDataPointerForName(
+            foundation, base::mac::NSToCFCast(string)));
+    if (ref) {
+      result = *ref;
+      [cache setObject:result forKey:string];
+    }
+  }
+
+  if (!result && string == kNSProgressEstimatedTimeRemainingKey) {
+    // Perhaps this is 10.8; try the old name of this key.
+    NSString** ref = static_cast<NSString**>(
+        CFBundleGetDataPointerForName(
+            foundation, base::mac::NSToCFCast(kNSProgressEstimatedTimeKey)));
     if (ref) {
       result = *ref;
       [cache setObject:result forKey:string];
@@ -236,6 +252,15 @@ void UpdateNSProgress(content::DownloadItem* download,
   NSProgress* progress = progress_data->progress();
   progress.totalUnitCount = download->GetTotalBytes();
   progress.completedUnitCount = download->GetReceivedBytes();
+  [progress setUserInfoObject:@(download->CurrentSpeed())
+                       forKey:ProgressString(kNSProgressThroughputKey)];
+
+  base::TimeDelta time_remaining;
+  NSNumber* time_remaining_ns = nil;
+  if (download->TimeRemaining(&time_remaining))
+    time_remaining_ns = @(time_remaining.InSeconds());
+  [progress setUserInfoObject:time_remaining_ns
+                   forKey:ProgressString(kNSProgressEstimatedTimeRemainingKey)];
 
   base::FilePath download_path = download->GetFullPath();
   if (progress_data->target() != download_path) {
