@@ -37,7 +37,7 @@ class UserScript {
   // Locations that user scripts can be run inside the document.
   enum RunLocation {
     UNDEFINED,
-    DOCUMENT_START,  // After the documentElemnet is created, but before
+    DOCUMENT_START,  // After the documentElement is created, but before
                      // anything else happens.
     DOCUMENT_END,  // After the entire document is parsed. Same as
                    // DOMContentLoaded.
