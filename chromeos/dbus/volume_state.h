@@ -14,9 +14,10 @@ namespace chromeos {
 
 struct CHROMEOS_EXPORT VolumeState {
   int32 output_volume;
-  bool output_mute;
+  bool output_system_mute;
   int32 input_gain;
   bool input_mute;
+  bool output_user_mute;
 
   VolumeState();
   std::string ToString() const;

@@ -81,8 +81,8 @@ class CHROMEOS_EXPORT CrasAudioClient {
   // Sets output volume to |volume|, in the range of [0, 100].
   virtual void  SetOutputVolume(int32 volume) = 0;
 
-  // Sets output mute state to |mute_on| value.
-  virtual void SetOutputMute(bool mute_on) = 0;
+  // Sets output mute from user action.
+  virtual void SetOutputUserMute(bool mute_on) = 0;
 
   // Sets input gain to |input_gain|. |input_gain| is specified in dBFS * 100.
   virtual void SetInputGain(int32 input_gain) = 0;

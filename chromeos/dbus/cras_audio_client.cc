@@ -139,9 +139,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual void SetOutputMute(bool mute_on) OVERRIDE {
+  virtual void SetOutputUserMute(bool mute_on) OVERRIDE {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
-                                 cras::kSetOutputMute);
+                                 cras::kSetOutputUserMute);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(mute_on);
     cras_proxy_->CallMethod(
@@ -220,13 +220,15 @@ class CrasAudioClientImpl : public CrasAudioClient {
 
   // Called when a OutputMuteChanged signal is received.
   void OutputMuteChangedReceived(dbus::Signal* signal) {
+    // Chrome should always call SetOutputUserMute api to set the output
+    // mute state and monitor user_mute state from OutputMuteChanged signal.
     dbus::MessageReader reader(signal);
-    bool mute;
-    if (!reader.PopBool(&mute)) {
+    bool system_mute, user_mute;
+    if (!reader.PopBool(&system_mute) || !reader.PopBool(&user_mute)) {
       LOG(ERROR) << "Error reading signal from cras:"
                  << signal->ToString();
     }
-    FOR_EACH_OBSERVER(Observer, observers_, OutputMuteChanged(mute));
+    FOR_EACH_OBSERVER(Observer, observers_, OutputMuteChanged(user_mute));
   }
 
   // Called when a InputGainChanged signal is received.
@@ -282,9 +284,10 @@ class CrasAudioClientImpl : public CrasAudioClient {
     if (response) {
       dbus::MessageReader reader(response);
       if (!reader.PopInt32(&volume_state.output_volume) ||
-          !reader.PopBool(&volume_state.output_mute) ||
+          !reader.PopBool(&volume_state.output_system_mute) ||
           !reader.PopInt32(&volume_state.input_gain) ||
-          !reader.PopBool(&volume_state.input_mute)) {
+          !reader.PopBool(&volume_state.input_mute) ||
+          !reader.PopBool(&volume_state.output_user_mute)) {
         success = false;
         LOG(ERROR) << "Error reading response from cras: "
                    << response->ToString();
@@ -469,11 +472,11 @@ class CrasAudioClientStubImpl : public CrasAudioClient {
                       OutputVolumeChanged(volume_state_.output_volume));
   }
 
-  virtual void SetOutputMute(bool mute_on) OVERRIDE {
-    volume_state_.output_mute = mute_on;
+  virtual void SetOutputUserMute(bool mute_on) OVERRIDE {
+    volume_state_.output_user_mute = mute_on;
     FOR_EACH_OBSERVER(Observer,
                       observers_,
-                      OutputMuteChanged(volume_state_.output_mute));
+                      OutputMuteChanged(volume_state_.output_user_mute));
   }
 
   virtual void SetInputGain(int32 input_gain) OVERRIDE {

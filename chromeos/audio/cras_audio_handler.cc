@@ -458,7 +458,7 @@ bool  CrasAudioHandler::SetOutputMuteInternal(bool mute_on) {
     return false;
 
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
-      SetOutputMute(mute_on);
+      SetOutputUserMute(mute_on);
   return true;
 }
 
