@@ -51,7 +51,7 @@ cr.define('options.accounts', function() {
       this.pattern = format1String + '|' + format2String + '|' +
                      format3String;
 
-      this.onkeypress = this.handleKeyPress_.bind(this);
+      this.onkeydown = this.handleKeyDown_.bind(this);
     },
 
 
@@ -104,21 +104,21 @@ cr.define('options.accounts', function() {
     },
 
     /**
-     * Handler for key press event.
+     * Handler for key down event.
      * @private
-     * @param {!Event} e The keypress event object.
+     * @param {!Event} e The keydown event object.
      */
-    handleKeyPress_: function(e) {
-      // Enter
-      if (e.keyCode == 13) {
+    handleKeyDown_: function(e) {
+      if (e.keyIdentifier == 'Enter') {
         var user = this.parse(this.value);
         if (user) {
-          var e = new Event('add');
-          e.user = user;
-          this.dispatchEvent(e);
+          var event = new Event('add');
+          event.user = user;
+          this.dispatchEvent(event);
         }
-
         this.select();
+        // Avoid double-handling so the dialog doesn't close.
+        e.stopPropagation();
       }
     }
   };
