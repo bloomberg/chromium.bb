@@ -62,7 +62,7 @@ void ProfilePolicyConnector::Init(
   if (cloud_policy_manager)
     providers.push_back(cloud_policy_manager);
 
-  bool is_managed = false;
+  bool allow_trusted_certs_from_policy = false;
   std::string username;
   if (chromeos::ProfileHelper::IsSigninProfile(profile_)) {
     special_user_policy_provider_.reset(new LoginProfilePolicyProvider(
@@ -75,14 +75,16 @@ void ProfilePolicyConnector::Init(
     chromeos::UserManager* user_manager = chromeos::UserManager::Get();
     chromeos::User* user = user_manager->GetActiveUser();
     CHECK(user);
-    // Check if |user| is managed, and if it's a public account.
     username = user->email();
-    is_managed =
-        connector->GetUserAffiliation(username) == USER_AFFILIATION_MANAGED;
     is_primary_user_ =
         chromeos::UserManager::Get()->GetLoggedInUsers().size() == 1;
     if (user->GetType() == chromeos::User::USER_TYPE_PUBLIC_ACCOUNT)
       InitializeDeviceLocalAccountPolicyProvider(username);
+    // Allow trusted certs from policy only for managed regular accounts.
+    const bool is_managed =
+        connector->GetUserAffiliation(username) == USER_AFFILIATION_MANAGED;
+    if (is_managed && user->GetType() == chromeos::User::USER_TYPE_REGULAR)
+      allow_trusted_certs_from_policy = true;
   }
   if (special_user_policy_provider_)
     providers.push_back(special_user_policy_provider_.get());
@@ -117,7 +119,7 @@ void ProfilePolicyConnector::Init(
         base::Bind(
             &ProfilePolicyConnector::InitializeNetworkConfigurationUpdater,
             weak_ptr_factory_.GetWeakPtr(),
-            is_managed));
+            allow_trusted_certs_from_policy));
   }
 #endif
 }
@@ -167,7 +169,7 @@ void ProfilePolicyConnector::InitializeDeviceLocalAccountPolicyProvider(
 }
 
 void ProfilePolicyConnector::InitializeNetworkConfigurationUpdater(
-    bool is_managed,
+    bool allow_trusted_certs_from_policy,
     chromeos::DBusMethodCallStatus status,
     const std::string& hashed_username) {
   // TODO(joaodasilva): create the NetworkConfigurationUpdater for user ONC
@@ -175,7 +177,7 @@ void ProfilePolicyConnector::InitializeNetworkConfigurationUpdater(
   // another per profile for user policy.
   g_browser_process->browser_policy_connector()->
       network_configuration_updater()->SetUserPolicyService(
-          is_managed, hashed_username, policy_service());
+          allow_trusted_certs_from_policy, hashed_username, policy_service());
 }
 #endif
 
