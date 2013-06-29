@@ -32,7 +32,7 @@ class ContentDecryptionModuleFactory {
       // TODO(scherkus): Revert the ProxyDecryptor changes from r208040 so that
       // this class always creates the MediaKeys.
       // A ProxyMediaKeys to be used if |key_system| is not Clear Key.
-      scoped_ptr<media::MediaKeys> media_keys,
+      scoped_ptr<media::MediaKeys> proxy_media_keys,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       const media::KeyAddedCB& key_added_cb,
       const media::KeyErrorCB& key_error_cb,

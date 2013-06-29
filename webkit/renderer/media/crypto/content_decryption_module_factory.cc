@@ -92,7 +92,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
     WebKit::WebFrame* web_frame,
     const base::Closure& destroy_plugin_cb,
 #elif defined(OS_ANDROID)
-    scoped_ptr<media::MediaKeys> media_keys,
+    scoped_ptr<media::MediaKeys> proxy_media_keys,
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
@@ -112,7 +112,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
       key_system, key_added_cb, key_error_cb, key_message_cb,
       destroy_plugin_cb, web_media_player_client, web_frame);
 #elif defined(OS_ANDROID)
-  return media_keys.Pass();
+  return proxy_media_keys.Pass();
 #else
   return scoped_ptr<media::MediaKeys>();
 #endif  // defined(ENABLE_PEPPER_CDMS)

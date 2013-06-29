@@ -83,6 +83,8 @@ class ProxyDecryptor : public media::MediaKeys {
   // Needed to create the PpapiDecryptor.
   WebKit::WebMediaPlayerClient* web_media_player_client_;
   WebKit::WebFrame* web_frame_;
+#elif defined(OS_ANDROID)
+  scoped_ptr<media::MediaKeys> proxy_media_keys_;
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
   // The real MediaKeys that manages key operations for the ProxyDecryptor.

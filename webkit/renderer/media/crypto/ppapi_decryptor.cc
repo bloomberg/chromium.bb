@@ -122,7 +122,18 @@ void PpapiDecryptor::CancelKeyRequest(const std::string& session_id) {
 }
 
 media::Decryptor* PpapiDecryptor::GetDecryptor() {
+#if defined(GOOGLE_TV)
+  // Google TV only uses PpapiDecrytor as a MediaKeys and does not need the
+  // Decryptor interface of the PpapiDecryptor.
+  // Details: If we don't do this GTV will be broken. The reason is that during
+  // initialization, MediaSourceDelegate tries to use DecryptingDemuxerStream
+  // to decrypt the stream in the renderer process (for ClearKey support).
+  // However, for GTV, PpapiDecryptor cannot do decryption at all. By returning
+  // NULL, DDS init will fail and we fallback to what GTV used to do.
+  return NULL;
+#else
   return this;
+#endif  // defined(GOOGLE_TV)
 }
 
 void PpapiDecryptor::RegisterNewKeyCB(StreamType stream_type,

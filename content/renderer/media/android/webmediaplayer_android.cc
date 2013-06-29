@@ -141,7 +141,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   }
 
   if (WebKit::WebRuntimeFeatures::isLegacyEncryptedMediaEnabled()) {
-    // |decryptor_| is owned, so Unretained() is safe here.
     decryptor_.reset(new ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
         client,
@@ -151,6 +150,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
         // WebMediaPlayer.
         scoped_ptr<media::MediaKeys>(new ProxyMediaKeys(proxy_, player_id_)),
 #endif // defined(ENABLE_PEPPER_CDMS)
+        // |decryptor_| is owned, so Unretained() is safe here.
         base::Bind(&WebMediaPlayerAndroid::OnKeyAdded, base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::OnKeyError, base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::OnKeyMessage,
@@ -216,6 +216,12 @@ void WebMediaPlayerAndroid::load(const WebURL& url,
   }
 #endif
 
+  media::SetDecryptorReadyCB set_decryptor_ready_cb;
+  if (decryptor_) {  // |decryptor_| can be NULL is EME if not enabled.
+    set_decryptor_ready_cb = base::Bind(&ProxyDecryptor::SetDecryptorReadyCB,
+                                        base::Unretained(decryptor_.get()));
+  }
+
   if (source_type_ != MediaPlayerAndroid::SOURCE_TYPE_URL) {
     has_media_info_ = true;
     media_source_delegate_.reset(
@@ -225,11 +231,14 @@ void WebMediaPlayerAndroid::load(const WebURL& url,
       media_source_delegate_->InitializeMediaSource(
           media_source,
           base::Bind(&WebMediaPlayerAndroid::OnNeedKey, base::Unretained(this)),
+          set_decryptor_ready_cb,
           base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
                      base::Unretained(this)),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerAndroid::OnDurationChange));
     }
 #if defined(GOOGLE_TV)
+    // TODO(xhwang): Pass set_decryptor_ready_cb in InitializeMediaStream() to
+    // enable ClearKey support for Google TV.
     if (source_type_ == MediaPlayerAndroid::SOURCE_TYPE_STREAM) {
       media_source_delegate_->InitializeMediaStream(
           demuxer_,

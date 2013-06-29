@@ -12,6 +12,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
 #include "media/filters/chunk_demuxer.h"
+#include "media/filters/decrypting_demuxer_stream.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebMediaSource.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -72,8 +73,9 @@ MediaSourceDelegate::MediaSourceDelegate(WebMediaPlayerProxyAndroid* proxy,
       player_id_(player_id),
       media_log_(media_log),
       demuxer_(NULL),
-      audio_params_(new MediaPlayerHostMsg_ReadFromDemuxerAck_Params),
-      video_params_(new MediaPlayerHostMsg_ReadFromDemuxerAck_Params),
+      is_demuxer_ready_(false),
+      audio_stream_(NULL),
+      video_stream_(NULL),
       seeking_(false),
       last_seek_request_id_(0),
       key_added_(false),
@@ -84,6 +86,10 @@ MediaSourceDelegate::~MediaSourceDelegate() {
   DVLOG(1) << "~MediaSourceDelegate() : " << player_id_;
   DCHECK(!chunk_demuxer_);
   DCHECK(!demuxer_);
+  DCHECK(!audio_decrypting_demuxer_stream_);
+  DCHECK(!video_decrypting_demuxer_stream_);
+  DCHECK(!audio_stream_);
+  DCHECK(!video_stream_);
 }
 
 void MediaSourceDelegate::Destroy() {
@@ -99,6 +105,13 @@ void MediaSourceDelegate::Destroy() {
   proxy_ = NULL;
 
   demuxer_ = NULL;
+  audio_stream_ = NULL;
+  video_stream_ = NULL;
+  // TODO(xhwang): Figure out if we need to Reset the DDSs after Seeking or
+  // before destroying them.
+  audio_decrypting_demuxer_stream_.reset();
+  video_decrypting_demuxer_stream_.reset();
+
   if (chunk_demuxer_) {
     chunk_demuxer_->Stop(
         BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerStopDone));
@@ -108,13 +121,16 @@ void MediaSourceDelegate::Destroy() {
 void MediaSourceDelegate::InitializeMediaSource(
     WebKit::WebMediaSource* media_source,
     const media::NeedKeyCB& need_key_cb,
+    const media::SetDecryptorReadyCB& set_decryptor_ready_cb,
     const UpdateNetworkStateCB& update_network_state_cb,
     const DurationChangeCB& duration_change_cb) {
   DCHECK(media_source);
   media_source_.reset(media_source);
   need_key_cb_ = need_key_cb;
+  set_decryptor_ready_cb_ = set_decryptor_ready_cb;
   update_network_state_cb_ = update_network_state_cb;
   duration_change_cb_ = duration_change_cb;
+  access_unit_size_ = kAccessUnitSizeForMediaSource;
 
   chunk_demuxer_.reset(new media::ChunkDemuxer(
       BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerOpened),
@@ -122,10 +138,10 @@ void MediaSourceDelegate::InitializeMediaSource(
       base::Bind(&MediaSourceDelegate::OnAddTextTrack,
                  base::Unretained(this)),
       base::Bind(&LogMediaSourceError, media_log_)));
+  demuxer_ = chunk_demuxer_.get();
+
   chunk_demuxer_->Initialize(this,
       BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerInitDone));
-  demuxer_ = chunk_demuxer_.get();
-  access_unit_size_ = kAccessUnitSizeForMediaSource;
 }
 
 #if defined(GOOGLE_TV)
@@ -135,12 +151,12 @@ void MediaSourceDelegate::InitializeMediaStream(
   DCHECK(demuxer);
   demuxer_ = demuxer;
   update_network_state_cb_ = update_network_state_cb;
-
-  demuxer_->Initialize(this,
-      BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerInitDone));
   // When playing Media Stream, don't wait to accumulate multiple packets per
   // IPC communication.
   access_unit_size_ = 1;
+
+  demuxer_->Initialize(this,
+      BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerInitDone));
 }
 #endif
 
@@ -217,31 +233,35 @@ void MediaSourceDelegate::OnReadFromDemuxer(media::DemuxerStream::Type type) {
   // The access unit size should have been initialized properly at this stage.
   DCHECK_GT(access_unit_size_, 0u);
   MediaPlayerHostMsg_ReadFromDemuxerAck_Params* params =
-      type == DemuxerStream::AUDIO ? audio_params_.get() : video_params_.get();
+      type == DemuxerStream::AUDIO ? &audio_params_ : &video_params_;
   params->type = type;
   params->access_units.resize(access_unit_size_);
-  DemuxerStream* stream = demuxer_->GetStream(type);
-  DCHECK(stream != NULL);
-  ReadFromDemuxerStream(stream, params, 0);
+  ReadFromDemuxerStream(type, params, 0);
 }
 
 void MediaSourceDelegate::ReadFromDemuxerStream(
-    DemuxerStream* stream,
+    media::DemuxerStream::Type type,
     MediaPlayerHostMsg_ReadFromDemuxerAck_Params* params,
     size_t index) {
   DCHECK(!seeking_);
   // DemuxerStream::Read() always returns the read callback asynchronously.
+  DemuxerStream* stream =
+      (type == DemuxerStream::AUDIO) ? audio_stream_ : video_stream_;
   stream->Read(base::Bind(&MediaSourceDelegate::OnBufferReady,
-                          weak_this_.GetWeakPtr(), stream, params, index));
+                          weak_this_.GetWeakPtr(), type, params, index));
 }
 
 void MediaSourceDelegate::OnBufferReady(
-    DemuxerStream* stream,
+    media::DemuxerStream::Type type,
     MediaPlayerHostMsg_ReadFromDemuxerAck_Params* params,
     size_t index,
     DemuxerStream::Status status,
     const scoped_refptr<media::DecoderBuffer>& buffer) {
   DVLOG(1) << "OnBufferReady() : " << player_id_;
+
+  // Drop any buffer returned during destruction.
+  if (!demuxer_)
+    return;
 
   // No new OnReadFromDemuxer() will be called during seeking. So this callback
   // must be from previous OnReadFromDemuxer() call and should be ignored.
@@ -251,7 +271,7 @@ void MediaSourceDelegate::OnBufferReady(
     return;
   }
 
-  bool is_audio = stream->type() == DemuxerStream::AUDIO;
+  bool is_audio = (type == DemuxerStream::AUDIO);
   if (status != DemuxerStream::kAborted &&
       index >= params->access_units.size()) {
     LOG(ERROR) << "The internal state inconsistency onBufferReady: "
@@ -272,10 +292,12 @@ void MediaSourceDelegate::OnBufferReady(
     case DemuxerStream::kConfigChanged:
       // In case of kConfigChanged, need to read decoder_config once
       // for the next reads.
+      // TODO(kjyoun): Investigate if we need to use this new config. See
+      // http://crbug.com/255783
       if (is_audio) {
-        stream->audio_decoder_config();
+        audio_stream_->audio_decoder_config();
       } else {
-        gfx::Size size = stream->video_decoder_config().coded_size();
+        gfx::Size size = video_stream_->video_decoder_config().coded_size();
         DVLOG(1) << "Video config is changed: " << size.width() << "x"
                  << size.height();
       }
@@ -307,7 +329,7 @@ void MediaSourceDelegate::OnBufferReady(
       // Vorbis needs 4 extra bytes padding on Android. Check
       // NuMediaExtractor.cpp in Android source code.
       if (is_audio && media::kCodecVorbis ==
-          stream->audio_decoder_config().codec()) {
+          audio_stream_->audio_decoder_config().codec()) {
         params->access_units[index].data.insert(
             params->access_units[index].data.end(), kVorbisPadding,
             kVorbisPadding + 4);
@@ -324,7 +346,7 @@ void MediaSourceDelegate::OnBufferReady(
             buffer->GetDecryptConfig()->subsamples();
       }
       if (++index < params->access_units.size()) {
-        ReadFromDemuxerStream(stream, params, index);
+        ReadFromDemuxerStream(type, params, index);
         return;
       }
       break;
@@ -356,8 +378,92 @@ void MediaSourceDelegate::OnDemuxerInitDone(media::PipelineStatus status) {
     OnDemuxerError(status);
     return;
   }
+
+  audio_stream_ = demuxer_->GetStream(DemuxerStream::AUDIO);
+  video_stream_ = demuxer_->GetStream(DemuxerStream::VIDEO);
+
+  if (audio_stream_ && audio_stream_->audio_decoder_config().is_encrypted()) {
+    InitAudioDecryptingDemuxerStream();
+    // InitVideoDecryptingDemuxerStream() will be called in
+    // OnAudioDecryptingDemuxerStreamInitDone().
+    return;
+  }
+
+  if (video_stream_ && video_stream_->video_decoder_config().is_encrypted()) {
+    InitVideoDecryptingDemuxerStream();
+    return;
+  }
+
+  // Notify demuxer ready when both streams are not encrypted.
+  is_demuxer_ready_ = true;
+  DCHECK(CanNotifyDemuxerReady());
+  NotifyDemuxerReady();
+}
+
+void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
+  DVLOG(1) << "InitAudioDecryptingDemuxerStream()";
+  audio_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
+      base::MessageLoopProxy::current(), set_decryptor_ready_cb_));
+  audio_decrypting_demuxer_stream_->Initialize(
+      audio_stream_,
+      BIND_TO_RENDER_LOOP(
+          &MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone));
+}
+
+void MediaSourceDelegate::InitVideoDecryptingDemuxerStream() {
+  DVLOG(1) << "InitVideoDecryptingDemuxerStream()";
+  video_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
+      base::MessageLoopProxy::current(), set_decryptor_ready_cb_));
+  video_decrypting_demuxer_stream_->Initialize(
+      video_stream_,
+      BIND_TO_RENDER_LOOP(
+          &MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone));
+}
+
+void MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone(
+    media::PipelineStatus status) {
+  DVLOG(1) << "OnAudioDecryptingDemuxerStreamInitDone() : " << status;
+
+  // It is possible that this function is called after Destroy(). As a result,
+  // we need to check whether the |demuxer_| is NULL before we proceed.
+  if (!demuxer_)
+    return;
+
+  if (status != media::PIPELINE_OK)
+    audio_decrypting_demuxer_stream_.reset();
+  else
+    audio_stream_ = audio_decrypting_demuxer_stream_.get();
+
+  if (video_stream_ && video_stream_->video_decoder_config().is_encrypted()) {
+    InitVideoDecryptingDemuxerStream();
+    return;
+  }
+
+  // Try to notify demuxer ready when audio DDS initialization finished and
+  // video is not encrypted.
+  is_demuxer_ready_ = true;
   if (CanNotifyDemuxerReady())
-    NotifyDemuxerReady("");
+    NotifyDemuxerReady();
+}
+
+void MediaSourceDelegate::OnVideoDecryptingDemuxerStreamInitDone(
+    media::PipelineStatus status) {
+  DVLOG(1) << "OnVideoDecryptingDemuxerStreamInitDone() : " << status;
+
+  // It is possible that this function is called after Destroy(). As a result,
+  // we need to check whether the |demuxer_| is NULL before we proceed.
+  if (!demuxer_)
+    return;
+
+  if (status != media::PIPELINE_OK)
+    video_decrypting_demuxer_stream_.reset();
+  else
+    video_stream_ = video_decrypting_demuxer_stream_.get();
+
+  // Try to notify demuxer ready when video DDS initialization finished.
+  is_demuxer_ready_ = true;
+  if (CanNotifyDemuxerReady())
+    NotifyDemuxerReady();
 }
 
 void MediaSourceDelegate::OnDemuxerSeekDone(unsigned seek_request_id,
@@ -381,9 +487,36 @@ void MediaSourceDelegate::OnDemuxerSeekDone(unsigned seek_request_id,
     return;
   }
 
+  ResetAudioDecryptingDemuxerStream();
+}
+
+void MediaSourceDelegate::ResetAudioDecryptingDemuxerStream() {
+  DVLOG(1) << "ResetAudioDecryptingDemuxerStream()";
+  if (audio_decrypting_demuxer_stream_) {
+    audio_decrypting_demuxer_stream_->Reset(
+        base::Bind(&MediaSourceDelegate::ResetVideoDecryptingDemuxerStream,
+                   weak_this_.GetWeakPtr()));
+  } else {
+    ResetVideoDecryptingDemuxerStream();
+  }
+}
+
+void MediaSourceDelegate::ResetVideoDecryptingDemuxerStream() {
+  DVLOG(1) << "ResetVideoDecryptingDemuxerStream()";
+  if (video_decrypting_demuxer_stream_) {
+    video_decrypting_demuxer_stream_->Reset(
+        base::Bind(&MediaSourceDelegate::SendSeekRequestAck,
+                   weak_this_.GetWeakPtr()));
+  } else {
+    SendSeekRequestAck();
+  }
+}
+
+void MediaSourceDelegate::SendSeekRequestAck() {
+  DVLOG(1) << "SendSeekRequestAck()";
   seeking_ = false;
+  proxy_->SeekRequestAck(player_id_, last_seek_request_id_);
   last_seek_request_id_ = 0;
-  proxy_->SeekRequestAck(player_id_, seek_request_id);
 }
 
 void MediaSourceDelegate::OnDemuxerStopDone() {
@@ -394,37 +527,44 @@ void MediaSourceDelegate::OnDemuxerStopDone() {
 
 void MediaSourceDelegate::OnMediaConfigRequest() {
   if (CanNotifyDemuxerReady())
-    NotifyDemuxerReady("");
+    NotifyDemuxerReady();
 }
 
 void MediaSourceDelegate::NotifyKeyAdded(const std::string& key_system) {
+  DVLOG(1) << "NotifyKeyAdded() : " << player_id_;
   // TODO(kjyoun): Enhance logic to detect when to call NotifyDemuxerReady()
-  // For now, we calls it when the first key is added.
+  // For now, we calls it when the first key is added. See
+  // http://crbug.com/255781
   if (key_added_)
     return;
   key_added_ = true;
-  if (CanNotifyDemuxerReady())
-    NotifyDemuxerReady(key_system);
+  key_system_ = key_system;
+  if (!CanNotifyDemuxerReady())
+    return;
+  if (HasEncryptedStream())
+    NotifyDemuxerReady();
 }
 
 bool MediaSourceDelegate::CanNotifyDemuxerReady() {
-  if (key_added_)
-    return true;
-  DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
-  if (audio_stream && audio_stream->audio_decoder_config().is_encrypted())
+  // This can happen when a key is added before the demuxer is initialized.
+  // See NotifyKeyAdded().
+  // TODO(kjyoun): Remove NotifyDemxuerReady() call from NotifyKeyAdded() so
+  // that we can remove all is_demuxer_ready_/key_added_/key_system_ madness.
+  // See http://crbug.com/255781
+  if (!is_demuxer_ready_)
     return false;
-  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-  if (video_stream && video_stream->video_decoder_config().is_encrypted())
+  if (HasEncryptedStream() && !key_added_)
     return false;
   return true;
 }
 
-void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
+void MediaSourceDelegate::NotifyDemuxerReady() {
+  DVLOG(1) << "NotifyDemuxerReady() : " << player_id_;
+  DCHECK(CanNotifyDemuxerReady());
+
   MediaPlayerHostMsg_DemuxerReady_Params params;
-  DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
-  if (audio_stream) {
-    const media::AudioDecoderConfig& config =
-        audio_stream->audio_decoder_config();
+  if (audio_stream_) {
+    media::AudioDecoderConfig config = audio_stream_->audio_decoder_config();
     params.audio_codec = config.codec();
     params.audio_channels =
         media::ChannelLayoutToChannelCount(config.channel_layout());
@@ -433,10 +573,8 @@ void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
     params.audio_extra_data = std::vector<uint8>(
         config.extra_data(), config.extra_data() + config.extra_data_size());
   }
-  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-  if (video_stream) {
-    const media::VideoDecoderConfig& config =
-        video_stream->video_decoder_config();
+  if (video_stream_) {
+    media::VideoDecoderConfig config = video_stream_->video_decoder_config();
     params.video_codec = config.codec();
     params.video_size = config.natural_size();
     params.is_video_encrypted = config.is_encrypted();
@@ -444,7 +582,7 @@ void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
         config.extra_data(), config.extra_data() + config.extra_data_size());
   }
   params.duration_ms = GetDurationMs();
-  params.key_system = key_system;
+  params.key_system = HasEncryptedStream() ? key_system_ : "";
 
   if (proxy_)
     proxy_->DemuxerReady(player_id_, params);
@@ -486,6 +624,13 @@ scoped_ptr<media::TextTrack> MediaSourceDelegate::OnAddTextTrack(
     const std::string& label,
     const std::string& language) {
   return scoped_ptr<media::TextTrack>();
+}
+
+bool MediaSourceDelegate::HasEncryptedStream() {
+  return (audio_stream_ &&
+          audio_stream_->audio_decoder_config().is_encrypted()) ||
+         (video_stream_ &&
+          video_stream_->video_decoder_config().is_encrypted());
 }
 
 }  // namespace content
