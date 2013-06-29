@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "build/build_config.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,11 +21,6 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -140,11 +134,6 @@ void InstantService::UndoAllMostVisitedDeletions() {
   top_sites->ClearBlacklistedURLs();
 }
 
-void InstantService::GetCurrentMostVisitedItems(
-    std::vector<InstantMostVisitedItem>* items) const {
-  *items = most_visited_items_;
-}
-
 void InstantService::UpdateThemeInfo() {
   // Update theme background info.
   // Initialize |theme_info| if necessary.
@@ -152,6 +141,10 @@ void InstantService::UpdateThemeInfo() {
     OnThemeChanged(ThemeServiceFactory::GetForProfile(profile_));
   else
     OnThemeChanged(NULL);
+}
+
+void InstantService::UpdateMostVisitedItemsInfo() {
+  NotifyAboutMostVisitedItems();
 }
 
 void InstantService::Shutdown() {
@@ -208,8 +201,6 @@ void InstantService::Observe(int type,
 
 void InstantService::OnMostVisitedItemsReceived(
     const history::MostVisitedURLList& data) {
-  // Android doesn't use Browser/BrowserList. Do nothing for Android platform.
-#if !defined(OS_ANDROID)
   history::MostVisitedURLList reordered_data(data);
   history::TopSites::MaybeShuffle(&reordered_data);
 
@@ -223,23 +214,12 @@ void InstantService::OnMostVisitedItemsReceived(
   }
 
   most_visited_items_ = new_most_visited_items;
+  NotifyAboutMostVisitedItems();
+}
 
-  const BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::GetActiveDesktop());
-  for (BrowserList::const_iterator it = browser_list->begin();
-       it != browser_list->end(); ++it) {
-    if ((*it)->profile() != profile_ || !((*it)->instant_controller()))
-      continue;
-
-    InstantController* controller = (*it)->instant_controller()->instant();
-    if (!controller)
-      continue;
-    // TODO(kmadhusu): It would be cleaner to have each InstantController
-    // register itself as an InstantServiceObserver and push out updates that
-    // way. Refer to crbug.com/246355 for more details.
-    controller->UpdateMostVisitedItems();
-  }
-#endif
+void InstantService::NotifyAboutMostVisitedItems() {
+  FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
+                    MostVisitedItemsChanged(most_visited_items_));
 }
 
 void InstantService::OnThemeChanged(ThemeService* theme_service) {

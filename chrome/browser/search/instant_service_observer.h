@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_SEARCH_INSTANT_SERVICE_OBSERVER_H_
 #define CHROME_BROWSER_SEARCH_INSTANT_SERVICE_OBSERVER_H_
 
+#include <vector>
+
+struct InstantMostVisitedItem;
 struct ThemeBackgroundInfo;
 
 // InstantServiceObserver defines the observer interface for InstantService.
@@ -12,6 +15,10 @@ class InstantServiceObserver {
  public:
   // Indicates that the user's custom theme has changed in some way.
   virtual void ThemeInfoChanged(const ThemeBackgroundInfo&) = 0;
+
+  // Indicates that the most visited items has changed.
+  virtual void MostVisitedItemsChanged(
+      const std::vector<InstantMostVisitedItem>&) = 0;
 
  protected:
   virtual ~InstantServiceObserver() {}

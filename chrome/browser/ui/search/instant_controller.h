@@ -214,10 +214,6 @@ class InstantController : public InstantPage::Delegate,
   // Resets list of debug events.
   void ClearDebugEvents();
 
-  // Gets the Most Visited items info from InstantService and forwards them to
-  // the Instant page renderer via the appropriate InstantPage subclass.
-  void UpdateMostVisitedItems();
-
   // Returns the correct Instant URL to use from the following possibilities:
   //   o The default search engine's Instant URL
   //   o The local page (see GetLocalInstantURL())
@@ -337,6 +333,8 @@ class InstantController : public InstantPage::Delegate,
 
   // Overridden from InstantServiceObserver:
   virtual void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) OVERRIDE;
+  virtual void MostVisitedItemsChanged(
+      const std::vector<InstantMostVisitedItem>& items) OVERRIDE;
 
   // Invoked by the InstantLoader when the Instant page wants to delete a
   // Most Visited item.

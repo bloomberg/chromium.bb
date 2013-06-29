@@ -1138,14 +1138,8 @@ void InstantController::ClearDebugEvents() {
   debug_events_.clear();
 }
 
-void InstantController::UpdateMostVisitedItems() {
-  InstantService* instant_service = GetInstantService();
-  if (!instant_service)
-    return;
-
-  std::vector<InstantMostVisitedItem> items;
-  instant_service->GetCurrentMostVisitedItems(&items);
-
+void InstantController::MostVisitedItemsChanged(
+    const std::vector<InstantMostVisitedItem>& items) {
   if (overlay_)
     overlay_->sender()->SendMostVisitedItems(items);
 
@@ -1212,8 +1206,10 @@ void InstantController::InstantPageRenderViewCreated(
 
   // Update theme info so that the page picks it up.
   InstantService* instant_service = GetInstantService();
-  if (instant_service)
+  if (instant_service) {
     instant_service->UpdateThemeInfo();
+    instant_service->UpdateMostVisitedItemsInfo();
+  }
 
   // Ensure the searchbox API has the correct initial state.
   if (IsContentsFrom(overlay(), contents)) {
@@ -1230,7 +1226,6 @@ void InstantController::InstantPageRenderViewCreated(
   } else {
     NOTREACHED();
   }
-  UpdateMostVisitedItems();
 }
 
 void InstantController::InstantSupportChanged(
@@ -1667,12 +1662,13 @@ void InstantController::UpdateInfoForInstantTab() {
 
     // Update theme details.
     InstantService* instant_service = GetInstantService();
-    if (instant_service)
+    if (instant_service) {
       instant_service->UpdateThemeInfo();
+      instant_service->UpdateMostVisitedItemsInfo();
+    }
 
     instant_tab_->InitializeFonts();
     instant_tab_->InitializePromos();
-    UpdateMostVisitedItems();
     instant_tab_->sender()->FocusChanged(omnibox_focus_state_,
                                          omnibox_focus_change_reason_);
     instant_tab_->sender()->SetInputInProgress(IsInputInProgress());

@@ -68,15 +68,15 @@ class InstantService : public BrowserContextKeyedService,
   // Most Visited deletions.
   void UndoAllMostVisitedDeletions();
 
-  // Returns the last added InstantMostVisitedItems.
-  void GetCurrentMostVisitedItems(
-      std::vector<InstantMostVisitedItem>* items) const;
-
   // Invoked by the InstantController to update theme information for NTP.
   //
   // TODO(kmadhusu): Invoking this from InstantController shouldn't be
   // necessary. Investigate more and remove this from here.
   void UpdateThemeInfo();
+
+  // Invoked by the InstantController to update most visited items details for
+  // NTP.
+  void UpdateMostVisitedItemsInfo();
 
  private:
   // Overridden from BrowserContextKeyedService:
@@ -91,6 +91,9 @@ class InstantService : public BrowserContextKeyedService,
   // async callback. Parses them and sends them to the renderer via
   // SendMostVisitedItems.
   void OnMostVisitedItemsReceived(const history::MostVisitedURLList& data);
+
+  // Notifies the observer about the last known most visited items.
+  void NotifyAboutMostVisitedItems();
 
   // Theme changed notification handler.
   void OnThemeChanged(ThemeService* theme_service);
