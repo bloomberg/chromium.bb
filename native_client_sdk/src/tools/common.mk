@@ -235,7 +235,7 @@ clean:
 # $3 = Extra Settings
 #
 define DEPEND_RULE
-ifndef $(IGNORE_DEPS)
+ifndef IGNORE_DEPS
 .PHONY: rebuild_$(1)
 
 rebuild_$(1) :| $(STAMPDIR)/dir.stamp
