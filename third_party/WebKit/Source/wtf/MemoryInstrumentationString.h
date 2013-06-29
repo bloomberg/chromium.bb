@@ -43,7 +43,7 @@ inline void reportMemoryUsage(const StringImpl* stringImpl, MemoryObjectInfo* me
 {
     size_t selfSize = sizeof(StringImpl);
 
-    size_t length = stringImpl->length() + (stringImpl->hasTerminatingNullCharacter() ? 1 : 0);
+    size_t length = stringImpl->length();
     size_t bufferSize = length * (stringImpl->is8Bit() ? sizeof(LChar) : sizeof(UChar));
     const void* buffer = stringImpl->is8Bit() ? static_cast<const void*>(stringImpl->characters8()) : static_cast<const void*>(stringImpl->characters16());
 

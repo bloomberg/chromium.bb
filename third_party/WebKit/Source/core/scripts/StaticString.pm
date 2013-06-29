@@ -35,7 +35,7 @@ sub GenerateStrings($)
 
     while ( my ($name, $value) = each %strings ) {
         my $characterList = join("', '", split("", $value));
-        push(@result, "static const UChar ${name}String16[] = { '$characterList', 0 };\n");
+        push(@result, "static const UChar ${name}String16[] = { '$characterList' };\n");
     }
 
     push(@result, "\n");

@@ -226,7 +226,7 @@ private:
         , m_buffer(0)
         , m_refCount(s_refCountIncrement)
         , m_length(length)
-        , m_hashAndFlags(s_hashFlag8BitBuffer | BufferInternal | s_hashFlagHasTerminatingNullCharacter)
+        , m_hashAndFlags(s_hashFlag8BitBuffer | BufferInternal)
     {
         ASSERT(m_data8);
         ASSERT(m_length);
@@ -396,7 +396,6 @@ public:
     static unsigned flagsOffset() { return OBJECT_OFFSETOF(StringImpl, m_hashAndFlags); }
     static unsigned flagIs8Bit() { return s_hashFlag8BitBuffer; }
     static unsigned dataOffset() { return OBJECT_OFFSETOF(StringImpl, m_data8); }
-    static PassRefPtr<StringImpl> createWithTerminatingNullCharacter(const StringImpl&);
 
     template<typename CharType, size_t inlineCapacity>
     static PassRefPtr<StringImpl> adopt(Vector<CharType, inlineCapacity>& vector)
@@ -454,8 +453,6 @@ public:
     {
         return !length() && !isStatic();
     }
-
-    bool hasTerminatingNullCharacter() const { return m_hashAndFlags & s_hashFlagHasTerminatingNullCharacter; }
 
     bool isAtomic() const { return m_hashAndFlags & s_hashFlagIsAtomic; }
     void setIsAtomic(bool isAtomic)
@@ -702,7 +699,7 @@ private:
 
     static const unsigned s_hashFlagHas16BitShadow = 1u << 7;
     static const unsigned s_hashFlag8BitBuffer = 1u << 6;
-    static const unsigned s_hashFlagHasTerminatingNullCharacter = 1u << 5;
+    static const unsigned s_unusedHashFlag = 1u << 5;
     static const unsigned s_hashFlagIsAtomic = 1u << 4;
     static const unsigned s_hashFlagDidReportCost = 1u << 3;
     static const unsigned s_hashMaskBufferOwnership = 1u | (1u << 1);
@@ -721,7 +718,7 @@ public:
         unsigned m_hashAndFlags;
 
         static const unsigned s_initialRefCount = s_refCountFlagIsStaticString;
-        static const unsigned s_initialFlags = s_hashFlag8BitBuffer | s_hashFlagHas16BitShadow | BufferInternal | s_hashFlagHasTerminatingNullCharacter;
+        static const unsigned s_initialFlags = s_hashFlag8BitBuffer | s_hashFlagHas16BitShadow | BufferInternal;
         static const unsigned s_hashShift = s_flagCount;
     };
 

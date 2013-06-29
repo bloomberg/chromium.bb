@@ -452,15 +452,10 @@ const UChar* StringImpl::getData16SlowCase() const
 
     STRING_STATS_ADD_UPCONVERTED_STRING(m_length);
 
-    unsigned len = length();
-    if (hasTerminatingNullCharacter())
-        ++len;
-
-    m_copyData16 = static_cast<UChar*>(fastMalloc(len * sizeof(UChar)));
-
+    unsigned length = this->length();
+    m_copyData16 = static_cast<UChar*>(fastMalloc(length * sizeof(UChar)));
     m_hashAndFlags |= s_hashFlagHas16BitShadow;
-
-    upconvertCharacters(0, len);
+    upconvertCharacters(0, length);
 
     return m_copyData16;
 }
@@ -2045,39 +2040,13 @@ PassRefPtr<StringImpl> StringImpl::adopt(StringBuffer<UChar>& buffer)
     return adoptRef(new StringImpl(buffer.release(), length));
 }
 
-PassRefPtr<StringImpl> StringImpl::createWithTerminatingNullCharacter(const StringImpl& string)
-{
-    // Use createUninitialized instead of 'new StringImpl' so that the string and its buffer
-    // get allocated in a single memory block.
-    unsigned length = string.m_length;
-    RELEASE_ASSERT(length < numeric_limits<unsigned>::max());
-    RefPtr<StringImpl> terminatedString;
-    if (string.is8Bit()) {
-        LChar* data;
-        terminatedString = createUninitialized(length + 1, data);
-        memcpy(data, string.m_data8, length * sizeof(LChar));
-        data[length] = 0;
-    } else {
-        UChar* data;
-        terminatedString = createUninitialized(length + 1, data);
-        memcpy(data, string.m_data16, length * sizeof(UChar));
-        data[length] = 0;
-    }
-    --(terminatedString->m_length);
-    terminatedString->m_hashAndFlags = (string.m_hashAndFlags & (~s_flagMask | s_hashFlag8BitBuffer)) | s_hashFlagHasTerminatingNullCharacter;
-    return terminatedString.release();
-}
-
 size_t StringImpl::sizeInBytes() const
 {
     // FIXME: support substrings
     size_t size = length();
     if (is8Bit()) {
-        if (has16BitShadow()) {
+        if (has16BitShadow())
             size += 2 * size;
-            if (hasTerminatingNullCharacter())
-                size += 2;
-        }
     } else
         size *= 2;
     return size + sizeof(*this);
