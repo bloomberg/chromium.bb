@@ -44,7 +44,7 @@ StateData kStateData[] = {
   { "maryland", "md" },
   { "massachusetts", "ma" },
   { "michigan", "mi" },
-  { "minnesota", "mv" },
+  { "minnesota", "mn" },
   { "mississippi", "ms" },
   { "missouri", "mo" },
   { "montana", "mt" },
