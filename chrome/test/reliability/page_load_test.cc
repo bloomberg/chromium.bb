@@ -70,7 +70,6 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "components/breakpad/common/breakpad_paths.h"
 #include "net/base/net_util.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "v8/include/v8-testing.h"
@@ -635,7 +634,7 @@ class PageLoadTest : public UITest {
       crash_dumps_dir_path_ = base::FilePath::FromUTF8Unsafe(
           alternate_minidump_location);
     } else {
-      PathService::Get(breakpad::DIR_CRASH_DUMPS, &crash_dumps_dir_path_);
+      PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dumps_dir_path_);
     }
 
     base::FileEnumerator enumerator(crash_dumps_dir_path_,

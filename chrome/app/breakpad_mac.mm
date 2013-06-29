@@ -25,13 +25,13 @@
 #include "base/threading/thread_restrictions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/dump_without_crashing.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "components/breakpad/common/breakpad_paths.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "native_client/src/trusted/service_runtime/osx/crash_filter.h"
 #include "policy/policy_constants.h"
@@ -250,7 +250,7 @@ void InitCrashReporter() {
           " doesn't exist";
     } else {
       PathService::Override(
-          breakpad::DIR_CRASH_DUMPS,
+          chrome::DIR_CRASH_DUMPS,
           base::FilePath(alternate_minidump_location));
       if (is_browser) {
         // Print out confirmation message to the stdout, but only print
@@ -262,7 +262,7 @@ void InitCrashReporter() {
   }
 
   base::FilePath dir_crash_dumps;
-  PathService::Get(breakpad::DIR_CRASH_DUMPS, &dir_crash_dumps);
+  PathService::Get(chrome::DIR_CRASH_DUMPS, &dir_crash_dumps);
   [breakpad_config setObject:base::SysUTF8ToNSString(dir_crash_dumps.value())
                       forKey:@BREAKPAD_DUMP_DIRECTORY];
 

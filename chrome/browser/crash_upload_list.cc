@@ -6,10 +6,10 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "chrome/common/chrome_paths.h"
 #if defined(OS_WIN)
 #include "chrome/browser/crash_upload_list_win.h"
 #endif
-#include "components/breakpad/common/breakpad_paths.h"
 
 // static
 const char* CrashUploadList::kReporterLogFilename = "uploads.log";
@@ -17,7 +17,7 @@ const char* CrashUploadList::kReporterLogFilename = "uploads.log";
 // static
 CrashUploadList* CrashUploadList::Create(Delegate* delegate) {
   base::FilePath crash_dir_path;
-  PathService::Get(breakpad::DIR_CRASH_DUMPS, &crash_dir_path);
+  PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
   base::FilePath upload_log_path =
       crash_dir_path.AppendASCII(kReporterLogFilename);
 #if defined(OS_WIN)

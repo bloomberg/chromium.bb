@@ -28,8 +28,8 @@
 #include "breakpad/src/client/linux/minidump_writer/linux_dumper.h"
 #include "breakpad/src/client/linux/minidump_writer/minidump_writer.h"
 #include "chrome/app/breakpad_linux_impl.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/env_vars.h"
-#include "components/breakpad/common/breakpad_paths.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_ANDROID)
@@ -379,7 +379,7 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
   base::FilePath dumps_path("/tmp");
   PathService::Get(base::DIR_TEMP, &dumps_path);
   if (!info->upload)
-    PathService::Get(breakpad::DIR_CRASH_DUMPS, &dumps_path);
+    PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   const uint64 rand = base::RandUint64();
   const std::string minidump_filename =
       base::StringPrintf("%s/chromium-%s-minidump-%016" PRIx64 ".dmp",

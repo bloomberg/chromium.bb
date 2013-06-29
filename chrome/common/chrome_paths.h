@@ -18,6 +18,7 @@ enum {
   DIR_APP = PATH_START,         // Directory where dlls and data reside.
   DIR_LOGS,                     // Directory where logs should be written.
   DIR_USER_DATA,                // Directory where user data can be written.
+  DIR_CRASH_DUMPS,              // Directory where crash dumps are written.
   DIR_RESOURCES,                // Directory containing separate file resources
                                 // used by Chrome at runtime.
   DIR_INSPECTOR,                // Directory where web inspector is located.

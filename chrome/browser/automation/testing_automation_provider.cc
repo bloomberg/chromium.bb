@@ -112,6 +112,7 @@
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
@@ -120,7 +121,6 @@
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "components/breakpad/common/breakpad_paths.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/favicon_status.h"
@@ -2238,7 +2238,7 @@ void TestingAutomationProvider::GetBrowserInfo(
   properties->SetString("command_line_string",
       CommandLine::ForCurrentProcess()->GetCommandLineString());
   base::FilePath dumps_path;
-  PathService::Get(breakpad::DIR_CRASH_DUMPS, &dumps_path);
+  PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   properties->SetString("DIR_CRASH_DUMPS", dumps_path.value());
 #if defined(USE_AURA)
   properties->SetBoolean("aura", true);

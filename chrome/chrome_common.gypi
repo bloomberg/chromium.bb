@@ -36,7 +36,6 @@
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
         '<(DEPTH)/chrome/chrome_resources.gyp:theme_resources',
         '<(DEPTH)/chrome/common_constants.gyp:common_constants',
-        '<(DEPTH)/components/components.gyp:breakpad_common',
         '<(DEPTH)/components/components.gyp:visitedlink_common',
         '<(DEPTH)/content/content.gyp:content_common',
         '<(DEPTH)/net/net.gyp:net',

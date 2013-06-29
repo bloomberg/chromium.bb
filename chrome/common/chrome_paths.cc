@@ -14,7 +14,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/widevine_cdm_constants.h"
-#include "components/breakpad/common/breakpad_paths.h"
 #include "ui/base/ui_base_paths.h"
 
 #if defined(OS_ANDROID)
@@ -190,6 +189,24 @@ bool PathProvider(int key, base::FilePath* result) {
       // Do not create the download directory here, we have done it twice now
       // and annoyed a lot of users.
 #endif
+      break;
+    case chrome::DIR_CRASH_DUMPS:
+#if defined(OS_CHROMEOS)
+      // ChromeOS uses a separate directory. See http://crosbug.com/25089
+      cur = base::FilePath("/var/log/chrome");
+#elif defined(OS_ANDROID)
+      if (!base::android::GetCacheDirectory(&cur))
+        return false;
+#else
+      // The crash reports are always stored relative to the default user data
+      // directory.  This avoids the problem of having to re-initialize the
+      // exception handler after parsing command line options, which may
+      // override the location of the app's profile directory.
+      if (!GetDefaultUserDataDirectory(&cur))
+        return false;
+#endif
+      cur = cur.Append(FILE_PATH_LITERAL("Crash Reports"));
+      create_dir = true;
       break;
     case chrome::DIR_RESOURCES:
 #if defined(OS_MACOSX)
@@ -479,25 +496,6 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif
       break;
 
-    case breakpad::DIR_CRASH_DUMPS:
-#if defined(OS_CHROMEOS)
-      // ChromeOS uses a separate directory. See http://crosbug.com/25089
-      cur = base::FilePath("/var/log/chrome");
-#elif defined(OS_ANDROID)
-      if (!base::android::GetCacheDirectory(&cur))
-        return false;
-#else
-      // The crash reports are always stored relative to the default user data
-      // directory.  This avoids the problem of having to re-initialize the
-      // exception handler after parsing command line options, which may
-      // override the location of the app's profile directory.
-      if (!GetDefaultUserDataDirectory(&cur))
-        return false;
-#endif
-      cur = cur.Append(FILE_PATH_LITERAL("Crash Reports"));
-      create_dir = true;
-      break;
-
     default:
       return false;
   }
@@ -514,8 +512,6 @@ bool PathProvider(int key, base::FilePath* result) {
 // eliminate this object file if there is no direct entry point into it.
 void RegisterPathProvider() {
   PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
-  PathService::RegisterProvider(
-      PathProvider, breakpad::PATH_START, breakpad::PATH_END);
 }
 
 }  // namespace chrome

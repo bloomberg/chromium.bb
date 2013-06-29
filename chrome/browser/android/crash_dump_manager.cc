@@ -14,8 +14,8 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/descriptors_android.h"
-#include "components/breakpad/common/breakpad_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/file_descriptor_info.h"
@@ -100,7 +100,7 @@ void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
   // We are dealing with a valid minidump. Copy it to the crash report
   // directory from where Java code will upload it later on.
   base::FilePath crash_dump_dir;
-  r = PathService::Get(breakpad::DIR_CRASH_DUMPS, &crash_dump_dir);
+  r = PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
   if (!r) {
     NOTREACHED() << "Failed to retrieve the crash dump directory.";
     return;
