@@ -54,9 +54,6 @@ class OverscanCalibrator : public ui::LayerDelegate {
   // The insets initially given. Stored so we can undo the insets later.
   gfx::Insets initial_insets_;
 
-  // The insets claimed by the display.
-  gfx::Insets native_insets_;
-
   // Whether the current insets are committed to the system or not.
   bool committed_;
 

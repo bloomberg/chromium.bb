@@ -287,20 +287,7 @@ const gfx::Display& DisplayManager::FindDisplayContainingPoint(
 
 void DisplayManager::SetOverscanInsets(int64 display_id,
                                        const gfx::Insets& insets_in_dip) {
-  // TODO(oshima): insets has to be rotated according to the
-  // the current display rotation.
-  display_info_[display_id].SetOverscanInsets(true, insets_in_dip);
-  DisplayInfoList display_info_list;
-  for (DisplayList::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
-    display_info_list.push_back(GetDisplayInfo(iter->id()));
-  }
-  AddMirrorDisplayInfoIfAny(&display_info_list);
-  UpdateDisplays(display_info_list);
-}
-
-void DisplayManager::ClearCustomOverscanInsets(int64 display_id) {
-  display_info_[display_id].clear_has_custom_overscan_insets();
+  display_info_[display_id].SetOverscanInsets(insets_in_dip);
   DisplayInfoList display_info_list;
   for (DisplayList::const_iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
@@ -372,7 +359,7 @@ void DisplayManager::RegisterDisplayProperty(
   if (0.5f <= ui_scale && ui_scale <= 2.0f)
     display_info_[display_id].set_ui_scale(ui_scale);
   if (overscan_insets)
-    display_info_[display_id].SetOverscanInsets(true, *overscan_insets);
+    display_info_[display_id].SetOverscanInsets(*overscan_insets);
 }
 
 bool DisplayManager::IsDisplayRotationEnabled() const {
@@ -504,7 +491,7 @@ void DisplayManager::UpdateDisplays(
     if (new_info_iter != new_display_info_list.end() &&
         mirrored_display_id == new_info_iter->id()) {
       DisplayInfo info = *new_info_iter;
-      info.SetOverscanInsets(true, gfx::Insets());
+      info.SetOverscanInsets(gfx::Insets());
       InsertAndUpdateDisplayInfo(info);
 
       mirrored_display_ = CreateDisplayFromDisplayInfoById(new_info_iter->id());

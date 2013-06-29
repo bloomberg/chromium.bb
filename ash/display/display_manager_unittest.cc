@@ -702,43 +702,6 @@ TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
   EXPECT_EQ("0,0 100x100", FindDisplayForId(10).bounds().ToString());
 }
 
-TEST_F(DisplayManagerTest, AutomaticOverscanInsets) {
-  if (!SupportsMultipleDisplays())
-    return;
-
-  UpdateDisplay("200x200,400x400");
-
-  std::vector<DisplayInfo> display_info_list;
-  display_info_list.push_back(GetDisplayInfoAt(0));
-  display_info_list.push_back(GetDisplayInfoAt(1));
-  display_info_list[1].set_has_overscan_for_test(true);
-  int64 id = display_info_list[1].id();
-  // SetDefaultOverscanInsets(&display_info_list[1]);
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
-  // It has overscan insets, although SetOverscanInsets() isn't called.
-  EXPECT_EQ("380x380",
-            GetDisplayInfoAt(1).size_in_pixel().ToString());
-
-  // If custom overscan insets is specified, the specified value is used.
-  display_manager()->SetOverscanInsets(id, gfx::Insets(5, 6, 7, 8));
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ("386x388",
-            GetDisplayInfoAt(1).size_in_pixel().ToString());
-
-  // Do not overscan even though it has 'has_overscan' flag, if the custom
-  // insets is empty.
-  display_manager()->SetOverscanInsets(id, gfx::Insets());
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ("400x400",
-            GetDisplayInfoAt(1).size_in_pixel().ToString());
-
-  // Clearing the custom overscan should set the bounds to
-  // original.
-  display_manager()->ClearCustomOverscanInsets(id);
-  EXPECT_EQ("380x380",
-            GetDisplayInfoAt(1).size_in_pixel().ToString());
-}
-
 TEST_F(DisplayManagerTest, Rotate) {
   if (!SupportsMultipleDisplays())
     return;

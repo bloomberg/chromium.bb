@@ -377,10 +377,6 @@ void DisplayController::SetOverscanInsets(int64 display_id,
   GetDisplayManager()->SetOverscanInsets(display_id, insets_in_dip);
 }
 
-void DisplayController::ClearCustomOverscanInsets(int64 display_id) {
-  GetDisplayManager()->ClearCustomOverscanInsets(display_id);
-}
-
 std::vector<internal::RootWindowController*>
 DisplayController::GetAllRootWindowControllers() {
   std::vector<internal::RootWindowController*> controllers;

@@ -195,7 +195,7 @@ void StoreCurrentDisplayProperties() {
     property_value->SetInteger("rotation", static_cast<int>(info.rotation()));
     property_value->SetInteger("ui-scale",
                                static_cast<int>(info.ui_scale() * 1000));
-    if (info.has_custom_overscan_insets())
+    if (!info.overscan_insets_in_dip().empty())
       InsetsToValue(info.overscan_insets_in_dip(), property_value.get());
     pref_data->Set(base::Int64ToString(id), property_value.release());
   }

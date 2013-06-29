@@ -96,9 +96,6 @@ class ASH_EXPORT DisplayManager :
   // display's bounds change.
   void SetOverscanInsets(int64 display_id, const gfx::Insets& insets_in_dip);
 
-  // Clears the overscan insets
-  void ClearCustomOverscanInsets(int64 display_id);
-
   // Sets the display's rotation.
   void SetDisplayRotation(int64 display_id, gfx::Display::Rotation rotation);
 

@@ -745,14 +745,13 @@ TEST_F(DisplayControllerTest, OverscanInsets) {
   generator.MoveMouseToInHost(20, 25);
   EXPECT_EQ("5,15", event_handler.GetLocationAndReset());
 
-  display_controller->ClearCustomOverscanInsets(display1.id());
+  display_controller->SetOverscanInsets(display1.id(), gfx::Insets());
   EXPECT_EQ("0,0 120x200", root_windows[0]->bounds().ToString());
   EXPECT_EQ("120,0 150x200",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
 
   generator.MoveMouseToInHost(30, 20);
   EXPECT_EQ("30,20", event_handler.GetLocationAndReset());
-
 
   // Make sure the root window transformer uses correct scale
   // factor when swapping display. Test crbug.com/253690.

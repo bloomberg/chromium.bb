@@ -22,19 +22,19 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
 
   info = DisplayInfo::CreateFromSpecWithID("10+20-300x400*2/o", 10);
   EXPECT_EQ("10,20 300x400", info.bounds_in_pixel().ToString());
-  EXPECT_EQ("286x380", info.size_in_pixel().ToString());
+  EXPECT_EQ("288x380", info.size_in_pixel().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_0, info.rotation());
   EXPECT_EQ("5,3,5,3", info.overscan_insets_in_dip().ToString());
 
   info = DisplayInfo::CreateFromSpecWithID("10+20-300x400*2/ob", 10);
   EXPECT_EQ("10,20 300x400", info.bounds_in_pixel().ToString());
-  EXPECT_EQ("286x380", info.size_in_pixel().ToString());
+  EXPECT_EQ("288x380", info.size_in_pixel().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_0, info.rotation());
   EXPECT_EQ("5,3,5,3", info.overscan_insets_in_dip().ToString());
 
   info = DisplayInfo::CreateFromSpecWithID("10+20-300x400*2/or", 10);
   EXPECT_EQ("10,20 300x400", info.bounds_in_pixel().ToString());
-  EXPECT_EQ("380x286", info.size_in_pixel().ToString());
+  EXPECT_EQ("380x288", info.size_in_pixel().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_90, info.rotation());
   // TODO(oshima): This should be rotated too. Fix this.
   EXPECT_EQ("5,3,5,3", info.overscan_insets_in_dip().ToString());
