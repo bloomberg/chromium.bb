@@ -955,7 +955,7 @@ willPositionSheet:(NSWindow*)sheet
   // TODO(sail) Remove this.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseCoreAnimation)) {
-    return browser_window_controller::kCoreAnimationEnabledLazy;
+    return browser_window_controller::kCoreAnimationDisabled;
   }
   if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseCoreAnimation) == "lazy") {

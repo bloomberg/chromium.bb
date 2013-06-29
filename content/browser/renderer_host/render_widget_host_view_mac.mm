@@ -87,7 +87,7 @@ static CoreAnimationStatus GetCoreAnimationStatus() {
   // TODO(sail) Remove this.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseCoreAnimation)) {
-    return CORE_ANIMATION_ENABLED_LAZY;
+    return CORE_ANIMATION_DISABLED;
   }
   if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseCoreAnimation) == "lazy") {
