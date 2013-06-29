@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
 #ifndef HTMLTreeBuilder_h
@@ -81,8 +81,6 @@ public:
     void finished();
 
     void setShouldSkipLeadingNewline(bool shouldSkip) { m_shouldSkipLeadingNewline = shouldSkip; }
-
-    static bool emptyInnerHTMLRequiresParser(HTMLElement* contextElement);
 
 private:
     class CharacterTokenBuffer;
@@ -185,7 +183,6 @@ private:
     InsertionMode insertionMode() const { return m_insertionMode; }
     void setInsertionMode(InsertionMode mode) { m_insertionMode = mode; }
 
-    static InsertionMode impliedInsertionModeForTag(const QualifiedName& tagName, bool& wasExplicit);
     void resetInsertionModeAppropriately();
 
     void processTemplateStartTag(AtomicHTMLToken*);
