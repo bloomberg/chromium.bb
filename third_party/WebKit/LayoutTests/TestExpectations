@@ -1523,6 +1523,8 @@ crbug.com/248938 [ Win ] virtual/threaded/animations/animation-direction-reverse
 
 crbug.com/255724 [ Mac Debug ] animations/animation-direction-normal.html [ Failure ]
 
+crbug.com/255726 [ Debug ] compositing/contents-opaque/visibility-hidden.html [ Pass Failure ]
+
 # Switching to content shell failures
 crbug.com/178709 plugins/document-open.html [ Failure ]
 crbug.com/178719 plugins/reloadplugins-and-pages.html [ Timeout ]
