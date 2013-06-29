@@ -92,11 +92,12 @@ void AutofillPopupViewBridge::InvalidateRow(size_t row) {
 void AutofillPopupViewBridge::UpdateBoundsAndRedrawPopup() {
   NSRect frame = NSRectFromCGRect(controller_->popup_bounds().ToCGRect());
 
-  // Flip coordinates back into Cocoa-land.
-  // TODO(isherman): Does this agree with the controller's idea of handling
-  // multi-monitor setups correctly?
-  NSScreen* screen = [[controller_->container_view() window] screen];
-  frame.origin.y = NSHeight([screen frame]) - NSMaxY(frame);
+  // Flip coordinates back into Cocoa-land.  The controller's platform-neutral
+  // coordinate space places the origin at the top-left of the first screen,
+  // whereas Cocoa's coordinate space expects the origin to be at the
+  // bottom-left of this same screen.
+  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  frame.origin.y = NSMaxY([screen frame]) - NSMaxY(frame);
 
   // Leave room for the border.
   frame = NSInsetRect(frame, -kBorderWidth, -kBorderWidth);
