@@ -172,6 +172,8 @@ class CHROMEOS_EXPORT IBusText {
     return &selection_attributes_;
   }
 
+  void CopyFrom(const IBusText& obj);
+
  private:
   std::string text_;
   std::string annotation_;

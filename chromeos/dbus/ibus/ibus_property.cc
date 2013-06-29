@@ -178,4 +178,18 @@ IBusProperty::IBusProperty()
 IBusProperty::~IBusProperty() {
 }
 
+void IBusProperty::CopyFrom(const IBusProperty& obj) {
+  key_ = obj.key();
+  type_ = obj.type();
+  label_ = obj.label();
+  tooltip_ = obj.tooltip();
+  visible_ = obj.visible();
+  checked_ = obj.checked();
+  sub_properties_.resize(obj.sub_properties().size());
+  for (size_t i = 0; i < obj.sub_properties().size(); ++i) {
+    sub_properties_[i] = new IBusProperty();
+    sub_properties_[i]->CopyFrom(*obj.sub_properties()[i]);
+  }
+}
+
 }  // namespace chromeos

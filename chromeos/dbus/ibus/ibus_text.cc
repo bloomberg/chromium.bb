@@ -227,4 +227,13 @@ IBusText::IBusText()
 IBusText::~IBusText() {
 }
 
+void IBusText::CopyFrom(const IBusText& obj) {
+  text_ = obj.text();
+  annotation_ = obj.annotation();
+  description_title_ = obj.description_title();
+  description_body_ = obj.description_body();
+  underline_attributes_ = obj.underline_attributes();
+  selection_attributes_ = obj.selection_attributes();
+}
+
 }  // namespace chromeos

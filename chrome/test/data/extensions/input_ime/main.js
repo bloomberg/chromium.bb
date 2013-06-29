@@ -230,6 +230,25 @@ EngineBridge.prototype = {
   },
 
   /**
+   * Returns active engine ID. Returns null if there is no active engine.
+   * @this EngineBridge
+   * @return {string} An string which identify the engine.
+   **/
+  getActiveEngineID: function() {
+    return this.activeEngine_;
+  },
+
+  /**
+   * Returns currently focused context ID. Returns null if there is no focused
+   * context.
+   * @this EngineBridge
+   * @return {strine} An string which identify the context.
+   **/
+  getFocusedContextID: function () {
+    return this.focusedContext_;
+  },
+
+  /**
    * Initialize EngineBridge by binding with chrome event.
    * @this EngineBridge
    **/
@@ -251,13 +270,9 @@ EngineBridge.prototype = {
   }
 };
 
-document.addEventListener('readystatechange', function() {
-  if (document.readyState === 'complete') {
-    var engineBridge = new EngineBridge();
-    engineBridge.Initialize();
-    engineBridge.addEngine('IdentityIME', new IdentityIME());
-    engineBridge.addEngine('ToUpperIME', new ToUpperIME());
-    engineBridge.addEngine('APIArgumentIME', new APIArgumentIME());
-    chrome.test.sendMessage('ReadyToUseImeEvent');
-  }
-});
+var engineBridge = new EngineBridge();
+engineBridge.Initialize();
+engineBridge.addEngine('IdentityIME', new IdentityIME());
+engineBridge.addEngine('ToUpperIME', new ToUpperIME());
+engineBridge.addEngine('APIArgumentIME', new APIArgumentIME());
+chrome.test.sendMessage('ReadyToUseImeEvent');

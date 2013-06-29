@@ -91,6 +91,8 @@ class CHROMEOS_EXPORT IBusProperty {
   IBusProperty();
   virtual ~IBusProperty();
 
+  void CopyFrom(const IBusProperty& obj);
+
   // The identity for the IBusProperty.
   std::string key() const { return key_; }
   void set_key(const std::string& key) { key_ = key; }

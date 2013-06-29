@@ -201,7 +201,7 @@ bool InputMethodEngineIBus::ClearComposition(int context_id,
   GetCurrentService()->UpdatePreedit(
       *preedit_text_.get(),
       0,
-      true,
+      false,
       chromeos::IBusEngineService::IBUS_ENGINE_PREEEDIT_FOCUS_OUT_MODE_COMMIT);
   return true;
 }
