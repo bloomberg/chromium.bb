@@ -64,13 +64,13 @@ void SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 
 void SystemGestureEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  touch_uma_.RecordTouchEvent(target, *event);
+  ash::TouchUMA::GetInstance()->RecordTouchEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event, event->touch_id());
 }
 
 void SystemGestureEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  touch_uma_.RecordGestureEvent(target, *event);
+  ash::TouchUMA::GetInstance()->RecordGestureEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event,
       event->GetLowestTouchId());
 

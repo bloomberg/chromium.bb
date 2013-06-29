@@ -39,6 +39,9 @@ class BrowserRootView : public views::internal::RootView {
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
+  // Overridden from internal::RootView:
+  virtual void DispatchGestureEvent(ui::GestureEvent* event) OVERRIDE;
+
  private:
   // Returns true if the event should be forwarded to the tabstrip.
   bool ShouldForwardToTabStrip(const ui::DropTargetEvent& event);

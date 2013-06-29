@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -117,6 +118,16 @@ int BrowserRootView::OnPerformDrop(const ui::DropTargetEvent& event) {
 
 const char* BrowserRootView::GetClassName() const {
   return kViewClassName;
+}
+
+void BrowserRootView::DispatchGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP &&
+      event->location().y() <= 0 &&
+      event->location().x() <= browser_view_->GetBounds().width()) {
+    TouchUMA::RecordGestureAction(TouchUMA::GESTURE_ROOTVIEWTOP_TAP);
+  }
+
+  RootView::DispatchGestureEvent(event);
 }
 
 bool BrowserRootView::ShouldForwardToTabStrip(

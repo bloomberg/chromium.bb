@@ -1912,6 +1912,7 @@
         'browser/ui/views/toolbar_view.cc',
         'browser/ui/views/toolbar_view.h',
         'browser/ui/views/top_level_widget_views.cc',
+        'browser/ui/views/touch_uma/touch_uma.h',
         'browser/ui/views/uninstall_view.cc',
         'browser/ui/views/uninstall_view.h',
         'browser/ui/views/update_recommended_message_box.cc',
@@ -2567,9 +2568,16 @@
           ],
         }],
         ['use_ash==1', {
+          'sources': [
+            'browser/ui/views/touch_uma/touch_uma_ash.cc',
+          ],
           'dependencies': [
             '../ash/ash.gyp:ash',
             '../ash/ash_strings.gyp:ash_strings',
+          ],
+        }, { # use_ash==0
+          'sources': [
+            'browser/ui/views/touch_uma/touch_uma.cc',
           ],
         }],
         ['toolkit_views==0 or chromeos==1', {

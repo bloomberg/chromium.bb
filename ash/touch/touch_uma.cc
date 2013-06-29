@@ -22,26 +22,6 @@
 
 namespace {
 
-enum GestureActionType {
-  GESTURE_UNKNOWN,
-  GESTURE_OMNIBOX_PINCH,
-  GESTURE_OMNIBOX_SCROLL,
-  GESTURE_TABSTRIP_PINCH,
-  GESTURE_TABSTRIP_SCROLL,
-  GESTURE_BEZEL_SCROLL,
-  GESTURE_DESKTOP_SCROLL,
-  GESTURE_DESKTOP_PINCH,
-  GESTURE_WEBPAGE_PINCH,
-  GESTURE_WEBPAGE_SCROLL,
-  GESTURE_WEBPAGE_TAP,
-  GESTURE_TABSTRIP_TAP,
-  GESTURE_BEZEL_DOWN,
-// NOTE: Add new action types only immediately above this line. Also, make sure
-// the enum list in tools/histogram/histograms.xml is updated with any change in
-// here.
-  GESTURE_ACTION_COUNT
-};
-
 enum UMAEventType {
   UMA_ET_UNKNOWN,
   UMA_ET_TOUCH_RELEASED,
@@ -102,72 +82,6 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(WindowTouchDetails,
                                  kWindowTouchDetails,
                                  NULL);
 
-GestureActionType FindGestureActionType(aura::Window* window,
-                                        const ui::GestureEvent& event) {
-  if (!window || window->GetRootWindow() == window) {
-    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
-      return GESTURE_BEZEL_SCROLL;
-    if (event.type() == ui::ET_GESTURE_BEGIN)
-      return GESTURE_BEZEL_DOWN;
-    return GESTURE_UNKNOWN;
-  }
-
-  std::string name = window ? window->name() : std::string();
-
-  const char kDesktopBackgroundView[] = "DesktopBackgroundView";
-  if (name == kDesktopBackgroundView) {
-    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
-      return GESTURE_DESKTOP_SCROLL;
-    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
-      return GESTURE_DESKTOP_PINCH;
-    return GESTURE_UNKNOWN;
-  }
-
-  const char kWebPage[] = "RenderWidgetHostViewAura";
-  if (name == kWebPage) {
-    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
-      return GESTURE_WEBPAGE_PINCH;
-    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
-      return GESTURE_WEBPAGE_SCROLL;
-    if (event.type() == ui::ET_GESTURE_TAP)
-      return GESTURE_WEBPAGE_TAP;
-    return GESTURE_UNKNOWN;
-  }
-
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
-  if (!widget)
-    return GESTURE_UNKNOWN;
-
-  views::View* view = widget->GetRootView()->
-      GetEventHandlerForPoint(event.location());
-  if (!view)
-    return GESTURE_UNKNOWN;
-
-  name = view->GetClassName();
-
-  const char kTabStrip[] = "TabStrip";
-  const char kTab[] = "BrowserTab";
-  if (name == kTabStrip || name == kTab) {
-    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
-      return GESTURE_TABSTRIP_SCROLL;
-    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
-      return GESTURE_TABSTRIP_PINCH;
-    if (event.type() == ui::ET_GESTURE_TAP)
-      return GESTURE_TABSTRIP_TAP;
-    return GESTURE_UNKNOWN;
-  }
-
-  const char kOmnibox[] = "BrowserOmniboxViewViews";
-  if (name == kOmnibox) {
-    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
-      return GESTURE_OMNIBOX_SCROLL;
-    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
-      return GESTURE_OMNIBOX_PINCH;
-    return GESTURE_UNKNOWN;
-  }
-
-  return GESTURE_UNKNOWN;
-}
 
 UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
   switch (event.type()) {
@@ -257,14 +171,10 @@ UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
 }
 
 namespace ash {
-namespace internal {
 
-TouchUMA::TouchUMA()
-    : touch_in_progress_(false),
-      burst_length_(0) {
-}
-
-TouchUMA::~TouchUMA() {
+// static
+TouchUMA* TouchUMA::GetInstance() {
+  return Singleton<TouchUMA>::get();
 }
 
 void TouchUMA::RecordGestureEvent(aura::Window* target,
@@ -274,11 +184,7 @@ void TouchUMA::RecordGestureEvent(aura::Window* target,
                             UMA_ET_COUNT);
 
   GestureActionType action = FindGestureActionType(target, event);
-  if (action != GESTURE_UNKNOWN) {
-    UMA_HISTOGRAM_ENUMERATION("Ash.GestureTarget",
-                              action,
-                              GESTURE_ACTION_COUNT);
-  }
+  RecordGestureAction(action);
 
   if (event.type() == ui::ET_GESTURE_END &&
       event.details().touch_points() == 2) {
@@ -290,6 +196,13 @@ void TouchUMA::RecordGestureEvent(aura::Window* target,
     }
     details->last_mt_time_ = event.time_stamp();
   }
+}
+
+void TouchUMA::RecordGestureAction(GestureActionType action) {
+  if (action == GESTURE_UNKNOWN || action >= GESTURE_ACTION_COUNT)
+    return;
+  UMA_HISTOGRAM_ENUMERATION("Ash.GestureTarget", action,
+                            GESTURE_ACTION_COUNT);
 }
 
 void TouchUMA::RecordTouchEvent(aura::Window* target,
@@ -423,6 +336,14 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
   }
 }
 
+TouchUMA::TouchUMA()
+    : touch_in_progress_(false),
+      burst_length_(0) {
+}
+
+TouchUMA::~TouchUMA() {
+}
+
 void TouchUMA::UpdateBurstData(const ui::TouchEvent& event) {
   if (event.type() == ui::ET_TOUCH_PRESSED) {
     if (!touch_in_progress_) {
@@ -445,5 +366,72 @@ void TouchUMA::UpdateBurstData(const ui::TouchEvent& event) {
   }
 }
 
-}  // namespace internal
+TouchUMA::GestureActionType TouchUMA::FindGestureActionType(
+    aura::Window* window,
+    const ui::GestureEvent& event) {
+  if (!window || window->GetRootWindow() == window) {
+    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+      return GESTURE_BEZEL_SCROLL;
+    if (event.type() == ui::ET_GESTURE_BEGIN)
+      return GESTURE_BEZEL_DOWN;
+    return GESTURE_UNKNOWN;
+  }
+
+  std::string name = window ? window->name() : std::string();
+
+  const char kDesktopBackgroundView[] = "DesktopBackgroundView";
+  if (name == kDesktopBackgroundView) {
+    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+      return GESTURE_DESKTOP_SCROLL;
+    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
+      return GESTURE_DESKTOP_PINCH;
+    return GESTURE_UNKNOWN;
+  }
+
+  const char kWebPage[] = "RenderWidgetHostViewAura";
+  if (name == kWebPage) {
+    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
+      return GESTURE_WEBPAGE_PINCH;
+    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+      return GESTURE_WEBPAGE_SCROLL;
+    if (event.type() == ui::ET_GESTURE_TAP)
+      return GESTURE_WEBPAGE_TAP;
+    return GESTURE_UNKNOWN;
+  }
+
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
+  if (!widget)
+    return GESTURE_UNKNOWN;
+
+  views::View* view = widget->GetRootView()->
+      GetEventHandlerForPoint(event.location());
+  if (!view)
+    return GESTURE_UNKNOWN;
+
+  name = view->GetClassName();
+
+  const char kTabStrip[] = "TabStrip";
+  const char kTab[] = "BrowserTab";
+  if (name == kTabStrip || name == kTab) {
+    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+      return GESTURE_TABSTRIP_SCROLL;
+    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
+      return GESTURE_TABSTRIP_PINCH;
+    if (event.type() == ui::ET_GESTURE_TAP)
+      return GESTURE_TABSTRIP_TAP;
+    return GESTURE_UNKNOWN;
+  }
+
+  const char kOmnibox[] = "BrowserOmniboxViewViews";
+  if (name == kOmnibox) {
+    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+      return GESTURE_OMNIBOX_SCROLL;
+    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
+      return GESTURE_OMNIBOX_PINCH;
+    return GESTURE_UNKNOWN;
+  }
+
+  return GESTURE_UNKNOWN;
+}
+
 }  // namespace ash

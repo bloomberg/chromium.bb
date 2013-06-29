@@ -7,6 +7,7 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/touch/touch_uma.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
@@ -119,14 +120,23 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (event->type() == ui::ET_GESTURE_TAP &&
-      event->details().tap_count() == 2 &&
       target->delegate()->GetNonClientComponent(event->location()) ==
       HTCAPTION) {
-    ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-        ash::UMA_TOGGLE_MAXIMIZE_CAPTION_GESTURE);
-    ToggleMaximizedState(target);  // |this| may be destroyed from here.
-    event->StopPropagation();
-    return;
+    if (event->details().tap_count() == 2) {
+      ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+          ash::UMA_TOGGLE_MAXIMIZE_CAPTION_GESTURE);
+      // Note: TouchUMA::GESTURE_FRAMEVIEW_TAP is counted twice each time
+      // TouchUMA::GESTURE_MAXIMIZE_DOUBLETAP is counted once.
+      TouchUMA::GetInstance()->RecordGestureAction(
+          TouchUMA::GESTURE_MAXIMIZE_DOUBLETAP);
+      ToggleMaximizedState(target);  // |this| may be destroyed from here.
+      event->StopPropagation();
+      return;
+    } else {
+      // Note: TouchUMA::GESTURE_FRAMEVIEW_TAP is counted twice for each tap.
+      TouchUMA::GetInstance()->RecordGestureAction(
+          TouchUMA::GESTURE_FRAMEVIEW_TAP);
+    }
   }
   ToplevelWindowEventHandler::OnGestureEvent(event);
 }

@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/theme_image_mapper.h"
+#include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -457,6 +458,7 @@ Tab::Tab(TabController* controller)
       immersive_loading_step_(0),
       should_display_crashed_favicon_(false),
       theme_provider_(NULL),
+      tab_activated_with_last_gesture_begin_(false),
       hover_controller_(this),
       showing_icon_(false),
       showing_close_button_(false),
@@ -711,6 +713,8 @@ void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
       CLOSE_TAB_FROM_TOUCH;
   DCHECK_EQ(close_button_, sender);
   controller()->CloseTab(this, source);
+  if (event.type() == ui::ET_GESTURE_TAP)
+    TouchUMA::RecordGestureAction(TouchUMA::GESTURE_TABCLOSE_TAP);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1028,6 +1032,7 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
                                        parent());
       ui::ListSelectionModel original_selection;
       original_selection.Copy(controller()->GetSelectionModel());
+      tab_activated_with_last_gesture_begin_ = !IsActive();
       if (!IsSelected())
         controller()->SelectTab(this);
       gfx::Point loc(event->location());

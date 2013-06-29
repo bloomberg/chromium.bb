@@ -69,8 +69,6 @@ class SystemGestureEventFilter : public ui::EventHandler,
   scoped_ptr<LongPressAffordanceHandler> long_press_affordance_;
   scoped_ptr<TwoFingerDragHandler> two_finger_drag_;
 
-  TouchUMA touch_uma_;
-
   DISALLOW_COPY_AND_ASSIGN(SystemGestureEventFilter);
 };
 

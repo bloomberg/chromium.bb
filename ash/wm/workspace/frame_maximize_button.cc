@@ -9,6 +9,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/touch/touch_uma.h"
 #include "ash/wm/maximize_bubble_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
@@ -279,8 +280,11 @@ void FrameMaximizeButton::OnGestureEvent(ui::GestureEvent* event) {
     // for TAP and SCROLL_END). So it is necessary to update the snap-state for
     // the current event.
     ProcessUpdateEvent(*event);
-    if (event->type() == ui::ET_GESTURE_TAP)
+    if (event->type() == ui::ET_GESTURE_TAP) {
       snap_type_ = SnapTypeForLocation(event->location());
+      TouchUMA::GetInstance()->RecordGestureAction(
+          TouchUMA::GESTURE_FRAMEMAXIMIZE_TAP);
+    }
     ProcessEndEvent(*event);
     event->SetHandled();
     return;

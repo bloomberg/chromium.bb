@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
+#include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -1495,6 +1496,8 @@ void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
     UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
                               TabStripModel::NEW_TAB_ENUM_COUNT);
     controller()->CreateNewTab();
+    if (event.type() == ui::ET_GESTURE_TAP)
+      TouchUMA::RecordGestureAction(TouchUMA::GESTURE_NEWTAB_TAP);
   }
 }
 
@@ -1582,6 +1585,17 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_BEGIN:
       EndDrag(END_DRAG_CANCEL);
       break;
+
+    case ui::ET_GESTURE_TAP: {
+      const int active_index = controller_->GetActiveIndex();
+      DCHECK_NE(-1, active_index);
+      Tab* active_tab = tab_at(active_index);
+      TouchUMA::GestureActionType action = TouchUMA::GESTURE_TABNOSWITCH_TAP;
+      if (active_tab->tab_activated_with_last_gesture_begin())
+        action = TouchUMA::GESTURE_TABSWITCH_TAP;
+      TouchUMA::RecordGestureAction(action);
+      break;
+    }
 
     default:
       break;
