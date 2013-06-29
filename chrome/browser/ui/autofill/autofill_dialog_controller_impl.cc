@@ -1411,8 +1411,14 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
       }
       break;
 
-    case CREDIT_CARD_NUMBER:
-      return CreditCardNumberValidityMessage(value);
+    case CREDIT_CARD_NUMBER: {
+      if (!value.empty()) {
+        base::string16 message = CreditCardNumberValidityMessage(value);
+        if (!message.empty())
+          return message;
+      }
+      break;
+    }
 
     case CREDIT_CARD_NAME:
       // Wallet requires a first and last name.
