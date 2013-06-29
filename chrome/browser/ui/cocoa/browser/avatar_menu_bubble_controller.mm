@@ -183,11 +183,13 @@ const CGFloat kManagedUserSpacing = 26.0;
   NSRect frame = [[self window] frame];
   // Adjust the origin after we have switched from the managed user menu to the
   // regular menu.
-  if (expanded_)
+  CGFloat newWidth = std::min(kBubbleMinWidth + width, kBubbleMaxWidth);
+  if (expanded_) {
+    frame.origin.x += frame.size.width - newWidth;
     frame.origin.y += frame.size.height - yOffset;
+  }
   frame.size.height = yOffset;
-  frame.size.width = kBubbleMinWidth + width;
-  frame.size.width = std::min(NSWidth(frame), kBubbleMaxWidth);
+  frame.size.width = newWidth;
   [[self window] setFrame:frame display:YES];
 }
 
