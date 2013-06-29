@@ -30,3 +30,6 @@ HostResolverImplTest.StartWithinCallback
 # Crash. See crbug.com/234776.
 DiskCacheEntryTest.EvictOldEntries
 DiskCacheEntryTest.NewEvictionEvictOldEntries
+
+# Fails flakily. http://crbug.com/255775
+SimpleIndexFileTest.WriteThenLoadIndex

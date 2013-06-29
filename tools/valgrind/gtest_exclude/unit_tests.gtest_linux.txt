@@ -29,3 +29,6 @@ HttpPipeliningCompatibilityClientTest.*
 
 # http://crbug.com/238964
 CpuInfoProviderTest.*
+
+# Fails flakily. http://crbug.com/255771
+NetworkStatsTestUDP.UDPEcho100BytesHasProxy
