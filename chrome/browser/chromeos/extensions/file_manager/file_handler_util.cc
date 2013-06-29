@@ -496,22 +496,19 @@ bool GetTaskForURLAndPath(Profile* profile,
 }
 
 // ExtensionTaskExecutor executes tasks with kTaskFile type.
-// TODO(hashimoto): Make this non ref-counted. crbug.com/231173
-class ExtensionTaskExecutor
-    : public base::RefCountedThreadSafe<ExtensionTaskExecutor> {
+class ExtensionTaskExecutor {
  public:
   ExtensionTaskExecutor(Profile* profile,
                         const Extension* extension,
                         int32 tab_id,
                         const std::string& action_id);
 
-  // Executes the task for each file. When true is returned, |done| will be run
-  // with the execution result.
-  bool Execute(const std::vector<FileSystemURL>& file_urls,
+  // Executes the task for each file. |done| will be run with the result.
+  void Execute(const std::vector<FileSystemURL>& file_urls,
                const FileTaskFinishedCallback& done);
 
  private:
-  friend class base::RefCountedThreadSafe<ExtensionTaskExecutor>;
+  // This object is responsible to delete itself.
   virtual ~ExtensionTaskExecutor();
 
   struct FileDefinition {
@@ -553,6 +550,9 @@ class ExtensionTaskExecutor
   int32 tab_id_;
   const std::string action_id_;
   FileTaskFinishedCallback done_;
+  base::WeakPtrFactory<ExtensionTaskExecutor> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionTaskExecutor);
 };
 
 bool ExecuteFileTask(Profile* profile,
@@ -587,9 +587,13 @@ bool ExecuteFileTask(Profile* profile,
 
   // Execute the task.
   if (task_type == kTaskFile) {
-    scoped_refptr<ExtensionTaskExecutor> executor(
-        new ExtensionTaskExecutor(profile, extension, tab_id, action_id));
-    return executor->Execute(file_urls, done);
+    // Forbid calling undeclared handlers.
+    if (!FindFileBrowserHandler(extension, action_id))
+      return false;
+
+    (new ExtensionTaskExecutor(
+        profile, extension, tab_id, action_id))->Execute(file_urls, done);
+    return true;
   } else if (task_type == kTaskApp) {
     for (size_t i = 0; i != file_urls.size(); ++i) {
       extensions::LaunchPlatformAppWithFileHandler(
@@ -691,17 +695,14 @@ ExtensionTaskExecutor::ExtensionTaskExecutor(
     : profile_(profile),
       extension_(extension),
       tab_id_(tab_id),
-      action_id_(action_id) {
+      action_id_(action_id),
+      weak_ptr_factory_(this) {
 }
 
 ExtensionTaskExecutor::~ExtensionTaskExecutor() {}
 
-bool ExtensionTaskExecutor::Execute(const std::vector<FileSystemURL>& file_urls,
+void ExtensionTaskExecutor::Execute(const std::vector<FileSystemURL>& file_urls,
                                     const FileTaskFinishedCallback& done) {
-  // Forbid calling undeclared handlers.
-  if (!FindFileBrowserHandler(extension_, action_id_))
-    return false;
-
   done_ = done;
 
   // Get file system context for the extension to which onExecute event will be
@@ -711,8 +712,9 @@ bool ExtensionTaskExecutor::Execute(const std::vector<FileSystemURL>& file_urls,
       Extension::GetBaseURLFromExtensionId(extension_->id()).GetOrigin(),
       fileapi::kFileSystemTypeExternal,
       fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-      base::Bind(&ExtensionTaskExecutor::DidOpenFileSystem, this, file_urls));
-  return true;
+      base::Bind(&ExtensionTaskExecutor::DidOpenFileSystem,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 file_urls));
 }
 
 void ExtensionTaskExecutor::DidOpenFileSystem(
@@ -734,7 +736,7 @@ void ExtensionTaskExecutor::DidOpenFileSystem(
       base::Bind(&PermissionSetter::SetupPermission,
                  base::Owned(permission_setter)),
       base::Bind(&ExtensionTaskExecutor::ExecuteFileActionsOnUIThread,
-                 this,
+                 weak_ptr_factory_.GetWeakPtr(),
                  file_system_name,
                  file_system_root));
 }
@@ -743,7 +745,7 @@ void ExtensionTaskExecutor::ExecuteDoneOnUIThread(bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!done_.is_null())
     done_.Run(success);
-  done_.Reset();
+  delete this;
 }
 
 void ExtensionTaskExecutor::ExecuteFileActionsOnUIThread(
@@ -779,7 +781,10 @@ void ExtensionTaskExecutor::ExecuteFileActionsOnUIThread(
     queue->AddPendingTask(
         profile_, extension_->id(),
         base::Bind(&ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent,
-                   this, file_system_name, file_system_root, file_list,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   file_system_name,
+                   file_system_root,
+                   file_list,
                    handler_pid));
   }
 }
