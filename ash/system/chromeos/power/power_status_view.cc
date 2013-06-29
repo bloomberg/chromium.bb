@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/power/tray_power.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/tray_constants.h"
@@ -30,8 +31,6 @@ const int kPaddingVertical = 10;
 const int kLabelMinWidth = 120;
 // Padding between battery status text and battery icon on default view.
 const int kPaddingBetweenBatteryStatusAndIcon = 3;
-// Minimum battery percentage rendered in UI.
-const int kMinBatteryPercent = 1;
 }  // namespace
 
 PowerStatusView::PowerStatusView(ViewType view_type,
@@ -42,10 +41,8 @@ PowerStatusView::PowerStatusView(ViewType view_type,
       time_status_label_(NULL),
       percentage_label_(NULL),
       icon_(NULL),
-      icon_image_index_(-1),
-      icon_image_offset_(0),
-      battery_charging_unreliable_(false),
       view_type_(view_type) {
+  PowerStatus::Get()->AddObserver(this);
   if (view_type == VIEW_DEFAULT) {
     time_status_label_ = new views::Label;
     percentage_label_ = new views::Label;
@@ -56,17 +53,22 @@ PowerStatusView::PowerStatusView(ViewType view_type,
     time_label_ = new views::Label;
     LayoutNotificationView();
   }
-  Update();
+  OnPowerStatusChanged();
 }
 
-void PowerStatusView::UpdatePowerStatus(
-    const chromeos::PowerSupplyStatus& status) {
-  supply_status_ = status;
-  // Sanitize.
-  if (supply_status_.battery_is_full)
-    supply_status_.battery_percentage = 100.0;
+PowerStatusView::~PowerStatusView() {
+  PowerStatus::Get()->RemoveObserver(this);
+}
 
-  Update();
+void PowerStatusView::OnPowerStatusChanged() {
+  view_type_ == VIEW_DEFAULT ?
+      UpdateTextForDefaultView() : UpdateTextForNotificationView();
+
+  if (icon_) {
+    icon_->SetImage(
+        PowerStatus::Get()->GetBatteryImage(PowerStatus::ICON_DARK));
+    icon_->SetVisible(true);
+  }
 }
 
 void PowerStatusView::LayoutDefaultView() {
@@ -107,43 +109,29 @@ void PowerStatusView::LayoutNotificationView() {
   AddChildView(time_label_);
 }
 
-void PowerStatusView::UpdateText() {
-  view_type_ == VIEW_DEFAULT ?
-      UpdateTextForDefaultView() : UpdateTextForNotificationView();
-  accessible_name_ = TrayPower::GetAccessibleNameString(supply_status_);
-}
-
 void PowerStatusView::UpdateTextForDefaultView() {
+  const PowerStatus& status = *PowerStatus::Get();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   base::string16 battery_percentage;
   base::string16 battery_time_status;
-  bool is_charging_unreliable =
-      TrayPower::IsBatteryChargingUnreliable(supply_status_);
-  if (supply_status_.line_power_on && supply_status_.battery_is_full) {
+
+  if (status.IsLinePowerConnected() && status.IsBatteryFull()) {
     battery_time_status =
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_FULL);
-  } else if (supply_status_.battery_percentage < 0.0f) {
-    battery_time_status =
-        is_charging_unreliable ?
-        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE) :
-        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
   } else {
     battery_percentage = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ONLY,
-        base::IntToString16(TrayPower::GetRoundedBatteryPercentage(
-            supply_status_.battery_percentage)));
-    if (is_charging_unreliable) {
+        base::IntToString16(status.GetRoundedBatteryPercent()));
+    if (status.IsUsbChargerConnected()) {
       battery_time_status = rb.GetLocalizedString(
           IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE);
     } else {
-      if (supply_status_.is_calculating_battery_time) {
+      if (status.IsBatteryTimeBeingCalculated()) {
         battery_time_status =
             rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
       } else {
-        base::TimeDelta time = base::TimeDelta::FromSeconds(
-            supply_status_.line_power_on ?
-            supply_status_.battery_seconds_to_full :
-            supply_status_.battery_seconds_to_empty);
+        base::TimeDelta time = status.IsLinePowerConnected() ?
+            status.GetBatteryTimeToFull() : status.GetBatteryTimeToEmpty();
         int hour = time.InHours();
         int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
         if (hour || min) {
@@ -152,7 +140,7 @@ void PowerStatusView::UpdateTextForDefaultView() {
               base::IntToString16(min);
           battery_time_status =
               l10n_util::GetStringFUTF16(
-                  supply_status_.line_power_on ?
+                  status.IsLinePowerConnected() ?
                   IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT :
                   IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT,
                   base::IntToString16(hour),
@@ -170,60 +158,44 @@ void PowerStatusView::UpdateTextForDefaultView() {
 }
 
 void PowerStatusView::UpdateTextForNotificationView() {
-  int hour = 0;
-  int min = 0;
-  if (!supply_status_.is_calculating_battery_time) {
-    base::TimeDelta time = base::TimeDelta::FromSeconds(
-        supply_status_.line_power_on ?
-        supply_status_.battery_seconds_to_full :
-        supply_status_.battery_seconds_to_empty);
-    hour = time.InHours();
-    min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
-  }
-  bool is_charging_unreliable =
-      TrayPower::IsBatteryChargingUnreliable(supply_status_);
-  if (supply_status_.line_power_on && supply_status_.battery_is_full) {
+  const PowerStatus& status = *PowerStatus::Get();
+  if (status.IsLinePowerConnected() && status.IsBatteryFull()) {
     status_label_->SetText(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_BATTERY_FULL));
   } else {
-    if (supply_status_.battery_percentage < 0.0f) {
-      // If charging is unreliable and no percentage available, we
-      // leave the top field, |staus_label|, blank. We do not want to
-      // show "Calculating". The user is informed in the bottom field,
-      // |time_label|, that "Charging not reliable".
-      status_label_->SetText(
-          is_charging_unreliable ?
-          base::string16() :
-          ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-              IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING));
-    } else {
-      status_label_->SetText(
-          l10n_util::GetStringFUTF16(
-              IDS_ASH_STATUS_TRAY_BATTERY_PERCENT,
-              base::IntToString16(TrayPower::GetRoundedBatteryPercentage(
-                  supply_status_.battery_percentage))));
-    }
+    status_label_->SetText(
+        l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_BATTERY_PERCENT,
+            base::IntToString16(status.GetRoundedBatteryPercent())));
   }
 
-  if (is_charging_unreliable) {
+  int hour = 0;
+  int min = 0;
+  if (!status.IsBatteryTimeBeingCalculated()) {
+    base::TimeDelta time = status.IsLinePowerConnected() ?
+        status.GetBatteryTimeToFull() : status.GetBatteryTimeToEmpty();
+    hour = time.InHours();
+    min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
+  }
+
+  if (status.IsUsbChargerConnected()) {
     time_label_->SetText(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE));
-  } else if (supply_status_.is_calculating_battery_time) {
+  } else if (status.IsBatteryTimeBeingCalculated()) {
     time_label_->SetText(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING));
   } else if (hour || min) {
-    if (supply_status_.line_power_on) {
+    if (status.IsLinePowerConnected()) {
       time_label_->SetText(
           l10n_util::GetStringFUTF16(
               IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL,
               base::IntToString16(hour),
               base::IntToString16(min)));
     } else {
-      // This is a low battery warning, which prompts user when battery
-      // time left is not much (ie in minutes).
+      // This is a low battery warning prompting the user in minutes.
       min = hour * 60 + min;
       ShellDelegate* delegate = Shell::GetInstance()->delegate();
       if (delegate) {
@@ -236,54 +208,6 @@ void PowerStatusView::UpdateTextForNotificationView() {
   } else {
     time_label_->SetText(base::string16());
   }
-}
-
-base::string16 PowerStatusView::GetBatteryTimeAccessibilityString(
-    int hour, int min) {
-  DCHECK(hour || min);
-  if (hour && !min) {
-    return Shell::GetInstance()->delegate()->GetTimeDurationLongString(
-        base::TimeDelta::FromHours(hour));
-  } else if (min  && !hour) {
-    return Shell::GetInstance()->delegate()->GetTimeDurationLongString(
-        base::TimeDelta::FromMinutes(min));
-  } else {
-    return l10n_util::GetStringFUTF16(
-        IDS_ASH_STATUS_TRAY_BATTERY_TIME_ACCESSIBLE,
-        Shell::GetInstance()->delegate()->GetTimeDurationLongString(
-            base::TimeDelta::FromHours(hour)),
-        Shell::GetInstance()->delegate()->GetTimeDurationLongString(
-            base::TimeDelta::FromMinutes(min)));
-  }
-}
-
-void PowerStatusView::UpdateIcon() {
-  if (icon_) {
-    int index = TrayPower::GetBatteryImageIndex(supply_status_);
-    int offset = TrayPower::GetBatteryImageOffset(supply_status_);
-    bool charging_unreliable =
-        TrayPower::IsBatteryChargingUnreliable(supply_status_);
-    if (icon_image_index_ != index ||
-        icon_image_offset_ != offset ||
-        battery_charging_unreliable_ != charging_unreliable) {
-      icon_image_index_ = index;
-      icon_image_offset_ = offset;
-      battery_charging_unreliable_ = charging_unreliable;
-      if (icon_image_index_ != -1) {
-        icon_->SetImage(
-            TrayPower::GetBatteryImage(icon_image_index_,
-                                       icon_image_offset_,
-                                       battery_charging_unreliable_,
-                                       ICON_DARK));
-      }
-    }
-    icon_->SetVisible(true);
-  }
-}
-
-void PowerStatusView::Update() {
-  UpdateText();
-  UpdateIcon();
 }
 
 void PowerStatusView::ChildPreferredSizeChanged(views::View* child) {

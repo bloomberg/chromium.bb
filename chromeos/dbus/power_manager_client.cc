@@ -804,24 +804,28 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   void UpdateStatus() {
     if (pause_count_ > 0) {
       pause_count_--;
+      if (pause_count_ == 2)
+        discharging_ = !discharging_;
     } else {
-      int discharge_amt = battery_percentage_ <= 10 ? 1 : 10;
-      battery_percentage_ += (discharging_ ? -discharge_amt : discharge_amt);
+      if (discharging_)
+        battery_percentage_ -= (battery_percentage_ <= 10 ? 1 : 10);
+      else
+        battery_percentage_ += (battery_percentage_ >= 10 ? 10 : 1);
       battery_percentage_ = std::min(std::max(battery_percentage_, 0), 100);
       // We pause at 0 and 100% so that it's easier to check those conditions.
       if (battery_percentage_ == 0 || battery_percentage_ == 100) {
-        discharging_ = !discharging_;
         pause_count_ = 4;
         if (battery_percentage_ == 100)
           cycle_count_ = (cycle_count_ + 1) % 3;
       }
     }
-    const int kSecondsToEmptyFullBattery(3 * 60 * 60);  // 3 hours.
+    const int kSecondsToEmptyFullBattery = 3 * 60 * 60;  // 3 hours.
 
     status_.is_calculating_battery_time = (pause_count_ > 1);
     status_.line_power_on = !discharging_;
     status_.battery_is_present = true;
     status_.battery_percentage = battery_percentage_;
+    status_.battery_is_full = battery_percentage_ == 100 && !discharging_;
     if (cycle_count_ != 2) {
       status_.battery_state = discharging_ ?
           PowerSupplyStatus::DISCHARGING : PowerSupplyStatus::CHARGING;

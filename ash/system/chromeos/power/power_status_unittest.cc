@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,31 +20,15 @@ namespace internal {
 
 namespace {
 
-void ValidatePowerSupplyStatus(const chromeos::PowerSupplyStatus& status) {
-  EXPECT_TRUE(status.battery_is_present);
-  EXPECT_GT(status.battery_percentage, 0.0);
-  if (status.battery_state == chromeos::PowerSupplyStatus::DISCHARGING) {
-    EXPECT_GT(status.battery_seconds_to_empty, 0);
-    EXPECT_EQ(status.battery_seconds_to_full, 0);
-  } else {
-    EXPECT_GT(status.battery_seconds_to_full, 0);
-    EXPECT_EQ(status.battery_seconds_to_empty, 0);
-  }
-}
-
 class TestObserver : public PowerStatus::Observer {
  public:
-  TestObserver() : power_changed_count_(0) {
-  }
+  TestObserver() : power_changed_count_(0) {}
   virtual ~TestObserver() {}
 
-  virtual void OnPowerStatusChanged(
-      const chromeos::PowerSupplyStatus& power_status) OVERRIDE {
-    ++power_changed_count_;
-    ValidatePowerSupplyStatus(power_status);
-  }
-
   int power_changed_count() const { return power_changed_count_; }
+
+  // PowerStatus::Observer overrides:
+  virtual void OnPowerStatusChanged() OVERRIDE { ++power_changed_count_; }
 
  private:
   int power_changed_count_;
@@ -91,9 +75,6 @@ TEST_F(PowerStatusTest, PowerStatusInitializeAndUpdate) {
   // power supply status data.
   message_loop_.RunUntilIdle();
   EXPECT_EQ(1, test_observer_->power_changed_count());
-  chromeos::PowerSupplyStatus init_status =
-      power_status_->GetPowerSupplyStatus();
-  ValidatePowerSupplyStatus(init_status);
 
   // Test RequestUpdate, test_obsever_ should be notified for power suuply
   // status change.

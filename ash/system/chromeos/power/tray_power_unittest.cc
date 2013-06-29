@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_ptr.h"
+#include "chromeos/dbus/power_supply_status.h"
 #include "ui/message_center/fake_message_center.h"
 
 using chromeos::PowerSupplyStatus;
@@ -68,18 +69,19 @@ class TrayPowerTest : public test::AshTestBase {
     return tray_power_->notification_state_;
   }
 
-  bool MaybeShowUsbChargerNotification(const PowerSupplyStatus& old_status,
-                                       const PowerSupplyStatus& new_status) {
-    return tray_power_->MaybeShowUsbChargerNotification(old_status, new_status);
+  bool MaybeShowUsbChargerNotification(const PowerSupplyStatus& status) {
+    PowerStatus::Get()->set_status_for_testing(status);
+    return tray_power_->MaybeShowUsbChargerNotification();
   }
 
   bool UpdateNotificationState(const PowerSupplyStatus& status) {
-    return tray_power_->UpdateNotificationState(status);
+    PowerStatus::Get()->set_status_for_testing(status);
+    return tray_power_->UpdateNotificationState();
   }
 
-  void SetLastPowerStatus(const PowerSupplyStatus& status) {
-    tray_power_->last_power_supply_status_ = status;
-  }
+  void SetUsbChargerConnected(bool connected) {
+    tray_power_->usb_charger_was_connected_ = connected;
+   }
 
   // Returns a discharging PowerSupplyStatus more appropriate for testing.
   static PowerSupplyStatus DefaultPowerSupplyStatus() {
@@ -103,13 +105,18 @@ class TrayPowerTest : public test::AshTestBase {
 };
 
 TEST_F(TrayPowerTest, MaybeShowUsbChargerNotification) {
-  // Notification shows when connecting a USB charger.
   PowerSupplyStatus discharging = DefaultPowerSupplyStatus();
+  EXPECT_FALSE(MaybeShowUsbChargerNotification(discharging));
+  EXPECT_EQ(0, message_center()->add_count());
+  EXPECT_EQ(0, message_center()->remove_count());
+
+  // Notification shows when connecting a USB charger.
   PowerSupplyStatus usb_connected = DefaultPowerSupplyStatus();
   usb_connected.line_power_on = true;
   usb_connected.battery_state = PowerSupplyStatus::CONNECTED_TO_USB;
-  EXPECT_TRUE(MaybeShowUsbChargerNotification(discharging, usb_connected));
+  EXPECT_TRUE(MaybeShowUsbChargerNotification(usb_connected));
   EXPECT_EQ(1, message_center()->add_count());
+  EXPECT_EQ(0, message_center()->remove_count());
 
   // Change in charge does not trigger the notification again.
   PowerSupplyStatus more_charge = DefaultPowerSupplyStatus();
@@ -117,13 +124,15 @@ TEST_F(TrayPowerTest, MaybeShowUsbChargerNotification) {
   more_charge.battery_seconds_to_full = 60 * 60;
   more_charge.battery_percentage = 75.0;
   more_charge.battery_state = PowerSupplyStatus::CONNECTED_TO_USB;
-  EXPECT_FALSE(MaybeShowUsbChargerNotification(usb_connected, more_charge));
+  SetUsbChargerConnected(true);
+  EXPECT_FALSE(MaybeShowUsbChargerNotification(more_charge));
   EXPECT_EQ(1, message_center()->add_count());
   EXPECT_EQ(0, message_center()->remove_count());
 
   // Disconnecting a USB charger with the notification showing should close
   // the notification.
-  EXPECT_TRUE(MaybeShowUsbChargerNotification(usb_connected, discharging));
+  EXPECT_TRUE(MaybeShowUsbChargerNotification(discharging));
+  EXPECT_EQ(1, message_center()->add_count());
   EXPECT_EQ(1, message_center()->remove_count());
 }
 

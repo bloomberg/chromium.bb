@@ -27,11 +27,6 @@ class PowerNotificationView;
 class PowerTrayView;
 }
 
-enum IconSet {
-  ICON_LIGHT,
-  ICON_DARK
-};
-
 class ASH_EXPORT TrayPower : public SystemTrayItem,
                              public PowerStatus::Observer {
  public:
@@ -50,38 +45,6 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
             message_center::MessageCenter* message_center);
   virtual ~TrayPower();
 
-  // Gets whether battery charging is unreliable for |supply_status|.
-  // When a non-standard power supply is connected, the battery may
-  // change from being charged to discharged frequently depending on the
-  // charger power and power consumption, i.e usage. In this case we
-  // do not want to show either a charging or discharging state.
-  static bool IsBatteryChargingUnreliable(
-      const chromeos::PowerSupplyStatus& supply_status);
-
-  // Gets the icon index in the battery icon array image based on
-  // |supply_status|.  If |supply_status| is uncertain about the power state,
-  // returns -1.
-  static int GetBatteryImageIndex(
-      const chromeos::PowerSupplyStatus& supply_status);
-
-  // Gets the horizontal offset in the battery icon array image based on
-  // |supply_status|.
-  static int GetBatteryImageOffset(
-      const chromeos::PowerSupplyStatus& supply_status);
-
-  // Looks up the actual icon in the icon array image for |image_index|.
-  static gfx::ImageSkia GetBatteryImage(int image_index,
-                                        int image_offset,
-                                        bool charging_unreliable,
-                                        IconSet icon_set);
-
-  // Gets the battery accessible string for |supply_status|.
-  static base::string16 GetAccessibleNameString(
-      const chromeos::PowerSupplyStatus& supply_status);
-
-  // Gets rounded battery percentage for |battery_percentage|.
-  static int GetRoundedBatteryPercentage(double battery_percentage);
-
  private:
   friend class TrayPowerTest;
 
@@ -98,31 +61,25 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
       ShelfAlignment alignment) OVERRIDE;
 
   // Overridden from PowerStatus::Observer.
-  virtual void OnPowerStatusChanged(
-      const chromeos::PowerSupplyStatus& status) OVERRIDE;
-
-  // Requests a power status update.
-  void RequestStatusUpdate() const;
+  virtual void OnPowerStatusChanged() OVERRIDE;
 
   // Show a notification that a low-power USB charger has been connected.
   // Returns true if a notification was shown or explicitly hidden.
-  bool MaybeShowUsbChargerNotification(
-      const chromeos::PowerSupplyStatus& old_status,
-      const chromeos::PowerSupplyStatus& new_status);
+  bool MaybeShowUsbChargerNotification();
 
   // Sets |notification_state_|. Returns true if a notification should be shown.
-  bool UpdateNotificationState(const chromeos::PowerSupplyStatus& status);
-  bool UpdateNotificationStateForRemainingTime(int remaining_seconds);
-  bool UpdateNotificationStateForRemainingPercentage(
-      double remaining_percentage);
+  bool UpdateNotificationState();
+  bool UpdateNotificationStateForRemainingTime();
+  bool UpdateNotificationStateForRemainingPercentage();
 
   message_center::MessageCenter* message_center_;  // Not owned.
   tray::PowerTrayView* power_tray_;
   tray::PowerNotificationView* notification_view_;
   NotificationState notification_state_;
 
-  // Power supply status at the last update.
-  chromeos::PowerSupplyStatus last_power_supply_status_;
+  // Was a USB charger connected the last time OnPowerStatusChanged() was
+  // called?
+  bool usb_charger_was_connected_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPower);
 };
