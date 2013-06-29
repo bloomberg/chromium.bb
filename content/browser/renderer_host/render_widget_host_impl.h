@@ -498,6 +498,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // other way around.
   bool should_auto_resize() { return should_auto_resize_; }
 
+  void ComputeTouchLatency(const ui::LatencyInfo& latency_info);
   void FrameSwapped(const ui::LatencyInfo& latency_info);
 
   // Returns the ID that uniquely describes this component to the latency

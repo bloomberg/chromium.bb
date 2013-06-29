@@ -190,6 +190,10 @@ void TouchEventQueue::PopTouchEventToView(InputEventAckState ack_result) {
   for (WebTouchEventWithLatencyList::const_iterator iter = acked_event->begin(),
        end = acked_event->end();
        iter != end; ++iter) {
+    ui::LatencyInfo* latency = const_cast<ui::LatencyInfo*>(&(iter->latency));
+    latency->AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT, 0, 0);
+    render_widget_host_->ComputeTouchLatency(*latency);
     view->ProcessAckedTouchEvent((*iter), ack_result);
   }
 }

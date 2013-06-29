@@ -1114,8 +1114,9 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   // In Aura, gesture event will carry its original touch event's
   // INPUT_EVENT_LATENCY_RWH_COMPONENT. For non-aura platform, we add the
   // INPUT_EVENT_LATENCY_RWH_COMPONENT right here.
-  if (!ui_latency.HasLatencyComponent(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
-                                      GetLatencyComponentId()))
+  if (!ui_latency.FindLatency(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
+                              GetLatencyComponentId(),
+                              NULL))
     latency_info = NewInputLatencyInfo();
 
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_INJECTED_RWH_COMPONENT,
@@ -1296,8 +1297,9 @@ void RenderWidgetHostImpl::SendInputEvent(const WebInputEvent& input_event,
                                           int event_size,
                                           const ui::LatencyInfo& latency_info,
                                           bool is_keyboard_shortcut) {
-  DCHECK(latency_info.HasLatencyComponent(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
-                                          GetLatencyComponentId()));
+  DCHECK(latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
+                                  GetLatencyComponentId(),
+                                  NULL));
   input_event_start_time_ = TimeTicks::Now();
   Send(new InputMsg_HandleInputEvent(
       routing_id_, &input_event, latency_info, is_keyboard_shortcut));
@@ -2582,6 +2584,55 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
 
 void RenderWidgetHostImpl::DetachDelegate() {
   delegate_ = NULL;
+}
+
+void RenderWidgetHostImpl::ComputeTouchLatency(
+    const ui::LatencyInfo& latency_info) {
+  ui::LatencyInfo::LatencyComponent ui_component;
+  ui::LatencyInfo::LatencyComponent rwh_component;
+  ui::LatencyInfo::LatencyComponent acked_component;
+
+  if (!latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_UI_COMPONENT,
+                                0,
+                                &ui_component) ||
+      !latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
+                                GetLatencyComponentId(),
+                                &rwh_component))
+    return;
+
+  DCHECK(ui_component.event_count == 1);
+  DCHECK(rwh_component.event_count == 1);
+
+  base::TimeDelta ui_delta =
+      rwh_component.event_time - ui_component.event_time;
+  rendering_stats_.touch_ui_count++;
+  rendering_stats_.total_touch_ui_latency += ui_delta;
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Event.Latency.Browser.TouchUI",
+      ui_delta.InMicroseconds(),
+      0,
+      20000,
+      100);
+
+  if (latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT,
+                               0,
+                               &acked_component)) {
+    DCHECK(acked_component.event_count == 1);
+    base::TimeDelta acked_delta =
+        acked_component.event_time - rwh_component.event_time;
+    rendering_stats_.touch_acked_count++;
+    rendering_stats_.total_touch_acked_latency += acked_delta;
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Event.Latency.Browser.TouchAcked",
+        acked_delta.InMicroseconds(),
+        0,
+        1000000,
+        100);
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGpuBenchmarking))
+    Send(new ViewMsg_SetBrowserRenderingStats(routing_id_, rendering_stats_));
 }
 
 void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {

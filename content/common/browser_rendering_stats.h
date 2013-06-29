@@ -18,6 +18,10 @@ struct CONTENT_EXPORT BrowserRenderingStats {
   uint32 input_event_count;
   base::TimeDelta total_input_latency;
 
+  uint32 touch_ui_count;
+  base::TimeDelta total_touch_ui_latency;
+  uint32 touch_acked_count;
+  base::TimeDelta total_touch_acked_latency;
   // Note: when adding new members, please remember to update enumerateFields
   // in browser_rendering_stats.cc.
 

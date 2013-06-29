@@ -935,10 +935,6 @@ void RenderWidgetHostViewWin::ProcessAckedTouchEvent(
       INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter)  {
-    (*iter)->latency()->AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT,
-        static_cast<int64>(ack_result),
-        0);
     scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
     gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
         *(*iter), result, this));

@@ -72,7 +72,12 @@ struct UI_EXPORT LatencyInfo {
                                      base::TimeTicks time,
                                      uint32 event_count);
 
-  bool HasLatencyComponent(LatencyComponentType type, int64 id) const;
+  // Returns true if the a component with |type| and |id| is found in
+  // the latency_components and the component is stored to |output| if
+  // |output| is not NULL. Returns false if no such component is found.
+  bool FindLatency(LatencyComponentType type,
+                   int64 id,
+                   LatencyComponent* output) const;
 
   void Clear();
 

@@ -142,18 +142,23 @@ def CalcAnalysisResults(rendering_stats_deltas, results):
               averageAnalysisTimeMS,
               data_type='unimportant')
 
-def CalcLatencyResults(rendering_stats_deltas, results):
-  inputEventCount = rendering_stats_deltas.get(
-      'inputEventCount', 0)
-  totalInputLatencyInSeconds = rendering_stats_deltas.get(
-      'totalInputLatency', 0)
-
+def CalcLatency(rendering_stats_deltas, count_name, total_latency_name,
+                result_name, results):
+  eventCount = rendering_stats_deltas.get(count_name, 0)
+  totalLatencyInSeconds = rendering_stats_deltas.get(total_latency_name, 0)
   averageLatency = DivideIfPossibleOrZero(
-      (totalInputLatencyInSeconds * 1000), inputEventCount)
+      (totalLatencyInSeconds * 1000), eventCount)
+  results.Add(result_name, 'ms', averageLatency, data_type='unimportant')
 
-  results.Add('average_latency', 'ms', averageLatency,
-              data_type='unimportant')
-
+def CalcLatencyResults(rendering_stats_deltas, results):
+  CalcLatency(rendering_stats_deltas, 'inputEventCount', 'totalInputLatency',
+              'average_latency', results)
+  CalcLatency(rendering_stats_deltas, 'touchUICount', 'totalTouchUILatency',
+              'average_touch_ui_latency', results)
+  CalcLatency(rendering_stats_deltas, 'touchAckedCount',
+              'totalTouchAckedLatency',
+              'average_touch_acked_latency',
+              results)
 
 class Smoothness(page_measurement.PageMeasurement):
   def __init__(self):
