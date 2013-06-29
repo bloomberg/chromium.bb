@@ -475,6 +475,81 @@ ssl_FreePlatformKey(PlatformKey key)
     CFRelease(key);
 }
 
+#define SSL_MAX_DIGEST_INFO_PREFIX 20
+
+/* ssl3_GetDigestInfoPrefix sets |out| and |out_len| to point to a buffer that
+ * contains ASN.1 data that should be prepended to a hash of the given type in
+ * order to create a DigestInfo structure that is valid for use in a PKCS #1
+ * v1.5 RSA signature. |out_len| will not be set to a value greater than
+ * SSL_MAX_DIGEST_INFO_PREFIX. */
+static SECStatus
+ssl3_GetDigestInfoPrefix(SECOidTag hashAlg,
+                         const SSL3Opaque** out, unsigned int *out_len)
+{
+    /* These are the DER encoding of ASN.1 DigestInfo structures:
+     *   DigestInfo ::= SEQUENCE {
+     *     digestAlgorithm AlgorithmIdentifier,
+     *     digest OCTET STRING
+     *   }
+     * See PKCS #1 v2.2 Section 9.2, Note 1.
+     */
+    static const unsigned char kSHA1[] = {
+        0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e,
+        0x03, 0x02, 0x1a, 0x05, 0x00, 0x04, 0x14
+    };
+    static const unsigned char kSHA224[] = {
+        0x30, 0x2d, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+        0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x04, 0x05,
+        0x00, 0x04, 0x1c
+    };
+    static const unsigned char kSHA256[] = {
+        0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+        0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x05,
+        0x00, 0x04, 0x20
+    };
+    static const unsigned char kSHA384[] = {
+        0x30, 0x41, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+        0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x02, 0x05,
+        0x00, 0x04, 0x30
+    };
+    static const unsigned char kSHA512[] = {
+        0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86,
+        0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03, 0x05,
+        0x00, 0x04, 0x40
+    };
+
+    switch (hashAlg) {
+    case SEC_OID_UNKNOWN:
+        *out_len = 0;
+        break;
+    case SEC_OID_SHA1:
+        *out = kSHA1;
+        *out_len = sizeof(kSHA1);
+        break;
+    case SEC_OID_SHA224:
+        *out = kSHA224;
+        *out_len = sizeof(kSHA224);
+        break;
+    case SEC_OID_SHA256:
+        *out = kSHA256;
+        *out_len = sizeof(kSHA256);
+        break;
+    case SEC_OID_SHA384:
+        *out = kSHA384;
+        *out_len = sizeof(kSHA384);
+        break;
+    case SEC_OID_SHA512:
+        *out = kSHA512;
+        *out_len = sizeof(kSHA512);
+        break;
+    default:
+        PORT_SetError(SSL_ERROR_UNSUPPORTED_HASH_ALGORITHM);
+        return SECFailure;
+    }
+
+    return SECSuccess;
+}
+
 SECStatus
 ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
                         PRBool isTLS, KeyType keyType)
@@ -492,6 +567,9 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
     CSSM_DATA       hashData;
     CSSM_DATA       signatureData;
     CSSM_CC_HANDLE  cssmSignature       = 0;
+    const SSL3Opaque* prefix;
+    unsigned int    prefixLen;
+    SSL3Opaque      prefixAndHash[SSL_MAX_DIGEST_INFO_PREFIX + HASH_LENGTH_MAX];
 
     buf->data = NULL;
 
@@ -522,38 +600,23 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
         goto done;    /* error code was set. */
 
     sigAlg = cssmKey->KeyHeader.AlgorithmId;
-
     digestAlg = CSSM_ALGID_NONE;
-    if (keyType == rsaKey) {
-        switch (hash->hashAlg) {
-            case SEC_OID_UNKNOWN:
-                break;
-            case SEC_OID_SHA1:
-                digestAlg = CSSM_ALGID_SHA1;
-                break;
-            case SEC_OID_SHA224:
-                digestAlg = CSSM_ALGID_SHA224;
-                break;
-            case SEC_OID_SHA256:
-                digestAlg = CSSM_ALGID_SHA256;
-                break;
-            case SEC_OID_SHA384:
-                digestAlg = CSSM_ALGID_SHA384;
-                break;
-            case SEC_OID_SHA512:
-                digestAlg = CSSM_ALGID_SHA512;
-                break;
-            default:
-                PORT_SetError(SSL_ERROR_UNSUPPORTED_HASH_ALGORITHM);
-                goto done;
-        }
-    }
 
     switch (keyType) {
         case rsaKey:
             PORT_Assert(sigAlg == CSSM_ALGID_RSA);
-            hashData.Data   = hash->u.raw;
-            hashData.Length = hash->len;
+            if (ssl3_GetDigestInfoPrefix(hash->hashAlg, &prefix, &prefixLen) !=
+                SECSuccess) {
+                goto done;
+            }
+            if (prefixLen + hash->len > sizeof(prefixAndHash)) {
+                PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
+                goto done;
+            }
+            memcpy(prefixAndHash, prefix, prefixLen);
+            memcpy(prefixAndHash + prefixLen, hash->u.raw, hash->len);
+            hashData.Data   = prefixAndHash;
+            hashData.Length = prefixLen + hash->len;
             break;
         case dsaKey:
         case ecKey:
@@ -585,7 +648,7 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
     status = SecKeyGetCredentials(key, CSSM_ACL_AUTHORIZATION_SIGN,
                                   kSecCredentialTypeDefault, &cssmCreds);
     if (status != noErr) {
-        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, status);
         goto done;
     }
 
@@ -595,7 +658,7 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
     cssmRv = CSSM_CSP_CreateSignatureContext(cspHandle, sigAlg, cssmCreds,
                                              cssmKey, &cssmSignature);
     if (cssmRv) {
-        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, cssmRv);
         goto done;
     }
 
@@ -608,7 +671,7 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
         blindingAttr.Attribute.Uint32 = 1;
         cssmRv = CSSM_UpdateContextAttributes(cssmSignature, 1, &blindingAttr);
         if (cssmRv) {
-            PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
+            PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, cssmRv);
             goto done;
         }
     }
@@ -616,7 +679,7 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
     cssmRv = CSSM_SignData(cssmSignature, &hashData, 1, digestAlg,
                            &signatureData);
     if (cssmRv) {
-        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, cssmRv);
         goto done;
     }
     buf->len = signatureData.Length;
