@@ -159,9 +159,7 @@ public:
         return m_impl->length();
     }
 
-    // FIXME: We're in the process of renaming characters() to bloatedCharacters()
-    // and then driving the number of callers to zero.
-    const UChar* characters() const { return bloatedCharacters(); }
+    // FIXME: Remove all the callers of bloatedCharacters().
     const UChar* bloatedCharacters() const
     {
         if (!m_impl)

@@ -114,7 +114,7 @@ TEST_F(UniscribeTest, TooBig)
     // will cause shaping to fail.
     {
         UniscribeHelper uniscribe(
-            input.characters(), static_cast<int>(input.length()),
+            input.bloatedCharacters(), static_cast<int>(input.length()),
             false, hfont, scriptCache, &properties, 0);
         uniscribe.initWithOptionalLengthProtection(false);
 
@@ -147,7 +147,7 @@ TEST_F(UniscribeTest, TooBig)
     // the length protection.
     {
         UniscribeHelper uniscribe(
-            input.characters(), static_cast<int>(input.length()),
+            input.bloatedCharacters(), static_cast<int>(input.length()),
             false, hfont, scriptCache, &properties, 0);
         uniscribe.initWithOptionalLengthProtection(true);
 
