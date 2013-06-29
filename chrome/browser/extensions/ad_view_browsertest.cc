@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(AdViewTest, AdViewPermissionIsRequired) {
 #else
 #define MAYBE_ChangeAdNetworkValue ChangeAdNetworkValue
 #endif
-IN_PROC_BROWSER_TEST_F(AdViewTest, ChangeAdNetworkValue) {
+IN_PROC_BROWSER_TEST_F(AdViewTest, MAYBE_ChangeAdNetworkValue) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   ASSERT_TRUE(RunPlatformAppTest(
