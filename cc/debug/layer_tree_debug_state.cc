@@ -20,6 +20,9 @@ LayerTreeDebugState::LayerTreeDebugState()
       show_replica_screen_space_rects(false),
       show_occluding_rects(false),
       show_non_occluding_rects(false),
+      show_touch_event_handler_rects(false),
+      show_wheel_event_handler_rects(false),
+      show_non_fast_scrollable_rects(false),
       slow_down_raster_scale_factor(0),
       rasterize_only_visible_content(false),
       show_picture_borders(false),
@@ -44,7 +47,8 @@ bool LayerTreeDebugState::ShowHudRects() const {
   return show_paint_rects || show_property_changed_rects ||
          show_surface_damage_rects || show_screen_space_rects ||
          show_replica_screen_space_rects || show_occluding_rects ||
-         show_non_occluding_rects;
+         show_non_occluding_rects || show_touch_event_handler_rects ||
+         show_wheel_event_handler_rects || show_non_fast_scrollable_rects;
 }
 
 bool LayerTreeDebugState::ShowMemoryStats() const {
@@ -64,6 +68,12 @@ bool LayerTreeDebugState::Equal(const LayerTreeDebugState& a,
           b.show_replica_screen_space_rects &&
           a.show_occluding_rects == b.show_occluding_rects &&
           a.show_non_occluding_rects == b.show_non_occluding_rects &&
+          a.show_touch_event_handler_rects ==
+          b.show_touch_event_handler_rects &&
+          a.show_wheel_event_handler_rects ==
+          b.show_wheel_event_handler_rects &&
+          a.show_non_fast_scrollable_rects ==
+          b.show_non_fast_scrollable_rects &&
           a.slow_down_raster_scale_factor == b.slow_down_raster_scale_factor &&
           a.rasterize_only_visible_content ==
           b.rasterize_only_visible_content &&
@@ -86,6 +96,9 @@ LayerTreeDebugState LayerTreeDebugState::Unite(const LayerTreeDebugState& a,
   r.show_replica_screen_space_rects |= b.show_replica_screen_space_rects;
   r.show_occluding_rects |= b.show_occluding_rects;
   r.show_non_occluding_rects |= b.show_non_occluding_rects;
+  r.show_touch_event_handler_rects |= b.show_touch_event_handler_rects;
+  r.show_wheel_event_handler_rects |= b.show_wheel_event_handler_rects;
+  r.show_non_fast_scrollable_rects |= b.show_non_fast_scrollable_rects;
 
   if (b.slow_down_raster_scale_factor)
     r.slow_down_raster_scale_factor = b.slow_down_raster_scale_factor;

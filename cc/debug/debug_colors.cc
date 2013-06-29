@@ -243,6 +243,42 @@ SkColor DebugColors::NonOccludingRectFillColor() {
   return SkColorSetARGB(10, 200, 0, 100);
 }
 
+// Touch-event-handler rects in yellow.
+SkColor DebugColors::TouchEventHandlerRectBorderColor() {
+  return SkColorSetARGB(255, 239, 229, 60);
+}
+int DebugColors::TouchEventHandlerRectBorderWidth(
+    const LayerTreeImpl* tree_impl) {
+  return Scale(2, tree_impl);
+}
+SkColor DebugColors::TouchEventHandlerRectFillColor() {
+  return SkColorSetARGB(30, 239, 229, 60);
+}
+
+// Wheel-event-handler rects in green.
+SkColor DebugColors::WheelEventHandlerRectBorderColor() {
+  return SkColorSetARGB(255, 189, 209, 57);
+}
+int DebugColors::WheelEventHandlerRectBorderWidth(
+    const LayerTreeImpl* tree_impl) {
+  return Scale(2, tree_impl);
+}
+SkColor DebugColors::WheelEventHandlerRectFillColor() {
+  return SkColorSetARGB(30, 189, 209, 57);
+}
+
+// Non-fast-scrollable rects in orange.
+SkColor DebugColors::NonFastScrollableRectBorderColor() {
+  return SkColorSetARGB(255, 238, 163, 59);
+}
+int DebugColors::NonFastScrollableRectBorderWidth(
+    const LayerTreeImpl* tree_impl) {
+  return Scale(2, tree_impl);
+}
+SkColor DebugColors::NonFastScrollableRectFillColor() {
+  return SkColorSetARGB(30, 238, 163, 59);
+}
+
 // Non-Painted rects in cyan.
 SkColor DebugColors::NonPaintedFillColor() { return SK_ColorCYAN; }
 

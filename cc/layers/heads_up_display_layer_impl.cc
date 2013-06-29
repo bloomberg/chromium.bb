@@ -589,6 +589,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
     SkColor stroke_color = 0;
     SkColor fill_color = 0;
     float stroke_width = 0.f;
+    std::string label_text;
 
     switch (debug_rects[i].type) {
       case PAINT_RECT_TYPE:
@@ -631,6 +632,27 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
         stroke_width =
             DebugColors::NonOccludingRectBorderWidth(layer_tree_impl());
         break;
+      case TOUCH_EVENT_HANDLER_RECT_TYPE:
+        stroke_color = DebugColors::TouchEventHandlerRectBorderColor();
+        fill_color = DebugColors::TouchEventHandlerRectFillColor();
+        stroke_width =
+            DebugColors::TouchEventHandlerRectBorderWidth(layer_tree_impl());
+        label_text = "touch event listener";
+        break;
+      case WHEEL_EVENT_HANDLER_RECT_TYPE:
+        stroke_color = DebugColors::WheelEventHandlerRectBorderColor();
+        fill_color = DebugColors::WheelEventHandlerRectFillColor();
+        stroke_width =
+            DebugColors::WheelEventHandlerRectBorderWidth(layer_tree_impl());
+        label_text = "mousewheel event listener";
+        break;
+      case NON_FAST_SCROLLABLE_RECT_TYPE:
+        stroke_color = DebugColors::NonFastScrollableRectBorderColor();
+        fill_color = DebugColors::NonFastScrollableRectFillColor();
+        stroke_width =
+            DebugColors::NonFastScrollableRectBorderWidth(layer_tree_impl());
+        label_text = "repaints on scroll";
+        break;
     }
 
     const gfx::RectF& rect = debug_rects[i].rect;
@@ -644,6 +666,39 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(SkFloatToScalar(stroke_width));
     canvas->drawRect(sk_rect, paint);
+
+    if (label_text.length()) {
+      const int kFontHeight = 12;
+      const int kPadding = 3;
+      const float device_scale_factor =
+          layer_tree_impl()->device_scale_factor();
+
+      canvas->save();
+      canvas->clipRect(sk_rect);
+      canvas->translate(sk_rect.x(), sk_rect.y());
+      canvas->scale(device_scale_factor, device_scale_factor);
+
+      SkPaint label_paint = CreatePaint();
+      label_paint.setTextSize(kFontHeight);
+      label_paint.setTypeface(typeface_.get());
+      label_paint.setColor(stroke_color);
+
+      const SkScalar label_text_width =
+          label_paint.measureText(label_text.c_str(), label_text.length());
+      canvas->drawRect(SkRect::MakeWH(label_text_width + 2 * kPadding,
+                                      kFontHeight + 2 * kPadding),
+                       label_paint);
+
+      label_paint.setAntiAlias(true);
+      label_paint.setColor(SkColorSetARGB(255, 50, 50, 50));
+      canvas->drawText(label_text.c_str(),
+                       label_text.length(),
+                       kPadding,
+                       kFontHeight * 0.8f + kPadding,
+                       label_paint);
+
+      canvas->restore();
+    }
   }
 
   canvas->restore();

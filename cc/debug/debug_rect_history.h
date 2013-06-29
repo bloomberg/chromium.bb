@@ -50,6 +50,9 @@ enum DebugRectType {
   REPLICA_SCREEN_SPACE_RECT_TYPE,
   OCCLUDING_RECT_TYPE,
   NONOCCLUDING_RECT_TYPE,
+  TOUCH_EVENT_HANDLER_RECT_TYPE,
+  WHEEL_EVENT_HANDLER_RECT_TYPE,
+  NON_FAST_SCROLLABLE_RECT_TYPE,
 };
 
 struct DebugRect {
@@ -94,6 +97,12 @@ class DebugRectHistory {
       const std::vector<gfx::Rect>& occluding_screen_space_rects);
   void SaveNonOccludingRects(
       const std::vector<gfx::Rect>& non_occluding_screen_space_rects);
+  void SaveTouchEventHandlerRects(LayerImpl* layer);
+  void SaveTouchEventHandlerRectsCallback(LayerImpl* layer);
+  void SaveWheelEventHandlerRects(LayerImpl* layer);
+  void SaveWheelEventHandlerRectsCallback(LayerImpl* layer);
+  void SaveNonFastScrollableRects(LayerImpl* layer);
+  void SaveNonFastScrollableRectsCallback(LayerImpl* layer);
 
   std::vector<DebugRect> debug_rects_;
 

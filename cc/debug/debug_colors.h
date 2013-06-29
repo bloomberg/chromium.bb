@@ -95,6 +95,18 @@ class DebugColors {
   static int NonOccludingRectBorderWidth(const LayerTreeImpl* tree_impl);
   static SkColor NonOccludingRectFillColor();
 
+  static SkColor TouchEventHandlerRectBorderColor();
+  static int TouchEventHandlerRectBorderWidth(const LayerTreeImpl* tree_impl);
+  static SkColor TouchEventHandlerRectFillColor();
+
+  static SkColor WheelEventHandlerRectBorderColor();
+  static int WheelEventHandlerRectBorderWidth(const LayerTreeImpl* tree_impl);
+  static SkColor WheelEventHandlerRectFillColor();
+
+  static SkColor NonFastScrollableRectBorderColor();
+  static int NonFastScrollableRectBorderWidth(const LayerTreeImpl* tree_impl);
+  static SkColor NonFastScrollableRectFillColor();
+
   static SkColor NonPaintedFillColor();
   static SkColor MissingPictureFillColor();
   static SkColor PictureBorderColor();

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
@@ -65,8 +66,15 @@ class CC_EXPORT LayerTreeHostCommon {
   static bool RenderSurfaceContributesToTarget(LayerType*,
                                                int target_surface_layer_id);
 
+  // TODO(egraether): Remove this implementation and replace it with the
+  // Callback version everywhere.
   template <class Function, typename LayerType>
   static void CallFunctionForSubtree(LayerType* root_layer);
+
+  template <typename LayerType>
+  static void CallFunctionForSubtree(
+      LayerType* root_layer,
+      const base::Callback<void(LayerType* layer)>& function);
 
   // Returns a layer with the given id if one exists in the subtree starting
   // from the given root layer (including mask and replica layers).
@@ -153,6 +161,26 @@ void LayerTreeHostCommon::CallFunctionForSubtree(LayerType* root_layer) {
   for (size_t i = 0; i < root_layer->children().size(); ++i) {
     CallFunctionForSubtree<Function>(
         get_child_as_raw_ptr(root_layer->children(), i));
+  }
+}
+
+template <typename LayerType>
+void LayerTreeHostCommon::CallFunctionForSubtree(
+    LayerType* root_layer,
+    const base::Callback<void(LayerType* layer)>& function) {
+  function.Run(root_layer);
+
+  if (LayerType* mask_layer = root_layer->mask_layer())
+    function.Run(mask_layer);
+  if (LayerType* replica_layer = root_layer->replica_layer()) {
+    function.Run(replica_layer);
+    if (LayerType* mask_layer = replica_layer->mask_layer())
+      function.Run(mask_layer);
+  }
+
+  for (size_t i = 0; i < root_layer->children().size(); ++i) {
+    CallFunctionForSubtree(get_child_as_raw_ptr(root_layer->children(), i),
+                           function);
   }
 }
 
