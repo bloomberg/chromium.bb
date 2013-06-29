@@ -1201,8 +1201,12 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       break;
     case syncer::DISABLE_SYNC_ON_CLIENT:
       OnStopSyncingPermanently();
-      // TODO(rsimha): Re-evaluate whether to also sign out the user here after
-      // a dashboard clear. See http://crbug.com/240436.
+#if !defined(OS_CHROMEOS)
+      // On desktop Chrome, sign out the user after a dashboard clear.
+      // TODO(rsimha): Revisit this for M30. See http://crbug.com/252049.
+      if (!auto_start_enabled_)  // Skip sign out on ChromeOS/Android.
+        SigninManagerFactory::GetForProfile(profile_)->SignOut();
+#endif
       break;
     case syncer::STOP_SYNC_FOR_DISABLED_ACCOUNT:
       // Sync disabled by domain admin. we should stop syncing until next

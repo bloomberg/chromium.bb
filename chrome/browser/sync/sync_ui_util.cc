@@ -56,10 +56,8 @@ string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
                                         user_name);
     } else if (service->IsStartSuppressed()) {
       // User is signed in, but sync has been stopped.
-      return l10n_util::GetStringFUTF16(
-          IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED,
-          user_name,
-          ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
+      return l10n_util::GetStringFUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED,
+                                        user_name);
     }
   }
 
@@ -253,8 +251,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       if (status_label) {
         string16 label = l10n_util::GetStringFUTF16(
                              IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED,
-                             UTF8ToUTF16(signin.GetAuthenticatedUsername()),
-                             ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
+                             UTF8ToUTF16(signin.GetAuthenticatedUsername()));
         status_label->assign(label);
         result_type = PRE_SYNCED;
       }
