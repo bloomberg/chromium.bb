@@ -53,7 +53,7 @@ static SkData* EncodeBitmapToData(size_t* offset, const SkBitmap& bm) {
         }
     }
     std::vector<unsigned char> vector;
-    if (gfx::PNGCodec::EncodeBGRASkBitmap(bm, true, &vector)) {
+    if (gfx::PNGCodec::EncodeBGRASkBitmap(bm, false, &vector)) {
         return SkData::NewWithCopy(&vector.front() , vector.size());
     }
     return NULL;
