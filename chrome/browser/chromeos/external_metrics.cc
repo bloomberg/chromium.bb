@@ -24,6 +24,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/perftimer.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -199,6 +200,43 @@ void SetupProgressiveScanFieldTrial() {
   }
 }
 
+// Sets up field trial for measuring swap and CPU metrics after tab switch
+// and scroll events. crbug.com/253994
+void SetupSwapJankFieldTrial() {
+  const char name_of_experiment[] = "SwapJank64vs32";
+
+  // Determine if this is a 32 or 64 bit build of Chrome.
+  bool is_chrome_64 = sizeof(void*) == 8;
+
+  // Determine if this is a 32 or 64 bit kernel.
+  bool is_kernel_64 = base::SysInfo::OperatingSystemArchitecture() == "x86_64";
+
+  // A 32 bit kernel requires 32 bit Chrome.
+  DCHECK(is_kernel_64 || !is_chrome_64);
+
+  // All groups are either on or off.
+  const base::FieldTrial::Probability kTotalProbability = 1;
+  scoped_refptr<base::FieldTrial> trial =
+      base::FieldTrialList::FactoryGetFieldTrial(name_of_experiment,
+                                                 kTotalProbability,
+                                                 "default",
+                                                 2013, 12, 31, NULL);
+  // Assign probability of 1 to this Chrome's group.  Assign 0 to all other
+  // choices.
+  trial->AppendGroup("kernel_64_chrome_64",
+                     is_kernel_64 && is_chrome_64 ? kTotalProbability : 0);
+  trial->AppendGroup("kernel_64_chrome_32",
+                     is_kernel_64 && !is_chrome_64 ? kTotalProbability : 0);
+  trial->AppendGroup("kernel_32_chrome_32",
+                     !is_kernel_64 && !is_chrome_64 ? kTotalProbability : 0);
+
+  // Announce the experiment to any listeners (especially important is the UMA
+  // software, which will append the group names to UMA statistics).
+  trial->group();
+  DVLOG(1) << "Configured in group '" << trial->group_name() << "' for "
+           << name_of_experiment << " field trial";
+}
+
 }  // namespace
 
 // The interval between external metrics collections in seconds
@@ -218,13 +256,18 @@ void ExternalMetrics::Start() {
   valid_user_actions_.insert("Updater.ServerCertificateChanged");
   valid_user_actions_.insert("Updater.ServerCertificateFailed");
 
+  // Initialize field trials that don't need to read from files.
+  SetupSwapJankFieldTrial();
+
   // Initialize any chromeos field trials that need to read from a file (e.g.,
   // those that have an upstart script determine their experimental group for
   // them) then schedule the data collection.  All of this is done on the file
   // thread.
   bool task_posted = BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&chromeos::ExternalMetrics::SetupAllFieldTrials, this));
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&chromeos::ExternalMetrics::SetupFieldTrialsOnFileThread,
+                 this));
   DCHECK(task_posted);
 }
 
@@ -444,8 +487,10 @@ void ExternalMetrics::ScheduleCollector() {
   DCHECK(result);
 }
 
-void ExternalMetrics::SetupAllFieldTrials() {
+void ExternalMetrics::SetupFieldTrialsOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  // Field trials that do not read from files can be initialized in
+  // ExternalMetrics::Start() above.
   SetupZramFieldTrial();
   SetupProgressiveScanFieldTrial();
   ScheduleCollector();

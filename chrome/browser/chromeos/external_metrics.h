@@ -86,10 +86,11 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   // Set containing known user actions.
   base::hash_set<std::string> valid_user_actions_;
 
-  // Calls setup methods for chromeOS field trials.  They are setup, here, so
-  // that we can make absolutely sure that they are setup before we gather UMA
-  // statistics from ChromeOS.
-  void SetupAllFieldTrials();
+  // Calls setup methods for Chrome OS field trials that need to be initialized
+  // based on data from the file system.  They are setup here so that we can
+  // make absolutely sure that they are setup before we gather UMA statistics
+  // from ChromeOS.
+  void SetupFieldTrialsOnFileThread();
 
   // Used for testing only.
   RecorderType test_recorder_;
