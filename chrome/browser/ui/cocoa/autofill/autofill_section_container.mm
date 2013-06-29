@@ -7,6 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_pop_up_button.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_view.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_suggestion_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
@@ -91,12 +92,11 @@ void BreakSuggestionText(const string16& text,
 }
 
 - (void)getInputs:(autofill::DetailOutputMap*)output {
-  for (id input in [inputs_ subviews]) {
+  for (NSControl<AutofillInputField>* input in [inputs_ subviews]) {
     const autofill::DetailInput* detailInput =
         reinterpret_cast<autofill::DetailInput*>([input tag]);
     DCHECK(detailInput);
-    NSString* value = [input isKindOfClass:[NSPopUpButton class]] ?
-        [input titleOfSelectedItem] : [input stringValue];
+    NSString* value = [input fieldValue];
     output->insert(
         std::make_pair(detailInput,base::SysNSStringToUTF16(value)));
   }
@@ -277,17 +277,15 @@ void BreakSuggestionText(const string16& text,
 
     ui::ComboboxModel* input_model =
         controller_->ComboboxModelForAutofillType(input.type);
+    base::scoped_nsprotocol<NSControl<AutofillInputField>*> control;
     if (input_model) {
-      base::scoped_nsobject<NSPopUpButton> popup(
-          [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:YES]);
+      base::scoped_nsobject<AutofillPopUpButton> popup(
+          [[AutofillPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO]);
       for (int i = 0; i < input_model->GetItemCount(); ++i) {
         [popup addItemWithTitle:
             base::SysUTF16ToNSString(input_model->GetItemAt(i))];
       }
-      [popup selectItemWithTitle:base::SysUTF16ToNSString(input.initial_value)];
-      [popup sizeToFit];
-      [popup setTag:reinterpret_cast<NSInteger>(&input)];
-      layout->AddView(popup);
+      control.reset(popup.release());
     } else {
       base::scoped_nsobject<AutofillTextField> field(
           [[AutofillTextField alloc] init]);
@@ -296,11 +294,13 @@ void BreakSuggestionText(const string16& text,
       [[field cell] setIcon:
           controller_->IconForField(
               input.type, input.initial_value).AsNSImage()];
-      [[field cell] setInvalid:YES];
-      [field sizeToFit];
-      [field setTag:reinterpret_cast<NSInteger>(&input)];
-      layout->AddView(field);
+      control.reset(field.release());
     }
+    [control setFieldValue:base::SysUTF16ToNSString(input.initial_value)];
+    [control setInvalid:YES];
+    [control sizeToFit];
+    [control setTag:reinterpret_cast<NSInteger>(&input)];
+    layout->AddView(control);
   }
 
   return view.autorelease();

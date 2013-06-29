@@ -443,6 +443,8 @@
         'browser/ui/cocoa/autofill/down_arrow_popup_menu_cell.mm',
         'browser/ui/cocoa/autofill/layout_view.h',
         'browser/ui/cocoa/autofill/layout_view.mm',
+        'browser/ui/cocoa/autofill/autofill_pop_up_button.h',
+        'browser/ui/cocoa/autofill/autofill_pop_up_button.mm',
         'browser/ui/cocoa/autofill/simple_grid_layout.h',
         'browser/ui/cocoa/autofill/simple_grid_layout.mm',
         'browser/ui/cocoa/background_gradient_view.h',

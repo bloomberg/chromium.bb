@@ -27,6 +27,22 @@ const CGFloat kGap = 6.0;  // gap between icon and text.
   return [AutofillTextFieldCell class];
 }
 
+- (BOOL)invalid {
+  return [[self cell] invalid];
+}
+
+- (void)setInvalid:(BOOL)invalid {
+  [[self cell] setInvalid:invalid];
+}
+
+- (NSString*)fieldValue {
+  return [[self cell] fieldValue];
+}
+
+- (void)setFieldValue:(NSString*)fieldValue {
+  [[self cell] setFieldValue:fieldValue];
+}
+
 @end
 
 @implementation AutofillTextFieldCell
@@ -39,6 +55,14 @@ const CGFloat kGap = 6.0;  // gap between icon and text.
 
 - (void)setIcon:(NSImage*) icon {
   icon_.reset([icon retain]);
+}
+
+- (NSString*)fieldValue {
+  return [self stringValue];
+}
+
+- (void)setFieldValue:(NSString*)fieldValue {
+  [self setStringValue:fieldValue];
 }
 
 - (NSRect)textFrameForFrame:(NSRect)frame {
