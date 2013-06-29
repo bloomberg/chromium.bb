@@ -496,8 +496,8 @@ void MediaSourcePlayer::SetDrmBridge(MediaDrmBridge* drm_bridge) {
 
   drm_bridge_ = drm_bridge;
 
-  // TODO(qinmin): Check if Start() is already called. If so, create the
-  // decoder jobs and kick off the playback.
+  if (playing_)
+    StartInternal();
 }
 
 void MediaSourcePlayer::OnSeekRequestAck(unsigned seek_request_id) {
