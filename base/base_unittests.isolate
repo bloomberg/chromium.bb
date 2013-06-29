@@ -3,6 +3,14 @@
 # found in the LICENSE file.
 {
   'conditions': [
+    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'isolate_dependency_untracked': [
+          'data/',
+          'test/data/',
+        ],
+      },
+    }],
     ['OS=="linux"', {
       'variables': {
         'command': [
@@ -24,10 +32,6 @@
           '../tools/swarm_client/run_isolated.py',
           '../tools/swarm_client/run_test_cases.py',
           '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
-        ],
-        'isolate_dependency_untracked': [
-          'data/',
-          'test/data/',
         ],
       },
     }],
