@@ -279,8 +279,14 @@ void SourceBuffer::appendBufferTimerFired(Timer<SourceBuffer>*)
 
     // 1. Run the segment parser loop algorithm.
     // Step 2 doesn't apply since we run Step 1 synchronously here.
-    m_private->append(&m_pendingAppendData[0], m_pendingAppendData.size());
-
+    size_t appendSize = m_pendingAppendData.size();
+    if (!appendSize) {
+        // Resize buffer for 0 byte appends so we always have a valid pointer.
+        // We need to convey all appends, even 0 byte ones to |m_private| so
+        // that it can clear its end of stream state if necessary.
+        m_pendingAppendData.resize(1);
+    }
+    m_private->append(m_pendingAppendData.data(), appendSize);
 
     // 3. Set the updating attribute to false.
     m_updating = false;
