@@ -1,10 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INVALIDATION_INVALIDATION_FRONTEND_H_
-#define CHROME_BROWSER_INVALIDATION_INVALIDATION_FRONTEND_H_
+#ifndef CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_H_
+#define CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_H_
 
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator_state.h"
 
@@ -30,8 +31,17 @@ namespace invalidation {
 //
 //   frontend->UpdateRegisteredInvalidationIds(client_handler, client_ids);
 //
-// To unregister for all invalidations:
+// When shutting down the client for browser shutdown:
 //
+//   frontend->UnregisterInvalidationHandler(client_handler);
+//
+// Note that there's no call to UpdateRegisteredIds() -- this is because the
+// invalidation API persists registrations across browser restarts.
+//
+// When permanently shutting down the client, e.g. when disabling the related
+// feature:
+//
+//   frontend->UpdateRegisteredInvalidationIds(client_handler, ObjectIdSet());
 //   frontend->UnregisterInvalidationHandler(client_handler);
 //
 // If an invalidation handler cares about the invalidator state, it should also
@@ -42,15 +52,20 @@ namespace invalidation {
 // It can also do the above in OnInvalidatorStateChange(), or it can use the
 // argument to OnInvalidatorStateChange().
 //
-// It is an error to have registered handlers when an InvalidationFrontend is
-// shut down; clients must ensure that they unregister themselves before then.
-//
-// TODO(rlarocque): This class should extend BrowserContextKeyedService.
+// It is an error to have registered handlers when an
+// InvalidationFrontend is shut down; clients must ensure that they
+// unregister themselves before then. (Depending on the
+// InvalidationFrontend, shutdown may be equivalent to destruction, or
+// a separate function call like Shutdown()).
 //
 // NOTE(akalin): Invalidations that come in during browser shutdown may get
 // dropped.  This won't matter once we have an Acknowledge API, though: see
 // http://crbug.com/78462 and http://crbug.com/124149.
-class InvalidationFrontend {
+//
+// This class inherits from ProfileKeyedService to make it possible to correctly
+// cast from various InvalidationService implementations to ProfileKeyedService
+// in InvalidationServiceFactory.
+class InvalidationService : public BrowserContextKeyedService {
  public:
   // Starts sending notifications to |handler|.  |handler| must not be NULL,
   // and it must not already be registered.
@@ -86,10 +101,14 @@ class InvalidationFrontend {
   // the updated state.
   virtual syncer::InvalidatorState GetInvalidatorState() const = 0;
 
+  // Returns the ID belonging to this invalidation client.  Can be used to
+  // prevent the receipt of notifications of our own changes.
+  virtual std::string GetInvalidatorClientId() const = 0;
+
  protected:
-  virtual ~InvalidationFrontend() { }
+  virtual ~InvalidationService() { }
 };
 
 }  // namespace invalidation
 
-#endif  // CHROME_BROWSER_INVALIDATION_INVALIDATION_FRONTEND_H_
+#endif  // CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_H_

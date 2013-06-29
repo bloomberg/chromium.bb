@@ -51,7 +51,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
     public SyncManager,
     public net::NetworkChangeNotifier::IPAddressObserver,
     public net::NetworkChangeNotifier::ConnectionTypeObserver,
-    public InvalidationHandler,
     public JsBackend,
     public SyncEngineEventListener,
     public ServerConnectionEventListener,
@@ -74,7 +73,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
       ExtensionsActivityMonitor* extensions_activity_monitor,
       SyncManager::ChangeDelegate* change_delegate,
       const SyncCredentials& credentials,
-      scoped_ptr<Invalidator> invalidator,
       const std::string& invalidator_client_id,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
@@ -90,17 +88,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
       ModelTypeSet types) OVERRIDE;
   virtual bool PurgePartiallySyncedTypes() OVERRIDE;
   virtual void UpdateCredentials(const SyncCredentials& credentials) OVERRIDE;
-  virtual void UpdateEnabledTypes(ModelTypeSet enabled_types) OVERRIDE;
-  virtual void RegisterInvalidationHandler(
-      InvalidationHandler* handler) OVERRIDE;
-  virtual void UpdateRegisteredInvalidationIds(
-      InvalidationHandler* handler,
-      const ObjectIdSet& ids) OVERRIDE;
-  virtual void UnregisterInvalidationHandler(
-      InvalidationHandler* handler) OVERRIDE;
-  virtual void AcknowledgeInvalidation(
-      const invalidation::ObjectId& id,
-      const syncer::AckHandle& ack_handle) OVERRIDE;
   virtual void StartSyncingNormally(
       const ModelSafeRoutingInfo& routing_info) OVERRIDE;
   virtual void ConfigureSyncer(
@@ -112,6 +99,9 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) OVERRIDE;
+  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
+  virtual void OnIncomingInvalidation(
+      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
   virtual void AddObserver(SyncManager::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(SyncManager::Observer* observer) OVERRIDE;
   virtual SyncStatus GetDetailedStatus() const OVERRIDE;
@@ -176,11 +166,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
       syncable::BaseTransaction* trans,
       std::vector<int64>* entries_changed) OVERRIDE;
-
-  // InvalidationHandler implementation.
-  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
-  virtual void OnIncomingInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
   // Handle explicit requests to fetch updates for the given types.
   virtual void RefreshTypes(ModelTypeSet types) OVERRIDE;
@@ -335,9 +320,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   // The scheduler that runs the Syncer. Needs to be explicitly
   // Start()ed.
   scoped_ptr<SyncScheduler> scheduler_;
-
-  // The Invalidator which notifies us when updates need to be downloaded.
-  scoped_ptr<Invalidator> invalidator_;
 
   // A multi-purpose status watch object that aggregates stats from various
   // sync components.

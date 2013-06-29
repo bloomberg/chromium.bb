@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/invalidation/p2p_invalidation_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/signin/token_service.h"
@@ -38,6 +39,7 @@
 #include "sync/internal_api/public/util/sync_string_conversions.h"
 
 using syncer::sessions::SyncSessionSnapshot;
+using invalidation::P2PInvalidationService;
 
 // TODO(rsimha): Remove the following lines once crbug.com/91863 is fixed.
 // The amount of time for which we wait for a live sync operation to complete.
@@ -106,14 +108,36 @@ bool StateChangeTimeoutEvent::Abort() {
   return !did_timeout_;
 }
 
+// static
+ProfileSyncServiceHarness* ProfileSyncServiceHarness::Create(
+    Profile* profile,
+    const std::string& username,
+    const std::string& password) {
+  return new ProfileSyncServiceHarness(profile, username, password, NULL);
+}
+
+// static
+ProfileSyncServiceHarness* ProfileSyncServiceHarness::CreateForIntegrationTest(
+    Profile* profile,
+    const std::string& username,
+    const std::string& password,
+    P2PInvalidationService* p2p_invalidation_service) {
+  return new ProfileSyncServiceHarness(profile,
+                                       username,
+                                       password,
+                                       p2p_invalidation_service);
+}
+
 ProfileSyncServiceHarness::ProfileSyncServiceHarness(
     Profile* profile,
     const std::string& username,
-    const std::string& password)
+    const std::string& password,
+    P2PInvalidationService* p2p_invalidation_service)
     : waiting_for_encryption_type_(syncer::UNSPECIFIED),
       wait_state_(INITIAL_WAIT_STATE),
       profile_(profile),
       service_(NULL),
+      p2p_invalidation_service_(p2p_invalidation_service),
       progress_marker_partner_(NULL),
       username_(username),
       password_(password),
@@ -131,17 +155,6 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
 ProfileSyncServiceHarness::~ProfileSyncServiceHarness() {
   if (service_->HasObserver(this))
     service_->RemoveObserver(this);
-}
-
-// static
-ProfileSyncServiceHarness* ProfileSyncServiceHarness::CreateAndAttach(
-    Profile* profile) {
-  ProfileSyncServiceFactory* f = ProfileSyncServiceFactory::GetInstance();
-  if (!f->HasProfileSyncService(profile)) {
-    NOTREACHED() << "Profile has never signed into sync.";
-    return NULL;
-  }
-  return new ProfileSyncServiceHarness(profile, std::string(), std::string());
 }
 
 void ProfileSyncServiceHarness::SetCredentials(const std::string& username,
@@ -480,6 +493,21 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
 
 void ProfileSyncServiceHarness::OnStateChanged() {
   RunStateChangeMachine();
+}
+
+void ProfileSyncServiceHarness::OnSyncCycleCompleted() {
+  // Integration tests still use p2p notifications.
+  const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
+  bool is_notifiable_commit =
+      (snap.model_neutral_state().num_successful_commits > 0);
+  if (is_notifiable_commit && p2p_invalidation_service_) {
+    const syncer::ObjectIdInvalidationMap& invalidation_map =
+        ModelTypeInvalidationMapToObjectIdInvalidationMap(
+            snap.source().types);
+    p2p_invalidation_service_->SendInvalidation(invalidation_map);
+  }
+
+  OnStateChanged();
 }
 
 void ProfileSyncServiceHarness::OnMigrationStateChange() {

@@ -168,7 +168,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(profile);
     profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                   "test_user");
+                                   "test_user@gmail.com");
     signin->Initialize(profile, NULL);
     EXPECT_FALSE(signin->GetAuthenticatedUsername().empty());
     return new TestProfileSyncService(
@@ -216,9 +216,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   // Simulate successful signin as test_user.
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                  "test_user");
-  sync_->signin()->SetAuthenticatedUsername("test_user");
-  GoogleServiceSigninSuccessDetails details("test_user", "");
+                                  "test_user@gmail.com");
+  sync_->signin()->SetAuthenticatedUsername("test_user@gmail.com");
+  GoogleServiceSigninSuccessDetails details("test_user@gmail.com", "");
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
       content::Source<Profile>(profile_.get()),
@@ -263,9 +263,9 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
 
   // Simulate successful signin as test_user.
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                  "test_user");
-  sync_->signin()->SetAuthenticatedUsername("test_user");
-  GoogleServiceSigninSuccessDetails details("test_user", "");
+                                  "test_user@gmail.com");
+  sync_->signin()->SetAuthenticatedUsername("test_user@gmail.com");
+  GoogleServiceSigninSuccessDetails details("test_user@gmail.com", "");
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
       content::Source<Profile>(profile_.get()),
@@ -284,7 +284,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
 // TODO(pavely): Reenable test once android is switched to oauth2.
 TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                  "test_user");
+                                  "test_user@gmail.com");
   SigninManagerFactory::GetForProfile(
       profile_.get())->Initialize(profile_.get(), NULL);
   CreateSyncService();
@@ -313,7 +313,8 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
   sync_->SetSetupInProgress(true);
 
   // Simulate successful signin.
-  GoogleServiceSigninSuccessDetails details("test_user", std::string());
+  GoogleServiceSigninSuccessDetails details("test_user@gmail.com",
+                                            std::string());
   content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
         content::Source<Profile>(profile_.get()),
@@ -367,7 +368,8 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
 
 TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
   // Pre load the tokens
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                  "test_user@gmail.com");
   SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
       profile_.get(), NULL);
   CreateSyncService();
@@ -400,7 +402,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   }
 
   // Pre load the tokens
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                  "test_user@gmail.com");
   SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
       profile_.get(), NULL);
   CreateSyncService();
@@ -429,7 +432,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   profile_->GetPrefs()->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
 
   // Pre load the tokens
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                  "test_user@gmail.com");
   SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
       profile_.get(), NULL);
   CreateSyncService();
@@ -451,7 +455,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
 
 TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   // Service should not be started by Initialize() since it's managed.
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                  "test_user@gmail.com");
   SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
       profile_.get(), NULL);
   CreateSyncService();
@@ -468,7 +473,8 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
 }
 
 TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                  "test_user@gmail.com");
   SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
       profile_.get(), NULL);
   CreateSyncService();
@@ -499,7 +505,8 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                  "test_user@gmail.com");
   SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
       profile_.get(), NULL);
   CreateSyncService();
@@ -532,7 +539,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
 
 TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
   // Pre load the tokens
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                  "test_user@gmail.com");
   SigninManagerFactory::GetForProfile(profile_.get())->Initialize(
       profile_.get(), NULL);
   CreateSyncService();

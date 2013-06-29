@@ -5,6 +5,7 @@
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
 
 #include "chrome/browser/drive/drive_notification_manager.h"
+#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -33,6 +34,7 @@ DriveNotificationManagerFactory::DriveNotificationManagerFactory()
         "DriveNotificationManager",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(invalidation::InvalidationServiceFactory::GetInstance());
 }
 
 DriveNotificationManagerFactory::~DriveNotificationManagerFactory() {}

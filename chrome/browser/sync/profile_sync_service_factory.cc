@@ -12,6 +12,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -64,6 +65,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(AboutSigninInternalsFactory::GetInstance());
+  DependsOn(invalidation::InvalidationServiceFactory::GetInstance());
 
   // The following have not been converted to BrowserContextKeyedServices yet,
   // and for now they are explicitly destroyed after the

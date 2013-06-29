@@ -16,6 +16,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+#include "jingle/notifier/base/notifier_options.h"
+#include "jingle/notifier/listener/push_client.h"
 #include "jingle/notifier/listener/push_client_observer.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -108,8 +110,6 @@ class SYNC_EXPORT_PRIVATE P2PInvalidator
   virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendInvalidation(
-      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
   // PushClientObserver implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;
@@ -117,6 +117,9 @@ class SYNC_EXPORT_PRIVATE P2PInvalidator
       notifier::NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
       const notifier::Notification& notification) OVERRIDE;
+
+  void SendInvalidation(
+      const ObjectIdInvalidationMap& invalidation_map);
 
   void SendNotificationDataForTest(
       const P2PNotificationData& notification_data);

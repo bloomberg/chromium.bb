@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
-#include "chrome/browser/invalidation/invalidation_frontend.h"
+#include "chrome/browser/invalidation/invalidation_service.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "sync/internal_api/public/base/invalidation_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,10 +22,10 @@ namespace extensions {
 
 namespace {
 
-class MockInvalidationFrontend : public invalidation::InvalidationFrontend {
+class MockInvalidationService : public invalidation::InvalidationService {
  public:
-  MockInvalidationFrontend();
-  ~MockInvalidationFrontend();
+  MockInvalidationService();
+  ~MockInvalidationService();
   MOCK_METHOD1(RegisterInvalidationHandler,
                void(syncer::InvalidationHandler*));
   MOCK_METHOD2(UpdateRegisteredInvalidationIds,
@@ -35,13 +35,14 @@ class MockInvalidationFrontend : public invalidation::InvalidationFrontend {
   MOCK_METHOD2(AcknowledgeInvalidation, void(const invalidation::ObjectId&,
                                              const syncer::AckHandle&));
   MOCK_CONST_METHOD0(GetInvalidatorState, syncer::InvalidatorState());
+  MOCK_CONST_METHOD0(GetInvalidatorClientId, std::string());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockInvalidationFrontend);
+  DISALLOW_COPY_AND_ASSIGN(MockInvalidationService);
 };
 
-MockInvalidationFrontend::MockInvalidationFrontend() {}
-MockInvalidationFrontend::~MockInvalidationFrontend() {}
+MockInvalidationService::MockInvalidationService() {}
+MockInvalidationService::~MockInvalidationService() {}
 
 class MockInvalidationHandlerDelegate
     : public PushMessagingInvalidationHandlerDelegate {
@@ -74,7 +75,7 @@ class PushMessagingInvalidationHandlerTest : public ::testing::Test {
     EXPECT_CALL(service_, UnregisterInvalidationHandler(handler_.get()));
     handler_.reset();
   }
-  StrictMock<MockInvalidationFrontend> service_;
+  StrictMock<MockInvalidationService> service_;
   StrictMock<MockInvalidationHandlerDelegate> delegate_;
   scoped_ptr<PushMessagingInvalidationHandler> handler_;
 };

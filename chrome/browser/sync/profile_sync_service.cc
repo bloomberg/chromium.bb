@@ -66,6 +66,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "grit/generated_resources.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
@@ -73,8 +74,6 @@
 #include "sync/internal_api/public/util/sync_string_conversions.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
-#include "sync/notifier/invalidator_registrar.h"
-#include "sync/notifier/invalidator_state.h"
 #include "sync/util/cryptographer.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -114,8 +113,6 @@ static const int kSyncClearDataTimeoutInSeconds = 60;  // 1 minute.
 
 static const char* kOAuth2Scopes[] = {
   GaiaConstants::kChromeSyncOAuth2Scope,
-  // GoogleTalk scope is needed for notifications.
-  GaiaConstants::kGoogleTalkOAuth2Scope
 };
 
 static const char* kManagedOAuth2Scopes[] = {
@@ -170,7 +167,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       profile_(profile),
       // |profile| may be NULL in unit tests.
       sync_prefs_(profile_ ? profile_->GetPrefs() : NULL),
-      invalidator_storage_(profile_ ? profile_->GetPrefs(): NULL),
       sync_service_url_(kDevServerUrl),
       data_type_requested_sync_startup_(false),
       is_first_time_sync_configure_(false),
@@ -187,7 +183,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       auto_start_enabled_(start_behavior == AUTO_START),
       configure_status_(DataTypeManager::UNKNOWN),
       setup_in_progress_(false),
-      invalidator_state_(syncer::DEFAULT_INVALIDATION_ERROR),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy) {
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
@@ -240,9 +235,6 @@ bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
 }
 
 void ProfileSyncService::Initialize() {
-  DCHECK(!invalidator_registrar_.get());
-  invalidator_registrar_.reset(new syncer::InvalidatorRegistrar());
-
   InitSettings();
 
   // We clear this here (vs Shutdown) because we want to remember that an error
@@ -507,8 +499,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
 void ProfileSyncService::CreateBackend() {
   backend_.reset(
       new SyncBackendHost(profile_->GetDebugName(),
-                          profile_, sync_prefs_.AsWeakPtr(),
-                          invalidator_storage_.AsWeakPtr()));
+                          profile_, sync_prefs_.AsWeakPtr()));
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
@@ -634,60 +625,6 @@ void ProfileSyncService::StartUpSlowBackendComponents() {
   // we'll want to start from a fresh SyncDB, so delete any old one that might
   // be there.
   InitializeBackend(!HasSyncSetupCompleted());
-
-  // |backend_| may end up being NULL here in tests (in synchronous
-  // initialization mode).
-  //
-  // TODO(akalin): Fix this horribly non-intuitive behavior (see
-  // http://crbug.com/140354).
-  if (backend_) {
-    backend_->UpdateRegisteredInvalidationIds(
-        invalidator_registrar_->GetAllRegisteredIds());
-    for (AckHandleReplayQueue::const_iterator it = ack_replay_queue_.begin();
-         it != ack_replay_queue_.end(); ++it) {
-      backend_->AcknowledgeInvalidation(it->first, it->second);
-    }
-    ack_replay_queue_.clear();
-  }
-}
-
-void ProfileSyncService::RegisterInvalidationHandler(
-    syncer::InvalidationHandler* handler) {
-  invalidator_registrar_->RegisterHandler(handler);
-}
-
-void ProfileSyncService::UpdateRegisteredInvalidationIds(
-    syncer::InvalidationHandler* handler,
-    const syncer::ObjectIdSet& ids) {
-  invalidator_registrar_->UpdateRegisteredIds(handler, ids);
-
-  // If |backend_| is NULL, its registered IDs will be updated when
-  // it's created and initialized.
-  if (backend_) {
-    backend_->UpdateRegisteredInvalidationIds(
-        invalidator_registrar_->GetAllRegisteredIds());
-  }
-}
-
-void ProfileSyncService::UnregisterInvalidationHandler(
-    syncer::InvalidationHandler* handler) {
-  invalidator_registrar_->UnregisterHandler(handler);
-}
-
-void ProfileSyncService::AcknowledgeInvalidation(
-    const invalidation::ObjectId& id,
-    const syncer::AckHandle& ack_handle) {
-  if (backend_) {
-    backend_->AcknowledgeInvalidation(id, ack_handle);
-  } else {
-    // If |backend_| is NULL, save the acknowledgements to replay when
-    // it's created and initialized.
-    ack_replay_queue_.push_back(std::make_pair(id, ack_handle));
-  }
-}
-
-syncer::InvalidatorState ProfileSyncService::GetInvalidatorState() const {
-  return invalidator_registrar_->GetInvalidatorState();
 }
 
 void ProfileSyncService::OnGetTokenSuccess(
@@ -751,23 +688,7 @@ void ProfileSyncService::OnGetTokenFailure(
   }
 }
 
-void ProfileSyncService::EmitInvalidationForTest(
-    const invalidation::ObjectId& id,
-    const std::string& payload) {
-  syncer::ObjectIdSet notify_ids;
-  notify_ids.insert(id);
-
-  const syncer::ObjectIdInvalidationMap& invalidation_map =
-      ObjectIdSetToInvalidationMap(notify_ids, payload);
-  OnIncomingInvalidation(invalidation_map);
-}
-
 void ProfileSyncService::Shutdown() {
-  DCHECK(invalidator_registrar_.get());
-  // Reset |invalidator_registrar_| first so that ShutdownImpl cannot
-  // use it.
-  invalidator_registrar_.reset();
-
   if (signin_)
     signin_->signin_global_error()->RemoveProvider(this);
 
@@ -822,9 +743,6 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   expect_sync_configuration_aborted_ = false;
   is_auth_in_progress_ = false;
   backend_initialized_ = false;
-  // NULL if we're called from Shutdown().
-  if (invalidator_registrar_)
-    UpdateInvalidatorRegistrarState();
   cached_passphrase_.clear();
   encryption_pending_ = false;
   encrypt_everything_ = false;
@@ -849,7 +767,6 @@ void ProfileSyncService::DisableForUser() {
   // Clear prefs (including SyncSetupHasCompleted) before shutting down so
   // PSS clients don't think we're set up while we're shutting down.
   sync_prefs_.ClearPreferences();
-  invalidator_storage_.Clear();
   ClearUnrecoverableError();
   ShutdownImpl(true);
 }
@@ -871,6 +788,11 @@ void ProfileSyncService::NotifyObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
   // TODO(akalin): Make an Observer subclass that listens and does the
   // event routing.
+  sync_js_controller_.HandleJsEvent("onServiceStateChanged", JsEventDetails());
+}
+
+void ProfileSyncService::NotifySyncCycleCompleted() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnSyncCycleCompleted());
   sync_js_controller_.HandleJsEvent(
       "onServiceStateChanged", JsEventDetails());
 }
@@ -954,17 +876,6 @@ void ProfileSyncService::DisableBrokenDatatype(
                  weak_factory_.GetWeakPtr()));
 }
 
-void ProfileSyncService::OnInvalidatorStateChange(
-    syncer::InvalidatorState state) {
-  invalidator_state_ = state;
-  UpdateInvalidatorRegistrarState();
-}
-
-void ProfileSyncService::OnIncomingInvalidation(
-    const syncer::ObjectIdInvalidationMap& invalidation_map) {
-  invalidator_registrar_->DispatchInvalidationsToHandlers(invalidation_map);
-}
-
 void ProfileSyncService::OnBackendInitialized(
     const syncer::WeakHandle<syncer::JsBackend>& js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
@@ -1008,7 +919,6 @@ void ProfileSyncService::OnBackendInitialized(
   }
 
   backend_initialized_ = true;
-  UpdateInvalidatorRegistrarState();
 
   sync_js_controller_.AttachJsBackend(js_backend);
   debug_info_listener_ = debug_info_listener;
@@ -1057,7 +967,7 @@ void ProfileSyncService::OnSyncCycleCompleted() {
                    GetSessionModelAssociator()->AsWeakPtr()));
   }
   DVLOG(2) << "Notifying observers sync cycle completed";
-  NotifyObservers();
+  NotifySyncCycleCompleted();
 }
 
 void ProfileSyncService::OnExperimentsChanged(
@@ -1153,10 +1063,10 @@ AuthError ConnectionStatusToAuthError(
 void ProfileSyncService::OnConnectionStatusChange(
     syncer::ConnectionStatus status) {
   if (use_oauth2_token_ && status == syncer::CONNECTION_AUTH_ERROR) {
-    // Sync or Tango server returned error indicating that access token is
-    // invalid. It could be either expired or access is revoked. Let's request
-    // another access token and if access is revoked then request for token will
-    // fail with corresponding error.
+    // Sync server returned error indicating that access token is invalid. It
+    // could be either expired or access is revoked. Let's request another
+    // access token and if access is revoked then request for token will fail
+    // with corresponding error.
     RequestAccessToken();
   } else {
     const GoogleServiceAuthError auth_error =
@@ -2179,17 +2089,6 @@ void ProfileSyncService::OnInternalUnrecoverableError(
   DCHECK(!HasUnrecoverableError());
   unrecoverable_error_reason_ = reason;
   OnUnrecoverableErrorImpl(from_here, message, delete_sync_database);
-}
-
-void ProfileSyncService::UpdateInvalidatorRegistrarState() {
-  const syncer::InvalidatorState effective_state =
-      backend_initialized_ ?
-      invalidator_state_ : syncer::TRANSIENT_INVALIDATION_ERROR;
-  DVLOG(1) << "New invalidator state: "
-           << syncer::InvalidatorStateToString(invalidator_state_)
-           << ", effective state: "
-           << syncer::InvalidatorStateToString(effective_state);
-  invalidator_registrar_->UpdateInvalidatorState(effective_state);
 }
 
 std::string ProfileSyncService::GetEffectiveUsername() {

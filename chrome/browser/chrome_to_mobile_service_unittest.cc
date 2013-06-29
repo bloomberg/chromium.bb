@@ -85,6 +85,10 @@ void ChromeToMobileServiceTest::FulfillFeatureRequirements() {
 // Test that GetMobiles and HasMobiles require Sync Invalidations being enabled.
 TEST_F(ChromeToMobileServiceTest, GetMobiles) {
   ChromeToMobileService* service = GetService();
+
+  // Send a fake notification that Sync Invalidations are disabled.
+  service->OnInvalidatorStateChange(syncer::TRANSIENT_INVALIDATION_ERROR);
+
   EXPECT_EQ(NULL, service->GetMobiles());
   EXPECT_FALSE(service->HasMobiles());
 
@@ -117,6 +121,9 @@ TEST_F(ChromeToMobileServiceTest, GetMobiles) {
 
 // Test fulfilling the requirements to enable the feature.
 TEST_F(ChromeToMobileServiceTest, RequirementsToEnable) {
+  // Send a fake notification that Sync Invalidations are disabled.
+  GetService()->OnInvalidatorStateChange(syncer::TRANSIENT_INVALIDATION_ERROR);
+
   // Navigate to a page with a URL that is valid to send.
   AddTab(browser(), GURL("http://foo"));
   EXPECT_FALSE(UpdateAndGetVerifiedCommandState());

@@ -146,13 +146,10 @@ class SyncBackendHostTest : public testing::Test {
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
     sync_prefs_.reset(new SyncPrefs(profile_->GetPrefs()));
-    invalidator_storage_.reset(new invalidation::InvalidatorStorage(
-        profile_->GetPrefs()));
     backend_.reset(new SyncBackendHost(
         profile_->GetDebugName(),
         profile_.get(),
-        sync_prefs_->AsWeakPtr(),
-        invalidator_storage_->AsWeakPtr()));
+        sync_prefs_->AsWeakPtr()));
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
 
@@ -178,7 +175,6 @@ class SyncBackendHostTest : public testing::Test {
     }
     backend_.reset();
     sync_prefs_.reset();
-    invalidator_storage_.reset();
     profile_.reset();
     // Pump messages posted by the sync thread (which may end up
     // posting on the IO thread).
@@ -266,7 +262,6 @@ class SyncBackendHostTest : public testing::Test {
   syncer::TestUnrecoverableErrorHandler handler_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<SyncPrefs> sync_prefs_;
-  scoped_ptr<invalidation::InvalidatorStorage> invalidator_storage_;
   scoped_ptr<SyncBackendHost> backend_;
   FakeSyncManager* fake_manager_;
   FakeSyncManagerFactory fake_manager_factory_;
@@ -592,76 +587,6 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypesWithPartialTypes) {
   EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());
-}
-
-// Register for some IDs and trigger an invalidation.  This should
-// propagate all the way to the frontend.
-TEST_F(SyncBackendHostTest, Invalidate) {
-  InitializeBackend(true);
-
-  syncer::ObjectIdSet ids;
-  ids.insert(invalidation::ObjectId(1, "id1"));
-  ids.insert(invalidation::ObjectId(2, "id2"));
-  const syncer::ObjectIdInvalidationMap& invalidation_map =
-      syncer::ObjectIdSetToInvalidationMap(ids, "payload");
-
-  EXPECT_CALL(
-      mock_frontend_,
-      OnIncomingInvalidation(invalidation_map))
-      .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
-
-  backend_->UpdateRegisteredInvalidationIds(ids);
-  fake_manager_->Invalidate(invalidation_map);
-  ui_loop_.PostDelayedTask(
-      FROM_HERE, ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
-  ui_loop_.Run();
-}
-
-// Register for some IDs and update the invalidator state.  This
-// should propagate all the way to the frontend.
-TEST_F(SyncBackendHostTest, UpdateInvalidatorState) {
-  InitializeBackend(true);
-
-  EXPECT_CALL(mock_frontend_,
-              OnInvalidatorStateChange(syncer::INVALIDATIONS_ENABLED))
-      .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
-
-  syncer::ObjectIdSet ids;
-  ids.insert(invalidation::ObjectId(3, "id3"));
-  backend_->UpdateRegisteredInvalidationIds(ids);
-  fake_manager_->UpdateInvalidatorState(syncer::INVALIDATIONS_ENABLED);
-  ui_loop_.PostDelayedTask(
-      FROM_HERE, ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
-  ui_loop_.Run();
-}
-
-// Call StopSyncingForShutdown() on the backend and fire some invalidations
-// before calling Shutdown().  Then start up and shut down the backend again.
-// Those notifications shouldn't propagate to the frontend.
-TEST_F(SyncBackendHostTest, InvalidationsAfterStopSyncingForShutdown) {
-  InitializeBackend(true);
-
-  syncer::ObjectIdSet ids;
-  ids.insert(invalidation::ObjectId(5, "id5"));
-  backend_->UpdateRegisteredInvalidationIds(ids);
-
-  backend_->StopSyncingForShutdown();
-
-  // Should not trigger anything.
-  fake_manager_->UpdateInvalidatorState(syncer::TRANSIENT_INVALIDATION_ERROR);
-  fake_manager_->UpdateInvalidatorState(syncer::INVALIDATIONS_ENABLED);
-  const syncer::ObjectIdInvalidationMap& invalidation_map =
-      syncer::ObjectIdSetToInvalidationMap(ids, "payload");
-  fake_manager_->Invalidate(invalidation_map);
-
-  // Make sure the above calls take effect before we continue.
-  fake_manager_->WaitForSyncThread();
-
-  backend_->Shutdown(false);
-  backend_.reset();
-
-  TearDown();
-  SetUp();
 }
 
 // Ensure the device info tracker is initialized properly on startup.
