@@ -11,10 +11,10 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/favicon/imported_favicon_usage.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/common_param_traits_macros.h"
+#include "chrome/common/importer/importer_url_row.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/password_form.h"
 #include "ipc/ipc_message_macros.h"
@@ -78,60 +78,55 @@ struct ParamTraits<importer::SourceProfile> {
   }
 };  // ParamTraits<importer::SourceProfile>
 
-// Traits for history::URLRow to pack/unpack.
+// Traits for ImporterURLRow to pack/unpack.
 template <>
-struct ParamTraits<history::URLRow> {
-  typedef history::URLRow param_type;
+struct ParamTraits<ImporterURLRow> {
+  typedef ImporterURLRow param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.id());
-    WriteParam(m, p.url());
-    WriteParam(m, p.title());
-    WriteParam(m, p.visit_count());
-    WriteParam(m, p.typed_count());
-    WriteParam(m, p.last_visit());
-    WriteParam(m, p.hidden());
+    WriteParam(m, p.url);
+    WriteParam(m, p.title);
+    WriteParam(m, p.visit_count);
+    WriteParam(m, p.typed_count);
+    WriteParam(m, p.last_visit);
+    WriteParam(m, p.hidden);
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
-    history::URLID id;
     GURL url;
     string16 title;
     int visit_count, typed_count;
     base::Time last_visit;
     bool hidden;
-    if (!ReadParam(m, iter, &id) ||
-        !ReadParam(m, iter, &url) ||
+    if (!ReadParam(m, iter, &url) ||
         !ReadParam(m, iter, &title) ||
         !ReadParam(m, iter, &visit_count) ||
         !ReadParam(m, iter, &typed_count) ||
         !ReadParam(m, iter, &last_visit) ||
         !ReadParam(m, iter, &hidden))
       return false;
-    *p = history::URLRow(url, id);
-    p->set_title(title);
-    p->set_visit_count(visit_count);
-    p->set_typed_count(typed_count);
-    p->set_last_visit(last_visit);
-    p->set_hidden(hidden);
+    *p = ImporterURLRow(url);
+    p->title = title;
+    p->visit_count = visit_count;
+    p->typed_count = typed_count;
+    p->last_visit = last_visit;
+    p->hidden = hidden;
     return true;
   }
   static void Log(const param_type& p, std::string* l) {
     l->append("(");
-    LogParam(p.id(), l);
+    LogParam(p.url, l);
     l->append(", ");
-    LogParam(p.url(), l);
+    LogParam(p.title, l);
     l->append(", ");
-    LogParam(p.title(), l);
+    LogParam(p.visit_count, l);
     l->append(", ");
-    LogParam(p.visit_count(), l);
+    LogParam(p.typed_count, l);
     l->append(", ");
-    LogParam(p.typed_count(), l);
+    LogParam(p.last_visit, l);
     l->append(", ");
-    LogParam(p.last_visit(), l);
-    l->append(", ");
-    LogParam(p.hidden(), l);
+    LogParam(p.hidden, l);
     l->append(")");
   }
-};  // ParamTraits<history::URLRow>
+};  // ParamTraits<ImporterURLRow>
 
 // Traits for ImportedBookmarkEntry to pack/unpack.
 template <>
@@ -264,10 +259,10 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_ImportItem_Finished,
 // These messages send data from the external importer process back to
 // the process host so it can be written to the profile.
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyHistoryImportStart,
-                     int  /* total number of history::URLRow items */)
+                     int  /* total number of ImporterURLRow items */)
 
 IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyHistoryImportGroup,
-                     history::URLRows,
+                     std::vector<ImporterURLRow>,
                      int  /* the source of URLs as in history::VisitSource.*/
                           /* To simplify IPC call, pass as an integer */)
 

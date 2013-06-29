@@ -104,7 +104,7 @@ void ExternalProcessImporterBridge::SetFavicons(
 }
 
 void ExternalProcessImporterBridge::SetHistoryItems(
-    const history::URLRows& rows,
+    const std::vector<ImporterURLRow>& rows,
     history::VisitSource visit_source) {
   Send(new ProfileImportProcessHostMsg_NotifyHistoryImportStart(rows.size()));
 
@@ -112,9 +112,10 @@ void ExternalProcessImporterBridge::SetHistoryItems(
   // Debug bounds-check which prevents pushing an iterator beyond its end()
   // (i.e., |it + 2 < s.end()| crashes in debug mode if |i + 1 == s.end()|).
   int rows_left = rows.end() - rows.begin();
-  for (history::URLRows::const_iterator it = rows.begin(); it < rows.end();) {
-    history::URLRows row_group;
-    history::URLRows::const_iterator end_group =
+  for (std::vector<ImporterURLRow>::const_iterator it = rows.begin();
+       it < rows.end();) {
+    std::vector<ImporterURLRow> row_group;
+    std::vector<ImporterURLRow>::const_iterator end_group =
         it + std::min(rows_left, kNumHistoryRowsToSend);
     row_group.assign(it, end_group);
 

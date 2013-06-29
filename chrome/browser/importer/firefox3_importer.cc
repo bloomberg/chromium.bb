@@ -21,6 +21,7 @@
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/nss_decryptor.h"
+#include "chrome/common/importer/importer_url_row.h"
 #include "chrome/common/time_format.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/password_form.h"
@@ -147,7 +148,7 @@ void Firefox3Importer::ImportHistory() {
 
   sql::Statement s(db.GetUniqueStatement(query));
 
-  history::URLRows rows;
+  std::vector<ImporterURLRow> rows;
   while (s.Step() && !cancelled()) {
     GURL url(s.ColumnString(0));
 
@@ -155,12 +156,12 @@ void Firefox3Importer::ImportHistory() {
     if (!CanImportURL(url))
       continue;
 
-    history::URLRow row(url);
-    row.set_title(s.ColumnString16(1));
-    row.set_visit_count(s.ColumnInt(2));
-    row.set_hidden(s.ColumnInt(3) == 1);
-    row.set_typed_count(s.ColumnInt(4));
-    row.set_last_visit(base::Time::FromTimeT(s.ColumnInt64(5)/1000000));
+    ImporterURLRow row(url);
+    row.title = s.ColumnString16(1);
+    row.visit_count = s.ColumnInt(2);
+    row.hidden = s.ColumnInt(3) == 1;
+    row.typed_count = s.ColumnInt(4);
+    row.last_visit = base::Time::FromTimeT(s.ColumnInt64(5)/1000000);
 
     rows.push_back(row);
   }

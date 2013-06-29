@@ -156,7 +156,7 @@ void ExternalProcessImporterClient::OnHistoryImportStart(
 }
 
 void ExternalProcessImporterClient::OnHistoryImportGroup(
-    const history::URLRows& history_rows_group,
+    const std::vector<ImporterURLRow>& history_rows_group,
     int visit_source) {
   if (cancelled_)
     return;

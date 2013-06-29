@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer/importer_url_row.h"
 
 class GURL;
 struct IE7PasswordInfo;
@@ -48,7 +49,7 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
   virtual void SetFavicons(
       const std::vector<ImportedFaviconUsage>& favicons) = 0;
 
-  virtual void SetHistoryItems(const history::URLRows& rows,
+  virtual void SetHistoryItems(const std::vector<ImporterURLRow>& rows,
                                history::VisitSource visit_source) = 0;
 
   virtual void SetKeywords(

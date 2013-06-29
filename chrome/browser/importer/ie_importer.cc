@@ -36,6 +36,7 @@
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/pstore_declarations.h"
+#include "chrome/common/importer/importer_url_row.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "components/webdata/encryptor/ie7_password.h"
@@ -486,7 +487,7 @@ void IEImporter::ImportHistory() {
     return;
   base::win::ScopedComPtr<IEnumSTATURL> enum_url;
   if (SUCCEEDED(result = url_history_stg2->EnumUrls(enum_url.Receive()))) {
-    history::URLRows rows;
+    std::vector<ImporterURLRow> rows;
     STATURL stat_url;
     ULONG fetched;
     while (!cancelled() &&
@@ -509,14 +510,14 @@ void IEImporter::ImportHistory() {
            kSchemes + total_schemes))
         continue;
 
-      history::URLRow row(url);
-      row.set_title(title_string);
-      row.set_last_visit(base::Time::FromFileTime(stat_url.ftLastVisited));
+      ImporterURLRow row(url);
+      row.title = title_string;
+      row.last_visit = base::Time::FromFileTime(stat_url.ftLastVisited);
       if (stat_url.dwFlags == STATURL_QUERYFLAG_TOPLEVEL) {
-        row.set_visit_count(1);
-        row.set_hidden(false);
+        row.visit_count = 1;
+        row.hidden = false;
       } else {
-        row.set_hidden(true);
+        row.hidden = true;
       }
 
       rows.push_back(row);

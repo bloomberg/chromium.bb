@@ -24,6 +24,27 @@
 
 #include <iterator>
 
+namespace {
+
+history::URLRows ConvertImporterURLRowsToHistoryURLRows(
+    const std::vector<ImporterURLRow>& rows) {
+  history::URLRows converted;
+  converted.reserve(rows.size());
+  for (std::vector<ImporterURLRow>::const_iterator it = rows.begin();
+       it != rows.end(); ++it) {
+    history::URLRow row(it->url);
+    row.set_title(it->title);
+    row.set_visit_count(it->visit_count);
+    row.set_typed_count(it->typed_count);
+    row.set_last_visit(it->last_visit);
+    row.set_hidden(it->hidden);
+    converted.push_back(row);
+  }
+  return converted;
+}
+
+}  // namespace
+
 using content::BrowserThread;
 
 namespace {
@@ -159,11 +180,14 @@ void InProcessImporterBridge::SetFavicons(
 }
 
 void InProcessImporterBridge::SetHistoryItems(
-    const history::URLRows &rows,
+    const std::vector<ImporterURLRow>& rows,
     history::VisitSource visit_source) {
+  history::URLRows converted = ConvertImporterURLRowsToHistoryURLRows(rows);
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ProfileWriter::AddHistoryPage, writer_, rows, visit_source));
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          &ProfileWriter::AddHistoryPage, writer_, converted, visit_source));
 }
 
 void InProcessImporterBridge::SetKeywords(

@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/common/importer/importer_url_row.h"
 
 #if __OBJC__
 @class NSDictionary;
@@ -93,7 +94,7 @@ class SafariImporter : public Importer {
   double HistoryTimeToEpochTime(NSString* history_time);
 
   // Parses Safari's history and loads it into the input array.
-  void ParseHistoryItems(history::URLRows* history_items);
+  void ParseHistoryItems(std::vector<ImporterURLRow>* history_items);
 
   // Opens the favicon database file.
   bool OpenDatabase(sql::Connection* db);

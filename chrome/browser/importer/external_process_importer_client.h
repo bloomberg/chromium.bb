@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer/importer_url_row.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host_client.h"
 
@@ -57,8 +58,9 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   void OnImportItemStart(int item);
   void OnImportItemFinished(int item);
   void OnHistoryImportStart(size_t total_history_rows_count);
-  void OnHistoryImportGroup(const history::URLRows& history_rows_group,
-                            int visit_source);
+  void OnHistoryImportGroup(
+      const std::vector<ImporterURLRow>& history_rows_group,
+      int visit_source);
   void OnHomePageImportReady(const GURL& home_page);
   void OnBookmarksImportStart(const string16& first_folder_name,
                               size_t total_bookmarks_count);
@@ -92,7 +94,7 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
 
   // These variables store data being collected from the importer until the
   // entire group has been collected and is ready to be written to the profile.
-  history::URLRows history_rows_;
+  std::vector<ImporterURLRow> history_rows_;
   std::vector<ImportedBookmarkEntry> bookmarks_;
   std::vector<ImportedFaviconUsage> favicons_;
 
