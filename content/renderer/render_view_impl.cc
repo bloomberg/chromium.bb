@@ -593,6 +593,16 @@ static bool ShouldUseFixedPositionCompositing(float device_scale_factor) {
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
+static bool ShouldUseAcceleratedCompositingForOverflowScroll(
+    float device_scale_factor) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kEnableAcceleratedOverflowScroll))
+    return true;
+
+  return DeviceScaleEnsuresTextQuality(device_scale_factor);
+}
+
 static bool ShouldUseTransitionCompositing(float device_scale_factor) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -882,6 +892,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   webview()->setDeviceScaleFactor(device_scale_factor_);
   webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
       ShouldUseFixedPositionCompositing(device_scale_factor_));
+  webview()->settings()->setAcceleratedCompositingForOverflowScrollEnabled(
+      ShouldUseAcceleratedCompositingForOverflowScroll(device_scale_factor_));
   webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
       ShouldUseTransitionCompositing(device_scale_factor_));
 
@@ -6219,6 +6231,8 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
     webview()->setDeviceScaleFactor(device_scale_factor);
     webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
         ShouldUseFixedPositionCompositing(device_scale_factor_));
+  webview()->settings()->setAcceleratedCompositingForOverflowScrollEnabled(
+      ShouldUseAcceleratedCompositingForOverflowScroll(device_scale_factor_));
     webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
         ShouldUseTransitionCompositing(device_scale_factor_));
   }
