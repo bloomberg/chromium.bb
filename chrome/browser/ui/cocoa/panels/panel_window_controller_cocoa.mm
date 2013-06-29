@@ -94,6 +94,10 @@ const double kWidthOfMouseResizeArea = 4.0;
       [[app windows] count] == static_cast<NSUInteger>([controller numPanels]);
 }
 
+- (void)performMiniaturize:(id)sender {
+  [[self windowController] minimizeButtonClicked:0];
+}
+
 // Ignore key events if window cannot become key window to fix problem
 // where keyboard input is still going into a minimized panel even though
 // the app has been deactivated in -[PanelWindowControllerCocoa deactivate:].

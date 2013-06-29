@@ -406,6 +406,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
   if ([event clickCount] == 1)
     [controller_ onTitlebarMouseClicked:[event modifierFlags]];
+  else if ([event clickCount] == 2)
+    [controller_ minimizeButtonClicked:[event modifierFlags]];
 }
 
 - (void)mouseDragged:(NSEvent*)event {
