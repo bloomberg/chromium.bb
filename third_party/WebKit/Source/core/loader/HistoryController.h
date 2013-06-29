@@ -30,11 +30,10 @@
 #ifndef HistoryController_h
 #define HistoryController_h
 
-#include "bindings/v8/SerializedScriptValue.h"
 #include "core/loader/FrameLoaderTypes.h"
-#include <wtf/Noncopyable.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

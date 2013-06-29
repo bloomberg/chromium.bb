@@ -34,10 +34,9 @@
 #include "InspectorTypeBuilder.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/rendering/RenderLayer.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

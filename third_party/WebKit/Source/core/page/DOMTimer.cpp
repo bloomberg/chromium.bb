@@ -31,9 +31,7 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/HashSet.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/CurrentTime.h"
 
 using namespace std;
 

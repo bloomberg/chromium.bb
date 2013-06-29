@@ -31,17 +31,13 @@
 #ifndef InspectorInstrumentation_h
 #define InspectorInstrumentation_h
 
-#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptString.h"
-#include "core/css/CSSImportRule.h"
-#include "core/css/CSSRule.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/Element.h"
 #include "core/dom/EventContext.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/ConsoleAPITypes.h"
-#include "core/page/ConsoleTypes.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/network/FormData.h"
@@ -51,8 +47,6 @@
 #include "modules/websockets/WebSocketHandshakeRequest.h"
 #include "modules/websockets/WebSocketHandshakeResponse.h"
 #include "wtf/RefPtr.h"
-#include "wtf/UnusedParam.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 

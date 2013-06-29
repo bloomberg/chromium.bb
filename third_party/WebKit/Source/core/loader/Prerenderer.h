@@ -34,7 +34,6 @@
 
 #include "core/dom/ActiveDOMObject.h"
 #include "weborigin/KURL.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

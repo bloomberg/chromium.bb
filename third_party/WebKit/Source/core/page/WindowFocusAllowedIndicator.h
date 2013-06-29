@@ -26,8 +26,7 @@
 #ifndef WindowFocusAllowedIndicator_h
 #define WindowFocusAllowedIndicator_h
 
-#include <wtf/Noncopyable.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

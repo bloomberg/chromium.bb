@@ -29,11 +29,9 @@
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/MemoryCache.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/HTTPParsers.h"
-#include <wtf/Vector.h>
 
 namespace WebCore {
 

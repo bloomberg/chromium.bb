@@ -36,7 +36,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ProgressTracker.h"
-#include "core/loader/ResourceLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 

@@ -32,7 +32,6 @@
 #include "core/inspector/InspectorStyleTextEditor.h"
 #include "core/platform/JSONValues.h"
 #include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"

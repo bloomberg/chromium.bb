@@ -46,7 +46,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayerPositionConstraint.h"
-#include "public/platform/WebScrollbar.h"
 #include "public/platform/WebScrollbarLayer.h"
 #include "public/platform/WebScrollbarThemeGeometry.h"
 #include "public/platform/WebScrollbarThemePainter.h"

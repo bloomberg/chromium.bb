@@ -28,9 +28,6 @@
 
 #include <limits>
 #include "core/dom/Document.h"
-#include "core/history/BackForwardController.h"
-#include "core/history/HistoryItem.h"
-#include "core/html/HTMLMediaElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/page/Chrome.h"
@@ -38,9 +35,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/platform/network/ResourceHandle.h"
 #include "core/rendering/TextAutosizer.h"
-#include "modules/webdatabase/Database.h"
 
 using namespace std;
 

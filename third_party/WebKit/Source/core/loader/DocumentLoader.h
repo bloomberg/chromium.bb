@@ -42,9 +42,8 @@
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "core/platform/text/StringWithDirection.h"
-#include <wtf/HashSet.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/HashSet.h"
+#include "wtf/RefPtr.h"
 
 namespace WTF {
 class SchedulePair;

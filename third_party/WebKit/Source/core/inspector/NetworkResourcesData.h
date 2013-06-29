@@ -36,7 +36,6 @@
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCounted.h"
-#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
 

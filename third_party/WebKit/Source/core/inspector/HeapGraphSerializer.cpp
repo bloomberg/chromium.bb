@@ -38,7 +38,6 @@
 #include "wtf/MemoryInstrumentationHashMap.h"
 #include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/MemoryObjectInfo.h"
-#include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

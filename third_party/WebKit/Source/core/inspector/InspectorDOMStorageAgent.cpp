@@ -47,9 +47,7 @@
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
 #include "weborigin/SecurityOrigin.h"
-
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/Vector.h>
+#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace WebCore {
 

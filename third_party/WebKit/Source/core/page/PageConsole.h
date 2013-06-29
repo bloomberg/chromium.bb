@@ -32,9 +32,8 @@
 #include "bindings/v8/ScriptState.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/ConsoleTypes.h"
-#include <wtf/BitVector.h>
-#include <wtf/Forward.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

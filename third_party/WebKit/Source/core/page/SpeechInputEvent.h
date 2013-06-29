@@ -31,9 +31,7 @@
 #include "core/dom/Event.h"
 #include "core/page/SpeechInputResultList.h"
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

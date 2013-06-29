@@ -27,11 +27,10 @@
 #define ContentSecurityPolicy_h
 
 #include "bindings/v8/ScriptState.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/TextPosition.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/TextPosition.h"
+#include "wtf/text/WTFString.h"
 
 namespace WTF {
 class OrdinalNumber;

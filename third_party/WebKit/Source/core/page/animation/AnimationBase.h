@@ -32,10 +32,7 @@
 #include "CSSPropertyNames.h"
 #include "core/platform/animation/CSSAnimationData.h"
 #include "core/rendering/style/RenderStyleConstants.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

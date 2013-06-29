@@ -42,7 +42,6 @@
 #include "core/platform/Pasteboard.h"
 
 #include "wtf/RefPtr.h"
-#include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
 using namespace std;

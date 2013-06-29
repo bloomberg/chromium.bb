@@ -32,7 +32,6 @@
 #include "core/loader/archive/ArchiveResource.h"
 #include "core/loader/archive/MHTMLArchive.h"
 #include "wtf/HashMap.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

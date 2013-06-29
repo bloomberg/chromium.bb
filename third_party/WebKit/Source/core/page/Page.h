@@ -25,16 +25,14 @@
 #include "core/page/LayoutMilestones.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/page/UseCounter.h"
-#include "core/platform/PlatformScreen.h"
 #include "core/platform/Supplementable.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/Region.h"
 #include "core/rendering/Pagination.h"
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Forward.h"
+#include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/text/WTFString.h"
 
 #if OS(SOLARIS)
 #include <sys/time.h> // For time_t structure.

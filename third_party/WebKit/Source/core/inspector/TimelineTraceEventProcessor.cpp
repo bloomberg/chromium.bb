@@ -35,10 +35,9 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/TimelineRecordFactory.h"
 
-#include <wtf/CurrentTime.h>
-#include <wtf/MainThread.h>
-#include <wtf/ThreadSpecific.h>
-#include <wtf/Vector.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/MainThread.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

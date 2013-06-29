@@ -29,13 +29,9 @@
 #include "config.h"
 #include "core/loader/DocumentWriter.h"
 
-#include "bindings/v8/ScriptController.h"
 #include "core/dom/DOMImplementation.h"
-#include "core/dom/RawDataDocumentParser.h"
 #include "core/dom/ScriptableDocumentParser.h"
-#include "core/html/PluginDocument.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/loader/SinkDocument.h"
 #include "core/loader/TextResourceDecoder.h"
@@ -43,7 +39,6 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Settings.h"
-#include "core/platform/text/SegmentedString.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 

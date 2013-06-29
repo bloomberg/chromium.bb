@@ -24,11 +24,10 @@
 #include "core/page/DOMWindowProperty.h"
 #include "core/page/NavigatorBase.h"
 #include "core/platform/Supplementable.h"
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

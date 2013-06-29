@@ -31,20 +31,15 @@
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/loader/cache/MemoryCache.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontCustomPlatformData.h"
 #include "core/platform/graphics/FontPlatformData.h"
-#include <wtf/Vector.h>
 
 #if ENABLE(SVG_FONTS)
 #include "SVGNames.h"
 #include "core/dom/NodeList.h"
 #include "core/svg/SVGDocument.h"
-#include "core/svg/SVGElement.h"
 #include "core/svg/SVGFontElement.h"
-#include "core/svg/SVGGElement.h"
 #endif
 
 namespace WebCore {

@@ -29,7 +29,6 @@
 
 #include "core/dom/Document.h"
 #include "core/html/track/WebVTTParser.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
@@ -37,7 +36,6 @@
 #include "core/loader/cache/CachedTextTrack.h"
 #include "core/platform/Logging.h"
 #include "core/platform/SharedBuffer.h"
-#include "core/platform/network/ResourceHandle.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {

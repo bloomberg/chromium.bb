@@ -42,9 +42,7 @@
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/page/Console.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/MainThread.h"
 
 namespace WebCore {
 

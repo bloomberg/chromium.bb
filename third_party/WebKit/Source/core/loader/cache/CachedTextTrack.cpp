@@ -29,7 +29,6 @@
 
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
-#include <wtf/Vector.h>
 
 namespace WebCore {
 

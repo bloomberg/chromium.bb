@@ -36,10 +36,9 @@
 #include "InspectorTypeBuilder.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include <wtf/HashMap.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashMap.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

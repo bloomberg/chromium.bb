@@ -42,10 +42,9 @@
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/Logging.h"
-#include <wtf/text/CString.h>
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

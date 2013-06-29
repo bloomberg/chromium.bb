@@ -30,23 +30,13 @@
 #include "config.h"
 #include "core/loader/DocumentLoader.h"
 
-#include <wtf/Assertions.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/unicode/Unicode.h>
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/dom/Event.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/history/HistoryItem.h"
-#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentWriter.h"
-#include "core/loader/FormState.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ResourceLoader.h"
@@ -63,9 +53,12 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/Logging.h"
 #include "weborigin/SchemeRegistry.h"
-#include "weborigin/SecurityPolicy.h"
+#include "wtf/Assertions.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

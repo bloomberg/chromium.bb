@@ -40,17 +40,15 @@
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/Console.h"
-#include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceResponse.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

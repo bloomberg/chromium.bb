@@ -38,12 +38,11 @@
 #include "core/inspector/ScriptBreakpoint.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/page/ConsoleTypes.h"
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

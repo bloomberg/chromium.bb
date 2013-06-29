@@ -32,22 +32,19 @@
 #include "config.h"
 #include "core/loader/PingLoader.h"
 
-#include <wtf/OwnPtr.h>
-#include <wtf/text/CString.h>
-#include <wtf/UnusedParam.h>
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/page/Frame.h"
-#include "core/page/Page.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 

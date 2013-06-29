@@ -31,9 +31,8 @@
 
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/storage/StorageArea.h"
-#include <wtf/HashMap.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

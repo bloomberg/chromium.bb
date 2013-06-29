@@ -24,12 +24,10 @@
 #include "config.h"
 #include "core/loader/cache/CachedResource.h"
 
-#include "core/dom/Document.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/CachedMetadata.h"
 #include "core/loader/CrossOriginAccessControl.h"
-#include "core/loader/DocumentLoader.h"
 #include "core/loader/ResourceLoader.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"

@@ -35,8 +35,6 @@
 #include "core/inspector/InspectorTimelineAgent.h"
 #include "core/platform/JSONValues.h"
 #include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"

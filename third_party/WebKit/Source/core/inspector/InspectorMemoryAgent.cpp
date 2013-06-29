@@ -47,13 +47,11 @@
 #include "core/platform/JSONValues.h"
 #include "core/platform/MemoryUsageSupport.h"
 #include "wtf/ArrayBufferView.h"
-#include "wtf/HashSet.h"
 #include "wtf/MemoryInstrumentationArrayBufferView.h"
 #include "wtf/NonCopyingSort.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringImpl.h"
 #include "wtf/text/WTFString.h"
 

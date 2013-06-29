@@ -35,9 +35,6 @@
 #include "bindings/v8/ScriptString.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
-#include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
 
 

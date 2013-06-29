@@ -30,13 +30,12 @@
 #define ResourceLoader_h
 
 #include "core/loader/ResourceLoaderOptions.h"
-#include "core/loader/ResourceLoaderTypes.h"
 #include "core/platform/network/ResourceHandleClient.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
 
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

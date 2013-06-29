@@ -29,7 +29,6 @@
 #include "HTMLNames.h"
 #include "SVGNames.h"
 #include "core/css/CSSHostRule.h"
-#include "core/css/CSSImportRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/CSSParser.h"

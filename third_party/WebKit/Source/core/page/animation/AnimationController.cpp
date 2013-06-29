@@ -40,8 +40,7 @@
 #include "core/page/animation/CSSPropertyAnimation.h"
 #include "core/page/animation/CompositeAnimation.h"
 #include "core/rendering/RenderView.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/UnusedParam.h>
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 

@@ -35,7 +35,6 @@
 #include "InspectorFrontend.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
-#include "bindings/v8/ScriptObject.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DeviceOrientationController.h"
 #include "core/dom/Document.h"
@@ -70,13 +69,11 @@
 #include "core/platform/JSONValues.h"
 #include "core/platform/text/RegularExpression.h"
 #include "modules/geolocation/GeolocationController.h"
-#include "modules/geolocation/GeolocationError.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/Vector.h"
 #include "wtf/text/Base64.h"
-#include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextEncoding.h"
 
 using namespace std;

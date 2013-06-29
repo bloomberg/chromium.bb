@@ -28,11 +28,10 @@
 
 #include "core/page/UserStyleSheet.h"
 #include "core/platform/Supplementable.h"
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

@@ -32,18 +32,16 @@
 #ifndef DocumentThreadableLoader_h
 #define DocumentThreadableLoader_h
 
-#include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceError.h"
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
     class Document;

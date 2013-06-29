@@ -50,8 +50,6 @@
 #include "core/loader/ResourceLoader.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/loader/UniqueIdentifier.h"
-#include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/loader/cache/CachedResourceInitiatorInfo.h"
 #include "core/loader/cache/MemoryCache.h"
@@ -68,11 +66,8 @@
 #include "modules/websockets/WebSocketHandshakeResponse.h"
 #include "weborigin/KURL.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/HexNumber.h"
-#include "wtf/ListHashSet.h"
 #include "wtf/MemoryInstrumentationHashMap.h"
 #include "wtf/RefPtr.h"
-#include "wtf/text/StringBuilder.h"
 
 typedef WebCore::InspectorBackendDispatcher::NetworkCommandHandler::LoadResourceForFrontendCallback LoadResourceForFrontendCallback;
 

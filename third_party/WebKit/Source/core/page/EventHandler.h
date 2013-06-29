@@ -33,15 +33,13 @@
 #include "core/page/FocusDirection.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/PlatformMouseEvent.h"
-#include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/LayoutPoint.h"
 #include "core/rendering/HitTestRequest.h"
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

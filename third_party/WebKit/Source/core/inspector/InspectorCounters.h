@@ -31,11 +31,10 @@
 #ifndef InspectorCounters_h
 #define InspectorCounters_h
 
-#include <wtf/FastAllocBase.h>
-#include <wtf/UnusedParam.h>
+#include "wtf/FastAllocBase.h"
 
 #if !ASSERT_DISABLED
-#include <wtf/MainThread.h>
+#include "wtf/MainThread.h"
 #endif
 
 namespace WebCore {

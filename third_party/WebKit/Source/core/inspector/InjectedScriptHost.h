@@ -32,9 +32,8 @@
 
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/page/ConsoleTypes.h"
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

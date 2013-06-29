@@ -31,8 +31,7 @@
 #include "core/loader/cache/CachedResourceInitiatorInfo.h"
 #include "core/platform/network/ResourceLoadPriority.h"
 #include "core/platform/network/ResourceRequest.h"
-#include <wtf/RefPtr.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 class Document;

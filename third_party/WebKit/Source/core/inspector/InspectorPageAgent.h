@@ -36,10 +36,8 @@
 #include "core/dom/DeviceOrientationData.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "modules/geolocation/GeolocationPosition.h"
-#include <wtf/HashMap.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

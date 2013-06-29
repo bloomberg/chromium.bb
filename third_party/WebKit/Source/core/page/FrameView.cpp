@@ -36,13 +36,8 @@
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/OverflowEvent.h"
 #include "core/editing/FrameSelection.h"
-#include "core/history/BackForwardController.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFrameElement.h"
-#include "core/html/HTMLFrameSetElement.h"
 #include "core/html/HTMLPlugInImageElement.h"
-#include "core/inspector/InspectorClient.h"
-#include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -65,8 +60,6 @@
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderFullScreen.h"
-#include "core/rendering/RenderIFrame.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
@@ -82,9 +75,8 @@
 #include "core/svg/SVGDocument.h"
 #include "core/svg/SVGSVGElement.h"
 
-#include <wtf/CurrentTime.h>
-#include <wtf/TemporaryChange.h>
-#include <wtf/UnusedParam.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/TemporaryChange.h"
 
 #include "core/platform/chromium/TraceEvent.h"
 

@@ -37,7 +37,6 @@
 #include "core/page/animation/CompositeAnimation.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/style/RenderStyle.h"
-#include <wtf/UnusedParam.h>
 
 using namespace std;
 

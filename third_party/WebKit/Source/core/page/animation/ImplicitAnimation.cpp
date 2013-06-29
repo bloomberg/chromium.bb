@@ -35,7 +35,6 @@
 #include "core/page/animation/ImplicitAnimation.h"
 #include "core/page/animation/KeyframeAnimation.h"
 #include "core/rendering/RenderBoxModelObject.h"
-#include <wtf/UnusedParam.h>
 
 namespace WebCore {
 

@@ -31,7 +31,6 @@
 #ifndef PageSerializer_h
 #define PageSerializer_h
 
-#include "core/platform/SharedBuffer.h"
 #include "weborigin/KURL.h"
 #include "weborigin/KURLHash.h"
 #include "wtf/HashMap.h"

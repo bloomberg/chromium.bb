@@ -29,8 +29,7 @@
 #include "core/page/Performance.h"
 #include "core/page/PerformanceMark.h"
 #include "core/page/PerformanceMeasure.h"
-#include <wtf/dtoa/utils.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

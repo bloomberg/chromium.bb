@@ -31,8 +31,6 @@
 #include "config.h"
 #include "core/inspector/ScriptCallFrame.h"
 
-#include <wtf/RefPtr.h>
-
 namespace WebCore {
 
 ScriptCallFrame::ScriptCallFrame(const String& functionName, const String& scriptName, unsigned lineNumber, unsigned column)

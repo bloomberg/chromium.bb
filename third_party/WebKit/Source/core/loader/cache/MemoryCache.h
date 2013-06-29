@@ -25,14 +25,11 @@
 #ifndef Cache_h
 #define Cache_h
 
-#include "core/loader/cache/CachedResource.h"
-#include "weborigin/SecurityOriginHash.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/Vector.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore  {
 

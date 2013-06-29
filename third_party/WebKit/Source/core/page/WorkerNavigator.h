@@ -29,10 +29,9 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/page/NavigatorBase.h"
 #include "core/platform/Supplementable.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -23,10 +23,6 @@
 #include "core/page/Chrome.h"
 
 #include "public/platform/WebScreenInfo.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/Vector.h>
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLInputElement.h"
@@ -43,6 +39,8 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/network/DNS.h"
 #include "core/rendering/HitTestResult.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -33,8 +33,7 @@
 
 #include "InspectorTypeBuilder.h"
 #include "bindings/v8/ScriptObject.h"
-#include <wtf/Forward.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

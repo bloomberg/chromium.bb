@@ -29,18 +29,11 @@
 #include "config.h"
 #include "core/page/animation/AnimationBase.h"
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/dom/Document.h"
-#include "core/dom/EventNames.h"
 #include "core/page/animation/AnimationControllerPrivate.h"
-#include "core/page/animation/CSSPropertyAnimation.h"
 #include "core/page/animation/CompositeAnimation.h"
-#include "core/platform/FloatConversion.h"
 #include "core/platform/animation/AnimationUtilities.h"
 #include "core/platform/animation/TimingFunction.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/style/RenderStyle.h"
-#include "wtf/CurrentTime.h"
 #include <algorithm>
 
 using namespace std;

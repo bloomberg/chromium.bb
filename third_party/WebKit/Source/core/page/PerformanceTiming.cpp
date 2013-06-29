@@ -39,7 +39,6 @@
 #include "core/page/Frame.h"
 #include "core/platform/network/ResourceLoadTiming.h"
 #include "core/platform/network/ResourceResponse.h"
-#include <wtf/CurrentTime.h>
 
 namespace WebCore {
 

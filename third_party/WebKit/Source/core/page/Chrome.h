@@ -26,8 +26,7 @@
 #include "core/page/FocusDirection.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/HostWindow.h"
-#include <wtf/Forward.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

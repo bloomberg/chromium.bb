@@ -32,7 +32,6 @@
 #define TimelineRecordFactory_h
 
 #include "core/platform/JSONValues.h"
-#include "core/platform/graphics/LayoutRect.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"

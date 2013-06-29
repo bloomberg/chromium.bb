@@ -44,8 +44,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleCachedImage.h"
 #include "core/rendering/style/StyleGeneratedImage.h"
-#include <wtf/Noncopyable.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

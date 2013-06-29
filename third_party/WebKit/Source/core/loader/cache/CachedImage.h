@@ -29,8 +29,7 @@
 #include "core/platform/graphics/IntSizeHash.h"
 #include "core/platform/graphics/LayoutSize.h"
 #include "core/svg/graphics/SVGImageCache.h"
-#include <wtf/HashMap.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

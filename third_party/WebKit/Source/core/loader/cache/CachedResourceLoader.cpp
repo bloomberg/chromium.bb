@@ -27,12 +27,6 @@
 #include "config.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationListHashSet.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/UnusedParam.h>
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
@@ -53,7 +47,6 @@
 #include "core/loader/cache/CachedTextTrack.h"
 #include "core/loader/cache/CachedXSLStyleSheet.h"
 #include "core/loader/cache/MemoryCache.h"
-#include "core/page/Console.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
@@ -64,6 +57,11 @@
 #include "public/platform/WebURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
+#include "wtf/MemoryInstrumentationListHashSet.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 
 #define PRELOAD_DEBUG 0
 

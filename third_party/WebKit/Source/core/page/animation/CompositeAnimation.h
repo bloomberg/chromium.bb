@@ -31,9 +31,7 @@
 
 #include "core/page/animation/ImplicitAnimation.h"
 #include "core/page/animation/KeyframeAnimation.h"
-#include <wtf/HashMap.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

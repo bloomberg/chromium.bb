@@ -48,7 +48,6 @@
 #include "core/platform/network/ResourceResponse.h"
 #include "core/rendering/RenderTheme.h"
 #include "modules/filesystem/DOMFileSystem.h"
-#include <wtf/StdLibExtras.h>
 
 using namespace std;
 

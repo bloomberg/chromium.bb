@@ -30,8 +30,6 @@
 
 #include "InspectorOverlayHost.h"
 
-#include "InspectorController.h"
-
 namespace WebCore {
 
 InspectorOverlayHost::InspectorOverlayHost()

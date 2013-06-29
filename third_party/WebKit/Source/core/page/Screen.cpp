@@ -33,9 +33,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "core/page/Settings.h"
 #include "core/platform/PlatformScreen.h"
-#include "core/platform/Widget.h"
 #include "core/platform/graphics/FloatRect.h"
 
 namespace WebCore {

@@ -36,9 +36,7 @@
 #include "core/dom/Event.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/history/BackForwardController.h"
-#include "core/history/HistoryItem.h"
 #include "core/html/HTMLFormElement.h"
-#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
@@ -46,10 +44,9 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderStateMachine.h"
-#include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include <wtf/CurrentTime.h>
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 

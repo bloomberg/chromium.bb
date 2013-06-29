@@ -23,8 +23,6 @@
 #include "config.h"
 #include "core/page/Navigator.h"
 
-#include <wtf/HashSet.h>
-#include <wtf/StdLibExtras.h>
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/loader/CookieJar.h"

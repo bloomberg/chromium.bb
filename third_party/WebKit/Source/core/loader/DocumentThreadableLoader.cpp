@@ -38,7 +38,6 @@
 #include "core/loader/CrossOriginPreflightResultCache.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/ResourceLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/CachedResourceLoader.h"

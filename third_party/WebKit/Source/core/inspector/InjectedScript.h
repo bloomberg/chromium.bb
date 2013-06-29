@@ -36,10 +36,7 @@
 #include "core/inspector/InjectedScriptBase.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/ScriptArguments.h"
-#include <wtf/Forward.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

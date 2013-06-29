@@ -27,14 +27,12 @@
 #include "config.h"
 #include "core/page/DOMWindow.h"
 
-#include <wtf/CurrentTime.h>
-#include <wtf/MainThread.h>
-#include <wtf/MathExtras.h>
-#include <wtf/text/Base64.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/MainThread.h"
+#include "wtf/MathExtras.h"
+#include "wtf/text/Base64.h"
+#include "wtf/text/WTFString.h"
 #include <algorithm>
 #include "RuntimeEnabledFeatures.h"
-#include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"

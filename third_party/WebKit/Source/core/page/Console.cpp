@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/page/Console.h"
 
-#include <stdio.h>
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "core/inspector/ConsoleAPITypes.h"
@@ -43,9 +42,8 @@
 #include "core/page/Frame.h"
 #include "core/page/MemoryInfo.h"
 #include "core/page/Page.h"
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/UnusedParam.h>
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 
 #include "core/platform/chromium/TraceEvent.h"
 

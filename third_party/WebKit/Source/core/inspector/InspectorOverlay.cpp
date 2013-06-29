@@ -48,12 +48,11 @@
 #include "core/page/Settings.h"
 #include "core/platform/JSONValues.h"
 #include "core/platform/PlatformMouseEvent.h"
-#include "core/platform/PlatformTouchEvent.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderObject.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

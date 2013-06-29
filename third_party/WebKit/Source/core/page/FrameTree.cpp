@@ -21,16 +21,14 @@
 #include "config.h"
 #include "core/page/FrameTree.h"
 
-#include <stdarg.h>
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include <wtf/StringExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
 
 using std::swap;
 

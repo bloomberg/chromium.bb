@@ -27,13 +27,12 @@
 #define PerformanceUserTiming_h
 
 #include "core/dom/ExceptionCode.h"
-#include "core/page/Performance.h"
 #include "core/page/PerformanceTiming.h"
-#include <wtf/HashMap.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashMap.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -31,10 +31,7 @@
 #include "core/inspector/InspectorProfilerAgent.h"
 
 #include "InspectorFrontend.h"
-#include "bindings/v8/PageScriptDebugServer.h"
-#include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptProfiler.h"
-#include "bindings/v8/WorkerScriptDebugServer.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InjectedScript.h"
@@ -44,13 +41,9 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptProfile.h"
-#include "core/page/Console.h"
 #include "core/page/ConsoleTypes.h"
-#include "core/page/Page.h"
-#include "core/platform/JSONValues.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/StringConcatenate.h"
 
 namespace WebCore {

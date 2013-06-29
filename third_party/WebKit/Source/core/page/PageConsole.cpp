@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/page/PageConsole.h"
 
-#include <stdio.h>
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/inspector/ConsoleAPITypes.h"
@@ -39,9 +38,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/Page.h"
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/UnusedParam.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
