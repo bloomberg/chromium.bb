@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
 class Profile;
 
@@ -40,8 +41,6 @@ typedef base::Callback<void(const std::string& resource_id,
     CacheIterateCallback;
 
 namespace internal {
-
-class ResourceMetadataStorage;
 
 // Callback for GetFileFromCache.
 typedef base::Callback<void(FileError error,
@@ -73,6 +72,8 @@ class FileCache {
     FILE_OPERATION_MOVE = 0,
     FILE_OPERATION_COPY,
   };
+
+  typedef ResourceMetadataStorage::CacheEntryIterator Iterator;
 
   // Name of the cache metadata DB previously used.
   // TODO(hashimoto): Remove this at some point.
@@ -120,10 +121,8 @@ class FileCache {
   void IterateOnUIThread(const CacheIterateCallback& iteration_callback,
                          const base::Closure& completion_callback);
 
-  // Iterates all files in the cache and calls |iteration_callback| for each
-  // file. |completion_callback| is run upon completion.
-  // TODO(hashimoto): Stop using callbacks for this method. crbug.com/242818
-  void Iterate(const CacheIterateCallback& iteration_callback);
+  // Returns an object to iterate over entries.
+  scoped_ptr<Iterator> GetIterator();
 
 
   // Runs FreeDiskSpaceIfNeededFor() on |blocking_task_runner_|, and calls

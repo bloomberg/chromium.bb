@@ -16,38 +16,23 @@
 namespace drive {
 namespace internal {
 
-namespace {
-
-// Collects resource IDs of stale cache files.
-void CollectStaleCacheFiles(
-    ResourceMetadata* resource_metadata,
-    std::vector<std::string>* out_resource_ids_to_be_removed,
-    const std::string& resource_id,
-    const FileCacheEntry& cache_entry) {
-  ResourceEntry entry;
-  FileError error = resource_metadata->GetResourceEntryById(
-      resource_id, &entry);
-
-  // The entry is not found or the MD5 does not match.
-  if (error != FILE_ERROR_OK ||
-      cache_entry.md5() != entry.file_specific_info().md5())
-    out_resource_ids_to_be_removed->push_back(resource_id);
-}
-
-}  // namespace
-
 void RemoveStaleCacheFiles(FileCache* cache,
                            ResourceMetadata* resource_metadata) {
   std::vector<std::string> resource_ids_to_be_removed;
-  cache->Iterate(base::Bind(&CollectStaleCacheFiles,
-                            resource_metadata,
-                            &resource_ids_to_be_removed));
 
-  for (size_t i = 0; i < resource_ids_to_be_removed.size(); ++i) {
-    const std::string& resource_id = resource_ids_to_be_removed[i];
-    FileError error = cache->Remove(resource_id);
-    LOG_IF(WARNING, error != FILE_ERROR_OK)
-        << "Failed to remove a stale cache file. resource_id: " << resource_id;
+  scoped_ptr<FileCache::Iterator> it = cache->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    ResourceEntry entry;
+    FileError error = resource_metadata->GetResourceEntryById(it->GetID(),
+                                                              &entry);
+    // The entry is not found or the MD5 does not match.
+    if (error != FILE_ERROR_OK ||
+        it->GetValue().md5() != entry.file_specific_info().md5()) {
+      FileError error = cache->Remove(it->GetID());
+      LOG_IF(WARNING, error != FILE_ERROR_OK)
+          << "Failed to remove a stale cache file. resource_id: "
+          << it->GetID();
+    }
   }
 }
 

@@ -154,6 +154,15 @@ void RunGetCacheEntryCallback(const GetCacheEntryCallback& callback,
   callback.Run(success, *cache_entry);
 }
 
+// Calls |iteration_callback| with each entry in |cache|.
+void IterateCache(FileCache* cache,
+                  const CacheIterateCallback& iteration_callback) {
+  scoped_ptr<FileCache::Iterator> it = cache->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance())
+    iteration_callback.Run(it->GetID(), it->GetValue());
+  DCHECK(!it->HasError());
+}
+
 }  // namespace
 
 const base::FilePath::CharType FileCache::kOldCacheMetadataDBName[] =
@@ -242,21 +251,15 @@ void FileCache::IterateOnUIThread(
 
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&FileCache::Iterate,
+      base::Bind(&IterateCache,
                  base::Unretained(this),
                  google_apis::CreateRelayCallback(iteration_callback)),
       completion_callback);
 }
 
-void FileCache::Iterate(const CacheIterateCallback& iteration_callback) {
+scoped_ptr<FileCache::Iterator> FileCache::GetIterator() {
   AssertOnSequencedWorkerPool();
-  DCHECK(!iteration_callback.is_null());
-
-  scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
-      storage_->GetCacheEntryIterator();
-  for (; !it->IsAtEnd(); it->Advance())
-    iteration_callback.Run(it->GetID(), it->GetValue());
-  DCHECK(!it->HasError());
+  return storage_->GetCacheEntryIterator();
 }
 
 void FileCache::FreeDiskSpaceIfNeededForOnUIThread(
