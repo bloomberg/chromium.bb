@@ -9,9 +9,11 @@
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "third_party/icu/public/common/unicode/rbbi.h"
 #include "third_party/icu/public/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/text/text_elider.h"
 #include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
@@ -324,7 +326,7 @@ void RenderText::SetText(const base::string16& text) {
     text_direction_ = base::i18n::UNKNOWN_DIRECTION;
 
   obscured_reveal_index_ = -1;
-  UpdateObscuredText();
+  UpdateLayoutText();
   ResetLayout();
 }
 
@@ -379,7 +381,7 @@ void RenderText::SetObscured(bool obscured) {
     obscured_ = obscured;
     obscured_reveal_index_ = -1;
     cached_bounds_and_offset_valid_ = false;
-    UpdateObscuredText();
+    UpdateLayoutText();
     ResetLayout();
   }
 }
@@ -390,7 +392,7 @@ void RenderText::SetObscuredRevealIndex(int index) {
 
   obscured_reveal_index_ = index;
   cached_bounds_and_offset_valid_ = false;
-  UpdateObscuredText();
+  UpdateLayoutText();
   ResetLayout();
 }
 
@@ -709,7 +711,7 @@ const Rect& RenderText::GetUpdatedCursorBounds() {
 }
 
 size_t RenderText::IndexOfAdjacentGrapheme(size_t index,
-    LogicalCursorDirection direction) {
+                                           LogicalCursorDirection direction) {
   if (index > text().length())
     return text().length();
 
@@ -763,6 +765,7 @@ RenderText::RenderText()
       composition_and_selection_styles_applied_(false),
       obscured_(false),
       obscured_reveal_index_(-1),
+      truncate_length_(0),
       fade_head_(false),
       fade_tail_(false),
       background_is_transparent_(false),
@@ -803,7 +806,7 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
 }
 
 const base::string16& RenderText::GetLayoutText() const {
-  return obscured() ? obscured_text_ : text();
+  return layout_text_.empty() ? text_ : layout_text_;
 }
 
 void RenderText::ApplyCompositionAndSelectionStyles() {
@@ -933,27 +936,37 @@ void RenderText::MoveCursorTo(size_t position, bool select) {
         (cursor == 0) ? CURSOR_FORWARD : CURSOR_BACKWARD));
 }
 
-void RenderText::UpdateObscuredText() {
-  if (!obscured_)
-    return;
+void RenderText::UpdateLayoutText() {
+  layout_text_.clear();
 
-  const size_t obscured_text_length =
-      static_cast<size_t>(ui::UTF16IndexToOffset(text_, 0, text_.length()));
-  obscured_text_.assign(obscured_text_length, kPasswordReplacementChar);
+  if (obscured_) {
+    size_t obscured_text_length =
+        static_cast<size_t>(ui::UTF16IndexToOffset(text_, 0, text_.length()));
+    layout_text_.assign(obscured_text_length, kPasswordReplacementChar);
 
-  if (obscured_reveal_index_ >= 0 &&
-      obscured_reveal_index_ < static_cast<int>(text_.length())) {
-    // Gets the index range in |text_| to be revealed.
-    size_t start = obscured_reveal_index_;
-    U16_SET_CP_START(text_.data(), 0, start);
-    size_t end = start;
-    UChar32 unused_char;
-    U16_NEXT(text_.data(), end, text_.length(), unused_char);
+    if (obscured_reveal_index_ >= 0 &&
+        obscured_reveal_index_ < static_cast<int>(text_.length())) {
+      // Gets the index range in |text_| to be revealed.
+      size_t start = obscured_reveal_index_;
+      U16_SET_CP_START(text_.data(), 0, start);
+      size_t end = start;
+      UChar32 unused_char;
+      U16_NEXT(text_.data(), end, text_.length(), unused_char);
 
-    // Gets the index in |obscured_text_| to be replaced.
-    const size_t cp_start =
-        static_cast<size_t>(ui::UTF16IndexToOffset(text_, 0, start));
-    obscured_text_.replace(cp_start, 1, text_.substr(start, end - start));
+      // Gets the index in |layout_text_| to be replaced.
+      const size_t cp_start =
+          static_cast<size_t>(ui::UTF16IndexToOffset(text_, 0, start));
+      if (layout_text_.length() > cp_start)
+        layout_text_.replace(cp_start, 1, text_.substr(start, end - start));
+    }
+  }
+
+  const base::string16& text = obscured_ ? layout_text_ : text_;
+  if (truncate_length_ > 0 && truncate_length_ < text.length()) {
+    // Truncate the text at a valid character break and append an ellipsis.
+    icu::StringCharacterIterator iter(text.c_str());
+    iter.setIndex32(truncate_length_ - 1);
+    layout_text_.assign(text.substr(0, iter.getIndex()) + ui::kEllipsisUTF16);
   }
 }
 

@@ -193,6 +193,12 @@ class UI_EXPORT RenderText {
   // cleared when SetText or SetObscured is called.
   void SetObscuredRevealIndex(int index);
 
+  // Set the maximum length of the displayed layout text, not the actual text.
+  // A |length| of 0 forgoes a hard limit, but does not guarantee proper
+  // functionality of very long strings. Applies to subsequent SetText calls.
+  // WARNING: Only use this for system limits, it lacks complex text support.
+  void set_truncate_length(size_t length) { truncate_length_ = length; }
+
   const Rect& display_rect() const { return display_rect_; }
   void SetDisplayRect(const Rect& r);
 
@@ -412,7 +418,7 @@ class UI_EXPORT RenderText {
   // Draw the text.
   virtual void DrawVisualText(Canvas* canvas) = 0;
 
-  // Returns the text used for layout, which may be |obscured_text_|.
+  // Returns the text used for layout, which may be obscured or truncated.
   const base::string16& GetLayoutText() const;
 
   // Apply (and undo) temporary composition underlines and selection colors.
@@ -451,6 +457,8 @@ class UI_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ApplyColorAndStyle);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ObscuredText);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, RevealObscuredText);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, TruncatedText);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, TruncatedObscuredText);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GraphemePositions);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, EdgeSelectionModels);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GetTextOffset);
@@ -463,8 +471,8 @@ class UI_EXPORT RenderText {
   // it is a NO-OP.
   void MoveCursorTo(size_t position, bool select);
 
-  // Updates |obscured_text_| if the text is obscured.
-  void UpdateObscuredText();
+  // Updates |layout_text_| if the text is obscured or truncated.
+  void UpdateLayoutText();
 
   // Update the cached bounds and display offset to ensure that the current
   // cursor is within the visible display area.
@@ -537,13 +545,16 @@ class UI_EXPORT RenderText {
   BreakList<bool> saved_underlines_;
   bool composition_and_selection_styles_applied_;
 
-  // A flag and the text to display for obscured (password) fields.
-  // Asterisks are used instead of the actual text glyphs when true.
+  // A flag to obscure actual text with asterisks for password fields.
   bool obscured_;
-  base::string16 obscured_text_;
-
   // The index at which the char should be revealed in the obscured text.
   int obscured_reveal_index_;
+
+  // The maximum length of text to display, 0 forgoes a hard limit.
+  size_t truncate_length_;
+
+  // The obscured and/or truncated text that will be displayed.
+  base::string16 layout_text_;
 
   // Fade text head and/or tail, if text doesn't fit into |display_rect_|.
   bool fade_head_;

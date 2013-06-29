@@ -5,6 +5,7 @@
 #include "ui/gfx/render_text.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/break_list.h"
@@ -55,6 +56,23 @@ void SetRTL(bool rtl) {
   gtk_widget_set_default_direction(rtl ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
 #endif
   EXPECT_EQ(rtl, base::i18n::IsRTL());
+}
+
+// Ensure cursor movement in the specified |direction| yields |expected| values.
+void RunMoveCursorLeftRightTest(RenderText* render_text,
+                                const std::vector<SelectionModel>& expected,
+                                VisualCursorDirection direction) {
+  for (size_t i = 0; i < expected.size(); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Going %s; expected value index %d.",
+        direction == CURSOR_LEFT ? "left" : "right", static_cast<int>(i)));
+    EXPECT_EQ(expected[i], render_text->selection_model());
+    render_text->MoveCursor(CHARACTER_BREAK, direction, false);
+  }
+  // Check that cursoring is clamped at the line edge.
+  EXPECT_EQ(expected.back(), render_text->selection_model());
+  // Check that it is the line edge.
+  render_text->MoveCursor(LINE_BREAK, direction, false);
+  EXPECT_EQ(expected.back(), render_text->selection_model());
 }
 
 }  // namespace
@@ -373,6 +391,118 @@ TEST_F(RenderTextTest, RevealObscuredText) {
   EXPECT_EQ(valid_expect_5_and_6, render_text->GetLayoutText());
 }
 
+TEST_F(RenderTextTest, TruncatedText) {
+  struct {
+    const wchar_t* text;
+    const wchar_t* layout_text;
+  } cases[] = {
+    // Strings shorter than the truncation length should be laid out in full.
+    { L"",        L""        },
+    { kWeak,      kWeak      },
+    { kLtr,       kLtr       },
+    { kLtrRtl,    kLtrRtl    },
+    { kLtrRtlLtr, kLtrRtlLtr },
+    { kRtl,       kRtl       },
+    { kRtlLtr,    kRtlLtr    },
+    { kRtlLtrRtl, kRtlLtrRtl },
+    // Strings as long as the truncation length should be laid out in full.
+    { L"01234",   L"01234"   },
+    // Long strings should be truncated with an ellipsis appended at the end.
+    { L"012345",                  L"0123\x2026"     },
+    { L"012"L" . ",               L"012 \x2026"     },
+    { L"012"L"abc",               L"012a\x2026"     },
+    { L"012"L"a"L"\x5d0\x5d1",    L"012a\x2026"     },
+    { L"012"L"a"L"\x5d1"L"b",     L"012a\x2026"     },
+    { L"012"L"\x5d0\x5d1\x5d2",   L"012\x5d0\x2026" },
+    { L"012"L"\x5d0\x5d1"L"a",    L"012\x5d0\x2026" },
+    { L"012"L"\x5d0"L"a"L"\x5d1", L"012\x5d0\x2026" },
+    // Surrogate pairs should be truncated reasonably enough.
+    { L"0123\x0915\x093f",              L"0123\x2026"                },
+    { L"0\x05e9\x05bc\x05c1\x05b8",     L"0\x05e9\x05bc\x05c1\x05b8" },
+    { L"01\x05e9\x05bc\x05c1\x05b8",    L"01\x05e9\x05bc\x2026"      },
+    { L"012\x05e9\x05bc\x05c1\x05b8",   L"012\x05e9\x2026"           },
+    { L"0123\x05e9\x05bc\x05c1\x05b8",  L"0123\x2026"                },
+    { L"01234\x05e9\x05bc\x05c1\x05b8", L"0123\x2026"                },
+    { L"012\xF0\x9D\x84\x9E",           L"012\xF0\x2026"             },
+  };
+
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->set_truncate_length(5);
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+    render_text->SetText(WideToUTF16(cases[i].text));
+    EXPECT_EQ(WideToUTF16(cases[i].text), render_text->text());
+    EXPECT_EQ(WideToUTF16(cases[i].layout_text), render_text->GetLayoutText())
+        << "For case " << i << ": " << cases[i].text;
+  }
+}
+
+TEST_F(RenderTextTest, TruncatedObscuredText) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->set_truncate_length(3);
+  render_text->SetObscured(true);
+  render_text->SetText(WideToUTF16(L"abcdef"));
+  EXPECT_EQ(WideToUTF16(L"abcdef"), render_text->text());
+  EXPECT_EQ(WideToUTF16(L"**\x2026"), render_text->GetLayoutText());
+}
+
+TEST_F(RenderTextTest, TruncatedCursorMovementLTR) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->set_truncate_length(2);
+  render_text->SetText(WideToUTF16(L"abcd"));
+
+  EXPECT_EQ(SelectionModel(0, CURSOR_BACKWARD), render_text->selection_model());
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
+  EXPECT_EQ(SelectionModel(4, CURSOR_FORWARD), render_text->selection_model());
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, false);
+  EXPECT_EQ(SelectionModel(0, CURSOR_BACKWARD), render_text->selection_model());
+
+  std::vector<SelectionModel> expected;
+  expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
+  expected.push_back(SelectionModel(1, CURSOR_BACKWARD));
+  expected.push_back(SelectionModel(2, CURSOR_BACKWARD));
+  // The cursor hops over the elided text to the line end.
+  expected.push_back(SelectionModel(4, CURSOR_FORWARD));
+  expected.push_back(SelectionModel(4, CURSOR_FORWARD));
+  RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_RIGHT);
+
+  expected.clear();
+  expected.push_back(SelectionModel(4, CURSOR_FORWARD));
+  // The cursor hops over the elided text to preceeding text.
+  expected.push_back(SelectionModel(1, CURSOR_FORWARD));
+  expected.push_back(SelectionModel(0, CURSOR_FORWARD));
+  expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
+  RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_LEFT);
+}
+
+TEST_F(RenderTextTest, TruncatedCursorMovementRTL) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->set_truncate_length(2);
+  render_text->SetText(WideToUTF16(L"\x5d0\x5d1\x5d2\x5d3"));
+
+  EXPECT_EQ(SelectionModel(0, CURSOR_BACKWARD), render_text->selection_model());
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, false);
+  EXPECT_EQ(SelectionModel(4, CURSOR_FORWARD), render_text->selection_model());
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
+  EXPECT_EQ(SelectionModel(0, CURSOR_BACKWARD), render_text->selection_model());
+
+  std::vector<SelectionModel> expected;
+  expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
+  expected.push_back(SelectionModel(1, CURSOR_BACKWARD));
+  expected.push_back(SelectionModel(2, CURSOR_BACKWARD));
+  // The cursor hops over the elided text to the line end.
+  expected.push_back(SelectionModel(4, CURSOR_FORWARD));
+  expected.push_back(SelectionModel(4, CURSOR_FORWARD));
+  RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_LEFT);
+
+  expected.clear();
+  expected.push_back(SelectionModel(4, CURSOR_FORWARD));
+  // The cursor hops over the elided text to preceeding text.
+  expected.push_back(SelectionModel(1, CURSOR_FORWARD));
+  expected.push_back(SelectionModel(0, CURSOR_FORWARD));
+  expected.push_back(SelectionModel(0, CURSOR_BACKWARD));
+  RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_RIGHT);
+}
+
 TEST_F(RenderTextTest, GetTextDirection) {
   struct {
     const wchar_t* text;
@@ -422,20 +552,6 @@ TEST_F(RenderTextTest, GetTextDirection) {
   EXPECT_EQ(render_text->GetTextDirection(), base::i18n::LEFT_TO_RIGHT);
   render_text->SetText(WideToUTF16(kRtl));
   EXPECT_EQ(render_text->GetTextDirection(), base::i18n::RIGHT_TO_LEFT);
-}
-
-void RunMoveCursorLeftRightTest(RenderText* render_text,
-    const std::vector<SelectionModel>& expected,
-    VisualCursorDirection direction) {
-  for (size_t i = 0; i < expected.size(); ++i) {
-    EXPECT_EQ(expected[i], render_text->selection_model());
-    render_text->MoveCursor(CHARACTER_BREAK, direction, false);
-  }
-  // Check that cursoring is clamped at the line edge.
-  EXPECT_EQ(expected.back(), render_text->selection_model());
-  // Check that it is the line edge.
-  render_text->MoveCursor(LINE_BREAK, direction, false);
-  EXPECT_EQ(expected.back(), render_text->selection_model());
 }
 
 TEST_F(RenderTextTest, MoveCursorLeftRightInLtr) {

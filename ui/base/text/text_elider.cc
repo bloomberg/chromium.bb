@@ -33,6 +33,7 @@ namespace ui {
 
 // U+2026 in utf8
 const char kEllipsis[] = "\xE2\x80\xA6";
+const char16 kEllipsisUTF16[] = { 0x2026, 0 };
 const char16 kForwardSlash = '/';
 
 namespace {
@@ -105,8 +106,6 @@ string16 BuildPathFromComponents(const string16& path_prefix,
                                  const std::vector<string16>& path_elements,
                                  const string16& filename,
                                  size_t num_components) {
-  const string16 kEllipsisAndSlash = UTF8ToUTF16(kEllipsis) + kForwardSlash;
-
   // Add the initial elements of the path.
   string16 path = path_prefix;
 
@@ -116,7 +115,7 @@ string16 BuildPathFromComponents(const string16& path_prefix,
 
   // Add |filename|, ellipsis if necessary.
   if (num_components != (path_elements.size() - 1))
-    path += kEllipsisAndSlash;
+    path += UTF8ToUTF16(kEllipsis) + kForwardSlash;
   path += filename;
 
   return path;
@@ -132,8 +131,6 @@ string16 ElideComponentizedPath(const string16& url_path_prefix,
                                 const gfx::Font& font,
                                 int available_pixel_width) {
   const size_t url_path_number_of_elements = url_path_elements.size();
-
-  const string16 kEllipsisAndSlash = UTF8ToUTF16(kEllipsis) + kForwardSlash;
 
   CHECK(url_path_number_of_elements);
   for (size_t i = url_path_number_of_elements - 1; i > 0; --i) {
@@ -167,8 +164,6 @@ string16 ElideEmail(const string16& email,
   DCHECK(!username.empty());
   DCHECK(!domain.empty());
 
-  const string16 kEllipsisUTF16 = UTF8ToUTF16(kEllipsis);
-
   // Subtract the @ symbol from the available width as it is mandatory.
   const string16 kAtSignUTF16 = ASCIIToUTF16("@");
   available_pixel_width -= font.GetStringWidth(kAtSignUTF16);
@@ -195,7 +190,7 @@ string16 ElideEmail(const string16& email,
     // Failing to elide the domain such that at least one character remains
     // (other than the ellipsis itself) remains: return a single ellipsis.
     if (domain.length() <= 1U)
-      return kEllipsisUTF16;
+      return string16(kEllipsisUTF16);
   }
 
   // Fit the username in the remaining width (at this point the elided username
@@ -367,11 +362,10 @@ string16 ElideUrl(const GURL& url,
   // which means that this case has been resolved earlier.
   string16 url_elided_domain = url_subdomain + url_domain;
   if (pixel_width_url_subdomain > kPixelWidthDotsTrailer) {
-    if (!url_subdomain.empty()) {
+    if (!url_subdomain.empty())
       url_elided_domain = kEllipsisAndSlash[0] + url_domain;
-    } else {
+    else
       url_elided_domain = url_domain;
-    }
 
     elided_path = ElideComponentizedPath(url_elided_domain, url_path_elements,
                                          url_filename, url_query, font,
@@ -455,13 +449,12 @@ string16 ElideText(const string16& text,
   if (text.empty())
     return text;
 
-  const string16 kEllipsisUTF16 = UTF8ToUTF16(kEllipsis);
-
   const int current_text_pixel_width = font.GetStringWidth(text);
   const bool elide_in_middle = (elide_behavior == ELIDE_IN_MIDDLE);
   const bool insert_ellipsis = (elide_behavior != TRUNCATE_AT_END);
 
-  StringSlicer slicer(text, kEllipsisUTF16, elide_in_middle);
+  const string16 ellipsis = string16(kEllipsisUTF16);
+  StringSlicer slicer(text, ellipsis, elide_in_middle);
 
   // Pango will return 0 width for absurdly long strings. Cut the string in
   // half and try again.
@@ -479,8 +472,7 @@ string16 ElideText(const string16& text,
   if (current_text_pixel_width <= available_pixel_width)
     return text;
 
-  if (insert_ellipsis &&
-      font.GetStringWidth(kEllipsisUTF16) > available_pixel_width)
+  if (insert_ellipsis && font.GetStringWidth(ellipsis) > available_pixel_width)
     return string16();
 
   // Use binary search to compute the elided text.

@@ -26,6 +26,7 @@ class FilePath;
 namespace ui {
 
 UI_EXPORT extern const char kEllipsis[];
+UI_EXPORT extern const char16 kEllipsisUTF16[];
 
 // Elides a well-formed email address (e.g. username@domain.com) to fit into
 // |available_pixel_width| using the specified |font|.
