@@ -93,9 +93,6 @@ xkb:jp::jpn	jp	ja
 xkb:ru::rus	ru	ru
 xkb:ru:phonetic:rus	ru(phonetic)	ru
 
-# Traditional Chinese
-m17n:zh:quick	us	zh-TW
-
 # Vietnamese
 m17n:vi:vni	us	vi
 # Note: Since Chrome does not support "get surrounding text" feature yet,
