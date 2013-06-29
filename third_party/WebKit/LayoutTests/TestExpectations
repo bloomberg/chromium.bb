@@ -1521,6 +1521,8 @@ crbug.com/248938 [ Win ] virtual/threaded/animations/3d/transform-perspective.ht
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/matrix-anim.html [ Pass Timeout ]
 crbug.com/248938 [ Win ] virtual/threaded/animations/animation-direction-reverse-hardware.html [ Slow ]
 
+crbug.com/255724 [ Mac Debug ] animations/animation-direction-normal.html [ Failure ]
+
 # Switching to content shell failures
 crbug.com/178709 plugins/document-open.html [ Failure ]
 crbug.com/178719 plugins/reloadplugins-and-pages.html [ Timeout ]
