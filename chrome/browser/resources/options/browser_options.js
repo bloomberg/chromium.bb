@@ -382,6 +382,9 @@ cr.define('options', function() {
         $('autoOpenFileTypesResetToDefault').onclick = function(event) {
           chrome.send('autoOpenFileTypesAction');
         };
+      } else {
+        $('disable-drive-row').hidden =
+            UIAccountTweaks.loggedInAsLocallyManagedUser();
       }
 
       // HTTPS/SSL section.

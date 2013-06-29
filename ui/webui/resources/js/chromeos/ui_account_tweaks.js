@@ -39,6 +39,13 @@ cr.define('uiAccountTweaks', function() {
   };
 
   /**
+   * @return {boolean} Whether we're currently in supervised user mode.
+   */
+  UIAccountTweaks.loggedInAsLocallyManagedUser = function() {
+    return loadTimeData.getBoolean('loggedInAsLocallyManagedUser');
+  };
+
+  /**
    * Disables or hides some elements in Guest mode in ChromeOS.
    * All elements within given document with guest-visibility
    * attribute are either hidden (for guest-visibility="hidden")

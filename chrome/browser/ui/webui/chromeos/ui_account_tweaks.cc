@@ -29,6 +29,9 @@ void AddAccountUITweaksLocalizedValues(
 
   localized_strings->SetBoolean("loggedInAsGuest",
       UserManager::Get()->IsLoggedInAsGuest());
+
+  localized_strings->SetBoolean("loggedInAsLocallyManagedUser",
+      UserManager::Get()->IsLoggedInAsLocallyManagedUser());
 }
 
 void AddAccountUITweaksLocalizedValues(
