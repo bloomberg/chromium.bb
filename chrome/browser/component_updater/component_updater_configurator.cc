@@ -29,7 +29,7 @@ namespace {
 const int kDelayOneMinute = 60;
 const int kDelayOneHour = kDelayOneMinute * 60;
 
-// Debug values you can pass to --component-updater-debug=value1,value2.
+// Debug values you can pass to --component-updater=value1,value2.
 // Speed up component checking.
 const char kSwitchFastUpdate[] = "fast-update";
 // Force out-of-process-xml parsing.
@@ -38,18 +38,40 @@ const char kSwitchOutOfProcess[] = "out-of-process";
 const char kSwitchRequestParam[] = "test-request";
 // Disables differential updates.
 const char kSwitchDisableDeltaUpdates[] = "disable-delta-updates";
+// Sets the URL for updates.
+const char kSwitchUrlSource[] = "url-source";
 
-// The urls from which an update manifest can be fetched.
-const char* kUrlSources[] = {
-  "http://clients2.google.com/service/update2/crx",       // BANDAID
-  "http://omaha.google.com/service/update2/crx",          // CWS_PUBLIC
-  "http://omaha.sandbox.google.com/service/update2/crx",   // CWS_SANDBOX
-};
+// The default url from which an update manifest can be fetched. Can be
+// overridden with --component-updater=url-source=someurl.
+const char kDefaultUrlSource[] =
+    "http://clients2.google.com/service/update2/crx";
 
+// Returns true if and only if |test| is contained in |vec|.
 bool HasSwitchValue(const std::vector<std::string>& vec, const char* test) {
   if (vec.empty())
     return 0;
   return (std::find(vec.begin(), vec.end(), test) != vec.end());
+}
+
+// If there is an element of |vec| of the form |test|=.*, returns the right-
+// hand side of that assignment. Otherwise, returns an empty string.
+// The right-hand side may contain additional '=' characters, allowing for
+// further nesting of switch arguments.
+std::string GetSwitchArgument(const std::vector<std::string>& vec,
+                              const char* test) {
+  if (vec.empty())
+    return std::string();
+  for (std::vector<std::string>::const_iterator it = vec.begin();
+      it != vec.end();
+      ++it) {
+    const std::size_t found = it->find("=");
+    if (found != std::string::npos) {
+      if (it->substr(0, found) == test) {
+        return it->substr(found + 1);
+      }
+    }
+  }
+  return std::string();
 }
 
 }  // namespace
@@ -66,7 +88,7 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   virtual int StepDelay() OVERRIDE;
   virtual int MinimumReCheckWait() OVERRIDE;
   virtual int OnDemandDelay() OVERRIDE;
-  virtual GURL UpdateUrl(CrxComponent::UrlSource source) OVERRIDE;
+  virtual GURL UpdateUrl() OVERRIDE;
   virtual const char* ExtraRequestParams() OVERRIDE;
   virtual size_t UrlSizeLimit() OVERRIDE;
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
@@ -78,6 +100,7 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
  private:
   net::URLRequestContextGetter* url_request_getter_;
   std::string extra_info_;
+  std::string url_source_;
   bool fast_update_;
   bool out_of_process_;
   bool deltas_enabled_;
@@ -102,6 +125,11 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
 #else
   deltas_enabled_ = false;
 #endif
+
+  url_source_ = GetSwitchArgument(switch_values, kSwitchUrlSource);
+  if (url_source_.empty()) {
+    url_source_ = kDefaultUrlSource;
+  }
 
   // Make the extra request params, they are necessary so omaha does
   // not deliver components that are going to be rejected at install time.
@@ -134,8 +162,8 @@ int ChromeConfigurator::OnDemandDelay() {
   return fast_update_ ? 2 : (30 * kDelayOneMinute);
 }
 
-GURL ChromeConfigurator::UpdateUrl(CrxComponent::UrlSource source) {
-  return GURL(kUrlSources[source]);
+GURL ChromeConfigurator::UpdateUrl() {
+  return GURL(url_source_);
 }
 
 const char* ChromeConfigurator::ExtraRequestParams() {

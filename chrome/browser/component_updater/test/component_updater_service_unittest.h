@@ -57,7 +57,7 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
 
   virtual int OnDemandDelay() OVERRIDE;
 
-  virtual GURL UpdateUrl(CrxComponent::UrlSource source) OVERRIDE;
+  virtual GURL UpdateUrl() OVERRIDE;
 
   virtual const char* ExtraRequestParams() OVERRIDE;
 
