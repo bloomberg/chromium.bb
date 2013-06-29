@@ -1946,9 +1946,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
   NSView* toolbarView = [toolbarController_ view];
   NSRect anchorRect = [toolbarView frame];
 
-  // Adjust to account for height and possible bookmark bar.
+  // Adjust to account for height and possible bookmark bar. Compress by 1
+  // to account for the separator.
   anchorRect.origin.y =
-      NSMaxY(anchorRect) - [toolbarController_ desiredHeightForCompression:0];
+      NSMaxY(anchorRect) - [toolbarController_ desiredHeightForCompression:1];
 
   // Shift to window base coordinates.
   return [[toolbarView superview] convertRect:anchorRect toView:nil];

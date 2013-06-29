@@ -83,8 +83,12 @@
 }
 
 - (NSColor*)strokeColor {
-  BOOL isActive = [[self window] isMainWindow];
-  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  NSWindow* window = [self window];
+  if ([window parentWindow])
+    window = [window parentWindow];
+
+  BOOL isActive = [window isMainWindow];
+  ui::ThemeProvider* themeProvider = [window themeProvider];
   if (!themeProvider)
     return [NSColor blackColor];
   return themeProvider->GetNSColor(

@@ -785,6 +785,8 @@
         'browser/ui/cocoa/omnibox/omnibox_popup_cell.mm',
         'browser/ui/cocoa/omnibox/omnibox_popup_matrix.h',
         'browser/ui/cocoa/omnibox/omnibox_popup_matrix.mm',
+        'browser/ui/cocoa/omnibox/omnibox_popup_separator_view.h',
+        'browser/ui/cocoa/omnibox/omnibox_popup_separator_view.mm',
         'browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h',
         'browser/ui/cocoa/omnibox/omnibox_popup_view_mac.mm',
         'browser/ui/cocoa/omnibox/omnibox_view_mac.h',

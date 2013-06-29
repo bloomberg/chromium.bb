@@ -12,6 +12,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_cell.h"
+#import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_separator_view.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -352,7 +353,6 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
     [popup_ setAlphaValue:1.0];
     [popup_ setOpaque:YES];
     [popup_ setBackgroundColor:BackgroundColor()];
-    [popup_ setHasShadow:YES];
     [popup_ setLevel:NSNormalWindowLevel];
     // Use a flipped view to pin the matrix top the top left. This is needed
     // for animated resize.
@@ -363,9 +363,17 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
     matrix_.reset([[OmniboxPopupMatrix alloc] initWithDelegate:this]);
     [contentView addSubview:matrix_];
 
+    top_separator_view_.reset(
+        [[OmniboxPopupTopSeparatorView alloc] initWithFrame:NSZeroRect]);
+    [contentView addSubview:top_separator_view_];
+
+    bottom_separator_view_.reset(
+        [[OmniboxPopupBottomSeparatorView alloc] initWithFrame:NSZeroRect]);
+    [contentView addSubview:bottom_separator_view_];
+
     // TODO(dtseng): Ignore until we provide NSAccessibility support.
     [popup_ accessibilitySetOverrideValue:NSAccessibilityUnknownRole
-        forAttribute:NSAccessibilityRoleAttribute];
+                             forAttribute:NSAccessibilityRoleAttribute];
   }
 }
 
@@ -378,6 +386,8 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   NSRect popup_frame = anchor_rect_base;
   // Size to fit the matrix and shift down by the size.
   popup_frame.size.height = matrixHeight + kPopupPaddingVertical * 2.0;
+  popup_frame.size.height += [OmniboxPopupTopSeparatorView preferredHeight];
+  popup_frame.size.height += [OmniboxPopupBottomSeparatorView preferredHeight];
   popup_frame.origin.y -= NSHeight(popup_frame);
   // Shift to screen coordinates.
   popup_frame.origin =
@@ -387,11 +397,27 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   if (NSEqualRects(popup_frame, target_popup_frame_))
     return;
 
+  // Top separator.
+  NSRect top_separator_frame = NSZeroRect;
+  top_separator_frame.size.width = NSWidth(popup_frame);
+  top_separator_frame.size.height =
+      [OmniboxPopupTopSeparatorView preferredHeight];
+  [top_separator_view_ setFrame:top_separator_frame];
+
+  // Bottom separator.
+  NSRect bottom_separator_frame = NSZeroRect;
+  bottom_separator_frame.size.width = NSWidth(popup_frame);
+  bottom_separator_frame.size.height =
+      [OmniboxPopupBottomSeparatorView preferredHeight];
+  bottom_separator_frame.origin.y =
+      NSHeight(popup_frame) - NSHeight(bottom_separator_frame);
+  [bottom_separator_view_ setFrame:bottom_separator_frame];
+
   NSPoint field_origin_base =
       [field_ convertPoint:[field_ bounds].origin toView:nil];
   NSRect matrix_frame = NSZeroRect;
   matrix_frame.origin.x = field_origin_base.x - NSMinX(anchor_rect_base);
-  matrix_frame.origin.y = kPopupPaddingVertical;
+  matrix_frame.origin.y = NSMaxY(top_separator_frame) + kPopupPaddingVertical;
   matrix_frame.size.width = [matrix_ cellSize].width;
   matrix_frame.size.height = matrixHeight;
   [matrix_ setFrame:matrix_frame];

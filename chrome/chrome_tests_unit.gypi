@@ -1468,6 +1468,7 @@
         'browser/ui/cocoa/nsview_additions_unittest.mm',
         'browser/ui/cocoa/omnibox/omnibox_popup_cell_unittest.mm',
         'browser/ui/cocoa/omnibox/omnibox_popup_matrix_unittest.mm',
+        'browser/ui/cocoa/omnibox/omnibox_popup_separator_view_unittest.mm',
         'browser/ui/cocoa/omnibox/omnibox_popup_view_mac_unittest.mm',
         'browser/ui/cocoa/omnibox/omnibox_view_mac_unittest.mm',
         'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
