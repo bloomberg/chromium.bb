@@ -38,6 +38,7 @@ namespace ash {
 namespace internal {
 class DisplayManager;
 class FocusActivationStore;
+class MirrorWindowController;
 class RootWindowController;
 }
 
@@ -165,6 +166,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
 
  private:
   friend class internal::DisplayManager;
+  friend class internal::MirrorWindowController;
 
   // Creates a root window for |display| and stores it in the |root_windows_|
   // map.

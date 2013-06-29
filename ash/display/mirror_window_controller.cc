@@ -11,6 +11,7 @@
 #undef RootWindow
 #endif
 
+#include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/root_window_transformers.h"
@@ -155,6 +156,9 @@ MirrorWindowController::~MirrorWindowController() {
 }
 
 void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
+  if (Shell::GetInstance()->display_controller()->in_bootstrap())
+    return;
+
   static int mirror_root_window_count = 0;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
