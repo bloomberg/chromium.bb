@@ -104,7 +104,7 @@ void InvokeTaskHelper(void* context) {
 #if !defined(OS_MACOSX)
 void MakeBitmapOpaque(SkBitmap* bitmap) {
   SkAutoLockPixels lock(*bitmap);
-  DCHECK(bitmap->config() == SkBitmap::kARGB_8888_Config);
+  DCHECK_EQ(bitmap->config(), SkBitmap::kARGB_8888_Config);
   for (int y = 0; y < bitmap->height(); ++y) {
     uint32_t* row = bitmap->getAddr32(0, y);
     for (int x = 0; x < bitmap->width(); ++x)
@@ -116,7 +116,8 @@ void MakeBitmapOpaque(SkBitmap* bitmap) {
 void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
   SkDevice* device = skia::GetTopDevice(*canvas);
   const SkBitmap& bitmap = device->accessBitmap(false);
-  bitmap.copyTo(snapshot, SkBitmap::kARGB_8888_Config);
+  const bool success = bitmap.copyTo(snapshot, SkBitmap::kARGB_8888_Config);
+  DCHECK(success);
 
 #if !defined(OS_MACOSX)
   // Only the expected PNGs for Mac have a valid alpha channel.
