@@ -8,6 +8,7 @@
       'NAME' : 'xray',
       'TYPE' : 'lib',
       'SOURCES' : [
+        'demangle.c',
         'hashtable.c',
         'stringpool.c',
         'symtable.c',

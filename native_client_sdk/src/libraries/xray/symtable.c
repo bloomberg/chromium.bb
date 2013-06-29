@@ -126,14 +126,16 @@ struct XRaySymbol* XRaySymbolTableAdd(struct XRaySymbolTable* symtab,
 
 struct XRaySymbol* XRaySymbolTableAddByName(struct XRaySymbolTable* symtab,
                                             const char* name, uint32_t addr) {
-  char* recorded_symbol;
+  char* recorded_name;
   struct XRaySymbol* symbol;
-  /* copy the symbol name into the string pool */
-  recorded_symbol = XRayStringPoolAppend(symtab->string_pool, name);
+  char buffer[XRAY_LINE_SIZE];
+  const char* demangled_name = XRayDemangle(buffer, XRAY_LINE_SIZE, name);
+  /* record the demangled symbol name into the string pool */
+  recorded_name = XRayStringPoolAppend(symtab->string_pool, demangled_name);
   if (g_symtable_debug)
-    printf("adding symbol %s\n", recorded_symbol);
+    printf("adding symbol %s\n", recorded_name);
   /* construct a symbol and put it in the symbol table */
-  symbol = XRaySymbolCreate(symtab->symbol_pool, recorded_symbol);
+  symbol = XRaySymbolCreate(symtab->symbol_pool, recorded_name);
   return XRaySymbolTableAdd(symtab, symbol, addr);
 }
 
@@ -260,4 +262,3 @@ void XRaySymbolTableFree(struct XRaySymbolTable* symtab) {
 }
 
 #endif  /* XRAY */
-

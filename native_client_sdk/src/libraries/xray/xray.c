@@ -659,7 +659,7 @@ void XRayTraceReport(FILE* f, int frame, char* label,
 int qcompare(const void* a, const void* b) {
   struct XRayTotal* ia = (struct XRayTotal*)a;
   struct XRayTotal* ib = (struct XRayTotal*)b;
-  return ia->ticks - ib->ticks;
+  return ib->ticks - ia->ticks;
 }
 
 
@@ -709,7 +709,7 @@ void XRayFrameReport(FILE* f) {
   /* Sort and take average of the median cut */
   qsort(totals, counter, sizeof(struct XRayTotal), qcompare);
   fprintf(f, "\n");
-  fprintf(f, "Sorted by total ticks:\n");
+  fprintf(f, "Sorted by total ticks (most expensive first):\n");
   fprintf(f, "\n");
   fprintf(f,
   "Frame#      Total Ticks      Capture size    Annotations   Label\n");
@@ -823,4 +823,3 @@ void XRayShutdown() {
 }
 
 #endif  /* XRAY */
-

@@ -81,6 +81,9 @@ XRAY_NO_INSTRUMENT struct XRaySymbol* XRaySymbolPoolAlloc(
 XRAY_NO_INSTRUMENT struct XRaySymbolPool* XRaySymbolPoolCreate();
 XRAY_NO_INSTRUMENT void XRaySymbolPoolFree(struct XRaySymbolPool* sympool);
 
+XRAY_NO_INSTRUMENT const char* XRayDemangle(char* demangle, size_t buffersize,
+    const char* symbol);
+
 XRAY_NO_INSTRUMENT const char* XRaySymbolGetName(struct XRaySymbol* symbol);
 XRAY_NO_INSTRUMENT struct XRaySymbol* XRaySymbolCreate(
     struct XRaySymbolPool* sympool, const char* name);
@@ -112,4 +115,3 @@ XRAY_NO_INSTRUMENT void XRayLoadMapfile(const char* mapfilename);
 #endif
 
 #endif  /* LIBRARIES_XRAY_XRAY_PRIV_H_ */
-
