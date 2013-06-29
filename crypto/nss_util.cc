@@ -318,14 +318,14 @@ class NSSInitSingleton {
   }
 
   void CloseTestNSSDB() {
-    if (test_slot_) {
-      SECStatus status = SECMOD_CloseUserDB(test_slot_);
-      if (status != SECSuccess)
-        PLOG(ERROR) << "SECMOD_CloseUserDB failed: " << PORT_GetError();
-      PK11_FreeSlot(test_slot_);
-      test_slot_ = NULL;
-      ignore_result(g_test_nss_db_dir.Get().Delete());
-    }
+    if (!test_slot_)
+      return;
+    SECStatus status = SECMOD_CloseUserDB(test_slot_);
+    if (status != SECSuccess)
+      PLOG(ERROR) << "SECMOD_CloseUserDB failed: " << PORT_GetError();
+    PK11_FreeSlot(test_slot_);
+    test_slot_ = NULL;
+    ignore_result(g_test_nss_db_dir.Get().Delete());
   }
 
   PK11SlotInfo* GetPublicNSSKeySlot() {
@@ -698,9 +698,12 @@ ScopedTestNSSDB::ScopedTestNSSDB()
 }
 
 ScopedTestNSSDB::~ScopedTestNSSDB() {
-  // TODO(mattm): Close the dababase once NSS 3.14 is required,
-  // which fixes https://bugzilla.mozilla.org/show_bug.cgi?id=588269
-  // Resource leaks are suppressed. http://crbug.com/156433 .
+  // Don't close when NSS is < 3.15.1, because it would require an additional
+  // sleep for 1 second after closing the database, due to
+  // http://bugzil.la/875601.
+  if (NSS_VersionCheck("3.15.1")) {
+    g_nss_singleton.Get().CloseTestNSSDB();
+  }
 }
 
 base::Lock* GetNSSWriteLock() {
