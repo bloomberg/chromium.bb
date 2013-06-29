@@ -682,6 +682,21 @@ std::string FragmentShaderRGBATexVaryingAlpha::GetShaderString(
   );  // NOLINT(whitespace/parens)
 }
 
+std::string FragmentShaderRGBATexPremultiplyAlpha::GetShaderString(
+    TexCoordPrecision precision) const {
+  return FRAGMENT_SHADER(
+    precision mediump float;
+    varying TexCoordPrecision vec2 v_texCoord;
+    varying float v_alpha;
+    uniform sampler2D s_texture;
+    void main() {
+      vec4 texColor = texture2D(s_texture, v_texCoord);
+      texColor.rgb *= texColor.a;
+      gl_FragColor = texColor * v_alpha;
+    }
+  );  // NOLINT(whitespace/parens)
+}
+
 std::string FragmentShaderRGBATexRectVaryingAlpha::GetShaderString(
     TexCoordPrecision precision) const {
   return "#extension GL_ARB_texture_rectangle : require\n" +

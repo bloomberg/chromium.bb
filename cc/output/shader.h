@@ -283,6 +283,11 @@ class FragmentShaderRGBATexVaryingAlpha : public FragmentTexOpaqueBinding {
   std::string GetShaderString(TexCoordPrecision precision) const;
 };
 
+class FragmentShaderRGBATexPremultiplyAlpha : public FragmentTexOpaqueBinding {
+ public:
+  std::string GetShaderString(TexCoordPrecision precision) const;
+};
+
 class FragmentShaderRGBATexAlpha : public FragmentTexAlphaBinding {
  public:
   std::string GetShaderString(TexCoordPrecision precision) const;

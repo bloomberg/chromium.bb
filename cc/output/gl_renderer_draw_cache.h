@@ -31,7 +31,6 @@ struct TexturedQuadDrawCache {
   // Values tracked to determine if textured quads may be coalesced.
   int program_id;
   int resource_id;
-  bool use_premultiplied_alpha;
   bool needs_blending;
 
   // Information about the program binding that is required to draw.
@@ -45,6 +44,7 @@ struct TexturedQuadDrawCache {
   std::vector<float> vertex_opacity_data;
   std::vector<Float16> matrix_data;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(TexturedQuadDrawCache);
 };
 

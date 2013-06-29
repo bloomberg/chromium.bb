@@ -265,6 +265,9 @@ class CC_EXPORT GLRenderer
   typedef ProgramBinding<VertexShaderPosTexTransform,
                          FragmentShaderRGBATexVaryingAlpha> TextureProgram;
   typedef ProgramBinding<VertexShaderPosTexTransform,
+                         FragmentShaderRGBATexPremultiplyAlpha>
+      NonPremultipliedTextureProgram;
+  typedef ProgramBinding<VertexShaderPosTexTransform,
                          FragmentShaderRGBATexRectVaryingAlpha>
       TextureIOSurfaceProgram;
 
@@ -337,6 +340,8 @@ class CC_EXPORT GLRenderer
 
   const TextureProgram* GetTextureProgram(
       TexCoordPrecision precision);
+  const NonPremultipliedTextureProgram* GetNonPremultipliedTextureProgram(
+      TexCoordPrecision precision);
   const TextureIOSurfaceProgram* GetTextureIOSurfaceProgram(
       TexCoordPrecision precision);
 
@@ -367,9 +372,12 @@ class CC_EXPORT GLRenderer
   scoped_ptr<TileProgramSwizzleAA> tile_program_swizzle_aa_highp_;
 
   scoped_ptr<TextureProgram> texture_program_;
+  scoped_ptr<NonPremultipliedTextureProgram> nonpremultiplied_texture_program_;
   scoped_ptr<TextureIOSurfaceProgram> texture_io_surface_program_;
 
   scoped_ptr<TextureProgram> texture_program_highp_;
+  scoped_ptr<NonPremultipliedTextureProgram>
+      nonpremultiplied_texture_program_highp_;
   scoped_ptr<TextureIOSurfaceProgram> texture_io_surface_program_highp_;
 
   scoped_ptr<RenderPassProgram> render_pass_program_;

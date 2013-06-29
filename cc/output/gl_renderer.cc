@@ -1686,23 +1686,6 @@ void GLRenderer::FlushTextureQuadCache() {
   GLC(Context(),
       Context()->bindTexture(GL_TEXTURE_2D, locked_quad.texture_id()));
 
-  // set up premultiplied alpha.
-  if (!draw_cache_.use_premultiplied_alpha) {
-    // As it turns out, the premultiplied alpha blending function (ONE,
-    // ONE_MINUS_SRC_ALPHA) will never cause the alpha channel to be set to
-    // anything less than 1.0f if it is initialized to that value! Therefore,
-    // premultiplied_alpha being false is the first situation we can generally
-    // see an alpha channel less than 1.0f coming out of the compositor. This is
-    // causing platform differences in some layout tests (see
-    // https://bugs.webkit.org/show_bug.cgi?id=82412), so in this situation, use
-    // a separate blend function for the alpha channel to avoid modifying it.
-    // Don't use colorMask() for this as it has performance implications on some
-    // platforms.
-    GLC(Context(),
-        Context()->blendFuncSeparate(
-            GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE));
-  }
-
   COMPILE_ASSERT(
       sizeof(Float4) == 4 * sizeof(float),  // NOLINT(runtime/sizeof)
       struct_is_densely_packed);
@@ -1735,10 +1718,6 @@ void GLRenderer::FlushTextureQuadCache() {
                              GL_UNSIGNED_SHORT,
                              0));
 
-  // Clean up after ourselves (reset state set above).
-  if (!draw_cache_.use_premultiplied_alpha)
-    GLC(context_, context_->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
-
   // Clear the cache.
   draw_cache_.program_id = 0;
   draw_cache_.uv_xform_data.resize(0);
@@ -1754,19 +1733,22 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
 
   // Choose the correct texture program binding
   TexTransformTextureProgramBinding binding;
-  binding.Set(GetTextureProgram(tex_coord_precision), Context());
+  if (quad->premultiplied_alpha) {
+    binding.Set(GetTextureProgram(tex_coord_precision), Context());
+  } else {
+    binding.Set(GetNonPremultipliedTextureProgram(tex_coord_precision),
+                Context());
+  }
 
   int resource_id = quad->resource_id;
 
   if (draw_cache_.program_id != binding.program_id ||
       draw_cache_.resource_id != resource_id ||
-      draw_cache_.use_premultiplied_alpha != quad->premultiplied_alpha ||
       draw_cache_.needs_blending != quad->ShouldDrawWithBlending() ||
       draw_cache_.matrix_data.size() >= 8) {
     FlushTextureQuadCache();
     draw_cache_.program_id = binding.program_id;
     draw_cache_.resource_id = resource_id;
-    draw_cache_.use_premultiplied_alpha = quad->premultiplied_alpha;
     draw_cache_.needs_blending = quad->ShouldDrawWithBlending();
 
     draw_cache_.uv_xform_location = binding.tex_transform_location;
@@ -1802,7 +1784,12 @@ void GLRenderer::DrawTextureQuad(const DrawingFrame* frame,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   TexTransformTextureProgramBinding binding;
-  binding.Set(GetTextureProgram(tex_coord_precision), Context());
+  if (quad->premultiplied_alpha) {
+    binding.Set(GetTextureProgram(tex_coord_precision), Context());
+  } else {
+    binding.Set(GetNonPremultipliedTextureProgram(tex_coord_precision),
+                Context());
+  }
   SetUseProgram(binding.program_id);
   GLC(Context(), Context()->uniform1i(binding.sampler_location, 0));
   Float4 uv_xform = UVTransform(quad);
@@ -1820,27 +1807,8 @@ void GLRenderer::DrawTextureQuad(const DrawingFrame* frame,
   ResourceProvider::ScopedSamplerGL quad_resource_lock(
       resource_provider_, quad->resource_id, GL_TEXTURE_2D, GL_LINEAR);
 
-  if (!quad->premultiplied_alpha) {
-    // As it turns out, the premultiplied alpha blending function (ONE,
-    // ONE_MINUS_SRC_ALPHA) will never cause the alpha channel to be set to
-    // anything less than 1.0f if it is initialized to that value! Therefore,
-    // premultiplied_alpha being false is the first situation we can generally
-    // see an alpha channel less than 1.0f coming out of the compositor. This is
-    // causing platform differences in some layout tests (see
-    // https://bugs.webkit.org/show_bug.cgi?id=82412), so in this situation, use
-    // a separate blend function for the alpha channel to avoid modifying it.
-    // Don't use colorMask() for this as it has performance implications on some
-    // platforms.
-    GLC(Context(),
-        Context()->blendFuncSeparate(
-            GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE));
-  }
-
   DrawQuadGeometry(
       frame, quad->quadTransform(), quad->rect, binding.matrix_location);
-
-  if (!quad->premultiplied_alpha)
-    GLC(context_, context_->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
 }
 
 void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
@@ -2824,6 +2792,24 @@ const GLRenderer::TextureProgram* GLRenderer::GetTextureProgram(
   return program.get();
 }
 
+const GLRenderer::NonPremultipliedTextureProgram*
+    GLRenderer::GetNonPremultipliedTextureProgram(TexCoordPrecision precision) {
+  scoped_ptr<NonPremultipliedTextureProgram>& program =
+      (precision == TexCoordPrecisionHigh) ?
+         nonpremultiplied_texture_program_highp_ :
+         nonpremultiplied_texture_program_;
+  if (!program) {
+    program = make_scoped_ptr(
+        new NonPremultipliedTextureProgram(context_, precision));
+  }
+  if (!program->initialized()) {
+    TRACE_EVENT0("cc",
+                 "GLRenderer::NonPremultipliedTextureProgram::Initialize");
+    program->Initialize(context_, is_using_bind_uniform_);
+  }
+  return program.get();
+}
+
 const GLRenderer::TextureIOSurfaceProgram*
 GLRenderer::GetTextureIOSurfaceProgram(TexCoordPrecision precision) {
   scoped_ptr<TextureIOSurfaceProgram>& program =
@@ -2953,11 +2939,15 @@ void GLRenderer::CleanupSharedObjects() {
 
   if (texture_program_)
     texture_program_->Cleanup(context_);
+  if (nonpremultiplied_texture_program_)
+    nonpremultiplied_texture_program_->Cleanup(context_);
   if (texture_io_surface_program_)
     texture_io_surface_program_->Cleanup(context_);
 
   if (texture_program_highp_)
     texture_program_highp_->Cleanup(context_);
+  if (nonpremultiplied_texture_program_highp_)
+    nonpremultiplied_texture_program_highp_->Cleanup(context_);
   if (texture_io_surface_program_highp_)
     texture_io_surface_program_highp_->Cleanup(context_);
 
