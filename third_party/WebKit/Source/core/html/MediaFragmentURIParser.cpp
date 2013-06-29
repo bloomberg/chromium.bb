@@ -111,12 +111,12 @@ void MediaFragmentURIParser::parseFragments()
         //    name-value pairs, where name and value are both octet string. In accordance 
         //    with RFC 3986, the name and value components must be parsed and separated before
         //    percent-encoded octets are decoded.
-        unsigned parameterStart = offset;
-        unsigned parameterEnd = fragmentString.find('&', offset);
+        size_t parameterStart = offset;
+        size_t parameterEnd = fragmentString.find('&', offset);
         if (parameterEnd == notFound)
             parameterEnd = end;
 
-        unsigned equalOffset = fragmentString.find('=', offset);
+        size_t equalOffset = fragmentString.find('=', offset);
         if (equalOffset == notFound || equalOffset > parameterEnd) {
             offset = parameterEnd + 1;
             continue;
