@@ -49,12 +49,12 @@ class LinuxPortTest(chromium_port_testcase.ChromiumPortTestCase):
         port = self.make_port(host, port_name=port_name)
         self.assertEqual(port.architecture(), expected_architecture)
         if expected_architecture == 'x86':
-            self.assertTrue(port.baseline_path().endswith('chromium-linux-x86'))
-            self.assertTrue(port.baseline_search_path()[0].endswith('chromium-linux-x86'))
-            self.assertTrue(port.baseline_search_path()[1].endswith('chromium-linux'))
+            self.assertTrue(port.baseline_path().endswith('linux-x86'))
+            self.assertTrue(port.baseline_search_path()[0].endswith('linux-x86'))
+            self.assertTrue(port.baseline_search_path()[1].endswith('linux'))
         else:
-            self.assertTrue(port.baseline_path().endswith('chromium-linux'))
-            self.assertTrue(port.baseline_search_path()[0].endswith('chromium-linux'))
+            self.assertTrue(port.baseline_path().endswith('linux'))
+            self.assertTrue(port.baseline_search_path()[0].endswith('linux'))
 
     def test_architectures(self):
         self.assert_architecture(port_name='linux-x86',

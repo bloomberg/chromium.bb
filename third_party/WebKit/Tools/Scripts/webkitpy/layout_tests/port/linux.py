@@ -43,8 +43,8 @@ class LinuxPort(chromium.ChromiumPort):
 
     SUPPORTED_VERSIONS = ('x86', 'x86_64')
 
-    FALLBACK_PATHS = { 'x86_64': [ 'chromium-linux' ] + win.WinPort.latest_platform_fallback_path() }
-    FALLBACK_PATHS['x86'] = ['chromium-linux-x86'] + FALLBACK_PATHS['x86_64']
+    FALLBACK_PATHS = { 'x86_64': [ 'linux' ] + win.WinPort.latest_platform_fallback_path() }
+    FALLBACK_PATHS['x86'] = ['linux-x86'] + FALLBACK_PATHS['x86_64']
 
     DEFAULT_BUILD_DIRECTORIES = ('sconsbuild', 'out')
 
