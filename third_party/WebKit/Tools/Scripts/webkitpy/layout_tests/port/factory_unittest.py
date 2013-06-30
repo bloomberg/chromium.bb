@@ -33,7 +33,7 @@ from webkitpy.common.system.systemhost_mock import MockSystemHost
 
 from webkitpy.layout_tests.port import chromium_android
 from webkitpy.layout_tests.port import linux
-from webkitpy.layout_tests.port import chromium_mac
+from webkitpy.layout_tests.port import mac
 from webkitpy.layout_tests.port import win
 from webkitpy.layout_tests.port import factory
 from webkitpy.layout_tests.port import test
@@ -52,11 +52,11 @@ class FactoryTest(unittest.TestCase):
         port = factory.PortFactory(host).get(port_name, options=options)
         self.assertIsInstance(port, cls)
 
-    def test_chromium_mac(self):
-        self.assert_port(port_name='chromium-mac', os_name='mac', os_version='snowleopard',
-                         cls=chromium_mac.ChromiumMacPort)
+    def test_mac(self):
+        self.assert_port(port_name='mac', os_name='mac', os_version='snowleopard',
+                         cls=mac.MacPort)
         self.assert_port(port_name='chromium', os_name='mac', os_version='lion',
-                         cls=chromium_mac.ChromiumMacPort)
+                         cls=mac.MacPort)
 
     def test_linux(self):
         self.assert_port(port_name='linux', cls=linux.LinuxPort)
@@ -83,4 +83,4 @@ class FactoryTest(unittest.TestCase):
 
     def test_get_from_builder_name(self):
         self.assertEqual(factory.PortFactory(MockSystemHost()).get_from_builder_name('WebKit Mac10.7').name(),
-                          'chromium-mac-lion')
+                          'mac-lion')

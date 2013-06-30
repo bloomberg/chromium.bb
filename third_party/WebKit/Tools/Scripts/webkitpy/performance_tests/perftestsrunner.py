@@ -83,7 +83,7 @@ class PerfTestsRunner(object):
             optparse.make_option('--release', action='store_const', const='Release', dest="configuration",
                 help='Set the configuration to Release'),
             optparse.make_option("--platform",
-                help="Specify port/platform being tested (i.e. chromium-mac)"),
+                help="Specify port/platform being tested (e.g. mac)"),
             optparse.make_option("--chromium",
                 action="store_const", const='chromium', dest='platform', help='Alias for --platform=chromium'),
             optparse.make_option("--chromium-android",

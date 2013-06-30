@@ -90,7 +90,7 @@ class BaselineOptimizer(object):
     def _optimize_result_for_root(self, new_results_by_directory):
         # The root directory (i.e. LayoutTests) is the only one that doesn't correspond
         # to a specific platform. As such, it's the only one where the baseline in fallback directories
-        # immediately before it can be promoted up, i.e. if win and chromium-mac
+        # immediately before it can be promoted up, i.e. if win and mac
         # have the same baseline, then it can be promoted up to be the LayoutTests baseline.
         # All other baselines can only be removed if they're redundant with a baseline earlier
         # in the fallback order. They can never promoted up.
