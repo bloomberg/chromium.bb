@@ -92,10 +92,10 @@ class WinPortTest(chromium_port_testcase.ChromiumPortTestCase):
 
     def test_baseline_path(self):
         port = self.make_port(port_name='win-xp')
-        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('chromium-win-xp'))
+        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('win-xp'))
 
         port = self.make_port(port_name='win-win7')
-        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('chromium-win'))
+        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('win'))
 
     def test_build_path(self):
         # Test that optional paths are used regardless of whether they exist.
