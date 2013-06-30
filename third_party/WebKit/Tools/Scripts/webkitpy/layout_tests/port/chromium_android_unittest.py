@@ -160,19 +160,6 @@ class ChromiumAndroidPortTest(chromium_port_testcase.ChromiumPortTestCase):
     def test_requires_http_server(self):
         self.assertTrue(self.make_port(device_count=1).requires_http_server())
 
-    # Disable this test because Android introduces its own TestExpectations file.
-    def test_expectations_files(self):
-        pass
-
-    # Test that Chromium Android still uses a port-specific TestExpectations file.
-    def test_uses_android_specific_test_expectations(self):
-        port = self.make_port()
-
-        android_count = len(port._port_specific_expectations_files())
-        chromium_count = len(super(chromium_android.ChromiumAndroidPort, port)._port_specific_expectations_files())
-
-        self.assertEquals(android_count - 1, chromium_count)
-
     # Tests the default timeouts for Android, which are different than the rest of Chromium.
     def test_default_timeout_ms(self):
         self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Release'})).default_timeout_ms(), 10000)

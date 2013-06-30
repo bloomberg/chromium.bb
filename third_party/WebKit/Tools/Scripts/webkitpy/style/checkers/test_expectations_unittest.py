@@ -63,25 +63,6 @@ class TestExpectationsTestCase(unittest.TestCase):
         self._error_collector = ErrorCollector()
         self._test_file = 'passes/text.html'
 
-    def _expect_port_for_expectations_path(self, expected_port_implementation, expectations_path):
-        host = MockHost()
-        checker = TestExpectationsChecker(expectations_path, ErrorCollector(), host=host)
-        port = checker._determine_port_from_expectations_path(host, expectations_path)
-        if port:
-            self.assertTrue(port.name().startswith(expected_port_implementation))
-        else:
-            self.assertIsNone(expected_port_implementation)
-
-    def test_determine_port_from_expectations_path(self):
-        self._expect_port_for_expectations_path(None, '/')
-        self._expect_port_for_expectations_path(None, 'LayoutTests/chromium-mac/TestExpectations')
-        self._expect_port_for_expectations_path(None, 'LayoutTests/platform/chromium/TestExpectations')
-        self._expect_port_for_expectations_path('chromium', 'LayoutTests/TestExpectations')
-        self._expect_port_for_expectations_path(None, '/mock-checkout/LayoutTests/platform/win/TestExpectations')
-        # FIXME: check-webkit-style doesn't know how to create port objects for all Qt version (4.8, 5.0) and
-        # will only check files based on the installed version of Qt.
-        #self._expect_port_for_expectations_path('qt', 'LayoutTests/platform/qt-5.0-wk2/TestExpectations')
-
     def assert_lines_lint(self, lines, should_pass, expected_output=None):
         self._error_collector.reset_errors()
 
@@ -89,11 +70,11 @@ class TestExpectationsTestCase(unittest.TestCase):
         checker = TestExpectationsChecker('test/TestExpectations',
                                           self._error_collector, host=host)
 
-        # We should have failed to find a valid port object for that path.
-        self.assertIsNone(checker._port_obj)
-
-        # Now use a test port so we can check the lines.
+        # We should have a valid port, but override it with a test port so we
+        # can check the lines.
+        self.assertIsNotNone(checker._port_obj)
         checker._port_obj = host.port_factory.get('test-mac-leopard')
+
         checker.check_test_expectations(expectations_str='\n'.join(lines),
                                         tests=[self._test_file])
         checker.check_tabs(lines)
