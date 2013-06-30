@@ -306,7 +306,7 @@ sub ParseInterface
 
     # Step #1: Find the IDL file associated with 'interface'
     my $filename = IDLFileForInterface($interfaceName)
-        or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
+      or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
 
     print "  |  |>  Parsing parent IDL \"$filename\" for interface \"$interfaceName\"\n" if $verbose;
 
@@ -441,6 +441,8 @@ sub AddIncludesForType
         AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
     } elsif ($type eq "any" || IsCallbackFunctionType($type)) {
         AddToImplIncludes("bindings/v8/ScriptValue.h");
+    } elsif ($type eq "ArrayBuffer") {
+        AddToImplIncludes("bindings/v8/custom/V8ArrayBufferCustom.h");
     } else {
         AddToImplIncludes("V8${type}.h");
     }
@@ -457,7 +459,7 @@ sub HeaderFilesForInterface
     my $implClassName = shift;
 
     my @includes = ();
-    if (IsTypedArrayType($interfaceName)) {
+    if (IsTypedArrayType($interfaceName) or $interfaceName eq "ArrayBuffer") {
         push(@includes, "wtf/${interfaceName}.h");
     } elsif ($interfaceName =~ /SVGPathSeg/) {
         $interfaceName =~ s/Abs|Rel//;
@@ -4755,15 +4757,7 @@ END
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 END
-    if ($interface->name eq "ArrayBuffer") {
-      AddToImplIncludes("bindings/v8/custom/V8ArrayBufferCustom.h");
-      $code .= <<END;
-    if (!impl->hasDeallocationObserver()) {
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(impl->byteLength());
-        impl->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
-    }
-END
-    } elsif (IsTypedArrayType($interface->name)) {
+    if (IsTypedArrayType($interface->name)) {
       AddToImplIncludes("bindings/v8/custom/V8ArrayBufferCustom.h");
       $code .= <<END;
     if (!impl->buffer()->hasDeallocationObserver()) {
@@ -5032,6 +5026,10 @@ sub GetNativeType
 
     die "UnionType is not supported" if IsUnionType($type);
 
+    if ($type eq "ArrayBuffer") {
+        return $isParameter ? "ArrayBuffer*" : "RefPtr<ArrayBuffer>";
+    }
+
     # We need to check [ImplementedAs] extended attribute for wrapper types.
     if (IsWrapperType($type)) {
         my $interface = ParseInterface($type);
@@ -5125,6 +5123,11 @@ sub JSValueToNative
         return "V8DOMWrapper::isDOMWrapper($value) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast($value))->toEventTarget(v8::Handle<v8::Object>::Cast($value)) : 0";
     }
 
+    if ($type eq "ArrayBuffer") {
+        AddIncludesForType($type);
+        return "$value->IsArrayBuffer() ? V8ArrayBuffer::toNative(v8::Handle<v8::ArrayBuffer>::Cast($value)) : 0"
+    }
+
     if ($type eq "XPathNSResolver") {
         return "toXPathNSResolver($value, $getIsolate)";
     }
@@ -5156,7 +5159,7 @@ sub CreateCustomSignature
     foreach my $parameter (@{$function->parameters}) {
         if ($first) { $first = 0; }
         else { $code .= ", "; }
-        if (IsWrapperType($parameter->type)) {
+        if (IsWrapperType($parameter->type) && $parameter->type ne "ArrayBuffer") {
             if ($parameter->type eq "XPathNSResolver") {
                 # Special case for XPathNSResolver.  All other browsers accepts a callable,
                 # so, even though it's against IDL, accept objects here.
@@ -5245,6 +5248,7 @@ sub IsCallbackInterface
 {
     my $type = shift;
     return 0 unless IsWrapperType($type);
+    return 0 if $type eq "ArrayBuffer";
 
     my $idlFile = IDLFileForInterface($type)
         or die("Could NOT find IDL file for interface \"$type\"!\n");

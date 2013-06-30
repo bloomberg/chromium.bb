@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebBindings.h"
 
-#include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
 #include "V8Element.h"
 #include "V8Range.h"
@@ -43,6 +42,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8NPUtils.h"
+#include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "bindings/v8/npruntime_priv.h"
 #include "core/dom/Range.h"
