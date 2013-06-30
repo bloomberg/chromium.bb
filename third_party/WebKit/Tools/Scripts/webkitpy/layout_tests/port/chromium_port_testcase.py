@@ -35,7 +35,7 @@ from webkitpy.tool.mocktool import MockOptions
 
 import chromium_android
 import linux
-import mac
+import chromium_mac
 import win
 
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
@@ -89,10 +89,10 @@ class ChromiumPortTestCase(port_testcase.PortTestCase):
             TestConfiguration('lucid', 'x86_64', 'release'),
         ]))
 
-    class TestMacPort(mac.MacPort):
+    class TestMacPort(chromium_mac.ChromiumMacPort):
         def __init__(self, options=None):
             options = options or MockOptions()
-            mac.MacPort.__init__(self, MockSystemHost(os_name='mac', os_version='leopard'), 'mac-leopard', options=options)
+            chromium_mac.ChromiumMacPort.__init__(self, MockSystemHost(os_name='mac', os_version='leopard'), 'chromium-mac-leopard', options=options)
 
         def default_configuration(self):
             self.default_configuration_called = True

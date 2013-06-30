@@ -64,7 +64,7 @@ class ChromiumPort(Port):
         )
 
     ALL_BASELINE_VARIANTS = [
-        'mac-mountainlion', 'mac-lion', 'mac-snowleopard',
+        'chromium-mac-mountainlion', 'chromium-mac-lion', 'chromium-mac-snowleopard',
         'win-win7', 'win-xp',
         'linux-x86_64', 'linux-x86',
     ]

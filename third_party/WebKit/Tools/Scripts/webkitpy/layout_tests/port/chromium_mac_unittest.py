@@ -28,43 +28,43 @@
 
 import unittest2 as unittest
 
-from webkitpy.layout_tests.port import mac
+from webkitpy.layout_tests.port import chromium_mac
 from webkitpy.layout_tests.port import chromium_port_testcase
 from webkitpy.tool.mocktool import MockOptions
 
 
-class MacPortTest(chromium_port_testcase.ChromiumPortTestCase):
+class ChromiumMacPortTest(chromium_port_testcase.ChromiumPortTestCase):
     os_name = 'mac'
     os_version = 'snowleopard'
-    port_name = 'mac'
-    port_maker = mac.MacPort
+    port_name = 'chromium-mac'
+    port_maker = chromium_mac.ChromiumMacPort
 
     def assert_name(self, port_name, os_version_string, expected):
         port = self.make_port(os_version=os_version_string, port_name=port_name)
         self.assertEqual(expected, port.name())
 
     def test_versions(self):
-        self.assertTrue(self.make_port().name() in ('mac-snowleopard', 'mac-lion', 'mac-mountainlion'))
+        self.assertTrue(self.make_port().name() in ('chromium-mac-snowleopard', 'chromium-mac-lion', 'chromium-mac-mountainlion'))
 
-        self.assert_name(None, 'snowleopard', 'mac-snowleopard')
-        self.assert_name('mac', 'snowleopard', 'mac-snowleopard')
-        self.assert_name('mac-snowleopard', 'leopard', 'mac-snowleopard')
-        self.assert_name('mac-snowleopard', 'snowleopard', 'mac-snowleopard')
+        self.assert_name(None, 'snowleopard', 'chromium-mac-snowleopard')
+        self.assert_name('chromium-mac', 'snowleopard', 'chromium-mac-snowleopard')
+        self.assert_name('chromium-mac-snowleopard', 'leopard', 'chromium-mac-snowleopard')
+        self.assert_name('chromium-mac-snowleopard', 'snowleopard', 'chromium-mac-snowleopard')
 
-        self.assert_name(None, 'lion', 'mac-lion')
-        self.assert_name(None, 'mountainlion', 'mac-mountainlion')
+        self.assert_name(None, 'lion', 'chromium-mac-lion')
+        self.assert_name(None, 'mountainlion', 'chromium-mac-mountainlion')
 
-        self.assert_name('mac', 'lion', 'mac-lion')
+        self.assert_name('chromium-mac', 'lion', 'chromium-mac-lion')
         self.assertRaises(AssertionError, self.assert_name, None, 'tiger', 'should-raise-assertion-so-this-value-does-not-matter')
 
     def test_baseline_path(self):
-        port = self.make_port(port_name='mac-snowleopard')
+        port = self.make_port(port_name='chromium-mac-snowleopard')
         self.assertEqual(port.baseline_path(), port._webkit_baseline_path('chromium-mac-snowleopard'))
 
-        port = self.make_port(port_name='mac-lion')
+        port = self.make_port(port_name='chromium-mac-lion')
         self.assertEqual(port.baseline_path(), port._webkit_baseline_path('chromium-mac-lion'))
 
-        port = self.make_port(port_name='mac-mountainlion')
+        port = self.make_port(port_name='chromium-mac-mountainlion')
         self.assertEqual(port.baseline_path(), port._webkit_baseline_path('chromium-mac'))
 
     def test_operating_system(self):

@@ -36,6 +36,7 @@ from webkitpy.thirdparty.mock import Mock
 from webkitpy.tool.mocktool import MockOptions
 
 import chromium
+import chromium_mac
 
 from webkitpy.layout_tests.port import chromium_port_testcase
 from webkitpy.layout_tests.port.driver import DriverInput
