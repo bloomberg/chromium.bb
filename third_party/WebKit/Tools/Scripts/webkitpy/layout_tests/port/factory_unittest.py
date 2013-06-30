@@ -32,7 +32,7 @@ from webkitpy.tool.mocktool import MockOptions
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 
 from webkitpy.layout_tests.port import chromium_android
-from webkitpy.layout_tests.port import chromium_linux
+from webkitpy.layout_tests.port import linux
 from webkitpy.layout_tests.port import chromium_mac
 from webkitpy.layout_tests.port import win
 from webkitpy.layout_tests.port import factory
@@ -58,10 +58,10 @@ class FactoryTest(unittest.TestCase):
         self.assert_port(port_name='chromium', os_name='mac', os_version='lion',
                          cls=chromium_mac.ChromiumMacPort)
 
-    def test_chromium_linux(self):
-        self.assert_port(port_name='chromium-linux', cls=chromium_linux.ChromiumLinuxPort)
+    def test_linux(self):
+        self.assert_port(port_name='linux', cls=linux.LinuxPort)
         self.assert_port(port_name='chromium', os_name='linux', os_version='lucid',
-                         cls=chromium_linux.ChromiumLinuxPort)
+                         cls=linux.LinuxPort)
 
     def test_chromium_android(self):
         self.assert_port(port_name='chromium-android', cls=chromium_android.ChromiumAndroidPort)

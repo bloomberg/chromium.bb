@@ -66,7 +66,7 @@ class ChromiumPort(Port):
     ALL_BASELINE_VARIANTS = [
         'chromium-mac-mountainlion', 'chromium-mac-lion', 'chromium-mac-snowleopard',
         'win-win7', 'win-xp',
-        'chromium-linux-x86_64', 'chromium-linux-x86',
+        'linux-x86_64', 'linux-x86',
     ]
 
     CONFIGURATION_SPECIFIER_MACROS = {

@@ -38,8 +38,8 @@ from webkitpy.layout_tests.port import config
 _log = logging.getLogger(__name__)
 
 
-class ChromiumLinuxPort(chromium.ChromiumPort):
-    port_name = 'chromium-linux'
+class LinuxPort(chromium.ChromiumPort):
+    port_name = 'linux'
 
     SUPPORTED_VERSIONS = ('x86', 'x86_64')
 
@@ -85,16 +85,16 @@ class ChromiumLinuxPort(chromium.ChromiumPort):
 
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
-        if port_name.endswith('-linux'):
+        if port_name.endswith('linux'):
             return port_name + '-' + cls._determine_architecture(host.filesystem, host.executive, cls._determine_driver_path_statically(host, options))
         return port_name
 
     def __init__(self, host, port_name, **kwargs):
         chromium.ChromiumPort.__init__(self, host, port_name, **kwargs)
         (base, arch) = port_name.rsplit('-', 1)
-        assert base == 'chromium-linux'
+        assert base == 'linux'
         assert arch in self.SUPPORTED_VERSIONS
-        assert port_name in ('chromium-linux', 'chromium-linux-x86', 'chromium-linux-x86_64')
+        assert port_name in ('linux', 'linux-x86', 'linux-x86_64')
         self._version = 'lucid'  # We only support lucid right now.
         self._architecture = arch
 

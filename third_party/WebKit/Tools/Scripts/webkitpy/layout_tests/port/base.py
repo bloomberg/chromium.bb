@@ -774,7 +774,7 @@ class Port(object):
 
     def name(self):
         """Returns a name that uniquely identifies this particular type of port
-        (e.g., "mac-snowleopard" or "chromium-linux-x86_x64" and can be passed
+        (e.g., "mac-snowleopard" or "linux-x86_x64" and can be passed
         to factory.get() to instantiate the port."""
         return self._name
 

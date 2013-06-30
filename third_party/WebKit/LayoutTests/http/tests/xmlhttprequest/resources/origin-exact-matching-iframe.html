@@ -44,13 +44,13 @@ shouldFail(location.protocol + "//" + location.host + "#");
 shouldFail(location.protocol + "//" + location.host + "%23");
 shouldFail(location.protocol + "//" + location.host + ":80");
 shouldFail(location.protocol + "//" + location.host + ", *");
-//shouldFail(location.protocol + "//" + location.host + "\0"); // Doesn't fail in chromium-linux. See http://wkbug.com/88688 and http://wkbug.com/88139
+//shouldFail(location.protocol + "//" + location.host + "\0"); // Doesn't fail on Linux. See http://wkbug.com/88688 and http://wkbug.com/88139
 shouldFail((location.protocol + "//" + location.host).toUpperCase());
 shouldFail(location.protocol.toUpperCase() + "//" + location.host);
 shouldFail("-");
 shouldFail("**");
 shouldFail("\0*");
-//shouldFail("*\0"); // Doesn't fail in chromium-linux. http://wkbug.com/88688 and http://wkbug.com/88139
+//shouldFail("*\0"); // Doesn't fail on Linux. http://wkbug.com/88688 and http://wkbug.com/88139
 shouldFail("'*'");
 shouldFail('"*"');
 shouldFail("* *");

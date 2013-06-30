@@ -36,7 +36,7 @@ import threading
 import time
 
 from webkitpy.layout_tests.port import chromium
-from webkitpy.layout_tests.port import chromium_linux
+from webkitpy.layout_tests.port import linux
 from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import factory
 from webkitpy.layout_tests.port import server_process
@@ -354,7 +354,7 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
 
     SUPPORTED_VERSIONS = ('android')
 
-    FALLBACK_PATHS = { 'android': [ 'chromium-android' ] + chromium_linux.ChromiumLinuxPort.latest_platform_fallback_path() }
+    FALLBACK_PATHS = { 'android': [ 'chromium-android' ] + linux.LinuxPort.latest_platform_fallback_path() }
 
     def __init__(self, host, port_name, **kwargs):
         super(ChromiumAndroidPort, self).__init__(host, port_name, **kwargs)

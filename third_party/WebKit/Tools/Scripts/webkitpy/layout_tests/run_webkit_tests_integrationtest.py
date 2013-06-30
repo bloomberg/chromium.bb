@@ -780,7 +780,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_build_check(self):
         # By using a port_name for a different platform than the one we're running on, the build check should always fail.
         if sys.platform == 'darwin':
-            port_name = 'chromium-linux-x86'
+            port_name = 'linux-x86'
         else:
             port_name = 'chromium-mac-lion'
         out = StringIO.StringIO()

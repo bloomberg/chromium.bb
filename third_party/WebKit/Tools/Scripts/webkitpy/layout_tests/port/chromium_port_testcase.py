@@ -34,7 +34,7 @@ from webkitpy.common.system.systemhost_mock import MockSystemHost
 from webkitpy.tool.mocktool import MockOptions
 
 import chromium_android
-import chromium_linux
+import linux
 import chromium_mac
 import win
 
@@ -107,10 +107,10 @@ class ChromiumPortTestCase(port_testcase.PortTestCase):
             self.default_configuration_called = True
             return 'default'
 
-    class TestLinuxPort(chromium_linux.ChromiumLinuxPort):
+    class TestLinuxPort(linux.LinuxPort):
         def __init__(self, options=None):
             options = options or MockOptions()
-            chromium_linux.ChromiumLinuxPort.__init__(self, MockSystemHost(os_name='linux', os_version='lucid'), 'chromium-linux-x86', options=options)
+            linux.LinuxPort.__init__(self, MockSystemHost(os_name='linux', os_version='lucid'), 'linux-x86', options=options)
 
         def default_configuration(self):
             self.default_configuration_called = True

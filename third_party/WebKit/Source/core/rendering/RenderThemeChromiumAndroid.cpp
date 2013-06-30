@@ -60,7 +60,7 @@ RenderThemeChromiumAndroid::~RenderThemeChromiumAndroid()
 Color RenderThemeChromiumAndroid::systemColor(CSSValueID cssValueId) const
 {
     if (isRunningLayoutTest() && cssValueId == CSSValueButtonface) {
-        // Match Chromium Linux' button color in layout tests.
+        // Match Linux button color in layout tests.
         static const Color linuxButtonGrayColor(0xffdddddd);
         return linuxButtonGrayColor;
     }
@@ -81,7 +81,7 @@ String RenderThemeChromiumAndroid::extraDefaultStyleSheet()
 void RenderThemeChromiumAndroid::adjustInnerSpinButtonStyle(RenderStyle* style, Element*) const
 {
     if (isRunningLayoutTest()) {
-        // Match Chromium Linux spin button style in layout tests.
+        // Match Linux spin button style in layout tests.
         // FIXME: Consider removing the conditional if a future Android theme matches this.
         IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartInnerSpinButton);
 
