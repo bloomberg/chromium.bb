@@ -70,12 +70,12 @@ _DESKTOP_NEGATIVE_FILTER['HEAD'] = (
         'ChromeDriverTest.testSingleTapElement',
     ]
 )
-_DESKTOP_NEGATIVE_FILTER['28'] = (
-    _DESKTOP_NEGATIVE_FILTER['HEAD'] + []
-)
-_DESKTOP_NEGATIVE_FILTER['27'] = (
-    _DESKTOP_NEGATIVE_FILTER['HEAD'] + []
-)
+
+
+def _GetDesktopNegativeFilter(version_name):
+  if version_name in _DESKTOP_NEGATIVE_FILTER:
+    return _DESKTOP_NEGATIVE_FILTER[version_name]
+  return _DESKTOP_NEGATIVE_FILTER['HEAD']
 
 
 _ANDROID_NEGATIVE_FILTER = {}
@@ -736,7 +736,7 @@ if __name__ == '__main__':
     if _ANDROID_PACKAGE:
       negative_filter = _ANDROID_NEGATIVE_FILTER[_ANDROID_PACKAGE]
     else:
-      negative_filter = _DESKTOP_NEGATIVE_FILTER[options.chrome_version]
+      negative_filter = _GetDesktopNegativeFilter(options.chrome_version)
     options.filter = '*-' + ':__main__.'.join([''] + negative_filter)
 
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(

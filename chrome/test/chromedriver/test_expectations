@@ -88,8 +88,7 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'VisibilityTest.tooSmallAWindowWithOverflowHiddenIsNotAProblem',
     'WindowTest.*',
 ]
-_REVISION_NEGATIVE_FILTER['28'] = [] + _REVISION_NEGATIVE_FILTER['HEAD']
-_REVISION_NEGATIVE_FILTER['27'] = [] + _REVISION_NEGATIVE_FILTER['HEAD']
+
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
@@ -159,6 +158,13 @@ _OS_NEGATIVE_FILTER['android'] = [
     'WindowSwitchingTest.*',
 ]
 
+
+def _GetRevisionNegativeFilter(chrome_version):
+  if chrome_version in _REVISION_NEGATIVE_FILTER:
+    return _REVISION_NEGATIVE_FILTER[chrome_version]
+  return _REVISION_NEGATIVE_FILTER['HEAD']
+
+
 def GetDisabledTestMatchers(operating_system, chrome_version):
   """Returns the list of disabled test matchers for the specific configuration.
 
@@ -171,7 +177,8 @@ def GetDisabledTestMatchers(operating_system, chrome_version):
     List of disabled test matchers, which may contain '*' wildcards.
   """
   return (_OS_NEGATIVE_FILTER[operating_system] +
-          _REVISION_NEGATIVE_FILTER[chrome_version])[:]
+          _GetRevisionNegativeFilter(chrome_version))[:]
+
 
 def ApplyJavaTestFilter(operating_system, chrome_version, tests):
   """Applies the test filter to the given list of tests.
@@ -186,7 +193,7 @@ def ApplyJavaTestFilter(operating_system, chrome_version, tests):
     Set of passed test names.
   """
   filters = (_OS_NEGATIVE_FILTER[operating_system] +
-             _REVISION_NEGATIVE_FILTER[chrome_version])
+             _GetRevisionNegativeFilter(chrome_version))
   passed = set(tests)
   for f in filters:
     passed.difference_update(set(t for t in tests if fnmatch.fnmatch(t, f)))
