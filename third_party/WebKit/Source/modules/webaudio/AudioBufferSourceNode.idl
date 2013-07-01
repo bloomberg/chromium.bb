@@ -53,4 +53,6 @@
     [MeasureAs=LegacyWebAudio] void noteOn(double when);
     [MeasureAs=LegacyWebAudio] void noteGrainOn(double when, double grainOffset, double grainDuration);
     void noteOff(double when);
+
+    attribute EventListener onended;
 };

@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/AudioScheduledSourceNode.h"
 
+#include "core/dom/Event.h"
 #include "core/platform/audio/AudioUtilities.h"
 #include "modules/webaudio/AudioContext.h"
 #include <algorithm>
@@ -44,6 +45,7 @@ AudioScheduledSourceNode::AudioScheduledSourceNode(AudioContext* context, float 
     , m_playbackState(UNSCHEDULED_STATE)
     , m_startTime(0)
     , m_endTime(UnknownTime)
+    , m_hasEndedListener(false)
 {
 }
 
@@ -162,6 +164,12 @@ void AudioScheduledSourceNode::noteOff(double when)
     stop(when);
 }
 
+void AudioScheduledSourceNode::setOnended(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld)
+{
+    m_hasEndedListener = listener;
+    setAttributeEventListener(eventNames().endedEvent, listener, isolatedWorld);
+}
+
 void AudioScheduledSourceNode::finish()
 {
     if (m_playbackState != FINISHED_STATE) {
@@ -170,6 +178,21 @@ void AudioScheduledSourceNode::finish()
         m_playbackState = FINISHED_STATE;
         context()->decrementActiveSourceCount();
     }
+
+    if (m_hasEndedListener)
+        callOnMainThread(&AudioScheduledSourceNode::notifyEndedDispatch, this);
+}
+
+void AudioScheduledSourceNode::notifyEndedDispatch(void* userData)
+{
+    static_cast<AudioScheduledSourceNode*>(userData)->notifyEnded();
+}
+
+void AudioScheduledSourceNode::notifyEnded()
+{
+    RefPtr<Event> event = Event::create(eventNames().endedEvent, FALSE, FALSE);
+    event->setTarget(this);
+    dispatchEvent(event.get());
 }
 
 } // namespace WebCore
