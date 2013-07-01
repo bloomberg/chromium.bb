@@ -634,7 +634,8 @@ static PassRefPtr<CSSValue> getPositionOffsetValue(RenderStyle* style, CSSProper
             toRenderBox(renderer)->containingBlockLogicalWidthForContent() :
             toRenderBox(renderer)->containingBlockLogicalHeightForContent(ExcludeMarginBorderPadding);
         return zoomAdjustedPixelValue(valueForLength(l, containingBlockSize, 0), style);
-    } if (l.isViewportPercentage())
+    }
+    if (l.isViewportPercentage())
         return zoomAdjustedPixelValue(valueForLength(l, 0, renderView), style);
     if (l.isAuto()) {
         // FIXME: It's not enough to simply return "auto" values for one offset if the other side is defined.
