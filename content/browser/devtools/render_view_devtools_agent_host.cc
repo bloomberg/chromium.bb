@@ -256,6 +256,19 @@ void RenderViewDevToolsAgentHost::RenderViewGone(
   }
 }
 
+void RenderViewDevToolsAgentHost::DidAttachInterstitialPage() {
+  if (!render_view_host_)
+    return;
+  // The rvh set in AboutToNavigateRenderView turned out to be interstitial.
+  // Connect back to the real one.
+  WebContents* web_contents =
+    WebContents::FromRenderViewHost(render_view_host_);
+  if (!web_contents)
+    return;
+  DisconnectRenderViewHost();
+  ConnectRenderViewHost(web_contents->GetRenderViewHost(), true);
+}
+
 void RenderViewDevToolsAgentHost::ConnectRenderViewHost(RenderViewHost* rvh,
                                                         bool reattach) {
   render_view_host_ = rvh;
