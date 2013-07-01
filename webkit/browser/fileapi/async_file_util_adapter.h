@@ -95,6 +95,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE AsyncFileUtilAdapter
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
+  virtual bool DeleteRecursively(
+      scoped_ptr<FileSystemOperationContext> context,
+      const FileSystemURL& url,
+      const StatusCallback& callback) OVERRIDE;
   virtual bool CreateSnapshotFile(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,

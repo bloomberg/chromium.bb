@@ -291,6 +291,16 @@ bool NativeMediaFileUtil::DeleteDirectory(
                  url, callback));
 }
 
+bool NativeMediaFileUtil::DeleteRecursively(
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
+    const fileapi::FileSystemURL& url,
+    const StatusCallback& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  if (!callback.is_null())
+    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+  return true;
+}
+
 bool NativeMediaFileUtil::CreateSnapshotFile(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,

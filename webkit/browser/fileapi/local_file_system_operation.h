@@ -221,6 +221,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSystemOperation
   void DidFileExists(const StatusCallback& callback,
                      base::PlatformFileError rv,
                      const base::PlatformFileInfo& file_info);
+  void DidDeleteRecursively(const FileSystemURL& url,
+                            const StatusCallback& callback,
+                            base::PlatformFileError rv);
   void DidWrite(const FileSystemURL& url,
                 const WriteCallback& callback,
                 base::PlatformFileError rv,

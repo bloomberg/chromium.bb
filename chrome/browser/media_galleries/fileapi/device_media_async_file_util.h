@@ -91,6 +91,10 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
+  virtual bool DeleteRecursively(
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
+      const fileapi::FileSystemURL& url,
+      const StatusCallback& callback) OVERRIDE;
   virtual bool CreateSnapshotFile(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,

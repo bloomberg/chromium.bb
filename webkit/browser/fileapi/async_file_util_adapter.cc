@@ -306,6 +306,15 @@ bool AsyncFileUtilAdapter::DeleteDirectory(
       callback);
 }
 
+bool AsyncFileUtilAdapter::DeleteRecursively(
+    scoped_ptr<FileSystemOperationContext> context,
+    const FileSystemURL& url,
+    const StatusCallback& callback) {
+  if (!callback.is_null())
+    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+  return true;
+}
+
 bool AsyncFileUtilAdapter::CreateSnapshotFile(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
