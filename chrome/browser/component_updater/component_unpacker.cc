@@ -110,7 +110,7 @@ base::DictionaryValue* ReadManifest(const base::FilePath& unpack_path) {
 // being inserted into the target directory by another process or thread.
 bool MakeEmptyDirectory(const base::FilePath& path) {
   if (file_util::PathExists(path)) {
-    if (!file_util::Delete(path, true))
+    if (!base::Delete(path, true))
       return false;
   }
   if (!file_util::CreateDirectory(path))
@@ -186,7 +186,7 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
                                                               patcher,
                                                               installer,
                                                               &extended_error_);
-    file_util::Delete(unpack_diff_path, true);
+    base::Delete(unpack_diff_path, true);
     unpack_diff_path.clear();
     error_ = result;
     if (error_ != kNone) {
@@ -223,5 +223,5 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
 
 ComponentUnpacker::~ComponentUnpacker() {
   if (!unpack_path_.empty())
-    file_util::Delete(unpack_path_, true);
+    base::Delete(unpack_path_, true);
 }

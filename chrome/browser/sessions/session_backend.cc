@@ -265,7 +265,7 @@ bool SessionBackend::ReadLastSessionCommandsImpl(
 
 void SessionBackend::DeleteLastSession() {
   Init();
-  file_util::Delete(GetLastSessionPath(), false);
+  base::Delete(GetLastSessionPath(), false);
 }
 
 void SessionBackend::MoveCurrentSessionToLastSession() {
@@ -275,7 +275,7 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
   const base::FilePath current_session_path = GetCurrentSessionPath();
   const base::FilePath last_session_path = GetLastSessionPath();
   if (file_util::PathExists(last_session_path))
-    file_util::Delete(last_session_path, false);
+    base::Delete(last_session_path, false);
   if (file_util::PathExists(current_session_path)) {
     int64 file_size;
     if (file_util::GetFileSize(current_session_path, &file_size)) {
@@ -292,7 +292,7 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
   }
 
   if (file_util::PathExists(current_session_path))
-    file_util::Delete(current_session_path, false);
+    base::Delete(current_session_path, false);
 
   // Create and open the file for the current session.
   ResetFile();

@@ -77,7 +77,7 @@ TEST(ScopedTempDir, UniqueTempDirUnderPath) {
     EXPECT_TRUE(test_path.value().find(base_path.value()) != std::string::npos);
   }
   EXPECT_FALSE(file_util::DirectoryExists(test_path));
-  file_util::Delete(base_path, true);
+  base::Delete(base_path, true);
 }
 
 TEST(ScopedTempDir, MultipleInvocations) {

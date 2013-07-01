@@ -510,13 +510,13 @@ void ExtensionServiceTestBase::InitializeInstalledExtensionService(
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath path = temp_dir_.path();
   path = path.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
-  file_util::Delete(path, true);
+  base::Delete(path, true);
   file_util::CreateDirectory(path);
   base::FilePath temp_prefs = path.Append(FILE_PATH_LITERAL("Preferences"));
   file_util::CopyFile(prefs_file, temp_prefs);
 
   extensions_install_dir_ = path.Append(FILE_PATH_LITERAL("Extensions"));
-  file_util::Delete(extensions_install_dir_, true);
+  base::Delete(extensions_install_dir_, true);
   file_util::CopyDirectory(source_install_dir, extensions_install_dir_, true);
 
   ExtensionServiceInitParams params;
@@ -546,12 +546,12 @@ void ExtensionServiceTestBase::InitializeExtensionServiceHelper(
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath path = temp_dir_.path();
   path = path.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
-  file_util::Delete(path, true);
+  base::Delete(path, true);
   file_util::CreateDirectory(path);
   base::FilePath prefs_filename =
       path.Append(FILE_PATH_LITERAL("TestPreferences"));
   extensions_install_dir_ = path.Append(FILE_PATH_LITERAL("Extensions"));
-  file_util::Delete(extensions_install_dir_, true);
+  base::Delete(extensions_install_dir_, true);
   file_util::CreateDirectory(extensions_install_dir_);
 
   ExtensionServiceInitParams params;
@@ -658,7 +658,7 @@ class ExtensionServiceTest
       ASSERT_TRUE(file_util::PathExists(pem_path));
     }
 
-    ASSERT_TRUE(file_util::Delete(crx_path, false));
+    ASSERT_TRUE(base::Delete(crx_path, false));
 
     scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
     ASSERT_TRUE(creator->Run(dir_path,
@@ -2038,7 +2038,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
 
   // Repeat the run with the pem file gone, and no special flags
   // Should refuse to overwrite the existing crx.
-  file_util::Delete(privkey_path, false);
+  base::Delete(privkey_path, false);
   ASSERT_FALSE(creator->Run(input_directory, crx_path, base::FilePath(),
       privkey_path, ExtensionCreator::kNoRunFlags));
 
@@ -2175,7 +2175,7 @@ TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
   ASSERT_TRUE(file_util::PathExists(crx_path));
   ASSERT_TRUE(file_util::PathExists(privkey_path));
 
-  file_util::Delete(crx_path, false);
+  base::Delete(crx_path, false);
   // Move the pem file into the extension.
   file_util::Move(privkey_path,
                   input_directory.AppendASCII("privkey.pem"));
@@ -2278,7 +2278,7 @@ TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   // directory, and we don't want to copy the whole extension for a unittest.
   base::FilePath theme_file = extension_path.Append(chrome::kThemePackFilename);
   ASSERT_TRUE(file_util::PathExists(theme_file));
-  ASSERT_TRUE(file_util::Delete(theme_file, false));  // Not recursive.
+  ASSERT_TRUE(base::Delete(theme_file, false));  // Not recursive.
 }
 
 // Tests that we can change the ID of an unpacked extension by adding a key

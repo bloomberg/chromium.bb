@@ -867,7 +867,7 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnTruncation) {
                 UnlimitedContext().get(),
                 url, &local_path));
   ASSERT_FALSE(local_path.empty());
-  ASSERT_TRUE(file_util::Delete(local_path, false));
+  ASSERT_TRUE(base::Delete(local_path, false));
 
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             ofu()->Truncate(
@@ -1670,7 +1670,7 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
   base::FilePath local_path;
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->GetLocalFilePath(context.get(), kPath[0], &local_path));
-  EXPECT_TRUE(file_util::Delete(local_path, false));
+  EXPECT_TRUE(base::Delete(local_path, false));
 
   entries.clear();
   EXPECT_EQ(base::PLATFORM_FILE_OK,

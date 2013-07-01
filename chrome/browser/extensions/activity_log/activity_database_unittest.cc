@@ -75,7 +75,7 @@ TEST_F(ActivityDatabaseTest, Init) {
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("ActivityInit.db");
-  file_util::Delete(db_file, false);
+  base::Delete(db_file, false);
 
   ActivityDatabase* activity_db = new ActivityDatabase();
   activity_db->Init(db_file);
@@ -96,7 +96,7 @@ TEST_F(ActivityDatabaseTest, RecordAPIAction) {
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
-  file_util::Delete(db_file, false);
+  base::Delete(db_file, false);
 
   ActivityDatabase* activity_db = new ActivityDatabase();
   activity_db->Init(db_file);
@@ -132,7 +132,7 @@ TEST_F(ActivityDatabaseTest, RecordDOMAction) {
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
-  file_util::Delete(db_file, false);
+  base::Delete(db_file, false);
 
   ActivityDatabase* activity_db = new ActivityDatabase();
   activity_db->Init(db_file);
@@ -177,7 +177,7 @@ TEST_F(ActivityDatabaseTest, RecordBlockedAction) {
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
-  file_util::Delete(db_file, false);
+  base::Delete(db_file, false);
 
   ActivityDatabase* activity_db = new ActivityDatabase();
   activity_db->Init(db_file);
@@ -213,7 +213,7 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
-  file_util::Delete(db_file, false);
+  base::Delete(db_file, false);
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
   // when the test is run close to local midnight.
@@ -273,7 +273,7 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
-  file_util::Delete(db_file, false);
+  base::Delete(db_file, false);
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
   // when the test is run close to local midnight.
@@ -343,7 +343,7 @@ TEST_F(ActivityDatabaseTest, BatchModeOff) {
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
-  file_util::Delete(db_file, false);
+  base::Delete(db_file, false);
 
   // Use a mock clock to ensure that events are not recorded on the wrong day
   // when the test is run close to local midnight.
@@ -377,7 +377,7 @@ TEST_F(ActivityDatabaseTest, BatchModeOn) {
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
-  file_util::Delete(db_file, false);
+  base::Delete(db_file, false);
 
   // Use a mock clock to set the time, and a special timer to control the
   // timing and skip ahead in time.
@@ -421,7 +421,7 @@ TEST_F(ActivityDatabaseTest, InitFailure) {
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
-  file_util::Delete(db_file, false);
+  base::Delete(db_file, false);
 
   ActivityDatabase* activity_db = new ActivityDatabase();
   scoped_refptr<APIAction> action = new APIAction(

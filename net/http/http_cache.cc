@@ -45,7 +45,7 @@ namespace {
 
 // Adaptor to delete a file on a worker thread.
 void DeletePath(base::FilePath path) {
-  file_util::Delete(path, false);
+  base::Delete(path, false);
 }
 
 }  // namespace

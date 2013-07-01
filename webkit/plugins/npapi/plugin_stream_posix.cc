@@ -38,7 +38,7 @@ bool PluginStream::OpenTempFile() {
     temp_file_ = file_util::OpenFile(temp_file_path_, "a");
 
   if (!temp_file_) {
-    file_util::Delete(temp_file_path_, false);
+    base::Delete(temp_file_path_, false);
     ResetTempFileName();
     return false;
   }

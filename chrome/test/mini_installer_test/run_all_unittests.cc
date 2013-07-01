@@ -33,7 +33,7 @@ void BackUpProfile(bool chrome_frame) {
     // Will check if User Data is already backed up.
     // If yes, will delete and create new one.
     if (file_util::PathExists(backup_path))
-      file_util::Delete(backup_path, true);
+      base::Delete(backup_path, true);
     file_util::CopyDirectory(path, backup_path, true);
   } else {
     printf("Chrome is not installed. Will not take any backup\n");

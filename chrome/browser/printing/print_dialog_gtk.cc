@@ -275,7 +275,7 @@ void PrintDialogGtk::PrintDocument(const printing::Metafile* metafile,
 
   if (!error && !metafile->SaveTo(path_to_pdf_)) {
     LOG(ERROR) << "Saving metafile failed";
-    file_util::Delete(path_to_pdf_, false);
+    base::Delete(path_to_pdf_, false);
     error = true;
   }
 

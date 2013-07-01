@@ -91,7 +91,7 @@ void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
 
   if (file_size == 0) {
     // Empty minidump, this process did not crash. Just remove the file.
-    r = file_util::Delete(minidump_path, false);
+    r = base::Delete(minidump_path, false);
     DCHECK(r) << "Failed to delete temporary minidump file "
               << minidump_path.value();
     return;
@@ -115,7 +115,7 @@ void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
   if (!r) {
     LOG(ERROR) << "Failed to move crash dump from " << minidump_path.value()
                << " to " << dest_path.value();
-    file_util::Delete(minidump_path, false);
+    base::Delete(minidump_path, false);
     return;
   }
   LOG(INFO) << "Crash minidump successfully generated: " <<

@@ -1811,7 +1811,7 @@ void AppCacheStorageImpl::OnDiskCacheInitialized(int rv) {
     if (!is_incognito_) {
       VLOG(1) << "Deleting existing appcache data and starting over.";
       db_thread_->PostTask(
-          FROM_HERE, base::Bind(base::IgnoreResult(&file_util::Delete),
+          FROM_HERE, base::Bind(base::IgnoreResult(&base::Delete),
                                 cache_directory_, true));
     }
   }

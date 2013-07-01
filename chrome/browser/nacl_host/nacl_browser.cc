@@ -101,7 +101,7 @@ void WriteCache(const base::FilePath& filename, const Pickle* pickle) {
 
 void RemoveCache(const base::FilePath& filename,
                  const base::Closure& callback) {
-  file_util::Delete(filename, false);
+  base::Delete(filename, false);
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                    callback);
 }

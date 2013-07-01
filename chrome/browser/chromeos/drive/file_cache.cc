@@ -123,7 +123,7 @@ void DeleteFilesSelectively(const base::FilePath& path_to_delete_pattern,
     if (!path_to_keep.empty() && current == path_to_keep)
       continue;
 
-    success = file_util::Delete(current, false);
+    success = base::Delete(current, false);
     if (!success)
       DVLOG(1) << "Error deleting " << current.value();
     else
@@ -310,7 +310,7 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
        current = enumerator.Next()) {
     util::ParseCacheFilePath(current, &resource_id, &md5);
     if (!GetCacheEntry(resource_id, md5, &entry))
-      file_util::Delete(current, false /* recursive */);
+      base::Delete(current, false /* recursive */);
   }
 
   // Check the disk space again.
@@ -791,7 +791,7 @@ bool FileCache::ClearAll() {
                                   base::FileEnumerator::FILES);
   for (base::FilePath file = enumerator.Next(); !file.empty();
        file = enumerator.Next())
-    file_util::Delete(file, false /* recursive */);
+    base::Delete(file, false /* recursive */);
 
   return true;
 }
@@ -832,7 +832,7 @@ bool FileCache::ImportOldDB(const base::FilePath& old_db_path) {
   }
 
   // Delete old DB.
-  file_util::Delete(old_db_path, true /* recursive */ );
+  base::Delete(old_db_path, true /* recursive */ );
   return imported;
 }
 

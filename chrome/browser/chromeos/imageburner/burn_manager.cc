@@ -238,7 +238,7 @@ BurnManager::BurnManager(
 
 BurnManager::~BurnManager() {
   if (image_dir_created_) {
-    file_util::Delete(image_dir_, true);
+    base::Delete(image_dir_, true);
   }
   if (NetworkHandler::IsInitialized()) {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(

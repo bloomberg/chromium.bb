@@ -57,10 +57,6 @@ BASE_EXPORT FilePath MakeAbsoluteFilePath(const FilePath& input);
 // particularly speedy in any platform.
 BASE_EXPORT int64 ComputeDirectorySize(const FilePath& root_path);
 
-}  // namespace base
-
-namespace file_util {
-
 // Deletes the given path, whether it's a file or a directory.
 // If it's a directory, it's perfectly happy to delete all of the
 // directory's contents.  Passing true to recursive deletes
@@ -73,7 +69,13 @@ namespace file_util {
 //
 // WARNING: USING THIS WITH recursive==true IS EQUIVALENT
 //          TO "rm -rf", SO USE WITH CAUTION.
-BASE_EXPORT bool Delete(const base::FilePath& path, bool recursive);
+BASE_EXPORT bool Delete(const FilePath& path, bool recursive);
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
 
 #if defined(OS_WIN)
 // Schedules to delete the given path, whether it's a file or a directory, until

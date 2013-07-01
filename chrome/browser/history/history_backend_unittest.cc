@@ -391,7 +391,7 @@ class HistoryBackendTest : public testing::Test {
       backend_->Closing();
     backend_ = NULL;
     mem_backend_.reset();
-    file_util::Delete(test_dir_, true);
+    base::Delete(test_dir_, true);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1275,7 +1275,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
   base::FilePath new_history_path(getTestDir());
-  file_util::Delete(new_history_path, true);
+  base::Delete(new_history_path, true);
   file_util::CreateDirectory(new_history_path);
   base::FilePath new_history_file =
       new_history_path.Append(chrome::kHistoryFilename);
@@ -2514,7 +2514,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
   base::FilePath new_history_path(getTestDir());
-  file_util::Delete(new_history_path, true);
+  base::Delete(new_history_path, true);
   file_util::CreateDirectory(new_history_path);
   base::FilePath new_history_file =
       new_history_path.Append(chrome::kHistoryFilename);

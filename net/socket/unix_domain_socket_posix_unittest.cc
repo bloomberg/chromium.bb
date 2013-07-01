@@ -183,7 +183,7 @@ class UnixDomainSocketTestHelper : public testing::Test {
 
   void DeleteSocketFile() {
     ASSERT_FALSE(file_path_.empty());
-    file_util::Delete(file_path_, false /* not recursive */);
+    base::Delete(file_path_, false /* not recursive */);
   }
 
   SocketDescriptor CreateClientSocket() {

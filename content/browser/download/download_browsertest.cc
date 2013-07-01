@@ -1210,7 +1210,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithDeletedFile) {
       base::FilePath(FILE_PATH_LITERAL("rangereset.crdownload")));
 
   // Delete the intermediate file.
-  file_util::Delete(download->GetFullPath(), false);
+  base::Delete(download->GetFullPath(), false);
 
   DownloadUpdatedObserver completion_observer(
       download, base::Bind(DownloadCompleteFilter));

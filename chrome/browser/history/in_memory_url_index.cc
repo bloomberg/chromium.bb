@@ -31,7 +31,7 @@ namespace history {
 // there is no private data to save. Runs on the FILE thread.
 void DeleteCacheFile(const base::FilePath& path) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  file_util::Delete(path, false);
+  base::Delete(path, false);
 }
 
 // Initializes a whitelist of URL schemes.

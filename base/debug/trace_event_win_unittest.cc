@@ -157,7 +157,7 @@ class TraceEventWinTest: public testing::Test {
       EXPECT_HRESULT_SUCCEEDED(controller_.Stop(&prop));
 
     if (!log_file_.value().empty())
-      file_util::Delete(log_file_, false);
+      base::Delete(log_file_, false);
   }
 
   void ExpectEvent(REFGUID guid,

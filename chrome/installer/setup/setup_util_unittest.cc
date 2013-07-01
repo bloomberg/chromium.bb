@@ -124,7 +124,7 @@ TEST_F(SetupUtilTestWithDir, GetMaxVersionFromArchiveDirTest) {
       installer::GetMaxVersionFromArchiveDir(test_dir_.path()));
   ASSERT_EQ(version->GetString(), "1.0.0.0");
 
-  file_util::Delete(chrome_dir, true);
+  base::Delete(chrome_dir, true);
   ASSERT_FALSE(file_util::PathExists(chrome_dir));
   ASSERT_TRUE(installer::GetMaxVersionFromArchiveDir(test_dir_.path()) == NULL);
 

@@ -139,7 +139,7 @@ TEST(WebAppShortcutCreatorTest, UpdateShortcuts) {
 
   shortcut_creator.BuildShortcut(other_folder.Append(app_name));
 
-  EXPECT_TRUE(file_util::Delete(
+  EXPECT_TRUE(base::Delete(
       other_folder.Append(app_name).Append("Contents"), true));
 
   EXPECT_TRUE(shortcut_creator.UpdateShortcuts());
@@ -153,7 +153,7 @@ TEST(WebAppShortcutCreatorTest, UpdateShortcuts) {
 
   shortcut_creator.BuildShortcut(other_folder.Append(app_name));
 
-  EXPECT_TRUE(file_util::Delete(
+  EXPECT_TRUE(base::Delete(
       other_folder.Append(app_name).Append("Contents"), true));
 
   EXPECT_FALSE(shortcut_creator.UpdateShortcuts());

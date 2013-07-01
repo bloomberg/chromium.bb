@@ -394,9 +394,9 @@ bool Connection::Delete(const base::FilePath& path) {
   base::FilePath journal_path(path.value() + FILE_PATH_LITERAL("-journal"));
   base::FilePath wal_path(path.value() + FILE_PATH_LITERAL("-wal"));
 
-  file_util::Delete(journal_path, false);
-  file_util::Delete(wal_path, false);
-  file_util::Delete(path, false);
+  base::Delete(journal_path, false);
+  base::Delete(wal_path, false);
+  base::Delete(path, false);
 
   return !file_util::PathExists(journal_path) &&
       !file_util::PathExists(wal_path) &&

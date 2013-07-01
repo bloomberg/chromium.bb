@@ -102,7 +102,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
 
   std::string contents;
   file_util::ReadFileToString(temp_file, &contents);
-  file_util::Delete(temp_file, false);
+  base::Delete(temp_file, false);
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);

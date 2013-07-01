@@ -416,8 +416,8 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
     base::FilePath new_file = new_origin_dir.Append(database.BaseName());
     file_util::Move(database, new_file);
   }
-  file_util::Delete(origin_dir, true);
-  file_util::Delete(new_origin_dir, true); // might fail on windows.
+  base::Delete(origin_dir, true);
+  base::Delete(new_origin_dir, true); // might fail on windows.
 
   databases_table_->DeleteOriginIdentifier(origin_identifier);
 
@@ -459,7 +459,7 @@ bool DatabaseTracker::LazyInit() {
           kTemporaryDirectoryPattern);
       for (base::FilePath directory = directories.Next(); !directory.empty();
            directory = directories.Next()) {
-        file_util::Delete(directory, true);
+        base::Delete(directory, true);
       }
     }
 
@@ -472,7 +472,7 @@ bool DatabaseTracker::LazyInit() {
         (!db_->Open(kTrackerDatabaseFullPath) ||
          !sql::MetaTable::DoesTableExist(db_.get()))) {
       db_->Close();
-      if (!file_util::Delete(db_dir_, true))
+      if (!base::Delete(db_dir_, true))
         return false;
     }
 
@@ -798,7 +798,7 @@ void DatabaseTracker::DeleteIncognitoDBDirectory() {
   base::FilePath incognito_db_dir =
       profile_path_.Append(kIncognitoDatabaseDirectoryName);
   if (file_util::DirectoryExists(incognito_db_dir))
-    file_util::Delete(incognito_db_dir, true);
+    base::Delete(incognito_db_dir, true);
 }
 
 void DatabaseTracker::ClearSessionOnlyOrigins() {

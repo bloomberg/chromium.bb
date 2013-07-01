@@ -201,7 +201,7 @@ bool SharedMemory::Delete(const std::string& name) {
     return false;
 
   if (file_util::PathExists(path)) {
-    return file_util::Delete(path, false);
+    return base::Delete(path, false);
   }
 
   // Doesn't exist, so success.

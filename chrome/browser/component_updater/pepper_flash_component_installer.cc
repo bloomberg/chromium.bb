@@ -385,7 +385,7 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
   // Remove older versions of Pepper Flash.
   for (std::vector<base::FilePath>::iterator iter = older_dirs.begin();
        iter != older_dirs.end(); ++iter) {
-    file_util::Delete(*iter, true);
+    base::Delete(*iter, true);
   }
 }
 #endif  // defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)

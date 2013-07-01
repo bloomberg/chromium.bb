@@ -57,12 +57,12 @@ class NaClGdbTest : public PPAPINaClNewlibTest {
 
     EXPECT_TRUE(file_util::ReadFileToString(mock_nacl_gdb_file, &content));
     EXPECT_STREQ("PASS", content.c_str());
-    EXPECT_TRUE(file_util::Delete(mock_nacl_gdb_file, false));
+    EXPECT_TRUE(base::Delete(mock_nacl_gdb_file, false));
 
     content.clear();
     EXPECT_TRUE(file_util::ReadFileToString(script_, &content));
     EXPECT_STREQ("PASS", content.c_str());
-    EXPECT_TRUE(file_util::Delete(script_, false));
+    EXPECT_TRUE(base::Delete(script_, false));
   }
 
  private:

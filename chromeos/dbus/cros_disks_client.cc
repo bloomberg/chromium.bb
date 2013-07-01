@@ -461,7 +461,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
     // Remove the directory created in Mount().
     base::WorkerPool::PostTaskAndReply(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(&file_util::Delete),
+        base::Bind(base::IgnoreResult(&base::Delete),
                    base::FilePath::FromUTF8Unsafe(device_path),
                    true /* recursive */),
         base::Bind(callback, device_path),

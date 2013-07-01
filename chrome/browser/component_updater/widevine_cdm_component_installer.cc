@@ -302,7 +302,7 @@ void StartWidevineCdmUpdateRegistration(ComponentUpdateService* cus) {
           BrowserThread::UI, FROM_HERE,
           base::Bind(&RegisterWidevineCdmWithChrome, adapter_path, version));
     } else {
-      file_util::Delete(latest_dir, true);
+      base::Delete(latest_dir, true);
       version = base::Version(kNullVersion);
     }
   }
@@ -314,7 +314,7 @@ void StartWidevineCdmUpdateRegistration(ComponentUpdateService* cus) {
   // Remove older versions of Widevine CDM.
   for (std::vector<base::FilePath>::iterator iter = older_dirs.begin();
        iter != older_dirs.end(); ++iter) {
-    file_util::Delete(*iter, true);
+    base::Delete(*iter, true);
   }
 }
 

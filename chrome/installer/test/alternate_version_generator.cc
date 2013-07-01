@@ -75,7 +75,7 @@ class ScopedTempDirectory {
  public:
   ScopedTempDirectory() { }
   ~ScopedTempDirectory() {
-    if (!directory_.empty() && !file_util::Delete(directory_, true)) {
+    if (!directory_.empty() && !base::Delete(directory_, true)) {
       LOG(DFATAL) << "Failed deleting temporary directory \""
                   << directory_.value() << "\"";
     }
@@ -602,9 +602,9 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
 
   // Get rid of intermediate files
   base::FilePath chrome_7z(chrome_7z_name);
-  if (!file_util::Delete(chrome_7z, false) ||
-      !file_util::Delete(chrome_packed_7z, false) ||
-      !file_util::Delete(setup_ex_, false)) {
+  if (!base::Delete(chrome_7z, false) ||
+      !base::Delete(chrome_packed_7z, false) ||
+      !base::Delete(setup_ex_, false)) {
     LOG(DFATAL) << "Failed deleting intermediate files";
     return false;
   }

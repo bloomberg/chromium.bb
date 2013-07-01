@@ -95,7 +95,7 @@ void BrowserWebKitPlatformSupportImpl::getPluginList(bool refresh,
 int BrowserWebKitPlatformSupportImpl::databaseDeleteFile(
     const WebKit::WebString& vfs_file_name, bool sync_dir) {
   const base::FilePath& path = base::FilePath::FromUTF16Unsafe(vfs_file_name);
-  return file_util::Delete(path, false) ? 0 : 1;
+  return base::Delete(path, false) ? 0 : 1;
 }
 
 long long BrowserWebKitPlatformSupportImpl::availableDiskSpaceInBytes(

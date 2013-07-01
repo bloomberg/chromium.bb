@@ -109,7 +109,7 @@ class StorageInfoProviderLinuxTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    file_util::Delete(mtab_file_, false);
+    base::Delete(mtab_file_, false);
   }
 
   scoped_refptr<StorageInfoProviderLinuxWrapper> storage_info_provider_;

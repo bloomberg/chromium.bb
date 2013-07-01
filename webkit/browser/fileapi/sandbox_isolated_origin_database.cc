@@ -73,7 +73,7 @@ void SandboxIsolatedOriginDatabase::MigrateDatabaseIfNeeded() {
     base::FilePath to_path = file_system_directory_.Append(kOriginDirectory);
 
     if (file_util::PathExists(to_path))
-      file_util::Delete(to_path, true /* recursive */);
+      base::Delete(to_path, true /* recursive */);
     file_util::Move(from_path, to_path);
   }
 

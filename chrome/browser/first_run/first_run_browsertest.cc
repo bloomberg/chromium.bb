@@ -93,7 +93,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
   }
 
   virtual void TearDown() OVERRIDE {
-    EXPECT_TRUE(file_util::Delete(prefs_file_, false));
+    EXPECT_TRUE(base::Delete(prefs_file_, false));
     InProcessBrowserTest::TearDown();
   }
 

@@ -246,7 +246,7 @@ bool PrintBackendCUPS::GetPrinterCapsAndDefaults(
   std::string content;
   bool res = file_util::ReadFileToString(ppd_path, &content);
 
-  file_util::Delete(ppd_path, false);
+  base::Delete(ppd_path, false);
 
   if (res) {
     printer_info->printer_capabilities.swap(content);
@@ -368,7 +368,7 @@ base::FilePath PrintBackendCUPS::GetPPD(const char* name) {
                    << ", name: " << name
                    << ", CUPS error: " << static_cast<int>(error_code)
                    << ", HTTP error: " << http_error;
-        file_util::Delete(ppd_path, false);
+        base::Delete(ppd_path, false);
         ppd_path.clear();
       }
     }

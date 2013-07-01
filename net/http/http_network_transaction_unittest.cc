@@ -7611,7 +7611,7 @@ TEST_P(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
   EXPECT_EQ(OK, rv);
   EXPECT_EQ("hello world", response_data);
 
-  file_util::Delete(temp_file_path, false);
+  base::Delete(temp_file_path, false);
 }
 
 TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
@@ -7671,7 +7671,7 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
   EXPECT_TRUE(response->headers.get() != NULL);
   EXPECT_EQ("HTTP/1.0 200 OK", response->headers->GetStatusLine());
 
-  file_util::Delete(temp_file, false);
+  base::Delete(temp_file, false);
 }
 
 TEST_P(HttpNetworkTransactionTest, UnreadableUploadFileAfterAuthRestart) {
@@ -7762,7 +7762,7 @@ TEST_P(HttpNetworkTransactionTest, UnreadableUploadFileAfterAuthRestart) {
   EXPECT_TRUE(response->auth_challenge.get() == NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
 
-  file_util::Delete(temp_file, false);
+  base::Delete(temp_file, false);
 }
 
 // Tests that changes to Auth realms are treated like auth rejections.

@@ -323,7 +323,7 @@ void MigrateCacheFilesFromOldDirectories(
 
   // Move all files inside "persistent" to "files".
   MoveAllFilesFromDirectory(persistent_directory, cache_file_directory);
-  file_util::Delete(persistent_directory,  true /* recursive */);
+  base::Delete(persistent_directory,  true /* recursive */);
 
   // Move all files inside "tmp" to "files".
   MoveAllFilesFromDirectory(tmp_directory, cache_file_directory);

@@ -75,7 +75,7 @@ class MinidumpTest: public testing::Test {
     }
 
     dump_file_handle_.Close();
-    EXPECT_TRUE(file_util::Delete(dump_file_, false));
+    EXPECT_TRUE(base::Delete(dump_file_, false));
   }
 
   void EnsureDumpMapped() {

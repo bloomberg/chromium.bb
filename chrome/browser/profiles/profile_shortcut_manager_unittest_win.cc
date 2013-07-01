@@ -391,7 +391,7 @@ TEST_F(ProfileShortcutManagerTest, DeleteSecondToLastProfileWithoutShortcut) {
       GetDefaultShortcutPathForProfile(profile_2_name_);
 
   // Delete the shortcut for the first profile, but keep the one for the 2nd.
-  ASSERT_TRUE(file_util::Delete(profile_1_shortcut_path, false));
+  ASSERT_TRUE(base::Delete(profile_1_shortcut_path, false));
   ASSERT_FALSE(file_util::PathExists(profile_1_shortcut_path));
   ASSERT_TRUE(file_util::PathExists(profile_2_shortcut_path));
 
@@ -415,7 +415,7 @@ TEST_F(ProfileShortcutManagerTest, DeleteSecondToLastProfileWithShortcut) {
       GetDefaultShortcutPathForProfile(profile_2_name_);
 
   // Delete the shortcut for the first profile, but keep the one for the 2nd.
-  ASSERT_TRUE(file_util::Delete(profile_1_shortcut_path, false));
+  ASSERT_TRUE(base::Delete(profile_1_shortcut_path, false));
   ASSERT_FALSE(file_util::PathExists(profile_1_shortcut_path));
   ASSERT_TRUE(file_util::PathExists(profile_2_shortcut_path));
 
@@ -444,8 +444,8 @@ TEST_F(ProfileShortcutManagerTest, DeleteOnlyProfileWithShortcuts) {
       GetDefaultShortcutPathForProfile(profile_3_name_);
 
   // Delete shortcuts for the first two profiles.
-  ASSERT_TRUE(file_util::Delete(profile_1_shortcut_path, false));
-  ASSERT_TRUE(file_util::Delete(profile_2_shortcut_path, false));
+  ASSERT_TRUE(base::Delete(profile_1_shortcut_path, false));
+  ASSERT_TRUE(base::Delete(profile_2_shortcut_path, false));
 
   // Only the shortcut to the third profile should exist.
   ASSERT_FALSE(file_util::PathExists(profile_1_shortcut_path));
@@ -503,7 +503,7 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcuts) {
                                 profile_2_path_);
 
   // Delete the renamed shortcut and try to create it again, which should work.
-  ASSERT_TRUE(file_util::Delete(profile_2_shortcut_path_2, false));
+  ASSERT_TRUE(base::Delete(profile_2_shortcut_path_2, false));
   EXPECT_FALSE(file_util::PathExists(profile_2_shortcut_path_2));
   profile_shortcut_manager_->CreateProfileShortcut(profile_2_path_);
   RunPendingTasks();
@@ -574,7 +574,7 @@ TEST_F(ProfileShortcutManagerTest, UpdateShortcutWithNoFlags) {
 
   // Delete the shortcut that got created for this profile and instead make
   // a new one without any command-line flags.
-  ASSERT_TRUE(file_util::Delete(GetDefaultShortcutPathForProfile(string16()),
+  ASSERT_TRUE(base::Delete(GetDefaultShortcutPathForProfile(string16()),
                                 false));
   const base::FilePath regular_shortcut_path =
       CreateRegularShortcutWithName(FROM_HERE,
@@ -592,7 +592,7 @@ TEST_F(ProfileShortcutManagerTest, UpdateTwoShortcutsWithNoFlags) {
 
   // Delete the shortcut that got created for this profile and instead make
   // two new ones without any command-line flags.
-  ASSERT_TRUE(file_util::Delete(GetDefaultShortcutPathForProfile(string16()),
+  ASSERT_TRUE(base::Delete(GetDefaultShortcutPathForProfile(string16()),
                                 false));
   const base::FilePath regular_shortcut_path =
       CreateRegularShortcutWithName(FROM_HERE,
@@ -664,7 +664,7 @@ TEST_F(ProfileShortcutManagerTest, HasProfileShortcuts) {
   // Delete the shortcut and check that the function returns false.
   const base::FilePath profile_2_shortcut_path =
       GetDefaultShortcutPathForProfile(profile_2_name_);
-  ASSERT_TRUE(file_util::Delete(profile_2_shortcut_path, false));
+  ASSERT_TRUE(base::Delete(profile_2_shortcut_path, false));
   EXPECT_FALSE(file_util::PathExists(profile_2_shortcut_path));
   profile_shortcut_manager_->HasProfileShortcuts(profile_2_path_, callback);
   RunPendingTasks();
@@ -752,7 +752,7 @@ TEST_F(ProfileShortcutManagerTest,
       GetDefaultShortcutPathForProfile(profile_2_name_);
 
   // Delete the shortcut for the first profile, but keep the one for the 2nd.
-  ASSERT_TRUE(file_util::Delete(profile_1_shortcut_path, false));
+  ASSERT_TRUE(base::Delete(profile_1_shortcut_path, false));
   ASSERT_FALSE(file_util::PathExists(profile_1_shortcut_path));
   ASSERT_TRUE(file_util::PathExists(profile_2_shortcut_path));
 

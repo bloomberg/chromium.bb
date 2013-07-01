@@ -257,7 +257,7 @@ void CleanupLegacyShortcuts(const InstallerState& installer_state,
                              shortcut_level, &uninstall_shortcut_path);
   uninstall_shortcut_path = uninstall_shortcut_path.Append(
       dist->GetUninstallLinkName() + installer::kLnkExt);
-  file_util::Delete(uninstall_shortcut_path, false);
+  base::Delete(uninstall_shortcut_path, false);
 
   if (installer_state.system_install()) {
     ShellUtil::RemoveShortcuts(

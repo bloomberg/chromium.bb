@@ -291,7 +291,7 @@ class EtwTraceConsumerDataTest: public EtwTraceConsumerBaseTest {
   }
 
   virtual void TearDown() {
-    EXPECT_TRUE(file_util::Delete(temp_file_, false));
+    EXPECT_TRUE(base::Delete(temp_file_, false));
 
     EtwTraceConsumerBaseTest::TearDown();
   }
@@ -335,7 +335,7 @@ class EtwTraceConsumerDataTest: public EtwTraceConsumerBaseTest {
   }
 
   HRESULT RoundTripEvent(PEVENT_TRACE_HEADER header, PEVENT_TRACE* trace) {
-    file_util::Delete(temp_file_, false);
+    base::Delete(temp_file_, false);
 
     HRESULT hr = LogEventToTempSession(header);
     if (SUCCEEDED(hr))

@@ -281,7 +281,7 @@ void GetShortcutLocationsAndDeleteShortcuts(
       // Any shortcut could have been pinned, either by chrome or the user, so
       // they are all unpinned.
       base::win::TaskbarUnpinShortcutLink(j->value().c_str());
-      file_util::Delete(*j, false);
+      base::Delete(*j, false);
     }
   }
 }
@@ -419,7 +419,7 @@ void DeletePlatformShortcuts(
   if (PathService::Get(base::DIR_START_MENU, &chrome_apps_dir)) {
     chrome_apps_dir = chrome_apps_dir.Append(GetAppShortcutsSubdirName());
     if (file_util::IsDirectoryEmpty(chrome_apps_dir))
-      file_util::Delete(chrome_apps_dir, false);
+      base::Delete(chrome_apps_dir, false);
   }
 }
 

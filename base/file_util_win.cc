@@ -27,22 +27,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 
-using base::FilePath;
-using base::g_bug108724_debug;
-
 namespace base {
-
-FilePath MakeAbsoluteFilePath(const FilePath& input) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  wchar_t file_path[MAX_PATH];
-  if (!_wfullpath(file_path, input.value().c_str(), MAX_PATH))
-    return FilePath();
-  return FilePath(file_path);
-}
-
-}  // namespace base
-
-namespace file_util {
 
 namespace {
 
@@ -51,8 +36,16 @@ const DWORD kFileShareAll =
 
 }  // namespace
 
+FilePath MakeAbsoluteFilePath(const FilePath& input) {
+  ThreadRestrictions::AssertIOAllowed();
+  wchar_t file_path[MAX_PATH];
+  if (!_wfullpath(file_path, input.value().c_str(), MAX_PATH))
+    return FilePath();
+  return FilePath(file_path);
+}
+
 bool Delete(const FilePath& path, bool recursive) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
 
   if (path.value().length() >= MAX_PATH)
     return false;
@@ -60,8 +53,8 @@ bool Delete(const FilePath& path, bool recursive) {
   if (!recursive) {
     // If not recursing, then first check to see if |path| is a directory.
     // If it is, then remove it with RemoveDirectory.
-    base::PlatformFileInfo file_info;
-    if (GetFileInfo(path, &file_info) && file_info.is_directory)
+    PlatformFileInfo file_info;
+    if (file_util::GetFileInfo(path, &file_info) && file_info.is_directory)
       return RemoveDirectory(path.value().c_str()) != 0;
 
     // Otherwise, it's a file, wildcard or non-existant. Try DeleteFile first
@@ -104,6 +97,13 @@ bool Delete(const FilePath& path, bool recursive) {
   // ERROR_FILE_NOT_FOUND. MSDN says Vista and up won't return 0x402.
   return (err == 0 || err == ERROR_FILE_NOT_FOUND || err == 0x402);
 }
+
+}  // namespace base
+
+namespace file_util {
+
+using base::FilePath;
+using base::kFileShareAll;
 
 bool DeleteAfterReboot(const FilePath& path) {
   base::ThreadRestrictions::AssertIOAllowed();

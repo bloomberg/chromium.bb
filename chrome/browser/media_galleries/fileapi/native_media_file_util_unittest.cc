@@ -288,7 +288,7 @@ TEST_F(NativeMediaFileUtilTest, CopySourceFiltering) {
     for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
       // Always start with an empty destination directory.
       // Copying to a non-empty destination directory is an invalid operation.
-      ASSERT_TRUE(file_util::Delete(dest_path, true));
+      ASSERT_TRUE(base::Delete(dest_path, true));
       ASSERT_TRUE(file_util::CreateDirectory(dest_path));
 
       FileSystemURL root_url = CreateURL(FPL(""));
@@ -318,7 +318,7 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
     if (loop_count == 1) {
       // Reset the test directory between the two loops to remove old
       // directories and create new ones that should pre-exist.
-      ASSERT_TRUE(file_util::Delete(root_path(), true));
+      ASSERT_TRUE(base::Delete(root_path(), true));
       ASSERT_TRUE(file_util::CreateDirectory(root_path()));
       PopulateDirectoryWithTestCases(root_path(),
                                      kFilteringTestCases,
@@ -387,7 +387,7 @@ TEST_F(NativeMediaFileUtilTest, MoveSourceFiltering) {
     for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
       // Always start with an empty destination directory.
       // Moving to a non-empty destination directory is an invalid operation.
-      ASSERT_TRUE(file_util::Delete(dest_path, true));
+      ASSERT_TRUE(base::Delete(dest_path, true));
       ASSERT_TRUE(file_util::CreateDirectory(dest_path));
 
       FileSystemURL root_url = CreateURL(FPL(""));
@@ -417,7 +417,7 @@ TEST_F(NativeMediaFileUtilTest, MoveDestFiltering) {
     if (loop_count == 1) {
       // Reset the test directory between the two loops to remove old
       // directories and create new ones that should pre-exist.
-      ASSERT_TRUE(file_util::Delete(root_path(), true));
+      ASSERT_TRUE(base::Delete(root_path(), true));
       ASSERT_TRUE(file_util::CreateDirectory(root_path()));
       PopulateDirectoryWithTestCases(root_path(),
                                      kFilteringTestCases,

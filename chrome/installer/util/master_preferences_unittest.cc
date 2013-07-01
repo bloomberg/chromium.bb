@@ -23,7 +23,7 @@ class MasterPreferencesTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    EXPECT_TRUE(file_util::Delete(prefs_file_, false));
+    EXPECT_TRUE(base::Delete(prefs_file_, false));
   }
 
   const base::FilePath& prefs_file() const { return prefs_file_; }
@@ -41,7 +41,7 @@ struct ExpectedBooleans {
 }  // namespace
 
 TEST_F(MasterPreferencesTest, NoFileToParse) {
-  EXPECT_TRUE(file_util::Delete(prefs_file(), false));
+  EXPECT_TRUE(base::Delete(prefs_file(), false));
   installer::MasterPreferences prefs(prefs_file());
   EXPECT_FALSE(prefs.read_from_file());
 }
@@ -275,7 +275,7 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
   }
 
   // Delete temporary prefs file.
-  EXPECT_TRUE(file_util::Delete(prefs_file, false));
+  EXPECT_TRUE(base::Delete(prefs_file, false));
 
   // Check that if master prefs doesn't exist, we can still parse the common
   // prefs.

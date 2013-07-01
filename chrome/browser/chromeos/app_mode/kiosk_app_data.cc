@@ -277,7 +277,7 @@ void KioskAppData::ClearCache() {
   if (!icon_path_.empty()) {
     BrowserThread::PostBlockingPoolTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(&file_util::Delete), icon_path_, false));
+        base::Bind(base::IgnoreResult(&base::Delete), icon_path_, false));
   }
 }
 

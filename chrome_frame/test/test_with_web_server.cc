@@ -136,8 +136,8 @@ void ChromeFrameTestWithWebServer::TearDownTestCase() {
   local_address_.clear();
   delete loop_;
   loop_ = NULL;
-  file_util::Delete(CFInstall_path_, false);
-  file_util::Delete(CFInstance_path_, false);
+  base::Delete(CFInstall_path_, false);
+  base::Delete(CFInstance_path_, false);
   if (temp_dir_.IsValid())
     EXPECT_TRUE(temp_dir_.Delete());
 }

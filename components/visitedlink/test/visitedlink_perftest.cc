@@ -66,7 +66,7 @@ class VisitedLink : public testing::Test {
     ASSERT_TRUE(file_util::CreateTemporaryFile(&db_path_));
   }
   virtual void TearDown() {
-    file_util::Delete(db_path_, false);
+    base::Delete(db_path_, false);
   }
 };
 

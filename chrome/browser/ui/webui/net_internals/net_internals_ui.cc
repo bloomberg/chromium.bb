@@ -323,7 +323,7 @@ void CloseDebugLogFile(PassPlatformFile pass_platform_file) {
 void CloseAndDeleteDebugLogFile(PassPlatformFile pass_platform_file,
                                 const base::FilePath& file_path) {
   CloseDebugLogFile(pass_platform_file);
-  file_util::Delete(file_path, false);
+  base::Delete(file_path, false);
 }
 
 // Called upon completion of |WriteDebugLogToFile|. Closes file

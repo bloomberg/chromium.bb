@@ -1538,7 +1538,7 @@ TEST_F(DiskCacheEntryTest, MissingData) {
 
   disk_cache::Addr address(0x80000001);
   base::FilePath name = cache_impl_->GetFileName(address);
-  EXPECT_TRUE(file_util::Delete(name, false));
+  EXPECT_TRUE(base::Delete(name, false));
 
   // Attempt to read the data.
   ASSERT_EQ(net::OK, OpenEntry(key, &entry));

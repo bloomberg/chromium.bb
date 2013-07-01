@@ -938,7 +938,7 @@ TEST_F(FileCacheTest, ScanCacheFile) {
   // Remove the existing DB.
   const base::FilePath metadata_directory =
       temp_dir_.path().Append(util::kMetadataDirectory);
-  ASSERT_TRUE(file_util::Delete(metadata_directory, true /* recursive */));
+  ASSERT_TRUE(base::Delete(metadata_directory, true /* recursive */));
 
   // Put an empty file with the same name as old DB.
   // This file cannot be opened by ImportOldDB() and will be dismissed.

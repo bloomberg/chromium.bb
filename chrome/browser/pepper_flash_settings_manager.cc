@@ -461,7 +461,7 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnBlockingPool(
   // Wipe that file.
   const base::FilePath& device_id_path =
       chrome::DeviceIDFetcher::GetLegacyDeviceIDPath(profile_path);
-  bool success = file_util::Delete(device_id_path, false);
+  bool success = base::Delete(device_id_path, false);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

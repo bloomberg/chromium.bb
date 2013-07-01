@@ -187,7 +187,7 @@ bool SimpleSynchronousEntry::DeleteFilesForEntryHash(
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
     FilePath to_delete = path.AppendASCII(
         GetFilenameFromEntryHashAndIndex(entry_hash, i));
-    if (!file_util::Delete(to_delete, false)) {
+    if (!base::Delete(to_delete, false)) {
       result = false;
       DLOG(ERROR) << "Could not delete " << to_delete.MaybeAsASCII();
     }

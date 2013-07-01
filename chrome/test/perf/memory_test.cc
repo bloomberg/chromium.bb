@@ -39,7 +39,7 @@ class MemoryTest : public UIPerfTest {
   virtual ~MemoryTest() {
     // Cleanup our temporary directory.
     if (cleanup_temp_dir_on_exit_)
-      file_util::Delete(temp_dir_, true);
+      base::Delete(temp_dir_, true);
   }
 
   // Called from SetUp() to determine the user data dir to copy.

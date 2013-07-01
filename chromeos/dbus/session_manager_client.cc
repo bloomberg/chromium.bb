@@ -512,7 +512,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
                          &user_policy_key_dir)) {
       base::WorkerPool::PostTask(
           FROM_HERE,
-          base::Bind(base::IgnoreResult(&file_util::Delete),
+          base::Bind(base::IgnoreResult(&base::Delete),
                      user_policy_key_dir, true),
           false);
     }

@@ -393,7 +393,7 @@ void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
   if (layout == ash::WALLPAPER_LAYOUT_CENTER) {
     // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
     if (file_util::PathExists(path))
-      file_util::Delete(path, false);
+      base::Delete(path, false);
     return;
   }
   scoped_refptr<base::RefCountedBytes> data;
@@ -675,7 +675,7 @@ void WallpaperManager::DeleteAllExcept(const base::FilePath& path) {
     for (base::FilePath current = files.Next(); !current.empty();
          current = files.Next()) {
       if (current != path)
-        file_util::Delete(current, false);
+        base::Delete(current, false);
     }
   }
 }
@@ -687,8 +687,8 @@ void WallpaperManager::DeleteWallpaperInList(
     base::FilePath path = *it;
     // Some users may still have legacy wallpapers with png extension. We need
     // to delete these wallpapers too.
-    if (!file_util::Delete(path, true) &&
-        !file_util::Delete(path.AddExtension(".png"), false)) {
+    if (!base::Delete(path, true) &&
+        !base::Delete(path.AddExtension(".png"), false)) {
       LOG(ERROR) << "Failed to remove user wallpaper at " << path.value();
     }
   }

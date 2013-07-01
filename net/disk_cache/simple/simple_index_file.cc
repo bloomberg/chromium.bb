@@ -51,7 +51,7 @@ void WriteToDiskInternal(const base::FilePath& index_filename,
     // TODO(felipeg): Add better error handling.
     LOG(ERROR) << "Could not write Simple Cache index to temporary file: "
                << temp_filename.value();
-    file_util::Delete(temp_filename, /* recursive = */ false);
+    base::Delete(temp_filename, /* recursive = */ false);
   } else {
     // Swap temp and index_file.
     bool result = file_util::ReplaceFile(temp_filename, index_filename);
@@ -178,14 +178,14 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::LoadFromDisk(
   std::string contents;
   if (!file_util::ReadFileToString(index_filename, &contents)) {
     LOG(WARNING) << "Could not read Simple Index file.";
-    file_util::Delete(index_filename, false);
+    base::Delete(index_filename, false);
     return scoped_ptr<SimpleIndex::EntrySet>();
   }
 
   scoped_ptr<SimpleIndex::EntrySet> entries =
       SimpleIndexFile::Deserialize(contents.data(), contents.size());
   if (!entries) {
-    file_util::Delete(index_filename, false);
+    base::Delete(index_filename, false);
     return scoped_ptr<SimpleIndex::EntrySet>();
   }
 
@@ -331,7 +331,7 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::RestoreFromDisk(
     const base::FilePath& index_file_path) {
   LOG(INFO) << "Simple Cache Index is being restored from disk.";
 
-  file_util::Delete(index_file_path, /* recursive = */ false);
+  base::Delete(index_file_path, /* recursive = */ false);
   scoped_ptr<SimpleIndex::EntrySet> index_file_entries(
       new SimpleIndex::EntrySet());
 

@@ -130,7 +130,7 @@ void URLFetcherFileWriter::CloseAndDeleteFile() {
   file_stream_.reset();
   DisownFile();
   file_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(base::IgnoreResult(&file_util::Delete),
+                              base::Bind(base::IgnoreResult(&base::Delete),
                                          file_path_,
                                          false /* recursive */));
 }

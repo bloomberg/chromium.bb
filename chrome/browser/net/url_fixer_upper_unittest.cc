@@ -459,7 +459,7 @@ TEST(URLFixerUpperTest, FixupFile) {
         file_cases[i].desired_tld).possibly_invalid_spec());
   }
 
-  EXPECT_TRUE(file_util::Delete(original, false));
+  EXPECT_TRUE(base::Delete(original, false));
 }
 
 TEST(URLFixerUpperTest, FixupRelativeFile) {
@@ -483,7 +483,7 @@ TEST(URLFixerUpperTest, FixupRelativeFile) {
   // are no backslashes
   EXPECT_TRUE(IsMatchingFileURL(URLFixerUpper::FixupRelativeFile(dir,
       file_part).possibly_invalid_spec(), full_path));
-  EXPECT_TRUE(file_util::Delete(full_path, false));
+  EXPECT_TRUE(base::Delete(full_path, false));
 
   // create a filename we know doesn't exist and make sure it doesn't get
   // fixed up to a file URL
@@ -527,8 +527,8 @@ TEST(URLFixerUpperTest, FixupRelativeFile) {
       base::FilePath(relative_file_str)).possibly_invalid_spec(), full_path));
 
   // done with the subdir
-  EXPECT_TRUE(file_util::Delete(full_path, false));
-  EXPECT_TRUE(file_util::Delete(new_dir, true));
+  EXPECT_TRUE(base::Delete(full_path, false));
+  EXPECT_TRUE(base::Delete(new_dir, true));
 
   // Test that an obvious HTTP URL isn't accidentally treated as an absolute
   // file path (on account of system-specific craziness).

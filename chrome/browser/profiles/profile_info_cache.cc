@@ -165,7 +165,7 @@ void ReadBitmap(const base::FilePath& image_path,
 
 void DeleteBitmap(const base::FilePath& image_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  file_util::Delete(image_path, false);
+  base::Delete(image_path, false);
 }
 
 }  // namespace

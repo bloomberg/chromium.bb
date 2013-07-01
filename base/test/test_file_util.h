@@ -27,7 +27,7 @@ bool EvictFileFromSystemCacheWithRetry(const FilePath& file);
 // TODO(brettw) move all of this to the base namespace.
 namespace file_util {
 
-// Wrapper over file_util::Delete. On Windows repeatedly invokes Delete in case
+// Wrapper over base::Delete. On Windows repeatedly invokes Delete in case
 // of failure to workaround Windows file locking semantics. Returns true on
 // success.
 bool DieFileDie(const base::FilePath& file, bool recurse);

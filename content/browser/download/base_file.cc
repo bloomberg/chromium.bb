@@ -198,7 +198,7 @@ void BaseFile::Cancel() {
   if (!full_path_.empty()) {
     bound_net_log_.AddEvent(net::NetLog::TYPE_DOWNLOAD_FILE_DELETED);
 
-    file_util::Delete(full_path_, false);
+    base::Delete(full_path_, false);
   }
 }
 

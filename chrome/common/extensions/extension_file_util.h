@@ -143,7 +143,7 @@ base::FilePath ExtensionResourceURLToFilePath(const GURL& url,
 base::FilePath GetInstallTempDir(const base::FilePath& extensions_dir);
 
 // Helper function to delete files. This is used to avoid ugly casts which
-// would be necessary with PostMessage since file_util::Delete is overloaded.
+// would be necessary with PostMessage since base::Delete is overloaded.
 // TODO(skerner): Make a version of Delete that is not overloaded in file_util.
 void DeleteFile(const base::FilePath& path, bool recursive);
 

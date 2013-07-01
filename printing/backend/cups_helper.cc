@@ -350,7 +350,7 @@ bool parsePpdCapabilities(
                        ppd_file_path,
                        printer_capabilities.data(),
                        data_size)) {
-    file_util::Delete(ppd_file_path, false);
+    base::Delete(ppd_file_path, false);
     return false;
   }
 
@@ -387,7 +387,7 @@ bool parsePpdCapabilities(
   caps.color_default = is_color;
 
   ppdClose(ppd);
-  file_util::Delete(ppd_file_path, false);
+  base::Delete(ppd_file_path, false);
 
   *printer_info = caps;
   return true;

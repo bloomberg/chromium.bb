@@ -269,7 +269,7 @@ void TestingProfile::CreateTempProfileDir() {
 
     base::FilePath fallback_dir(
         system_tmp_dir.AppendASCII("TestingProfilePath"));
-    file_util::Delete(fallback_dir, true);
+    base::Delete(fallback_dir, true);
     file_util::CreateDirectory(fallback_dir);
     if (!temp_dir_.Set(fallback_dir)) {
       // That shouldn't happen, but if it does, try to recover.
@@ -360,7 +360,7 @@ void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   if (delete_file) {
     base::FilePath path = GetPath();
     path = path.Append(chrome::kHistoryFilename);
-    file_util::Delete(path, false);
+    base::Delete(path, false);
   }
   // This will create and init the history service.
   HistoryService* history_service = static_cast<HistoryService*>(
@@ -429,7 +429,7 @@ static BrowserContextKeyedService* BuildBookmarkModel(
 void TestingProfile::CreateBookmarkModel(bool delete_file) {
   if (delete_file) {
     base::FilePath path = GetPath().Append(chrome::kBookmarksFileName);
-    file_util::Delete(path, false);
+    base::Delete(path, false);
   }
   // This will create a bookmark model.
   BookmarkModel* bookmark_service = static_cast<BookmarkModel*>(

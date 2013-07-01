@@ -559,7 +559,7 @@ bool NamedProxyLauncher::InitializeConnection(const LaunchState& state,
 #if defined(OS_POSIX)
     // Because we are waiting on the existence of the testing file below,
     // make sure there isn't one already there before browser launch.
-    if (!file_util::Delete(base::FilePath(channel_id_), false)) {
+    if (!base::Delete(base::FilePath(channel_id_), false)) {
       LOG(ERROR) << "Failed to delete " << channel_id_;
       return false;
     }

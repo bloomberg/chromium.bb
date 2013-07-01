@@ -3767,7 +3767,7 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
     // Do normal cleanup before deleting the profile directory below.
     NavigationControllerTest::TearDown();
 
-    ASSERT_TRUE(file_util::Delete(test_dir_, true));
+    ASSERT_TRUE(base::Delete(test_dir_, true));
     ASSERT_FALSE(file_util::PathExists(test_dir_));
   }
 

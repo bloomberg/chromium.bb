@@ -268,7 +268,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
           LOG(ERROR) << "Can't save revision file to: "
                      << rev_path.value();
           rt = false;
-          file_util::Delete(img_path, false);
+          base::Delete(img_path, false);
         } else {
           LOG(INFO) << "Saved revision file to: "
                     << rev_path.value();
@@ -447,7 +447,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     }
     ref_img_revision_ = max_revision;
     for (size_t i = 0; i < outdated_revs.size(); ++i)
-      file_util::Delete(outdated_revs[i], false);
+      base::Delete(outdated_revs[i], false);
   }
 
   DISALLOW_COPY_AND_ASSIGN(GpuPixelBrowserTest);

@@ -156,9 +156,9 @@ HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
       return HRESULT_FROM_WIN32(exit_code);
     }
   } else {
-    if (!file_util::Delete(target_path, false)) {
+    if (!base::Delete(target_path, false)) {
       SpoolerServiceCommand("stop");
-      bool deleted = file_util::Delete(target_path, false);
+      bool deleted = base::Delete(target_path, false);
       SpoolerServiceCommand("start");
 
       if(!deleted) {
@@ -480,7 +480,7 @@ HRESULT DoDelete(const base::FilePath& install_path) {
   if (!file_util::DirectoryExists(install_path))
     return S_FALSE;
   Sleep(5000);  // Give parent some time to exit.
-  return file_util::Delete(install_path, true) ? S_OK : E_FAIL;
+  return base::Delete(install_path, true) ? S_OK : E_FAIL;
 }
 
 HRESULT DoInstall(const base::FilePath& install_path) {
@@ -493,7 +493,7 @@ HRESULT DoInstall(const base::FilePath& install_path) {
   if (!old_install_path.value().empty() &&
       install_path != old_install_path) {
     if (file_util::DirectoryExists(old_install_path))
-      file_util::Delete(old_install_path, true);
+      base::Delete(old_install_path, true);
   }
   CreateUninstallKey(kUninstallId, LoadLocalString(IDS_DRIVER_NAME),
                      kUninstallSwitch);

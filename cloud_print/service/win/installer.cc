@@ -64,9 +64,9 @@ void DeleteShortcut(int dir_key, bool with_subdir) {
   if (path.empty())
     return;
   if (with_subdir)
-    file_util::Delete(path.DirName(), true);
+    base::Delete(path.DirName(), true);
   else
-    file_util::Delete(path, false);
+    base::Delete(path, false);
 }
 
 void DeleteShortcuts() {
@@ -95,7 +95,7 @@ HRESULT ProcessInstallerSwitches() {
     if (!old_location.empty() &&
         cloud_print::IsProgramsFilesParent(old_location) &&
         old_location != cloud_print::GetInstallLocation(kGoogleUpdateId)) {
-      file_util::Delete(old_location, true);
+      base::Delete(old_location, true);
     }
 
     cloud_print::SetGoogleUpdateKeys(
@@ -120,7 +120,7 @@ HRESULT ProcessInstallerSwitches() {
     base::FilePath delete_path = command_line.GetSwitchValuePath(kDeleteSwitch);
     if (!delete_path.empty() &&
         cloud_print::IsProgramsFilesParent(delete_path)) {
-      file_util::Delete(delete_path, true);
+      base::Delete(delete_path, true);
     }
     return S_OK;
   }

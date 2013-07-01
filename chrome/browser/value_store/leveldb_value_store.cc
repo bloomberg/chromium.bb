@@ -94,7 +94,7 @@ LeveldbValueStore::~LeveldbValueStore() {
   if (db_ && IsEmpty()) {
     // Close |db_| now to release any lock on the directory.
     db_.reset();
-    if (!file_util::Delete(db_path_, true)) {
+    if (!base::Delete(db_path_, true)) {
       LOG(WARNING) << "Failed to delete LeveldbValueStore database " <<
           db_path_.value();
     }

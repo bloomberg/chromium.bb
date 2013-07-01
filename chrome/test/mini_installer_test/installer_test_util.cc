@@ -62,7 +62,7 @@ bool DeleteInstallDirectory(bool system_level,
   if (!has_install_dir || !file_util::PathExists(path))
     return false;
   path = path.AppendASCII(version);
-  return file_util::Delete(path, true);
+  return base::Delete(path, true);
 }
 
 bool DeleteRegistryKey(bool system_level,

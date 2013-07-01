@@ -87,7 +87,7 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
   db_->set_exclusive_locking();
   db_->set_page_size(4096);
   db_->set_histogram_tag("SyncDirectory");
-  file_util::Delete(backing_filepath_, false);
+  base::Delete(backing_filepath_, false);
 
   result = TryLoad(handles_map, delete_journals, kernel_load_info);
   if (result == OPENED) {

@@ -79,7 +79,7 @@ class NetLogTempFileTest : public ::testing::Test {
 
   virtual void TearDown() OVERRIDE {
     // Delete the temporary file we have created.
-    ASSERT_TRUE(file_util::Delete(net_export_log_, false));
+    ASSERT_TRUE(base::Delete(net_export_log_, false));
   }
 
   std::string GetStateString() const {

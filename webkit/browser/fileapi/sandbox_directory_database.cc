@@ -309,7 +309,7 @@ bool DatabaseCheckHelper::ScanDirectory() {
       std::set<base::FilePath>::iterator itr =
           files_in_db_.find(relative_file_path);
       if (itr == files_in_db_.end()) {
-        if (!file_util::Delete(absolute_file_path, false))
+        if (!base::Delete(absolute_file_path, false))
           return false;
       } else {
         files_in_db_.erase(itr);
@@ -748,7 +748,7 @@ bool SandboxDirectoryDatabase::Init(RecoveryOption recovery_option) {
       // fall through
     case DELETE_ON_CORRUPTION:
       LOG(WARNING) << "Clearing SandboxDirectoryDatabase.";
-      if (!file_util::Delete(filesystem_data_directory_, true))
+      if (!base::Delete(filesystem_data_directory_, true))
         return false;
       if (!file_util::CreateDirectory(filesystem_data_directory_))
         return false;

@@ -233,7 +233,7 @@ void ObliterateOneDirectory(const base::FilePath& current_dir,
 
     switch (action) {
       case kDelete:
-        file_util::Delete(to_delete, true);
+        base::Delete(to_delete, true);
         break;
 
       case kEnqueue:
@@ -285,7 +285,7 @@ void BlockingObliteratePath(
   // root and be done with it.  Otherwise, signal garbage collection and do
   // a best-effort delete of the on-disk structures.
   if (valid_paths_to_keep.empty()) {
-    file_util::Delete(root, true);
+    base::Delete(root, true);
     return;
   }
   closure_runner->PostTask(FROM_HERE, on_gc_required);
@@ -343,8 +343,7 @@ void BlockingGarbageCollect(
 
   file_access_runner->PostTask(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&file_util::Delete), trash_directory,
-                 true));
+      base::Bind(base::IgnoreResult(&base::Delete), trash_directory, true));
 }
 
 }  // namespace

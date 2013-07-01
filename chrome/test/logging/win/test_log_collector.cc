@@ -262,7 +262,7 @@ void TestLogCollector::ProcessSessionForTest(
       std::cerr.flush();
     }
 
-    if (!file_util::Delete(log_file_, false))
+    if (!base::Delete(log_file_, false))
       LOG(ERROR) << "Failed to delete log file " << log_file_.value();
   }
 

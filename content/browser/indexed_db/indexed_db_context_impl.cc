@@ -83,7 +83,7 @@ void ClearSessionOnlyOrigins(
       continue;
     if (special_storage_policy->IsStorageProtected(*iter))
       continue;
-    file_util::Delete(*file_path_iter, true);
+    base::Delete(*file_path_iter, true);
   }
 }
 
@@ -175,7 +175,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
   base::FilePath idb_directory = GetFilePath(origin_url);
   EnsureDiskUsageCacheInitialized(origin_url);
   const bool recursive = true;
-  bool deleted = file_util::Delete(idb_directory, recursive);
+  bool deleted = base::Delete(idb_directory, recursive);
 
   QueryDiskAndUpdateQuotaUsage(origin_url);
   if (deleted) {

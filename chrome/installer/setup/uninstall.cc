@@ -270,7 +270,7 @@ bool RemoveInstallerFiles(const base::FilePath& installer_directory,
       continue;
 
     VLOG(1) << "Deleting installer path " << to_delete.value();
-    if (!file_util::Delete(to_delete, true)) {
+    if (!base::Delete(to_delete, true)) {
       LOG(ERROR) << "Failed to delete path: " << to_delete.value();
       success = false;
     }
@@ -402,7 +402,7 @@ DeleteResult DeleteEmptyDir(const base::FilePath& path) {
   if (!file_util::IsDirectoryEmpty(path))
     return DELETE_NOT_EMPTY;
 
-  if (file_util::Delete(path, true))
+  if (base::Delete(path, true))
     return DELETE_SUCCEEDED;
 
   LOG(ERROR) << "Failed to delete folder: " << path.value();
@@ -449,7 +449,7 @@ DeleteResult DeleteLocalState(
   for (size_t i = 0; i < local_state_folders.size(); ++i) {
     const base::FilePath& user_local_state = local_state_folders[i];
     VLOG(1) << "Deleting user profile " << user_local_state.value();
-    if (!file_util::Delete(user_local_state, true)) {
+    if (!base::Delete(user_local_state, true)) {
       LOG(ERROR) << "Failed to delete user profile dir: "
                  << user_local_state.value();
       if (schedule_on_failure) {
@@ -543,7 +543,7 @@ DeleteResult DeleteAppHostFilesAndFolders(const InstallerState& installer_state,
   DeleteResult result = DELETE_SUCCEEDED;
 
   base::FilePath app_host_exe(target_path.Append(installer::kChromeAppHostExe));
-  if (!file_util::Delete(app_host_exe, false)) {
+  if (!base::Delete(app_host_exe, false)) {
     result = DELETE_FAILED;
     LOG(ERROR) << "Failed to delete path: " << app_host_exe.value();
   }
@@ -589,7 +589,7 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
     }
 
     VLOG(1) << "Deleting install path " << to_delete.value();
-    if (!file_util::Delete(to_delete, true)) {
+    if (!base::Delete(to_delete, true)) {
       LOG(ERROR) << "Failed to delete path (1st try): " << to_delete.value();
       if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
         // We don't try killing Chrome processes for Chrome Frame builds since
@@ -605,7 +605,7 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
         // Try closing any running Chrome processes and deleting files once
         // again.
         CloseAllChromeProcesses();
-        if (!file_util::Delete(to_delete, true)) {
+        if (!base::Delete(to_delete, true)) {
           LOG(ERROR) << "Failed to delete path (2nd try): "
                      << to_delete.value();
           result = DELETE_FAILED;
@@ -1351,7 +1351,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // Try and delete the preserved local state once the post-install
   // operations are complete.
   if (!backup_state_file.empty())
-    file_util::Delete(backup_state_file, false);
+    base::Delete(backup_state_file, false);
 
   return ret;
 }

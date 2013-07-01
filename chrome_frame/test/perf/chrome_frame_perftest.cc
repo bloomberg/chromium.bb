@@ -1329,7 +1329,7 @@ class EtwPerfSession {
   }
 
   ~EtwPerfSession() {
-    file_util::Delete(etl_log_file_, false);
+    base::Delete(etl_log_file_, false);
   }
 
   void Start() {

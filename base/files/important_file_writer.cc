@@ -73,20 +73,20 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
 
   if (!ClosePlatformFile(tmp_file)) {
     LogFailure(path, FAILED_CLOSING, "failed to close temporary file");
-    file_util::Delete(tmp_file_path, false);
+    base::Delete(tmp_file_path, false);
     return false;
   }
 
   if (bytes_written < static_cast<int>(data.length())) {
     LogFailure(path, FAILED_WRITING, "error writing, bytes_written=" +
                IntToString(bytes_written));
-    file_util::Delete(tmp_file_path, false);
+    base::Delete(tmp_file_path, false);
     return false;
   }
 
   if (!file_util::ReplaceFile(tmp_file_path, path)) {
     LogFailure(path, FAILED_RENAMING, "could not rename temporary file");
-    file_util::Delete(tmp_file_path, false);
+    base::Delete(tmp_file_path, false);
     return false;
   }
 

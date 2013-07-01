@@ -122,7 +122,7 @@ void VfsBackend::OpenTempFileInDirectory(
 int VfsBackend::DeleteFile(const base::FilePath& file_path, bool sync_dir) {
   if (!file_util::PathExists(file_path))
     return SQLITE_OK;
-  if (!file_util::Delete(file_path, false))
+  if (!base::Delete(file_path, false))
     return SQLITE_IOERR_DELETE;
 
   int error_code = SQLITE_OK;

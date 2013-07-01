@@ -187,7 +187,7 @@ void CheckAppListShimOnFileThread(const base::FilePath& profile_path) {
 
   // Sanity check because deleting things recursively is scary.
   CHECK(install_path.MatchesExtension(".app"));
-  file_util::Delete(install_path, true /* recursive */);
+  base::Delete(install_path, true /* recursive */);
 }
 
 void CreateShortcutsInDefaultLocation(

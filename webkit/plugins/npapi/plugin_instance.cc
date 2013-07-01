@@ -243,7 +243,7 @@ void PluginInstance::NPP_Destroy() {
 
   for (unsigned int file_index = 0; file_index < files_created_.size();
        file_index++) {
-    file_util::Delete(files_created_[file_index], false);
+    base::Delete(files_created_[file_index], false);
   }
 
   // Ensure that no timer callbacks are invoked after NPP_Destroy.

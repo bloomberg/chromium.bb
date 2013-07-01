@@ -130,8 +130,8 @@ void RunDictionaryTest(const char* codepage,
   // Deletes the temporary files.
   // We need to delete them after the above AffReader and DicReader are deleted
   // since they close the input files in their destructors.
-  file_util::Delete(aff_file, false);
-  file_util::Delete(dic_file, false);
+  base::Delete(aff_file, false);
+  base::Delete(dic_file, false);
 }
 
 }  // namespace

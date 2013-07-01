@@ -242,7 +242,7 @@ PlatformFileError NativeFileUtil::DeleteFile(const base::FilePath& path) {
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   if (file_util::DirectoryExists(path))
     return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
-  if (!file_util::Delete(path, false))
+  if (!base::Delete(path, false))
     return base::PLATFORM_FILE_ERROR_FAILED;
   return base::PLATFORM_FILE_OK;
 }
@@ -254,7 +254,7 @@ PlatformFileError NativeFileUtil::DeleteDirectory(const base::FilePath& path) {
     return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
   if (!file_util::IsDirectoryEmpty(path))
     return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
-  if (!file_util::Delete(path, false))
+  if (!base::Delete(path, false))
     return base::PLATFORM_FILE_ERROR_FAILED;
   return base::PLATFORM_FILE_OK;
 }

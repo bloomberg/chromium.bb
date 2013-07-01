@@ -196,7 +196,7 @@ FileError UpdateLocalStateForDownloadFile(
 
   FileError error = util::GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
-    file_util::Delete(downloaded_file_path, false /* recursive */);
+    base::Delete(downloaded_file_path, false /* recursive */);
     return error;
   }
 
@@ -204,7 +204,7 @@ FileError UpdateLocalStateForDownloadFile(
   error = cache->Store(resource_id, md5, downloaded_file_path,
                        internal::FileCache::FILE_OPERATION_MOVE);
   if (error != FILE_ERROR_OK) {
-    file_util::Delete(downloaded_file_path, false /* recursive */);
+    base::Delete(downloaded_file_path, false /* recursive */);
     return error;
   }
 

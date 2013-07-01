@@ -188,7 +188,7 @@ class RecordApiTest : public InProcessBrowserTest {
     InProcessBrowserTest::CleanUpOnMainThread();
     for (std::vector<base::FilePath>::const_iterator it = temp_files_.begin();
         it != temp_files_.end(); ++it) {
-      if (!file_util::Delete(*it, false))
+      if (!base::Delete(*it, false))
         NOTREACHED();
     }
   }

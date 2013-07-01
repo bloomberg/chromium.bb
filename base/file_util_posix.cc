@@ -58,23 +58,7 @@
 #include "base/chromeos/chromeos_version.h"
 #endif
 
-using base::FileEnumerator;
-using base::FilePath;
-using base::MakeAbsoluteFilePath;
-
 namespace base {
-
-FilePath MakeAbsoluteFilePath(const FilePath& input) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  char full_path[PATH_MAX];
-  if (realpath(input.value().c_str(), full_path) == NULL)
-    return FilePath();
-  return FilePath(full_path);
-}
-
-}  // namespace base
-
-namespace file_util {
 
 namespace {
 
@@ -152,16 +136,12 @@ bool VerifySpecificPathControlledByUser(const FilePath& path,
 
 }  // namespace
 
-static std::string TempFileName() {
-#if defined(OS_MACOSX)
-  return base::StringPrintf(".%s.XXXXXX", base::mac::BaseBundleID());
-#endif
-
-#if defined(GOOGLE_CHROME_BUILD)
-  return std::string(".com.google.Chrome.XXXXXX");
-#else
-  return std::string(".org.chromium.Chromium.XXXXXX");
-#endif
+FilePath MakeAbsoluteFilePath(const FilePath& input) {
+  ThreadRestrictions::AssertIOAllowed();
+  char full_path[PATH_MAX];
+  if (realpath(input.value().c_str(), full_path) == NULL)
+    return FilePath();
+  return FilePath(full_path);
 }
 
 // TODO(erikkay): The Windows version of this accepts paths like "foo/bar/*"
@@ -169,7 +149,7 @@ static std::string TempFileName() {
 // that functionality. If not, remove from file_util_win.cc, otherwise add it
 // here.
 bool Delete(const FilePath& path, bool recursive) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   const char* path_str = path.value().c_str();
   stat_wrapper_t file_info;
   int test = CallLstat(path_str, &file_info);
@@ -203,6 +183,33 @@ bool Delete(const FilePath& path, bool recursive) {
     success = (rmdir(dir.value().c_str()) == 0);
   }
   return success;
+}
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::stat_wrapper_t;
+using base::CallStat;
+using base::CallLstat;
+using base::FileEnumerator;
+using base::FilePath;
+using base::MakeAbsoluteFilePath;
+using base::RealPath;
+using base::VerifySpecificPathControlledByUser;
+
+static std::string TempFileName() {
+#if defined(OS_MACOSX)
+  return base::StringPrintf(".%s.XXXXXX", base::mac::BaseBundleID());
+#endif
+
+#if defined(GOOGLE_CHROME_BUILD)
+  return std::string(".com.google.Chrome.XXXXXX");
+#else
+  return std::string(".org.chromium.Chromium.XXXXXX");
+#endif
 }
 
 bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {

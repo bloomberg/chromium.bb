@@ -126,7 +126,7 @@ bool DieFileDie(const base::FilePath& file, bool recurse) {
   // into short chunks, so that if a try succeeds, we won't delay the test
   // for too long.
   for (int i = 0; i < kIterations; ++i) {
-    if (file_util::Delete(file, recurse))
+    if (base::Delete(file, recurse))
       return true;
     base::PlatformThread::Sleep(kTimeout);
   }

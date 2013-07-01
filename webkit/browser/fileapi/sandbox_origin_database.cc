@@ -108,7 +108,7 @@ bool SandboxOriginDatabase::Init(InitOption init_option,
                                 DB_REPAIR_FAILED, DB_REPAIR_MAX);
       // fall through
     case DELETE_ON_CORRUPTION:
-      if (!file_util::Delete(file_system_directory_, true))
+      if (!base::Delete(file_system_directory_, true))
         return false;
       if (!file_util::CreateDirectory(file_system_directory_))
         return false;
@@ -167,7 +167,7 @@ bool SandboxOriginDatabase::RepairDatabase(const std::string& db_path) {
   for (std::set<base::FilePath>::iterator dir_itr = directories.begin();
        dir_itr != directories.end();
        ++dir_itr) {
-    if (!file_util::Delete(file_system_directory_.Append(*dir_itr),
+    if (!base::Delete(file_system_directory_.Append(*dir_itr),
                            true /* recursive */)) {
       DropDatabase();
       return false;
@@ -301,7 +301,7 @@ base::FilePath SandboxOriginDatabase::GetDatabasePath() const {
 
 void SandboxOriginDatabase::RemoveDatabase() {
   DropDatabase();
-  file_util::Delete(GetDatabasePath(), true /* recursive */);
+  base::Delete(GetDatabasePath(), true /* recursive */);
 }
 
 bool SandboxOriginDatabase::GetLastPathNumber(int* number) {

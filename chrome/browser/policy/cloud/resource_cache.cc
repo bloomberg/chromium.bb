@@ -36,7 +36,7 @@ ResourceCache::ResourceCache(const base::FilePath& cache_path) {
     LOG(WARNING) << "Failed to open leveldb at " << cache_path.AsUTF8Unsafe()
                  << ": " << status.ToString();
     // Maybe the database is busted; drop everything and try to create it again.
-    file_util::Delete(cache_path, true);
+    base::Delete(cache_path, true);
     status = leveldb::DB::Open(options, cache_path.AsUTF8Unsafe(), &db);
 
     if (!status.ok())

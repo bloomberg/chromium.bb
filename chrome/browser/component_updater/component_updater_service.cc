@@ -929,7 +929,7 @@ void CrxUpdateService::Install(const CRXContext* context,
                              context->fingerprint,
                              component_patcher_.get(),
                              context->installer);
-  if (!file_util::Delete(crx_path, false))
+  if (!base::Delete(crx_path, false))
     NOTREACHED() << crx_path.value();
   // Why unretained? See comment at top of file.
   BrowserThread::PostDelayedTask(

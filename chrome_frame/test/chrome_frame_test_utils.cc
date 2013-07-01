@@ -702,7 +702,7 @@ void ClearIESessionHistory() {
   session_history_path = session_history_path.AppendASCII("Microsoft");
   session_history_path = session_history_path.AppendASCII("Internet Explorer");
   session_history_path = session_history_path.AppendASCII("Recovery");
-  file_util::Delete(session_history_path, true);
+  base::Delete(session_history_path, true);
 }
 
 std::string GetLocalIPv4Address() {

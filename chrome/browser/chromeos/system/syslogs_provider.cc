@@ -146,7 +146,7 @@ LogDictionaryType* GetSystemLogs(base::FilePath* zip_file_name,
                                                   &data);
   // if we were using an internal temp file, the user does not need the
   // logs to stay past the ReadFile call - delete the file
-  file_util::Delete(temp_filename, false);
+  base::Delete(temp_filename, false);
 
   if (!read_success)
     return NULL;
@@ -321,7 +321,7 @@ void SyslogsProviderImpl::ReadSyslogs(
     // Load compressed logs.
     zip_content = new std::string();
     LoadCompressedLogs(zip_file, zip_content);
-    file_util::Delete(zip_file, false);
+    base::Delete(zip_file, false);
   }
 
   // Include dbus statistics summary

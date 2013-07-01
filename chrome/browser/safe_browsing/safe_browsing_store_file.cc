@@ -186,7 +186,7 @@ void SafeBrowsingStoreFile::CheckForOriginalAndDelete(
                            static_cast<int>(size / 1024));
     }
 
-    if (file_util::Delete(original_filename, false)) {
+    if (base::Delete(original_filename, false)) {
       RecordFormatEvent(FORMAT_EVENT_DELETED_ORIGINAL);
     } else {
       RecordFormatEvent(FORMAT_EVENT_DELETED_ORIGINAL_FAILED);
@@ -196,7 +196,7 @@ void SafeBrowsingStoreFile::CheckForOriginalAndDelete(
     // the weeds.
     const base::FilePath journal_filename(
         current_filename.DirName().AppendASCII("Safe Browsing-journal"));
-    file_util::Delete(journal_filename, false);
+    base::Delete(journal_filename, false);
   }
 }
 
@@ -654,7 +654,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
   // Close the file handle and swizzle the file into place.
   new_file_.reset();
-  if (!file_util::Delete(filename_, false) &&
+  if (!base::Delete(filename_, false) &&
       file_util::PathExists(filename_))
     return false;
 
@@ -735,14 +735,14 @@ void SafeBrowsingStoreFile::DeleteSubChunk(int32 chunk_id) {
 
 // static
 bool SafeBrowsingStoreFile::DeleteStore(const base::FilePath& basename) {
-  if (!file_util::Delete(basename, false) &&
+  if (!base::Delete(basename, false) &&
       file_util::PathExists(basename)) {
     NOTREACHED();
     return false;
   }
 
   const base::FilePath new_filename = TemporaryFileForFilename(basename);
-  if (!file_util::Delete(new_filename, false) &&
+  if (!base::Delete(new_filename, false) &&
       file_util::PathExists(new_filename)) {
     NOTREACHED();
     return false;
@@ -754,7 +754,7 @@ bool SafeBrowsingStoreFile::DeleteStore(const base::FilePath& basename) {
   const base::FilePath journal_filename(
       basename.value() + FILE_PATH_LITERAL("-journal"));
   if (file_util::PathExists(journal_filename))
-    file_util::Delete(journal_filename, false);
+    base::Delete(journal_filename, false);
 
   return true;
 }

@@ -65,7 +65,7 @@ TEST_F(CacheUtilTest, MoveCache) {
 TEST_F(CacheUtilTest, DeleteCache) {
   // DeleteCache won't delete subdirs, so let's not start with this
   // one around.
-  file_util::Delete(dir1_, false);
+  base::Delete(dir1_, false);
   disk_cache::DeleteCache(cache_dir_, false);
   EXPECT_TRUE(file_util::PathExists(cache_dir_)); // cache dir stays
   EXPECT_FALSE(file_util::PathExists(file1_));
@@ -75,7 +75,7 @@ TEST_F(CacheUtilTest, DeleteCache) {
 TEST_F(CacheUtilTest, DeleteCacheAndDir) {
   // DeleteCache won't delete subdirs, so let's not start with this
   // one around.
-  file_util::Delete(dir1_, false);
+  base::Delete(dir1_, false);
   disk_cache::DeleteCache(cache_dir_, true);
   EXPECT_FALSE(file_util::PathExists(cache_dir_)); // cache dir is gone
   EXPECT_FALSE(file_util::PathExists(file1_));

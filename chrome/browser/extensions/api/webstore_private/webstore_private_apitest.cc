@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath missing_directory = temp_dir.Take();
-  EXPECT_TRUE(file_util::Delete(missing_directory, true));
+  EXPECT_TRUE(base::Delete(missing_directory, true));
   WebstoreInstaller::SetDownloadDirectoryForTests(&missing_directory);
 
   // Now run the install test, which should succeed.
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
 
   // Cleanup.
   if (file_util::DirectoryExists(missing_directory))
-    EXPECT_TRUE(file_util::Delete(missing_directory, true));
+    EXPECT_TRUE(base::Delete(missing_directory, true));
 }
 
 // Tests passing a localized name.
