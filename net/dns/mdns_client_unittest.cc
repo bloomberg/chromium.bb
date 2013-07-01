@@ -654,7 +654,8 @@ TEST_F(MDnsTest, AdditionalRecords) {
           &record_privet,
           &PtrRecordCopyContainer::SaveWithDummyArg));
 
-  SimulatePacketReceive(kSamplePacketAdditionalOnly, sizeof(kSamplePacket1));
+  SimulatePacketReceive(kSamplePacketAdditionalOnly,
+                        sizeof(kSamplePacketAdditionalOnly));
 
   EXPECT_TRUE(record_privet.IsRecordWith("_privet._tcp.local",
                                          "hello._privet._tcp.local"));
