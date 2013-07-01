@@ -167,13 +167,29 @@ char* KernelProxy::getwd(char* buf) {
 }
 
 int KernelProxy::chmod(const char* path, mode_t mode) {
-  int fd = KernelProxy::open(path, O_RDWR);
+  int fd = KernelProxy::open(path, O_RDONLY);
   if (-1 == fd)
     return -1;
 
   int result = fchmod(fd, mode);
   close(fd);
   return result;
+}
+
+int KernelProxy::chown(const char* path, uid_t owner, gid_t group) {
+  return 0;
+}
+
+int KernelProxy::fchown(int fd, uid_t owner, gid_t group) {
+  return 0;
+}
+
+int KernelProxy::lchown(const char* path, uid_t owner, gid_t group) {
+  return 0;
+}
+
+int KernelProxy::utime(const char* filename, const struct utimbuf* times) {
+  return 0;
 }
 
 int KernelProxy::mkdir(const char* path, mode_t mode) {
@@ -454,6 +470,23 @@ int KernelProxy::isatty(int fd) {
   return 0;
 }
 
+int KernelProxy::ioctl(int d, int request, char* argp) {
+  ScopedKernelHandle handle;
+  Error error = AcquireHandle(d, &handle);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  error = handle->node_->Ioctl(request, argp);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return 0;
+}
+
 off_t KernelProxy::lseek(int fd, off_t offset, int whence) {
   ScopedKernelHandle handle;
   Error error = AcquireHandle(fd, &handle);
@@ -511,8 +544,14 @@ int KernelProxy::remove(const char* path) {
 
 // TODO(noelallen): Needs implementation.
 int KernelProxy::fchmod(int fd, int mode) {
-  errno = EINVAL;
-  return -1;
+  ScopedKernelHandle handle;
+  Error error = AcquireHandle(fd, &handle);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return 0;
 }
 
 int KernelProxy::access(const char* path, int amode) {

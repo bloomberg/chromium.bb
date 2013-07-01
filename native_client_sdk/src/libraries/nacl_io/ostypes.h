@@ -13,6 +13,8 @@
 
 typedef int mode_t;
 typedef SSIZE_T ssize_t;
+typedef int uid_t;
+typedef int gid_t;
 
 #endif
 

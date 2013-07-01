@@ -55,6 +55,10 @@ int _chmod(const char* path, mode_t mode) {
   return ki_chmod(path, mode);
 }
 
+int chown(const char* path, uid_t owner, gid_t group) {
+  return ki_chown(path, owner, group);
+}
+
 int _close(int fd) {
   return ki_close(fd);
 }
@@ -69,6 +73,10 @@ int _dup(int oldfd) {
 
 int _dup2(int oldfd, int newfd) {
   return ki_dup2(oldfd, newfd);
+}
+
+int fchown(int fd, uid_t owner, gid_t group) {
+  return ki_fchown(fd, owner, group);
 }
 
 int _fstat32(int fd, struct _stat32* buf) {
@@ -119,8 +127,16 @@ int getdents(int fd, void* buf, unsigned int count) {
   return ki_getdents(fd, buf, count);
 }
 
+int ioctl(int d, int request, char* argp) {
+  return ki_ioctl(d, request, argp);
+}
+
 int _isatty(int fd) {
   return ki_isatty(fd);
+}
+
+int lchown(const char* path, uid_t owner, gid_t group) {
+  return ki_lchown(path, owner, group);
 }
 
 int link(const char* oldpath, const char* newpath) {
@@ -224,6 +240,10 @@ int umount(const char* path) {
 
 int _unlink(const char* path) {
   return ki_unlink(path);
+}
+
+int _utime(const char* filename, const struct utimbuf* times) {
+  return ki_utime(filename, times);
 }
 
 int _write(int fd, const void* buf, size_t nbyte) {

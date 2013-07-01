@@ -69,7 +69,7 @@ def GetSDKVersion():
       name, value = line.split(':', 1)
       if name == "Version":
         version = value.strip()
-      if name == "Revision":
+      if name == "Chrome Revision":
         revision = value.strip()
 
   if revision == None or version == None:

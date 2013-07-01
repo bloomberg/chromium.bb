@@ -120,8 +120,13 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   ThreadSafeQueue<PSEvent> event_queue_;
   uint32_t events_enabled_;
   Verbosity verbosity_;
+  int fd_tty_;
 
   PSMainFunc_t main_cb_;
+
+  const PPB_Core* ppb_core_;
+  const PPB_Var* ppb_var_;
+  const PPB_View* ppb_view_;
 
   friend class PSGraphics3DClient;
   friend class PSMouseLock;

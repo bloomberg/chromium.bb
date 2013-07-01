@@ -7,7 +7,9 @@
 #include <fcntl.h>
 
 #include "nacl_io/error.h"
+#include "nacl_io/ioctl.h"
 #include "nacl_io/kernel_proxy.h"
+#include "nacl_io/mount_dev.h"
 #include "nacl_io/mount_node.h"
 #include "nacl_io/mount_node_dir.h"
 #include "nacl_io/mount_node_mem.h"
@@ -192,4 +194,3 @@ TEST(MountNodeTest, Directory) {
   file.reset();
   EXPECT_EQ(1, s_AllocNum);
 }
-

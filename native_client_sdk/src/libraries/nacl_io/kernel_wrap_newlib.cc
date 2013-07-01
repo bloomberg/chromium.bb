@@ -63,6 +63,10 @@ int chmod(const char* path, mode_t mode) {
   return ki_chmod(path, mode);
 }
 
+int chown(const char* path, uid_t owner, gid_t group) {
+  return ki_chown(path, owner, group);
+}
+
 int WRAP(close)(int fd) {
   return (ki_close(fd) < 0) ? errno : 0;
 }
@@ -77,7 +81,11 @@ int WRAP(dup2)(int fd, int newfd) {
   return (newfd < 0) ? errno : 0;
 }
 
-int WRAP(fstat)(int fd, struct stat *buf) {
+int fchown(int fd, uid_t owner, gid_t group) {
+  return ki_fchown(fd, owner, group);
+}
+
+int WRAP(fstat)(int fd, struct stat* buf) {
   return (ki_fstat(fd, buf) < 0) ? errno : 0;
 }
 
@@ -101,12 +109,20 @@ int getdents(int fd, void* buf, unsigned int count) {
   return ki_getdents(fd, buf, count);
 }
 
-int WRAP(getdents)(int fd, dirent* buf, size_t count, size_t *nread) {
+int WRAP(getdents)(int fd, dirent* buf, size_t count, size_t* nread) {
   return (ki_getdents(fd, buf, count) < 0) ? errno : 0;
+}
+
+int ioctl(int d, int request, char* argp) {
+  return ki_ioctl(d, request, argp);
 }
 
 int isatty(int fd) {
   return ki_isatty(fd);
+}
+
+int lchown(const char* path, uid_t owner, gid_t group) {
+  return ki_lchown(path, owner, group);
 }
 
 int link(const char* oldpath, const char* newpath) {
@@ -143,7 +159,7 @@ int WRAP(open)(const char* pathname, int oflag, mode_t cmode, int* newfd) {
   return (*newfd < 0) ? errno : 0;
 }
 
-int WRAP(read)(int fd, void *buf, size_t count, size_t *nread) {
+int WRAP(read)(int fd, void* buf, size_t count, size_t* nread) {
   if (!ki_is_initialized())
     return REAL(read)(fd, buf, count, nread);
 
@@ -179,6 +195,10 @@ int umount(const char* path) {
 
 int unlink(const char* path) {
   return ki_unlink(path);
+}
+
+int utime(const char *filename, const struct utimbuf* times) {
+  return ki_utime(filename, times);
 }
 
 int WRAP(write)(int fd, const void *buf, size_t count, size_t *nwrote) {

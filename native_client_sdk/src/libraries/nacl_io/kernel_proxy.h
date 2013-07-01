@@ -15,6 +15,7 @@
 #include "nacl_io/kernel_object.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/ostypes.h"
+#include "nacl_io/osutime.h"
 #include "nacl_io/path.h"
 
 class KernelHandle;
@@ -43,7 +44,7 @@ class KernelProxy : protected KernelObject {
   virtual void Init(PepperInterface* ppapi);
 
   // KernelHandle and FD allocation and manipulation functions.
-  virtual int open(const char *path, int oflag);
+  virtual int open(const char* path, int oflag);
   virtual int close(int fd);
   virtual int dup(int fd);
   virtual int dup2(int fd, int newfd);
@@ -55,6 +56,12 @@ class KernelProxy : protected KernelObject {
   virtual int mount(const char *source, const char *target,
       const char *filesystemtype, unsigned long mountflags, const void *data);
   virtual int umount(const char *path);
+
+  // Stub system calls that don't do anything (yet), handled by KernelProxy.
+  virtual int chown(const char* path, uid_t owner, gid_t group);
+  virtual int fchown(int fd, uid_t owner, gid_t group);
+  virtual int lchown(const char* path, uid_t owner, gid_t group);
+  virtual int utime(const char* filename, const struct utimbuf* times);
 
   // System calls that take a path as an argument:
   // The kernel proxy will look for the Node associated to the path. To
@@ -79,6 +86,7 @@ class KernelProxy : protected KernelObject {
   virtual int ftruncate(int fd, off_t length);
   virtual int fsync(int fd);
   virtual int isatty(int fd);
+  virtual int ioctl(int d, int request, char *argp);
 
   // lseek() relies on the mount's Stat() to determine whether or not the
   // file handle corresponding to fd is a directory

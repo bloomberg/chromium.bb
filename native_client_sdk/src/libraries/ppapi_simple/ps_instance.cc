@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
 #include <stdarg.h>
@@ -16,6 +17,7 @@
 #include <string>
 #include <vector>
 
+#include "nacl_io/ioctl.h"
 #include "nacl_io/kernel_wrap.h"
 #include "nacl_io/nacl_io.h"
 
@@ -89,7 +91,8 @@ PSInstance::PSInstance(PP_Instance instance, const char *argv[])
       pp::Graphics3DClient(this),
       main_loop_(NULL),
       verbosity_(PSV_LOG),
-      events_enabled_(PSE_NONE) {
+      events_enabled_(PSE_NONE),
+      fd_tty_(-1) {
   // Set the single Instance object
   s_InstanceObject = this;
 
@@ -201,6 +204,7 @@ bool PSInstance::ProcessProperties() {
   const char* stdout_path = GetProperty("ps_stdout", "/dev/stdout");
   const char* stderr_path = GetProperty("ps_stderr", "/dev/console3");
   const char* verbosity = GetProperty("ps_verbosity", NULL);
+  const char* tty_prefix = GetProperty("ps_tty_prefix", NULL);
 
   // Reset verbosity if passed in
   if (verbosity) SetVerbosity(static_cast<Verbosity>(atoi(verbosity)));
@@ -215,6 +219,15 @@ bool PSInstance::ProcessProperties() {
 
   int fd2 = open(stderr_path, O_WRONLY);
   dup2(fd2, 2);
+
+  if (tty_prefix) {
+    fd_tty_ = open("/dev/tty", O_WRONLY);
+    if (fd_tty_ >= 0) {
+      ioctl(fd_tty_, TIOCNACLPREFIX, const_cast<char*>(tty_prefix));
+    } else {
+      Error("Failed to open /dev/tty.\n");
+    }
+  }
 
   // Set line buffering on stdout and stderr
 #if !defined(WIN32)
@@ -298,6 +311,30 @@ void PSInstance::PostEvent(PSEventType type, PP_Resource resource) {
 
 void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
   assert(PSE_INSTANCE_HANDLEMESSAGE == type);
+
+  // If the user has specified a tty_prefix_ (using ioctl), then we'll give the
+  // tty node a chance to vacuum up any messages beginning with that prefix. If
+  // the message does not start with the prefix, the ioctl call will return
+  // ENOENT and we'll pass the message through to the event queue.
+  if (fd_tty_ >= 0 && var.type == PP_VARTYPE_STRING) {
+    uint32_t message_len;
+    const char* message = PSInterfaceVar()->VarToUtf8(var, &message_len);
+    std::string message_str(message, message + message_len);
+
+    // Since our message may contain null characters, we can't send it as a
+    // naked C string, so we package it up in this struct before sending it
+    // to the ioctl.
+    struct tioc_nacl_input_string ioctl_message;
+    ioctl_message.length = message_len;
+    ioctl_message.buffer = message_str.data();
+    int ret =
+      ioctl(fd_tty_, TIOCNACLINPUT, reinterpret_cast<char*>(&ioctl_message));
+    if (ret != ENOTTY) {
+      Error("ioctl returned unexpected error: %d.\n", ret);
+    }
+
+    return;
+  }
 
   if (events_enabled_ & type) {
     PSInterfaceVar()->AddRef(var);

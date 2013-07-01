@@ -138,6 +138,10 @@ int WRAP(chdir) (const char* pathname) {
   return (ki_chdir(pathname)) ? errno : 0;
 }
 
+int chown(const char* path, uid_t owner, gid_t group) {
+  return ki_chown(path, owner, group);
+}
+
 int WRAP(close)(int fd) {
   return (ki_close(fd) < 0) ? errno : 0;
 }
@@ -149,6 +153,10 @@ int WRAP(dup)(int fd, int* newfd) NOTHROW {
 
 int WRAP(dup2)(int fd, int newfd) NOTHROW {
   return (ki_dup2(fd, newfd) < 0) ? errno : 0;
+}
+
+int fchown(int fd, uid_t owner, gid_t group) {
+  return ki_fchown(fd, owner, group);
 }
 
 int WRAP(fstat)(int fd, struct nacl_abi_stat *nacl_buf) {
@@ -215,8 +223,16 @@ int WRAP(getdents)(int fd, dirent* nacl_buf, size_t nacl_count, size_t *nread) {
   return 0;
 }
 
+int ioctl(int d, int request, char* argp) NOTHROW {
+  return ki_ioctl(d, request, argp);
+}
+
 int isatty(int fd) NOTHROW {
   return ki_isatty(fd);
+}
+
+int lchown(const char* path, uid_t owner, gid_t group) {
+  return ki_lchown(path, owner, group);
 }
 
 int link(const char* oldpath, const char* newpath) NOTHROW {
@@ -310,7 +326,11 @@ int unlink(const char* path) NOTHROW {
   return ki_unlink(path);
 }
 
-int WRAP(write)(int fd, const void *buf, size_t count, size_t *nwrote) {
+int utime(const char* filename, const struct utimbuf* times) {
+  return ki_utime(filename, times);
+}
+
+int WRAP(write)(int fd, const void* buf, size_t count, size_t* nwrote) {
   if (!ki_is_initialized())
     return REAL(write)(fd, buf, count, nwrote);
 
@@ -326,7 +346,7 @@ int _real_close(int fd) {
   return REAL(close)(fd);
 }
 
-int _real_fstat(int fd, struct stat *buf) {
+int _real_fstat(int fd, struct stat* buf) {
   struct nacl_abi_stat st;
   int err = REAL(fstat)(fd, &st);
   if (err) {
@@ -338,7 +358,7 @@ int _real_fstat(int fd, struct stat *buf) {
   return 0;
 }
 
-int _real_getdents(int fd, void* buf, size_t count, size_t *nread) {
+int _real_getdents(int fd, void* buf, size_t count, size_t* nread) {
   // "buf" contains dirent(s); "nacl_buf" contains nacl_abi_dirent(s).
   // See WRAP(getdents) above.
   char* nacl_buf = (char*)alloca(count);

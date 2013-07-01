@@ -145,7 +145,7 @@ class TestGetosWithTempdir(TestCaseExtended):
     expected_version = (16, 196)
     with open(os.path.join(self.tempdir, 'README'), 'w') as out:
       out.write('Version: %s\n' % expected_version[0])
-      out.write('Revision: %s\n' % expected_version[1])
+      out.write('Chrome Revision: %s\n' % expected_version[1])
 
     version = getos.GetSDKVersion()
     self.assertEqual(version, expected_version)

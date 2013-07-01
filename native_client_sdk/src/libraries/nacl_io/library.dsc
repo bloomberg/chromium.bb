@@ -39,6 +39,7 @@
       'FILES': [
         "error.h",
         "inode_pool.h",
+	"ioctl.h",
         "kernel_handle.h",
         "kernel_intercept.h",
         "kernel_object.h",
@@ -63,6 +64,7 @@
         "osstat.h",
         "ostypes.h",
         "osunistd.h",
+	"osutime.h",
         "path.h",
         "pepper_interface.h",
         "real_pepper_interface.h",

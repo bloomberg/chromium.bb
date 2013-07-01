@@ -1,4 +1,4 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -73,6 +73,9 @@ void MakeDummyStatbuf(struct stat* statbuf) {
   statbuf->st_ctime = 11;
 }
 
+const uid_t kDummyUid = 1001;
+const gid_t kDummyGid = 1002;
+
 class KernelWrapTest : public ::testing::Test {
  public:
   KernelWrapTest() {
@@ -114,6 +117,13 @@ TEST_F(KernelWrapTest, chmod) {
   chmod("chmod", 23);
 }
 
+TEST_F(KernelWrapTest, chown) {
+  uid_t uid = kDummyUid;
+  gid_t gid = kDummyGid;
+  EXPECT_CALL(mock, chown(StrEq("chown"), uid, gid)).Times(1);
+  chown("chown", uid, gid);
+}
+
 TEST_F(KernelWrapTest, close) {
   EXPECT_CALL(mock, close(34)).Times(1);
   close(34);
@@ -127,6 +137,13 @@ TEST_F(KernelWrapTest, dup) {
 TEST_F(KernelWrapTest, dup2) {
   EXPECT_CALL(mock, dup2(123, 234)).Times(1);
   dup2(123, 234);
+}
+
+TEST_F(KernelWrapTest, fchown) {
+  uid_t uid = kDummyUid;
+  gid_t gid = kDummyGid;
+  EXPECT_CALL(mock, fchown(123, uid, gid)).Times(1);
+  fchown(123, uid, gid);
 }
 
 TEST_F(KernelWrapTest, fstat) {
@@ -174,9 +191,22 @@ TEST_F(KernelWrapTest, getwd) {
 #pragma GCC diagnostic warning "-Wdeprecated-declarations"
 #endif
 
+TEST_F(KernelWrapTest, ioctl) {
+  char buffer[] = "ioctl";
+  EXPECT_CALL(mock, ioctl(012, 345, StrEq("ioctl"))).Times(1);
+  ioctl(012, 345, buffer);
+}
+
 TEST_F(KernelWrapTest, isatty) {
   EXPECT_CALL(mock, isatty(678)).Times(1);
   isatty(678);
+}
+
+TEST_F(KernelWrapTest, lchown) {
+  uid_t uid = kDummyUid;
+  gid_t gid = kDummyGid;
+  EXPECT_CALL(mock, lchown(StrEq("lchown"), uid, gid)).Times(1);
+  lchown("lchown", uid, gid);
 }
 
 TEST_F(KernelWrapTest, lseek) {
@@ -240,6 +270,12 @@ TEST_F(KernelWrapTest, umount) {
 TEST_F(KernelWrapTest, unlink) {
   EXPECT_CALL(mock, unlink(StrEq("unlink"))).Times(1);
   unlink("unlink");
+}
+
+TEST_F(KernelWrapTest, utime) {
+  const struct utimbuf* times;
+  EXPECT_CALL(mock, utime(StrEq("utime"), times));
+  utime("utime", times);
 }
 
 TEST_F(KernelWrapTest, write) {

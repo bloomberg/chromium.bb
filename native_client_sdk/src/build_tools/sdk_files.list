@@ -256,6 +256,7 @@ include/json/writer.h
 include/KHR/khrplatform.h
 include/nacl_io/error.h
 include/nacl_io/inode_pool.h
+include/nacl_io/ioctl.h
 include/nacl_io/kernel_handle.h
 include/nacl_io/kernel_intercept.h
 include/nacl_io/kernel_object.h
@@ -280,6 +281,7 @@ include/nacl_io/osmman.h
 include/nacl_io/osstat.h
 include/nacl_io/ostypes.h
 include/nacl_io/osunistd.h
+include/nacl_io/osutime.h
 include/nacl_io/path.h
 include/nacl_io/pepper/all_interfaces.h
 include/nacl_io/pepper/define_empty_macros.h

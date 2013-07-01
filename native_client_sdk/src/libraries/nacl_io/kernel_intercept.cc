@@ -173,3 +173,22 @@ int ki_open_resource(const char* file) {
   return s_kp->open_resource(file);
 }
 
+int ki_ioctl(int d, int request, char* argp) {
+  return s_kp->ioctl(d, request, argp);
+}
+
+int ki_chown(const char* path, uid_t owner, gid_t group) {
+  return s_kp->chown(path, owner, group);
+}
+
+int ki_fchown(int fd, uid_t owner, gid_t group) {
+  return s_kp->fchown(fd, owner, group);
+}
+
+int ki_lchown(const char* path, uid_t owner, gid_t group) {
+  return s_kp->lchown(path, owner, group);
+}
+
+int ki_utime(const char* filename, const struct utimbuf* times) {
+  return s_kp->utime(filename, times);
+}
