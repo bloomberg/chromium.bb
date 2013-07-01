@@ -107,10 +107,16 @@ TEST_F(StoragePartitionShaderClearTest, ClearShaderCache) {
   EXPECT_EQ(1u, Size());
 
   TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(cache_path(), NULL, NULL, NULL, NULL, NULL, NULL);
+  StoragePartitionImpl sp(cache_path(),
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          NULL,
+                          scoped_ptr<WebRTCIdentityStore>());
   base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ClearData, &sp, clear_cb.callback()));
+      FROM_HERE, base::Bind(&ClearData, &sp, clear_cb.callback()));
   clear_cb.WaitForResult();
   EXPECT_EQ(0u, Size());
 }

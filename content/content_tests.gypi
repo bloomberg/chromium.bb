@@ -321,6 +321,7 @@
         'browser/loader/upload_data_stream_builder_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',
         'browser/media/media_internals_unittest.cc',
+        'browser/media/webrtc_identity_store_unittest.cc',
         'browser/net/sqlite_persistent_cookie_store_unittest.cc',
         'browser/notification_service_impl_unittest.cc',
         'browser/plugin_loader_posix_unittest.cc',

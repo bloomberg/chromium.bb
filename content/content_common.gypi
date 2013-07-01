@@ -268,6 +268,7 @@
     'common/media/midi_messages.h',
     'common/media/video_capture.h',
     'common/media/video_capture_messages.h',
+    'common/media/webrtc_identity_messages.h',
     'common/memory_benchmark_messages.h',
     'common/message_router.cc',
     'common/message_router.h',

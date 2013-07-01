@@ -658,6 +658,8 @@
     'browser/media/media_internals_proxy.h',
     'browser/media/media_internals_ui.cc',
     'browser/media/media_internals_ui.h',
+    'browser/media/webrtc_identity_store.cc',
+    'browser/media/webrtc_identity_store.h',
     'browser/media/webrtc_internals.cc',
     'browser/media/webrtc_internals.h',
     'browser/media/webrtc_internals_message_handler.cc',
@@ -1195,6 +1197,8 @@
       'sources': [
         'browser/renderer_host/media/peer_connection_tracker_host.cc',
         'browser/renderer_host/media/peer_connection_tracker_host.h',
+        'browser/renderer_host/media/webrtc_identity_service_host.cc',
+        'browser/renderer_host/media/webrtc_identity_service_host.h',
         'browser/renderer_host/p2p/socket_host.cc',
         'browser/renderer_host/p2p/socket_host.h',
         'browser/renderer_host/p2p/socket_host_tcp.cc',

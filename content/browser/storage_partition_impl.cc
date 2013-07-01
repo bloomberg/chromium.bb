@@ -159,15 +159,16 @@ StoragePartitionImpl::StoragePartitionImpl(
     fileapi::FileSystemContext* filesystem_context,
     webkit_database::DatabaseTracker* database_tracker,
     DOMStorageContextImpl* dom_storage_context,
-    IndexedDBContextImpl* indexed_db_context)
+    IndexedDBContextImpl* indexed_db_context,
+    scoped_ptr<WebRTCIdentityStore> webrtc_identity_store)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
       appcache_service_(appcache_service),
       filesystem_context_(filesystem_context),
       database_tracker_(database_tracker),
       dom_storage_context_(dom_storage_context),
-      indexed_db_context_(indexed_db_context) {
-}
+      indexed_db_context_(indexed_db_context),
+      webrtc_identity_store_(webrtc_identity_store.Pass()) {}
 
 StoragePartitionImpl::~StoragePartitionImpl() {
   // These message loop checks are just to avoid leaks in unittests.
@@ -243,13 +244,17 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(quota_manager->proxy());
 
+  scoped_ptr<WebRTCIdentityStore> webrtc_identity_store(
+      new WebRTCIdentityStore());
+
   return new StoragePartitionImpl(partition_path,
                                   quota_manager.get(),
                                   appcache_service.get(),
                                   filesystem_context.get(),
                                   database_tracker.get(),
                                   dom_storage_context.get(),
-                                  indexed_db_context.get());
+                                  indexed_db_context.get(),
+                                  webrtc_identity_store.Pass());
 }
 
 base::FilePath StoragePartitionImpl::GetPath() {
@@ -342,6 +347,10 @@ void StoragePartitionImpl::AsyncClearDataBetween(uint32 storage_mask,
         base::Bind(&ClearShaderCacheOnIOThread, GetPath(), begin, end,
             callback));
   }
+}
+
+WebRTCIdentityStore* StoragePartitionImpl::GetWebRTCIdentityStore() {
+  return webrtc_identity_store_.get();
 }
 
 void StoragePartitionImpl::SetURLRequestContext(

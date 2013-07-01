@@ -11,6 +11,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/media/webrtc_identity_store.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -41,6 +42,8 @@ class StoragePartitionImpl : public StoragePartition {
       const base::Time& end,
       const base::Closure& callback) OVERRIDE;
 
+  WebRTCIdentityStore* GetWebRTCIdentityStore();
+
  private:
   friend class StoragePartitionImplMap;
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionShaderClearTest, ClearShaderCache);
@@ -62,7 +65,8 @@ class StoragePartitionImpl : public StoragePartition {
       fileapi::FileSystemContext* filesystem_context,
       webkit_database::DatabaseTracker* database_tracker,
       DOMStorageContextImpl* dom_storage_context,
-      IndexedDBContextImpl* indexed_db_context);
+      IndexedDBContextImpl* indexed_db_context,
+      scoped_ptr<WebRTCIdentityStore> webrtc_identity_store);
 
   // Used by StoragePartitionImplMap.
   //
@@ -89,6 +93,7 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
   scoped_refptr<DOMStorageContextImpl> dom_storage_context_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+  scoped_ptr<WebRTCIdentityStore> webrtc_identity_store_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);
 };
