@@ -22,10 +22,11 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 
 namespace chromeos {
 
@@ -102,9 +103,7 @@ class MagnificationManagerImpl : public MagnificationManager,
 
  private:
   void SetProfile(Profile* profile) {
-    if (pref_change_registrar_) {
-      pref_change_registrar_.reset();
-    }
+    pref_change_registrar_.reset();
 
     if (profile) {
       pref_change_registrar_.reset(new PrefChangeRegistrar);
@@ -186,14 +185,13 @@ class MagnificationManagerImpl : public MagnificationManager,
         content::Details<AccessibilityStatusEventDetails>(&details));
   }
 
-  // content::NotificationObserver implimentation:
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
-        // Update |profile_| when entering the login screen or when entering a
-        // session.
+        // Update |profile_| when entering the login screen.
         Profile* profile = ProfileManager::GetDefaultProfile();
         if (ProfileHelper::IsSigninProfile(profile))
           SetProfile(profile);

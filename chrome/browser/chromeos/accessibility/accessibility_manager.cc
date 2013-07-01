@@ -33,9 +33,9 @@
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_accessibility_state.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -516,8 +516,7 @@ void AccessibilityManager::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
-      // Update |profile_| when entering the login screen or when entering a
-      // session.
+      // Update |profile_| when entering the login screen.
       Profile* profile = ProfileManager::GetDefaultProfile();
       if (ProfileHelper::IsSigninProfile(profile))
         SetProfile(profile);
