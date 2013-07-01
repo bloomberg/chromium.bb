@@ -124,7 +124,7 @@ do_package() {
   # https://bugzilla.novell.com/show_bug.cgi?id=556248
   DEPENDS="lsb >= 4.0, \
   libcurl.so.4${EMPTY_VERSION}${PKG_ARCH}, \
-  libnss3.so(NSS_3.12.3)${PKG_ARCH}, \
+  libnss3.so(NSS_3.14.3)${PKG_ARCH}, \
   wget, \
   xdg-utils, \
   zlib, \
