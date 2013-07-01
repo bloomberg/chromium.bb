@@ -104,8 +104,8 @@ int example_main(int argc, char *argv[]) {
 
   PSEventSetFilter(PSE_ALL);
 
-  // Mount the images directory as an HTTP resources
-  mount("/images", "/images", "httpfs", 0, "");
+  // Mount the images directory as an HTTP resource.
+  mount("images", "/images", "httpfs", 0, "");
 
   FILE* fp = fopen("/images/flock_green.raw", "rb");
   fread(&fmt, sizeof(fmt), 1, fp);
