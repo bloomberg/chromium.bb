@@ -108,8 +108,6 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
-  virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE;
-  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
 
   // Testing interface.
   void SetForceHideTabIndicatorsForTest(bool force);
@@ -219,11 +217,7 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // bounds, above it, or within a few pixels below it. This allow the container
   // to steal enough pixels to detect a swipe in and handles the case that there
   // is a bezel sensor above the top container.
-  bool ShouldHandleEvent(const gfx::Point& location) const;
-
-  // Call Add/RemovePreTargerHandler since either the RootWindow has changed or
-  // the enabled state of observing has changed.
-  void UpdatePreTargetHandler();
+  bool ShouldHandleGestureEvent(const gfx::Point& location) const;
 
   // Injected dependencies. Not owned.
   Delegate* delegate_;

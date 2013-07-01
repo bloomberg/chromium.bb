@@ -86,6 +86,16 @@ bool IsActiveWindowTransientChildOf(aura::Window* toplevel) {
   return false;
 }
 
+// Returns the location of |event| in screen coordinates.
+gfx::Point GetEventLocationInScreen(const ui::LocatedEvent& event) {
+  gfx::Point location_in_screen = event.location();
+  aura::Window* target = static_cast<aura::Window*>(event.target());
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(target->GetRootWindow());
+  screen_position_client->ConvertPointToScreen(target, &location_in_screen);
+  return location_in_screen;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 class RevealedLockAsh : public ImmersiveRevealedLock {
@@ -350,10 +360,7 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     return;
   enabled_ = enabled;
 
-  // Delay the initialization of the window observers till the first call to
-  // SetEnabled(true) because FullscreenController is not yet initialized when
-  // Init() is called.
-  EnableWindowObservers(true);
+  EnableWindowObservers(enabled_);
 
   UpdateUseMinimalChrome(LAYOUT_NO);
 
@@ -461,11 +468,6 @@ void ImmersiveModeControllerAsh::OnMouseEvent(ui::MouseEvent* event) {
   if (!enabled_)
     return;
 
-  // Counterintuitively, we can still get synthesized mouse moves when
-  // aura::client::CursorClient::IsMouseEventsEnabled() == false.
-  if (event->flags() & ui::EF_IS_SYNTHESIZED)
-    return;
-
   if (event->type() != ui::ET_MOUSE_MOVED &&
       event->type() != ui::ET_MOUSE_PRESSED &&
       event->type() != ui::ET_MOUSE_RELEASED &&
@@ -510,7 +512,7 @@ void ImmersiveModeControllerAsh::OnGestureEvent(ui::GestureEvent* event) {
 
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      if (ShouldHandleEvent(event->location())) {
+      if (ShouldHandleGestureEvent(GetEventLocationInScreen(*event))) {
         gesture_begun_ = true;
         event->SetHandled();
       }
@@ -618,18 +620,6 @@ void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
-void ImmersiveModeControllerAsh::OnWindowAddedToRootWindow(
-    aura::Window* window) {
-  DCHECK_EQ(window, native_window_);
-  UpdatePreTargetHandler();
-}
-
-void ImmersiveModeControllerAsh::OnWindowRemovingFromRootWindow(
-    aura::Window* window) {
-  DCHECK_EQ(window, native_window_);
-  UpdatePreTargetHandler();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Testing interface:
 
@@ -680,7 +670,10 @@ void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
     focus_manager->RemoveFocusChangeListener(this);
   }
 
-  UpdatePreTargetHandler();
+  if (enable)
+    ash::Shell::GetInstance()->AddPreTargetHandler(this);
+  else
+    ash::Shell::GetInstance()->RemovePreTargetHandler(this);
 
   if (enable) {
     native_window_->AddObserver(this);
@@ -709,18 +702,29 @@ void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
 void ImmersiveModeControllerAsh::UpdateTopEdgeHoverTimer(
     ui::MouseEvent* event) {
   DCHECK(enabled_);
-  // If the top-of-window views are already revealed or the cursor left the
-  // top edge we don't need to trigger based on a timer anymore.
-  if (reveal_state_ == SLIDING_OPEN ||
-      reveal_state_ == REVEALED ||
-      event->root_location().y() != 0) {
+  // Stop the timer if the top-of-window views are already revealed.
+  if (reveal_state_ == SLIDING_OPEN || reveal_state_ == REVEALED) {
     top_edge_hover_timer_.Stop();
     return;
   }
+
+  gfx::Point location_in_screen = GetEventLocationInScreen(*event);
+  gfx::Rect top_container_bounds_in_screen =
+      top_container_->GetBoundsInScreen();
+
+  // Stop the timer if the cursor left the top edge or is on a different
+  // display.
+  if (location_in_screen.y() != top_container_bounds_in_screen.y() ||
+      location_in_screen.x() < top_container_bounds_in_screen.x() ||
+      location_in_screen.x() >= top_container_bounds_in_screen.right()) {
+    top_edge_hover_timer_.Stop();
+    return;
+  }
+
   // The cursor is now at the top of the screen. Consider the cursor "not
   // moving" even if it moves a little bit in x, because users don't have
   // perfect pointing precision.
-  int mouse_x = event->root_location().x();
+  int mouse_x = location_in_screen.x() - top_container_bounds_in_screen.x();
   if (top_edge_hover_timer_.IsRunning() &&
       abs(mouse_x - mouse_x_when_hit_top_) <=
           ImmersiveFullscreenConfiguration::
@@ -766,11 +770,7 @@ void ImmersiveModeControllerAsh::UpdateLocatedEventRevealedLock(
 
   gfx::Point location_in_screen;
   if (event && event->type() != ui::ET_MOUSE_CAPTURE_CHANGED) {
-    location_in_screen = event->location();
-    aura::Window* target = static_cast<aura::Window*>(event->target());
-    aura::client::ScreenPositionClient* screen_position_client =
-        aura::client::GetScreenPositionClient(target->GetRootWindow());
-    screen_position_client->ConvertPointToScreen(target, &location_in_screen);
+    location_in_screen = GetEventLocationInScreen(*event);
   } else {
     aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
         native_window_->GetRootWindow());
@@ -1071,7 +1071,7 @@ ImmersiveModeControllerAsh::SwipeType ImmersiveModeControllerAsh::GetSwipeType(
   return SWIPE_NONE;
 }
 
-bool ImmersiveModeControllerAsh::ShouldHandleEvent(
+bool ImmersiveModeControllerAsh::ShouldHandleGestureEvent(
     const gfx::Point& location) const {
   // All of the gestures that are of interest start in a region with left &
   // right edges agreeing with |top_container_|. When CLOSED it is difficult to
@@ -1085,17 +1085,5 @@ bool ImmersiveModeControllerAsh::ShouldHandleEvent(
   return near_bounds.Contains(location) ||
       ((location.y() < near_bounds.y()) &&
        (location.x() >= near_bounds.x()) &&
-       (location.x() <= near_bounds.right()));
-}
-
-void ImmersiveModeControllerAsh::UpdatePreTargetHandler() {
-  if (!native_window_)
-    return;
-  aura::RootWindow* root_window = native_window_->GetRootWindow();
-  if (!root_window)
-    return;
-  if (observers_enabled_)
-    root_window->AddPreTargetHandler(this);
-  else
-    root_window->RemovePreTargetHandler(this);
+       (location.x() < near_bounds.right()));
 }

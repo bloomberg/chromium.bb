@@ -230,12 +230,14 @@ TEST_F(ImmersiveModeControllerAshTest, OnMouseEvent) {
 
   // Large move right restarts the timer (so it is still running) and considers
   // this a new hit at the top.
-  event_generator()->MoveMouseTo(150, 0);
+  event_generator()->MoveMouseTo(499, 0);
   EXPECT_TRUE(top_edge_hover_timer_running());
-  EXPECT_EQ(150, mouse_x_when_hit_top());
+  EXPECT_EQ(499, mouse_x_when_hit_top());
 
-  // Moving off the top edge stops the timer.
-  event_generator()->MoveMouseTo(150, 1);
+  // Moving off the top edge horizontally stops the timer.
+  EXPECT_GT(CurrentContext()->bounds().width(), top_container()->width());
+  EXPECT_EQ(500, top_container()->width());
+  event_generator()->MoveMouseTo(500, 0);
   EXPECT_FALSE(top_edge_hover_timer_running());
 
   // Once revealed, a move just a little below the top container doesn't end a
