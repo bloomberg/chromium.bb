@@ -1339,7 +1339,7 @@ const Experiment kExperiments[] = {
     "enable-rich-notifications",
     IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_NAME,
     IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_DESCRIPTION,
-    kOsWin | kOsCrOS | kOsMac,
+    kOsWin | kOsMac,
     ENABLE_DISABLE_VALUE_TYPE(
         message_center::switches::kEnableRichNotifications,
         message_center::switches::kDisableRichNotifications)
