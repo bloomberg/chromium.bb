@@ -35,6 +35,14 @@ def GetChromeFlags(replay_host, http_port, https_port):
       '--ignore-certificate-errors',
       ]
 
+# Signal masks on Linux are inherited from parent processes.  If anything
+# invoking us accidentally masks SIGINT (e.g. by putting a process in the
+# background from a shell script), sending a SIGINT to the child will fail
+# to terminate it.  Running this signal handler before execing should fix that
+# problem.
+def ResetInterruptHandler():
+  signal.signal(signal.SIGINT, signal.SIG_DFL)
+
 class ReplayError(Exception):
   """Catch-all exception for the module."""
   pass
@@ -153,8 +161,10 @@ class ReplayServer(object):
     cmd_line.append(self.archive_path)
     self.log_fh = self._OpenLogFile()
     logging.debug('Starting Web-Page-Replay: %s', cmd_line)
-    self.replay_process = subprocess.Popen(
-      cmd_line, stdout=self.log_fh, stderr=subprocess.STDOUT)
+    kwargs = { 'stdout': self.log_fh, 'stderr': subprocess.STDOUT }
+    if sys.platform.startswith('linux') or sys.platform == 'darwin':
+      kwargs['preexec_fn'] = ResetInterruptHandler
+    self.replay_process = subprocess.Popen(cmd_line, **kwargs)
     if not self.IsStarted():
       log = open(self.log_path).read()
       raise ReplayNotStartedError(
