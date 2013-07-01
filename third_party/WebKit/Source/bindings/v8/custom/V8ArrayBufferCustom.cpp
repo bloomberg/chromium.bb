@@ -31,15 +31,14 @@
 #include "config.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 
-#include "bindings/v8/V8Binding.h"
-#include "core/dom/ExceptionCode.h"
-
 #include "wtf/ArrayBuffer.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+#include "V8ArrayBuffer.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
 
-using namespace WTF;
+namespace WebCore {
 
 V8ArrayBufferDeallocationObserver* V8ArrayBufferDeallocationObserver::instance()
 {
@@ -47,61 +46,40 @@ V8ArrayBufferDeallocationObserver* V8ArrayBufferDeallocationObserver::instance()
     return &deallocationObserver;
 }
 
-WrapperTypeInfo V8ArrayBuffer::info = {
-    0, V8ArrayBuffer::derefObject,
-    0, 0, 0, 0, 0, WrapperTypeObjectPrototype
-};
 
-bool V8ArrayBuffer::HasInstance(v8::Handle<v8::Value> value, v8::Isolate*, WrapperWorldType)
+void V8ArrayBuffer::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return value->IsArrayBuffer();
-}
+    // If we return a previously constructed ArrayBuffer,
+    // e.g. from the call to ArrayBufferView.buffer, this code is called
+    // with a zero-length argument list. The V8DOMWrapper will then
+    // set the internal pointer in the newly-created object.
+    // Unfortunately it doesn't look like it's possible to distinguish
+    // between this case and that where the user calls "new
+    // ArrayBuffer()" from JavaScript. To guard against problems,
+    // we always create at least a zero-length ArrayBuffer, even
+    // if it is immediately overwritten by the V8DOMWrapper.
 
-bool V8ArrayBuffer::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate*)
-{
-    return value->IsArrayBuffer();
-}
+    // Supported constructors:
+    // ArrayBuffer(n) where n is an integer:
+    //   -- create an empty buffer of n bytes
 
-void V8ArrayBuffer::derefObject(void* object)
-{
-    static_cast<ArrayBuffer*>(object)->deref();
-}
-
-
-v8::Handle<v8::Object> V8ArrayBuffer::createWrapper(PassRefPtr<ArrayBuffer> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl.get());
-    ASSERT(DOMDataStore::getWrapper(impl.get(), isolate).IsEmpty());
-
-    v8::Handle<v8::Object> wrapper = v8::ArrayBuffer::New(impl->data(), impl->byteLength());
-    v8::V8::AdjustAmountOfExternalAllocatedMemory(impl->byteLength());
-    impl->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
-
-    V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
-    return wrapper;
-}
-
-ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
-{
-    ASSERT(object->IsArrayBuffer());
-    void* arraybufferPtr = object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
-    if (arraybufferPtr)
-        return reinterpret_cast<ArrayBuffer*>(arraybufferPtr);
-
-    v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
-    ASSERT(!v8buffer->IsExternal());
-
-    v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
-    ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength());
-    RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(contents);
-    // V8 accounts for external memory even after externalizing the buffer.
+    int argLength = args.Length();
+    int length = 0;
+    if (argLength > 0)
+        length = toInt32(args[0]); // NaN/+inf/-inf returns 0, this is intended by WebIDL
+    RefPtr<ArrayBuffer> buffer;
+    if (length >= 0)
+        buffer = ArrayBuffer::create(static_cast<unsigned>(length), 1);
+    if (!buffer.get()) {
+        throwError(v8RangeError, "ArrayBuffer size is not a small enough positive integer.", args.GetIsolate());
+        return;
+    }
     buffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
-    V8DOMWrapper::associateObjectWithWrapper(buffer.release(), &info, object, v8::Isolate::GetCurrent(), WrapperConfiguration::Dependent);
-
-    arraybufferPtr = object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
-    ASSERT(arraybufferPtr);
-    return reinterpret_cast<ArrayBuffer*>(arraybufferPtr);
+    v8::V8::AdjustAmountOfExternalAllocatedMemory(buffer->byteLength());
+    // Transform the holder into a wrapper object for the array.
+    v8::Handle<v8::Object> wrapper = args.Holder();
+    V8DOMWrapper::associateObjectWithWrapper(buffer.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
+    args.GetReturnValue().Set(wrapper);
 }
-
 
 } // namespace WebCore

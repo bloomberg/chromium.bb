@@ -52,21 +52,24 @@ ArrayBufferContents::ArrayBufferContents(unsigned numElements, unsigned elementB
             return;
         }
     }
-    if (allocateMemory(numElements * elementByteSize, policy, m_data)) {
+    bool allocationSucceeded = false;
+    if (policy == ZeroInitialize)
+        allocationSucceeded = WTF::tryFastCalloc(numElements, elementByteSize).getValue(m_data);
+    else {
+        ASSERT(policy == DontInitialize);
+        allocationSucceeded = WTF::tryFastMalloc(numElements * elementByteSize).getValue(m_data);
+    }
+
+    if (allocationSucceeded) {
         m_sizeInBytes = numElements * elementByteSize;
         return;
     }
     m_data = 0;
 }
 
-ArrayBufferContents::ArrayBufferContents(void* data, unsigned sizeInBytes)
-    : m_data(data)
-    , m_sizeInBytes(sizeInBytes)
-    , m_deallocationObserver(0) { }
-
 ArrayBufferContents::~ArrayBufferContents()
 {
-    freeMemory(m_data);
+    WTF::fastFree(m_data);
     clear();
 }
 
@@ -85,20 +88,6 @@ void ArrayBufferContents::transfer(ArrayBufferContents& other)
     other.m_data = m_data;
     other.m_sizeInBytes = m_sizeInBytes;
     clear();
-}
-
-bool ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy policy, void*& data)
-{
-    if (policy == ZeroInitialize) {
-        return WTF::tryFastCalloc(size, 1).getValue(data);
-    }
-    ASSERT(policy == DontInitialize);
-    return WTF::tryFastMalloc(size).getValue(data);
-}
-
-void ArrayBufferContents::freeMemory(void * data)
-{
-    WTF::fastFree(data);
 }
 
 } // namespace WTF
