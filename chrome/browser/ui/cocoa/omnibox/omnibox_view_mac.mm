@@ -13,7 +13,6 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
@@ -665,16 +664,12 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
   }
 
   if (model()->popup_model()->IsOpen()) {
-    // If instant extended is enabled then allow users to press tab to select
-    // results from the omnibox popup.
-    BOOL enableTabAutocomplete = chrome::IsInstantExtendedAPIEnabled();
-
     if (cmd == @selector(insertBacktab:)) {
       if (model()->popup_model()->selected_line_state() ==
             OmniboxPopupModel::KEYWORD) {
         model()->ClearKeyword(GetText());
         return true;
-      } else if (enableTabAutocomplete) {
+      } else {
         model()->OnUpOrDownKeyPressed(-1);
         return true;
       }
@@ -682,7 +677,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
 
     if ((cmd == @selector(insertTab:) ||
         cmd == @selector(insertTabIgnoringFieldEditor:)) &&
-        !model()->is_keyword_hint() && enableTabAutocomplete) {
+        !model()->is_keyword_hint()) {
       model()->OnUpOrDownKeyPressed(1);
       return true;
     }
