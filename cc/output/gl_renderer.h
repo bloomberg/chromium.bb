@@ -238,9 +238,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   // Tiled layer shaders.
   typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexAlpha>
       TileProgram;
-  typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexClampAlphaAA>
+  typedef ProgramBinding<VertexShaderTileAA, FragmentShaderRGBATexClampAlphaAA>
       TileProgramAA;
-  typedef ProgramBinding<VertexShaderTile,
+  typedef ProgramBinding<VertexShaderTileAA,
                          FragmentShaderRGBATexClampSwizzleAlphaAA>
       TileProgramSwizzleAA;
   typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexOpaque>
@@ -267,18 +267,18 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                          FragmentShaderRGBATexAlpha> RenderPassProgram;
   typedef ProgramBinding<VertexShaderPosTexTransform,
                          FragmentShaderRGBATexAlphaMask> RenderPassMaskProgram;
-  typedef ProgramBinding<VertexShaderQuadTexTransform,
+  typedef ProgramBinding<VertexShaderQuadTexTransformAA,
                          FragmentShaderRGBATexAlphaAA> RenderPassProgramAA;
-  typedef ProgramBinding<VertexShaderQuadTexTransform,
+  typedef ProgramBinding<VertexShaderQuadTexTransformAA,
                          FragmentShaderRGBATexAlphaMaskAA>
       RenderPassMaskProgramAA;
   typedef ProgramBinding<VertexShaderPosTexTransform,
                          FragmentShaderRGBATexColorMatrixAlpha>
       RenderPassColorMatrixProgram;
-  typedef ProgramBinding<VertexShaderQuadTexTransform,
+  typedef ProgramBinding<VertexShaderQuadTexTransformAA,
                          FragmentShaderRGBATexAlphaMaskColorMatrixAA>
       RenderPassMaskColorMatrixProgramAA;
-  typedef ProgramBinding<VertexShaderQuadTexTransform,
+  typedef ProgramBinding<VertexShaderQuadTexTransformAA,
                          FragmentShaderRGBATexAlphaColorMatrixAA>
       RenderPassColorMatrixProgramAA;
   typedef ProgramBinding<VertexShaderPosTexTransform,
@@ -299,7 +299,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       DebugBorderProgram;
   typedef ProgramBinding<VertexShaderQuad, FragmentShaderColor>
       SolidColorProgram;
-  typedef ProgramBinding<VertexShaderQuad, FragmentShaderColorAA>
+  typedef ProgramBinding<VertexShaderQuadAA, FragmentShaderColorAA>
       SolidColorProgramAA;
 
   const TileProgram* GetTileProgram(TexCoordPrecision precision);
@@ -415,6 +415,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   gfx::Rect swap_buffer_rect_;
   gfx::Rect scissor_rect_;
+  gfx::Rect viewport_;
   bool is_backbuffer_discarded_;
   bool discard_backbuffer_when_not_visible_;
   bool is_using_bind_uniform_;

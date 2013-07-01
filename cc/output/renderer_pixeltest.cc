@@ -973,6 +973,46 @@ TEST_F(GLRendererPixelTest, ForceAntiAliasingOff) {
       ExactPixelComparator(false)));
 }
 
+TEST_F(GLRendererPixelTest, AntiAliasingPerspective) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  scoped_ptr<RenderPass> pass =
+      CreateTestRootRenderPass(RenderPass::Id(1, 1), rect);
+
+  gfx::Rect red_rect(0, 0, 180, 500);
+  gfx::Transform red_content_to_target_transform(
+      1.0,  2.4520,  10.6206, 19.0,
+      0.0,  0.3528,  5.9737,  9.5,
+      0.0, -0.2250, -0.9744,  0.0,
+      0.0,  0.0225,  0.0974,  1.0);
+  scoped_ptr<SharedQuadState> red_shared_state =
+      CreateTestSharedQuadState(red_content_to_target_transform, red_rect);
+  scoped_ptr<SolidColorDrawQuad> red = SolidColorDrawQuad::Create();
+  red->SetNew(red_shared_state.get(), red_rect, SK_ColorRED, false);
+  pass->quad_list.push_back(red.PassAs<DrawQuad>());
+
+  gfx::Rect green_rect(19, 7, 180, 10);
+  scoped_ptr<SharedQuadState> green_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), green_rect);
+  scoped_ptr<SolidColorDrawQuad> green = SolidColorDrawQuad::Create();
+  green->SetNew(green_shared_state.get(), green_rect, SK_ColorGREEN, false);
+  pass->quad_list.push_back(green.PassAs<DrawQuad>());
+
+  scoped_ptr<SharedQuadState> blue_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+  scoped_ptr<SolidColorDrawQuad> blue = SolidColorDrawQuad::Create();
+  blue->SetNew(blue_shared_state.get(), rect, SK_ColorBLUE, false);
+  pass->quad_list.push_back(blue.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("anti_aliasing_perspective.png")),
+      ExactPixelComparator(true)));
+}
+
 TYPED_TEST(RendererPixelTestWithSkiaGPUBackend, PictureDrawQuadIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);

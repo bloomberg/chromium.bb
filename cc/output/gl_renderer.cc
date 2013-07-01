@@ -829,6 +829,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   int shader_quad_location = -1;
   int shader_edge_location = -1;
+  int shader_viewport_location = -1;
   int shader_mask_sampler_location = -1;
   int shader_mask_tex_coord_scale_location = -1;
   int shader_mask_tex_coord_offset_location = -1;
@@ -846,7 +847,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
 
     shader_quad_location = program->vertex_shader().quad_location();
-    shader_edge_location = program->fragment_shader().edge_location();
+    shader_edge_location = program->vertex_shader().edge_location();
+    shader_viewport_location = program->vertex_shader().viewport_location();
     shader_mask_sampler_location =
         program->fragment_shader().mask_sampler_location();
     shader_mask_tex_coord_scale_location =
@@ -882,7 +884,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
 
     shader_quad_location = program->vertex_shader().quad_location();
-    shader_edge_location = program->fragment_shader().edge_location();
+    shader_edge_location = program->vertex_shader().edge_location();
+    shader_viewport_location = program->vertex_shader().viewport_location();
     shader_matrix_location = program->vertex_shader().matrix_location();
     shader_alpha_location = program->fragment_shader().alpha_location();
     shader_tex_transform_location =
@@ -898,7 +901,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     shader_quad_location = program->vertex_shader().quad_location();
     shader_tex_transform_location =
         program->vertex_shader().tex_transform_location();
-    shader_edge_location = program->fragment_shader().edge_location();
+    shader_edge_location = program->vertex_shader().edge_location();
+    shader_viewport_location = program->vertex_shader().viewport_location();
     shader_alpha_location = program->fragment_shader().alpha_location();
     shader_mask_sampler_location =
         program->fragment_shader().mask_sampler_location();
@@ -921,7 +925,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     shader_quad_location = program->vertex_shader().quad_location();
     shader_tex_transform_location =
         program->vertex_shader().tex_transform_location();
-    shader_edge_location = program->fragment_shader().edge_location();
+    shader_edge_location = program->vertex_shader().edge_location();
+    shader_viewport_location = program->vertex_shader().viewport_location();
     shader_alpha_location = program->fragment_shader().alpha_location();
     shader_color_matrix_location =
         program->fragment_shader().color_matrix_location();
@@ -1024,6 +1029,15 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     GLC(Context(), Context()->uniform3fv(shader_edge_location, 8, edge));
   }
 
+  if (shader_viewport_location != -1) {
+    float viewport[4] = {
+      viewport_.x(), viewport_.y(),
+      viewport_.width(), viewport_.height(),
+    };
+    GLC(Context(),
+        Context()->uniform4fv(shader_viewport_location, 1, viewport));
+  }
+
   if (shader_color_matrix_location != -1) {
     float matrix[16];
     for (int i = 0; i < 4; ++i) {
@@ -1064,9 +1078,10 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 struct SolidColorProgramUniforms {
   unsigned program;
   unsigned matrix_location;
-  unsigned color_location;
+  unsigned viewport_location;
   unsigned quad_location;
   unsigned edge_location;
+  unsigned color_location;
 };
 
 template<class T>
@@ -1074,9 +1089,10 @@ static void SolidColorUniformLocation(T program,
                                       SolidColorProgramUniforms* uniforms) {
   uniforms->program = program->program();
   uniforms->matrix_location = program->vertex_shader().matrix_location();
-  uniforms->color_location = program->fragment_shader().color_location();
+  uniforms->viewport_location = program->vertex_shader().viewport_location();
   uniforms->quad_location = program->vertex_shader().quad_location();
-  uniforms->edge_location = program->fragment_shader().edge_location();
+  uniforms->edge_location = program->vertex_shader().edge_location();
+  uniforms->color_location = program->fragment_shader().color_location();
 }
 
 bool GLRenderer::SetupQuadForAntialiasing(
@@ -1201,9 +1217,15 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
                            (SkColorGetG(color) * (1.0f / 255.0f)) * alpha,
                            (SkColorGetB(color) * (1.0f / 255.0f)) * alpha,
                            alpha));
-
-  if (use_aa)
+  if (use_aa) {
+    float viewport[4] = {
+      viewport_.x(), viewport_.y(),
+      viewport_.width(), viewport_.height(),
+    };
+    GLC(Context(),
+        Context()->uniform4fv(uniforms.viewport_location, 1, viewport));
     GLC(Context(), Context()->uniform3fv(uniforms.edge_location, 8, edge));
+  }
 
   // Enable blending when the quad properties require it or if we decided
   // to use antialiasing.
@@ -1227,28 +1249,30 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
 
 struct TileProgramUniforms {
   unsigned program;
-  unsigned sampler_location;
-  unsigned vertex_tex_transform_location;
-  unsigned fragment_tex_transform_location;
-  unsigned edge_location;
   unsigned matrix_location;
-  unsigned alpha_location;
+  unsigned viewport_location;
   unsigned quad_location;
+  unsigned edge_location;
+  unsigned vertex_tex_transform_location;
+  unsigned sampler_location;
+  unsigned fragment_tex_transform_location;
+  unsigned alpha_location;
 };
 
 template <class T>
 static void TileUniformLocation(T program, TileProgramUniforms* uniforms) {
   uniforms->program = program->program();
+  uniforms->matrix_location = program->vertex_shader().matrix_location();
+  uniforms->viewport_location = program->vertex_shader().viewport_location();
+  uniforms->quad_location = program->vertex_shader().quad_location();
+  uniforms->edge_location = program->vertex_shader().edge_location();
   uniforms->vertex_tex_transform_location =
       program->vertex_shader().vertex_tex_transform_location();
-  uniforms->matrix_location = program->vertex_shader().matrix_location();
-  uniforms->quad_location = program->vertex_shader().quad_location();
 
   uniforms->sampler_location = program->fragment_shader().sampler_location();
   uniforms->alpha_location = program->fragment_shader().alpha_location();
   uniforms->fragment_tex_transform_location =
       program->fragment_shader().fragment_tex_transform_location();
-  uniforms->edge_location = program->fragment_shader().edge_location();
 }
 
 void GLRenderer::DrawTileQuad(const DrawingFrame* frame,
@@ -1364,6 +1388,12 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
       resource_provider_, resource_id, GL_TEXTURE_2D, filter);
 
   if (use_aa) {
+    float viewport[4] = {
+      viewport_.x(), viewport_.y(),
+      viewport_.width(), viewport_.height(),
+    };
+    GLC(Context(),
+        Context()->uniform4fv(uniforms.viewport_location, 1, viewport));
     GLC(Context(), Context()->uniform3fv(uniforms.edge_location, 8, edge));
 
     GLC(Context(),
@@ -2459,6 +2489,7 @@ void GLRenderer::SetScissorTestRect(gfx::Rect scissor_rect) {
 }
 
 void GLRenderer::SetDrawViewport(gfx::Rect window_space_viewport) {
+  viewport_ = window_space_viewport;
   GLC(context_, context_->viewport(window_space_viewport.x(),
                                    window_space_viewport.y(),
                                    window_space_viewport.width(),
