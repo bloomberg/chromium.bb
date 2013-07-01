@@ -434,6 +434,13 @@ const CGFloat kRapidCloseDist = 2.5;
   [self drawStroke:dirtyRect];
 }
 
+- (void)setFrameOrigin:(NSPoint)origin {
+  // The background color depends on the view's vertical position.
+  if (NSMinY([self frame]) != origin.y)
+    [self setNeedsDisplay:YES];
+  [super setFrameOrigin:origin];
+}
+
 // Override this to catch the text so that we can choose when to display it.
 - (void)setToolTip:(NSString*)string {
   toolTipText_.reset([string retain]);
