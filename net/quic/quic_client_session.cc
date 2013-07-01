@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -157,6 +158,8 @@ void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
 }
 
 void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ConnectionCloseErrorCode",
+                              error);
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(ERR_QUIC_PROTOCOL_ERROR);
   }
@@ -187,6 +190,7 @@ void QuicClientSession::StartReading() {
 }
 
 void QuicClientSession::CloseSessionOnError(int error) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.CloseSessionOnError", -error);
   CloseSessionOnErrorInner(error);
   NotifyFactoryOfSessionClose();
 }

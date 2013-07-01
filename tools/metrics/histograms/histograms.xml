@@ -5694,6 +5694,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.CloseSessionOnError" enum="NetErrorCodes">
+  <summary>
+    The network error code which resulted in the session being closed.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.ConnectionCloseErrorCode"
+    enum="QuicErrorCodes">
+  <summary>
+    The QUIC error code which resulted in the connection being closed.
+  </summary>
+</histogram>
+
 <histogram name="Net.RenegotiationExtensionSupported">
   <summary>
     True if the HTTP request was sent to a server which supports the TLS
@@ -17964,6 +17977,55 @@ other types of suffix sets.
   <int value="20" label="DOMAIN_TWIMG_COM"/>
   <int value="21" label="DOMAIN_AKAMAIHD_NET"/>
   <int value="22" label="DOMAIN_NUM_EVENTS"/>
+</enum>
+
+<enum name="QuicErrorCodes" type="int">
+  <int value="0" label="NO_ERROR"/>
+  <int value="1" label="INTERNAL_ERROR"/>
+  <int value="2" label="STREAM_DATA_AFTER_TERMINATION"/>
+  <int value="3" label="INVALID_PACKET_HEADER"/>
+  <int value="4" label="INVALID_FRAME_DATA"/>
+  <int value="5" label="INVALID_FEC_DATA"/>
+  <int value="6" label="INVALID_RST_STREAM_DATA"/>
+  <int value="7" label="INVALID_CONNECTION_CLOSE_DATA"/>
+  <int value="8" label="INVALID_GOAWAY_DATA"/>
+  <int value="9" label="INVALID_ACK_DATA"/>
+  <int value="10" label="INVALID_VERSION_NEGOTIATION_PACKET"/>
+  <int value="11" label="INVALID_PUBLIC_RST_PACKET"/>
+  <int value="12" label="DECRYPTION_FAILURE"/>
+  <int value="13" label="ENCRYPTION_FAILURE"/>
+  <int value="14" label="PACKET_TOO_LARGE"/>
+  <int value="15" label="PACKET_FOR_NONEXISTENT_STREAM"/>
+  <int value="16" label="PEER_GOING_AWAY"/>
+  <int value="17" label="INVALID_STREAM_ID"/>
+  <int value="18" label="TOO_MANY_OPEN_STREAMS"/>
+  <int value="19" label="PUBLIC_RESET"/>
+  <int value="20" label="INVALID_VERSION"/>
+  <int value="21" label="STREAM_RST_BEFORE_HEADERS_DECOMPRESSED"/>
+  <int value="22" label="INVALID_HEADER_ID"/>
+  <int value="23" label="INVALID_NEGOTIATED_VALUE"/>
+  <int value="24" label="DECOMPRESSION_FAILURE"/>
+  <int value="25" label="CONNECTION_TIMED_OUT"/>
+  <int value="26" label="ERROR_MIGRATING_ADDRESS"/>
+  <int value="27" label="PACKET_WRITE_ERROR"/>
+  <int value="28" label="HANDSHAKE_FAILED"/>
+  <int value="29" label="CRYPTO_TAGS_OUT_OF_ORDER"/>
+  <int value="30" label="CRYPTO_TOO_MANY_ENTRIES"/>
+  <int value="31" label="CRYPTO_INVALID_VALUE_LENGTH"/>
+  <int value="32" label="CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE"/>
+  <int value="33" label="INVALID_CRYPTO_MESSAGE_TYPE"/>
+  <int value="34" label="INVALID_CRYPTO_MESSAGE_PARAMETER"/>
+  <int value="35" label="CRYPTO_MESSAGE_PARAMETER_NOT_FOUND"/>
+  <int value="36" label="CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP"/>
+  <int value="37" label="CRYPTO_MESSAGE_INDEX_NOT_FOUND"/>
+  <int value="38" label="CRYPTO_INTERNAL_ERROR"/>
+  <int value="39" label="CRYPTO_VERSION_NOT_SUPPORTED"/>
+  <int value="40" label="CRYPTO_NO_SUPPORT"/>
+  <int value="41" label="CRYPTO_TOO_MANY_REJECTS"/>
+  <int value="42" label="PROOF_INVALID"/>
+  <int value="43" label="CRYPTO_DUPLICATE_TAG"/>
+  <int value="44" label="CRYPTO_ENCRYPTION_LEVEL_INCORRECT"/>
+  <int value="45" label="CRYPTO_SERVER_CONFIG_EXPIRED"/>
 </enum>
 
 <enum name="QuicHandshakeState" type="int">
