@@ -97,7 +97,6 @@ public:
     bool shouldDumpEditingCallbacks() const;
     bool shouldDumpFrameLoadCallbacks() const;
     bool shouldDumpUserGestureInFrameLoadCallbacks() const;
-    bool stopProvisionalFrameLoads() const;
     bool shouldDumpTitleChanges() const;
     bool shouldDumpIconChanges() const;
     bool shouldDumpCreateView() const;
@@ -342,10 +341,6 @@ private:
     // user gesture status text for some frame load callbacks. It takes no
     // arguments, and ignores any that may be present.
     void dumpUserGestureInFrameLoadCallbacks(const CppArgumentList&, CppVariant*);
-
-    // If true, causes provisional frame loads to be stopped for the remainder of
-    // the test.
-    void setStopProvisionalFrameLoads(const CppArgumentList&, CppVariant*);
 
     void dumpTitleChanges(const CppArgumentList&, CppVariant*);
 
@@ -601,10 +596,6 @@ private:
     // If true, the test_shell will output a line of the user gesture status
     // text for some frame load callbacks.
     bool m_dumpUserGestureInFrameLoadCallbacks;
-
-    // If true, stops provisional frame loads during the
-    // DidStartProvisionalLoadForFrame callback.
-    bool m_stopProvisionalFrameLoads;
 
     // If true, output a message when the page title is changed.
     bool m_dumpTitleChanges;
