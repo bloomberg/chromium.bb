@@ -71,6 +71,11 @@ const float kTextBaselineShift = -1.0;
   [self setDrawsBackground:NO];
   [self setHorizontallyResizable:NO];
   [self setVerticallyResizable:NO];
+
+  // When text is rendered, linkTextAttributes override anything set via
+  // addAttributes for text that has NSLinkAttributeName. Set to nil to allow
+  // custom attributes to take precendence.
+  [self setLinkTextAttributes:nil];
 }
 
 - (void)fixupCursor {
