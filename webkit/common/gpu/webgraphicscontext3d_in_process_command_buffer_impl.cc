@@ -1237,7 +1237,10 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::signalSyncPoint(
   // Take ownership of the callback.
   context_->SignalSyncPoint(
       sync_point, base::Bind(&OnSignalSyncPoint, base::Owned(callback)));
-  // Stick something in the command buffer.
+  // Make sure we have something to flush, or shallowFlushCHROMIUM()
+  // doesn't do anything.
+  gl_->helper()->Noop(1);
+  // This fill force PumpCommands() to run which is what triggers the signal.
   shallowFlushCHROMIUM();
 }
 

@@ -45,6 +45,10 @@ class BrowserTestBase : public testing::Test {
   // RunTestOnMainThread().
   virtual void SetUpOnMainThread() {}
 
+  // Override this to add any custom teardown code that needs to be done on the
+  // main thread right after RunTestOnMainThread().
+  virtual void TearDownOnMainThread() {}
+
   // Override this to add command line flags specific to your test.
   virtual void SetUpCommandLine(CommandLine* command_line) {}
 

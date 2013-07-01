@@ -122,6 +122,8 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
   SetUpOnMainThread();
 
   RunTestOnMainThread();
+
+  TearDownOnMainThread();
 #if defined(OS_MACOSX)
   pool.Recycle();
 #endif
