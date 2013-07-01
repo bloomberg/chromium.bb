@@ -41,7 +41,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->UpdateTwinLayer();
 
   layer_impl->SetIsMask(is_mask_);
-  layer_impl->CreateTilingSet();
+  layer_impl->CreateTilingSetIfNeeded();
   // Unlike other properties, invalidation must always be set on layer_impl.
   // See PictureLayerImpl::PushPropertiesTo for more details.
   layer_impl->invalidation_.Clear();

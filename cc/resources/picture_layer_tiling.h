@@ -51,6 +51,10 @@ class CC_EXPORT PictureLayerTiling {
       gfx::Size layer_bounds,
       PictureLayerTilingClient* client);
   gfx::Size layer_bounds() const { return layer_bounds_; }
+  void SetLayerBounds(gfx::Size layer_bounds);
+  void Invalidate(const Region& layer_region);
+  void CreateMissingTilesInLiveTilesRect();
+
   void SetCanUseLCDText(bool can_use_lcd_text);
 
   void SetClient(PictureLayerTilingClient* client);
@@ -59,6 +63,8 @@ class CC_EXPORT PictureLayerTiling {
 
   gfx::Rect ContentRect() const;
   gfx::SizeF ContentSizeF() const;
+  gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
+  gfx::Size tile_size() const { return tiling_data_.max_texture_size(); }
   float contents_scale() const { return contents_scale_; }
 
   void CreateAllTilesForTesting() {
@@ -141,6 +147,8 @@ class CC_EXPORT PictureLayerTiling {
   // The src_tree priority is reset to the lowest priority possible.  This
   // also updates the pile on each tile to be the current client's pile.
   void DidBecomeActive();
+
+  void UpdateTilesToCurrentPile();
 
   bool NeedsUpdateForFrameAtTime(double frame_time_in_seconds) {
     return frame_time_in_seconds != last_impl_frame_time_in_seconds_;

@@ -114,6 +114,74 @@ void PictureLayerTiling::SetCanUseLCDText(bool can_use_lcd_text) {
     it->second->set_can_use_lcd_text(can_use_lcd_text);
 }
 
+void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
+  const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
+  for (TilingData::Iterator iter(&tiling_data_, live_tiles_rect_); iter;
+       ++iter) {
+    TileMapKey key = iter.index();
+    TileMap::iterator find = tiles_.find(key);
+    if (find != tiles_.end())
+      continue;
+    CreateTile(key.first, key.second, twin_tiling);
+  }
+}
+
+void PictureLayerTiling::SetLayerBounds(gfx::Size layer_bounds) {
+  if (layer_bounds_ == layer_bounds)
+    return;
+
+  DCHECK(!layer_bounds.IsEmpty());
+
+  gfx::Size old_layer_bounds = layer_bounds_;
+  layer_bounds_ = layer_bounds;
+  gfx::Size old_content_bounds = tiling_data_.total_size();
+  gfx::Size content_bounds =
+      gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds_, contents_scale_));
+
+  gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
+  if (tile_size != tiling_data_.max_texture_size()) {
+    tiling_data_.SetTotalSize(content_bounds);
+    tiling_data_.SetMaxTextureSize(tile_size);
+    Reset();
+    return;
+  }
+
+  // Any tiles outside our new bounds are invalid and should be dropped.
+  gfx::Rect bounded_live_tiles_rect(live_tiles_rect_);
+  bounded_live_tiles_rect.Intersect(gfx::Rect(content_bounds));
+  SetLiveTilesRect(bounded_live_tiles_rect);
+  tiling_data_.SetTotalSize(content_bounds);
+
+  // Create tiles for newly exposed areas.
+  Region layer_region((gfx::Rect(layer_bounds_)));
+  layer_region.Subtract(gfx::Rect(old_layer_bounds));
+  Invalidate(layer_region);
+}
+
+void PictureLayerTiling::Invalidate(const Region& layer_region) {
+  std::vector<TileMapKey> new_tile_keys;
+  for (Region::Iterator iter(layer_region); iter.has_rect(); iter.next()) {
+    gfx::Rect layer_rect = iter.rect();
+    gfx::Rect content_rect =
+        gfx::ScaleToEnclosingRect(layer_rect, contents_scale_);
+    content_rect.Intersect(live_tiles_rect_);
+    if (content_rect.IsEmpty())
+      continue;
+    for (TilingData::Iterator iter(&tiling_data_, content_rect); iter; ++iter) {
+      TileMapKey key(iter.index());
+      TileMap::iterator find = tiles_.find(key);
+      if (find == tiles_.end())
+        continue;
+      tiles_.erase(find);
+      new_tile_keys.push_back(key);
+    }
+  }
+
+  const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
+  for (size_t i = 0; i < new_tile_keys.size(); ++i)
+    CreateTile(new_tile_keys[i].first, new_tile_keys[i].second, twin_tiling);
+}
+
 PictureLayerTiling::CoverageIterator::CoverageIterator()
     : tiling_(NULL),
       current_tile_(NULL),
@@ -472,6 +540,12 @@ void PictureLayerTiling::DidBecomeActive() {
     // will cause PicturePileImpls and their clones to get deleted once the
     // corresponding PictureLayerImpl and any in flight raster jobs go out of
     // scope.
+    client_->UpdatePile(it->second.get());
+  }
+}
+
+void PictureLayerTiling::UpdateTilesToCurrentPile() {
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     client_->UpdatePile(it->second.get());
   }
 }

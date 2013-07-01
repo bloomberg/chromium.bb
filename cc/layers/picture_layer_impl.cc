@@ -60,17 +60,10 @@ scoped_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
   return PictureLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-void PictureLayerImpl::CreateTilingSet() {
+void PictureLayerImpl::CreateTilingSetIfNeeded() {
   DCHECK(layer_tree_impl()->IsPendingTree());
-  DCHECK(!tilings_);
-  tilings_.reset(new PictureLayerTilingSet(this, bounds()));
-}
-
-void PictureLayerImpl::TransferTilingSet(
-    scoped_ptr<PictureLayerTilingSet> tilings) {
-  DCHECK(layer_tree_impl()->IsActiveTree());
-  tilings->SetClient(this);
-  tilings_ = tilings.Pass();
+  if (!tilings_)
+    tilings_.reset(new PictureLayerTilingSet(this, bounds()));
 }
 
 void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
@@ -84,9 +77,13 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   twin_layer_ = NULL;
 
   layer_impl->SetIsMask(is_mask_);
-  layer_impl->TransferTilingSet(tilings_.Pass());
   layer_impl->pile_ = pile_;
-  pile_ = PicturePileImpl::Create();
+  pile_ = NULL;
+
+  layer_impl->tilings_.swap(tilings_);
+  layer_impl->tilings_->SetClient(layer_impl);
+  if (tilings_)
+    tilings_->SetClient(this);
 
   layer_impl->raster_page_scale_ = raster_page_scale_;
   layer_impl->raster_device_scale_ = raster_device_scale_;
@@ -563,8 +560,6 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   // trade-off for memory (use the same pile as much as possible, by switching
   // during DidBecomeActive) and for time (don't bother checking every tile
   // during activation to see if the new pile can still raster it).
-  //
-  // TODO(enne): Clean up this double loop.
   for (int x = 0; x < pile_->num_tiles_x(); ++x) {
     for (int y = 0; y < pile_->num_tiles_y(); ++y) {
       bool previously_had = other->pile_->HasRecordingAt(x, y);
@@ -581,11 +576,16 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   difference_region.Subtract(gfx::Rect(other->bounds()));
   invalidation_.Union(difference_region);
 
-  tilings_->RemoveAllTilings();
-  if (CanHaveTilings())
-    tilings_->AddTilingsToMatchScales(*other->tilings_, MinimumContentsScale());
-
-  DCHECK(bounds() == tilings_->layer_bounds());
+  if (CanHaveTilings()) {
+    // The reason the active layer's invalidation is needed here is becuase
+    // the recycle tree hasn't had that invalidation applied to it yet.
+    tilings_->SyncTilings(*other->tilings_,
+                          bounds(),
+                          other->invalidation_,
+                          MinimumContentsScale());
+  } else {
+    tilings_->RemoveAllTilings();
+  }
 }
 
 void PictureLayerImpl::SyncTiling(

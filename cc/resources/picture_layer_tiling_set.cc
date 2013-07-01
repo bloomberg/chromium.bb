@@ -36,26 +36,55 @@ void PictureLayerTilingSet::SetClient(PictureLayerTilingClient* client) {
     tilings_[i]->SetClient(client_);
 }
 
-void PictureLayerTilingSet::AddTilingsToMatchScales(
+void PictureLayerTilingSet::SyncTilings(
     const PictureLayerTilingSet& other,
+    gfx::Size new_layer_bounds,
+    const Region& layer_invalidation,
     float minimum_contents_scale) {
-  DCHECK(tilings_.empty());
+  if (new_layer_bounds.IsEmpty()) {
+    RemoveAllTilings();
+    layer_bounds_ = new_layer_bounds;
+    return;
+  }
+
   tilings_.reserve(other.tilings_.size());
+
+  // Remove any tilings that aren't in |other| or don't meet the minimum.
+  for (size_t i = 0; i < tilings_.size(); ++i) {
+    float scale = tilings_[i]->contents_scale();
+    if (scale >= minimum_contents_scale && !!other.TilingAtScale(scale))
+      continue;
+    // Swap with the last element and remove it.
+    tilings_.swap(tilings_.begin() + i, tilings_.end() - 1);
+    tilings_.pop_back();
+    --i;
+  }
+
+  // Add any missing tilings from |other| that meet the minimum.
   for (size_t i = 0; i < other.tilings_.size(); ++i) {
     float contents_scale = other.tilings_[i]->contents_scale();
     if (contents_scale < minimum_contents_scale)
       continue;
+    if (PictureLayerTiling* this_tiling = TilingAtScale(contents_scale)) {
+      this_tiling->set_resolution(other.tilings_[i]->resolution());
+      this_tiling->UpdateTilesToCurrentPile();
+      this_tiling->SetLayerBounds(new_layer_bounds);
+      this_tiling->Invalidate(layer_invalidation);
+      this_tiling->CreateMissingTilesInLiveTilesRect();
+      DCHECK(this_tiling->tile_size() ==
+             client_->CalculateTileSize(this_tiling->ContentRect().size()));
+      continue;
+    }
     scoped_ptr<PictureLayerTiling> new_tiling = PictureLayerTiling::Create(
         contents_scale,
-        layer_bounds_,
+        new_layer_bounds,
         client_);
-    // We need to copy the resolution to ensure that the information is not
-    // lost on this tiling. This is safe, since we know the current set begins
-    // empty (ie we will not end up with multiple HIGH RES tilings).
     new_tiling->set_resolution(other.tilings_[i]->resolution());
     tilings_.push_back(new_tiling.Pass());
   }
   tilings_.sort(LargestToSmallestScaleFunctor());
+
+  layer_bounds_ = new_layer_bounds;
 }
 
 void PictureLayerTilingSet::SetCanUseLCDText(bool can_use_lcd_text) {
@@ -74,6 +103,14 @@ PictureLayerTiling* PictureLayerTilingSet::AddTiling(float contents_scale) {
 
   tilings_.sort(LargestToSmallestScaleFunctor());
   return appended;
+}
+
+PictureLayerTiling* PictureLayerTilingSet::TilingAtScale(float scale) const {
+  for (size_t i = 0; i < tilings_.size(); ++i) {
+    if (tilings_[i]->contents_scale() == scale)
+      return tilings_[i];
+  }
+  return NULL;
 }
 
 void PictureLayerTilingSet::RemoveAllTilings() {
