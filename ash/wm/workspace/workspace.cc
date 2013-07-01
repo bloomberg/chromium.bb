@@ -20,8 +20,8 @@ namespace internal {
 
 Workspace::Workspace(WorkspaceManager* manager,
                      aura::Window* parent,
-                     bool is_maximized)
-    : is_maximized_(is_maximized),
+                     bool is_fullscreen)
+    : is_fullscreen_(is_fullscreen),
       workspace_manager_(manager),
       window_(new aura::Window(NULL)),
       event_handler_(new WorkspaceEventHandler(window_)),
@@ -72,7 +72,7 @@ aura::Window* Workspace::ReleaseWindow() {
 }
 
 bool Workspace::ShouldMoveToPending() const {
-  if (!is_maximized_)
+  if (!is_fullscreen_)
     return false;
 
   for (size_t i = 0; i < window_->children().size(); ++i) {
@@ -80,8 +80,8 @@ bool Workspace::ShouldMoveToPending() const {
     if (!child->TargetVisibility() || wm::IsWindowMinimized(child))
       continue;
 
-    // If we have a maximized window don't move to pending.
-    if (WorkspaceManager::IsMaximized(child))
+    // If we have a fullscreen window don't move to pending.
+    if (wm::IsWindowFullscreen(child))
       return false;
 
     if (GetTrackedByWorkspace(child) && !GetPersistsAcrossAllWorkspaces(child))
@@ -90,13 +90,13 @@ bool Workspace::ShouldMoveToPending() const {
   return true;
 }
 
-int Workspace::GetNumMaximizedWindows() const {
+int Workspace::GetNumFullscreenWindows() const {
   int count = 0;
   for (size_t i = 0; i < window_->children().size(); ++i) {
     aura::Window* child = window_->children()[i];
     if (GetTrackedByWorkspace(child) &&
-        (WorkspaceManager::IsMaximized(child) ||
-         WorkspaceManager::WillRestoreMaximized(child))) {
+        (wm::IsWindowFullscreen(child) ||
+         WorkspaceManager::WillRestoreToWorkspace(child))) {
       if (++count == 2)
         return count;
     }
