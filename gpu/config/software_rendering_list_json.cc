@@ -88,7 +88,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.2",
+  "version": "6.3",
   "entries": [
     {
       "id": 1,
@@ -128,7 +128,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "type": "any"
       },
       "vendor_id": "0x8086",
-      "device_id": ["0x27AE"],
+      "device_id": ["0x27AE", "0x27A2"],
       "features": [
         "webgl",
         "flash_3d",
