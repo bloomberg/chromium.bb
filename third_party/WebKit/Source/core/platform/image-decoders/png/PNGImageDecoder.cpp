@@ -512,8 +512,8 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer, unsigned rowIndex, 
     }
 
     bool hasNonTrivialAlpha = alphaMask != 255;
-    if (hasNonTrivialAlpha && !buffer.hasAlpha())
-        buffer.setHasAlpha(true);
+    if (!buffer.hasAlpha())
+        buffer.setHasAlpha(hasNonTrivialAlpha);
 }
 
 void PNGImageDecoder::pngComplete()
