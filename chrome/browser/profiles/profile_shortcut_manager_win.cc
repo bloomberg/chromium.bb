@@ -557,8 +557,7 @@ string16 CreateProfileShortcutFlags(const base::FilePath& profile_path) {
 // static
 bool ProfileShortcutManager::IsFeatureEnabled() {
   return BrowserDistribution::GetDistribution()->CanCreateDesktopShortcuts() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowAppList);
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir);
 }
 
 // static
