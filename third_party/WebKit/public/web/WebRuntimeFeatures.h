@@ -127,9 +127,6 @@ public:
     WEBKIT_EXPORT static void enableIndexedDB(bool);
     WEBKIT_EXPORT static bool isIndexedDBEnabled();
 
-    WEBKIT_EXPORT static void enableInputModeAttribute(bool);
-    WEBKIT_EXPORT static bool isInputModeAttributeEnabled();
-
     WEBKIT_EXPORT static void enableInputTypeWeek(bool);
     WEBKIT_EXPORT static bool isInputTypeWeekEnabled();
 
