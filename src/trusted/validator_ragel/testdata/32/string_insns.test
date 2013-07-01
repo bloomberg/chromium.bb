@@ -65,7 +65,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  2: failed to decode instruction
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # same
@@ -76,4 +76,4 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  2: failed to decode instruction
+  SAFE

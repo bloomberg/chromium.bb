@@ -7,13 +7,6 @@ class Validator(object):
   BITNESS = None
   MAX_SUPERINSTRUCTION_LENGTH = None
 
-  def __init__(self, data):
-    self.data = data
-    self.messages = []
-    self.valid_jump_targets = set()
-    self.jumps = {}
-    self.condition = spec.Condition()
-
   def ValidateSuperinstruction(self, superinstruction):
     raise NotImplementedError()
 
@@ -26,17 +19,14 @@ class Validator(object):
       self, insns, precondition, postcondition):
     raise NotImplementedError()
 
+  def CheckFinalCondition(self, end_offset):
+    raise NotImplementedError()
 
-  def Validate(self):
-    if len(self.data) % spec.BUNDLE_SIZE != 0:
-      self.messages.append((0, 'chunk size is not multiple of bundle size'))
-      return
-
-    try:
-      insns = validator.DisassembleChunk(self.data, bitness=self.BITNESS)
-    except validator.DisassemblerError as e:
-      self.messages.append((e.offset, 'failed to decode instruction'))
-      return
+  def Validate(self, insns):
+    self.messages = []
+    self.valid_jump_targets = set()
+    self.jumps = {}
+    self.condition = spec.Condition()
 
     i = 0
 
@@ -87,11 +77,17 @@ class Validator(object):
 
     assert i == len(insns)
 
+    end_offset = insns[-1].address + len(insns[-1].bytes)
+    self.valid_jump_targets.add(end_offset)
+    self.CheckFinalCondition(end_offset)
+
     for source, destination in sorted(self.jumps.items()):
       if (destination % spec.BUNDLE_SIZE != 0 and
           destination not in self.valid_jump_targets):
         self.messages.append(
             (source, 'jump into a middle of instruction (0x%x)' % destination))
+
+    return self.messages
 
 
 class Validator32(Validator):
@@ -105,6 +101,9 @@ class Validator32(Validator):
   def CheckConditions(
       self, insns, precondition, postcondition):
     assert precondition == postcondition == spec.Condition()
+
+  def CheckFinalCondition(self, end_offset):
+    assert self.condition == spec.Condition()
 
 
 class Validator64(Validator):
@@ -127,8 +126,6 @@ class Validator64(Validator):
     self.condition = postcondition
 
     end_offset = offset + sum(len(insn.bytes) for insn in insns)
-    # Here we rely on the fact that our chunks never end mid-bundle, so
-    # this check would be performed at the end of the chunk as well.
     if end_offset % spec.BUNDLE_SIZE == 0:
       # At the end of bundle we reset condition to default value
       # (because anybody can jump to this point), so we have to check
@@ -139,3 +136,12 @@ class Validator64(Validator):
             '%s at the end of bundle'
             % self.condition.WhyNotImplies(spec.Condition())))
       self.condition = spec.Condition()
+
+  def CheckFinalCondition(self, end_offset):
+    # If chunk ends mid-bundle, we have to check final condition separately.
+    if end_offset % spec.BUNDLE_SIZE != 0:
+      if not self.condition.Implies(spec.Condition()):
+        self.messages.append((
+            end_offset,
+            '%s at the end of chunk'
+            % self.condition.WhyNotImplies(spec.Condition())))

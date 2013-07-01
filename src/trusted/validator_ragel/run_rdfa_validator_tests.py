@@ -273,8 +273,8 @@ class RdfaTestRunner(test_format.TestRunner):
     parser.add_option('--rdfaval', default='validator_test',
                       help='Path to the ncval validator executable')
 
-  def GetSectionContent(self, options, hex_content):
-    data_chunks = list(test_format.ParseHex(hex_content))
+  def GetSectionContent(self, options, sections):
+    data_chunks = list(test_format.ParseHex(sections['hex']))
     result = RunRdfaWithNopPatching(options, data_chunks)
 
     last_line = re.search('return code: ((-)?\d+)\n$', result)

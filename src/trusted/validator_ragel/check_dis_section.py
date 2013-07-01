@@ -15,9 +15,9 @@ class RdfaTestRunner(test_format.TestRunner):
     parser.add_option('--objdump',
                       help='Path to objdump')
 
-  def GetSectionContent(self, options, hex_content):
+  def GetSectionContent(self, options, sections):
     arch = {32: '-Mi386', 64: '-Mx86-64'}[options.bits]
-    data = ''.join(test_format.ParseHex(hex_content))
+    data = ''.join(test_format.ParseHex(sections['hex']))
 
     tmp = tempfile.NamedTemporaryFile(mode='wb', delete=False)
     try:

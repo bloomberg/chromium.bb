@@ -36,7 +36,7 @@
   return code: 1
 @spec:
   0: unrecognized instruction 'nopw -0x1(%ebx)'
-  5: unrecognized instruction 'call *-0x6f6f6f70(%eax)'
+  5: unrecognized instruction '.byte 0xff'
 ----------------------------------------------------------------------
 @hex:
   # This is an example of a different, correct, nop case.
@@ -57,7 +57,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  d: failed to decode instruction
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 01  nopw %cs:0x1000000(%eax,%eax,1)))
 ----------------------------------------------------------------------
 @hex:
   # This is an example where we have decremented the nop by 1.
@@ -69,7 +69,8 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  8: failed to decode instruction
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 66 66 66 2e 0f 1f 83 ff ff ff ff  nopw %cs:-0x1(%ebx)))
+  d: unrecognized instruction '.byte 0xff'
 ----------------------------------------------------------------------
 @hex:
   # This is the list of all nops, just to see if they validate.

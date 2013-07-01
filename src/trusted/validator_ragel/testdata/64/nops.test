@@ -73,7 +73,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  2: failed to decode instruction
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 90  xchg %ax,%ax))
 ----------------------------------------------------------------------
 @hex:
   66 66 66 90
@@ -83,7 +83,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  3: failed to decode instruction
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 66 90  xchg %ax,%ax))
 ----------------------------------------------------------------------
 @hex:
   3E 0F 1F 84 00 00 00 00 00
@@ -93,7 +93,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  2: failed to decode instruction
+  0: ('segments in memory references are not allowed', Instruction(0x0: 3e 0f 1f 84 00 00 00 00 00  nopl %ds:0x0(%rax,%rax,1)))
 ----------------------------------------------------------------------
 @hex:
   66 3E 0F 1F 84 00 00 00 00 00
@@ -103,7 +103,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  3: failed to decode instruction
+  0: ('segments in memory references are not allowed', Instruction(0x0: 66 3e 0f 1f 84 00 00 00 00 00  nopw %ds:0x0(%rax,%rax,1)))
 ----------------------------------------------------------------------
 @hex:
   # TODO(shcherbina): whitelist nops by bytes, not by disasm
@@ -115,4 +115,4 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  2: failed to decode instruction
+  SAFE

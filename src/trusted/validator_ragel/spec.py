@@ -335,6 +335,9 @@ def ValidateRegularInstruction(instruction, bitness):
   """
   assert bitness in [32, 64]
 
+  if instruction.disasm.startswith('.byte '):
+    raise DoNotMatchError(instruction)
+
   try:
     _ValidateNop(instruction)
     return Condition(), Condition()
