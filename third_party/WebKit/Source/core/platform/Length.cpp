@@ -140,13 +140,9 @@ Vector<Length> parseHTMLAreaElementCoords(const String& string)
     return r;
 }
 
-// FIXME: Per HTML5, this should "use the rules for parsing a list of dimensions".
-Vector<Length> parseFrameSetListOfDimensions(const String& string)
+template<typename CharType>
+static Vector<Length> parseFrameSetListOfDimensionsInternal(StringImpl* str)
 {
-    RefPtr<StringImpl> str = string.impl()->simplifyWhiteSpace();
-    if (!str->length())
-        return Vector<Length>();
-
     unsigned len = str->count(',') + 1;
     Vector<Length> r(len);
 
@@ -155,19 +151,30 @@ Vector<Length> parseFrameSetListOfDimensions(const String& string)
     size_t pos2;
 
     while ((pos2 = str->find(',', pos)) != notFound) {
-        r[i++] = parseFrameSetDimension(str->bloatedCharacters() + pos, pos2 - pos);
+        r[i++] = parseFrameSetDimension(str->getCharacters<CharType>() + pos, pos2 - pos);
         pos = pos2 + 1;
     }
 
     ASSERT(i == len - 1);
 
     // IE Quirk: If the last comma is the last char skip it and reduce len by one.
-    if (str->length()-pos > 0)
-        r[i] = parseFrameSetDimension(str->bloatedCharacters() + pos, str->length() - pos);
+    if (str->length() - pos > 0)
+        r[i] = parseFrameSetDimension(str->getCharacters<CharType>() + pos, str->length() - pos);
     else
         r.shrink(r.size() - 1);
 
     return r;
+}
+
+// FIXME: Per HTML5, this should "use the rules for parsing a list of dimensions".
+Vector<Length> parseFrameSetListOfDimensions(const String& string)
+{
+    RefPtr<StringImpl> str = string.impl()->simplifyWhiteSpace();
+    if (!str->length())
+        return Vector<Length>();
+    if (str->is8Bit())
+        return parseFrameSetListOfDimensionsInternal<LChar>(str.get());
+    return parseFrameSetListOfDimensionsInternal<UChar>(str.get());
 }
 
 class CalculationValueHandleMap {
