@@ -96,3 +96,6 @@ ResourceFetcherTests.ResourceFetcher404
 ResourceFetcherTests.ResourceFetcherDeletedInCallback
 ResourceFetcherTests.ResourceFetcherTimeout
 ResourceFetcherTests.ResourceFetcherDownload
+
+# http://crbug.com/256238
+SignalTest.*
