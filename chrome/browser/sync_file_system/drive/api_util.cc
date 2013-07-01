@@ -126,6 +126,16 @@ void UploadResultAdapter(const APIUtil::ResourceEntryCallback& callback,
   callback.Run(error, entry.Pass());
 }
 
+std::string GetMimeTypeFromTitle(const std::string& title) {
+  base::FilePath::StringType extension =
+      base::FilePath::FromUTF8Unsafe(title).Extension();
+  std::string mime_type;
+  if (extension.empty() ||
+      !net::GetWellKnownMimeTypeFromExtension(extension.substr(1), &mime_type))
+    return kMimeTypeOctetStream;
+  return mime_type;
+}
+
 }  // namespace
 
 APIUtil::APIUtil(Profile* profile)
@@ -487,11 +497,7 @@ void APIUtil::UploadNewFile(const std::string& directory_resource_id,
   DVLOG(2) << "Uploading new file into the directory [" << directory_resource_id
            << "] with title [" << title << "]";
 
-  std::string mime_type;
-  if (!net::GetWellKnownMimeTypeFromExtension(local_file_path.Extension(),
-                                              &mime_type))
-    mime_type = kMimeTypeOctetStream;
-
+  std::string mime_type = GetMimeTypeFromTitle(title);
   UploadKey upload_key = RegisterUploadCallback(callback);
   ResourceEntryCallback did_upload_callback =
       base::Bind(&APIUtil::DidUploadNewFile,
@@ -824,11 +830,7 @@ void APIUtil::UploadExistingFileInternal(
     return;
   }
 
-  std::string mime_type;
-  if (!net::GetWellKnownMimeTypeFromExtension(local_file_path.Extension(),
-                                              &mime_type))
-    mime_type = kMimeTypeOctetStream;
-
+  std::string mime_type = GetMimeTypeFromTitle(entry->title());
   UploadKey upload_key = RegisterUploadCallback(callback);
   ResourceEntryCallback did_upload_callback =
       base::Bind(&APIUtil::DidUploadExistingFile, AsWeakPtr(), upload_key);
