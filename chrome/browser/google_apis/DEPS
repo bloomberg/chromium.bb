@@ -3,20 +3,23 @@ include_rules = [
   "-content",
   "+chrome/browser/google_apis",
 
-  # Should use ThreadChecker instead of BrowserThread::CurrentlyOn()
-  # crbug.com/251577
+  # BrowserThread should be gone: crbug.com/251577, crbug.com/256112
   "!content/public/browser/browser_thread.h",
 ]
 
 # Exceptions are temporarily needed. crbug.com/146989
 specific_include_rules = {
   ".*requests.*unittest\.cc": [
+    # This is necessary for AuthService. See below.
     "!chrome/test/base/testing_profile.h",
+    # TestBrowserThreadBundle should be gone: crbug.com/256109
     "!content/public/test/test_browser_thread_bundle.h",
   ],
   "time_util_unittest\.cc": [
+    # TimezoneSettings should be gone: crbug.com/256115
     "!chrome/browser/chromeos/system/timezone_settings.h",
   ],
+  # AuthService should be gone. crbug.com/162157
   "auth_service\.(h|cc)": [
     "!chrome/browser/profiles/profile.h",
     "!chrome/browser/signin/token_service_factory.h",
