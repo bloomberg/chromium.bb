@@ -104,6 +104,11 @@ def RunCppTests(cpp_tests):
   return code
 
 
+def DownloadChrome(version_name, revision, download_site):
+  util.MarkBuildStepStart('download %s' % version_name)
+  return archive.DownloadChrome(revision, util.MakeTempDir(), download_site)
+
+
 def main():
   parser = optparse.OptionParser()
   parser.add_option(
@@ -159,6 +164,7 @@ def main():
     latest_snapshot_revision = archive.GetLatestRevision(archive.Site.SNAPSHOT)
     versions = [
         ['HEAD', latest_snapshot_revision],
+        ['29', archive.CHROME_29_REVISION],
         ['28', archive.CHROME_28_REVISION],
         ['27', archive.CHROME_27_REVISION]
     ]
@@ -171,9 +177,7 @@ def main():
       if version_name == 'HEAD':
         version_name = version[1]
         download_site = archive.Site.SNAPSHOT
-      chrome_path = archive.DownloadChrome(version[1],
-                                           util.MakeTempDir(),
-                                           download_site)
+      chrome_path = DownloadChrome(version_name, version[1], download_site)
       code1 = RunPythonTests(chromedriver,
                              ref_chromedriver,
                              chrome=chrome_path,
