@@ -1,10 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/extensions/shell_window.h"
+#include "apps/shell_window.h"
 
 #include "apps/shell_window_geometry_cache.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/app_window_contents.h"
@@ -13,18 +14,8 @@
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/media/media_capture_devices_dispatcher.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -48,10 +39,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 
-#if defined(USE_ASH)
-#include "ash/launcher/launcher_types.h"
-#endif
-
 using content::ConsoleMessageLevel;
 using content::WebContents;
 using extensions::APIPermission;
@@ -62,31 +49,9 @@ namespace {
 const int kDefaultWidth = 512;
 const int kDefaultHeight = 384;
 
-// The preferred icon size for displaying the app icon.
-#if defined(USE_ASH)
-const int kPreferredIconSize = ash::kLauncherPreferredSize;
-#else
-const int kPreferredIconSize = extension_misc::EXTENSION_ICON_SMALL;
-#endif
-
-static bool disable_external_open_for_testing_ = false;
-
-class ShellWindowLinkDelegate : public content::WebContentsDelegate {
- private:
-  virtual content::WebContents* OpenURLFromTab(
-      content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
-};
-
-content::WebContents* ShellWindowLinkDelegate::OpenURLFromTab(
-    content::WebContents* source,
-    const content::OpenURLParams& params) {
-  platform_util::OpenExternal(params.url);
-  delete source;
-  return NULL;
-}
-
 }  // namespace
+
+namespace apps {
 
 ShellWindow::CreateParams::CreateParams()
   : window_type(ShellWindow::WINDOW_TYPE_DEFAULT),
@@ -97,29 +62,32 @@ ShellWindow::CreateParams::CreateParams()
     state(ui::SHOW_STATE_DEFAULT),
     hidden(false),
     resizable(true),
-    focused(true) {
-}
+    focused(true) {}
 
-ShellWindow::CreateParams::~CreateParams() {
-}
+ShellWindow::CreateParams::~CreateParams() {}
+
+ShellWindow::Delegate::~Delegate() {}
 
 ShellWindow* ShellWindow::Create(Profile* profile,
+                                 Delegate* delegate,
                                  const extensions::Extension* extension,
                                  const GURL& url,
                                  const CreateParams& params) {
   // This object will delete itself when the window is closed.
-  ShellWindow* window = new ShellWindow(profile, extension);
+  ShellWindow* window = new ShellWindow(profile, delegate, extension);
   window->Init(url, new AppWindowContents(window), params);
   extensions::ShellWindowRegistry::Get(profile)->AddShellWindow(window);
   return window;
 }
 
 ShellWindow::ShellWindow(Profile* profile,
+                         Delegate* delegate,
                          const extensions::Extension* extension)
     : profile_(profile),
       extension_(extension),
       extension_id_(extension->id()),
       window_type_(WINDOW_TYPE_DEFAULT),
+      delegate_(delegate),
       image_loader_ptr_factory_(this),
       fullscreen_for_window_api_(false),
       fullscreen_for_tab_(false) {
@@ -132,8 +100,8 @@ void ShellWindow::Init(const GURL& url,
   shell_window_contents_.reset(shell_window_contents);
   shell_window_contents_->Initialize(profile(), url);
   WebContents* web_contents = shell_window_contents_->GetWebContents();
+  delegate_->InitWebContents(web_contents);
   WebContentsModalDialogManager::CreateForWebContents(web_contents);
-  FaviconTabHelper::CreateForWebContents(web_contents);
 
   web_contents->SetDelegate(this);
   WebContentsModalDialogManager::FromWebContents(web_contents)->
@@ -157,8 +125,7 @@ void ShellWindow::Init(const GURL& url,
   if (!params.window_key.empty()) {
     window_key_ = params.window_key;
 
-    apps::ShellWindowGeometryCache* cache =
-        apps::ShellWindowGeometryCache::Get(profile());
+    ShellWindowGeometryCache* cache = ShellWindowGeometryCache::Get(profile());
 
     gfx::Rect cached_bounds;
     gfx::Rect cached_screen_bounds;
@@ -234,9 +201,7 @@ void ShellWindow::Init(const GURL& url,
                     &web_contents->GetController()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
-  // Close when the browser is exiting.
-  // TODO(mihaip): we probably don't want this in the long run (when platform
-  // apps are no longer tied to the browser process).
+  // Close when the browser process is exiting.
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 
@@ -261,8 +226,8 @@ void ShellWindow::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
-      web_contents, request, callback, extension());
+  delegate_->RequestMediaAccessPermission(web_contents, request, callback,
+                                          extension());
 }
 
 WebContents* ShellWindow::OpenURLFromTab(WebContents* source,
@@ -288,16 +253,9 @@ WebContents* ShellWindow::OpenURLFromTab(WebContents* source,
     return NULL;
   }
 
-  // Force all links to open in a new tab, even if they were trying to open a
-  // window.
-  chrome::NavigateParams new_tab_params(
-      static_cast<Browser*>(NULL), params.url, params.transition);
-  new_tab_params.disposition =
-      disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
-  new_tab_params.initiating_profile = profile_;
-  chrome::Navigate(&new_tab_params);
-
-  if (!new_tab_params.target_contents) {
+  WebContents* contents = delegate_->OpenURLFromTab(profile_, source,
+                                                    params);
+  if (!contents) {
     AddMessageToDevToolsConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR,
         base::StringPrintf(
@@ -305,7 +263,7 @@ WebContents* ShellWindow::OpenURLFromTab(WebContents* source,
             params.url.spec().c_str()));
   }
 
-  return new_tab_params.target_contents;
+  return contents;
 }
 
 void ShellWindow::AddNewContents(WebContents* source,
@@ -316,30 +274,8 @@ void ShellWindow::AddNewContents(WebContents* source,
                                  bool* was_blocked) {
   DCHECK(Profile::FromBrowserContext(new_contents->GetBrowserContext()) ==
       profile_);
-#if defined(OS_MACOSX) || defined(OS_WIN) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (disable_external_open_for_testing_) {
-    Browser* browser =
-        chrome::FindOrCreateTabbedBrowser(profile_, chrome::GetActiveDesktop());
-    // Force all links to open in a new tab, even if they were trying to open a
-    // new window.
-    disposition =
-        disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
-    chrome::AddWebContents(browser, NULL, new_contents, disposition,
-                           initial_pos, user_gesture, was_blocked);
-  } else {
-    new_contents->SetDelegate(new ShellWindowLinkDelegate());
-  }
-#else
-  Browser* browser =
-      chrome::FindOrCreateTabbedBrowser(profile_, chrome::GetActiveDesktop());
-  // Force all links to open in a new tab, even if they were trying to open a
-  // new window.
-  disposition =
-      disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
-  chrome::AddWebContents(browser, NULL, new_contents, disposition, initial_pos,
-                         user_gesture, was_blocked);
-#endif
+  delegate_->AddNewContents(profile_, new_contents, disposition,
+                            initial_pos, user_gesture, was_blocked);
 }
 
 void ShellWindow::HandleKeyboardEvent(
@@ -414,12 +350,16 @@ string16 ShellWindow::GetTitle() const {
   // WebContents::GetTitle() will return the page's URL if there's no <title>
   // specified. However, we'd prefer to show the name of the extension in that
   // case, so we directly inspect the NavigationEntry's title.
+  string16 title;
   if (!web_contents() ||
       !web_contents()->GetController().GetActiveEntry() ||
-      web_contents()->GetController().GetActiveEntry()->GetTitle().empty())
-    return UTF8ToUTF16(extension()->name());
-  string16 title = web_contents()->GetTitle();
-  Browser::FormatTitleForDisplay(&title);
+      web_contents()->GetController().GetActiveEntry()->GetTitle().empty()) {
+    title = UTF8ToUTF16(extension()->name());
+  } else {
+    title = web_contents()->GetTitle();
+  }
+  const char16 kBadChars[] = { '\n', 0 };
+  RemoveChars(title, kBadChars, &title);
   return title;
 }
 
@@ -431,7 +371,7 @@ void ShellWindow::SetAppIconUrl(const GURL& url) {
   web_contents()->DownloadImage(
       url,
       true,  // is a favicon
-      kPreferredIconSize,
+      delegate_->PreferredIconSize(),
       0,  // no maximum size
       base::Bind(&ShellWindow::DidDownloadFavicon,
                  image_loader_ptr_factory_.GetWeakPtr()));
@@ -492,7 +432,7 @@ void ShellWindow::DidDownloadFavicon(int id,
   // whose height >= the preferred size.
   int largest_index = 0;
   for (size_t i = 1; i < bitmaps.size(); ++i) {
-    if (bitmaps[i].height() < kPreferredIconSize)
+    if (bitmaps[i].height() < delegate_->PreferredIconSize())
       break;
     largest_index = i;
   }
@@ -509,9 +449,9 @@ void ShellWindow::UpdateExtensionAppIcon() {
   loader->LoadImageAsync(
       extension(),
       extensions::IconsInfo::GetIconResource(extension(),
-                                             kPreferredIconSize,
+                                             delegate_->PreferredIconSize(),
                                              ExtensionIconSet::MATCH_BIGGER),
-      gfx::Size(kPreferredIconSize, kPreferredIconSize),
+      gfx::Size(delegate_->PreferredIconSize(), delegate_->PreferredIconSize()),
       base::Bind(&ShellWindow::OnImageLoaded,
                  image_loader_ptr_factory_.GetWeakPtr()));
 }
@@ -526,7 +466,7 @@ bool ShellWindow::ShouldSuppressDialogs() {
 
 content::ColorChooser* ShellWindow::OpenColorChooser(WebContents* web_contents,
                                                      SkColor initial_color) {
-  return chrome::ShowColorChooser(web_contents, initial_color);
+  return delegate_->ShowColorChooser(web_contents, initial_color);
 }
 
 void ShellWindow::RunFileChooser(WebContents* tab,
@@ -538,7 +478,8 @@ void ShellWindow::RunFileChooser(WebContents* tab,
     LOG(WARNING) << "File dialog opened by panel.";
     return;
   }
-  FileSelectHelper::RunFileChooser(tab, params);
+
+  delegate_->RunFileChooser(tab, params);
 }
 
 bool ShellWindow::IsPopupOrPanel(const WebContents* source) const {
@@ -607,6 +548,15 @@ void ShellWindow::Observe(int type,
   }
 }
 
+void ShellWindow::SetWebContentsBlocked(content::WebContents* web_contents,
+                                        bool blocked) {
+  delegate_->SetWebContentsBlocked(web_contents, blocked);
+}
+
+bool ShellWindow::IsWebContentsVisible(content::WebContents* web_contents) {
+  return delegate_->IsWebContentsVisible(web_contents);
+}
+
 extensions::ActiveTabPermissionGranter*
     ShellWindow::GetActiveTabPermissionGranter() {
   // Shell windows don't support the activeTab permission.
@@ -630,8 +580,7 @@ void ShellWindow::SaveWindowPosition() {
   if (!native_app_window_)
     return;
 
-  apps::ShellWindowGeometryCache* cache =
-      apps::ShellWindowGeometryCache::Get(profile());
+  ShellWindowGeometryCache* cache = ShellWindowGeometryCache::Get(profile());
 
   gfx::Rect bounds = native_app_window_->GetRestoredBounds();
   bounds.Inset(native_app_window_->GetFrameInsets());
@@ -697,7 +646,4 @@ SkRegion* ShellWindow::RawDraggableRegionsToSkRegion(
   return sk_region;
 }
 
-void ShellWindow::DisableExternalOpenForTesting() {
-  disable_external_open_for_testing_ = true;
-}
-
+}  // namespace apps

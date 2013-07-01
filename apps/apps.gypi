@@ -57,6 +57,8 @@
         'saved_files_service.h',
         'saved_files_service_factory.cc',
         'saved_files_service_factory.h',
+        'shell_window.cc',
+        'shell_window.h',
         'shell_window_geometry_cache.cc',
         'shell_window_geometry_cache.h',
         'shortcut_manager.cc',

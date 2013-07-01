@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "apps/shell_window.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -226,7 +226,7 @@ ui::BaseWindow* GetBaseWindowForWebContents(
 
   gfx::NativeWindow native_window =
       web_contents->GetView()->GetTopLevelNativeWindow();
-  ShellWindow* shell_window =
+  apps::ShellWindow* shell_window =
       extensions::ShellWindowRegistry::
           GetShellWindowForNativeWindowAnyProfile(native_window);
   return shell_window->GetBaseWindow();

@@ -21,6 +21,8 @@
 
 namespace app_window = extensions::api::app_window;
 
+using apps::ShellWindow;
+
 AppWindowContents::AppWindowContents(ShellWindow* host)
     : host_(host) {
 }

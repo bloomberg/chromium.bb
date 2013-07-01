@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -38,6 +38,8 @@ struct DraggableRegion;
 namespace ui {
 class BaseWindow;
 }
+
+namespace apps {
 
 // Manages the web contents for Shell Windows. The implementation for this
 // class should create and maintain the WebContents for the window, and handle
@@ -70,8 +72,8 @@ class ShellWindowContents {
 // have a WebContents but none of the chrome of normal browser windows.
 class ShellWindow : public content::NotificationObserver,
                     public content::WebContentsDelegate,
-                    public extensions::ExtensionKeybindingRegistry::Delegate,
-                    public ChromeWebModalDialogManagerDelegate {
+                    public web_modal::WebContentsModalDialogManagerDelegate,
+                    public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   enum WindowType {
     WINDOW_TYPE_DEFAULT  = 1 << 0,  // Default shell window.
@@ -120,8 +122,48 @@ class ShellWindow : public content::NotificationObserver,
     bool focused;
   };
 
+  class Delegate {
+   public:
+    virtual ~Delegate();
+
+    // General initialization.
+    virtual void InitWebContents(content::WebContents* web_contents) = 0;
+
+    // Link handling.
+    virtual content::WebContents* OpenURLFromTab(
+        Profile* profile,
+        content::WebContents* source,
+        const content::OpenURLParams& params) = 0;
+    virtual void AddNewContents(Profile* profile,
+                                content::WebContents* new_contents,
+                                WindowOpenDisposition disposition,
+                                const gfx::Rect& initial_pos,
+                                bool user_gesture,
+                                bool* was_blocked) = 0;
+
+    // Feature support.
+    virtual content::ColorChooser* ShowColorChooser(
+        content::WebContents* web_contents,
+        SkColor initial_color) = 0;
+    virtual void RunFileChooser(content::WebContents* tab,
+                                const content::FileChooserParams& params) = 0;
+    virtual void RequestMediaAccessPermission(
+        content::WebContents* web_contents,
+        const content::MediaStreamRequest& request,
+        const content::MediaResponseCallback& callback,
+      const extensions::Extension* extension) = 0;
+    virtual int PreferredIconSize() = 0;
+
+    // Web contents modal dialog support.
+    virtual void SetWebContentsBlocked(content::WebContents* web_contents,
+                                       bool blocked) = 0;
+    virtual bool IsWebContentsVisible(content::WebContents* web_contents) = 0;
+  };
+
   // Helper function for creating and intiailizing a v2 app window.
+  // The created shell window will take ownership of |delegate|.
   static ShellWindow* Create(Profile* profile,
+                             Delegate* delegate,
                              const extensions::Extension* extension,
                              const GURL& url,
                              const CreateParams& params);
@@ -134,7 +176,10 @@ class ShellWindow : public content::NotificationObserver,
   // The constructor and Init methods are public for constructing a ShellWindow
   // with a non-standard render interface (e.g. v1 apps using Ash Panels).
   // Normally ShellWindow::Create should be used.
-  ShellWindow(Profile* profile, const extensions::Extension* extension);
+  // The constructed shell window takes ownership of |delegate|.
+  ShellWindow(Profile* profile,
+              Delegate* delegate,
+              const extensions::Extension* extension);
 
   // Initializes the render interface, web contents, and native window.
   // |shell_window_contents| will become owned by ShellWindow.
@@ -204,8 +249,6 @@ class ShellWindow : public content::NotificationObserver,
     return shell_window_contents_.get();
   }
 
-  static void DisableExternalOpenForTesting();
-
  protected:
   virtual ~ShellWindow();
 
@@ -255,6 +298,12 @@ class ShellWindow : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // web_modal::WebContentsModalDialogManagerDelegate implementation.
+  virtual void SetWebContentsBlocked(content::WebContents* web_contents,
+                                     bool blocked) OVERRIDE;
+  virtual bool IsWebContentsVisible(
+      content::WebContents* web_contents) OVERRIDE;
 
   // Helper method to add a message to the renderer's DevTools console.
   void AddMessageToDevToolsConsole(content::ConsoleMessageLevel level,
@@ -314,6 +363,7 @@ class ShellWindow : public content::NotificationObserver,
 
   scoped_ptr<NativeAppWindow> native_app_window_;
   scoped_ptr<ShellWindowContents> shell_window_contents_;
+  scoped_ptr<Delegate> delegate_;
 
   base::WeakPtrFactory<ShellWindow> image_loader_ptr_factory_;
 
@@ -324,5 +374,7 @@ class ShellWindow : public content::NotificationObserver,
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
 };
+
+}  // namespace apps
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_SHELL_WINDOW_H_

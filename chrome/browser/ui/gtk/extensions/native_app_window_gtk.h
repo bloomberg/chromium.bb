@@ -7,10 +7,10 @@
 
 #include <gtk/gtk.h>
 
+#include "apps/shell_window.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -28,8 +28,8 @@ class NativeAppWindowGtk : public NativeAppWindow,
                            public ExtensionViewGtk::Container,
                            public ui::ActiveWindowWatcherXObserver {
  public:
-  NativeAppWindowGtk(ShellWindow* shell_window,
-                     const ShellWindow::CreateParams& params);
+  NativeAppWindowGtk(apps::ShellWindow* shell_window,
+                     const apps::ShellWindow::CreateParams& params);
 
   // ui::BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -105,7 +105,7 @@ class NativeAppWindowGtk : public NativeAppWindow,
 
   void OnDebouncedBoundsChanged();
 
-  ShellWindow* shell_window_;  // weak - ShellWindow owns NativeAppWindow.
+  apps::ShellWindow* shell_window_;  // weak - ShellWindow owns NativeAppWindow.
 
   GtkWindow* window_;
   GdkWindowState state_;

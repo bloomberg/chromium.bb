@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_NATIVE_APP_WINDOW_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_NATIVE_APP_WINDOW_H_
 
-#include "chrome/browser/ui/extensions/shell_window.h"
+#include "apps/shell_window.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/insets.h"
@@ -16,9 +16,10 @@
 class NativeAppWindow : public ui::BaseWindow,
                         public web_modal::WebContentsModalDialogHost {
  public:
-  // Used by ShellWindow to instantiate the platform-specific ShellWindow code.
-  static NativeAppWindow* Create(ShellWindow* window,
-                                 const ShellWindow::CreateParams& params);
+  // Used by apps::ShellWindow to instantiate the platform-specific
+  // apps::ShellWindow code.
+  static NativeAppWindow* Create(apps::ShellWindow* window,
+                                 const apps::ShellWindow::CreateParams& params);
 
   // Called when the draggable regions are changed.
   virtual void UpdateDraggableRegions(

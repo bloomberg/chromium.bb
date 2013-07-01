@@ -36,9 +36,10 @@ class AppWindowWatcher : public ShellWindowRegistry::Observer {
 
  private:
   // extensions::ShellWindowRegistry::Observer overrides:
-  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE {}
-  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE {}
-  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE {
+  virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {}
+  virtual void OnShellWindowIconChanged(apps::ShellWindow* shell_window)
+    OVERRIDE {}
+  virtual void OnShellWindowRemoved(apps::ShellWindow* shell_window) OVERRIDE {
     if (window_registry_->shell_windows().empty()) {
       chrome::AttemptUserExit();
       window_registry_->RemoveObserver(this);

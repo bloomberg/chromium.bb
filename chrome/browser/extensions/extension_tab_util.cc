@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_tab_util.h"
 
+#include "apps/shell_window.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
@@ -33,6 +33,7 @@
 namespace keys = extensions::tabs_constants;
 namespace tabs = extensions::api::tabs;
 
+using apps::ShellWindow;
 using content::NavigationEntry;
 using content::WebContents;
 using extensions::APIPermission;

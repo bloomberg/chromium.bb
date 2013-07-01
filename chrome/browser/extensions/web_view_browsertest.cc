@@ -1086,7 +1086,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TearDownTest) {
   const extensions::Extension* extension =
       LoadAndLaunchPlatformApp("web_view/teardown");
   ASSERT_TRUE(first_loaded_listener.WaitUntilSatisfied());
-  ShellWindow* window = NULL;
+  apps::ShellWindow* window = NULL;
   if (!GetShellWindowCount())
     window = CreateShellWindow(extension);
   else

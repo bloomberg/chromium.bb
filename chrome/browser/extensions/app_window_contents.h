@@ -7,10 +7,10 @@
 
 #include <vector>
 
+#include "apps/shell_window.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -24,18 +24,18 @@ namespace extensions {
 struct DraggableRegion;
 }
 
-// ShellWindowContents class specific to app windows. It maintains a
+// apps::ShellWindowContents class specific to app windows. It maintains a
 // WebContents instance and observes it for the purpose of passing
 // messages to the extensions system.
-class AppWindowContents : public ShellWindowContents,
+class AppWindowContents : public apps::ShellWindowContents,
                           public content::NotificationObserver,
                           public content::WebContentsObserver,
                           public ExtensionFunctionDispatcher::Delegate {
  public:
-  explicit AppWindowContents(ShellWindow* host);
+  explicit AppWindowContents(apps::ShellWindow* host);
   virtual ~AppWindowContents();
 
-  // ShellWindowContents
+  // apps::ShellWindowContents
   virtual void Initialize(Profile* profile, const GURL& url) OVERRIDE;
   virtual void LoadContents(int32 creator_process_id) OVERRIDE;
   virtual void NativeWindowChanged(NativeAppWindow* native_app_window) OVERRIDE;
@@ -61,7 +61,7 @@ class AppWindowContents : public ShellWindowContents,
       const std::vector<extensions::DraggableRegion>& regions);
   void SuspendRenderViewHost(content::RenderViewHost* rvh);
 
-  ShellWindow* host_;  // This class is owned by |host_|
+  apps::ShellWindow* host_;  // This class is owned by |host_|
   GURL url_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<content::WebContents> web_contents_;

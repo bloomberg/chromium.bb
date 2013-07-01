@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/app_window/app_window_api.h"
 
+#include "apps/shell_window.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -12,8 +13,8 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "content/public/browser/notification_registrar.h"
@@ -32,6 +33,8 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #endif
+
+using apps::ShellWindow;
 
 namespace app_window = extensions::api::app_window;
 namespace Create = app_window::Create;
@@ -289,8 +292,12 @@ bool AppWindowCreateFunction::RunImpl() {
   if (force_maximize)
     create_params.state = ui::SHOW_STATE_MAXIMIZED;
 
-  ShellWindow* shell_window =
-      ShellWindow::Create(profile(), GetExtension(), url, create_params);
+  ShellWindow* shell_window = ShellWindow::Create(
+      profile(),
+      new chrome::ChromeShellWindowDelegate(),
+      GetExtension(),
+      url,
+      create_params);
 
   if (chrome::ShouldForceFullscreenApp())
     shell_window->Fullscreen();

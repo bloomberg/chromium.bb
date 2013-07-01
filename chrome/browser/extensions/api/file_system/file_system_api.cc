@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 
 #include "apps/saved_files_service.h"
+#include "apps/shell_window.h"
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/file_system.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
@@ -52,6 +52,7 @@
 
 using apps::SavedFileEntry;
 using apps::SavedFilesService;
+using apps::ShellWindow;
 using fileapi::IsolatedContext;
 
 const char kInvalidParameters[] = "Invalid parameters";

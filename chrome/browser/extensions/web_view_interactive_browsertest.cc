@@ -1,13 +1,13 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "apps/shell_window.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -21,6 +21,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/test/ui_controls.h"
+
+using apps::ShellWindow;
 
 class WebViewInteractiveTest
     : public extensions::PlatformAppBrowserTest {
