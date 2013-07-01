@@ -28,13 +28,22 @@ const int kUsernameMaxWidth = 200;
 namespace signin_ui_util {
 
 GlobalError* GetSignedInServiceError(Profile* profile) {
+  std::vector<GlobalError*> errors = GetSignedInServiceErrors(profile);
+  if (errors.empty())
+    return NULL;
+  return errors[0];
+}
+
+std::vector<GlobalError*> GetSignedInServiceErrors(Profile* profile) {
+  std::vector<GlobalError*> errors;
+
   // Auth errors have the highest priority - after that, individual service
   // errors.
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
   SigninGlobalError* signin_error = signin_manager->signin_global_error();
   if (signin_error && signin_error->HasMenuItem())
-    return signin_error;
+    errors.push_back(signin_error);
 
   // No auth error - now try other services. Currently the list is just hard-
   // coded but in the future if we add more we can create some kind of
@@ -44,9 +53,10 @@ GlobalError* GetSignedInServiceError(Profile* profile) {
         ProfileSyncServiceFactory::GetForProfile(profile);
     SyncGlobalError* error = service->sync_global_error();
     if (error && error->HasMenuItem())
-      return error;
+      errors.push_back(error);
   }
-  return NULL;
+
+  return errors;
 }
 
 string16 GetSigninMenuLabel(Profile* profile) {

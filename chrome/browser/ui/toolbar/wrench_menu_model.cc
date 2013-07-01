@@ -664,8 +664,10 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
     if (error->HasMenuItem()) {
       // Don't add a signin error if it's already being displayed elsewhere.
 #if !defined(OS_CHROMEOS)
-      if (error == signin_ui_util::GetSignedInServiceError(
-                       browser_->profile()->GetOriginalProfile())) {
+      std::vector<GlobalError*> errors =
+          signin_ui_util::GetSignedInServiceErrors(
+              browser_->profile()->GetOriginalProfile());
+      if (std::find(errors.begin(), errors.end(), error) != errors.end()) {
         MenuModel* model = this;
         int index = 0;
         if (MenuModel::GetModelAndIndexForCommandId(

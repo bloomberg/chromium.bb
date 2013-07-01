@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SIGNIN_SIGNIN_UI_UTIL_H_
 #define CHROME_BROWSER_SIGNIN_SIGNIN_UI_UTIL_H_
 
+#include <vector>
+
 #include "base/strings/string16.h"
 
 class GlobalError;
@@ -18,6 +20,9 @@ namespace signin_ui_util {
 // If a signed in service is reporting an error, returns the GlobalError
 // object associated with that service, or NULL if no errors are reported.
 GlobalError* GetSignedInServiceError(Profile* profile);
+
+// Returns all errors reported by signed in services.
+std::vector<GlobalError*> GetSignedInServiceErrors(Profile* profile);
 
 // Return the label that should be displayed in the signin menu (i.e.
 // "Sign in to Chromium", "Signin Error...", etc).
