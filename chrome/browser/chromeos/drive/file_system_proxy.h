@@ -160,22 +160,6 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const base::FilePath& virtual_path,
       const base::FilePath& local_path);
 
-  // Invoked during Truncate() operation. This is called when a local modifiable
-  // cache is ready for truncation.
-  void OnFileOpenedForTruncate(
-      const base::FilePath& virtual_path,
-      int64 length,
-      const fileapi::FileSystemOperation::StatusCallback& callback,
-      FileError open_result,
-      const base::FilePath& local_cache_path);
-
-  // Invoked during Truncate() operation. This is called when the truncation of
-  // a local cache file is finished on FILE thread.
-  void DidTruncate(
-      const base::FilePath& virtual_path,
-      const fileapi::FileSystemOperation::StatusCallback& callback,
-      base::PlatformFileError truncate_result);
-
   // Invoked during OpenFile() operation when truncate or write flags are set.
   // This is called when a local modifiable cached file is ready for such
   // operation.
@@ -193,15 +177,6 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       base::ProcessHandle peer_handle,
       const OpenFileCallback& callback,
       FileError file_error);
-
-  // Invoked during OpenFile() operation when base::PLATFORM_FILE_OPEN_TRUNCATED
-  // flag is set. This is called when the truncation of a local cache file is
-  // finished on FILE thread.
-  void OnOpenAndTruncate(
-      base::ProcessHandle peer_handle,
-      const OpenFileCallback& callback,
-      base::PlatformFile* platform_file,
-      base::PlatformFileError* truncate_result);
 
   // Returns |file_system_| on UI thread.
   FileSystemInterface* GetFileSystemOnUIThread();

@@ -121,35 +121,6 @@ void EmitDebugLogForCloseFile(const base::FilePath& local_path,
   DVLOG(1) << "Closed: " << local_path.AsUTF8Unsafe() << ": " << file_error;
 }
 
-base::PlatformFileError DoTruncateOnBlockingPool(
-    const base::FilePath& local_cache_path,
-    int64 length) {
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
-
-  base::PlatformFile file = base::CreatePlatformFile(
-      local_cache_path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
-      NULL,
-      &result);
-  if (result == base::PLATFORM_FILE_OK) {
-    DCHECK_NE(base::kInvalidPlatformFileValue, file);
-    if (!base::TruncatePlatformFile(file, length))
-      result = base::PLATFORM_FILE_ERROR_FAILED;
-    base::ClosePlatformFile(file);
-  }
-  return result;
-}
-
-void DidCloseFileForTruncate(
-    const FileSystemOperation::StatusCallback& callback,
-    base::PlatformFileError truncate_result,
-    FileError close_result) {
-  // Reports the first error.
-  callback.Run(truncate_result == base::PLATFORM_FILE_OK ?
-               FileErrorToPlatformError(close_result) :
-               truncate_result);
-}
-
 }  // namespace
 
 DirectoryEntry ResourceEntryToDirectoryEntry(
@@ -379,19 +350,13 @@ void FileSystemProxy::Truncate(
     return;
   }
 
-  // TODO(kinaba): http://crbug.com/132780.
-  // Optimize the cases for small |length|, at least for |length| == 0.
-  // CreateWritableSnapshotFile downloads the whole content unnecessarily.
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::OpenFile,
+      base::Bind(&FileSystemInterface::TruncateFile,
                  base::Unretained(file_system_),
-                 file_path,
+                 file_path, length,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&FileSystemProxy::OnFileOpenedForTruncate,
-                                this,
-                                file_path,
-                                length,
-                                callback))));
+                     base::Bind(&FileSystemProxy::OnStatusCallback,
+                                this, callback))));
 }
 
 void FileSystemProxy::OnOpenFileForWriting(
@@ -461,51 +426,6 @@ void FileSystemProxy::OnCreateFileForOpen(
                                 file_flags,
                                 peer_handle,
                                 callback))));
-}
-
-void FileSystemProxy::OnFileOpenedForTruncate(
-    const base::FilePath& virtual_path,
-    int64 length,
-    const fileapi::FileSystemOperation::StatusCallback& callback,
-    FileError open_result,
-    const base::FilePath& local_cache_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (open_result != FILE_ERROR_OK) {
-    callback.Run(FileErrorToPlatformError(open_result));
-    return;
-  }
-
-  // Cache file prepared for modification is available. Truncate it.
-  bool posted = base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&DoTruncateOnBlockingPool,
-                 local_cache_path,
-                 length),
-      base::Bind(&FileSystemProxy::DidTruncate,
-                 this,
-                 virtual_path,
-                 callback));
-  DCHECK(posted);
-}
-
-void FileSystemProxy::DidTruncate(
-    const base::FilePath& virtual_path,
-    const FileSystemOperation::StatusCallback& callback,
-    base::PlatformFileError truncate_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // Truncation finished. We must close the file no matter |truncate_result|
-  // indicates an error or not.
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::CloseFile,
-                 base::Unretained(file_system_),
-                 virtual_path,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&DidCloseFileForTruncate,
-                                callback,
-                                truncate_result))));
 }
 
 void FileSystemProxy::OpenFile(
