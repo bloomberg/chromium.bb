@@ -12,14 +12,7 @@
 class DetachedPanelBrowserTest : public BasePanelBrowserTest {
 };
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_CheckDetachedPanelProperties DISABLED_CheckDetachedPanelProperties
-#else
-#define MAYBE_CheckDetachedPanelProperties CheckDetachedPanelProperties
-#endif
-IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
-                       MAYBE_CheckDetachedPanelProperties) {
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DetachedPanelCollection* detached_collection =
       panel_manager->detached_collection();
@@ -46,7 +39,12 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
   EXPECT_FALSE(panel->IsAlwaysOnTop());
 
   EXPECT_TRUE(panel_testing->IsButtonVisible(panel::CLOSE_BUTTON));
-  EXPECT_TRUE(panel_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
+  // The minimize button will not be shown on some Linux desktop environment
+  // that does not support system minimize.
+  if (PanelManager::CanUseSystemMinimize())
+    EXPECT_TRUE(panel_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
+  else
+    EXPECT_FALSE(panel_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel_testing->IsButtonVisible(panel::RESTORE_BUTTON));
 
   EXPECT_EQ(panel::RESIZABLE_ALL, panel->CanResizeByMouse());
