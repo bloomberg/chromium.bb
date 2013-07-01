@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_HANDLER_IMPL_H_
-#define CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_HANDLER_IMPL_H_
+#ifndef CHROME_RENDERER_MEDIA_CHROME_WEBRTC_LOG_MESSAGE_DELEGATE_H_
+#define CHROME_RENDERER_MEDIA_CHROME_WEBRTC_LOG_MESSAGE_DELEGATE_H_
 
 #include <string>
 
@@ -18,19 +18,19 @@ class MessageLoopProxy;
 class PartialCircularBuffer;
 class WebRtcLoggingMessageFilter;
 
-// WebRtcLoggingHandlerImpl handles WebRTC logging. There is one object per
-// render process, owned by WebRtcLoggingMessageFilter. It communicates with
+// ChromeWebRtcLogMessageDelegate handles WebRTC logging. There is one object
+// per render process, owned by WebRtcLoggingMessageFilter. It communicates with
 // WebRtcLoggingHandlerHost and receives logging messages from libjingle and
 // writes them to a shared memory buffer.
-class WebRtcLoggingHandlerImpl
+class ChromeWebRtcLogMessageDelegate
     : public content::WebRtcLogMessageDelegate,
       public base::NonThreadSafe {
  public:
-  WebRtcLoggingHandlerImpl(
+  ChromeWebRtcLogMessageDelegate(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
       WebRtcLoggingMessageFilter* message_filter);
 
-  virtual ~WebRtcLoggingHandlerImpl();
+  virtual ~ChromeWebRtcLogMessageDelegate();
 
   // content::WebRtcLogMessageDelegate implementation.
   virtual void InitLogging(const std::string& app_session_id,
@@ -50,7 +50,7 @@ class WebRtcLoggingHandlerImpl
   WebRtcLoggingMessageFilter* message_filter_;
   bool log_initialized_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRtcLoggingHandlerImpl);
+  DISALLOW_COPY_AND_ASSIGN(ChromeWebRtcLogMessageDelegate);
 };
 
-#endif  // CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_HANDLER_IMPL_H_
+#endif  // CHROME_RENDERER_MEDIA_CHROME_WEBRTC_LOG_MESSAGE_DELEGATE_H_

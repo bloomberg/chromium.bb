@@ -7,12 +7,12 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
-#include "chrome/renderer/media/webrtc_logging_handler_impl.h"
+#include "chrome/renderer/media/chrome_webrtc_log_message_delegate.h"
 #include "ipc/ipc_logging.h"
 
 WebRtcLoggingMessageFilter::WebRtcLoggingMessageFilter(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
-    : logging_handler_(NULL),
+    : log_message_delegate_(NULL),
       io_message_loop_(io_message_loop),
       channel_(NULL) {
   io_message_loop_->PostTask(
@@ -44,13 +44,13 @@ void WebRtcLoggingMessageFilter::OnFilterAdded(IPC::Channel* channel) {
 void WebRtcLoggingMessageFilter::OnFilterRemoved() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   channel_ = NULL;
-  logging_handler_->OnFilterRemoved();
+  log_message_delegate_->OnFilterRemoved();
 }
 
 void WebRtcLoggingMessageFilter::OnChannelClosing() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   channel_ = NULL;
-  logging_handler_->OnFilterRemoved();
+  log_message_delegate_->OnFilterRemoved();
 }
 
 void WebRtcLoggingMessageFilter::InitLogging(
@@ -62,19 +62,20 @@ void WebRtcLoggingMessageFilter::InitLogging(
 
 void WebRtcLoggingMessageFilter::CreateLoggingHandler() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  logging_handler_ = new WebRtcLoggingHandlerImpl(io_message_loop_, this);
+  log_message_delegate_ =
+      new ChromeWebRtcLogMessageDelegate(io_message_loop_, this);
 }
 
 void WebRtcLoggingMessageFilter::OnLogOpened(
     base::SharedMemoryHandle handle,
     uint32 length) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  logging_handler_->OnLogOpened(handle, length);
+  log_message_delegate_->OnLogOpened(handle, length);
 }
 
 void WebRtcLoggingMessageFilter::OnOpenLogFailed() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  logging_handler_->OnOpenLogFailed();
+  log_message_delegate_->OnOpenLogFailed();
 }
 
 void WebRtcLoggingMessageFilter::Send(IPC::Message* message) {

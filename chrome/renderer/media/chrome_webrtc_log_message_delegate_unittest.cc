@@ -6,27 +6,28 @@
 
 #include "base/process_util.h"
 #include "chrome/common/partial_circular_buffer.h"
-#include "chrome/renderer/media/webrtc_logging_handler_impl.h"
+#include "chrome/renderer/media/chrome_webrtc_log_message_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(WebRtcLoggingHandlerImplTest, Basic) {
+TEST(ChromeWebRtcLogMessageDelegateTest, Basic) {
   const uint32 kTestLogSize = 1024;  // 1 KB
   const char kTestString[] = "abcdefghijklmnopqrstuvwxyz";
 
   base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
-  scoped_ptr<WebRtcLoggingHandlerImpl> logging_handler(
-      new WebRtcLoggingHandlerImpl(message_loop.message_loop_proxy(), NULL));
+  scoped_ptr<ChromeWebRtcLogMessageDelegate> log_message_delegate(
+      new ChromeWebRtcLogMessageDelegate(message_loop.message_loop_proxy(),
+                                         NULL));
 
   base::SharedMemory shared_memory;
   ASSERT_TRUE(shared_memory.CreateAndMapAnonymous(kTestLogSize));
   base::SharedMemoryHandle new_handle;
   ASSERT_TRUE(shared_memory.ShareToProcess(base::GetCurrentProcessHandle(),
                                            &new_handle));
-  logging_handler->OnLogOpened(new_handle, kTestLogSize);
+  log_message_delegate->OnLogOpened(new_handle, kTestLogSize);
 
-  logging_handler->LogMessage(kTestString);
-  logging_handler->LogMessage(kTestString);
+  log_message_delegate->LogMessage(kTestString);
+  log_message_delegate->LogMessage(kTestString);
 
   PartialCircularBuffer read_pcb(
       reinterpret_cast<uint8*>(shared_memory.memory()), kTestLogSize);

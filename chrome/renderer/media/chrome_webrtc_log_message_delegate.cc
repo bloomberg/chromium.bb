@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/media/webrtc_logging_handler_impl.h"
+#include "chrome/renderer/media/chrome_webrtc_log_message_delegate.h"
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/common/partial_circular_buffer.h"
 #include "chrome/renderer/media/webrtc_logging_message_filter.h"
 
-WebRtcLoggingHandlerImpl::WebRtcLoggingHandlerImpl(
+ChromeWebRtcLogMessageDelegate::ChromeWebRtcLogMessageDelegate(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
     WebRtcLoggingMessageFilter* message_filter)
     : io_message_loop_(io_message_loop),
@@ -18,12 +18,13 @@ WebRtcLoggingHandlerImpl::WebRtcLoggingHandlerImpl(
   content::InitWebRtcLoggingDelegate(this);
 }
 
-WebRtcLoggingHandlerImpl::~WebRtcLoggingHandlerImpl() {
+ChromeWebRtcLogMessageDelegate::~ChromeWebRtcLogMessageDelegate() {
   DCHECK(CalledOnValidThread());
 }
 
-void WebRtcLoggingHandlerImpl::InitLogging(const std::string& app_session_id,
-                                           const std::string& app_url) {
+void ChromeWebRtcLogMessageDelegate::InitLogging(
+    const std::string& app_session_id,
+    const std::string& app_url) {
   DCHECK(CalledOnValidThread());
 
   if (!log_initialized_) {
@@ -32,11 +33,11 @@ void WebRtcLoggingHandlerImpl::InitLogging(const std::string& app_session_id,
   }
 }
 
-void WebRtcLoggingHandlerImpl::LogMessage(const std::string& message) {
+void ChromeWebRtcLogMessageDelegate::LogMessage(const std::string& message) {
   if (!CalledOnValidThread()) {
     io_message_loop_->PostTask(
         FROM_HERE, base::Bind(
-            &WebRtcLoggingHandlerImpl::LogMessage,
+            &ChromeWebRtcLogMessageDelegate::LogMessage,
             base::Unretained(this),
             message));
     return;
@@ -49,12 +50,12 @@ void WebRtcLoggingHandlerImpl::LogMessage(const std::string& message) {
   }
 }
 
-void WebRtcLoggingHandlerImpl::OnFilterRemoved() {
+void ChromeWebRtcLogMessageDelegate::OnFilterRemoved() {
   DCHECK(CalledOnValidThread());
   message_filter_ = NULL;
 }
 
-void WebRtcLoggingHandlerImpl::OnLogOpened(
+void ChromeWebRtcLogMessageDelegate::OnLogOpened(
     base::SharedMemoryHandle handle,
     uint32 length) {
   DCHECK(CalledOnValidThread());
@@ -68,7 +69,7 @@ void WebRtcLoggingHandlerImpl::OnLogOpened(
                                 true));
 }
 
-void WebRtcLoggingHandlerImpl::OnOpenLogFailed() {
+void ChromeWebRtcLogMessageDelegate::OnOpenLogFailed() {
   DCHECK(CalledOnValidThread());
   DLOG(ERROR) << "Could not open log.";
   // TODO(grunell): Implement.

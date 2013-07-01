@@ -12,11 +12,11 @@ namespace base {
 class MessageLoopProxy;
 }
 
-class WebRtcLoggingHandlerImpl;
+class ChromeWebRtcLogMessageDelegate;
 
-// Filter for WebRTC logging messages. Sits between WebRtcLoggingHandlerImpl
-// (renderer process) and WebRtcLoggingHandlerHost (browser process). Must be
-// called on the IO thread.
+// Filter for WebRTC logging messages. Sits between
+// ChromeWebRtcLogMessageDelegate (renderer process) and
+// WebRtcLoggingHandlerHost (browser process). Must be called on the IO thread.
 class WebRtcLoggingMessageFilter
     : public IPC::ChannelProxy::MessageFilter {
  public:
@@ -51,7 +51,7 @@ class WebRtcLoggingMessageFilter
   // file. That's a global pointer used on different threads, so we will leak
   // this object when we go away to ensure that it outlives any log messages
   // coming from libjingle.
-  WebRtcLoggingHandlerImpl* logging_handler_;
+  ChromeWebRtcLogMessageDelegate* log_message_delegate_;
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
