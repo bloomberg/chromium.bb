@@ -33,8 +33,8 @@ class WebMediaPlayerManagerAndroid {
   void UnregisterMediaPlayer(int player_id);
 
   // Release all the media resources managed by this object unless
-  // an audio play is in progress, or the app wants to retain video playback.
-  void ReleaseMediaResources(bool retain_video_playback);
+  // an audio play is in progress.
+  void ReleaseMediaResources();
 
   // Check whether a player can enter fullscreen.
   bool CanEnterFullscreen(WebKit::WebFrame* frame);

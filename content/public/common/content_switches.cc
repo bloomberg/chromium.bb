@@ -797,11 +797,6 @@ const char kNetworkCountryIso[] = "network-country-iso";
 
 // Disable overscroll edge effects like those found in Android views.
 const char kDisableOverscrollEdgeEffect[] = "disable-overscroll-edge-effect";
-
-// Retains video playback even on lost focus. In general, this makes sense only
-// if the app uses a single tab.
-const char kRetainVideoPlaybackOnLostFocus[] =
-    "retain-video-playback-on-lost-focus";
 #endif
 
 #if defined(OS_CHROMEOS)

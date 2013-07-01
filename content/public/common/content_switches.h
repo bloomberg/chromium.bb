@@ -247,7 +247,6 @@ extern const char kDisableMediaHistoryLogging[];
 CONTENT_EXPORT extern const char kDisableGestureRequirementForMediaPlayback[];
 extern const char kNetworkCountryIso[];
 CONTENT_EXPORT extern const char kDisableOverscrollEdgeEffect[];
-CONTENT_EXPORT extern const char kRetainVideoPlaybackOnLostFocus[];
 #endif
 
 #if defined(OS_CHROMEOS)

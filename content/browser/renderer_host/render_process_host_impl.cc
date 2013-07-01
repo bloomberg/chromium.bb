@@ -966,7 +966,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(OS_ANDROID)
     switches::kNetworkCountryIso,
     switches::kDisableGestureRequirementForMediaPlayback,
-    switches::kRetainVideoPlaybackOnLostFocus,
 #endif
 #if defined(GOOGLE_TV)
     switches::kUseExternalVideoSurfaceThresholdInPixels,
