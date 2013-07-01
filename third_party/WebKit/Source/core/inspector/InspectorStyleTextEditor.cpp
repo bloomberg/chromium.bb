@@ -138,7 +138,6 @@ void InspectorStyleTextEditor::internalReplaceProperty(const InspectorStylePrope
     const SourceRange& range = property.sourceData.range;
     long replaceRangeStart = range.start;
     long replaceRangeEnd = range.end;
-    const UChar* characters = m_styleText.bloatedCharacters();
     long newTextLength = newText.length();
     String finalNewText = newText;
 
@@ -155,8 +154,8 @@ void InspectorStyleTextEditor::internalReplaceProperty(const InspectorStylePrope
             bool isLastNewline = false;
             int i;
             int textLength = m_styleText.length();
-            for (i = replaceRangeEnd; i < textLength && isSpaceOrNewline(characters[i]); ++i) {
-                isLastNewline = isHTMLLineBreak(characters[i]);
+            for (i = replaceRangeEnd; i < textLength && isSpaceOrNewline(m_styleText[i]); ++i) {
+                isLastNewline = isHTMLLineBreak(m_styleText[i]);
                 if (isLastNewline)
                     foundNewline = true;
                 else if (foundNewline && !isLastNewline) {
