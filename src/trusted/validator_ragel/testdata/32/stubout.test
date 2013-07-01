@@ -1,9 +1,5 @@
 @hex:
-  # Sample stubout code, with multiple stubouts.
-  #
-  # add %ds:[%eax], %al
   00 00
-  # ret
   c3
 @dis:
      0:	00 00                                        	add    %al,(%eax)
@@ -13,9 +9,7 @@
   return code: 1
 ----------------------------------------------------------------------
 @hex:
-  # add %eax, %eax
   01 c0
-  # Too many prefix bytes
   66 66 66 66 00 00
 @dis:
      0:	01 c0                                        	add    %eax,%eax
@@ -29,9 +23,7 @@
   return code: 1
 ----------------------------------------------------------------------
 @hex:
-  # lea %esi, %ds:[%esi+%esp*1]
   8d 74 26 00
-  # Too many prefix bytes
   66 66 66 66 00 00
 @dis:
      0:	8d 74 26 00                                  	lea    0x0(%esi,%eiz,1),%esi
