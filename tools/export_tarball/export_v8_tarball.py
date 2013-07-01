@@ -63,7 +63,7 @@ def GetV8Directory():
 # Workaround lack of the exclude parameter in add method in python-2.4.
 # TODO(phajdan.jr): remove the workaround when it's not needed on the bot.
 class MyTarFile(tarfile.TarFile):
-  def add(self, name, arcname=None, recursive=True, exclude=None):
+  def add(self, name, arcname=None, recursive=True, exclude=None, filter=None):
     head, tail = os.path.split(name)
     if tail in ('.svn', '.git'):
       return
