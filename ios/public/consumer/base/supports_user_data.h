@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_BASE_SUPPORTS_USER_DATA_H_
-#define IOS_BASE_SUPPORTS_USER_DATA_H_
+#ifndef IOS_PUBLIC_CONSUMER_BASE_SUPPORTS_USER_DATA_H_
+#define IOS_PUBLIC_CONSUMER_BASE_SUPPORTS_USER_DATA_H_
 
 namespace ios {
 
@@ -47,4 +47,4 @@ class SupportsUserData {
 
 }  // namespace ios
 
-#endif  // IOS_BASE_SUPPORTS_USER_DATA_H_
+#endif  // IOS_PUBLIC_CONSUMER_BASE_SUPPORTS_USER_DATA_H_

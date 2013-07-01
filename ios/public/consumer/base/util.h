@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CONSUME_PUBLIC_BASE_UTIL_H_
-#define IOS_CONSUME_PUBLIC_BASE_UTIL_H_
+#ifndef IOS_PUBLIC_CONSUMER_BASE_UTIL_H_
+#define IOS_PUBLIC_CONSUMER_BASE_UTIL_H_
 
 namespace ios {
 
@@ -15,4 +15,4 @@ bool IsRunningOnOrLater(int major, int minor, int bug_fix);
 
 }  // namespace ios
 
-#endif  // IOS_CONSUME_PUBLIC_BASE_UTIL_H_
+#endif  // IOS_PUBLIC_CONSUMER_BASE_UTIL_H_

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/ios/ios_util.h"
-#include "ios/consumer/public/base/util.h"
+#include "ios/public/consumer/base/util.h"
 
 namespace ios {
 

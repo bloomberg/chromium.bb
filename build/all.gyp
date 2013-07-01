@@ -69,7 +69,7 @@
           ],
         }, { #  'OS=="ios"'
           'dependencies': [
-            '../ios/consumer/ios_consumer.gyp:*',
+            '../ios/ios.gyp:*',
           ],
         }],
         ['os_posix==1 and OS!="android" and OS!="ios"', {

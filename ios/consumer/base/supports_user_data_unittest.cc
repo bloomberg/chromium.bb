@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/consumer/public/base/supports_user_data.h"
+#include "ios/public/consumer/base/supports_user_data.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
