@@ -321,6 +321,88 @@ def _GetLegacyPrefixes(instruction):
   return result
 
 
+def ProcessMemoryAccess(instruction, operands):
+  """Make sure that memory access is valid and return precondition required.
+
+  (only makes sense for 64-bit instructions)
+
+  Args:
+    instruction: Instruction tuple
+    operands: list of instruction operands as strings, for example
+              ['%eax', '(%r15,%rbx,1)']
+  Returns:
+    Condition object representing precondition required for memory access (if
+    it's present among operands) to be valid.
+  Raises:
+    SandboxingError if memory access is invalid.
+  """
+  precondition = Condition()
+  for op in operands:
+    m = re.match(_MemoryRE() + r'$', op)
+    if m is not None:
+      assert m.group('memory_segment') is None
+      base = m.group('memory_base')
+      index = m.group('memory_index')
+      allowed_bases = ['%r15', '%rbp', '%rsp', '%rip']
+      if base not in allowed_bases:
+        raise SandboxingError(
+            'memory access only is allowed with base from %s'
+            % allowed_bases,
+            instruction)
+      if index is not None:
+        if index == '%riz':
+          pass
+        elif index in REGS64:
+          if index in ['%r15', '%rsp', '%rbp']:
+            raise SandboxingError(
+                '%s can\'t be used as index in memory access' % index,
+                instruction)
+          else:
+            assert precondition == Condition()
+            precondition = Condition(restricted=index)
+        else:
+          raise SandboxingError(
+              'unrecognized register is used for memory access as index',
+              instruction)
+  return precondition
+
+
+def ProcessOperandWrites(instruction, write_operands, zero_extending=False):
+  """Check that writes to operands are valid, return postcondition established.
+
+  (only makes sense for 64-bit instructions)
+
+  Args:
+    instruction: Instruction tuple
+    write_operands: list of operands instruction writes to as strings,
+                    for example ['%eax', '(%r15,%rbx,1)']
+    zero_extending: whether instruction is considered zero extending
+  Returns:
+    Condition object representing postcondition established by operand writes.
+  Raises:
+    SandboxingError if write is invalid.
+  """
+  postcondition = Condition()
+  for op in write_operands:
+    # TODO(shcherbina): disallow writes to
+    #   rbp, rsp
+    #   cs, ds, es, fs, gs
+    if op in ['%r15', '%r15d', '%r15w', '%r15b']:
+      raise SandboxingError('changes to r15 are not allowed', instruction)
+    if op in ['%bpl', '%bp']:
+      raise SandboxingError('changes to rbp are not allowed', instruction)
+    if op in ['%spl', '%sp']:
+      raise SandboxingError('changes to rsp are not allowed', instruction)
+    if op in REG32_TO_REG64 and zero_extending:
+      assert postcondition == Condition()
+      r = REG32_TO_REG64[op]
+      if r in ['%rbp', '%rsp']:
+        postcondition = Condition(restricted_instead_of_sandboxed=r)
+      else:
+        postcondition = Condition(restricted=r)
+  return postcondition
+
+
 def ValidateRegularInstruction(instruction, bitness):
   """Validate regular instruction (not direct jump).
 
@@ -382,49 +464,9 @@ def ValidateRegularInstruction(instruction, bitness):
     write_ops = [ops[1]]
 
     if bitness == 64:
-      for op in ops:
-        m = re.match(_MemoryRE() + r'$', op)
-        if m is not None:
-          base = m.group('memory_base')
-          index = m.group('memory_index')
-          allowed_bases = ['%r15', '%rbp', '%rsp', '%rip']
-          if base not in allowed_bases:
-            raise SandboxingError(
-                'memory access only is allowed with base from %s'
-                % allowed_bases,
-                instruction)
-          if index is not None:
-            if index == '%riz':
-              pass
-            elif index in REGS64:
-              if index in ['%r15', '%rsp', '%rbp']:
-                raise SandboxingError(
-                    '%s can\'t be used as index in memory access' % index,
-                    instruction)
-              else:
-                precondition = Condition(restricted=index)
-            else:
-              raise SandboxingError(
-                  'unrecognized register is used for memory access as index',
-                  instruction)
-
-      for op in write_ops:
-        # TODO(shcherbina): disallow writes to
-        #   rbp, rsp
-        #   cs, ds, es, fs, gs
-        if op in ['%r15', '%r15d', '%r15w', '%r15b']:
-          raise SandboxingError('changes to r15 are not allowed', instruction)
-        if op in ['%bpl', '%bp']:
-          raise SandboxingError('changes to rbp are not allowed', instruction)
-        if op in ['%spl', '%sp']:
-          raise SandboxingError('changes to rsp are not allowed', instruction)
-        if op in REG32_TO_REG64:
-          assert postcondition == Condition()
-          r = REG32_TO_REG64[op]
-          if r in ['%rbp', '%rsp']:
-            postcondition = Condition(restricted_instead_of_sandboxed=r)
-          else:
-            postcondition = Condition(restricted=r)
+      precondition = ProcessMemoryAccess(instruction, ops)
+      postcondition = ProcessOperandWrites(
+          instruction, write_ops, zero_extending=True)
 
     return precondition, postcondition
 
