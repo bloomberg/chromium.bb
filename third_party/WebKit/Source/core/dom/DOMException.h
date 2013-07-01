@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMCoreException_h
-#define DOMCoreException_h
+#ifndef DOMException_h
+#define DOMException_h
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "wtf/PassRefPtr.h"
@@ -37,9 +37,9 @@ namespace WebCore {
 
 typedef int ExceptionCode;
 
-class DOMCoreException : public RefCounted<DOMCoreException>, public ScriptWrappable {
+class DOMException : public RefCounted<DOMException>, public ScriptWrappable {
 public:
-    static PassRefPtr<DOMCoreException> create(ExceptionCode);
+    static PassRefPtr<DOMException> create(ExceptionCode);
 
     unsigned short code() const { return m_code; }
     String name() const { return m_name; }
@@ -52,7 +52,7 @@ public:
     static unsigned short getLegacyErrorCode(ExceptionCode);
 
 private:
-    explicit DOMCoreException(ExceptionCode);
+    explicit DOMException(ExceptionCode);
 
     unsigned short m_code;
     String m_name;
@@ -61,4 +61,4 @@ private:
 
 } // namespace WebCore
 
-#endif // DOMCoreException_h
+#endif // DOMException_h

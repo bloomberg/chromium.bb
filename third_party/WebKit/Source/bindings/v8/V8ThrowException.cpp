@@ -27,7 +27,7 @@
 
 #include "V8DOMException.h"
 #include "bindings/v8/V8Binding.h"
-#include "core/dom/DOMCoreException.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
@@ -53,7 +53,7 @@ v8::Handle<v8::Value> V8ThrowException::setDOMException(int ec, v8::Isolate* iso
     if (ec == TypeError)
         return V8ThrowException::throwTypeError(0, isolate);
 
-    RefPtr<DOMCoreException> domException = DOMCoreException::create(ec);
+    RefPtr<DOMException> domException = DOMException::create(ec);
     v8::Handle<v8::Value> exception = toV8(domException, v8::Handle<v8::Object>(), isolate);
 
     if (exception.IsEmpty())

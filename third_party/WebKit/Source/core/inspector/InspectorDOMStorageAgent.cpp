@@ -31,7 +31,7 @@
 #include "core/inspector/InspectorDOMStorageAgent.h"
 
 #include "InspectorFrontend.h"
-#include "core/dom/DOMCoreException.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
@@ -136,7 +136,7 @@ void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, cons
 static String toErrorString(const ExceptionCode& ec)
 {
     if (ec)
-        return DOMCoreException::getErrorName(ec);
+        return DOMException::getErrorName(ec);
     return "";
 }
 

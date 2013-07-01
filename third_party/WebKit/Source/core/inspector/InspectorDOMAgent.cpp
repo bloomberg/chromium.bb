@@ -37,7 +37,7 @@
 #include "core/dom/Attr.h"
 #include "core/dom/CharacterData.h"
 #include "core/dom/ContainerNode.h"
-#include "core/dom/DOMCoreException.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentType.h"
@@ -216,7 +216,7 @@ void RevalidateStyleAttributeTask::onTimer(Timer<RevalidateStyleAttributeTask>*)
 String InspectorDOMAgent::toErrorString(const ExceptionCode& ec)
 {
     if (ec)
-        return DOMCoreException::getErrorName(ec);
+        return DOMException::getErrorName(ec);
     return "";
 }
 

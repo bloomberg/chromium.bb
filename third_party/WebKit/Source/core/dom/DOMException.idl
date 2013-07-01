@@ -27,8 +27,7 @@
  */
 
 [
-    DoNotCheckConstants,
-    ImplementedAs=DOMCoreException
+    DoNotCheckConstants
 ] exception DOMException {
 
     readonly attribute unsigned short   code;

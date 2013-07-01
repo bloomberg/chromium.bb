@@ -27,7 +27,7 @@
 #define DOMError_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/DOMCoreException.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -48,12 +48,12 @@ public:
 
     static PassRefPtr<DOMError> create(ExceptionCode ec)
     {
-        return adoptRef(new DOMError(DOMCoreException::getErrorName(ec), DOMCoreException::getErrorMessage(ec)));
+        return adoptRef(new DOMError(DOMException::getErrorName(ec), DOMException::getErrorMessage(ec)));
     }
 
     static PassRefPtr<DOMError> create(ExceptionCode ec, const String& message)
     {
-        return adoptRef(new DOMError(DOMCoreException::getErrorName(ec), message));
+        return adoptRef(new DOMError(DOMException::getErrorName(ec), message));
     }
 
     const String& name() const { return m_name; }

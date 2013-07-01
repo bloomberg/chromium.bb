@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebStorageQuotaCallbacksImpl.h"
 
-#include "core/dom/DOMCoreException.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/quota/StorageErrorCallback.h"
 #include "modules/quota/StorageQuotaCallback.h"
@@ -74,7 +74,7 @@ void WebStorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long long grant
 void WebStorageQuotaCallbacksImpl::didFail(WebStorageQuotaError error)
 {
     if (m_errorCallback)
-        m_errorCallback->handleEvent(DOMCoreException::create(static_cast<ExceptionCode>(error)).get());
+        m_errorCallback->handleEvent(DOMException::create(static_cast<ExceptionCode>(error)).get());
     delete this;
 }
 

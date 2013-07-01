@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/dom/DOMCoreException.h"
+#include "core/dom/DOMException.h"
 
 #include "ExceptionCode.h"
 
@@ -107,7 +107,7 @@ static const CoreException* getErrorEntry(ExceptionCode ec)
     return tableIndex < tableSize ? &coreExceptions[tableIndex] : 0;
 }
 
-DOMCoreException::DOMCoreException(ExceptionCode ec)
+DOMException::DOMException(ExceptionCode ec)
 {
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
@@ -127,17 +127,17 @@ DOMCoreException::DOMCoreException(ExceptionCode ec)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<DOMCoreException> DOMCoreException::create(ExceptionCode ec)
+PassRefPtr<DOMException> DOMException::create(ExceptionCode ec)
 {
-    return adoptRef(new DOMCoreException(ec));
+    return adoptRef(new DOMException(ec));
 }
 
-String DOMCoreException::toString() const
+String DOMException::toString() const
 {
     return name() + ": " + message();
 }
 
-String DOMCoreException::getErrorName(ExceptionCode ec)
+String DOMException::getErrorName(ExceptionCode ec)
 {
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
@@ -147,7 +147,7 @@ String DOMCoreException::getErrorName(ExceptionCode ec)
     return entry->name;
 }
 
-String DOMCoreException::getErrorMessage(ExceptionCode ec)
+String DOMException::getErrorMessage(ExceptionCode ec)
 {
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
@@ -157,7 +157,7 @@ String DOMCoreException::getErrorMessage(ExceptionCode ec)
     return entry->message;
 }
 
-unsigned short DOMCoreException::getLegacyErrorCode(ExceptionCode ec)
+unsigned short DOMException::getLegacyErrorCode(ExceptionCode ec)
 {
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
