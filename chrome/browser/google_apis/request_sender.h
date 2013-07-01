@@ -46,6 +46,10 @@ class RequestSender {
 
   AuthService* auth_service() { return auth_service_.get(); }
 
+  net::URLRequestContextGetter* url_request_context_getter() const {
+    return url_request_context_getter_;
+  }
+
   // Prepares the object for use.
   virtual void Initialize();
 
@@ -80,6 +84,7 @@ class RequestSender {
       const base::WeakPtr<AuthenticatedRequestInterface>& request);
 
   Profile* profile_;  // Not owned.
+  net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
 
   scoped_ptr<AuthService> auth_service_;
   std::set<AuthenticatedRequestInterface*> in_flight_requests_;

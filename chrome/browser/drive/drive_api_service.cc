@@ -327,7 +327,6 @@ CancelCallback DriveAPIService::GetAllResourceList(
   return sender_->StartRequestWithRetry(
       new GetChangelistRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           false,  // include deleted
           0,
@@ -352,7 +351,6 @@ CancelCallback DriveAPIService::GetResourceListInDirectory(
   return sender_->StartRequestWithRetry(
       new GetFilelistRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           base::StringPrintf(
               "'%s' in parents and trashed = false",
@@ -372,7 +370,6 @@ CancelCallback DriveAPIService::Search(
   return sender_->StartRequestWithRetry(
       new GetFilelistRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           drive::util::TranslateQuery(search_query),
           kMaxNumFilesResourcePerRequestForSearch,
@@ -400,7 +397,6 @@ CancelCallback DriveAPIService::SearchByTitle(
   return sender_->StartRequestWithRetry(
       new GetFilelistRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           query,
           kMaxNumFilesResourcePerRequest,
@@ -416,7 +412,6 @@ CancelCallback DriveAPIService::GetChangeList(
   return sender_->StartRequestWithRetry(
       new GetChangelistRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           true,  // include deleted
           start_changestamp,
@@ -433,7 +428,6 @@ CancelCallback DriveAPIService::ContinueGetResourceList(
   return sender_->StartRequestWithRetry(
       new ContinueGetFileListRequest(
           sender_.get(),
-          url_request_context_getter_,
           override_url,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
@@ -446,7 +440,6 @@ CancelCallback DriveAPIService::GetResourceEntry(
 
   return sender_->StartRequestWithRetry(new GetFileRequest(
       sender_.get(),
-      url_request_context_getter_,
       url_generator_,
       resource_id,
       base::Bind(&ParseResourceEntryAndRun, callback)));
@@ -460,7 +453,6 @@ CancelCallback DriveAPIService::GetAboutResource(
   return sender_->StartRequestWithRetry(
       new GetAboutRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           callback));
 }
@@ -471,7 +463,6 @@ CancelCallback DriveAPIService::GetAppList(const GetAppListCallback& callback) {
 
   return sender_->StartRequestWithRetry(new GetApplistRequest(
       sender_.get(),
-      url_request_context_getter_,
       url_generator_,
       base::Bind(&ParseAppListAndRun, callback)));
 }
@@ -488,7 +479,6 @@ CancelCallback DriveAPIService::DownloadFile(
 
   return sender_->StartRequestWithRetry(
       new DownloadFileRequest(sender_.get(),
-                              url_request_context_getter_,
                               download_action_callback,
                               get_content_callback,
                               progress_callback,
@@ -505,7 +495,6 @@ CancelCallback DriveAPIService::DeleteResource(
 
   return sender_->StartRequestWithRetry(new TrashResourceRequest(
       sender_.get(),
-      url_request_context_getter_,
       url_generator_,
       resource_id,
       callback));
@@ -521,7 +510,6 @@ CancelCallback DriveAPIService::AddNewDirectory(
   return sender_->StartRequestWithRetry(
       new CreateDirectoryRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           parent_resource_id,
           directory_name,
@@ -539,7 +527,6 @@ CancelCallback DriveAPIService::CopyResource(
   return sender_->StartRequestWithRetry(
       new CopyResourceRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           resource_id,
           parent_resource_id,
@@ -557,7 +544,6 @@ CancelCallback DriveAPIService::CopyHostedDocument(
   return sender_->StartRequestWithRetry(
       new CopyResourceRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           resource_id,
           std::string(),  // parent_resource_id.
@@ -575,7 +561,6 @@ CancelCallback DriveAPIService::RenameResource(
   return sender_->StartRequestWithRetry(
       new RenameResourceRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           resource_id,
           new_name,
@@ -595,7 +580,6 @@ CancelCallback DriveAPIService::TouchResource(
   return sender_->StartRequestWithRetry(
       new TouchResourceRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           resource_id,
           modified_date,
@@ -613,7 +597,6 @@ CancelCallback DriveAPIService::AddResourceToDirectory(
   return sender_->StartRequestWithRetry(
       new InsertResourceRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           parent_resource_id,
           resource_id,
@@ -630,7 +613,6 @@ CancelCallback DriveAPIService::RemoveResourceFromDirectory(
   return sender_->StartRequestWithRetry(
       new DeleteResourceRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           parent_resource_id,
           resource_id,
@@ -649,7 +631,6 @@ CancelCallback DriveAPIService::InitiateUploadNewFile(
   return sender_->StartRequestWithRetry(
       new InitiateUploadNewFileRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           content_type,
           content_length,
@@ -670,7 +651,6 @@ CancelCallback DriveAPIService::InitiateUploadExistingFile(
   return sender_->StartRequestWithRetry(
       new InitiateUploadExistingFileRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           content_type,
           content_length,
@@ -694,7 +674,6 @@ CancelCallback DriveAPIService::ResumeUpload(
   return sender_->StartRequestWithRetry(
       new ResumeUploadRequest(
           sender_.get(),
-          url_request_context_getter_,
           upload_url,
           start_position,
           end_position,
@@ -714,7 +693,6 @@ CancelCallback DriveAPIService::GetUploadStatus(
 
   return sender_->StartRequestWithRetry(new GetUploadStatusRequest(
       sender_.get(),
-      url_request_context_getter_,
       upload_url,
       content_length,
       base::Bind(&ParseResourceEntryForUploadRangeAndRun, callback)));
@@ -729,7 +707,6 @@ CancelCallback DriveAPIService::AuthorizeApp(
 
   return sender_->StartRequestWithRetry(new GetFileRequest(
       sender_.get(),
-      url_request_context_getter_,
       url_generator_,
       resource_id,
       base::Bind(&ExtractOpenUrlAndRun, app_id, callback)));

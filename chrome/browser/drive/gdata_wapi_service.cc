@@ -199,7 +199,6 @@ CancelCallback GDataWapiService::GetAllResourceList(
 
   return sender_->StartRequestWithRetry(
       new GetResourceListRequest(sender_.get(),
-                                 url_request_context_getter_,
                                  url_generator_,
                                  GURL(),         // No override url
                                  0,              // start changestamp
@@ -217,7 +216,6 @@ CancelCallback GDataWapiService::GetResourceListInDirectory(
 
   return sender_->StartRequestWithRetry(
       new GetResourceListRequest(sender_.get(),
-                                 url_request_context_getter_,
                                  url_generator_,
                                  GURL(),         // No override url
                                  0,              // start changestamp
@@ -235,7 +233,6 @@ CancelCallback GDataWapiService::Search(
 
   return sender_->StartRequestWithRetry(
       new GetResourceListRequest(sender_.get(),
-                                 url_request_context_getter_,
                                  url_generator_,
                                  GURL(),         // No override url
                                  0,              // start changestamp
@@ -254,7 +251,6 @@ CancelCallback GDataWapiService::SearchByTitle(
 
   return sender_->StartRequestWithRetry(
       new SearchByTitleRequest(sender_.get(),
-                               url_request_context_getter_,
                                url_generator_,
                                title,
                                directory_resource_id,
@@ -269,7 +265,6 @@ CancelCallback GDataWapiService::GetChangeList(
 
   return sender_->StartRequestWithRetry(
       new GetResourceListRequest(sender_.get(),
-                                 url_request_context_getter_,
                                  url_generator_,
                                  GURL(),         // No override url
                                  start_changestamp,
@@ -287,7 +282,6 @@ CancelCallback GDataWapiService::ContinueGetResourceList(
 
   return sender_->StartRequestWithRetry(
       new GetResourceListRequest(sender_.get(),
-                                 url_request_context_getter_,
                                  url_generator_,
                                  override_url,
                                  0,              // start changestamp
@@ -304,7 +298,6 @@ CancelCallback GDataWapiService::GetResourceEntry(
 
   return sender_->StartRequestWithRetry(
       new GetResourceEntryRequest(sender_.get(),
-                                  url_request_context_getter_,
                                   url_generator_,
                                   resource_id,
                                   base::Bind(&ParseResourceEntryAndRun,
@@ -319,7 +312,6 @@ CancelCallback GDataWapiService::GetAboutResource(
   return sender_->StartRequestWithRetry(
       new GetAccountMetadataRequest(
           sender_.get(),
-          url_request_context_getter_,
           url_generator_,
           base::Bind(&ParseAboutResourceAndRun, callback),
           false));  // Exclude installed apps.
@@ -332,7 +324,6 @@ CancelCallback GDataWapiService::GetAppList(
 
   return sender_->StartRequestWithRetry(
       new GetAccountMetadataRequest(sender_.get(),
-                                    url_request_context_getter_,
                                     url_generator_,
                                     base::Bind(&ParseAppListAndRun, callback),
                                     true));  // Include installed apps.
@@ -350,7 +341,6 @@ CancelCallback GDataWapiService::DownloadFile(
 
   return sender_->StartRequestWithRetry(
       new DownloadFileRequest(sender_.get(),
-                              url_request_context_getter_,
                               download_action_callback,
                               get_content_callback,
                               progress_callback,
@@ -367,7 +357,6 @@ CancelCallback GDataWapiService::DeleteResource(
 
   return sender_->StartRequestWithRetry(
       new DeleteResourceRequest(sender_.get(),
-                                url_request_context_getter_,
                                 url_generator_,
                                 callback,
                                 resource_id,
@@ -383,7 +372,6 @@ CancelCallback GDataWapiService::AddNewDirectory(
 
   return sender_->StartRequestWithRetry(
       new CreateDirectoryRequest(sender_.get(),
-                                 url_request_context_getter_,
                                  url_generator_,
                                  base::Bind(&ParseResourceEntryAndRun,
                                             callback),
@@ -415,7 +403,6 @@ CancelCallback GDataWapiService::CopyHostedDocument(
 
   return sender_->StartRequestWithRetry(
       new CopyHostedDocumentRequest(sender_.get(),
-                                    url_request_context_getter_,
                                     url_generator_,
                                     base::Bind(&ParseResourceEntryAndRun,
                                                callback),
@@ -432,7 +419,6 @@ CancelCallback GDataWapiService::RenameResource(
 
   return sender_->StartRequestWithRetry(
       new RenameResourceRequest(sender_.get(),
-                                url_request_context_getter_,
                                 url_generator_,
                                 callback,
                                 resource_id,
@@ -467,7 +453,6 @@ CancelCallback GDataWapiService::AddResourceToDirectory(
 
   return sender_->StartRequestWithRetry(
       new AddResourceToDirectoryRequest(sender_.get(),
-                                        url_request_context_getter_,
                                         url_generator_,
                                         callback,
                                         parent_resource_id,
@@ -483,7 +468,6 @@ CancelCallback GDataWapiService::RemoveResourceFromDirectory(
 
   return sender_->StartRequestWithRetry(
       new RemoveResourceFromDirectoryRequest(sender_.get(),
-                                             url_request_context_getter_,
                                              url_generator_,
                                              callback,
                                              parent_resource_id,
@@ -502,7 +486,6 @@ CancelCallback GDataWapiService::InitiateUploadNewFile(
 
   return sender_->StartRequestWithRetry(
       new InitiateUploadNewFileRequest(sender_.get(),
-                                       url_request_context_getter_,
                                        url_generator_,
                                        callback,
                                        content_type,
@@ -523,7 +506,6 @@ CancelCallback GDataWapiService::InitiateUploadExistingFile(
 
   return sender_->StartRequestWithRetry(
       new InitiateUploadExistingFileRequest(sender_.get(),
-                                            url_request_context_getter_,
                                             url_generator_,
                                             callback,
                                             content_type,
@@ -546,7 +528,6 @@ CancelCallback GDataWapiService::ResumeUpload(
 
   return sender_->StartRequestWithRetry(
       new ResumeUploadRequest(sender_.get(),
-                              url_request_context_getter_,
                               callback,
                               progress_callback,
                               upload_url,
@@ -566,7 +547,6 @@ CancelCallback GDataWapiService::GetUploadStatus(
 
   return sender_->StartRequestWithRetry(
       new GetUploadStatusRequest(sender_.get(),
-                                 url_request_context_getter_,
                                  callback,
                                  upload_url,
                                  content_length));
@@ -581,7 +561,6 @@ CancelCallback GDataWapiService::AuthorizeApp(
 
   return sender_->StartRequestWithRetry(
       new AuthorizeAppRequest(sender_.get(),
-                              url_request_context_getter_,
                               url_generator_,
                               callback,
                               resource_id,

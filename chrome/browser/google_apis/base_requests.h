@@ -24,10 +24,6 @@ namespace base {
 class Value;
 }  // namespace base
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace google_apis {
 
 class RequestSender;
@@ -97,8 +93,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   virtual void Cancel() OVERRIDE;
 
  protected:
-  UrlFetchRequestBase(RequestSender* sender,
-                      net::URLRequestContextGetter* url_request_context_getter);
+  explicit UrlFetchRequestBase(RequestSender* sender);
   virtual ~UrlFetchRequestBase();
 
   // Gets URL for the request.
@@ -168,7 +163,6 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   // AuthenticatedRequestInterface overrides.
   virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE;
 
-  net::URLRequestContextGetter* url_request_context_getter_;
   ReAuthenticateCallback re_authenticate_callback_;
   int re_authenticate_count_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
@@ -197,10 +191,8 @@ class EntryActionRequest : public UrlFetchRequestBase {
  public:
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |callback| must not be null.
-  EntryActionRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const EntryActionCallback& callback);
+  EntryActionRequest(RequestSender* sender,
+                     const EntryActionCallback& callback);
   virtual ~EntryActionRequest();
 
  protected:
@@ -227,9 +219,7 @@ typedef base::Callback<void(GDataErrorCode error,
 class GetDataRequest : public UrlFetchRequestBase {
  public:
   // |callback| must not be null.
-  GetDataRequest(RequestSender* runner,
-                 net::URLRequestContextGetter* url_request_context_getter,
-                 const GetDataCallback& callback);
+  GetDataRequest(RequestSender* sender, const GetDataCallback& callback);
   virtual ~GetDataRequest();
 
   // Parses JSON response.
@@ -285,12 +275,10 @@ class InitiateUploadRequestBase : public UrlFetchRequestBase {
   // |callback| must not be null.
   // |content_type| and |content_length| should be the attributes of the
   // uploading file.
-  InitiateUploadRequestBase(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const InitiateUploadCallback& callback,
-      const std::string& content_type,
-      int64 content_length);
+  InitiateUploadRequestBase(RequestSender* sender,
+                            const InitiateUploadCallback& callback,
+                            const std::string& content_type,
+                            int64 content_length);
   virtual ~InitiateUploadRequestBase();
 
   // UrlFetchRequestBase overrides.
@@ -333,10 +321,7 @@ struct UploadRangeResponse {
 class UploadRangeRequestBase : public UrlFetchRequestBase {
  protected:
   // |upload_location| is the URL of where to upload the file to.
-  UploadRangeRequestBase(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GURL& upload_url);
+  UploadRangeRequestBase(RequestSender* sender, const GURL& upload_url);
   virtual ~UploadRangeRequestBase();
 
   // UrlFetchRequestBase overrides.
@@ -397,15 +382,13 @@ class ResumeUploadRequestBase : public UploadRangeRequestBase {
   // |buf| holds current content to be uploaded.
   // See also UploadRangeRequestBase's comment for remaining parameters
   // meaning.
-  ResumeUploadRequestBase(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GURL& upload_location,
-      int64 start_position,
-      int64 end_position,
-      int64 content_length,
-      const std::string& content_type,
-      const base::FilePath& local_file_path);
+  ResumeUploadRequestBase(RequestSender* sender,
+                          const GURL& upload_location,
+                          int64 start_position,
+                          int64 end_position,
+                          int64 content_length,
+                          const std::string& content_type,
+                          const base::FilePath& local_file_path);
   virtual ~ResumeUploadRequestBase();
 
   // UrlFetchRequestBase overrides.
@@ -441,11 +424,9 @@ class GetUploadStatusRequestBase : public UploadRangeRequestBase {
   // |content_length| is the whole data size to be uploaded.
   // See also UploadRangeRequestBase's constructor comment for other
   // parameters.
-  GetUploadStatusRequestBase(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GURL& upload_url,
-      int64 content_length);
+  GetUploadStatusRequestBase(RequestSender* sender,
+                             const GURL& upload_url,
+                             int64 content_length);
   virtual ~GetUploadStatusRequestBase();
 
  protected:
@@ -490,14 +471,12 @@ class DownloadFileRequest : public UrlFetchRequestBase {
   // output_file_path:
   //   Specifies the file path to save the downloaded file.
   //
-  DownloadFileRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback,
-      const ProgressCallback& progress_callback,
-      const GURL& download_url,
-      const base::FilePath& output_file_path);
+  DownloadFileRequest(RequestSender* sender,
+                      const DownloadActionCallback& download_action_callback,
+                      const GetContentCallback& get_content_callback,
+                      const ProgressCallback& progress_callback,
+                      const GURL& download_url,
+                      const base::FilePath& output_file_path);
   virtual ~DownloadFileRequest();
 
  protected:

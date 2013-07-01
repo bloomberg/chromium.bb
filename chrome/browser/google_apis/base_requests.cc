@@ -90,11 +90,8 @@ void ParseJson(const std::string& json, const ParseJsonCallback& callback) {
 
 //============================ UrlFetchRequestBase ===========================
 
-UrlFetchRequestBase::UrlFetchRequestBase(
-    RequestSender* sender,
-    net::URLRequestContextGetter* url_request_context_getter)
-    : url_request_context_getter_(url_request_context_getter),
-      re_authenticate_count_(0),
+UrlFetchRequestBase::UrlFetchRequestBase(RequestSender* sender)
+    : re_authenticate_count_(0),
       sender_(sender),
       save_temp_file_(false),
       weak_ptr_factory_(this) {
@@ -106,7 +103,6 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
                                 const std::string& custom_user_agent,
                                 const ReAuthenticateCallback& callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(url_request_context_getter_);
   DCHECK(!access_token.empty());
   DCHECK(!callback.is_null());
   DCHECK(re_authenticate_callback_.is_null());
@@ -126,7 +122,7 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
   URLFetcher::RequestType request_type = GetRequestType();
   url_fetcher_.reset(
       URLFetcher::Create(url, request_type, this));
-  url_fetcher_->SetRequestContext(url_request_context_getter_);
+  url_fetcher_->SetRequestContext(sender_->url_request_context_getter());
   // Always set flags to neither send nor save cookies.
   url_fetcher_->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -272,11 +268,9 @@ UrlFetchRequestBase::GetWeakPtr() {
 
 //============================ EntryActionRequest ============================
 
-EntryActionRequest::EntryActionRequest(
-    RequestSender* runner,
-    net::URLRequestContextGetter* url_request_context_getter,
-    const EntryActionCallback& callback)
-    : UrlFetchRequestBase(runner, url_request_context_getter),
+EntryActionRequest::EntryActionRequest(RequestSender* sender,
+                                       const EntryActionCallback& callback)
+    : UrlFetchRequestBase(sender),
       callback_(callback) {
   DCHECK(!callback_.is_null());
 }
@@ -296,11 +290,9 @@ void EntryActionRequest::RunCallbackOnPrematureFailure(GDataErrorCode code) {
 
 //============================== GetDataRequest ==============================
 
-GetDataRequest::GetDataRequest(
-    RequestSender* runner,
-    net::URLRequestContextGetter* url_request_context_getter,
-    const GetDataCallback& callback)
-    : UrlFetchRequestBase(runner, url_request_context_getter),
+GetDataRequest::GetDataRequest(RequestSender* sender,
+                               const GetDataCallback& callback)
+    : UrlFetchRequestBase(sender),
       callback_(callback),
       weak_ptr_factory_(this) {
   DCHECK(!callback_.is_null());
@@ -369,12 +361,11 @@ void GetDataRequest::RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
 //========================= InitiateUploadRequestBase ========================
 
 InitiateUploadRequestBase::InitiateUploadRequestBase(
-    RequestSender* runner,
-    net::URLRequestContextGetter* url_request_context_getter,
+    RequestSender* sender,
     const InitiateUploadCallback& callback,
     const std::string& content_type,
     int64 content_length)
-    : UrlFetchRequestBase(runner, url_request_context_getter),
+    : UrlFetchRequestBase(sender),
       callback_(callback),
       content_type_(content_type),
       content_length_(content_length) {
@@ -436,11 +427,9 @@ UploadRangeResponse::~UploadRangeResponse() {
 
 //========================== UploadRangeRequestBase ==========================
 
-UploadRangeRequestBase::UploadRangeRequestBase(
-    RequestSender* runner,
-    net::URLRequestContextGetter* url_request_context_getter,
-    const GURL& upload_url)
-    : UrlFetchRequestBase(runner, url_request_context_getter),
+UploadRangeRequestBase::UploadRangeRequestBase(RequestSender* sender,
+                                               const GURL& upload_url)
+    : UrlFetchRequestBase(sender),
       upload_url_(upload_url),
       weak_ptr_factory_(this) {
 }
@@ -524,17 +513,14 @@ void UploadRangeRequestBase::RunCallbackOnPrematureFailure(
 //========================== ResumeUploadRequestBase =========================
 
 ResumeUploadRequestBase::ResumeUploadRequestBase(
-    RequestSender* runner,
-    net::URLRequestContextGetter* url_request_context_getter,
+    RequestSender* sender,
     const GURL& upload_location,
     int64 start_position,
     int64 end_position,
     int64 content_length,
     const std::string& content_type,
     const base::FilePath& local_file_path)
-    : UploadRangeRequestBase(runner,
-                             url_request_context_getter,
-                             upload_location),
+    : UploadRangeRequestBase(sender, upload_location),
       start_position_(start_position),
       end_position_(end_position),
       content_length_(content_length),
@@ -591,14 +577,10 @@ bool ResumeUploadRequestBase::GetContentFile(
 
 //======================== GetUploadStatusRequestBase ========================
 
-GetUploadStatusRequestBase::GetUploadStatusRequestBase(
-    RequestSender* runner,
-    net::URLRequestContextGetter* url_request_context_getter,
-    const GURL& upload_url,
-    int64 content_length)
-    : UploadRangeRequestBase(runner,
-                             url_request_context_getter,
-                             upload_url),
+GetUploadStatusRequestBase::GetUploadStatusRequestBase(RequestSender* sender,
+                                                       const GURL& upload_url,
+                                                       int64 content_length)
+    : UploadRangeRequestBase(sender, upload_url),
       content_length_(content_length) {}
 
 GetUploadStatusRequestBase::~GetUploadStatusRequestBase() {}
@@ -621,14 +603,13 @@ GetUploadStatusRequestBase::GetExtraRequestHeaders() const {
 //============================ DownloadFileRequest ===========================
 
 DownloadFileRequest::DownloadFileRequest(
-    RequestSender* runner,
-    net::URLRequestContextGetter* url_request_context_getter,
+    RequestSender* sender,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
     const ProgressCallback& progress_callback,
     const GURL& download_url,
     const base::FilePath& output_file_path)
-    : UrlFetchRequestBase(runner, url_request_context_getter),
+    : UrlFetchRequestBase(sender),
       download_action_callback_(download_action_callback),
       get_content_callback_(get_content_callback),
       progress_callback_(progress_callback),

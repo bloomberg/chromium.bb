@@ -12,10 +12,6 @@
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 #include "chrome/browser/google_apis/drive_common_callbacks.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace google_apis {
 
 class FileResource;
@@ -32,8 +28,7 @@ typedef base::Callback<void(GDataErrorCode error,
 // This class performs the request for fetching About data.
 class GetAboutRequest : public GetDataRequest {
  public:
-  GetAboutRequest(RequestSender* runner,
-                  net::URLRequestContextGetter* url_request_context_getter,
+  GetAboutRequest(RequestSender* sender,
                   const DriveApiUrlGenerator& url_generator,
                   const GetAboutResourceCallback& callback);
   virtual ~GetAboutRequest();
@@ -53,8 +48,7 @@ class GetAboutRequest : public GetDataRequest {
 // This class performs the request for fetching Applist.
 class GetApplistRequest : public GetDataRequest {
  public:
-  GetApplistRequest(RequestSender* runner,
-                    net::URLRequestContextGetter* url_request_context_getter,
+  GetApplistRequest(RequestSender* sender,
                     const DriveApiUrlGenerator& url_generator,
                     const GetDataCallback& callback);
   virtual ~GetApplistRequest();
@@ -82,14 +76,12 @@ class GetChangelistRequest : public GetDataRequest {
   // all changes are necessary.
   // |max_results| specifies the max of the number of files resource in the
   // response.
-  GetChangelistRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DriveApiUrlGenerator& url_generator,
-      bool include_deleted,
-      int64 start_changestamp,
-      int max_results,
-      const GetDataCallback& callback);
+  GetChangelistRequest(RequestSender* sender,
+                       const DriveApiUrlGenerator& url_generator,
+                       bool include_deleted,
+                       int64 start_changestamp,
+                       int max_results,
+                       const GetDataCallback& callback);
   virtual ~GetChangelistRequest();
 
  protected:
@@ -112,13 +104,11 @@ class GetChangelistRequest : public GetDataRequest {
 // should be able to be fetched by ContinueGetFileListRequest defined below.
 class GetFilelistRequest : public GetDataRequest {
  public:
-  GetFilelistRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DriveApiUrlGenerator& url_generator,
-      const std::string& search_string,
-      int max_results,
-      const GetDataCallback& callback);
+  GetFilelistRequest(RequestSender* sender,
+                     const DriveApiUrlGenerator& url_generator,
+                     const std::string& search_string,
+                     int max_results,
+                     const GetDataCallback& callback);
   virtual ~GetFilelistRequest();
 
  protected:
@@ -138,8 +128,7 @@ class GetFilelistRequest : public GetDataRequest {
 // This class performs the request for fetching a file.
 class GetFileRequest : public GetDataRequest {
  public:
-  GetFileRequest(RequestSender* runner,
-                 net::URLRequestContextGetter* url_request_context_getter,
+  GetFileRequest(RequestSender* sender,
                  const DriveApiUrlGenerator& url_generator,
                  const std::string& file_id,
                  const FileResourceCallback& callback);
@@ -169,11 +158,9 @@ namespace drive {
 // This class performs the request to fetch remaining Filelist result.
 class ContinueGetFileListRequest : public GetDataRequest {
  public:
-  ContinueGetFileListRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GURL& url,
-      const GetDataCallback& callback);
+  ContinueGetFileListRequest(RequestSender* sender,
+                             const GURL& url,
+                             const GetDataCallback& callback);
   virtual ~ContinueGetFileListRequest();
 
  protected:
@@ -190,13 +177,11 @@ class ContinueGetFileListRequest : public GetDataRequest {
 // This class performs the request for creating a directory.
 class CreateDirectoryRequest : public GetDataRequest {
  public:
-  CreateDirectoryRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DriveApiUrlGenerator& url_generator,
-      const std::string& parent_resource_id,
-      const std::string& directory_name,
-      const FileResourceCallback& callback);
+  CreateDirectoryRequest(RequestSender* sender,
+                         const DriveApiUrlGenerator& url_generator,
+                         const std::string& parent_resource_id,
+                         const std::string& directory_name,
+                         const FileResourceCallback& callback);
   virtual ~CreateDirectoryRequest();
 
  protected:
@@ -220,13 +205,11 @@ class CreateDirectoryRequest : public GetDataRequest {
 class RenameResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  RenameResourceRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DriveApiUrlGenerator& url_generator,
-      const std::string& resource_id,
-      const std::string& new_name,
-      const EntryActionCallback& callback);
+  RenameResourceRequest(RequestSender* sender,
+                        const DriveApiUrlGenerator& url_generator,
+                        const std::string& resource_id,
+                        const std::string& new_name,
+                        const EntryActionCallback& callback);
   virtual ~RenameResourceRequest();
 
  protected:
@@ -255,14 +238,12 @@ class RenameResourceRequest : public EntryActionRequest {
 class TouchResourceRequest : public GetDataRequest {
  public:
   // |callback| must not be null.
-  TouchResourceRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DriveApiUrlGenerator& url_generator,
-      const std::string& resource_id,
-      const base::Time& modified_date,
-      const base::Time& last_viewed_by_me_date,
-      const FileResourceCallback& callback);
+  TouchResourceRequest(RequestSender* sender,
+                       const DriveApiUrlGenerator& url_generator,
+                       const std::string& resource_id,
+                       const base::Time& modified_date,
+                       const base::Time& last_viewed_by_me_date,
+                       const FileResourceCallback& callback);
   virtual ~TouchResourceRequest();
 
  protected:
@@ -298,14 +279,12 @@ class TouchResourceRequest : public GetDataRequest {
 class CopyResourceRequest : public GetDataRequest {
  public:
   // Upon completion, |callback| will be called. |callback| must not be null.
-  CopyResourceRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DriveApiUrlGenerator& url_generator,
-      const std::string& resource_id,
-      const std::string& parent_resource_id,
-      const std::string& new_name,
-      const FileResourceCallback& callback);
+  CopyResourceRequest(RequestSender* sender,
+                      const DriveApiUrlGenerator& url_generator,
+                      const std::string& resource_id,
+                      const std::string& parent_resource_id,
+                      const std::string& new_name,
+                      const FileResourceCallback& callback);
   virtual ~CopyResourceRequest();
 
  protected:
@@ -338,12 +317,10 @@ class CopyResourceRequest : public GetDataRequest {
 class TrashResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  TrashResourceRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DriveApiUrlGenerator& url_generator,
-      const std::string& resource_id,
-      const EntryActionCallback& callback);
+  TrashResourceRequest(RequestSender* sender,
+                       const DriveApiUrlGenerator& url_generator,
+                       const std::string& resource_id,
+                       const EntryActionCallback& callback);
   virtual ~TrashResourceRequest();
 
  protected:
@@ -366,13 +343,11 @@ class TrashResourceRequest : public EntryActionRequest {
 class InsertResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  InsertResourceRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DriveApiUrlGenerator& url_generator,
-      const std::string& parent_resource_id,
-      const std::string& resource_id,
-      const EntryActionCallback& callback);
+  InsertResourceRequest(RequestSender* sender,
+                        const DriveApiUrlGenerator& url_generator,
+                        const std::string& parent_resource_id,
+                        const std::string& resource_id,
+                        const EntryActionCallback& callback);
   virtual ~InsertResourceRequest();
 
  protected:
@@ -401,13 +376,11 @@ class InsertResourceRequest : public EntryActionRequest {
 class DeleteResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  DeleteResourceRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DriveApiUrlGenerator& url_generator,
-      const std::string& parent_resource_id,
-      const std::string& resource_id,
-      const EntryActionCallback& callback);
+  DeleteResourceRequest(RequestSender* sender,
+                        const DriveApiUrlGenerator& url_generator,
+                        const std::string& parent_resource_id,
+                        const std::string& resource_id,
+                        const EntryActionCallback& callback);
   virtual ~DeleteResourceRequest();
 
  protected:
@@ -432,15 +405,13 @@ class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
   // |title| should be set.
   // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
-  InitiateUploadNewFileRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DriveApiUrlGenerator& url_generator,
-      const std::string& content_type,
-      int64 content_length,
-      const std::string& parent_resource_id,
-      const std::string& title,
-      const InitiateUploadCallback& callback);
+  InitiateUploadNewFileRequest(RequestSender* sender,
+                               const DriveApiUrlGenerator& url_generator,
+                               const std::string& content_type,
+                               int64 content_length,
+                               const std::string& parent_resource_id,
+                               const std::string& title,
+                               const InitiateUploadCallback& callback);
   virtual ~InitiateUploadNewFileRequest();
 
  protected:
@@ -470,15 +441,13 @@ class InitiateUploadExistingFileRequest
   // |etag| should be set if it is available to detect the upload confliction.
   // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
-  InitiateUploadExistingFileRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const DriveApiUrlGenerator& url_generator,
-      const std::string& content_type,
-      int64 content_length,
-      const std::string& resource_id,
-      const std::string& etag,
-      const InitiateUploadCallback& callback);
+  InitiateUploadExistingFileRequest(RequestSender* sender,
+                                    const DriveApiUrlGenerator& url_generator,
+                                    const std::string& content_type,
+                                    int64 content_length,
+                                    const std::string& resource_id,
+                                    const std::string& etag,
+                                    const InitiateUploadCallback& callback);
   virtual ~InitiateUploadExistingFileRequest();
 
  protected:
@@ -507,17 +476,15 @@ class ResumeUploadRequest : public ResumeUploadRequestBase {
  public:
   // See also ResumeUploadRequestBase's comment for parameters meaning.
   // |callback| must not be null. |progress_callback| may be null.
-  ResumeUploadRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GURL& upload_location,
-      int64 start_position,
-      int64 end_position,
-      int64 content_length,
-      const std::string& content_type,
-      const base::FilePath& local_file_path,
-      const UploadRangeCallback& callback,
-      const ProgressCallback& progress_callback);
+  ResumeUploadRequest(RequestSender* sender,
+                      const GURL& upload_location,
+                      int64 start_position,
+                      int64 end_position,
+                      int64 content_length,
+                      const std::string& content_type,
+                      const base::FilePath& local_file_path,
+                      const UploadRangeCallback& callback,
+                      const ProgressCallback& progress_callback);
   virtual ~ResumeUploadRequest();
 
  protected:
@@ -543,12 +510,10 @@ class GetUploadStatusRequest : public GetUploadStatusRequestBase {
  public:
   // See also GetUploadStatusRequestBase's comment for parameters meaning.
   // |callback| must not be null.
-  GetUploadStatusRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GURL& upload_url,
-      int64 content_length,
-      const UploadRangeCallback& callback);
+  GetUploadStatusRequest(RequestSender* sender,
+                         const GURL& upload_url,
+                         int64 content_length,
+                         const UploadRangeCallback& callback);
   virtual ~GetUploadStatusRequest();
 
  protected:

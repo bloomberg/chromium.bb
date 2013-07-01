@@ -321,7 +321,6 @@ TEST_F(DriveApiRequestsTest, GetAboutRequest_ValidJson) {
     base::RunLoop run_loop;
     GetAboutRequest* request = new GetAboutRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -356,7 +355,6 @@ TEST_F(DriveApiRequestsTest, GetAboutRequest_InvalidJson) {
     base::RunLoop run_loop;
     GetAboutRequest* request = new GetAboutRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -384,7 +382,6 @@ TEST_F(DriveApiRequestsTest, GetApplistRequest) {
     base::RunLoop run_loop;
     GetApplistRequest* request = new GetApplistRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -411,7 +408,6 @@ TEST_F(DriveApiRequestsTest, GetChangelistRequest) {
     base::RunLoop run_loop;
     GetChangelistRequest* request = new GetChangelistRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         true,  // include deleted
         100,  // start changestamp
@@ -442,7 +438,6 @@ TEST_F(DriveApiRequestsTest, GetFilelistRequest) {
     base::RunLoop run_loop;
     GetFilelistRequest* request = new GetFilelistRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         "\"abcde\" in parents",
         50,  // max results
@@ -473,7 +468,6 @@ TEST_F(DriveApiRequestsTest, ContinueGetFileListRequest) {
     drive::ContinueGetFileListRequest* request =
         new drive::ContinueGetFileListRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             test_server_.GetURL("/continue/get/file/list"),
             test_util::CreateQuitCallback(
                 &run_loop,
@@ -502,7 +496,6 @@ TEST_F(DriveApiRequestsTest, CreateDirectoryRequest) {
     drive::CreateDirectoryRequest* request =
         new drive::CreateDirectoryRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             "root",
             "new directory",
@@ -547,7 +540,6 @@ TEST_F(DriveApiRequestsTest, RenameResourceRequest) {
     drive::RenameResourceRequest* request =
         new drive::RenameResourceRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             "resource_id",
             "new name",
@@ -584,7 +576,6 @@ TEST_F(DriveApiRequestsTest, TouchResourceRequest) {
     base::RunLoop run_loop;
     drive::TouchResourceRequest* request = new drive::TouchResourceRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         "resource_id",
         base::Time::FromUTCExploded(kModifiedDate),
@@ -624,7 +615,6 @@ TEST_F(DriveApiRequestsTest, CopyResourceRequest) {
     drive::CopyResourceRequest* request =
         new drive::CopyResourceRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             "resource_id",
             "parent_resource_id",
@@ -663,7 +653,6 @@ TEST_F(DriveApiRequestsTest, CopyResourceRequest_EmptyParentResourceId) {
     drive::CopyResourceRequest* request =
         new drive::CopyResourceRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             "resource_id",
             std::string(),  // parent resource id.
@@ -699,7 +688,6 @@ TEST_F(DriveApiRequestsTest, TrashResourceRequest) {
     drive::TrashResourceRequest* request =
         new drive::TrashResourceRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             "resource_id",
             test_util::CreateQuitCallback(
@@ -730,7 +718,6 @@ TEST_F(DriveApiRequestsTest, InsertResourceRequest) {
     drive::InsertResourceRequest* request =
         new drive::InsertResourceRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             "parent_resource_id",
             "resource_id",
@@ -761,7 +748,6 @@ TEST_F(DriveApiRequestsTest, DeleteResourceRequest) {
     drive::DeleteResourceRequest* request =
         new drive::DeleteResourceRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             "parent_resource_id",
             "resource_id",
@@ -799,7 +785,6 @@ TEST_F(DriveApiRequestsTest, UploadNewFileRequest) {
     drive::InitiateUploadNewFileRequest* request =
         new drive::InitiateUploadNewFileRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             kTestContentType,
             kTestContent.size(),
@@ -839,7 +824,6 @@ TEST_F(DriveApiRequestsTest, UploadNewFileRequest) {
     drive::ResumeUploadRequest* resume_request =
         new drive::ResumeUploadRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             upload_url,
             0,  // start_position
             kTestContent.size(),  // end_position (exclusive)
@@ -893,7 +877,6 @@ TEST_F(DriveApiRequestsTest, UploadNewEmptyFileRequest) {
     drive::InitiateUploadNewFileRequest* request =
         new drive::InitiateUploadNewFileRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             kTestContentType,
             0,
@@ -932,7 +915,6 @@ TEST_F(DriveApiRequestsTest, UploadNewEmptyFileRequest) {
     drive::ResumeUploadRequest* resume_request =
         new drive::ResumeUploadRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             upload_url,
             0,  // start_position
             0,  // end_position (exclusive)
@@ -984,7 +966,6 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
     drive::InitiateUploadNewFileRequest* request =
         new drive::InitiateUploadNewFileRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             kTestContentType,
             kTestContent.size(),
@@ -1027,7 +1008,6 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
       drive::GetUploadStatusRequest* get_upload_status_request =
           new drive::GetUploadStatusRequest(
               request_sender_.get(),
-              request_context_getter_.get(),
               upload_url,
               kTestContent.size(),
               test_util::CreateQuitCallback(
@@ -1069,7 +1049,6 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
       drive::ResumeUploadRequest* resume_request =
           new drive::ResumeUploadRequest(
               request_sender_.get(),
-              request_context_getter_.get(),
               upload_url,
               start_position,
               end_position,
@@ -1119,7 +1098,6 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
       drive::GetUploadStatusRequest* get_upload_status_request =
           new drive::GetUploadStatusRequest(
               request_sender_.get(),
-              request_context_getter_.get(),
               upload_url,
               kTestContent.size(),
               test_util::CreateQuitCallback(
@@ -1166,7 +1144,6 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequest) {
     drive::InitiateUploadExistingFileRequest* request =
         new drive::InitiateUploadExistingFileRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             kTestContentType,
             kTestContent.size(),
@@ -1201,7 +1178,6 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequest) {
     drive::ResumeUploadRequest* resume_request =
         new drive::ResumeUploadRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             upload_url,
             0,  // start_position
             kTestContent.size(),  // end_position (exclusive)
@@ -1255,7 +1231,6 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETag) {
     drive::InitiateUploadExistingFileRequest* request =
         new drive::InitiateUploadExistingFileRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             kTestContentType,
             kTestContent.size(),
@@ -1290,7 +1265,6 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETag) {
     drive::ResumeUploadRequest* resume_request =
         new drive::ResumeUploadRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             upload_url,
             0,  // start_position
             kTestContent.size(),  // end_position (exclusive)
@@ -1341,7 +1315,6 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETagConflicting) {
     drive::InitiateUploadExistingFileRequest* request =
         new drive::InitiateUploadExistingFileRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             kTestContentType,
             kTestContent.size(),

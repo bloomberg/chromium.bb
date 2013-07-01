@@ -88,7 +88,6 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
     base::RunLoop run_loop;
     DownloadFileRequest* request = new DownloadFileRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&result_code, &temp_file)),
@@ -123,7 +122,6 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_NonExistentFile) {
     base::RunLoop run_loop;
     DownloadFileRequest* request = new DownloadFileRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&result_code, &temp_file)),

@@ -109,8 +109,6 @@ class GDataContactsService : public GDataContactsServiceInterface {
   // unsuccessfully).
   void OnRequestComplete(DownloadContactsRequest* request);
 
-  net::URLRequestContextGetter* url_request_context_getter_;  // not owned
-
   scoped_ptr<google_apis::RequestSender> sender_;
 
   // Group ID for the "My Contacts" system contacts group.

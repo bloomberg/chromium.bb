@@ -22,9 +22,9 @@ const char kInvalidJsonString[] = "$$$";
 
 class FakeGetDataRequest : public GetDataRequest {
  public:
-  explicit FakeGetDataRequest(RequestSender* runner,
+  explicit FakeGetDataRequest(RequestSender* sender,
                               const GetDataCallback& callback)
-      : GetDataRequest(runner, NULL, callback) {
+      : GetDataRequest(sender, callback) {
   }
 
   virtual ~FakeGetDataRequest() {
@@ -43,16 +43,16 @@ class BaseRequestsTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
-    runner_.reset(new RequestSender(profile_.get(),
+    sender_.reset(new RequestSender(profile_.get(),
                                     NULL /* url_request_context_getter */,
                                     std::vector<std::string>() /* scopes */,
                                     std::string() /* custom user agent */));
-    runner_->Initialize();
+    sender_->Initialize();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<RequestSender> runner_;
+  scoped_ptr<RequestSender> sender_;
 };
 
 TEST_F(BaseRequestsTest, ParseValidJson) {
@@ -89,7 +89,7 @@ TEST_F(BaseRequestsTest, GetDataRequestParseValidResponse) {
   scoped_ptr<base::Value> value;
   FakeGetDataRequest* get_data_request =
       new FakeGetDataRequest(
-          runner_.get(),
+          sender_.get(),
           base::Bind(test_util::CreateCopyResultCallback(&error, &value)));
 
   get_data_request->ParseResponse(HTTP_SUCCESS, kValidJsonString);
@@ -106,7 +106,7 @@ TEST_F(BaseRequestsTest, GetDataRequestParseInvalidResponse) {
   scoped_ptr<base::Value> value;
   FakeGetDataRequest* get_data_request =
       new FakeGetDataRequest(
-          runner_.get(),
+          sender_.get(),
           base::Bind(test_util::CreateCopyResultCallback(&error, &value)));
 
   get_data_request->ParseResponse(HTTP_SUCCESS, kInvalidJsonString);

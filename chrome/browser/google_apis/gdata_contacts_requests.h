@@ -9,10 +9,6 @@
 
 #include "chrome/browser/google_apis/base_requests.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace google_apis {
 
 //========================== GetContactGroupsRequest =========================
@@ -20,10 +16,8 @@ namespace google_apis {
 // This class fetches a JSON feed containing a user's contact groups.
 class GetContactGroupsRequest : public GetDataRequest {
  public:
-  GetContactGroupsRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GetDataCallback& callback);
+  GetContactGroupsRequest(RequestSender* runner,
+                          const GetDataCallback& callback);
   virtual ~GetContactGroupsRequest();
 
   void set_feed_url_for_testing(const GURL& url) {
@@ -46,12 +40,10 @@ class GetContactGroupsRequest : public GetDataRequest {
 // This class fetches a JSON feed containing a user's contacts.
 class GetContactsRequest : public GetDataRequest {
  public:
-  GetContactsRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const std::string& group_id,
-      const base::Time& min_update_time,
-      const GetDataCallback& callback);
+  GetContactsRequest(RequestSender* runner,
+                     const std::string& group_id,
+                     const base::Time& min_update_time,
+                     const GetDataCallback& callback);
   virtual ~GetContactsRequest();
 
   void set_feed_url_for_testing(const GURL& url) {
@@ -83,11 +75,9 @@ class GetContactsRequest : public GetDataRequest {
 // This class fetches a contact's photo.
 class GetContactPhotoRequest : public UrlFetchRequestBase {
  public:
-  GetContactPhotoRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GURL& photo_url,
-      const GetContentCallback& callback);
+  GetContactPhotoRequest(RequestSender* runner,
+                         const GURL& photo_url,
+                         const GetContentCallback& callback);
   virtual ~GetContactPhotoRequest();
 
  protected:

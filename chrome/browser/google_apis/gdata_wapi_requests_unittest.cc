@@ -343,7 +343,6 @@ TEST_F(GDataWapiRequestsTest, GetResourceListRequest_DefaultFeed) {
     base::RunLoop run_loop;
     GetResourceListRequest* request = new GetResourceListRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         GURL(),         // Pass an empty URL to use the default feed
         0,              // start changestamp
@@ -378,7 +377,6 @@ TEST_F(GDataWapiRequestsTest, GetResourceListRequest_ValidFeed) {
     base::RunLoop run_loop;
     GetResourceListRequest* request = new GetResourceListRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_server_.GetURL("/files/chromeos/gdata/root_feed.json"),
         0,              // start changestamp
@@ -414,7 +412,6 @@ TEST_F(GDataWapiRequestsTest, GetResourceListRequest_InvalidFeed) {
     base::RunLoop run_loop;
     GetResourceListRequest* request = new GetResourceListRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
         0,              // start changestamp
@@ -443,7 +440,6 @@ TEST_F(GDataWapiRequestsTest, SearchByTitleRequest) {
     base::RunLoop run_loop;
     SearchByTitleRequest* request = new SearchByTitleRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         "search-title",
         std::string(),  // directory resource id
@@ -471,7 +467,6 @@ TEST_F(GDataWapiRequestsTest, GetResourceEntryRequest_ValidResourceId) {
     base::RunLoop run_loop;
     GetResourceEntryRequest* request = new GetResourceEntryRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         "file:2_file_resource_id",  // resource ID
         test_util::CreateQuitCallback(
@@ -499,7 +494,6 @@ TEST_F(GDataWapiRequestsTest, GetResourceEntryRequest_InvalidResourceId) {
     base::RunLoop run_loop;
     GetResourceEntryRequest* request = new GetResourceEntryRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         "<invalid>",  // resource ID
         test_util::CreateQuitCallback(
@@ -525,7 +519,6 @@ TEST_F(GDataWapiRequestsTest, GetAccountMetadataRequest) {
     base::RunLoop run_loop;
     GetAccountMetadataRequest* request = new GetAccountMetadataRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -567,7 +560,6 @@ TEST_F(GDataWapiRequestsTest,
     base::RunLoop run_loop;
     GetAccountMetadataRequest* request = new GetAccountMetadataRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -605,7 +597,6 @@ TEST_F(GDataWapiRequestsTest, DeleteResourceRequest) {
     base::RunLoop run_loop;
     DeleteResourceRequest* request = new DeleteResourceRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -633,7 +624,6 @@ TEST_F(GDataWapiRequestsTest, DeleteResourceRequestWithETag) {
     base::RunLoop run_loop;
     DeleteResourceRequest* request = new DeleteResourceRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -663,7 +653,6 @@ TEST_F(GDataWapiRequestsTest, CreateDirectoryRequest) {
     base::RunLoop run_loop;
     CreateDirectoryRequest* request = new CreateDirectoryRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -701,7 +690,6 @@ TEST_F(GDataWapiRequestsTest, CopyHostedDocumentRequest) {
     base::RunLoop run_loop;
     CopyHostedDocumentRequest* request = new CopyHostedDocumentRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -736,7 +724,6 @@ TEST_F(GDataWapiRequestsTest, RenameResourceRequest) {
     base::RunLoop run_loop;
     RenameResourceRequest* request = new RenameResourceRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -774,7 +761,6 @@ TEST_F(GDataWapiRequestsTest, AuthorizeAppRequest_ValidFeed) {
     base::RunLoop run_loop;
     AuthorizeAppRequest* request = new AuthorizeAppRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -814,7 +800,6 @@ TEST_F(GDataWapiRequestsTest, AuthorizeAppRequest_NotFound) {
     base::RunLoop run_loop;
     AuthorizeAppRequest* request = new AuthorizeAppRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -852,7 +837,6 @@ TEST_F(GDataWapiRequestsTest, AuthorizeAppRequest_InvalidFeed) {
     base::RunLoop run_loop;
     AuthorizeAppRequest* request = new AuthorizeAppRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         *url_generator_,
         test_util::CreateQuitCallback(
             &run_loop,
@@ -890,7 +874,6 @@ TEST_F(GDataWapiRequestsTest, AddResourceToDirectoryRequest) {
     AddResourceToDirectoryRequest* request =
         new AddResourceToDirectoryRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             test_util::CreateQuitCallback(
                 &run_loop,
@@ -928,7 +911,6 @@ TEST_F(GDataWapiRequestsTest, RemoveResourceFromDirectoryRequest) {
     RemoveResourceFromDirectoryRequest* request =
         new RemoveResourceFromDirectoryRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             test_util::CreateQuitCallback(
                 &run_loop,
@@ -967,7 +949,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewFile) {
     InitiateUploadNewFileRequest* initiate_request =
         new InitiateUploadNewFileRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             test_util::CreateQuitCallback(
                 &run_loop,
@@ -1009,7 +990,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewFile) {
     base::RunLoop run_loop;
     ResumeUploadRequest* resume_request = new ResumeUploadRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&response, &new_entry)),
@@ -1069,7 +1049,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
     InitiateUploadNewFileRequest* initiate_request =
         new InitiateUploadNewFileRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             test_util::CreateQuitCallback(
                 &run_loop,
@@ -1116,7 +1095,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
       GetUploadStatusRequest* get_upload_status_request =
           new GetUploadStatusRequest(
               request_sender_.get(),
-              request_context_getter_.get(),
               test_util::CreateQuitCallback(
                   &run_loop,
                   test_util::CreateCopyResultCallback(&response, &new_entry)),
@@ -1163,7 +1141,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
       base::RunLoop run_loop;
       ResumeUploadRequest* resume_request = new ResumeUploadRequest(
           request_sender_.get(),
-          request_context_getter_.get(),
           test_util::CreateQuitCallback(
               &run_loop,
               test_util::CreateCopyResultCallback(&response, &new_entry)),
@@ -1214,7 +1191,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
       GetUploadStatusRequest* get_upload_status_request =
           new GetUploadStatusRequest(
               request_sender_.get(),
-              request_context_getter_.get(),
               test_util::CreateQuitCallback(
                   &run_loop,
                   test_util::CreateCopyResultCallback(&response, &new_entry)),
@@ -1264,7 +1240,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewEmptyFile) {
     InitiateUploadNewFileRequest* initiate_request =
         new InitiateUploadNewFileRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             test_util::CreateQuitCallback(
                 &run_loop,
@@ -1306,7 +1281,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewEmptyFile) {
     base::RunLoop run_loop;
     ResumeUploadRequest* resume_request = new ResumeUploadRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&response, &new_entry)),
@@ -1356,7 +1330,6 @@ TEST_F(GDataWapiRequestsTest, UploadExistingFile) {
     InitiateUploadExistingFileRequest* initiate_request =
         new InitiateUploadExistingFileRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             test_util::CreateQuitCallback(
                 &run_loop,
@@ -1397,7 +1370,6 @@ TEST_F(GDataWapiRequestsTest, UploadExistingFile) {
     base::RunLoop run_loop;
     ResumeUploadRequest* resume_request = new ResumeUploadRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&response, &new_entry)),
@@ -1450,7 +1422,6 @@ TEST_F(GDataWapiRequestsTest, UploadExistingFileWithETag) {
     InitiateUploadExistingFileRequest* initiate_request =
         new InitiateUploadExistingFileRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             test_util::CreateQuitCallback(
                 &run_loop,
@@ -1491,7 +1462,6 @@ TEST_F(GDataWapiRequestsTest, UploadExistingFileWithETag) {
     base::RunLoop run_loop;
     ResumeUploadRequest* resume_request = new ResumeUploadRequest(
         request_sender_.get(),
-        request_context_getter_.get(),
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&response, &new_entry)),
@@ -1539,7 +1509,6 @@ TEST_F(GDataWapiRequestsTest, UploadExistingFileWithETagConflict) {
     InitiateUploadExistingFileRequest* initiate_request =
         new InitiateUploadExistingFileRequest(
             request_sender_.get(),
-            request_context_getter_.get(),
             *url_generator_,
             test_util::CreateQuitCallback(
                 &run_loop,

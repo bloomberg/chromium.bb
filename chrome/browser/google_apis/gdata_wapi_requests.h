@@ -12,10 +12,6 @@
 #include "chrome/browser/google_apis/drive_common_callbacks.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace google_apis {
 
 class AccountMetadata;
@@ -45,15 +41,13 @@ class GetResourceListRequest : public GetDataRequest {
   //
   // callback:
   //   Called once the feed is fetched. Must not be null.
-  GetResourceListRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const GURL& override_url,
-      int64 start_changestamp,
-      const std::string& search_string,
-      const std::string& directory_resource_id,
-      const GetResourceListCallback& callback);
+  GetResourceListRequest(RequestSender* sender,
+                         const GDataWapiUrlGenerator& url_generator,
+                         const GURL& override_url,
+                         int64 start_changestamp,
+                         const std::string& search_string,
+                         const std::string& directory_resource_id,
+                         const GetResourceListCallback& callback);
   virtual ~GetResourceListRequest();
 
  protected:
@@ -83,13 +77,11 @@ class SearchByTitleRequest : public GetDataRequest {
   //
   // callback:
   //   Called once the feed is fetched. Must not be null.
-  SearchByTitleRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const std::string& title,
-      const std::string& directory_resource_id,
-      const GetResourceListCallback& callback);
+  SearchByTitleRequest(RequestSender* sender,
+                       const GDataWapiUrlGenerator& url_generator,
+                       const std::string& title,
+                       const std::string& directory_resource_id,
+                       const GetResourceListCallback& callback);
   virtual ~SearchByTitleRequest();
 
  protected:
@@ -110,12 +102,10 @@ class SearchByTitleRequest : public GetDataRequest {
 class GetResourceEntryRequest : public GetDataRequest {
  public:
   // |callback| must not be null.
-  GetResourceEntryRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const std::string& resource_id,
-      const GetDataCallback& callback);
+  GetResourceEntryRequest(RequestSender* sender,
+                          const GDataWapiUrlGenerator& url_generator,
+                          const std::string& resource_id,
+                          const GetDataCallback& callback);
   virtual ~GetResourceEntryRequest();
 
  protected:
@@ -143,12 +133,10 @@ class GetAccountMetadataRequest : public GetDataRequest {
   // If |include_installed_apps| is set to true, the result should include
   // the list of installed third party applications.
   // |callback| must not be null.
-  GetAccountMetadataRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const GetAccountMetadataCallback& callback,
-      bool include_installed_apps);
+  GetAccountMetadataRequest(RequestSender* sender,
+                            const GDataWapiUrlGenerator& url_generator,
+                            const GetAccountMetadataCallback& callback,
+                            bool include_installed_apps);
   virtual ~GetAccountMetadataRequest();
 
  protected:
@@ -173,13 +161,11 @@ class GetAccountMetadataRequest : public GetDataRequest {
 class DeleteResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  DeleteResourceRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const EntryActionCallback& callback,
-      const std::string& resource_id,
-      const std::string& etag);
+  DeleteResourceRequest(RequestSender* sender,
+                        const GDataWapiUrlGenerator& url_generator,
+                        const EntryActionCallback& callback,
+                        const std::string& resource_id,
+                        const std::string& etag);
   virtual ~DeleteResourceRequest();
 
  protected:
@@ -205,13 +191,11 @@ class CreateDirectoryRequest : public GetDataRequest {
   // |parent_resource_id|. If this parameter is empty, a new directory will
   // be created in the root directory.
   // |callback| must not be null.
-  CreateDirectoryRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const GetDataCallback& callback,
-      const std::string& parent_resource_id,
-      const std::string& directory_name);
+  CreateDirectoryRequest(RequestSender* sender,
+                         const GDataWapiUrlGenerator& url_generator,
+                         const GetDataCallback& callback,
+                         const std::string& parent_resource_id,
+                         const std::string& directory_name);
   virtual ~CreateDirectoryRequest();
 
  protected:
@@ -237,13 +221,11 @@ class CreateDirectoryRequest : public GetDataRequest {
 class CopyHostedDocumentRequest : public GetDataRequest {
  public:
   // |callback| must not be null.
-  CopyHostedDocumentRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const GetDataCallback& callback,
-      const std::string& resource_id,
-      const std::string& new_name);
+  CopyHostedDocumentRequest(RequestSender* sender,
+                            const GDataWapiUrlGenerator& url_generator,
+                            const GetDataCallback& callback,
+                            const std::string& resource_id,
+                            const std::string& new_name);
   virtual ~CopyHostedDocumentRequest();
 
  protected:
@@ -267,13 +249,11 @@ class CopyHostedDocumentRequest : public GetDataRequest {
 class RenameResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  RenameResourceRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const EntryActionCallback& callback,
-      const std::string& resource_id,
-      const std::string& new_name);
+  RenameResourceRequest(RequestSender* sender,
+                        const GDataWapiUrlGenerator& url_generator,
+                        const EntryActionCallback& callback,
+                        const std::string& resource_id,
+                        const std::string& new_name);
   virtual ~RenameResourceRequest();
 
  protected:
@@ -299,13 +279,11 @@ class RenameResourceRequest : public EntryActionRequest {
 class AuthorizeAppRequest : public GetDataRequest {
  public:
   // |callback| must not be null.
-  AuthorizeAppRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const AuthorizeAppCallback& callback,
-      const std::string& resource_id,
-      const std::string& app_id);
+  AuthorizeAppRequest(RequestSender* sender,
+                      const GDataWapiUrlGenerator& url_generator,
+                      const AuthorizeAppCallback& callback,
+                      const std::string& resource_id,
+                      const std::string& app_id);
   virtual ~AuthorizeAppRequest();
 
  protected:
@@ -331,13 +309,11 @@ class AuthorizeAppRequest : public GetDataRequest {
 class AddResourceToDirectoryRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  AddResourceToDirectoryRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const EntryActionCallback& callback,
-      const std::string& parent_resource_id,
-      const std::string& resource_id);
+  AddResourceToDirectoryRequest(RequestSender* sender,
+                                const GDataWapiUrlGenerator& url_generator,
+                                const EntryActionCallback& callback,
+                                const std::string& parent_resource_id,
+                                const std::string& resource_id);
   virtual ~AddResourceToDirectoryRequest();
 
  protected:
@@ -362,13 +338,11 @@ class AddResourceToDirectoryRequest : public EntryActionRequest {
 class RemoveResourceFromDirectoryRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  RemoveResourceFromDirectoryRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const EntryActionCallback& callback,
-      const std::string& parent_resource_id,
-      const std::string& resource_id);
+  RemoveResourceFromDirectoryRequest(RequestSender* sender,
+                                     const GDataWapiUrlGenerator& url_generator,
+                                     const EntryActionCallback& callback,
+                                     const std::string& parent_resource_id,
+                                     const std::string& resource_id);
   virtual ~RemoveResourceFromDirectoryRequest();
 
  protected:
@@ -395,15 +369,13 @@ class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
   //   (resumable-create-media URL)
   // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
-  InitiateUploadNewFileRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const InitiateUploadCallback& callback,
-      const std::string& content_type,
-      int64 content_length,
-      const std::string& parent_resource_id,
-      const std::string& title);
+  InitiateUploadNewFileRequest(RequestSender* sender,
+                               const GDataWapiUrlGenerator& url_generator,
+                               const InitiateUploadCallback& callback,
+                               const std::string& content_type,
+                               int64 content_length,
+                               const std::string& parent_resource_id,
+                               const std::string& title);
   virtual ~InitiateUploadNewFileRequest();
 
  protected:
@@ -433,15 +405,13 @@ class InitiateUploadExistingFileRequest
   // |etag| should be set if it is available to detect the upload confliction.
   // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
-  InitiateUploadExistingFileRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const GDataWapiUrlGenerator& url_generator,
-      const InitiateUploadCallback& callback,
-      const std::string& content_type,
-      int64 content_length,
-      const std::string& resource_id,
-      const std::string& etag);
+  InitiateUploadExistingFileRequest(RequestSender* sender,
+                                    const GDataWapiUrlGenerator& url_generator,
+                                    const InitiateUploadCallback& callback,
+                                    const std::string& content_type,
+                                    int64 content_length,
+                                    const std::string& resource_id,
+                                    const std::string& etag);
   virtual ~InitiateUploadExistingFileRequest();
 
  protected:
@@ -465,19 +435,17 @@ class InitiateUploadExistingFileRequest
 // Performs the request for resuming the upload of a file.
 class ResumeUploadRequest : public ResumeUploadRequestBase {
  public:
-  // See also ResumeUploadRequestBase's comment for parameters meaining.
+  // See also ResumeUploadRequestBase's comment for parameters meaning.
   // |callback| must not be null.
-  ResumeUploadRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const UploadRangeCallback& callback,
-      const ProgressCallback& progress_callback,
-      const GURL& upload_location,
-      int64 start_position,
-      int64 end_position,
-      int64 content_length,
-      const std::string& content_type,
-      const base::FilePath& local_file_path);
+  ResumeUploadRequest(RequestSender* sender,
+                      const UploadRangeCallback& callback,
+                      const ProgressCallback& progress_callback,
+                      const GURL& upload_location,
+                      int64 start_position,
+                      int64 end_position,
+                      int64 content_length,
+                      const std::string& content_type,
+                      const base::FilePath& local_file_path);
   virtual ~ResumeUploadRequest();
 
  protected:
@@ -503,12 +471,10 @@ class GetUploadStatusRequest : public GetUploadStatusRequestBase {
  public:
   // See also GetUploadStatusRequestBase's comment for parameters meaning.
   // |callback| must not be null.
-  GetUploadStatusRequest(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const UploadRangeCallback& callback,
-      const GURL& upload_url,
-      int64 content_length);
+  GetUploadStatusRequest(RequestSender* sender,
+                         const UploadRangeCallback& callback,
+                         const GURL& upload_url,
+                         int64 content_length);
   virtual ~GetUploadStatusRequest();
 
  protected:

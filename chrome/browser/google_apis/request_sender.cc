@@ -17,6 +17,7 @@ RequestSender::RequestSender(
     const std::vector<std::string>& scopes,
     const std::string& custom_user_agent)
     : profile_(profile),
+      url_request_context_getter_(url_request_context_getter),
       auth_service_(new AuthService(url_request_context_getter, scopes)),
       custom_user_agent_(custom_user_agent),
       weak_ptr_factory_(this) {
