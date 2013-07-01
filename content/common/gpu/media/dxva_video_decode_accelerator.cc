@@ -369,7 +369,7 @@ void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
   // Should be called only once during program startup.
   DCHECK(!pre_sandbox_init_done_);
 
-  static wchar_t* decoding_dlls[] = {
+  static const wchar_t* kDecodingDlls[] = {
     L"d3d9.dll",
     L"dxva2.dll",
     L"mf.dll",
@@ -377,9 +377,9 @@ void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
     L"msmpeg2vdec.dll",
   };
 
-  for (int i = 0; i < arraysize(decoding_dlls); ++i) {
-    if (!::LoadLibrary(decoding_dlls[i])) {
-      DLOG(ERROR) << "Failed to load decoder dll: " << decoding_dlls[i]
+  for (int i = 0; i < arraysize(kDecodingDlls); ++i) {
+    if (!::LoadLibrary(kDecodingDlls[i])) {
+      DLOG(ERROR) << "Failed to load decoder dll: " << kDecodingDlls[i]
                   << ", Error: " << ::GetLastError();
       return;
     }
