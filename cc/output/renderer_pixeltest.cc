@@ -682,18 +682,10 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
 
   this->renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
 
-#if defined(OS_WIN)
-  // Windows has 1 pixel off by one in GL mode: crbug.com/225027
-  // In software mode, any pixel can be off by one.
-  FuzzyPixelComparator comparator(true, 100.f, 0.f, 1.f, 1, 0);
-#else
-  FuzzyForSoftwareOnlyPixelComparator<TypeParam> comparator(true);
-#endif
-
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_anti_aliasing.png")),
-      comparator));
+      FuzzyPixelOffByOneComparator(true)));
 }
 
 template <typename RendererType>
@@ -877,7 +869,7 @@ TEST_F(GLRendererPixelTest, AntiAliasing) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png")),
-      ExactPixelComparator(true)));
+      FuzzyPixelOffByOneComparator(true)));
 }
 
 // This test tests that anti-aliasing works for axis aligned quads.
