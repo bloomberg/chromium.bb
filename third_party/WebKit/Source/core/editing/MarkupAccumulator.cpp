@@ -286,8 +286,8 @@ void MarkupAccumulator::appendNamespace(StringBuilder& result, const AtomicStrin
         return;
 
     // Use emptyAtoms's impl() for both null and empty strings since the HashMap can't handle 0 as a key
-    StringImpl* pre = prefix.isEmpty() ? emptyAtom.impl() : prefix.impl();
-    StringImpl* foundNS = namespaces.get(pre);
+    AtomicStringImpl* pre = prefix.isEmpty() ? emptyAtom.impl() : prefix.impl();
+    AtomicStringImpl* foundNS = namespaces.get(pre);
     if (foundNS != namespaceURI.impl()) {
         namespaces.set(pre, namespaceURI.impl());
         result.append(' ');

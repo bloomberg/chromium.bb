@@ -36,6 +36,7 @@ namespace WTF {
     class ArrayBuffer;
     class ArrayBufferView;
     class AtomicString;
+    class AtomicStringImpl;
     class CString;
     class Float32Array;
     class Float64Array;
@@ -66,6 +67,7 @@ using WTF::Vector;
 using WTF::ArrayBuffer;
 using WTF::ArrayBufferView;
 using WTF::AtomicString;
+using WTF::AtomicStringImpl;
 using WTF::CString;
 using WTF::Float32Array;
 using WTF::Float64Array;

@@ -129,6 +129,7 @@ class WTF_EXPORT StringImpl {
     friend struct WTF::LCharBufferTranslator;
     friend struct WTF::SubstringTranslator;
     friend struct WTF::UCharBufferTranslator;
+    friend class AtomicStringImpl;
 
 private:
     enum BufferOwnership {

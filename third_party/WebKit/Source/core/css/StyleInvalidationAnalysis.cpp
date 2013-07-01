@@ -44,7 +44,7 @@ StyleInvalidationAnalysis::StyleInvalidationAnalysis(const Vector<StyleSheetCont
         analyzeStyleSheet(sheets[i]);
 }
 
-static bool determineSelectorScopes(const CSSSelectorList& selectorList, HashSet<StringImpl*>& idScopes, HashSet<StringImpl*>& classScopes)
+static bool determineSelectorScopes(const CSSSelectorList& selectorList, HashSet<AtomicStringImpl*>& idScopes, HashSet<AtomicStringImpl*>& classScopes)
 {
     for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(selector)) {
         const CSSSelector* scopeSelector = 0;
@@ -141,7 +141,7 @@ void StyleInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* styleSheet
     }
 }
 
-static bool elementMatchesSelectorScopes(const Element* element, const HashSet<StringImpl*>& idScopes, const HashSet<StringImpl*>& classScopes)
+static bool elementMatchesSelectorScopes(const Element* element, const HashSet<AtomicStringImpl*>& idScopes, const HashSet<AtomicStringImpl*>& classScopes)
 {
     if (!idScopes.isEmpty() && element->hasID() && idScopes.contains(element->idForStyleResolution().impl()))
         return true;

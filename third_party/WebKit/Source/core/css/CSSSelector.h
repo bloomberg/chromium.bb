@@ -254,13 +254,13 @@ namespace WebCore {
         CSSSelector& operator=(const CSSSelector&);
 
         struct RareData : public RefCounted<RareData> {
-            static PassRefPtr<RareData> create(PassRefPtr<StringImpl> value) { return adoptRef(new RareData(value)); }
+            static PassRefPtr<RareData> create(PassRefPtr<AtomicStringImpl> value) { return adoptRef(new RareData(value)); }
             ~RareData();
 
             bool parseNth();
             bool matchNth(int count);
 
-            StringImpl* m_value; // Plain pointer to keep things uniform with the union.
+            AtomicStringImpl* m_value; // Plain pointer to keep things uniform with the union.
             int m_a; // Used for :nth-*
             int m_b; // Used for :nth-*
             QualifiedName m_attribute; // used for attribute selector
@@ -268,13 +268,13 @@ namespace WebCore {
             OwnPtr<CSSSelectorList> m_selectorList; // Used for :-webkit-any and :not
         
         private:
-            RareData(PassRefPtr<StringImpl> value);
+            RareData(PassRefPtr<AtomicStringImpl> value);
         };
         void createRareData();
 
         union DataUnion {
             DataUnion() : m_value(0) { }
-            StringImpl* m_value;
+            AtomicStringImpl* m_value;
             QualifiedName::QualifiedNameImpl* m_tagQName;
             RareData* m_rareData;
         } m_data;
@@ -429,8 +429,8 @@ inline const QualifiedName& CSSSelector::tagQName() const
 inline const AtomicString& CSSSelector::value() const
 {
     ASSERT(m_match != Tag);
-    // AtomicString is really just an StringImpl* so the cast below is safe.
-    // FIXME: Perhaps call sites could be changed to accept StringImpl?
+    // AtomicString is really just an AtomicStringImpl* so the cast below is safe.
+    // FIXME: Perhaps call sites could be changed to accept AtomicStringImpl?
     return *reinterpret_cast<const AtomicString*>(m_hasRareData ? &m_data.m_rareData->m_value : &m_data.m_value);
 }
 

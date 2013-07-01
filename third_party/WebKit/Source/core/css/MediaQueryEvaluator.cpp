@@ -58,7 +58,7 @@ using namespace MediaFeatureNames;
 enum MediaFeaturePrefix { MinPrefix, MaxPrefix, NoPrefix };
 
 typedef bool (*EvalFunc)(CSSValue*, RenderStyle*, Frame*, MediaFeaturePrefix);
-typedef HashMap<StringImpl*, EvalFunc> FunctionMap;
+typedef HashMap<AtomicStringImpl*, EvalFunc> FunctionMap;
 static FunctionMap* gFunctionMap;
 
 MediaQueryEvaluator::MediaQueryEvaluator(bool mediaFeatureResult)

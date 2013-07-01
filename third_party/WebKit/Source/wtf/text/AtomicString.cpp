@@ -397,13 +397,13 @@ static inline HashSet<StringImpl*>::iterator findString(const StringImpl* string
     return stringTable().find<HashAndCharactersTranslator<CharacterType> >(buffer);
 }
 
-StringImpl* AtomicString::find(const StringImpl* stringImpl)
+AtomicStringImpl* AtomicString::find(const StringImpl* stringImpl)
 {
     ASSERT(stringImpl);
     ASSERT(stringImpl->existingHash());
 
     if (!stringImpl->length())
-        return StringImpl::empty();
+        return static_cast<AtomicStringImpl*>(StringImpl::empty());
 
     HashSet<StringImpl*>::iterator iterator;
     if (stringImpl->is8Bit())
@@ -412,7 +412,7 @@ StringImpl* AtomicString::find(const StringImpl* stringImpl)
         iterator = findString<UChar>(stringImpl);
     if (iterator == stringTable().end())
         return 0;
-    return *iterator;
+    return static_cast<AtomicStringImpl*>(*iterator);
 }
 
 void AtomicString::remove(StringImpl* r)

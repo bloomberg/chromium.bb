@@ -22,6 +22,7 @@
 #define AtomicString_h
 
 #include "wtf/WTFExport.h"
+#include "wtf/text/AtomicStringImpl.h"
 #include "wtf/text/WTFString.h"
 
 // Define 'NO_IMPLICIT_ATOMICSTRING' before including this header,
@@ -56,6 +57,7 @@ public:
     }
 
     ATOMICSTRING_CONVERSION AtomicString(StringImpl* imp) : m_string(add(imp)) { }
+    AtomicString(AtomicStringImpl* imp) : m_string(imp) { }
     ATOMICSTRING_CONVERSION AtomicString(const String& s) : m_string(add(s.impl())) { }
     AtomicString(StringImpl* baseString, unsigned start, unsigned length) : m_string(add(baseString, start, length)) { }
 
@@ -88,12 +90,12 @@ public:
     AtomicString(WTF::HashTableDeletedValueType) : m_string(WTF::HashTableDeletedValue) { }
     bool isHashTableDeletedValue() const { return m_string.isHashTableDeletedValue(); }
 
-    static StringImpl* find(const StringImpl*);
+    static AtomicStringImpl* find(const StringImpl*);
 
     operator const String&() const { return m_string; }
     const String& string() const { return m_string; };
 
-    StringImpl* impl() const { return m_string.impl(); }
+    AtomicStringImpl* impl() const { return static_cast<AtomicStringImpl *>(m_string.impl()); }
 
     bool is8Bit() const { return m_string.is8Bit(); }
     const UChar* characters() const { return m_string.bloatedCharacters(); }

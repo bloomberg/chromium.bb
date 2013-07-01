@@ -87,12 +87,12 @@ private:
     void updateKeyframeAnimations(RenderObject*, RenderStyle* currentStyle, RenderStyle* targetStyle);
     
     typedef HashMap<int, RefPtr<ImplicitAnimation> > CSSPropertyTransitionsMap;
-    typedef HashMap<StringImpl*, RefPtr<KeyframeAnimation> >  AnimationNameMap;
+    typedef HashMap<AtomicStringImpl*, RefPtr<KeyframeAnimation> >  AnimationNameMap;
 
     AnimationControllerPrivate* m_animationController;
     CSSPropertyTransitionsMap m_transitions;
     AnimationNameMap m_keyframeAnimations;
-    Vector<StringImpl*> m_keyframeAnimationOrderMap;
+    Vector<AtomicStringImpl*> m_keyframeAnimationOrderMap;
     bool m_suspended;
 };
 

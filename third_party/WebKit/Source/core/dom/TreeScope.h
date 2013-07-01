@@ -56,7 +56,7 @@ public:
 
     Node* focusedNode();
     Element* getElementById(const AtomicString&) const;
-    bool hasElementWithId(StringImpl* id) const;
+    bool hasElementWithId(AtomicStringImpl* id) const;
     bool containsMultipleElementsWithId(const AtomicString& id) const;
     void addElementById(const AtomicString& elementId, Element*);
     void removeElementById(const AtomicString& elementId, Element*);
@@ -174,7 +174,7 @@ private:
     mutable RefPtr<DOMSelection> m_selection;
 };
 
-inline bool TreeScope::hasElementWithId(StringImpl* id) const
+inline bool TreeScope::hasElementWithId(AtomicStringImpl* id) const
 {
     ASSERT(id);
     return m_elementsById && m_elementsById->contains(id);

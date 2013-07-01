@@ -50,7 +50,7 @@ private:
     void notifyObserversInternal(const AtomicString& id);
 
     typedef HashSet<IdTargetObserver*> ObserverSet;
-    typedef HashMap<StringImpl*, OwnPtr<ObserverSet> > IdToObserverSetMap;
+    typedef HashMap<AtomicStringImpl*, OwnPtr<ObserverSet> > IdToObserverSetMap;
     IdToObserverSetMap m_registry;
     ObserverSet* m_notifyingObserversInSet;
 };

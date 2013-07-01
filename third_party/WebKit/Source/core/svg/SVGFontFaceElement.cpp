@@ -67,9 +67,9 @@ static CSSPropertyID cssPropertyIdForSVGAttributeName(const QualifiedName& attrN
     if (!attrName.namespaceURI().isNull())
         return CSSPropertyInvalid;
     
-    static HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap = 0;
+    static HashMap<AtomicStringImpl*, CSSPropertyID>* propertyNameToIdMap = 0;
     if (!propertyNameToIdMap) {
-        propertyNameToIdMap = new HashMap<StringImpl*, CSSPropertyID>;
+        propertyNameToIdMap = new HashMap<AtomicStringImpl*, CSSPropertyID>;
         // This is a list of all @font-face CSS properties which are exposed as SVG XML attributes
         // Those commented out are not yet supported by WebCore's style system
         // mapAttributeToCSSProperty(propertyNameToIdMap, accent_heightAttr);

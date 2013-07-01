@@ -185,6 +185,7 @@
             'text/AtomicString.cpp',
             'text/AtomicString.h',
             'text/AtomicStringHash.h',
+            'text/AtomicStringImpl.h',
             'text/Base64.cpp',
             'text/Base64.h',
             'text/CString.cpp',

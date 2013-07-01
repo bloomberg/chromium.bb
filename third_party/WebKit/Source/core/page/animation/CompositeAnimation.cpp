@@ -254,7 +254,7 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
     }
     
     // Make a list of animations to be removed.
-    Vector<StringImpl*> animsToBeRemoved;
+    Vector<AtomicStringImpl*> animsToBeRemoved;
     kfend = m_keyframeAnimations.end();
     for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != kfend; ++it) {
         KeyframeAnimation* keyframeAnim = it->value.get();
@@ -293,7 +293,7 @@ PassRefPtr<RenderStyle> CompositeAnimation::animate(RenderObject* renderer, Rend
 
     // Now that we have animation objects ready, let them know about the new goal state.  We want them
     // to fill in a RenderStyle*& only if needed.
-    for (Vector<StringImpl*>::const_iterator it = m_keyframeAnimationOrderMap.begin(); it != m_keyframeAnimationOrderMap.end(); ++it) {
+    for (Vector<AtomicStringImpl*>::const_iterator it = m_keyframeAnimationOrderMap.begin(); it != m_keyframeAnimationOrderMap.end(); ++it) {
         RefPtr<KeyframeAnimation> keyframeAnim = m_keyframeAnimations.get(*it);
         if (keyframeAnim)
             keyframeAnim->animate(this, renderer, currentStyle, targetStyle, resultStyle);
@@ -313,7 +313,7 @@ PassRefPtr<RenderStyle> CompositeAnimation::getAnimatedStyle() const
 
     m_keyframeAnimations.checkConsistency();
 
-    for (Vector<StringImpl*>::const_iterator it = m_keyframeAnimationOrderMap.begin(); it != m_keyframeAnimationOrderMap.end(); ++it) {
+    for (Vector<AtomicStringImpl*>::const_iterator it = m_keyframeAnimationOrderMap.begin(); it != m_keyframeAnimationOrderMap.end(); ++it) {
         RefPtr<KeyframeAnimation> keyframeAnimation = m_keyframeAnimations.get(*it);
         if (keyframeAnimation)
             keyframeAnimation->getAnimatedStyle(resultStyle);

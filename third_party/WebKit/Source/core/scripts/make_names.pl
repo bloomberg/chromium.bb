@@ -850,7 +850,7 @@ print F "typedef PassRefPtr<$parameters{namespace}Element> (*ConstructorFunction
 print F ", HTMLFormElement*" if $parameters{namespace} eq "HTML";
 print F ", bool createdByParser);\n";
 print F <<END
-typedef HashMap<StringImpl*, ConstructorFunction> FunctionMap;
+typedef HashMap<AtomicStringImpl*, ConstructorFunction> FunctionMap;
 
 static FunctionMap* gFunctionMap = 0;
 
@@ -1119,7 +1119,7 @@ END
         print F <<END
 v8::Handle<v8::Object> createV8$parameters{namespace}Wrapper($parameters{namespace}Element* element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    typedef HashMap<WTF::StringImpl*, Create$parameters{namespace}ElementWrapperFunction> FunctionMap;
+    typedef HashMap<WTF::AtomicStringImpl*, Create$parameters{namespace}ElementWrapperFunction> FunctionMap;
     DEFINE_STATIC_LOCAL(FunctionMap, map, ());
     if (map.isEmpty()) {
 END

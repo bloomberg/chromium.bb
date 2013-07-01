@@ -58,7 +58,7 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 using namespace SVGNames;
 
-void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap, const QualifiedName& attrName)
+void mapAttributeToCSSProperty(HashMap<AtomicStringImpl*, CSSPropertyID>* propertyNameToIdMap, const QualifiedName& attrName)
 {
     // FIXME: when CSS supports "transform-origin" the special case for transform_originAttr can be removed.
     CSSPropertyID propertyId = cssPropertyID(attrName.localName());
@@ -133,9 +133,9 @@ CSSPropertyID SVGStyledElement::cssPropertyIdForSVGAttributeName(const Qualified
     if (!attrName.namespaceURI().isNull())
         return CSSPropertyInvalid;
     
-    static HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap = 0;
+    static HashMap<AtomicStringImpl*, CSSPropertyID>* propertyNameToIdMap = 0;
     if (!propertyNameToIdMap) {
-        propertyNameToIdMap = new HashMap<StringImpl*, CSSPropertyID>;
+        propertyNameToIdMap = new HashMap<AtomicStringImpl*, CSSPropertyID>;
         // This is a list of all base CSS and SVG CSS properties which are exposed as SVG XML attributes
         mapAttributeToCSSProperty(propertyNameToIdMap, alignment_baselineAttr);
         mapAttributeToCSSProperty(propertyNameToIdMap, baseline_shiftAttr);

@@ -177,7 +177,7 @@ Node* TreeScope::ancestorInThisScope(Node* node) const
 
 void TreeScope::addImageMap(HTMLMapElement* imageMap)
 {
-    StringImpl* name = imageMap->getName().impl();
+    AtomicStringImpl* name = imageMap->getName().impl();
     if (!name)
         return;
     if (!m_imageMapsByName)
@@ -189,7 +189,7 @@ void TreeScope::removeImageMap(HTMLMapElement* imageMap)
 {
     if (!m_imageMapsByName)
         return;
-    StringImpl* name = imageMap->getName().impl();
+    AtomicStringImpl* name = imageMap->getName().impl();
     if (!name)
         return;
     m_imageMapsByName->remove(name, imageMap);
