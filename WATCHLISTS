@@ -434,6 +434,9 @@
     'sync': {
       'filepath': 'chrome/browser/sync/|sync/',
     },
+    'syncfs': {
+      'filepath': 'sync_file_system',
+    },
     'sync_proto': {
       'filepath': 'sync/protocol/',
     },
@@ -689,6 +692,9 @@
     'sync': ['haitaol+watch@chromium.org',
              'rsimha+watch@chromium.org',
              'tim+watch@chromium.org'],
+    'syncfs': ['kinuko+watch@chromium.org',
+               'tzik+watch@chromium.org',
+               'nhiroki+watch@chromium.org'],
     'sync_proto': ['albertb+watch@chromium.org'],
     'tab_contents': ['avi@chromium.org',
                      'creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
