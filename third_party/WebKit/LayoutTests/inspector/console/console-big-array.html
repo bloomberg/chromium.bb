@@ -100,7 +100,7 @@ function test()
 
     function completeTest()
     {
-        InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(WebInspector.consoleView.messagesElement));
+        InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(WebInspector.consoleView.topGroup.element));
         InspectorTest.completeTest();
     }
 }

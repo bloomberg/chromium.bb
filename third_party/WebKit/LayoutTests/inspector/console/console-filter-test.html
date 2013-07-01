@@ -48,7 +48,7 @@ function test()
     function dumpVisibleMessages(root, indent)
     {
         indent = indent || "";
-        root = root || WebInspector.consoleView.messagesElement.firstChild; // .console-group
+        root = root || WebInspector.consoleView.topGroup.element; // .console-group
         var children = root.childNodes;
 
         for (var i = 0; i < children.length; i++) {
