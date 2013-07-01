@@ -495,12 +495,12 @@ bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
       PLOG(ERROR) << "Failed to change the current directory.";
 
     VLOG(1) << "Attempting to move setup to: " << temp_file.value();
-    ret = file_util::Move(setup_exe, temp_file);
+    ret = base::Move(setup_exe, temp_file);
     PLOG_IF(ERROR, !ret) << "Failed to move setup to " << temp_file.value();
 
     // We cannot delete the file right away, but try to delete it some other
     // way. Either with the help of a different process or the system.
-    if (ret && !file_util::DeleteAfterReboot(temp_file)) {
+    if (ret && !base::DeleteAfterReboot(temp_file)) {
       static const uint32 kDeleteAfterMs = 10 * 1000;
       installer::DeleteFileFromTempProcess(temp_file, kDeleteAfterMs);
     }

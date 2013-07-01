@@ -492,7 +492,7 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcuts) {
       GetDefaultShortcutPathForProfile(profile_2_name_);
   const base::FilePath profile_2_shortcut_path_2 =
       GetUserShortcutsDirectory().Append(L"MyChrome.lnk");
-  ASSERT_TRUE(file_util::Move(profile_2_shortcut_path_1,
+  ASSERT_TRUE(base::Move(profile_2_shortcut_path_1,
                               profile_2_shortcut_path_2));
 
   // Ensure that a new shortcut does not get made if the old one was renamed.

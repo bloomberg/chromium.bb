@@ -93,8 +93,8 @@ class DllRedirectorLoadingTest : public testing::Test {
     ASSERT_TRUE(file_util::CreateDirectory(new_version_dir));
     new_chrome_frame_dll_ =
         new_version_dir.Append(build_chrome_frame_dll.BaseName());
-    ASSERT_TRUE(file_util::Move(temporary_new_chrome_frame_dll,
-                                new_chrome_frame_dll_));
+    ASSERT_TRUE(base::Move(temporary_new_chrome_frame_dll,
+                           new_chrome_frame_dll_));
     ASSERT_TRUE(file_util::PathExists(new_chrome_frame_dll_));
   }
 

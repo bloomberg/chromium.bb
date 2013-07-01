@@ -44,6 +44,12 @@ int64 ComputeDirectorySize(const FilePath& root_path) {
   return running_size;
 }
 
+bool Move(const FilePath& from_path, const FilePath& to_path) {
+  if (from_path.ReferencesParent() || to_path.ReferencesParent())
+    return false;
+  return MoveUnsafe(from_path, to_path);
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -54,37 +60,6 @@ using base::FileEnumerator;
 using base::FilePath;
 using base::kExtensionSeparator;
 using base::kMaxUniqueFiles;
-
-void InsertBeforeExtension(FilePath* path, const FilePath::StringType& suffix) {
-  FilePath::StringType& value =
-      const_cast<FilePath::StringType&>(path->value());
-
-  const FilePath::StringType::size_type last_dot =
-      value.rfind(kExtensionSeparator);
-  const FilePath::StringType::size_type last_separator =
-      value.find_last_of(FilePath::StringType(FilePath::kSeparators));
-
-  if (last_dot == FilePath::StringType::npos ||
-      (last_separator != std::wstring::npos && last_dot < last_separator)) {
-    // The path looks something like "C:\pics.old\jojo" or "C:\pics\jojo".
-    // We should just append the suffix to the entire path.
-    value.append(suffix);
-    return;
-  }
-
-  value.insert(last_dot, suffix);
-}
-
-bool Move(const FilePath& from_path, const FilePath& to_path) {
-  if (from_path.ReferencesParent() || to_path.ReferencesParent())
-    return false;
-  return MoveUnsafe(from_path, to_path);
-}
-
-bool ReplaceFile(const base::FilePath& from_path,
-                 const base::FilePath& to_path) {
-  return ReplaceFileAndGetError(from_path, to_path, NULL);
-}
 
 bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
   if (from_path.ReferencesParent() || to_path.ReferencesParent())

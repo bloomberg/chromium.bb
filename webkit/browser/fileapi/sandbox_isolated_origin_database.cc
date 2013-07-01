@@ -74,7 +74,7 @@ void SandboxIsolatedOriginDatabase::MigrateDatabaseIfNeeded() {
 
     if (file_util::PathExists(to_path))
       base::Delete(to_path, true /* recursive */);
-    file_util::Move(from_path, to_path);
+    base::Move(from_path, to_path);
   }
 
   database->RemoveDatabase();

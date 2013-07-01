@@ -270,7 +270,7 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
     NotifyInstallError();
     return false;
   }
-  if (!file_util::Move(unpack_path, path)) {
+  if (!base::Move(unpack_path, path)) {
     LOG(WARNING) << "Move failed, not installing.";
     NotifyInstallError();
     return false;

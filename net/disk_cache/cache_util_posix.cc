@@ -28,14 +28,14 @@ bool MoveCache(const base::FilePath& from_path, const base::FilePath& to_path) {
   for (base::FilePath name = iter.Next(); !name.value().empty();
        name = iter.Next()) {
     base::FilePath destination = to_path.Append(name.BaseName());
-    if (!file_util::Move(name, destination)) {
+    if (!base::Move(name, destination)) {
       LOG(ERROR) << "Unable to move cache item.";
       return false;
     }
   }
   return true;
 #else
-  return file_util::Move(from_path, to_path);
+  return base::Move(from_path, to_path);
 #endif
 }
 

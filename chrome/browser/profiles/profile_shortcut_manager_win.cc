@@ -255,7 +255,7 @@ void ListDesktopShortcutsWithCommandLine(const base::FilePath& chrome_exe,
 // Renames the given desktop shortcut and informs the shell of this change.
 bool RenameDesktopShortcut(const base::FilePath& old_shortcut_path,
                            const base::FilePath& new_shortcut_path) {
-  if (!file_util::Move(old_shortcut_path, new_shortcut_path))
+  if (!base::Move(old_shortcut_path, new_shortcut_path))
     return false;
 
   // Notify the shell of the rename, which allows the icon to keep its position

@@ -54,7 +54,7 @@ void WriteToDiskInternal(const base::FilePath& index_filename,
     base::Delete(temp_filename, /* recursive = */ false);
   } else {
     // Swap temp and index_file.
-    bool result = file_util::ReplaceFile(temp_filename, index_filename);
+    bool result = base::ReplaceFile(temp_filename, index_filename, NULL);
     DCHECK(result);
   }
   if (app_on_background) {

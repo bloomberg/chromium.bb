@@ -175,7 +175,7 @@ void DeleteProgramDir(const std::string& delete_switch) {
   if (!file_util::CreateTemporaryFile(&temp_path))
     return;
   file_util::CopyFile(installer_source, temp_path);
-  file_util::DeleteAfterReboot(temp_path);
+  base::DeleteAfterReboot(temp_path);
   CommandLine command_line(temp_path);
   command_line.AppendSwitchPath(delete_switch, installer_source.DirName());
   base::LaunchOptions options;

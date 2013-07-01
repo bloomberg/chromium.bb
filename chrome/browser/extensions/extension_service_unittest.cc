@@ -2177,7 +2177,7 @@ TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
 
   base::Delete(crx_path, false);
   // Move the pem file into the extension.
-  file_util::Move(privkey_path,
+  base::Move(privkey_path,
                   input_directory.AppendASCII("privkey.pem"));
 
   // This pack should fail because of the contained private key.

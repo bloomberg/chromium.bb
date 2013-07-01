@@ -29,7 +29,7 @@ DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
 
   // TODO(estade): Move() falls back to copying and deleting when a simple
   // rename fails. Copying sucks for large downloads. crbug.com/8737
-  if (!file_util::Move(full_path_, new_path))
+  if (!base::Move(full_path_, new_path))
     return LogSystemError("Move", errno);
 
   if (stat_succeeded) {

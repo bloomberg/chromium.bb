@@ -72,7 +72,7 @@ void MoveDownloadedFile(const base::FilePath& downloaded_file,
                         const base::FilePath& dest_path) {
   if (error != FILE_ERROR_OK)
     return;
-  file_util::Move(downloaded_file, dest_path);
+  base::Move(downloaded_file, dest_path);
 }
 
 // Used to implement CheckForFileExistence().

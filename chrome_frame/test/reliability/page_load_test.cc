@@ -369,7 +369,7 @@ class PageLoadTest : public testing::Test {
     if (!log_path.empty()) {
       base::FilePath saved_log_file_path =
           ConstructSavedDebugLogPath(log_path, index);
-      if (file_util::Move(log_path, saved_log_file_path)) {
+      if (base::Move(log_path, saved_log_file_path)) {
         log_file << " " << log_id << "=" << saved_log_file_path.value();
       }
     }

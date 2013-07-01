@@ -84,7 +84,7 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
     return false;
   }
 
-  if (!file_util::ReplaceFile(tmp_file_path, path)) {
+  if (!base::ReplaceFile(tmp_file_path, path, NULL)) {
     LogFailure(path, FAILED_RENAMING, "could not rename temporary file");
     base::Delete(tmp_file_path, false);
     return false;

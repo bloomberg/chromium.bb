@@ -13,7 +13,7 @@ void RenameFile(const base::FilePath& downloaded_filename,
                 const base::FilePath& desired_filename,
                 base::PlatformFileError* result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  bool success = file_util::ReplaceFile(downloaded_filename, desired_filename);
+  bool success = base::ReplaceFile(downloaded_filename, desired_filename, NULL);
   *result = success ? base::PLATFORM_FILE_OK
                     : base::PLATFORM_FILE_ERROR_NOT_FOUND;
 }

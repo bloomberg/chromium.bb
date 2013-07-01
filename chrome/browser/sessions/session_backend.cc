@@ -287,8 +287,7 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
                              static_cast<int>(file_size / 1024));
       }
     }
-    last_session_valid_ = file_util::Move(current_session_path,
-                                          last_session_path);
+    last_session_valid_ = base::Move(current_session_path, last_session_path);
   }
 
   if (file_util::PathExists(current_session_path))

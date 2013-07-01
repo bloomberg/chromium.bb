@@ -98,15 +98,8 @@ bool Delete(const FilePath& path, bool recursive) {
   return (err == 0 || err == ERROR_FILE_NOT_FOUND || err == 0x402);
 }
 
-}  // namespace base
-
-namespace file_util {
-
-using base::FilePath;
-using base::kFileShareAll;
-
 bool DeleteAfterReboot(const FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
 
   if (path.value().length() >= MAX_PATH)
     return false;
@@ -117,7 +110,7 @@ bool DeleteAfterReboot(const FilePath& path) {
 }
 
 bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
 
   // NOTE: I suspect we could support longer paths, but that would involve
   // analyzing all our usage of files.
@@ -134,11 +127,11 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   bool ret = false;
   DWORD last_error = ::GetLastError();
 
-  if (DirectoryExists(from_path)) {
+  if (file_util::DirectoryExists(from_path)) {
     // MoveFileEx fails if moving directory across volumes. We will simulate
     // the move by using Copy and Delete. Ideally we could check whether
     // from_path and to_path are indeed in different volumes.
-    ret = CopyAndDeleteDirectory(from_path, to_path);
+    ret = file_util::CopyAndDeleteDirectory(from_path, to_path);
   }
 
   if (!ret) {
@@ -150,10 +143,10 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   return ret;
 }
 
-bool ReplaceFileAndGetError(const FilePath& from_path,
-                            const FilePath& to_path,
-                            base::PlatformFileError* error) {
-  base::ThreadRestrictions::AssertIOAllowed();
+bool ReplaceFile(const FilePath& from_path,
+                 const FilePath& to_path,
+                 PlatformFileError* error) {
+  ThreadRestrictions::AssertIOAllowed();
   // Try a simple move first.  It will only succeed when |to_path| doesn't
   // already exist.
   if (::MoveFile(from_path.value().c_str(), to_path.value().c_str()))
@@ -167,9 +160,18 @@ bool ReplaceFileAndGetError(const FilePath& from_path,
     return true;
   }
   if (error)
-    *error = base::LastErrorToPlatformFileError(GetLastError());
+    *error = LastErrorToPlatformFileError(GetLastError());
   return false;
 }
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::FilePath;
+using base::kFileShareAll;
 
 bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
   base::ThreadRestrictions::AssertIOAllowed();

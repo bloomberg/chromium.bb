@@ -851,14 +851,14 @@ void WallpaperManager::MoveCustomWallpapersOnWorker(const UserList& users) {
       // Appends DUMMY to the file name of moved custom wallpaper. This way we
       // do not need to update WallpaperInfo for user.
       to_path = GetCustomWallpaperPath(kSmallWallpaperSubDir, email, "DUMMY");
-      file_util::Move(from_path, to_path);
+      base::Move(from_path, to_path);
     }
     from_path = GetWallpaperPathForUser(email, false);
     if (!file_util::PathExists(from_path))
       from_path = from_path.AddExtension(".png");
     if (file_util::PathExists(from_path)) {
       to_path = GetCustomWallpaperPath(kLargeWallpaperSubDir, email, "DUMMY");
-      file_util::Move(from_path, to_path);
+      base::Move(from_path, to_path);
     }
     from_path = GetOriginalWallpaperPathForUser(email);
     if (!file_util::PathExists(from_path))
@@ -866,7 +866,7 @@ void WallpaperManager::MoveCustomWallpapersOnWorker(const UserList& users) {
     if (file_util::PathExists(from_path)) {
       to_path = GetCustomWallpaperPath(kOriginalWallpaperSubDir, email,
                                        "DUMMY");
-      file_util::Move(from_path, to_path);
+      base::Move(from_path, to_path);
     }
   }
 }

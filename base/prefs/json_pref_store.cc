@@ -130,7 +130,7 @@ void FileThreadDeserializer::HandleErrors(
         // want to differentiate between recent and long ago errors.
         if (file_util::PathExists(bad))
           *error = PersistentPrefStore::PREF_READ_ERROR_JSON_REPEAT;
-        file_util::Move(path, bad);
+        base::Move(path, bad);
         break;
     }
   } else if (!value->IsType(base::Value::TYPE_DICTIONARY)) {

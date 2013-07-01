@@ -414,7 +414,7 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
   for (base::FilePath database = databases.Next(); !database.empty();
        database = databases.Next()) {
     base::FilePath new_file = new_origin_dir.Append(database.BaseName());
-    file_util::Move(database, new_file);
+    base::Move(database, new_file);
   }
   base::Delete(origin_dir, true);
   base::Delete(new_origin_dir, true); // might fail on windows.

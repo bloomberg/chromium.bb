@@ -81,7 +81,7 @@ void ScanCacheDirectory(const base::FilePath& directory_path,
 // Moves the file.
 bool MoveFile(const base::FilePath& source_path,
               const base::FilePath& dest_path) {
-  if (!file_util::Move(source_path, dest_path)) {
+  if (!base::Move(source_path, dest_path)) {
     LOG(ERROR) << "Failed to move " << source_path.value()
                << " to " << dest_path.value();
     return false;

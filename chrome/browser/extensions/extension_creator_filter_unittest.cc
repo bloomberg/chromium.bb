@@ -26,7 +26,7 @@ class ExtensionCreatorFilterTest : public PlatformTest {
     base::FilePath test_file(test_dir_.Append(file_path));
     base::FilePath temp_file;
     EXPECT_TRUE(file_util::CreateTemporaryFileInDir(test_dir_, &temp_file));
-    EXPECT_TRUE(file_util::Move(temp_file, test_file));
+    EXPECT_TRUE(base::Move(temp_file, test_file));
     return test_file;
   }
 

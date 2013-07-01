@@ -47,8 +47,8 @@ TruncateResult TruncateLogFileIfNeeded(const base::FilePath& log_file) {
     if (old_log_file.IsValid()) {
       result = LOGFILE_DELETED;
       base::FilePath tmp_log(log_file.value() + FILE_PATH_LITERAL(".tmp"));
-      // Note that file_util::Move will attempt to replace existing files.
-      if (file_util::Move(log_file, tmp_log)) {
+      // Note that base::Move will attempt to replace existing files.
+      if (base::Move(log_file, tmp_log)) {
         int64 offset = log_size - kTruncatedInstallerLogFileSize;
         std::string old_log_data(kTruncatedInstallerLogFileSize, 0);
         int bytes_read = base::ReadPlatformFile(old_log_file,

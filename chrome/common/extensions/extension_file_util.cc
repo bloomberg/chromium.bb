@@ -87,7 +87,7 @@ base::FilePath InstallExtension(const base::FilePath& unpacked_source_dir,
   }
   base::FilePath crx_temp_source =
       extension_temp_dir.path().Append(unpacked_source_dir.BaseName());
-  if (!file_util::Move(unpacked_source_dir, crx_temp_source)) {
+  if (!base::Move(unpacked_source_dir, crx_temp_source)) {
     LOG(ERROR) << "Moving extension from : " << unpacked_source_dir.value()
                << " to : " << crx_temp_source.value() << " failed.";
     return base::FilePath();
@@ -111,7 +111,7 @@ base::FilePath InstallExtension(const base::FilePath& unpacked_source_dir,
     return base::FilePath();
   }
 
-  if (!file_util::Move(crx_temp_source, version_dir)) {
+  if (!base::Move(crx_temp_source, version_dir)) {
     LOG(ERROR) << "Installing extension from : " << crx_temp_source.value()
                << " into : " << version_dir.value() << " failed.";
     return base::FilePath();

@@ -111,7 +111,7 @@ void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
       base::StringPrintf("chromium-renderer-minidump-%016" PRIx64 ".dmp%d",
                          rand, pid);
   base::FilePath dest_path = crash_dump_dir.Append(filename);
-  r = file_util::Move(minidump_path, dest_path);
+  r = base::Move(minidump_path, dest_path);
   if (!r) {
     LOG(ERROR) << "Failed to move crash dump from " << minidump_path.value()
                << " to " << dest_path.value();

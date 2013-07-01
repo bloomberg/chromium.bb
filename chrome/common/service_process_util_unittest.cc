@@ -302,7 +302,7 @@ void DeleteFunc(const base::FilePath& file) {
 }
 
 void MoveFunc(const base::FilePath& from, const base::FilePath& to) {
-  EXPECT_TRUE(file_util::Move(from, to));
+  EXPECT_TRUE(base::Move(from, to));
 }
 
 void ChangeAttr(const base::FilePath& from, int mode) {

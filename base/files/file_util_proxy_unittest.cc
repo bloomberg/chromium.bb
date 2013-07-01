@@ -169,7 +169,7 @@ TEST_F(FileUtilProxyTest, Close) {
 
 #if defined(OS_WIN)
   // This fails on Windows if the file is not closed.
-  EXPECT_FALSE(file_util::Move(test_path(),
+  EXPECT_FALSE(base::Move(test_path(),
                                test_dir_path().AppendASCII("new")));
 #endif
 
@@ -181,7 +181,7 @@ TEST_F(FileUtilProxyTest, Close) {
   EXPECT_EQ(PLATFORM_FILE_OK, error_);
 
   // Now it should pass on all platforms.
-  EXPECT_TRUE(file_util::Move(test_path(), test_dir_path().AppendASCII("new")));
+  EXPECT_TRUE(base::Move(test_path(), test_dir_path().AppendASCII("new")));
 }
 
 TEST_F(FileUtilProxyTest, CreateTemporary) {

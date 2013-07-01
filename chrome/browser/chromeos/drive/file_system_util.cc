@@ -114,7 +114,7 @@ void MoveAllFilesFromDirectory(const base::FilePath& directory_from,
        file_from = enumerator.Next()) {
     const base::FilePath file_to = directory_to.Append(file_from.BaseName());
     if (!file_util::PathExists(file_to))  // Do not overwrite existing files.
-      file_util::Move(file_from, file_to);
+      base::Move(file_from, file_to);
   }
 }
 

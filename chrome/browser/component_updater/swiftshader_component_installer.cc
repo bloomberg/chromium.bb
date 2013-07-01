@@ -143,7 +143,7 @@ bool SwiftShaderComponentInstaller::Install(
       GetSwiftShaderBaseDirectory().AppendASCII(version.GetString());
   if (file_util::PathExists(path))
     return false;
-  if (!file_util::Move(unpack_path, path))
+  if (!base::Move(unpack_path, path))
     return false;
   // Installation is done. Now tell the rest of chrome.
   current_version_ = version;

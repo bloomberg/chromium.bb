@@ -1069,7 +1069,7 @@ TEST_F(FileUtilTest, MoveFileNew) {
       FILE_PATH_LITERAL("Move_Test_File_Destination.txt"));
   ASSERT_FALSE(file_util::PathExists(file_name_to));
 
-  EXPECT_TRUE(file_util::Move(file_name_from, file_name_to));
+  EXPECT_TRUE(base::Move(file_name_from, file_name_to));
 
   // Check everything has been moved.
   EXPECT_FALSE(file_util::PathExists(file_name_from));
@@ -1089,7 +1089,7 @@ TEST_F(FileUtilTest, MoveFileExists) {
   CreateTextFile(file_name_to, L"Old file content");
   ASSERT_TRUE(file_util::PathExists(file_name_to));
 
-  EXPECT_TRUE(file_util::Move(file_name_from, file_name_to));
+  EXPECT_TRUE(base::Move(file_name_from, file_name_to));
 
   // Check everything has been moved.
   EXPECT_FALSE(file_util::PathExists(file_name_from));
@@ -1110,7 +1110,7 @@ TEST_F(FileUtilTest, MoveFileDirExists) {
   file_util::CreateDirectory(dir_name_to);
   ASSERT_TRUE(file_util::PathExists(dir_name_to));
 
-  EXPECT_FALSE(file_util::Move(file_name_from, dir_name_to));
+  EXPECT_FALSE(base::Move(file_name_from, dir_name_to));
 }
 
 
@@ -1135,7 +1135,7 @@ TEST_F(FileUtilTest, MoveNew) {
 
   ASSERT_FALSE(file_util::PathExists(dir_name_to));
 
-  EXPECT_TRUE(file_util::Move(dir_name_from, dir_name_to));
+  EXPECT_TRUE(base::Move(dir_name_from, dir_name_to));
 
   // Check everything has been moved.
   EXPECT_FALSE(file_util::PathExists(dir_name_from));
@@ -1147,10 +1147,10 @@ TEST_F(FileUtilTest, MoveNew) {
   file_name_from = dir_name_to.Append(txt_file_name);
   file_name_to = dir_name_to.Append(FILE_PATH_LITERAL(".."));
   file_name_to = file_name_to.Append(txt_file_name);
-  EXPECT_FALSE(file_util::Move(file_name_from, file_name_to));
+  EXPECT_FALSE(base::Move(file_name_from, file_name_to));
   EXPECT_TRUE(file_util::PathExists(file_name_from));
   EXPECT_FALSE(file_util::PathExists(file_name_to));
-  EXPECT_TRUE(file_util::MoveUnsafe(file_name_from, file_name_to));
+  EXPECT_TRUE(base::MoveUnsafe(file_name_from, file_name_to));
   EXPECT_FALSE(file_util::PathExists(file_name_from));
   EXPECT_TRUE(file_util::PathExists(file_name_to));
 }
@@ -1181,7 +1181,7 @@ TEST_F(FileUtilTest, MoveExist) {
   file_util::CreateDirectory(dir_name_exists);
   ASSERT_TRUE(file_util::PathExists(dir_name_exists));
 
-  EXPECT_TRUE(file_util::Move(dir_name_from, dir_name_to));
+  EXPECT_TRUE(base::Move(dir_name_from, dir_name_to));
 
   // Check everything has been moved.
   EXPECT_FALSE(file_util::PathExists(dir_name_from));

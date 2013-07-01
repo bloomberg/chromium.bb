@@ -494,7 +494,7 @@ void AppPackUpdater::BlockingInstallCacheEntry(
     }
   }
 
-  if (!file_util::Move(path, cached_crx_path)) {
+  if (!base::Move(path, cached_crx_path)) {
     LOG(ERROR) << "Failed to move AppPack crx from " << path.value()
                << " to " << cached_crx_path.value();
     base::Delete(path, true /* recursive */);

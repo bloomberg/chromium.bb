@@ -337,7 +337,7 @@ void BlockingGarbageCollect(
         path != trash_directory) {
       // Since |trash_directory| is unique for each run of this function there
       // can be no colllisions on the move.
-      file_util::Move(path, trash_directory.Append(path.BaseName()));
+      base::Move(path, trash_directory.Append(path.BaseName()));
     }
   }
 

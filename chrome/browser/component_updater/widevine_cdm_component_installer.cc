@@ -234,7 +234,7 @@ bool WidevineCdmComponentInstaller::Install(
       GetWidevineCdmBaseDirectory().AppendASCII(version.GetString());
   if (file_util::PathExists(install_path))
     return false;
-  if (!file_util::Move(unpack_path, install_path))
+  if (!base::Move(unpack_path, install_path))
     return false;
 
   base::FilePath adapter_install_path =

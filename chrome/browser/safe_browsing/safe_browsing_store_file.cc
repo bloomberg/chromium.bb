@@ -659,7 +659,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
     return false;
 
   const base::FilePath new_filename = TemporaryFileForFilename(filename_);
-  if (!file_util::Move(new_filename, filename_))
+  if (!base::Move(new_filename, filename_))
     return false;
 
   // Record counts before swapping to caller.

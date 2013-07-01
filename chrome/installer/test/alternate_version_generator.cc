@@ -447,8 +447,8 @@ bool ApplyAlternateVersion(const base::FilePath& work_dir,
 
   // Change the versioned directory.
   base::FilePath chrome_bin = work_dir.Append(&kChromeBin[0]);
-  doing_great = file_util::Move(chrome_bin.Append(ctx.current_version_str),
-                                chrome_bin.Append(ctx.new_version_str));
+  doing_great = base::Move(chrome_bin.Append(ctx.current_version_str),
+                           chrome_bin.Append(ctx.new_version_str));
 
   if (doing_great) {
     // Report the version numbers if requested.
@@ -649,7 +649,7 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
   }
 
   // Finally, move the updated mini_installer into place.
-  return file_util::Move(mini_installer, target_path);
+  return base::Move(mini_installer, target_path);
 }
 
 bool GenerateAlternatePEFileVersion(const base::FilePath& original_file,

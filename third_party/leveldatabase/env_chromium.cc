@@ -672,10 +672,8 @@ Status ChromiumEnv::RenameFile(const std::string& src, const std::string& dst) {
   Retrier retrier(kRenameFile, this);
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   do {
-    if (::file_util::ReplaceFileAndGetError(
-            src_file_path, destination, &error)) {
+    if (base::ReplaceFile(src_file_path, destination, &error))
       return result;
-    }
   } while (retrier.ShouldKeepTrying(error));
 
   DCHECK(error != base::PLATFORM_FILE_OK);

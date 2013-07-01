@@ -78,7 +78,7 @@ bool CopyTreeWorkItem::Do() {
     }
 
     base::FilePath backup = backup_path_.path().Append(dest_path_.BaseName());
-    if (file_util::Move(dest_path_, backup)) {
+    if (base::Move(dest_path_, backup)) {
       moved_to_backup_ = true;
       VLOG(1) << "Moved destination " << dest_path_.value() <<
                  " to backup path " << backup.value();
@@ -114,7 +114,7 @@ void CopyTreeWorkItem::Rollback() {
   }
   if (moved_to_backup_) {
     base::FilePath backup(backup_path_.path().Append(dest_path_.BaseName()));
-    if (!file_util::Move(backup, dest_path_)) {
+    if (!base::Move(backup, dest_path_)) {
       LOG(ERROR) << "failed move " << backup.value()
                  << " to " << dest_path_.value();
     }

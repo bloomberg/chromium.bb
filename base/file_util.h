@@ -71,19 +71,13 @@ BASE_EXPORT int64 ComputeDirectorySize(const FilePath& root_path);
 //          TO "rm -rf", SO USE WITH CAUTION.
 BASE_EXPORT bool Delete(const FilePath& path, bool recursive);
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
 #if defined(OS_WIN)
 // Schedules to delete the given path, whether it's a file or a directory, until
 // the operating system is restarted.
 // Note:
 // 1) The file/directory to be deleted should exist in a temp folder.
 // 2) The directory to be deleted must be empty.
-BASE_EXPORT bool DeleteAfterReboot(const base::FilePath& path);
+BASE_EXPORT bool DeleteAfterReboot(const FilePath& path);
 #endif
 
 // Moves the given path, whether it's a file or a directory.
@@ -91,13 +85,12 @@ BASE_EXPORT bool DeleteAfterReboot(const base::FilePath& path);
 // on different volumes, this will attempt to copy and delete. Returns
 // true for success.
 // This function fails if either path contains traversal components ('..').
-BASE_EXPORT bool Move(const base::FilePath& from_path,
-                      const base::FilePath& to_path);
+BASE_EXPORT bool Move(const FilePath& from_path, const FilePath& to_path);
 
 // Same as Move but allows paths with traversal components.
 // Use only with extreme care.
-BASE_EXPORT bool MoveUnsafe(const base::FilePath& from_path,
-                            const base::FilePath& to_path);
+BASE_EXPORT bool MoveUnsafe(const FilePath& from_path,
+                            const FilePath& to_path);
 
 // Renames file |from_path| to |to_path|. Both paths must be on the same
 // volume, or the function will fail. Destination file will be created
@@ -105,13 +98,15 @@ BASE_EXPORT bool MoveUnsafe(const base::FilePath& from_path,
 // temporary files. On Windows it preserves attributes of the target file.
 // Returns true on success, leaving *error unchanged.
 // Returns false on failure and sets *error appropriately, if it is non-NULL.
-BASE_EXPORT bool ReplaceFileAndGetError(const base::FilePath& from_path,
-                                        const base::FilePath& to_path,
-                                        base::PlatformFileError* error);
+BASE_EXPORT bool ReplaceFile(const FilePath& from_path,
+                             const FilePath& to_path,
+                             PlatformFileError* error);
 
-// Backward-compatible convenience method for the above.
-BASE_EXPORT bool ReplaceFile(const base::FilePath& from_path,
-                             const base::FilePath& to_path);
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
 
 // Copies a single file. Use CopyDirectory to copy directories.
 // This function fails if either path contains traversal components ('..').

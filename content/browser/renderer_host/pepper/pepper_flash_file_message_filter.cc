@@ -157,7 +157,7 @@ int32_t PepperFlashFileMessageFilter::OnRenameFile(
         base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
   }
 
-  bool result = file_util::Move(from_full_path, to_full_path);
+  bool result = base::Move(from_full_path, to_full_path);
   return ppapi::PlatformFileErrorToPepperError(result ?
       base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_ACCESS_DENIED);
 }

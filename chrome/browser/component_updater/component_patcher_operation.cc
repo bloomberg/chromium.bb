@@ -150,7 +150,7 @@ ComponentUnpacker::Error DeltaUpdateOpCreate::DoParseArguments(
 ComponentUnpacker::Error DeltaUpdateOpCreate::DoRun(ComponentPatcher*,
                                                     int* error) {
   *error = 0;
-  if (!file_util::Move(patch_abs_path_, output_abs_path_))
+  if (!base::Move(patch_abs_path_, output_abs_path_))
     return ComponentUnpacker::kDeltaOperationFailure;
 
   return ComponentUnpacker::kNone;

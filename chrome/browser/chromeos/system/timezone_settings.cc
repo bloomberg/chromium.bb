@@ -219,7 +219,7 @@ void SetTimezoneIDFromString(const std::string& id) {
   }
 
   // Move symlink2 to symlink.
-  if (!file_util::ReplaceFile(timezone_symlink2, timezone_symlink)) {
+  if (!base::ReplaceFile(timezone_symlink2, timezone_symlink, NULL)) {
     LOG(ERROR) << "SetTimezoneID: Unable to move symlink "
                << timezone_symlink2.value() << " to "
                << timezone_symlink.value();
