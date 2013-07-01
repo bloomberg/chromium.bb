@@ -503,16 +503,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ResizePanel) {
   panel->Close();
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN)
-// There is no animations on Linux, by design (http://crbug.com/144074).
-// And there are intermittent/flaky failures on windows try bots
-// (http://crbug.com/179069).
-#define MAYBE_AnimateBounds DISABLED_AnimateBounds
-#else
-#define MAYBE_AnimateBounds AnimateBounds
-#endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AnimateBounds) {
-  Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 100, 100));
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AnimateBounds) {
+  // Create a detached panel, instead of docked panel because it cannot be
+  // moved to any location.
+  Panel* panel = CreateDetachedPanel("1", gfx::Rect(200, 100, 100, 100));
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
 
@@ -527,8 +521,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AnimateBounds) {
   // Set bounds with animation.
   gfx::Rect bounds = gfx::Rect(10, 20, 150, 160);
   panel->SetPanelBounds(bounds);
+  // There is no animation on Linux, by design.
+#if !defined(OS_LINUX)
   EXPECT_TRUE(panel_testing->IsAnimatingBounds());
   WaitForBoundsAnimationFinished(panel);
+#endif
   EXPECT_FALSE(panel_testing->IsAnimatingBounds());
   EXPECT_EQ(bounds, panel->GetBounds());
 
