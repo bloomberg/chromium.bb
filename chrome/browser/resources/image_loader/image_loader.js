@@ -103,6 +103,29 @@ ImageLoader.getInstance = function() {
 };
 
 /**
+ * Checks if the options contain any image processing.
+ *
+ * @param {number} width Source width.
+ * @param {number} height Source height.
+ * @param {Object} options Resizing options as a hash array.
+ * @return {boolean} True if yes, false if not.
+ */
+ImageLoader.shouldProcess = function(width, height, options) {
+  var targetDimensions = ImageLoader.resizeDimensions(width, height, options);
+
+  // Dimensions has to be adjusted.
+  if (targetDimensions.width != width || targetDimensions.height != height)
+    return true;
+
+  // Orientation has to be adjusted.
+  if (options.orientation)
+    return true;
+
+  // No changes required.
+  return false;
+};
+
+/**
  * Calculates dimensions taking into account resize options, such as:
  * - scale: for scaling,
  * - maxWidth, maxHeight: for maximum dimensions,
