@@ -199,14 +199,18 @@ static inline bool base64DecodeInternal(const T* data, unsigned len, Vector<char
     return true;
 }
 
-bool base64Decode(const char* data, unsigned len, Vector<char>& out, Base64DecodePolicy policy)
+bool base64Decode(const char* data, unsigned length, Vector<char>& out, Base64DecodePolicy policy)
 {
-    return base64DecodeInternal<char>(data, len, out, policy);
+    return base64DecodeInternal<LChar>(reinterpret_cast<const LChar*>(data), length, out, policy);
 }
 
 bool base64Decode(const String& in, Vector<char>& out, Base64DecodePolicy policy)
 {
-    return base64DecodeInternal<UChar>(in.bloatedCharacters(), in.length(), out, policy);
+    if (in.isEmpty())
+        return base64DecodeInternal<LChar>(0, 0, out, policy);
+    if (in.is8Bit())
+        return base64DecodeInternal<LChar>(in.characters8(), in.length(), out, policy);
+    return base64DecodeInternal<UChar>(in.characters16(), in.length(), out, policy);
 }
 
 } // namespace WTF
