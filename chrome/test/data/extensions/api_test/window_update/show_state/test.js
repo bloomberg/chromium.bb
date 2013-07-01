@@ -78,9 +78,13 @@ function minimizeWindow(theWindow) {
 }
 
 function testWindowState(windowType) {
-  // Specifying size prevents 'panel' windows from computing size asynchronously. It ensures
-  // panel sizes stay fixed through the test.
-  chrome.windows.create({'url': 'hello.html', 'type': windowType, 'width':200, 'height':300 },
+  // Specifying size prevents 'panel' windows from computing size
+  // asynchronously. It ensures panel sizes stay fixed through the test.
+  // Do not use the big size because the maximium panel sizes are based on a
+  // factor of the screen resolution and the try bot might be configured with
+  // 800x600 resolution.
+  chrome.windows.create({ 'url': 'hello.html', 'type': windowType, 'width': 200,
+                          'height': 200 },
     pass(minimizeWindow));
 }
 
