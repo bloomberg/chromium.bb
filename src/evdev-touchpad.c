@@ -571,6 +571,8 @@ process_key(struct touchpad_dispatch *touchpad,
 	    struct input_event *e,
 	    uint32_t time)
 {
+	uint32_t code;
+
 	switch (e->code) {
 	case BTN_TOUCH:
 		if (!touchpad->has_pressure) {
@@ -588,8 +590,12 @@ process_key(struct touchpad_dispatch *touchpad,
 	case BTN_FORWARD:
 	case BTN_BACK:
 	case BTN_TASK:
-		notify_button(device->seat,
-			      time, e->code,
+		if (!touchpad->fsm.enable && e->code == BTN_LEFT &&
+		    touchpad->finger_state == TOUCHPAD_FINGERS_TWO)
+			code = BTN_RIGHT;
+		else
+			code = e->code;
+		notify_button(device->seat, time, code,
 			      e->value ? WL_POINTER_BUTTON_STATE_PRESSED :
 			                 WL_POINTER_BUTTON_STATE_RELEASED);
 		break;
