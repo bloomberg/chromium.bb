@@ -128,8 +128,7 @@ class NET_EXPORT MDnsClient {
  public:
   virtual ~MDnsClient() {}
 
-  // Create listener object for RRType |rrtype| and name |name|.  If |name| is
-  // an empty string, listen to all notification of type |rrtype|.
+  // Create listener object for RRType |rrtype| and name |name|.
   virtual scoped_ptr<MDnsListener> CreateListener(
       uint16 rrtype,
       const std::string& name,

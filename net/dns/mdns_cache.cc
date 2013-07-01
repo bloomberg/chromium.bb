@@ -44,11 +44,11 @@ MDnsCache::Key::~Key() {
 }
 
 bool MDnsCache::Key::operator<(const MDnsCache::Key& key) const {
-  if (type_ != key.type_)
-    return type_ < key.type_;
-
   if (name_ != key.name_)
     return name_ < key.name_;
+
+  if (type_ != key.type_)
+    return type_ < key.type_;
 
   if (optional_ != key.optional_)
     return optional_ < key.optional_;
@@ -154,8 +154,8 @@ void MDnsCache::FindDnsRecords(unsigned type,
 
   RecordMap::const_iterator i = mdns_cache_.lower_bound(Key(type, name, ""));
   for (; i != mdns_cache_.end(); ++i) {
-    if (i->first.type() != type ||
-        (!name.empty() && i->first.name() != name)) {
+    if (i->first.name() != name ||
+        (type != 0 && i->first.type() != type)) {
       break;
     }
 
@@ -166,6 +166,19 @@ void MDnsCache::FindDnsRecords(unsigned type,
 
     results->push_back(record);
   }
+}
+
+scoped_ptr<const RecordParsed> MDnsCache::RemoveRecord(
+    const RecordParsed* record) {
+  Key key = Key::CreateFor(record);
+  RecordMap::iterator found = mdns_cache_.find(key);
+
+  if (found != mdns_cache_.end() && found->second == record) {
+    mdns_cache_.erase(key);
+    return scoped_ptr<const RecordParsed>(record);
+  }
+
+  return scoped_ptr<const RecordParsed>();
 }
 
 // static

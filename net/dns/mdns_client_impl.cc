@@ -13,7 +13,13 @@
 #include "net/base/net_log.h"
 #include "net/base/rand_callback.h"
 #include "net/dns/dns_protocol.h"
+#include "net/dns/record_rdata.h"
 #include "net/udp/datagram_socket.h"
+
+// TODO(gene): Remove this temporary method of disabling NSEC support once it
+// becomes clear whether this feature should be
+// supported. http://crbug.com/255232
+#define ENABLE_NSEC
 
 namespace net {
 
@@ -284,12 +290,48 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
   for (std::map<MDnsCache::Key, MDnsListener::UpdateType>::iterator i =
            update_keys.begin(); i != update_keys.end(); i++) {
     const RecordParsed* record = cache_.LookupKey(i->first);
-    if (record) {
-      AlertListeners(i->second, ListenerKey(record->type(), record->name()),
+    if (!record)
+      continue;
+
+    if (record->type() == dns_protocol::kTypeNSEC) {
+#if defined(ENABLE_NSEC)
+      NotifyNsecRecord(record);
+#endif
+    } else {
+      AlertListeners(i->second, ListenerKey(record->name(), record->type()),
                      record);
-      // Alert listeners listening only for rrtype and not for name.
-      AlertListeners(i->second, ListenerKey(record->type(), ""),
-                     record);
+    }
+  }
+}
+
+void MDnsClientImpl::Core::NotifyNsecRecord(const RecordParsed* record) {
+  DCHECK_EQ(dns_protocol::kTypeNSEC, record->type());
+  const NsecRecordRdata* rdata = record->rdata<NsecRecordRdata>();
+  DCHECK(rdata);
+
+  // Remove all cached records matching the nonexistent RR types.
+  std::vector<const RecordParsed*> records_to_remove;
+
+  cache_.FindDnsRecords(0, record->name(), &records_to_remove,
+                        base::Time::Now());
+
+  for (std::vector<const RecordParsed*>::iterator i = records_to_remove.begin();
+       i != records_to_remove.end(); i++) {
+    if ((*i)->type() == dns_protocol::kTypeNSEC)
+      continue;
+    if (!rdata->GetBit((*i)->type())) {
+      scoped_ptr<const RecordParsed> record_removed = cache_.RemoveRecord((*i));
+      DCHECK(record_removed);
+      OnRecordRemoved(record_removed.get());
+    }
+  }
+
+  // Alert all listeners waiting for the nonexistent RR types.
+  ListenerMap::iterator i =
+      listeners_.upper_bound(ListenerKey(record->name(), 0));
+  for (; i != listeners_.end() && i->first.first == record->name(); i++) {
+    if (!rdata->GetBit(i->first.second)) {
+      FOR_EACH_OBSERVER(MDnsListenerImpl, *i->second, AlertNsecRecord());
     }
   }
 }
@@ -311,7 +353,7 @@ void MDnsClientImpl::Core::AlertListeners(
 
 void MDnsClientImpl::Core::AddListener(
     MDnsListenerImpl* listener) {
-  ListenerKey key(listener->GetType(), listener->GetName());
+  ListenerKey key(listener->GetName(), listener->GetType());
   std::pair<ListenerMap::iterator, bool> observer_insert_result =
       listeners_.insert(
           make_pair(key, static_cast<ObserverList<MDnsListenerImpl>*>(NULL)));
@@ -327,7 +369,7 @@ void MDnsClientImpl::Core::AddListener(
 }
 
 void MDnsClientImpl::Core::RemoveListener(MDnsListenerImpl* listener) {
-  ListenerKey key(listener->GetType(), listener->GetName());
+  ListenerKey key(listener->GetName(), listener->GetType());
   ListenerMap::iterator observer_list_iterator = listeners_.find(key);
 
   DCHECK(observer_list_iterator != listeners_.end());
@@ -337,8 +379,19 @@ void MDnsClientImpl::Core::RemoveListener(MDnsListenerImpl* listener) {
 
   // Remove the observer list from the map if it is empty
   if (observer_list_iterator->second->size() == 0) {
-    delete observer_list_iterator->second;
-    listeners_.erase(observer_list_iterator);
+    // Schedule the actual removal for later in case the listener removal
+    // happens while iterating over the observer list.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(
+            &MDnsClientImpl::Core::CleanupObserverList, AsWeakPtr(), key));
+  }
+}
+
+void MDnsClientImpl::Core::CleanupObserverList(const ListenerKey& key) {
+  ListenerMap::iterator found = listeners_.find(key);
+  if (found != listeners_.end() && found->second->size() == 0) {
+    delete found->second;
+    listeners_.erase(found);
   }
 }
 
@@ -370,10 +423,7 @@ void MDnsClientImpl::Core::DoCleanup() {
 void MDnsClientImpl::Core::OnRecordRemoved(
     const RecordParsed* record) {
   AlertListeners(MDnsListener::RECORD_REMOVED,
-                 ListenerKey(record->type(), record->name()), record);
-  // Alert listeners listening only for rrtype and not for name.
-  AlertListeners(MDnsListener::RECORD_REMOVED, ListenerKey(record->type(), ""),
-                 record);
+                 ListenerKey(record->name(), record->type()), record);
 }
 
 void MDnsClientImpl::Core::QueryCache(
@@ -481,6 +531,11 @@ void MDnsListenerImpl::AlertDelegate(MDnsListener::UpdateType update_type,
   delegate_->OnRecordUpdate(update_type, record);
 }
 
+void MDnsListenerImpl::AlertNsecRecord() {
+  DCHECK(started_);
+  delegate_->OnNsecRecord(name_, rrtype_);
+}
+
 MDnsTransactionImpl::MDnsTransactionImpl(
     uint16 rrtype,
     const std::string& name,
@@ -541,8 +596,12 @@ void MDnsTransactionImpl::TriggerCallback(MDnsTransaction::Result result,
   // the callback can delete the transaction.
   MDnsTransaction::ResultCallback callback = callback_;
 
-  if (flags_ & MDnsTransaction::SINGLE_RESULT)
+  // Reset the transaction if it expects a single result, or if the result
+  // is a final one (everything except for a record).
+  if (flags_ & MDnsTransaction::SINGLE_RESULT ||
+      result != MDnsTransaction::RESULT_RECORD) {
     Reset();
+  }
 
   callback.Run(result, record);
 }
@@ -563,16 +622,10 @@ void MDnsTransactionImpl::OnRecordUpdate(MDnsListener::UpdateType update,
 
 void MDnsTransactionImpl::SignalTransactionOver() {
   DCHECK(started_);
-  base::WeakPtr<MDnsTransactionImpl> weak_this = AsWeakPtr();
-
   if (flags_ & MDnsTransaction::SINGLE_RESULT) {
     TriggerCallback(MDnsTransaction::RESULT_NO_RESULTS, NULL);
   } else {
     TriggerCallback(MDnsTransaction::RESULT_DONE, NULL);
-  }
-
-  if (weak_this) {
-    weak_this->Reset();
   }
 }
 
@@ -587,6 +640,20 @@ void MDnsTransactionImpl::ServeRecordsFromCache() {
       weak_this->TriggerCallback(MDnsTransaction::RESULT_RECORD,
                                  records.front());
     }
+
+#if defined(ENABLE_NSEC)
+    if (records.empty()) {
+      DCHECK(weak_this);
+      client_->core()->QueryCache(dns_protocol::kTypeNSEC, name_, &records);
+      if (!records.empty()) {
+        const NsecRecordRdata* rdata =
+            records.front()->rdata<NsecRecordRdata>();
+        DCHECK(rdata);
+        if (!rdata->GetBit(rrtype_))
+          weak_this->TriggerCallback(MDnsTransaction::RESULT_NSEC, NULL);
+      }
+    }
+#endif
   }
 }
 
@@ -610,7 +677,7 @@ bool MDnsTransactionImpl::QueryAndListen() {
 }
 
 void MDnsTransactionImpl::OnNsecRecord(const std::string& name, unsigned type) {
-  // TODO(noamsml): NSEC records not yet implemented
+  TriggerCallback(RESULT_NSEC, NULL);
 }
 
 void MDnsTransactionImpl::OnCachePurged() {

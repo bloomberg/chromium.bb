@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_test_util.h"
@@ -70,6 +72,39 @@ static const uint8 kTestResponsesSameAnswers[] = {
   0x00, 0x04,         // RDLENGTH is 4 bytes.
   0x4a, 0x7d,         // RDATA is the IP: 74.125.95.121
   0x5f, 0x79,
+};
+
+static const uint8 kTestResponseTwoRecords[] = {
+  // Answer 1
+  // ghs.l.google.com in DNS format. (A)
+  0x03, 'g', 'h', 's',
+  0x01, 'l',
+  0x06, 'g', 'o', 'o', 'g', 'l', 'e',
+  0x03, 'c', 'o', 'm',
+  0x00,
+  0x00, 0x01,         // TYPE is A.
+  0x00, 0x01,         // CLASS is IN.
+  0x00, 0x00,         // TTL (4 bytes) is 53 seconds.
+  0x00, 0x35,
+  0x00, 0x04,         // RDLENGTH is 4 bytes.
+  0x4a, 0x7d,         // RDATA is the IP: 74.125.95.121
+  0x5f, 0x79,
+  // Answer 2
+  // ghs.l.google.com in DNS format. (AAAA)
+  0x03, 'g', 'h', 's',
+  0x01, 'l',
+  0x06, 'g', 'o', 'o', 'g', 'l', 'e',
+  0x03, 'c', 'o', 'm',
+  0x00,
+  0x00, 0x1c,         // TYPE is AAA.
+  0x00, 0x01,         // CLASS is IN.
+  0x00, 0x00,         // TTL (4 bytes) is 53 seconds.
+  0x00, 0x35,
+  0x00, 0x10,         // RDLENGTH is 4 bytes.
+  0x4a, 0x7d, 0x4a, 0x7d,
+  0x5f, 0x79, 0x5f, 0x79,
+  0x5f, 0x79, 0x5f, 0x79,
+  0x5f, 0x79, 0x5f, 0x79,
 };
 
 class RecordRemovalMock {
@@ -231,4 +266,58 @@ TEST_F(MDnsCacheTest, RecordPreemptExpirationTime) {
   EXPECT_EQ(default_time_ + ttl1, cache_.next_expiration());
 }
 
-} // namespace net
+TEST_F(MDnsCacheTest, AnyRRType) {
+  DnsRecordParser parser(kTestResponseTwoRecords,
+                         sizeof(kTestResponseTwoRecords),
+                         0);
+
+  scoped_ptr<const RecordParsed> record1;
+  scoped_ptr<const RecordParsed> record2;
+  std::vector<const RecordParsed*> results;
+
+  record1 = RecordParsed::CreateFrom(&parser, default_time_);
+  record2 = RecordParsed::CreateFrom(&parser, default_time_);
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record1.Pass()));
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record2.Pass()));
+
+  cache_.FindDnsRecords(0, "ghs.l.google.com", &results, default_time_);
+
+  EXPECT_EQ(2u, results.size());
+  EXPECT_EQ(default_time_, results.front()->time_created());
+
+  EXPECT_EQ("ghs.l.google.com", results[0]->name());
+  EXPECT_EQ("ghs.l.google.com", results[1]->name());
+  EXPECT_EQ(dns_protocol::kTypeA,
+            std::min(results[0]->type(), results[1]->type()));
+  EXPECT_EQ(dns_protocol::kTypeAAAA,
+            std::max(results[0]->type(), results[1]->type()));
+}
+
+TEST_F(MDnsCacheTest, RemoveRecord) {
+  DnsRecordParser parser(kT1ResponseDatagram, sizeof(kT1ResponseDatagram),
+                         sizeof(dns_protocol::Header));
+  parser.SkipQuestion();
+
+  scoped_ptr<const RecordParsed> record1;
+  std::vector<const RecordParsed*> results;
+
+  record1 = RecordParsed::CreateFrom(&parser, default_time_);
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record1.Pass()));
+
+  cache_.FindDnsRecords(dns_protocol::kTypeCNAME, "codereview.chromium.org",
+                        &results, default_time_);
+
+  EXPECT_EQ(1u, results.size());
+
+  scoped_ptr<const RecordParsed> record_out =
+      cache_.RemoveRecord(results.front());
+
+  EXPECT_EQ(record_out.get(), results.front());
+
+  cache_.FindDnsRecords(dns_protocol::kTypeCNAME, "codereview.chromium.org",
+                        &results, default_time_);
+
+  EXPECT_EQ(0u, results.size());
+}
+
+}  // namespace net

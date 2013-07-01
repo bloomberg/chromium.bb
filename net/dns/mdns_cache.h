@@ -24,7 +24,7 @@ class RecordParsed;
 // guaranteed not to return expired records. It also has facilities for timely
 // record expiration.
 class NET_EXPORT_PRIVATE MDnsCache {
-public:
+ public:
   // Key type for the record map. It is a 3-tuple of type, name and optional
   // value ordered by type, then name, then optional value. This allows us to
   // query for all records of a certain type and name, while also allowing us
@@ -71,7 +71,7 @@ public:
   const RecordParsed* LookupKey(const Key& key);
 
   // Return records with type |type| and name |name|. Expired records will not
-  // be returned. If |name| is empty, return all records with type |type|.
+  // be returned. If |type| is zero, return all records with name |name|.
   void FindDnsRecords(unsigned type,
                       const std::string& name,
                       std::vector<const RecordParsed*>* records,
@@ -87,9 +87,13 @@ public:
   // base::Time when the cache is empty.
   base::Time next_expiration() const { return next_expiration_; }
 
+  // Remove a record from the cache.  Returns a scoped version of the pointer
+  // passed in if it was removed, scoped null otherwise.
+  scoped_ptr<const RecordParsed> RemoveRecord(const RecordParsed* record);
+
   void Clear();
 
-private:
+ private:
   typedef std::map<Key, const RecordParsed*> RecordMap;
 
   // Get the effective expiration of a cache entry, based on its creation time

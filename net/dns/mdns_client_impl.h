@@ -99,8 +99,10 @@ class MDnsListenerImpl;
 
 class MDnsClientImpl : public MDnsClient {
  public:
-  // The core object exists while the MDnsClient is listening, and is
-  // deleted whenever the number of listeners reaches zero.
+  // The core object exists while the MDnsClient is listening, and is deleted
+  // whenever the number of listeners reaches zero. The deletion happens
+  // asychronously, so destroying the last listener does not immediately
+  // invalidate the core.
   class Core : public base::SupportsWeakPtr<Core>, MDnsConnection::Delegate {
    public:
     Core(MDnsClientImpl* client,
@@ -113,8 +115,7 @@ class MDnsClientImpl : public MDnsClient {
     // Send a query with a specific rrtype and name. Returns true on success.
     bool SendQuery(uint16 rrtype, std::string name);
 
-    // Add/remove a listener to the list of listener. May cause network traffic
-    // if listener is active.
+    // Add/remove a listener to the list of listeners.
     void AddListener(MDnsListenerImpl* listener);
     void RemoveListener(MDnsListenerImpl* listener);
 
@@ -128,7 +129,7 @@ class MDnsClientImpl : public MDnsClient {
     virtual void OnConnectionError(int error) OVERRIDE;
 
    private:
-    typedef std::pair<uint16, std::string> ListenerKey;
+    typedef std::pair<std::string, uint16> ListenerKey;
     typedef std::map<ListenerKey, ObserverList<MDnsListenerImpl>* >
     ListenerMap;
 
@@ -144,6 +145,12 @@ class MDnsClientImpl : public MDnsClient {
 
     // Callback for when a record is removed from the cache.
     void OnRecordRemoved(const RecordParsed* record);
+
+    void NotifyNsecRecord(const RecordParsed* record);
+
+    // Delete and erase the observer list for |key|. Only deletes the observer
+    // list if is empty.
+    void CleanupObserverList(const ListenerKey& key);
 
     ListenerMap listeners_;
 
@@ -220,6 +227,10 @@ class MDnsListenerImpl : public MDnsListener,
   // Alert the delegate of a record update.
   void AlertDelegate(MDnsListener::UpdateType update_type,
                      const RecordParsed* record_parsed);
+
+  // Alert the delegate of the existence of an Nsec record.
+  void AlertNsecRecord();
+
  private:
   uint16 rrtype_;
   std::string name_;

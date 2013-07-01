@@ -264,6 +264,52 @@ const char kSamplePacketAdditionalOnly[] = {
   0xc0, 0x0c,
 };
 
+const char kSamplePacketNsec[] = {
+  // Header
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x01,               // 1 RR (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
+
+  // Answer 1
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x2f,        // TYPE is NSEC.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x06,        // RDLENGTH is 6 bytes.
+  0xc0, 0x0c,
+  0x00, 0x02, 0x00, 0x08  // Only A record present
+};
+
+const char kSamplePacketAPrivet[] = {
+  // Header
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x01,               // 1 RR (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
+
+  // Answer 1
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x01,        // TYPE is NSEC.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x04,        // RDLENGTH is 4 bytes.
+  0xc0, 0x0c,
+  0x00, 0x02,
+};
+
 class PtrRecordCopyContainer {
  public:
   PtrRecordCopyContainer() {}
@@ -392,7 +438,6 @@ void MDnsTest::Stop() {
 TEST_F(MDnsTest, PassiveListeners) {
   StrictMock<MockListenerDelegate> delegate_privet;
   StrictMock<MockListenerDelegate> delegate_printer;
-  StrictMock<MockListenerDelegate> delegate_ptr;
 
   PtrRecordCopyContainer record_privet;
   PtrRecordCopyContainer record_printer;
@@ -401,12 +446,9 @@ TEST_F(MDnsTest, PassiveListeners) {
       dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet);
   scoped_ptr<MDnsListener> listener_printer = test_client_->CreateListener(
       dns_protocol::kTypePTR, "_printer._tcp.local", &delegate_printer);
-  scoped_ptr<MDnsListener> listener_ptr = test_client_->CreateListener(
-      dns_protocol::kTypePTR, "", &delegate_ptr);
 
   ASSERT_TRUE(listener_privet->Start());
   ASSERT_TRUE(listener_printer->Start());
-  ASSERT_TRUE(listener_ptr->Start());
 
   ASSERT_TRUE(test_client_->IsListeningForTests());
 
@@ -424,8 +466,6 @@ TEST_F(MDnsTest, PassiveListeners) {
           &record_printer,
           &PtrRecordCopyContainer::SaveWithDummyArg));
 
-  EXPECT_CALL(delegate_ptr, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
-      .Times(Exactly(2));
 
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
@@ -440,11 +480,6 @@ TEST_F(MDnsTest, PassiveListeners) {
   listener_printer.reset();
 
   ASSERT_TRUE(test_client_->IsListeningForTests());
-
-  EXPECT_CALL(delegate_ptr, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
-      .Times(Exactly(2));
-
-  SimulatePacketReceive(kSamplePacket2, sizeof(kSamplePacket2));
 }
 
 TEST_F(MDnsTest, PassiveListenersCacheCleanup) {
@@ -832,6 +867,119 @@ TEST_F(MDnsTest, DoubleRecordDisagreeing) {
                         sizeof(kCorruptedPacketDoubleRecord));
 
   EXPECT_EQ("2.3.4.5", IPAddressToString(address));
+}
+
+TEST_F(MDnsTest, NsecWithListener) {
+  StrictMock<MockListenerDelegate> delegate_privet;
+  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+      dns_protocol::kTypeA, "_privet._tcp.local", &delegate_privet);
+
+  // Test to make sure nsec callback is NOT called for PTR
+  // (which is marked as existing).
+  StrictMock<MockListenerDelegate> delegate_privet2;
+  scoped_ptr<MDnsListener> listener_privet2 = test_client_->CreateListener(
+      dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet2);
+
+  ASSERT_TRUE(listener_privet->Start());
+
+  EXPECT_CALL(delegate_privet,
+              OnNsecRecord("_privet._tcp.local", dns_protocol::kTypeA));
+
+  SimulatePacketReceive(kSamplePacketNsec,
+                        sizeof(kSamplePacketNsec));
+}
+
+TEST_F(MDnsTest, NsecWithTransactionFromNetwork) {
+  scoped_ptr<MDnsTransaction> transaction_privet =
+      test_client_->CreateTransaction(
+          dns_protocol::kTypeA, "_privet._tcp.local",
+          MDnsTransaction::QUERY_NETWORK |
+          MDnsTransaction::QUERY_CACHE |
+          MDnsTransaction::SINGLE_RESULT,
+          base::Bind(&MDnsTest::MockableRecordCallback,
+                     base::Unretained(this)));
+
+  EXPECT_CALL(*socket_factory_, OnSendTo(_))
+      .Times(2);
+
+  ASSERT_TRUE(transaction_privet->Start());
+
+  EXPECT_CALL(*this,
+              MockableRecordCallback(MDnsTransaction::RESULT_NSEC, NULL));
+
+  SimulatePacketReceive(kSamplePacketNsec,
+                        sizeof(kSamplePacketNsec));
+}
+
+TEST_F(MDnsTest, NsecWithTransactionFromCache) {
+  // Force mDNS to listen.
+  StrictMock<MockListenerDelegate> delegate_irrelevant;
+  scoped_ptr<MDnsListener> listener_irrelevant =
+      test_client_->CreateListener(dns_protocol::kTypePTR, "_privet._tcp.local",
+                                   &delegate_irrelevant);
+  listener_irrelevant->Start();
+
+  SimulatePacketReceive(kSamplePacketNsec,
+                        sizeof(kSamplePacketNsec));
+
+  EXPECT_CALL(*this,
+              MockableRecordCallback(MDnsTransaction::RESULT_NSEC, NULL));
+
+  scoped_ptr<MDnsTransaction> transaction_privet_a =
+      test_client_->CreateTransaction(
+          dns_protocol::kTypeA, "_privet._tcp.local",
+          MDnsTransaction::QUERY_NETWORK |
+          MDnsTransaction::QUERY_CACHE |
+          MDnsTransaction::SINGLE_RESULT,
+          base::Bind(&MDnsTest::MockableRecordCallback,
+                     base::Unretained(this)));
+
+  ASSERT_TRUE(transaction_privet_a->Start());
+
+  // Test that a PTR transaction does NOT consider the same NSEC record to be a
+  // valid answer to the query
+
+  scoped_ptr<MDnsTransaction> transaction_privet_ptr =
+      test_client_->CreateTransaction(
+          dns_protocol::kTypePTR, "_privet._tcp.local",
+          MDnsTransaction::QUERY_NETWORK |
+          MDnsTransaction::QUERY_CACHE |
+          MDnsTransaction::SINGLE_RESULT,
+          base::Bind(&MDnsTest::MockableRecordCallback,
+                     base::Unretained(this)));
+
+  EXPECT_CALL(*socket_factory_, OnSendTo(_))
+      .Times(2);
+
+  ASSERT_TRUE(transaction_privet_ptr->Start());
+}
+
+TEST_F(MDnsTest, NsecConflictRemoval) {
+  StrictMock<MockListenerDelegate> delegate_privet;
+  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+      dns_protocol::kTypeA, "_privet._tcp.local", &delegate_privet);
+
+  ASSERT_TRUE(listener_privet->Start());
+
+  const RecordParsed* record1;
+  const RecordParsed* record2;
+
+  EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
+      .WillOnce(SaveArg<1>(&record1));
+
+  SimulatePacketReceive(kSamplePacketAPrivet,
+                        sizeof(kSamplePacketAPrivet));
+
+  EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_REMOVED, _))
+      .WillOnce(SaveArg<1>(&record2));
+
+  EXPECT_CALL(delegate_privet,
+              OnNsecRecord("_privet._tcp.local", dns_protocol::kTypeA));
+
+  SimulatePacketReceive(kSamplePacketNsec,
+                        sizeof(kSamplePacketNsec));
+
+  EXPECT_EQ(record1, record2);
 }
 
 
