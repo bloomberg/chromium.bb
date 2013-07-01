@@ -13,6 +13,7 @@
 
 @class AutofillDetailsContainer;
 @class AutofillDialogWindowController;
+@class AutofillNotificationContainer;
 @class AutofillSectionContainer;
 @class GTMWidthBasedTweaker;
 @class HyperlinkTextView;
@@ -30,17 +31,26 @@ namespace autofill {
   base::scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
   base::scoped_nsobject<AutofillDetailsContainer> detailsContainer_;
   base::scoped_nsobject<HyperlinkTextView> legalDocumentsView_;
+  base::scoped_nsobject<AutofillNotificationContainer> notificationContainer_;
   AutofillDialogWindowController* target_;
-  autofill::AutofillDialogController* controller_;  // Not owned.
 
-  NSSize legalDocumentsSize_;  // Preferred size for legal documents.
-  BOOL legalDocumentsSizeDirty_;  // Dirty marker for preferred size.
+  // Weak. Owns the dialog.
+  autofill::AutofillDialogController* controller_;
+
+  // Preferred size for legal documents.
+  NSSize legalDocumentsSize_;
+
+  // Dirty marker for preferred size.
+  BOOL legalDocumentsSizeDirty_;
 }
 
 @property(assign, nonatomic) AutofillDialogWindowController* target;
 
 // Designated initializer.
 - (id)initWithController:(autofill::AutofillDialogController*)controller;
+
+// Sets the anchor point for the notificationView_.
+- (void)setAnchorView:(NSView*)anchorView;
 
 // Returns the view controller responsible for |section|.
 - (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section;
@@ -50,6 +60,9 @@ namespace autofill {
 
 // Called when the legal documents text might need to be refreshed.
 - (void)updateLegalDocuments;
+
+// Called when there are changes to the notification area.
+- (void)updateNotificationArea;
 
 @end
 

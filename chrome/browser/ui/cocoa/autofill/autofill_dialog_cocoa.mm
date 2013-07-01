@@ -75,6 +75,7 @@ void AutofillDialogCocoa::UpdateForErrors() {
 }
 
 void AutofillDialogCocoa::UpdateNotificationArea() {
+  [sheet_controller_ updateNotificationArea];
 }
 
 void AutofillDialogCocoa::UpdateAutocheckoutStepsArea() {
@@ -176,6 +177,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     [flippedContentView setAutoresizingMask:
         (NSViewWidthSizable | NSViewHeightSizable)];
     [[[self window] contentView] addSubview:flippedContentView];
+    [mainContainer_ setAnchorView:[[accountChooser_ subviews] objectAtIndex:1]];
 
     NSRect contentRect = clientRect;
     contentRect.origin = NSMakePoint(0, 0);
@@ -247,6 +249,10 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 - (void)updateAccountChooser {
   [accountChooser_ update];
   [mainContainer_ updateLegalDocuments];
+}
+
+- (void)updateNotificationArea {
+  [mainContainer_ updateNotificationArea];
 }
 
 - (void)updateSection:(autofill::DialogSection)section {

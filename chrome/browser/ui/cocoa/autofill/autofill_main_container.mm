@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_notification_container.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "grit/generated_resources.h"
@@ -71,6 +72,10 @@
   [legalDocumentsView_ setDelegate:self];
   legalDocumentsSizeDirty_ = YES;
   [[self view] addSubview:legalDocumentsView_];
+
+  notificationContainer_.reset(
+      [[AutofillNotificationContainer alloc] initWithController:controller_]);
+  [[self view] addSubview:[notificationContainer_ view]];
 }
 
 // Called when embedded links are clicked.
@@ -97,6 +102,9 @@
     size.height += legalDocumentSize.height + kVerticalSpacing;
   }
 
+  NSSize notificationSize =
+      [notificationContainer_ preferredSizeForWidth:detailsSize.width];
+  size.height += notificationSize.height;
   return size;
 }
 
@@ -118,6 +126,13 @@
   NSRect containerFrame = [[detailsContainer_ view] frame];
   containerFrame.origin.y = NSMaxY(buttonFrame);
   [[detailsContainer_ view] setFrameOrigin:containerFrame.origin];
+
+  NSRect notificationFrame;
+  notificationFrame.origin = NSMakePoint(0, NSMaxY(containerFrame));
+  notificationFrame.size = [notificationContainer_ preferredSizeForWidth:
+      preferredContainerSize.width];
+  [[notificationContainer_ view] setFrame:notificationFrame];
+  [notificationContainer_ performLayout];
 }
 
 - (void)buildWindowButtonsForFrame:(NSRect)frame {
@@ -221,6 +236,17 @@
   id controller = [[[self view] window] windowController];
   if ([controller respondsToSelector:@selector(requestRelayout)])
     [controller performSelector:@selector(requestRelayout)];
+}
+
+- (void)updateNotificationArea {
+  [notificationContainer_ setNotifications:controller_->CurrentNotifications()];
+  id controller = [[[self view] window] windowController];
+  if ([controller respondsToSelector:@selector(requestRelayout)])
+    [controller performSelector:@selector(requestRelayout)];
+}
+
+- (void)setAnchorView:(NSView*)anchorView {
+  [notificationContainer_ setAnchorView:anchorView];
 }
 
 @end

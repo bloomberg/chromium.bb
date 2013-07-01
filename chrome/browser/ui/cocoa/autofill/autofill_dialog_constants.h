@@ -11,8 +11,16 @@ namespace {
 // Horizontal padding between text and other elements (in pixels).
 const CGFloat kAroundTextPadding = 4;
 
+// Sizing of notification arrow.
+const int kArrowHeight = 7;
+const int kArrowWidth = 2 * kArrowHeight;
+
 // Spacing between buttons.
 const CGFloat kButtonGap = 6;
+
+// The space between the edges of a notification bar and the text within (in
+// pixels).
+const int kNotificationPadding = 14;
 
 // Vertical spacing between legal text and details section.
 const int kVerticalSpacing = 8;
