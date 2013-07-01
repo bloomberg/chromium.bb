@@ -117,5 +117,8 @@ ManifestTest.RestrictedKeys
 # crbug.com/152599
 SyncSearchEngineDataTypeControllerTest.*
 
+# crbug.com/256259
+DiagnosticsModelTest.RunAll
+
 # Death tests are not supported with apks.
 *DeathTest*
