@@ -670,39 +670,15 @@ static Layer* FindFirstScrollableLayer(Layer* layer) {
   return NULL;
 }
 
-class CalculateLCDTextMetricsFunctor {
- public:
-  void operator()(Layer* layer) {
-    LayerTreeHost* layer_tree_host = layer->layer_tree_host();
-    if (!layer_tree_host)
-      return;
+void LayerTreeHost::CalculateLCDTextMetricsCallback(Layer* layer) {
+  if (!layer->SupportsLCDText())
+    return;
 
-    if (!layer->SupportsLCDText())
-      return;
-
-    bool update_total_num_cc_layers_can_use_lcd_text = false;
-    bool update_total_num_cc_layers_will_use_lcd_text = false;
-    if (layer->draw_properties().can_use_lcd_text) {
-      update_total_num_cc_layers_can_use_lcd_text = true;
-      if (layer->contents_opaque())
-        update_total_num_cc_layers_will_use_lcd_text = true;
-    }
-
-    layer_tree_host->IncrementLCDTextMetrics(
-        update_total_num_cc_layers_can_use_lcd_text,
-        update_total_num_cc_layers_will_use_lcd_text);
-  }
-};
-
-void LayerTreeHost::IncrementLCDTextMetrics(
-    bool update_total_num_cc_layers_can_use_lcd_text,
-    bool update_total_num_cc_layers_will_use_lcd_text) {
   lcd_text_metrics_.total_num_cc_layers++;
-  if (update_total_num_cc_layers_can_use_lcd_text)
+  if (layer->draw_properties().can_use_lcd_text) {
     lcd_text_metrics_.total_num_cc_layers_can_use_lcd_text++;
-  if (update_total_num_cc_layers_will_use_lcd_text) {
-    DCHECK(update_total_num_cc_layers_can_use_lcd_text);
-    lcd_text_metrics_.total_num_cc_layers_will_use_lcd_text++;
+    if (layer->contents_opaque())
+      lcd_text_metrics_.total_num_cc_layers_will_use_lcd_text++;
   }
 }
 
@@ -732,8 +708,10 @@ void LayerTreeHost::UpdateLayers(Layer* root_layer,
 
     if (total_frames_used_for_lcd_text_metrics_ <=
         kTotalFramesToUseForLCDTextMetrics) {
-      LayerTreeHostCommon::CallFunctionForSubtree<
-          CalculateLCDTextMetricsFunctor, Layer>(root_layer);
+      LayerTreeHostCommon::CallFunctionForSubtree(
+          root_layer,
+          base::Bind(&LayerTreeHost::CalculateLCDTextMetricsCallback,
+                     base::Unretained(this)));
       total_frames_used_for_lcd_text_metrics_++;
     }
 
@@ -776,19 +754,17 @@ void LayerTreeHost::TriggerPrepaint() {
   SetNeedsCommit();
 }
 
-class LayerTreeHostReduceMemoryFunctor {
- public:
-  void operator()(Layer* layer) {
-    layer->ReduceMemoryUsage();
-  }
-};
+static void LayerTreeHostReduceMemoryCallback(Layer* layer) {
+  layer->ReduceMemoryUsage();
+}
 
 void LayerTreeHost::ReduceMemoryUsage() {
   if (!root_layer())
     return;
 
-  LayerTreeHostCommon::CallFunctionForSubtree<
-      LayerTreeHostReduceMemoryFunctor, Layer>(root_layer());
+  LayerTreeHostCommon::CallFunctionForSubtree(
+      root_layer(),
+      base::Bind(&LayerTreeHostReduceMemoryCallback));
 }
 
 void LayerTreeHost::SetPrioritiesForSurfaces(size_t surface_memory_bytes) {

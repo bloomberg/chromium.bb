@@ -255,10 +255,6 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 
-  void IncrementLCDTextMetrics(
-      bool update_total_num_cc_layers_can_use_lcd_text,
-      bool update_total_num_cc_layers_will_use_lcd_text);
-
  protected:
   LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSettings& settings);
   bool Initialize(scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
@@ -284,6 +280,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   size_t CalculateMemoryForRenderSurfaces(const LayerList& update_list);
 
   bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
+
+  void CalculateLCDTextMetricsCallback(Layer* layer);
 
   bool animating_;
   bool needs_full_tree_sync_;
