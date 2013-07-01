@@ -41,8 +41,8 @@ class ScopedVector {
     return *this;
   }
 
-  T*& operator[](size_t index) { return v_[index]; }
-  const T* operator[](size_t index) const { return v_[index]; }
+  reference operator[](size_t index) { return v_[index]; }
+  const_reference operator[](size_t index) const { return v_[index]; }
 
   bool empty() const { return v_.empty(); }
   size_t size() const { return v_.size(); }
