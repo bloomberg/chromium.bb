@@ -26,6 +26,7 @@
 #include "chrome/common/search_types.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
@@ -168,6 +169,9 @@ class InstantController : public InstantPage::Delegate,
   // CommitInstant() on the browser, and returns true. Else, returns false.
   bool CommitIfPossible(InstantCommitType type);
 
+  // If the network status changes, try to reset NTP and Overlay.
+  void OnNetworkChanged(net::NetworkChangeNotifier::ConnectionType type);
+
   // Called to indicate that the omnibox focus state changed with the given
   // |reason|. If |focus_state| is FOCUS_NONE, |view_gaining_focus| is set to
   // the view gaining focus.
@@ -283,6 +287,8 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UnrelatedSiteInstance);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OnDefaultSearchProviderChanged);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedNetworkTest,
+                           NTPReactsToNetworkChanges);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            AcceptingURLSearchDoesNotNavigate);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, AcceptingJSSearchDoesNotRunJS);

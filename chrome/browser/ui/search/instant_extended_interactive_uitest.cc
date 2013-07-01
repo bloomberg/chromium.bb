@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -74,6 +75,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -112,6 +114,26 @@ class QuittingHistoryDBTask : public history::HistoryDBTask {
   DISALLOW_COPY_AND_ASSIGN(QuittingHistoryDBTask);
 };
 
+class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
+ public:
+  FakeNetworkChangeNotifier() : connection_type_(CONNECTION_NONE) {}
+
+  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+    return connection_type_;
+  }
+
+  void SetConnectionType(ConnectionType type) {
+    connection_type_ = type;
+    NotifyObserversOfNetworkChange(type);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  virtual ~FakeNetworkChangeNotifier() {}
+
+ private:
+  ConnectionType connection_type_;
+  DISALLOW_COPY_AND_ASSIGN(FakeNetworkChangeNotifier);
+};
 }  // namespace
 
 class InstantExtendedTest : public InProcessBrowserTest,
@@ -250,6 +272,29 @@ class InstantExtendedTest : public InProcessBrowserTest,
   int on_toggle_voice_search_calls_;
 };
 
+class InstantExtendedNetworkTest : public InstantExtendedTest {
+ protected:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    disable_for_test_.reset(new net::NetworkChangeNotifier::DisableForTest);
+    fake_network_change_notifier_.reset(new FakeNetworkChangeNotifier);
+    InstantExtendedTest::SetUpOnMainThread();
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    InstantExtendedTest::CleanUpOnMainThread();
+    fake_network_change_notifier_.reset();
+    disable_for_test_.reset();
+  }
+
+  void SetConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
+    fake_network_change_notifier_->SetConnectionType(type);
+  }
+
+ private:
+  scoped_ptr<net::NetworkChangeNotifier::DisableForTest> disable_for_test_;
+  scoped_ptr<FakeNetworkChangeNotifier> fake_network_change_notifier_;
+};
+
 // Test class used to verify chrome-search: scheme and access policy from the
 // Instant overlay.  This is a subclass of |ExtensionBrowserTest| because it
 // loads a theme that provides a background image.
@@ -304,7 +349,73 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NTPIsPreloaded) {
   content::WebContents* ntp_contents = instant()->ntp_->contents();
   EXPECT_TRUE(ntp_contents);
 }
+#endif  // HTML_INSTANT_EXTENDED_POPUP
 
+IN_PROC_BROWSER_TEST_F(InstantExtendedNetworkTest, NTPReactsToNetworkChanges) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // The setup first initializes the platform specific NetworkChangeNotifier.
+  // The InstantExtendedNetworkTest replaces it with a fake, but by the time,
+  // instant controller has already registered itself. So the instant controller
+  // needs to register itself as NetworkChangeObserver again.
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(browser_instant());
+
+  // The fake network change notifier will provide the network state to be
+  // offline, so the ntp will be local.
+  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  EXPECT_TRUE(instant()->ntp()->IsLocal());
+
+  // Change the connect state, and wait for the notifications to be run, and NTP
+  // support to be determined.
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Verify the network state is fine, and instant controller doesn't want to
+  // switch to local NTP anymore.
+  EXPECT_FALSE(net::NetworkChangeNotifier::IsOffline());
+  EXPECT_FALSE(instant()->ShouldSwitchToLocalNTP());
+
+  // Open new tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Verify new NTP is not local.
+  EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
+  EXPECT_NE(instant()->GetLocalInstantURL(), active_tab->GetURL().spec());
+  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  EXPECT_FALSE(instant()->ntp()->IsLocal());
+
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Verify the network state is fine, and instant controller doesn't want to
+  // switch to local NTP anymore.
+  EXPECT_TRUE(net::NetworkChangeNotifier::IsOffline());
+  EXPECT_TRUE(instant()->ShouldSwitchToLocalNTP());
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Verify new NTP is not local.
+  EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
+  EXPECT_EQ(instant()->GetLocalInstantURL(), active_tab->GetURL().spec());
+  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  EXPECT_TRUE(instant()->ntp()->IsLocal());
+}
+
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInSameTab) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));

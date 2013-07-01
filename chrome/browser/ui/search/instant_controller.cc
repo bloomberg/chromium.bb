@@ -1197,6 +1197,17 @@ InstantNTP* InstantController::ntp() const {
   return ntp_.get();
 }
 
+void InstantController::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  // Not interested in events conveying change to offline
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+    return;
+  if (!extended_enabled_ || use_local_page_only_)
+    return;
+  if (!ntp_ || ntp_->IsLocal())
+    ResetNTP(GetInstantURL());
+}
+
 // TODO(shishir): We assume that the WebContent's current RenderViewHost is the
 // RenderViewHost being created which is not always true. Fix this.
 void InstantController::InstantPageRenderViewCreated(

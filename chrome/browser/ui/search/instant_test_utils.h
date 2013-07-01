@@ -21,6 +21,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
+class BrowserInstantController;
 class InstantController;
 class InstantModel;
 class OmniboxView;
@@ -71,6 +72,10 @@ class InstantTestBase {
 
   void set_browser(Browser* browser) {
     browser_ = browser;
+  }
+
+  BrowserInstantController* browser_instant() {
+    return browser_->instant_controller();
   }
 
   InstantController* instant() {

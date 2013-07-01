@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/browser/ui/search/instant_unload_handler.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
@@ -27,7 +28,9 @@ namespace gfx {
 class Rect;
 }
 
-class BrowserInstantController : public SearchModelObserver {
+class BrowserInstantController
+    : public SearchModelObserver,
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   explicit BrowserInstantController(Browser* browser);
   virtual ~BrowserInstantController();
@@ -113,6 +116,10 @@ class BrowserInstantController : public SearchModelObserver {
   // default search provider) by simply reloading all such WebContents. This
   // ensures that they are reloaded in a non-privileged renderer process.
   void OnDefaultSearchProviderChanged(const std::string& pref_name);
+
+  // Overridden from net::NetworkChangeNotifier::NetworkChangeObserver:
+  virtual void OnNetworkChanged(net::NetworkChangeNotifier::ConnectionType type)
+      OVERRIDE;
 
   // Replaces the contents at tab |index| with |new_contents| and deletes the
   // existing contents.

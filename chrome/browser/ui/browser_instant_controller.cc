@@ -60,10 +60,12 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
                  base::Unretained(this)));
   ResetInstant(std::string());
   browser_->search_model()->AddObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 BrowserInstantController::~BrowserInstantController() {
   browser_->search_model()->RemoveObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 bool BrowserInstantController::MaybeSwapInInstantNTPContents(
@@ -271,6 +273,15 @@ void BrowserInstantController::ModelChanged(
 
   if (old_state.instant_support != new_state.instant_support)
     instant_.InstantSupportChanged(new_state.instant_support);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserInstantController, net::NetworkChangeNotifier::NetworkChangeObserver
+// implementation:
+
+void BrowserInstantController::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  instant_.OnNetworkChanged(type);
 }
 
 void BrowserInstantController::OnDefaultSearchProviderChanged(
