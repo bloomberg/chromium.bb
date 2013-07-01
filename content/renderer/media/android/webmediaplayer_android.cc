@@ -1101,7 +1101,7 @@ void WebMediaPlayerAndroid::OnKeyMessage(const std::string& session_id,
 
   client_->keyMessage(current_key_system_,
                       WebString::fromUTF8(session_id),
-                      &message[0],
+                      message.empty() ? NULL : &message[0],
                       message.size(),
                       destination_url_gurl);
 }
