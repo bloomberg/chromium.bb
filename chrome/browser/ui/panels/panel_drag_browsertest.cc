@@ -820,47 +820,37 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DragOneDetachedPanel) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest,
-                       DISABLED_CloseDetachedPanelOnDrag) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelDragController* drag_controller = panel_manager->drag_controller();
   DetachedPanelCollection* detached_collection =
       panel_manager->detached_collection();
 
-  // Create 4 detached panels.
+  // Create 1 detached panel.
   Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(100, 200, 100, 100));
-  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(200, 210, 110, 110));
-  Panel* panel3 = CreateDetachedPanel("3", gfx::Rect(300, 220, 120, 120));
-  Panel* panel4 = CreateDetachedPanel("4", gfx::Rect(400, 230, 130, 130));
-  ASSERT_EQ(4, detached_collection->num_panels());
+  ASSERT_EQ(1, detached_collection->num_panels());
 
   scoped_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
   gfx::Point panel1_old_position = panel1->GetBounds().origin();
-  gfx::Point panel2_position = panel2->GetBounds().origin();
-  gfx::Point panel3_position = panel3->GetBounds().origin();
-  gfx::Point panel4_position = panel4->GetBounds().origin();
 
   // Test the scenario: drag a panel, close another panel, cancel the drag.
   {
-    gfx::Point panel1_new_position = panel1_old_position;
-    panel1_new_position.Offset(-51, -102);
+    // Create a panel to be closed.
+    Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(300, 210, 110, 110));
 
     // Start dragging a panel.
     panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
+    gfx::Point panel1_new_position = panel1_old_position;
+    panel1_new_position.Offset(-51, -102);
     panel1_testing->DragTitlebar(panel1_new_position);
     EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
-    ASSERT_EQ(4, detached_collection->num_panels());
+    ASSERT_EQ(2, detached_collection->num_panels());
     EXPECT_TRUE(detached_collection->HasPanel(panel1));
     EXPECT_TRUE(detached_collection->HasPanel(panel2));
-    EXPECT_TRUE(detached_collection->HasPanel(panel3));
-    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
-    EXPECT_EQ(panel2_position, panel2->GetBounds().origin());
-    EXPECT_EQ(panel3_position, panel3->GetBounds().origin());
-    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
 
     // Closing another panel while dragging in progress will keep the dragging
     // panel intact.
@@ -868,86 +858,64 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest,
     EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
-    ASSERT_EQ(3, detached_collection->num_panels());
+    ASSERT_EQ(1, detached_collection->num_panels());
     EXPECT_TRUE(detached_collection->HasPanel(panel1));
-    EXPECT_TRUE(detached_collection->HasPanel(panel3));
-    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
-    EXPECT_EQ(panel3_position, panel3->GetBounds().origin());
-    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
 
     // Cancel the drag.
     panel1_testing->CancelDragTitlebar();
     WaitForBoundsAnimationFinished(panel1);
     EXPECT_FALSE(drag_controller->is_dragging());
-
-    ASSERT_EQ(3, detached_collection->num_panels());
-    EXPECT_TRUE(detached_collection->HasPanel(panel1));
-    EXPECT_TRUE(detached_collection->HasPanel(panel3));
-    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel1_old_position, panel1->GetBounds().origin());
-    EXPECT_EQ(panel3_position, panel3->GetBounds().origin());
-    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
   }
 
   // Test the scenario: drag a panel, close another panel, end the drag.
   {
-    gfx::Point panel1_new_position = panel1_old_position;
-    panel1_new_position.Offset(-51, -102);
+    // Create a panel to be closed.
+    Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(300, 210, 110, 110));
 
     // Start dragging a panel.
     panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
+    gfx::Point panel1_new_position = panel1_old_position;
+    panel1_new_position.Offset(-51, -102);
     panel1_testing->DragTitlebar(panel1_new_position);
-    EXPECT_TRUE(drag_controller->is_dragging());
-    EXPECT_EQ(panel1, drag_controller->dragging_panel());
-
-    ASSERT_EQ(3, detached_collection->num_panels());
-    EXPECT_TRUE(detached_collection->HasPanel(panel1));
-    EXPECT_TRUE(detached_collection->HasPanel(panel3));
-    EXPECT_TRUE(detached_collection->HasPanel(panel4));
-    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
-    EXPECT_EQ(panel3_position, panel3->GetBounds().origin());
-    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
-
-    // Closing another panel while dragging in progress will keep the dragging
-    // panel intact.
-    CloseWindowAndWait(panel3);
     EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
     ASSERT_EQ(2, detached_collection->num_panels());
     EXPECT_TRUE(detached_collection->HasPanel(panel1));
-    EXPECT_TRUE(detached_collection->HasPanel(panel4));
+    EXPECT_TRUE(detached_collection->HasPanel(panel2));
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
-    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
+
+    // Closing another panel while dragging in progress will keep the dragging
+    // panel intact.
+    CloseWindowAndWait(panel2);
+    EXPECT_TRUE(drag_controller->is_dragging());
+    EXPECT_EQ(panel1, drag_controller->dragging_panel());
+
+    ASSERT_EQ(1, detached_collection->num_panels());
+    EXPECT_TRUE(detached_collection->HasPanel(panel1));
+    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
 
     // Finish the drag.
     panel1_testing->FinishDragTitlebar();
     EXPECT_FALSE(drag_controller->is_dragging());
-
-    ASSERT_EQ(2, detached_collection->num_panels());
-    EXPECT_TRUE(detached_collection->HasPanel(panel1));
-    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
-    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
   }
 
   // Test the scenario: drag a panel and close the dragging panel.
   {
-    gfx::Point panel1_new_position = panel1->GetBounds().origin();
-    panel1_new_position.Offset(-51, -102);
-
     // Start dragging a panel again.
     panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
+    gfx::Point panel1_new_position = panel1->GetBounds().origin();
+    panel1_new_position.Offset(45, 67);
     panel1_testing->DragTitlebar(panel1_new_position);
     EXPECT_TRUE(drag_controller->is_dragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
-    ASSERT_EQ(2, detached_collection->num_panels());
+    ASSERT_EQ(1, detached_collection->num_panels());
     EXPECT_TRUE(detached_collection->HasPanel(panel1));
-    EXPECT_TRUE(detached_collection->HasPanel(panel4));
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
-    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
 
     // Closing the dragging panel should make the drag controller abort.
     content::WindowedNotificationObserver signal(
@@ -962,12 +930,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest,
 
     // Wait till the panel is fully closed.
     signal.Wait();
-    ASSERT_EQ(1, detached_collection->num_panels());
-    EXPECT_TRUE(detached_collection->HasPanel(panel4));
-    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
+    ASSERT_EQ(0, detached_collection->num_panels());
   }
-
-  panel_manager->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Detach) {
