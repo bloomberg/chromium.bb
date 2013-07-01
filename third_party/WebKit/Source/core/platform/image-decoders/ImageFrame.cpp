@@ -157,11 +157,7 @@ void ImageFrame::zeroFillFrameRect(const IntRect& rect)
     if (rect.isEmpty())
         return;
 
-    // FIXME: Can we make this faster using Skia?
-    for (int y = rect.y(); y < rect.maxY(); ++y) {
-        uint8_t* const dst = reinterpret_cast<uint8_t*>(getAddr(rect.x(), rect.y()));
-        memset(dst, 0, (rect.maxX() - rect.x()) * sizeof(ImageFrame::PixelData));
-    }
+    m_bitmap->bitmap().eraseArea(rect, SkColorSetARGB(0, 0, 0, 0));
     setHasAlpha(true);
 }
 
