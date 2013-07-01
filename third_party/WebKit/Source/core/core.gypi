@@ -3523,8 +3523,6 @@
             'svg/SVGStyleElement.h',
             'svg/SVGStyledElement.cpp',
             'svg/SVGStyledElement.h',
-            'svg/SVGStyledLocatableElement.cpp',
-            'svg/SVGStyledLocatableElement.h',
             'svg/SVGSwitchElement.cpp',
             'svg/SVGSwitchElement.h',
             'svg/SVGSymbolElement.cpp',

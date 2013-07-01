@@ -39,8 +39,8 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGElementRareData.h"
+#include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGSVGElement.h"
-#include "core/svg/SVGStyledLocatableElement.h"
 #include "core/svg/SVGTextElement.h"
 
 namespace WebCore {
@@ -255,8 +255,8 @@ const HashSet<SVGElementInstance*>& SVGElement::instancesForElement() const
 
 bool SVGElement::getBoundingBox(FloatRect& rect, SVGLocatable::StyleUpdateStrategy styleUpdateStrategy)
 {
-    if (isStyledLocatable()) {
-        rect = toSVGStyledLocatableElement(this)->getBBox(styleUpdateStrategy);
+    if (isSVGGraphicsElement()) {
+        rect = toSVGGraphicsElement(this)->getBBox(styleUpdateStrategy);
         return true;
     }
     if (hasTagName(SVGNames::textTag)) {

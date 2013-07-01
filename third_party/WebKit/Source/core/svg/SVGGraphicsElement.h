@@ -22,7 +22,7 @@
 #define SVGGraphicsElement_h
 
 #include "core/svg/SVGAnimatedTransformList.h"
-#include "core/svg/SVGStyledLocatableElement.h"
+#include "core/svg/SVGStyledElement.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/SVGTransformable.h"
 
@@ -31,7 +31,7 @@ namespace WebCore {
 class AffineTransform;
 class Path;
 
-class SVGGraphicsElement : public SVGStyledLocatableElement, public SVGTransformable, public SVGTests {
+class SVGGraphicsElement : public SVGStyledElement, public SVGTransformable, public SVGTests {
 public:
     virtual ~SVGGraphicsElement();
 
