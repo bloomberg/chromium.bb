@@ -341,7 +341,8 @@ TEST(ExtensionProxyApiHelpers, CreateProxyRulesDict) {
           "http=proxy1:80;https=proxy2:80;ftp=proxy3:80;socks=proxy4:80",
           "localhost"));
   ProxyConfigDictionary config(browser_pref.get());
-  scoped_ptr<base::DictionaryValue> extension_pref(CreateProxyRulesDict(config));
+  scoped_ptr<base::DictionaryValue> extension_pref(
+      CreateProxyRulesDict(config));
   ASSERT_TRUE(extension_pref.get());
 
   scoped_ptr<base::DictionaryValue> expected(new base::DictionaryValue);
