@@ -41,9 +41,15 @@ BUNDLE_SIZE = 32
 
 
 def _ValidateNop(instruction):
+  # TODO(shcherbina): whitelist nops by bytes, not only by disasm.
+  # Example:
+  #   66 66 0f 1f 84 00 00 00 00 00
+  # is decoded as
+  #   nopw   0x0(%rax,%rax,1)
+  # and so seems valid, but we should only allow
+  #   66 0f 1f 84 00 00 00 00 00
   if instruction.disasm in [
       'nop',
-      'xchg %ax,%ax',
       'nopl (%rax)',
       'nopl 0x0(%rax)',
       'nopl 0x0(%rax,%rax,1)',
@@ -303,6 +309,18 @@ class Condition(object):
     yield Condition(restricted_instead_of_sandboxed='%rsp')
 
 
+def _GetLegacyPrefixes(instruction):
+  result = []
+  for b in instruction.bytes:
+    if b not in [
+        0x66, 0x67, 0x2e, 0x3e, 0x26, 0x64, 0x65, 0x36, 0xf0, 0xf3, 0xf2]:
+      break
+    if b in result:
+      raise SandboxingError('duplicate legacy prefix', instruction)
+    result.append(b)
+  return result
+
+
 def ValidateRegularInstruction(instruction, bitness):
   """Validate regular instruction (not direct jump).
 
@@ -322,6 +340,9 @@ def ValidateRegularInstruction(instruction, bitness):
     return Condition(), Condition()
   except DoNotMatchError:
     pass
+
+  # Report error on duplicate prefixes (note that they are allowed in nops),.
+  _GetLegacyPrefixes(instruction)
 
   try:
     _ValidateOperandlessInstruction(instruction, bitness)
@@ -409,19 +430,17 @@ def ValidateRegularInstruction(instruction, bitness):
 
 def ValidateDirectJump(instruction):
   cond_jumps_re = re.compile(
+      r'(data16 )?'
       r'(ja(e?)|jb(e?)|jg(e?)|jl(e?)|'
       r'j(n?)e|j(n?)o|j(n?)p|j(n?)s)'
       r' %s$' % _HexRE('destination'))
   m = cond_jumps_re.match(instruction.disasm)
   if m is not None:
-    # 16-bit conditional jump has the following form:
-    #   <optional branch hint (2e or 3e)>
-    #   <data16 (66)>
-    #   0f <cond jump opcode>
-    #   <2-byte offset>
-    # (branch hint and data16 can go in any order)
-    if instruction.bytes[0] == 0x66 or (
-        instruction.bytes[0] in [0x2e, 0x3e] and instruction.bytes[1] == 0x66):
+    # Unfortunately we can't rely on presence of 'data16' prefix in disassembly,
+    # because nacl-objdump prints it, but objdump we base our decoder on
+    # does not.
+    # So we look at bytes.
+    if 0x66 in _GetLegacyPrefixes(instruction):
       raise SandboxingError(
           '16-bit conditional jumps are disallowed', instruction)
     return int(m.group('destination'), 16)

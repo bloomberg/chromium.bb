@@ -18,7 +18,7 @@
 @rdfa_output:
   return code: 0
 @spec:
-  SAFE
+  1: unrecognized instruction 'xchg %ax,%ax'
 ----------------------------------------------------------------------
 @hex:
   0F 1F 84 00 00 00 00 00
@@ -106,6 +106,8 @@
   3: failed to decode instruction
 ----------------------------------------------------------------------
 @hex:
+  # TODO(shcherbina): whitelist nops by bytes, not by disasm
+  # (see _ValidateNop in spec.py)
   66 66 0F 1F 84 00 00 00 00 00
 @dis:
      0:	66 66 0f 1f 84 00 00 00 00 00                	nopw   0x0(%rax,%rax,1)
