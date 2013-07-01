@@ -36,6 +36,8 @@ class WEBDATA_EXPORT WebDataServiceBase
   // TODO(joi): Should we combine this with WebDatabaseService::InitCallback?
   typedef base::Callback<void(sql::InitStatus)> ProfileErrorCallback;
 
+  typedef base::Closure DBLoadedCallback;
+
   // |callback| will only be invoked on error, and only if
   // |callback.is_null()| evaluates to false.
   //
@@ -72,8 +74,7 @@ class WEBDATA_EXPORT WebDataServiceBase
   // (following a successful database load), then cleared.
   // Note: if the database load is already complete, then the callback will NOT
   // be stored or called.
-  virtual void RegisterDBLoadedCallback(
-      const base::Callback<void(void)>& callback);
+  virtual void RegisterDBLoadedCallback(const DBLoadedCallback& callback);
 
   // Returns true if the database load has completetd successfully, and
   // ShutdownOnUIThread has not yet been called.
@@ -95,6 +96,8 @@ class WEBDATA_EXPORT WebDataServiceBase
 
  private:
   ProfileErrorCallback profile_error_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebDataServiceBase);
 };
 
 #endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_BASE_H_

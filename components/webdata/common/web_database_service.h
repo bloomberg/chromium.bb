@@ -52,6 +52,10 @@ class WEBDATA_EXPORT WebDatabaseService
   typedef base::Callback<scoped_ptr<WDTypedResult>(WebDatabase*)> ReadTask;
   typedef base::Callback<WebDatabase::State(WebDatabase*)> WriteTask;
 
+  // Types for managing DB loading callbacks.
+  typedef base::Closure DBLoadedCallback;
+  typedef base::Callback<void(sql::InitStatus)> DBLoadErrorCallback;
+
   // Takes the path to the WebDatabase file.
   // WebDatabaseService lives on |ui_thread| and posts tasks to |db_thread|.
   WebDatabaseService(const base::FilePath& path,
@@ -101,23 +105,25 @@ class WEBDATA_EXPORT WebDatabaseService
   // (following a successful database load), then cleared.
   // Note: if the database load is already complete, then the callback will NOT
   // be stored or called.
-  void RegisterDBLoadedCallback(const base::Callback<void(void)>& callback);
+  void RegisterDBLoadedCallback(const DBLoadedCallback& callback);
 
   // Register a callback to be notified that the database has failed to load.
   // Multiple callbacks may be registered, and each will be called at most once
   // (following a database load failure), then cleared.
   // Note: if the database load is already complete, then the callback will NOT
   // be stored or called.
-  void RegisterDBErrorCallback(
-      const base::Callback<void(sql::InitStatus)>& callback);
+  void RegisterDBErrorCallback(const DBLoadErrorCallback& callback);
 
-  bool db_loaded() { return db_loaded_; };
+  bool db_loaded() const { return db_loaded_; };
 
  private:
   class BackendDelegate;
   friend class BackendDelegate;
   friend class base::RefCountedDeleteOnMessageLoop<WebDatabaseService>;
   friend class base::DeleteHelper<WebDatabaseService>;
+
+  typedef std::vector<DBLoadedCallback> LoadedCallbacks;
+  typedef std::vector<DBLoadErrorCallback> ErrorCallbacks;
 
   virtual ~WebDatabaseService();
 
@@ -132,13 +138,6 @@ class WEBDATA_EXPORT WebDatabaseService
   // All vended weak pointers are invalidated in ShutdownDatabase().
   base::WeakPtrFactory<WebDatabaseService> weak_ptr_factory_;
 
-  // Types for managing DB loading callbacks.
-  typedef base::Callback<void(void)> DBLoadedCallback;
-  typedef std::vector<DBLoadedCallback> LoadedCallbacks;
-
-  typedef base::Callback<void(sql::InitStatus)> DBLoadErrorCallback;
-  typedef std::vector<DBLoadErrorCallback> ErrorCallbacks;
-
   // Callbacks to be called once the DB has loaded.
   LoadedCallbacks loaded_callbacks_;
 
@@ -149,6 +148,8 @@ class WEBDATA_EXPORT WebDatabaseService
   bool db_loaded_;
 
   scoped_refptr<base::MessageLoopProxy> db_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebDatabaseService);
 };
 
 #endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_SERVICE_H_

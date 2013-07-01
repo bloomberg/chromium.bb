@@ -62,7 +62,7 @@ bool WebDataServiceBase::IsDatabaseLoaded() {
 }
 
 void WebDataServiceBase::RegisterDBLoadedCallback(
-    const base::Callback<void(void)>& callback) {
+    const DBLoadedCallback& callback) {
   if (!wdbs_.get())
     return;
   wdbs_->RegisterDBLoadedCallback(callback);

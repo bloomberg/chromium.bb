@@ -150,12 +150,12 @@ void WebDatabaseService::CancelRequest(WebDataServiceBase::Handle h) {
 }
 
 void WebDatabaseService::RegisterDBLoadedCallback(
-    const base::Callback<void(void)>& callback) {
+    const DBLoadedCallback& callback) {
   loaded_callbacks_.push_back(callback);
 }
 
 void WebDatabaseService::RegisterDBErrorCallback(
-    const base::Callback<void(sql::InitStatus)>& callback) {
+    const DBLoadErrorCallback& callback) {
   error_callbacks_.push_back(callback);
 }
 
