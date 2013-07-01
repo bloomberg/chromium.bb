@@ -7,7 +7,6 @@
 #include "apps/app_launcher.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ui/search/instant_ipc_sender.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/render_messages.h"
@@ -86,14 +85,6 @@ void InstantPage::SetContents(content::WebContents* web_contents) {
     InstantSupportDetermined(model->instant_support() == INSTANT_SUPPORT_YES);
 }
 
-bool InstantPage::ShouldProcessRenderViewCreated() {
-  return false;
-}
-
-bool InstantPage::ShouldProcessRenderViewGone() {
-  return false;
-}
-
 bool InstantPage::ShouldProcessAboutToNavigateMainFrame() {
   return false;
 }
@@ -126,11 +117,6 @@ bool InstantPage::ShouldProcessUndoAllMostVisitedDeletions() {
   return false;
 }
 
-void InstantPage::RenderViewCreated(content::RenderViewHost* render_view_host) {
-  if (ShouldProcessRenderViewCreated())
-    delegate_->InstantPageRenderViewCreated(contents());
-}
-
 bool InstantPage::OnMessageReceived(const IPC::Message& message) {
   if (is_incognito_)
     return false;
@@ -152,11 +138,6 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void InstantPage::RenderViewGone(base::TerminationStatus /* status */) {
-  if (ShouldProcessRenderViewGone())
-    delegate_->InstantPageRenderViewGone(contents());
 }
 
 void InstantPage::DidCommitProvisionalLoadForFrame(

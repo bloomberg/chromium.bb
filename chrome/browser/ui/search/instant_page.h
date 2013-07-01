@@ -148,8 +148,6 @@ class InstantPage : public content::WebContentsObserver,
   // page. By default, all messages are handled, but any derived classes may
   // choose to ignore some or all of the received messages by overriding these
   // methods.
-  virtual bool ShouldProcessRenderViewCreated();
-  virtual bool ShouldProcessRenderViewGone();
   virtual bool ShouldProcessAboutToNavigateMainFrame();
   virtual bool ShouldProcessSetSuggestions();
   virtual bool ShouldProcessShowInstantOverlay();
@@ -174,10 +172,7 @@ class InstantPage : public content::WebContentsObserver,
                            IgnoreMessageReceivedFromIncognitoPage);
 
   // Overridden from content::WebContentsObserver:
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,

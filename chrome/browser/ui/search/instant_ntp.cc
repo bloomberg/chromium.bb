@@ -13,6 +13,7 @@ InstantNTP::InstantNTP(InstantPage::Delegate* delegate,
                        bool is_incognito)
     : InstantPage(delegate, instant_url, is_incognito),
       loader_(this) {
+  DCHECK(delegate);
 }
 
 InstantNTP::~InstantNTP() {
@@ -30,6 +31,14 @@ void InstantNTP::InitContents(Profile* profile,
 scoped_ptr<content::WebContents> InstantNTP::ReleaseContents() {
   SetContents(NULL);
   return loader_.ReleaseContents();
+}
+
+void InstantNTP::RenderViewCreated(content::RenderViewHost* render_view_host) {
+  delegate()->InstantPageRenderViewCreated(contents());
+}
+
+void InstantNTP::RenderViewGone(base::TerminationStatus /* status */) {
+  delegate()->InstantPageRenderViewGone(contents());
 }
 
 void InstantNTP::OnSwappedContents() {
@@ -55,12 +64,4 @@ content::WebContents* InstantNTP::OpenURLFromTab(
 }
 
 void InstantNTP::LoadCompletedMainFrame() {
-}
-
-bool InstantNTP::ShouldProcessRenderViewCreated() {
-  return true;
-}
-
-bool InstantNTP::ShouldProcessRenderViewGone() {
-  return true;
 }
