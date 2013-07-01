@@ -95,8 +95,7 @@ class RenderingHelperGL : public RenderingHelper {
   virtual ~RenderingHelperGL();
 
   // Implement RenderingHelper.
-  virtual void Initialize(bool suppress_swap_to_display,
-                          int num_windows,
+  virtual void Initialize(int num_windows,
                           const std::vector<gfx::Size>& dimensions,
                           base::WaitableEvent* done) OVERRIDE;
   virtual void UnInitialize(base::WaitableEvent* done) OVERRIDE;
@@ -121,7 +120,6 @@ class RenderingHelperGL : public RenderingHelper {
 
   base::MessageLoop* message_loop_;
   std::vector<gfx::Size> dimensions_;
-  bool suppress_swap_to_display_;
 
   NativeContextType gl_context_;
   std::map<uint32, int> texture_id_to_surface_index_;
@@ -187,7 +185,6 @@ void RenderingHelperGL::MakeCurrent(int window_id) {
 }
 
 void RenderingHelperGL::Initialize(
-    bool suppress_swap_to_display,
     int num_windows,
     const std::vector<gfx::Size>& dimensions,
     base::WaitableEvent* done) {
@@ -202,7 +199,6 @@ void RenderingHelperGL::Initialize(
   gfx::InitializeGLBindings(RenderingHelperGL::kGLImplementation);
   scoped_refptr<GLContextStubWithExtensions> stub_context(
       new GLContextStubWithExtensions());
-  suppress_swap_to_display_ = suppress_swap_to_display;
 
   CHECK_GT(dimensions.size(), 0U);
   dimensions_ = dimensions;
@@ -454,8 +450,6 @@ void RenderingHelperGL::RenderTexture(uint32 texture_id) {
   glBindTexture(GL_TEXTURE_2D, texture_id);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-  if (suppress_swap_to_display_)
-    return;
 
 #if GL_VARIANT_GLX
   glXSwapBuffers(x_display_, x_windows_[window_id]);
@@ -483,7 +477,6 @@ void* RenderingHelperGL::GetGLDisplay() {
 }
 
 void RenderingHelperGL::Clear() {
-  suppress_swap_to_display_ = false;
   dimensions_.clear();
   texture_id_to_surface_index_.clear();
   message_loop_ = NULL;

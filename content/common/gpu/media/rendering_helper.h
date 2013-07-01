@@ -28,8 +28,7 @@ class RenderingHelper {
   virtual ~RenderingHelper() {}
 
   // Create the render context and windows by the specified dimensions.
-  virtual void Initialize(bool suppress_swap_to_display,
-                          int num_windows,
+  virtual void Initialize(int num_windows,
                           const std::vector<gfx::Size>& dimensions,
                           base::WaitableEvent* done) = 0;
 
@@ -43,7 +42,7 @@ class RenderingHelper {
                              uint32* texture_id,
                              base::WaitableEvent* done) = 0;
 
-  // Render |texture_id| to the screen (unless |suppress_swap_to_display_|).
+  // Render |texture_id| to the screen.
   virtual void RenderTexture(uint32 texture_id) = 0;
 
   // Delete |texture_id|.

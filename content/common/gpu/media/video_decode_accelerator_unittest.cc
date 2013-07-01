@@ -29,11 +29,14 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/format_macros.h"
+#include "base/platform_file.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringize_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -80,6 +83,10 @@ namespace {
 const base::FilePath::CharType* test_video_data =
     // FILE_PATH_LITERAL("test-25fps.vp8:320:240:250:250:50:175:11");
     FILE_PATH_LITERAL("test-25fps.h264:320:240:250:258:50:175:1");
+
+// The path of the frame delivery time log. We can enable the log and specify
+// the filename by the "--frame_delivery_log" switch.
+const base::FilePath::CharType* frame_delivery_log = NULL;
 
 // Magic constants for differentiating the reasons for NotifyResetDone being
 // called.
@@ -251,7 +258,8 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
                        int delete_decoder_state,
                        int frame_width,
                        int frame_height,
-                       int profile);
+                       int profile,
+                       bool suppress_rendering);
   virtual ~GLRenderingVDAClient();
   void CreateDecoder();
 
@@ -268,6 +276,8 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
   virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyResetDone() OVERRIDE;
   virtual void NotifyError(VideoDecodeAccelerator::Error error) OVERRIDE;
+
+  void OutputFrameDeliveryTimes(base::PlatformFile output);
 
   // Simple getters for inspecting the state of the Client.
   int num_done_bitstream_buffers() { return num_done_bitstream_buffers_; }
@@ -321,8 +331,9 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
   int num_done_bitstream_buffers_;
   PictureBufferById picture_buffers_by_id_;
   base::TimeTicks initialize_done_ticks_;
-  base::TimeTicks last_frame_delivered_ticks_;
   int profile_;
+  bool suppress_rendering;
+  std::vector<base::TimeTicks> frame_delivery_times_;
 };
 
 GLRenderingVDAClient::GLRenderingVDAClient(
@@ -337,7 +348,8 @@ GLRenderingVDAClient::GLRenderingVDAClient(
     int delete_decoder_state,
     int frame_width,
     int frame_height,
-    int profile)
+    int profile,
+    bool suppress_rendering)
     : rendering_helper_(rendering_helper),
       rendering_window_id_(rendering_window_id),
       encoded_data_(encoded_data),
@@ -351,7 +363,8 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       state_(CS_CREATED),
       num_skipped_fragments_(0), num_queued_fragments_(0),
       num_decoded_frames_(0), num_done_bitstream_buffers_(0),
-      profile_(profile) {
+      profile_(profile),
+      suppress_rendering(suppress_rendering) {
   CHECK_GT(num_fragments_per_decode, 0);
   CHECK_GT(num_in_flight_decodes, 0);
   CHECK_GT(num_play_throughs, 0);
@@ -438,7 +451,7 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
 
   if (decoder_deleted())
     return;
-  last_frame_delivered_ticks_ = base::TimeTicks::Now();
+  frame_delivery_times_.push_back(base::TimeTicks::Now());
 
   CHECK_LE(picture.bitstream_buffer_id(), next_bitstream_buffer_id_);
   ++num_decoded_frames_;
@@ -457,7 +470,9 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
   media::PictureBuffer* picture_buffer =
       picture_buffers_by_id_[picture.picture_buffer_id()];
   CHECK(picture_buffer);
-  rendering_helper_->RenderTexture(picture_buffer->texture_id());
+  if (!suppress_rendering) {
+    rendering_helper_->RenderTexture(picture_buffer->texture_id());
+  }
 
   decoder_->ReusePictureBuffer(picture.picture_buffer_id());
 }
@@ -516,6 +531,20 @@ void GLRenderingVDAClient::NotifyResetDone() {
 
 void GLRenderingVDAClient::NotifyError(VideoDecodeAccelerator::Error error) {
   SetState(CS_ERROR);
+}
+
+void GLRenderingVDAClient::OutputFrameDeliveryTimes(base::PlatformFile output) {
+  std::string s = base::StringPrintf("frame count: %" PRIuS "\n",
+                                     frame_delivery_times_.size());
+  base::WritePlatformFileAtCurrentPos(output, s.data(), s.length());
+  base::TimeTicks t0 = initialize_done_ticks_;
+  for (size_t i = 0; i < frame_delivery_times_.size(); ++i) {
+    s = base::StringPrintf("frame %04" PRIuS ": %" PRId64 " us\n",
+                           i,
+                           (frame_delivery_times_[i] - t0).InMicroseconds());
+    t0 = frame_delivery_times_[i];
+    base::WritePlatformFileAtCurrentPos(output, s.data(), s.length());
+  }
 }
 
 static bool LookingAtNAL(const std::string& encoded, size_t pos) {
@@ -658,7 +687,7 @@ void GLRenderingVDAClient::DecodeNextFragments() {
 }
 
 double GLRenderingVDAClient::frames_per_second() {
-  base::TimeDelta delta = last_frame_delivered_ticks_ - initialize_done_ticks_;
+  base::TimeDelta delta = frame_delivery_times_.back() - initialize_done_ticks_;
   if (delta.InSecondsF() == 0)
     return 0;
   return num_decoded_frames_ / delta.InSecondsF();
@@ -722,9 +751,10 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   ParseAndReadTestVideoData(test_video_data, num_concurrent_decoders,
                             reset_point, &test_video_files);
 
-  // Suppress GL swapping in all but a few tests, to cut down overall test
-  // runtime.
-  const bool suppress_swap_to_display = num_fragments_per_decode > 1;
+  // Suppress GL rendering when we are logging the frame delivery time and a
+  // few other tests, to cut down overall test runtime.
+  const bool suppress_rendering = num_fragments_per_decode > 1 ||
+      frame_delivery_log != NULL;
 
   std::vector<ClientStateNotification*> notes(num_concurrent_decoders, NULL);
   std::vector<GLRenderingVDAClient*> clients(num_concurrent_decoders, NULL);
@@ -752,7 +782,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
       FROM_HERE,
       base::Bind(&RenderingHelper::Initialize,
                  base::Unretained(rendering_helper.get()),
-                 suppress_swap_to_display, num_concurrent_decoders,
+                 num_concurrent_decoders,
                  frame_dimensions, &done));
   done.Wait();
 
@@ -766,7 +796,8 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
         rendering_helper.get(), index, note, video_file->data_str,
         num_fragments_per_decode, num_in_flight_decodes, num_play_throughs,
         video_file->reset_after_frame_num, delete_decoder_state,
-        video_file->width, video_file->height, video_file->profile);
+        video_file->width, video_file->height, video_file->profile,
+        suppress_rendering);
     clients[index] = client;
 
     rendering_thread.message_loop()->PostTask(
@@ -840,10 +871,25 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
                      num_fragments_per_decode));
     }
     LOG(INFO) << "Decoder " << i << " fps: " << client->frames_per_second();
-    int min_fps = suppress_swap_to_display ?
+    int min_fps = suppress_rendering ?
         video_file->min_fps_no_render : video_file->min_fps_render;
     if (min_fps > 0)
       EXPECT_GT(client->frames_per_second(), min_fps);
+  }
+
+  // Output the frame delivery time to file
+  // We can only make performance/correctness assertions if the decoder was
+  // allowed to finish.
+  if (frame_delivery_log != NULL && delete_decoder_state >= CS_FLUSHED) {
+    base::PlatformFile output_file = base::CreatePlatformFile(
+        base::FilePath(frame_delivery_log),
+        base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
+        NULL,
+        NULL);
+    for (size_t i = 0; i < num_concurrent_decoders; ++i) {
+      clients[i]->OutputFrameDeliveryTimes(output_file);
+    }
+    base::ClosePlatformFile(output_file);
   }
 
   rendering_thread.message_loop()->PostTask(
@@ -958,6 +1004,10 @@ int main(int argc, char **argv) {
        it != switches.end(); ++it) {
     if (it->first == "test_video_data") {
       content::test_video_data = it->second.c_str();
+      continue;
+    }
+    if (it->first == "frame_delivery_log") {
+      content::frame_delivery_log = it->second.c_str();
       continue;
     }
     if (it->first == "v" || it->first == "vmodule")
