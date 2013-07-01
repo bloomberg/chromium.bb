@@ -152,30 +152,38 @@ void SVGAnimateMotionElement::updateAnimationPath()
     updateAnimationMode();
 }
 
-static bool parsePoint(const String& s, FloatPoint& point)
+template<typename CharType>
+static bool parsePointInternal(const String& string, FloatPoint& point)
 {
-    if (s.isEmpty())
-        return false;
-    const UChar* cur = s.bloatedCharacters();
-    const UChar* end = cur + s.length();
+    const CharType* ptr = string.getCharacters<CharType>();
+    const CharType* end = ptr + string.length();
     
-    if (!skipOptionalSVGSpaces(cur, end))
+    if (!skipOptionalSVGSpaces(ptr, end))
         return false;
     
     float x = 0;
-    if (!parseNumber(cur, end, x))
+    if (!parseNumber(ptr, end, x))
         return false;
     
     float y = 0;
-    if (!parseNumber(cur, end, y))
+    if (!parseNumber(ptr, end, y))
         return false;
     
     point = FloatPoint(x, y);
     
     // disallow anything except spaces at the end
-    return !skipOptionalSVGSpaces(cur, end);
+    return !skipOptionalSVGSpaces(ptr, end);
 }
-    
+
+static bool parsePoint(const String& string, FloatPoint& point)
+{
+    if (string.isEmpty())
+        return false;
+    if (string.is8Bit())
+        return parsePointInternal<LChar>(string, point);
+    return parsePointInternal<UChar>(string, point);
+}
+
 void SVGAnimateMotionElement::resetAnimatedType()
 {
     if (!hasValidAttributeType())

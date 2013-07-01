@@ -60,11 +60,11 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document*
     registerAnimatedPropertiesForSVGAnimationElement();
 }
 
-static void parseKeyTimes(const String& parse, Vector<float>& result, bool verifyOrder)
+static void parseKeyTimes(const String& string, Vector<float>& result, bool verifyOrder)
 {
     result.clear();
     Vector<String> parseList;
-    parse.split(';', parseList);
+    string.split(';', parseList);
     for (unsigned n = 0; n < parseList.size(); ++n) {
         String timeString = parseList[n];
         bool ok;
@@ -85,55 +85,64 @@ fail:
     result.clear();
 }
 
-static void parseKeySplines(const String& parse, Vector<UnitBezier>& result)
+template<typename CharType>
+static void parseKeySplinesInternal(const String& string, Vector<UnitBezier>& result)
 {
-    result.clear();
-    if (parse.isEmpty())
-        return;
-    const UChar* cur = parse.bloatedCharacters();
-    const UChar* end = cur + parse.length();
+    const CharType* ptr = string.getCharacters<CharType>();
+    const CharType* end = ptr + string.length();
 
-    skipOptionalSVGSpaces(cur, end);
+    skipOptionalSVGSpaces(ptr, end);
 
     bool delimParsed = false;
-    while (cur < end) {
+    while (ptr < end) {
         delimParsed = false;
         float posA = 0;
-        if (!parseNumber(cur, end, posA)) {
+        if (!parseNumber(ptr, end, posA)) {
             result.clear();
             return;
         }
 
         float posB = 0;
-        if (!parseNumber(cur, end, posB)) {
+        if (!parseNumber(ptr, end, posB)) {
             result.clear();
             return;
         }
 
         float posC = 0;
-        if (!parseNumber(cur, end, posC)) {
+        if (!parseNumber(ptr, end, posC)) {
             result.clear();
             return;
         }
 
         float posD = 0;
-        if (!parseNumber(cur, end, posD, false)) {
+        if (!parseNumber(ptr, end, posD, false)) {
             result.clear();
             return;
         }
 
-        skipOptionalSVGSpaces(cur, end);
+        skipOptionalSVGSpaces(ptr, end);
 
-        if (cur < end && *cur == ';') {
+        if (ptr < end && *ptr == ';') {
             delimParsed = true;
-            cur++;
+            ptr++;
         }
-        skipOptionalSVGSpaces(cur, end);
+        skipOptionalSVGSpaces(ptr, end);
 
         result.append(UnitBezier(posA, posB, posC, posD));
     }
-    if (!(cur == end && !delimParsed))
+    if (!(ptr == end && !delimParsed))
         result.clear();
+}
+
+static void parseKeySplines(const String& string, Vector<UnitBezier>& result)
+{
+    result.clear();
+    if (string.isEmpty())
+        return;
+    if (string.is8Bit())
+        parseKeySplinesInternal<LChar>(string, result);
+    else
+        parseKeySplinesInternal<UChar>(string, result);
 }
 
 bool SVGAnimationElement::isSupportedAttribute(const QualifiedName& attrName)
