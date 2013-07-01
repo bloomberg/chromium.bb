@@ -108,12 +108,13 @@ void UpdateFromSystemSettings(
 #elif defined(USE_DEFAULT_RENDER_THEME)
   prefs->focus_ring_color = SkColorSetRGB(0x4D, 0x90, 0xFE);
 
+#if !defined(OS_WIN)
   // This color is 0x544d90fe modulated with 0xffffff.
   prefs->active_selection_bg_color = SkColorSetRGB(0xCB, 0xE4, 0xFA);
   prefs->active_selection_fg_color = SK_ColorBLACK;
   prefs->inactive_selection_bg_color = SkColorSetRGB(0xEA, 0xEA, 0xEA);
   prefs->inactive_selection_fg_color = SK_ColorBLACK;
-
+#endif
   // WebKit accepts a single parameter to control the interval over which the
   // cursor is shown or hidden, so divide Views's time for the full cycle by two
   // and then convert to seconds.
