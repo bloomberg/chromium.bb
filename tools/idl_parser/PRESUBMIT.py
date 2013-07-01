@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 
-WHITELIST = [ r'.+_test.py$' ]
+WHITELIST = [ r'^.+_test\.py$' ]
 
 def CheckChangeOnUpload(input_api, output_api):
   return input_api.canned_checks.RunUnitTestsInDirectory(
