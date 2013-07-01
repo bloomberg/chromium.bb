@@ -1031,8 +1031,10 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   if (shader_viewport_location != -1) {
     float viewport[4] = {
-      viewport_.x(), viewport_.y(),
-      viewport_.width(), viewport_.height(),
+      static_cast<float>(viewport_.x()),
+      static_cast<float>(viewport_.y()),
+      static_cast<float>(viewport_.width()),
+      static_cast<float>(viewport_.height()),
     };
     GLC(Context(),
         Context()->uniform4fv(shader_viewport_location, 1, viewport));
@@ -1219,8 +1221,10 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
                            alpha));
   if (use_aa) {
     float viewport[4] = {
-      viewport_.x(), viewport_.y(),
-      viewport_.width(), viewport_.height(),
+      static_cast<float>(viewport_.x()),
+      static_cast<float>(viewport_.y()),
+      static_cast<float>(viewport_.width()),
+      static_cast<float>(viewport_.height()),
     };
     GLC(Context(),
         Context()->uniform4fv(uniforms.viewport_location, 1, viewport));
@@ -1389,8 +1393,10 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
 
   if (use_aa) {
     float viewport[4] = {
-      viewport_.x(), viewport_.y(),
-      viewport_.width(), viewport_.height(),
+      static_cast<float>(viewport_.x()),
+      static_cast<float>(viewport_.y()),
+      static_cast<float>(viewport_.width()),
+      static_cast<float>(viewport_.height()),
     };
     GLC(Context(),
         Context()->uniform4fv(uniforms.viewport_location, 1, viewport));
