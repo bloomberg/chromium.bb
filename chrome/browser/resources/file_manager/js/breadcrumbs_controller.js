@@ -247,7 +247,7 @@ BreadcrumbsController.prototype.truncate = function() {
  * @param {string} path Path to directory.
  */
 BreadcrumbsController.prototype.show = function(rootPath, path) {
-  this.bc_.hidden = false;
+  this.bc_.style.display = '-webkit-box';
   this.update(rootPath, path);
 };
 
@@ -255,7 +255,7 @@ BreadcrumbsController.prototype.show = function(rootPath, path) {
  * Hide breadcrumbs div.
  */
 BreadcrumbsController.prototype.hide = function() {
-  this.bc_.hidden = true;
+  this.bc_.style.display = 'none';
 };
 
 /**

@@ -193,9 +193,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       spaceInnerBar.style.width =
           (100 * usedSpace / sizeStatsResult.totalSizeKB) + '%';
 
-      spaceOuterBar.hidden = false;
+      spaceOuterBar.style.display = '';
     } else {
-      spaceOuterBar.hidden = true;
+      spaceOuterBar.style.display = 'none';
       spaceInfoLabel.textContent = str('FAILED_SPACE_INFO');
     }
   };
@@ -1340,11 +1340,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (type == FileManager.ListType.DETAIL) {
       this.table_.dataModel = this.directoryModel_.getFileList();
       this.table_.selectionModel = this.directoryModel_.getFileListSelection();
-      this.table_.hidden = false;
-      this.grid_.hidden = true;
+      this.table_.style.display = '';
+      this.grid_.style.display = 'none';
       this.grid_.selectionModel = this.emptySelectionModel_;
       this.grid_.dataModel = this.emptyDataModel_;
-      this.table_.hidden = false;
+      this.table_.style.display = '';
       /** @type {cr.ui.List} */
       this.currentList_ = this.table_.list;
       this.detailViewButton_.setAttribute('checked', '');
@@ -1354,11 +1354,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     } else if (type == FileManager.ListType.THUMBNAIL) {
       this.grid_.dataModel = this.directoryModel_.getFileList();
       this.grid_.selectionModel = this.directoryModel_.getFileListSelection();
-      this.grid_.hidden = false;
-      this.table_.hidden = true;
+      this.grid_.style.display = '';
+      this.table_.style.display = 'none';
       this.table_.selectionModel = this.emptySelectionModel_;
       this.table_.dataModel = this.emptyDataModel_;
-      this.grid_.hidden = false;
+      this.grid_.style.display = '';
       /** @type {cr.ui.List} */
       this.currentList_ = this.grid_;
       this.thumbnailViewButton_.setAttribute('checked', '');

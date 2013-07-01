@@ -2,21 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/* Special attribute used in HTML to hide elements. */
-body[type='folder'] [invisibleif~='folder'],
-body[type='saveas-file'] [invisibleif~='saveas-file'],
-body[type='open-file'] [invisibleif~='open-file'],
-body[type='open-multi-file'] [invisibleif~='open-multi-file'],
-body[type='full-page'] [invisibleif~='full-page'],
-
-body[type='folder'] [visibleif]:not([visibleif~='folder']),
-body[type='saveas-file'] [visibleif]:not([visibleif~='saveas-file']),
-body[type='open-file'] [visibleif]:not([visibleif~='open-file']),
-body[type='open-multi-file'] [visibleif]:not([visibleif~='open-multi-file']),
-body[type='full-page'] [visibleif]:not([visibleif~='full-page']) {
-  display: none !important;
-}
-
 html {
   height: 100%;
 }
@@ -386,6 +371,13 @@ div.splitter {
   opacity: 1;
 }
 
+#directory-tree .tree-row > div.root-eject[hidden] {
+  /* [hidden] has alredy set in dialog.css, but it is overridden by the
+   * selector '.tree-item > .tree-row > * 'in tree.js, hence we need to
+   * override it again. */
+  display: none;
+}
+
 #directory-tree .tree-row > div.root-eject:hover {
   opacity: 1;
 }
@@ -441,6 +433,11 @@ div.splitter {
   background-image: -webkit-image-set(
     url('../images/files/ui/topbar_button_close.png') 1x,
     url('../images/files/ui/2x/topbar_button_close.png') 2x);
+}
+
+body:not([type='full-page']) .dialog-header #close-button,
+body:not([type='full-page']) .dialog-header #maximize-button {
+  display: none;
 }
 
 /* Container for the detail and thumbnail list views. */
@@ -656,6 +653,10 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
   pointer-events: auto;
 }
 
+#search-box[hidden] {
+  display: none;  /* Required, since overriden by #search-box. */
+}
+
 #search-box::-webkit-search-cancel-button {
   -webkit-appearance: none;
 }
@@ -808,7 +809,6 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
 }
 
 .downloads-warning[hidden] {
-  display: -webkit-box !important;  /* Overrides [hidden] for animation. */
   height: 0;
 }
 
@@ -837,7 +837,9 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
 
 .volume-warning[hidden] {
   border-top-width: 0;
-  display: -webkit-box !important;  /* Overrides [hidden] for animation. */
+  /* [hidden] has already set in dialog.css, but it is overridden by the
+   * selector ".volume-warning", hence we need to override it again. */
+  display: none;
   height: 0;
 }
 
@@ -1424,6 +1426,10 @@ list .detail-name > .file-checkbox::before,
   padding-right: 4px;
 }
 
+body:not([type='saveas-file']) #filename-input-box {
+  display: none;
+}
+
 /* A vertical spring. */
 .vertical-spacer {
   -webkit-box-flex: 1;
@@ -1607,6 +1613,20 @@ body[drive='error'] #unmounted-panel > .error,
   color: rgb(17, 85, 204);
   cursor: pointer;
   text-decoration: none;
+}
+
+body[type='folder'] [invisibleif~='folder'],
+body[type='saveas-file'] [invisibleif~='saveas-file'],
+body[type='open-file'] [invisibleif~='open-file'],
+body[type='open-multi-file'] [invisibleif~='open-multi-file'],
+body[type='full-page'] [invisibleif~='full-page'],
+
+body[type='folder'] [visibleif]:not([visibleif~='folder']),
+body[type='saveas-file'] [visibleif]:not([visibleif~='saveas-file']),
+body[type='open-file'] [visibleif]:not([visibleif~='open-file']),
+body[type='open-multi-file'] [visibleif]:not([visibleif~='open-multi-file']),
+body[type='full-page'] [visibleif]:not([visibleif~='full-page']) {
+  display: none;
 }
 
 .buttonbar > * {
