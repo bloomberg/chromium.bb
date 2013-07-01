@@ -639,25 +639,20 @@ void OmniboxViewWin::Update(const WebContents* tab_for_state_restoring) {
     // we _were_ switching tabs, the RevertAll() above already drew the new
     // permanent text.)
 
-    // Tweak: if the edit was previously nonempty and had all the text selected,
-    // select all the new text.  This makes one particular case better: the
-    // user clicks in the box to change it right before the permanent URL is
-    // changed.  Since the new URL is still fully selected, the user's typing
-    // will replace the edit contents as they'd intended.
-    //
-    // NOTE: The selection can be longer than the text length if the edit is in
-    // in rich text mode and the user has selected the "phantom newline" at the
-    // end, so use ">=" instead of "==" to see if all the text is selected.  In
-    // theory we prevent this case from ever occurring, but this is still safe.
+    // Tweak: if the user had all the text selected, select all the new text.
+    // This makes one particular case better: the user clicks in the box to
+    // change it right before the permanent URL is changed.  Since the new URL
+    // is still fully selected, the user's typing will replace the edit contents
+    // as they'd intended.
     CHARRANGE sel;
     GetSelection(sel);
     const bool was_reversed = (sel.cpMin > sel.cpMax);
-    const bool was_sel_all = (sel.cpMin != sel.cpMax) &&
+    const bool was_select_all = (sel.cpMin != sel.cpMax) &&
       IsSelectAllForRange(sel);
 
     RevertAll();
 
-    if (was_sel_all)
+    if (was_select_all)
       SelectAll(was_reversed);
   } else if (changed_security_level) {
     // Only the security style changed, nothing else.  Redraw our text using it.

@@ -364,7 +364,6 @@ void OmniboxViewViews::Update(const content::WebContents* contents) {
   bool changed_security_level = (security_level != security_level_);
   security_level_ = security_level;
 
-  // TODO(msw|oshima): Copied from GTK, determine correct Win/CrOS behavior.
   if (contents) {
     RevertAll();
     const OmniboxState* state = static_cast<OmniboxState*>(
@@ -377,7 +376,22 @@ void OmniboxViewViews::Update(const content::WebContents* contents) {
       ClearEditHistory();
     }
   } else if (visibly_changed_permanent_text) {
+    // Not switching tabs, just updating the permanent text.  (In the case where
+    // we _were_ switching tabs, the RevertAll() above already drew the new
+    // permanent text.)
+
+    // Tweak: if the user had all the text selected, select all the new text.
+    // This makes one particular case better: the user clicks in the box to
+    // change it right before the permanent URL is changed.  Since the new URL
+    // is still fully selected, the user's typing will replace the edit contents
+    // as they'd intended.
+    const ui::Range range(GetSelectedRange());
+    const bool was_select_all = (range.length() == text().length());
+
     RevertAll();
+
+    if (was_select_all)
+      SelectAll(range.is_reversed());
   } else if (changed_security_level) {
     EmphasizeURLComponents();
   }
