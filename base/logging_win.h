@@ -18,7 +18,7 @@ struct StaticMemorySingletonTraits;
 namespace logging {
 
 // Event ID for the log messages we generate.
-EXTERN_C BASE_EXPORT extern const GUID kLogEventId;
+EXTERN_C BASE_EXPORT const GUID kLogEventId;
 
 // Feature enable mask for LogEventProvider.
 enum LogEnableMask {
