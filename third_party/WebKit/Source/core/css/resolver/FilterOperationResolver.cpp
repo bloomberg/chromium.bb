@@ -497,7 +497,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
             int blur = item->blur ? item->blur->computeLength<int>(style, rootStyle, zoomFactor) : 0;
             Color color;
             if (item->color)
-                color = state.colorFromPrimitiveValue(item->color.get());
+                color = state.resolveColorFromPrimitiveValue(item->color.get());
 
             operations.operations().append(DropShadowFilterOperation::create(location, blur, color.isValid() ? color : Color::transparent, operationType));
             break;

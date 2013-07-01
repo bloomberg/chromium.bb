@@ -158,9 +158,9 @@ public:
 
     static PassRefPtr<RenderStyle> styleForDocument(Document*, CSSFontSelector* = 0);
 
-    Color colorFromPrimitiveValue(CSSPrimitiveValue* value, bool forVisitedLink = false) const
+    Color resolveColorFromPrimitiveValue(CSSPrimitiveValue* value, bool forVisitedLink = false)
     {
-        return m_state.colorFromPrimitiveValue(value, forVisitedLink);
+        return m_state.resolveColorFromPrimitiveValue(value, forVisitedLink);
     }
     RenderStyle* style() const { return m_state.style(); }
     RenderStyle* parentStyle() const { return m_state.parentStyle(); }

@@ -57,6 +57,7 @@ public:
     , m_elementAffectedByClassRules(false)
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
+    , m_isMatchedPropertiesCacheable(true)
     , m_hasPendingShaders(false)
     , m_lineHeightValue(0)
     , m_fontDirty(false)
@@ -67,7 +68,8 @@ public:
     void initForStyleResolve(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
     void clear();
 
-    Color colorFromPrimitiveValue(CSSPrimitiveValue*, bool forVisitedLink = false) const;
+    // This method might change an internal state, i.e. m_isMatchedPropertiesCachable.
+    Color resolveColorFromPrimitiveValue(CSSPrimitiveValue*, bool forVisitedLink = false);
 
     Document* document() const { return m_element->document(); }
     Element* element() const { return m_element; }
@@ -95,6 +97,7 @@ public:
     PendingSVGDocumentMap& pendingSVGDocuments() { return m_pendingSVGDocuments; }
     void setHasPendingShaders(bool hasPendingShaders) { m_hasPendingShaders = hasPendingShaders; }
     bool hasPendingShaders() const { return m_hasPendingShaders; }
+    bool isMatchedPropertiesCacheable() const { return m_isMatchedPropertiesCacheable; }
 
     void setLineHeightValue(CSSValue* value) { m_lineHeightValue = value; }
     CSSValue* lineHeightValue() { return m_lineHeightValue; }
@@ -138,6 +141,7 @@ private:
 
     bool m_applyPropertyToRegularStyle;
     bool m_applyPropertyToVisitedLinkStyle;
+    bool m_isMatchedPropertiesCacheable;
 
     PendingImagePropertyMap m_pendingImageProperties;
     bool m_hasPendingShaders;

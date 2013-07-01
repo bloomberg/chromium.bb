@@ -2133,6 +2133,8 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
 
     if (cacheItem || !cacheHash)
         return;
+    if (!state.isMatchedPropertiesCacheable())
+        return;
     if (!isCacheableInMatchedPropertiesCache(state.element(), state.style(), state.parentStyle()))
         return;
     addToMatchedPropertiesCache(state.style(), state.parentStyle(), cacheHash, matchResult);
@@ -2658,7 +2660,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
             Color color;
             if (item->color)
-                color = m_state.colorFromPrimitiveValue(item->color.get());
+                color = m_state.resolveColorFromPrimitiveValue(item->color.get());
             else if (state.style())
                 color = state.style()->color();
 
@@ -2775,7 +2777,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         if (!primitiveValue)
             break;
 
-        Color col = m_state.colorFromPrimitiveValue(primitiveValue);
+        Color col = m_state.resolveColorFromPrimitiveValue(primitiveValue);
         state.style()->setTapHighlightColor(col);
         return;
     }

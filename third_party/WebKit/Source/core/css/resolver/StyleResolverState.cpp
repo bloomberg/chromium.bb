@@ -135,7 +135,7 @@ static Color colorForCSSValue(CSSValueID cssValueId)
     return RenderTheme::defaultTheme()->systemColor(cssValueId);
 }
 
-Color StyleResolverState::colorFromPrimitiveValue(CSSPrimitiveValue* value, bool forVisitedLink) const
+Color StyleResolverState::resolveColorFromPrimitiveValue(CSSPrimitiveValue* value, bool forVisitedLink)
 {
     if (value->isRGBColor())
         return Color(value->getRGBA32Value());
@@ -153,6 +153,7 @@ Color StyleResolverState::colorFromPrimitiveValue(CSSPrimitiveValue* value, bool
     case CSSValueWebkitFocusRingColor:
         return RenderTheme::focusRingColor();
     case CSSValueCurrentcolor:
+        m_isMatchedPropertiesCacheable = false;
         return style()->color();
     default:
         return colorForCSSValue(valueID);
