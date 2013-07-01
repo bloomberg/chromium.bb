@@ -46,13 +46,12 @@ static const char regexSpecialCharacters[] = "[](){}+-*.,?\\^$|";
 static String createSearchRegexSource(const String& text)
 {
     String result;
-    const UChar* characters = text.bloatedCharacters();
     String specials(regexSpecialCharacters);
 
     for (unsigned i = 0; i < text.length(); i++) {
-        if (specials.find(characters[i]) != notFound)
+        if (specials.find(text[i]) != notFound)
             result.append("\\");
-        result.append(characters[i]);
+        result.append(text[i]);
     }
 
     return result;
