@@ -10,7 +10,7 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
-#include "content/browser/indexed_db/indexed_db_database_callbacks_wrapper.h"
+#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
@@ -51,7 +51,7 @@ IndexedDBTransaction::TaskStack::pop() {
 
 scoped_refptr<IndexedDBTransaction> IndexedDBTransaction::Create(
     int64 id,
-    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
     const std::vector<int64>& object_store_ids,
     indexed_db::TransactionMode mode,
     IndexedDBDatabase* database) {
@@ -65,7 +65,7 @@ scoped_refptr<IndexedDBTransaction> IndexedDBTransaction::Create(
 
 IndexedDBTransaction::IndexedDBTransaction(
     int64 id,
-    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
     const std::set<int64>& object_store_ids,
     indexed_db::TransactionMode mode,
     IndexedDBDatabase* database)

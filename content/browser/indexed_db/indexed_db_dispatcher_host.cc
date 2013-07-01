@@ -242,9 +242,9 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
                                          params.ipc_database_callbacks_id,
                                          host_transaction_id,
                                          origin_url));
-  scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks_proxy =
-      IndexedDBDatabaseCallbacksWrapper::Create(new IndexedDBDatabaseCallbacks(
-          this, params.ipc_thread_id, params.ipc_database_callbacks_id));
+  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_proxy =
+      IndexedDBDatabaseCallbacks::Create(
+          this, params.ipc_thread_id, params.ipc_database_callbacks_id);
   callbacks_proxy->SetDatabaseCallbacks(database_callbacks_proxy);
   Context()->GetIDBFactory()->
       Open(params.name,
@@ -474,8 +474,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
 
   database->createTransaction(
       host_transaction_id,
-      new IndexedDBDatabaseCallbacks(
-          parent_, params.ipc_thread_id, params.ipc_database_callbacks_id),
       params.object_store_ids,
       params.mode);
   transaction_database_map_[host_transaction_id] = params.ipc_database_id;

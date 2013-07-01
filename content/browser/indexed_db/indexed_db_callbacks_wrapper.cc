@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
+
+#include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
+#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
 
@@ -127,7 +129,7 @@ void IndexedDBCallbacksWrapper::OnSuccess(
 }
 
 void IndexedDBCallbacksWrapper::SetDatabaseCallbacks(
-    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks) {
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks) {
   database_callbacks_ = database_callbacks;
 }
 }  // namespace content

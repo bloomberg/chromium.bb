@@ -22,13 +22,13 @@ namespace content {
 
 class IndexedDBDatabase;
 class IndexedDBCursor;
-class IndexedDBDatabaseCallbacksWrapper;
+class IndexedDBDatabaseCallbacks;
 
 class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
  public:
   static scoped_refptr<IndexedDBTransaction> Create(
       int64 transaction_id,
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
       const std::vector<int64>& scope,
       indexed_db::TransactionMode,
       IndexedDBDatabase* db);
@@ -72,7 +72,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   int64 id() const { return id_; }
 
   IndexedDBDatabase* database() const { return database_.get(); }
-  IndexedDBDatabaseCallbacksWrapper* connection() const {
+  IndexedDBDatabaseCallbacks* connection() const {
     return callbacks_.get();
   }
 
@@ -83,7 +83,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
  private:
   IndexedDBTransaction(
       int64 id,
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
       const std::set<int64>& object_store_ids,
       indexed_db::TransactionMode,
       IndexedDBDatabase* db);
@@ -110,7 +110,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
 
   State state_;
   bool commit_pending_;
-  scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks_;
+  scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
   scoped_refptr<IndexedDBDatabase> database_;
 
   class TaskQueue {

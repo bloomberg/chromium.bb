@@ -7,21 +7,19 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
-#include "content/browser/indexed_db/indexed_db_database_callbacks_wrapper.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 
 namespace content {
 class IndexedDBCallbacksBase;
 class IndexedDBDatabase;
 class IndexedDBDatabaseCallbacks;
-class IndexedDBDatabaseCallbacksWrapper;
 class IndexedDBDatabaseError;
 
 class CONTENT_EXPORT WebIDBDatabaseImpl {
  public:
   WebIDBDatabaseImpl(
       scoped_refptr<IndexedDBDatabase> db,
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks);
+      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks);
   virtual ~WebIDBDatabaseImpl();
 
   typedef std::vector<IndexedDBKey> IndexKeys;
@@ -34,7 +32,6 @@ class CONTENT_EXPORT WebIDBDatabaseImpl {
   virtual void deleteObjectStore(long long object_store_id,
                                  long long transaction_id);
   virtual void createTransaction(long long id,
-                                 IndexedDBDatabaseCallbacks* callbacks,
                                  const std::vector<int64>& scope,
                                  unsigned short mode);
   virtual void forceClose();
@@ -100,7 +97,7 @@ class CONTENT_EXPORT WebIDBDatabaseImpl {
 
  private:
   scoped_refptr<IndexedDBDatabase> database_backend_;
-  scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks_;
+  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_;
 };
 
 }  // namespace content

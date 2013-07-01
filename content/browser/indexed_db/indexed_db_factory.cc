@@ -158,7 +158,7 @@ void IndexedDBFactory::Open(
     int64 version,
     int64 transaction_id,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     const string16& database_identifier,
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::Open");

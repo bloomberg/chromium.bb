@@ -565,8 +565,6 @@
     'browser/indexed_db/indexed_db_database.h',
     'browser/indexed_db/indexed_db_database_callbacks.cc',
     'browser/indexed_db/indexed_db_database_callbacks.h',
-    'browser/indexed_db/indexed_db_database_callbacks_wrapper.cc',
-    'browser/indexed_db/indexed_db_database_callbacks_wrapper.h',
     'browser/indexed_db/indexed_db_database_error.h',
     'browser/indexed_db/indexed_db_dispatcher_host.cc',
     'browser/indexed_db/indexed_db_dispatcher_host.h',

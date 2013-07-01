@@ -11,6 +11,7 @@
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
+#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
@@ -19,7 +20,7 @@ namespace content {
 
 WebIDBDatabaseImpl::WebIDBDatabaseImpl(
     scoped_refptr<IndexedDBDatabase> database_backend,
-    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks)
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks)
     : database_backend_(database_backend),
       database_callbacks_(database_callbacks) {}
 
@@ -44,7 +45,6 @@ void WebIDBDatabaseImpl::deleteObjectStore(long long transaction_id,
 
 void WebIDBDatabaseImpl::createTransaction(
     long long id,
-    IndexedDBDatabaseCallbacks* /*callbacks*/,
     const std::vector<int64>& object_store_ids,
     unsigned short mode) {
   if (!database_callbacks_.get())

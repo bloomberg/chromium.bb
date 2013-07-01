@@ -64,7 +64,7 @@ class IndexedDBDatabase::VersionChangeOperation
       int64 transaction_id,
       int64 version,
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       WebKit::WebIDBCallbacks::DataLoss data_loss)
       : database_(database),
         transaction_id_(transaction_id),
@@ -79,7 +79,7 @@ class IndexedDBDatabase::VersionChangeOperation
   int64 transaction_id_;
   int64 version_;
   scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
-  scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks_;
+  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_;
   WebKit::WebIDBCallbacks::DataLoss data_loss_;
 };
 
@@ -373,7 +373,7 @@ class IndexedDBDatabase::PendingOpenCall {
  public:
   PendingOpenCall(
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 version)
       : callbacks_(callbacks),
@@ -381,7 +381,7 @@ class IndexedDBDatabase::PendingOpenCall {
         version_(version),
         transaction_id_(transaction_id) {}
   scoped_refptr<IndexedDBCallbacksWrapper> Callbacks() { return callbacks_; }
-  scoped_refptr<IndexedDBDatabaseCallbacksWrapper> DatabaseCallbacks() {
+  scoped_refptr<IndexedDBDatabaseCallbacks> DatabaseCallbacks() {
     return database_callbacks_;
   }
   int64 Version() { return version_; }
@@ -389,7 +389,7 @@ class IndexedDBDatabase::PendingOpenCall {
 
  private:
   scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
-  scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks_;
+  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_;
   int64 version_;
   const int64 transaction_id_;
 };
@@ -1512,7 +1512,7 @@ void IndexedDBDatabase::ProcessPendingCalls() {
 
 void IndexedDBDatabase::CreateTransaction(
     int64 transaction_id,
-    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
     const std::vector<int64>& object_store_ids,
     uint16 mode) {
 
@@ -1537,7 +1537,7 @@ bool IndexedDBDatabase::IsOpenConnectionBlocked() const {
 
 void IndexedDBDatabase::OpenConnection(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int64 transaction_id,
     int64 version) {
   const WebKit::WebIDBCallbacks::DataLoss kDataLoss =
@@ -1548,7 +1548,7 @@ void IndexedDBDatabase::OpenConnection(
 
 void IndexedDBDatabase::OpenConnection(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int64 transaction_id,
     int64 version,
     WebKit::WebIDBCallbacks::DataLoss data_loss) {
@@ -1635,7 +1635,7 @@ void IndexedDBDatabase::OpenConnection(
 
 void IndexedDBDatabase::RunVersionChangeTransaction(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int64 transaction_id,
     int64 requested_version,
     WebKit::WebIDBCallbacks::DataLoss data_loss) {
@@ -1672,7 +1672,7 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
 
 void IndexedDBDatabase::RunVersionChangeTransactionFinal(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int64 transaction_id,
     int64 requested_version) {
   const WebKit::WebIDBCallbacks::DataLoss kDataLoss =
@@ -1686,7 +1686,7 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
 
 void IndexedDBDatabase::RunVersionChangeTransactionFinal(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int64 transaction_id,
     int64 requested_version,
     WebKit::WebIDBCallbacks::DataLoss data_loss) {
@@ -1757,7 +1757,7 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
 }
 
 void IndexedDBDatabase::Close(
-    scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks) {
+    scoped_refptr<IndexedDBDatabaseCallbacks> callbacks) {
   DCHECK(callbacks.get());
   DCHECK(database_callbacks_set_.has(callbacks));
 

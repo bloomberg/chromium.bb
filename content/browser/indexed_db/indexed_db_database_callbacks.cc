@@ -4,7 +4,6 @@
 
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 
-#include "base/memory/scoped_vector.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
@@ -21,20 +20,31 @@ IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
 
 IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {}
 
-void IndexedDBDatabaseCallbacks::onForcedClose() {
+void IndexedDBDatabaseCallbacks::OnForcedClose() {
+  if (!dispatcher_host_)
+    return;
+
   dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksForcedClose(
       ipc_thread_id_, ipc_database_callbacks_id_));
+
+  dispatcher_host_ = NULL;
 }
 
-void IndexedDBDatabaseCallbacks::onVersionChange(long long old_version,
-                                                 long long new_version) {
+void IndexedDBDatabaseCallbacks::OnVersionChange(int64 old_version,
+                                                        int64 new_version) {
+  if (!dispatcher_host_)
+    return;
+
   dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksIntVersionChange(
       ipc_thread_id_, ipc_database_callbacks_id_, old_version, new_version));
 }
 
-void IndexedDBDatabaseCallbacks::onAbort(
-    long long host_transaction_id,
+void IndexedDBDatabaseCallbacks::OnAbort(
+    int64 host_transaction_id,
     const IndexedDBDatabaseError& error) {
+  if (!dispatcher_host_)
+    return;
+
   dispatcher_host_->FinishTransaction(host_transaction_id, false);
   dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksAbort(
       ipc_thread_id_,
@@ -44,7 +54,10 @@ void IndexedDBDatabaseCallbacks::onAbort(
       error.message()));
 }
 
-void IndexedDBDatabaseCallbacks::onComplete(long long host_transaction_id) {
+void IndexedDBDatabaseCallbacks::OnComplete(int64 host_transaction_id) {
+  if (!dispatcher_host_)
+    return;
+
   dispatcher_host_->FinishTransaction(host_transaction_id, true);
   dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksComplete(
       ipc_thread_id_,

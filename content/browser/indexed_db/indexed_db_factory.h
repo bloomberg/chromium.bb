@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
-#include "content/browser/indexed_db/indexed_db_database_callbacks_wrapper.h"
+#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/common/content_export.h"
 
@@ -40,7 +40,7 @@ class CONTENT_EXPORT IndexedDBFactory
             int64 version,
             int64 transaction_id,
             scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-            scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+            scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
             const string16& database_identifier,
             const base::FilePath& data_directory);
 

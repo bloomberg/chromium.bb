@@ -76,7 +76,7 @@ class MockIDBCallbacks : public IndexedDBCallbacksWrapper {
   bool was_success_db_called_;
 };
 
-class FakeIDBDatabaseCallbacks : public IndexedDBDatabaseCallbacksWrapper {
+class FakeIDBDatabaseCallbacks : public IndexedDBDatabaseCallbacks {
  public:
   static scoped_refptr<FakeIDBDatabaseCallbacks> Create() {
     return make_scoped_refptr(new FakeIDBDatabaseCallbacks());
@@ -90,7 +90,7 @@ class FakeIDBDatabaseCallbacks : public IndexedDBDatabaseCallbacksWrapper {
  private:
   friend class base::RefCounted<FakeIDBDatabaseCallbacks>;
   virtual ~FakeIDBDatabaseCallbacks() {}
-  FakeIDBDatabaseCallbacks() : IndexedDBDatabaseCallbacksWrapper(NULL) {}
+  FakeIDBDatabaseCallbacks() : IndexedDBDatabaseCallbacks(NULL, 0, 0) {}
 };
 
 TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
@@ -140,7 +140,7 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   db = NULL;
 }
 
-class MockIDBDatabaseCallbacks : public IndexedDBDatabaseCallbacksWrapper {
+class MockIDBDatabaseCallbacks : public IndexedDBDatabaseCallbacks {
  public:
   static scoped_refptr<MockIDBDatabaseCallbacks> Create() {
     return make_scoped_refptr(new MockIDBDatabaseCallbacks());
@@ -155,7 +155,8 @@ class MockIDBDatabaseCallbacks : public IndexedDBDatabaseCallbacksWrapper {
 
  private:
   MockIDBDatabaseCallbacks()
-      : IndexedDBDatabaseCallbacksWrapper(NULL), was_abort_called_(false) {}
+      : IndexedDBDatabaseCallbacks(NULL, 0, 0),
+        was_abort_called_(false) {}
   virtual ~MockIDBDatabaseCallbacks() { EXPECT_TRUE(was_abort_called_); }
   bool was_abort_called_;
 };
@@ -188,7 +189,7 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
   const int64 transaction_id = 123;
   const std::vector<int64> scope;
   web_database.createTransaction(
-      transaction_id, 0, scope, indexed_db::TRANSACTION_READ_ONLY);
+      transaction_id, scope, indexed_db::TRANSACTION_READ_ONLY);
 
   web_database.forceClose();
 

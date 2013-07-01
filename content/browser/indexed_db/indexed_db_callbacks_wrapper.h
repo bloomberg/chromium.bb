@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
@@ -19,7 +20,6 @@
 
 namespace content {
 class IndexedDBCallbacksBase;
-class IndexedDBDatabaseCallbacksWrapper;
 class IndexedDBCursor;
 class IndexedDBDatabase;
 class WebIDBDatabaseImpl;
@@ -79,7 +79,7 @@ class CONTENT_EXPORT IndexedDBCallbacksWrapper
   virtual void OnSuccess(scoped_refptr<IndexedDBDatabase> db,
                          const content::IndexedDBDatabaseMetadata& metadata);
   virtual void SetDatabaseCallbacks(
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks);
+      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks);
 
  protected:
   virtual ~IndexedDBCallbacksWrapper();
@@ -89,7 +89,7 @@ class CONTENT_EXPORT IndexedDBCallbacksWrapper
   friend class base::RefCounted<IndexedDBCallbacksWrapper>;
   scoped_ptr<WebIDBDatabaseImpl> web_database_impl_;
   scoped_ptr<IndexedDBCallbacksBase> callbacks_;
-  scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks_;
+  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_;
   bool did_complete_;
   bool did_create_proxy_;
 };

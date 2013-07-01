@@ -20,7 +20,7 @@
 namespace content {
 
 class IndexedDBCallbacksWrapper;
-class IndexedDBDatabaseCallbacksWrapper;
+class IndexedDBDatabaseCallbacks;
 class IndexedDBBackingStore;
 class IndexedDBFactory;
 class IndexedDBKey;
@@ -65,12 +65,12 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   void OpenConnection(
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 version);
   void OpenConnection(
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 version,
       WebKit::WebIDBCallbacks::DataLoss data_loss);
@@ -85,10 +85,10 @@ class CONTENT_EXPORT IndexedDBDatabase
   void DeleteObjectStore(int64 transaction_id, int64 object_store_id);
   void CreateTransaction(
       int64 transaction_id,
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
       const std::vector<int64>& object_store_ids,
       uint16 mode);
-  void Close(scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks);
+  void Close(scoped_refptr<IndexedDBDatabaseCallbacks> callbacks);
 
   void Commit(int64 transaction_id);
   void Abort(int64 transaction_id);
@@ -168,18 +168,18 @@ class CONTENT_EXPORT IndexedDBDatabase
   bool OpenInternal();
   void RunVersionChangeTransaction(
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 requested_version,
       WebKit::WebIDBCallbacks::DataLoss data_loss);
   void RunVersionChangeTransactionFinal(
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 requested_version);
   void RunVersionChangeTransactionFinal(
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 requested_version,
       WebKit::WebIDBCallbacks::DataLoss data_loss);
@@ -219,7 +219,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   typedef std::list<PendingDeleteCall*> PendingDeleteCallList;
   PendingDeleteCallList pending_delete_calls_;
 
-  typedef list_set<scoped_refptr<IndexedDBDatabaseCallbacksWrapper> >
+  typedef list_set<scoped_refptr<IndexedDBDatabaseCallbacks> >
       DatabaseCallbacksSet;
   DatabaseCallbacksSet database_callbacks_set_;
 

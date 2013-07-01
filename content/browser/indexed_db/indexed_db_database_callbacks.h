@@ -5,27 +5,43 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DATABASE_CALLBACKS_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DATABASE_CALLBACKS_H_
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 
 namespace content {
 class IndexedDBDatabaseError;
 class IndexedDBDispatcherHost;
 
-class IndexedDBDatabaseCallbacks {
+class CONTENT_EXPORT IndexedDBDatabaseCallbacks
+    : public base::RefCounted<IndexedDBDatabaseCallbacks> {
  public:
-  IndexedDBDatabaseCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                             int ipc_thread_id,
-                             int ipc_database_callbacks_id);
+  static scoped_refptr<IndexedDBDatabaseCallbacks> Create(
+      IndexedDBDispatcherHost* dispatcher_host,
+      int ipc_thread_id,
+      int ipc_database_callbacks_id) {
+    return make_scoped_refptr(
+        new IndexedDBDatabaseCallbacks(
+            dispatcher_host, ipc_thread_id, ipc_database_callbacks_id));
+  }
 
+  virtual void OnForcedClose();
+  virtual void OnVersionChange(int64 old_version, int64 new_version);
+
+  virtual void OnAbort(int64 host_transaction_id,
+                       const IndexedDBDatabaseError& error);
+  virtual void OnComplete(int64 host_transaction_id);
+
+ protected:
+  IndexedDBDatabaseCallbacks(
+      IndexedDBDispatcherHost* dispatcher_host,
+      int ipc_thread_id,
+      int ipc_database_callbacks_id);
   virtual ~IndexedDBDatabaseCallbacks();
 
-  virtual void onForcedClose();
-  virtual void onVersionChange(long long old_version, long long new_version);
-  virtual void onAbort(long long host_transaction_id,
-                       const IndexedDBDatabaseError& error);
-  virtual void onComplete(long long host_transaction_id);
-
  private:
+  friend class base::RefCounted<IndexedDBDatabaseCallbacks>;
+
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
   int ipc_thread_id_;
   int ipc_database_callbacks_id_;
