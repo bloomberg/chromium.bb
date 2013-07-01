@@ -462,6 +462,12 @@ class ASH_EXPORT Shell
   // Returns the launcher delegate, creating if necesary.
   LauncherDelegate* GetLauncherDelegate();
 
+  void SetTouchHudProjectionEnabled(bool enabled);
+
+  bool is_touch_hud_projection_enabled() const {
+    return is_touch_hud_projection_enabled_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
@@ -603,6 +609,8 @@ class ASH_EXPORT Shell
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_testing_;
+
+  bool is_touch_hud_projection_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

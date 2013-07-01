@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/system_logs/touch_log_source.h"
 
-#include "ash/touch/touch_observer_hud.h"
+#include "ash/touch/touch_hud_debug.h"
 #include "base/json/json_string_value_serializer.h"
 #include "chrome/browser/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,7 +25,7 @@ void TouchLogSource::Fetch(const SysLogsSourceCallback& callback) {
 
   SystemLogsResponse response;
   scoped_ptr<DictionaryValue> dictionary =
-      ash::internal::TouchObserverHUD::GetAllAsDictionary();
+      ash::internal::TouchHudDebug::GetAllAsDictionary();
   if (!dictionary->empty()) {
     std::string touch_log;
     JSONStringValueSerializer json(&touch_log);

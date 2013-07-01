@@ -39,7 +39,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/web_notification/web_notification_tray.h"
-#include "ash/touch/touch_observer_hud.h"
+#include "ash/touch/touch_hud_debug.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/power_button_controller.h"
@@ -561,8 +561,8 @@ bool AcceleratorController::PerformAction(int action,
     case TOUCH_HUD_CLEAR: {
       internal::RootWindowController* controller =
           internal::RootWindowController::ForActiveRootWindow();
-      if (controller->touch_observer_hud()) {
-        controller->touch_observer_hud()->Clear();
+      if (controller->touch_hud_debug()) {
+        controller->touch_hud_debug()->Clear();
         return true;
       }
       return false;
@@ -570,11 +570,16 @@ bool AcceleratorController::PerformAction(int action,
     case TOUCH_HUD_MODE_CHANGE: {
       internal::RootWindowController* controller =
           internal::RootWindowController::ForActiveRootWindow();
-      if (controller->touch_observer_hud()) {
-        controller->touch_observer_hud()->ChangeToNextMode();
+      if (controller->touch_hud_debug()) {
+        controller->touch_hud_debug()->ChangeToNextMode();
         return true;
       }
       return false;
+    }
+    case TOUCH_HUD_PROJECTION_TOGGLE: {
+      bool enabled = Shell::GetInstance()->is_touch_hud_projection_enabled();
+      Shell::GetInstance()->SetTouchHudProjectionEnabled(!enabled);
+      return true;
     }
     case DISABLE_GPU_WATCHDOG:
       content::GpuDataManager::GetInstance()->DisableGpuWatchdog();

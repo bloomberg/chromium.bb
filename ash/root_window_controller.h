@@ -5,6 +5,8 @@
 #ifndef ASH_ROOT_WINDOW_CONTROLLER_H_
 #define ASH_ROOT_WINDOW_CONTROLLER_H_
 
+#include <map>
+
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/system/user/login_status.h"
@@ -52,7 +54,8 @@ class ShelfLayoutManager;
 class StatusAreaWidget;
 class SystemBackgroundController;
 class SystemModalContainerLayoutManager;
-class TouchObserverHUD;
+class TouchHudDebug;
+class TouchHudProjection;
 class WorkspaceController;
 
 // This class maintains the per root window state for ash. This class
@@ -91,13 +94,31 @@ class ASH_EXPORT RootWindowController {
   // NULL if no such shelf exists.
   ShelfWidget* shelf() { return shelf_.get(); }
 
-  TouchObserverHUD* touch_observer_hud() { return touch_observer_hud_; }
-
-  // Sets the touch HUD. The RootWindowController will not own this HUD; its
-  // lifetime is managed by itself.
-  void set_touch_observer_hud(TouchObserverHUD* hud) {
-    touch_observer_hud_ = hud;
+  // Get touch HUDs associated with this root window controller.
+  TouchHudDebug* touch_hud_debug() const {
+    return touch_hud_debug_;
   }
+  TouchHudProjection* touch_hud_projection() const {
+    return touch_hud_projection_;
+  }
+
+  // Set touch HUDs for this root window controller. The root window controller
+  // will not own the HUDs; their lifetimes are managed by themselves. Whenever
+  // the widget showing a HUD is being destroyed (e.g. because of detaching a
+  // display), the HUD deletes itself.
+  void set_touch_hud_debug(TouchHudDebug* hud) {
+    touch_hud_debug_ = hud;
+  }
+  void set_touch_hud_projection(TouchHudProjection* hud) {
+    touch_hud_projection_ = hud;
+  }
+
+  // Enables projection touch HUD.
+  void EnableTouchHudProjection();
+
+  // Disables projection touch HUD.
+  void DisableTouchHudProjection();
+
   // Access the shelf layout manager associated with this root
   // window controller, NULL if no such shelf exists.
   ShelfLayoutManager* GetShelfLayoutManager();
@@ -172,6 +193,9 @@ class ASH_EXPORT RootWindowController {
   // Force the shelf to query for it's current visibility state.
   void UpdateShelfVisibility();
 
+  // Initialize touch HUDs if necessary.
+  void InitTouchHuds();
+
   // Returns the window, if any, which is in fullscreen mode in the active
   // workspace. Exposed here so clients of Ash don't need to know the details
   // of workspace management.
@@ -207,9 +231,10 @@ class ASH_EXPORT RootWindowController {
   scoped_ptr<ScreenDimmer> screen_dimmer_;
   scoped_ptr<WorkspaceController> workspace_controller_;
 
-  // Heads-up display for touch events. The RootWindowController does not own
-  // this HUD; its lifetime is managed by itself.
-  TouchObserverHUD* touch_observer_hud_;
+  // Heads-up displays for touch events. These HUDs are not owned by the root
+  // window controller and manage their own lifetimes.
+  TouchHudDebug* touch_hud_debug_;
+  TouchHudProjection* touch_hud_projection_;
 
   // We need to own event handlers for various containers.
   scoped_ptr<ToplevelWindowEventHandler> default_container_handler_;

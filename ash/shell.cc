@@ -211,7 +211,8 @@ Shell::Shell(ShellDelegate* delegate)
       cursor_manager_(scoped_ptr<views::corewm::NativeCursorManager>(
           native_cursor_manager_)),
       browser_context_(NULL),
-      simulate_modal_window_open_for_testing_(false) {
+      simulate_modal_window_open_for_testing_(false),
+      is_touch_hud_projection_enabled_(false) {
   DCHECK(delegate_.get());
   display_manager_.reset(new internal::DisplayManager);
   mirror_window_controller_.reset(new internal::MirrorWindowController);
@@ -860,6 +861,22 @@ LauncherDelegate* Shell::GetLauncherDelegate() {
   return launcher_delegate_.get();
 }
 
+void Shell::SetTouchHudProjectionEnabled(bool enabled) {
+  if (is_touch_hud_projection_enabled_ == enabled)
+    return;
+
+  RootWindowList roots = GetInstance()->GetAllRootWindows();
+  for (RootWindowList::iterator iter = roots.begin(); iter != roots.end();
+      ++iter) {
+    internal::RootWindowController* controller = GetRootWindowController(*iter);
+    if (enabled)
+      controller->EnableTouchHudProjection();
+    else
+      controller->DisableTouchHudProjection();
+  }
+  is_touch_hud_projection_enabled_ = enabled;
+}
+
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
   aura::client::SetFocusClient(root, focus_client_.get());
   internal::RootWindowController* controller =
@@ -919,6 +936,7 @@ void Shell::InitRootWindowController(
 
   root_window->SetCursor(ui::kCursorPointer);
   controller->InitLayoutManagers();
+  controller->InitTouchHuds();
 
   // TODO(oshima): Move the instance to RootWindowController when
   // the extended desktop is enabled by default.

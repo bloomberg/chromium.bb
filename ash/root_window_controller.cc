@@ -21,7 +21,8 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/touch/touch_observer_hud.h"
+#include "ash/touch/touch_hud_debug.h"
+#include "ash/touch/touch_hud_projection.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/boot_splash_screen.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
@@ -169,7 +170,8 @@ RootWindowController::RootWindowController(aura::RootWindow* root_window)
       root_window_layout_(NULL),
       docked_layout_manager_(NULL),
       panel_layout_manager_(NULL),
-      touch_observer_hud_(NULL) {
+      touch_hud_debug_(NULL),
+      touch_hud_projection_(NULL) {
   SetRootWindowController(root_window, this);
   screen_dimmer_.reset(new ScreenDimmer(root_window));
 
@@ -303,12 +305,6 @@ void RootWindowController::InitForPrimaryDisplay() {
 
 void RootWindowController::CreateContainers() {
   CreateContainersInRootWindow(root_window_.get());
-
-  // Create touch observer HUD if needed. HUD should be created after the
-  // containers have been created, so that its widget can be added to them.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAshTouchHud))
-    touch_observer_hud_ = new TouchObserverHUD(root_window_.get());
 }
 
 void RootWindowController::CreateSystemBackground(
@@ -414,6 +410,18 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   ReparentAllWindows(root_window_.get(), dst);
 }
 
+void RootWindowController::EnableTouchHudProjection() {
+  if (touch_hud_projection_)
+    return;
+  set_touch_hud_projection(new TouchHudProjection(root_window_.get()));
+}
+
+void RootWindowController::DisableTouchHudProjection() {
+  if (!touch_hud_projection_)
+    return;
+  touch_hud_projection_->Remove();
+}
+
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
   return shelf_.get() ? shelf_->shelf_layout_manager() : NULL;
 }
@@ -454,6 +462,14 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
 
 void RootWindowController::UpdateShelfVisibility() {
   shelf_->shelf_layout_manager()->UpdateVisibilityState();
+}
+
+void RootWindowController::InitTouchHuds() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAshTouchHud))
+    set_touch_hud_debug(new TouchHudDebug(root_window_.get()));
+  if (Shell::GetInstance()->is_touch_hud_projection_enabled())
+    EnableTouchHudProjection();
 }
 
 aura::Window* RootWindowController::GetFullscreenWindow() const {
