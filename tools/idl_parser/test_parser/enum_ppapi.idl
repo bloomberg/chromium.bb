@@ -117,3 +117,10 @@ enum MealType3 {
   other = 012 << 777
 };
 
+/* BUILD Enum(MealType4) */
+enum MealType4 {
+  /* BUILD EnumItem(rice) */
+  rice = true,
+  /* BUILD EnumItem(noodles) */
+  noodles = false
+};

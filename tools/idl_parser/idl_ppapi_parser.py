@@ -117,20 +117,19 @@ class IDLPPAPIParser(IDLParser):
     val = str(p[1])
     if len(p) > 2:
       val = "%s %s %s" % (p[1], p[2], p[3])
-
     p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'integer'),
-                          self.BuildAttribute('NAME', val))
+                          self.BuildAttribute('VALUE', val))
 
   def p_ConstValueStr(self, p):
     """ConstValue : string"""
     p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'string'),
-                          self.BuildAttribute('NAME', p[1]))
+                          self.BuildAttribute('VALUE', p[1]))
 
+  # Boolean & Float Literals area already BuildAttributes
   def p_ConstValueLiteral(self, p):
     """ConstValue : FloatLiteral
                   | BooleanLiteral """
     p[0] = p[1]
-
 
   # [21]
   def p_EnumValueList(self, p):
@@ -149,7 +148,7 @@ class IDLPPAPIParser(IDLParser):
                  | ExtendedAttributeList identifier '=' ConstValue"""
     p[0] = self.BuildNamed('EnumItem', p, 2, p[1])
     if len(p) > 3:
-      p[0].AddChildren(self.BuildAttribute('VALUE', p[4]))
+      p[0].AddChildren(p[4])
 
   def p_PrimitiveType(self, p):
     """PrimitiveType : IntegerType
@@ -229,7 +228,7 @@ def main(argv):
 
   ast = IDLNode('AST', '__AST__', 0, 0, nodes)
 
-  print '\n'.join(ast.Tree(accept_props=['PROD','VALUE']))
+  print '\n'.join(ast.Tree(accept_props=['PROD', 'TYPE', 'VALUE']))
   if errors:
     print '\nFound %d errors.\n' % errors
 

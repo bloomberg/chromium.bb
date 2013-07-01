@@ -148,13 +148,13 @@ class IDLNode(object):
         tab = ''.rjust(self.depth * 2)
         self.out.append(tab + str(node))
         if self.props:
+          proplist = []
           for key, value in node.GetProperties().iteritems():
-            proplist = []
             if key in self.props:
               proplist.append(tab + '    %s: %s' % (key, str(value)))
-            if proplist:
-              self.out.append(tab + '  PROPERTIES')
-              self.out.extend(proplist)
+          if proplist:
+            self.out.append(tab + '  PROPERTIES')
+            self.out.extend(proplist)
 
     if filter_nodes == None:
       filter_nodes = ['Comment', 'Copyright']

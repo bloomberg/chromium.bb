@@ -401,7 +401,7 @@ class IDLParser(object):
   def p_BooleanLiteral(self, p):
     """BooleanLiteral : TRUE
                       | FALSE"""
-    value = self.BuildAttribute('NAME', Boolean(p[1] == 'true'))
+    value = self.BuildAttribute('VALUE', Boolean(p[1] == 'true'))
     p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'boolean'), value)
 
   # [29]
