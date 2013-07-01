@@ -52,7 +52,7 @@ void V8History::stateAttrGetterCustom(v8::Local<v8::String> name, const v8::Prop
     }
 
     RefPtr<SerializedScriptValue> serialized = history->state();
-    value = serialized ? serialized->deserialize(info.GetIsolate()) : v8::Handle<v8::Value>(v8Null(info.GetIsolate()));
+    value = serialized ? serialized->deserialize(info.GetIsolate()) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(V8HiddenPropertyName::state(), value);
 
     v8SetReturnValue(info, value);

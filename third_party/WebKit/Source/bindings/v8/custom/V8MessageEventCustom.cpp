@@ -51,7 +51,7 @@ void V8MessageEvent::dataAttrGetterCustom(v8::Local<v8::String> name, const v8::
     case MessageEvent::DataTypeScriptValue: {
         ScriptValue scriptValue = event->dataAsScriptValue();
         if (scriptValue.hasNoValue())
-            result = v8Null(info.GetIsolate());
+            result = v8::Null(info.GetIsolate());
         else
             result = scriptValue.v8Value();
         break;
@@ -61,8 +61,9 @@ void V8MessageEvent::dataAttrGetterCustom(v8::Local<v8::String> name, const v8::
         if (RefPtr<SerializedScriptValue> serializedValue = event->dataAsSerializedScriptValue()) {
             MessagePortArray ports = event->ports();
             result = serializedValue->deserialize(info.GetIsolate(), &ports);
-        } else
-            result = v8Null(info.GetIsolate());
+        } else {
+            result = v8::Null(info.GetIsolate());
+        }
         break;
 
     case MessageEvent::DataTypeString: {

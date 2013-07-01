@@ -69,7 +69,7 @@ void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::
                 value = v8String(sqlValue.string(), args.GetIsolate());
                 break;
             case SQLValue::NullValue:
-                value = v8Null(args.GetIsolate());
+                value = v8::Null(args.GetIsolate());
                 break;
             case SQLValue::NumberValue:
                 value = v8::Number::New(sqlValue.number());

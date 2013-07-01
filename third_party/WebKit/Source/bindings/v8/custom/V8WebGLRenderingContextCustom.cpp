@@ -139,7 +139,7 @@ static v8::Handle<v8::Value> toV8Object(const WebGLGetInfo& info, v8::Handle<v8:
     case WebGLGetInfo::kTypeInt:
         return v8::Integer::New(info.getInt(), isolate);
     case WebGLGetInfo::kTypeNull:
-        return v8Null(isolate);
+        return v8::Null(isolate);
     case WebGLGetInfo::kTypeString:
         return v8String(info.getString(), isolate);
     case WebGLGetInfo::kTypeUnsignedInt:
@@ -175,7 +175,7 @@ static v8::Handle<v8::Value> toV8Object(const WebGLGetInfo& info, v8::Handle<v8:
 static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8::Object> contextObject, v8::Isolate* isolate)
 {
     if (!extension)
-        return v8Null(isolate);
+        return v8::Null(isolate);
     v8::Handle<v8::Value> extensionObject;
     const char* referenceName = 0;
     switch (extension->getName()) {

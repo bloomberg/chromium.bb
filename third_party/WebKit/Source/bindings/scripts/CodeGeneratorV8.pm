@@ -897,7 +897,7 @@ template<class HolderContainer, class Wrappable>
 inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const HolderContainer& container, Wrappable* wrappable)
 {
     if (UNLIKELY(!impl))
-        return v8Null(container.GetIsolate());
+        return v8::Null(container.GetIsolate());
     v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast(impl, container, wrappable);
     if (!wrapper.IsEmpty())
         return wrapper;
@@ -909,7 +909,7 @@ inline v8::Handle<v8::Value> toV8FastForMainWorld(${nativeType}* impl, const Hol
 {
     ASSERT(worldType(container.GetIsolate()) == MainWorld);
     if (UNLIKELY(!impl))
-        return v8Null(container.GetIsolate());
+        return v8::Null(container.GetIsolate());
     v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
@@ -1586,7 +1586,7 @@ END
         my $getterFunc = ToMethodName($attribute->name);
         $code .= <<END;
     RefPtr<SerializedScriptValue> serialized = imp->${getterFunc}();
-    value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8Null(info.GetIsolate()));
+    value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(propertyName, value);
     v8SetReturnValue(info, value);
     return;
@@ -1596,7 +1596,7 @@ END
         my $getterFunc = ToMethodName($attribute->name);
         # FIXME: Pass the main world ID for main-world-only getters.
         $code .= "    EventListener* listener = imp->${getterFunc}(isolatedWorldForIsolate(info.GetIsolate()));\n";
-        $code .= "    v8SetReturnValue(info, listener ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(listener)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8Null(info.GetIsolate())));\n";
+        $code .= "    v8SetReturnValue(info, listener ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(listener)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));\n";
         $code .= "    return;\n";
     } else {
         my $nativeValue = NativeToJSValue($attribute->type, $attribute->extendedAttributes, $expression, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix, "return");
@@ -5449,7 +5449,7 @@ sub NativeToJSValue
 
     if ($type eq "SerializedScriptValue") {
         AddToImplIncludes("$type.h");
-        my $returnValue = "$nativeValue ? $nativeValue->deserialize() : v8::Handle<v8::Value>(v8Null($getIsolate))";
+        my $returnValue = "$nativeValue ? $nativeValue->deserialize() : v8::Handle<v8::Value>(v8::Null($getIsolate))";
         return "${indent}v8SetReturnValue(${getHolderContainer}, $returnValue);" if $isReturnValue;
         return "$indent$receiver $returnValue;";
     }

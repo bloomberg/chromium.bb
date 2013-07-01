@@ -61,7 +61,6 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     , m_gcEventData(adoptPtr(new GCEventData()))
     , m_shouldCollectGarbageSoon(false)
 {
-    m_v8Null.set(isolate, v8::Null(isolate));
 }
 
 V8PerIsolateData::~V8PerIsolateData()
@@ -122,7 +121,6 @@ void V8PerIsolateData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
 
     info.ignoreMember(m_toStringTemplate);
     info.ignoreMember(m_lazyEventListenerToStringTemplate);
-    info.ignoreMember(m_v8Null);
     info.ignoreMember(m_liveRoot);
     info.ignoreMember(m_regexContext);
 }

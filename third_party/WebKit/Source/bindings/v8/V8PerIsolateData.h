@@ -87,8 +87,6 @@ public:
 
     StringCache* stringCache() { return m_stringCache.get(); }
 
-    v8::Handle<v8::Value> v8Null() { return m_v8Null.get(); }
-
     v8::Persistent<v8::Value>& ensureLiveRoot();
 
     void visitExternalStrings(ExternalStringVisitor*);
@@ -159,7 +157,6 @@ private:
     ScopedPersistent<v8::FunctionTemplate> m_toStringTemplate;
     v8::Persistent<v8::FunctionTemplate> m_lazyEventListenerToStringTemplate;
     OwnPtr<StringCache> m_stringCache;
-    ScopedPersistent<v8::Value> m_v8Null;
 
     Vector<DOMDataStore*> m_domDataList;
     DOMDataStore* m_workerDomDataStore;

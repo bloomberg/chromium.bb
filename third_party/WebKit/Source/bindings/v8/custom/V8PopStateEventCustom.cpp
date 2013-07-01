@@ -63,7 +63,7 @@ void V8PopStateEvent::stateAttrGetterCustom(v8::Local<v8::String> name, const v8
 
     History* history = event->history();
     if (!history || !event->serializedState()) {
-        v8SetReturnValue(info, cacheState(info.Holder(), v8Null(info.GetIsolate())));
+        v8SetReturnValue(info, cacheState(info.Holder(), v8::Null(info.GetIsolate())));
         return;
     }
 
