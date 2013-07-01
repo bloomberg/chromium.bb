@@ -46,9 +46,7 @@ MetroDriver::MetroDriver() : init_metro_fn_(NULL) {
     // It is not next to the build output, so this must be an actual deployment
     // and in that case we need the mainloader to find the current version
     // directory.
-    MainDllLoader* loader = MakeMainDllLoader();
-    std::wstring version = loader->GetVersion();
-    delete loader;
+    string16 version(GetCurrentModuleVersion());
     if (!version.empty()) {
       std::wstring exe_path(GetExecutablePath());
       exe_path.append(version).append(L"\\").append(chrome::kMetroDriverDll);

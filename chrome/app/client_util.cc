@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
-#include "base/win/registry.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/common/chrome_constants.h"
@@ -35,32 +34,6 @@ namespace {
 typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*);
 
 typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
-
-// Gets chrome version according to the load path. |exe_path| must be the
-// backslash terminated directory of the current chrome.exe.
-// TODO(cpu): This is now only used to support metro_driver, remove it.
-bool GetChromeVersion(const wchar_t* exe_dir, const wchar_t* key_path,
-                      string16* version) {
-  HKEY reg_root = InstallUtil::IsPerUserInstall(exe_dir) ? HKEY_CURRENT_USER :
-                                                           HKEY_LOCAL_MACHINE;
-  bool success = false;
-
-  base::win::RegKey key(reg_root, key_path, KEY_QUERY_VALUE);
-  if (key.Valid()) {
-    string16 new_chrome_exe(exe_dir);
-    new_chrome_exe.append(installer::kChromeNewExe);
-    if (::PathFileExistsW(new_chrome_exe.c_str()) &&
-        key.ReadValue(google_update::kRegOldVersionField,
-                      version) == ERROR_SUCCESS) {
-      success = true;
-    } else {
-      success = (key.ReadValue(google_update::kRegVersionField,
-                               version) == ERROR_SUCCESS);
-    }
-  }
-
-  return success;
-}
 
 // Expects that |dir| has a trailing backslash. |dir| is modified so it
 // contains the full path that was tried. Caller must check for the return
@@ -106,6 +79,17 @@ string16 GetExecutablePath() {
   return exe_path.append(1, L'\\');
 }
 
+string16 GetCurrentModuleVersion() {
+  scoped_ptr<FileVersionInfo> file_version_info(
+      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+  if (file_version_info.get()) {
+    string16 version_string(file_version_info->file_version());
+    if (Version(WideToASCII(version_string)).IsValid())
+      return version_string;
+  }
+  return string16();
+}
+
 //=============================================================================
 
 MainDllLoader::MainDllLoader() : dll_(NULL) {
@@ -117,13 +101,12 @@ MainDllLoader::~MainDllLoader() {
 // Loading chrome is an interesting affair. First we try loading from the
 // current directory to support run-what-you-compile and other development
 // scenarios.
-// If that fails then we look at the --chrome-version command line flag followed
-// by the 'CHROME_VERSION' env variable to determine if we should stick with an
-// older dll version even if a new one is available to support upgrade-in-place
-// scenarios.
-// If that fails then finally we look at the registry which should point us
-// to the latest version. This is the expected path for the first chrome.exe
-// browser instance in an installed build.
+// If that fails then we look at the --chrome-version command line flag to
+// determine if we should stick with an older dll version even if a new one is
+// available to support upgrade-in-place scenarios.
+// If that fails then finally we look at the version resource in the current
+// module. This is the expected path for chrome.exe browser instances in an
+// installed build.
 HMODULE MainDllLoader::Load(string16* out_version, string16* out_file) {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   const string16 dir(GetExecutablePath());
@@ -132,13 +115,11 @@ HMODULE MainDllLoader::Load(string16* out_version, string16* out_file) {
   if (!dll) {
     // Loading from same directory (for developers) failed.
     string16 version_string;
-    Version version;
     if (cmd_line.HasSwitch(switches::kChromeVersion)) {
       // This is used to support Chrome Frame, see http://crbug.com/88589.
       version_string = cmd_line.GetSwitchValueNative(switches::kChromeVersion);
-      version = Version(WideToASCII(version_string));
 
-      if (!version.IsValid()) {
+      if (!Version(WideToASCII(version_string)).IsValid()) {
         // If a bogus command line flag was given, then abort.
         LOG(ERROR) << "Invalid command line version: " << version_string;
         return NULL;
@@ -147,16 +128,10 @@ HMODULE MainDllLoader::Load(string16* out_version, string16* out_file) {
 
     // If no version on the command line, then look at the version resource in
     // the current module and try loading that.
-    if (!version.IsValid()) {
-      scoped_ptr<FileVersionInfo> file_version_info(
-          FileVersionInfo::CreateFileVersionInfoForCurrentModule());
-      if (file_version_info.get()) {
-        version_string = file_version_info->file_version();
-        version = Version(WideToASCII(version_string));
-      }
-    }
+    if (version_string.empty())
+      version_string = GetCurrentModuleVersion();
 
-    if (!version.IsValid()) {
+    if (version_string.empty()) {
       LOG(ERROR) << "No valid Chrome version found";
       return NULL;
     }
@@ -166,10 +141,12 @@ HMODULE MainDllLoader::Load(string16* out_version, string16* out_file) {
     out_file->append(*out_version).append(1, L'\\');
     dll = LoadChromeWithDirectory(out_file);
     if (!dll) {
-      LOG(ERROR) << "Failed to load Chrome DLL from " << *out_file;
+      PLOG(ERROR) << "Failed to load Chrome DLL from " << *out_file;
       return NULL;
     }
   }
+
+  DCHECK(dll);
 
 #if defined(CHROME_SPLIT_DLL)
   // In split dlls mode, we need to manually initialize both DLLs because
@@ -209,15 +186,6 @@ int MainDllLoader::Launch(HINSTANCE instance,
 
   int rc = entry_point(instance, sbox_info);
   return OnBeforeExit(rc, file);
-}
-
-string16 MainDllLoader::GetVersion() {
-  string16 reg_path(GetRegistryPath());
-  string16 version_string;
-  string16 dir(GetExecutablePath());
-  if (!GetChromeVersion(dir.c_str(), reg_path.c_str(), &version_string))
-    return string16();
-  return version_string;
 }
 
 void MainDllLoader::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
