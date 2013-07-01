@@ -1035,7 +1035,7 @@ testcase.restoreCurrentView = function() {
       appId = inAppId;
       callRemoteTestUtil('waitForElement',
                          appId,
-                         ['.thumbnail-grid[style*="display: none;"]'],
+                         ['.thumbnail-grid[hidden]'],
                          this.next);
     },
     // Change the current view.
@@ -1050,7 +1050,7 @@ testcase.restoreCurrentView = function() {
       chrome.test.assertTrue(result);
       callRemoteTestUtil('waitForElement',
                          appId,
-                         ['.detail-table[style*="display: none;"]'],
+                         ['.detail-table[hidden]'],
                          this.next);
     },
     // Open another window, where the current view is restored.
@@ -1062,7 +1062,7 @@ testcase.restoreCurrentView = function() {
       appId = inAppId;
       callRemoteTestUtil('waitForElement',
                          appId,
-                         ['.detail-table[style*="display: none;"]'],
+                         ['.detail-table[hidden]'],
                          this.next);
     },
     // Check the error.
