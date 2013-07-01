@@ -44,6 +44,7 @@ class RootWindowController;
 
 // DisplayController owns and maintains RootWindows for each attached
 // display, keeping them in sync with display configuration changes.
+// TODO(oshima): Factor out the layout registration class.
 class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
  public:
   class ASH_EXPORT Observer {
@@ -140,13 +141,15 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   void SetLayoutForCurrentDisplays(const DisplayLayout& layout);
 
   // Returns the display layout used for current displays.
-  DisplayLayout GetCurrentDisplayLayout() const;
+  DisplayLayout GetCurrentDisplayLayout();
 
   // Returns the current display pair.
   DisplayIdPair GetCurrentDisplayIdPair() const;
 
   // Returns the display layout registered for the given display id |pair|.
-  DisplayLayout GetRegisteredDisplayLayout(const DisplayIdPair& pair) const;
+  // If no layout is registered, it creatas new layout using
+  // |default_display_layout_|.
+  DisplayLayout GetRegisteredDisplayLayout(const DisplayIdPair& pair);
 
   // Checks if the mouse pointer is on one of displays, and moves to
   // the center of the nearest display if it's outside of all displays.
@@ -192,9 +195,12 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   // with display swapping applied.  That is, this returns
   // flipped layout if the displays are swapped.
   DisplayLayout ComputeDisplayLayoutForDisplayIdPair(
-      const DisplayIdPair& display_pair) const;
+      const DisplayIdPair& display_pair);
 
   void UpdateHostWindowNames();
+
+  // Creates new layout for display pair from |default_display_layout_|.
+  DisplayLayout CreateDisplayLayout(const DisplayIdPair& display_pair);
 
   bool in_bootstrap() const { return in_bootstrap_; }
 

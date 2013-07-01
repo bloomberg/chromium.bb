@@ -200,6 +200,7 @@ void DisplayManager::UpdateDisplayBoundsForLayout(
     const DisplayLayout& layout,
     const gfx::Display& primary_display,
     gfx::Display* secondary_display) {
+  DCHECK_EQ("0,0", primary_display.bounds().origin().ToString());
 
   const gfx::Rect& primary_bounds = primary_display.bounds();
   DisplayController::GetPrimaryDisplay().bounds();
@@ -905,7 +906,7 @@ gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {
 
   // Simply set the origin to (0,0).  The primary display's origin is
   // always (0,0) and the secondary display's bounds will be updated
-  // by |DisplayController::UpdateDisplayBoundsForLayout|.
+  // in |UpdateSecondaryDisplayBoundsForLayout| called in |UpdateDisplay|.
   new_display.SetScaleAndBounds(
       display_info.device_scale_factor(), gfx::Rect(bounds_in_pixel.size()));
   new_display.set_rotation(display_info.rotation());
@@ -919,8 +920,12 @@ bool DisplayManager::UpdateSecondaryDisplayBoundsForLayout(
     return false;
 
   DisplayController* controller = Shell::GetInstance()->display_controller();
+  int64 id_at_zero = displays->at(0).id();
   DisplayIdPair pair =
-      std::make_pair(displays->at(0).id(), displays->at(1).id());
+      (id_at_zero == first_display_id_ ||
+       id_at_zero == gfx::Display::InternalDisplayId()) ?
+      std::make_pair(id_at_zero, displays->at(1).id()) :
+      std::make_pair(displays->at(1).id(), id_at_zero) ;
   DisplayLayout layout =
       controller->ComputeDisplayLayoutForDisplayIdPair(pair);
 

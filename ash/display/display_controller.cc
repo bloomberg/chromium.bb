@@ -300,11 +300,11 @@ void DisplayController::InitPrimaryDisplay() {
       GetDisplayManager()->GetPrimaryDisplayCandidate();
   primary_display_id = primary_candidate->id();
   AddRootWindowForDisplay(*primary_candidate);
-  UpdateDisplayBoundsForLayout();
 }
 
 void DisplayController::InitSecondaryDisplays() {
   internal::DisplayManager* display_manager = GetDisplayManager();
+  UpdateDisplayBoundsForLayout();
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
     const gfx::Display* display = display_manager->GetDisplayAt(i);
     if (primary_display_id != display->id()) {
@@ -313,7 +313,6 @@ void DisplayController::InitSecondaryDisplays() {
     }
   }
   if (display_manager->GetNumDisplays() > 1) {
-    UpdateDisplayBoundsForLayout();
     DisplayIdPair pair = GetCurrentDisplayIdPair();
     DisplayLayout layout = GetCurrentDisplayLayout();
     SetPrimaryDisplayId(
@@ -420,12 +419,13 @@ void DisplayController::SetLayoutForCurrentDisplays(
     to_set.primary_id = primary.id();
     paired_layouts_[pair] = to_set;
     NotifyDisplayConfigurationChanging();
+    // TODO(oshima): Call UpdateDisplays instead.
     UpdateDisplayBoundsForLayout();
     NotifyDisplayConfigurationChanged();
   }
 }
 
-DisplayLayout DisplayController::GetCurrentDisplayLayout() const {
+DisplayLayout DisplayController::GetCurrentDisplayLayout() {
   DCHECK_EQ(2U, GetDisplayManager()->num_connected_displays());
   // Invert if the primary was swapped.
   if (GetDisplayManager()->num_connected_displays() > 1) {
@@ -433,7 +433,9 @@ DisplayLayout DisplayController::GetCurrentDisplayLayout() const {
     return ComputeDisplayLayoutForDisplayIdPair(pair);
   }
   // On release build, just fallback to default instead of blowing up.
-  return default_display_layout_;
+  DisplayLayout layout = default_display_layout_;
+  layout.primary_id = primary_display_id;
+  return layout;
 }
 
 DisplayIdPair DisplayController::GetCurrentDisplayIdPair() const {
@@ -455,10 +457,11 @@ DisplayIdPair DisplayController::GetCurrentDisplayIdPair() const {
 }
 
 DisplayLayout DisplayController::GetRegisteredDisplayLayout(
-    const DisplayIdPair& pair) const {
+    const DisplayIdPair& pair) {
   std::map<DisplayIdPair, DisplayLayout>::const_iterator iter =
       paired_layouts_.find(pair);
-  return iter != paired_layouts_.end() ? iter->second : default_display_layout_;
+  return
+      iter != paired_layouts_.end() ? iter->second : CreateDisplayLayout(pair);
 }
 
 void DisplayController::ToggleMirrorMode() {
@@ -658,22 +661,15 @@ void DisplayController::UpdateMouseCursor(const gfx::Point& point_in_native) {
 }
 
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
-  if (limiter_)
-    limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
   const internal::DisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display.id());
   DCHECK(!display_info.bounds_in_pixel().IsEmpty());
-
-  UpdateDisplayBoundsForLayout();
   aura::RootWindow* root = root_windows_[display.id()];
   root->SetHostBounds(display_info.bounds_in_pixel());
   SetDisplayPropertiesOnHostWindow(root, display);
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
-  if (limiter_)
-    limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
-
   if (primary_root_window_for_replace_) {
     DCHECK(root_windows_.empty());
     primary_display_id = display.id();
@@ -681,7 +677,6 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
     primary_root_window_for_replace_->SetProperty(
         internal::kDisplayIdKey, display.id());
     primary_root_window_for_replace_ = NULL;
-    UpdateDisplayBoundsForLayout();
     const internal::DisplayInfo& display_info =
         GetDisplayManager()->GetDisplayInfo(display.id());
     root_windows_[display.id()]->SetHostBounds(
@@ -691,15 +686,11 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
       primary_display_id = display.id();
     DCHECK(!root_windows_.empty());
     aura::RootWindow* root = AddRootWindowForDisplay(display);
-    UpdateDisplayBoundsForLayout();
     Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
   }
 }
 
 void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
-  if (limiter_)
-    limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
-
   aura::RootWindow* root_to_delete = root_windows_[display.id()];
   DCHECK(root_to_delete) << display.ToString();
 
@@ -796,13 +787,17 @@ void DisplayController::NotifyDisplayConfigurationChanging() {
 void DisplayController::NotifyDisplayConfigurationChanged() {
   if (in_bootstrap())
     return;
+
+  if (limiter_)
+    limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
+
   focus_activation_store_->Restore();
 
   internal::DisplayManager* display_manager = GetDisplayManager();
   if (display_manager->num_connected_displays() > 1) {
     DisplayIdPair pair = GetCurrentDisplayIdPair();
     if (paired_layouts_.find(pair) == paired_layouts_.end())
-      paired_layouts_[pair] = default_display_layout_;
+      CreateDisplayLayout(pair);
     paired_layouts_[pair].mirrored = display_manager->IsMirrored();
     if (Shell::GetScreen()->GetNumDisplays() > 1 ) {
       int64 primary_id = paired_layouts_[pair].primary_id;
@@ -838,7 +833,7 @@ void DisplayController::OnFadeOutForSwapDisplayFinished() {
 }
 
 DisplayLayout DisplayController::ComputeDisplayLayoutForDisplayIdPair(
-    const DisplayIdPair& pair) const {
+    const DisplayIdPair& pair) {
   DisplayLayout layout = GetRegisteredDisplayLayout(pair);
   int64 primary_id = layout.primary_id;
   // TODO(oshima): replace this with DCHECK.
@@ -863,6 +858,14 @@ void DisplayController::UpdateHostWindowNames() {
     XStoreName(ui::GetXDisplay(), xwindow, name.c_str());
   }
 #endif
+}
+
+DisplayLayout DisplayController::CreateDisplayLayout(
+    const DisplayIdPair& pair) {
+  DisplayLayout layout = default_display_layout_;
+  layout.primary_id = pair.first;
+  paired_layouts_[pair] = layout;
+  return layout;
 }
 
 }  // namespace ash
