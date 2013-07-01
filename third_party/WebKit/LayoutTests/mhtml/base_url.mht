@@ -1,0 +1,30 @@
+From: <Saved by UnMHT>
+Subject: =?iso-2022-jp?B?QSBzaW1wbGUgcGFnZQ==?=
+Date: Wed, May 11 2011 15:36:36 GMT-0700
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	boundary="----=_NextPart_000_0000_87206557.D2C008B0";
+	type="text/html"
+
+------=_NextPart_000_0000_87206557.D2C008B0
+Content-Type: text/html; charset="ISO-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Location: http://localhost/base.html
+
+<html><head><meta http-equiv=3D"Content-Type" content=3D"text/html; charset=
+=3Diso-8859-1">
+
+<title>A simple page</title>
+</head>
+<body>
+<div id="out"></div>
+<script>
+if (window.testRunner)
+  testRunner.dumpAsText();
+if (window.internals.baseURL(document) == "http://localhost/base.html")
+    out.innerHTML = "PASS";
+else
+    out.innerHTML = "FAIL";
+</script>
+</body></html>
+------=_NextPart_000_0000_87206557.D2C008B0--

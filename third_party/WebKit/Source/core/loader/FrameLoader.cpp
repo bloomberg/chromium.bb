@@ -1004,8 +1004,7 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBac
     }
 }
 
-void FrameLoader::loadURL(const ResourceRequest& request, const String& frameName, FrameLoadType newLoadType,
-    PassRefPtr<Event> event, PassRefPtr<FormState> formState)
+void FrameLoader::loadURL(const ResourceRequest& request, const String& frameName, FrameLoadType newLoadType, PassRefPtr<Event> event, PassRefPtr<FormState> formState)
 {
     if (m_inStopAllLoaders)
         return;

@@ -30,6 +30,7 @@
 #define DocumentWriter_h
 
 #include "core/loader/TextResourceDecoderBuilder.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -41,49 +42,43 @@ class KURL;
 class SecurityOrigin;
 class TextResourceDecoder;
 
-class DocumentWriter {
+class DocumentWriter : public RefCounted<DocumentWriter> {
     WTF_MAKE_NONCOPYABLE(DocumentWriter);
 public:
-    explicit DocumentWriter(Frame*);
+    static PassRefPtr<DocumentWriter> create(Document*, const String& mimeType = "", const String& encoding = "", bool encodingUserChoosen = false);
+
+    ~DocumentWriter();
+
+    void end();
 
     // This is only called by ScriptController::executeScriptIfJavaScriptURL
     // and always contains the result of evaluating a javascript: url.
     void replaceDocument(const String&, Document* ownerDocument);
 
-    void begin();
-    void begin(const KURL&, bool dispatchWindowObjectAvailable = true, Document* ownerDocument = 0);
     void addData(const char* bytes, size_t length);
-    void end();
     
-    void setFrame(Frame* frame) { m_frame = frame; }
-
     const String& mimeType() const { return m_decoderBuilder.mimeType(); }
-    void setMIMEType(const String& type) { m_decoderBuilder.setMIMEType(type); }
-    void setEncoding(const String& encoding, bool userChosen) { m_decoderBuilder.setEncoding(encoding, userChosen); }
+    const String& encoding() const { return m_decoderBuilder.encoding(); }
+    bool encodingWasChosenByUser() const { return m_decoderBuilder.encodingWasChosenByUser(); }
 
     // Exposed for DocumentParser::appendBytes.
     void reportDataReceived();
+    // Exposed for DocumentLoader::replaceDocument.
+    void appendReplacingData(const String&);
 
     void setDocumentWasLoadedAsPartOfNavigation();
 
 private:
+    DocumentWriter(Document*, const String& mimeType, const String& encoding, bool encodingUserChoosen);
+
     PassRefPtr<Document> createDocument(const KURL&);
-    void clear();
 
-    Frame* m_frame;
-
+    Document* m_document;
     bool m_hasReceivedSomeData;
     TextResourceDecoderBuilder m_decoderBuilder;
 
     RefPtr<TextResourceDecoder> m_decoder;
     RefPtr<DocumentParser> m_parser;
-
-    enum WriterState {
-        NotStartedWritingState,
-        StartedWritingState,
-        FinishedWritingState,
-    };
-    WriterState m_state;
 };
 
 } // namespace WebCore

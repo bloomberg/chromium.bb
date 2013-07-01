@@ -355,7 +355,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         ASSERT(loader->activeDocumentLoader()); // DocumentLoader should have been created by frame->init().
         DocumentWriter* writer = loader->activeDocumentLoader()->beginWriting("image/svg+xml", "UTF-8");
         writer->addData(data()->data(), data()->size());
-        writer->end();
+        loader->activeDocumentLoader()->endWriting(writer);
         // Set the intrinsic size before a container size is available.
         m_intrinsicSize = containerSize();
     }
