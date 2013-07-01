@@ -98,7 +98,11 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
     bool operator()(const GraphNode* a,
                     const GraphNode* b) {
       // In this system, numerically lower priority is run first.
-      return a->priority() > b->priority();
+      if (a->priority() != b->priority())
+        return a->priority() > b->priority();
+
+      // Run task with most dependents first when priority is the same.
+      return a->dependents().size() < b->dependents().size();
     }
   };
 
