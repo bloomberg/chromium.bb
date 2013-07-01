@@ -4,6 +4,7 @@
 
 #include "ui/app_list/search_box_model.h"
 
+#include "base/metrics/histogram.h"
 #include "ui/app_list/search_box_model_observer.h"
 
 namespace app_list {
@@ -41,6 +42,11 @@ void SearchBoxModel::SetText(const base::string16& text) {
   if (text_ == text)
     return;
 
+  // Log that a new search has been commenced whenever the text box text
+  // transitions from empty to non-empty.
+  if (text_.empty() && !text.empty()) {
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchCommenced", 1, 2);
+  }
   text_ = text;
   FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, TextChanged());
 }
