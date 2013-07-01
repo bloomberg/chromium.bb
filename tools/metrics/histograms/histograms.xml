@@ -11644,6 +11644,17 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UMA.ProtoCompressionRatio" units="%">
+  <summary>
+    Compression ratio of the serialized protobuf that will be uploaded to the
+    UMA server. This serialized protobuf is compressed using gzip.
+  </summary>
+</histogram>
+
+<histogram name="UMA.ProtoGzipped" enum="Boolean">
+  <summary>Was the UMA protobuf uploaded earlier compressed or not.</summary>
+</histogram>
+
 <histogram name="Variations.DisabledNoEntropyProvider" enum="BooleanHit">
   <obsolete>
     Deprecated 1/2013. No longer tracked.
@@ -12721,6 +12732,11 @@ other types of suffix sets.
   <int value="6" label="Authentication timed out"/>
   <int value="7" label="Unsupported device"/>
   <int value="8" label="Unknown or unhandler error"/>
+</enum>
+
+<enum name="Boolean" type="int">
+  <int value="0" label="False"/>
+  <int value="1" label="True"/>
 </enum>
 
 <enum name="BooleanAttempted" type="int">

@@ -88,6 +88,7 @@ include_rules = [
   "+third_party/re2",
   "+third_party/sqlite",
   "+third_party/undoview",
+  "+third_party/zlib",
 
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.
