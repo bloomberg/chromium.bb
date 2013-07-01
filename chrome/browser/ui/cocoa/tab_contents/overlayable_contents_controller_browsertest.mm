@@ -7,7 +7,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/tab_contents/instant_overlay_controller_mac.h"
 #include "chrome/browser/ui/search/instant_overlay_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -28,12 +27,8 @@ class OverlayableContentsControllerTest : public InProcessBrowserTest,
         content::WebContents::CreateParams(browser()->profile())));
     instant_overlay_model_.SetOverlayContents(web_contents_.get());
 
-    BrowserWindowController* window_controller =
-        [BrowserWindowController browserWindowControllerForWindow:
-                browser()->window()->GetNativeWindow()];
     controller_.reset([[OverlayableContentsController alloc]
-         initWithBrowser:browser()
-        windowController:window_controller]);
+         initWithBrowser:browser()]);
     [[controller_ view] setFrame:NSMakeRect(0, 0, 100, 200)];
     instant_overlay_model_.AddObserver([controller_ instantOverlayController]);
   }

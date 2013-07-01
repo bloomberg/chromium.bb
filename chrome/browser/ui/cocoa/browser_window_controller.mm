@@ -344,8 +344,7 @@ enum {
     // Create the overlayable contents controller.  This provides the switch
     // view that TabStripController needs.
     overlayableContentsController_.reset(
-        [[OverlayableContentsController alloc] initWithBrowser:browser
-                                              windowController:self]);
+        [[OverlayableContentsController alloc] initWithBrowser:browser]);
     [[overlayableContentsController_ view]
         setFrame:[[devToolsController_ view] bounds]];
     [[devToolsController_ view]

@@ -10,13 +10,11 @@
 #include "chrome/browser/ui/search/instant_overlay_controller.h"
 
 class Browser;
-@class BrowserWindowController;
 @class OverlayableContentsController;
 
 class InstantOverlayControllerMac : public InstantOverlayController {
  public:
   InstantOverlayControllerMac(Browser* browser,
-                              BrowserWindowController* window,
                               OverlayableContentsController* overlay);
   virtual ~InstantOverlayControllerMac();
 
@@ -24,7 +22,6 @@ class InstantOverlayControllerMac : public InstantOverlayController {
   // Overridden from InstantOverlayController:
   virtual void OverlayStateChanged(const InstantOverlayModel& model) OVERRIDE;
 
-  BrowserWindowController* const window_;
   OverlayableContentsController* const overlay_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantOverlayControllerMac);

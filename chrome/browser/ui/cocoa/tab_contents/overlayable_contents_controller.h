@@ -12,7 +12,6 @@
 #include "chrome/common/instant_types.h"
 
 class Browser;
-@class BrowserWindowController;
 class InstantOverlayControllerMac;
 
 namespace content {
@@ -49,8 +48,7 @@ class WebContents;
 @property(readonly, nonatomic) NSView* activeContainer;
 
 // Initialization.
-- (id)initWithBrowser:(Browser*)browser
-     windowController:(BrowserWindowController*)windowController;
+- (id)initWithBrowser:(Browser*)browser;
 
 // Sets the current overlay and installs its WebContentsView into the view
 // hierarchy. Hides the active view. If |overlay| is NULL then closes the

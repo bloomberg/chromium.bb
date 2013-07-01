@@ -16,8 +16,7 @@
 
 @implementation OverlayableContentsController
 
-- (id)initWithBrowser:(Browser*)browser
-     windowController:(BrowserWindowController*)windowController {
+- (id)initWithBrowser:(Browser*)browser {
   if ((self = [super init])) {
     base::scoped_nsobject<NSView> view(
         [[NSView alloc] initWithFrame:NSZeroRect]);
@@ -35,7 +34,7 @@
     [view addSubview:activeContainer_];
 
     instantOverlayController_.reset(
-        new InstantOverlayControllerMac(browser, windowController, self));
+        new InstantOverlayControllerMac(browser, self));
   }
   return self;
 }
