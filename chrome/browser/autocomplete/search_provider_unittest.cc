@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autocomplete/search_provider.h"
 
+#include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -792,6 +794,36 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
 
   // Test in keyword mode.  (Both modes should give the same result.)
   RunTest(cases, arraysize(cases), true);
+}
+
+// Ensures command-line flags are reflected in the URLs the search provider
+// generates.
+TEST_F(SearchProviderTest, CommandLineOverrides) {
+  TemplateURLService* turl_model =
+      TemplateURLServiceFactory::GetForProfile(&profile_);
+
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("default");
+  data.SetKeyword(data.short_name);
+  data.SetURL("{google:baseURL}{searchTerms}");
+  default_t_url_ = new TemplateURL(&profile_, data);
+  turl_model->Add(default_t_url_);
+  turl_model->SetDefaultSearchProvider(default_t_url_);
+
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
+                                                      "http://www.bar.com/");
+
+  TestData cases[] = {
+    { ASCIIToUTF16("k a"), 2,
+      { ResultInfo(GURL("http://keyword/a"),
+                   AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+                   ASCIIToUTF16("k a")),
+        ResultInfo(GURL("http://www.bar.com/k%20a"),
+                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+                   ASCIIToUTF16("k a")) } },
+  };
+
+  RunTest(cases, arraysize(cases), false);
 }
 
 // Verifies Navsuggest results don't set a TemplateURL, which Instant relies on.

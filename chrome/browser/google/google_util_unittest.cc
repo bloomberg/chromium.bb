@@ -25,6 +25,10 @@ bool IsSearch(const std::string& url) {
   return google_util::IsGoogleSearchUrl(GURL(url));
 }
 
+bool StartsWithBaseURL(const std::string& url) {
+  return google_util::StartsWithCommandLineGoogleBaseURL(GURL(url));
+}
+
 }  // namespace
 
 
@@ -283,4 +287,50 @@ TEST(GoogleUtilTest, GoogleDomains) {
   EXPECT_FALSE(IsGoogleDomainUrl(GURL("doesnotexist://www.google.com"),
                                  google_util::DISALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
+}
+
+TEST(GoogleUtilTest, GoogleBaseURL) {
+  // When no command-line flag is specified, no input to
+  // StartsWithCommandLineGoogleBaseURL() should return true.
+  EXPECT_FALSE(StartsWithBaseURL(std::string()));
+  EXPECT_FALSE(StartsWithBaseURL("http://www.foo.com/"));
+  EXPECT_FALSE(StartsWithBaseURL("http://www.google.com/"));
+
+  // By default, none of the IsGoogleXXX functions should return true for a
+  // "foo.com" URL.
+  EXPECT_FALSE(IsGoogleHostname("www.foo.com",
+                                google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://www.foo.com/xyz"),
+                                 google_util::DISALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_FALSE(IsGoogleDomainUrl(GURL("https://www.foo.com/"),
+                                 google_util::DISALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_FALSE(IsHomePage("https://www.foo.com/webhp"));
+  EXPECT_FALSE(IsSearch("http://www.foo.com/search?q=a"));
+
+  // Override the Google base URL on the command line.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
+                                                      "http://www.foo.com/");
+
+  // Only URLs which start with exactly the string on the command line should
+  // cause StartsWithCommandLineGoogleBaseURL() to return true.
+  EXPECT_FALSE(StartsWithBaseURL(std::string()));
+  EXPECT_TRUE(StartsWithBaseURL("http://www.foo.com/"));
+  EXPECT_TRUE(StartsWithBaseURL("http://www.foo.com/abc"));
+  EXPECT_FALSE(StartsWithBaseURL("https://www.foo.com/"));
+  EXPECT_FALSE(StartsWithBaseURL("http://www.google.com/"));
+
+  // The various IsGoogleXXX functions should respect the command-line flag.
+  EXPECT_TRUE(IsGoogleHostname("www.foo.com", google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_FALSE(IsGoogleHostname("foo.com", google_util::ALLOW_SUBDOMAIN));
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.foo.com/xyz"),
+                                google_util::DISALLOW_SUBDOMAIN,
+                                google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("https://www.foo.com/"),
+                                google_util::DISALLOW_SUBDOMAIN,
+                                google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_TRUE(IsHomePage("https://www.foo.com/webhp"));
+  EXPECT_FALSE(IsHomePage("http://www.foo.com/xyz"));
+  EXPECT_TRUE(IsSearch("http://www.foo.com/search?q=a"));
 }

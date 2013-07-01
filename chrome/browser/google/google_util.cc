@@ -152,8 +152,23 @@ bool GetReactivationBrand(std::string* brand) {
 
 #endif
 
+bool StartsWithCommandLineGoogleBaseURL(const GURL& url) {
+  const std::string base_url(CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kGoogleBaseURL));
+  return !base_url.empty() &&
+      StartsWithASCII(url.possibly_invalid_spec(), base_url, true);
+}
+
 bool IsGoogleHostname(const std::string& host,
                       SubdomainPermission subdomain_permission) {
+  const std::string base_url(CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kGoogleBaseURL));
+  if (!base_url.empty()) {
+    GURL base_gurl(base_url);
+    if (base_gurl.is_valid() && (host == base_gurl.host()))
+      return true;
+  }
+
   size_t tld_length = net::registry_controlled_domains::GetRegistryLength(
       host,
       net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,

@@ -9,6 +9,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -541,5 +542,47 @@ TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabledWithoutInstant) {
   EXPECT_FALSE(IsInstantCheckboxChecked(profile()));
 }
 
+TEST_F(SearchTest, CommandLineOverrides) {
+  EnableInstantExtendedAPIForTesting();
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchInstantEnabled, true);
+
+  // GetLocalInstantURL() should default to the non-Google local NTP.
+  SetSearchProvider(false);
+  GURL local_instant_url(GetLocalInstantURL(profile()));
+  EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), local_instant_url);
+
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  TemplateURLData data;
+  data.SetURL("{google:baseURL}search?q={searchTerms}");
+  data.instant_url = "{google:baseURL}webhp?strk";
+  data.search_terms_replacement_key = "strk";
+  TemplateURL* template_url = new TemplateURL(profile(), data);
+  // Takes ownership of |template_url|.
+  template_url_service->Add(template_url);
+  template_url_service->SetDefaultSearchProvider(template_url);
+
+  // By default, Instant Extended forces the instant URL to be HTTPS, so even if
+  // we set a Google base URL that is HTTP, we should get an HTTPS URL.
+  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.foo.com/");
+  GURL instant_url(GetInstantURL(profile(), kDisableStartMargin));
+  ASSERT_TRUE(instant_url.is_valid());
+  EXPECT_EQ("https://www.foo.com/webhp?strk", instant_url.spec());
+
+  // However, if the Google base URL is specified on the command line, the
+  // instant URL should just use it, even if it's HTTP.
+  UIThreadSearchTermsData::SetGoogleBaseURL(std::string());
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
+                                                      "http://www.bar.com/");
+  instant_url = GetInstantURL(profile(), kDisableStartMargin);
+  ASSERT_TRUE(instant_url.is_valid());
+  EXPECT_EQ("http://www.bar.com/webhp?strk", instant_url.spec());
+
+  // Similarly, setting a Google base URL on the command line should allow you
+  // to get the Google version of the local NTP, even though search provider's
+  // URL doesn't contain "google".
+  local_instant_url = GetLocalInstantURL(profile());
+  EXPECT_EQ(GURL(chrome::kChromeSearchLocalGoogleNtpUrl), local_instant_url);
+}
 
 }  // namespace chrome

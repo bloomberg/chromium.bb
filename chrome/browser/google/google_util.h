@@ -69,9 +69,18 @@ enum PortPermission {
   DISALLOW_NON_STANDARD_PORTS,
 };
 
+// Returns true if a Google base URL was specified on the command line and |url|
+// begins with that base URL.  This uses a simple string equality check.
+bool StartsWithCommandLineGoogleBaseURL(const GURL& url);
+
 // True if |host| is "[www.]google.<TLD>" with a valid TLD. If
 // |subdomain_permission| is ALLOW_SUBDOMAIN, we check against host
 // "*.google.<TLD>" instead.
+//
+// If the Google base URL has been overridden on the command line, this function
+// will also return true for any URL whose hostname exactly matches the hostname
+// of the URL specified on the command line.  In this case,
+// |subdomain_permission| is ignored.
 bool IsGoogleHostname(const std::string& host,
                       SubdomainPermission subdomain_permission);
 // True if |url| is a valid URL with a host that returns true for

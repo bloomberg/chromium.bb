@@ -270,6 +270,12 @@ string16 ToolbarModelImpl::GetSearchTerms() const {
       (entry->GetSSL().security_style == content::SECURITY_STYLE_UNKNOWN))
     return search_terms;
 
+  // If the URL is using a Google base URL specified via the command line, skip
+  // the security check below.
+  if (entry &&
+      google_util::StartsWithCommandLineGoogleBaseURL(entry->GetVirtualURL()))
+    return search_terms;
+
   // Otherwise, extract search terms for HTTPS pages that do not have a security
   // error.
   ToolbarModel::SecurityLevel security_level = GetSecurityLevel();

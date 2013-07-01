@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -156,10 +157,13 @@ bool IsRenderedInInstantProcess(const content::WebContents* contents,
 // usable as an instant URL:
 // (1) It contains the search terms replacement key of |template_url|, which is
 //     expected to be the TemplateURL* for the default search provider.
-// (2) It has a secure scheme.
+// (2) Either it has a secure scheme, or else the user has manually specified a
+//     --google-base-url and it uses that base URL.  (This allows testers to use
+//     --google-base-url to point at non-HTTPS servers, which eases testing.)
 bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url) {
   return template_url->HasSearchTermsReplacementKey(url) &&
-      url.SchemeIsSecure();
+      (url.SchemeIsSecure() ||
+       google_util::StartsWithCommandLineGoogleBaseURL(url));
 }
 
 // Returns true if |url| can be used as an Instant URL for |profile|.
@@ -440,8 +444,11 @@ GURL GetInstantURL(Profile* profile, int start_margin) {
   GURL instant_url =
       TemplateURLRefToGURL(template_url->instant_url_ref(), start_margin);
 
-  // Extended mode requires HTTPS.  Force it.
-  if (!extended_api_enabled || instant_url.SchemeIsSecure())
+  // Extended mode requires HTTPS.  Force it unless the base URL was overridden
+  // on the command line, in which case we allow HTTP (see comments on
+  // IsSuitableURLForInstant()).
+  if (!extended_api_enabled || instant_url.SchemeIsSecure() ||
+      google_util::StartsWithCommandLineGoogleBaseURL(instant_url))
     return instant_url;
   GURL::Replacements replacements;
   const std::string secure_scheme(chrome::kHttpsScheme);
