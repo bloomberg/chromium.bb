@@ -2,7 +2,6 @@
     'variables': {
         'wtf_files': [
             'ASCIICType.h',
-            'AVLTree.h',
             'Alignment.h',
             'ArrayBuffer.cpp',
             'ArrayBuffer.h',
@@ -217,11 +216,9 @@
             'unicode/CharacterNames.h',
             'unicode/Collator.h',
             'unicode/CollatorDefault.cpp',
-            'unicode/ScriptCodesFromICU.h',
             'unicode/UTF8.cpp',
             'unicode/UTF8.h',
             'unicode/Unicode.h',
-            'unicode/UnicodeMacrosFromICU.h',
             'unicode/icu/CollatorICU.cpp',
             'unicode/icu/UnicodeIcu.h',
         ],
