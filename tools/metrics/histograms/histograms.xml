@@ -8291,6 +8291,486 @@ other types of suffix sets.
   <summary>Chrome OS stateful partition usage level.</summary>
 </histogram>
 
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap0.Time1" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap0.Time2" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap0.Time3" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap0.Time4" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap1.Time1" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap1.Time2" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap1.Time3" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap1.Time4" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap2.Time1" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap2.Time2" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap2.Time3" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap2.Time4" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap3.Time1" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap3.Time2" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap3.Time3" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Cpu.Swap3.Time4" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap0.Time1"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap0.Time2"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap0.Time3"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap0.Time4"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap1.Time1"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap1.Time2"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap1.Time3"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap1.Time4"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap2.Time1"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap2.Time2"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap2.Time3"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap2.Time4"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap3.Time1"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap3.Time2"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap3.Time3"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.Scroll.Faults.Swap3.Time4"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    scroll event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap0.Time1" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap0.Time2" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap0.Time3" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap0.Time4" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap1.Time1" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap1.Time2" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap1.Time3" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap1.Time4" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap2.Time1" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap2.Time2" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap2.Time3" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap2.Time4" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap3.Time1" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap3.Time2" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap3.Time3" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Cpu.Swap3.Time4" units="%">
+  <summary>
+    CPU utilization for the specified swap group and time interval after a tab
+    switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap0.Time1"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap0.Time2"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap0.Time3"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap0.Time4"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap1.Time1"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap1.Time2"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap1.Time3"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap1.Time4"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap2.Time1"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap2.Time2"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap2.Time3"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap2.Time4"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap3.Time1"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap3.Time2"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap3.Time3"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapJank.TabSwitch.Faults.Swap3.Time4"
+    units="page faults/second">
+  <summary>
+    Page faults/second for the specified swap group and time interval after a
+    tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
 <histogram name="Platform.Temperature.Junction" units="Celsius">
   <summary>
     Peak junction temperature for the last sample interval, read from TSEN on
