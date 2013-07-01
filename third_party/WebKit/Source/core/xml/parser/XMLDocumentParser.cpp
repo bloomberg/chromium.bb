@@ -63,6 +63,7 @@
 #include "core/xml/XMLErrors.h"
 #include "core/xml/XMLTreeViewer.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
+#include "core/xml/parser/XMLParserInput.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/TemporaryChange.h"
 
@@ -1456,26 +1457,12 @@ xmlDocPtr xmlDocPtrForString(CachedResourceLoader* cachedResourceLoader, const S
 {
     if (source.isEmpty())
         return 0;
-
-    bool is8Bit = source.is8Bit();
-    const char* characters = is8Bit ? reinterpret_cast<const char*>(source.characters8())
-                                    : reinterpret_cast<const char*>(source.characters16());
-    int sizeInBytes = source.length() * (is8Bit ? sizeof(LChar) : sizeof(UChar));
-
     // Parse in a single chunk into an xmlDocPtr
     // FIXME: Hook up error handlers so that a failure to parse the main document results in
     // good error messages.
-    const UChar BOM = 0xFEFF;
-    const unsigned char BOMHighByte = *reinterpret_cast<const unsigned char*>(&BOM);
-
-    const char* encoding = 0;
-    if (is8Bit)
-        encoding = "iso-8859-1";
-    else
-        encoding = BOMHighByte == 0xFF ? "UTF-16LE" : "UTF-16BE";
-
     XMLDocumentParserScope scope(cachedResourceLoader, errorFunc, 0);
-    return xmlReadMemory(characters, sizeInBytes, url.latin1().data(), encoding, XSLT_PARSE_OPTIONS);
+    XMLParserInput input(source);
+    return xmlReadMemory(input.data(), input.size(), url.latin1().data(), input.encoding(), XSLT_PARSE_OPTIONS);
 }
 
 OrdinalNumber XMLDocumentParser::lineNumber() const

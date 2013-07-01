@@ -1610,6 +1610,7 @@
             'xml/parser/XMLDocumentParser.h',
             'xml/parser/XMLDocumentParserScope.cpp',
             'xml/parser/XMLDocumentParserScope.h',
+            'xml/parser/XMLParserInput.h',
             'xml/DOMParser.cpp',
             'xml/DOMParser.h',
             'xml/NativeXPathNSResolver.cpp',

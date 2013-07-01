@@ -30,7 +30,8 @@
 #include "core/xml/XSLImportRule.h"
 #include "core/xml/XSLTProcessor.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
-#include <wtf/text/CString.h>
+#include "core/xml/parser/XMLParserInput.h"
+#include "wtf/text/CString.h"
 
 #include <libxml/uri.h>
 #include <libxslt/xsltutils.h>
@@ -118,11 +119,9 @@ CachedResourceLoader* XSLStyleSheet::cachedResourceLoader()
     return document->cachedResourceLoader();
 }
 
-bool XSLStyleSheet::parseString(const String& string)
+bool XSLStyleSheet::parseString(const String& source)
 {
     // Parse in a single chunk into an xmlDocPtr
-    const UChar BOM = 0xFEFF;
-    const unsigned char BOMHighByte = *reinterpret_cast<const unsigned char*>(&BOM);
     if (!m_stylesheetDocTaken)
         xmlFreeDoc(m_stylesheetDoc);
     m_stylesheetDocTaken = false;
@@ -133,11 +132,9 @@ bool XSLStyleSheet::parseString(const String& string)
         console = frame->page()->console();
 
     XMLDocumentParserScope scope(cachedResourceLoader(), XSLTProcessor::genericErrorFunc, XSLTProcessor::parseErrorFunc, console);
+    XMLParserInput input(source);
 
-    const char* buffer = reinterpret_cast<const char*>(string.bloatedCharacters());
-    int size = string.length() * sizeof(UChar);
-
-    xmlParserCtxtPtr ctxt = xmlCreateMemoryParserCtxt(buffer, size);
+    xmlParserCtxtPtr ctxt = xmlCreateMemoryParserCtxt(input.data(), input.size());
     if (!ctxt)
         return 0;
 
@@ -153,14 +150,12 @@ bool XSLStyleSheet::parseString(const String& string)
         xmlDictReference(ctxt->dict);
     }
 
-    m_stylesheetDoc = xmlCtxtReadMemory(ctxt, buffer, size,
-        finalURL().string().utf8().data(),
-        BOMHighByte == 0xFF ? "UTF-16LE" : "UTF-16BE",
+    m_stylesheetDoc = xmlCtxtReadMemory(ctxt, input.data(), input.size(),
+        finalURL().string().utf8().data(), input.encoding(),
         XML_PARSE_NOENT | XML_PARSE_DTDATTR | XML_PARSE_NOWARNING | XML_PARSE_NOCDATA);
+
     xmlFreeParserCtxt(ctxt);
-
     loadChildSheets();
-
     return m_stylesheetDoc;
 }
 
