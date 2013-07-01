@@ -133,16 +133,57 @@ convert_to_yv12(struct wcap_decoder *decoder, unsigned char *out)
 }
 
 static void
-output_yuv_frame(struct wcap_decoder *decoder)
+convert_to_yuv444(struct wcap_decoder *decoder, unsigned char *out)
+{
+
+	unsigned char *yp, *up, *vp;
+	uint32_t *rp, *end;
+	int u, v;
+	int i, stride, psize;
+	uint32_t format = decoder->format;
+
+	stride = decoder->width;
+	psize = stride * decoder->height;
+	for (i = 0; i < decoder->height; i++) {
+		yp = out + stride * i;
+		up = yp + (psize * 2);
+		vp = yp + (psize * 1);
+		rp = decoder->frame + decoder->width * i;
+		end = rp + decoder->width;	
+		while (rp < end) {
+			u = 0;
+			v = 0;
+			yp[0] = rgb_to_yuv(format, rp[0], &u, &v);
+			up[0] = clamp_uv(u/.3);
+			vp[0] = clamp_uv(v/.3);
+			up++;
+			vp++;
+			yp++;
+			rp++;
+		}
+	}
+}
+
+static void
+output_yuv_frame(struct wcap_decoder *decoder, int depth)
 {
 	static unsigned char *out;
 	int size;
 
-	size = decoder->width * decoder->height * 3 / 2;
+	if (depth == 444) {
+		size = decoder->width * decoder->height * 3;
+	} else {
+		size = decoder->width * decoder->height * 3 / 2;
+	}
 	if (out == NULL)
 		out = malloc(size);
 
-	convert_to_yv12(decoder, out);
+	if (depth == 444) {
+		convert_to_yuv444(decoder, out);
+	} else {
+		convert_to_yv12(decoder, out);
+	}
+
 	printf("FRAME\n");
 	fwrite(out, 1, size, stdout);
 }
@@ -155,6 +196,7 @@ usage(int exit_code)
 		"\t[--rate=<num:denom>] <wcap file>\n\n"
 		"\t--help\t\t\tthis help text\n"
 		"\t--yuv4mpeg2\t\tdump wcap file to stdout in yuv4mpeg2 format\n"
+		"\t--yuv4mpeg2-444\t\tdump wcap file to stdout in yuv4mpeg2 444 format\n"
 		"\t--frame=<frame>\t\twrite out the given frame number as png\n"
 		"\t--all\t\t\twrite all frames as pngs\n"
 		"\t--rate=<num:denom>\treplay frame rate for yuv4mpeg2,\n"
@@ -169,11 +211,14 @@ int main(int argc, char *argv[])
 	int i, j, output_frame = -1, yuv4mpeg2 = 0, all = 0, has_frame;
 	int num = 30, denom = 1;
 	char filename[200];
+	char *mode;
 	uint32_t msecs, frame_time, *frame, frame_size;
 
 	for (i = 1, j = 1; i < argc; i++) {
-		if (strcmp(argv[i], "--yuv4mpeg2") == 0) {
-			yuv4mpeg2 = 1;
+		if (strcmp(argv[i], "--yuv4mpeg2-444") == 0) {
+			yuv4mpeg2 = 444;
+		} else if (strcmp(argv[i], "--yuv4mpeg2") == 0) {
+			yuv4mpeg2 = 420;
 		} else if (strcmp(argv[i], "--help") == 0) {
 			usage(EXIT_SUCCESS);
 		} else if (strcmp(argv[i], "--all") == 0) {
@@ -215,8 +260,13 @@ int main(int argc, char *argv[])
 	}
 
 	if (yuv4mpeg2) {
-		printf("YUV4MPEG2 C420jpeg W%d H%d F%d:%d Ip A0:0\n",
-		       decoder->width, decoder->height, num, denom);
+		if (yuv4mpeg2 == 444) {
+			mode = "C444";
+		} else {
+			mode = "C420jpeg";
+		}
+		printf("YUV4MPEG2 %s W%d H%d F%d:%d Ip A0:0\n",
+					 mode, decoder->width, decoder->height, num, denom);
 		fflush(stdout);
 	}
 
@@ -236,7 +286,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "wrote %s\n", filename);
 		}
 		if (yuv4mpeg2)
-			output_yuv_frame(decoder);
+			output_yuv_frame(decoder, yuv4mpeg2);
 		i++;
 		msecs += frame_time;
 		while (decoder->msecs < msecs && has_frame)
