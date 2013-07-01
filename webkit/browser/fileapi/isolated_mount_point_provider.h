@@ -29,9 +29,6 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type,
       base::PlatformFileError* error_code) OVERRIDE;
-  virtual FilePermissionPolicy GetPermissionPolicy(
-      const FileSystemURL& url,
-      int permissions) const OVERRIDE;
   virtual FileSystemOperation* CreateFileSystemOperation(
       const FileSystemURL& url,
       FileSystemContext* context,

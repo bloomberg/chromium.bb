@@ -20,7 +20,10 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
+#include "webkit/browser/fileapi/file_permission_policy.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace content {
 
@@ -603,6 +606,47 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFile(
   return result;
 }
 
+bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
+    int child_id, const fileapi::FileSystemURL& url, int permissions) {
+  if (!url.is_valid())
+    return false;
+
+  if (url.path().ReferencesParent())
+    return false;
+
+  // Any write access is disallowed on the root path.
+  if (fileapi::VirtualPath::IsRootPath(url.path()) &&
+      (permissions & ~kReadFilePermissions)) {
+    return false;
+  }
+
+  if (url.mount_type() == fileapi::kFileSystemTypeIsolated) {
+    // When Isolated filesystems is overlayed on top of another filesystem,
+    // its per-filesystem permission overrides the underlying filesystem
+    // permissions).
+    return HasPermissionsForFileSystem(
+        child_id, url.mount_filesystem_id(), permissions);
+  }
+
+  FileSystemPermissionPolicyMap::iterator found =
+      file_system_policy_map_.find(url.type());
+  if (found == file_system_policy_map_.end())
+    return false;
+
+  if ((found->second & fileapi::FILE_PERMISSION_READ_ONLY) &&
+      permissions & ~kReadFilePermissions) {
+    return false;
+  }
+
+  if (found->second & fileapi::FILE_PERMISSION_USE_FILE_PERMISSION)
+    return HasPermissionsForFile(child_id, url.path(), permissions);
+
+  if (found->second & fileapi::FILE_PERMISSION_SANDBOX)
+    return true;
+
+  return false;
+}
+
 bool ChildProcessSecurityPolicyImpl::HasWebUIBindings(int child_id) {
   base::AutoLock lock(lock_);
 
@@ -690,6 +734,13 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystem(
   if (state == security_state_.end())
     return false;
   return state->second->HasPermissionsForFileSystem(filesystem_id, permission);
+}
+
+void ChildProcessSecurityPolicyImpl::RegisterFileSystemPermissionPolicy(
+    fileapi::FileSystemType type,
+    int policy) {
+  base::AutoLock lock(lock_);
+  file_system_policy_map_[type] = policy;
 }
 
 }  // namespace content

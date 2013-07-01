@@ -233,37 +233,16 @@ CrosMountPointProvider::GetCopyOrMoveFileValidatorFactory(
   return NULL;
 }
 
-fileapi::FilePermissionPolicy CrosMountPointProvider::GetPermissionPolicy(
-    const fileapi::FileSystemURL& url, int permissions) const {
-  if (url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal &&
-      (permissions & ~fileapi::kReadFilePermissions)) {
-    // Restricted file system is read-only.
-    return fileapi::FILE_PERMISSION_ALWAYS_DENY;
-  }
-
-  if (!IsAccessAllowed(url))
-    return fileapi::FILE_PERMISSION_ALWAYS_DENY;
-
-  // Permit access to mount points from internal WebUI.
-  const GURL& origin_url = url.origin();
-  if (origin_url.SchemeIs(kChromeUIScheme))
-    return fileapi::FILE_PERMISSION_ALWAYS_ALLOW;
-
-  if (url.mount_type() == fileapi::kFileSystemTypeIsolated) {
-    // Permissions in isolated filesystems should be examined with
-    // FileSystem permission.
-    return fileapi::FILE_PERMISSION_USE_FILESYSTEM_PERMISSION;
-  }
-
-  // Also apply system's file permission by default.
-  return fileapi::FILE_PERMISSION_USE_FILE_PERMISSION;
-}
-
 fileapi::FileSystemOperation* CrosMountPointProvider::CreateFileSystemOperation(
     const fileapi::FileSystemURL& url,
     fileapi::FileSystemContext* context,
     base::PlatformFileError* error_code) const {
   DCHECK(url.is_valid());
+
+  if (!IsAccessAllowed(url)) {
+    *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
+    return NULL;
+  }
 
   if (url.type() == fileapi::kFileSystemTypeDrive) {
     fileapi::RemoteFileSystemProxyInterface* remote_proxy =
@@ -292,6 +271,9 @@ CrosMountPointProvider::CreateFileStreamReader(
     fileapi::FileSystemContext* context) const {
   DCHECK(url.is_valid());
 
+  if (!IsAccessAllowed(url))
+    return scoped_ptr<webkit_blob::FileStreamReader>();
+
   if (url.type() == fileapi::kFileSystemTypeDrive) {
     fileapi::RemoteFileSystemProxyInterface* remote_proxy =
         GetRemoteProxy(url.filesystem_id());
@@ -313,6 +295,9 @@ CrosMountPointProvider::CreateFileStreamWriter(
     int64 offset,
     fileapi::FileSystemContext* context) const {
   DCHECK(url.is_valid());
+
+  if (!IsAccessAllowed(url))
+    return scoped_ptr<fileapi::FileStreamWriter>();
 
   if (url.type() == fileapi::kFileSystemTypeDrive) {
     fileapi::RemoteFileSystemProxyInterface* remote_proxy =

@@ -91,9 +91,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxMountPointProvider
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type,
       base::PlatformFileError* error_code) OVERRIDE;
-  virtual FilePermissionPolicy GetPermissionPolicy(
-      const FileSystemURL& url,
-      int permissions) const OVERRIDE;
   virtual FileSystemOperation* CreateFileSystemOperation(
       const FileSystemURL& url,
       FileSystemContext* context,
@@ -164,6 +161,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxMountPointProvider
   void AddFileChangeObserver(FileSystemType type,
                              FileChangeObserver* observer,
                              base::SequencedTaskRunner* task_runner);
+
+  // Performs API-specific validity checks on the given path |url|.
+  // Returns true if access to |url| is valid in this filesystem.
+  bool IsAccessValid(const FileSystemURL& url) const;
 
   void set_enable_temporary_file_system_in_incognito(bool enable) {
     enable_temporary_file_system_in_incognito_ = enable;

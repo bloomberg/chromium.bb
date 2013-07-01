@@ -15,12 +15,17 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/glue/resource_type.h"
 
 class GURL;
 
 namespace base {
 class FilePath;
+}
+
+namespace fileapi {
+class FileSystemURL;
 }
 
 namespace content {
@@ -124,10 +129,16 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool CanReadDirectory(int child_id, const base::FilePath& directory);
 
   // Determines if certain permissions were granted for a file. |permissions|
-  // must be a bit-set of base::PlatformFileFlags.
+  // must be a bitwise-or'd value of base::PlatformFileFlags.
   bool HasPermissionsForFile(int child_id,
                              const base::FilePath& file,
                              int permissions);
+
+  // Determines if certain permissions were granted for a file in FileSystem
+  // API. |permissions| must be a bitwise-or'd value of base::PlatformFileFlags.
+  bool HasPermissionsForFileSystemFile(int child_id,
+                                       const fileapi::FileSystemURL& url,
+                                       int permissions);
 
   // Returns true if the specified child_id has been granted WebUIBindings.
   // The browser should check this property before assuming the child process is
@@ -165,11 +176,18 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       int permission);
 
   // Determines if certain permissions were granted for a file fystem.
-  // |permissions| must be a bit-set of base::PlatformFileFlags.
+  // |permissions| must be a bitwise-or'd value of base::PlatformFileFlags.
   bool HasPermissionsForFileSystem(
       int child_id,
       const std::string& filesystem_id,
       int permission);
+
+  // Register FileSystem type and permission policy which should be used
+  // for the type.  The |policy| must be a bitwise-or'd value of
+  // fileapi::FilePermissionPolicy.
+  void RegisterFileSystemPermissionPolicy(
+      fileapi::FileSystemType type,
+      int policy);
 
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;
@@ -181,6 +199,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   typedef std::set<std::string> SchemeSet;
   typedef std::map<int, SecurityState*> SecurityStateMap;
   typedef std::map<int, int> WorkerToMainProcessMap;
+  typedef std::map<fileapi::FileSystemType, int> FileSystemPermissionPolicyMap;
 
   // Obtain an instance of ChildProcessSecurityPolicyImpl via GetInstance().
   ChildProcessSecurityPolicyImpl();
@@ -190,7 +209,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   void AddChild(int child_id);
 
   // Determines if certain permissions were granted for a file to given child
-  // process. |permissions| must be a bit-set of base::PlatformFileFlags.
+  // process. |permissions| must be a bitwise-or'd value of
+  // base::PlatformFileFlags.
   bool ChildProcessHasPermissionsForFile(int child_id,
                                          const base::FilePath& file,
                                          int permissions);
@@ -217,6 +237,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // This maps keeps the record of which js worker thread child process
   // corresponds to which main js thread child process.
   WorkerToMainProcessMap worker_map_;
+
+  FileSystemPermissionPolicyMap file_system_policy_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicyImpl);
 };

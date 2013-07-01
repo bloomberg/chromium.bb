@@ -80,11 +80,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemMountPointProvider {
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type, base::PlatformFileError* error_code) = 0;
 
-  // Returns file permission policy we should apply for the given |url|.
-  virtual FilePermissionPolicy GetPermissionPolicy(
-      const FileSystemURL& url,
-      int permissions) const = 0;
-
   // Returns a new instance of the specialized FileSystemOperation for this
   // mount point based on the given triplet of |origin_url|, |file_system_type|
   // and |virtual_path|. On failure to create a file system operation, set
@@ -137,10 +132,7 @@ class ExternalFileSystemMountPointProvider
  public:
   // Returns true if |url| is allowed to be accessed.
   // This is supposed to perform ExternalFileSystem-specific security
-  // checks. This method is also likely to be called by
-  // FileSystemMountPointProvider::GetPermissionPolicy as
-  // GetPermissionPolicy is supposed to perform fileapi-generic security
-  // checks (which likely need to include ExternalFileSystem-specific checks).
+  // checks.
   virtual bool IsAccessAllowed(const fileapi::FileSystemURL& url) const = 0;
   // Returns the list of top level directories that are exposed by this
   // provider. This list is used to set appropriate child process file access

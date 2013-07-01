@@ -87,6 +87,8 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/browser/appcache/appcache_interceptor.h"
 #include "webkit/browser/blob/blob_storage_controller.h"
+#include "webkit/browser/fileapi/file_permission_policy.h"
+#include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/resource_request_body.h"
@@ -185,7 +187,8 @@ void SetReferrerForRequest(net::URLRequest* request, const Referrer& referrer) {
 // if the renderer is attempting to upload an unauthorized file.
 bool ShouldServiceRequest(int process_type,
                           int child_id,
-                          const ResourceHostMsg_Request& request_data)  {
+                          const ResourceHostMsg_Request& request_data,
+                          fileapi::FileSystemContext* file_system_context)  {
   if (process_type == PROCESS_TYPE_PLUGIN)
     return true;
 
@@ -210,6 +213,15 @@ bool ShouldServiceRequest(int process_type,
         NOTREACHED() << "Denied unauthorized upload of "
                      << iter->path().value();
         return false;
+      }
+      if (iter->type() == ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM) {
+        fileapi::FileSystemURL url = file_system_context->CrackURL(iter->url());
+        if (!policy->HasPermissionsForFileSystemFile(
+                child_id, url, fileapi::kReadFilePermissions)) {
+          NOTREACHED() << "Denied unauthorized upload of "
+                       << iter->url().spec();
+          return false;
+        }
       }
     }
   }
@@ -907,7 +919,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
   CHECK(ContainsKey(active_resource_contexts_, resource_context));
 
   if (is_shutdown_ ||
-      !ShouldServiceRequest(process_type, child_id, request_data)) {
+      !ShouldServiceRequest(process_type, child_id, request_data,
+                            filter_->file_system_context())) {
     AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
     return;
   }

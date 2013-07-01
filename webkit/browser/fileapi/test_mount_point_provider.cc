@@ -139,11 +139,6 @@ void TestMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
     copy_or_move_file_validator_factory_ = factory.Pass();
 }
 
-FilePermissionPolicy TestMountPointProvider::GetPermissionPolicy(
-    const FileSystemURL& url, int permissions) const {
-  return FILE_PERMISSION_ALWAYS_DENY;
-}
-
 FileSystemOperation* TestMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,

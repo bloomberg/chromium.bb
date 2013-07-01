@@ -11,6 +11,7 @@
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
@@ -52,6 +53,51 @@ void DidOpenFileSystem(
 }
 
 }  // namespace
+
+// static
+int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
+  switch (type) {
+    case kFileSystemTypeTemporary:
+    case kFileSystemTypePersistent:
+    case kFileSystemTypeSyncable:
+      return FILE_PERMISSION_SANDBOX;
+
+    case kFileSystemTypeDrive:
+    case kFileSystemTypeNativeForPlatformApp:
+    case kFileSystemTypeNativeLocal:
+      return FILE_PERMISSION_USE_FILE_PERMISSION;
+
+    case kFileSystemTypeRestrictedNativeLocal:
+      return FILE_PERMISSION_READ_ONLY |
+             FILE_PERMISSION_USE_FILE_PERMISSION;
+
+    // Following types are only accessed via IsolatedFileSystem, and
+    // don't have their own permission policies.
+    case kFileSystemTypeDeviceMedia:
+    case kFileSystemTypeDragged:
+    case kFileSystemTypeForTransientFile:
+    case kFileSystemTypeItunes:
+    case kFileSystemTypeNativeMedia:
+    case kFileSystemTypePicasa:
+      return FILE_PERMISSION_ALWAYS_DENY;
+
+    // Following types only appear as mount_type, and will not be
+    // queried for their permission policies.
+    case kFileSystemTypeIsolated:
+    case kFileSystemTypeExternal:
+      return FILE_PERMISSION_ALWAYS_DENY;
+
+    // Following types should not be used to access files by FileAPI clients.
+    case kFileSystemTypeTest:
+    case kFileSystemTypeSyncableForInternalSync:
+    case kFileSystemInternalTypeEnumEnd:
+    case kFileSystemInternalTypeEnumStart:
+    case kFileSystemTypeUnknown:
+      return FILE_PERMISSION_ALWAYS_DENY;
+  }
+  NOTREACHED();
+  return FILE_PERMISSION_ALWAYS_DENY;
+}
 
 FileSystemContext::FileSystemContext(
     scoped_ptr<FileSystemTaskRunners> task_runners,

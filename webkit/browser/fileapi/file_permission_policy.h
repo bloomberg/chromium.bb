@@ -16,17 +16,16 @@ WEBKIT_STORAGE_BROWSER_EXPORT extern const int kOpenFilePermissions;
 
 enum FilePermissionPolicy {
   // Any access should be always denied.
-  FILE_PERMISSION_ALWAYS_DENY,
+  FILE_PERMISSION_ALWAYS_DENY = 0x0,
 
-  // Any access should be always allowed. (This should be used only for
-  // access to sandbox directories.)
-  FILE_PERMISSION_ALWAYS_ALLOW,
+  // Access is sandboxed, no extra permission check is necessary.
+  FILE_PERMISSION_SANDBOX = 1 << 0,
+
+  // Access should be restricted to read-only.
+  FILE_PERMISSION_READ_ONLY = 1 << 1,
 
   // Access should be examined by per-file permission policy.
-  FILE_PERMISSION_USE_FILE_PERMISSION,
-
-  // Access should be examined by per-filesystem permission policy.
-  FILE_PERMISSION_USE_FILESYSTEM_PERMISSION,
+  FILE_PERMISSION_USE_FILE_PERMISSION = 1 << 2,
 };
 
 }  // namespace fileapi

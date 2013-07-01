@@ -190,84 +190,47 @@ TEST_F(SandboxMountPointProviderTest, EnumerateOrigins) {
   EXPECT_EQ(persistent_size, persistent_actual_size);
 }
 
-TEST_F(SandboxMountPointProviderTest, AccessPermissions) {
+TEST_F(SandboxMountPointProviderTest, IsAccessValid) {
   SetUpNewProvider(CreateAllowFileAccessOptions());
 
-  // Any access should be allowed in sandbox directory.
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
-            provider_->GetPermissionPolicy(CreateFileSystemURL("foo"),
-                                         kReadFilePermissions));
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
-            provider_->GetPermissionPolicy(CreateFileSystemURL("foo"),
-                                         kWriteFilePermissions));
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
-            provider_->GetPermissionPolicy(CreateFileSystemURL("foo"),
-                                         kCreateFilePermissions));
+  // Normal case.
+  EXPECT_TRUE(provider_->IsAccessValid(CreateFileSystemURL("a")));
 
   // Access to a path with parent references ('..') should be disallowed.
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
-            provider_->GetPermissionPolicy(CreateFileSystemURL("a/../b"),
-                                         kReadFilePermissions));
+  EXPECT_FALSE(provider_->IsAccessValid(CreateFileSystemURL("a/../b")));
 
   // Access from non-allowed scheme should be disallowed.
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
-            provider_->GetPermissionPolicy(
-                FileSystemURL::CreateForTest(
-                    GURL("unknown://bar"), kFileSystemTypeTemporary,
-                    base::FilePath::FromUTF8Unsafe("foo")),
-                kReadFilePermissions));
+  EXPECT_FALSE(provider_->IsAccessValid(
+      FileSystemURL::CreateForTest(
+          GURL("unknown://bar"), kFileSystemTypeTemporary,
+          base::FilePath::FromUTF8Unsafe("foo"))));
 
   // Access for non-sandbox type should be disallowed.
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
-            provider_->GetPermissionPolicy(
-                FileSystemURL::CreateForTest(
-                    GURL("http://foo/"), kFileSystemTypeTest,
-                    base::FilePath::FromUTF8Unsafe("foo")),
-                kReadFilePermissions));
+  EXPECT_FALSE(provider_->IsAccessValid(
+      FileSystemURL::CreateForTest(
+          GURL("http://foo/"), kFileSystemTypeTest,
+          base::FilePath::FromUTF8Unsafe("foo"))));
 
-  // Write access to the root folder should be restricted.
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
-            provider_->GetPermissionPolicy(CreateFileSystemURL(""),
-                                           kWriteFilePermissions));
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
-            provider_->GetPermissionPolicy(CreateFileSystemURL("/"),
-                                           kWriteFilePermissions));
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
-            provider_->GetPermissionPolicy(CreateFileSystemURL("/"),
-                                           kCreateFilePermissions));
+  // Access with restricted name should be disallowed.
+  EXPECT_FALSE(provider_->IsAccessValid(CreateFileSystemURL(".")));
+  EXPECT_FALSE(provider_->IsAccessValid(CreateFileSystemURL("..")));
 
-  // Create access with restricted name should be disallowed.
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
-            provider_->GetPermissionPolicy(CreateFileSystemURL(".."),
-                                           kCreateFilePermissions));
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
-            provider_->GetPermissionPolicy(CreateFileSystemURL("."),
-                                           kCreateFilePermissions));
+  // This is also diallowed due to Windows XP parent path handling.
+  EXPECT_FALSE(provider_->IsAccessValid(CreateFileSystemURL("...")));
+
+  // These are identified as unsafe cases due to weird path handling
+  // on Windows.
+  EXPECT_FALSE(provider_->IsAccessValid(CreateFileSystemURL(" ..")));
+  EXPECT_FALSE(provider_->IsAccessValid(CreateFileSystemURL(".. ")));
 
   // Similar but safe cases.
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
-            provider_->GetPermissionPolicy(CreateFileSystemURL(" ."),
-                                           kCreateFilePermissions));
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
-            provider_->GetPermissionPolicy(CreateFileSystemURL(". "),
-                                           kCreateFilePermissions));
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
-            provider_->GetPermissionPolicy(CreateFileSystemURL(" .."),
-                                           kCreateFilePermissions));
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
-            provider_->GetPermissionPolicy(CreateFileSystemURL(".. "),
-                                           kCreateFilePermissions));
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
-            provider_->GetPermissionPolicy(CreateFileSystemURL("b."),
-                                           kCreateFilePermissions));
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
-            provider_->GetPermissionPolicy(CreateFileSystemURL(".b"),
-                                           kCreateFilePermissions));
+  EXPECT_TRUE(provider_->IsAccessValid(CreateFileSystemURL(" .")));
+  EXPECT_TRUE(provider_->IsAccessValid(CreateFileSystemURL(". ")));
+  EXPECT_TRUE(provider_->IsAccessValid(CreateFileSystemURL("b.")));
+  EXPECT_TRUE(provider_->IsAccessValid(CreateFileSystemURL(".b")));
 
   // A path that looks like a drive letter.
-  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
-            provider_->GetPermissionPolicy(CreateFileSystemURL("c:"),
-                                           kCreateFilePermissions));
+  EXPECT_TRUE(provider_->IsAccessValid(CreateFileSystemURL("c:")));
 }
 
 TEST_F(SandboxMountPointProviderTest, GetRootPathCreateAndExamine) {

@@ -101,8 +101,6 @@ TEST(CrosMountPointProviderTest, GetRootDirectories) {
 }
 
 TEST(CrosMountPointProviderTest, AccessPermissions) {
-  const int kPermission = fileapi::kReadFilePermissions;
-
   url_util::AddStandardScheme("chrome-extension");
 
   scoped_refptr<quota::MockSpecialStoragePolicy> storage_policy =
@@ -135,80 +133,48 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
       base::FilePath(FPL("/usr/share/oem"))));
 
   // Provider specific mount point access.
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_ALWAYS_DENY,
-      provider.GetPermissionPolicy(
-          CreateFileSystemURL(extension, "removable/foo", mount_points.get()),
-          kPermission));
+  EXPECT_FALSE(provider.IsAccessAllowed(
+      CreateFileSystemURL(extension, "removable/foo", mount_points.get())));
 
   provider.GrantFileAccessToExtension(extension,
                                       base::FilePath(FPL("removable/foo")));
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_USE_FILE_PERMISSION,
-      provider.GetPermissionPolicy(
-          CreateFileSystemURL(extension, "removable/foo", mount_points.get()),
-          kPermission));
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_ALWAYS_DENY,
-      provider.GetPermissionPolicy(
-          CreateFileSystemURL(extension, "removable/foo1", mount_points.get()),
-          kPermission));
+  EXPECT_TRUE(provider.IsAccessAllowed(
+      CreateFileSystemURL(extension, "removable/foo", mount_points.get())));
+  EXPECT_FALSE(provider.IsAccessAllowed(
+      CreateFileSystemURL(extension, "removable/foo1", mount_points.get())));
 
   // System mount point access.
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_ALWAYS_DENY,
-      provider.GetPermissionPolicy(
-          CreateFileSystemURL(extension, "system/foo",
-                              system_mount_points.get()),
-          kPermission));
+  EXPECT_FALSE(provider.IsAccessAllowed(
+      CreateFileSystemURL(extension, "system/foo", system_mount_points.get())));
 
   provider.GrantFileAccessToExtension(extension,
                                       base::FilePath(FPL("system/foo")));
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_USE_FILE_PERMISSION,
-      provider.GetPermissionPolicy(
-          CreateFileSystemURL(extension, "system/foo",
-                              system_mount_points.get()),
-          kPermission));
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_ALWAYS_DENY,
-      provider.GetPermissionPolicy(
-          CreateFileSystemURL(extension, "system/foo1",
-                              system_mount_points.get()),
-          kPermission));
+  EXPECT_TRUE(provider.IsAccessAllowed(
+      CreateFileSystemURL(extension, "system/foo", system_mount_points.get())));
+  EXPECT_FALSE(provider.IsAccessAllowed(
+      CreateFileSystemURL(extension, "system/foo1",
+                          system_mount_points.get())));
 
   // oem is restricted file system.
   provider.GrantFileAccessToExtension(
       extension, base::FilePath(FPL("oem/foo")));
   // The extension should not be able to access the file even if
   // GrantFileAccessToExtension was called.
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_ALWAYS_DENY,
-      provider.GetPermissionPolicy(
-          CreateFileSystemURL(extension, "oem/foo", mount_points.get()),
-          kPermission));
+  EXPECT_FALSE(provider.IsAccessAllowed(
+      CreateFileSystemURL(extension, "oem/foo", mount_points.get())));
 
   provider.GrantFullAccessToExtension(extension);
   // The extension should be able to access restricted file system after it was
   // granted full access.
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_USE_FILE_PERMISSION,
-      provider.GetPermissionPolicy(
-          CreateFileSystemURL(extension, "oem/foo", mount_points.get()),
-          kPermission));
+  EXPECT_TRUE(provider.IsAccessAllowed(
+      CreateFileSystemURL(extension, "oem/foo", mount_points.get())));
   // The extension which was granted full access should be able to access any
   // path on current file systems.
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_USE_FILE_PERMISSION,
-      provider.GetPermissionPolicy(
-          CreateFileSystemURL(extension, "removable/foo1", mount_points.get()),
-          kPermission));
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_USE_FILE_PERMISSION,
-      provider.GetPermissionPolicy(
-          CreateFileSystemURL(extension, "system/foo1",
-                              system_mount_points.get()),
-          kPermission));
+  EXPECT_TRUE(provider.IsAccessAllowed(
+      CreateFileSystemURL(extension, "removable/foo1", mount_points.get())));
+  EXPECT_TRUE(provider.IsAccessAllowed(
+      CreateFileSystemURL(extension, "system/foo1",
+                          system_mount_points.get())));
 
   // The extension cannot access new mount points.
   // TODO(tbarzic): This should probably be changed.
@@ -216,27 +182,19 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
       "test",
       fileapi::kFileSystemTypeNativeLocal,
       base::FilePath(FPL("/foo/test"))));
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_ALWAYS_DENY,
-      provider.GetPermissionPolicy(
-          CreateFileSystemURL(extension, "test_/foo", mount_points.get()),
-          kPermission));
+  EXPECT_FALSE(provider.IsAccessAllowed(
+      CreateFileSystemURL(extension, "test_/foo", mount_points.get())));
 
   provider.RevokeAccessForExtension(extension);
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_ALWAYS_DENY,
-      provider.GetPermissionPolicy(
-          CreateFileSystemURL(extension, "removable/foo", mount_points.get()),
-          kPermission));
+  EXPECT_FALSE(provider.IsAccessAllowed(
+      CreateFileSystemURL(extension, "removable/foo", mount_points.get())));
 
   fileapi::FileSystemURL internal_url = FileSystemURL::CreateForTest(
       GURL("chrome://foo"),
       fileapi::kFileSystemTypeExternal,
       base::FilePath(FPL("removable/")));
   // Internal WebUI should have full access.
-  EXPECT_EQ(
-      fileapi::FILE_PERMISSION_ALWAYS_ALLOW,
-      provider.GetPermissionPolicy(internal_url, kPermission));
+  EXPECT_TRUE(provider.IsAccessAllowed(internal_url));
 }
 
 TEST(CrosMountPointProvider, GetVirtualPathConflictWithSystemPoints) {

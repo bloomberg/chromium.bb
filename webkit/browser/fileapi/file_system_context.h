@@ -71,6 +71,14 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
     : public base::RefCountedThreadSafe<FileSystemContext,
                                         DefaultContextDeleter> {
  public:
+  // Returns file permission policy we should apply for the given |type|.
+  // The return value must be bitwise-or'd of FilePermissionPolicy.
+  //
+  // Note: if a part of a filesystem is returned via 'Isolated' mount point,
+  // its per-filesystem permission overrides the underlying filesystem's
+  // permission policy.
+  static int GetPermissionPolicy(FileSystemType type);
+
   // task_runners->file_task_runner() is used as default TaskRunner.
   // Unless a MountPointProvider is overridden in CreateFileSystemOperation,
   // it is used for all file operations and file related meta operations.

@@ -272,42 +272,15 @@ SandboxMountPointProvider::GetCopyOrMoveFileValidatorFactory(
   return NULL;
 }
 
-FilePermissionPolicy SandboxMountPointProvider::GetPermissionPolicy(
-    const FileSystemURL& url, int permissions) const {
-  if (!CanHandleType(url.type()) || !IsAllowedScheme(url.origin()))
-    return FILE_PERMISSION_ALWAYS_DENY;
-
-  if (url.path().ReferencesParent())
-    return FILE_PERMISSION_ALWAYS_DENY;
-
-  // Any write access is disallowed on the root path.
-  if (VirtualPath::IsRootPath(url.path())
-      && (permissions & ~kReadFilePermissions))
-    return FILE_PERMISSION_ALWAYS_DENY;
-
-  if ((permissions & kCreateFilePermissions) == kCreateFilePermissions) {
-    base::FilePath filename = VirtualPath::BaseName(url.path());
-    // See if the name is allowed to create.
-    for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
-      if (filename.value() == kRestrictedNames[i])
-        return FILE_PERMISSION_ALWAYS_DENY;
-    }
-    for (size_t i = 0; i < arraysize(kRestrictedChars); ++i) {
-      if (filename.value().find(kRestrictedChars[i]) !=
-          base::FilePath::StringType::npos)
-        return FILE_PERMISSION_ALWAYS_DENY;
-    }
-  }
-
-  // Access to the sandbox directory (and only to the directory) should be
-  // always allowed.
-  return FILE_PERMISSION_ALWAYS_ALLOW;
-}
-
 FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::PlatformFileError* error_code) const {
+  if (!IsAccessValid(url)) {
+    *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
+    return NULL;
+  }
+
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
 
@@ -339,6 +312,8 @@ SandboxMountPointProvider::CreateFileStreamReader(
     int64 offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
+  if (!IsAccessValid(url))
+    return scoped_ptr<webkit_blob::FileStreamReader>();
   return scoped_ptr<webkit_blob::FileStreamReader>(
       new FileSystemFileStreamReader(
           context, url, offset, expected_modification_time));
@@ -349,6 +324,8 @@ SandboxMountPointProvider::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
+  if (!IsAccessValid(url))
+    return scoped_ptr<fileapi::FileStreamWriter>();
   return scoped_ptr<fileapi::FileStreamWriter>(
       new SandboxFileStreamWriter(context, url, offset, update_observers_));
 }
@@ -594,6 +571,41 @@ void SandboxMountPointProvider::AddFileChangeObserver(
   ChangeObserverList::Source observer_source = list->source();
   observer_source.AddObserver(observer, task_runner);
   *list = ChangeObserverList(observer_source);
+}
+
+bool SandboxMountPointProvider::IsAccessValid(
+    const FileSystemURL& url) const {
+  if (!IsAllowedScheme(url.origin()))
+    return false;
+
+  if (!CanHandleType(url.type()))
+    return false;
+
+  if (url.path().ReferencesParent())
+    return false;
+
+  // Return earlier if the path is '/', because VirtualPath::BaseName()
+  // returns '/' for '/' and we fail the "basename != '/'" check below.
+  // (We exclude '.' because it's disallowed by spec.)
+  if (VirtualPath::IsRootPath(url.path()) &&
+      url.path() != base::FilePath(base::FilePath::kCurrentDirectory))
+    return true;
+
+  // Restricted names specified in
+  // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
+  base::FilePath filename = VirtualPath::BaseName(url.path());
+  // See if the name is allowed to create.
+  for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
+    if (filename.value() == kRestrictedNames[i])
+      return false;
+  }
+  for (size_t i = 0; i < arraysize(kRestrictedChars); ++i) {
+    if (filename.value().find(kRestrictedChars[i]) !=
+        base::FilePath::StringType::npos)
+      return false;
+  }
+
+  return true;
 }
 
 base::FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(

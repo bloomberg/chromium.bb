@@ -159,14 +159,6 @@ MediaFileSystemMountPointProvider::GetCopyOrMoveFileValidatorFactory(
   return NULL;
 }
 
-fileapi::FilePermissionPolicy
-MediaFileSystemMountPointProvider::GetPermissionPolicy(
-    const FileSystemURL& url, int permissions) const {
-  // Access to media file systems should be checked using per-filesystem
-  // access permission.
-  return fileapi::FILE_PERMISSION_USE_FILESYSTEM_PERMISSION;
-}
-
 fileapi::FileSystemOperation*
 MediaFileSystemMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,

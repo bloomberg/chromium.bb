@@ -71,14 +71,26 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
       external_mount_points,
       &additional_providers);
 
-  return new fileapi::FileSystemContext(
-      task_runners.Pass(),
-      external_mount_points,
-      special_storage_policy,
-      quota_manager_proxy,
-      additional_providers.Pass(),
-      profile_path,
-      CreateBrowserFileSystemOptions(is_incognito));
+  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+      new fileapi::FileSystemContext(
+          task_runners.Pass(),
+          external_mount_points,
+          special_storage_policy,
+          quota_manager_proxy,
+          additional_providers.Pass(),
+          profile_path,
+          CreateBrowserFileSystemOptions(is_incognito));
+
+  std::vector<fileapi::FileSystemType> types;
+  file_system_context->GetFileSystemTypes(&types);
+  for (size_t i = 0; i < types.size(); ++i) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->
+        RegisterFileSystemPermissionPolicy(
+            types[i],
+            fileapi::FileSystemContext::GetPermissionPolicy(types[i]));
+  }
+
+  return file_system_context;
 }
 
 bool CheckFileSystemPermissionsForProcess(
@@ -104,29 +116,9 @@ bool CheckFileSystemPermissionsForProcess(
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  switch (mount_point_provider->GetPermissionPolicy(url, permissions)) {
-    case fileapi::FILE_PERMISSION_ALWAYS_DENY:
-      *error = base::PLATFORM_FILE_ERROR_SECURITY;
-      return false;
-    case fileapi::FILE_PERMISSION_ALWAYS_ALLOW:
-      CHECK(context->IsSandboxFileSystem(url.type()));
-      return true;
-    case fileapi::FILE_PERMISSION_USE_FILE_PERMISSION: {
-      const bool success = policy->HasPermissionsForFile(
-          process_id, url.path(), permissions);
-      if (!success)
-        *error = base::PLATFORM_FILE_ERROR_SECURITY;
-      return success;
-    }
-    case fileapi::FILE_PERMISSION_USE_FILESYSTEM_PERMISSION: {
-      const bool success = policy->HasPermissionsForFileSystem(
-          process_id, url.mount_filesystem_id(), permissions);
-      if (!success)
-        *error = base::PLATFORM_FILE_ERROR_SECURITY;
-      return success;
-    }
-  }
-  NOTREACHED();
+  if (policy->HasPermissionsForFileSystemFile(process_id, url, permissions))
+    return true;
+
   *error = base::PLATFORM_FILE_ERROR_SECURITY;
   return false;
 }
