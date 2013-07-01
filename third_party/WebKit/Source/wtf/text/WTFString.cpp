@@ -406,6 +406,18 @@ Vector<UChar> String::charactersWithNullTermination() const
     return result;
 }
 
+unsigned String::copyTo(UChar* buffer, unsigned maxLength) const
+{
+    unsigned numCharacters = std::min(length(), maxLength);
+    if (!numCharacters)
+        return 0;
+    if (is8Bit())
+        StringImpl::copyChars(buffer, characters8(), numCharacters);
+    else
+        StringImpl::copyChars(buffer, characters16(), numCharacters);
+    return numCharacters;
+}
+
 String String::format(const char *format, ...)
 {
     va_list args;

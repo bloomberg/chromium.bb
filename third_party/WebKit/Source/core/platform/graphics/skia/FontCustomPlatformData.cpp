@@ -78,8 +78,8 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(int size, bool bold, b
         ASSERT_NOT_REACHED();
         return FontPlatformData();
     }
-    memcpy(logFont.lfFaceName, m_name.charactersWithNullTermination().data(),
-           sizeof(logFont.lfFaceName[0]) * (1 + m_name.length()));
+    unsigned len = m_name.copyTo(logFont.lfFaceName, LF_FACESIZE - 1);
+    logFont.lfFaceName[len] = '\0';
 
     // FIXME: almost identical to FillLogFont in FontCacheWin.cpp.
     // Need to refactor.
