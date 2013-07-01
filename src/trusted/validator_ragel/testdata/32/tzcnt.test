@@ -1,5 +1,7 @@
 @hex:
-  # Test if we recognize tzcnt as a bsf with REP prefix.
+  # tzcnt %ebx,%eax
   f3 0f bc c3
+@dis:
+     0:	f3 0f bc c3                                  	repz bsf %ebx,%eax
 @rdfa_output:
   return code: 0
