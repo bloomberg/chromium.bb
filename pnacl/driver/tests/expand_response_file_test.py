@@ -9,31 +9,13 @@ This tests that @file (response files) are parsed as a command shell
 would parse them (stripping quotes when necessary, etc.)
 """
 
+import driver_test_utils
 import driver_tools
 
 import os
-import tempfile
 import unittest
 
-class TestExpandResponseFile(unittest.TestCase):
-
-  def setUp(self):
-    self.tempfiles = []
-
-  def getTemp(self):
-    # Set delete=False, so that we can close the files and
-    # re-open them.  Windows sometimes does not allow you to
-    # re-open an already opened temp file.
-    t = tempfile.NamedTemporaryFile(delete=False)
-    self.tempfiles.append(t)
-    return t
-
-  def tearDown(self):
-    for t in self.tempfiles:
-      if not t.closed:
-        t.close()
-      os.remove(t.name)
-
+class TestExpandResponseFile(driver_test_utils.DriverTesterCommon):
   def test_ShouldExpandCommandFile(self):
     """Test that response files are detected in commandline parser. """
     # NOTE: This is currently not just syntactic.  We currently require

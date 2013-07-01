@@ -18,28 +18,11 @@ import os
 import tempfile
 import unittest
 
-class TestStrip(unittest.TestCase):
+class TestStrip(driver_test_utils.DriverTesterCommon):
 
   def setUp(self):
+    super(TestStrip, self).setUp()
     driver_test_utils.ApplyTestEnvOverrides(env)
-    self.tempfiles = []
-
-  def getTemp(self, **kwargs):
-    # Set delete=False, so that we can close the files and
-    # re-open them.  Windows sometimes does not allow you to
-    # re-open an already opened temp file.
-    t = tempfile.NamedTemporaryFile(delete=False, **kwargs)
-    self.tempfiles.append(t)
-    return t
-
-  def tearDown(self):
-    for t in self.tempfiles:
-      if not t.closed:
-        t.close()
-      os.remove(t.name)
-    # Wipe other temp files that are normally wiped by DriverExit.
-    # We don't want anything to exit, so we do not call DriverExit manually.
-    driver_log.TempFiles.wipe()
 
   def getSource(self, num):
     with self.getTemp(suffix='.c') as t:

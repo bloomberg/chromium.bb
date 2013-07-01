@@ -3,11 +3,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import driver_env
 import os
 from os.path import dirname
 import platform
 import sys
+import tempfile
+import unittest
+
+import driver_env
+import driver_log
 
 def CanRunHost():
   # Some of the test+tools require running the host binaries, but that
@@ -96,3 +100,26 @@ def GetPlatformToTest():
     if arg.startswith('--platform='):
       return arg.split('=')[1]
   raise Exception('Unknown platform')
+
+class DriverTesterCommon(unittest.TestCase):
+  def setUp(self):
+    super(DriverTesterCommon, self).setUp()
+    self._tempfiles = []
+
+  def tearDown(self):
+    for t in self._tempfiles:
+      if not t.closed:
+        t.close()
+      os.remove(t.name)
+    driver_log.TempFiles.wipe()
+    super(DriverTesterCommon, self).tearDown()
+
+  def getTemp(self, **kwargs):
+    """ Get a temporary named file object.
+    """
+    # Set delete=False, so that we can close the files and
+    # re-open them.  Windows sometimes does not allow you to
+    # re-open an already opened temp file.
+    t = tempfile.NamedTemporaryFile(delete=False, **kwargs)
+    self._tempfiles.append(t)
+    return t
