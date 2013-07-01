@@ -38,6 +38,8 @@ patch -p4 < $patches_dir/secretexporterlocks.patch
 
 patch -p4 < $patches_dir/cbc.patch
 
+patch -p4 < $patches_dir/aes256keylength.patch
+
 patch -p4 < $patches_dir/suitebonly.patch
 
 patch -p4 < $patches_dir/secitemarray.patch
