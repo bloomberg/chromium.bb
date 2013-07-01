@@ -140,6 +140,9 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
     : OmniboxView(profile, controller, toolbar_model, command_updater),
       popup_view_(new OmniboxPopupViewMac(this, model(), field)),
       field_(field),
+      saved_temporary_selection_(NSMakeRange(0, 0)),
+      selection_before_change_(NSMakeRange(0, 0)),
+      marked_range_before_change_(NSMakeRange(0, 0)),
       delete_was_pressed_(false),
       delete_at_end_pressed_(false) {
   [field_ setObserver:this];
