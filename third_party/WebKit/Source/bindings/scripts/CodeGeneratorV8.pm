@@ -1726,6 +1726,9 @@ sub GenerateNormalAttrSetterCallback
 
     $code .= "static void ${attrName}AttrSetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)\n";
     $code .= "{\n";
+    if (!$attrExt->{"PerWorldBindings"}) {
+        $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMMethod\");\n";
+    }
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($attrExt->{"DeprecateAs"});
     if (HasActivityLogging($forMainWorldSuffix, $attrExt, "Setter")) {
@@ -1735,6 +1738,9 @@ sub GenerateNormalAttrSetterCallback
         $code .= "    ${v8ClassName}::${attrName}AttrSetterCustom(name, value, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::${attrName}AttrSetter${forMainWorldSuffix}(name, value, info);\n";
+    }
+    if (!$attrExt->{"PerWorldBindings"}) {
+        $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
     }
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;

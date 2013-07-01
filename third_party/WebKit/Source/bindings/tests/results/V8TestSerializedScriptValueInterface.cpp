@@ -85,7 +85,9 @@ static void valueAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> val
 
 static void valueAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestSerializedScriptValueInterfaceV8Internal::valueAttrSetter(name, value, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void readonlyValueAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -132,7 +134,9 @@ static void cachedValueAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Valu
 
 static void cachedValueAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestSerializedScriptValueInterfaceV8Internal::cachedValueAttrSetter(name, value, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void cachedReadonlyValueAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
