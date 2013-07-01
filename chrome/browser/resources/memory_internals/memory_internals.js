@@ -64,8 +64,14 @@ var MainView = (function() {
           case 'process-info':
             value = process['type'] + '<br>' + process['titles'].join('<br>');
             break;
-          case 'process-memory':
+          case 'process-memory-private':
             value = process['memory_private'];
+            break;
+          case 'process-memory-v8':
+            if (process['v8_alloc'] !== undefined) {
+              value = 'Used : ' + process['v8_used'] + '<br>' +
+                  'Allocated : ' + process['v8_alloc'];
+            }
             break;
           }
           var col = row.insertCell(-1);

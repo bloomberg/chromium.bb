@@ -9,10 +9,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "base/values.h"
 #include "chrome/browser/memory_details.h"
 #include "content/public/browser/browser_thread.h"
 
 class MemoryInternalsHandler;
+class RendererDetails;
 
 namespace base {
 class ListValue;
@@ -21,7 +23,7 @@ class Value;
 
 class MemoryInternalsProxy
     : public base::RefCountedThreadSafe<
-        MemoryInternalsProxy, content::BrowserThread::DeleteOnUIThread> {
+          MemoryInternalsProxy, content::BrowserThread::DeleteOnUIThread> {
  public:
   MemoryInternalsProxy();
 
@@ -43,6 +45,12 @@ class MemoryInternalsProxy
   // Sends a message from IO thread to update UI on UI thread.
   void UpdateUIOnUIThread(const string16& update);
 
+  // Measure memory usage of V8.
+  void OnV8MemoryUpdate(const base::ProcessId pid,
+                        const size_t v8_allocated,
+                        const size_t v8_used);
+  void RequestV8MemoryUpdate();
+
   // Convert memory information into DictionaryValue format.
   void OnDetailsAvailable(const ProcessData& browser);
 
@@ -51,6 +59,8 @@ class MemoryInternalsProxy
                                         base::Value* args);
 
   MemoryInternalsHandler* handler_;
+  base::DictionaryValue* information_;
+  RendererDetails* renderer_details_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryInternalsProxy);
 };
