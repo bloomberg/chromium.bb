@@ -11,15 +11,30 @@
 #include <map>
 #include <string>
 
-#include "nacl_io/kernel_handle.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+
+#include "mount_mock.h"
+#include "mount_node_mock.h"
+
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/mount_mem.h"
 #include "nacl_io/osmman.h"
 #include "nacl_io/path.h"
+#include "nacl_io/typed_mount_factory.h"
 
-#include "gtest/gtest.h"
+using ::testing::_;
+using ::testing::DoAll;
+using ::testing::Invoke;
+using ::testing::Return;
+using ::testing::SaveArg;
+using ::testing::SetArgPointee;
+using ::testing::StrEq;
+using ::testing::WithArgs;
+
+namespace {
 
 class KernelProxyFriend : public KernelProxy {
  public:
@@ -44,22 +59,24 @@ class KernelProxyTest : public ::testing::Test {
   KernelProxyFriend* kp_;
 };
 
+}  // namespace
+
 TEST_F(KernelProxyTest, FileLeak) {
   const size_t buffer_size = 1024;
   char filename[128];
   int file_num;
   int garbage[buffer_size];
 
-  MountMem* mount = (MountMem*) kp_->RootMount();
+  MountMem* mount = (MountMem*)kp_->RootMount();
   ScopedMountNode root;
 
   EXPECT_EQ(0, mount->Open(Path("/"), O_RDONLY, &root));
   EXPECT_EQ(0, root->ChildCount());
 
-  for (file_num=0; file_num < 4096; file_num++) {
+  for (file_num = 0; file_num < 4096; file_num++) {
     sprintf(filename, "/foo%i.tmp", file_num++);
-    FILE *f = fopen(filename, "w");
-    EXPECT_NE((FILE *) 0, f);
+    FILE* f = fopen(filename, "w");
+    EXPECT_NE((FILE*)0, f);
     EXPECT_EQ(1, root->ChildCount());
     EXPECT_EQ(buffer_size, fwrite(garbage, 1, buffer_size, f));
     fclose(f);
@@ -227,6 +244,8 @@ TEST_F(KernelProxyTest, MemMountDup) {
   // fd, new_fd, dup_fd -> "/bar"
 }
 
+namespace {
+
 StringMap_t g_StringMap;
 
 class MountMockInit : public MountMem {
@@ -237,13 +256,14 @@ class MountMockInit : public MountMem {
       return EINVAL;
     return 0;
   }
-  ;
+
+  friend class TypedMountFactory<MountMockInit>;
 };
 
 class KernelProxyMountMock : public KernelProxy {
   virtual void Init(PepperInterface* ppapi) {
     KernelProxy::Init(NULL);
-    factories_["initfs"] = MountMockInit::Create<MountMockInit>;
+    factories_["initfs"] = new TypedMountFactory<MountMockInit>;
   }
 };
 
@@ -259,6 +279,8 @@ class KernelProxyMountTest : public ::testing::Test {
  private:
   KernelProxy* kp_;
 };
+
+}  // namespace
 
 TEST_F(KernelProxyMountTest, MountInit) {
   int res1 = ki_mount("/", "/mnt1", "initfs", 0, "false,foo=bar");
@@ -326,12 +348,14 @@ class MountMockMMap : public Mount {
   virtual Error Mkdir(const Path& path, int permissions) { return ENOSYS; }
   virtual Error Rmdir(const Path& path) { return ENOSYS; }
   virtual Error Remove(const Path& path) { return ENOSYS; }
+
+  friend class TypedMountFactory<MountMockMMap>;
 };
 
 class KernelProxyMockMMap : public KernelProxy {
   virtual void Init(PepperInterface* ppapi) {
     KernelProxy::Init(NULL);
-    factories_["mmapfs"] = MountMockInit::Create<MountMockMMap>;
+    factories_["mmapfs"] = new TypedMountFactory<MountMockMMap>;
   }
 };
 
@@ -376,3 +400,103 @@ TEST_F(KernelProxyMMapTest, MMap) {
   EXPECT_EQ(3, g_MMapCount);
 }
 
+namespace {
+
+class SingletonMountFactory : public MountFactory {
+ public:
+  SingletonMountFactory(const ScopedMount& mount) : mount_(mount) {}
+
+  virtual Error CreateMount(int dev,
+                            StringMap_t& args,
+                            PepperInterface* ppapi,
+                            ScopedMount* out_mount) {
+    *out_mount = mount_;
+    return 0;
+  }
+
+ private:
+  ScopedMount mount_;
+};
+
+class KernelProxyError : public KernelProxy {
+ public:
+  KernelProxyError() : mnt_(new MountMock) {}
+
+  virtual void Init(PepperInterface* ppapi) {
+    KernelProxy::Init(ppapi);
+    factories_["testfs"] = new SingletonMountFactory(mnt_);
+
+    EXPECT_CALL(*mnt_, Destroy()).Times(1);
+  }
+
+  ScopedRef<MountMock> mnt() { return mnt_; }
+
+ private:
+  ScopedRef<MountMock> mnt_;
+};
+
+class KernelProxyErrorTest : public ::testing::Test {
+ public:
+  KernelProxyErrorTest() : kp_(new KernelProxyError) {
+    ki_init(kp_);
+    // Unmount the passthrough FS and mount a testfs.
+    EXPECT_EQ(0, kp_->umount("/"));
+    EXPECT_EQ(0, kp_->mount("", "/", "testfs", 0, NULL));
+  }
+
+  ~KernelProxyErrorTest() {
+    ki_uninit();
+    delete kp_;
+  }
+
+  ScopedRef<MountMock> mnt() { return kp_->mnt(); }
+
+ private:
+  KernelProxyError* kp_;
+};
+
+}  // namespace
+
+TEST_F(KernelProxyErrorTest, WriteError) {
+  ScopedRef<MountMock> mock_mnt(mnt());
+  ScopedRef<MountNodeMock> mock_node(new MountNodeMock(&*mock_mnt));
+  EXPECT_CALL(*mock_mnt, Open(_, _, _))
+      .WillOnce(DoAll(SetArgPointee<2>(mock_node), Return(0)));
+
+  EXPECT_CALL(*mock_node, Write(_, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<3>(0),  // Wrote 0 bytes.
+                      Return(1234)));       // Returned error 1234.
+
+  EXPECT_CALL(*mock_node, Destroy()).Times(1);
+
+  int fd = ki_open("/dummy", O_WRONLY);
+  EXPECT_NE(0, fd);
+
+  char buf[20];
+  EXPECT_EQ(-1, ki_write(fd, &buf[0], 20));
+  // The Mount should be able to return whatever error it wants and have it
+  // propagate through.
+  EXPECT_EQ(1234, errno);
+}
+
+TEST_F(KernelProxyErrorTest, ReadError) {
+  ScopedRef<MountMock> mock_mnt(mnt());
+  ScopedRef<MountNodeMock> mock_node(new MountNodeMock(&*mock_mnt));
+  EXPECT_CALL(*mock_mnt, Open(_, _, _))
+      .WillOnce(DoAll(SetArgPointee<2>(mock_node), Return(0)));
+
+  EXPECT_CALL(*mock_node, Read(_, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<3>(0),  // Read 0 bytes.
+                      Return(1234)));       // Returned error 1234.
+
+  EXPECT_CALL(*mock_node, Destroy()).Times(1);
+
+  int fd = ki_open("/dummy", O_RDONLY);
+  EXPECT_NE(0, fd);
+
+  char buf[20];
+  EXPECT_EQ(-1, ki_read(fd, &buf[0], 20));
+  // The Mount should be able to return whatever error it wants and have it
+  // propagate through.
+  EXPECT_EQ(1234, errno);
+}

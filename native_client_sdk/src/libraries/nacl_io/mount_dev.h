@@ -6,6 +6,7 @@
 #define LIBRARIES_NACL_IO_MOUNT_DEV_H_
 
 #include "nacl_io/mount.h"
+#include "nacl_io/typed_mount_factory.h"
 
 class MountNode;
 
@@ -26,7 +27,8 @@ class MountDev : public Mount {
  private:
   ScopedMountNode root_;
 
-  friend class Mount;
+  friend class TypedMountFactory<MountDev>;
+  DISALLOW_COPY_AND_ASSIGN(MountDev);
 };
 
 #endif  // LIBRARIES_NACL_IO_MOUNT_DEV_H_

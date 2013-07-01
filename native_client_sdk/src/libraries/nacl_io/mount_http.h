@@ -9,10 +9,9 @@
 #include <string>
 #include "nacl_io/mount.h"
 #include "nacl_io/pepper_interface.h"
+#include "nacl_io/typed_mount_factory.h"
 
 class MountNode;
-class MountNodeDir;
-class MountNodeHttp;
 class MountHttpMock;
 
 std::string NormalizeHeaderKey(const std::string& s);
@@ -54,7 +53,7 @@ class MountHttp : public Mount {
   bool cache_stat_;
   bool cache_content_;
 
-  friend class Mount;
+  friend class TypedMountFactory<MountHttp>;
   friend class MountNodeHttp;
   friend class MountHttpMock;
 };

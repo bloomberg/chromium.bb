@@ -265,6 +265,7 @@ include/nacl_io/kernel_wrap.h
 include/nacl_io/kernel_wrap_real.h
 include/nacl_io/mount_dev.h
 include/nacl_io/mount.h
+include/nacl_io/mount_factory.h
 include/nacl_io/mount_html5fs.h
 include/nacl_io/mount_http.h
 include/nacl_io/mount_mem.h
@@ -288,6 +289,7 @@ include/nacl_io/pepper/define_empty_macros.h
 include/nacl_io/pepper_interface.h
 include/nacl_io/pepper/undef_macros.h
 include/nacl_io/real_pepper_interface.h
+include/nacl_io/typed_mount_factory.h
 include/ppapi/c/dev/deprecated_bool.h
 include/ppapi/c/dev/ppb_audio_input_dev.h
 include/ppapi/c/dev/ppb_buffer_dev.h

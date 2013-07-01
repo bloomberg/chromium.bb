@@ -60,7 +60,7 @@ function handleMessage(event) {
   // in the test failure summary).
   var argList = msg.substr(firstColon + 1);
   args = [];
-  for (var i = 0; i < argCount; ++i) {
+  for (var i = 0; i < argCount - 1; ++i) {
     var arg;
     var comma = argList.indexOf(',');
     if (comma === -1) {
@@ -77,6 +77,9 @@ function handleMessage(event) {
     }
     args.push(arg);
   }
+
+  // Last argument is the rest of the message.
+  args.push(argList);
 
   cmdFunction.apply(null, args);
 }

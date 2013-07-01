@@ -5,22 +5,14 @@
 #ifndef LIBRARIES_NACL_IO_KERNEL_PROXY_H_
 #define LIBRARIES_NACL_IO_KERNEL_PROXY_H_
 
-#include <ppapi/c/pp_instance.h>
-#include <ppapi/c/ppb.h>
-#include <pthread.h>
 #include <map>
 #include <string>
-#include <vector>
 
 #include "nacl_io/kernel_object.h"
-#include "nacl_io/mount.h"
+#include "nacl_io/mount_factory.h"
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
-#include "nacl_io/path.h"
 
-class KernelHandle;
-class Mount;
-class MountNode;
 class PepperInterface;
 
 // KernelProxy provide one-to-one mapping for libc kernel calls.  Calls to the
@@ -30,12 +22,7 @@ class PepperInterface;
 // other classes should return Error (as defined by nacl_io/error.h).
 class KernelProxy : protected KernelObject {
  public:
-  typedef Error (*MountFactory_t)(int,
-                                  StringMap_t&,
-                                  PepperInterface*,
-                                  ScopedMount*);
-  typedef std::map<std::string, std::string> StringMap_t;
-  typedef std::map<std::string, MountFactory_t> MountFactoryMap_t;
+  typedef std::map<std::string, MountFactory*> MountFactoryMap_t;
 
   KernelProxy();
   virtual ~KernelProxy();

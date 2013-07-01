@@ -21,7 +21,6 @@ class MountNode;
 
 typedef ScopedRef<MountNode> ScopedMountNode;
 
-
 // NOTE: The KernelProxy is the only class that should be setting errno. All
 // other classes should return Error (as defined by nacl_io/error.h).
 class MountNode : public RefObject {
@@ -70,7 +69,7 @@ class MountNode : public RefObject {
   virtual int GetMode();
   virtual int GetType();
   // Assume that |out_size| is non-NULL.
-  virtual Error GetSize(size_t *out_size);
+  virtual Error GetSize(size_t* out_size);
   virtual bool IsaDir();
   virtual bool IsaFile();
   virtual bool IsaTTY();
@@ -99,7 +98,7 @@ class MountNode : public RefObject {
   struct stat stat_;
 
   // We use a pointer directly to avoid cycles in the ref count.
-  // TODO(noelallen) We should change this to it's unnecessary for the node
+  // TODO(noelallen) We should change this so it's unnecessary for the node
   // to track it's parent.  When a node is unlinked, the mount should do
   // any cleanup it needs.
   Mount* mount_;

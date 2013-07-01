@@ -5,10 +5,8 @@
 #ifndef LIBRARIES_NACL_IO_MOUNT_MEM_H_
 #define LIBRARIES_NACL_IO_MOUNT_MEM_H_
 
-#include <map>
-#include <string>
-
 #include "nacl_io/mount.h"
+#include "nacl_io/typed_mount_factory.h"
 
 class MountMem : public Mount {
  protected:
@@ -44,7 +42,7 @@ private:
 
   ScopedMountNode root_;
 
-  friend class Mount;
+  friend class TypedMountFactory<MountMem>;
   DISALLOW_COPY_AND_ASSIGN(MountMem);
 };
 

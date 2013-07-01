@@ -25,6 +25,7 @@
 #include "nacl_io/osstat.h"
 #include "nacl_io/path.h"
 #include "nacl_io/pepper_interface.h"
+#include "nacl_io/typed_mount_factory.h"
 #include "sdk_util/auto_lock.h"
 #include "sdk_util/ref_object.h"
 
@@ -38,18 +39,27 @@
 
 KernelProxy::KernelProxy() : dev_(0), ppapi_(NULL) {}
 
-KernelProxy::~KernelProxy() { delete ppapi_; }
+KernelProxy::~KernelProxy() {
+  // Clean up the MountFactories.
+  for (MountFactoryMap_t::iterator i = factories_.begin();
+       i != factories_.end();
+       ++i) {
+    delete i->second;
+  }
+
+  delete ppapi_;
+}
 
 void KernelProxy::Init(PepperInterface* ppapi) {
   ppapi_ = ppapi;
   cwd_ = "/";
   dev_ = 1;
 
-  factories_["memfs"] = MountMem::Create<MountMem>;
-  factories_["dev"] = MountDev::Create<MountDev>;
-  factories_["html5fs"] = MountHtml5Fs::Create<MountHtml5Fs>;
-  factories_["httpfs"] = MountHttp::Create<MountHttp>;
-  factories_["passthroughfs"] = MountPassthrough::Create<MountPassthrough>;
+  factories_["memfs"] = new TypedMountFactory<MountMem>;
+  factories_["dev"] = new TypedMountFactory<MountDev>;
+  factories_["html5fs"] = new TypedMountFactory<MountHtml5Fs>;
+  factories_["httpfs"] = new TypedMountFactory<MountHttp>;
+  factories_["passthroughfs"] = new TypedMountFactory<MountPassthrough>;
 
   int result;
   result = mount("", "/", "passthroughfs", 0, NULL);
@@ -90,7 +100,6 @@ int KernelProxy::open(const char* path, int oflags) {
 
   return AllocateFD(handle);
 }
-
 
 int KernelProxy::close(int fd) {
   ScopedKernelHandle handle;
@@ -302,7 +311,8 @@ int KernelProxy::mount(const char* source,
     free(str);
   }
 
-  Error error = factory->second(dev_++, smap, ppapi_, &mounts_[abs_targ]);
+  Error error =
+      factory->second->CreateMount(dev_++, smap, ppapi_, &mounts_[abs_targ]);
   if (error) {
     errno = error;
     return -1;
