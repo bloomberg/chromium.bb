@@ -83,6 +83,9 @@ IndexedDBBrowserTestWithVersion0Schema.MigrationTest
 IndexedDBBrowserTestWithVersion123456Schema.DestroyTest
 IndexedDBBrowserTestWithVersion987654SSVData.DestroyTest
 
+# http://crbug.com/256184
+IndexedDBBrowserTestWithCorruptLevelDB.DestroyTest
+
 BookmarkletTest.NonEmptyResult
 MediaSourceTest.Playback_AudioOnly_WebM
 MediaSourceTest.Playback_VideoAudio_WebM
