@@ -243,7 +243,10 @@ class GitWrapper(SCMWrapper):
     if not options.verbose:
       quiet = ['--quiet']
     self._UpdateBranchHeads(options, fetch=False)
-    self._Run(['fetch', 'origin', '--prune'] + quiet, options)
+
+    fetch_cmd = [
+      '-c', 'core.deltaBaseCacheLimit=2g', 'fetch', 'origin', '--prune']
+    self._Run(fetch_cmd + quiet, options)
     self._Run(['reset', '--hard', revision] + quiet, options)
     self.UpdateSubmoduleConfig()
     files = self._Capture(['ls-files']).splitlines()
@@ -362,7 +365,8 @@ class GitWrapper(SCMWrapper):
     if not self._HasHead():
       # Previous checkout was aborted before branches could be created in repo,
       # so we need to reconstruct them here.
-      self._Run(['pull', 'origin', 'master'], options)
+      self._Run(['-c', 'core.deltaBaseCacheLimit=2g', 'pull', 'origin',
+                 'master'], options)
       self._FetchAndReset(revision, file_list, options)
 
     cur_branch = self._GetCurrentBranch()
@@ -699,7 +703,7 @@ class GitWrapper(SCMWrapper):
       # git clone doesn't seem to insert a newline properly before printing
       # to stdout
       print('')
-    clone_cmd = ['clone', '--progress']
+    clone_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'clone', '--progress']
     if revision.startswith('refs/heads/'):
       clone_cmd.extend(['-b', revision.replace('refs/heads/', '')])
       detach_head = False
@@ -932,7 +936,7 @@ class GitWrapper(SCMWrapper):
                         '^\\+refs/branch-heads/\\*:.*$']
           self._Run(config_cmd, options)
           if fetch:
-            fetch_cmd = ['fetch', 'origin']
+            fetch_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'fetch', 'origin']
             if options.verbose:
               fetch_cmd.append('--verbose')
             self._Run(fetch_cmd, options)
