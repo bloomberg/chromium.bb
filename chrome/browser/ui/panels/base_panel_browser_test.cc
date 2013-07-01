@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
@@ -407,6 +408,33 @@ Panel* BasePanelBrowserTest::CreatePanelWithBounds(
 Panel* BasePanelBrowserTest::CreatePanel(const std::string& panel_name) {
   CreatePanelParams params(panel_name, gfx::Rect(), SHOW_AS_ACTIVE);
   return CreatePanelWithParams(params);
+}
+
+Panel* BasePanelBrowserTest::CreateInactivePanel(
+    const std::string& panel_name) {
+  // Create an active panel first, instead of inactive panel. This is because
+  // certain window managers on Linux, like icewm, will always activate the
+  // new window.
+  Panel* panel = CreatePanel(panel_name);
+
+#if defined(OS_LINUX)
+  // For certain window managers on Linux, like icewm, panel activation and
+  // deactivation notification might not get tiggered when non-panel window is
+  // activated or deactivated. So we deactivate the panel directly.
+  panel->Deactivate();
+#else
+  // Make the panel lose focus by activating the browser window. This is
+  // because:
+  // 1) On Windows, deactivating the panel window might cause the application
+  //    to lose the foreground status. When this occurs, trying to activate
+  //    the panel window again will not be allowed by the system.
+  // 2) On MacOS, deactivating a window is not supported by Cocoa.
+  browser()->window()->Activate();
+#endif
+
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+
+  return panel;
 }
 
 Panel* BasePanelBrowserTest::CreateDockedPanel(const std::string& name,

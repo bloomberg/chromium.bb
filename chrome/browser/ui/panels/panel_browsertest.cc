@@ -1043,15 +1043,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateMultiple) {
   EXPECT_FALSE(tabbed_window->IsActive());
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_DrawAttentionBasic DISABLED_DrawAttentionBasic
-#else
-#define MAYBE_DrawAttentionBasic DrawAttentionBasic
-#endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionBasic) {
-  CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
-  Panel* panel = CreatePanelWithParams(params);
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionBasic) {
+  Panel* panel = CreateInactivePanel("P1");
   scoped_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
@@ -1084,70 +1077,50 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionBasic) {
   panel->Close();
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_DrawAttentionWhileMinimized DISABLED_DrawAttentionWhileMinimized
-#else
-#define MAYBE_DrawAttentionWhileMinimized DrawAttentionWhileMinimized
-#endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionWhileMinimized) {
-  // Create 3 panels so we end up with an inactive panel that can
-  // be made to draw attention.
-  Panel* panel = CreatePanel("test panel1");
-  Panel* panel2 = CreatePanel("test panel2");
-  Panel* panel3 = CreatePanel("test panel3");
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
+  Panel* panel1 = CreateInactivePanel("P1");
+  Panel* panel2 = CreateInactivePanel("P2");
 
-  scoped_ptr<NativePanelTesting> native_panel_testing(
-      CreateNativePanelTesting(panel));
+  scoped_ptr<NativePanelTesting> native_panel1_testing(
+      CreateNativePanelTesting(panel1));
 
   // Test that the attention is drawn and the title-bar is brought up when the
   // minimized panel is drawing attention.
-  panel->Minimize();
-  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
-  panel->FlashFrame(true);
-  EXPECT_TRUE(panel->IsDrawingAttention());
-  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
-  EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
+  panel1->Minimize();
+  EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
+  panel1->FlashFrame(true);
+  EXPECT_TRUE(panel1->IsDrawingAttention());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+  EXPECT_TRUE(native_panel1_testing->VerifyDrawingAttention());
 
   // Test that we cannot bring up other minimized panel if the mouse is over
   // the panel that draws attension.
   panel2->Minimize();
-  gfx::Point hover_point(panel->GetBounds().origin());
+  gfx::Point hover_point(panel1->GetBounds().origin());
   MoveMouse(hover_point);
-  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
   EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());
 
   // Test that we cannot bring down the panel that is drawing the attention.
   hover_point.set_y(hover_point.y() - 200);
   MoveMouse(hover_point);
-  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
 
   // Test that the attention is cleared when activated.
-  panel->Activate();
-  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
-  EXPECT_FALSE(panel->IsDrawingAttention());
-  EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
-  EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
+  panel1->Activate();
+  WaitForPanelActiveState(panel1, SHOW_AS_ACTIVE);
+  EXPECT_FALSE(panel1->IsDrawingAttention());
+  EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
+  EXPECT_FALSE(native_panel1_testing->VerifyDrawingAttention());
 
-  panel->Close();
-  panel2->Close();
-  panel3->Close();
+  PanelManager::GetInstance()->CloseAll();
 }
 
-// http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_StopDrawingAttentionWhileMinimized \
-  DISABLED_StopDrawingAttentionWhileMinimized
-#else
-#define MAYBE_StopDrawingAttentionWhileMinimized \
-  StopDrawingAttentionWhileMinimized
-#endif
 // Verify that minimized state of a panel is correct after draw attention
 // is stopped when there are other minimized panels.
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       MAYBE_StopDrawingAttentionWhileMinimized) {
-  Panel* panel1 = CreatePanel("panel1");
-  Panel* panel2 = CreatePanel("panel2");
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, StopDrawingAttentionWhileMinimized) {
+  Panel* panel1 = CreateInactivePanel("P1");
+  Panel* panel2 = CreateInactivePanel("P2");
 
   panel1->Minimize();
   EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
@@ -1211,21 +1184,17 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
   EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());
 
-  panel1->Close();
-  panel2->Close();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
-  CreatePanelParams params("Initially Active", gfx::Rect(), SHOW_AS_ACTIVE);
-  Panel* panel = CreatePanelWithParams(params);
+  // Create an active panel.
+  Panel* panel = CreatePanel("P1");
   scoped_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
   // Test that the attention should not be drawn if the expanded panel is in
   // focus.
-  EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
-  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);  // doublecheck active state
-  EXPECT_FALSE(panel->IsDrawingAttention());
   panel->FlashFrame(true);
   EXPECT_FALSE(panel->IsDrawingAttention());
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
@@ -1233,19 +1202,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
   panel->Close();
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_DrawAttentionResetOnActivate DISABLED_DrawAttentionResetOnActivate
-#else
-#define MAYBE_DrawAttentionResetOnActivate DrawAttentionResetOnActivate
-#endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnActivate) {
-  // Create 2 panels so we end up with an inactive panel that can
-  // be made to draw attention.
-  Panel* panel = CreatePanel("test panel1");
-  Panel* panel2 = CreatePanel("test panel2");
-  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
-
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
+  Panel* panel = CreateInactivePanel("P1");
   scoped_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
@@ -1260,59 +1218,36 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnActivate) {
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
   panel->Close();
-  panel2->Close();
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_DrawAttentionMinimizedNotResetOnActivate DISABLED_DrawAttentionMinimizedNotResetOnActivate
-#else
-#define MAYBE_DrawAttentionMinimizedNotResetOnActivate DrawAttentionMinimizedNotResetOnActivate
-#endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       MAYBE_DrawAttentionMinimizedNotResetOnActivate) {
-  // Create 2 panels so we end up with an inactive panel that can
-  // be made to draw attention.
-  Panel* panel1 = CreatePanel("test panel1");
-  Panel* panel2 = CreatePanel("test panel2");
-  WaitForPanelActiveState(panel1, SHOW_AS_INACTIVE);
+                       DrawAttentionMinimizedNotResetOnActivate) {
+  Panel* panel = CreateInactivePanel("P1");
 
-  panel1->Minimize();
-  EXPECT_TRUE(panel1->IsMinimized());
-  panel1->FlashFrame(true);
-  EXPECT_TRUE(panel1->IsDrawingAttention());
+  panel->Minimize();
+  EXPECT_TRUE(panel->IsMinimized());
+  panel->FlashFrame(true);
+  EXPECT_TRUE(panel->IsDrawingAttention());
 
   // Simulate panel being activated while minimized. Cannot call
   // Activate() as that expands the panel.
-  panel1->OnActiveStateChanged(true);
-  EXPECT_TRUE(panel1->IsDrawingAttention());  // Unchanged.
+  panel->OnActiveStateChanged(true);
+  EXPECT_TRUE(panel->IsDrawingAttention());  // Unchanged.
 
   // Unminimize panel to show that attention would have been cleared
   // if panel had not been minimized.
-  panel1->Restore();
-  EXPECT_FALSE(panel1->IsMinimized());
-  EXPECT_TRUE(panel1->IsDrawingAttention());  // Unchanged.
+  panel->Restore();
+  EXPECT_FALSE(panel->IsMinimized());
+  EXPECT_TRUE(panel->IsDrawingAttention());  // Unchanged.
 
-  panel1->OnActiveStateChanged(true);
-  EXPECT_FALSE(panel1->IsDrawingAttention());  // Attention cleared.
+  panel->OnActiveStateChanged(true);
+  EXPECT_FALSE(panel->IsDrawingAttention());  // Attention cleared.
 
-  panel1->Close();
-  panel2->Close();
+  panel->Close();
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_DrawAttentionResetOnClick DISABLED_DrawAttentionResetOnClick
-#else
-#define MAYBE_DrawAttentionResetOnClick DrawAttentionResetOnClick
-#endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnClick) {
-  // Create 2 panels so we end up with an inactive panel that can
-  // be made to draw attention.
-  Panel* panel = CreatePanel("test panel1");
-  Panel* panel2 = CreatePanel("test panel2");
-  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
-
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnClick) {
+  Panel* panel = CreateInactivePanel("P1");
   scoped_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
@@ -1330,7 +1265,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnClick) {
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
   panel->Close();
-  panel2->Close();
 }
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.

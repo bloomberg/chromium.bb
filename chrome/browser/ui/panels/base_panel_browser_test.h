@@ -79,6 +79,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   Panel* CreatePanelWithBounds(const std::string& panel_name,
                                const gfx::Rect& bounds);
   Panel* CreatePanel(const std::string& panel_name);
+  Panel* CreateInactivePanel(const std::string& panel_name);
 
   Panel* CreateDockedPanel(const std::string& name, const gfx::Rect& bounds);
   Panel* CreateDetachedPanel(const std::string& name, const gfx::Rect& bounds);
