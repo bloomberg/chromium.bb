@@ -113,15 +113,6 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
         base::Int64ToString(id), layout, offset, primary_id);
   }
 
-  void StoreDefaultLayoutPref(ash::DisplayLayout::Position layout,
-                              int offset,
-                              int64 primary_id) {
-    local_state_.SetInteger(prefs::kSecondaryDisplayLayout,
-                            static_cast<int>(layout));
-    local_state_.SetInteger(prefs::kSecondaryDisplayOffset, offset);
-    local_state_.SetInt64(prefs::kPrimaryDisplayID, primary_id);
-  }
-
   void StoreDisplayOverscan(int64 id, const gfx::Insets& insets) {
     DictionaryPrefUpdate update(&local_state_, prefs::kDisplayProperties);
     const std::string name = base::Int64ToString(id);
@@ -154,25 +145,6 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(DisplayPreferencesTest);
 };
 
-TEST_F(DisplayPreferencesTest, DefaultLayout) {
-  ash::DisplayController* display_controller =
-      ash::Shell::GetInstance()->display_controller();
-
-  int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
-  int64 id2 = id1 + 1;
-  StoreDefaultLayoutPref(ash::DisplayLayout::LEFT, 50, id2);
-  LoadDisplayPreferences(true);
-  EXPECT_EQ("left, 50",
-            display_controller->default_display_layout().ToString());
-
-  UpdateDisplay("100x100,200x200");
-  // Displays are swapped, so does the layout.
-  EXPECT_EQ("right, -50",
-            display_controller->GetCurrentDisplayLayout().ToString());
-  EXPECT_EQ(id2,
-            display_controller->GetCurrentDisplayLayout().primary_id);
-}
-
 TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
   UpdateDisplay("100x100,200x200");
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
@@ -182,7 +154,6 @@ TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
 
   StoreDisplayLayoutPrefForPair(id1, id2, ash::DisplayLayout::TOP, 20);
   StoreDisplayLayoutPrefForPair(id1, dummy_id, ash::DisplayLayout::LEFT, 30);
-  StoreDefaultLayoutPref(ash::DisplayLayout::LEFT, 50, id2);
   StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
 
@@ -220,7 +191,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   LoggedInAsUser();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
-  SetCurrentAndDefaultDisplayLayout(layout);
+  SetCurrentDisplayLayout(layout);
   StoreDisplayLayoutPrefForTest(
       id1, dummy_id, ash::DisplayLayout(ash::DisplayLayout::LEFT, 20));
   // Can't switch to a display that does not exist.
@@ -247,12 +218,6 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   bool mirrored = true;
   EXPECT_TRUE(layout_value->GetBoolean(kMirroredKey, &mirrored));
   EXPECT_FALSE(mirrored);
-
-  // The default value is set for the last call of
-  // SetCurrentAndDefaultDisplayLayout
-  EXPECT_EQ(ash::DisplayLayout::TOP,
-            local_state()->GetInteger(prefs::kSecondaryDisplayLayout));
-  EXPECT_EQ(10, local_state()->GetInteger(prefs::kSecondaryDisplayOffset));
 
   const base::DictionaryValue* properties =
       local_state()->GetDictionary(prefs::kDisplayProperties);
@@ -303,17 +268,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_TRUE(layout_value->GetString(kPrimaryIdKey, &primary_id_str));
   EXPECT_EQ(base::Int64ToString(id2), primary_id_str);
 
-  // Default value should changte.
-  EXPECT_EQ(ash::DisplayLayout::TOP,
-            local_state()->GetInteger(prefs::kSecondaryDisplayLayout));
-  EXPECT_EQ(10, local_state()->GetInteger(prefs::kSecondaryDisplayOffset));
-
-  SetCurrentAndDefaultDisplayLayout(
+  SetCurrentDisplayLayout(
       ash::DisplayLayout(ash::DisplayLayout::BOTTOM, 20));
-  // Displays are swapped, so does the default layout.
-  EXPECT_EQ(ash::DisplayLayout::TOP,
-            local_state()->GetInteger(prefs::kSecondaryDisplayLayout));
-  EXPECT_EQ(-20, local_state()->GetInteger(prefs::kSecondaryDisplayOffset));
 
   UpdateDisplay("200x200*2,1+0-200x200");
   // Mirrored.
@@ -358,7 +314,7 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
 
   LoggedInAsUser();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
-  SetCurrentAndDefaultDisplayLayout(layout);
+  SetCurrentDisplayLayout(layout);
   layout = layout.Invert();
 
   const base::DictionaryValue* displays =
@@ -394,7 +350,7 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   gfx::Display::SetInternalDisplayId(id1);
   int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
-  SetCurrentAndDefaultDisplayLayout(layout);
+  SetCurrentDisplayLayout(layout);
   display_manager->SetDisplayUIScale(id1, 1.25f);
   display_controller->SetPrimaryDisplayId(id2);
   int64 new_primary =
@@ -407,10 +363,6 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   // Does not store the preferences locally.
   EXPECT_FALSE(local_state()->FindPreference(
       prefs::kSecondaryDisplays)->HasUserSetting());
-  EXPECT_FALSE(local_state()->FindPreference(
-      prefs::kSecondaryDisplayLayout)->HasUserSetting());
-  EXPECT_FALSE(local_state()->FindPreference(
-      prefs::kSecondaryDisplayOffset)->HasUserSetting());
   EXPECT_FALSE(local_state()->FindPreference(
       prefs::kDisplayProperties)->HasUserSetting());
 

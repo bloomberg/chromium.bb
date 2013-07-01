@@ -84,12 +84,6 @@ void LoadDisplayLayouts() {
   PrefService* local_state = g_browser_process->local_state();
   ash::DisplayController* display_controller = GetDisplayController();
 
-  ash::DisplayLayout default_layout = ash::DisplayLayout::FromInts(
-      local_state->GetInteger(prefs::kSecondaryDisplayLayout),
-      local_state->GetInteger(prefs::kSecondaryDisplayOffset));
-  default_layout.primary_id = local_state->GetInt64(prefs::kPrimaryDisplayID);
-  display_controller->SetDefaultDisplayLayout(default_layout);
-
   const base::DictionaryValue* layouts = local_state->GetDictionary(
       prefs::kSecondaryDisplays);
   for (DictionaryValue::Iterator it(*layouts); !it.IsAtEnd(); it.Advance()) {
@@ -239,20 +233,12 @@ void StoreCurrentDisplayPowerState() {
 }  // namespace
 
 void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry) {
-  // The default secondary display layout.
-  registry->RegisterIntegerPref(prefs::kSecondaryDisplayLayout,
-                                static_cast<int>(ash::DisplayLayout::RIGHT));
-  // The default offset of the secondary display position from the primary
-  // display.
-  registry->RegisterIntegerPref(prefs::kSecondaryDisplayOffset, 0);
   // Per-display preference.
   registry->RegisterDictionaryPref(prefs::kSecondaryDisplays);
   registry->RegisterDictionaryPref(prefs::kDisplayProperties);
   DisplayPowerStateToStringMap::const_iterator iter =
       GetDisplayPowerStateToStringMap()->find(chromeos::DISPLAY_POWER_ALL_ON);
   registry->RegisterStringPref(prefs::kDisplayPowerState, iter->second);
-  registry->RegisterInt64Pref(prefs::kPrimaryDisplayID,
-                              gfx::Display::kInvalidDisplayID);
 }
 
 void StoreDisplayPrefs() {
@@ -263,22 +249,9 @@ void StoreDisplayPrefs() {
   StoreCurrentDisplayPowerState();
 }
 
-void SetCurrentAndDefaultDisplayLayout(const ash::DisplayLayout& layout) {
+void SetCurrentDisplayLayout(const ash::DisplayLayout& layout) {
   ash::DisplayController* display_controller = GetDisplayController();
   display_controller->SetLayoutForCurrentDisplays(layout);
-
-  if (IsValidUser()) {
-    PrefService* local_state = g_browser_process->local_state();
-    ash::DisplayIdPair pair = display_controller->GetCurrentDisplayIdPair();
-    // Use registered layout as the layout might have been inverted when
-    // the displays are swapped.
-    ash::DisplayLayout display_layout =
-        display_controller->GetRegisteredDisplayLayout(pair);
-    local_state->SetInteger(prefs::kSecondaryDisplayLayout,
-                            static_cast<int>(display_layout.position));
-    local_state->SetInteger(prefs::kSecondaryDisplayOffset,
-                            display_layout.offset);
-  }
 }
 
 void LoadDisplayPreferences(bool first_run_after_boot) {

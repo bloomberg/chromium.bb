@@ -801,21 +801,6 @@ const char kDisplayPowerState[] = "settings.display.power_state";
 // A dictionary pref that stores per display preferences.
 const char kDisplayProperties[] = "settings.display.properties";
 
-// A 64bit integer pref that specifies the name of the primary display device.
-const char kPrimaryDisplayID[] = "settings.display.primary_id";
-
-// An enumeration that specifies the layout of the secondary display.
-//  0 - The secondary display is at the top of the primary display.
-//  1 - The secondary display is at the right of the primary display.
-//  2 - The secondary display is at the bottom of the primary display.
-//  3 - The secondary display is at the left of the primary display.
-// TODO(mukai,oshima): update the format of the multi-display settings.
-const char kSecondaryDisplayLayout[] = "settings.display.secondary_layout";
-
-// An integer pref that specifies how far the secondary display is positioned
-// from the edge of the primary display.
-const char kSecondaryDisplayOffset[] = "settings.display.secondary_offset";
-
 // A dictionary pref that specifies per-display layout/offset information.
 // Its key is the ID of the display and its value is a dictionary for the
 // layout/offset information.

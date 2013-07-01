@@ -29,8 +29,8 @@ void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry);
 // dispay layout).
 void StoreDisplayPrefs();
 
-// Sets the display layout for the current displays and default.
-void SetCurrentAndDefaultDisplayLayout(const ash::DisplayLayout& layout);
+// Sets the display layout for the current displays.
+void SetCurrentDisplayLayout(const ash::DisplayLayout& layout);
 
 // Load display preferences from Local Store. |first_run_after_boot| is used
 // determine if a certain preference should be applied at boot time or

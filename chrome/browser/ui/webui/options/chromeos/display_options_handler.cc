@@ -227,7 +227,7 @@ void DisplayOptionsHandler::OnFadeOutForMirroringFinished(bool is_mirroring) {
 
 void DisplayOptionsHandler::OnFadeOutForDisplayLayoutFinished(
     int position, int offset) {
-  SetCurrentAndDefaultDisplayLayout(
+  SetCurrentDisplayLayout(
       ash::DisplayLayout::FromInts(position, offset));
   ash::Shell::GetInstance()->output_configurator_animation()->
       StartFadeInAnimation();
