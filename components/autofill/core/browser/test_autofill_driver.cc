@@ -15,4 +15,12 @@ content::WebContents* TestAutofillDriver::GetWebContents() {
   return web_contents();
 }
 
+bool TestAutofillDriver::RendererIsAvailable() {
+  return true;
+}
+
+void TestAutofillDriver::SendFormDataToRenderer(int query_id,
+                                                const FormData& form_data) {
+}
+
 }  // namespace autofill

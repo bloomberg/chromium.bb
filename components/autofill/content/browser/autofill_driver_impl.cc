@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "ipc/ipc_message_macros.h"
@@ -79,6 +80,19 @@ AutofillDriverImpl::~AutofillDriverImpl() {}
 
 content::WebContents* AutofillDriverImpl::GetWebContents() {
   return web_contents();
+}
+
+bool AutofillDriverImpl::RendererIsAvailable() {
+  return (web_contents()->GetRenderViewHost() != NULL);
+}
+
+void AutofillDriverImpl::SendFormDataToRenderer(int query_id,
+                                                const FormData& data) {
+  if (!RendererIsAvailable())
+    return;
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(
+      new AutofillMsg_FormDataFilled(host->GetRoutingID(), query_id, data));
 }
 
 bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {

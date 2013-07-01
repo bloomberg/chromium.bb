@@ -13,6 +13,7 @@ namespace autofill {
 
 class AutofillProfile;
 class CreditCard;
+struct FormData;
 struct FormFieldData;
 
 // Common utilities shared amongst Autofill tests.
@@ -24,6 +25,11 @@ void CreateTestFormField(const char* label,
                          const char* value,
                          const char* type,
                          FormFieldData* field);
+
+// Populates |form| with data corresponding to a simple address form.
+// Note that this actually appends fields to the form data, which can be useful
+// for building up more complex test forms.
+void CreateTestAddressFormData(FormData* form);
 
 // Returns a profile full of dummy info.
 AutofillProfile GetFullProfile();

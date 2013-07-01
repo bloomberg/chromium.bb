@@ -24,6 +24,9 @@ class TestAutofillDriver : public AutofillDriver,
 
   // AutofillDriver implementation.
   virtual content::WebContents* GetWebContents() OVERRIDE;
+  virtual bool RendererIsAvailable() OVERRIDE;
+  virtual void SendFormDataToRenderer(int query_id,
+                                      const FormData& data) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDriver);

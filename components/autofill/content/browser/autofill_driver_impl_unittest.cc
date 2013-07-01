@@ -8,12 +8,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/core/browser/autofill_common_test.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_manager_delegate.h"
+#include "components/autofill/core/common/autofill_messages.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/test/mock_render_process_host.h"
+#include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -74,6 +78,28 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
+  // Searches for an |AutofillMsg_FormDataFilled| message in the queue of sent
+  // IPC messages. If none is present, returns false. Otherwise, extracts the
+  // first |AutofillMsg_FormDataFilled| message, fills the output parameters
+  // with the values of the message's parameters, and clears the queue of sent
+  // messages.
+  bool GetAutofillFormDataFilledMessage(int* page_id, FormData* results) {
+    const uint32 kMsgID = AutofillMsg_FormDataFilled::ID;
+    const IPC::Message* message =
+        process()->sink().GetFirstMessageMatching(kMsgID);
+    if (!message)
+      return false;
+    Tuple2<int, FormData> autofill_param;
+    AutofillMsg_FormDataFilled::Read(message, &autofill_param);
+    if (page_id)
+      *page_id = autofill_param.a;
+    if (results)
+      *results = autofill_param.b;
+
+    process()->sink().ClearMessages();
+    return true;
+  }
+
   scoped_ptr<TestAutofillManagerDelegate> test_manager_delegate_;
   scoped_ptr<TestAutofillDriverImpl> driver_;
 };
@@ -95,6 +121,20 @@ TEST_F(AutofillDriverImplTest, NavigatedWithinSamePage) {
   ASSERT_TRUE(!details.is_navigation_to_different_page());
   content::FrameNavigateParams params = content::FrameNavigateParams();
   driver_->DidNavigateMainFrame(details, params);
+}
+
+TEST_F(AutofillDriverImplTest, FormDataSentToRenderer) {
+  int input_page_id = 42;
+  FormData input_form_data;
+  test::CreateTestAddressFormData(&input_form_data);
+  driver_->SendFormDataToRenderer(input_page_id, input_form_data);
+
+  int output_page_id = 0;
+  FormData output_form_data;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&output_page_id,
+                                               &output_form_data));
+  EXPECT_EQ(input_page_id, output_page_id);
+  EXPECT_EQ(input_form_data, output_form_data);
 }
 
 }  // namespace autofill

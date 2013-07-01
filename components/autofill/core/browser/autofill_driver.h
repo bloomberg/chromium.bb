@@ -5,14 +5,17 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_DRIVER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_DRIVER_H_
 
+#include "components/autofill/core/common/form_data.h"
+
 namespace content {
 class WebContents;
 }
 
 namespace autofill {
 
-// Interface that provides access to the driver-level context in which Autofill
-// is operating. A concrete implementation must be provided by the driver.
+// Interface that allows Autofill core code to interact with its driver (i.e.,
+// obtain information from it and give information to it). A concrete
+// implementation must be provided by the driver.
 class AutofillDriver {
  public:
   virtual ~AutofillDriver() {}
@@ -20,6 +23,14 @@ class AutofillDriver {
   // TODO(blundell): Remove this method once shared code no longer needs to
   // know about WebContents.
   virtual content::WebContents* GetWebContents() = 0;
+
+  // Returns true iff the renderer is available for communication.
+  virtual bool RendererIsAvailable() = 0;
+
+  // Forwards |data| to the renderer. |query_id| is the id of the renderer's
+  // original request for the data. This method is a no-op if the renderer is
+  // not currently available.
+  virtual void SendFormDataToRenderer(int query_id, const FormData& data) = 0;
 };
 
 }  // namespace autofill

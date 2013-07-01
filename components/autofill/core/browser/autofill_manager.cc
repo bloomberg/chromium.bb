@@ -534,8 +534,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
       }
     }
 
-    host->Send(new AutofillMsg_FormDataFilled(host->GetRoutingID(), query_id,
-                                              result));
+    driver_->SendFormDataToRenderer(query_id, result);
     return;
   }
 
@@ -579,8 +578,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
   if (autofilled_form_signatures_.size() > kMaxRecentFormSignaturesToRemember)
     autofilled_form_signatures_.pop_back();
 
-  host->Send(new AutofillMsg_FormDataFilled(
-      host->GetRoutingID(), query_id, result));
+  driver_->SendFormDataToRenderer(query_id, result);
 }
 
 void AutofillManager::OnShowAutofillDialog() {
@@ -955,10 +953,10 @@ bool AutofillManager::GetHost(RenderViewHost** host) const {
     return false;
   }
 
-  *host = driver_->GetWebContents()->GetRenderViewHost();
-  if (!*host)
+  if (!driver_->RendererIsAvailable())
     return false;
 
+  *host = driver_->GetWebContents()->GetRenderViewHost();
   return true;
 }
 

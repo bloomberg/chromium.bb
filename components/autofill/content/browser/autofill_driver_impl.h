@@ -46,6 +46,9 @@ class AutofillDriverImpl : public AutofillDriver,
 
   // AutofillDriver:
   virtual content::WebContents* GetWebContents() OVERRIDE;
+  virtual bool RendererIsAvailable() OVERRIDE;
+  virtual void SendFormDataToRenderer(int query_id,
+                                      const FormData& data) OVERRIDE;
 
   AutofillExternalDelegate* autofill_external_delegate() {
     return autofill_external_delegate_.get();

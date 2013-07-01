@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/webdata/encryptor/encryptor.h"
@@ -33,6 +34,38 @@ void CreateTestFormField(const char* label,
   field->name = ASCIIToUTF16(name);
   field->value = ASCIIToUTF16(value);
   field->form_control_type = type;
+}
+
+void CreateTestAddressFormData(FormData* form) {
+  form->name = ASCIIToUTF16("MyForm");
+  form->method = ASCIIToUTF16("POST");
+  form->origin = GURL("http://myform.com/form.html");
+  form->action = GURL("http://myform.com/submit.html");
+  form->user_submitted = true;
+
+  FormFieldData field;
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("Address Line 2", "addr2", "", "text", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("City", "city", "", "text", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("State", "state", "", "text", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("Postal Code", "zipcode", "", "text", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("Country", "country", "", "text", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("Phone Number", "phonenumber", "", "tel", &field);
+  form->fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "email", &field);
+  form->fields.push_back(field);
 }
 
 inline void check_and_set(
