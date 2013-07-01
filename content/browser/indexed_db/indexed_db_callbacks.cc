@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "content/browser/indexed_db/indexed_db_cursor.h"
+#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
@@ -18,278 +20,318 @@ using WebKit::WebIDBCallbacks;
 namespace content {
 
 namespace {
-const int32 kDatabaseNotAdded = -1;
+const int32 kNoCursor = -1;
+const int32 kNoDatabase = -1;
+const int32 kNoDatabaseCallbacks = -1;
+const int64 kNoTransaction = -1;
 }
 
-IndexedDBCallbacksBase::IndexedDBCallbacksBase(
-    IndexedDBDispatcherHost* dispatcher_host,
-    int32 ipc_thread_id,
-    int32 ipc_callbacks_id)
-    : dispatcher_host_(dispatcher_host),
+IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
+                                       int32 ipc_thread_id,
+                                       int32 ipc_callbacks_id)
+    : did_complete_(false),
+      did_create_proxy_(false),
+      dispatcher_host_(dispatcher_host),
       ipc_callbacks_id_(ipc_callbacks_id),
-      ipc_thread_id_(ipc_thread_id) {}
+      ipc_thread_id_(ipc_thread_id),
+      ipc_cursor_id_(kNoCursor),
+      host_transaction_id_(kNoTransaction),
+      ipc_database_id_(kNoDatabase),
+      ipc_database_callbacks_id_(kNoDatabaseCallbacks) {}
 
-IndexedDBCallbacksBase::~IndexedDBCallbacksBase() {}
+IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
+                                       int32 ipc_thread_id,
+                                       int32 ipc_callbacks_id,
+                                       int32 ipc_cursor_id)
+    : did_complete_(false),
+      did_create_proxy_(false),
+      dispatcher_host_(dispatcher_host),
+      ipc_callbacks_id_(ipc_callbacks_id),
+      ipc_thread_id_(ipc_thread_id),
+      ipc_cursor_id_(ipc_cursor_id),
+      host_transaction_id_(kNoTransaction),
+      ipc_database_id_(kNoDatabase),
+      ipc_database_callbacks_id_(kNoDatabaseCallbacks) {}
 
-void IndexedDBCallbacksBase::onError(const IndexedDBDatabaseError& error) {
-  dispatcher_host_->Send(new IndexedDBMsg_CallbacksError(
-      ipc_thread_id_, ipc_callbacks_id_, error.code(), error.message()));
-}
-
-void IndexedDBCallbacksBase::onBlocked(long long old_version) {
-  dispatcher_host_->Send(new IndexedDBMsg_CallbacksIntBlocked(
-      ipc_thread_id_, ipc_callbacks_id_, old_version));
-}
-
-void IndexedDBCallbacksBase::onSuccess(const std::vector<string16>& value) {
-  NOTREACHED();
-}
-
-void IndexedDBCallbacksBase::onSuccess(
-    WebIDBDatabaseImpl* idb_object,
-    const IndexedDBDatabaseMetadata& metadata) {
-  NOTREACHED();
-}
-
-void IndexedDBCallbacksBase::onUpgradeNeeded(
-    long long old_version,
-    WebIDBDatabaseImpl* database,
-    const IndexedDBDatabaseMetadata& /*metadata*/,
-    WebKit::WebIDBCallbacks::DataLoss data_loss) {
-  NOTREACHED();
-}
-
-void IndexedDBCallbacksBase::onSuccess(IndexedDBCursor* idb_object,
-                                       const IndexedDBKey& key,
-                                       const IndexedDBKey& primaryKey,
-                                       std::vector<char>* value) {
-  NOTREACHED();
-}
-
-void IndexedDBCallbacksBase::onSuccess(const IndexedDBKey& key,
-                                       const IndexedDBKey& primaryKey,
-                                       std::vector<char>* value) {
-  NOTREACHED();
-}
-
-void IndexedDBCallbacksBase::onSuccess(std::vector<char>* value) {
-  NOTREACHED();
-}
-
-void IndexedDBCallbacksBase::onSuccessWithPrefetch(
-    const std::vector<IndexedDBKey>& keys,
-    const std::vector<IndexedDBKey>& primaryKeys,
-    const std::vector<std::vector<char> >& values) {
-  NOTREACHED();
-}
-
-void IndexedDBCallbacksBase::onSuccess(const IndexedDBKey& value) {
-  NOTREACHED();
-}
-
-void IndexedDBCallbacksBase::onSuccess(std::vector<char>* value,
-                                       const IndexedDBKey& key,
-                                       const IndexedDBKeyPath& keyPath) {
-  NOTREACHED();
-}
-
-void IndexedDBCallbacksBase::onSuccess(long long value) { NOTREACHED(); }
-
-void IndexedDBCallbacksBase::onSuccess() { NOTREACHED(); }
-
-IndexedDBCallbacksDatabase::IndexedDBCallbacksDatabase(
-    IndexedDBDispatcherHost* dispatcher_host,
-    int32 ipc_thread_id,
-    int32 ipc_callbacks_id,
-    int32 ipc_database_callbacks_id,
-    int64 host_transaction_id,
-    const GURL& origin_url)
-    : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id, ipc_callbacks_id),
+IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
+                                       int32 ipc_thread_id,
+                                       int32 ipc_callbacks_id,
+                                       int32 ipc_database_callbacks_id,
+                                       int64 host_transaction_id,
+                                       const GURL& origin_url)
+    : did_complete_(false),
+      did_create_proxy_(false),
+      dispatcher_host_(dispatcher_host),
+      ipc_callbacks_id_(ipc_callbacks_id),
+      ipc_thread_id_(ipc_thread_id),
+      ipc_cursor_id_(kNoCursor),
       host_transaction_id_(host_transaction_id),
       origin_url_(origin_url),
-      ipc_database_id_(kDatabaseNotAdded),
+      ipc_database_id_(kNoDatabase),
       ipc_database_callbacks_id_(ipc_database_callbacks_id) {}
 
-void IndexedDBCallbacksDatabase::onSuccess(
-    WebIDBDatabaseImpl* idb_object,
-    const IndexedDBDatabaseMetadata& metadata) {
-  int32 ipc_object_id = ipc_database_id_;
-  if (ipc_object_id == kDatabaseNotAdded) {
-    ipc_object_id =
-        dispatcher_host()->Add(idb_object, ipc_thread_id(), origin_url_);
-  } else {
-    // We already have this database and don't need a new copy of it.
-    delete idb_object;
-  }
-  const ::IndexedDBDatabaseMetadata idb_metadata =
-      IndexedDBDispatcherHost::ConvertMetadata(metadata);
+IndexedDBCallbacks::~IndexedDBCallbacks() {}
 
-  dispatcher_host()->Send(
-      new IndexedDBMsg_CallbacksSuccessIDBDatabase(ipc_thread_id(),
-                                                   ipc_callbacks_id(),
-                                                   ipc_database_callbacks_id_,
-                                                   ipc_object_id,
-                                                   idb_metadata));
+void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
+  DCHECK(dispatcher_host_);
+
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksError(
+      ipc_thread_id_, ipc_callbacks_id_, error.code(), error.message()));
+  dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacksDatabase::onUpgradeNeeded(
-    long long old_version,
-    WebIDBDatabaseImpl* database,
+void IndexedDBCallbacks::OnSuccess(const std::vector<string16>& value) {
+  DCHECK(dispatcher_host_);
+
+  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
+  DCHECK_EQ(kNoTransaction, host_transaction_id_);
+  DCHECK_EQ(kNoDatabase, ipc_database_id_);
+  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+
+  std::vector<string16> list;
+  for (unsigned i = 0; i < value.size(); ++i)
+    list.push_back(value[i]);
+
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessStringList(
+      ipc_thread_id_, ipc_callbacks_id_, list));
+  dispatcher_host_ = NULL;
+}
+
+void IndexedDBCallbacks::OnBlocked(int64 existing_version) {
+  DCHECK(dispatcher_host_);
+  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
+
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksIntBlocked(
+      ipc_thread_id_, ipc_callbacks_id_, existing_version));
+}
+
+void IndexedDBCallbacks::OnUpgradeNeeded(
+    int64 old_version,
+    scoped_refptr<IndexedDBDatabase> database,
     const IndexedDBDatabaseMetadata& metadata,
     WebIDBCallbacks::DataLoss data_loss) {
-  dispatcher_host()->RegisterTransactionId(host_transaction_id_, origin_url_);
+  DCHECK(dispatcher_host_);
+  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
+  did_create_proxy_ = true;
+
+  WebIDBDatabaseImpl* web_database =
+      new WebIDBDatabaseImpl(database, database_callbacks_);
+
+  dispatcher_host_->RegisterTransactionId(host_transaction_id_, origin_url_);
   int32 ipc_database_id =
-      dispatcher_host()->Add(database, ipc_thread_id(), origin_url_);
+      dispatcher_host_->Add(web_database, ipc_thread_id_, origin_url_);
   ipc_database_id_ = ipc_database_id;
   IndexedDBMsg_CallbacksUpgradeNeeded_Params params;
-  params.ipc_thread_id = ipc_thread_id();
-  params.ipc_callbacks_id = ipc_callbacks_id();
+  params.ipc_thread_id = ipc_thread_id_;
+  params.ipc_callbacks_id = ipc_callbacks_id_;
   params.ipc_database_id = ipc_database_id;
   params.ipc_database_callbacks_id = ipc_database_callbacks_id_;
   params.old_version = old_version;
   params.idb_metadata = IndexedDBDispatcherHost::ConvertMetadata(metadata);
   params.data_loss = data_loss;
-  dispatcher_host()->Send(new IndexedDBMsg_CallbacksUpgradeNeeded(params));
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksUpgradeNeeded(params));
+
+  database_callbacks_ = NULL;
 }
 
-void IndexedDBCallbacks<IndexedDBCursor>::onSuccess(
-    IndexedDBCursor* idb_cursor,
-    const IndexedDBKey& key,
-    const IndexedDBKey& primaryKey,
-    std::vector<char>* value) {
-  int32 ipc_object_id = dispatcher_host()->Add(idb_cursor);
+void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBDatabase> database,
+                                   const IndexedDBDatabaseMetadata& metadata) {
+  DCHECK(dispatcher_host_);
+  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
+
+  scoped_refptr<IndexedDBCallbacks> self(this);
+
+  WebIDBDatabaseImpl* impl =
+      did_create_proxy_ ? 0
+                        : new WebIDBDatabaseImpl(database, database_callbacks_);
+  database_callbacks_ = NULL;
+
+  int32 ipc_object_id = ipc_database_id_;
+  if (ipc_object_id == kNoDatabase)
+    ipc_object_id = dispatcher_host_->Add(impl, ipc_thread_id_, origin_url_);
+
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessIDBDatabase(
+      ipc_thread_id_,
+      ipc_callbacks_id_,
+      ipc_database_callbacks_id_,
+      ipc_object_id,
+      IndexedDBDispatcherHost::ConvertMetadata(metadata)));
+  dispatcher_host_ = NULL;
+}
+
+void IndexedDBCallbacks::SetDatabaseCallbacks(
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks) {
+  database_callbacks_ = database_callbacks;
+}
+
+void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
+                                   const IndexedDBKey& key,
+                                   const IndexedDBKey& primary_key,
+                                   std::vector<char>* value) {
+  DCHECK(dispatcher_host_);
+
+  DCHECK_EQ(kNoTransaction, host_transaction_id_);
+  DCHECK_EQ(kNoDatabase, ipc_database_id_);
+  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+
+  int32 ipc_object_id = dispatcher_host_->Add(cursor);
   IndexedDBMsg_CallbacksSuccessIDBCursor_Params params;
-  params.ipc_thread_id = ipc_thread_id();
-  params.ipc_callbacks_id = ipc_callbacks_id();
+  params.ipc_thread_id = ipc_thread_id_;
+  params.ipc_callbacks_id = ipc_callbacks_id_;
   params.ipc_cursor_id = ipc_object_id;
   params.key = key;
-  params.primary_key = primaryKey;
+  params.primary_key = primary_key;
   if (value && !value->empty())
     std::swap(params.value, *value);
   // TODO(alecflett): Avoid a copy here: the whole params object is
   // being copied into the message.
-  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIDBCursor(params));
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessIDBCursor(params));
+
+  dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks<IndexedDBCursor>::onSuccess(std::vector<char>* value) {
-  std::vector<char> value_copy;
-  if (value && !value->empty())
-    std::swap(value_copy, *value);
-  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessValue(
-      ipc_thread_id(),
-      ipc_callbacks_id(),
-      // TODO(alecflett): avoid a copy here.
-      value_copy));
-}
+void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
+                                   const IndexedDBKey& primary_key,
+                                   std::vector<char>* value) {
+  DCHECK(dispatcher_host_);
 
-void IndexedDBCallbacks<IndexedDBCursor>::onSuccess(
-    const IndexedDBKey& key,
-    const IndexedDBKey& primaryKey,
-    std::vector<char>* value) {
-  DCHECK_NE(ipc_cursor_id_, -1);
+  DCHECK_NE(kNoCursor, ipc_cursor_id_);
+  DCHECK_EQ(kNoTransaction, host_transaction_id_);
+  DCHECK_EQ(kNoDatabase, ipc_database_id_);
+  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+
   IndexedDBCursor* idb_cursor =
-      dispatcher_host()->GetCursorFromId(ipc_cursor_id_);
+      dispatcher_host_->GetCursorFromId(ipc_cursor_id_);
 
   DCHECK(idb_cursor);
   if (!idb_cursor)
     return;
   IndexedDBMsg_CallbacksSuccessCursorContinue_Params params;
-  params.ipc_thread_id = ipc_thread_id();
-  params.ipc_callbacks_id = ipc_callbacks_id();
+  params.ipc_thread_id = ipc_thread_id_;
+  params.ipc_callbacks_id = ipc_callbacks_id_;
   params.ipc_cursor_id = ipc_cursor_id_;
   params.key = key;
-  params.primary_key = primaryKey;
+  params.primary_key = primary_key;
   if (value && !value->empty())
     std::swap(params.value, *value);
   // TODO(alecflett): Avoid a copy here: the whole params object is
   // being copied into the message.
-  dispatcher_host()->Send(
+  dispatcher_host_->Send(
       new IndexedDBMsg_CallbacksSuccessCursorContinue(params));
+  dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks<IndexedDBCursor>::onSuccessWithPrefetch(
+void IndexedDBCallbacks::OnSuccessWithPrefetch(
     const std::vector<IndexedDBKey>& keys,
-    const std::vector<IndexedDBKey>& primaryKeys,
+    const std::vector<IndexedDBKey>& primary_keys,
     const std::vector<std::vector<char> >& values) {
-  DCHECK_NE(ipc_cursor_id_, -1);
+  DCHECK_EQ(keys.size(), primary_keys.size());
+  DCHECK_EQ(keys.size(), values.size());
+
+  DCHECK(dispatcher_host_);
+
+  DCHECK_NE(kNoCursor, ipc_cursor_id_);
+  DCHECK_EQ(kNoTransaction, host_transaction_id_);
+  DCHECK_EQ(kNoDatabase, ipc_database_id_);
+  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
 
   std::vector<IndexedDBKey> msgKeys;
   std::vector<IndexedDBKey> msgPrimaryKeys;
 
   for (size_t i = 0; i < keys.size(); ++i) {
     msgKeys.push_back(keys[i]);
-    msgPrimaryKeys.push_back(primaryKeys[i]);
+    msgPrimaryKeys.push_back(primary_keys[i]);
   }
 
   IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params params;
-  params.ipc_thread_id = ipc_thread_id();
-  params.ipc_callbacks_id = ipc_callbacks_id();
+  params.ipc_thread_id = ipc_thread_id_;
+  params.ipc_callbacks_id = ipc_callbacks_id_;
   params.ipc_cursor_id = ipc_cursor_id_;
   params.keys = msgKeys;
   params.primary_keys = msgPrimaryKeys;
   params.values = values;
-  dispatcher_host()->Send(
+  dispatcher_host_->Send(
       new IndexedDBMsg_CallbacksSuccessCursorPrefetch(params));
+  dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks<IndexedDBKey>::onSuccess(const IndexedDBKey& value) {
-  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIndexedDBKey(
-      ipc_thread_id(), ipc_callbacks_id(), IndexedDBKey(value)));
-}
+void IndexedDBCallbacks::OnSuccess(std::vector<char>* value,
+                                   const IndexedDBKey& key,
+                                   const IndexedDBKeyPath& key_path) {
+  DCHECK(dispatcher_host_);
 
-void IndexedDBCallbacks<std::vector<string16> >::onSuccess(
-    const std::vector<string16>& value) {
+  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
+  DCHECK_EQ(kNoTransaction, host_transaction_id_);
+  DCHECK_EQ(kNoDatabase, ipc_database_id_);
+  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
 
-  std::vector<string16> list;
-  for (unsigned i = 0; i < value.size(); ++i)
-    list.push_back(value[i]);
-
-  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessStringList(
-      ipc_thread_id(), ipc_callbacks_id(), list));
-}
-
-void IndexedDBCallbacks<std::vector<char> >::onSuccess(
-    std::vector<char>* value) {
   std::vector<char> value_copy;
   if (value && !value->empty())
     std::swap(value_copy, *value);
-  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessValue(
-      ipc_thread_id(),
-      ipc_callbacks_id(),
-      // TODO(alecflett): avoid a copy here
-      value_copy));
-}
-
-void IndexedDBCallbacks<std::vector<char> >::onSuccess(
-    std::vector<char>* value,
-    const IndexedDBKey& primaryKey,
-    const IndexedDBKeyPath& keyPath) {
-  std::vector<char> value_copy;
-  if (value && !value->empty())
-    std::swap(value_copy, *value);
-  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessValueWithKey(
-      ipc_thread_id(),
-      ipc_callbacks_id(),
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessValueWithKey(
+      ipc_thread_id_,
+      ipc_callbacks_id_,
       // TODO(alecflett): Avoid a copy here.
       value_copy,
-      IndexedDBKey(primaryKey),
-      IndexedDBKeyPath(keyPath)));
+      key,
+      key_path));
+  dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks<std::vector<char> >::onSuccess(long long value) {
-  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessInteger(
-      ipc_thread_id(), ipc_callbacks_id(), value));
+void IndexedDBCallbacks::OnSuccess(std::vector<char>* value) {
+  DCHECK(dispatcher_host_);
+
+  DCHECK_EQ(kNoTransaction, host_transaction_id_);
+  DCHECK_EQ(kNoDatabase, ipc_database_id_);
+  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+
+  std::vector<char> value_copy;
+  if (value && !value->empty())
+    std::swap(value_copy, *value);
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessValue(
+      ipc_thread_id_,
+      ipc_callbacks_id_,
+      // TODO(alecflett): avoid a copy here.
+      value_copy));
+  dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks<std::vector<char> >::onSuccess() {
-  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessUndefined(
-      ipc_thread_id(), ipc_callbacks_id()));
+void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
+  DCHECK(dispatcher_host_);
+
+  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
+  DCHECK_EQ(kNoTransaction, host_transaction_id_);
+  DCHECK_EQ(kNoDatabase, ipc_database_id_);
+  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessIndexedDBKey(
+      ipc_thread_id_, ipc_callbacks_id_, value));
+  dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks<std::vector<char> >::onSuccess(
-    const IndexedDBKey& value) {
-  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIndexedDBKey(
-      ipc_thread_id(), ipc_callbacks_id(), value));
+void IndexedDBCallbacks::OnSuccess(int64 value) {
+  DCHECK(dispatcher_host_);
+
+  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
+  DCHECK_EQ(kNoTransaction, host_transaction_id_);
+  DCHECK_EQ(kNoDatabase, ipc_database_id_);
+  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessInteger(
+      ipc_thread_id_, ipc_callbacks_id_, value));
+  dispatcher_host_ = NULL;
+}
+
+void IndexedDBCallbacks::OnSuccess() {
+  DCHECK(dispatcher_host_);
+
+  DCHECK_EQ(kNoTransaction, host_transaction_id_);
+  DCHECK_EQ(kNoDatabase, ipc_database_id_);
+  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
+
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessUndefined(
+      ipc_thread_id_, ipc_callbacks_id_));
+  dispatcher_host_ = NULL;
 }
 
 }  // namespace content

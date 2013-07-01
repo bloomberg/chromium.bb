@@ -16,7 +16,6 @@
 
 namespace content {
 
-class IndexedDBDatabase;
 class IndexedDBTransaction;
 
 class CONTENT_EXPORT IndexedDBCursor
@@ -42,12 +41,11 @@ class CONTENT_EXPORT IndexedDBCursor
   }
 
   // IndexedDBCursor
-  void Advance(uint32 count,
-               scoped_refptr<IndexedDBCallbacksWrapper> callbacks);
+  void Advance(uint32 count, scoped_refptr<IndexedDBCallbacks> callbacks);
   void ContinueFunction(scoped_ptr<IndexedDBKey> key,
-                        scoped_refptr<IndexedDBCallbacksWrapper> callbacks);
+                        scoped_refptr<IndexedDBCallbacks> callbacks);
   void PrefetchContinue(int number_to_fetch,
-                        scoped_refptr<IndexedDBCallbacksWrapper> callbacks);
+                        scoped_refptr<IndexedDBCallbacks> callbacks);
   void PrefetchReset(int used_prefetches, int unused_prefetches);
 
   const IndexedDBKey& key() const { return cursor_->key(); }

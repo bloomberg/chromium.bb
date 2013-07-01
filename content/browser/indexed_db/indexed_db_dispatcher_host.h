@@ -60,8 +60,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   // A shortcut for accessing our context.
   IndexedDBContextImpl* Context() { return indexed_db_context_.get(); }
 
-  // The various IndexedDBCallbacks children call these methods to add the
-  // results into the applicable map.  See below for more details.
+  // IndexedDBCallbacks call these methods to add the results into the
+  // applicable map.  See below for more details.
   int32 Add(IndexedDBCursor* idb_cursor);
   int32 Add(WebIDBDatabaseImpl* idb_database,
             int32 ipc_thread_id,

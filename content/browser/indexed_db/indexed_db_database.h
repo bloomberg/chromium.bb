@@ -12,14 +12,13 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/indexed_db/indexed_db.h"
-#include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
+#include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "content/browser/indexed_db/list_set.h"
 
 namespace content {
 
-class IndexedDBCallbacksWrapper;
 class IndexedDBDatabaseCallbacks;
 class IndexedDBBackingStore;
 class IndexedDBFactory;
@@ -64,17 +63,17 @@ class CONTENT_EXPORT IndexedDBDatabase
   void RemoveIndex(int64 object_store_id, int64 index_id);
 
   void OpenConnection(
-      scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
       scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 version);
   void OpenConnection(
-      scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
       scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 version,
       WebKit::WebIDBCallbacks::DataLoss data_loss);
-  void DeleteDatabase(scoped_refptr<IndexedDBCallbacksWrapper> callbacks);
+  void DeleteDatabase(scoped_refptr<IndexedDBCallbacks> callbacks);
   const IndexedDBDatabaseMetadata& metadata() const { return metadata_; }
 
   void CreateObjectStore(int64 transaction_id,
@@ -83,11 +82,10 @@ class CONTENT_EXPORT IndexedDBDatabase
                          const IndexedDBKeyPath& key_path,
                          bool auto_increment);
   void DeleteObjectStore(int64 transaction_id, int64 object_store_id);
-  void CreateTransaction(
-      int64 transaction_id,
-      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
-      const std::vector<int64>& object_store_ids,
-      uint16 mode);
+  void CreateTransaction(int64 transaction_id,
+                         scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+                         const std::vector<int64>& object_store_ids,
+                         uint16 mode);
   void Close(scoped_refptr<IndexedDBDatabaseCallbacks> callbacks);
 
   void Commit(int64 transaction_id);
@@ -117,13 +115,13 @@ class CONTENT_EXPORT IndexedDBDatabase
            int64 index_id,
            scoped_ptr<IndexedDBKeyRange> key_range,
            bool key_only,
-           scoped_refptr<IndexedDBCallbacksWrapper> callbacks);
+           scoped_refptr<IndexedDBCallbacks> callbacks);
   void Put(int64 transaction_id,
            int64 object_store_id,
            std::vector<char>* value,
            scoped_ptr<IndexedDBKey> key,
            PutMode mode,
-           scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+           scoped_refptr<IndexedDBCallbacks> callbacks,
            const std::vector<int64>& index_ids,
            const std::vector<IndexKeys>& index_keys);
   void SetIndexKeys(int64 transaction_id,
@@ -141,19 +139,19 @@ class CONTENT_EXPORT IndexedDBDatabase
                   indexed_db::CursorDirection,
                   bool key_only,
                   TaskType task_type,
-                  scoped_refptr<IndexedDBCallbacksWrapper> callbacks);
+                  scoped_refptr<IndexedDBCallbacks> callbacks);
   void Count(int64 transaction_id,
              int64 object_store_id,
              int64 index_id,
              scoped_ptr<IndexedDBKeyRange> key_range,
-             scoped_refptr<IndexedDBCallbacksWrapper> callbacks);
+             scoped_refptr<IndexedDBCallbacks> callbacks);
   void DeleteRange(int64 transaction_id,
                    int64 object_store_id,
                    scoped_ptr<IndexedDBKeyRange> key_range,
-                   scoped_refptr<IndexedDBCallbacksWrapper> callbacks);
+                   scoped_refptr<IndexedDBCallbacks> callbacks);
   void Clear(int64 transaction_id,
              int64 object_store_id,
-             scoped_refptr<IndexedDBCallbacksWrapper> callbacks);
+             scoped_refptr<IndexedDBCallbacks> callbacks);
 
  private:
   friend class base::RefCounted<IndexedDBDatabase>;
@@ -167,18 +165,18 @@ class CONTENT_EXPORT IndexedDBDatabase
   bool IsOpenConnectionBlocked() const;
   bool OpenInternal();
   void RunVersionChangeTransaction(
-      scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
       scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 requested_version,
       WebKit::WebIDBCallbacks::DataLoss data_loss);
   void RunVersionChangeTransactionFinal(
-      scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
       scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 requested_version);
   void RunVersionChangeTransactionFinal(
-      scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
       scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int64 transaction_id,
       int64 requested_version,
@@ -187,7 +185,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   void ProcessPendingCalls();
 
   bool IsDeleteDatabaseBlocked() const;
-  void DeleteDatabaseFinal(scoped_refptr<IndexedDBCallbacksWrapper> callbacks);
+  void DeleteDatabaseFinal(scoped_refptr<IndexedDBCallbacks> callbacks);
 
   class VersionChangeOperation;
 

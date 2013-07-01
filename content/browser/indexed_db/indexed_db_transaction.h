@@ -20,7 +20,6 @@
 
 namespace content {
 
-class IndexedDBDatabase;
 class IndexedDBCursor;
 class IndexedDBDatabaseCallbacks;
 

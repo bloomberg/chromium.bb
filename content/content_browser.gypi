@@ -555,8 +555,6 @@
     'browser/indexed_db/indexed_db_backing_store.h',
     'browser/indexed_db/indexed_db_callbacks.cc',
     'browser/indexed_db/indexed_db_callbacks.h',
-    'browser/indexed_db/indexed_db_callbacks_wrapper.cc',
-    'browser/indexed_db/indexed_db_callbacks_wrapper.h',
     'browser/indexed_db/indexed_db_context_impl.cc',
     'browser/indexed_db/indexed_db_context_impl.h',
     'browser/indexed_db/indexed_db_cursor.cc',

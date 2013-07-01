@@ -63,7 +63,7 @@ class IndexedDBDatabase::VersionChangeOperation
       scoped_refptr<IndexedDBDatabase> database,
       int64 transaction_id,
       int64 version,
-      scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
       scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       WebKit::WebIDBCallbacks::DataLoss data_loss)
       : database_(database),
@@ -78,7 +78,7 @@ class IndexedDBDatabase::VersionChangeOperation
   scoped_refptr<IndexedDBDatabase> database_;
   int64 transaction_id_;
   int64 version_;
-  scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
+  scoped_refptr<IndexedDBCallbacks> callbacks_;
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_;
   WebKit::WebIDBCallbacks::DataLoss data_loss_;
 };
@@ -199,7 +199,7 @@ class GetOperation : public IndexedDBTransaction::Operation {
                const bool auto_increment,
                scoped_ptr<IndexedDBKeyRange> key_range,
                indexed_db::CursorType cursor_type,
-               scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
+               scoped_refptr<IndexedDBCallbacks> callbacks)
       : backing_store_(backing_store),
         database_id_(database_id),
         object_store_id_(object_store_id),
@@ -208,8 +208,7 @@ class GetOperation : public IndexedDBTransaction::Operation {
         auto_increment_(auto_increment),
         key_range_(key_range.Pass()),
         cursor_type_(cursor_type),
-        callbacks_(callbacks) {
-  }
+        callbacks_(callbacks) {}
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
  private:
@@ -221,7 +220,7 @@ class GetOperation : public IndexedDBTransaction::Operation {
   const bool auto_increment_;
   const scoped_ptr<IndexedDBKeyRange> key_range_;
   const indexed_db::CursorType cursor_type_;
-  const scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
+  const scoped_refptr<IndexedDBCallbacks> callbacks_;
 };
 
 class PutOperation : public IndexedDBTransaction::Operation {
@@ -232,7 +231,7 @@ class PutOperation : public IndexedDBTransaction::Operation {
                std::vector<char>* value,
                scoped_ptr<IndexedDBKey> key,
                IndexedDBDatabase::PutMode put_mode,
-               scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+               scoped_refptr<IndexedDBCallbacks> callbacks,
                const std::vector<int64>& index_ids,
                const std::vector<IndexedDBDatabase::IndexKeys>& index_keys)
       : backing_store_(backing_store),
@@ -254,7 +253,7 @@ class PutOperation : public IndexedDBTransaction::Operation {
   std::vector<char> value_;
   scoped_ptr<IndexedDBKey> key_;
   const IndexedDBDatabase::PutMode put_mode_;
-  const scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
+  const scoped_refptr<IndexedDBCallbacks> callbacks_;
   const std::vector<int64> index_ids_;
   const std::vector<IndexedDBDatabase::IndexKeys> index_keys_;
 };
@@ -279,7 +278,7 @@ class OpenCursorOperation : public IndexedDBTransaction::Operation {
                       indexed_db::CursorDirection direction,
                       indexed_db::CursorType cursor_type,
                       IndexedDBDatabase::TaskType task_type,
-                      scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
+                      scoped_refptr<IndexedDBCallbacks> callbacks)
       : backing_store_(backing_store),
         database_id_(database_id),
         object_store_id_(object_store_id),
@@ -300,7 +299,7 @@ class OpenCursorOperation : public IndexedDBTransaction::Operation {
   const indexed_db::CursorDirection direction_;
   const indexed_db::CursorType cursor_type_;
   const IndexedDBDatabase::TaskType task_type_;
-  const scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
+  const scoped_refptr<IndexedDBCallbacks> callbacks_;
 };
 
 class CountOperation : public IndexedDBTransaction::Operation {
@@ -310,7 +309,7 @@ class CountOperation : public IndexedDBTransaction::Operation {
                  int64 object_store_id,
                  int64 index_id,
                  scoped_ptr<IndexedDBKeyRange> key_range,
-                 scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
+                 scoped_refptr<IndexedDBCallbacks> callbacks)
       : backing_store_(backing_store),
         database_id_(database_id),
         object_store_id_(object_store_id),
@@ -325,7 +324,7 @@ class CountOperation : public IndexedDBTransaction::Operation {
   const int64 object_store_id_;
   const int64 index_id_;
   const scoped_ptr<IndexedDBKeyRange> key_range_;
-  const scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
+  const scoped_refptr<IndexedDBCallbacks> callbacks_;
 };
 
 class DeleteRangeOperation : public IndexedDBTransaction::Operation {
@@ -334,7 +333,7 @@ class DeleteRangeOperation : public IndexedDBTransaction::Operation {
                        int64 database_id,
                        int64 object_store_id,
                        scoped_ptr<IndexedDBKeyRange> key_range,
-                       scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
+                       scoped_refptr<IndexedDBCallbacks> callbacks)
       : backing_store_(backing_store),
         database_id_(database_id),
         object_store_id_(object_store_id),
@@ -347,7 +346,7 @@ class DeleteRangeOperation : public IndexedDBTransaction::Operation {
   const int64 database_id_;
   const int64 object_store_id_;
   const scoped_ptr<IndexedDBKeyRange> key_range_;
-  const scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
+  const scoped_refptr<IndexedDBCallbacks> callbacks_;
 };
 
 class ClearOperation : public IndexedDBTransaction::Operation {
@@ -355,7 +354,7 @@ class ClearOperation : public IndexedDBTransaction::Operation {
   ClearOperation(scoped_refptr<IndexedDBBackingStore> backing_store,
                  int64 database_id,
                  int64 object_store_id,
-                 scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
+                 scoped_refptr<IndexedDBCallbacks> callbacks)
       : backing_store_(backing_store),
         database_id_(database_id),
         object_store_id_(object_store_id),
@@ -366,21 +365,20 @@ class ClearOperation : public IndexedDBTransaction::Operation {
   const scoped_refptr<IndexedDBBackingStore> backing_store_;
   const int64 database_id_;
   const int64 object_store_id_;
-  const scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
+  const scoped_refptr<IndexedDBCallbacks> callbacks_;
 };
 
 class IndexedDBDatabase::PendingOpenCall {
  public:
-  PendingOpenCall(
-      scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-      int64 transaction_id,
-      int64 version)
+  PendingOpenCall(scoped_refptr<IndexedDBCallbacks> callbacks,
+                  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+                  int64 transaction_id,
+                  int64 version)
       : callbacks_(callbacks),
         database_callbacks_(database_callbacks),
         version_(version),
         transaction_id_(transaction_id) {}
-  scoped_refptr<IndexedDBCallbacksWrapper> Callbacks() { return callbacks_; }
+  scoped_refptr<IndexedDBCallbacks> Callbacks() { return callbacks_; }
   scoped_refptr<IndexedDBDatabaseCallbacks> DatabaseCallbacks() {
     return database_callbacks_;
   }
@@ -388,7 +386,7 @@ class IndexedDBDatabase::PendingOpenCall {
   int64 TransactionId() const { return transaction_id_; }
 
  private:
-  scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
+  scoped_refptr<IndexedDBCallbacks> callbacks_;
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_;
   int64 version_;
   const int64 transaction_id_;
@@ -396,12 +394,12 @@ class IndexedDBDatabase::PendingOpenCall {
 
 class IndexedDBDatabase::PendingDeleteCall {
  public:
-  explicit PendingDeleteCall(scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
+  explicit PendingDeleteCall(scoped_refptr<IndexedDBCallbacks> callbacks)
       : callbacks_(callbacks) {}
-  scoped_refptr<IndexedDBCallbacksWrapper> Callbacks() { return callbacks_; }
+  scoped_refptr<IndexedDBCallbacks> Callbacks() { return callbacks_; }
 
  private:
-  scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
+  scoped_refptr<IndexedDBCallbacks> callbacks_;
 };
 
 scoped_refptr<IndexedDBDatabase> IndexedDBDatabase::Create(
@@ -702,13 +700,12 @@ void IndexedDBDatabase::Abort(int64 transaction_id,
     transactions_[transaction_id]->Abort(error);
 }
 
-void IndexedDBDatabase::Get(
-    int64 transaction_id,
-    int64 object_store_id,
-    int64 index_id,
-    scoped_ptr<IndexedDBKeyRange> key_range,
-    bool key_only,
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
+void IndexedDBDatabase::Get(int64 transaction_id,
+                            int64 object_store_id,
+                            int64 index_id,
+                            scoped_ptr<IndexedDBKeyRange> key_range,
+                            bool key_only,
+                            scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE("IndexedDBDatabase::Get");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
@@ -904,7 +901,7 @@ void IndexedDBDatabase::Put(int64 transaction_id,
                             std::vector<char>* value,
                             scoped_ptr<IndexedDBKey> key,
                             PutMode put_mode,
-                            scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+                            scoped_refptr<IndexedDBCallbacks> callbacks,
                             const std::vector<int64>& index_ids,
                             const std::vector<IndexKeys>& index_keys) {
   IDB_TRACE("IndexedDBDatabase::Put");
@@ -983,18 +980,17 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
   ScopedVector<IndexWriter> index_writers;
   string16 error_message;
   bool obeys_constraints = false;
-  bool backing_store_success =
-      MakeIndexWriters(transaction,
-                                                 backing_store_.get(),
-                                                 database_id_,
-                                                 object_store_,
-                                                 *key,
-                                                 key_was_generated,
-                                                 index_ids_,
-                                                 index_keys_,
-                                                 &index_writers,
-                                                 &error_message,
-                                                 &obeys_constraints);
+  bool backing_store_success = MakeIndexWriters(transaction,
+                                                backing_store_.get(),
+                                                database_id_,
+                                                object_store_,
+                                                *key,
+                                                key_was_generated,
+                                                index_ids_,
+                                                index_keys_,
+                                                &index_writers,
+                                                &error_message,
+                                                &obeys_constraints);
   if (!backing_store_success) {
     callbacks_->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -1159,7 +1155,7 @@ void IndexedDBDatabase::OpenCursor(
     indexed_db::CursorDirection direction,
     bool key_only,
     TaskType task_type,
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
+    scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE("IndexedDBDatabase::OpenCursor");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
@@ -1232,12 +1228,11 @@ void OpenCursorOperation::Perform(IndexedDBTransaction* transaction) {
       cursor, cursor->key(), cursor->primary_key(), cursor->Value());
 }
 
-void IndexedDBDatabase::Count(
-    int64 transaction_id,
-    int64 object_store_id,
-    int64 index_id,
-    scoped_ptr<IndexedDBKeyRange> key_range,
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
+void IndexedDBDatabase::Count(int64 transaction_id,
+                              int64 object_store_id,
+                              int64 index_id,
+                              scoped_ptr<IndexedDBKeyRange> key_range,
+                              scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE("IndexedDBDatabase::Count");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
@@ -1292,7 +1287,7 @@ void IndexedDBDatabase::DeleteRange(
     int64 transaction_id,
     int64 object_store_id,
     scoped_ptr<IndexedDBKeyRange> key_range,
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
+    scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE("IndexedDBDatabase::DeleteRange");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
@@ -1331,10 +1326,9 @@ void DeleteRangeOperation::Perform(IndexedDBTransaction* transaction) {
   callbacks_->OnSuccess();
 }
 
-void IndexedDBDatabase::Clear(
-    int64 transaction_id,
-    int64 object_store_id,
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
+void IndexedDBDatabase::Clear(int64 transaction_id,
+                              int64 object_store_id,
+                              scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE("IndexedDBDatabase::Clear");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
@@ -1536,7 +1530,7 @@ bool IndexedDBDatabase::IsOpenConnectionBlocked() const {
 }
 
 void IndexedDBDatabase::OpenConnection(
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int64 transaction_id,
     int64 version) {
@@ -1547,7 +1541,7 @@ void IndexedDBDatabase::OpenConnection(
 }
 
 void IndexedDBDatabase::OpenConnection(
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int64 transaction_id,
     int64 version,
@@ -1634,7 +1628,7 @@ void IndexedDBDatabase::OpenConnection(
 }
 
 void IndexedDBDatabase::RunVersionChangeTransaction(
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int64 transaction_id,
     int64 requested_version,
@@ -1671,7 +1665,7 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
 }
 
 void IndexedDBDatabase::RunVersionChangeTransactionFinal(
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int64 transaction_id,
     int64 requested_version) {
@@ -1685,7 +1679,7 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
 }
 
 void IndexedDBDatabase::RunVersionChangeTransactionFinal(
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int64 transaction_id,
     int64 requested_version,
@@ -1713,7 +1707,7 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
 }
 
 void IndexedDBDatabase::DeleteDatabase(
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
+    scoped_refptr<IndexedDBCallbacks> callbacks) {
 
   if (IsDeleteDatabaseBlocked()) {
     for (DatabaseCallbacksSet::const_iterator it =
@@ -1740,7 +1734,7 @@ bool IndexedDBDatabase::IsDeleteDatabaseBlocked() const {
 }
 
 void IndexedDBDatabase::DeleteDatabaseFinal(
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
+    scoped_refptr<IndexedDBCallbacks> callbacks) {
   DCHECK(!IsDeleteDatabaseBlocked());
   DCHECK(backing_store_.get());
   if (!backing_store_->DeleteDatabase(metadata_.name)) {

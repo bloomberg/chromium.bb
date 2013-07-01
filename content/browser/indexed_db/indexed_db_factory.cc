@@ -51,7 +51,7 @@ void IndexedDBFactory::RemoveIDBDatabaseBackend(
 }
 
 void IndexedDBFactory::GetDatabaseNames(
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
     const string16& database_identifier,
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::GetDatabaseNames");
@@ -72,7 +72,7 @@ void IndexedDBFactory::GetDatabaseNames(
 
 void IndexedDBFactory::DeleteDatabase(
     const string16& name,
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
     const string16& database_identifier,
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::DeleteDatabase");
@@ -87,7 +87,6 @@ void IndexedDBFactory::DeleteDatabase(
     it->second->DeleteDatabase(callbacks);
     return;
   }
-
 
   // TODO(dgrogan): Plumb data_loss back to script eventually?
   WebKit::WebIDBCallbacks::DataLoss data_loss;
@@ -157,7 +156,7 @@ void IndexedDBFactory::Open(
     const string16& name,
     int64 version,
     int64 transaction_id,
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     const string16& database_identifier,
     const base::FilePath& data_directory) {

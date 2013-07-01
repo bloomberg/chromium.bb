@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
-#include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
+#include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
@@ -31,15 +31,15 @@ TEST(IndexedDBDatabaseTest, BackingStoreRetention) {
   IndexedDBFactory* factory = 0;
   scoped_refptr<IndexedDBDatabase> db =
       IndexedDBDatabase::Create(ASCIIToUTF16("db"),
-                                    backing_store.get(),
-                                    factory,
-                                    ASCIIToUTF16("uniqueid"));
+                                backing_store.get(),
+                                factory,
+                                ASCIIToUTF16("uniqueid"));
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
   db = NULL;
   EXPECT_TRUE(backing_store->HasOneRef());  // local
 }
 
-class MockIDBCallbacks : public IndexedDBCallbacksWrapper {
+class MockIDBCallbacks : public IndexedDBCallbacks {
  public:
   static scoped_refptr<MockIDBCallbacks> Create() {
     return make_scoped_refptr(new MockIDBCallbacks());
@@ -72,7 +72,7 @@ class MockIDBCallbacks : public IndexedDBCallbacksWrapper {
  private:
   virtual ~MockIDBCallbacks() { EXPECT_TRUE(was_success_db_called_); }
   MockIDBCallbacks()
-      : IndexedDBCallbacksWrapper(NULL), was_success_db_called_(false) {}
+      : IndexedDBCallbacks(NULL, 0, 0), was_success_db_called_(false) {}
   bool was_success_db_called_;
 };
 
@@ -101,9 +101,9 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   IndexedDBFactory* factory = 0;
   scoped_refptr<IndexedDBDatabase> db =
       IndexedDBDatabase::Create(ASCIIToUTF16("db"),
-                                    backing_store.get(),
-                                    factory,
-                                    ASCIIToUTF16("uniqueid"));
+                                backing_store.get(),
+                                factory,
+                                ASCIIToUTF16("uniqueid"));
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 
@@ -155,8 +155,7 @@ class MockIDBDatabaseCallbacks : public IndexedDBDatabaseCallbacks {
 
  private:
   MockIDBDatabaseCallbacks()
-      : IndexedDBDatabaseCallbacks(NULL, 0, 0),
-        was_abort_called_(false) {}
+      : IndexedDBDatabaseCallbacks(NULL, 0, 0), was_abort_called_(false) {}
   virtual ~MockIDBDatabaseCallbacks() { EXPECT_TRUE(was_abort_called_); }
   bool was_abort_called_;
 };
@@ -169,9 +168,9 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
   IndexedDBFactory* factory = 0;
   scoped_refptr<IndexedDBDatabase> backend =
       IndexedDBDatabase::Create(ASCIIToUTF16("db"),
-                                    backing_store.get(),
-                                    factory,
-                                    ASCIIToUTF16("uniqueid"));
+                                backing_store.get(),
+                                factory,
+                                ASCIIToUTF16("uniqueid"));
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 

@@ -5,203 +5,163 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CALLBACKS_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CALLBACKS_H_
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
+#include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
+#include "content/common/indexed_db/indexed_db_key.h"
+#include "content/common/indexed_db/indexed_db_key_path.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 
 namespace content {
 class IndexedDBCursor;
-class IndexedDBDatabaseError;
+class IndexedDBDatabase;
+class IndexedDBDatabaseCallbacks;
 class WebIDBDatabaseImpl;
 struct IndexedDBDatabaseMetadata;
 
-class IndexedDBCallbacksBase {
+class CONTENT_EXPORT IndexedDBCallbacks
+    : public base::RefCounted<IndexedDBCallbacks> {
  public:
-  virtual ~IndexedDBCallbacksBase();
+  // Simple payload responses
+  static scoped_refptr<IndexedDBCallbacks> Create(
+      IndexedDBDispatcherHost* dispatcher_host,
+      int32 ipc_thread_id,
+      int32 ipc_callbacks_id) {
+    return make_scoped_refptr(new IndexedDBCallbacks(
+        dispatcher_host, ipc_thread_id, ipc_callbacks_id));
+  }
 
-  virtual void onError(const IndexedDBDatabaseError& error);
-  virtual void onBlocked(long long old_version);
+  // IndexedDBCursor responses
+  static scoped_refptr<IndexedDBCallbacks> Create(
+      IndexedDBDispatcherHost* dispatcher_host,
+      int32 ipc_thread_id,
+      int32 ipc_callbacks_id,
+      int32 ipc_cursor_id) {
+    return make_scoped_refptr(new IndexedDBCallbacks(
+        dispatcher_host, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
+  }
+  // IndexedDBDatabase responses
+  static scoped_refptr<IndexedDBCallbacks> Create(
+      IndexedDBDispatcherHost* dispatcher_host,
+      int32 ipc_thread_id,
+      int32 ipc_callbacks_id,
+      int32 ipc_database_callbacks_id,
+      int64 host_transaction_id,
+      const GURL& origin_url) {
+    return make_scoped_refptr(new IndexedDBCallbacks(dispatcher_host,
+                                                     ipc_thread_id,
+                                                     ipc_callbacks_id,
+                                                     ipc_database_callbacks_id,
+                                                     host_transaction_id,
+                                                     origin_url));
+  }
 
-  // implemented by subclasses, but need to be called later
-  virtual void onSuccess(const std::vector<string16>& value);
-  virtual void onSuccess(WebIDBDatabaseImpl* idb_object,
-                         const IndexedDBDatabaseMetadata& metadata);
-  virtual void onUpgradeNeeded(long long old_version,
-                               WebIDBDatabaseImpl* database,
-                               const IndexedDBDatabaseMetadata&,
-                               WebKit::WebIDBCallbacks::DataLoss data_loss);
-  virtual void onSuccess(IndexedDBCursor* idb_object,
+  virtual void OnError(const IndexedDBDatabaseError& error);
+
+  // IndexedDBFactory::GetDatabaseNames
+  virtual void OnSuccess(const std::vector<string16>& string);
+
+  // IndexedDBFactory::Open / DeleteDatabase
+  virtual void OnBlocked(int64 existing_version);
+
+  // IndexedDBFactory::Open
+  virtual void OnUpgradeNeeded(
+      int64 old_version,
+      scoped_refptr<IndexedDBDatabase> db,
+      const content::IndexedDBDatabaseMetadata& metadata,
+      WebKit::WebIDBCallbacks::DataLoss data_loss);
+  virtual void OnSuccess(scoped_refptr<IndexedDBDatabase> db,
+                         const content::IndexedDBDatabaseMetadata& metadata);
+  void SetDatabaseCallbacks(
+      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks);
+
+  // IndexedDBDatabase::OpenCursor
+  virtual void OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
                          const IndexedDBKey& key,
-                         const IndexedDBKey& primaryKey,
+                         const IndexedDBKey& primary_key,
                          std::vector<char>* value);
-  virtual void onSuccess(const IndexedDBKey& key,
-                         const IndexedDBKey& primaryKey,
+
+  // IndexedDBCursor::Continue / Advance
+  virtual void OnSuccess(const IndexedDBKey& key,
+                         const IndexedDBKey& primary_key,
                          std::vector<char>* value);
-  virtual void onSuccess(std::vector<char>* value);
-  virtual void onSuccessWithPrefetch(
+
+  // IndexedDBCursor::PrefetchContinue
+  virtual void OnSuccessWithPrefetch(
       const std::vector<IndexedDBKey>& keys,
-      const std::vector<IndexedDBKey>& primaryKeys,
+      const std::vector<IndexedDBKey>& primary_keys,
       const std::vector<std::vector<char> >& values);
-  virtual void onSuccess(const IndexedDBKey& value);
-  virtual void onSuccess(std::vector<char>* value,
+
+  // IndexedDBDatabase::Get (with key injection)
+  virtual void OnSuccess(std::vector<char>* data,
                          const IndexedDBKey& key,
-                         const IndexedDBKeyPath& keyPath);
-  virtual void onSuccess(long long value);
-  virtual void onSuccess();
+                         const IndexedDBKeyPath& key_path);
+
+  // IndexedDBDatabase::Get
+  virtual void OnSuccess(std::vector<char>* value);
+
+  // IndexedDBDatabase::Put / IndexedDBCursor::Update
+  virtual void OnSuccess(const IndexedDBKey& value);
+
+  // IndexedDBDatabase::Count
+  virtual void OnSuccess(int64 value);
+
+  // IndexedDBDatabase::Delete
+  // IndexedDBCursor::Continue / Advance (when complete)
+  virtual void OnSuccess();
 
  protected:
-  IndexedDBCallbacksBase(IndexedDBDispatcherHost* dispatcher_host,
-                         int32 ipc_thread_id,
-                         int32 ipc_callbacks_id);
-  IndexedDBDispatcherHost* dispatcher_host() const {
-    return dispatcher_host_.get();
-  }
-  int32 ipc_thread_id() const { return ipc_thread_id_; }
-  int32 ipc_callbacks_id() const { return ipc_callbacks_id_; }
+  virtual ~IndexedDBCallbacks();
+
+  // Simple payload responses
+  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
+                     int32 ipc_thread_id,
+                     int32 ipc_callbacks_id);
+
+  // IndexedDBCursor responses
+  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
+                     int32 ipc_thread_id,
+                     int32 ipc_callbacks_id,
+                     int32 ipc_cursor_id);
+
+  // IndexedDBDatabase responses
+  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
+                     int32 ipc_thread_id,
+                     int32 ipc_callbacks_id,
+                     int32 ipc_database_callbacks_id,
+                     int64 host_transaction_id,
+                     const GURL& origin_url);
 
  private:
+  friend class base::RefCounted<IndexedDBCallbacks>;
+
+  scoped_ptr<WebIDBDatabaseImpl> web_database_impl_;
+  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_;
+  bool did_complete_;
+  bool did_create_proxy_;
+
+  // Originally from IndexedDBCallbacks:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
   int32 ipc_callbacks_id_;
   int32 ipc_thread_id_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksBase);
-};
+  // IndexedDBCursor callbacks ------------------------
+  int32 ipc_cursor_id_;
 
-// TODO(dgrogan): Remove this class and change the remaining specializations
-// into subclasses of IndexedDBCallbacksBase.
-template <class WebObjectType>
-class IndexedDBCallbacks : public IndexedDBCallbacksBase {
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
-};
-
-class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
- public:
-  IndexedDBCallbacksDatabase(IndexedDBDispatcherHost* dispatcher_host,
-                             int32 ipc_thread_id,
-                             int32 ipc_callbacks_id,
-                             int32 ipc_database_callbacks_id,
-                             int64 host_transaction_id,
-                             const GURL& origin_url);
-
-  virtual void onSuccess(WebIDBDatabaseImpl* idb_object,
-                         const IndexedDBDatabaseMetadata& metadata) OVERRIDE;
-  virtual void onUpgradeNeeded(long long old_version,
-                               WebIDBDatabaseImpl* database,
-                               const IndexedDBDatabaseMetadata&,
-                               WebKit::WebIDBCallbacks::DataLoss data_loss)
-      OVERRIDE;
-
- private:
+  // IndexedDBDatabase callbacks ------------------------
   int64 host_transaction_id_;
   GURL origin_url_;
   int32 ipc_database_id_;
   int32 ipc_database_callbacks_id_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksDatabase);
-};
-
-// IndexedDBCursor uses:
-// * onSuccess(IndexedDBCursor*, WebIDBKey, WebIDBKey, WebData)
-//   when an openCursor()/openKeyCursor() call has succeeded,
-// * onSuccess(WebIDBKey, WebIDBKey, WebData)
-//   when an advance()/continue() call has succeeded, or
-// * onSuccess()
-//   to indicate it does not contain any data, i.e., there is no key within
-//   the key range, or it has reached the end.
-template <>
-class IndexedDBCallbacks<IndexedDBCursor> : public IndexedDBCallbacksBase {
- public:
-  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32 ipc_thread_id,
-                     int32 ipc_callbacks_id,
-                     int32 ipc_cursor_id)
-      : IndexedDBCallbacksBase(dispatcher_host,
-                               ipc_thread_id,
-                               ipc_callbacks_id),
-        ipc_cursor_id_(ipc_cursor_id) {}
-
-  virtual void onSuccess(IndexedDBCursor* idb_object,
-                         const IndexedDBKey& key,
-                         const IndexedDBKey& primaryKey,
-                         std::vector<char>* value);
-  virtual void onSuccess(const IndexedDBKey& key,
-                         const IndexedDBKey& primaryKey,
-                         std::vector<char>* value);
-  virtual void onSuccess(std::vector<char>* value);
-  virtual void onSuccessWithPrefetch(
-      const std::vector<IndexedDBKey>& keys,
-      const std::vector<IndexedDBKey>& primaryKeys,
-      const std::vector<std::vector<char> >& values);
-
- private:
-  // The id of the cursor this callback concerns, or -1 if the cursor
-  // does not exist yet.
-  int32 ipc_cursor_id_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
-};
-
-// WebIDBKey is implemented in WebKit as opposed to being an interface Chromium
-// implements.  Thus we pass a const ___& version and thus we need this
-// specialization.
-template <>
-class IndexedDBCallbacks<IndexedDBKey> : public IndexedDBCallbacksBase {
- public:
-  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32 ipc_thread_id,
-                     int32 ipc_callbacks_id)
-      : IndexedDBCallbacksBase(dispatcher_host,
-                               ipc_thread_id,
-                               ipc_callbacks_id) {}
-
-  virtual void onSuccess(const IndexedDBKey& value);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
-};
-
-template <>
-class IndexedDBCallbacks<
-    std::vector<string16> > : public IndexedDBCallbacksBase {
- public:
-  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32 ipc_thread_id,
-                     int32 ipc_callbacks_id)
-      : IndexedDBCallbacksBase(dispatcher_host,
-                               ipc_thread_id,
-                               ipc_callbacks_id) {}
-
-  virtual void onSuccess(const std::vector<string16>& value);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
-};
-
-// WebData is implemented in WebKit as opposed to being an interface
-// Chromium implements.  Thus we pass a const ___& version and thus we
-// need this specialization.
-template <>
-class IndexedDBCallbacks<std::vector<char> > : public IndexedDBCallbacksBase {
- public:
-  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32 ipc_thread_id,
-                     int32 ipc_callbacks_id)
-      : IndexedDBCallbacksBase(dispatcher_host,
-                               ipc_thread_id,
-                               ipc_callbacks_id) {}
-
-  virtual void onSuccess(std::vector<char>* value);
-  virtual void onSuccess(std::vector<char>* value,
-                         const IndexedDBKey& key,
-                         const IndexedDBKeyPath& keyPath);
-  virtual void onSuccess(long long value);
-  virtual void onSuccess();
-  virtual void onSuccess(const IndexedDBKey& value);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
 
 }  // namespace content

@@ -17,7 +17,6 @@
 
 namespace content {
 
-class IndexedDBDatabase;
 class IndexedDBTransaction;
 struct IndexedDBObjectStoreMetadata;
 

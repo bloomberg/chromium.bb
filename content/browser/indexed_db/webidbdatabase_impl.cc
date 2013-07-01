@@ -8,10 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
+#include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
-#include "content/browser/indexed_db/indexed_db_database.h"
-#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
@@ -86,14 +84,15 @@ void WebIDBDatabaseImpl::commit(long long transaction_id) {
     database_backend_->Commit(transaction_id);
 }
 
-void WebIDBDatabaseImpl::openCursor(long long transaction_id,
-                                    long long object_store_id,
-                                    long long index_id,
-                                    const IndexedDBKeyRange& key_range,
-                                    unsigned short direction,
-                                    bool key_only,
-                                    WebKit::WebIDBDatabase::TaskType task_type,
-                                    IndexedDBCallbacksBase* callbacks) {
+void WebIDBDatabaseImpl::openCursor(
+    long long transaction_id,
+    long long object_store_id,
+    long long index_id,
+    const IndexedDBKeyRange& key_range,
+    unsigned short direction,
+    bool key_only,
+    WebKit::WebIDBDatabase::TaskType task_type,
+    scoped_refptr<IndexedDBCallbacks> callbacks) {
   if (database_backend_.get())
     database_backend_->OpenCursor(
         transaction_id,
@@ -103,20 +102,20 @@ void WebIDBDatabaseImpl::openCursor(long long transaction_id,
         static_cast<indexed_db::CursorDirection>(direction),
         key_only,
         static_cast<IndexedDBDatabase::TaskType>(task_type),
-        IndexedDBCallbacksWrapper::Create(callbacks));
+        callbacks);
 }
 
 void WebIDBDatabaseImpl::count(long long transaction_id,
                                long long object_store_id,
                                long long index_id,
                                const IndexedDBKeyRange& key_range,
-                               IndexedDBCallbacksBase* callbacks) {
+                               scoped_refptr<IndexedDBCallbacks> callbacks) {
   if (database_backend_.get())
     database_backend_->Count(transaction_id,
                              object_store_id,
                              index_id,
                              make_scoped_ptr(new IndexedDBKeyRange(key_range)),
-                             IndexedDBCallbacksWrapper::Create(callbacks));
+                             callbacks);
 }
 
 void WebIDBDatabaseImpl::get(long long transaction_id,
@@ -124,14 +123,14 @@ void WebIDBDatabaseImpl::get(long long transaction_id,
                              long long index_id,
                              const IndexedDBKeyRange& key_range,
                              bool key_only,
-                             IndexedDBCallbacksBase* callbacks) {
+                             scoped_refptr<IndexedDBCallbacks> callbacks) {
   if (database_backend_.get())
     database_backend_->Get(transaction_id,
                            object_store_id,
                            index_id,
                            make_scoped_ptr(new IndexedDBKeyRange(key_range)),
                            key_only,
-                           IndexedDBCallbacksWrapper::Create(callbacks));
+                           callbacks);
 }
 
 void WebIDBDatabaseImpl::put(long long transaction_id,
@@ -139,7 +138,7 @@ void WebIDBDatabaseImpl::put(long long transaction_id,
                              std::vector<char>* value,
                              const IndexedDBKey& key,
                              WebKit::WebIDBDatabase::PutMode put_mode,
-                             IndexedDBCallbacksBase* callbacks,
+                             scoped_refptr<IndexedDBCallbacks> callbacks,
                              const std::vector<int64>& index_ids,
                              const std::vector<IndexKeys>& index_keys) {
   if (!database_backend_.get())
@@ -152,7 +151,7 @@ void WebIDBDatabaseImpl::put(long long transaction_id,
                          value,
                          make_scoped_ptr(new IndexedDBKey(key)),
                          static_cast<IndexedDBDatabase::PutMode>(put_mode),
-                         IndexedDBCallbacksWrapper::Create(callbacks),
+                         callbacks,
                          index_ids,
                          index_keys);
 }
@@ -189,25 +188,24 @@ void WebIDBDatabaseImpl::setIndexesReady(
       transaction_id, object_store_id, index_ids);
 }
 
-void WebIDBDatabaseImpl::deleteRange(long long transaction_id,
-                                     long long object_store_id,
-                                     const IndexedDBKeyRange& key_range,
-                                     IndexedDBCallbacksBase* callbacks) {
+void WebIDBDatabaseImpl::deleteRange(
+    long long transaction_id,
+    long long object_store_id,
+    const IndexedDBKeyRange& key_range,
+    scoped_refptr<IndexedDBCallbacks> callbacks) {
   if (database_backend_.get())
     database_backend_->DeleteRange(
         transaction_id,
         object_store_id,
         make_scoped_ptr(new IndexedDBKeyRange(key_range)),
-        IndexedDBCallbacksWrapper::Create(callbacks));
+        callbacks);
 }
 
 void WebIDBDatabaseImpl::clear(long long transaction_id,
                                long long object_store_id,
-                               IndexedDBCallbacksBase* callbacks) {
+                               scoped_refptr<IndexedDBCallbacks> callbacks) {
   if (database_backend_.get())
-    database_backend_->Clear(transaction_id,
-                             object_store_id,
-                             IndexedDBCallbacksWrapper::Create(callbacks));
+    database_backend_->Clear(transaction_id, object_store_id, callbacks);
 }
 
 void WebIDBDatabaseImpl::createIndex(long long transaction_id,
