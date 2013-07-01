@@ -1,6 +1,6 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
 #ifndef PPAPI_SIMPLE_PS_MAIN_H_
 #define PPAPI_SIMPLE_PS_MAIN_H_
@@ -34,5 +34,4 @@ void* PSMainCreate(PP_Instance inst, PSMainFunc_t func, const char **argv);
 
 EXTERN_C_END
 
-#endif  /* PPAPI_SIMPLE_PPAPI_SIMPLE_MAIN_H_ */
-
+#endif  /* PPAPI_SIMPLE_PS_MAIN_H_ */

@@ -927,10 +927,9 @@ def main(args):
     # of the build.
     del os.environ['NACL_SDK_ROOT']
 
-  BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
-  BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
-
   if not options.skip_toolchain:
+    BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
+    BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
     BuildStepDownloadToolchains()
     BuildStepUntarToolchains(pepperdir, platform, arch, toolchains)
 

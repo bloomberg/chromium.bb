@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -57,7 +56,7 @@ struct StartInfo {
 // The starting point for 'main'.  We create this thread to hide the real
 // main pepper thread which must never be blocked.
 void* PSInstance::MainThreadThunk(void *info) {
-  s_InstanceObject->Log("Got MainThreadThunk.\n");
+  s_InstanceObject->Trace("Got MainThreadThunk.\n");
   StartInfo* si = static_cast<StartInfo*>(info);
   si->inst_->main_loop_ = new pp::MessageLoop(si->inst_);
   si->inst_->main_loop_->AttachToCurrentThread();
@@ -69,20 +68,24 @@ void* PSInstance::MainThreadThunk(void *info) {
   delete[] si->argv_;
   delete si;
 
+  // Exit the entire process once the 'main' thread returns.
+  // The error code will be available to javascript via
+  // the exitcode paramater of the crash event.
+  exit(ret);
   return NULL;
 }
 
 // The default implementation supports running a 'C' main.
 int PSInstance::MainThread(int argc, char *argv[]) {
-  if (main_cb_) {
-    Log("Starting MAIN.\n");
-    int ret = main_cb_(argc, argv);
-    Log("Main thread returned with %d.\n", ret);
-    return ret;
+  if (!main_cb_) {
+    Error("No main defined.\n");
+    return 0;
   }
 
-  Error("No main defined.\n");
-  return 0;
+  Trace("Starting MAIN.\n");
+  int ret = main_cb_(argc, argv);
+  Log("Main thread returned with %d.\n", ret);
+  return ret;
 }
 
 PSInstance::PSInstance(PP_Instance instance, const char *argv[])
@@ -90,13 +93,13 @@ PSInstance::PSInstance(PP_Instance instance, const char *argv[])
       pp::MouseLock(this),
       pp::Graphics3DClient(this),
       main_loop_(NULL),
-      verbosity_(PSV_LOG),
+      verbosity_(PSV_WARN),
       events_enabled_(PSE_NONE),
       fd_tty_(-1) {
   // Set the single Instance object
   s_InstanceObject = this;
 
-#ifdef DEBUG
+#ifdef NACL_SDK_DEBUG
   SetVerbosity(PSV_LOG);
 #endif
 
@@ -130,13 +133,7 @@ bool PSInstance::Init(uint32_t arg,
   si->argv_[0] = NULL;
 
   // Process arguments passed into Module INIT from JavaScript
-  for (uint32_t i=0; i < arg; i++) {
-    if (argv[i]) {
-      Log("ARG %s=%s\n", argn[i], argv[i]);
-    } else {
-      Log("ARG %s\n", argn[i]);
-    }
-
+  for (uint32_t i = 0; i < arg; i++) {
     // If we start with PM prefix set the instance argument map
     if (0 == strncmp(argn[i], "ps_", 3)) {
       std::string key = argn[i];
@@ -145,25 +142,33 @@ bool PSInstance::Init(uint32_t arg,
       continue;
     }
 
+    // Chrome passed @dev as an internal extra attribute in
+    // some cases.  Ignore this.
+    if (0 == strcmp(argn[i], "@dev")) {
+      continue;
+    }
+
     // If this is the 'src' tag, then get the NMF name.
     if (!strcmp("src", argn[i])) {
       char *name = new char[strlen(argv[i]) + 1];
       strcpy(name, argv[i]);
       si->argv_[0] = name;
-    }
-    else {
-      // Otherwise turn it into arguments
-      char *key = new char[strlen(argn[i]) + 3];
-      key[0] = '-';
-      key[1] = '-';
-      strcpy(&key[2], argn[i]);
+    } else {
+      // Otherwise turn html tag attributes into arguments
+      // that get passed to the main funciton.  Attributes
+      // without values get transformed into "--name" and
+      // attributes with values become "--name=value".
+      int arglen = strlen(argn[i]) + 3;
+      if (argv[i] && argv[i][0])
+        arglen += strlen(argv[i]) + 1;
 
-      si->argv_[si->argc_++] = key;
-      if (argv[i] && argv[i][0]) {
-        char *val = new char[strlen(argv[i]) + 1];
-        strcpy(val, argv[i]);
-        si->argv_[si->argc_++] = val;
-      }
+      char* arg = new char[arglen];
+      if (argv[i] && argv[i][0])
+        sprintf(arg, "--%s=%s", argn[i], argv[i]);
+      else
+        sprintf(arg, "--%s", argn[i]);
+
+      si->argv_[si->argc_++] = arg;
     }
   }
 
@@ -175,16 +180,32 @@ bool PSInstance::Init(uint32_t arg,
   }
 
   PSInterfaceInit();
+  bool props_processed = ProcessProperties();
 
-  if (ProcessProperties()) {
-    pthread_t main_thread;
-    int ret = pthread_create(&main_thread, NULL, MainThreadThunk, si);
-    Log("Created thread: %d.\n", ret);
-    return ret == 0;
+  // Log arg values only once ProcessProperties has been
+  // called so that the ps_verbosity attribute will be in
+  // effect.
+  for (uint32_t i = 0; i < arg; i++) {
+    if (argv[i]) {
+      Trace("attribs[%d] '%s=%s'\n", i, argn[i], argv[i]);
+    } else {
+      Trace("attribs[%d] '%s'\n", i, argn[i]);
+    }
   }
 
-  Log("Skipping create thread.\n");
-  return false;
+  for (uint32_t i = 0; i < si->argc_; i++) {
+    Trace("argv[%d] '%s'\n", i, si->argv_[i]);
+  }
+
+  if (!props_processed) {
+    Warn("Skipping create thread.\n");
+    return false;
+  }
+
+  pthread_t main_thread;
+  int ret = pthread_create(&main_thread, NULL, MainThreadThunk, si);
+  Trace("Created thread: %d.\n", ret);
+  return ret == 0;
 }
 
 const char* PSInstance::GetProperty(const char* key, const char* def) {
@@ -195,7 +216,7 @@ const char* PSInstance::GetProperty(const char* key, const char* def) {
   return def;
 }
 
-// Processes the properties passed fixed at compile time via the
+// Processes the properties set at compile time via the
 // initialization macro, or via dynamically set embed attributes
 // through instance DidCreate.
 bool PSInstance::ProcessProperties() {
@@ -241,28 +262,39 @@ void PSInstance::SetVerbosity(Verbosity verbosity) {
   verbosity_ = verbosity;
 }
 
-void PSInstance::Log(const char *fmt, ...) {
-  if (verbosity_ >= PSV_LOG) {
-    va_list ap;
-    va_start(ap, fmt);
-    vfprintf(stdout, fmt, ap);
+void PSInstance::VALog(Verbosity verbosity, const char *fmt, va_list args) {
+  if (verbosity <= verbosity_) {
+    fprintf(stderr, "ps: ");
+    vfprintf(stderr, fmt, args);
   }
+}
+
+void PSInstance::Trace(const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  VALog(PSV_TRACE, fmt, ap);
+  va_end(ap);
+}
+
+void PSInstance::Log(const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  VALog(PSV_LOG, fmt, ap);
+  va_end(ap);
 }
 
 void PSInstance::Warn(const char *fmt, ...) {
-  if (verbosity_ >= PSV_WARN) {
-    va_list ap;
-    va_start(ap, fmt);
-    vfprintf(stdout, fmt, ap);
-  }
+  va_list ap;
+  va_start(ap, fmt);
+  VALog(PSV_WARN, fmt, ap);
+  va_end(ap);
 }
 
 void PSInstance::Error(const char *fmt, ...) {
-  if (verbosity_ >= PSV_ERROR) {
-    va_list ap;
-    va_start(ap, fmt);
-    vfprintf(stderr, fmt, ap);
-  }
+  va_list ap;
+  va_start(ap, fmt);
+  VALog(PSV_ERROR, fmt, ap);
+  va_end(ap);
 }
 
 void PSInstance::SetEnabledEvents(uint32_t mask) {
@@ -374,7 +406,7 @@ void PSInstance::ReleaseEvent(PSEvent* event) {
 }
 
 void PSInstance::HandleMessage(const pp::Var& message) {
-  Log("Got Message\n");
+  Trace("Got Message\n");
   PostEvent(PSE_INSTANCE_HANDLEMESSAGE, message.pp_var());
 }
 

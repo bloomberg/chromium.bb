@@ -136,6 +136,8 @@ def CreateHTML(filenames, options):
     cmd = [create_nmf, '-s', staging, '-o', nmf] + filenames
     if options.verbose:
       cmd.append('-v')
+    if options.debug_libs:
+      cmd.append('--debug-libs')
     Log(cmd)
     try:
       subprocess.check_call(cmd)
@@ -158,6 +160,8 @@ def main(argv):
   parser = optparse.OptionParser(usage, description=description, epilog=epilog)
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Verbose output')
+  parser.add_option('-d', '--debug-libs', action='store_true',
+                    help='When calling create_nmf request debug libaries')
   parser.add_option('-o', '--output', dest='output',
                     help='Name of html file to write (default is '
                          'input name with .html extension)',

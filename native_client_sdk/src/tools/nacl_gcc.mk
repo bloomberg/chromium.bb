@@ -382,6 +382,7 @@ ARCH_SUFFIXES := $(foreach arch,$(ARCHES),_$(arch).nexe)
 NMF := python $(NACL_SDK_ROOT)/tools/create_nmf.py
 ifeq ($(CONFIG),Debug)
 NMF_FLAGS += --debug-libs
+HTML_FLAGS += --debug-libs
 endif
 
 EXECUTABLES=$(foreach arch,$(ARCH_SUFFIXES),$(OUTDIR)/$(1)$(arch)) $(GLIBC_SO_LIST)
@@ -400,5 +401,5 @@ CREATE_HTML := python $(NACL_SDK_ROOT)/tools/create_html.py
 define HTML_RULE
 all: $(OUTDIR)/$(1).html
 $(OUTDIR)/$(1).html: $(EXECUTABLES)
-	$(call LOG,CREATE_HTML,$$@,$(CREATE_HTML) -o $$@ $$^)
+	$(call LOG,CREATE_HTML,$$@,$(CREATE_HTML) $(HTML_FLAGS) -o $$@ $$^)
 endef

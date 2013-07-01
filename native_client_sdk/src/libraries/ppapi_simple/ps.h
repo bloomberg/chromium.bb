@@ -131,5 +131,4 @@ void* PSUserCreateInstance(PP_Instance inst) {                     \
 EXTERN_C_END
 
 
-#endif  // PPAPI_SIMPLE_PPAPI_SIMPLE_H
-
+#endif  // PPAPI_SIMPLE_PS_H_

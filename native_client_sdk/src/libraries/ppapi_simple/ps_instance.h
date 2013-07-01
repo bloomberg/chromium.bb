@@ -1,12 +1,11 @@
-/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef PPAPI_SIMPLE_PS_INSTANCE_H_
 #define PPAPI_SIMPLE_PS_INSTANCE_H_
 
+#include <stdarg.h>
 #include <map>
 
 #include "ppapi/c/pp_instance.h"
@@ -35,11 +34,14 @@ typedef std::map<std::string, std::string> PropertyMap_t;
 // Graphics3DClient interfaces.
 class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
  public:
+  // Verbosity levels, ecplicitly numbered since we pass these
+  // in from html attributes as numberic values.
   enum Verbosity {
-    PSV_SILENT,
-    PSV_ERROR,
-    PSV_WARN,
-    PSV_LOG,
+    PSV_SILENT = 0,
+    PSV_ERROR = 1,
+    PSV_WARN = 2,
+    PSV_LOG = 3,
+    PSV_TRACE = 4,
   };
 
   // Returns a pointer to the global instance
@@ -61,6 +63,7 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
 
   // Logging Functions
   void SetVerbosity(Verbosity verbosity);
+  void Trace(const char *fmt, ...);
   void Log(const char *fmt, ...);
   void Warn(const char *fmt, ...);
   void Error(const char *fmt, ...);
@@ -85,6 +88,10 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   // Called by the browser when the NaCl module is loaded and all ready to go.
   // This function will create a new thread which will run the pseudo main.
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
+
+  // Output log message to stderr if the current verbosity is set
+  // at or above the given verbosity.
+  void VALog(Verbosity verbosity, const char *fmt, va_list args);
 
   // Called whenever the in-browser window changes size, it will pass a
   // context change request to whichever thread is handling rendering.
@@ -133,4 +140,3 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
 };
 
 #endif  // PPAPI_MAIN_PS_INSTANCE_H_
-

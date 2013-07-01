@@ -141,7 +141,8 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
                                        targets)
 
 
-def BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config):
+def BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config,
+                        verbose):
   make_dir = os.path.join(pepperdir, branch)
   print "\n\nMake: " + make_dir
   if platform == 'win':
@@ -150,9 +151,13 @@ def BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config):
   else:
     make = 'make'
 
+
   extra_args = ['CONFIG='+config]
   if not deps:
     extra_args += ['IGNORE_DEPS=1']
+
+  if verbose:
+    extra_args += ['V=1']
 
   try:
     buildbot_common.Run([make, '-j8', 'TOOLCHAIN=all'] + extra_args,
@@ -168,17 +173,19 @@ def BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config):
 
 
 def BuildProjects(pepperdir, platform, project_tree, deps=True,
-                  clean=False, config='Debug'):
+                  clean=False, config='Debug', verbose=False):
   # First build libraries
   build_order = ['src', 'testlibs']
   for branch in build_order:
     if branch in project_tree:
-      BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config)
+      BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config,
+                          verbose)
 
   # Build everything else.
   for branch in project_tree:
     if branch not in build_order:
-      BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config)
+      BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config,
+                          verbose)
 
 
 def main(args):
@@ -253,7 +260,8 @@ def main(args):
     else:
       configs = ['Debug', 'Release']
     for config in configs:
-      BuildProjects(pepperdir, platform, project_tree, config=config)
+      BuildProjects(pepperdir, platform, project_tree,
+                    config=config, verbose=options.verbose)
 
   return 0
 
