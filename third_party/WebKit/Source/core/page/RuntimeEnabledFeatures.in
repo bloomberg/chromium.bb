@@ -64,6 +64,7 @@ Notifications status=stable
 PagePopup status=stable
 ParseSVGAsHTML
 PeerConnection depends_on=MediaStream, status=stable
+ProgrammaticScrollNotifications status=test
 Promise status=test
 Quota status=stable
 RequestAutocomplete status=test

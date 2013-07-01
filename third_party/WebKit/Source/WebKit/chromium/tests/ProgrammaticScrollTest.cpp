@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
+#include "RuntimeEnabledFeatures.h"
 #include "URLTestHelpers.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
@@ -31,6 +32,11 @@ public:
     ProgrammaticScrollTest()
         : m_baseURL("http://www.test.com/")
     {
+    }
+
+    virtual void SetUp()
+    {
+        RuntimeEnabledFeatures::setProgrammaticScrollNotificationsEnabled(true);
     }
 
     virtual void TearDown()

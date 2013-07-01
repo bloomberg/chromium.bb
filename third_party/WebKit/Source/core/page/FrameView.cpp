@@ -1572,7 +1572,8 @@ void FrameView::setScrollPosition(const IntPoint& scrollPoint)
     if (newScrollPosition == scrollPosition())
         return;
 
-    if (Page* page = m_frame->page())
+    Page* page = m_frame->page();
+    if (page && RuntimeEnabledFeatures::programmaticScrollNotificationsEnabled())
         page->chrome().client()->didProgrammaticallyScroll(m_frame.get(), newScrollPosition);
 
     if (requestScrollPositionUpdate(newScrollPosition))
