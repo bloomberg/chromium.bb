@@ -15,10 +15,6 @@ specific_include_rules = {
     # TestBrowserThreadBundle should be gone: crbug.com/256109
     "!content/public/test/test_browser_thread_bundle.h",
   ],
-  "time_util_unittest\.cc": [
-    # TimezoneSettings should be gone: crbug.com/256115
-    "!chrome/browser/chromeos/system/timezone_settings.h",
-  ],
   # AuthService should be gone. crbug.com/162157
   "auth_service\.(h|cc)": [
     "!chrome/browser/profiles/profile.h",
