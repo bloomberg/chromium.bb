@@ -21,19 +21,18 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGParserUtilities.h"
 
 #include "core/dom/Document.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/svg/SVGPointList.h"
-
+#include "wtf/ASCIICType.h"
 #include <limits>
-#include <wtf/ASCIICType.h>
 
 namespace WebCore {
 
-template <typename FloatType> static inline bool isValidRange(const FloatType& x)
+template <typename FloatType>
+static inline bool isValidRange(const FloatType& x)
 {
     static const FloatType max = std::numeric_limits<FloatType>::max();
     return x >= -max && x <= max;
@@ -42,11 +41,12 @@ template <typename FloatType> static inline bool isValidRange(const FloatType& x
 // We use this generic parseNumber function to allow the Path parsing code to work 
 // at a higher precision internally, without any unnecessary runtime cost or code
 // complexity.
-template <typename CharacterType, typename FloatType> static bool genericParseNumber(const CharacterType*& ptr, const CharacterType* end, FloatType& number, bool skip)
+template <typename CharType, typename FloatType>
+static bool genericParseNumber(const CharType*& ptr, const CharType* end, FloatType& number, bool skip)
 {
     FloatType integer, decimal, frac, exponent;
     int sign, expsign;
-    const CharacterType* start = ptr;
+    const CharType* start = ptr;
 
     exponent = 0;
     integer = 0;
@@ -68,12 +68,12 @@ template <typename CharacterType, typename FloatType> static bool genericParseNu
         return false;
 
     // read the integer part, build right-to-left
-    const CharacterType* ptrStartIntPart = ptr;
+    const CharType* ptrStartIntPart = ptr;
     while (ptr < end && *ptr >= '0' && *ptr <= '9')
         ++ptr; // Advance to first non-digit.
 
     if (ptr != ptrStartIntPart) {
-        const CharacterType* ptrScanIntPart = ptr - 1;
+        const CharType* ptrScanIntPart = ptr - 1;
         FloatType multiplier = 1;
         while (ptrScanIntPart >= ptrStartIntPart) {
             integer += multiplier * static_cast<FloatType>(*(ptrScanIntPart--) - '0');
@@ -141,11 +141,11 @@ template <typename CharacterType, typename FloatType> static bool genericParseNu
     return true;
 }
 
-template <typename CharacterType>
-bool parseSVGNumber(CharacterType* begin, size_t length, double& number)
+template <typename CharType>
+bool parseSVGNumber(CharType* begin, size_t length, double& number)
 {
-    const CharacterType* ptr = begin;
-    const CharacterType* end = ptr + length;
+    const CharType* ptr = begin;
+    const CharType* end = ptr + length;
     return genericParseNumber(ptr, end, number, false);
 }
 
@@ -165,19 +165,26 @@ bool parseNumber(const UChar*& ptr, const UChar* end, float& number, bool skip)
 
 bool parseNumberFromString(const String& string, float& number, bool skip)
 {
-    const UChar* ptr = string.bloatedCharacters();
+    if (string.isEmpty())
+        return false;
+    if (string.is8Bit()) {
+        const LChar* ptr = string.characters8();
+        const LChar* end = ptr + string.length();
+        return genericParseNumber(ptr, end, number, skip) && ptr == end;
+    }
+    const UChar* ptr = string.characters16();
     const UChar* end = ptr + string.length();
     return genericParseNumber(ptr, end, number, skip) && ptr == end;
 }
 
 // only used to parse largeArcFlag and sweepFlag which must be a "0" or "1"
 // and might not have any whitespace/comma after it
-template <typename CharacterType>
-bool genericParseArcFlag(const CharacterType*& ptr, const CharacterType* end, bool& flag)
+template <typename CharType>
+bool genericParseArcFlag(const CharType*& ptr, const CharType* end, bool& flag)
 {
     if (ptr >= end)
         return false;
-    const CharacterType flagChar = *ptr++;
+    const CharType flagChar = *ptr++;
     if (flagChar == '0')
         flag = false;
     else if (flagChar == '1')
@@ -200,30 +207,39 @@ bool parseArcFlag(const UChar*& ptr, const UChar* end, bool& flag)
     return genericParseArcFlag(ptr, end, flag);
 }
 
-bool parseNumberOptionalNumber(const String& s, float& x, float& y)
+template<typename CharType>
+static bool genericParseNumberOptionalNumber(const CharType*& ptr, const CharType* end, float& x, float& y)
 {
-    if (s.isEmpty())
-        return false;
-    const UChar* cur = s.bloatedCharacters();
-    const UChar* end = cur + s.length();
-
-    if (!parseNumber(cur, end, x))
+    if (!parseNumber(ptr, end, x))
         return false;
 
-    if (cur == end)
+    if (ptr == end)
         y = x;
-    else if (!parseNumber(cur, end, y, false))
+    else if (!parseNumber(ptr, end, y, false))
         return false;
 
-    return cur == end;
+    return ptr == end;
 }
 
-bool parseRect(const String& string, FloatRect& rect)
+bool parseNumberOptionalNumber(const String& string, float& x, float& y)
 {
-    const UChar* ptr = string.bloatedCharacters();
+    if (string.isEmpty())
+        return false;
+    if (string.is8Bit()) {
+        const LChar* ptr = string.characters8();
+        const LChar* end = ptr + string.length();
+        return genericParseNumberOptionalNumber(ptr, end, x, y);
+    }
+    const UChar* ptr = string.characters16();
     const UChar* end = ptr + string.length();
+    return genericParseNumberOptionalNumber(ptr, end, x, y);
+}
+
+template<typename CharType>
+static bool genericParseRect(const CharType*& ptr, const CharType* end, FloatRect& rect)
+{
     skipOptionalSVGSpaces(ptr, end);
-    
+
     float x = 0;
     float y = 0;
     float width = 0;
@@ -233,51 +249,72 @@ bool parseRect(const String& string, FloatRect& rect)
     return valid;
 }
 
+bool parseRect(const String& string, FloatRect& rect)
+{
+    if (string.isEmpty())
+        return false;
+    if (string.is8Bit()) {
+        const LChar* ptr = string.characters8();
+        const LChar* end = ptr + string.length();
+        return genericParseRect(ptr, end, rect);
+    }
+    const UChar* ptr = string.characters16();
+    const UChar* end = ptr + string.length();
+    return genericParseRect(ptr, end, rect);
+}
+
+template<typename CharType>
+static bool genericParsePointsList(SVGPointList& pointsList, const CharType*& ptr, const CharType* end)
+{
+    skipOptionalSVGSpaces(ptr, end);
+
+    bool delimParsed = false;
+    while (ptr < end) {
+        delimParsed = false;
+        float xPos = 0.0f;
+        if (!parseNumber(ptr, end, xPos))
+           return false;
+
+        float yPos = 0.0f;
+        if (!parseNumber(ptr, end, yPos, false))
+            return false;
+
+        skipOptionalSVGSpaces(ptr, end);
+
+        if (ptr < end && *ptr == ',') {
+            delimParsed = true;
+            ptr++;
+        }
+        skipOptionalSVGSpaces(ptr, end);
+
+        pointsList.append(FloatPoint(xPos, yPos));
+    }
+    return ptr == end && !delimParsed;
+}
+
+// FIXME: Why is the out parameter first?
 bool pointsListFromSVGData(SVGPointList& pointsList, const String& points)
 {
     if (points.isEmpty())
         return true;
-    const UChar* cur = points.bloatedCharacters();
-    const UChar* end = cur + points.length();
-
-    skipOptionalSVGSpaces(cur, end);
-
-    bool delimParsed = false;
-    while (cur < end) {
-        delimParsed = false;
-        float xPos = 0.0f;
-        if (!parseNumber(cur, end, xPos))
-           return false;
-
-        float yPos = 0.0f;
-        if (!parseNumber(cur, end, yPos, false))
-            return false;
-
-        skipOptionalSVGSpaces(cur, end);
-
-        if (cur < end && *cur == ',') {
-            delimParsed = true;
-            cur++;
-        }
-        skipOptionalSVGSpaces(cur, end);
-
-        pointsList.append(FloatPoint(xPos, yPos));
+    if (points.is8Bit()) {
+        const LChar* ptr = points.characters8();
+        const LChar* end = ptr + points.length();
+        return genericParsePointsList(pointsList, ptr, end);
     }
-    return cur == end && !delimParsed;
+    const UChar* ptr = points.characters16();
+    const UChar* end = ptr + points.length();
+    return genericParsePointsList(pointsList, ptr, end);
 }
 
-bool parseGlyphName(const String& input, HashSet<String>& values)
+template<typename CharType>
+static bool parseGlyphName(const CharType*& ptr, const CharType* end, HashSet<String>& values)
 {
-    // FIXME: Parsing error detection is missing.
-    values.clear();
-
-    const UChar* ptr = input.bloatedCharacters();
-    const UChar* end = ptr + input.length();
     skipOptionalSVGSpaces(ptr, end);
 
     while (ptr < end) {
         // Leading and trailing white space, and white space before and after separators, will be ignored.
-        const UChar* inputStart = ptr;
+        const CharType* inputStart = ptr;
         while (ptr < end && *ptr != ',')
             ++ptr;
 
@@ -285,7 +322,7 @@ bool parseGlyphName(const String& input, HashSet<String>& values)
             break;
 
         // walk backwards from the ; to ignore any whitespace
-        const UChar* inputEnd = ptr - 1;
+        const CharType* inputEnd = ptr - 1;
         while (inputStart < inputEnd && isSVGSpace(*inputEnd))
             --inputEnd;
 
@@ -296,7 +333,24 @@ bool parseGlyphName(const String& input, HashSet<String>& values)
     return true;
 }
 
-static bool parseUnicodeRange(const UChar* characters, unsigned length, UnicodeRange& range)
+bool parseGlyphName(const String& input, HashSet<String>& values)
+{
+    // FIXME: Parsing error detection is missing.
+    values.clear();
+    if (input.isEmpty())
+        return true;
+    if (input.is8Bit()) {
+        const LChar* ptr = input.characters8();
+        const LChar* end = ptr + input.length();
+        return parseGlyphName(ptr, end, values);
+    }
+    const UChar* ptr = input.characters16();
+    const UChar* end = ptr + input.length();
+    return parseGlyphName(ptr, end, values);
+}
+
+template<typename CharType>
+static bool parseUnicodeRange(const CharType* characters, unsigned length, UnicodeRange& range)
 {
     if (length < 2 || characters[0] != 'U' || characters[1] != '+')
         return false;
@@ -305,8 +359,8 @@ static bool parseUnicodeRange(const UChar* characters, unsigned length, UnicodeR
     unsigned startRange = 0;
     unsigned startLength = 0;
 
-    const UChar* ptr = characters + 2;
-    const UChar* end = characters + length;
+    const CharType* ptr = characters + 2;
+    const CharType* end = characters + length;
     while (ptr < end) {
         if (!isASCIIHexDigit(*ptr))
             break;
@@ -365,14 +419,11 @@ static bool parseUnicodeRange(const UChar* characters, unsigned length, UnicodeR
     return true;
 }
 
-bool parseKerningUnicodeString(const String& input, UnicodeRanges& rangeList, HashSet<String>& stringList)
+template<typename CharType>
+static bool genericParseKerningUnicodeString(const CharType*& ptr, const CharType* end, UnicodeRanges& rangeList, HashSet<String>& stringList)
 {
-    // FIXME: Parsing error detection is missing.
-    const UChar* ptr = input.bloatedCharacters();
-    const UChar* end = ptr + input.length();
-
     while (ptr < end) {
-        const UChar* inputStart = ptr;
+        const CharType* inputStart = ptr;
         while (ptr < end && *ptr != ',')
             ++ptr;
 
@@ -391,17 +442,31 @@ bool parseKerningUnicodeString(const String& input, UnicodeRanges& rangeList, Ha
     return true;
 }
 
-Vector<String> parseDelimitedString(const String& input, const char seperator)
+bool parseKerningUnicodeString(const String& input, UnicodeRanges& rangeList, HashSet<String>& stringList)
+{
+    // FIXME: Parsing error detection is missing.
+    if (input.isEmpty())
+        return true;
+    if (input.is8Bit()) {
+        const LChar* ptr = input.characters8();
+        const LChar* end = ptr + input.length();
+        return genericParseKerningUnicodeString(ptr, end, rangeList, stringList);
+    }
+    const UChar* ptr = input.characters16();
+    const UChar* end = ptr + input.length();
+    return genericParseKerningUnicodeString(ptr, end, rangeList, stringList);
+}
+
+template<typename CharType>
+static Vector<String> genericParseDelimitedString(const CharType*& ptr, const CharType* end, const char seperator)
 {
     Vector<String> values;
 
-    const UChar* ptr = input.bloatedCharacters();
-    const UChar* end = ptr + input.length();
     skipOptionalSVGSpaces(ptr, end);
 
     while (ptr < end) {
         // Leading and trailing white space, and white space before and after semicolon separators, will be ignored.
-        const UChar* inputStart = ptr;
+        const CharType* inputStart = ptr;
         while (ptr < end && *ptr != seperator) // careful not to ignore whitespace inside inputs
             ptr++;
 
@@ -409,7 +474,7 @@ Vector<String> parseDelimitedString(const String& input, const char seperator)
             break;
 
         // walk backwards from the ; to ignore any whitespace
-        const UChar* inputEnd = ptr - 1;
+        const CharType* inputEnd = ptr - 1;
         while (inputStart < inputEnd && isSVGSpace(*inputEnd))
             inputEnd--;
 
@@ -420,8 +485,22 @@ Vector<String> parseDelimitedString(const String& input, const char seperator)
     return values;
 }
 
-template <typename CharacterType>
-bool parseFloatPoint(const CharacterType*& current, const CharacterType* end, FloatPoint& point)
+Vector<String> parseDelimitedString(const String& input, const char seperator)
+{
+    if (input.isEmpty())
+        return Vector<String>();
+    if (input.is8Bit()) {
+        const LChar* ptr = input.characters8();
+        const LChar* end = ptr + input.length();
+        return genericParseDelimitedString(ptr, end, seperator);
+    }
+    const UChar* ptr = input.characters16();
+    const UChar* end = ptr + input.length();
+    return genericParseDelimitedString(ptr, end, seperator);
+}
+
+template <typename CharType>
+bool parseFloatPoint(const CharType*& current, const CharType* end, FloatPoint& point)
 {
     float x;
     float y;
@@ -435,8 +514,8 @@ bool parseFloatPoint(const CharacterType*& current, const CharacterType* end, Fl
 template bool parseFloatPoint(const LChar*& current, const LChar* end, FloatPoint& point1);
 template bool parseFloatPoint(const UChar*& current, const UChar* end, FloatPoint& point1);
 
-template <typename CharacterType>
-inline bool parseFloatPoint2(const CharacterType*& current, const CharacterType* end, FloatPoint& point1, FloatPoint& point2)
+template <typename CharType>
+inline bool parseFloatPoint2(const CharType*& current, const CharType* end, FloatPoint& point1, FloatPoint& point2)
 {
     float x1;
     float y1;
@@ -455,8 +534,8 @@ inline bool parseFloatPoint2(const CharacterType*& current, const CharacterType*
 template bool parseFloatPoint2(const LChar*& current, const LChar* end, FloatPoint& point1, FloatPoint& point2);
 template bool parseFloatPoint2(const UChar*& current, const UChar* end, FloatPoint& point1, FloatPoint& point2);
 
-template <typename CharacterType>
-bool parseFloatPoint3(const CharacterType*& current, const CharacterType* end, FloatPoint& point1, FloatPoint& point2, FloatPoint& point3)
+template <typename CharType>
+bool parseFloatPoint3(const CharType*& current, const CharType* end, FloatPoint& point1, FloatPoint& point2, FloatPoint& point3)
 {
     float x1;
     float y1;
