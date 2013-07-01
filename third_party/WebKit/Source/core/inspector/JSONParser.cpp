@@ -59,7 +59,8 @@ const char* const nullString = "null";
 const char* const trueString = "true";
 const char* const falseString = "false";
 
-bool parseConstToken(const UChar* start, const UChar* end, const UChar** tokenEnd, const char* token)
+template<typename CharType>
+bool parseConstToken(const CharType* start, const CharType* end, const CharType** tokenEnd, const char* token)
 {
     while (start < end && *token != '\0' && *start++ == *token++) { }
     if (*token != '\0')
@@ -68,7 +69,8 @@ bool parseConstToken(const UChar* start, const UChar* end, const UChar** tokenEn
     return true;
 }
 
-bool readInt(const UChar* start, const UChar* end, const UChar** tokenEnd, bool canHaveLeadingZeros)
+template<typename CharType>
+bool readInt(const CharType* start, const CharType* end, const CharType** tokenEnd, bool canHaveLeadingZeros)
 {
     if (start == end)
         return false;
@@ -86,13 +88,14 @@ bool readInt(const UChar* start, const UChar* end, const UChar** tokenEnd, bool 
     return true;
 }
 
-bool parseNumberToken(const UChar* start, const UChar* end, const UChar** tokenEnd)
+template<typename CharType>
+bool parseNumberToken(const CharType* start, const CharType* end, const CharType** tokenEnd)
 {
     // We just grab the number here. We validate the size in DecodeNumber.
     // According to RFC4627, a valid number is: [minus] int [frac] [exp]
     if (start == end)
         return false;
-    UChar c = *start;
+    CharType c = *start;
     if ('-' == c)
         ++start;
 
@@ -135,12 +138,13 @@ bool parseNumberToken(const UChar* start, const UChar* end, const UChar** tokenE
     return true;
 }
 
-bool readHexDigits(const UChar* start, const UChar* end, const UChar** tokenEnd, int digits)
+template<typename CharType>
+bool readHexDigits(const CharType* start, const CharType* end, const CharType** tokenEnd, int digits)
 {
     if (end - start < digits)
         return false;
     for (int i = 0; i < digits; ++i) {
-        UChar c = *start++;
+        CharType c = *start++;
         if (!(('0' <= c && c <= '9') || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F')))
             return false;
     }
@@ -148,10 +152,11 @@ bool readHexDigits(const UChar* start, const UChar* end, const UChar** tokenEnd,
     return true;
 }
 
-bool parseStringToken(const UChar* start, const UChar* end, const UChar** tokenEnd)
+template<typename CharType>
+bool parseStringToken(const CharType* start, const CharType* end, const CharType** tokenEnd)
 {
     while (start < end) {
-        UChar c = *start++;
+        CharType c = *start++;
         if ('\\' == c) {
             c = *start++;
             // Make sure the escaped char is valid.
@@ -185,7 +190,8 @@ bool parseStringToken(const UChar* start, const UChar* end, const UChar** tokenE
     return false;
 }
 
-Token parseToken(const UChar* start, const UChar* end, const UChar** tokenStart, const UChar** tokenEnd)
+template<typename CharType>
+Token parseToken(const CharType* start, const CharType* end, const CharType** tokenStart, const CharType** tokenEnd)
 {
     while (start < end && isSpaceOrNewline(*start))
         ++start;
@@ -248,7 +254,8 @@ Token parseToken(const UChar* start, const UChar* end, const UChar** tokenStart,
     return InvalidToken;
 }
 
-inline int hexToInt(UChar c)
+template<typename CharType>
+inline int hexToInt(CharType c)
 {
     if ('0' <= c && c <= '9')
         return c - '0';
@@ -260,10 +267,11 @@ inline int hexToInt(UChar c)
     return 0;
 }
 
-bool decodeString(const UChar* start, const UChar* end, StringBuilder* output)
+template<typename CharType>
+bool decodeString(const CharType* start, const CharType* end, StringBuilder* output)
 {
     while (start < end) {
-        UChar c = *start++;
+        CharType c = *start++;
         if ('\\' != c) {
             output->append(c);
             continue;
@@ -312,7 +320,8 @@ bool decodeString(const UChar* start, const UChar* end, StringBuilder* output)
     return true;
 }
 
-bool decodeString(const UChar* start, const UChar* end, String* output)
+template<typename CharType>
+bool decodeString(const CharType* start, const CharType* end, String* output)
 {
     if (start == end) {
         *output = "";
@@ -328,14 +337,15 @@ bool decodeString(const UChar* start, const UChar* end, String* output)
     return true;
 }
 
-PassRefPtr<JSONValue> buildValue(const UChar* start, const UChar* end, const UChar** valueTokenEnd, int depth)
+template<typename CharType>
+PassRefPtr<JSONValue> buildValue(const CharType* start, const CharType* end, const CharType** valueTokenEnd, int depth)
 {
     if (depth > stackLimit)
         return 0;
 
     RefPtr<JSONValue> result;
-    const UChar* tokenStart;
-    const UChar* tokenEnd;
+    const CharType* tokenStart;
+    const CharType* tokenEnd;
     Token token = parseToken(start, end, &tokenStart, &tokenEnd);
     switch (token) {
     case InvalidToken:
@@ -443,17 +453,26 @@ PassRefPtr<JSONValue> buildValue(const UChar* start, const UChar* end, const UCh
     return result.release();
 }
 
-} // anonymous namespace
-
-PassRefPtr<JSONValue> parseJSON(const String& json)
+template<typename CharType>
+PassRefPtr<JSONValue> parseJSONInternal(const CharType* start, unsigned length)
 {
-    const UChar* start = json.bloatedCharacters();
-    const UChar* end = json.bloatedCharacters() + json.length();
-    const UChar *tokenEnd;
+    const CharType* end = start + length;
+    const CharType *tokenEnd;
     RefPtr<JSONValue> value = buildValue(start, end, &tokenEnd, 0);
     if (!value || tokenEnd != end)
         return 0;
     return value.release();
+}
+
+} // anonymous namespace
+
+PassRefPtr<JSONValue> parseJSON(const String& json)
+{
+    if (json.isEmpty())
+        return 0;
+    if (json.is8Bit())
+        return parseJSONInternal(json.characters8(), json.length());
+    return parseJSONInternal(json.characters16(), json.length());
 }
 
 } // namespace WebCore
