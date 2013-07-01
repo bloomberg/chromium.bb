@@ -35,7 +35,7 @@ SECStatus VerifyRSAPSS_End(SECKEYPublicKey* public_key,
                            unsigned int salt_len,
                            const unsigned char* signature,
                            unsigned int signature_len) {
-  unsigned int hash_len = hash_context->hashobj->length;
+  unsigned int hash_len = HASH_ResultLenContext(hash_context);
   std::vector<unsigned char> hash(hash_len);
   HASH_End(hash_context, &hash[0], &hash_len, hash.size());
 
@@ -53,7 +53,7 @@ SECStatus VerifyRSAPSS_End(SECKEYPublicKey* public_key,
     return rv;
   }
   return emsa_pss_verify(&hash[0], &enc[0], enc.size(),
-                         hash_context->hashobj->type, mask_hash_alg,
+                         HASH_GetType(hash_context), mask_hash_alg,
                          salt_len);
 }
 
