@@ -552,9 +552,15 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
   ASSERT_EQ(GetInspectedTab()->GetURL(), url);
 }
 
+#if defined(OS_WIN)
+// Flakily times out: http://crbug.com/163411
+#define MAYBE_TestReattachAfterCrash DISABLED_TestReattachAfterCrash
+#else
+#define MAYBE_TestReattachAfterCrash TestReattachAfterCrash
+#endif
 // Tests that inspector will reattach to inspected page when it is reloaded
 // after a crash. See http://crbug.com/101952
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestReattachAfterCrash) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestReattachAfterCrash) {
   OpenDevToolsWindow(kDebuggerTestPage);
 
   content::CrashTab(GetInspectedTab());
