@@ -1,16 +1,17 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import json
 import os
 import sys
-import json
 
+from telemetry import test as test_module
+from telemetry.core import util
 from telemetry.page import page_set
 from telemetry.page import page_test
-from telemetry.core import util
 
-src_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..')
-conformance_path = os.path.join(src_path, 'third_party', 'webgl_conformance')
+conformance_path = os.path.join(
+    util.GetChromiumSrcDir(), 'third_party', 'webgl_conformance')
 
 conformance_harness_script = r"""
   var testHarness = {};
@@ -47,37 +48,12 @@ def _DidWebGLTestSucceed(tab):
 def _WebGLTestMessages(tab):
   return tab.EvaluateJavaScript('webglTestHarness._messages')
 
-class WebGLConformanceTest(page_test.PageTest):
+class WebglConformanceValidator(page_test.PageTest):
   def __init__(self):
-    super(WebGLConformanceTest, self).__init__('ValidatePage')
-
-  def CreatePageSet(self, _, options):
-    tests = WebGLConformanceTest._ParseTests('00_test_list.txt', '1.0.1')
-
-    page_set_dict = {
-      'description': 'Executes WebGL conformance tests',
-      'user_agent_type': 'desktop',
-      'serving_dirs': [
-        '../../../../third_party/webgl_conformance'
-      ],
-      'pages': []
-    }
-
-    pages = page_set_dict['pages']
-
-    for test in tests:
-      pages.append({
-        'url': 'file:///../../../../third_party/webgl_conformance/' + test,
-        'script_to_evaluate_on_commit': conformance_harness_script,
-        'wait_for_javascript_expression': 'webglTestHarness._finished'
-      })
-
-    return page_set.PageSet.FromDict(page_set_dict, __file__)
+    super(WebglConformanceValidator, self).__init__('ValidatePage')
 
   def ValidatePage(self, page, tab, results):
-    if _DidWebGLTestSucceed(tab):
-      results.AddSuccess(page)
-    else:
+    if not _DidWebGLTestSucceed(tab):
       results.AddFailureMessage(page, _WebGLTestMessages(tab))
 
   def CustomizeBrowserOptions(self, options):
@@ -85,8 +61,35 @@ class WebGLConformanceTest(page_test.PageTest):
     options.AppendExtraBrowserArg(
         '--disable-gesture-requirement-for-media-playback')
 
+
+class WebglConformance(test_module.Test):
+  """Conformance with Khronos WebGL Conformance Tests"""
+  enabled = False
+  test = WebglConformanceValidator
+
+  def CreatePageSet(self, options):
+    tests = self._ParseTests('00_test_list.txt', '1.0.1')
+
+    page_set_dict = {
+      'description': 'Executes WebGL conformance tests',
+      'user_agent_type': 'desktop',
+      'serving_dirs': [ '' ],
+      'pages': []
+    }
+
+    pages = page_set_dict['pages']
+
+    for test in tests:
+      pages.append({
+        'url': 'file:///' + test,
+        'script_to_evaluate_on_commit': conformance_harness_script,
+        'wait_for_javascript_expression': 'webglTestHarness._finished'
+      })
+
+    return page_set.PageSet.FromDict(page_set_dict, conformance_path)
+
   @staticmethod
-  def _ParseTests(path, version = None):
+  def _ParseTests(path, version=None):
     test_paths = []
     current_dir = os.path.dirname(path)
     full_path = os.path.normpath(os.path.join(conformance_path, path))
@@ -123,7 +126,7 @@ class WebGLConformanceTest(page_test.PageTest):
 
         if '.txt' in test_name:
           include_path = os.path.join(current_dir, test_name)
-          test_paths += WebGLConformanceTest._ParseTests(
+          test_paths += WebglConformance._ParseTests(
             include_path, version)
         else:
           test = os.path.join(current_dir, test_name)
