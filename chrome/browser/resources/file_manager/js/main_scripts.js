@@ -77,6 +77,7 @@
 //<include src="butter_bar.js"/>
 //<include src="directory_contents.js"/>
 //<include src="directory_model.js"/>
+//<include src="directory_tree.js"/>
 //<include src="drag_selector.js"/>
 //<include src="drive_banners.js" />
 //<include src="error_dialog.js"/>
@@ -90,7 +91,6 @@
 //<include src="file_transfer_controller.js"/>
 //<include src="file_type.js"/>
 //<include src="scrollbar.js"/>
-//<include src="sidebar.js"/>
 //<include src="tree.css.js"/>
 //<include src="volume_list.js"/>
 //<include src="volume_manager.js"/>
