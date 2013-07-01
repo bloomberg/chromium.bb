@@ -1584,6 +1584,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             document->updateLayoutIgnorePendingStylesheets();
             styledNode = this->styledNode();
             style = computeRenderStyle(propertyID);
+            renderer = styledNode->renderer();
         }
     } else {
         style = computeRenderStyle(propertyID);
