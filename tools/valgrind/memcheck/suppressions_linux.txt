@@ -32,3 +32,16 @@
 # in our own code, or stuff that is so trivial it's not worth fixing.
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
+
+{
+   bug_256436
+   Memcheck:Unaddressable
+   fun:g_utf8_offset_to_pointer
+   fun:_ZNK3gfx15RenderTextLinux22TextIndexToLayoutIndexEm
+   fun:_ZNK3gfx15RenderTextLinux21GetRunContainingCaretERKNS_14SelectionModelE
+   fun:_ZN3gfx15RenderTextLinux26AdjacentCharSelectionModelERKNS_14SelectionModelENS_21VisualCursorDirectionE
+   fun:_ZN3gfx10RenderText25GetAdjacentSelectionModelERKNS_14SelectionModelENS_9BreakTypeENS_21VisualCursorDirectionE
+   fun:_ZN3gfx10RenderText10MoveCursorENS_9BreakTypeENS_21VisualCursorDirectionEb
+   fun:_ZN3gfx12_GLOBAL__N_126RunMoveCursorLeftRightTestEPNS_10RenderTextERKSt6vectorINS_14SelectionModelESaIS4_EENS_21VisualCursorDirectionE
+   fun:_ZN3gfx46RenderTextTest_TruncatedCursorMovementLTR_Test8TestBodyEv
+}
