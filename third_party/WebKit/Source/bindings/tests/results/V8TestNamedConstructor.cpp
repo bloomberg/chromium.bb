@@ -111,6 +111,7 @@ v8::Handle<v8::FunctionTemplate> V8TestNamedConstructorConstructor::GetTemplate(
     if (!cachedTemplate.IsEmpty())
         return v8::Local<v8::FunctionTemplate>::New(isolate, cachedTemplate);
 
+    TraceEvent::SamplingState0Scope("Blink\0Blink-BuildDOMTemplate");
     v8::HandleScope scope(isolate);
     v8::Local<v8::FunctionTemplate> result = v8::FunctionTemplate::New(V8TestNamedConstructorConstructorCallback);
 
@@ -145,6 +146,7 @@ v8::Handle<v8::FunctionTemplate> V8TestNamedConstructor::GetTemplate(v8::Isolate
     if (result != data->templateMap(currentWorldType).end())
         return result->value.newLocal(isolate);
 
+    TraceEvent::SamplingState0Scope("Blink\0Blink-BuildDOMTemplate");
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::FunctionTemplate> templ =
         ConfigureV8TestNamedConstructorTemplate(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);

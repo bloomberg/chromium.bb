@@ -133,6 +133,7 @@ static const V8DOMConfiguration::BatchedMethod V8Float64ArrayMethods[] = {
 
 void V8Float64Array::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TraceEvent::SamplingState0Scope("Blink\0Blink-DOMConstructor");
     if (!args.IsConstructCall()) {
         throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
         return;
@@ -181,6 +182,7 @@ v8::Handle<v8::FunctionTemplate> V8Float64Array::GetTemplate(v8::Isolate* isolat
     if (result != data->templateMap(currentWorldType).end())
         return result->value.newLocal(isolate);
 
+    TraceEvent::SamplingState0Scope("Blink\0Blink-BuildDOMTemplate");
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::FunctionTemplate> templ =
         ConfigureV8Float64ArrayTemplate(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);

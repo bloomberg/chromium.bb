@@ -2625,6 +2625,7 @@ sub GenerateConstructorCallback
     my $code = "";
     $code .= "void ${v8ClassName}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)\n";
     $code .= "{\n";
+    $code .= "    TraceEvent::SamplingState0Scope(\"Blink\\0Blink-DOMConstructor\");\n";
     $code .= GenerateFeatureObservation($interface->extendedAttributes->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($interface->extendedAttributes->{"DeprecateAs"});
     $code .= GenerateConstructorHeader();
@@ -2845,6 +2846,7 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::GetTemplate(v8::Isol
     if (!cachedTemplate.IsEmpty())
         return v8::Local<v8::FunctionTemplate>::New(isolate, cachedTemplate);
 
+    TraceEvent::SamplingState0Scope("Blink\\0Blink-BuildDOMTemplate");
     v8::HandleScope scope(isolate);
     v8::Local<v8::FunctionTemplate> result = v8::FunctionTemplate::New(${v8ClassName}ConstructorCallback);
 
@@ -4355,6 +4357,7 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}::GetTemplate(v8::Isolate* isolat
     if (result != data->templateMap(currentWorldType).end())
         return result->value.newLocal(isolate);
 
+    TraceEvent::SamplingState0Scope("Blink\\0Blink-BuildDOMTemplate");
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::FunctionTemplate> templ =
         Configure${v8ClassName}Template(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);
@@ -4480,6 +4483,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* is
     if (currentWorldType == MainWorld) {
         static v8::Persistent<v8::ObjectTemplate> V8WindowShadowObjectCacheForMainWorld;
         if (V8WindowShadowObjectCacheForMainWorld.IsEmpty()) {
+            TraceEvent::SamplingState0Scope("Blink\\0Blink-BuildDOMTemplate");
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
             ConfigureShadowObjectTemplate(templ, isolate, currentWorldType);
             V8WindowShadowObjectCacheForMainWorld.Reset(isolate, templ);
@@ -4489,6 +4493,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* is
     } else {
         static v8::Persistent<v8::ObjectTemplate> V8WindowShadowObjectCacheForNonMainWorld;
         if (V8WindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
+            TraceEvent::SamplingState0Scope("Blink\\0Blink-BuildDOMTemplate");
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
             ConfigureShadowObjectTemplate(templ, isolate, currentWorldType);
             V8WindowShadowObjectCacheForNonMainWorld.Reset(isolate, templ);

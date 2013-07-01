@@ -31,6 +31,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/page/Frame.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {
@@ -88,6 +89,7 @@ v8::Handle<v8::FunctionTemplate> V8TestExtendedEvent::GetTemplate(v8::Isolate* i
     if (result != data->templateMap(currentWorldType).end())
         return result->value.newLocal(isolate);
 
+    TraceEvent::SamplingState0Scope("Blink\0Blink-BuildDOMTemplate");
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::FunctionTemplate> templ =
         ConfigureV8TestExtendedEventTemplate(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);
