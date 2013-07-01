@@ -192,6 +192,7 @@ public:
     IntRect absoluteCaretBounds();
     void setCaretRectNeedsUpdate() { CaretBase::setCaretRectNeedsUpdate(); }
 
+    void didChangeFocus();
     void willBeModified(EAlteration, SelectionDirection);
 
     bool isNone() const { return m_selection.isNone(); }
@@ -291,6 +292,7 @@ private:
     void setUseSecureKeyboardEntry(bool);
 
     void setCaretVisibility(CaretVisibility);
+    bool shouldBlinkCaret() const;
 
     bool dispatchSelectStart();
   

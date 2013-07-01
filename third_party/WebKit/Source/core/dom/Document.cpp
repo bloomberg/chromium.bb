@@ -3329,6 +3329,8 @@ bool Document::setFocusedNode(PassRefPtr<Node> prpNewFocusedNode, FocusDirection
 
 SetFocusedNodeDone:
     updateStyleIfNeeded();
+    if (Frame* frame = this->frame())
+        frame->selection()->didChangeFocus();
     return !focusChangeBlocked;
 }
 

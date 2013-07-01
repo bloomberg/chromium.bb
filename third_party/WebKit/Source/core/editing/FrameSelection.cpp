@@ -507,6 +507,11 @@ TextDirection FrameSelection::directionOfSelection()
     return directionOfEnclosingBlock();
 }
 
+void FrameSelection::didChangeFocus()
+{
+    updateAppearance();
+}
+
 void FrameSelection::willBeModified(EAlteration alter, SelectionDirection direction)
 {
     if (alter != AlterationExtend)
@@ -1778,14 +1783,17 @@ void FrameSelection::updateAppearance()
     }
 
     bool caretRectChangedOrCleared = recomputeCaretRect();
-
-    bool caretBrowsing = m_frame->settings() && m_frame->settings()->caretBrowsingEnabled();
-    bool shouldBlink = caretIsVisible() && isCaret() && (isContentEditable() || caretBrowsing) && forwardPosition.isNull();
+    bool shouldBlink = shouldBlinkCaret() && forwardPosition.isNull();
 
     // If the caret moved, stop the blink timer so we can restart with a
     // black caret in the new location.
-    if (caretRectChangedOrCleared || !shouldBlink || shouldStopBlinkingDueToTypingCommand(m_frame))
+    if (caretRectChangedOrCleared || !shouldBlink || shouldStopBlinkingDueToTypingCommand(m_frame)) {
         m_caretBlinkTimer.stop();
+        if (!shouldBlink && m_caretPaint) {
+            m_caretPaint = false;
+            invalidateCaretRect();
+        }
+    }
 
     // Start blinking with a black caret. Be sure not to restart if we're
     // already blinking in the right location.
@@ -1847,6 +1855,25 @@ void FrameSelection::setCaretVisibility(CaretVisibility visibility)
     CaretBase::setCaretVisibility(visibility);
 
     updateAppearance();
+}
+
+bool FrameSelection::shouldBlinkCaret() const
+{
+    if (!caretIsVisible() || !isCaret())
+        return false;
+
+    if (m_frame->settings() && m_frame->settings()->caretBrowsingEnabled())
+        return false;
+
+    Node* root = rootEditableElement();
+    if (!root)
+        return false;
+
+    Node* focusedNode = root->document()->focusedNode();
+    if (!focusedNode)
+        return false;
+
+    return focusedNode->containsIncludingShadowDOM(m_selection.start().anchorNode());
 }
 
 void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)
