@@ -806,10 +806,42 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, FileIO) {
   );
 }
 
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileRef)
+IN_PROC_BROWSER_TEST_F(PPAPITest, FileRef) {
+  RunTestViaHTTP(
+      LIST_TEST(FileRef_Create)
+      LIST_TEST(FileRef_GetFileSystemType)
+      LIST_TEST(FileRef_GetName)
+      LIST_TEST(FileRef_GetPath)
+      LIST_TEST(FileRef_GetParent)
+      LIST_TEST(FileRef_MakeDirectory)
+      LIST_TEST(FileRef_QueryAndTouchFile)
+      LIST_TEST(FileRef_DeleteFileAndDirectory)
+      LIST_TEST(FileRef_RenameFileAndDirectory)
+      // TODO(teravest): Add in-process support.
+      // LIST_TEST(FileRef_Query)
+      LIST_TEST(FileRef_FileNameEscaping)
+      // TODO(teravest): Add in-process support.
+      // LIST_TEST(FileRef_ReadDirectoryEntries)
+  );
+}
 // OutOfProcessPPAPITest.FileRef times out fairly often.
 // http://crbug.com/241646
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_FileRef)
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileRef) {
+  RunTestViaHTTP(
+      LIST_TEST(FileRef_Create)
+      LIST_TEST(FileRef_GetFileSystemType)
+      LIST_TEST(FileRef_GetName)
+      LIST_TEST(FileRef_GetPath)
+      LIST_TEST(FileRef_GetParent)
+      LIST_TEST(FileRef_MakeDirectory)
+      LIST_TEST(FileRef_QueryAndTouchFile)
+      LIST_TEST(FileRef_DeleteFileAndDirectory)
+      LIST_TEST(FileRef_RenameFileAndDirectory)
+      LIST_TEST(FileRef_Query)
+      LIST_TEST(FileRef_FileNameEscaping)
+      LIST_TEST(DISABLED_FileRef_ReadDirectoryEntries)
+  );
+}
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef) {
   RunTestViaHTTP(
       LIST_TEST(FileRef_Create)
