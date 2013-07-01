@@ -753,7 +753,9 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   for changed_line in changed_lines:
     m = pattern.match(changed_line)
     if m:
-      virtual_depended_on_files.add('%s/DEPS' % m.group(1))
+      path = m.group(1)
+      if not path.startswith('grit/'):
+        virtual_depended_on_files.add('%s/DEPS' % m.group(1))
 
   if not virtual_depended_on_files:
     return []
