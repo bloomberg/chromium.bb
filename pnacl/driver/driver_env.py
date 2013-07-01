@@ -161,6 +161,7 @@ INITIAL_ENV = {
   'CLANGXX'       : '${BASE_LLVM_BIN}/clang${EXEC_EXT} -ccc-cxx',
   'LLVM_OPT'      : '${BASE_LLVM_BIN}/opt${EXEC_EXT}',
   'LLVM_DIS'      : '${BASE_LLVM_BIN}/llvm-dis${EXEC_EXT}',
+  'LLVM_NM'       : '${BASE_LLVM_BIN}/llvm-nm${EXEC_EXT}',
   # llvm-as compiles llvm assembly (.ll) to bitcode (.bc/.po)
   'LLVM_AS'       : '${BASE_LLVM_BIN}/llvm-as${EXEC_EXT}',
   'LLVM_BCWRAP'   : '${BASE_LLVM_BIN}/bc-wrap${EXEC_EXT}',

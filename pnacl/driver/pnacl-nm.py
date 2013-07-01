@@ -9,56 +9,54 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import Run, ParseArgs
+import driver_tools
 from driver_env import env
+from driver_log import Log
 
-EXTRA_ENV = { 'ARGS'          : '' }
-# just pass all args through to 'ARGS' and eventually to the underlying tool
-PATTERNS = [ ( '(.*)',  "env.append('ARGS', $0)") ]
+EXTRA_ENV = {
+  'TOOLNAME':   '',
+  'INPUTS':     '',
+  'FLAGS':      '',
+}
+
+PATTERNS = [
+  ( '(.*)',     "env.append('INPUTS', pathtools.normalize($0))"),
+]
 
 def main(argv):
   env.update(EXTRA_ENV)
-  ParseArgs(argv, PATTERNS)
-  Run('"${NM}" --plugin=${GOLD_PLUGIN_SO} ${ARGS}')
+  driver_tools.ParseArgs(argv, PATTERNS)
+
+  inputs = env.get('INPUTS')
+
+  if len(inputs) == 0:
+    Log.Fatal("No input files given")
+
+  for infile in inputs:
+    env.push()
+    env.set('input', infile)
+
+    # For frozen PNaCl bitcode, use 'llvm-nm -bitcode-format=pnacl'. For all
+    # other formats, use the binutils nm with our gold plugin.
+    if driver_tools.IsPNaClBitcode(infile):
+      env.set('TOOLNAME', '${LLVM_NM}')
+      env.append('FLAGS', '-bitcode-format=pnacl')
+    else:
+      env.set('TOOLNAME', '${NM}')
+      env.append('FLAGS', '--plugin=${GOLD_PLUGIN_SO}')
+
+    driver_tools.Run('"${TOOLNAME}" ${FLAGS} ${input}')
+    env.pop()
+
   # only reached in case of no errors
   return 0
 
 def get_help(unused_argv):
   return """
 Usage: %s [option(s)] [file(s)]
- List symbols in [file(s)] (a.out by default).
- The options are:
-  -a, --debug-syms       Display debugger-only symbols
-  -A, --print-file-name  Print name of the input file before every symbol
-  -B                     Same as --format=bsd
-  -C, --demangle[=STYLE] Decode low-level symbol names into user-level names
-                          The STYLE, if specified, can be `auto' (the default),
-                          `gnu', `lucid', `arm', `hp', `edg', `gnu-v3', `java'
-                          or `gnat'
-      --no-demangle      Do not demangle low-level symbol names
-  -D, --dynamic          Display dynamic symbols instead of normal symbols
-      --defined-only     Display only defined symbols
-  -e                     (ignored)
-  -f, --format=FORMAT    Use the output format FORMAT.  FORMAT can be `bsd',
-                           `sysv' or `posix'.  The default is `bsd'
-  -g, --extern-only      Display only external symbols
-  -l, --line-numbers     Use debugging information to find a filename and
-                           line number for each symbol
-  -n, --numeric-sort     Sort symbols numerically by address
-  -o                     Same as -A
-  -p, --no-sort          Do not sort the symbols
-  -P, --portability      Same as --format=posix
-  -r, --reverse-sort     Reverse the sense of the sort
-  -S, --print-size       Print size of defined symbols
-  -s, --print-armap      Include index for symbols from archive members
-      --size-sort        Sort symbols by size
-      --special-syms     Include special symbols in the output
-      --synthetic        Display synthetic symbols as well
-  -t, --radix=RADIX      Use RADIX for printing symbol values
-      --target=BFDNAME   Specify the target object format as BFDNAME
-  -u, --undefined-only   Display only undefined symbols
-  -X 32_64               (ignored)
-  @FILE                  Read options from FILE
-  -h, --help             Display this information
-  -V, --version          Display this program's version number
+ List symbols in [file(s)].
+
+ * For stable PNaCl bitcode files, this calls the llvm-nm tool.
+ * For all other files, this calls the standard nm from binutils - please see
+   that tool's help pages for options.
 """ % env.getone('SCRIPT_NAME')
