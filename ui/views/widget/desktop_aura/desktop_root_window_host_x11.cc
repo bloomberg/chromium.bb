@@ -74,6 +74,7 @@ const char* kAtomsToCache[] = {
   "_NET_WM_PID",
   "_NET_WM_PING",
   "_NET_WM_STATE",
+  "_NET_WM_STATE_ABOVE",
   "_NET_WM_STATE_FULLSCREEN",
   "_NET_WM_STATE_HIDDEN",
   "_NET_WM_STATE_MAXIMIZED_HORZ",
@@ -577,8 +578,9 @@ bool DesktopRootWindowHostX11::HasCapture() const {
 }
 
 void DesktopRootWindowHostX11::SetAlwaysOnTop(bool always_on_top) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  SetWMSpecState(always_on_top,
+                 atom_cache_.GetAtom("_NET_WM_STATE_ABOVE"),
+                 None);
 }
 
 void DesktopRootWindowHostX11::SetWindowTitle(const string16& title) {
