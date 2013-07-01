@@ -90,6 +90,8 @@ ExtensionAppShimHandler::ExtensionAppShimHandler()
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 ExtensionAppShimHandler::~ExtensionAppShimHandler() {}
@@ -140,9 +142,11 @@ bool ExtensionAppShimHandler::OnShimLaunch(Host* host,
     delegate_->LaunchApp(profile, extension);
 
   // The first host to claim this (profile, app_id) becomes the main host.
-  // For any others, focus the app and return false.
+  // For any others, focus or relaunch the app and return false.
   if (!hosts_.insert(make_pair(make_pair(profile, app_id), host)).second) {
-    OnShimFocus(host);
+    OnShimFocus(host,
+                launch_type == APP_SHIM_LAUNCH_NORMAL ?
+                    APP_SHIM_FOCUS_REOPEN : APP_SHIM_FOCUS_NORMAL);
     return false;
   }
 
@@ -160,7 +164,8 @@ void ExtensionAppShimHandler::OnShimClose(Host* host) {
     hosts_.erase(it);
 }
 
-void ExtensionAppShimHandler::OnShimFocus(Host* host) {
+void ExtensionAppShimHandler::OnShimFocus(Host* host,
+                                          AppShimFocusType focus_type) {
   DCHECK(delegate_->ProfileExistsForPath(host->GetProfilePath()));
   Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
 
@@ -171,7 +176,22 @@ void ExtensionAppShimHandler::OnShimFocus(Host* host) {
        it != windows.end(); ++it) {
     native_windows.insert((*it)->GetNativeWindow());
   }
-  ui::FocusWindowSet(native_windows);
+  if (!native_windows.empty()) {
+    ui::FocusWindowSet(native_windows);
+    return;
+  }
+
+  if (focus_type == APP_SHIM_FOCUS_REOPEN) {
+    const extensions::Extension* extension =
+        delegate_->GetAppExtension(profile, host->GetAppId());
+    if (extension) {
+      delegate_->LaunchApp(profile, extension);
+    } else {
+      // Extensions may have been uninstalled or disabled since the shim
+      // started.
+      host->OnAppClosed();
+    }
+  }
 }
 
 void ExtensionAppShimHandler::OnShimQuit(Host* host) {
@@ -184,6 +204,9 @@ void ExtensionAppShimHandler::OnShimQuit(Host* host) {
        it != windows.end(); ++it) {
     (*it)->GetBaseWindow()->Close();
   }
+
+  DCHECK_NE(0u, hosts_.count(make_pair(profile, host->GetAppId())));
+  hosts_.find(make_pair(profile, host->GetAppId()))->second->OnAppClosed();
 }
 
 void ExtensionAppShimHandler::set_delegate(Delegate* delegate) {
@@ -199,10 +222,11 @@ void ExtensionAppShimHandler::Observe(
     return;
 
   switch (type) {
-    case chrome::NOTIFICATION_PROFILE_CREATED:
+    case chrome::NOTIFICATION_PROFILE_CREATED: {
       AppLifetimeMonitorFactory::GetForProfile(profile)->AddObserver(this);
       break;
-    case chrome::NOTIFICATION_PROFILE_DESTROYED:
+    }
+    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       AppLifetimeMonitorFactory::GetForProfile(profile)->RemoveObserver(this);
       // Shut down every shim associated with this profile.
       for (HostMap::iterator it = hosts_.begin(); it != hosts_.end(); ) {
@@ -213,9 +237,19 @@ void ExtensionAppShimHandler::Observe(
           current->second->OnAppClosed();
       }
       break;
-    default:
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+      const std::string& app_id =
+          content::Details<extensions::Extension>(details).ptr()->id();
+      HostMap::const_iterator it = hosts_.find(make_pair(profile, app_id));
+      if (it != hosts_.end())
+        it->second->OnAppClosed();
+      break;
+    }
+    default: {
       NOTREACHED();  // Unexpected notification.
       break;
+    }
   }
 }
 
@@ -236,11 +270,7 @@ void ExtensionAppShimHandler::OnAppActivated(Profile* profile,
 }
 
 void ExtensionAppShimHandler::OnAppDeactivated(Profile* profile,
-                                               const std::string& app_id) {
-  HostMap::const_iterator it = hosts_.find(make_pair(profile, app_id));
-  if (it != hosts_.end())
-    it->second->OnAppClosed();
-}
+                                               const std::string& app_id) {}
 
 void ExtensionAppShimHandler::OnAppStop(Profile* profile,
                                         const std::string& app_id) {}

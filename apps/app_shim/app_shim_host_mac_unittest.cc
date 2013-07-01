@@ -88,7 +88,10 @@ class AppShimHostTest : public testing::Test,
   }
 
   virtual void OnShimClose(Host* host) OVERRIDE { ++close_count_; }
-  virtual void OnShimFocus(Host* host) OVERRIDE { ++focus_count_; }
+  virtual void OnShimFocus(Host* host,
+                           apps::AppShimFocusType focus_type) OVERRIDE {
+    ++focus_count_;
+  }
   virtual void OnShimQuit(Host* host) OVERRIDE { ++quit_count_; }
 
   bool fail_launch_;
@@ -123,7 +126,8 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
   EXPECT_EQ(0, focus_count_);
   EXPECT_EQ(0, close_count_);
 
-  EXPECT_TRUE(host()->ReceiveMessage(new AppShimHostMsg_FocusApp()));
+  EXPECT_TRUE(host()->ReceiveMessage(
+      new AppShimHostMsg_FocusApp(apps::APP_SHIM_FOCUS_NORMAL)));
   EXPECT_EQ(1, focus_count_);
 
   EXPECT_TRUE(host()->ReceiveMessage(new AppShimHostMsg_QuitApp()));

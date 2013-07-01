@@ -54,10 +54,8 @@ class AppShimHost : public IPC::Listener,
                    std::string app_id,
                    apps::AppShimLaunchType launch_type);
 
-  // Called when the app shim process notifies that the app should be brought
-  // to the front (i.e. the user has clicked on the app's icon in the dock or
-  // Cmd+Tabbed to it.)
-  void OnFocus();
+  // Called when the app shim process notifies that the app was focused.
+  void OnFocus(apps::AppShimFocusType focus_type);
 
   // Called when the app shim process notifies that the app should quit.
   void OnQuit();

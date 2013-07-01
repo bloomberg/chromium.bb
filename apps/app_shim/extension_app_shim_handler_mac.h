@@ -53,7 +53,6 @@ class ExtensionAppShimHandler : public AppShimHandler,
                            const extensions::Extension* extension);
     virtual void LaunchShim(Profile* profile,
                             const extensions::Extension* extension);
-
   };
 
   ExtensionAppShimHandler();
@@ -62,7 +61,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
   // AppShimHandler overrides:
   virtual bool OnShimLaunch(Host* host, AppShimLaunchType launch_type) OVERRIDE;
   virtual void OnShimClose(Host* host) OVERRIDE;
-  virtual void OnShimFocus(Host* host) OVERRIDE;
+  virtual void OnShimFocus(Host* host, AppShimFocusType focus_type) OVERRIDE;
   virtual void OnShimQuit(Host* host) OVERRIDE;
 
   // AppLifetimeMonitor::Observer overrides:

@@ -81,11 +81,11 @@ void AppShimHost::OnLaunchApp(base::FilePath profile_dir,
   Send(new AppShimMsg_LaunchApp_Done(success));
 }
 
-void AppShimHost::OnFocus() {
+void AppShimHost::OnFocus(apps::AppShimFocusType focus_type) {
   DCHECK(CalledOnValidThread());
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
   if (handler)
-    handler->OnShimFocus(this);
+    handler->OnShimFocus(this, focus_type);
 }
 
 void AppShimHost::OnQuit() {

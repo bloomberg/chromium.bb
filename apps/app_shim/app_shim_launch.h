@@ -13,6 +13,17 @@ enum AppShimLaunchType {
   APP_SHIM_LAUNCH_REGISTER_ONLY = 0,
   // Do the above and launch the app.
   APP_SHIM_LAUNCH_NORMAL,
+  // Counter and end marker.
+  APP_SHIM_LAUNCH_NUM_TYPES
+};
+
+enum AppShimFocusType {
+  // Just focus the app.
+  APP_SHIM_FOCUS_NORMAL = 0,
+  // Focus the app or launch it if it has no windows open.
+  APP_SHIM_FOCUS_REOPEN,
+  // Counter and end marker.
+  APP_SHIM_FOCUS_NUM_TYPES
 };
 
 }  // namespace apps

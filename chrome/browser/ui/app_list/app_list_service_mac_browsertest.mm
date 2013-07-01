@@ -32,7 +32,8 @@ class AppListServiceMacBrowserTest : public InProcessBrowserTest,
 
   void FocusShim() {
     DCHECK(running_);
-    AppShimHandler::GetForAppMode(app_mode::kAppListModeId)->OnShimFocus(this);
+    AppShimHandler::GetForAppMode(app_mode::kAppListModeId)->
+        OnShimFocus(this, apps::APP_SHIM_FOCUS_REOPEN);
   }
 
   void QuitShim() {

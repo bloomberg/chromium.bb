@@ -19,6 +19,7 @@ using extensions::Extension;
 typedef extensions::ShellWindowRegistry::ShellWindowList ShellWindowList;
 
 using ::testing::_;
+using ::testing::Invoke;
 using ::testing::Return;
 
 class MockDelegate : public ExtensionAppShimHandler::Delegate {
@@ -43,7 +44,11 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
   }
   virtual ~TestingExtensionAppShimHandler() {}
 
-  MOCK_METHOD1(OnShimFocus, void(Host* host));
+  MOCK_METHOD2(OnShimFocus, void(Host* host, AppShimFocusType));
+
+  void RealOnShimFocus(Host* host, AppShimFocusType focus_type) {
+    ExtensionAppShimHandler::OnShimFocus(host, focus_type);
+  }
 
   AppShimHandler::Host* FindHost(Profile* profile,
                                  const std::string& app_id) {
@@ -178,7 +183,8 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
   EXPECT_EQ(&host_bb_, handler_->FindHost(&profile_b_, kTestAppIdB));
 
   // Starting and closing a second host just focuses the app.
-  EXPECT_CALL(*handler_, OnShimFocus(&host_aa_duplicate_));
+  EXPECT_CALL(*handler_, OnShimFocus(&host_aa_duplicate_,
+                                     APP_SHIM_FOCUS_REOPEN));
   EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_duplicate_, normal_launch));
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
   handler_->OnShimClose(&host_aa_duplicate_);
@@ -202,6 +208,30 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
 
   handler_->OnAppDeactivated(&profile_a_, kTestAppIdA);
+  EXPECT_EQ(0, host_aa_.close_count());
+
+  // Return no shell windows for OnShimFocus and OnShimQuit.
+  ShellWindowList shell_window_list;
+  EXPECT_CALL(*delegate_, GetWindows(&profile_a_, kTestAppIdA))
+      .WillRepeatedly(Return(shell_window_list));
+
+  // Non-reopen focus does nothing.
+  EXPECT_CALL(*handler_, OnShimFocus(&host_aa_, APP_SHIM_FOCUS_NORMAL))
+      .WillOnce(Invoke(handler_.get(),
+                       &TestingExtensionAppShimHandler::RealOnShimFocus));
+  EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get()))
+      .Times(0);
+  handler_->OnShimFocus(&host_aa_, APP_SHIM_FOCUS_NORMAL);
+
+  // Reopen focus launches the app.
+  EXPECT_CALL(*handler_, OnShimFocus(&host_aa_, APP_SHIM_FOCUS_REOPEN))
+      .WillOnce(Invoke(handler_.get(),
+                       &TestingExtensionAppShimHandler::RealOnShimFocus));
+  EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get()));
+  handler_->OnShimFocus(&host_aa_, APP_SHIM_FOCUS_REOPEN);
+
+  // Quit closes the shim.
+  handler_->OnShimQuit(&host_aa_);
   EXPECT_EQ(1, host_aa_.close_count());
 }
 
