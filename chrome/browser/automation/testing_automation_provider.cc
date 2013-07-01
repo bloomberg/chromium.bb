@@ -136,6 +136,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/common/geoposition.h"
 #include "content/public/common/ssl_status.h"
 #include "extensions/browser/view_type_utils.h"
@@ -146,7 +147,6 @@
 #include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_base_types.h"
-#include "webkit/common/webdropdata.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -943,7 +943,7 @@ void TestingAutomationProvider::DragAndDropFilePaths(
   }
 
   // Emulate drag and drop to set the file paths to the file upload control.
-  WebDropData drop_data;
+  content::DropData drop_data;
   for (size_t path_index = 0; path_index < paths->GetSize(); ++path_index) {
     string16 path;
     if (!paths->GetString(path_index, &path)) {
@@ -953,7 +953,7 @@ void TestingAutomationProvider::DragAndDropFilePaths(
     }
 
     drop_data.filenames.push_back(
-        WebDropData::FileInfo(path, string16()));
+        content::DropData::FileInfo(path, string16()));
   }
 
   const gfx::Point client(x, y);

@@ -57,6 +57,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -68,7 +69,6 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "ui/snapshot/snapshot.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/common/webdropdata.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
@@ -571,7 +571,7 @@ void RenderViewHostImpl::RequestFindMatchRects(int current_version) {
 #endif
 
 void RenderViewHostImpl::DragTargetDragEnter(
-    const WebDropData& drop_data,
+    const DropData& drop_data,
     const gfx::Point& client_pt,
     const gfx::Point& screen_pt,
     WebDragOperationsMask operations_allowed,
@@ -582,13 +582,13 @@ void RenderViewHostImpl::DragTargetDragEnter(
 
   // The URL could have been cobbled together from any highlighted text string,
   // and can't be interpreted as a capability.
-  WebDropData filtered_data(drop_data);
+  DropData filtered_data(drop_data);
   FilterURL(policy, GetProcess(), true, &filtered_data.url);
 
   // The filenames vector, on the other hand, does represent a capability to
   // access the given files.
   fileapi::IsolatedContext::FileInfoSet files;
-  for (std::vector<WebDropData::FileInfo>::iterator iter(
+  for (std::vector<DropData::FileInfo>::iterator iter(
            filtered_data.filenames.begin());
        iter != filtered_data.filenames.end(); ++iter) {
     // A dragged file may wind up as the value of an input element, or it
@@ -1444,7 +1444,7 @@ void RenderViewHostImpl::OnRunBeforeUnloadConfirm(const GURL& frame_url,
 }
 
 void RenderViewHostImpl::OnStartDragging(
-    const WebDropData& drop_data,
+    const DropData& drop_data,
     WebDragOperationsMask drag_operations_mask,
     const SkBitmap& bitmap,
     const gfx::Vector2d& bitmap_offset_in_dip,
@@ -1453,7 +1453,7 @@ void RenderViewHostImpl::OnStartDragging(
   if (!view)
     return;
 
-  WebDropData filtered_data(drop_data);
+  DropData filtered_data(drop_data);
   RenderProcessHost* process = GetProcess();
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
@@ -1471,7 +1471,7 @@ void RenderViewHostImpl::OnStartDragging(
   //    still fire though, which causes read permissions to be granted to the
   //    renderer for any file paths in the drop.
   filtered_data.filenames.clear();
-  for (std::vector<WebDropData::FileInfo>::const_iterator it =
+  for (std::vector<DropData::FileInfo>::const_iterator it =
            drop_data.filenames.begin();
        it != drop_data.filenames.end(); ++it) {
     base::FilePath path(base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->path)));

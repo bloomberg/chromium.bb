@@ -8,6 +8,8 @@
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/drop_data.h"
+#include "content/renderer/drop_data_builder.h"
 #include "content/renderer/scoped_clipboard_writer_glue.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -20,7 +22,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
-#include "webkit/common/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/renderer/clipboard_utils.h"
 
@@ -208,7 +209,7 @@ void WebClipboardImpl::writeImage(
 void WebClipboardImpl::writeDataObject(const WebDragData& data) {
   ScopedClipboardWriterGlue scw(client_);
 
-  WebDropData data_object(data);
+  const DropData& data_object = DropDataBuilder::Build(data);
   // TODO(dcheng): Properly support text/uri-list here.
   if (!data_object.text.is_null())
     scw.WriteText(data_object.text.string());

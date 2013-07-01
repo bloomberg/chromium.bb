@@ -17,6 +17,7 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/edit_command.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/drop_data.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
@@ -25,7 +26,6 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "webkit/common/webdropdata.h"
 #include "webkit/common/cursors/webcursor.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -241,7 +241,7 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetVisibility,
 IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_DragStatusUpdate,
                     int /* instance_id */,
                     WebKit::WebDragStatus /* drag_status */,
-                    WebDropData /* drop_data */,
+                    content::DropData /* drop_data */,
                     WebKit::WebDragOperationsMask /* operation_mask */,
                     gfx::Point /* plugin_location */)
 

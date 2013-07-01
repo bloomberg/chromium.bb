@@ -7,19 +7,19 @@
 
 #include "content/common/drag_event_source_info.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/drop_data.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/vector2d.h"
-#include "webkit/common/webdropdata.h"
 
 #define IPC_MESSAGE_START DragMsgStart
 
 // Messages sent from the browser to the renderer.
 
 IPC_MESSAGE_ROUTED5(DragMsg_TargetDragEnter,
-                    WebDropData /* drop_data */,
+                    content::DropData /* drop_data */,
                     gfx::Point /* client_pt */,
                     gfx::Point /* screen_pt */,
                     WebKit::WebDragOperationsMask /* ops_allowed */,
@@ -52,11 +52,11 @@ IPC_MESSAGE_ROUTED0(DragMsg_SourceSystemDragEnded)
 // Messages sent from the renderer to the browser.
 
 // Used to tell the parent the user started dragging in the content area. The
-// WebDropData struct contains contextual information about the pieces of the
+// DropData struct contains contextual information about the pieces of the
 // page the user dragged. The parent uses this notification to initiate a
 // drag session at the OS level.
 IPC_MESSAGE_ROUTED5(DragHostMsg_StartDragging,
-                    WebDropData /* drop_data */,
+                    content::DropData /* drop_data */,
                     WebKit::WebDragOperationsMask /* ops_allowed */,
                     SkBitmap /* image */,
                     gfx::Vector2d /* image_offset */,

@@ -13,7 +13,6 @@
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 
 class GURL;
-struct WebDropData;
 struct WebPreferences;
 
 namespace gfx {
@@ -43,6 +42,7 @@ class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
 struct CustomContextMenuContext;
+struct DropData;
 
 // A RenderViewHost is responsible for creating and talking to a RenderView
 // object in a child process. It exposes a high level API to users, for things
@@ -136,7 +136,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   // D&d drop target messages that get sent to WebKit.
   virtual void DragTargetDragEnter(
-      const WebDropData& drop_data,
+      const DropData& drop_data,
       const gfx::Point& client_pt,
       const gfx::Point& screen_pt,
       WebKit::WebDragOperationsMask operations_allowed,

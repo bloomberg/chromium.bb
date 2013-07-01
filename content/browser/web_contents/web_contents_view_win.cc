@@ -193,7 +193,7 @@ void WebContentsViewWin::RestoreFocus() {
     delegate_->RestoreFocus();
 }
 
-WebDropData* WebContentsViewWin::GetDropData() const {
+DropData* WebContentsViewWin::GetDropData() const {
   return drag_dest_->current_drop_data();
 }
 
@@ -259,7 +259,7 @@ void WebContentsViewWin::ShowPopupMenu(const gfx::Rect& bounds,
   NOTIMPLEMENTED();
 }
 
-void WebContentsViewWin::StartDragging(const WebDropData& drop_data,
+void WebContentsViewWin::StartDragging(const DropData& drop_data,
                                        WebKit::WebDragOperationsMask operations,
                                        const gfx::ImageSkia& image,
                                        const gfx::Vector2d& image_offset,

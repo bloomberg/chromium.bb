@@ -4,21 +4,21 @@
 
 #include "content/common/drag_event_source_info.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/drop_data.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/gfx/point.h"
-#include "webkit/common/webdropdata.h"
 
 #define IPC_MESSAGE_START DragMsgStart
 
 IPC_ENUM_TRAITS(WebKit::WebDragOperation)
 
-IPC_STRUCT_TRAITS_BEGIN(WebDropData::FileInfo)
+IPC_STRUCT_TRAITS_BEGIN(content::DropData::FileInfo)
   IPC_STRUCT_TRAITS_MEMBER(path)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebDropData)
+IPC_STRUCT_TRAITS_BEGIN(content::DropData)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(url_title)
   IPC_STRUCT_TRAITS_MEMBER(download_metadata)

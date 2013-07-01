@@ -19,6 +19,7 @@
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/browser_plugin/browser_plugin_compositing_helper.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
+#include "content/renderer/drop_data_builder.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/v8_value_converter_impl.h"
@@ -1523,7 +1524,7 @@ bool BrowserPlugin::handleDragStatusUpdate(WebKit::WebDragStatus drag_status,
         render_view_routing_id_,
         guest_instance_id_,
         drag_status,
-        WebDropData(drag_data),
+        DropDataBuilder::Build(drag_data),
         mask,
         position));
   return true;

@@ -12,6 +12,7 @@
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -19,7 +20,6 @@
 #include "content/test/test_web_contents.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
-#include "webkit/common/webdropdata.h"
 
 namespace content {
 
@@ -125,7 +125,7 @@ class MockDraggingRenderViewHostDelegateView
                              const std::vector<WebMenuItem>& items,
                              bool right_aligned,
                              bool allow_multiple_selection) OVERRIDE {}
-  virtual void StartDragging(const WebDropData& drop_data,
+  virtual void StartDragging(const DropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_ops,
                              const gfx::ImageSkia& image,
                              const gfx::Vector2d& image_offset,
@@ -156,7 +156,7 @@ TEST_F(RenderViewHostTest, StartDragging) {
   MockDraggingRenderViewHostDelegateView delegate_view;
   web_contents->set_delegate_view(&delegate_view);
 
-  WebDropData drop_data;
+  DropData drop_data;
   GURL file_url = GURL("file:///home/user/secrets.txt");
   drop_data.url = file_url;
   drop_data.html_base_url = file_url;
@@ -187,7 +187,7 @@ TEST_F(RenderViewHostTest, StartDragging) {
 }
 
 TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
-  WebDropData dropped_data;
+  DropData dropped_data;
   gfx::Point client_point;
   gfx::Point screen_point;
   // We use "//foo/bar" path (rather than "/foo/bar") since dragged paths are
@@ -199,7 +199,7 @@ TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
   GURL dragged_file_url = net::FilePathToFileURL(dragged_file_path);
   GURL sensitive_file_url = net::FilePathToFileURL(sensitive_file_path);
   dropped_data.url = highlighted_file_url;
-  dropped_data.filenames.push_back(WebDropData::FileInfo(
+  dropped_data.filenames.push_back(DropData::FileInfo(
       UTF8ToUTF16(dragged_file_path.AsUTF8Unsafe()), string16()));
 
   rvh()->DragTargetDragEnter(dropped_data, client_point, screen_point,

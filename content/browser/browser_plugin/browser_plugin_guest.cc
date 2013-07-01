@@ -39,6 +39,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/result_codes.h"
 #include "net/base/net_errors.h"
@@ -46,7 +47,6 @@
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/surface/transport_dib.h"
-#include "webkit/common/webdropdata.h"
 #include "webkit/glue/resource_type.h"
 
 #if defined(OS_MACOSX)
@@ -1119,7 +1119,7 @@ void BrowserPluginGuest::OnCompositorFrameACK(
 
 void BrowserPluginGuest::OnDragStatusUpdate(int instance_id,
                                             WebKit::WebDragStatus drag_status,
-                                            const WebDropData& drop_data,
+                                            const DropData& drop_data,
                                             WebKit::WebDragOperationsMask mask,
                                             const gfx::Point& location) {
   RenderViewHost* host = GetWebContents()->GetRenderViewHost();

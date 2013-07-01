@@ -22,7 +22,7 @@ void TestWebContentsView::ShowPopupMenu(const gfx::Rect& bounds,
 }
 
 void TestWebContentsView::StartDragging(
-    const WebDropData& drop_data,
+    const DropData& drop_data,
     WebKit::WebDragOperationsMask allowed_ops,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
@@ -72,7 +72,7 @@ void TestWebContentsView::StoreFocus() {
 void TestWebContentsView::RestoreFocus() {
 }
 
-WebDropData* TestWebContentsView::GetDropData() const {
+DropData* TestWebContentsView::GetDropData() const {
   return NULL;
 }
 

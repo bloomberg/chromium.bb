@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/public/common/drop_data.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "webkit/common/webdropdata.h"
 
 namespace content {
 
@@ -28,7 +28,7 @@ class CONTENT_EXPORT WebDragDestGtk {
   WebDragDestGtk(WebContents* web_contents, GtkWidget* widget);
   ~WebDragDestGtk();
 
-  WebDropData* current_drop_data() const { return drop_data_.get(); }
+  DropData* current_drop_data() const { return drop_data_.get(); }
 
   // This is called when the renderer responds to a drag motion event. We must
   // update the system drag cursor.
@@ -79,7 +79,7 @@ class CONTENT_EXPORT WebDragDestGtk {
   GdkDragContext* context_;
 
   // The data for the current drag, or NULL if |context_| is NULL.
-  scoped_ptr<WebDropData> drop_data_;
+  scoped_ptr<DropData> drop_data_;
 
   // The number of outstanding drag data requests we have sent to the drag
   // source.

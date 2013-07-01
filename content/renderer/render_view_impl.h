@@ -80,7 +80,6 @@ struct PP_NetAddress_Private;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_PostMessage_Params;
 struct ViewMsg_StopFinding_Params;
-struct WebDropData;
 
 namespace ui {
 struct SelectedFileInfo;
@@ -163,6 +162,7 @@ class SpeechRecognitionDispatcher;
 class StatsCollectionController;
 class WebPluginDelegateProxy;
 struct CustomContextMenuContext;
+struct DropData;
 struct FaviconURL;
 struct FileChooserParams;
 struct RenderViewImplParams;
@@ -983,7 +983,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnDragTargetDrop(const gfx::Point& client_pt,
                         const gfx::Point& screen_pt,
                         int key_modifiers);
-  void OnDragTargetDragEnter(const WebDropData& drop_data,
+  void OnDragTargetDragEnter(const DropData& drop_data,
                              const gfx::Point& client_pt,
                              const gfx::Point& screen_pt,
                              WebKit::WebDragOperationsMask operations_allowed,

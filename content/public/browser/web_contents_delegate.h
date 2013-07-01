@@ -24,7 +24,6 @@
 #include "ui/gfx/vector2d.h"
 
 class GURL;
-struct WebDropData;
 
 namespace base {
 class FilePath;
@@ -41,6 +40,7 @@ class RenderViewHost;
 class WebContents;
 class WebContentsImpl;
 struct ContextMenuParams;
+struct DropData;
 struct FileChooserParams;
 struct NativeWebKeyboardEvent;
 struct SSLStatus;
@@ -272,7 +272,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // true to allow dragging and dropping on the web contents window or false to
   // cancel the operation. This method is used by Chromium Embedded Framework.
   virtual bool CanDragEnter(WebContents* source,
-                            const WebDropData& data,
+                            const DropData& data,
                             WebKit::WebDragOperationsMask operations_allowed);
 
   // Render view drag n drop ended.

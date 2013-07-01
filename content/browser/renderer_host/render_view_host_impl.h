@@ -153,7 +153,7 @@ class CONTENT_EXPORT RenderViewHostImpl
       int client_x, int client_y, int screen_x, int screen_y) OVERRIDE;
   virtual void DragSourceSystemDragEnded() OVERRIDE;
   virtual void DragTargetDragEnter(
-      const WebDropData& drop_data,
+      const DropData& drop_data,
       const gfx::Point& client_pt,
       const gfx::Point& screen_pt,
       WebKit::WebDragOperationsMask operations_allowed,
@@ -543,7 +543,7 @@ class CONTENT_EXPORT RenderViewHostImpl
                                 const string16& message,
                                 bool is_reload,
                                 IPC::Message* reply_msg);
-  void OnStartDragging(const WebDropData& drop_data,
+  void OnStartDragging(const DropData& drop_data,
                        WebKit::WebDragOperationsMask operations_allowed,
                        const SkBitmap& bitmap,
                        const gfx::Vector2d& bitmap_offset_in_dip,

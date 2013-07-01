@@ -124,7 +124,7 @@ void WebContentsViewAndroid::RestoreFocus() {
   NOTIMPLEMENTED();
 }
 
-WebDropData* WebContentsViewAndroid::GetDropData() const {
+DropData* WebContentsViewAndroid::GetDropData() const {
   NOTIMPLEMENTED();
   return NULL;
 }
@@ -198,7 +198,7 @@ void WebContentsViewAndroid::ShowPopupMenu(
 }
 
 void WebContentsViewAndroid::StartDragging(
-    const WebDropData& drop_data,
+    const DropData& drop_data,
     WebKit::WebDragOperationsMask allowed_ops,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,

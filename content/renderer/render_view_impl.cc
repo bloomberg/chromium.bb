@@ -52,6 +52,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/ssl_status.h"
@@ -78,6 +79,7 @@
 #include "content/renderer/disambiguation_popup_helper.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
+#include "content/renderer/drop_data_builder.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/fetchers/alt_error_page_resource_fetcher.h"
 #include "content/renderer/geolocation_dispatcher.h"
@@ -202,7 +204,6 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "v8/include/v8.h"
 #include "webkit/common/dom_storage/dom_storage_types.h"
-#include "webkit/common/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/weburlresponse_extradata_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -690,7 +691,7 @@ bool TouchEnabled() {
 #endif
 }
 
-WebDragData WebDropDataToDragData(const WebDropData& drop_data) {
+WebDragData DropDataToWebDragData(const DropData& drop_data) {
   std::vector<WebDragData::Item> item_list;
 
   // These fields are currently unused when dragging into WebKit.
@@ -726,7 +727,7 @@ WebDragData WebDropDataToDragData(const WebDropData& drop_data) {
     item_list.push_back(item);
   }
 
-  for (std::vector<WebDropData::FileInfo>::const_iterator it =
+  for (std::vector<DropData::FileInfo>::const_iterator it =
            drop_data.filenames.begin();
        it != drop_data.filenames.end();
        ++it) {
@@ -2589,7 +2590,7 @@ void RenderViewImpl::startDragging(WebFrame* frame,
                                    WebDragOperationsMask mask,
                                    const WebImage& image,
                                    const WebPoint& webImageOffset) {
-  WebDropData drop_data(data);
+  DropData drop_data(DropDataBuilder::Build(data));
   drop_data.referrer_policy = frame->document().referrerPolicy();
   gfx::Vector2d imageOffset(webImageOffset.x, webImageOffset.y);
   Send(new DragHostMsg_StartDragging(routing_id_,
@@ -5343,13 +5344,13 @@ void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
   RenderProcess::current()->AddBindings(enabled_bindings_flags);
 }
 
-void RenderViewImpl::OnDragTargetDragEnter(const WebDropData& drop_data,
+void RenderViewImpl::OnDragTargetDragEnter(const DropData& drop_data,
                                            const gfx::Point& client_point,
                                            const gfx::Point& screen_point,
                                            WebDragOperationsMask ops,
                                            int key_modifiers) {
   WebDragOperation operation = webview()->dragTargetDragEnter(
-      WebDropDataToDragData(drop_data),
+      DropDataToWebDragData(drop_data),
       client_point,
       screen_point,
       ops,

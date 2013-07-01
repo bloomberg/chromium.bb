@@ -149,8 +149,6 @@
       ],
 
       'sources': [
-        '../common/webdropdata.cc',
-        '../common/webdropdata.h',
         '../common/webkit_common_export.h',
         '../common/webmenuitem.cc',
         '../common/webmenuitem.h',

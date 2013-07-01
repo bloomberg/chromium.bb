@@ -80,7 +80,7 @@ class InterstitialPageImpl::InterstitialPageRVHDelegateView
                              const std::vector<WebMenuItem>& items,
                              bool right_aligned,
                              bool allow_multiple_selection) OVERRIDE;
-  virtual void StartDragging(const WebDropData& drop_data,
+  virtual void StartDragging(const DropData& drop_data,
                              WebDragOperationsMask operations_allowed,
                              const gfx::ImageSkia& image,
                              const gfx::Vector2d& image_offset,
@@ -775,7 +775,7 @@ void InterstitialPageImpl::InterstitialPageRVHDelegateView::ShowPopupMenu(
 }
 
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::StartDragging(
-    const WebDropData& drop_data,
+    const DropData& drop_data,
     WebDragOperationsMask allowed_operations,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,

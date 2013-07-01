@@ -22,12 +22,12 @@
 #include "content/browser/web_contents/web_drag_source_gtk.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
+#include "content/public/common/drop_data.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "webkit/common/webdropdata.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
@@ -174,7 +174,7 @@ void WebContentsViewGtk::RestoreFocus() {
     SetInitialFocus();
 }
 
-WebDropData* WebContentsViewGtk::GetDropData() const {
+DropData* WebContentsViewGtk::GetDropData() const {
   return drag_dest_->current_drop_data();
 }
 
@@ -369,7 +369,7 @@ void WebContentsViewGtk::ShowPopupMenu(const gfx::Rect& bounds,
 
 // Render view DnD -------------------------------------------------------------
 
-void WebContentsViewGtk::StartDragging(const WebDropData& drop_data,
+void WebContentsViewGtk::StartDragging(const DropData& drop_data,
                                        WebDragOperationsMask ops,
                                        const gfx::ImageSkia& image,
                                        const gfx::Vector2d& image_offset,

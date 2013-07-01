@@ -52,7 +52,6 @@ struct ViewHostMsg_ShowPopup_Params;
 #endif
 struct ViewHostMsg_UpdateRect_Params;
 class WebCursor;
-struct WebDropData;
 
 namespace cc {
 class CompositorFrameAck;
@@ -69,6 +68,7 @@ class BrowserPluginEmbedder;
 class BrowserPluginGuestManager;
 class RenderProcessHost;
 class RenderWidgetHostView;
+struct DropData;
 struct MediaStreamRequest;
 
 // A browser plugin guest provides functionality for WebContents to operate in
@@ -330,7 +330,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   // renderer.
   void OnDragStatusUpdate(int instance_id,
                           WebKit::WebDragStatus drag_status,
-                          const WebDropData& drop_data,
+                          const DropData& drop_data,
                           WebKit::WebDragOperationsMask drag_mask,
                           const gfx::Point& location);
   // Instructs the guest to execute an edit command decoded in the embedder.

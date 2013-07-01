@@ -30,6 +30,7 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
+using content::DropData;
 using content::PopupMenuHelper;
 using content::RenderViewHostFactory;
 using content::RenderWidgetHostView;
@@ -55,8 +56,8 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 - (id)initWithWebContentsViewMac:(WebContentsViewMac*)w;
 - (void)registerDragTypes;
 - (void)setCurrentDragOperation:(NSDragOperation)operation;
-- (WebDropData*)dropData;
-- (void)startDragWithDropData:(const WebDropData&)dropData
+- (DropData*)dropData;
+- (void)startDragWithDropData:(const DropData&)dropData
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset;
@@ -124,7 +125,7 @@ void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
 }
 
 void WebContentsViewMac::StartDragging(
-    const WebDropData& drop_data,
+    const DropData& drop_data,
     WebDragOperationsMask allowed_operations,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
@@ -204,7 +205,7 @@ void WebContentsViewMac::RestoreFocus() {
   focus_tracker_.reset(nil);
 }
 
-WebDropData* WebContentsViewMac::GetDropData() const {
+DropData* WebContentsViewMac::GetDropData() const {
   return [cocoa_view_ dropData];
 }
 
@@ -425,7 +426,7 @@ void WebContentsViewMac::CloseTab() {
   [dragDest_ setCurrentOperation:operation];
 }
 
-- (WebDropData*)dropData {
+- (DropData*)dropData {
   return [dragDest_ currentDropData];
 }
 
@@ -467,7 +468,7 @@ void WebContentsViewMac::CloseTab() {
                              forType:type];
 }
 
-- (void)startDragWithDropData:(const WebDropData&)dropData
+- (void)startDragWithDropData:(const DropData&)dropData
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset {

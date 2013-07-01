@@ -8,13 +8,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #import "content/browser/web_contents/web_drag_dest_mac.h"
+#include "content/public/common/drop_data.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
-#include "webkit/common/webdropdata.h"
 
+using content::DropData;
 using content::RenderViewHostImplTestHarness;
 
 namespace {
@@ -144,7 +145,7 @@ TEST_F(WebDragDestTest, URL) {
 }
 
 TEST_F(WebDragDestTest, Data) {
-  WebDropData data;
+  DropData data;
   NSPasteboard* pboard = [NSPasteboard pasteboardWithUniqueName];
 
   PutURLOnPasteboard(@"http://www.google.com", pboard);
@@ -155,7 +156,7 @@ TEST_F(WebDragDestTest, Data) {
   NSString* textString = @"hi there";
   [pboard setString:htmlString forType:NSHTMLPboardType];
   [pboard setString:textString forType:NSStringPboardType];
-  [drag_dest_ populateWebDropData:&data fromPasteboard:pboard];
+  [drag_dest_ populateDropData:&data fromPasteboard:pboard];
   EXPECT_EQ(data.url.spec(), "http://www.google.com/");
   EXPECT_EQ(base::SysNSStringToUTF16(textString), data.text.string());
   EXPECT_EQ(base::SysNSStringToUTF16(htmlString), data.html.string());

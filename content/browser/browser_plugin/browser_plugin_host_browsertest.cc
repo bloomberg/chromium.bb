@@ -23,6 +23,7 @@
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
@@ -34,7 +35,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "webkit/common/webdropdata.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
@@ -863,7 +863,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_AcceptDragEvents) {
   double end_x, end_y;
   ASSERT_TRUE(end->GetDouble(0, &end_x) && end->GetDouble(1, &end_y));
 
-  WebDropData drop_data;
+  DropData drop_data;
   GURL url = GURL("https://www.domain.com/index.html");
   drop_data.url = url;
 

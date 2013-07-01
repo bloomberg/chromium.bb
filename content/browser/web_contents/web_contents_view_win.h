@@ -63,7 +63,7 @@ class CONTENT_EXPORT WebContentsViewWin
   virtual void SetInitialFocus() OVERRIDE;
   virtual void StoreFocus() OVERRIDE;
   virtual void RestoreFocus() OVERRIDE;
-  virtual WebDropData* GetDropData() const OVERRIDE;
+  virtual DropData* GetDropData() const OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
 
   // Overridden from WebContentsViewPort:
@@ -87,7 +87,7 @@ class CONTENT_EXPORT WebContentsViewWin
                              const std::vector<WebMenuItem>& items,
                              bool right_aligned,
                              bool allow_multiple_selection) OVERRIDE;
-  virtual void StartDragging(const WebDropData& drop_data,
+  virtual void StartDragging(const DropData& drop_data,
                              WebKit::WebDragOperationsMask operations,
                              const gfx::ImageSkia& image,
                              const gfx::Vector2d& image_offset,

@@ -18,6 +18,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/drop_data.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -26,7 +27,6 @@
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/gfx/gtk_util.h"
-#include "webkit/common/webdropdata.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
@@ -68,7 +68,7 @@ WebDragSourceGtk::~WebDragSourceGtk() {
   gtk_widget_destroy(drag_icon_);
 }
 
-bool WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
+bool WebDragSourceGtk::StartDragging(const DropData& drop_data,
                                      WebDragOperationsMask allowed_ops,
                                      GdkEventButton* last_mouse_down,
                                      const SkBitmap& image,
@@ -105,7 +105,7 @@ bool WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
   // NOTE: Begin a drag even if no targets present. Otherwise, things like
   // draggable list elements will not work.
 
-  drop_data_.reset(new WebDropData(drop_data));
+  drop_data_.reset(new DropData(drop_data));
 
   // The image we get from WebKit makes heavy use of alpha-shading. This looks
   // bad on non-compositing WMs. Fall back to the default drag icon.

@@ -7,9 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "content/public/common/drop_data.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/base/dragdrop/drop_target_win.h"
-#include "webkit/common/webdropdata.h"
 
 namespace content {
 class InterstitialDropTarget;
@@ -27,7 +27,7 @@ class CONTENT_EXPORT WebDragDest : public ui::DropTargetWin {
   WebDragDest(HWND source_hwnd, WebContents* contents);
   virtual ~WebDragDest();
 
-  WebDropData* current_drop_data() const { return drop_data_.get(); }
+  DropData* current_drop_data() const { return drop_data_.get(); }
 
   void set_drag_cursor(WebKit::WebDragOperation op) {
     drag_cursor_ = op;
@@ -76,7 +76,7 @@ class CONTENT_EXPORT WebDragDest : public ui::DropTargetWin {
   WebDragDestDelegate* delegate_;
 
   // The data for the current drag, or NULL if |context_| is NULL.
-  scoped_ptr<WebDropData> drop_data_;
+  scoped_ptr<DropData> drop_data_;
 
   // True if the drag has been canceled.
   bool canceled_;

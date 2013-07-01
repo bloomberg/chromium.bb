@@ -5,10 +5,10 @@
 #import "content/browser/web_contents/web_drag_source_mac.h"
 
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/test/test_renderer_host.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/common/webdropdata.h"
 
 namespace content {
 
@@ -19,7 +19,7 @@ TEST_F(WebDragSourceMacTest, DragInvalidlyEscapedBookmarklet) {
   base::scoped_nsobject<NSView> view(
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 10, 10)]);
 
-  scoped_ptr<WebDropData> dropData(new WebDropData);
+  scoped_ptr<DropData> dropData(new DropData);
   dropData->url = GURL("javascript:%");
 
   WebContentsImpl* contentsImpl = static_cast<WebContentsImpl*>(contents.get());

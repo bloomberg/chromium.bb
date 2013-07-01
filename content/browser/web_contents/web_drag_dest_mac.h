@@ -7,8 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "webkit/common/webdropdata.h"
-
+#include "content/public/common/drop_data.h"
 
 namespace content {
 class RenderViewHost;
@@ -40,7 +39,7 @@ CONTENT_EXPORT
   RenderViewHostIdentifier currentRVH_;
 
   // The data for the current drag, or NULL if none is in progress.
-  scoped_ptr<WebDropData> dropData_;
+  scoped_ptr<content::DropData> dropData_;
 
   // True if the drag has been canceled.
   bool canceled_;
@@ -51,7 +50,7 @@ CONTENT_EXPORT
 // (if necessary).
 - (id)initWithWebContentsImpl:(content::WebContentsImpl*)contents;
 
-- (WebDropData*)currentDropData;
+- (content::DropData*)currentDropData;
 
 - (void)setDragDelegate:(content::WebDragDestDelegate*)delegate;
 
@@ -76,7 +75,7 @@ CONTENT_EXPORT
 @interface WebDragDest(Testing)
 // Given |data|, which should not be nil, fill it in using the contents of the
 // given pasteboard.
-- (void)populateWebDropData:(WebDropData*)data
+- (void)populateDropData:(content::DropData*)data
              fromPasteboard:(NSPasteboard*)pboard;
 // Given a point in window coordinates and a view in that window, return a
 // flipped point in the coordinate system of |view|.

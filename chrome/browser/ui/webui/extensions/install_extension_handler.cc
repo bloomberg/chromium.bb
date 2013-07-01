@@ -17,10 +17,10 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/drop_data.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/common/webdropdata.h"
 
 InstallExtensionHandler::InstallExtensionHandler() {
 }
@@ -54,7 +54,8 @@ void InstallExtensionHandler::RegisterMessages() {
 }
 
 void InstallExtensionHandler::HandleStartDragMessage(const ListValue* args) {
-  WebDropData* drop_data = web_ui()->GetWebContents()->GetView()->GetDropData();
+  content::DropData* drop_data =
+      web_ui()->GetWebContents()->GetView()->GetDropData();
   if (!drop_data) {
     DLOG(ERROR) << "No current drop data.";
     return;
@@ -65,7 +66,7 @@ void InstallExtensionHandler::HandleStartDragMessage(const ListValue* args) {
     return;
   }
 
-  const WebDropData::FileInfo& file_info = drop_data->filenames.front();
+  const content::DropData::FileInfo& file_info = drop_data->filenames.front();
 
   file_to_install_ = base::FilePath::FromWStringHack(
       UTF16ToWide(file_info.path));

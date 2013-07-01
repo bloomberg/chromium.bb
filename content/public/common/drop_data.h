@@ -1,33 +1,28 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A struct for managing data being dropped on a webview.  This represents a
-// union of all the types of data that can be dropped in a platform neutral
+
+// A struct for managing data being dropped on a WebContents.  This represents
+// a union of all the types of data that can be dropped in a platform neutral
 // way.
 
-#ifndef WEBKIT_COMMON_WEBDROPDATA_H_
-#define WEBKIT_COMMON_WEBDROPDATA_H_
+#ifndef CONTENT_PUBLIC_COMMON_DROP_DATA_H_
+#define CONTENT_PUBLIC_COMMON_DROP_DATA_H_
 
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/strings/nullable_string16.h"
-#include "base/strings/string16.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "url/gurl.h"
-#include "webkit/common/webkit_common_export.h"
 
-struct IDataObject;
+namespace content {
 
-namespace WebKit {
-class WebDragData;
-}
-
-struct WEBKIT_COMMON_EXPORT WebDropData {
+struct CONTENT_EXPORT DropData {
   // The struct is used to represent a file in the drop data.
-  struct WEBKIT_COMMON_EXPORT FileInfo {
+  struct CONTENT_EXPORT FileInfo {
     FileInfo();
     FileInfo(const base::string16& path, const base::string16& display_name);
 
@@ -37,12 +32,8 @@ struct WEBKIT_COMMON_EXPORT WebDropData {
     base::string16 display_name;
   };
 
-  // Construct from a WebDragData object.
-  explicit WebDropData(const WebKit::WebDragData&);
-
-  WebDropData();
-
-  ~WebDropData();
+  DropData();
+  ~DropData();
 
   // User is dragging a link into the webview.
   GURL url;
@@ -77,4 +68,6 @@ struct WEBKIT_COMMON_EXPORT WebDropData {
   std::map<base::string16, base::string16> custom_data;
 };
 
-#endif  // WEBKIT_COMMON_WEBDROPDATA_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_COMMON_DROP_DATA_H_

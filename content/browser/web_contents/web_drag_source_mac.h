@@ -11,9 +11,9 @@
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 
-struct WebDropData;
 namespace content {
 class WebContentsImpl;
+struct DropData;
 }
 
 // A class that handles tracking and event processing for a drag and drop
@@ -28,7 +28,7 @@ CONTENT_EXPORT
   NSView* contentsView_;
 
   // Our drop data. Should only be initialized once.
-  scoped_ptr<WebDropData> dropData_;
+  scoped_ptr<content::DropData> dropData_;
 
   // The image to show as drag image. Can be nil.
   base::scoped_nsobject<NSImage> dragImage_;
@@ -57,7 +57,7 @@ CONTENT_EXPORT
 // with data types appropriate for dropData.
 - (id)initWithContents:(content::WebContentsImpl*)contents
                   view:(NSView*)contentsView
-              dropData:(const WebDropData*)dropData
+              dropData:(const content::DropData*)dropData
                  image:(NSImage*)image
                 offset:(NSPoint)offset
             pasteboard:(NSPasteboard*)pboard

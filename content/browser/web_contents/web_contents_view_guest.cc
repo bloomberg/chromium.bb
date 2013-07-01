@@ -15,11 +15,11 @@
 #include "content/common/drag_messages.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/drop_data.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "webkit/common/webdropdata.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
@@ -166,7 +166,7 @@ void WebContentsViewGuest::StoreFocus() {
   platform_view_->StoreFocus();
 }
 
-WebDropData* WebContentsViewGuest::GetDropData() const {
+DropData* WebContentsViewGuest::GetDropData() const {
   NOTIMPLEMENTED();
   return NULL;
 }
@@ -204,7 +204,7 @@ void WebContentsViewGuest::ShowPopupMenu(const gfx::Rect& bounds,
 }
 
 void WebContentsViewGuest::StartDragging(
-    const WebDropData& drop_data,
+    const DropData& drop_data,
     WebDragOperationsMask ops,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,

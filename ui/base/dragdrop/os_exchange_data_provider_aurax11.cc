@@ -16,7 +16,7 @@
 #include "ui/base/x/x11_util.h"
 
 // Note: the GetBlah() methods are used immediately by the
-// web_contents_view_aura.cc:PrepareWebDropData(), while the omnibox is a
+// web_contents_view_aura.cc:PrepareDropData(), while the omnibox is a
 // little more discriminating and calls HasBlah() before trying to get the
 // information.
 

@@ -262,7 +262,7 @@ class TestRenderViewHost
   void TestOnUpdateStateWithFile(
       int process_id, const base::FilePath& file_path);
 
-  void TestOnStartDragging(const WebDropData& drop_data);
+  void TestOnStartDragging(const DropData& drop_data);
 
   // If set, *delete_counter is incremented when this object destructs.
   void set_delete_counter(int* delete_counter) {

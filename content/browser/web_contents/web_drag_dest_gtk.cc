@@ -110,7 +110,7 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
                                       guint time) {
   if (context_ != context) {
     context_ = context;
-    drop_data_.reset(new WebDropData);
+    drop_data_.reset(new DropData);
     is_drop_target_ = false;
 
     if (delegate())
@@ -204,8 +204,7 @@ void WebDragDestGtk::OnDragDataReceived(
           if (url.SchemeIs(chrome::kFileScheme) &&
               net::FileURLToFilePath(url, &file_path)) {
             drop_data_->filenames.push_back(
-                WebDropData::FileInfo(UTF8ToUTF16(file_path.value()),
-                                      string16()));
+                DropData::FileInfo(UTF8ToUTF16(file_path.value()), string16()));
             // This is a hack. Some file managers also populate text/plain with
             // a file URL when dragging files, so we clear it to avoid exposing
             // it to the web content.

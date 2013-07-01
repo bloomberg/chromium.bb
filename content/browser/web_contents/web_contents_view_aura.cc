@@ -32,6 +32,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
+#include "content/public/common/drop_data.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -55,7 +56,6 @@
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
-#include "webkit/common/webdropdata.h"
 
 namespace content {
 WebContentsViewPort* CreateWebContentsView(
@@ -228,8 +228,8 @@ class WebDragSourceAura : public base::MessageLoopForUI::Observer,
   DISALLOW_COPY_AND_ASSIGN(WebDragSourceAura);
 };
 
-// Utility to fill a ui::OSExchangeDataProvider object from WebDropData.
-void PrepareDragData(const WebDropData& drop_data,
+// Utility to fill a ui::OSExchangeDataProvider object from DropData.
+void PrepareDragData(const DropData& drop_data,
                      ui::OSExchangeData::Provider* provider) {
   if (!drop_data.text.string().empty())
     provider->SetString(drop_data.text.string());
@@ -239,7 +239,7 @@ void PrepareDragData(const WebDropData& drop_data,
     provider->SetHtml(drop_data.html.string(), drop_data.html_base_url);
   if (!drop_data.filenames.empty()) {
     std::vector<ui::OSExchangeData::FileInfo> filenames;
-    for (std::vector<WebDropData::FileInfo>::const_iterator it =
+    for (std::vector<DropData::FileInfo>::const_iterator it =
              drop_data.filenames.begin();
          it != drop_data.filenames.end(); ++it) {
       filenames.push_back(
@@ -257,9 +257,8 @@ void PrepareDragData(const WebDropData& drop_data,
   }
 }
 
-// Utility to fill a WebDropData object from ui::OSExchangeData.
-void PrepareWebDropData(WebDropData* drop_data,
-                        const ui::OSExchangeData& data) {
+// Utility to fill a DropData object from ui::OSExchangeData.
+void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
   string16 plain_text;
   data.GetString(&plain_text);
   if (!plain_text.empty())
@@ -286,7 +285,7 @@ void PrepareWebDropData(WebDropData* drop_data,
     for (std::vector<ui::OSExchangeData::FileInfo>::const_iterator
              it = files.begin(); it != files.end(); ++it) {
       drop_data->filenames.push_back(
-          WebDropData::FileInfo(
+          DropData::FileInfo(
               UTF8ToUTF16(it->path.AsUTF8Unsafe()),
               UTF8ToUTF16(it->display_name.AsUTF8Unsafe())));
     }
@@ -1088,7 +1087,7 @@ void WebContentsViewAura::RestoreFocus() {
     delegate_->RestoreFocus();
 }
 
-WebDropData* WebContentsViewAura::GetDropData() const {
+DropData* WebContentsViewAura::GetDropData() const {
   return current_drop_data_.get();
 }
 
@@ -1238,7 +1237,7 @@ void WebContentsViewAura::ShowPopupMenu(const gfx::Rect& bounds,
 }
 
 void WebContentsViewAura::StartDragging(
-    const WebDropData& drop_data,
+    const DropData& drop_data,
     WebKit::WebDragOperationsMask operations,
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
@@ -1522,9 +1521,9 @@ void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
   if (drag_dest_delegate_)
     drag_dest_delegate_->DragInitialize(web_contents_);
 
-  current_drop_data_.reset(new WebDropData());
+  current_drop_data_.reset(new DropData());
 
-  PrepareWebDropData(current_drop_data_.get(), event.data());
+  PrepareDropData(current_drop_data_.get(), event.data());
   WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
 
   gfx::Point screen_pt =

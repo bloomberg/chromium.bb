@@ -16,15 +16,14 @@
 #endif
 
 class GURL;
-struct WebDropData;
 
 namespace ui {
 class OSExchangeData;
 }
 
 namespace content {
-
 class WebContents;
+struct DropData;
 
 // An optional delegate that listens for drags of bookmark data.
 class WebDragDestDelegate {
@@ -64,7 +63,7 @@ class WebDragDestDelegate {
 #elif defined(OS_WIN)
   // Allows the delegate to set data on the drag. If it doesn't want to set
   // data, it should return false.
-  virtual bool AddDragData(const WebDropData& drop_data,
+  virtual bool AddDragData(const DropData& drop_data,
                            ui::OSExchangeData* data) = 0;
 #endif  // TOOLKIT_GTK
 

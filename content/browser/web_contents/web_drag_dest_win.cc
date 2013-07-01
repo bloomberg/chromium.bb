@@ -13,6 +13,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
+#include "content/public/common/drop_data.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -21,7 +22,6 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/point.h"
-#include "webkit/common/webdropdata.h"
 
 using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationCopy;
@@ -60,9 +60,9 @@ int GetModifierFlags() {
   return modifier_state;
 }
 
-// Helper method for converting Window's specific IDataObject to a WebDropData
+// Helper method for converting Window's specific IDataObject to a DropData
 // object.
-void PopulateWebDropData(IDataObject* data_object, WebDropData* drop_data) {
+void PopulateDropData(IDataObject* data_object, DropData* drop_data) {
   base::string16 url_str;
   if (ui::ClipboardUtil::GetUrl(
           data_object, &url_str, &drop_data->url_title, false)) {
@@ -74,7 +74,7 @@ void PopulateWebDropData(IDataObject* data_object, WebDropData* drop_data) {
   ui::ClipboardUtil::GetFilenames(data_object, &filenames);
   for (size_t i = 0; i < filenames.size(); ++i)
     drop_data->filenames.push_back(
-        WebDropData::FileInfo(filenames[i], base::string16()));
+        DropData::FileInfo(filenames[i], base::string16()));
   base::string16 text;
   ui::ClipboardUtil::GetPlainText(data_object, &text);
   if (!text.empty()) {
@@ -154,11 +154,11 @@ DWORD WebDragDest::OnDragEnter(IDataObject* data_object,
                                DWORD effects) {
   current_rvh_ = web_contents_->GetRenderViewHost();
 
-  // TODO(tc): PopulateWebDropData can be slow depending on what is in the
+  // TODO(tc): PopulateDropData can be slow depending on what is in the
   // IDataObject.  Maybe we can do this in a background thread.
-  scoped_ptr<WebDropData> drop_data;
-  drop_data.reset(new WebDropData());
-  PopulateWebDropData(data_object, drop_data.get());
+  scoped_ptr<DropData> drop_data;
+  drop_data.reset(new DropData());
+  PopulateDropData(data_object, drop_data.get());
 
   if (drop_data->url.is_empty())
     ui::OSExchangeDataProviderWin::GetPlainTextURL(data_object,

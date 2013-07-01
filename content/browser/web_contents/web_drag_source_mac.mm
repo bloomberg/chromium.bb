@@ -23,6 +23,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/common/url_constants.h"
 #include "grit/ui_resources.h"
 #include "net/base/escape.h"
@@ -32,13 +33,13 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/gfx/image/image.h"
-#include "webkit/common/webdropdata.h"
 
 using base::SysNSStringToUTF8;
 using base::SysUTF8ToNSString;
 using base::SysUTF16ToNSString;
 using content::BrowserThread;
 using content::DragDownloadFile;
+using content::DropData;
 using content::PromiseFileFinalizer;
 using content::RenderViewHostImpl;
 using net::FileStream;
@@ -63,7 +64,7 @@ base::FilePath FilePathFromFilename(const string16& filename) {
 // Returns a filename appropriate for the drop data
 // TODO(viettrungluu): Refactor to make it common across platforms,
 // and move it somewhere sensible.
-base::FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
+base::FilePath GetFileNameFromDragData(const DropData& drop_data) {
   base::FilePath file_name(
       FilePathFromFilename(drop_data.file_description_filename));
 
@@ -84,7 +85,7 @@ base::FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
 // This helper's sole task is to write out data for a promised file; the caller
 // is responsible for opening the file. It takes the drop data and an open file
 // stream.
-void PromiseWriterHelper(const WebDropData& drop_data,
+void PromiseWriterHelper(const DropData& drop_data,
                          scoped_ptr<FileStream> file_stream) {
   DCHECK(file_stream);
   file_stream->WriteSync(drop_data.file_contents.data(),
@@ -135,7 +136,7 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
 
 - (id)initWithContents:(content::WebContentsImpl*)contents
                   view:(NSView*)contentsView
-              dropData:(const WebDropData*)dropData
+              dropData:(const DropData*)dropData
                  image:(NSImage*)image
                 offset:(NSPoint)offset
             pasteboard:(NSPasteboard*)pboard
@@ -147,7 +148,7 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
     contentsView_ = contentsView;
     DCHECK(contentsView_);
 
-    dropData_.reset(new WebDropData(*dropData));
+    dropData_.reset(new DropData(*dropData));
     DCHECK(dropData_.get());
 
     dragImage_.reset([image retain]);
@@ -470,7 +471,7 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
   // if there is an image flavor, don't put the HTML data on as HTML, but rather
   // put it on as this Chrome-only flavor.
   //
-  // (The only time that Blink fills in the WebDropData::file_contents is with
+  // (The only time that Blink fills in the DropData::file_contents is with
   // an image drop, but the MIME time is tested anyway for paranoia's sake.)
   bool hasImageData = !dropData_->file_contents.empty() &&
                       fileUTI_ &&

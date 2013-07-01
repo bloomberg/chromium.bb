@@ -11,14 +11,15 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
+#include "content/public/common/drop_data.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/window_open_disposition.h"
-#include "webkit/common/webdropdata.h"
 
 using WebKit::WebDragOperationsMask;
+using content::DropData;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContentsImpl;
@@ -50,7 +51,7 @@ int GetModifierFlags() {
   return self;
 }
 
-- (WebDropData*)currentDropData {
+- (DropData*)currentDropData {
   return dropData_.get();
 }
 
@@ -105,10 +106,10 @@ int GetModifierFlags() {
   // we need to send a new enter message in draggingUpdated:.
   currentRVH_ = webContents_->GetRenderViewHost();
 
-  // Fill out a WebDropData from pasteboard.
-  scoped_ptr<WebDropData> dropData;
-  dropData.reset(new WebDropData());
-  [self populateWebDropData:dropData.get()
+  // Fill out a DropData from pasteboard.
+  scoped_ptr<DropData> dropData;
+  dropData.reset(new DropData());
+  [self populateDropData:dropData.get()
              fromPasteboard:[info draggingPasteboard]];
 
   NSDragOperation mask = [info draggingSourceOperationMask];
@@ -246,8 +247,8 @@ int GetModifierFlags() {
 // Given |data|, which should not be nil, fill it in using the contents of the
 // given pasteboard. The types handled by this method should be kept in sync
 // with [WebContentsViewCocoa registerDragTypes].
-- (void)populateWebDropData:(WebDropData*)data
-             fromPasteboard:(NSPasteboard*)pboard {
+- (void)populateDropData:(DropData*)data
+          fromPasteboard:(NSPasteboard*)pboard {
   DCHECK(data);
   DCHECK(pboard);
   NSArray* types = [pboard types];
@@ -288,7 +289,7 @@ int GetModifierFlags() {
                            fileExistsAtPath:filename];
         if (exists) {
           data->filenames.push_back(
-              WebDropData::FileInfo(
+              DropData::FileInfo(
                   base::SysNSStringToUTF16(filename), string16()));
         }
       }

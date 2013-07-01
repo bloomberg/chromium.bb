@@ -26,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
+#include "content/public/common/drop_data.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -36,7 +37,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
-#include "webkit/common/webdropdata.h"
 
 using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperationCopy;
@@ -155,7 +155,7 @@ WebContentsDragWin::~WebContentsDragWin() {
   DCHECK(!drag_drop_thread_.get());
 }
 
-void WebContentsDragWin::StartDragging(const WebDropData& drop_data,
+void WebContentsDragWin::StartDragging(const DropData& drop_data,
                                        WebDragOperationsMask ops,
                                        const gfx::ImageSkia& image,
                                        const gfx::Vector2d& image_offset) {
@@ -191,7 +191,7 @@ void WebContentsDragWin::StartDragging(const WebDropData& drop_data,
 }
 
 void WebContentsDragWin::StartBackgroundDragging(
-    const WebDropData& drop_data,
+    const DropData& drop_data,
     WebDragOperationsMask ops,
     const GURL& page_url,
     const std::string& page_encoding,
@@ -222,7 +222,7 @@ void WebContentsDragWin::StartBackgroundDragging(
 }
 
 void WebContentsDragWin::PrepareDragForDownload(
-    const WebDropData& drop_data,
+    const DropData& drop_data,
     ui::OSExchangeData* data,
     const GURL& page_url,
     const std::string& page_encoding) {
@@ -277,7 +277,7 @@ void WebContentsDragWin::PrepareDragForDownload(
 }
 
 void WebContentsDragWin::PrepareDragForFileContents(
-    const WebDropData& drop_data, ui::OSExchangeData* data) {
+    const DropData& drop_data, ui::OSExchangeData* data) {
   static const int kMaxFilenameLength = 255;  // FAT and NTFS
   base::FilePath file_name(drop_data.file_description_filename);
 
@@ -297,7 +297,7 @@ void WebContentsDragWin::PrepareDragForFileContents(
   data->SetFileContents(file_name, drop_data.file_contents);
 }
 
-void WebContentsDragWin::PrepareDragForUrl(const WebDropData& drop_data,
+void WebContentsDragWin::PrepareDragForUrl(const DropData& drop_data,
                                            ui::OSExchangeData* data) {
   if (drag_dest_->delegate() &&
       drag_dest_->delegate()->AddDragData(drop_data, data)) {
@@ -307,7 +307,7 @@ void WebContentsDragWin::PrepareDragForUrl(const WebDropData& drop_data,
   data->SetURL(drop_data.url, drop_data.url_title);
 }
 
-bool WebContentsDragWin::DoDragging(const WebDropData& drop_data,
+bool WebContentsDragWin::DoDragging(const DropData& drop_data,
                                     WebDragOperationsMask ops,
                                     const GURL& page_url,
                                     const std::string& page_encoding,

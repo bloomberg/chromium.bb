@@ -98,6 +98,8 @@
     'renderer/dom_storage/webstoragearea_impl.h',
     'renderer/dom_storage/webstoragenamespace_impl.cc',
     'renderer/dom_storage/webstoragenamespace_impl.h',
+    'renderer/drop_data_builder.cc',
+    'renderer/drop_data_builder.h',
     'renderer/external_popup_menu.cc',
     'renderer/external_popup_menu.h',
     'renderer/gamepad_shared_memory_reader.cc',
