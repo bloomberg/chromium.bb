@@ -1881,3 +1881,5 @@ crbug.com/255667 transforms/3d/point-mapping/3d-point-mapping.html [ ImageOnlyFa
 
 crbug.com/255971 [ Win7 Debug ] media/encrypted-media/encrypted-media-not-loaded.html [ Crash ]
 crbug.com/255971 [ Win7 Debug ] media/encrypted-media/encrypted-media-syntax.html [ Crash ]
+
+crbug.com/256226 [ Win7 Mac Debug ] webmidi/requestmidiaccess.html [ Crash ]
