@@ -32,6 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {
@@ -103,7 +104,9 @@ static void excitingFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
 
 static void excitingFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestActiveDOMObjectV8Internal::excitingFunctionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void postMessageMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -121,7 +124,9 @@ static void postMessageMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void postMessageMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestActiveDOMObjectV8Internal::postMessageMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void postMessageAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

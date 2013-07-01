@@ -33,6 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {
@@ -82,7 +83,9 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestEventTargetV8Internal::itemMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -99,7 +102,9 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestEventTargetV8Internal::namedItemMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -114,7 +119,9 @@ static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
 
 static void addEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestEventTargetV8Internal::addEventListenerMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -129,7 +136,9 @@ static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void removeEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestEventTargetV8Internal::removeEventListenerMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void dispatchEventMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -152,7 +161,9 @@ static void dispatchEventMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void dispatchEventMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestEventTargetV8Internal::dispatchEventMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)

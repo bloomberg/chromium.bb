@@ -36,6 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -83,7 +84,9 @@ static void fooMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void fooMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     Float64ArrayV8Internal::fooMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -93,7 +96,9 @@ static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void setMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     Float64ArrayV8Internal::setMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)

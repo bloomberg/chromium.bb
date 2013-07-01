@@ -37,6 +37,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 #include "wtf/UnusedParam.h"
 
@@ -271,7 +272,9 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestTypedefsV8Internal::funcMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void setShadowMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -303,7 +306,9 @@ static void setShadowMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void setShadowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestTypedefsV8Internal::setShadowMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -320,7 +325,9 @@ static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value
 
 static void methodWithSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestTypedefsV8Internal::methodWithSequenceArgMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void nullableArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -338,7 +345,9 @@ static void nullableArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
 
 static void nullableArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestTypedefsV8Internal::nullableArrayArgMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -368,7 +377,9 @@ static void funcWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void funcWithClampMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestTypedefsV8Internal::funcWithClampMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -380,7 +391,9 @@ static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Valu
 
 static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestTypedefsV8Internal::immutablePointFunctionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -403,7 +416,9 @@ static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void stringArrayFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestTypedefsV8Internal::stringArrayFunctionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -426,7 +441,9 @@ static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>
 
 static void stringArrayFunction2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestTypedefsV8Internal::stringArrayFunction2Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -444,7 +461,9 @@ static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestTypedefsV8Internal::methodWithExceptionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)

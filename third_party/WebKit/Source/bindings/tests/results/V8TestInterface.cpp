@@ -36,6 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -687,7 +688,9 @@ static void implementsMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& a
 
 static void implementsMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestInterfaceV8Internal::implementsMethod1Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
@@ -720,7 +723,9 @@ static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& a
 
 static void implementsMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestInterfaceV8Internal::implementsMethod2Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
@@ -729,7 +734,9 @@ static void implementsMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void implementsMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     V8TestInterface::implementsMethod3MethodCustom(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
@@ -749,7 +756,9 @@ static void implementsMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& a
 
 static void implementsMethod4MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestInterfaceV8Internal::implementsMethod4Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
@@ -770,7 +779,9 @@ static void supplementalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void supplementalMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestInterfaceV8Internal::supplementalMethod1Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -803,7 +814,9 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void supplementalMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestInterfaceV8Internal::supplementalMethod2Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -812,7 +825,9 @@ static void supplementalMethod2MethodCallback(const v8::FunctionCallbackInfo<v8:
 
 static void supplementalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     V8TestInterface::supplementalMethod3MethodCustom(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -832,7 +847,9 @@ static void supplementalMethod4Method(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void supplementalMethod4MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestInterfaceV8Internal::supplementalMethod4Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)

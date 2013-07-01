@@ -2103,6 +2103,9 @@ sub GenerateFunctionCallback
 static void ${name}MethodCallback${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
 END
+    if (!$function->extendedAttributes->{"PerWorldBindings"}) {
+        $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMMethod\");\n";
+    }
     $code .= GenerateFeatureObservation($function->extendedAttributes->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($function->extendedAttributes->{"DeprecateAs"});
     if (HasActivityLogging($forMainWorldSuffix, $function->extendedAttributes, "Access")) {
@@ -2112,6 +2115,9 @@ END
         $code .= "    ${v8ClassName}::${name}MethodCustom(args);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::${name}Method${forMainWorldSuffix}(args);\n";
+    }
+    if (!$function->extendedAttributes->{"PerWorldBindings"}) {
+        $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
     }
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
@@ -3853,6 +3859,7 @@ sub GenerateImplementation
     AddToImplIncludes("core/dom/ContextFeatures.h");
     AddToImplIncludes("core/dom/Document.h");
     AddToImplIncludes("RuntimeEnabledFeatures.h");
+    AddToImplIncludes("core/platform/chromium/TraceEvent.h");
 
     AddIncludesForType($interfaceName);
 

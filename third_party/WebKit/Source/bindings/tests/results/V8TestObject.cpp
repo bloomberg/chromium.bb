@@ -55,6 +55,7 @@
 #include "core/page/Frame.h"
 #include "core/page/PageConsole.h"
 #include "core/page/UseCounter.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 #include "core/svg/properties/SVGStaticPropertyTearOff.h"
 #include "wtf/GetPtr.h"
@@ -2620,7 +2621,9 @@ static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::voidMethodMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void voidMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2640,7 +2643,9 @@ static void voidMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void voidMethodWithArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::voidMethodWithArgsMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void longMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2652,7 +2657,9 @@ static void longMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void longMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::longMethodMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void longMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2671,7 +2678,9 @@ static void longMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void longMethodWithArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::longMethodWithArgsMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void objMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2683,8 +2692,10 @@ static void objMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void objMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     UseCounter::count(activeDOMWindow(), UseCounter::TestFeature);
     TestObjV8Internal::objMethodMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void objMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2703,7 +2714,9 @@ static void objMethodWithArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& a
 
 static void objMethodWithArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::objMethodWithArgsMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2721,7 +2734,9 @@ static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value
 
 static void methodWithSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithSequenceArgMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodReturningSequenceMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2738,7 +2753,9 @@ static void methodReturningSequenceMethod(const v8::FunctionCallbackInfo<v8::Val
 
 static void methodReturningSequenceMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodReturningSequenceMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2761,7 +2778,9 @@ static void methodWithEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value>& a
 
 static void methodWithEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithEnumArgMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodThatRequiresAllArgsAndThrowsMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2785,7 +2804,9 @@ static void methodThatRequiresAllArgsAndThrowsMethod(const v8::FunctionCallbackI
 
 static void methodThatRequiresAllArgsAndThrowsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodThatRequiresAllArgsAndThrowsMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void serializedValueMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2806,7 +2827,9 @@ static void serializedValueMethod(const v8::FunctionCallbackInfo<v8::Value>& arg
 
 static void serializedValueMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::serializedValueMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void optionsObjectMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2833,7 +2856,9 @@ static void optionsObjectMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void optionsObjectMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::optionsObjectMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2851,18 +2876,24 @@ static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithExceptionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void customMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     UseCounter::count(activeDOMWindow(), UseCounter::CustomTestFeature);
     V8TestObject::customMethodMethodCustom(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void customMethodWithArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     V8TestObject::customMethodWithArgsMethodCustom(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2877,7 +2908,9 @@ static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
 
 static void addEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::addEventListenerMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2892,7 +2925,9 @@ static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void removeEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::removeEventListenerMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void withScriptStateVoidMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2915,7 +2950,9 @@ static void withScriptStateVoidMethod(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void withScriptStateVoidMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::withScriptStateVoidMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void withScriptStateObjMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2938,7 +2975,9 @@ static void withScriptStateObjMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void withScriptStateObjMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::withScriptStateObjMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void withScriptStateVoidExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2966,7 +3005,9 @@ static void withScriptStateVoidExceptionMethod(const v8::FunctionCallbackInfo<v8
 
 static void withScriptStateVoidExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::withScriptStateVoidExceptionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void withScriptStateObjExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2994,7 +3035,9 @@ static void withScriptStateObjExceptionMethod(const v8::FunctionCallbackInfo<v8:
 
 static void withScriptStateObjExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::withScriptStateObjExceptionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void withScriptExecutionContextMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3008,7 +3051,9 @@ static void withScriptExecutionContextMethod(const v8::FunctionCallbackInfo<v8::
 
 static void withScriptExecutionContextMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::withScriptExecutionContextMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void withScriptExecutionContextAndScriptStateMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3032,7 +3077,9 @@ static void withScriptExecutionContextAndScriptStateMethod(const v8::FunctionCal
 
 static void withScriptExecutionContextAndScriptStateMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::withScriptExecutionContextAndScriptStateMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void withScriptExecutionContextAndScriptStateObjExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3061,7 +3108,9 @@ static void withScriptExecutionContextAndScriptStateObjExceptionMethod(const v8:
 
 static void withScriptExecutionContextAndScriptStateObjExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::withScriptExecutionContextAndScriptStateObjExceptionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void withScriptExecutionContextAndScriptStateWithSpacesMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3085,7 +3134,9 @@ static void withScriptExecutionContextAndScriptStateWithSpacesMethod(const v8::F
 
 static void withScriptExecutionContextAndScriptStateWithSpacesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::withScriptExecutionContextAndScriptStateWithSpacesMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void withActiveWindowAndFirstWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3098,7 +3149,9 @@ static void withActiveWindowAndFirstWindowMethod(const v8::FunctionCallbackInfo<
 
 static void withActiveWindowAndFirstWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::withActiveWindowAndFirstWindowMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3117,7 +3170,9 @@ static void methodWithOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value
 
 static void methodWithOptionalArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithOptionalArgMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithNonOptionalArgAndOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3141,7 +3196,9 @@ static void methodWithNonOptionalArgAndOptionalArgMethod(const v8::FunctionCallb
 
 static void methodWithNonOptionalArgAndOptionalArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithNonOptionalArgAndOptionalArgMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithNonOptionalArgAndTwoOptionalArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3171,7 +3228,9 @@ static void methodWithNonOptionalArgAndTwoOptionalArgsMethod(const v8::FunctionC
 
 static void methodWithNonOptionalArgAndTwoOptionalArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithNonOptionalArgAndTwoOptionalArgsMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithOptionalStringMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3190,7 +3249,9 @@ static void methodWithOptionalStringMethod(const v8::FunctionCallbackInfo<v8::Va
 
 static void methodWithOptionalStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithOptionalStringMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithOptionalStringIsUndefinedMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3204,7 +3265,9 @@ static void methodWithOptionalStringIsUndefinedMethod(const v8::FunctionCallback
 
 static void methodWithOptionalStringIsUndefinedMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithOptionalStringIsUndefinedMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithOptionalStringIsNullStringMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3218,7 +3281,9 @@ static void methodWithOptionalStringIsNullStringMethod(const v8::FunctionCallbac
 
 static void methodWithOptionalStringIsNullStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithOptionalStringIsNullStringMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3240,7 +3305,9 @@ static void methodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value
 
 static void methodWithCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithCallbackArgMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithNonCallbackArgAndCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3263,7 +3330,9 @@ static void methodWithNonCallbackArgAndCallbackArgMethod(const v8::FunctionCallb
 
 static void methodWithNonCallbackArgAndCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithNonCallbackArgAndCallbackArgMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithCallbackAndOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3284,7 +3353,9 @@ static void methodWithCallbackAndOptionalArgMethod(const v8::FunctionCallbackInf
 
 static void methodWithCallbackAndOptionalArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithCallbackAndOptionalArgMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void staticMethodWithCallbackAndOptionalArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3304,7 +3375,9 @@ static void staticMethodWithCallbackAndOptionalArgMethod(const v8::FunctionCallb
 
 static void staticMethodWithCallbackAndOptionalArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::staticMethodWithCallbackAndOptionalArgMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void staticMethodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3325,7 +3398,9 @@ static void staticMethodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8:
 
 static void staticMethodWithCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::staticMethodWithCallbackArgMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithEnforceRangeInt8Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3343,7 +3418,9 @@ static void methodWithEnforceRangeInt8Method(const v8::FunctionCallbackInfo<v8::
 
 static void methodWithEnforceRangeInt8MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithEnforceRangeInt8Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithEnforceRangeUInt8Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3361,7 +3438,9 @@ static void methodWithEnforceRangeUInt8Method(const v8::FunctionCallbackInfo<v8:
 
 static void methodWithEnforceRangeUInt8MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithEnforceRangeUInt8Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithEnforceRangeInt32Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3379,7 +3458,9 @@ static void methodWithEnforceRangeInt32Method(const v8::FunctionCallbackInfo<v8:
 
 static void methodWithEnforceRangeInt32MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithEnforceRangeInt32Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithEnforceRangeUInt32Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3397,7 +3478,9 @@ static void methodWithEnforceRangeUInt32Method(const v8::FunctionCallbackInfo<v8
 
 static void methodWithEnforceRangeUInt32MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithEnforceRangeUInt32Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithEnforceRangeInt64Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3415,7 +3498,9 @@ static void methodWithEnforceRangeInt64Method(const v8::FunctionCallbackInfo<v8:
 
 static void methodWithEnforceRangeInt64MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithEnforceRangeInt64Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithEnforceRangeUInt64Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3433,7 +3518,9 @@ static void methodWithEnforceRangeUInt64Method(const v8::FunctionCallbackInfo<v8
 
 static void methodWithEnforceRangeUInt64MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithEnforceRangeUInt64Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #if ENABLE(Condition1)
@@ -3451,7 +3538,9 @@ static void conditionalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void conditionalMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::conditionalMethod1Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #endif // ENABLE(Condition1)
@@ -3472,7 +3561,9 @@ static void conditionalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void conditionalMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::conditionalMethod2Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #endif // ENABLE(Condition1) && ENABLE(Condition2)
@@ -3493,7 +3584,9 @@ static void conditionalMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void conditionalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::conditionalMethod3Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
@@ -3507,7 +3600,9 @@ static void callbackFunctionReturnValueMethod(const v8::FunctionCallbackInfo<v8:
 
 static void callbackFunctionReturnValueMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::callbackFunctionReturnValueMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void callbackFunctionArgumentMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3525,7 +3620,9 @@ static void callbackFunctionArgumentMethod(const v8::FunctionCallbackInfo<v8::Va
 
 static void callbackFunctionArgumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::callbackFunctionArgumentMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void overloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3737,7 +3834,9 @@ static void overloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
 
 static void overloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::overloadedMethodMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void classMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3749,7 +3848,9 @@ static void classMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void classMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::classMethodMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void classMethodWithOptionalMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3765,12 +3866,16 @@ static void classMethodWithOptionalMethod(const v8::FunctionCallbackInfo<v8::Val
 
 static void classMethodWithOptionalMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::classMethodWithOptionalMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void classMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     V8TestObject::classMethod2MethodCustom(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #if ENABLE(Condition1)
@@ -3830,7 +3935,9 @@ static void overloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& a
 
 static void overloadedMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::overloadedMethod1Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 #endif // ENABLE(Condition1)
@@ -3857,7 +3964,9 @@ static void classMethodWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>
 
 static void classMethodWithClampMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::classMethodWithClampMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void enabledAtRuntimeMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3875,7 +3984,9 @@ static void enabledAtRuntimeMethod1Method(const v8::FunctionCallbackInfo<v8::Val
 
 static void enabledAtRuntimeMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::enabledAtRuntimeMethod1Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void enabledAtRuntimeMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3893,7 +4004,9 @@ static void enabledAtRuntimeMethod2Method(const v8::FunctionCallbackInfo<v8::Val
 
 static void enabledAtRuntimeMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::enabledAtRuntimeMethod2Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void enabledPerContextMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3911,7 +4024,9 @@ static void enabledPerContextMethod1Method(const v8::FunctionCallbackInfo<v8::Va
 
 static void enabledPerContextMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::enabledPerContextMethod1Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void enabledPerContextMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3929,7 +4044,9 @@ static void enabledPerContextMethod2Method(const v8::FunctionCallbackInfo<v8::Va
 
 static void enabledPerContextMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::enabledPerContextMethod2Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void methodWithUnsignedLongSequenceMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3947,7 +4064,9 @@ static void methodWithUnsignedLongSequenceMethod(const v8::FunctionCallbackInfo<
 
 static void methodWithUnsignedLongSequenceMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::methodWithUnsignedLongSequenceMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3970,7 +4089,9 @@ static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void stringArrayFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::stringArrayFunctionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void domStringListFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -3993,7 +4114,9 @@ static void domStringListFunctionMethod(const v8::FunctionCallbackInfo<v8::Value
 
 static void domStringListFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::domStringListFunctionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void getSVGDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4015,7 +4138,9 @@ static void getSVGDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& args
 
 static void getSVGDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::getSVGDocumentMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void convert1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4033,7 +4158,9 @@ static void convert1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void convert1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::convert1Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void convert2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4051,7 +4178,9 @@ static void convert2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void convert2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::convert2Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void convert4Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4069,7 +4198,9 @@ static void convert4Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void convert4MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::convert4Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void convert5Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4087,7 +4218,9 @@ static void convert5Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void convert5MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::convert5Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void mutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4099,7 +4232,9 @@ static void mutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>
 
 static void mutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::mutablePointFunctionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4111,7 +4246,9 @@ static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Valu
 
 static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::immutablePointFunctionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void orangeMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4124,7 +4261,9 @@ static void orangeMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void orangeMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::orangeMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void strictFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4149,7 +4288,9 @@ static void strictFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& args
 
 static void strictFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::strictFunctionMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void variadicStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4168,7 +4309,9 @@ static void variadicStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
 
 static void variadicStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::variadicStringMethodMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void variadicDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4187,7 +4330,9 @@ static void variadicDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
 
 static void variadicDoubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::variadicDoubleMethodMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void variadicNodeMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4213,7 +4358,9 @@ static void variadicNodeMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void variadicNodeMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     TestObjV8Internal::variadicNodeMethodMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void perWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4355,12 +4502,14 @@ static void activityLoggedMethod1Method(const v8::FunctionCallbackInfo<v8::Value
 
 static void activityLoggedMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     V8PerContextData* contextData = V8PerContextData::from(args.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
         Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(args);
         contextData->activityLogger()->log("TestObject.activityLoggedMethod1", args.Length(), loggerArgs.data(), "Method");
     }
     TestObjV8Internal::activityLoggedMethod1Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void activityLoggedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4568,8 +4717,10 @@ static void deprecatedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& ar
 
 static void deprecatedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     UseCounter::countDeprecation(activeDOMWindow(), UseCounter::Method);
     TestObjV8Internal::deprecatedMethodMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void deprecatedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -4581,8 +4732,10 @@ static void deprecatedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Valu
 
 static void deprecatedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     UseCounter::countDeprecation(activeDOMWindow(), UseCounter::StaticMethod);
     TestObjV8Internal::deprecatedStaticMethodMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)

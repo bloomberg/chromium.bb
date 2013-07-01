@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -127,7 +128,9 @@ static void func1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void func1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     RealClassV8Internal::func1Method(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void funcTestInterfaceImplementedAsParamMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -144,7 +147,9 @@ static void funcTestInterfaceImplementedAsParamMethod(const v8::FunctionCallback
 
 static void funcTestInterfaceImplementedAsParamMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMMethod");
     RealClassV8Internal::funcTestInterfaceImplementedAsParamMethod(args);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 } // namespace RealClassV8Internal
