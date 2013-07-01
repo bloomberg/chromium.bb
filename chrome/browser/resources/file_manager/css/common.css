@@ -2,6 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+/* Special attribute to hide elements. */
+[hidden] {
+  display: none !important;
+}
+
 /* This file contains "borrowed" copy of standard styles. To simplify merging,
  * when altering, please preserve original property value by adding comments. */
 input.common[type='checkbox'],
@@ -167,6 +172,7 @@ menu.chrome-menu {
   border-radius: 3px;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
   color: rgb(34, 34, 34);
+  display: block;
   outline: none;
   overflow: hidden;
   padding: 5px 0;
@@ -175,7 +181,7 @@ menu.chrome-menu {
 }
 
 menu.chrome-menu[hidden] {
-  display: block;
+  display: block !important;  /* Overrides default [hidden] for animation. */
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
@@ -435,10 +441,6 @@ div.watch-single-video-icon {
 .shown > .cr-dialog-shield {
   opacity: 0.5;
   transition: opacity 500ms;
-}
-
-[hidden] {
-  display: none;
 }
 
 .cr-dialog-title {
