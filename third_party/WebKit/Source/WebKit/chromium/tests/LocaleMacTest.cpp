@@ -74,7 +74,7 @@ protected:
         OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
         DateComponents date;
         unsigned end;
-        date.parseWeek(isoString.bloatedCharacters(), isoString.length(), 0, end);
+        date.parseWeek(isoString, 0, end);
         return locale->formatDateTime(date);
     }
 
@@ -83,7 +83,7 @@ protected:
         OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
         DateComponents date;
         unsigned end;
-        date.parseMonth(isoString.bloatedCharacters(), isoString.length(), 0, end);
+        date.parseMonth(isoString, 0, end);
         return locale->formatDateTime(date, (useShortFormat ? Locale::FormatTypeShort : Locale::FormatTypeMedium));
     }
 

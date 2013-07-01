@@ -95,11 +95,11 @@ StepRange DateTimeLocalInputType::createStepRange(AnyStepHandling anyStepHandlin
     return StepRange(stepBase, minimum, maximum, step, stepDescription);
 }
 
-bool DateTimeLocalInputType::parseToDateComponentsInternal(const UChar* characters, unsigned length, DateComponents* out) const
+bool DateTimeLocalInputType::parseToDateComponentsInternal(const String& string, DateComponents* out) const
 {
     ASSERT(out);
     unsigned end;
-    return out->parseDateTimeLocal(characters, length, 0, end) && end == length;
+    return out->parseDateTimeLocal(string, 0, end) && end == string.length();
 }
 
 bool DateTimeLocalInputType::setMillisecondToDateComponents(double value, DateComponents* date) const

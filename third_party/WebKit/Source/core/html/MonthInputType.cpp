@@ -128,11 +128,11 @@ Decimal MonthInputType::parseToNumber(const String& src, const Decimal& defaultV
     return Decimal::fromDouble(months);
 }
 
-bool MonthInputType::parseToDateComponentsInternal(const UChar* characters, unsigned length, DateComponents* out) const
+bool MonthInputType::parseToDateComponentsInternal(const String& string, DateComponents* out) const
 {
     ASSERT(out);
     unsigned end;
-    return out->parseMonth(characters, length, 0, end) && end == length;
+    return out->parseMonth(string, 0, end) && end == string.length();
 }
 
 bool MonthInputType::setMillisecondToDateComponents(double value, DateComponents* date) const

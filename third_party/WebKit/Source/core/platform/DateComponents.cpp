@@ -98,10 +98,10 @@ int DateComponents::maxWeekNumberInYear() const
     return day == Thursday || (day == Wednesday && isLeapYear(m_year)) ? maximumWeekNumber : maximumWeekNumber - 1;
 }
 
-static unsigned countDigits(const UChar* src, unsigned length, unsigned start)
+static unsigned countDigits(const String& src, unsigned start)
 {
     unsigned index = start;
-    for (; index < length; ++index) {
+    for (; index < src.length(); ++index) {
         if (!isASCIIDigit(src[index]))
             break;
     }
@@ -109,19 +109,19 @@ static unsigned countDigits(const UChar* src, unsigned length, unsigned start)
 }
 
 // Very strict integer parser. Do not allow leading or trailing whitespace unlike charactersToIntStrict().
-static bool toInt(const UChar* src, unsigned length, unsigned parseStart, unsigned parseLength, int& out)
+static bool toInt(const String& src, unsigned parseStart, unsigned parseLength, int& out)
 {
-    if (parseStart + parseLength > length || parseLength <= 0)
+    if (parseStart + parseLength > src.length() || parseLength <= 0)
         return false;
     int value = 0;
-    const UChar* current = src + parseStart;
-    const UChar* end = current + parseLength;
+    unsigned current = parseStart;
+    unsigned end = current + parseLength;
 
     // We don't need to handle negative numbers for ISO 8601.
     for (; current < end; ++current) {
-        if (!isASCIIDigit(*current))
+        if (!isASCIIDigit(src[current]))
             return false;
-        int digit = *current - '0';
+        int digit = src[current] - '0';
         if (value > (INT_MAX - digit) / 10) // Check for overflow.
             return false;
         value = value * 10 + digit;
@@ -130,14 +130,14 @@ static bool toInt(const UChar* src, unsigned length, unsigned parseStart, unsign
     return true;
 }
 
-bool DateComponents::parseYear(const UChar* src, unsigned length, unsigned start, unsigned& end)
+bool DateComponents::parseYear(const String& src, unsigned start, unsigned& end)
 {
-    unsigned digitsLength = countDigits(src, length, start);
+    unsigned digitsLength = countDigits(src, start);
     // Needs at least 4 digits according to the standard.
     if (digitsLength < 4)
         return false;
     int year;
-    if (!toInt(src, length, start, digitsLength, year))
+    if (!toInt(src, start, digitsLength, year))
         return false;
     if (year < minimumYear() || year > maximumYear())
         return false;
@@ -285,9 +285,9 @@ bool DateComponents::addMinute(int minute)
 }
 
 // Parses a timezone part, and adjust year, month, monthDay, hour, minute, second, millisecond.
-bool DateComponents::parseTimeZone(const UChar* src, unsigned length, unsigned start, unsigned& end)
+bool DateComponents::parseTimeZone(const String& src, unsigned start, unsigned& end)
 {
-    if (start >= length)
+    if (start >= src.length())
         return false;
     unsigned index = start;
     if (src[index] == 'Z') {
@@ -306,15 +306,15 @@ bool DateComponents::parseTimeZone(const UChar* src, unsigned length, unsigned s
 
     int hour;
     int minute;
-    if (!toInt(src, length, index, 2, hour) || hour < 0 || hour > 23)
+    if (!toInt(src, index, 2, hour) || hour < 0 || hour > 23)
         return false;
     index += 2;
 
-    if (index >= length || src[index] != ':')
+    if (index >= src.length() || src[index] != ':')
         return false;
     ++index;
 
-    if (!toInt(src, length, index, 2, minute) || minute < 0 || minute > 59)
+    if (!toInt(src, index, 2, minute) || minute < 0 || minute > 59)
         return false;
     index += 2;
 
@@ -330,18 +330,17 @@ bool DateComponents::parseTimeZone(const UChar* src, unsigned length, unsigned s
     return true;
 }
 
-bool DateComponents::parseMonth(const UChar* src, unsigned length, unsigned start, unsigned& end)
+bool DateComponents::parseMonth(const String& src, unsigned start, unsigned& end)
 {
-    ASSERT(src);
     unsigned index;
-    if (!parseYear(src, length, start, index))
+    if (!parseYear(src, start, index))
         return false;
-    if (index >= length || src[index] != '-')
+    if (index >= src.length() || src[index] != '-')
         return false;
     ++index;
 
     int month;
-    if (!toInt(src, length, index, 2, month) || month < 1 || month > 12)
+    if (!toInt(src, index, 2, month) || month < 1 || month > 12)
         return false;
     --month;
     if (!withinHTMLDateLimits(m_year, month))
@@ -352,21 +351,20 @@ bool DateComponents::parseMonth(const UChar* src, unsigned length, unsigned star
     return true;
 }
 
-bool DateComponents::parseDate(const UChar* src, unsigned length, unsigned start, unsigned& end)
+bool DateComponents::parseDate(const String& src, unsigned start, unsigned& end)
 {
-    ASSERT(src);
     unsigned index;
-    if (!parseMonth(src, length, start, index))
+    if (!parseMonth(src, start, index))
         return false;
     // '-' and 2-digits are needed.
-    if (index + 2 >= length)
+    if (index + 2 >= src.length())
         return false;
     if (src[index] != '-')
         return false;
     ++index;
 
     int day;
-    if (!toInt(src, length, index, 2, day) || day < 1 || day > maxDayOfMonth(m_year, m_month))
+    if (!toInt(src, index, 2, day) || day < 1 || day > maxDayOfMonth(m_year, m_month))
         return false;
     if (!withinHTMLDateLimits(m_year, m_month, day))
         return false;
@@ -376,15 +374,14 @@ bool DateComponents::parseDate(const UChar* src, unsigned length, unsigned start
     return true;
 }
 
-bool DateComponents::parseWeek(const UChar* src, unsigned length, unsigned start, unsigned& end)
+bool DateComponents::parseWeek(const String& src, unsigned start, unsigned& end)
 {
-    ASSERT(src);
     unsigned index;
-    if (!parseYear(src, length, start, index))
+    if (!parseYear(src, start, index))
         return false;
 
     // 4 characters ('-' 'W' digit digit) are needed.
-    if (index + 3 >= length)
+    if (index + 3 >= src.length())
         return false;
     if (src[index] != '-')
         return false;
@@ -394,7 +391,7 @@ bool DateComponents::parseWeek(const UChar* src, unsigned length, unsigned start
     ++index;
 
     int week;
-    if (!toInt(src, length, index, 2, week) || week < minimumWeekNumber || week > maxWeekNumberInYear())
+    if (!toInt(src, index, 2, week) || week < minimumWeekNumber || week > maxWeekNumberInYear())
         return false;
     if (m_year == maximumYear() && week > maximumWeekInMaximumYear)
         return false;
@@ -404,21 +401,20 @@ bool DateComponents::parseWeek(const UChar* src, unsigned length, unsigned start
     return true;
 }
 
-bool DateComponents::parseTime(const UChar* src, unsigned length, unsigned start, unsigned& end)
+bool DateComponents::parseTime(const String& src, unsigned start, unsigned& end)
 {
-    ASSERT(src);
     int hour;
-    if (!toInt(src, length, start, 2, hour) || hour < 0 || hour > 23)
+    if (!toInt(src, start, 2, hour) || hour < 0 || hour > 23)
         return false;
     unsigned index = start + 2;
-    if (index >= length)
+    if (index >= src.length())
         return false;
     if (src[index] != ':')
         return false;
     ++index;
 
     int minute;
-    if (!toInt(src, length, index, 2, minute) || minute < 0 || minute > 59)
+    if (!toInt(src, index, 2, minute) || minute < 0 || minute > 59)
         return false;
     index += 2;
 
@@ -426,24 +422,25 @@ bool DateComponents::parseTime(const UChar* src, unsigned length, unsigned start
     int millisecond = 0;
     // Optional second part.
     // Do not return with false because the part is optional.
-    if (index + 2 < length && src[index] == ':') {
-        if (toInt(src, length, index + 1, 2, second) && second >= 0 && second <= 59) {
+    if (index + 2 < src.length() && src[index] == ':') {
+        if (toInt(src, index + 1, 2, second) && second >= 0 && second <= 59) {
             index += 3;
 
             // Optional fractional second part.
-            if (index < length && src[index] == '.') {
-                unsigned digitsLength = countDigits(src, length, index + 1);
+            if (index < src.length() && src[index] == '.') {
+                unsigned digitsLength = countDigits(src, index + 1);
                 if (digitsLength >  0) {
                     ++index;
                     bool ok;
                     if (digitsLength == 1) {
-                        ok = toInt(src, length, index, 1, millisecond);
+                        ok = toInt(src, index, 1, millisecond);
                         millisecond *= 100;
                     } else if (digitsLength == 2) {
-                        ok = toInt(src, length, index, 2, millisecond);
+                        ok = toInt(src, index, 2, millisecond);
                         millisecond *= 10;
-                    } else // digitsLength >= 3
-                        ok = toInt(src, length, index, 3, millisecond);
+                    } else { // digitsLength >= 3
+                        ok = toInt(src, index, 3, millisecond);
+                    }
                     ASSERT_UNUSED(ok, ok);
                     index += digitsLength;
                 }
@@ -459,18 +456,17 @@ bool DateComponents::parseTime(const UChar* src, unsigned length, unsigned start
     return true;
 }
 
-bool DateComponents::parseDateTimeLocal(const UChar* src, unsigned length, unsigned start, unsigned& end)
+bool DateComponents::parseDateTimeLocal(const String& src, unsigned start, unsigned& end)
 {
-    ASSERT(src);
     unsigned index;
-    if (!parseDate(src, length, start, index))
+    if (!parseDate(src, start, index))
         return false;
-    if (index >= length)
+    if (index >= src.length())
         return false;
     if (src[index] != 'T')
         return false;
     ++index;
-    if (!parseTime(src, length, index, end))
+    if (!parseTime(src, index, end))
         return false;
     if (!withinHTMLDateLimits(m_year, m_month, m_monthDay, m_hour, m_minute, m_second, m_millisecond))
         return false;
@@ -478,20 +474,19 @@ bool DateComponents::parseDateTimeLocal(const UChar* src, unsigned length, unsig
     return true;
 }
 
-bool DateComponents::parseDateTime(const UChar* src, unsigned length, unsigned start, unsigned& end)
+bool DateComponents::parseDateTime(const String& src, unsigned start, unsigned& end)
 {
-    ASSERT(src);
     unsigned index;
-    if (!parseDate(src, length, start, index))
+    if (!parseDate(src, start, index))
         return false;
-    if (index >= length)
+    if (index >= src.length())
         return false;
     if (src[index] != 'T')
         return false;
     ++index;
-    if (!parseTime(src, length, index, index))
+    if (!parseTime(src, index, index))
         return false;
-    if (!parseTimeZone(src, length, index, end))
+    if (!parseTimeZone(src, index, end))
         return false;
     if (!withinHTMLDateLimits(m_year, m_month, m_monthDay, m_hour, m_minute, m_second, m_millisecond))
         return false;

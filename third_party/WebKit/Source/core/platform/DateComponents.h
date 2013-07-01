@@ -102,17 +102,17 @@ public:
     // failures, and the trailing extra characters don't cause parse failures.
 
     // Sets year and month.
-    bool parseMonth(const UChar* src, unsigned length, unsigned start, unsigned& end);
+    bool parseMonth(const String&, unsigned start, unsigned& end);
     // Sets year, month and monthDay.
-    bool parseDate(const UChar* src, unsigned length, unsigned start, unsigned& end);
+    bool parseDate(const String&, unsigned start, unsigned& end);
     // Sets year and week.
-    bool parseWeek(const UChar* src, unsigned length, unsigned start, unsigned& end);
+    bool parseWeek(const String&, unsigned start, unsigned& end);
     // Sets hour, minute, second and millisecond.
-    bool parseTime(const UChar* src, unsigned length, unsigned start, unsigned& end);
+    bool parseTime(const String&, unsigned start, unsigned& end);
     // Sets year, month, monthDay, hour, minute, second and millisecond.
-    bool parseDateTimeLocal(const UChar* src, unsigned length, unsigned start, unsigned& end);
+    bool parseDateTimeLocal(const String&, unsigned start, unsigned& end);
     // Sets year, month, monthDay, hour, minute, second and millisecond, and adjusts timezone.
-    bool parseDateTime(const UChar* src, unsigned length, unsigned start, unsigned& end);
+    bool parseDateTime(const String&, unsigned start, unsigned& end);
 
     // The following setMillisecondsSinceEpochFor*() functions take
     // the number of milliseconds since 1970-01-01 00:00:00.000 UTC as
@@ -172,10 +172,10 @@ private:
     // Returns the maximum week number in this DateComponents's year.
     // The result is either of 52 and 53.
     int maxWeekNumberInYear() const;
-    bool parseYear(const UChar* src, unsigned length, unsigned start, unsigned& end);
+    bool parseYear(const String&, unsigned start, unsigned& end);
     bool addDay(int);
     bool addMinute(int);
-    bool parseTimeZone(const UChar* src, unsigned length, unsigned start, unsigned& end);
+    bool parseTimeZone(const String&, unsigned start, unsigned& end);
     // Helper for millisecondsSinceEpoch().
     double millisecondsSinceEpochForTime() const;
     // Helpers for setMillisecondsSinceEpochFor*().

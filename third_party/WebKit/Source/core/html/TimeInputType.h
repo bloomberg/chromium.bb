@@ -53,7 +53,7 @@ private:
     virtual DateComponents::Type dateType() const OVERRIDE;
     virtual Decimal defaultValueForStepUp() const OVERRIDE;
     virtual StepRange createStepRange(AnyStepHandling) const OVERRIDE;
-    virtual bool parseToDateComponentsInternal(const UChar*, unsigned length, DateComponents*) const OVERRIDE;
+    virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const OVERRIDE;
     virtual bool setMillisecondToDateComponents(double, DateComponents*) const OVERRIDE;
     virtual bool isTimeField() const OVERRIDE;
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)

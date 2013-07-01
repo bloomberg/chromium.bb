@@ -82,11 +82,11 @@ StepRange WeekInputType::createStepRange(AnyStepHandling anyStepHandling) const
     return StepRange(stepBase, minimum, maximum, step, stepDescription);
 }
 
-bool WeekInputType::parseToDateComponentsInternal(const UChar* characters, unsigned length, DateComponents* out) const
+bool WeekInputType::parseToDateComponentsInternal(const String& string, DateComponents* out) const
 {
     ASSERT(out);
     unsigned end;
-    return out->parseWeek(characters, length, 0, end) && end == length;
+    return out->parseWeek(string, 0, end) && end == string.length();
 }
 
 bool WeekInputType::setMillisecondToDateComponents(double value, DateComponents* date) const

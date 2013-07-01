@@ -84,11 +84,11 @@ StepRange DateInputType::createStepRange(AnyStepHandling anyStepHandling) const
     return StepRange(stepBase, minimum, maximum, step, stepDescription);
 }
 
-bool DateInputType::parseToDateComponentsInternal(const UChar* characters, unsigned length, DateComponents* out) const
+bool DateInputType::parseToDateComponentsInternal(const String& string, DateComponents* out) const
 {
     ASSERT(out);
     unsigned end;
-    return out->parseDate(characters, length, 0, end) && end == length;
+    return out->parseDate(string, 0, end) && end == string.length();
 }
 
 bool DateInputType::setMillisecondToDateComponents(double value, DateComponents* date) const

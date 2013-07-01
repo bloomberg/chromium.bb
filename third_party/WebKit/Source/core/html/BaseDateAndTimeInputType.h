@@ -49,7 +49,7 @@ protected:
     virtual String visibleValue() const OVERRIDE;
 
 private:
-    virtual bool parseToDateComponentsInternal(const UChar*, unsigned length, DateComponents*) const = 0;
+    virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const = 0;
     virtual DateComponents::Type dateType() const = 0;
     virtual double valueAsDate() const OVERRIDE;
     virtual void setValueAsDate(double, ExceptionCode&) const OVERRIDE;

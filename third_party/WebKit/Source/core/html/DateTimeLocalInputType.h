@@ -54,7 +54,7 @@ private:
     virtual double valueAsDate() const OVERRIDE;
     virtual void setValueAsDate(double, ExceptionCode&) const OVERRIDE;
     virtual StepRange createStepRange(AnyStepHandling) const;
-    virtual bool parseToDateComponentsInternal(const UChar*, unsigned length, DateComponents*) const OVERRIDE;
+    virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const OVERRIDE;
     virtual bool setMillisecondToDateComponents(double, DateComponents*) const OVERRIDE;
     virtual bool isDateTimeLocalField() const OVERRIDE;
 

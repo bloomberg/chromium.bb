@@ -250,7 +250,7 @@ void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(const St
         return;
     DateComponents date;
     unsigned end;
-    if (date.parseDate(value.bloatedCharacters(), value.length(), 0, end) && end == value.length())
+    if (date.parseDate(value, 0, end) && end == value.length())
         edit->setOnlyYearMonthDay(date);
 }
 

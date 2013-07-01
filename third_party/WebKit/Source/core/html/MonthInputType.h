@@ -56,7 +56,7 @@ private:
     virtual Decimal parseToNumber(const String&, const Decimal&) const OVERRIDE;
     virtual Decimal defaultValueForStepUp() const OVERRIDE;
     virtual StepRange createStepRange(AnyStepHandling) const OVERRIDE;
-    virtual bool parseToDateComponentsInternal(const UChar*, unsigned length, DateComponents*) const OVERRIDE;
+    virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const OVERRIDE;
     virtual bool setMillisecondToDateComponents(double, DateComponents*) const OVERRIDE;
     virtual bool isMonthField() const OVERRIDE;
 
