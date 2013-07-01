@@ -60,9 +60,9 @@
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 #include "modules/webaudio/OscillatorNode.h"
 #include "modules/webaudio/PannerNode.h"
+#include "modules/webaudio/PeriodicWave.h"
 #include "modules/webaudio/ScriptProcessorNode.h"
 #include "modules/webaudio/WaveShaperNode.h"
-#include "modules/webaudio/WaveTable.h"
 #include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/MemoryInstrumentationVector.h"
 
@@ -556,7 +556,7 @@ PassRefPtr<OscillatorNode> AudioContext::createOscillator()
     return node;
 }
 
-PassRefPtr<WaveTable> AudioContext::createWaveTable(Float32Array* real, Float32Array* imag, ExceptionCode& ec)
+PassRefPtr<PeriodicWave> AudioContext::createPeriodicWave(Float32Array* real, Float32Array* imag, ExceptionCode& ec)
 {
     ASSERT(isMainThread());
     
@@ -566,7 +566,7 @@ PassRefPtr<WaveTable> AudioContext::createWaveTable(Float32Array* real, Float32A
     }
     
     lazyInitialize();
-    return WaveTable::create(sampleRate(), real, imag);
+    return PeriodicWave::create(sampleRate(), real, imag);
 }
 
 void AudioContext::notifyNodeFinishedProcessing(AudioNode* node)

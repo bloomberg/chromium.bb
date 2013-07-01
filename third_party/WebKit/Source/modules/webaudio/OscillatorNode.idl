@@ -53,6 +53,6 @@
     void noteOn(double when);
     void noteOff(double when);
 
-    void setWaveTable(WaveTable waveTable);
+    void setPeriodicWave(PeriodicWave periodicWave);
 
 };

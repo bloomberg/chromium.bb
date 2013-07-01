@@ -230,6 +230,7 @@ PerformanceMeasure
 PerformanceNavigation
 PerformanceResourceTiming
 PerformanceTiming
+PeriodicWave
 Plugin
 PluginArray
 PopStateEvent
@@ -426,7 +427,6 @@ Uint8Array
 Uint8ClampedArray
 ValidityState
 WaveShaperNode
-WaveTable
 WebGLActiveInfo
 WebGLBuffer
 WebGLContextEvent
