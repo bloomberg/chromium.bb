@@ -338,41 +338,49 @@ private:
 
 void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
 {
-    // It would be nice if the GC callbacks passed the Isolate directly....
+    // FIXME: It would be nice if the GC callbacks passed the Isolate directly....
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (type == v8::kGCTypeScavenge)
-        minorGCPrologue(v8::Isolate::GetCurrent());
+        minorGCPrologue(isolate);
     else if (type == v8::kGCTypeMarkSweepCompact)
-        majorGCPrologue(flags & v8::kGCCallbackFlagConstructRetainedObjectInfos);
+        majorGCPrologue(flags & v8::kGCCallbackFlagConstructRetainedObjectInfos, isolate);
 }
 
 void V8GCController::minorGCPrologue(v8::Isolate* isolate)
 {
     TRACE_EVENT_BEGIN0("v8", "minorGC");
-    TraceEvent::SamplingState0Scope("V8\0V8MinorGC");
-
     if (isMainThread()) {
+        TraceEvent::SamplingState0Scope("Blink\0Blink-MinorGC");
         v8::HandleScope scope;
-
         MinorGCWrapperVisitor visitor(isolate);
         v8::V8::VisitHandlesForPartialDependence(isolate, &visitor);
         visitor.notifyFinished();
+
+        V8PerIsolateData::from(isolate)->setPreviousSamplingState(TraceEvent::SamplingState0Scope::current());
+        TraceEvent::SamplingState0Scope::forceCurrent("Blink\0Blink-MinorGC");
     }
 }
 
 // Create object groups for DOM tree nodes.
-void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos)
+void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos, v8::Isolate* isolate)
 {
-    TRACE_EVENT_BEGIN0("v8", "majorGC");
-    TraceEvent::SamplingState0Scope("V8\0V8MajorGC");
-
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope;
+    TRACE_EVENT_BEGIN0("v8", "majorGC");
+    if (isMainThread()) {
+        TraceEvent::SamplingState0Scope("Blink\0Blink-MajorGC");
+        MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
+        v8::V8::VisitHandlesWithClassIds(&visitor);
+        visitor.notifyFinished();
+        V8PerIsolateData::from(isolate)->stringCache()->clearOnGC();
 
-    MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
-    v8::V8::VisitHandlesWithClassIds(&visitor);
-    visitor.notifyFinished();
-
-    V8PerIsolateData::from(isolate)->stringCache()->clearOnGC();
+        V8PerIsolateData::from(isolate)->setPreviousSamplingState(TraceEvent::SamplingState0Scope::current());
+        TraceEvent::SamplingState0Scope::forceCurrent("V8\0V8-MajorGC");
+    } else {
+        MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
+        v8::V8::VisitHandlesWithClassIds(&visitor);
+        visitor.notifyFinished();
+        V8PerIsolateData::from(isolate)->stringCache()->clearOnGC();
+    }
 }
 
 static int workingSetEstimateMB = 0;
@@ -385,18 +393,22 @@ static Mutex& workingSetEstimateMBMutex()
 
 void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
 {
+    // FIXME: It would be nice if the GC callbacks passed the Isolate directly....
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (type == v8::kGCTypeScavenge)
-        minorGCEpilogue();
+        minorGCEpilogue(isolate);
     else if (type == v8::kGCTypeMarkSweepCompact)
-        majorGCEpilogue();
+        majorGCEpilogue(isolate);
 }
 
-void V8GCController::minorGCEpilogue()
+void V8GCController::minorGCEpilogue(v8::Isolate* isolate)
 {
-    TRACE_EVENT_END0("v8", "GC");
+    TRACE_EVENT_END0("v8", "minorGC");
+    if (isMainThread())
+        TraceEvent::SamplingState0Scope::forceCurrent(V8PerIsolateData::from(isolate)->previousSamplingState());
 }
 
-void V8GCController::majorGCEpilogue()
+void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
 {
     v8::HandleScope scope;
 
@@ -406,7 +418,9 @@ void V8GCController::majorGCEpilogue()
         workingSetEstimateMB = MemoryUsageSupport::actualMemoryUsageMB();
     }
 
-    TRACE_EVENT_END0("v8", "GC");
+    TRACE_EVENT_END0("v8", "majorGC");
+    if (isMainThread())
+        TraceEvent::SamplingState0Scope::forceCurrent(V8PerIsolateData::from(isolate)->previousSamplingState());
 }
 
 void V8GCController::checkMemoryUsage()

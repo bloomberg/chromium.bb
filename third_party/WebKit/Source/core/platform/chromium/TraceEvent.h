@@ -806,6 +806,16 @@ public:
         *WebCore::traceSamplingState0 = m_previousState0;
     }
 
+    static inline const char* current()
+    {
+        return reinterpret_cast<const char*>(*WebCore::traceSamplingState0);
+    }
+
+    static inline void forceCurrent(const char* name)
+    {
+        *WebCore::traceSamplingState0 = reinterpret_cast<long>(const_cast<char*>(name));
+    }
+
 private:
     long m_previousState0;
 };

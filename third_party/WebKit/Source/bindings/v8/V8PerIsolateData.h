@@ -143,6 +143,9 @@ public:
 
     v8::Local<v8::Context> ensureRegexContext();
 
+    const char* previousSamplingState() const { return m_previousSamplingState; }
+    void setPreviousSamplingState(const char* name) { m_previousSamplingState = name; }
+
 private:
     explicit V8PerIsolateData(v8::Isolate*);
     ~V8PerIsolateData();
@@ -164,6 +167,8 @@ private:
     OwnPtr<V8HiddenPropertyName> m_hiddenPropertyName;
     ScopedPersistent<v8::Value> m_liveRoot;
     ScopedPersistent<v8::Context> m_regexContext;
+
+    const char* m_previousSamplingState;
 
     bool m_constructorMode;
     friend class ConstructorMode;

@@ -1652,7 +1652,7 @@ void Document::recalcStyle(StyleChange change)
         return; // Guard against re-entrancy. -dwh
 
     TRACE_EVENT0("webkit", "Document::recalcStyle");
-    TraceEvent::SamplingState0Scope("WebKit\0WebKitRecalcStyle");
+    TraceEvent::SamplingState0Scope("Blink\0Blink-RecalcStyle");
 
     // FIXME: We should update style on our ancestor chain before proceeding (especially for seamless),
     // however doing so currently causes several tests to crash, as Frame::setDocument calls Document::attach

@@ -102,12 +102,12 @@ void ThreadTimers::updateSharedTimer()
 
 void ThreadTimers::sharedTimerFired()
 {
-    TRACE_EVENT_SAMPLING_STATE0("WebKit\0WebKitInternal");
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-Internal");
 
     // Redirect to non-static method.
     threadGlobalData().threadTimers().sharedTimerFiredInternal();
 
-    TRACE_EVENT_SAMPLING_STATE0("WebKit\0WebKitSleeping");
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-Sleeping");
 }
 
 void ThreadTimers::sharedTimerFiredInternal()
