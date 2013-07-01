@@ -96,7 +96,16 @@ void RecommendationRestorer::Restore(bool allow_delay,
   if (!pref->GetRecommendedValue() || !pref->HasUserSetting())
     return;
 
-  if (!logged_in_ && allow_delay)
+  if (logged_in_) {
+    allow_delay = false;
+  } else if (allow_delay && ash::Shell::HasInstance()) {
+    // Skip the delay if there has been no user input since the browser started.
+    const ash::UserActivityDetector* user_activity_detector =
+        ash::Shell::GetInstance()->user_activity_detector();
+    allow_delay = !user_activity_detector->last_activity_time().is_null();
+  }
+
+  if (allow_delay)
     StartTimer();
   else
     pref_change_registrar_.prefs()->ClearPref(pref->name().c_str());
