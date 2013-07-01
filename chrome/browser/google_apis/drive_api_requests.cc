@@ -11,9 +11,6 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/request_util.h"
 #include "chrome/browser/google_apis/time_util.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace google_apis {
 namespace {
@@ -29,7 +26,6 @@ void ParseJsonAndRun(
     const base::Callback<void(GDataErrorCode, scoped_ptr<T>)>& callback,
     GDataErrorCode error,
     scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   scoped_ptr<T> resource;
@@ -53,7 +49,6 @@ void ParseFileResourceWithUploadRangeAndRun(
     const drive::UploadRangeCallback& callback,
     const UploadRangeResponse& response,
     scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   scoped_ptr<FileResource> file_resource;
@@ -620,7 +615,9 @@ ResumeUploadRequest::ResumeUploadRequest(
 ResumeUploadRequest::~ResumeUploadRequest() {}
 
 void ResumeUploadRequest::OnRangeRequestComplete(
-    const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
+    const UploadRangeResponse& response,
+    scoped_ptr<base::Value> value) {
+  DCHECK(CalledOnValidThread());
   ParseFileResourceWithUploadRangeAndRun(callback_, response, value.Pass());
 }
 
@@ -649,7 +646,9 @@ GetUploadStatusRequest::GetUploadStatusRequest(
 GetUploadStatusRequest::~GetUploadStatusRequest() {}
 
 void GetUploadStatusRequest::OnRangeRequestComplete(
-    const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
+    const UploadRangeResponse& response,
+    scoped_ptr<base::Value> value) {
+  DCHECK(CalledOnValidThread());
   ParseFileResourceWithUploadRangeAndRun(callback_, response, value.Pass());
 }
 
