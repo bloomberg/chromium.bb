@@ -519,10 +519,24 @@ void LocalSyncDelegate::HandleManualResolutionCase(
     return;
   }
 
-  SetMetadataConflict(
-      base::Bind(&LocalSyncDelegate::DidApplyLocalChange,
-                 weak_factory_.GetWeakPtr(), callback,
-                 google_apis::HTTP_CONFLICT));
+  SetMetadataConflict(base::Bind(&LocalSyncDelegate::NotifyConflict,
+                                 weak_factory_.GetWeakPtr(), callback));
+}
+
+void LocalSyncDelegate::NotifyConflict(const SyncStatusCallback& callback,
+                                       SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  sync_service_->NotifyObserversFileStatusChanged(
+      url_,
+      SYNC_FILE_STATUS_CONFLICTING,
+      SYNC_ACTION_NONE,
+      SYNC_DIRECTION_NONE);
+
+  DidApplyLocalChange(callback, google_apis::HTTP_CONFLICT, status);
 }
 
 void LocalSyncDelegate::HandleLocalWinCase(
