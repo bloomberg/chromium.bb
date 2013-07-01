@@ -54,7 +54,6 @@ private:
         ParserStateBackup(WebSocketExtensionParser* parser)
             : m_parser(parser)
             , m_current(parser->m_current)
-            , m_end(parser->m_end)
             , m_isDisposed(false) { }
         ~ParserStateBackup();
 
@@ -62,7 +61,6 @@ private:
     private:
         WebSocketExtensionParser* m_parser;
         const char* m_current;
-        const char* m_end;
         bool m_isDisposed;
     };
     const String& currentToken() { return m_currentToken; }
@@ -77,7 +75,7 @@ private:
     void skipSpaces();
 
     const char* m_current;
-    const char* m_end;
+    const char* const m_end;
     String m_currentToken;
 };
 

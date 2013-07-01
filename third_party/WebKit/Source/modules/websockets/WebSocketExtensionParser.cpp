@@ -41,7 +41,6 @@ WebSocketExtensionParser::ParserStateBackup::~ParserStateBackup()
 {
     if (!m_isDisposed) {
         m_parser->m_current = m_current;
-        m_parser->m_end = m_end;
     }
 }
 
