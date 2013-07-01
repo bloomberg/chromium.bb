@@ -619,6 +619,7 @@
         'browser/chromeos/drive/file_system/remove_operation_unittest.cc',
         'browser/chromeos/drive/file_system/search_operation_unittest.cc',
         'browser/chromeos/drive/file_system/touch_operation_unittest.cc',
+        'browser/chromeos/drive/file_system/truncate_operation_unittest.cc',
         'browser/chromeos/drive/file_system/update_operation_unittest.cc',
         'browser/chromeos/drive/file_system_util_unittest.cc',
         'browser/chromeos/drive/file_write_helper_unittest.cc',

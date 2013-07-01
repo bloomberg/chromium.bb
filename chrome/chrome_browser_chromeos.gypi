@@ -259,6 +259,8 @@
         'browser/chromeos/drive/file_system/search_operation.h',
         'browser/chromeos/drive/file_system/touch_operation.cc',
         'browser/chromeos/drive/file_system/touch_operation.h',
+        'browser/chromeos/drive/file_system/truncate_operation.cc',
+        'browser/chromeos/drive/file_system/truncate_operation.h',
         'browser/chromeos/drive/file_system/update_operation.cc',
         'browser/chromeos/drive/file_system/update_operation.h',
         'browser/chromeos/drive/file_system_interface.h',

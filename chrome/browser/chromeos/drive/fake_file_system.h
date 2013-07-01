@@ -86,6 +86,9 @@ class FakeFileSystem : public FileSystemInterface {
                          const base::Time& last_access_time,
                          const base::Time& last_modified_time,
                          const FileOperationCallback& callback) OVERRIDE;
+  virtual void TruncateFile(const base::FilePath& file_path,
+                            int64 length,
+                            const FileOperationCallback& callback) OVERRIDE;
   virtual void Pin(const base::FilePath& file_path,
                    const FileOperationCallback& callback) OVERRIDE;
   virtual void Unpin(const base::FilePath& file_path,

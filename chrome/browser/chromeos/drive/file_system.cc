@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/search_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/touch_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/truncate_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -129,6 +130,13 @@ void FileSystem::Initialize() {
                                        cache_));
   touch_operation_.reset(new file_system::TouchOperation(
       blocking_task_runner_.get(), observer, scheduler_, resource_metadata_));
+  truncate_operation_.reset(
+      new file_system::TruncateOperation(blocking_task_runner_.get(),
+                                         observer,
+                                         scheduler_,
+                                         resource_metadata_,
+                                         cache_,
+                                         temporary_file_directory_));
   download_operation_.reset(
       new file_system::DownloadOperation(blocking_task_runner_.get(),
                                          observer,
@@ -341,6 +349,14 @@ void FileSystem::TouchFile(const base::FilePath& file_path,
   DCHECK(!callback.is_null());
   touch_operation_->TouchFile(
       file_path, last_access_time, last_modified_time, callback);
+}
+
+void FileSystem::TruncateFile(const base::FilePath& file_path,
+                              int64 length,
+                              const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  truncate_operation_->Truncate(file_path, length, callback);
 }
 
 void FileSystem::Pin(const base::FilePath& file_path,

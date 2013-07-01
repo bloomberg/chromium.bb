@@ -297,6 +297,13 @@ class FileSystemInterface {
                          const base::Time& last_modified_time,
                          const FileOperationCallback& callback) = 0;
 
+  // Truncates the file content at |file_path| to the |length|.
+  //
+  // |callback| must not be null.
+  virtual void TruncateFile(const base::FilePath& file_path,
+                            int64 length,
+                            const FileOperationCallback& callback) = 0;
+
   // Pins a file at |file_path|.
   //
   // |callback| must not be null.

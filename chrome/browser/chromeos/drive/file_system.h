@@ -52,6 +52,7 @@ class OperationObserver;
 class RemoveOperation;
 class SearchOperation;
 class TouchOperation;
+class TruncateOperation;
 class UpdateOperation;
 }  // namespace file_system
 
@@ -116,6 +117,9 @@ class FileSystem : public FileSystemInterface,
                          const base::Time& last_access_time,
                          const base::Time& last_modified_time,
                          const FileOperationCallback& callback) OVERRIDE;
+  virtual void TruncateFile(const base::FilePath& file_path,
+                            int64 length,
+                            const FileOperationCallback& callback) OVERRIDE;
   virtual void Pin(const base::FilePath& file_path,
                    const FileOperationCallback& callback) OVERRIDE;
   virtual void Unpin(const base::FilePath& file_path,
@@ -394,6 +398,7 @@ class FileSystem : public FileSystemInterface,
   scoped_ptr<file_system::MoveOperation> move_operation_;
   scoped_ptr<file_system::RemoveOperation> remove_operation_;
   scoped_ptr<file_system::TouchOperation> touch_operation_;
+  scoped_ptr<file_system::TruncateOperation> truncate_operation_;
   scoped_ptr<file_system::DownloadOperation> download_operation_;
   scoped_ptr<file_system::UpdateOperation> update_operation_;
   scoped_ptr<file_system::SearchOperation> search_operation_;
