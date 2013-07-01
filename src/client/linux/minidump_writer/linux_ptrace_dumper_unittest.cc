@@ -69,7 +69,9 @@ class LinuxPtraceDumperChildTest : public testing::Test {
  protected:
   virtual void SetUp() {
     child_pid_ = fork();
+#ifndef __ANDROID__
     prctl(PR_SET_PTRACER, child_pid_);
+#endif
   }
 
   /* Gtest is calling TestBody from this class, which sets up a child
