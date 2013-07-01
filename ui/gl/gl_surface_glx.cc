@@ -424,9 +424,6 @@ bool NativeViewGLSurfaceGLX::IsOffscreen() {
 
 bool NativeViewGLSurfaceGLX::SwapBuffers() {
   glXSwapBuffers(g_display, window_);
-  // For latency_tests.cc:
-  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete",
-                                 TRACE_EVENT_SCOPE_THREAD);
   return true;
 }
 

@@ -4695,11 +4695,6 @@ error::Error GLES2DecoderImpl::HandleRegisterSharedIdsCHROMIUM(
 error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
   DCHECK(!ShouldDeferDraws());
   if (CheckBoundFramebuffersValid("glClear")) {
-    UNSHIPPED_TRACE_EVENT_INSTANT2(
-        "test_gpu", "DoClear",
-        TRACE_EVENT_SCOPE_THREAD,
-        "red", state_.color_clear_red,
-        "green", state_.color_clear_green);
     ApplyDirtyState();
     glClear(mask);
   }
@@ -4954,8 +4949,6 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
         srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
   }
   EnableDisable(GL_SCISSOR_TEST, state_.enable_flags.scissor_test);
-  UNSHIPPED_TRACE_EVENT_INSTANT1("test_gpu", "DoBlit", TRACE_EVENT_SCOPE_THREAD,
-                                 "width", srcX1 - srcX0);
 }
 
 void GLES2DecoderImpl::DoRenderbufferStorageMultisample(

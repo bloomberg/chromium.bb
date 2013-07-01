@@ -2132,7 +2132,6 @@
         'test/base/chrome_test_launcher.cc',
         'test/perf/browser_perf_test.cc',
         'test/perf/browser_perf_test.h',
-        'test/perf/rendering/latency_tests.cc',
         'test/perf/rendering/throughput_tests.cc',
       ],
       'rules': [

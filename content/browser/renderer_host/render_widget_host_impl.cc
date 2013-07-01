@@ -1850,14 +1850,6 @@ void RenderWidgetHostImpl::OnUpdateRect(
       RecordAction(UserMetricsAction("BadMessageTerminate_RWH1"));
       GetProcess()->ReceivedBadMessage();
     } else {
-      UNSHIPPED_TRACE_EVENT_INSTANT2("test_latency", "UpdateRect",
-          TRACE_EVENT_SCOPE_THREAD,
-          "x+y", params.bitmap_rect.x() + params.bitmap_rect.y(),
-          "color", 0xffffff & *static_cast<uint32*>(dib->memory()));
-      UNSHIPPED_TRACE_EVENT_INSTANT1("test_latency", "UpdateRectWidth",
-          TRACE_EVENT_SCOPE_THREAD,
-          "width", params.bitmap_rect.width());
-
       // Scroll the backing store.
       if (!params.scroll_rect.IsEmpty()) {
         ScrollBackingStoreRect(params.scroll_delta,
@@ -1967,9 +1959,6 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
   // On other platforms, this will be equivalent to MPArch.RWH_OnMsgUpdateRect.
   delta = now - paint_start;
   UMA_HISTOGRAM_TIMES("MPArch.RWH_TotalPaintTime", delta);
-  UNSHIPPED_TRACE_EVENT_INSTANT1("test_latency", "UpdateRectComplete",
-      TRACE_EVENT_SCOPE_THREAD,
-      "x+y", params.bitmap_rect.x() + params.bitmap_rect.y());
 }
 
 void RenderWidgetHostImpl::OnInputEventAck(

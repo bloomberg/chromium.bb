@@ -841,10 +841,6 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
     hr = swap_chain_->Present(&rect, &rect, window_, NULL, 0);
 
-    // For latency_tests.cc:
-    UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete",
-                                   TRACE_EVENT_SCOPE_THREAD);
-
     if (FAILED(hr)) {
       if (present_thread_->IsDeviceLost())
         present_thread_->ResetDevice();
@@ -1023,10 +1019,6 @@ void AcceleratedPresenter::PresentWithGDI(HDC dc) {
   }
 
   system_surface->UnlockRect();
-
-  // For latency_tests.cc:
-  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete",
-                                 TRACE_EVENT_SCOPE_THREAD);
 }
 
 gfx::Size AcceleratedPresenter::GetWindowSize() {

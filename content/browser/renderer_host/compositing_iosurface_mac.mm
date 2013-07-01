@@ -570,10 +570,6 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
   RenderWidgetHostImpl::CompositorFrameDrawn(latency_info_);
   latency_info_.Clear();
 
-  // For latency_tests.cc:
-  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete",
-                                 TRACE_EVENT_SCOPE_THREAD);
-
   // Try to finish previous copy requests after flush to get better pipelining.
   std::vector<base::Closure> copy_done_callbacks;
   FinishAllCopiesWithinContext(&copy_done_callbacks);
