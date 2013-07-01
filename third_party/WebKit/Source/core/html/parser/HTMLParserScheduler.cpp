@@ -39,8 +39,7 @@ const int HTMLParserScheduler::parserChunkSize = 4096;
 
 // parserTimeLimit is the seconds the parser will run in one write() call
 // before yielding. Inline <script> execution can cause it to exceed the limit.
-// FIXME: We would like this value to be 0.2.
-const double HTMLParserScheduler::parserTimeLimit = 0.500;
+const double HTMLParserScheduler::parserTimeLimit = 0.2;
 
 ActiveParserSession::ActiveParserSession(Document* document)
     : m_document(document)
