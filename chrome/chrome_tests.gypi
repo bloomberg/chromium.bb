@@ -2823,7 +2823,7 @@
             'common',
             'renderer',
             '../content/content.gyp:content_gpu',
-            '../content/content.gyp:test_support_content',
+            '../content/content_shell_and_tests.gyp:test_support_content',
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
             '../base/base.gyp:test_support_perf',
@@ -3165,7 +3165,7 @@
                 'interactive_ui_tests',
                 # Disabled from running in coverage_posix.py.
                 # We need to build this during compile step, so enabling here.
-                '../content/content.gyp:content_browsertests',
+                '../content/content_shell_and_tests.gyp:content_browsertests',
                 '../courgette/courgette.gyp:courgette_unittests',
                 '../crypto/crypto.gyp:crypto_unittests',
                 '../jingle/jingle.gyp:jingle_unittests',
@@ -3275,7 +3275,7 @@
             'chromium_testshell_java',
             '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',
-            '../content/content.gyp:content_java_test_support',
+            '../content/content_shell_and_tests.gyp:content_java_test_support',
             '../sync/sync.gyp:sync_javatests',
             '../tools/android/forwarder/forwarder.gyp:forwarder',
           ],

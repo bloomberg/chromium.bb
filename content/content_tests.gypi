@@ -16,9 +16,9 @@
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui_test_support',
         '../url/url.gyp:url_lib',
-        'content_app',
-        'content_browser',
-        'content_common',
+        'content.gyp:content_app',
+        'content.gyp:content_browser',
+        'content.gyp:content_common',
       ],
       'include_dirs': [
         '..',
@@ -161,10 +161,10 @@
           ],
         }, {  # OS != "ios"
           'dependencies': [
-            'content_child',
-            'content_ppapi_plugin',
-            'content_utility',
-            'content_worker',
+            'content.gyp:content_child',
+            'content.gyp:content_ppapi_plugin',
+            'content.gyp:content_utility',
+            'content.gyp:content_worker',
             '../ppapi/ppapi_internal.gyp:ppapi_host',
             '../ppapi/ppapi_internal.gyp:ppapi_proxy',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
@@ -245,8 +245,8 @@
       'type': '<(gtest_target_type)',
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
-        'content_browser',
-        'content_common',
+        'content.gyp:content_browser',
+        'content.gyp:content_common',
         'test_support_content',
         'browser/speech/proto/speech_proto.gyp:speech_proto',
         '../base/base.gyp:test_support_base',
@@ -560,11 +560,11 @@
           ],
         }, {  # OS != "ios"
           'dependencies': [
-            'content_browser',
-            'content_child',
-            'content_gpu',
-            'content_plugin',
-            'content_renderer',
+            'content.gyp:content_browser',
+            'content.gyp:content_child',
+            'content.gyp:content_gpu',
+            'content.gyp:content_plugin',
+            'content.gyp:content_renderer',
             'content_resources.gyp:content_resources',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../gpu/gpu.gyp:gpu',
@@ -735,10 +735,10 @@
           'type': '<(gtest_target_type)',
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
-            'content_common',
-            'content_gpu',
-            'content_plugin',
-            'content_renderer',
+            'content.gyp:content_common',
+            'content.gyp:content_gpu',
+            'content.gyp:content_plugin',
+            'content.gyp:content_renderer',
             'content_shell_lib',
             'content_shell_pak',
             'test_support_content',
@@ -986,7 +986,7 @@
           'type': '<(gtest_target_type)',
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
-            'content_common',
+            'content.gyp:content_common',
             'test_support_content',
             '../base/base.gyp:test_support_base',
             '../testing/gtest.gyp:gtest',
@@ -1007,7 +1007,7 @@
           'type': '<(gtest_target_type)',
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
-            'content_common',
+            'content.gyp:content_common',
             'test_support_content',
             '../base/base.gyp:test_support_base',
             '../testing/gtest.gyp:gtest',
@@ -1030,7 +1030,7 @@
             'target_name': 'video_decode_accelerator_unittest',
             'type': '<(gtest_target_type)',
             'dependencies': [
-              'content',
+              'content.gyp:content',
               '../base/base.gyp:base',
               '../testing/gtest.gyp:gtest',
               '../media/media.gyp:media',
@@ -1099,7 +1099,7 @@
           'target_name': 'h264_parser_unittest',
           'type': 'executable',
           'dependencies': [
-            'content_common',
+            'content.gyp:content_common',
             '../base/base.gyp:base',
             '../testing/gtest.gyp:gtest',
           ],
@@ -1126,7 +1126,7 @@
           'target_name': 'content_unittests_apk',
           'type': 'none',
           'dependencies': [
-            'content_java',
+            'content.gyp:content_java',
             'content_unittests',
           ],
           'variables': {
@@ -1139,8 +1139,8 @@
           'target_name': 'content_browsertests_apk',
           'type': 'none',
           'dependencies': [
+            'content.gyp:content_java',
             'content_browsertests',
-            'content_java',
             'content_java_test_support',
             'content_shell_java',
           ],
@@ -1192,8 +1192,8 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',
-            'content_common',
-            'content_java',
+            'content.gyp:content_common',
+            'content.gyp:content_java',
           ],
           'variables': {
             'java_in_dir': '../content/public/test/android/javatests',
@@ -1204,7 +1204,7 @@
           'target_name': 'content_shell_test_apk',
           'type': 'none',
           'dependencies': [
-            'content_java',
+            'content.gyp:content_java',
             'content_java_test_support',
             'content_shell_apk_java',
             '../base/base.gyp:base_java',

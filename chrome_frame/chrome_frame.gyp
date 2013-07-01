@@ -414,7 +414,7 @@
         '../chrome/chrome_resources.gyp:chrome_resources',
         '../content/content.gyp:content_app',
         '../content/content.gyp:content_gpu',
-        '../content/content.gyp:test_support_content',
+        '../content/content_shell_and_tests.gyp:test_support_content',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
