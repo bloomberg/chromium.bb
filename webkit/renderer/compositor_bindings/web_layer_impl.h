@@ -26,9 +26,7 @@ namespace cc { class Layer; }
 class SkImageFilter;
 
 namespace WebKit {
-class WebAnimationDelegate;
 class WebFilterOperations;
-class WebLayerScrollClient;
 struct WebFloatRect;
 }
 

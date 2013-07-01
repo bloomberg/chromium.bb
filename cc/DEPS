@@ -13,5 +13,4 @@ include_rules = [
   # TODO(danakj): Drop dependencies on WebKit Platform API from cc.
   "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
   "+third_party/WebKit/public/platform/WebGraphicsMemoryAllocation.h",
-  "+third_party/WebKit/public/platform/WebLayerScrollClient.h",
 ]

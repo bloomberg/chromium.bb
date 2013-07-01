@@ -4,6 +4,7 @@
 
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "cc/animation/animation.h"
 #include "cc/base/region.h"
@@ -13,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebLayerPositionConstraint.h"
+#include "third_party/WebKit/public/platform/WebLayerScrollClient.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "webkit/renderer/compositor_bindings/web_animation_impl.h"
@@ -349,7 +351,9 @@ WebKit::WebLayerPositionConstraint WebLayerImpl::positionConstraint() const {
 
 void WebLayerImpl::setScrollClient(
     WebKit::WebLayerScrollClient* scroll_client) {
-  layer_->set_layer_scroll_client(scroll_client);
+  layer_->set_did_scroll_callback(
+      base::Bind(&WebKit::WebLayerScrollClient::didScroll,
+                 base::Unretained(scroll_client)));
 }
 
 bool WebLayerImpl::isOrphan() const { return !layer_->layer_tree_host(); }

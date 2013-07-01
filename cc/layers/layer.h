@@ -30,10 +30,6 @@
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
 
-namespace WebKit {
-class WebLayerScrollClient;
-}
-
 namespace cc {
 
 class Animation;
@@ -233,8 +229,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return touch_event_handler_region_;
   }
 
-  void set_layer_scroll_client(WebKit::WebLayerScrollClient* client) {
-    layer_scroll_client_ = client;
+  void set_did_scroll_callback(const base::Closure& callback) {
+    did_scroll_callback_ = callback;
   }
 
   void SetDrawCheckerboardForMissingTiles(bool checkerboard);
@@ -486,7 +482,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   ScopedPtrVector<CopyOutputRequest> copy_requests_;
 
-  WebKit::WebLayerScrollClient* layer_scroll_client_;
+  base::Closure did_scroll_callback_;
 
   DrawProperties<Layer, RenderSurface> draw_properties_;
 

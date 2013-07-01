@@ -17,7 +17,6 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "third_party/WebKit/public/platform/WebLayerScrollClient.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/rect_conversions.h"
 
@@ -55,8 +54,7 @@ Layer::Layer()
       draw_checkerboard_for_missing_tiles_(false),
       force_render_surface_(false),
       replica_layer_(NULL),
-      raster_scale_(0.f),
-      layer_scroll_client_(NULL) {
+      raster_scale_(0.f) {
   if (layer_id_ < 0) {
     s_next_layer_id = 1;
     layer_id_ = s_next_layer_id++;
@@ -526,8 +524,8 @@ void Layer::SetScrollOffsetFromImplSide(gfx::Vector2d scroll_offset) {
   if (scroll_offset_ == scroll_offset)
     return;
   scroll_offset_ = scroll_offset;
-  if (layer_scroll_client_)
-    layer_scroll_client_->didScroll();
+  if (!did_scroll_callback_.is_null())
+    did_scroll_callback_.Run();
   // Note: didScroll() could potentially change the layer structure.
   //       "this" may have been destroyed during the process.
 }
