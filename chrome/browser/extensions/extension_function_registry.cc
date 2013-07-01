@@ -73,6 +73,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::EnableAppLauncherFunction>();
   RegisterFunction<extensions::GetWebGLStatusFunction>();
   RegisterFunction<extensions::GetIsLauncherEnabledFunction>();
+  RegisterFunction<extensions::IsInIncognitoModeFunction>();
 
   // Runtime
   RegisterFunction<extensions::RuntimeGetBackgroundPageFunction>();

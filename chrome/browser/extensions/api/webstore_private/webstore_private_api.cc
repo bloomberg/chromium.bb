@@ -690,4 +690,11 @@ bool GetIsLauncherEnabledFunction::RunImpl() {
   return true;
 }
 
+bool IsInIncognitoModeFunction::RunImpl() {
+  SetResult(
+      Value::CreateBooleanValue(profile_ != profile_->GetOriginalProfile()));
+  SendResponse(true);
+  return true;
+}
+
 }  // namespace extensions

@@ -238,6 +238,20 @@
             ]
           }
         ]
+      },
+      {
+        "name": "isInIncognitoMode",
+        "description": "Returns whether the browser is in incognito mode or not.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              { "name": "is_incognito", "type": "boolean" }
+            ]
+          }
+        ]
       }
     ]
   }

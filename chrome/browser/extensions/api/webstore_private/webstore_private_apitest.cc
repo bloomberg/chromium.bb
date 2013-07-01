@@ -241,6 +241,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   ASSERT_EQ("iladmdjkfniedhfhcfoefgojhgaiaccc", listener.id());
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IsInIncognitoMode) {
+  GURL page_url = GetTestServerURL("incognito.html");
+  ASSERT_TRUE(
+      RunPageTest(page_url.spec(), ExtensionApiTest::kFlagUseIncognito));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IsNotInIncognitoMode) {
+  GURL page_url = GetTestServerURL("not_incognito.html");
+  ASSERT_TRUE(RunPageTest(page_url.spec()));
+}
+
 // Fails often on Windows dbg bots. http://crbug.com/177163.
 #if defined(OS_WIN)
 #define MAYBE_IconUrl DISABLED_IconUrl

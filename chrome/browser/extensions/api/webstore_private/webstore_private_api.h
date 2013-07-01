@@ -287,6 +287,20 @@ class GetIsLauncherEnabledFunction : public AsyncExtensionFunction {
   void OnIsLauncherCheckCompleted(bool is_enabled);
 };
 
+class IsInIncognitoModeFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.isInIncognitoMode",
+                             WEBSTOREPRIVATE_ISININCOGNITOMODEFUNCTION)
+
+  IsInIncognitoModeFunction() {}
+
+ protected:
+  virtual ~IsInIncognitoModeFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_PRIVATE_WEBSTORE_PRIVATE_API_H_
