@@ -1802,7 +1802,7 @@ void ContentSecurityPolicy::reportInvalidSandboxFlags(const String& invalidFlags
 
 void ContentSecurityPolicy::reportInvalidReflectedXSS(const String& invalidValue) const
 {
-    logToConsole("The 'reflected-xss' Content Security Policy directive has the invalid value \"" + invalidValue + "\". Value values are \"allow\", \"filter\", and \"block\".");
+    logToConsole("The 'reflected-xss' Content Security Policy directive has the invalid value \"" + invalidValue + "\". Valid values are \"allow\", \"filter\", and \"block\".");
 }
 
 void ContentSecurityPolicy::reportInvalidDirectiveValueCharacter(const String& directiveName, const String& value) const
