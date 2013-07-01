@@ -93,7 +93,6 @@ void ParseJson(const std::string& json, const ParseJsonCallback& callback) {
 UrlFetchRequestBase::UrlFetchRequestBase(RequestSender* sender)
     : re_authenticate_count_(0),
       sender_(sender),
-      save_temp_file_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -127,12 +126,11 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
   url_fetcher_->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
       net::LOAD_DISABLE_CACHE);
-  if (save_temp_file_) {
-    url_fetcher_->SaveResponseToTemporaryFile(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  } else if (!output_file_path_.empty()) {
+
+  base::FilePath output_file_path;
+  if (GetOutputFilePath(&output_file_path)) {
     url_fetcher_->SaveResponseToFileAtPath(
-        output_file_path_,
+        output_file_path,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
 
@@ -203,6 +201,10 @@ bool UrlFetchRequestBase::GetContentFile(base::FilePath* local_file_path,
                                          int64* range_offset,
                                          int64* range_length,
                                          std::string* upload_content_type) {
+  return false;
+}
+
+bool UrlFetchRequestBase::GetOutputFilePath(base::FilePath* local_file_path) {
   return false;
 }
 
@@ -613,15 +615,11 @@ DownloadFileRequest::DownloadFileRequest(
       download_action_callback_(download_action_callback),
       get_content_callback_(get_content_callback),
       progress_callback_(progress_callback),
-      download_url_(download_url) {
+      download_url_(download_url),
+      output_file_path_(output_file_path) {
   DCHECK(!download_action_callback_.is_null());
+  DCHECK(!output_file_path_.empty());
   // get_content_callback may be null.
-
-  // Make sure we download the content into a temp file.
-  if (output_file_path.empty())
-    set_save_temp_file(true);
-  else
-    set_output_file_path(output_file_path);
 }
 
 DownloadFileRequest::~DownloadFileRequest() {}
@@ -629,6 +627,12 @@ DownloadFileRequest::~DownloadFileRequest() {}
 // Overridden from UrlFetchRequestBase.
 GURL DownloadFileRequest::GetURL() const {
   return download_url_;
+}
+
+bool DownloadFileRequest::GetOutputFilePath(base::FilePath* local_file_path) {
+  // Configure so that the downloaded content is saved to |output_file_path_|.
+  *local_file_path = output_file_path_;
+  return true;
 }
 
 void DownloadFileRequest::OnURLFetchDownloadProgress(const URLFetcher* source,

@@ -124,6 +124,10 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
                               int64* range_length,
                               std::string* upload_content_type);
 
+  // Used by a derived class to set an output file path if they want to save
+  // the downloaded content to a file at a specific path.
+  virtual bool GetOutputFilePath(base::FilePath* local_file_path);
+
   // Invoked by OnURLFetchComplete when the request completes without an
   // authentication error. Must be implemented by a derived class.
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) = 0;
@@ -142,20 +146,6 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   // Returns true if called on the thread where the constructor was called.
   bool CalledOnValidThread();
 
-  // By default, no temporary file will be saved. Derived classes can set
-  // this to true in their constructors, if they want to save the downloaded
-  // content to a temporary file.
-  void set_save_temp_file(bool save_temp_file) {
-    save_temp_file_ = save_temp_file;
-  }
-
-  // By default, no file will be saved. Derived classes can set an output
-  // file path in their constructors, if they want to save the downloaded
-  // content to a file at a specific path.
-  void set_output_file_path(const base::FilePath& output_file_path) {
-    output_file_path_ = output_file_path;
-  }
-
  private:
   // URLFetcherDelegate overrides.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -167,9 +157,6 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   int re_authenticate_count_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
   RequestSender* sender_;
-
-  bool save_temp_file_;
-  base::FilePath output_file_path_;
 
   base::ThreadChecker thread_checker_;
 
@@ -482,6 +469,7 @@ class DownloadFileRequest : public UrlFetchRequestBase {
  protected:
   // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
+  virtual bool GetOutputFilePath(base::FilePath* local_file_path) OVERRIDE;
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
@@ -498,6 +486,7 @@ class DownloadFileRequest : public UrlFetchRequestBase {
   const GetContentCallback get_content_callback_;
   const ProgressCallback progress_callback_;
   const GURL download_url_;
+  const base::FilePath output_file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileRequest);
 };
