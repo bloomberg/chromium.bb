@@ -6,3 +6,8 @@ SSLClientSocketTest.ConnectMismatched
 DiskCacheEntryTest.SimpleCacheStreamAccess
 DiskCacheEntryTest.SimpleCacheGrowData
 DiskCacheEntryTest.SimpleCacheSizeChanges
+
+# Fails. http://crbug.com/256421
+HTTPSRequestTest.HTTPSExpiredTest
+SSLClientSocketTest.ConnectExpired
+URLFetcherBadHTTPSTest.BadHTTPSTest
