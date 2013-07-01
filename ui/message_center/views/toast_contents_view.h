@@ -80,6 +80,8 @@ class ToastContentsView : public views::WidgetDelegateView,
   virtual views::View* GetContentsView() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
+  virtual void OnDisplayChanged() OVERRIDE;
+  virtual void OnWorkAreaChanged() OVERRIDE;
 
   // Given the bounds of a toast on the screen, compute the bouds for that
   // toast in 'closed' state. The 'closed' state is used as origin/destination

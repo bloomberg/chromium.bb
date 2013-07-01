@@ -13,6 +13,8 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
@@ -236,6 +238,18 @@ bool ToastContentsView::CanActivate() const {
 #else
   return false;
 #endif
+}
+
+void ToastContentsView::OnDisplayChanged() {
+  gfx::NativeView native_view = GetWidget()->GetNativeView();
+  collection_->OnDisplayBoundsChanged(gfx::Screen::GetScreenFor(
+      native_view)->GetDisplayNearestWindow(native_view));
+}
+
+void ToastContentsView::OnWorkAreaChanged() {
+  gfx::NativeView native_view = GetWidget()->GetNativeView();
+  collection_->OnDisplayBoundsChanged(gfx::Screen::GetScreenFor(
+      native_view)->GetDisplayNearestWindow(native_view));
 }
 
 // views::View

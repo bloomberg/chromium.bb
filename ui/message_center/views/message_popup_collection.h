@@ -11,8 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-//#include "base/run_loop.h"
 #include "base/timer/timer.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/display_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/message_center/message_center_export.h"
@@ -48,6 +49,7 @@ class ToastContentsView;
 // be slightly different.
 class MESSAGE_CENTER_EXPORT MessagePopupCollection
     : public MessageCenterObserver,
+      public gfx::DisplayObserver,
       public base::SupportsWeakPtr<MessagePopupCollection> {
  public:
   // |parent| specifies the parent widget of the toast windows. The default
@@ -77,6 +79,11 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // zero. Otherwise, simply waits when it becomes zero.
   void DoUpdateIfPossible();
 
+  // Overridden from gfx::DislayObserver:
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ash::WebNotificationTrayTest,
                            ManyPopupNotifications);
@@ -86,8 +93,8 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   void CloseAllWidgets();
 
-  // Returns the bottom-right position of the current work area.
-  gfx::Point GetWorkAreaBottomRight();
+  // Returns the x-origin for the given toast bounds in the current work area.
+  int GetToastOriginX(const gfx::Rect& toast_bounds);
 
   // Iterates toasts and starts closing the expired ones.
   void CloseToasts();
@@ -131,6 +138,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   MessageCenterTray* tray_;
   Toasts toasts_;
   gfx::Rect work_area_;
+  int64 display_id_;
 
   int defer_counter_;
 
