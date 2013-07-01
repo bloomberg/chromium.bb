@@ -172,8 +172,18 @@ bool BackingStoreMac::CopyFromBackingStore(const gfx::Rect& rect,
   gfx::ScopedCGContextSaveGState save_gstate(temp_context);
   CGContextTranslateCTM(temp_context, 0.0, size().height());
   CGContextScaleCTM(temp_context, 1.0, -1.0);
-  CGContextDrawLayerAtPoint(temp_context, CGPointMake(-rect.x(), -rect.y()),
-                            cg_layer());
+  if (cg_layer()) {
+    CGContextDrawLayerAtPoint(temp_context, CGPointMake(-rect.x(), -rect.y()),
+                              cg_layer());
+  } else {
+    base::ScopedCFTypeRef<CGImageRef> bitmap_image(
+        CGBitmapContextCreateImage(cg_bitmap_));
+    CGContextDrawImage(
+        temp_context,
+        CGRectMake(-rect.x(), -rect.y(), rect.width(), rect.height()),
+        bitmap_image);
+  }
+
   return true;
 }
 
