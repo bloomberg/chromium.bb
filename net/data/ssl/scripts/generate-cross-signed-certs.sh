@@ -35,14 +35,14 @@ touch out/2048-md5-root-index.txt
 try openssl genrsa -out out/2048-sha1-root.key 2048
 
 # Generate the root certificate
-CA_COMMON_NAME="Test Root CA" \
+CA_COMMON_NAME="Test Dup-Hash Root CA" \
   try openssl req \
     -new \
     -key out/2048-sha1-root.key \
     -out out/2048-sha1-root.req \
     -config ca.cnf
 
-CA_COMMON_NAME="Test Root CA" \
+CA_COMMON_NAME="Test Dup-Hash Root CA" \
   try openssl x509 \
     -req -days 3650 \
     -sha1 \
@@ -53,7 +53,7 @@ CA_COMMON_NAME="Test Root CA" \
     -extfile ca.cnf \
     -extensions ca_cert
 
-CA_COMMON_NAME="Test Root CA" \
+CA_COMMON_NAME="Test Dup-Hash Root CA" \
   try openssl x509 \
     -req -days 3650 \
     -md5 \
@@ -72,7 +72,7 @@ try openssl req \
   -config ee.cnf
 
 # Generate the leaf certificates
-CA_COMMON_NAME="Test Root CA" \
+CA_COMMON_NAME="Test Dup-Hash Root CA" \
   try openssl ca \
     -batch \
     -extensions user_cert \
@@ -81,6 +81,12 @@ CA_COMMON_NAME="Test Root CA" \
     -out out/ok_cert.pem \
     -config ca.cnf
 
-cp out/2048-md5-root.pem ../certificates/cross-signed-root-md5.pem
-cp out/2048-sha1-root.pem ../certificates/cross-signed-root-sha1.pem
-cp out/ok_cert.pem ../certificates/cross-signed-leaf.pem
+try openssl x509 -text \
+  -in out/2048-md5-root.pem \
+  -out ../certificates/cross-signed-root-md5.pem
+try openssl x509 -text \
+  -in out/2048-sha1-root.pem \
+  -out ../certificates/cross-signed-root-sha1.pem
+try openssl x509 -text \
+  -in out/ok_cert.pem \
+  -out ../certificates/cross-signed-leaf.pem
