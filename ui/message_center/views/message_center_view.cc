@@ -470,6 +470,8 @@ class RichMessageListView : public MessageListView,
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetHeightForWidth(int width) OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+  virtual void ReorderChildLayers(ui::Layer* parent_layer) OVERRIDE;
 
   // Overridden from MessageListView.
   virtual void AddNotificationAt(views::View* view, int i) OVERRIDE;
@@ -487,10 +489,6 @@ class RichMessageListView : public MessageListView,
 
  private:
   // Returns the actual index for child of |index|.
-  // RichMessageListView allows to slide down upper notifications, which means
-  // that the upper ones should come above the lower ones. To achieve this,
-  // inversed order is adopted. The top most notification is the last child,
-  // and the bottom most notification is the first child.
   int GetActualIndex(int index);
   bool IsValidChild(views::View* child);
   void DoUpdateIfPossible();
@@ -553,7 +551,7 @@ void RichMessageListView::Layout() {
   int between_items =
       kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
 
-  for (int i = child_count() - 1; i >= 0; --i) {
+  for (int i = 0; i < child_count(); ++i) {
     views::View* child = child_at(i);
     if (!child->visible())
       continue;
@@ -564,9 +562,7 @@ void RichMessageListView::Layout() {
 }
 
 void RichMessageListView::AddNotificationAt(views::View* view, int i) {
-  // Increment by 1 because the default behavior of AddChildViewAt() is to
-  // insert before the specified index.
-  AddChildViewAt(view, GetActualIndex(i) + 1);
+  AddChildViewAt(view, GetActualIndex(i));
   if (GetContentsBounds().IsEmpty())
     return;
 
@@ -637,6 +633,24 @@ int RichMessageListView::GetHeightForWidth(int width) {
   return height + GetInsets().height();
 }
 
+void RichMessageListView::PaintChildren(gfx::Canvas* canvas) {
+  // Paint in the inversed order. Otherwise upper notification may be
+  // hidden by the lower one.
+  for (int i = child_count() - 1; i >= 0; --i) {
+    if (!child_at(i)->layer())
+      child_at(i)->Paint(canvas);
+  }
+}
+
+void RichMessageListView::ReorderChildLayers(ui::Layer* parent_layer) {
+  // Reorder children to stack the last child layer at the top. Otherwise
+  // upper notification may be hidden by the lower one.
+  for (int i = 0; i < child_count(); ++i) {
+    if (child_at(i)->layer())
+      parent_layer->StackAtBottom(child_at(i)->layer());
+  }
+}
+
 void RichMessageListView::SetRepositionTarget(const gfx::Rect& target) {
   reposition_top_ = target.y();
   fixed_height_ = GetHeightForWidth(width());
@@ -705,19 +719,9 @@ void RichMessageListView::OnBoundsAnimatorDone(
 }
 
 int RichMessageListView::GetActualIndex(int index) {
-  // As is written in the comment in the declaration, this method
-  // returns actual index for the |index|-th valid child from the end.
-  int actual_index = child_count() - 1;
-  // Skips the invalid children at last.
-  for (; actual_index > 0; --actual_index) {
-    if (IsValidChild(child_at(actual_index)))
-      break;
-  }
-  // Find the |index|-th valid child from the end.
-  for (; actual_index >= 0 && index > 0; --actual_index) {
-    index -= IsValidChild(child_at(actual_index)) ? 1 : 0;
-  }
-  return actual_index;
+  for (int i = 0; i < child_count() && i <= index; ++i)
+    index += IsValidChild(child_at(i)) ? 0 : 1;
+  return std::min(index, child_count());
 }
 
 bool RichMessageListView::IsValidChild(views::View* child) {
@@ -746,21 +750,21 @@ void RichMessageListView::DoUpdateIfPossible() {
     return;
   }
 
-  int first_index = -1;
-  for (int i = 0; i < child_count(); ++i) {
+  int last_index = -1;
+  for (int i = child_count() - 1; i >= 0; --i) {
     views::View* child = child_at(i);
     if (!IsValidChild(child)) {
       AnimateChild(child, child->y(), child->height());
     } else if (child->y() < reposition_top_) {
-      first_index = i;
+      last_index = i;
       break;
     }
   }
-  if (first_index > 0) {
-    int bottom = reposition_top_ + child_at(first_index)->height();
+  if (last_index > 0) {
+    int bottom = reposition_top_ + child_at(last_index)->height();
     int between_items =
         kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
-    for (int i = first_index; i < child_count(); ++i) {
+    for (int i = last_index; i >= 0; --i) {
       views::View* child = child_at(i);
       AnimateChild(child, bottom - child->height(), child->height());
       bottom -= child->height() + between_items;
@@ -797,8 +801,8 @@ void RichMessageListView::AnimateClearingOneNotification() {
 
   clear_all_started_ = true;
 
-  views::View* child = clearing_all_views_.back();
-  clearing_all_views_.pop_back();
+  views::View* child = clearing_all_views_.front();
+  clearing_all_views_.pop_front();
 
   // Slide from left to right.
   gfx::Rect new_bounds = child->bounds();
