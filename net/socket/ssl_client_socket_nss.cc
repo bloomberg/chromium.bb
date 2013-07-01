@@ -715,19 +715,6 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   // |arg| contains a pointer to the current SSLClientSocketNSS::Core.
   static void HandshakeCallback(PRFileDesc* socket, void* arg);
 
-  // Called by NSS if the peer supports the NPN handshake extension, to allow
-  // the application to select the protocol to use.
-  // See the documentation for SSLNextProtocolCallback in
-  // third_party/nss/ssl/ssl.h for the meanings of the arguments.
-  // |arg| contains a pointer to the current SSLClientSocketNSS::Core.
-  static SECStatus NextProtoCallback(void* arg,
-                                     PRFileDesc* fd,
-                                     const unsigned char* protos,
-                                     unsigned int protos_len,
-                                     unsigned char* proto_out,
-                                     unsigned int* proto_out_len,
-                                     unsigned int proto_max_len);
-
   // Handles an NSS error generated while handshaking or performing IO.
   // Returns a network error code mapped from the original NSS error.
   int HandleNSSError(PRErrorCode error, bool handshake_error);
@@ -775,6 +762,9 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   // Record histograms for channel id support during full handshakes - resumed
   // handshakes are ignored.
   void RecordChannelIDSupport();
+  // UpdateNextProto gets any application-layer protocol that may have been
+  // negotiated by the TLS connection.
+  void UpdateNextProto();
 
   ////////////////////////////////////////////////////////////////////////////
   // Methods that are ONLY called on the network task runner:
@@ -978,8 +968,30 @@ bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
   SECStatus rv = SECSuccess;
 
   if (!ssl_config_.next_protos.empty()) {
-    rv = SSL_SetNextProtoCallback(
-        nss_fd_, SSLClientSocketNSS::Core::NextProtoCallback, this);
+    size_t wire_length = 0;
+    for (std::vector<std::string>::const_iterator
+         i = ssl_config_.next_protos.begin();
+         i != ssl_config_.next_protos.end(); ++i) {
+      if (i->size() > 255) {
+        LOG(WARNING) << "Ignoring overlong NPN/ALPN protocol: " << *i;
+        continue;
+      }
+      wire_length += i->size();
+      wire_length++;
+    }
+    scoped_ptr<uint8[]> wire_protos(new uint8[wire_length]);
+    uint8* dst = wire_protos.get();
+    for (std::vector<std::string>::const_iterator
+         i = ssl_config_.next_protos.begin();
+         i != ssl_config_.next_protos.end(); i++) {
+      if (i->size() > 255)
+        continue;
+      *dst++ = i->size();
+      memcpy(dst, i->data(), i->size());
+      dst += i->size();
+    }
+    DCHECK_EQ(dst, wire_protos.get() + wire_length);
+    rv = SSL_SetNextProtoNego(nss_fd_, wire_protos.get(), wire_length);
     if (rv != SECSuccess)
       LogFailedNSSFunction(*weak_net_log_, "SSL_SetNextProtoCallback", "");
   }
@@ -1615,79 +1627,13 @@ void SSLClientSocketNSS::Core::HandshakeCallback(
   core->RecordChannelIDSupport();
   core->UpdateServerCert();
   core->UpdateConnectionStatus();
+  core->UpdateNextProto();
 
   // Update the network task runners view of the handshake state whenever
   // a handshake has completed.
   core->PostOrRunCallback(
       FROM_HERE, base::Bind(&Core::OnHandshakeStateUpdated, core,
                             *nss_state));
-}
-
-// static
-SECStatus SSLClientSocketNSS::Core::NextProtoCallback(
-    void* arg,
-    PRFileDesc* nss_fd,
-    const unsigned char* protos,
-    unsigned int protos_len,
-    unsigned char* proto_out,
-    unsigned int* proto_out_len,
-    unsigned int proto_max_len) {
-  Core* core = reinterpret_cast<Core*>(arg);
-  DCHECK(core->OnNSSTaskRunner());
-
-  HandshakeState* nss_state = &core->nss_handshake_state_;
-
-  // For each protocol in server preference, see if we support it.
-  for (unsigned int i = 0; i < protos_len; ) {
-    const size_t len = protos[i];
-    for (std::vector<std::string>::const_iterator
-         j = core->ssl_config_.next_protos.begin();
-         j != core->ssl_config_.next_protos.end(); j++) {
-      // Having very long elements in the |next_protos| vector isn't a disaster
-      // because they'll never be selected, but it does indicate an error
-      // somewhere.
-      DCHECK_LT(j->size(), 256u);
-
-      if (j->size() == len &&
-          memcmp(&protos[i + 1], j->data(), len) == 0) {
-        nss_state->next_proto_status = kNextProtoNegotiated;
-        nss_state->next_proto = *j;
-        break;
-      }
-    }
-
-    if (nss_state->next_proto_status == kNextProtoNegotiated)
-      break;
-
-    // NSS ensures that the data in |protos| is well formed, so this will not
-    // cause a jump past the end of the buffer.
-    i += len + 1;
-  }
-
-  nss_state->server_protos.assign(
-      reinterpret_cast<const char*>(protos), protos_len);
-
-  // If we didn't find a protocol, we select the first one from our list.
-  if (nss_state->next_proto_status != kNextProtoNegotiated) {
-    nss_state->next_proto_status = kNextProtoNoOverlap;
-    nss_state->next_proto = core->ssl_config_.next_protos[0];
-  }
-
-  if (nss_state->next_proto.size() > proto_max_len) {
-    PORT_SetError(SEC_ERROR_OUTPUT_LEN);
-    return SECFailure;
-  }
-  memcpy(proto_out, nss_state->next_proto.data(),
-         nss_state->next_proto.size());
-  *proto_out_len = nss_state->next_proto.size();
-
-  // Update the network task runner's view of the handshake state now that
-  // NPN negotiation has occurred.
-  core->PostOrRunCallback(
-      FROM_HERE, base::Bind(&Core::OnHandshakeStateUpdated, core,
-                            *nss_state));
-
-  return SECSuccess;
 }
 
 int SSLClientSocketNSS::Core::HandleNSSError(PRErrorCode nss_error,
@@ -2536,6 +2482,33 @@ void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
   if (ssl_config_.version_fallback) {
     nss_handshake_state_.ssl_connection_status |=
         SSL_CONNECTION_VERSION_FALLBACK;
+  }
+}
+
+void SSLClientSocketNSS::Core::UpdateNextProto() {
+  uint8 buf[256];
+  SSLNextProtoState state;
+  unsigned buf_len;
+
+  SECStatus rv = SSL_GetNextProto(nss_fd_, &state, buf, &buf_len, sizeof(buf));
+  if (rv != SECSuccess)
+    return;
+
+  nss_handshake_state_.next_proto =
+      std::string(reinterpret_cast<char*>(buf), buf_len);
+  switch (state) {
+    case SSL_NEXT_PROTO_NEGOTIATED:
+      nss_handshake_state_.next_proto_status = kNextProtoNegotiated;
+      break;
+    case SSL_NEXT_PROTO_NO_OVERLAP:
+      nss_handshake_state_.next_proto_status = kNextProtoNoOverlap;
+      break;
+    case SSL_NEXT_PROTO_NO_SUPPORT:
+      nss_handshake_state_.next_proto_status = kNextProtoUnsupported;
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 }
 

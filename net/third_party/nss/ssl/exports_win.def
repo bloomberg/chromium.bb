@@ -42,6 +42,8 @@ SSL_GetImplementedCiphers
 SSL_GetNumImplementedCiphers
 SSL_HandshakeNegotiatedExtension
 SSL_SetNextProtoCallback
+SSL_SetNextProtoNego
+SSL_GetNextProto
 DTLS_GetHandshakeTimeout
 DTLS_ImportFD
 SSL_ExportKeyingMaterial

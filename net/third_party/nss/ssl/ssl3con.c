@@ -32,6 +32,8 @@
 #include "blapi.h"
 #endif
 
+/* WHITESPACE CHANGE TO TRIGGER REBUILD OF THIS DLL ON WINDOWS. */
+
 /* This is a bodge to allow this code to be compiled against older NSS headers
  * that don't contain the TLS 1.2 changes. */
 #ifndef CKM_NSS_TLS_PRF_GENERAL_SHA256
