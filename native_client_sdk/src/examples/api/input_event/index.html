@@ -19,7 +19,7 @@ found in the LICENSE file.
      multi-threaded application.  The main thread converts input events to
      non-pepper events and puts them on a queue. The worker thread pulls them
      off of the queue, converts them to a string, and then uses
-     CallOnMainThread so that PostMessage can be send the result of the worker
+     CallOnMainThread so that PostMessage can send the result of the worker
      thread to the browser.</p>
   <p>If you press the 'Kill worker thread and queue' button, then the main
   thread (which puts events on the queue) will call CancelQueue, indicating
