@@ -200,4 +200,8 @@ void WebstoreResult::OnShutdown() {
   StopObservingInstall();
 }
 
+ChromeSearchResultType WebstoreResult::GetType() {
+  return SEARCH_WEBSTORE_SEARCH_RESULT;
+}
+
 }  // namespace app_list

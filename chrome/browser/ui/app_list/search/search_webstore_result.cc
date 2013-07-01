@@ -55,4 +55,8 @@ scoped_ptr<ChromeSearchResult> SearchWebstoreResult::Duplicate() {
       new SearchWebstoreResult(profile_, query_)).Pass();
 }
 
+ChromeSearchResultType SearchWebstoreResult::GetType() {
+  return WEBSTORE_SEARCH_RESULT;
+}
+
 }  // namespace app_list

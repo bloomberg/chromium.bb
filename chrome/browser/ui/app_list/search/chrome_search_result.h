@@ -12,6 +12,20 @@
 
 namespace app_list {
 
+// The type of the search result. This is used for logging so do not change the
+// order of this enum.
+enum ChromeSearchResultType {
+  // A result that forwards an omnibox search result.
+  OMNIBOX_SEARCH_RESULT,
+  // An app result.
+  APP_SEARCH_RESULT,
+  // A search result from the webstore.
+  WEBSTORE_SEARCH_RESULT,
+  // A result that opens a webstore search.
+  SEARCH_WEBSTORE_SEARCH_RESULT,
+  SEARCH_RESULT_TYPE_BOUNDARY
+};
+
 // Base class of all search results. It provides an additional interface
 // for SearchController to mix the results, duplicate a result from a
 // SearchProvider and pass it to UI and invoke actions on the results when
@@ -29,6 +43,8 @@ class ChromeSearchResult : public SearchResult {
 
   // Creates a copy of the result.
   virtual scoped_ptr<ChromeSearchResult> Duplicate() = 0;
+
+  virtual ChromeSearchResultType GetType() = 0;
 
   const std::string& id() const { return id_; }
   double relevance() { return relevance_; }

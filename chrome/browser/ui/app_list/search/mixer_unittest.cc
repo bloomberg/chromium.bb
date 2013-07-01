@@ -35,6 +35,9 @@ class TestSearchResult : public ChromeSearchResult {
     return scoped_ptr<ChromeSearchResult>(
         new TestSearchResult(id(), relevance())).Pass();
   }
+  virtual ChromeSearchResultType GetType() OVERRIDE {
+    return SEARCH_RESULT_TYPE_BOUNDARY;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(TestSearchResult);
 };

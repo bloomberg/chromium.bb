@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,11 @@
 #include "ui/app_list/search_box_model.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+namespace {
+  const char kAppListSearchResultOpenTypeHistogram[] =
+      "Apps.AppListSearchResultOpenType";
+}
 
 namespace app_list {
 
@@ -100,6 +106,9 @@ void SearchController::OpenResult(SearchResult* result, int event_flags) {
 
   ChromeSearchResult* chrome_result =
       static_cast<app_list::ChromeSearchResult*>(result);
+  UMA_HISTOGRAM_ENUMERATION(kAppListSearchResultOpenTypeHistogram,
+                            chrome_result->GetType(),
+                            SEARCH_RESULT_TYPE_BOUNDARY);
   chrome_result->Open(event_flags);
 
   if (history_ && history_->IsReady()) {

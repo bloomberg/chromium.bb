@@ -38,6 +38,7 @@ class AppResult : public ChromeSearchResult,
   virtual void InvokeAction(int action_index, int event_flags) OVERRIDE;
   virtual scoped_ptr<ChromeSearchResult> Duplicate() OVERRIDE;
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
+  virtual ChromeSearchResultType GetType() OVERRIDE;
 
  private:
   // extensions::IconImage::Observer overrides:

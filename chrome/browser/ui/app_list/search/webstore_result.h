@@ -36,6 +36,7 @@ class WebstoreResult : public ChromeSearchResult,
   virtual void Open(int event_flags) OVERRIDE;
   virtual void InvokeAction(int action_index, int event_flags) OVERRIDE;
   virtual scoped_ptr<ChromeSearchResult> Duplicate() OVERRIDE;
+  virtual ChromeSearchResultType GetType() OVERRIDE;
 
  private:
   void UpdateActions();

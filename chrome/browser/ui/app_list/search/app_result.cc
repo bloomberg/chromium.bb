@@ -84,6 +84,10 @@ scoped_ptr<ChromeSearchResult> AppResult::Duplicate() {
   return copy.Pass();
 }
 
+ChromeSearchResultType AppResult::GetType() {
+  return APP_SEARCH_RESULT;
+}
+
 ui::MenuModel* AppResult::GetContextMenuModel() {
   if (!context_menu_) {
     context_menu_.reset(new AppContextMenu(

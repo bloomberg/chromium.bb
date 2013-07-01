@@ -92,6 +92,10 @@ class OmniboxResult : public ChromeSearchResult {
         new OmniboxResult(profile_, match_)).Pass();
   }
 
+  virtual ChromeSearchResultType GetType() OVERRIDE {
+    return OMNIBOX_SEARCH_RESULT;
+  }
+
  private:
   void UpdateIcon() {
     int resource_id = match_.starred ?
