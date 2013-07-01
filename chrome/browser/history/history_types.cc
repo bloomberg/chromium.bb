@@ -394,13 +394,6 @@ IconMapping::IconMapping()
 
 IconMapping::~IconMapping() {}
 
-// FaviconSizes --------------------------------------------------------------
-
-const FaviconSizes& GetDefaultFaviconSizes() {
-  CR_DEFINE_STATIC_LOCAL(FaviconSizes, kDefaultFaviconSizes, ());
-  return kDefaultFaviconSizes;
-}
-
 // FaviconBitmapIDSize ---------------------------------------------------------
 
 FaviconBitmapIDSize::FaviconBitmapIDSize()

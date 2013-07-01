@@ -161,11 +161,6 @@ class ThumbnailDatabase {
 
   // Favicons ------------------------------------------------------------------
 
-  // Updates the favicon sizes associated with a favicon to |favicon_sizes|.
-  // See comment in history_types.h for description of |favicon_sizes|.
-  bool SetFaviconSizes(chrome::FaviconID icon_id,
-                       const FaviconSizes& favicon_sizes);
-
   // Sets the the favicon as out of date. This will set |last_updated| for all
   // of the bitmaps for |icon_id| to be out of date.
   bool SetFaviconOutOfDate(chrome::FaviconID icon_id);
@@ -184,21 +179,18 @@ class ThumbnailDatabase {
   // Gets the icon_url, icon_type and sizes for the specified |icon_id|.
   bool GetFaviconHeader(chrome::FaviconID icon_id,
                         GURL* icon_url,
-                        chrome::IconType* icon_type,
-                        FaviconSizes* favicon_sizes);
+                        chrome::IconType* icon_type);
 
   // Adds favicon with |icon_url|, |icon_type| and |favicon_sizes| to the
   // favicon db, returning its id.
   chrome::FaviconID AddFavicon(const GURL& icon_url,
-                               chrome::IconType icon_type,
-                               const FaviconSizes& favicon_sizes);
+                               chrome::IconType icon_type);
 
   // Adds a favicon with a single bitmap. This call is equivalent to calling
   // AddFavicon and AddFaviconBitmap.
   chrome::FaviconID AddFavicon(
       const GURL& icon_url,
       chrome::IconType icon_type,
-      const FaviconSizes& favicon_sizes,
       const scoped_refptr<base::RefCountedMemory>& icon_data,
       base::Time time,
       const gfx::Size& pixel_size);
@@ -325,7 +317,7 @@ class ThumbnailDatabase {
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion4);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion5);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion6);
-  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, FaviconSizesToAndFromString);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion7);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
 
   // Creates the thumbnail table, returning true if the table already exists
@@ -344,8 +336,11 @@ class ThumbnailDatabase {
   // Adds support for sizes in favicon table.
   bool UpgradeToVersion5();
 
-  // Adds support for size in favicons table and removes sizes column.
+  // Adds support for size in favicons table.
   bool UpgradeToVersion6();
+
+  // Removes sizes column.
+  bool UpgradeToVersion7();
 
   // Migrates the icon mapping data from URL database to Thumbnail database.
   // Return whether the migration succeeds.
@@ -400,23 +395,6 @@ class ThumbnailDatabase {
 
   // Returns True if the current database is latest.
   bool IsLatestVersion();
-
-  // Converts the vector representation of favicon sizes as passed into
-  // SetFaviconSizes to a string to store in the |favicons| database table.
-  // Format:
-  //   Each widthxheight pair is separated by a space.
-  //   Width and height are separated by a space.
-  // For instance, if sizes contains pixel sizes (16x16, 32x32), the
-  // string representation is "16 16 32 32".
-  static void FaviconSizesToDatabaseString(const FaviconSizes& favicon_sizes,
-                                           std::string* favicon_sizes_string);
-
-  // Converts the string representation of favicon sizes as stored in the
-  // |favicons| database table to a vector. Returns an empty vector if there
-  // were parsing errors.
-  static void DatabaseStringToFaviconSizes(
-      const std::string& favicon_sizes_string,
-      FaviconSizes* favicon_sizes);
 
   sql::Connection db_;
   sql::MetaTable meta_table_;

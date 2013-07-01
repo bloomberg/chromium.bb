@@ -698,19 +698,6 @@ struct IconMapping {
   chrome::IconType icon_type;
 };
 
-// FaviconSizes represents the sizes that the thumbnail database knows a
-// favicon is available from the web. FaviconSizes has several entries
-// only if FaviconSizes is for an .ico file. FaviconSizes can be different
-// from the pixel sizes of the entries in the |favicon_bitmaps| table. For
-// instance, if a web page has a .ico favicon with bitmaps of pixel sizes
-// (16x16, 32x32), FaviconSizes will have both sizes regardless of whether
-// either of these bitmaps is cached in the favicon_bitmaps database table.
-typedef std::vector<gfx::Size> FaviconSizes;
-
-// Returns the default FaviconSizes to use if the favicon sizes for a FaviconID
-// are unknown.
-const FaviconSizes& GetDefaultFaviconSizes();
-
 // Defines a favicon bitmap and its associated pixel size.
 struct FaviconBitmapIDSize {
   FaviconBitmapIDSize();

@@ -40,7 +40,6 @@ bool FaviconSQLHandler::Update(const HistoryAndBookmarkRow& row,
   chrome::FaviconID favicon_id = thumbnail_db_->AddFavicon(
       GURL(),
       chrome::FAVICON,
-      history::GetDefaultFaviconSizes(),
       row.favicon(),
       Time::Now(),
       gfx::Size());
@@ -110,7 +109,6 @@ bool FaviconSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   chrome::FaviconID id = thumbnail_db_->AddFavicon(
       GURL(),
       chrome::FAVICON,
-      history::GetDefaultFaviconSizes(),
       row->favicon(),
       Time::Now(),
       gfx::Size());

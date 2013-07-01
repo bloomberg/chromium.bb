@@ -461,9 +461,9 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   GURL favicon_url1("http://www.google.com/favicon.ico");
   GURL favicon_url2("http://news.google.com/favicon.ico");
   chrome::FaviconID favicon2 = backend_->thumbnail_db_->AddFavicon(favicon_url2,
-      chrome::FAVICON, GetSizesSmallAndLarge());
+      chrome::FAVICON);
   chrome::FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(favicon_url1,
-      chrome::FAVICON, GetSizesSmallAndLarge());
+      chrome::FAVICON);
 
   std::vector<unsigned char> data;
   data.push_back('a');
@@ -689,7 +689,6 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   chrome::FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(
       favicon_url1,
       chrome::FAVICON,
-      GetDefaultFaviconSizes(),
       new base::RefCountedBytes(data),
       Time::Now(),
       gfx::Size());
@@ -698,7 +697,6 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   chrome::FaviconID favicon2 = backend_->thumbnail_db_->AddFavicon(
       favicon_url2,
       chrome::FAVICON,
-      GetDefaultFaviconSizes(),
       new base::RefCountedBytes(data),
       Time::Now(),
       gfx::Size());
@@ -871,7 +869,6 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   chrome::FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(
       favicon_url1,
       chrome::FAVICON,
-      GetDefaultFaviconSizes(),
       base::RefCountedBytes::TakeVector(&data),
       Time::Now(),
       gfx::Size());
@@ -2073,7 +2070,7 @@ TEST_F(HistoryBackendTest, GetFaviconsFromDBNoFaviconBitmaps) {
   const GURL icon_url("http://www.google.com/icon1");
 
   chrome::FaviconID icon_id = backend_->thumbnail_db_->AddFavicon(
-      icon_url, chrome::FAVICON, GetSizesSmallAndLarge());
+      icon_url, chrome::FAVICON);
   EXPECT_NE(0, icon_id);
   EXPECT_NE(0, backend_->thumbnail_db_->AddIconMapping(page_url, icon_id));
 
@@ -2198,7 +2195,6 @@ TEST_F(HistoryBackendTest, GetFaviconsFromDBExpired) {
   chrome::FaviconID icon_id =
       backend_->thumbnail_db_->AddFavicon(icon_url,
                                           chrome::FAVICON,
-                                          GetSizesSmallAndLarge(),
                                           bitmap_data,
                                           last_updated,
                                           kSmallSize);

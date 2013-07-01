@@ -382,11 +382,9 @@ void ExpireHistoryBackend::DeleteFaviconsIfPossible(
     if (!thumb_db_->HasMappingFor(*i)) {
       GURL icon_url;
       chrome::IconType icon_type;
-      FaviconSizes favicon_sizes;
       if (thumb_db_->GetFaviconHeader(*i,
                                       &icon_url,
-                                      &icon_type,
-                                      &favicon_sizes) &&
+                                      &icon_type) &&
           thumb_db_->DeleteFavicon(*i)) {
         expired_favicons->insert(icon_url);
       }

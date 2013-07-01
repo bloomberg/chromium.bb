@@ -55,22 +55,13 @@
 //   icon_type        The type of the favicon specified in the rel attribute of
 //                    the link tag. The FAVICON type is used for the default
 //                    favicon.ico favicon.
-//   sizes            Sizes is a listing of all the sizes at which the favicon
-//                    at |url| is available from the web. Note that this may
-//                    include sizes for which a bitmap is not stored in the
-//                    favicon_bitmaps table. Each widthxheight pair is
-//                    separated by a space. Width and height are separated by
-//                    a space as well. For instance, if |icon_id| represents a
-//                    .ico file containing 16x16 and 32x32 bitmaps, |sizes|
-//                    would be "16 16 32 32".
 //
 // favicon_bitmaps    This table contains the PNG encoded bitmap data of the
 //                    favicons. There is a separate row for every size in a
 //                    multi resolution bitmap. The bitmap data is associated
 //                    to the favicon via the |icon_id| field which matches
 //                    the |id| field in the appropriate row in the |favicons|
-//                    table. There is not necessarily a row for each size
-//                    specified in the sizes attribute.
+//                    table.
 //
 //  id                Unique ID.
 //  icon_id           The ID of the favicon that the bitmap is associated to.
@@ -288,8 +279,8 @@ void DatabaseErrorCallback(sql::Connection* db,
 namespace history {
 
 // Version number of the database.
-static const int kCurrentVersionNumber = 6;
-static const int kCompatibleVersionNumber = 6;
+static const int kCurrentVersionNumber = 7;
+static const int kCompatibleVersionNumber = 7;
 
 // Use 90 quality (out of 100) which is pretty high, because we're very
 // sensitive to artifacts for these small sized, highly detailed images.
@@ -391,7 +382,7 @@ sql::InitStatus ThumbnailDatabase::Init(
       return CantUpgradeToVersion(cur_version);
   }
 
-  if (!db_.DoesColumnExist("favicons", "sizes")) {
+  if (cur_version < 7 && !db_.DoesColumnExist("favicons", "sizes")) {
     LOG(ERROR) << "Raze because of missing favicon.sizes";
     RecordInvalidStructure(STRUCTURE_EVENT_VERSION5);
 
@@ -402,6 +393,12 @@ sql::InitStatus ThumbnailDatabase::Init(
   if (cur_version == 5) {
     ++cur_version;
     if (!UpgradeToVersion6())
+      return CantUpgradeToVersion(cur_version);
+  }
+
+  if (cur_version == 6) {
+    ++cur_version;
+    if (!UpgradeToVersion7())
       return CantUpgradeToVersion(cur_version);
   }
 
@@ -523,8 +520,7 @@ bool ThumbnailDatabase::InitFaviconsTable(sql::Connection* db,
                "url LONGVARCHAR NOT NULL,"
                // Set the default icon_type as FAVICON to be consistent with
                // table upgrade in UpgradeToVersion4().
-               "icon_type INTEGER DEFAULT 1,"
-               "sizes LONGVARCHAR)");
+               "icon_type INTEGER DEFAULT 1)");
     if (!db->Execute(sql.c_str()))
       return false;
   }
@@ -566,7 +562,7 @@ bool ThumbnailDatabase::InitFaviconBitmapsIndex() {
 }
 
 bool ThumbnailDatabase::IsFaviconDBStructureIncorrect() {
-  return !db_.IsSQLValid("SELECT id, url, icon_type, sizes FROM favicons");
+  return !db_.IsSQLValid("SELECT id, url, icon_type FROM favicons");
 }
 
 void ThumbnailDatabase::BeginTransaction() {
@@ -851,19 +847,6 @@ bool ThumbnailDatabase::DeleteFaviconBitmap(FaviconBitmapID bitmap_id) {
   return statement.Run();
 }
 
-bool ThumbnailDatabase::SetFaviconSizes(chrome::FaviconID icon_id,
-                                        const FaviconSizes& favicon_sizes) {
-  std::string favicon_sizes_as_string;
-  FaviconSizesToDatabaseString(favicon_sizes, &favicon_sizes_as_string);
-
-  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "UPDATE favicons SET sizes=? WHERE id=?"));
-  statement.BindString(0, favicon_sizes_as_string);
-  statement.BindInt64(1, icon_id);
-
-  return statement.Run();
-}
-
 bool ThumbnailDatabase::SetFaviconOutOfDate(chrome::FaviconID icon_id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE favicon_bitmaps SET last_updated=? WHERE icon_id=?"));
@@ -893,12 +876,11 @@ chrome::FaviconID ThumbnailDatabase::GetFaviconIDForFaviconURL(
 
 bool ThumbnailDatabase::GetFaviconHeader(chrome::FaviconID icon_id,
                                          GURL* icon_url,
-                                         chrome::IconType* icon_type,
-                                         FaviconSizes* favicon_sizes) {
+                                         chrome::IconType* icon_type) {
   DCHECK(icon_id);
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT url, icon_type, sizes FROM favicons WHERE id=?"));
+      "SELECT url, icon_type FROM favicons WHERE id=?"));
   statement.BindInt64(0, icon_id);
 
   if (!statement.Step())
@@ -908,24 +890,18 @@ bool ThumbnailDatabase::GetFaviconHeader(chrome::FaviconID icon_id,
     *icon_url = GURL(statement.ColumnString(0));
   if (icon_type)
     *icon_type = static_cast<chrome::IconType>(statement.ColumnInt(1));
-  if (favicon_sizes)
-    DatabaseStringToFaviconSizes(statement.ColumnString(2), favicon_sizes);
 
   return true;
 }
 
 chrome::FaviconID ThumbnailDatabase::AddFavicon(
     const GURL& icon_url,
-    chrome::IconType icon_type,
-    const FaviconSizes& favicon_sizes) {
-  std::string favicon_sizes_as_string;
-  FaviconSizesToDatabaseString(favicon_sizes, &favicon_sizes_as_string);
+    chrome::IconType icon_type) {
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO favicons (url, icon_type, sizes) VALUES (?, ?, ?)"));
+      "INSERT INTO favicons (url, icon_type) VALUES (?, ?)"));
   statement.BindString(0, URLDatabase::GURLToDatabaseURL(icon_url));
   statement.BindInt(1, icon_type);
-  statement.BindString(2, favicon_sizes_as_string);
 
   if (!statement.Run())
     return 0;
@@ -935,11 +911,10 @@ chrome::FaviconID ThumbnailDatabase::AddFavicon(
 chrome::FaviconID ThumbnailDatabase::AddFavicon(
     const GURL& icon_url,
     chrome::IconType icon_type,
-    const FaviconSizes& favicon_sizes,
     const scoped_refptr<base::RefCountedMemory>& icon_data,
     base::Time time,
     const gfx::Size& pixel_size) {
-  chrome::FaviconID icon_id = AddFavicon(icon_url, icon_type, favicon_sizes);
+  chrome::FaviconID icon_id = AddFavicon(icon_url, icon_type);
   if (!icon_id || !AddFaviconBitmap(icon_id, icon_data, time, pixel_size))
     return 0;
 
@@ -1155,8 +1130,8 @@ ThumbnailDatabase::CopyFaviconAndFaviconBitmapsToTemporaryTables(
     chrome::FaviconID source) {
   sql::Statement statement;
   statement.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO temp_favicons (url, icon_type, sizes) "
-      "SELECT url, icon_type, sizes FROM favicons WHERE id = ?"));
+      "INSERT INTO temp_favicons (url, icon_type) "
+      "SELECT url, icon_type FROM favicons WHERE id = ?"));
   statement.BindInt64(0, source);
 
   if (!statement.Run())
@@ -1360,39 +1335,24 @@ bool ThumbnailDatabase::UpgradeToVersion6() {
   return true;
 }
 
-// static
-void ThumbnailDatabase::FaviconSizesToDatabaseString(
-    const FaviconSizes& favicon_sizes,
-    std::string* favicon_sizes_string) {
-  std::vector<std::string> parts;
-  for (FaviconSizes::const_iterator it = favicon_sizes.begin();
-       it != favicon_sizes.end(); ++it) {
-    parts.push_back(base::IntToString(it->width()));
-    parts.push_back(base::IntToString(it->height()));
-  }
-  *favicon_sizes_string = JoinString(parts, ' ');
-}
+bool ThumbnailDatabase::UpgradeToVersion7() {
+  bool success =
+      db_.Execute("CREATE TABLE temp_favicons ("
+                  "id INTEGER PRIMARY KEY,"
+                  "url LONGVARCHAR NOT NULL,"
+                  "icon_type INTEGER DEFAULT 1)") &&
+      db_.Execute("INSERT INTO temp_favicons (id, url, icon_type) "
+                  "SELECT id, url, icon_type FROM favicons") &&
+      db_.Execute("DROP TABLE favicons") &&
+      db_.Execute("ALTER TABLE temp_favicons RENAME TO favicons") &&
+      db_.Execute("CREATE INDEX IF NOT EXISTS favicons_url ON favicons(url)");
 
-// static
-void ThumbnailDatabase::DatabaseStringToFaviconSizes(
-    const std::string& favicon_sizes_string,
-    FaviconSizes* favicon_sizes) {
-  bool parsing_errors = false;
+  if (!success)
+    return false;
 
-  base::StringTokenizer t(favicon_sizes_string, " ");
-  while (t.GetNext() && !parsing_errors) {
-    int width, height = 0;
-    parsing_errors |= !base::StringToInt(t.token(), &width);
-    if (!t.GetNext()) {
-      parsing_errors = true;
-      break;
-    }
-    parsing_errors |= !base::StringToInt(t.token(), &height);
-    favicon_sizes->push_back(gfx::Size(width, height));
-  }
-
-  if (parsing_errors)
-    favicon_sizes->clear();
+  meta_table_.SetVersionNumber(7);
+  meta_table_.SetCompatibleVersionNumber(std::min(7, kCompatibleVersionNumber));
+  return true;
 }
 
 }  // namespace history

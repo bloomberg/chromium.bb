@@ -1982,8 +1982,7 @@ void HistoryBackend::MergeFavicon(
 
   if (!favicon_id) {
     // There is no favicon at |icon_url|, create it.
-    favicon_id = thumbnail_db_->AddFavicon(icon_url, icon_type,
-                                           GetDefaultFaviconSizes());
+    favicon_id = thumbnail_db_->AddFavicon(icon_url, icon_type);
   }
 
   std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
@@ -2142,8 +2141,7 @@ void HistoryBackend::SetFavicons(
     if (!icon_id) {
       // TODO(pkotwicz): Remove the favicon sizes attribute from
       // ThumbnailDatabase::AddFavicon().
-      icon_id = thumbnail_db_->AddFavicon(icon_url, icon_type,
-                                          GetDefaultFaviconSizes());
+      icon_id = thumbnail_db_->AddFavicon(icon_url, icon_type);
       data_modified = true;
     }
     icon_ids.push_back(icon_id);
@@ -2212,7 +2210,6 @@ void HistoryBackend::SetImportedFavicons(
       favicon_id = thumbnail_db_->AddFavicon(
           favicon_usage[i].favicon_url,
           chrome::FAVICON,
-          GetDefaultFaviconSizes(),
           new base::RefCountedBytes(favicon_usage[i].png_data),
           now,
           gfx::Size());
@@ -2497,7 +2494,7 @@ bool HistoryBackend::GetFaviconBitmapResultsForBestMatch(
   GURL icon_url;
   chrome::IconType icon_type;
   if (!thumbnail_db_->GetFaviconHeader(best_favicon_id, &icon_url,
-                                       &icon_type, NULL)) {
+                                       &icon_type)) {
     return false;
   }
 
