@@ -419,20 +419,20 @@ div.splitter {
 
 .dialog-header #gear-button {
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/topbar_button_settings.png') 1x,
-    url('../images/files/ui/new-ui/2x/topbar_button_settings.png') 2x);
+    url('../images/files/ui/topbar_button_settings.png') 1x,
+    url('../images/files/ui/2x/topbar_button_settings.png') 2x);
 }
 
 .dialog-header #maximize-button {
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/topbar_button_maximize.png') 1x,
-    url('../images/files/ui/new-ui/2x/topbar_button_maximize.png') 2x);
+    url('../images/files/ui/topbar_button_maximize.png') 1x,
+    url('../images/files/ui/2x/topbar_button_maximize.png') 2x);
 }
 
 .dialog-header #close-button {
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/topbar_button_close.png') 1x,
-    url('../images/files/ui/new-ui/2x/topbar_button_close.png') 2x);
+    url('../images/files/ui/topbar_button_close.png') 1x,
+    url('../images/files/ui/2x/topbar_button_close.png') 2x);
 }
 
 body:not([type='full-page']) .dialog-header #close-button,
@@ -671,8 +671,8 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
   -webkit-margin-start: 10px;
   -webkit-order: -1;
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/search_icon_inactive.png') 1x,
-    url('../images/files/ui/new-ui/2x/search_icon_inactive.png') 2x);
+    url('../images/files/ui/search_icon_inactive.png') 1x,
+    url('../images/files/ui/2x/search_icon_inactive.png') 2x);
   background-position: center;
   background-repeat: no-repeat;
   height: 32px;
@@ -684,16 +684,16 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
 #search-box:focus + #search-icon,
 .has-text #search-icon {
   background: -webkit-image-set(
-    url('../images/files/ui/new-ui/search_icon_active.png') 1x,
-    url('../images/files/ui/new-ui/2x/search_icon_active.png') 2x);
+    url('../images/files/ui/search_icon_active.png') 1x,
+    url('../images/files/ui/2x/search_icon_active.png') 2x);
 }
 
 #search-clear-button {
   -webkit-margin-end: 30px;
   -webkit-margin-start: 10px;
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/search_clear.png') 1x,
-    url('../images/files/ui/new-ui/2x/search_clear.png') 2x);
+    url('../images/files/ui/search_clear.png') 1x,
+    url('../images/files/ui/2x/search_clear.png') 2x);
   background-position: center;
   background-repeat: no-repeat;
   display: none;
@@ -711,14 +711,14 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
 
 #search-clear-button:hover {
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/search_clear_hover.png') 1x,
-    url('../images/files/ui/new-ui/2x/search_clear_hover.png') 2x);
+    url('../images/files/ui/search_clear_hover.png') 1x,
+    url('../images/files/ui/2x/search_clear_hover.png') 2x);
 }
 
 #search-clear-button:active {
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/search_clear_pressed.png') 1x,
-    url('../images/files/ui/new-ui/2x/search_clear_pressed.png') 2x);
+    url('../images/files/ui/search_clear_pressed.png') 1x,
+    url('../images/files/ui/2x/search_clear_pressed.png') 2x);
 }
 
 .filelist-panel {
@@ -1167,8 +1167,8 @@ input.rename {
 /* Table splitter element */
 .table-header-splitter {
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/vertical_separator.png') 1x,
-    url('../images/files/ui/new-ui/2x/vertical_separator.png') 2x);
+    url('../images/files/ui/vertical_separator.png') 1x,
+    url('../images/files/ui/2x/vertical_separator.png') 2x);
   background-position: center;
   background-repeat: repeat-y;
   height: 20px;
@@ -1271,8 +1271,8 @@ input.rename {
 #list-container li.table-row .file-checkbox {
   -webkit-appearance: none;
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/select_checkbox.png') 1x,
-    url('../images/files/ui/new-ui/2x/select_checkbox.png') 2x);
+    url('../images/files/ui/select_checkbox.png') 1x,
+    url('../images/files/ui/2x/select_checkbox.png') 2x);
   background-position: center;
   background-repeat: no-repeat;
   border-style: none;
@@ -1292,8 +1292,8 @@ input.rename {
 #list-container .table-header #select-all-checkbox:checked,
 #list-container li.table-row .file-checkbox:checked {
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/select_checkbox_checked.png') 1x,
-    url('../images/files/ui/new-ui/2x/select_checkbox_checked.png') 2x);
+    url('../images/files/ui/select_checkbox_checked.png') 1x,
+    url('../images/files/ui/2x/select_checkbox_checked.png') 2x);
 }
 
 #list-container .table-header #select-all-checkbox:checked,
@@ -1339,8 +1339,8 @@ input.rename {
 
 #delete-button {
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/onbutton_trash.png') 1x,
-    url('../images/files/ui/new-ui/2x/onbutton_trash.png') 2x);
+    url('../images/files/ui/onbutton_trash.png') 1x,
+    url('../images/files/ui/2x/onbutton_trash.png') 2x);
   background-position: center;
   background-repeat: no-repeat;
   min-width: 21px;  /* overrride */
@@ -1795,8 +1795,8 @@ list.autocomplete-suggestions > li > div.detail-text em {
 
 list.autocomplete-suggestions > li > div[search-icon] {
   background: -webkit-image-set(
-    url('../images/files/ui/new-ui/search_icon_active.png') 1x,
-    url('../images/files/ui/new-ui/2x/search_icon_active.png') 2x);
+    url('../images/files/ui/search_icon_active.png') 1x,
+    url('../images/files/ui/2x/search_icon_active.png') 2x);
   background-position: center;
   background-repeat: no-repeat;
 }
@@ -1829,28 +1829,28 @@ list.autocomplete-suggestions > [lead] > div.detail-text em {
 
 menuitem#detail-view {
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/button_list_view.png') 1x,
-    url('../images/files/ui/new-ui/2x/button_list_view.png') 2x);
+    url('../images/files/ui/button_list_view.png') 1x,
+    url('../images/files/ui/2x/button_list_view.png') 2x);
 }
 
 menuitem#detail-view[selected]:not([disabled]),
 menuitem#detail-view[lead]:not([disabled]) {
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/button_list_view_white.png') 1x,
-    url('../images/files/ui/new-ui/2x/button_list_view_white.png') 2x);
+    url('../images/files/ui/button_list_view_white.png') 1x,
+    url('../images/files/ui/2x/button_list_view_white.png') 2x);
 }
 
 menuitem#thumbnail-view {
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/button_mosaic_view.png') 1x,
-    url('../images/files/ui/new-ui/2x/button_mosaic_view.png') 2x);
+    url('../images/files/ui/button_mosaic_view.png') 1x,
+    url('../images/files/ui/2x/button_mosaic_view.png') 2x);
 }
 
 menuitem#thumbnail-view[selected]:not([disabled]),
 menuitem#thumbnail-view[lead]:not([disabled]) {
   background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/button_mosaic_view_white.png') 1x,
-    url('../images/files/ui/new-ui/2x/button_mosaic_view_white.png') 2x);
+    url('../images/files/ui/button_mosaic_view_white.png') 1x,
+    url('../images/files/ui/2x/button_mosaic_view_white.png') 2x);
 }
 
 #iframe-drag-area {

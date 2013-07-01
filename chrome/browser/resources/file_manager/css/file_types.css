@@ -314,117 +314,117 @@ list.autocomplete-suggestions [selected] [file-type-icon='word'] {
 
 [volume-type-icon='archive'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/black_archive.png') 1x,
-    url('../images/files/volumes/new-ui/2x/black_archive.png') 2x);
+    url('../images/files/volumes/black_archive.png') 1x,
+    url('../images/files/volumes/2x/black_archive.png') 2x);
 }
 
 list:focus li[selected] [volume-type-icon='archive'],
 tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='archive'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/white_archive.png') 1x,
-    url('../images/files/volumes/new-ui/2x/white_archive.png') 2x);
+    url('../images/files/volumes/white_archive.png') 1x,
+    url('../images/files/volumes/2x/white_archive.png') 2x);
 }
 
 [volume-type-icon='downloads'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/black_downloads.png') 1x,
-    url('../images/files/volumes/new-ui/2x/black_downloads.png') 2x);
+    url('../images/files/volumes/black_downloads.png') 1x,
+    url('../images/files/volumes/2x/black_downloads.png') 2x);
 }
 
 list:focus li[selected] [volume-type-icon='downloads'],
 tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='downloads'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/white_downloads.png') 1x,
-    url('../images/files/volumes/new-ui/2x/white_downloads.png') 2x);
+    url('../images/files/volumes/white_downloads.png') 1x,
+    url('../images/files/volumes/2x/white_downloads.png') 2x);
 }
 
 [volume-type-icon='drive'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/black_drive.png') 1x,
-    url('../images/files/volumes/new-ui/2x/black_drive.png') 2x);
+    url('../images/files/volumes/black_drive.png') 1x,
+    url('../images/files/volumes/2x/black_drive.png') 2x);
 }
 
 list:focus li[selected] [volume-type-icon='drive'],
 tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='drive'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/white_drive.png') 1x,
-    url('../images/files/volumes/new-ui/2x/white_drive.png') 2x);
+    url('../images/files/volumes/white_drive.png') 1x,
+    url('../images/files/volumes/2x/white_drive.png') 2x);
 }
 
 [volume-type-icon='drive_offline'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/black_offline.png') 1x,
-    url('../images/files/volumes/new-ui/2x/black_offline.png') 2x);
+    url('../images/files/volumes/black_offline.png') 1x,
+    url('../images/files/volumes/2x/black_offline.png') 2x);
 }
 
 list:focus li[selected] [volume-type-icon='drive_offline'],
 tree:focus .tree-item[selected] > .tree-row >
     [volume-type-icon='drive_offline'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/white_offline.png') 1x,
-    url('../images/files/volumes/new-ui/2x/white_offline.png') 2x);
+    url('../images/files/volumes/white_offline.png') 1x,
+    url('../images/files/volumes/2x/white_offline.png') 2x);
 }
 
 [volume-type-icon='drive_shared_with_me'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/black_shared.png') 1x,
-    url('../images/files/volumes/new-ui/2x/black_shared.png') 2x);
+    url('../images/files/volumes/black_shared.png') 1x,
+    url('../images/files/volumes/2x/black_shared.png') 2x);
 }
 
 list:focus li[selected] [volume-type-icon='drive_shared_with_me'],
 tree:focus .tree-item[selected] > .tree-row >
     [volume-type-icon='drive_shared_with_me'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/white_shared.png') 1x,
-    url('../images/files/volumes/new-ui/2x/white_shared.png') 2x);
+    url('../images/files/volumes/white_shared.png') 1x,
+    url('../images/files/volumes/2x/white_shared.png') 2x);
 }
 
 [volume-type-icon='drive_recent'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/black_recent.png') 1x,
-    url('../images/files/volumes/new-ui/2x/black_recent.png') 2x);
+    url('../images/files/volumes/black_recent.png') 1x,
+    url('../images/files/volumes/2x/black_recent.png') 2x);
 }
 
 list:focus li[selected] [volume-type-icon='drive_recent'],
 tree:focus .tree-item[selected] > .tree-row >
     [volume-type-icon='drive_recent'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/white_recent.png') 1x,
-    url('../images/files/volumes/new-ui/2x/white_recent.png') 2x);
+    url('../images/files/volumes/white_recent.png') 1x,
+    url('../images/files/volumes/2x/white_recent.png') 2x);
 }
 
 [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/black_usb.png') 1x,
-    url('../images/files/volumes/new-ui/2x/black_usb.png') 2x);
+    url('../images/files/volumes/black_usb.png') 1x,
+    url('../images/files/volumes/2x/black_usb.png') 2x);
 }
 
 list:focus li[selected] [volume-type-icon='removable'],
 tree:focus .tree-item[selected] > .tree-row >
     [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/white_usb.png') 1x,
-    url('../images/files/volumes/new-ui/2x/white_usb.png') 2x);
+    url('../images/files/volumes/white_usb.png') 1x,
+    url('../images/files/volumes/2x/white_usb.png') 2x);
 }
 
 [volume-type-icon='removable'][volume-subtype='sd'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/black_sd.png') 1x,
-    url('../images/files/volumes/new-ui/2x/black_sd.png') 2x);
+    url('../images/files/volumes/black_sd.png') 1x,
+    url('../images/files/volumes/2x/black_sd.png') 2x);
 }
 
 list:focus li[selected] [volume-type-icon='removable'][volume-subtype='sd'],
 tree:focus .tree-item[selected] > .tree-row >
     [volume-type-icon='removable'][volume-subtype='sd'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/white_sd.png') 1x,
-    url('../images/files/volumes/new-ui/2x/white_sd.png') 2x);
+    url('../images/files/volumes/white_sd.png') 1x,
+    url('../images/files/volumes/2x/white_sd.png') 2x);
 }
 
 [volume-type-icon='removable'][volume-subtype='optical'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/black_optical.png') 1x,
-    url('../images/files/volumes/new-ui/2x/black_optical.png') 2x);
+    url('../images/files/volumes/black_optical.png') 1x,
+    url('../images/files/volumes/2x/black_optical.png') 2x);
 }
 
 list:focus div[selected]
@@ -432,8 +432,8 @@ list:focus div[selected]
 tree:focus .tree-item[selected] > .tree-row >
     [volume-type-icon='removable'][volume-subtype='optical'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/white_optical.png') 1x,
-    url('../images/files/volumes/new-ui/2x/white_optical.png') 2x);
+    url('../images/files/volumes/white_optical.png') 1x,
+    url('../images/files/volumes/2x/white_optical.png') 2x);
 }
 
 list:focus li[selected]
@@ -441,16 +441,16 @@ list:focus li[selected]
 tree:focus .tree-item[selected] > .tree-row >
     [volume-type-icon='removable'][volume-subtype='optical'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/white_optical.png') 1x,
-    url('../images/files/volumes/new-ui/2x/white_optical.png') 2x);
+    url('../images/files/volumes/white_optical.png') 1x,
+    url('../images/files/volumes/2x/white_optical.png') 2x);
 }
 
 /* TODO(kaznacheev): consider a better icon for volume-subtype=unknown.
    Also find out if we need an icon for volume-subtype=mobile */
 [volume-type-icon='removable'][volume-subtype='unknown'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/black_hdd.png') 1x,
-    url('../images/files/volumes/new-ui/2x/black_hdd.png') 2x);
+    url('../images/files/volumes/black_hdd.png') 1x,
+    url('../images/files/volumes/2x/black_hdd.png') 2x);
 }
 
 list:focus li[selected]
@@ -458,6 +458,6 @@ list:focus li[selected]
 tree:focus .tree-item[selected] > .tree-row >
     [volume-type-icon='removable'][volume-subtype='unknown'] {
   background-image: -webkit-image-set(
-    url('../images/files/volumes/new-ui/white_hdd.png') 1x,
-    url('../images/files/volumes/new-ui/2x/white_hdd.png') 2x);
+    url('../images/files/volumes/white_hdd.png') 1x,
+    url('../images/files/volumes/2x/white_hdd.png') 2x);
 }
