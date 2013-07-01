@@ -28,12 +28,18 @@
 #include "core/platform/network/DNS.h"
 
 #include "public/platform/Platform.h"
+#include "public/platform/WebPrescientNetworking.h"
 
 namespace WebCore {
 
 void prefetchDNS(const String& hostname)
 {
-    WebKit::Platform::current()->prefetchHostName(hostname);
+    WebKit::WebPrescientNetworking* prescientNetworking = WebKit::Platform::current()->prescientNetworking();
+
+    if (!prescientNetworking)
+        return;
+
+    prescientNetworking->prefetchDNS(hostname);
 }
 
 } // namespace WebCore
