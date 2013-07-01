@@ -179,7 +179,7 @@ VisiblePosition RenderSVGInlineText::positionForPoint(const LayoutPoint& point)
         if (!box->isSVGInlineTextBox())
             continue;
 
-        SVGInlineTextBox* textBox = static_cast<SVGInlineTextBox*>(box);
+        SVGInlineTextBox* textBox = toSVGInlineTextBox(box);
         Vector<SVGTextFragment>& fragments = textBox->textFragments();
 
         unsigned textFragmentsSize = fragments.size();
