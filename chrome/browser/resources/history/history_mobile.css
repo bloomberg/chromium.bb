@@ -195,7 +195,7 @@ h3:first-of-type {
   display: none;
 }
 
-.entry .title-and-domain {
+.entry .visit-entry {
   -webkit-flex: auto;
   -webkit-flex-flow: column;
   -webkit-padding-start: 48px;
@@ -229,13 +229,17 @@ h3:first-of-type {
   display: -webkit-box;
 }
 
-.entry .title-and-domain {
+.entry .visit-entry {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
   display: -webkit-box;
 }
 </if>
+
+.entry .bookmark-section {
+  display: none;
+}
 
 @media only screen and (max-width:600px) {
 
