@@ -280,18 +280,14 @@ static void FreeArgs(NaClSrpcArg** vec) {
 
 static NaClSrpcArg** AllocArgs(size_t vector_length) {
   NaClSrpcArg** vec;
-  size_t vector_length_in_bytes;
   size_t i;
 
   /* Allocate the index vector. */
   if (NACL_SRPC_MAX_ARGS < vector_length) {
     return NULL;
   }
-  vector_length_in_bytes = (vector_length + 1) * sizeof *vec;
-  vec = (NaClSrpcArg **) malloc(vector_length_in_bytes);
-  memset(vec, 0, vector_length_in_bytes);
+  vec = (NaClSrpcArg **) calloc(vector_length + 1, sizeof *vec);
   if (NULL == vec) {
-    FreeArgs(vec);
     return NULL;
   }
   /* Allocate and initialize the arguments (if any). */
