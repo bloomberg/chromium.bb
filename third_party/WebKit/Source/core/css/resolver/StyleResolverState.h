@@ -25,6 +25,7 @@
 #include "CSSPropertyNames.h"
 
 #include "core/css/CSSSVGDocumentValue.h"
+#include "core/css/resolver/ElementStyleResources.h"
 #include "core/dom/Element.h"
 #include "core/platform/graphics/Color.h"
 #include "core/rendering/style/BorderData.h"
@@ -38,9 +39,6 @@ namespace WebCore {
 class FillLayer;
 class FontDescription;
 class RenderRegion;
-
-typedef HashMap<CSSPropertyID, RefPtr<CSSValue> > PendingImagePropertyMap;
-typedef HashMap<FilterOperation*, RefPtr<CSSSVGDocumentValue> > PendingSVGDocumentMap;
 
 class StyleResolverState {
 WTF_MAKE_NONCOPYABLE(StyleResolverState);
@@ -58,7 +56,6 @@ public:
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_isMatchedPropertiesCacheable(true)
-    , m_hasPendingShaders(false)
     , m_lineHeightValue(0)
     , m_fontDirty(false)
     , m_hasUAAppearance(false)
@@ -93,10 +90,6 @@ public:
     void setApplyPropertyToVisitedLinkStyle(bool isApply) { m_applyPropertyToVisitedLinkStyle = isApply; }
     bool applyPropertyToRegularStyle() const { return m_applyPropertyToRegularStyle; }
     bool applyPropertyToVisitedLinkStyle() const { return m_applyPropertyToVisitedLinkStyle; }
-    PendingImagePropertyMap& pendingImageProperties() { return m_pendingImageProperties; }
-    PendingSVGDocumentMap& pendingSVGDocuments() { return m_pendingSVGDocuments; }
-    void setHasPendingShaders(bool hasPendingShaders) { m_hasPendingShaders = hasPendingShaders; }
-    bool hasPendingShaders() const { return m_hasPendingShaders; }
     bool isMatchedPropertiesCacheable() const { return m_isMatchedPropertiesCacheable; }
 
     void setLineHeightValue(CSSValue* value) { m_lineHeightValue = value; }
@@ -109,6 +102,7 @@ public:
     BorderData borderData() const { return m_borderData; }
     FillLayer backgroundData() const { return m_backgroundData; }
     Color backgroundColor() const { return m_backgroundColor; }
+    ElementStyleResources& elementStyleResources() { return m_elementStyleResources; }
 
     const FontDescription& fontDescription() { return m_style->fontDescription(); }
     const FontDescription& parentFontDescription() { return m_parentStyle->fontDescription(); }
@@ -143,9 +137,6 @@ private:
     bool m_applyPropertyToVisitedLinkStyle;
     bool m_isMatchedPropertiesCacheable;
 
-    PendingImagePropertyMap m_pendingImageProperties;
-    bool m_hasPendingShaders;
-    PendingSVGDocumentMap m_pendingSVGDocuments;
     CSSValue* m_lineHeightValue;
     bool m_fontDirty;
 
@@ -153,6 +144,7 @@ private:
     BorderData m_borderData;
     FillLayer m_backgroundData;
     Color m_backgroundColor;
+    ElementStyleResources m_elementStyleResources;
 };
 
 } // namespace WebCore

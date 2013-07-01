@@ -48,9 +48,7 @@ void StyleResolverState::clear()
     m_parentStyle = 0;
     m_parentNode = 0;
     m_regionForStyling = 0;
-    m_pendingImageProperties.clear();
-    m_hasPendingShaders = false;
-    m_pendingSVGDocuments.clear();
+    m_elementStyleResources.clear();
 }
 
 void StyleResolverState::initElement(Element* element)
@@ -93,7 +91,7 @@ void StyleResolverState::initForStyleResolve(Document* document, Element* e, Ren
     m_rootElementStyle = docElement && e != docElement ? docElement->renderStyle() : docStyle;
 
     m_style = 0;
-    m_pendingImageProperties.clear();
+    m_elementStyleResources.clear();
     m_fontDirty = false;
 }
 
@@ -159,6 +157,5 @@ Color StyleResolverState::resolveColorFromPrimitiveValue(CSSPrimitiveValue* valu
         return colorForCSSValue(valueID);
     }
 }
-
 
 } // namespace WebCore

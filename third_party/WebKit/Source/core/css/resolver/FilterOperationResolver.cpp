@@ -99,7 +99,7 @@ static StyleShader* cachedOrPendingStyleShaderFromValue(CSSShaderValue* value, S
 {
     StyleShader* shader = value->cachedOrPendingShader();
     if (shader && shader->isPendingShader())
-        state.setHasPendingShaders(true);
+        state.elementStyleResources().setHasPendingShaders(true);
     return shader;
 }
 
@@ -415,7 +415,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
             RefPtr<ReferenceFilterOperation> operation = ReferenceFilterOperation::create(svgDocumentValue->url(), url.fragmentIdentifier(), operationType);
             if (SVGURIReference::isExternalURIReference(svgDocumentValue->url(), state.document())) {
                 if (!svgDocumentValue->loadRequested())
-                    state.pendingSVGDocuments().set(operation.get(), svgDocumentValue);
+                    state.elementStyleResources().addPendingSVGDocument(operation.get(), svgDocumentValue);
                 else if (svgDocumentValue->cachedSVGDocument())
                     operation->setCachedSVGDocumentReference(adoptPtr(new CachedSVGDocumentReference(svgDocumentValue->cachedSVGDocument())));
             }

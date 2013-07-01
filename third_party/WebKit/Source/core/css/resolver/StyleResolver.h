@@ -36,6 +36,7 @@
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/css/resolver/StyleResourceLoader.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "wtf/HashMap.h"
@@ -72,7 +73,6 @@ class RenderRegion;
 class RuleData;
 class RuleSet;
 class Settings;
-class StyleCustomFilterProgramCache;
 class StyleImage;
 class StyleKeyframe;
 class StylePendingImage;
@@ -131,6 +131,7 @@ public:
     const bool includeEmptyRules;
     const ContainerNode* scope;
 };
+
 
 // This class selects a RenderStyle for a given element based on a collection of stylesheets.
 class StyleResolver {
@@ -242,11 +243,6 @@ public:
     bool usesBeforeAfterRules() const { return m_features.usesBeforeAfterRules; }
 
     void invalidateMatchedPropertiesCache();
-
-    void loadPendingShaders();
-    void loadPendingSVGDocuments();
-
-    void loadPendingResources();
 
     struct RuleRange {
         RuleRange(int& firstRuleIndex, int& lastRuleIndex): firstRuleIndex(firstRuleIndex), lastRuleIndex(lastRuleIndex) { }
@@ -381,10 +377,6 @@ private:
 
     void applySVGProperty(CSSPropertyID, CSSValue*);
 
-    PassRefPtr<StyleImage> loadPendingImage(StylePendingImage*);
-    void loadPendingImages();
-    void loadPendingShapeImage(ShapeValue*);
-
     struct MatchedPropertiesCacheItem {
         void reportMemoryUsage(MemoryObjectInfo*) const;
         Vector<MatchedProperties> matchedProperties;
@@ -433,8 +425,7 @@ private:
     InspectorCSSOMWrappers m_inspectorCSSOMWrappers;
 
     StyleResolverState m_state;
-
-    OwnPtr<StyleCustomFilterProgramCache> m_customFilterProgramCache;
+    StyleResourceLoader m_styleResourceLoader;
 
     friend class DeprecatedStyleBuilder;
     friend bool operator==(const MatchedProperties&, const MatchedProperties&);
