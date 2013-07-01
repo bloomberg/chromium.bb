@@ -28,7 +28,7 @@ class PPAPI_PROXY_EXPORT FileRefResource
  public:
   static PP_Resource CreateFileRef(Connection connection,
                                    PP_Instance instance,
-                                   FileRef_CreateInfo info);
+                                   const FileRef_CreateInfo& info);
 
   virtual ~FileRefResource();
 
@@ -68,7 +68,7 @@ class PPAPI_PROXY_EXPORT FileRefResource
  private:
   FileRefResource(Connection connection,
                   PP_Instance instance,
-                  FileRef_CreateInfo info);
+                  const FileRef_CreateInfo& info);
 
   void RunTrackedCallback(scoped_refptr<TrackedCallback> callback,
                           const ResourceMessageReplyParams& params);

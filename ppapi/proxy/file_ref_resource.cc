@@ -22,10 +22,9 @@ namespace proxy {
 FileRefResource::FileRefResource(
     Connection connection,
     PP_Instance instance,
-    FileRef_CreateInfo create_info)
+    const FileRef_CreateInfo& create_info)
     : PluginResource(connection, instance),
-      create_info_(create_info),
-      name_var_(new StringVar(create_info_.display_name)) {
+      create_info_(create_info) {
   if (create_info_.file_system_type != PP_FILESYSTEMTYPE_EXTERNAL) {
     // If path ends with a slash, then normalize it away unless path is
     // the root path.
@@ -38,6 +37,7 @@ FileRefResource::FileRefResource(
     create_info_.display_name = GetNameForInternalFilePath(
         create_info_.internal_path);
   }
+  name_var_ = new StringVar(create_info_.display_name);
 
   if (create_info_.pending_host_resource_id != 0) {
     AttachToPendingHost(BROWSER, create_info_.pending_host_resource_id);
@@ -53,9 +53,10 @@ FileRefResource::~FileRefResource() {
 }
 
 //static
-PP_Resource FileRefResource::CreateFileRef(Connection connection,
-                                           PP_Instance instance,
-                                           FileRef_CreateInfo create_info) {
+PP_Resource FileRefResource::CreateFileRef(
+    Connection connection,
+    PP_Instance instance,
+    const FileRef_CreateInfo& create_info) {
   // If we have a valid file_system resource, ensure that its type matches that
   // of the fs_type parameter.
   if (create_info.pending_host_resource_id != 0) {
