@@ -32,8 +32,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enableWebAudio(enable_webaudio);
   // Android does not support the Gamepad API.
   WebRuntimeFeatures::enableGamepad(false);
-  // input[type=week] in Android is incomplete. crbug.com/135938
-  WebRuntimeFeatures::enableInputTypeWeek(false);
   // Android does not have support for PagePopup
   WebRuntimeFeatures::enablePagePopup(false);
   // datalist on Android is not enabled
