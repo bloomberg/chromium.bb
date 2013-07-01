@@ -47,7 +47,7 @@ function successCallback1(a) {
 
     // Now test System Exclusive access - our test mock should not allow this type of access.
     try {
-        navigator.requestMIDIAccess( { sysexEnabled: true } ).then(successCallback2, errorCallback2);
+        navigator.requestMIDIAccess( { sysex: true } ).then(successCallback2, errorCallback2);
         testPassed('navigator.requestMIDIAccess() did not throw exception.');
     } catch(e) {
         testFailed('navigator.requestMIDIAccess() should not throw exception.');

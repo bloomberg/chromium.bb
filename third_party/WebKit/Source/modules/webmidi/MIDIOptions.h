@@ -37,12 +37,12 @@ namespace WebCore {
 
 struct MIDIOptions  {
     explicit MIDIOptions(const Dictionary& options)
-        : sysexEnabled(false)
+        : sysex(false)
     {
-        options.get("sysexEnabled", sysexEnabled);
+        options.get("sysex", sysex);
     }
 
-    bool sysexEnabled;
+    bool sysex;
 };
 
 } // namespace WebCore

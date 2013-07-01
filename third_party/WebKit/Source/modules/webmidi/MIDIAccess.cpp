@@ -60,7 +60,7 @@ MIDIAccess::MIDIAccess(ScriptExecutionContext* context, MIDIAccessPromise* promi
 {
     ScriptWrappable::init(this);
     m_accessor = MIDIAccessor::create(this);
-    m_accessor->requestAccess(promise->options()->sysexEnabled);
+    m_accessor->requestAccess(promise->options()->sysex);
 }
 
 void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version)

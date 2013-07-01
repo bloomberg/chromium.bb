@@ -64,7 +64,7 @@ void MIDIAccessPromise::fulfill()
         if (m_successCallback) {
             m_state = Invoked;
             ASSERT(m_access.get());
-            m_successCallback->handleEvent(m_access.release().leakRef(), m_options->sysexEnabled);
+            m_successCallback->handleEvent(m_access.release().leakRef(), m_options->sysex);
             m_options.clear();
         } else {
             m_state = Accepted;
@@ -101,7 +101,7 @@ void MIDIAccessPromise::then(PassRefPtr<MIDISuccessCallback> successCallback, Pa
 
     switch (m_state) {
     case Accepted:
-        successCallback->handleEvent(m_access.release().leakRef(), m_options->sysexEnabled);
+        successCallback->handleEvent(m_access.release().leakRef(), m_options->sysex);
         m_options.clear();
         m_state = Invoked;
         break;

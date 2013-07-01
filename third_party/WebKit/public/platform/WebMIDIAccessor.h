@@ -39,7 +39,7 @@ class WebMIDIAccessor {
 public:
     virtual ~WebMIDIAccessor() { }
 
-    // |access| is set to true if MIDIOptions.sysexEnabled is true. Otherwise false.
+    // |access| is set to true if MIDIOptions.sysex is true. Otherwise false.
     virtual void requestAccess(bool access) { }
     // |timeStamp| is measured in milliseconds as Web MIDI spec defines.
     virtual void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) { }
