@@ -70,27 +70,28 @@ void SVGAngle::setValue(float value)
     }
 }
 
-inline SVGAngle::SVGAngleType stringToAngleType(const UChar*& ptr, const UChar* end)
+template<typename CharType>
+static SVGAngle::SVGAngleType stringToAngleType(const CharType*& ptr, const CharType* end)
 {
     // If there's no unit given, the angle type is unspecified.
     if (ptr == end)
         return SVGAngle::SVG_ANGLETYPE_UNSPECIFIED;
 
-    const UChar firstChar = *ptr;
+    const CharType firstChar = *ptr;
     
     // If the unit contains only one character, the angle type is unknown.
     ++ptr;
     if (ptr == end)
         return SVGAngle::SVG_ANGLETYPE_UNKNOWN;
 
-    const UChar secondChar = *ptr;
+    const CharType secondChar = *ptr;
  
     // If the unit contains only two characters, the angle type is unknown.
     ++ptr;
     if (ptr == end)
         return SVGAngle::SVG_ANGLETYPE_UNKNOWN;
 
-    const UChar thirdChar = *ptr;
+    const CharType thirdChar = *ptr;
     if (firstChar == 'd' && secondChar == 'e' && thirdChar == 'g')
         return SVGAngle::SVG_ANGLETYPE_DEG;
     if (firstChar == 'r' && secondChar == 'a' && thirdChar == 'd')
@@ -101,7 +102,7 @@ inline SVGAngle::SVGAngleType stringToAngleType(const UChar*& ptr, const UChar* 
     if (ptr == end)
         return SVGAngle::SVG_ANGLETYPE_UNKNOWN;
 
-    const UChar fourthChar = *ptr;
+    const CharType fourthChar = *ptr;
 
     if (firstChar == 'g' && secondChar == 'r' && thirdChar == 'a' && fourthChar == 'd')
         return SVGAngle::SVG_ANGLETYPE_GRAD;
@@ -133,6 +134,22 @@ String SVGAngle::valueAsString() const
     return String();
 }
 
+template<typename CharType>
+static bool parseValue(const String& value, float& valueInSpecifiedUnits, SVGAngle::SVGAngleType& unitType)
+{
+    const CharType* ptr = value.getCharacters<CharType>();
+    const CharType* end = ptr + value.length();
+
+    if (!parseNumber(ptr, end, valueInSpecifiedUnits, false))
+        return false;
+
+    unitType = stringToAngleType(ptr, end);
+    if (unitType == SVGAngle::SVG_ANGLETYPE_UNKNOWN)
+        return false;
+
+    return true;
+}
+
 void SVGAngle::setValueAsString(const String& value, ExceptionCode& ec)
 {
     if (value.isEmpty()) {
@@ -141,16 +158,11 @@ void SVGAngle::setValueAsString(const String& value, ExceptionCode& ec)
     }
 
     float valueInSpecifiedUnits = 0;
-    const UChar* ptr = value.bloatedCharacters();
-    const UChar* end = ptr + value.length();
+    SVGAngleType unitType = SVG_ANGLETYPE_UNKNOWN;
 
-    if (!parseNumber(ptr, end, valueInSpecifiedUnits, false)) {
-        ec = SYNTAX_ERR;
-        return;
-    }
-
-    SVGAngleType unitType = stringToAngleType(ptr, end);
-    if (unitType == SVG_ANGLETYPE_UNKNOWN) {
+    bool success = value.is8Bit() ? parseValue<LChar>(value, valueInSpecifiedUnits, unitType)
+                                  : parseValue<UChar>(value, valueInSpecifiedUnits, unitType);
+    if (!success) {
         ec = SYNTAX_ERR;
         return;
     }
