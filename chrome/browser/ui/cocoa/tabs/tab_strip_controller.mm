@@ -2044,6 +2044,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   if (activeTabView) {
     [subviews addObject:activeTabView];
   }
+  WithNoAnimation noAnimation;
   [tabStripView_ setSubviews:subviews];
   [self setTabTrackingAreasEnabled:mouseInside_];
 }
