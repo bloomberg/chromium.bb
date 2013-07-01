@@ -16,6 +16,7 @@
 
 namespace sync_file_system {
 
+class ConflictResolutionResolver;
 class DriveMetadataStore;
 
 namespace drive {
@@ -115,6 +116,7 @@ class LocalSyncDelegate {
   DriveMetadataStore* metadata_store();
   drive::APIUtilInterface* api_util();
   RemoteChangeHandler* remote_change_handler();
+  ConflictResolutionResolver* conflict_resolution_resolver();
 
   DriveFileSyncService* sync_service_;  // Not owned.
 

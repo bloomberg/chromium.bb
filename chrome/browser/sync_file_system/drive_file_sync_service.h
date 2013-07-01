@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
+#include "chrome/browser/sync_file_system/conflict_resolution_resolver.h"
 #include "chrome/browser/sync_file_system/drive/api_util_interface.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
@@ -59,12 +60,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
                              public base::SupportsWeakPtr<DriveFileSyncService>,
                              public ::drive::DriveNotificationObserver {
  public:
-  enum ConflictResolutionResult {
-    CONFLICT_RESOLUTION_MARK_CONFLICT,
-    CONFLICT_RESOLUTION_LOCAL_WIN,
-    CONFLICT_RESOLUTION_REMOTE_WIN,
-  };
-
   typedef base::Callback<void(const SyncStatusCallback& callback)> Task;
 
   static ConflictResolutionPolicy kDefaultPolicy;
@@ -115,7 +110,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual void GetFileMetadataMap(OriginFileMetadataMap* metadata_map) OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
   virtual SyncStatusCode SetConflictResolutionPolicy(
-      ConflictResolutionPolicy resolution) OVERRIDE;
+      ConflictResolutionPolicy policy) OVERRIDE;
   virtual ConflictResolutionPolicy GetConflictResolutionPolicy() const OVERRIDE;
 
   // LocalChangeProcessor overrides.
@@ -155,9 +150,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
   struct ApplyLocalChangeParam;
   struct ProcessRemoteChangeParam;
 
-  typedef base::Callback<void(const base::Time& time,
-                              SyncFileType remote_file_type,
-                              SyncStatusCode status)> UpdatedTimeCallback;
   typedef base::Callback<
       void(SyncStatusCode status,
            const std::string& resource_id)> ResourceIdCallback;
@@ -213,12 +205,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback);
 
-  // Local synchronization related methods.
-  ConflictResolutionResult ResolveConflictForLocalSync(
-      SyncFileType local_file_type,
-      const base::Time& local_update_time,
-      SyncFileType remote_file_type,
-      const base::Time& remote_update_time);
   void DidApplyLocalChange(const SyncStatusCallback& callback,
                            SyncStatusCode status);
 
@@ -288,10 +274,15 @@ class DriveFileSyncService : public RemoteFileSyncService,
       SyncStatusCode status);
   void HandleConflictForRemoteSync(
       scoped_ptr<ProcessRemoteChangeParam> param,
-      const base::Time& remote_updated_time,
-      SyncFileType remote_file_change,
-      SyncStatusCode status);
+      SyncFileType remote_file_change);
+  void HandleLocalWinForRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param);
   void ResolveConflictToLocalForRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param);
+  void HandleRemoteWinForRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param,
+      SyncFileType remote_file_type);
+  void HandleManualResolutionForRemoteSync(
       scoped_ptr<ProcessRemoteChangeParam> param);
   void StartOverRemoteSync(
       scoped_ptr<ProcessRemoteChangeParam> param,
@@ -323,8 +314,13 @@ class DriveFileSyncService : public RemoteFileSyncService,
       const fileapi::FileSystemURL& url,
       DriveMetadata* drive_metadata,
       const SyncStatusCallback& callback);
-  void DidGetRemoteFileMetadataForRemoteUpdatedTime(
-      const UpdatedTimeCallback& callback,
+  void NotifyConflict(
+      const fileapi::FileSystemURL& url,
+      const SyncStatusCallback& callback,
+      SyncStatusCode status);
+
+  void DidGetResourceEntryForConflictResolution(
+      scoped_ptr<ProcessRemoteChangeParam> param,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> entry);
 
@@ -424,7 +420,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   google_apis::GDataErrorCode last_gdata_error_;
 
-  ConflictResolutionPolicy conflict_resolution_;
+  ConflictResolutionResolver conflict_resolution_resolver_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncService);
 };

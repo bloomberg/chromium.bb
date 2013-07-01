@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chrome/browser/sync_file_system/conflict_resolution_resolver.h"
 #include "chrome/browser/sync_file_system/drive/api_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
@@ -476,14 +477,14 @@ void LocalSyncDelegate::DidGetEntryForConflictResolution(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
   SyncFileType remote_file_type = SYNC_FILE_TYPE_UNKNOWN;
-  DriveFileSyncService::ConflictResolutionResult resolution;
+  ConflictResolution resolution = CONFLICT_RESOLUTION_UNKNOWN;
 
-  if (error != google_apis::HTTP_SUCCESS) {
-    resolution = DriveFileSyncService::CONFLICT_RESOLUTION_LOCAL_WIN;
+  if (error != google_apis::HTTP_SUCCESS ||
+      entry->updated_time().is_null()) {
+    resolution = CONFLICT_RESOLUTION_LOCAL_WIN;
   } else {
     SyncFileType local_file_type = local_metadata_.file_type;
     base::Time local_modification_time = local_metadata_.last_modified;
-
     base::Time remote_modification_time = entry->updated_time();
     if (entry->is_file())
       remote_file_type = SYNC_FILE_TYPE_FILE;
@@ -492,21 +493,23 @@ void LocalSyncDelegate::DidGetEntryForConflictResolution(
     else
       remote_file_type = SYNC_FILE_TYPE_UNKNOWN;
 
-    resolution = sync_service_->ResolveConflictForLocalSync(
+    resolution = conflict_resolution_resolver()->Resolve(
         local_file_type, local_modification_time,
         remote_file_type, remote_modification_time);
   }
 
   switch (resolution) {
-    case DriveFileSyncService::CONFLICT_RESOLUTION_MARK_CONFLICT:
+    case CONFLICT_RESOLUTION_MARK_CONFLICT:
       HandleManualResolutionCase(callback);
       return;
-    case DriveFileSyncService::CONFLICT_RESOLUTION_LOCAL_WIN:
+    case CONFLICT_RESOLUTION_LOCAL_WIN:
       HandleLocalWinCase(callback);
       return;
-    case DriveFileSyncService::CONFLICT_RESOLUTION_REMOTE_WIN:
+    case CONFLICT_RESOLUTION_REMOTE_WIN:
       HandleRemoteWinCase(callback, remote_file_type);
       return;
+    case CONFLICT_RESOLUTION_UNKNOWN:
+      NOTREACHED();
   }
   NOTREACHED();
   callback.Run(SYNC_STATUS_FAILED);
@@ -591,6 +594,10 @@ APIUtilInterface* LocalSyncDelegate::api_util() {
 
 RemoteChangeHandler* LocalSyncDelegate::remote_change_handler() {
   return &sync_service_->remote_change_handler_;
+}
+
+ConflictResolutionResolver* LocalSyncDelegate::conflict_resolution_resolver() {
+  return &sync_service_->conflict_resolution_resolver_;
 }
 
 }  // namespace drive

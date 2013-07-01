@@ -2130,6 +2130,8 @@
         'browser/sync/sync_ui_util.h',
         'browser/sync/user_selectable_sync_type.h',
         'browser/sync_file_system/conflict_resolution_policy.h',
+        'browser/sync_file_system/conflict_resolution_resolver.cc',
+        'browser/sync_file_system/conflict_resolution_resolver.h',
         'browser/sync_file_system/drive/api_util.cc',
         'browser/sync_file_system/drive/api_util.h',
         'browser/sync_file_system/drive/api_util_interface.h',
