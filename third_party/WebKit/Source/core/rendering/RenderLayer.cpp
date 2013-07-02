@@ -95,7 +95,6 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
-#include "core/rendering/RenderMarquee.h"
 #include "core/rendering/RenderReplica.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -149,7 +148,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_3DTransformedDescendantStatusDirty(true)
     , m_has3DTransformedDescendant(false)
     , m_containsDirtyOverlayScrollbars(false)
-    , m_updatingMarqueePosition(false)
 #if !ASSERT_DISABLED
     , m_layerListMutationAllowed(true)
 #endif
@@ -418,16 +416,6 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
         if (isUpdateRoot)
             updateFlags |= RenderLayerBacking::IsUpdateRoot;
         backing()->updateAfterLayout(updateFlags);
-    }
-
-    // With all our children positioned, now update our marquee if we need to.
-    if (renderer()->isMarquee()) {
-        RenderMarquee* marquee = toRenderMarquee(renderer());
-        // FIXME: would like to use TemporaryChange<> but it doesn't work with bitfields.
-        bool oldUpdatingMarqueePosition = m_updatingMarqueePosition;
-        m_updatingMarqueePosition = true;
-        marquee->updateMarqueePosition();
-        m_updatingMarqueePosition = oldUpdatingMarqueePosition;
     }
 
     if (geometryMap)
@@ -772,14 +760,6 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
     // We don't update our reflection as scrolling is a translation which does not change the size()
     // of an object, thus RenderReplica will still repaint itself properly as the layer position was
     // updated above.
-
-    if (renderer()->isMarquee()) {
-        RenderMarquee* marquee = toRenderMarquee(renderer());
-        bool oldUpdatingMarqueePosition = m_updatingMarqueePosition;
-        m_updatingMarqueePosition = true;
-        marquee->updateMarqueePosition();
-        m_updatingMarqueePosition = oldUpdatingMarqueePosition;
-    }
 
     if (geometryMap)
         geometryMap->popMappingsToAncestor(parent());
@@ -2169,13 +2149,7 @@ void RenderLayer::setScrollOffset(const IntPoint& newScrollOffset)
             view->markLazyBlocksForLayout();
         }
 
-        if (!m_updatingMarqueePosition) {
-            // Avoid updating compositing layers if, higher on the stack, we're already updating layer
-            // positions. Updating layer positions requires a full walk of up-to-date RenderLayers, and
-            // in this case we're still updating their positions; we'll update compositing layers later
-            // when that completes.
-            updateCompositingLayersAfterScroll();
-        }
+        updateCompositingLayersAfterScroll();
     }
 
     RenderLayerModelObject* repaintContainer = renderer()->containerForRepaint();

@@ -1174,7 +1174,6 @@ protected:
                                             // in a preserves3D hierarchy. Hint to do 3D-aware hit testing.
 
     bool m_containsDirtyOverlayScrollbars : 1;
-    bool m_updatingMarqueePosition : 1;
 
 #if !ASSERT_DISABLED
     bool m_layerListMutationAllowed : 1;

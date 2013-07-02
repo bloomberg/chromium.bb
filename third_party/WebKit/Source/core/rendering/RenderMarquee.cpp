@@ -274,6 +274,13 @@ void RenderMarquee::styleDidChange(StyleDifference difference, const RenderStyle
         m_timer.stop();
 }
 
+void RenderMarquee::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight)
+{
+    RenderBlock::layoutBlock(relayoutChildren, pageLogicalHeight);
+
+    updateMarqueePosition();
+}
+
 void RenderMarquee::timerFired(Timer<RenderMarquee>*)
 {
     // FIXME: Why do we need to check the view and not just the RenderMarquee itself?

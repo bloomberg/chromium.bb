@@ -86,6 +86,8 @@ private:
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE FINAL;
 
+    virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE FINAL;
+
     void timerFired(Timer<RenderMarquee>*);
 
     int m_currentLoop;
