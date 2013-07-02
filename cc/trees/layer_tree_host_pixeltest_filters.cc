@@ -11,7 +11,15 @@
 namespace cc {
 namespace {
 
-class LayerTreeHostFiltersPixelTest : public LayerTreePixelTest {};
+class LayerTreeHostFiltersPixelTest : public LayerTreePixelTest {
+  virtual void BeginTest() OVERRIDE;
+};
+
+void LayerTreeHostFiltersPixelTest::BeginTest() {
+  LayerTreePixelTest::BeginTest();
+  pixel_comparator_.reset(
+      new FuzzyPixelComparator(true, 100.f, 0.f, 1.f, 2, 0));
+}
 
 TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlur) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
