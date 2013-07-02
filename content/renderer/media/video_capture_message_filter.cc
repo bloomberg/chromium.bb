@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/video_capture_message_filter.h"
 
+#include "content/common/media/encoded_video_capture_messages.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/common/view_messages.h"
 
@@ -61,7 +62,17 @@ bool VideoCaptureMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_StateChanged, OnDeviceStateChanged)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnBufferCreated)
     IPC_MESSAGE_HANDLER(VideoCaptureMsg_DeviceInfo, OnDeviceInfoReceived)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_HANDLER(EncodedVideoCaptureMsg_CapabilitiesAvailable,
+                        OnCapabilitiesAvailable)
+    IPC_MESSAGE_HANDLER(EncodedVideoCaptureMsg_BitstreamOpened,
+                        OnBitstreamOpened)
+    IPC_MESSAGE_HANDLER(EncodedVideoCaptureMsg_BitstreamClosed,
+                        OnBitstreamClosed)
+    IPC_MESSAGE_HANDLER(EncodedVideoCaptureMsg_BitstreamConfigChanged,
+                        OnBitstreamConfigChanged)
+    IPC_MESSAGE_HANDLER(EncodedVideoCaptureMsg_BitstreamReady,
+                        OnBitstreamReady);
+  IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
@@ -90,15 +101,18 @@ void VideoCaptureMessageFilter::OnChannelClosing() {
 
 VideoCaptureMessageFilter::~VideoCaptureMessageFilter() {}
 
+VideoCaptureMessageFilter::Delegate* VideoCaptureMessageFilter::find_delegate(
+    int device_id) const {
+  Delegates::const_iterator i = delegates_.find(device_id);
+  return i != delegates_.end() ? i->second : NULL;
+}
+
 void VideoCaptureMessageFilter::OnBufferCreated(
     int device_id,
     base::SharedMemoryHandle handle,
     int length,
     int buffer_id) {
-  Delegate* delegate = NULL;
-  if (delegates_.find(device_id) != delegates_.end())
-    delegate = delegates_.find(device_id)->second;
-
+  Delegate* delegate = find_delegate(device_id);
   if (!delegate) {
     DLOG(WARNING) << "OnBufferCreated: Got video frame buffer for a "
         "non-existent or removed video capture.";
@@ -117,10 +131,7 @@ void VideoCaptureMessageFilter::OnBufferReceived(
     int device_id,
     int buffer_id,
     base::Time timestamp) {
-  Delegate* delegate = NULL;
-  if (delegates_.find(device_id) != delegates_.end())
-    delegate = delegates_.find(device_id)->second;
-
+  Delegate* delegate = find_delegate(device_id);
   if (!delegate) {
     DLOG(WARNING) << "OnBufferReceived: Got video frame buffer for a "
         "non-existent or removed video capture.";
@@ -137,9 +148,7 @@ void VideoCaptureMessageFilter::OnBufferReceived(
 void VideoCaptureMessageFilter::OnDeviceStateChanged(
     int device_id,
     VideoCaptureState state) {
-  Delegate* delegate = NULL;
-  if (delegates_.find(device_id) != delegates_.end())
-    delegate = delegates_.find(device_id)->second;
+  Delegate* delegate = find_delegate(device_id);
   if (!delegate) {
     DLOG(WARNING) << "OnDeviceStateChanged: Got video capture event for a "
         "non-existent or removed video capture.";
@@ -151,15 +160,73 @@ void VideoCaptureMessageFilter::OnDeviceStateChanged(
 void VideoCaptureMessageFilter::OnDeviceInfoReceived(
     int device_id,
     const media::VideoCaptureParams& params) {
-  Delegate* delegate = NULL;
-  if (delegates_.find(device_id) != delegates_.end())
-    delegate = delegates_.find(device_id)->second;
+  Delegate* delegate = find_delegate(device_id);
   if (!delegate) {
     DLOG(WARNING) << "OnDeviceInfoReceived: Got video capture event for a "
         "non-existent or removed video capture.";
     return;
   }
   delegate->OnDeviceInfoReceived(params);
+}
+
+void VideoCaptureMessageFilter::OnCapabilitiesAvailable(
+    int device_id,
+    media::VideoEncodingCapabilities capabilities) {
+  Delegate* delegate = find_delegate(device_id);
+  if (!delegate) {
+    DLOG(WARNING) << "OnCapabilitiesAvailable: Got video capture event for a "
+        "non-existent or removed video capture.";
+    return;
+  }
+  delegate->OnEncodingCapabilitiesAvailable(capabilities);
+}
+
+void VideoCaptureMessageFilter::OnBitstreamOpened(
+    int device_id,
+    media::VideoEncodingParameters params,
+    std::vector<base::SharedMemoryHandle> buffers,
+    uint32 buffer_size) {
+  Delegate* delegate = find_delegate(device_id);
+  if (!delegate) {
+    DLOG(WARNING) << "OnBitstreamOpened: Got video capture event for a "
+        "non-existent or removed video capture.";
+    return;
+  }
+  delegate->OnEncodedBitstreamOpened(params, buffers, buffer_size);
+}
+
+void VideoCaptureMessageFilter::OnBitstreamClosed(int device_id) {
+  Delegate* delegate = find_delegate(device_id);
+  if (!delegate) {
+    DLOG(WARNING) << "OnBitstreamClosed: Got video capture event for a "
+        "non-existent or removed video capture.";
+    return;
+  }
+  delegate->OnEncodedBitstreamClosed();
+}
+
+void VideoCaptureMessageFilter::OnBitstreamConfigChanged(
+    int device_id,
+    media::RuntimeVideoEncodingParameters params) {
+  Delegate* delegate = find_delegate(device_id);
+  if (!delegate) {
+    DLOG(WARNING) << "OnBitstreamConfigChanged: Got video capture event for a "
+        "non-existent or removed video capture.";
+    return;
+  }
+  delegate->OnEncodingConfigChanged(params);
+}
+
+void VideoCaptureMessageFilter::OnBitstreamReady(
+    int device_id, int buffer_id, uint32 size,
+    media::BufferEncodingMetadata metadata) {
+  Delegate* delegate = find_delegate(device_id);
+  if (!delegate) {
+    DLOG(WARNING) << "OnBitstreamReady: Got video capture event for a "
+        "non-existent or removed video capture.";
+    return;
+  }
+  delegate->OnEncodedBufferReady(buffer_id, size, metadata);
 }
 
 }  // namespace content

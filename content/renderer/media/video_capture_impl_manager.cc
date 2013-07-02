@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "content/renderer/media/rtc_encoding_video_capturer_factory.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 
@@ -30,6 +31,8 @@ media::VideoCapture* VideoCaptureImplManager::AddDevice(
         new VideoCaptureImpl(id, message_loop_proxy_.get(), filter_.get());
     devices_[id] = new Device(vc, handler);
     vc->Init();
+    if (encoding_capturer_factory_)
+      encoding_capturer_factory_->OnEncodedVideoSourceAdded(vc);
     return vc;
   }
 
@@ -58,6 +61,9 @@ void VideoCaptureImplManager::RemoveDevice(
 
   if (size == it->second->clients.size() || size > 1)
     return;
+
+  if (encoding_capturer_factory_)
+    encoding_capturer_factory_->OnEncodedVideoSourceRemoved(devices_[id]->vc);
 
   devices_[id]->vc->DeInit(base::Bind(&VideoCaptureImplManager::FreeDevice,
                                       this, devices_[id]->vc));

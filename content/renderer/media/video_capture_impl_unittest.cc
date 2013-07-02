@@ -4,6 +4,7 @@
 
 #include "base/message_loop.h"
 #include "content/child/child_process.h"
+#include "content/common/media/encoded_video_capture_messages.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -79,6 +80,16 @@ class VideoCaptureImplTest : public ::testing::Test {
         IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Stop, DeviceStopCapture)
         IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_BufferReady,
                             DeviceReceiveEmptyBuffer)
+        IPC_MESSAGE_HANDLER(EncodedVideoCaptureHostMsg_GetCapabilities,
+                            DeviceGetEncodingCapabilities)
+        IPC_MESSAGE_HANDLER(EncodedVideoCaptureHostMsg_OpenBitstream,
+                            DeviceOpenEncodedBitstream)
+        IPC_MESSAGE_HANDLER(EncodedVideoCaptureHostMsg_CloseBitstream,
+                            DeviceCloseEncodedBitstream)
+        IPC_MESSAGE_HANDLER(EncodedVideoCaptureHostMsg_TryConfigureBitstream,
+                            DeviceSetEncodingConfig)
+        IPC_MESSAGE_HANDLER(EncodedVideoCaptureHostMsg_BitstreamBufferConsumed,
+                            DeviceReturnEncodedBuffer)
         IPC_MESSAGE_UNHANDLED(handled = false)
       IPC_END_MESSAGE_MAP()
       EXPECT_TRUE(handled);
@@ -99,6 +110,20 @@ class VideoCaptureImplTest : public ::testing::Test {
     }
 
     void DeviceReceiveEmptyBuffer(int device_id, int buffer_id) {}
+
+    void DeviceGetEncodingCapabilities(
+        int device_id, media::VideoCaptureSessionId session_id) {}
+
+    void DeviceOpenEncodedBitstream(int device_id,
+                                    media::VideoCaptureSessionId session_id,
+                                    media::VideoEncodingParameters params) {}
+
+    void DeviceCloseEncodedBitstream(int device_id) {}
+
+    void DeviceSetEncodingConfig(
+        int device_id, media::RuntimeVideoEncodingParameters params) {}
+
+    void DeviceReturnEncodedBuffer(int device_id, int buffer_id) {}
   };
 
   VideoCaptureImplTest() {

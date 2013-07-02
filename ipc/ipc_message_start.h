@@ -86,7 +86,8 @@ enum IPCMessageStart {
   WebSocketMsgStart,
   NaClHostMsgStart,
   WebRTCIdentityMsgStart,
-  LastIPCMsgStart  // Must come last.
+  EncodedVideoCaptureMsgStart,
+  LastIPCMsgStart      // Must come last.
 };
 
 #endif  // IPC_IPC_MESSAGE_START_H_

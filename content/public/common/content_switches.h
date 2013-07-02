@@ -35,6 +35,9 @@ extern const char kDisableBackingStoreLimit[];
 CONTENT_EXPORT extern const char kDisableDatabases[];
 extern const char kDisableDesktopNotifications[];
 CONTENT_EXPORT extern const char kDisableDeviceOrientation[];
+#if defined(OS_CHROMEOS)
+CONTENT_EXPORT extern const char kEnableEncodedScreenCapture[];
+#endif
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kEnableExperimentalWebGL[];
 #else

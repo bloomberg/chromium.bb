@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
+#include "content/renderer/media/rtc_encoding_video_capturer_factory.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/rtc_video_capturer.h"
@@ -487,17 +488,32 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     audio_device_ = new WebRtcAudioDeviceImpl();
 
     cricket::WebRtcVideoDecoderFactory* decoder_factory = NULL;
+    cricket::WebRtcVideoEncoderFactory* encoder_factory = NULL;
+
 #if defined(GOOGLE_TV)
     // PeerConnectionFactory will hold the ownership of this
     // VideoDecoderFactory.
     decoder_factory = decoder_factory_tv_ = new RTCVideoDecoderFactoryTv;
 #endif
 
+#if defined(OS_CHROMEOS)
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    if (command_line.HasSwitch(switches::kEnableEncodedScreenCapture)) {
+      // PeerConnectionFactory owns the encoder factory. Pass a weak pointer of
+      // encoder factory to |vc_manager_| because the manager outlives it.
+      RtcEncodingVideoCapturerFactory* rtc_encoding_capturer_factory =
+          new RtcEncodingVideoCapturerFactory();
+      encoder_factory = rtc_encoding_capturer_factory;
+      vc_manager_->set_encoding_capturer_factory(
+          rtc_encoding_capturer_factory->AsWeakPtr());
+    }
+#endif
+
     scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
         webrtc::CreatePeerConnectionFactory(worker_thread_,
                                             signaling_thread_,
                                             audio_device_.get(),
-                                            NULL,
+                                            encoder_factory,
                                             decoder_factory));
     if (factory.get())
       pc_factory_ = factory;

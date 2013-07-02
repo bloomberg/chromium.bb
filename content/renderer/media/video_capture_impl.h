@@ -38,6 +38,7 @@
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "media/video/capture/video_capture.h"
 #include "media/video/capture/video_capture_types.h"
+#include "media/video/encoded_video_source.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -46,7 +47,9 @@ class MessageLoopProxy;
 namespace content {
 
 class CONTENT_EXPORT VideoCaptureImpl
-    : public media::VideoCapture, public VideoCaptureMessageFilter::Delegate {
+    : public media::VideoCapture,
+      public VideoCaptureMessageFilter::Delegate,
+      public media::EncodedVideoSource {
  public:
   // media::VideoCapture interface.
   virtual void StartCapture(
@@ -67,6 +70,31 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual void OnDeviceInfoReceived(
       const media::VideoCaptureParams& device_info) OVERRIDE;
   virtual void OnDelegateAdded(int32 device_id) OVERRIDE;
+  virtual void OnEncodingCapabilitiesAvailable(
+          const media::VideoEncodingCapabilities& capabilities) OVERRIDE;
+  virtual void OnEncodedBitstreamOpened(
+      const media::VideoEncodingParameters& params,
+      const std::vector<base::SharedMemoryHandle>& buffers,
+      uint32 buffer_size) OVERRIDE;
+  virtual void OnEncodedBitstreamClosed() OVERRIDE;
+  virtual void OnEncodingConfigChanged(
+      const media::RuntimeVideoEncodingParameters& params) OVERRIDE;
+  virtual void OnEncodedBufferReady(
+      int buffer_id,
+      uint32 size,
+      const media::BufferEncodingMetadata& metadata) OVERRIDE;
+
+  // media::EncodedVideoSource interface.
+  virtual void RequestCapabilities(
+      const RequestCapabilitiesCallback& callback) OVERRIDE;
+  virtual void OpenBitstream(
+      media::EncodedVideoSource::Client* client,
+      const media::VideoEncodingParameters& params) OVERRIDE;
+  virtual void CloseBitstream() OVERRIDE;
+  virtual void ReturnBitstreamBuffer(
+      scoped_refptr<const media::EncodedBitstreamBuffer> buffer) OVERRIDE;
+  virtual void TrySetBitstreamConfig(
+      const media::RuntimeVideoEncodingParameters& params) OVERRIDE;
 
   // Stop/resume delivering video frames to clients, based on flag |suspend|.
   virtual void SuspendCapture(bool suspend);
@@ -100,6 +128,26 @@ class CONTENT_EXPORT VideoCaptureImpl
   void DoDelegateAddedOnCaptureThread(int32 device_id);
 
   void DoSuspendCaptureOnCaptureThread(bool suspend);
+
+  void StartFetchCapabilities();
+  void DoRequestCapabilitiesOnCaptureThread(
+      const RequestCapabilitiesCallback& callback);
+  void DoOpenBitstreamOnCaptureThread(
+      media::EncodedVideoSource::Client* client,
+      const media::VideoEncodingParameters& params);
+  void DoCloseBitstreamOnCaptureThread();
+  void DoNotifyBitstreamOpenedOnCaptureThread(
+      const media::VideoEncodingParameters& params,
+      const std::vector<base::SharedMemoryHandle>& buffers,
+      uint32 buffer_size);
+  void DoNotifyBitstreamClosedOnCaptureThread();
+  void DoNotifyBitstreamConfigChangedOnCaptureThread(
+      const media::RuntimeVideoEncodingParameters& params);
+  void DoNotifyBitstreamBufferReadyOnCaptureThread(
+      int buffer_id, uint32 size,
+      const media::BufferEncodingMetadata& metadata);
+  void DoNotifyCapabilitiesAvailableOnCaptureThread(
+      const media::VideoEncodingCapabilities& capabilities);
 
   void Init();
   void DeInit(base::Closure task);
@@ -142,6 +190,20 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   bool suspended_;
   VideoCaptureState state_;
+
+  // Video encoding capabilities as reported by the device.
+  media::VideoEncodingCapabilities encoding_caps_;
+  // Callback for RequestCapabilities().
+  RequestCapabilitiesCallback encoding_caps_callback_;
+  // Pointer to the EVS client.
+  media::EncodedVideoSource::Client* encoded_video_source_client_;
+  // Bitstream buffers returned by the video capture device. Unowned.
+  std::vector<base::SharedMemory*> bitstream_buffers_;
+  // |bitstream_open_| is set to true when renderer receives BitstreamOpened
+  // message acknowledging an OpenBitstream request, and is set to false when
+  // the EVS client requests to close bitstream, or when renderer receives
+  // BitstreamClosed message from the browser procses.
+  bool bitstream_open_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImpl);
 };

@@ -259,6 +259,7 @@
     'common/mac/font_loader.h',
     'common/mac/font_loader.mm',
     'common/media/audio_messages.h',
+    'common/media/encoded_video_capture_messages.h',
     'common/media/media_param_traits.cc',
     'common/media/media_param_traits.h',
     'common/media/media_player_messages_android.h',
