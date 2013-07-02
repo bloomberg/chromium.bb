@@ -578,6 +578,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.hostedButton.checkable = true;
     this.detailViewButton_.checkable = true;
     this.thumbnailViewButton_.checkable = true;
+
+    if (util.platform.runningInBrowser()) {
+      // Supresses the default context menu.
+      this.dialogDom_.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    }
   };
 
   FileManager.prototype.onMaximize = function() {
