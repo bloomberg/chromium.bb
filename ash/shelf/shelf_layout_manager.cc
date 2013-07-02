@@ -581,7 +581,6 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
        state_.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN &&
        state.visibility_state == SHELF_VISIBLE) ?
       BackgroundAnimator::CHANGE_IMMEDIATE : BackgroundAnimator::CHANGE_ANIMATE;
-  StopAnimating();
 
   State old_state = state_;
   state_ = state;
@@ -593,6 +592,8 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   launcher_animation_setter.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kWorkspaceSwitchTimeMS));
   launcher_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
+  launcher_animation_setter.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   GetLayer(shelf_)->SetBounds(
       target_bounds.shelf_bounds_in_root);
   GetLayer(shelf_)->SetOpacity(target_bounds.opacity);
@@ -601,6 +602,8 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   status_animation_setter.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kWorkspaceSwitchTimeMS));
   status_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
+  status_animation_setter.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
   // Delay updating the background when going from SHELF_AUTO_HIDE_SHOWN to
   // SHELF_AUTO_HIDE_HIDDEN until the shelf animates out. Otherwise during the

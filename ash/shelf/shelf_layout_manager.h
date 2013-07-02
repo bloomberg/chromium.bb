@@ -238,7 +238,7 @@ class ASH_EXPORT ShelfLayoutManager :
   // Sets the visibility of the shelf to |state|.
   void SetState(ShelfVisibilityState visibility_state);
 
-  // Stops any animations.
+  // Stops any animations and progresses them to the end.
   void StopAnimating();
 
   // Returns the width (if aligned to the side) or height (if aligned to the

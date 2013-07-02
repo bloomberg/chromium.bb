@@ -33,6 +33,7 @@
 #include "ui/base/animation/animation_container_element.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/label.h"
@@ -657,6 +658,33 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
             Shell::GetScreen()->GetPrimaryDisplay().bounds().bottom());
   EXPECT_GE(shelf->status_area_widget()->GetNativeView()->bounds().y(),
             Shell::GetScreen()->GetPrimaryDisplay().bounds().bottom());
+}
+
+// Test that switching to a different visibility state does not restart the
+// shelf show / hide animation if it is already running. (crbug.com/250918)
+TEST_F(ShelfLayoutManagerTest, SetStateWhileAnimating) {
+  ShelfWidget* shelf = GetShelfWidget();
+  SetState(shelf->shelf_layout_manager(), SHELF_VISIBLE);
+  gfx::Rect initial_shelf_bounds = shelf->GetWindowBoundsInScreen();
+  gfx::Rect initial_status_bounds =
+      shelf->status_area_widget()->GetWindowBoundsInScreen();
+
+  ui::ScopedAnimationDurationScaleMode normal_animation_duration(
+      ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  SetState(shelf->shelf_layout_manager(), SHELF_HIDDEN);
+  SetState(shelf->shelf_layout_manager(), SHELF_VISIBLE);
+
+  gfx::Rect current_shelf_bounds = shelf->GetWindowBoundsInScreen();
+  gfx::Rect current_status_bounds =
+      shelf->status_area_widget()->GetWindowBoundsInScreen();
+
+  const int small_change = initial_shelf_bounds.height() / 2;
+  EXPECT_LE(
+      std::abs(initial_shelf_bounds.height() - current_shelf_bounds.height()),
+      small_change);
+  EXPECT_LE(
+      std::abs(initial_status_bounds.height() - current_status_bounds.height()),
+      small_change);
 }
 
 // Makes sure the launcher is sized when the status area changes size.

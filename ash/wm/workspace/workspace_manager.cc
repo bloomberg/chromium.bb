@@ -368,11 +368,11 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
     contents_window_->StackChildAtTop(last_active->window());
   }
 
-  UpdateShelfVisibility();
-
   // NOTE: duration supplied to this method is only used for desktop background.
   HideWorkspace(last_active, reason, is_unminimizing_fullscreen_window);
   ShowWorkspace(workspace, last_active, reason);
+
+  UpdateShelfVisibility();
 
   RootWindowController* root_controller = GetRootWindowController(
       contents_window_->GetRootWindow());
