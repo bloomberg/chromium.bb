@@ -7,13 +7,13 @@ Dimensions 0 x 0
 Create renderbuffers
 PASS gl = create3DContext() is non-null.
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS depthBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS stencilBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS depthStencilBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 Attach depth using DEPTH_ATTACHMENT
 PASS fbo = gl.createFramebuffer() is non-null.
 PASS getError was expected value: NO_ERROR : 
@@ -100,7 +100,7 @@ PASS getError was expected value: NO_ERROR :
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) returned 36054
 Attach color renderbuffer with internalformat == RGBA4
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS fbo = gl.createFramebuffer() is non-null.
 PASS getError was expected value: NO_ERROR : 
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) returned 36054
@@ -108,7 +108,7 @@ PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION :
 PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION : 
 Attach color renderbuffer with internalformat == RGB5_A1
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS fbo = gl.createFramebuffer() is non-null.
 PASS getError was expected value: NO_ERROR : 
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) returned 36054
@@ -116,7 +116,7 @@ PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION :
 PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION : 
 Attach color renderbuffer with internalformat == RGB565
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS fbo = gl.createFramebuffer() is non-null.
 PASS getError was expected value: NO_ERROR : 
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) returned 36054
@@ -124,7 +124,7 @@ PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION :
 PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION : 
 Create and attach depthStencil renderbuffer
 PASS depthStencilBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS gl.getRenderbufferParameter(gl.RENDERBUFFER, gl.RENDERBUFFER_WIDTH) is width
 PASS gl.getRenderbufferParameter(gl.RENDERBUFFER, gl.RENDERBUFFER_HEIGHT) is height
 PASS gl.getRenderbufferParameter(gl.RENDERBUFFER, gl.RENDERBUFFER_INTERNAL_FORMAT) is gl.DEPTH_STENCIL
@@ -143,13 +143,13 @@ Dimensions 0 x 2
 Create renderbuffers
 PASS gl = create3DContext() is non-null.
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS depthBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS stencilBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS depthStencilBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 Attach depth using DEPTH_ATTACHMENT
 PASS fbo = gl.createFramebuffer() is non-null.
 PASS getError was expected value: NO_ERROR : 
@@ -236,7 +236,7 @@ PASS getError was expected value: NO_ERROR :
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) returned 36054
 Attach color renderbuffer with internalformat == RGBA4
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS fbo = gl.createFramebuffer() is non-null.
 PASS getError was expected value: NO_ERROR : 
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) returned 36054
@@ -244,7 +244,7 @@ PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION :
 PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION : 
 Attach color renderbuffer with internalformat == RGB5_A1
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS fbo = gl.createFramebuffer() is non-null.
 PASS getError was expected value: NO_ERROR : 
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) returned 36054
@@ -252,7 +252,7 @@ PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION :
 PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION : 
 Attach color renderbuffer with internalformat == RGB565
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS fbo = gl.createFramebuffer() is non-null.
 PASS getError was expected value: NO_ERROR : 
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) returned 36054
@@ -260,7 +260,7 @@ PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION :
 PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION : 
 Create and attach depthStencil renderbuffer
 PASS depthStencilBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS gl.getRenderbufferParameter(gl.RENDERBUFFER, gl.RENDERBUFFER_WIDTH) is width
 PASS gl.getRenderbufferParameter(gl.RENDERBUFFER, gl.RENDERBUFFER_INTERNAL_FORMAT) is gl.DEPTH_STENCIL
 PASS gl.getRenderbufferParameter(gl.RENDERBUFFER, gl.RENDERBUFFER_RED_SIZE) is 0
@@ -278,13 +278,13 @@ Dimensions 2 x 0
 Create renderbuffers
 PASS gl = create3DContext() is non-null.
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS depthBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS stencilBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS depthStencilBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 Attach depth using DEPTH_ATTACHMENT
 PASS fbo = gl.createFramebuffer() is non-null.
 PASS getError was expected value: NO_ERROR : 
@@ -371,7 +371,7 @@ PASS getError was expected value: NO_ERROR :
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) returned 36054
 Attach color renderbuffer with internalformat == RGBA4
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS fbo = gl.createFramebuffer() is non-null.
 PASS getError was expected value: NO_ERROR : 
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) returned 36054
@@ -379,7 +379,7 @@ PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION :
 PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION : 
 Attach color renderbuffer with internalformat == RGB5_A1
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS fbo = gl.createFramebuffer() is non-null.
 PASS getError was expected value: NO_ERROR : 
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) returned 36054
@@ -387,7 +387,7 @@ PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION :
 PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION : 
 Attach color renderbuffer with internalformat == RGB565
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS fbo = gl.createFramebuffer() is non-null.
 PASS getError was expected value: NO_ERROR : 
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) returned 36054
@@ -395,7 +395,7 @@ PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION :
 PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION : 
 Create and attach depthStencil renderbuffer
 PASS depthStencilBuffer = gl.createRenderbuffer() is non-null.
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS gl.getRenderbufferParameter(gl.RENDERBUFFER, gl.RENDERBUFFER_HEIGHT) is height
 PASS gl.getRenderbufferParameter(gl.RENDERBUFFER, gl.RENDERBUFFER_INTERNAL_FORMAT) is gl.DEPTH_STENCIL
 PASS gl.getRenderbufferParameter(gl.RENDERBUFFER, gl.RENDERBUFFER_RED_SIZE) is 0
@@ -612,7 +612,7 @@ PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) should be FRAMEBUFFER_COMPLETE wa
 
 0 size attachment should be FRAMEBUFFER_INCOMPLETE_ATTACHMENT (OpenGL ES 2.0 4.4.5)
 PASS gl.checkFramebufferStatus(gl.FRAMEBUFFER) should be FRAMEBUFFER_INCOMPLETE_ATTACHMENT was FRAMEBUFFER_INCOMPLETE_ATTACHMENT or FRAMEBUFFER_UNSUPPORTED
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 
 No attachments should be INCOMPLETE_FRAMEBUFFER_MISSING_ATTACHMENT (OpenGL ES 2.0 4.4.5)
 PASS fbo = gl.createFramebuffer() is non-null.
@@ -650,7 +650,7 @@ PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION : clear with inc
 PASS colorBuffer = gl.createRenderbuffer() is non-null.
 
 Drawing or reading from an incomplete framebuffer should generate INVALID_FRAMEBUFFER_OPERATION
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : 
+PASS getError was expected value: NO_ERROR : 
 PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION : drawArrays with incomplete framebuffer
 PASS getError was expected value: INVALID_FRAMEBUFFER_OPERATION : readPixels from incomplete framebuffer
 PASS getError was one of: INVALID_FRAMEBUFFER_OPERATION or INVALID_OPERATION : copyTexImage2D from incomplete framebuffer

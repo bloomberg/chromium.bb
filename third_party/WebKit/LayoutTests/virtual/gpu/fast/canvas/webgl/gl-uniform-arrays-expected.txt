@@ -17,10 +17,10 @@ PASS getError was expected value: NO_ERROR : can get value of element 0 of array
 PASS value put in (16) matches value pulled out (16)
 PASS getError was expected value: NO_ERROR : can get location of element 1 of array from gl.getUniformLocation
 PASS getError was expected value: NO_ERROR : can get value of element 1 of array from gl.getUniform
-FAIL value put in (15) matches value pulled out (16)
+PASS value put in (15) matches value pulled out (15)
 PASS getError was expected value: NO_ERROR : can get location of element 2 of array from gl.getUniformLocation
 PASS getError was expected value: NO_ERROR : can get value of element 2 of array from gl.getUniform
-FAIL value put in (14) matches value pulled out (16)
+PASS value put in (14) matches value pulled out (14)
 PASS getError was expected value: INVALID_OPERATION : using the wrong size of gl.Uniform fails
 PASS getError was expected value: NO_ERROR : can call gl.useProgram(null)
 
@@ -38,10 +38,10 @@ PASS getError was expected value: NO_ERROR : can get value of element 0 of array
 PASS value put in ([16, 15]) matches value pulled out ([16, 15])
 PASS getError was expected value: NO_ERROR : can get location of element 1 of array from gl.getUniformLocation
 PASS getError was expected value: NO_ERROR : can get value of element 1 of array from gl.getUniform
-FAIL value put in ([14, 13]) matches value pulled out ([16, 15])
+PASS value put in ([14, 13]) matches value pulled out ([14, 13])
 PASS getError was expected value: NO_ERROR : can get location of element 2 of array from gl.getUniformLocation
 PASS getError was expected value: NO_ERROR : can get value of element 2 of array from gl.getUniform
-FAIL value put in ([12, 11]) matches value pulled out ([16, 15])
+PASS value put in ([12, 11]) matches value pulled out ([12, 11])
 PASS getError was expected value: INVALID_OPERATION : using the wrong size of gl.Uniform fails
 PASS passing non-array to glUniform*fv should throw TypeError
 PASS getError was expected value: NO_ERROR : can call gl.useProgram(null)
@@ -60,10 +60,10 @@ PASS getError was expected value: NO_ERROR : can get value of element 0 of array
 PASS value put in ([16, 15, 14]) matches value pulled out ([16, 15, 14])
 PASS getError was expected value: NO_ERROR : can get location of element 1 of array from gl.getUniformLocation
 PASS getError was expected value: NO_ERROR : can get value of element 1 of array from gl.getUniform
-FAIL value put in ([13, 12, 11]) matches value pulled out ([16, 15, 14])
+PASS value put in ([13, 12, 11]) matches value pulled out ([13, 12, 11])
 PASS getError was expected value: NO_ERROR : can get location of element 2 of array from gl.getUniformLocation
 PASS getError was expected value: NO_ERROR : can get value of element 2 of array from gl.getUniform
-FAIL value put in ([10, 9, 8]) matches value pulled out ([16, 15, 14])
+PASS value put in ([10, 9, 8]) matches value pulled out ([10, 9, 8])
 PASS getError was expected value: INVALID_OPERATION : using the wrong size of gl.Uniform fails
 PASS passing non-array to glUniform*fv should throw TypeError
 PASS getError was expected value: NO_ERROR : can call gl.useProgram(null)
@@ -82,10 +82,10 @@ PASS getError was expected value: NO_ERROR : can get value of element 0 of array
 PASS value put in ([16, 15, 14, 13]) matches value pulled out ([16, 15, 14, 13])
 PASS getError was expected value: NO_ERROR : can get location of element 1 of array from gl.getUniformLocation
 PASS getError was expected value: NO_ERROR : can get value of element 1 of array from gl.getUniform
-FAIL value put in ([12, 11, 10, 9]) matches value pulled out ([16, 15, 14, 13])
+PASS value put in ([12, 11, 10, 9]) matches value pulled out ([12, 11, 10, 9])
 PASS getError was expected value: NO_ERROR : can get location of element 2 of array from gl.getUniformLocation
 PASS getError was expected value: NO_ERROR : can get value of element 2 of array from gl.getUniform
-FAIL value put in ([8, 7, 6, 5]) matches value pulled out ([16, 15, 14, 13])
+PASS value put in ([8, 7, 6, 5]) matches value pulled out ([8, 7, 6, 5])
 PASS getError was expected value: INVALID_OPERATION : using the wrong size of gl.Uniform fails
 PASS passing non-array to glUniform*fv should throw TypeError
 PASS getError was expected value: NO_ERROR : can call gl.useProgram(null)
