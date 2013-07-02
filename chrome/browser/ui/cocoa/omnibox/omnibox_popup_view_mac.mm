@@ -348,20 +348,25 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
                                     styleMask:NSBorderlessWindowMask
                                       backing:NSBackingStoreBuffered
                                         defer:YES]);
-    [popup_ setMovableByWindowBackground:NO];
-    // The window shape is determined by the content view.
-    [popup_ setAlphaValue:1.0];
-    [popup_ setOpaque:YES];
-    [popup_ setBackgroundColor:BackgroundColor()];
-    [popup_ setLevel:NSNormalWindowLevel];
+    [popup_ setBackgroundColor:[NSColor clearColor]];
+    [popup_ setOpaque:NO];
+
     // Use a flipped view to pin the matrix top the top left. This is needed
     // for animated resize.
     base::scoped_nsobject<FlippedView> contentView(
         [[FlippedView alloc] initWithFrame:NSZeroRect]);
     [popup_ setContentView:contentView];
 
+    // View to draw a background beneath the matrix.
+    background_view_.reset([[NSBox alloc] initWithFrame:NSZeroRect]);
+    [background_view_ setBoxType:NSBoxCustom];
+    [background_view_ setBorderType:NSNoBorder];
+    [background_view_ setFillColor:BackgroundColor()];
+    [background_view_ setContentViewMargins:NSZeroSize];
+    [contentView addSubview:background_view_];
+
     matrix_.reset([[OmniboxPopupMatrix alloc] initWithDelegate:this]);
-    [contentView addSubview:matrix_];
+    [background_view_ addSubview:matrix_];
 
     top_separator_view_.reset(
         [[OmniboxPopupTopSeparatorView alloc] initWithFrame:NSZeroRect]);
@@ -413,11 +418,20 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
       NSHeight(popup_frame) - NSHeight(bottom_separator_frame);
   [bottom_separator_view_ setFrame:bottom_separator_frame];
 
+  // Background view.
+  NSRect background_rect = NSZeroRect;
+  background_rect.size.width = NSWidth(popup_frame);
+  background_rect.size.height = NSHeight(popup_frame) -
+      NSHeight(top_separator_frame) - NSHeight(bottom_separator_frame);
+  background_rect.origin.y = NSMaxY(top_separator_frame);
+  [background_view_ setFrame:background_rect];
+
+  // Matrix.
   NSPoint field_origin_base =
       [field_ convertPoint:[field_ bounds].origin toView:nil];
   NSRect matrix_frame = NSZeroRect;
   matrix_frame.origin.x = field_origin_base.x - NSMinX(anchor_rect_base);
-  matrix_frame.origin.y = NSMaxY(top_separator_frame) + kPopupPaddingVertical;
+  matrix_frame.origin.y = kPopupPaddingVertical;
   matrix_frame.size.width = [matrix_ cellSize].width;
   matrix_frame.size.height = matrixHeight;
   [matrix_ setFrame:matrix_frame];

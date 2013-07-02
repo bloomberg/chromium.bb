@@ -112,6 +112,7 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
   base::scoped_nsobject<OmniboxPopupMatrix> matrix_;
   base::scoped_nsobject<NSView> top_separator_view_;
   base::scoped_nsobject<NSView> bottom_separator_view_;
+  base::scoped_nsobject<NSBox> background_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupViewMac);
 };
