@@ -15,14 +15,18 @@ import sys
 
 import bb_utils
 
-BotConfig = collections.namedtuple(
+_BotConfig = collections.namedtuple(
     'BotConfig', ['bot_id', 'host_obj', 'test_obj'])
 
 HostConfig = collections.namedtuple(
     'HostConfig',
-    ['host_steps', 'extra_args', 'extra_gyp_defines', 'target_arch'])
+    ['script', 'host_steps', 'extra_args', 'extra_gyp_defines', 'target_arch'])
 
-TestConfig = collections.namedtuple('Tests', ['tests', 'extra_args'])
+TestConfig = collections.namedtuple('Tests', ['script', 'tests', 'extra_args'])
+
+
+def BotConfig(bot_id, host_object, test_object=None):
+  return _BotConfig(bot_id, host_object, test_object)
 
 
 def DictDiff(d1, d2):
@@ -74,24 +78,25 @@ def GetEnvironment(host_obj, testing):
   return env
 
 
-def GetCommands(options, bot_config):
+def GetCommands(options, bot_config, host_step_script, device_step_script):
   """Get a formatted list of commands.
 
   Args:
     options: Options object.
     bot_config: A BotConfig named tuple.
+    host_step_script: Host step script.
+    device_step_script: Device step script.
   Returns:
     list of Command objects.
   """
   property_args = bb_utils.EncodeProperties(options)
-  commands = [['build/android/buildbot/bb_host_steps.py'] +
-              ['--steps=%s' % ','.join(bot_config.host_obj.host_steps)] +
+  commands = [[host_step_script,
+               '--steps=%s' % ','.join(bot_config.host_obj.host_steps)] +
               property_args + (bot_config.host_obj.extra_args or [])]
 
   test_obj = bot_config.test_obj
   if test_obj:
-    run_test_cmd = [
-        'build/android/buildbot/bb_device_steps.py', '--reboot'] + property_args
+    run_test_cmd = [device_step_script, '--reboot'] + property_args
     for test in test_obj.tests:
       run_test_cmd.extend(['-f', test])
     if test_obj.extra_args:
@@ -108,14 +113,13 @@ def GetBotStepMap():
   std_tests = ['ui', 'unit']
   flakiness_server = '--upload-to-flakiness-server'
 
-  def B(bot_id, host_object, test_object=None):
-    return BotConfig(bot_id, host_object, test_object)
-
-  def T(tests, extra_args=None):
-    return TestConfig(tests, extra_args)
-
-  def H(host_steps, extra_args=None, extra_gyp=None, target_arch=None):
-    return HostConfig(host_steps, extra_args, extra_gyp, target_arch)
+  B = BotConfig
+  H = (lambda steps, extra_args=None, extra_gyp=None, target_arch=None :
+       HostConfig('build/android/buildbot/bb_host_steps.py', steps, extra_args,
+                  extra_gyp, target_arch))
+  T = (lambda tests, extra_args=None :
+       TestConfig('build/android/buildbot/bb_device_steps.py', tests,
+                  extra_args))
 
   bot_configs = [
       # Main builders
@@ -181,11 +185,32 @@ def GetBotStepMap():
   return bot_map
 
 
-def main(argv):
+# Return an object from the map, looking first for an exact id match.
+# If this fails, look for an id which is a substring of the specified id.
+# Choose the longest of all substring matches.
+# pylint: disable=W0622
+def GetBestMatch(id_map, id):
+  config = id_map.get(id)
+  if not config:
+    substring_matches = filter(lambda x: x in id, id_map.iterkeys())
+    if substring_matches:
+      max_id = max(substring_matches, key=len)
+      print 'Using config from id="%s" (substring match).' % max_id
+      config = id_map[max_id]
+  return config
+
+
+def GetRunBotOptParser():
   parser = bb_utils.GetParser()
   parser.add_option('--bot-id', help='Specify bot id directly.')
   parser.add_option('--testing', action='store_true',
                     help='For testing: print, but do not run commands')
+
+  return parser
+
+
+def main(argv):
+  parser = GetRunBotOptParser()
   options, args = parser.parse_args(argv[1:])
   if args:
     parser.error('Unused args: %s' % args)
@@ -194,25 +219,17 @@ def main(argv):
   if not bot_id:
     parser.error('A bot id must be specified through option or factory_props.')
 
-  # Get a BotConfig object looking first for an exact bot-id match. If no exact
-  # match, look for a bot-id which is a substring of the specified id.
-  # This allows similar bots to have unique IDs, but to share config.
-  # If multiple substring matches exist, pick the longest one.
-  bot_map = GetBotStepMap()
-  bot_config = bot_map.get(bot_id)
-  if not bot_config:
-    substring_matches = filter(lambda x: x in bot_id, bot_map.iterkeys())
-    if substring_matches:
-      max_id = max(substring_matches, key=len)
-      print 'Using config from id="%s" (substring match).' % max_id
-      bot_config = bot_map[max_id]
+  bot_config = GetBestMatch(GetBotStepMap(), bot_id)
   if not bot_config:
     print 'Error: config for id="%s" cannot be inferred.' % bot_id
     return 1
 
   print 'Using config:', bot_config
 
-  commands = GetCommands(options, bot_config)
+  commands = GetCommands(
+      options, bot_config,
+      'build/android/buildbot/bb_host_steps.py',
+      'build/android/buildbot/bb_device_steps.py')
   for command in commands:
     print 'Will run: ', bb_utils.CommandToString(command)
   print

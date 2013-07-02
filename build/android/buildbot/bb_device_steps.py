@@ -24,6 +24,7 @@ import errors
 
 
 CHROME_SRC = constants.DIR_SOURCE_ROOT
+LOGCAT_DIR = os.path.join(CHROME_SRC, 'out', 'logcat')
 
 # Describes an instrumation test suite:
 #   test: Name of test we're running.
@@ -31,28 +32,35 @@ CHROME_SRC = constants.DIR_SOURCE_ROOT
 #   apk_package: package for the apk to be installed.
 #   test_apk: apk to run tests on.
 #   test_data: data folder in format destination:source.
+#   host_driven_root: The python test root directory.
+#   annotation: Annotation of the tests to include.
+#   exclude_annotation: The annotation of the tests to exclude.
 I_TEST = collections.namedtuple('InstrumentationTest', [
-    'name', 'apk', 'apk_package', 'test_apk', 'test_data', 'host_driven_root'])
+    'name', 'apk', 'apk_package', 'test_apk', 'test_data', 'host_driven_root',
+    'annotation', 'exclude_annotation', 'extra_flags'])
+
+def I(name, apk, apk_package, test_apk, test_data, host_driven_root=None,
+      annotation=None, exclude_annotation=None, extra_flags=None):
+  return I_TEST(name, apk, apk_package, test_apk, test_data, host_driven_root,
+                annotation, exclude_annotation, extra_flags)
 
 INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
-    I_TEST('ContentShell',
-           'ContentShell.apk',
-           'org.chromium.content_shell_apk',
-           'ContentShellTest',
-           'content:content/test/data/android/device_files',
-           None),
-    I_TEST('ChromiumTestShell',
-           'ChromiumTestShell.apk',
-           'org.chromium.chrome.testshell',
-           'ChromiumTestShellTest',
-           'chrome:chrome/test/data/android/device_files',
-           constants.CHROMIUM_TEST_SHELL_HOST_DRIVEN_DIR),
-    I_TEST('AndroidWebView',
-           'AndroidWebView.apk',
-           'org.chromium.android_webview.shell',
-           'AndroidWebViewTest',
-           'webview:android_webview/test/data/device_files',
-           None),
+    I('ContentShell',
+      'ContentShell.apk',
+      'org.chromium.content_shell_apk',
+      'ContentShellTest',
+      'content:content/test/data/android/device_files'),
+    I('ChromiumTestShell',
+      'ChromiumTestShell.apk',
+      'org.chromium.chrome.testshell',
+      'ChromiumTestShellTest',
+      'chrome:chrome/test/data/android/device_files',
+      constants.CHROMIUM_TEST_SHELL_HOST_DRIVEN_DIR),
+    I('AndroidWebView',
+      'AndroidWebView.apk',
+      'org.chromium.android_webview.shell',
+      'AndroidWebViewTest',
+      'webview:android_webview/test/data/device_files'),
     ])
 
 VALID_TESTS = set(['chromedriver', 'ui', 'unit', 'webkit', 'webkit_layout'])
@@ -124,7 +132,7 @@ def RunBrowserTestSuite(options):
   buildbot_report.PrintNamedStep(constants.BROWSERTEST_SUITE_NAME)
   RunCmd(['build/android/run_browser_tests.py'] + args)
 
-def RunChromeDriverTests():
+def RunChromeDriverTests(_):
   """Run all the steps for running chromedriver tests."""
   buildbot_report.PrintNamedStep('chromedriver_annotation')
   RunCmd(['chrome/test/chromedriver/run_buildbot_steps.py',
@@ -168,6 +176,12 @@ def RunInstrumentationSuite(options, test):
                 constants.UPSTREAM_FLAKINESS_SERVER)
   if test.host_driven_root:
     args.append('--python_test_root=%s' % test.host_driven_root)
+  if test.annotation:
+    args.extend(['-A', test.annotation])
+  if test.exclude_annotation:
+    args.extend(['-E', test.exclude_annotation])
+  if test.extra_flags:
+    args.extend(test.extra_flags)
 
   RunCmd(['build/android/run_instrumentation_tests.py'] + args)
 
@@ -219,57 +233,75 @@ def RunWebkitLayoutTests(options):
          flunk_on_failure=False)
 
 
-def MainTestWrapper(options):
+def SpawnLogcatMonitor():
+  shutil.rmtree(LOGCAT_DIR, ignore_errors=True)
+  bb_utils.SpawnCmd([
+      os.path.join(CHROME_SRC, 'build', 'android', 'adb_logcat_monitor.py'),
+      LOGCAT_DIR])
+
+  # Wait for logcat_monitor to pull existing logcat
+  RunCmd(['sleep', '5'])
+
+def ProvisionDevices(options):
   # Restart adb to work around bugs, sleep to wait for usb discovery.
   RunCmd(['adb', 'kill-server'])
   RunCmd(['adb', 'start-server'])
   RunCmd(['sleep', '1'])
 
-  # Spawn logcat monitor
-  logcat_dir = os.path.join(CHROME_SRC, 'out/logcat')
-  shutil.rmtree(logcat_dir, ignore_errors=True)
-  bb_utils.SpawnCmd(['build/android/adb_logcat_monitor.py', logcat_dir])
-
-  # Wait for logcat_monitor to pull existing logcat
-  RunCmd(['sleep', '5'])
-
-  # Provision devices
   buildbot_report.PrintNamedStep('provision_devices')
   if options.reboot:
     RebootDevices()
   RunCmd(['build/android/provision_devices.py', '-t', options.target])
 
-  # Device check and alert emails
+
+def DeviceStatusCheck(_):
   buildbot_report.PrintNamedStep('device_status_check')
   RunCmd(['build/android/device_status_check.py'], halt_on_failure=True)
 
-  if options.install:
-    test_obj = INSTRUMENTATION_TESTS[options.install]
-    InstallApk(options, test_obj, print_step=True)
 
-  if 'chromedriver' in options.test_filter:
-    RunChromeDriverTests()
-  if 'unit' in options.test_filter:
-    RunTestSuites(options, gtest_config.STABLE_TEST_SUITES)
-  if 'ui' in options.test_filter:
-    for test in INSTRUMENTATION_TESTS.itervalues():
-      RunInstrumentationSuite(options, test)
-  if 'webkit' in options.test_filter:
-    RunTestSuites(options, [
-        gtest_config.Apk('webkit_unit_tests'),
-    ])
-    RunWebkitLint(options.target)
-  if 'webkit_layout' in options.test_filter:
-    RunWebkitLayoutTests(options)
+def GetDeviceSetupStepCmds():
+  return [
+    ('provision_devices', ProvisionDevices),
+    ('device_status_check', DeviceStatusCheck)
+  ]
 
-  if options.experimental:
-    RunTestSuites(options, gtest_config.EXPERIMENTAL_TEST_SUITES)
-    RunBrowserTestSuite(options)
 
+def RunUnitTests(options):
+  RunTestSuites(options, gtest_config.STABLE_TEST_SUITES)
+
+
+def RunInstrumentationTests(options):
+  for test in INSTRUMENTATION_TESTS.itervalues():
+    RunInstrumentationSuite(options, test)
+
+
+def RunWebkitTests(options):
+  RunTestSuites(options, [gtest_config.Apk('webkit_unit_tests')])
+  RunWebkitLint(options.target)
+
+
+def GetTestStepCmds():
+  return [
+      ('chromedriver', RunChromeDriverTests),
+      ('unit', RunUnitTests),
+      ('ui', RunInstrumentationTests),
+      ('webkit', RunWebkitTests),
+      ('webkit_layout', RunWebkitLayoutTests)
+  ]
+
+
+def LogcatDump(options):
   # Print logcat, kill logcat monitor
   buildbot_report.PrintNamedStep('logcat_dump')
-  RunCmd(['build/android/adb_logcat_printer.py', logcat_dir])
+  logcat_file = os.path.join(CHROME_SRC, 'out', options.target, 'full_log')
+  with open(logcat_file, 'w') as f:
+    RunCmd([
+        os.path.join(CHROME_SRC, 'build', 'android', 'adb_logcat_printer.py'),
+        LOGCAT_DIR], stdout=f)
+  RunCmd(['cat', logcat_file])
 
+
+def GenerateTestReport(options):
   buildbot_report.PrintNamedStep('test_report')
   for report in glob.glob(
       os.path.join(CHROME_SRC, 'out', options.target, 'test_logs', '*.log')):
@@ -277,7 +309,38 @@ def MainTestWrapper(options):
     os.remove(report)
 
 
-def main(argv):
+def GetPostTestStepCmds():
+  return [
+      ('logcat_dump', LogcatDump),
+      ('test_report', GenerateTestReport)
+  ]
+
+
+def MainTestWrapper(options):
+  # Spawn logcat monitor
+  SpawnLogcatMonitor()
+
+  # Run all device setup steps
+  for _, cmd in GetDeviceSetupStepCmds():
+    cmd(options)
+
+  if options.install:
+    test_obj = INSTRUMENTATION_TESTS[options.install]
+    InstallApk(options, test_obj, print_step=True)
+
+  if options.test_filter:
+    bb_utils.RunSteps(options.test_filter, GetTestStepCmds(), options)
+
+  if options.experimental:
+    RunTestSuites(options, gtest_config.EXPERIMENTAL_TEST_SUITES)
+    RunBrowserTestSuite(options)
+
+  # Run all post test steps
+  for _, cmd in GetPostTestStepCmds():
+    cmd(options)
+
+
+def GetDeviceStepsOptParser():
   parser = bb_utils.GetParser()
   parser.add_option('--experimental', action='store_true',
                     help='Run experiemental tests')
@@ -295,6 +358,15 @@ def main(argv):
   parser.add_option(
       '--auto-reconnect', action='store_true',
       help='Push script to device which restarts adbd on disconnections.')
+  parser.add_option(
+      '--logcat-dump-output',
+      help='The logcat dump output will be "tee"-ed into this file')
+
+  return parser
+
+
+def main(argv):
+  parser = GetDeviceStepsOptParser()
   options, args = parser.parse_args(argv[1:])
 
   if args:

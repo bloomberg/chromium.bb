@@ -104,7 +104,7 @@ def BisectPerfRegression(_):
           '-p', bb_utils.GOMA_DIR])
 
 
-def GetHostSteps():
+def GetHostStepCmds():
   return [
       ('compile', Compile),
       ('extract_build', ExtractBuild),
@@ -115,7 +115,7 @@ def GetHostSteps():
   ]
 
 
-def main(argv):
+def GetHostStepsOptParser():
   parser = bb_utils.GetParser()
   parser.add_option('--steps', help='Comma separated list of host tests.')
   parser.add_option('--build-targets', default='All',
@@ -123,13 +123,19 @@ def main(argv):
   parser.add_option('--experimental', action='store_true',
                     help='Indicate whether to compile experimental targets.')
 
+  return parser
+
+
+def main(argv):
+  parser = GetHostStepsOptParser()
   options, args = parser.parse_args(argv[1:])
   if args:
     return sys.exit('Unused args %s' % args)
 
   setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
 
-  bb_utils.RunSteps(GetHostSteps(), options)
+  if options.steps:
+    bb_utils.RunSteps(options.steps.split(','), GetHostStepCmds(), options)
 
 
 if __name__ == '__main__':

@@ -29,7 +29,7 @@ def CommandToString(command):
   return ' '.join(map(pipes.quote, command))
 
 
-def SpawnCmd(command):
+def SpawnCmd(command, stdout=None):
   """Spawn a process without waiting for termination."""
   print '>', CommandToString(command)
   sys.stdout.flush()
@@ -39,13 +39,13 @@ def SpawnCmd(command):
       def wait():
         return 0
     return MockPopen()
-  return subprocess.Popen(command, cwd=CHROME_SRC)
+  return subprocess.Popen(command, cwd=CHROME_SRC, stdout=stdout)
 
 
 def RunCmd(command, flunk_on_failure=True, halt_on_failure=False,
-           warning_code=88):
+           warning_code=88, stdout=None):
   """Run a command relative to the chrome source root."""
-  code = SpawnCmd(command).wait()
+  code = SpawnCmd(command, stdout).wait()
   print '<', CommandToString(command)
   if code != 0:
     print 'ERROR: process exited with code %d' % code
@@ -78,16 +78,12 @@ def EncodeProperties(options):
           '--build-properties=%s' % json.dumps(options.build_properties)]
 
 
-def RunSteps(all_steps, options):
-  if not options.steps:
-    return
-
-  steps = options.steps.split(',')
-  unknown_steps = set(steps) - set(step for step, _ in all_steps)
+def RunSteps(steps, step_cmds, options):
+  unknown_steps = set(steps) - set(step for step, _ in step_cmds)
   if unknown_steps:
     print >> sys.stderr, 'FATAL: Unknown steps %s' % list(unknown_steps)
     sys.exit(1)
 
-  for step, cmd in all_steps:
+  for step, cmd in step_cmds:
     if step in steps:
       cmd(options)
