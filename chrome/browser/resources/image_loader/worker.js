@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
  * Worker for requests. Fetches requests from a queue and processes them
  * synchronously, taking into account priorities. The highest priority is 0.
@@ -17,13 +19,6 @@ function Worker() {
    * @private
    */
   this.newRequests_ = [];
-
-  /**
-   * List of requests being checked for availability in cache.
-   * @type {Array.<Request>}
-   * @private
-   */
-  this.cacheCheckRequests_ = [];
 
   /**
    * List of pending requests for images to be downloaded.
@@ -75,10 +70,11 @@ Worker.prototype.add = function(request) {
     return;
   }
 
-  // Already started, so cache is available. Items available in cache will
-  // be served immediately, other enqueued.
-  this.requests_[request.getId()] = request;
-  this.serveCachedOrEnqueue_(request);
+  // Enqueue the request, since already started.
+  this.pendingRequests_.push(request);
+  this.sortPendingRequests_();
+
+  this.continue_();
 };
 
 /**
@@ -107,56 +103,28 @@ Worker.prototype.remove = function(requestId) {
 };
 
 /**
- * Serves cached image or adds the request to the pending list.
- *
- * @param {Request} request Request object.
- * @private
- */
-Worker.prototype.serveCachedOrEnqueue_ = function(request) {
-  this.cacheCheckRequests_.push(request);
-
-  var onSuccess = function() {
-    // The item is available. Remove from the cache queue.
-    var index = this.cacheCheckRequests_.indexOf(request);
-    if (index != -1)
-      this.cacheCheckRequests_.splice(index, 1);
-  }.bind(this);
-
-  var onFailure = function() {
-    // Not available in cache. Move to the pending queue.
-    var index = this.cacheCheckRequests_.indexOf(request);
-    if (index != -1) {
-      this.cacheCheckRequests_.splice(index, 1);
-      this.pendingRequests_.push(request);
-    }
-
-    // Sort requests by priorities.
-    this.pendingRequests_.sort(function(a, b) {
-      return a.getPriority() - b.getPriority();
-    });
-
-    // Continue handling the most important requests (if started).
-    if (this.started_)
-      this.continue_();
-  }.bind(this);
-
-  request.loadFromCacheAndProcess(onSuccess, onFailure);
-};
-
-/**
  * Starts handling requests.
  */
 Worker.prototype.start = function() {
   this.started_ = true;
 
   // Process tasks added before worker has been started.
-  for (var index = 0; index < this.newRequests_.length; index++) {
-    this.serveCachedOrEnqueue_(this.newRequests_[index]);
-  }
+  this.pendingRequests_.concat(this.newRequests_);
+  this.sortPendingRequests_();
   this.newRequests_ = [];
 
   // Start serving enqueued requests.
   this.continue_();
+};
+
+/**
+ * Sorts pending requests by priorities.
+ * @private
+ */
+Worker.prototype.sortPendingRequests_ = function() {
+  this.pendingRequests_.sort(function(a, b) {
+    return a.getPriority() - b.getPriority();
+  });
 };
 
 /**
@@ -166,19 +134,25 @@ Worker.prototype.start = function() {
  * @private
  */
 Worker.prototype.continue_ = function() {
-  for (var index = 0; index < this.pendingRequests_.length; index++) {
+  var index = 0;
+  while (index < this.pendingRequests_.length) {
     var request = this.pendingRequests_[index];
 
     // Run only up to MAXIMUM_IN_PARALLEL in the same time.
-    if (Object.keys(this.activeRequests_).length ==
-        Worker.MAXIMUM_IN_PARALLEL) {
+    if (this.activeRequests_.length == Worker.MAXIMUM_IN_PARALLEL)
       return;
-    }
 
-    delete this.pendingRequests_.splice(index, 1);
+    this.pendingRequests_.splice(index, 1);
     this.activeRequests_.push(request);
 
-    request.downloadAndProcess(this.finish_.bind(this, request));
+    // Try to load from cache. If doesn't exist, then download.
+    var currentRequest = request;
+    currentRequest.loadFromCacheAndProcess(
+        this.finish_.bind(this, currentRequest),
+        function() {
+          currentRequest.downloadAndProcess(
+              this.finish_.bind(this, currentRequest));
+        }.bind(this));
   }
 };
 

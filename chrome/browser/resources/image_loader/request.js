@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
  * Creates and starts downloading and then resizing of the image. Finally,
  * returns the image using the callback.
@@ -231,6 +233,7 @@ Request.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
  * @private
  */
 Request.prototype.sendImage_ = function(imageChanged) {
+  var imageData;
   if (!imageChanged) {
     // The image hasn't been processed, so the raw data can be directly
     // forwarded for speed (no need to encode the image again).

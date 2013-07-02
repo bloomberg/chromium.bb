@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 /**
  * Loads and resizes an image.
  * @constructor
@@ -188,6 +190,8 @@ ImageLoader.resize = function(source, target, options) {
   var orientation = options.orientation || 0;
 
   // For odd orientation values: 1 (90deg) and 3 (270deg) flip dimensions.
+  var drawImageWidth;
+  var drawImageHeight;
   if (orientation % 2) {
     drawImageWidth = target.height;
     drawImageHeight = target.width;
