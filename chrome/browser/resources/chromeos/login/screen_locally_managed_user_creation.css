@@ -139,8 +139,17 @@
 }
 
 #managed-user-creation-error {
-  padding: 100px 50px;
+  padding: 175px 120px 0;
   text-align: center;
+}
+
+#managed-user-creation-error .error-icon {
+  -webkit-margin-after: 50px;
+}
+
+#managed-user-creation-error  .error-message-paragraph {
+  -webkit-margin-after: 40px;
+  -webkit-margin-before: 30px;
 }
 
 .screen-control-button {
@@ -218,7 +227,8 @@
 }
 
 .manager-pod .password-error,
-#managed-user-creation .password-error {
+#managed-user-creation .password-error,
+#managed-user-creation .duplicate-name {
   border: 1px solid red !important;
 }
 

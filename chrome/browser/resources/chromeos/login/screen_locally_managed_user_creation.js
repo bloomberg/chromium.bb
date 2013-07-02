@@ -565,8 +565,11 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var userNameField = $('managed-user-creation-name');
       if (userNameField.value == this.lastIncorrectUserName_) {
         this.nameErrorVisible = true;
-        $('managed-user-creation-name-error').textContent = errorText;
-
+        $('bubble').showTextForElement(
+            $('managed-user-creation-name'),
+            errorText,
+            cr.ui.Bubble.Attachment.RIGHT,
+            24, 4);
         this.setButtonDisabledStatus('next', true);
       }
     },
@@ -605,12 +608,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {boolean}
      */
     set nameErrorVisible(value) {
-      $('managed-user-creation-name-error').
-          classList.toggle('error', value);
       $('managed-user-creation-name').
           classList.toggle('duplicate-name', value);
       if (!value)
-        $('managed-user-creation-name-error').textContent = '';
+        $('bubble').hide();
     },
 
     /**
