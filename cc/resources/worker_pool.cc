@@ -4,11 +4,6 @@
 
 #include "cc/resources/worker_pool.h"
 
-#if defined(OS_ANDROID)
-// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-#include <sys/resource.h>
-#endif
-
 #include <algorithm>
 #include <queue>
 
@@ -163,6 +158,9 @@ WorkerPool::Inner::Inner(
                 "Worker%u",
                 static_cast<unsigned>(workers_.size() + 1)).c_str()));
     worker->Start();
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+    worker->SetThreadPriority(base::kThreadPriority_Background);
+#endif
     workers_.push_back(worker.Pass());
   }
 }
@@ -293,12 +291,6 @@ void WorkerPool::Inner::CollectCompletedTasks(TaskVector* completed_tasks) {
 }
 
 void WorkerPool::Inner::Run() {
-#if defined(OS_ANDROID)
-  base::PlatformThread::SetThreadPriority(
-      base::PlatformThread::CurrentHandle(),
-      base::kThreadPriority_Background);
-#endif
-
   base::AutoLock lock(lock_);
 
   // Get a unique thread index.
