@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #ifndef ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEW_H_
-#define ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEWS_H_
+#define ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEW_H_
 
 #include "base/timer/timer.h"
 #include "ui/views/controls/button/image_button.h"
@@ -95,4 +95,4 @@ class TrayNotificationView : public views::SlideOutView,
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEWS_H_
+#endif  // ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEW_H_
