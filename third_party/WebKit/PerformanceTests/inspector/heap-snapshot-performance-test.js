@@ -26,26 +26,26 @@ function test()
 
         var testName = /([^\/]+)\.html$/.exec(WebInspector.inspectedPageURL)[1];
         var fullTimerCookie = timer.start("full-summary-snapshot-time");
+        var type = WebInspector.panels.profiles.getProfileType("HEAP");
+
         var backendTimerCookie = timer.start("take-snapshot");
-        HeapProfilerAgent.takeHeapSnapshot(step0);
+        type._takeHeapSnapshot(step0);
 
         function step0()
         {
             timer.finish(backendTimerCookie);
             transferTimerCookie = timer.start("transfer-snapshot");
-            var type = WebInspector.panels.profiles.getProfileType("HEAP");
             var profiles = type.getProfiles();
-            WebInspector.panels.profiles._showProfile(profiles[profiles.length - 1]);
-            InspectorTest.addSniffer(type, "finishHeapSnapshot", step1);
+            InspectorTest.addSniffer(profiles[0], "_updateTransferProgress", onUpdateTransferProgress, true);
+            InspectorTest.addSniffer(profiles[0], "_wasShown", step2);
         }
 
-        function step1(uid)
+        function onUpdateTransferProgress(saved, total)
         {
+            if (saved !== total)
+                return;
             timer.finish(transferTimerCookie);
             showTimerCookie = timer.start("show-snapshot");
-            var panel = WebInspector.panels.profiles;
-            var profile = panel.getProfile("HEAP", uid);
-            profile.load(step2); // Add load callback.
         }
 
         function step2()
