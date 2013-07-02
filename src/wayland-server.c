@@ -620,7 +620,6 @@ static void
 unbind_resource(struct wl_resource *resource)
 {
 	wl_list_remove(&resource->link);
-	free(resource);
 }
 
 static void
