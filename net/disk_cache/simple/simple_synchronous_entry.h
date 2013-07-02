@@ -38,7 +38,6 @@ class SimpleSynchronousEntry {
 
   static void OpenEntry(
       const base::FilePath& path,
-      const std::string& key,
       uint64 entry_hash,
       SimpleSynchronousEntry** out_entry,
       int* out_result);
@@ -120,8 +119,8 @@ class SimpleSynchronousEntry {
                                       uint64 entry_hash);
 
   const base::FilePath path_;
-  const std::string key_;
   const uint64 entry_hash_;
+  std::string key_;
 
   bool have_open_files_;
   bool initialized_;

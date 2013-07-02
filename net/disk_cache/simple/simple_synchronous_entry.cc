@@ -141,12 +141,10 @@ SimpleSynchronousEntry::CRCRecord::CRCRecord(int index_p,
 // static
 void SimpleSynchronousEntry::OpenEntry(
     const FilePath& path,
-    const std::string& key,
     const uint64 entry_hash,
     SimpleSynchronousEntry** out_entry,
     int* out_result) {
-  DCHECK_EQ(entry_hash, simple_util::GetEntryHashKey(key));
-  SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, key,
+  SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, "",
                                                                   entry_hash);
   *out_result = sync_entry->InitializeForOpen();
   if (*out_result != net::OK) {
@@ -375,8 +373,8 @@ SimpleSynchronousEntry::SimpleSynchronousEntry(
     const std::string& key,
     const uint64 entry_hash)
     : path_(path),
-      key_(key),
       entry_hash_(entry_hash),
+      key_(key),
       have_open_files_(false),
       initialized_(false) {
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(files_),
@@ -442,12 +440,9 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
       else
         last_modified_ = std::max(last_modified_, file_info.last_modified);
 
-      data_size_[i] = GetDataSizeFromKeyAndFileSize(key_, file_info.size);
-      if (data_size_[i] < 0) {
-        // This entry can't possibly be valid, as it does not enough space to
-        // store a valid SimpleFileEOF record.
-        return false;
-      }
+      // Keep the file size in |data size_| briefly until the key is initialized
+      // properly.
+      data_size_[i] = file_info.size;
     }
   }
 
@@ -501,13 +496,12 @@ int SimpleSynchronousEntry::InitializeForOpen() {
       RecordSyncOpenResult(OPEN_ENTRY_CANT_READ_KEY);
       return net::ERR_FAILED;
     }
-    if (header.key_length != key_.size() ||
-        std::memcmp(key_.data(), key.get(), key_.size()) != 0) {
-      // TODO(gavinp): Since the way we use entry hash to name entries means
-      // this is expected to occur at some frequency, add unit_tests that this
-      // does is handled gracefully at higher levels.
-      DLOG(WARNING) << "Key mismatch on open.";
-      RecordSyncOpenResult(OPEN_ENTRY_KEY_MISMATCH);
+
+    key_ = std::string(key.get(), header.key_length);
+    data_size_[i] = GetDataSizeFromKeyAndFileSize(key_, data_size_[i]);
+    if (data_size_[i] < 0) {
+      // This entry can't possibly be valid, as it does not have enough space to
+      // store a valid SimpleFileEOF record.
       return net::ERR_FAILED;
     }
 

@@ -3064,4 +3064,9 @@ TEST_F(DiskCacheBackendTest, BlockfileCacheOverSimpleCache) {
   DisableIntegrityCheck();
 }
 
+TEST_F(DiskCacheBackendTest, SimpleCacheFixEnumerators) {
+  SetSimpleCacheMode();
+  BackendFixEnumerators();
+}
+
 #endif  // !defined(OS_WIN)

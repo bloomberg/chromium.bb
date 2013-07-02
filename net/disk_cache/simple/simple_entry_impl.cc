@@ -94,19 +94,16 @@ class SimpleEntryImpl::ScopedOperationRunner {
 
 SimpleEntryImpl::SimpleEntryImpl(SimpleBackendImpl* backend,
                                  const FilePath& path,
-                                 const std::string& key,
                                  const uint64 entry_hash)
     : backend_(backend->AsWeakPtr()),
       worker_pool_(backend->worker_pool()),
       path_(path),
-      key_(key),
       entry_hash_(entry_hash),
       last_used_(Time::Now()),
       last_modified_(last_used_),
       open_count_(0),
       state_(STATE_UNINITIALIZED),
       synchronous_entry_(NULL) {
-  DCHECK_EQ(entry_hash, simple_util::GetEntryHashKey(key));
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_end_offset_),
                  arrays_should_be_same_size);
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_),
@@ -130,7 +127,7 @@ int SimpleEntryImpl::OpenEntry(Entry** out_entry,
   };
   OpenEntryIndexEnum open_entry_index_enum = INDEX_NOEXIST;
   if (backend_.get()) {
-    if (backend_->index()->Has(key_))
+    if (backend_->index()->Has(entry_hash_))
       open_entry_index_enum = INDEX_HIT;
     else
       open_entry_index_enum = INDEX_MISS;
@@ -151,6 +148,7 @@ int SimpleEntryImpl::OpenEntry(Entry** out_entry,
 int SimpleEntryImpl::CreateEntry(Entry** out_entry,
                                  const CompletionCallback& callback) {
   DCHECK(backend_.get());
+  DCHECK_EQ(entry_hash_, simple_util::GetEntryHashKey(key_));
   int ret_value = net::ERR_FAILED;
   if (state_ == STATE_UNINITIALIZED &&
       pending_operations_.size() == 0) {
@@ -191,7 +189,6 @@ int SimpleEntryImpl::DoomEntry(const CompletionCallback& callback) {
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
   return net::ERR_IO_PENDING;
 }
-
 
 void SimpleEntryImpl::Doom() {
   DoomEntry(CompletionCallback());
@@ -437,7 +434,7 @@ void SimpleEntryImpl::OpenEntryInternal(const CompletionCallback& callback,
   scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
       new PointerToSimpleSynchronousEntry());
   scoped_ptr<int> result(new int());
-  Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry, path_, key_,
+  Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry, path_,
                             entry_hash_, sync_entry.get(), result.get());
   Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete, this,
                              callback, start_time, base::Passed(&sync_entry),
@@ -661,6 +658,13 @@ void SimpleEntryImpl::CreationOperationComplete(
 
   state_ = STATE_READY;
   synchronous_entry_ = *in_sync_entry;
+  if (key_.empty()) {
+    key_ = synchronous_entry_->key();
+  } else {
+    // This should only be triggered when creating an entry. The key check in
+    // the open case is handled in SimpleBackendImpl.
+    DCHECK_EQ(key_, synchronous_entry_->key());
+  }
   SetSynchronousData();
   UMA_HISTOGRAM_TIMES("SimpleCache.EntryCreationTime",
                       (base::TimeTicks::Now() - start_time));

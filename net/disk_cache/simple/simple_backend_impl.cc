@@ -145,10 +145,15 @@ bool FileStructureConsistent(const base::FilePath& path) {
 }
 
 void CallCompletionCallback(const net::CompletionCallback& callback,
-                            scoped_ptr<int> result) {
+                            int error_code) {
   DCHECK(!callback.is_null());
+  callback.Run(error_code);
+}
+
+void CallCompletionCallbackFromPointer(const net::CompletionCallback& callback,
+                                       scoped_ptr<int> result) {
   DCHECK(result);
-  callback.Run(*result);
+  CallCompletionCallback(callback, *result);
 }
 
 void RecordIndexLoad(base::TimeTicks constructed_since, int result) {
@@ -233,12 +238,20 @@ int SimpleBackendImpl::OpenEntry(const std::string& key,
                                  Entry** entry,
                                  const CompletionCallback& callback) {
   scoped_refptr<SimpleEntryImpl> simple_entry = CreateOrFindActiveEntry(key);
-  return simple_entry->OpenEntry(entry, callback);
+  CompletionCallback backend_callback =
+      base::Bind(&SimpleBackendImpl::OnEntryOpenedFromKey,
+                 AsWeakPtr(),
+                 key,
+                 entry,
+                 simple_entry,
+                 callback);
+  return simple_entry->OpenEntry(entry, backend_callback);
 }
 
 int SimpleBackendImpl::CreateEntry(const std::string& key,
                                    Entry** entry,
                                    const CompletionCallback& callback) {
+  DCHECK(key.size() > 0);
   scoped_refptr<SimpleEntryImpl> simple_entry = CreateOrFindActiveEntry(key);
   return simple_entry->CreateEntry(entry, callback);
 }
@@ -283,7 +296,7 @@ void SimpleBackendImpl::IndexReadyForDoom(Time initial_time,
   Closure task = base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
                             base::Passed(&removed_key_hashes), path_,
                             new_result.get());
-  Closure reply = base::Bind(&CallCompletionCallback,
+  Closure reply = base::Bind(&CallCompletionCallbackFromPointer,
                              callback, base::Passed(&new_result));
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
@@ -306,12 +319,17 @@ int SimpleBackendImpl::DoomEntriesSince(
 int SimpleBackendImpl::OpenNextEntry(void** iter,
                                      Entry** next_entry,
                                      const CompletionCallback& callback) {
-  NOTIMPLEMENTED();
-  return net::ERR_FAILED;
+  CompletionCallback get_next_entry =
+      base::Bind(&SimpleBackendImpl::GetNextEntryInIterator, AsWeakPtr(), iter,
+                 next_entry, callback);
+  return index_->ExecuteWhenReady(get_next_entry);
 }
 
 void SimpleBackendImpl::EndEnumeration(void** iter) {
-  NOTIMPLEMENTED();
+  SimpleIndex::HashList* entry_list =
+      static_cast<SimpleIndex::HashList*>(*iter);
+  delete entry_list;
+  *iter = NULL;
 }
 
 void SimpleBackendImpl::GetStats(
@@ -374,7 +392,8 @@ scoped_refptr<SimpleEntryImpl> SimpleBackendImpl::CreateOrFindActiveEntry(
   if (insert_result.second)
     DCHECK(!it->second.get());
   if (!it->second.get()) {
-    SimpleEntryImpl* entry = new SimpleEntryImpl(this, path_, key, entry_hash);
+    SimpleEntryImpl* entry = new SimpleEntryImpl(this, path_, entry_hash);
+    entry->set_key(key);
     it->second = entry->AsWeakPtr();
   }
   DCHECK(it->second.get());
@@ -386,6 +405,127 @@ scoped_refptr<SimpleEntryImpl> SimpleBackendImpl::CreateOrFindActiveEntry(
     return CreateOrFindActiveEntry(key);
   }
   return make_scoped_refptr(it->second.get());
+}
+
+
+int SimpleBackendImpl::OpenEntryFromHash(uint64 hash,
+                                         Entry** entry,
+                                         const CompletionCallback& callback) {
+  EntryMap::iterator has_active = active_entries_.find(hash);
+  if (has_active != active_entries_.end())
+    return OpenEntry(has_active->second->key(), entry, callback);
+
+  scoped_refptr<SimpleEntryImpl> simple_entry = new SimpleEntryImpl(this, path_,
+                                                                    hash);
+  CompletionCallback backend_callback =
+      base::Bind(&SimpleBackendImpl::OnEntryOpenedFromHash,
+                 AsWeakPtr(),
+                 hash, entry, simple_entry, callback);
+  return simple_entry->OpenEntry(entry, backend_callback);
+}
+
+void SimpleBackendImpl::GetNextEntryInIterator(
+    void** iter,
+    Entry** next_entry,
+    const CompletionCallback& callback,
+    int error_code) {
+  if (error_code != net::OK) {
+    CallCompletionCallback(callback, error_code);
+    return;
+  }
+  if (*iter == NULL) {
+    *iter = index()->GetAllHashes().release();
+  }
+  SimpleIndex::HashList* entry_list =
+      static_cast<SimpleIndex::HashList*>(*iter);
+  while (entry_list->size() > 0) {
+    uint64 entry_hash = entry_list->back();
+    entry_list->pop_back();
+    if (index()->Has(entry_hash)) {
+      *next_entry = NULL;
+      CompletionCallback continue_iteration = base::Bind(
+          &SimpleBackendImpl::CheckIterationReturnValue,
+          AsWeakPtr(),
+          iter,
+          next_entry,
+          callback);
+      int error_code_open = OpenEntryFromHash(entry_hash,
+                                              next_entry,
+                                              continue_iteration);
+      // TODO(clamy): Write a unit test that checks that getting ERR_FAILED here
+      // will not stop the enumeration.
+      if (error_code_open == net::ERR_IO_PENDING)
+        return;
+      if (error_code_open != net::ERR_FAILED) {
+        CallCompletionCallback(callback, error_code_open);
+        return;
+      }
+    }
+  }
+  CallCompletionCallback(callback, net::ERR_FAILED);
+}
+
+void SimpleBackendImpl::OnEntryOpenedFromHash(
+    uint64 hash,
+    Entry** entry,
+    scoped_refptr<SimpleEntryImpl> simple_entry,
+    const CompletionCallback& callback,
+    int error_code) {
+  if (error_code != net::OK) {
+    CallCompletionCallback(callback, error_code);
+    return;
+  }
+  DCHECK(*entry);
+  std::pair<EntryMap::iterator, bool> insert_result =
+      active_entries_.insert(std::make_pair(hash,
+                                            base::WeakPtr<SimpleEntryImpl>()));
+  EntryMap::iterator& it = insert_result.first;
+  const bool did_insert = insert_result.second;
+  if (did_insert) {
+    // There is no active entry corresponding to this hash. The entry created
+    // is put in the map of active entries and returned to the caller.
+    it->second = simple_entry->AsWeakPtr();
+    CallCompletionCallback(callback, error_code);
+  } else {
+    // The entry was made active with the key while the creation from hash
+    // occurred. The entry created from hash needs to be closed, and the one
+    // coming from the key returned to the caller.
+    simple_entry->Close();
+    it->second->OpenEntry(entry, callback);
+  }
+}
+
+void SimpleBackendImpl::OnEntryOpenedFromKey(
+    const std::string key,
+    Entry** entry,
+    scoped_refptr<SimpleEntryImpl> simple_entry,
+    const CompletionCallback& callback,
+    int error_code) {
+  int final_code = error_code;
+  if (final_code == net::OK) {
+    if (key.compare(simple_entry->key()) != 0) {
+      // TODO(clamy): Add an histogram to record key mismatches.
+      DLOG(WARNING) << "Key mismatch on open.";
+      simple_entry->Doom();
+      simple_entry->Close();
+      final_code = net::ERR_FAILED;
+    } else {
+      DCHECK_EQ(simple_entry->entry_hash(), simple_util::GetEntryHashKey(key));
+    }
+  }
+  CallCompletionCallback(callback, final_code);
+}
+
+void SimpleBackendImpl::CheckIterationReturnValue(
+    void** iter,
+    Entry** entry,
+    const CompletionCallback& callback,
+    int error_code) {
+  if (error_code == net::ERR_FAILED) {
+    OpenNextEntry(iter, entry, callback);
+    return;
+  }
+  CallCompletionCallback(callback, error_code);
 }
 
 }  // namespace disk_cache

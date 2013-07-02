@@ -117,6 +117,48 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   scoped_refptr<SimpleEntryImpl> CreateOrFindActiveEntry(
       const std::string& key);
 
+  // Given a hash, will try to open the corresponding Entry. If we have an Entry
+  // corresponding to |hash| in the map of active entries, opens it. Otherwise,
+  // a new empty Entry will be created, opened and filled with information from
+  // the disk.
+  int OpenEntryFromHash(uint64 hash,
+                        Entry** entry,
+                        const CompletionCallback& callback);
+
+  // Called when the index is initilized to find the next entry in the iterator
+  // |iter|. If there are no more hashes in the iterator list, net::ERR_FAILED
+  // is returned. Otherwise, calls OpenEntryFromHash.
+  void GetNextEntryInIterator(void** iter,
+                              Entry** next_entry,
+                              const CompletionCallback& callback,
+                              int error_code);
+
+  // Called when we tried to open an entry with hash alone. When a blank entry
+  // has been created and filled in with information from the disk - based on a
+  // hash alone - this checks that a duplicate active entry was not created
+  // using a key in the meantime.
+  void OnEntryOpenedFromHash(uint64 hash,
+                             Entry** entry,
+                             scoped_refptr<SimpleEntryImpl> simple_entry,
+                             const CompletionCallback& callback,
+                             int error_code);
+
+  // Called when we tried to open an entry from key. When the entry has been
+  // opened, a check for key mismatch is performed.
+  void OnEntryOpenedFromKey(const std::string key,
+                            Entry** entry,
+                            scoped_refptr<SimpleEntryImpl> simple_entry,
+                            const CompletionCallback& callback,
+                            int error_code);
+
+  // Called at the end of the asynchronous operation triggered by
+  // OpenEntryFromHash. Makes sure to continue iterating if the open entry was
+  // not a success.
+  void CheckIterationReturnValue(void** iter,
+                                 Entry** entry,
+                                 const CompletionCallback& callback,
+                                 int error_code);
+
   const base::FilePath path_;
   scoped_ptr<SimpleIndex> index_;
   const scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;

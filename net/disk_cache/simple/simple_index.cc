@@ -179,26 +179,14 @@ int SimpleIndex::ExecuteWhenReady(const net::CompletionCallback& task) {
   return net::ERR_IO_PENDING;
 }
 
-scoped_ptr<std::vector<uint64> > SimpleIndex::RemoveEntriesBetween(
+scoped_ptr<SimpleIndex::HashList> SimpleIndex::RemoveEntriesBetween(
     const base::Time initial_time, const base::Time end_time) {
-  DCHECK_EQ(true, initialized_);
-  const base::Time extended_end_time =
-      end_time.is_null() ? base::Time::Max() : end_time;
-  DCHECK(extended_end_time >= initial_time);
-  scoped_ptr<std::vector<uint64> > ret_hashes(new std::vector<uint64>());
-  for (EntrySet::iterator it = entries_set_.begin(), end = entries_set_.end();
-       it != end;) {
-    EntryMetadata& metadata = it->second;
-    base::Time entry_time = metadata.GetLastUsedTime();
-    if (initial_time <= entry_time && entry_time < extended_end_time) {
-      ret_hashes->push_back(it->first);
-      cache_size_ -= metadata.GetEntrySize();
-      entries_set_.erase(it++);
-    } else {
-      it++;
-    }
-  }
-  return ret_hashes.Pass();
+  return ExtractEntriesBetween(initial_time, end_time, true);
+}
+
+scoped_ptr<SimpleIndex::HashList> SimpleIndex::GetAllHashes() {
+  const base::Time null_time = base::Time();
+  return ExtractEntriesBetween(null_time, null_time, false);
 }
 
 int32 SimpleIndex::GetEntryCount() const {
@@ -233,11 +221,10 @@ void SimpleIndex::Remove(const std::string& key) {
   PostponeWritingToDisk();
 }
 
-bool SimpleIndex::Has(const std::string& key) const {
+bool SimpleIndex::Has(uint64 hash) const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // If not initialized, always return true, forcing it to go to the disk.
-  return !initialized_ ||
-         entries_set_.count(simple_util::GetEntryHashKey(key)) > 0;
+  return !initialized_ || entries_set_.count(hash) > 0;
 }
 
 bool SimpleIndex::UseIfExists(const std::string& key) {
@@ -431,6 +418,31 @@ void SimpleIndex::WriteToDisk() {
 
   index_file_->WriteToDisk(entries_set_, cache_size_,
                            start, app_on_background_);
+}
+
+scoped_ptr<SimpleIndex::HashList> SimpleIndex::ExtractEntriesBetween(
+    const base::Time initial_time, const base::Time end_time,
+    bool delete_entries) {
+  DCHECK_EQ(true, initialized_);
+  const base::Time extended_end_time =
+      end_time.is_null() ? base::Time::Max() : end_time;
+  DCHECK(extended_end_time >= initial_time);
+  scoped_ptr<HashList> ret_hashes(new HashList());
+  for (EntrySet::iterator it = entries_set_.begin(), end = entries_set_.end();
+       it != end;) {
+    EntryMetadata& metadata = it->second;
+    base::Time entry_time = metadata.GetLastUsedTime();
+    if (initial_time <= entry_time && entry_time < extended_end_time) {
+      ret_hashes->push_back(it->first);
+      if (delete_entries) {
+        cache_size_ -= metadata.GetEntrySize();
+        entries_set_.erase(it++);
+        continue;
+      }
+    }
+    ++it;
+  }
+  return ret_hashes.Pass();
 }
 
 }  // namespace disk_cache

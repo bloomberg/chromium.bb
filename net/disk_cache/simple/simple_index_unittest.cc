@@ -23,6 +23,9 @@ const int64 kTestLastUsedTimeInternal = 12345;
 const base::Time kTestLastUsedTime =
     base::Time::FromInternalValue(kTestLastUsedTimeInternal);
 const uint64 kTestEntrySize = 789;
+const uint64 kKey1Hash = disk_cache::simple_util::GetEntryHashKey("key1");
+const uint64 kKey2Hash = disk_cache::simple_util::GetEntryHashKey("key2");
+const uint64 kKey3Hash = disk_cache::simple_util::GetEntryHashKey("key3");
 
 }  // namespace
 
@@ -232,19 +235,19 @@ TEST_F(SimpleIndexTest, Has) {
   EXPECT_EQ(1, index_file_->get_index_entries_calls());
 
   // Confirm "Has()" always returns true before the callback is called.
-  EXPECT_TRUE(index()->Has("key1"));
+  EXPECT_TRUE(index()->Has(kKey1Hash));
   index()->Insert("key1");
-  EXPECT_TRUE(index()->Has("key1"));
+  EXPECT_TRUE(index()->Has(kKey1Hash));
   index()->Remove("key1");
   // TODO(rdsmith): Maybe return false on explicitly removed entries?
-  EXPECT_TRUE(index()->Has("key1"));
+  EXPECT_TRUE(index()->Has(kKey1Hash));
 
   ReturnIndexFile();
 
   // Confirm "Has() returns conditionally now.
-  EXPECT_FALSE(index()->Has("key1"));
+  EXPECT_FALSE(index()->Has(kKey1Hash));
   index()->Insert("key1");
-  EXPECT_TRUE(index()->Has("key1"));
+  EXPECT_TRUE(index()->Has(kKey1Hash));
   index()->Remove("key1");
 }
 
@@ -364,7 +367,7 @@ TEST_F(SimpleIndexTest, RemoveBeforeInit) {
                             10u);
   ReturnIndexFile();
 
-  EXPECT_FALSE(index()->Has("key1"));
+  EXPECT_FALSE(index()->Has(kKey1Hash));
 }
 
 // Insert something that's going to come in from the loaded index; correct
@@ -395,7 +398,7 @@ TEST_F(SimpleIndexTest, InsertRemoveBeforeInit) {
                             10u);
   ReturnIndexFile();
 
-  EXPECT_FALSE(index()->Has("key1"));
+  EXPECT_FALSE(index()->Has(kKey1Hash));
 }
 
 // Insert and Remove something that's going to come in from the loaded index.
@@ -445,7 +448,7 @@ TEST_F(SimpleIndexTest, AllInitConflicts) {
 
   ReturnIndexFile();
 
-  EXPECT_FALSE(index()->Has("key1"));
+  EXPECT_FALSE(index()->Has(kKey1Hash));
 
   EntryMetadata metadata;
   EXPECT_TRUE(GetEntryForTesting("key2", &metadata));
@@ -453,7 +456,7 @@ TEST_F(SimpleIndexTest, AllInitConflicts) {
   EXPECT_GT(now + base::TimeDelta::FromMinutes(1), metadata.GetLastUsedTime());
   EXPECT_EQ(0ul, metadata.GetEntrySize());
 
-  EXPECT_FALSE(index()->Has("key3"));
+  EXPECT_FALSE(index()->Has(kKey3Hash));
 
   EXPECT_TRUE(GetEntryForTesting("key4", &metadata));
   EXPECT_LT(now - base::TimeDelta::FromMinutes(1), metadata.GetLastUsedTime());
@@ -481,9 +484,9 @@ TEST_F(SimpleIndexTest, BasicEviction) {
   // Confirm index is as expected: No eviction, everything there.
   EXPECT_EQ(3, index()->GetEntryCount());
   EXPECT_EQ(0, index_file()->doom_entry_set_calls());
-  EXPECT_TRUE(index()->Has("key1"));
-  EXPECT_TRUE(index()->Has("key2"));
-  EXPECT_TRUE(index()->Has("key3"));
+  EXPECT_TRUE(index()->Has(kKey1Hash));
+  EXPECT_TRUE(index()->Has(kKey2Hash));
+  EXPECT_TRUE(index()->Has(kKey3Hash));
 
   // Trigger an eviction, and make sure the right things are tossed.
   // TODO(rdsmith): This is dependent on the innards of the implementation
@@ -492,9 +495,9 @@ TEST_F(SimpleIndexTest, BasicEviction) {
   index()->UpdateEntrySize("key3", 475);
   EXPECT_EQ(1, index_file()->doom_entry_set_calls());
   EXPECT_EQ(1, index()->GetEntryCount());
-  EXPECT_FALSE(index()->Has("key1"));
-  EXPECT_FALSE(index()->Has("key2"));
-  EXPECT_TRUE(index()->Has("key3"));
+  EXPECT_FALSE(index()->Has(kKey1Hash));
+  EXPECT_FALSE(index()->Has(kKey2Hash));
+  EXPECT_TRUE(index()->Has(kKey3Hash));
   ASSERT_EQ(2u, index_file_->last_doom_entry_hashes().size());
 }
 
