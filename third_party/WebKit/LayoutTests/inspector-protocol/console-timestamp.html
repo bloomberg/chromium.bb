@@ -43,7 +43,7 @@ function test()
     InspectorTest.eventHandler["Console.messageRepeatCountUpdated"] = messageRepeatCountUpdated;
     InspectorTest.sendCommand("Console.enable", {});
 
-    InspectorTest.sendCommand("Runtime.evaluate", { expression: "console.log('testUnique');console.log('testDouble');console.log('testDouble');" });
+    InspectorTest.sendCommand("Runtime.evaluate", { expression: "console.log('testUnique'); for (var i = 0; i < 2; ++i) console.log('testDouble');" });
 }
 
 </script>

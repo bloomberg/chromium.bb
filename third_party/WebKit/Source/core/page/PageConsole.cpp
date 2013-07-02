@@ -66,15 +66,15 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
         if (!parser->isWaitingForScripts() && !parser->isExecutingScript())
             line = parser->lineNumber().oneBasedInt();
     }
-    addMessage(source, level, message, url, line, 0, 0, requestIdentifier);
+    addMessage(source, level, message, url, line, 0, 0, 0, requestIdentifier);
 }
 
 void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack)
 {
-    addMessage(source, level, message, String(), 0, callStack, 0);
+    addMessage(source, level, message, String(), 0, 0, callStack, 0);
 }
 
-void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state, unsigned long requestIdentifier)
+void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state, unsigned long requestIdentifier)
 {
     if (muteCount && source != ConsoleAPIMessageSource)
         return;
@@ -86,7 +86,7 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
     if (callStack)
         InspectorInstrumentation::addMessageToConsole(page, source, LogMessageType, level, message, callStack, requestIdentifier);
     else
-        InspectorInstrumentation::addMessageToConsole(page, source, LogMessageType, level, message, url, lineNumber, state, requestIdentifier);
+        InspectorInstrumentation::addMessageToConsole(page, source, LogMessageType, level, message, url, lineNumber, columnNumber, state, requestIdentifier);
 
     if (source == CSSMessageSource)
         return;

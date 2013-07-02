@@ -172,7 +172,7 @@ void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageTyp
     addConsoleMessage(adoptPtr(new ConsoleMessage(!isWorkerAgent(), source, type, level, message, arguments, state, requestIdentifier)));
 }
 
-void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, ScriptState* state, unsigned long requestIdentifier)
+void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber, ScriptState* state, unsigned long requestIdentifier)
 {
     if (type == ClearMessageType) {
         ErrorString error;
@@ -180,7 +180,7 @@ void InspectorConsoleAgent::addMessageToConsole(MessageSource source, MessageTyp
     }
 
     bool canGenerateCallStack = !isWorkerAgent() && m_frontend;
-    addConsoleMessage(adoptPtr(new ConsoleMessage(canGenerateCallStack, source, type, level, message, scriptId, lineNumber, state, requestIdentifier)));
+    addConsoleMessage(adoptPtr(new ConsoleMessage(canGenerateCallStack, source, type, level, message, scriptId, lineNumber, columnNumber, state, requestIdentifier)));
 }
 
 Vector<unsigned> InspectorConsoleAgent::consoleMessageArgumentCounts()
@@ -218,7 +218,7 @@ void InspectorConsoleAgent::stopConsoleTiming(Frame*, const String& title, PassR
     double elapsed = monotonicallyIncreasingTime() - startTime;
     String message = title + String::format(": %.3fms", elapsed * 1000);
     const ScriptCallFrame& lastCaller = callStack->at(0);
-    addMessageToConsole(ConsoleAPIMessageSource, TimingMessageType, DebugMessageLevel, message, lastCaller.sourceURL(), lastCaller.lineNumber());
+    addMessageToConsole(ConsoleAPIMessageSource, TimingMessageType, DebugMessageLevel, message, lastCaller.sourceURL(), lastCaller.lineNumber(), lastCaller.columnNumber());
 }
 
 void InspectorConsoleAgent::consoleCount(ScriptState* state, PassRefPtr<ScriptArguments> arguments)
@@ -266,7 +266,7 @@ void InspectorConsoleAgent::didFinishXHRLoading(ThreadableLoaderClient*, unsigne
 {
     if (m_frontend && m_state->getBoolean(ConsoleAgentState::monitoringXHR)) {
         String message = "XHR finished loading: \"" + url + "\".";
-        addMessageToConsole(NetworkMessageSource, LogMessageType, DebugMessageLevel, message, sendURL, sendLineNumber, 0, requestIdentifier);
+        addMessageToConsole(NetworkMessageSource, LogMessageType, DebugMessageLevel, message, sendURL, sendLineNumber, 0, 0, requestIdentifier);
     }
 }
 
@@ -276,7 +276,7 @@ void InspectorConsoleAgent::didReceiveResourceResponse(unsigned long requestIden
         return;
     if (response.httpStatusCode() >= 400) {
         String message = "Failed to load resource: the server responded with a status of " + String::number(response.httpStatusCode()) + " (" + response.httpStatusText() + ')';
-        addMessageToConsole(NetworkMessageSource, LogMessageType, ErrorMessageLevel, message, response.url().string(), 0, 0, requestIdentifier);
+        addMessageToConsole(NetworkMessageSource, LogMessageType, ErrorMessageLevel, message, response.url().string(), 0, 0, 0, requestIdentifier);
     }
 }
 
@@ -290,7 +290,7 @@ void InspectorConsoleAgent::didFailLoading(unsigned long requestIdentifier, Docu
         message.appendLiteral(": ");
         message.append(error.localizedDescription());
     }
-    addMessageToConsole(NetworkMessageSource, LogMessageType, ErrorMessageLevel, message.toString(), error.failingURL(), 0, 0, requestIdentifier);
+    addMessageToConsole(NetworkMessageSource, LogMessageType, ErrorMessageLevel, message.toString(), error.failingURL(), 0, 0, 0, requestIdentifier);
 }
 
 void InspectorConsoleAgent::setMonitoringXHREnabled(ErrorString*, bool enabled)

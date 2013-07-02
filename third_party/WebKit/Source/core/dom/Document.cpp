@@ -4525,7 +4525,7 @@ void Document::addMessage(MessageSource source, MessageLevel level, const String
     }
 
     if (Page* page = this->page())
-        page->console()->addMessage(source, level, message, sourceURL, lineNumber, callStack, state, requestIdentifier);
+        page->console()->addMessage(source, level, message, sourceURL, lineNumber, 0, callStack, state, requestIdentifier);
 }
 
 const SecurityOrigin* Document::topOrigin() const

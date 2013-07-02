@@ -279,7 +279,7 @@ void WorkerGlobalScope::addMessageToWorkerConsole(MessageSource source, MessageL
     if (callStack)
         InspectorInstrumentation::addMessageToConsole(this, source, LogMessageType, level, message, callStack, requestIdentifier);
     else
-        InspectorInstrumentation::addMessageToConsole(this, source, LogMessageType, level, message, sourceURL, lineNumber, state, requestIdentifier);
+        InspectorInstrumentation::addMessageToConsole(this, source, LogMessageType, level, message, sourceURL, lineNumber, 0, state, requestIdentifier);
 }
 
 bool WorkerGlobalScope::isContextThread() const

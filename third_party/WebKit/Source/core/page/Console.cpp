@@ -219,7 +219,7 @@ void Console::groupCollapsed(ScriptState* state, PassRefPtr<ScriptArguments> arg
 
 void Console::groupEnd()
 {
-    InspectorInstrumentation::addMessageToConsole(page(), ConsoleAPIMessageSource, EndGroupMessageType, LogMessageLevel, String(), String(), 0);
+    InspectorInstrumentation::addMessageToConsole(page(), ConsoleAPIMessageSource, EndGroupMessageType, LogMessageLevel, String(), String(), 0, 0);
 }
 
 PassRefPtr<MemoryInfo> Console::memory() const
