@@ -12,6 +12,10 @@
 // measured in milliseconds.
 /** @const */ var BROWSING_GAP_TIME = 15 * 60 * 1000;
 
+// The largest bucket value for UMA histogram, based on entry ID. All entries
+// with IDs greater than this will be included in this bucket.
+/** @const */ var UMA_MAX_BUCKET_VALUE = 1000;
+
 // TODO(glen): Get rid of these global references, replace with a controller
 //     or just make the classes own more of the page.
 var historyModel;
@@ -53,6 +57,20 @@ function recordUmaAction(actionDesc) {
   chrome.send('metricsHandler:recordAction', [actionDesc]);
 }
 
+/**
+ * Record a histogram value in UMA. If specified value is larger than the max
+ * bucket value, record the value in the largest bucket.
+ * @param {string} histogram The name of the histogram to be recorded in.
+ * @param {integer} value The value to record in the histogram.
+ */
+
+function recordUmaHistogram(histogram, value) {
+  chrome.send('metricsHandler:recordInHistogram',
+              [histogram,
+              ((value > UMA_MAX_BUCKET_VALUE) ? UMA_MAX_BUCKET_VALUE : value),
+              UMA_MAX_BUCKET_VALUE]);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Visit:
 
@@ -76,7 +94,7 @@ function Visit(result, continued, model) {
   this.deviceName = result.deviceName;
   this.deviceType = result.deviceType;
 
-  // The id will be set according to when the visit was displayed, not
+  // The ID will be set according to when the visit was displayed, not
   // received. Set to -1 to show that it has not been set yet.
   this.id_ = -1;
 
@@ -180,7 +198,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     visitEntryWrapper.classList.add('blocked-indicator');
     visitEntryWrapper.appendChild(this.getVisitAttemptDOM_());
   } else {
-    visitEntryWrapper.appendChild(this.getTitleDOM_());
+    visitEntryWrapper.appendChild(this.getTitleDOM_(isSearchResult));
     if (addTitleFavicon)
       this.addFaviconToElement_(visitEntryWrapper);
     visitEntryWrapper.appendChild(domain);
@@ -308,21 +326,32 @@ Visit.prototype.addHighlightedText_ = function(node, content, highlightText) {
 /**
  * Returns the DOM element containing a link on the title of the URL for the
  * current visit.
+ * @param {boolean} isSearchResult Whether or not the entry is a search result.
  * @return {Element} DOM representation for the title block.
  * @private
  */
-Visit.prototype.getTitleDOM_ = function() {
+Visit.prototype.getTitleDOM_ = function(isSearchResult) {
   var node = createElementWithClassName('div', 'title');
   var link = document.createElement('a');
   link.href = this.url_;
   link.id = 'id-' + this.id_;
   link.target = '_top';
+  var integerId = parseInt(this.id_, 10);
   link.addEventListener('click', function() {
     recordUmaAction('EntryLinkClick_HistoryPage');
+    // Record the ID of the entry to signify how many entries are above this
+    // link on the page.
+    recordUmaHistogram('HistoryPage.ClickPosition', integerId);
   });
   link.addEventListener('contextmenu', function() {
     recordUmaAction('EntryLinkRightClick_HistoryPage');
   });
+
+  if (isSearchResult) {
+    link.addEventListener('click', function() {
+      recordUmaAction('SearchResultClick_HistoryPage');
+    });
+  }
 
   // Add a tooltip, since it might be ellipsized.
   // TODO(dubroy): Find a way to show the tooltip only when necessary.
@@ -1619,6 +1648,12 @@ function removeItems() {
     checkbox.disabled = true;
     link.classList.add('to-be-removed');
     disabledItems.push(checkbox);
+    var integerId = parseInt(entry.visit.id_, 10);
+    // Record the ID of the entry to signify how many entries are above this
+    // link on the page.
+    recordUmaHistogram('HistoryPage.RemoveEntryPosition', integerId);
+    if (entry.parentNode.className == 'search-results')
+      recordUmaAction('SearchResultRemove_HistoryPage');
   }
 
   function onConfirmRemove() {
