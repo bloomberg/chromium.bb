@@ -177,6 +177,17 @@ cr.define('cr.ui', function() {
           true);
       document.addEventListener('keydown', this.onDocumentKeyDown_.bind(this),
           true);
+
+      document.addEventListener('mousedown', function(event) {
+        var tagName = event.target.tagName;
+        if (tagName != 'BUTTON' && tagName != 'INPUT')
+          return;
+        var type = event.target.type;
+        if (type == 'button' || type == 'reset' || type == 'submit' ||
+            type == 'radio' || type == 'checkbox') {
+          event.preventDefault();
+        }
+      }, false);
     },
   };
 
