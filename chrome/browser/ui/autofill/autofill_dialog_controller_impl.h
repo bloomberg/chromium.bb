@@ -548,6 +548,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // interact with it.
   void LogDialogLatencyToShow();
 
+  // Sets the state of the autocheckout flow.
+  void SetAutocheckoutState(AutocheckoutState autocheckout_state);
+
   // Returns the metric corresponding to the user's initial state when
   // interacting with this dialog.
   AutofillMetrics::DialogInitialUserStateMetric GetInitialUserState() const;

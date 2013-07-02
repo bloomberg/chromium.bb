@@ -1267,11 +1267,13 @@ gfx::Size AutofillDialogViews::GetPreferredSize() {
   }
 
   int base_height = insets.height();
-  int notification_height = notification_area_->GetPreferredSize().height();
+  int notification_height = notification_area_->
+      GetHeightForWidth(scroll_size.width());
   if (notification_height > 0)
     base_height += notification_height + views::kRelatedControlVerticalSpacing;
 
-  int steps_height = autocheckout_steps_area_->GetPreferredSize().height();
+  int steps_height = autocheckout_steps_area_->
+      GetHeightForWidth(scroll_size.width());
   if (steps_height > 0)
     base_height += steps_height + views::kRelatedControlVerticalSpacing;
 

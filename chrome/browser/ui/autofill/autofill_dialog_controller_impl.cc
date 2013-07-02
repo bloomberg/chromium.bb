@@ -586,12 +586,8 @@ void AutofillDialogControllerImpl::OnAutocheckoutError() {
   GetMetricLogger().LogAutocheckoutDuration(
       base::Time::Now() - autocheckout_started_timestamp_,
       AutofillMetrics::AUTOCHECKOUT_FAILED);
-  autocheckout_state_ = AUTOCHECKOUT_ERROR;
+  SetAutocheckoutState(AUTOCHECKOUT_ERROR);
   autocheckout_started_timestamp_ = base::Time();
-  view_->UpdateNotificationArea();
-  view_->UpdateButtonStrip();
-  view_->UpdateAutocheckoutStepsArea();
-  view_->UpdateDetailArea();
 }
 
 void AutofillDialogControllerImpl::OnAutocheckoutSuccess() {
@@ -599,10 +595,8 @@ void AutofillDialogControllerImpl::OnAutocheckoutSuccess() {
   GetMetricLogger().LogAutocheckoutDuration(
       base::Time::Now() - autocheckout_started_timestamp_,
       AutofillMetrics::AUTOCHECKOUT_SUCCEEDED);
-  autocheckout_state_ = AUTOCHECKOUT_SUCCESS;
+  SetAutocheckoutState(AUTOCHECKOUT_SUCCESS);
   autocheckout_started_timestamp_ = base::Time();
-  view_->UpdateNotificationArea();
-  view_->UpdateButtonStrip();
 }
 
 
@@ -1964,10 +1958,6 @@ void AutofillDialogControllerImpl::OnDidAuthenticateInstrument(bool success) {
   } else {
     DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
     SuggestionsUpdated();
-    view_->UpdateNotificationArea();
-    view_->UpdateButtonStrip();
-    view_->UpdateAutocheckoutStepsArea();
-    view_->UpdateDetailArea();
   }
 }
 
@@ -1984,8 +1974,7 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
     return;
   }
 
-  autocheckout_state_ = AUTOCHECKOUT_NOT_STARTED;
-  view_->UpdateAutocheckoutStepsArea();
+  SetAutocheckoutState(AUTOCHECKOUT_NOT_STARTED);
 
   switch (full_wallet_->required_actions()[0]) {
     case wallet::CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS:
@@ -1998,16 +1987,12 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
 
     case wallet::VERIFY_CVV:
       SuggestionsUpdated();
-      view_->UpdateNotificationArea();
-      view_->UpdateButtonStrip();
       break;
 
     default:
       DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
       break;
   }
-
-  view_->UpdateDetailArea();
 }
 
 void AutofillDialogControllerImpl::OnPassiveSigninSuccess(
@@ -2317,7 +2302,7 @@ void AutofillDialogControllerImpl::DisableWallet(
   wallet_items_.reset();
   wallet_errors_.clear();
   GetWalletClient()->CancelRequests();
-  autocheckout_state_ = AUTOCHECKOUT_NOT_STARTED;
+  SetAutocheckoutState(AUTOCHECKOUT_NOT_STARTED);
   for (std::vector<DialogAutocheckoutStep>::iterator it = steps_.begin();
       it != steps_.end(); ++it) {
     if (it->type() == AUTOCHECKOUT_STEP_PROXY_CARD) {
@@ -2880,13 +2865,7 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
 
   if (GetDialogType() == DIALOG_TYPE_AUTOCHECKOUT) {
     DCHECK_EQ(AUTOCHECKOUT_NOT_STARTED, autocheckout_state_);
-    autocheckout_state_ = AUTOCHECKOUT_IN_PROGRESS;
-    if (view_) {
-      view_->UpdateButtonStrip();
-      view_->UpdateAutocheckoutStepsArea();
-      view_->UpdateDetailArea();
-      view_->UpdateAccountChooser();
-    }
+    SetAutocheckoutState(AUTOCHECKOUT_IN_PROGRESS);
   }
 
   scoped_ptr<wallet::Instrument> inputted_instrument =
@@ -3051,7 +3030,7 @@ void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(
       DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
     }
   }
-
+  SetAutocheckoutState(AUTOCHECKOUT_NOT_STARTED);
   SetIsSubmitting(false);
 }
 
@@ -3109,11 +3088,7 @@ void AutofillDialogControllerImpl::FinishSubmit() {
     // in an Autocheckout flow.
     GetManager()->RemoveObserver(this);
     autocheckout_started_timestamp_ = base::Time::Now();
-    autocheckout_state_ = AUTOCHECKOUT_IN_PROGRESS;
-    view_->UpdateButtonStrip();
-    view_->UpdateAutocheckoutStepsArea();
-    view_->UpdateDetailArea();
-    view_->UpdateNotificationArea();
+    SetAutocheckoutState(AUTOCHECKOUT_IN_PROGRESS);
   }
 
   LogOnFinishSubmitMetrics();
@@ -3261,6 +3236,20 @@ void AutofillDialogControllerImpl::LogDialogLatencyToShow() {
       GetDialogType(),
       base::Time::Now() - dialog_shown_timestamp_);
   was_ui_latency_logged_ = true;
+}
+
+void AutofillDialogControllerImpl::SetAutocheckoutState(
+    AutocheckoutState autocheckout_state) {
+  if (autocheckout_state_ == autocheckout_state)
+    return;
+
+  autocheckout_state_ = autocheckout_state;
+  if (view_) {
+    view_->UpdateDetailArea();
+    view_->UpdateButtonStrip();
+    view_->UpdateAutocheckoutStepsArea();
+    view_->UpdateNotificationArea();
+  }
 }
 
 AutofillMetrics::DialogInitialUserStateMetric
