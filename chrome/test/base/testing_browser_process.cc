@@ -56,6 +56,10 @@ TestingBrowserProcess::~TestingBrowserProcess() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
   SetBrowserPolicyConnector(NULL);
 #endif
+
+  // Destructors for some objects owned by TestingBrowserProcess will use
+  // g_browser_process if it is not NULL, so it must be NULL before proceeding.
+  DCHECK_EQ(static_cast<BrowserProcess*>(NULL), g_browser_process);
 }
 
 void TestingBrowserProcess::ResourceDispatcherHostCreated() {

@@ -53,6 +53,10 @@ void UpdatePlatformShortcuts(
   CreatePlatformShortcuts(web_app_path, shortcut_info, creation_locations);
 }
 
+void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
+  // TODO(mgiuca): Implement this on Linux.
+}
+
 }  // namespace internals
 
 }  // namespace web_app

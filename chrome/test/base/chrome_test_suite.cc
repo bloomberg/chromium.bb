@@ -152,8 +152,10 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
 
   virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
     if (g_browser_process) {
-      delete g_browser_process;
+      BrowserProcess* browser_process = g_browser_process;
+      // g_browser_process must be NULL during its own destruction.
       g_browser_process = NULL;
+      delete browser_process;
     }
 
     // TODO(ios): Bring this back once ChromeContentBrowserClient is building.

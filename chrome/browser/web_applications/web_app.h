@@ -131,6 +131,10 @@ void UpdatePlatformShortcuts(
     const string16& old_app_title,
     const ShellIntegration::ShortcutInfo& shortcut_info);
 
+// Delete all the shortcuts for an entire profile.
+// This is executed on the FILE thread.
+void DeleteAllShortcutsForProfile(const base::FilePath& profile_path);
+
 // Sanitizes |name| and returns a version of it that is safe to use as an
 // on-disk file name .
 base::FilePath GetSanitizedFileName(const string16& name);

@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/path_service.h"
@@ -92,41 +93,63 @@ bool ShouldUpdateIcon(const base::FilePath& icon_file,
                 sizeof(base::MD5Digest)) != 0;
 }
 
-bool ShortcutIsForProfile(const base::FilePath& shortcut_file_name,
-                          const base::FilePath& profile_path) {
+// Returns true if |shortcut_file_name| matches profile |profile_path|, and has
+// an --app-id flag.
+bool IsAppShortcutForProfile(const base::FilePath& shortcut_file_name,
+                             const base::FilePath& profile_path) {
   string16 cmd_line_string;
   if (base::win::ResolveShortcut(shortcut_file_name, NULL, &cmd_line_string)) {
     cmd_line_string = L"program " + cmd_line_string;
     CommandLine shortcut_cmd_line = CommandLine::FromString(cmd_line_string);
     return shortcut_cmd_line.HasSwitch(switches::kProfileDirectory) &&
            shortcut_cmd_line.GetSwitchValuePath(switches::kProfileDirectory) ==
-               profile_path.BaseName();
+               profile_path.BaseName() &&
+           shortcut_cmd_line.HasSwitch(switches::kAppId);
   }
 
   return false;
 }
 
-std::vector<base::FilePath> MatchingShortcutsForProfileAndExtension(
+// Finds shortcuts in |shortcut_path| that match profile for |profile_path| and
+// extension with title |shortcut_name|.
+// If |shortcut_name| is empty, finds all shortcuts matching |profile_path|.
+std::vector<base::FilePath> FindAppShortcutsByProfileAndTitle(
     const base::FilePath& shortcut_path,
     const base::FilePath& profile_path,
     const string16& shortcut_name) {
   std::vector<base::FilePath> shortcut_paths;
-  base::FilePath base_path = shortcut_path.
-      Append(web_app::internals::GetSanitizedFileName(shortcut_name)).
-      AddExtension(FILE_PATH_LITERAL(".lnk"));
 
-  const int fileNamesToCheck = 10;
-  for (int i = 0; i < fileNamesToCheck; ++i) {
-    base::FilePath shortcut_file = base_path;
-    if (i) {
-      shortcut_file = shortcut_file.InsertBeforeExtensionASCII(
-          base::StringPrintf(" (%d)", i));
+  if (shortcut_name.empty()) {
+    // Find all shortcuts for this profile.
+    base::FileEnumerator files(shortcut_path, false,
+                               base::FileEnumerator::FILES,
+                               FILE_PATH_LITERAL("*.lnk"));
+    base::FilePath shortcut_file = files.Next();
+    while (!shortcut_file.empty()) {
+      if (IsAppShortcutForProfile(shortcut_file, profile_path))
+        shortcut_paths.push_back(shortcut_file);
+      shortcut_file = files.Next();
     }
-    if (file_util::PathExists(shortcut_file) &&
-        ShortcutIsForProfile(shortcut_file, profile_path)) {
-      shortcut_paths.push_back(shortcut_file);
+  } else {
+    // Find all shortcuts matching |shortcut_name|.
+    base::FilePath base_path = shortcut_path.
+        Append(web_app::internals::GetSanitizedFileName(shortcut_name)).
+        AddExtension(FILE_PATH_LITERAL(".lnk"));
+
+    const int fileNamesToCheck = 10;
+    for (int i = 0; i < fileNamesToCheck; ++i) {
+      base::FilePath shortcut_file = base_path;
+      if (i > 0) {
+        shortcut_file = shortcut_file.InsertBeforeExtensionASCII(
+            base::StringPrintf(" (%d)", i));
+      }
+      if (file_util::PathExists(shortcut_file) &&
+          IsAppShortcutForProfile(shortcut_file, profile_path)) {
+        shortcut_paths.push_back(shortcut_file);
+      }
     }
   }
+
   return shortcut_paths;
 }
 
@@ -229,6 +252,9 @@ bool CreateShortcutsInPaths(
 // in the profile with |profile_path|.
 // |was_pinned_to_taskbar| will be set to true if there was previously a
 // shortcut pinned to the taskbar for this app; false otherwise.
+// If |web_app_path| is empty, this will not delete shortcuts from the web app
+// directory. If |title| is empty, all shortcuts for this profile will be
+// deleted.
 // |shortcut_paths| will be populated with a list of directories where shortcuts
 // for this app were found (and deleted). This will delete duplicate shortcuts,
 // but only return each path once, even if it contained multiple deleted
@@ -253,16 +279,18 @@ void GetShortcutLocationsAndDeleteShortcuts(
       web_app::GetAppShortcutsSubdirName();
   std::vector<base::FilePath> all_paths = web_app::internals::GetShortcutPaths(
       all_shortcut_locations);
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
+      !web_app_path.empty()) {
     all_paths.push_back(web_app_path);
+  }
 
   if (was_pinned_to_taskbar) {
     // Determine if there is a link to this app in the TaskBar pin directory.
     base::FilePath taskbar_pin_path;
     if (PathService::Get(base::DIR_TASKBAR_PINS, &taskbar_pin_path)) {
       std::vector<base::FilePath> taskbar_pin_files =
-          MatchingShortcutsForProfileAndExtension(taskbar_pin_path,
-                                                  profile_path, title);
+          FindAppShortcutsByProfileAndTitle(taskbar_pin_path, profile_path,
+                                            title);
       *was_pinned_to_taskbar = !taskbar_pin_files.empty();
     } else {
       *was_pinned_to_taskbar = false;
@@ -272,7 +300,7 @@ void GetShortcutLocationsAndDeleteShortcuts(
   for (std::vector<base::FilePath>::const_iterator i = all_paths.begin();
        i != all_paths.end(); ++i) {
     std::vector<base::FilePath> shortcut_files =
-        MatchingShortcutsForProfileAndExtension(*i, profile_path, title);
+        FindAppShortcutsByProfileAndTitle(*i, profile_path, title);
     if (shortcut_paths && !shortcut_files.empty()) {
       shortcut_paths->push_back(*i);
     }
@@ -413,6 +441,19 @@ void DeletePlatformShortcuts(
   GetShortcutLocationsAndDeleteShortcuts(
       web_app_path, shortcut_info.profile_path, shortcut_info.title, NULL,
       NULL);
+
+  // If there are no more shortcuts in the Chrome Apps subdirectory, remove it.
+  base::FilePath chrome_apps_dir;
+  if (PathService::Get(base::DIR_START_MENU, &chrome_apps_dir)) {
+    chrome_apps_dir = chrome_apps_dir.Append(GetAppShortcutsSubdirName());
+    if (file_util::IsDirectoryEmpty(chrome_apps_dir))
+      base::Delete(chrome_apps_dir, false);
+  }
+}
+
+void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
+  GetShortcutLocationsAndDeleteShortcuts(base::FilePath(), profile_path, L"",
+                                         NULL, NULL);
 
   // If there are no more shortcuts in the Chrome Apps subdirectory, remove it.
   base::FilePath chrome_apps_dir;

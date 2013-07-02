@@ -624,6 +624,10 @@ void UpdatePlatformShortcuts(
   shortcut_creator.UpdateShortcuts();
 }
 
+void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
+  // TODO(mgiuca): Implement this on Mac.
+}
+
 }  // namespace internals
 
 }  // namespace web_app

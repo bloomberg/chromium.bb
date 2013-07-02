@@ -11,15 +11,19 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
@@ -50,6 +54,7 @@ namespace apps {
 
 ShortcutManager::ShortcutManager(Profile* profile)
     : profile_(profile),
+      is_profile_info_cache_observer_(false),
       prefs_(profile->GetPrefs()),
       weak_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
@@ -59,9 +64,26 @@ ShortcutManager::ShortcutManager(Profile* profile)
   // Wait for extensions to be ready before running OnceOffCreateShortcuts.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<Profile>(profile_));
+
+  // TODO(mgiuca): This use of g_browser_process should be DCHECKed for
+  // content::BrowserThread::CurrentlyOn(content::BrowserThread::UI). This check
+  // currently fails browser_tests, due to http://crbug.com/251191.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  // profile_manager might be NULL in testing environments.
+  if (profile_manager) {
+    profile_manager->GetProfileInfoCache().AddObserver(this);
+    is_profile_info_cache_observer_ = true;
+  }
 }
 
-ShortcutManager::~ShortcutManager() {}
+ShortcutManager::~ShortcutManager() {
+  if (g_browser_process && is_profile_info_cache_observer_) {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    // profile_manager might be NULL in testing environments or during shutdown.
+    if (profile_manager)
+      profile_manager->GetProfileInfoCache().RemoveObserver(this);
+  }
+}
 
 void ShortcutManager::Observe(int type,
                                  const content::NotificationSource& source,
@@ -110,6 +132,16 @@ void ShortcutManager::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void ShortcutManager::OnProfileWillBeRemoved(
+    const base::FilePath& profile_path) {
+  if (profile_path != profile_->GetPath())
+    return;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&web_app::internals::DeleteAllShortcutsForProfile,
+                 profile_path));
 }
 
 void ShortcutManager::OnceOffCreateShortcuts() {
