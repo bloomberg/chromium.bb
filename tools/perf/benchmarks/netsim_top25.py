@@ -9,7 +9,6 @@ from perf_tools import page_cycler
 class NetsimTop25(test.Test):
   """Measures load time of the top 25 sites under simulated cable network."""
   test = page_cycler.PageCycler
-  test.clear_cache_before_each_run = True
   page_set = 'tools/perf/page_sets/top_25.json'
   options = {
     'extra_wpr_args': [
@@ -18,3 +17,7 @@ class NetsimTop25(test.Test):
       ],
     'pageset_repeat': '5',
     }
+
+  def __init__(self):
+    super(NetsimTop25, self).__init__()
+    self.test.clear_cache_before_each_run = True
