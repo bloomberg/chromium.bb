@@ -109,7 +109,7 @@ class InternetOptionsHandler
       const base::DictionaryValue* shill_properties);
   void PopulateIPConfigsCallback(
       const std::string& service_path,
-      base::DictionaryValue* shill_properties,
+      const base::DictionaryValue* shill_properties,
       const chromeos::NetworkIPConfigVector& ipconfigs,
       const std::string& hardware_address);
   void PopulateConnectionDetails(const chromeos::Network* network,

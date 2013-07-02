@@ -1194,21 +1194,29 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   chromeos::Network* network = cros_->FindNetworkByPath(service_path);
   if (!network)
     return;
-  // Have to copy the properties because the object will go out of scope when
-  // this function call completes (it's owned by the calling function).
-  base::DictionaryValue* shill_props_copy = shill_properties->DeepCopy();
-  cros_->GetIPConfigs(
-      network->device_path(),
-      chromeos::NetworkLibrary::FORMAT_COLON_SEPARATED_HEX,
-      base::Bind(&InternetOptionsHandler::PopulateIPConfigsCallback,
-                 weak_factory_.GetWeakPtr(),
-                 service_path,
-                 base::Owned(shill_props_copy)));
+
+  if (network->device_path().empty()) {
+    PopulateIPConfigsCallback(service_path,
+                              shill_properties,
+                              chromeos::NetworkIPConfigVector(),
+                              std::string());
+  } else {
+    // Have to copy the properties because the object will go out of scope when
+    // this function call completes (it's owned by the calling function).
+    base::DictionaryValue* shill_props_copy = shill_properties->DeepCopy();
+    cros_->GetIPConfigs(
+        network->device_path(),
+        chromeos::NetworkLibrary::FORMAT_COLON_SEPARATED_HEX,
+        base::Bind(&InternetOptionsHandler::PopulateIPConfigsCallback,
+                   weak_factory_.GetWeakPtr(),
+                   service_path,
+                   base::Owned(shill_props_copy)));
+  }
 }
 
 void InternetOptionsHandler::PopulateIPConfigsCallback(
     const std::string& service_path,
-    base::DictionaryValue* shill_properties,
+    const base::DictionaryValue* shill_properties,
     const chromeos::NetworkIPConfigVector& ipconfigs,
     const std::string& hardware_address) {
   if (!shill_properties)
