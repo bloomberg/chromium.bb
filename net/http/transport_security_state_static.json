@@ -616,6 +616,7 @@
     { "name": "whonix.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "blueseed.co", "include_subdomains": true, "mode": "force-https" },
     { "name": "forum.quantifiedself.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "shodan.io", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
