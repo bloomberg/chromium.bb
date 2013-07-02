@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive/metadata_db_migration_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,7 +13,7 @@
 #include "webkit/common/fileapi/file_system_types.h"
 
 namespace sync_file_system {
-namespace drive {
+namespace drive_backend {
 
 namespace {
 
@@ -247,5 +247,5 @@ SyncStatusCode MigrateDatabaseFromV1ToV2(leveldb::DB* db) {
       db->Write(leveldb::WriteOptions(), &write_batch));
 }
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system

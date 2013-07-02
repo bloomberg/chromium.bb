@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive/fake_api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/fake_api_util.h"
 
 #include <algorithm>
 
@@ -12,7 +12,7 @@
 #include "chrome/browser/google_apis/drive_entry_kinds.h"
 
 namespace sync_file_system {
-namespace drive {
+namespace drive_backend {
 
 bool FakeAPIUtil::RemoteResourceComparator::operator()(
     const RemoteResource& left,
@@ -268,5 +268,5 @@ scoped_ptr<google_apis::ResourceEntry> FakeAPIUtil::CreateResourceEntry(
   return entry.Pass();
 }
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system

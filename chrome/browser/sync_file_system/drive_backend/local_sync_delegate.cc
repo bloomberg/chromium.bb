@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive/local_sync_delegate.h"
+#include "chrome/browser/sync_file_system/drive_backend/local_sync_delegate.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_resolver.h"
-#include "chrome/browser/sync_file_system/drive/api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/api_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
 namespace sync_file_system {
-namespace drive {
+namespace drive_backend {
 
 LocalSyncDelegate::LocalSyncDelegate(
     DriveFileSyncService* sync_service,
@@ -600,5 +600,5 @@ ConflictResolutionResolver* LocalSyncDelegate::conflict_resolution_resolver() {
   return &sync_service_->conflict_resolution_resolver_;
 }
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system

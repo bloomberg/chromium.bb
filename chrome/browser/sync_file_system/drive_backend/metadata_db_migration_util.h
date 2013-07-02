@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_METADATA_DB_MIGRATION_UTIL_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_METADATA_DB_MIGRATION_UTIL_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_METADATA_DB_MIGRATION_UTIL_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_METADATA_DB_MIGRATION_UTIL_H_
 
 #include <string>
 
@@ -14,7 +14,7 @@
 class GURL;
 
 namespace sync_file_system {
-namespace drive {
+namespace drive_backend {
 
 // Parses a filesystem URL which contains 'drive' as a service name
 // (a.k.a. V0-format filesystem URL).
@@ -58,7 +58,7 @@ SyncStatusCode MigrateDatabaseFromV0ToV1(leveldb::DB* db);
 // Migrate |db| schema from version 1 to version 2.
 SyncStatusCode MigrateDatabaseFromV1ToV2(leveldb::DB* db);
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_METADATA_DB_MIGRATION_UTIL_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_METADATA_DB_MIGRATION_UTIL_H_

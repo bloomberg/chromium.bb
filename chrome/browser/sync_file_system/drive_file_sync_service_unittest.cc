@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "chrome/browser/sync_file_system/drive/fake_api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/fake_api_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "chrome/test/base/testing_profile.h"
@@ -16,6 +16,9 @@
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
 namespace sync_file_system {
+
+using drive_backend::APIUtilInterface;
+using drive_backend::FakeAPIUtil;
 
 namespace {
 
@@ -49,7 +52,7 @@ class DriveFileSyncServiceTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     RegisterSyncableFileSystem();
-    fake_api_util_ = new drive::FakeAPIUtil;
+    fake_api_util_ = new FakeAPIUtil;
 
     ASSERT_TRUE(scoped_base_dir_.CreateUniqueTempDir());
     base_dir_ = scoped_base_dir_.path();
@@ -64,7 +67,7 @@ class DriveFileSyncServiceTest : public testing::Test {
     sync_service_ = DriveFileSyncService::CreateForTesting(
         &profile_,
         base_dir_,
-        scoped_ptr<drive::APIUtilInterface>(fake_api_util_),
+        scoped_ptr<APIUtilInterface>(fake_api_util_),
         scoped_ptr<DriveMetadataStore>(metadata_store_)).Pass();
     base::MessageLoop::current()->RunUntilIdle();
   }
@@ -83,7 +86,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
  protected:
-  drive::FakeAPIUtil* fake_api_util() { return fake_api_util_; }
+  FakeAPIUtil* fake_api_util() { return fake_api_util_; }
   DriveMetadataStore* metadata_store() { return metadata_store_; }
   DriveFileSyncService* sync_service() { return sync_service_.get(); }
   std::map<GURL, std::string>* pending_batch_sync_origins() {
@@ -140,7 +143,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   TestingProfile profile_;
   base::FilePath base_dir_;
 
-  drive::FakeAPIUtil* fake_api_util_;   // Owned by |sync_service_|.
+  FakeAPIUtil* fake_api_util_;          // Owned by |sync_service_|.
   DriveMetadataStore* metadata_store_;  // Owned by |sync_service_|.
 
   scoped_ptr<DriveFileSyncService> sync_service_;
@@ -195,7 +198,7 @@ TEST_F(DriveFileSyncServiceTest, UninstallOriginWithoutOriginDirectory) {
   EXPECT_TRUE(done);
 
   // Assert the App's origin folder does not exist.
-  const drive::FakeAPIUtil::RemoteResourceByResourceId& remote_resources =
+  const FakeAPIUtil::RemoteResourceByResourceId& remote_resources =
       fake_api_util()->remote_resources();
   EXPECT_TRUE(remote_resources.find(origin_dir_resource_id) ==
               remote_resources.end());

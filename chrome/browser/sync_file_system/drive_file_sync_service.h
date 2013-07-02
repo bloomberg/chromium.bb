@@ -18,7 +18,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_resolver.h"
-#include "chrome/browser/sync_file_system/drive/api_util_interface.h"
+#include "chrome/browser/sync_file_system/drive_backend/api_util_interface.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/local_sync_operation_resolver.h"
@@ -44,7 +44,7 @@ class Location;
 
 namespace sync_file_system {
 
-namespace drive {
+namespace drive_backend {
 class LocalSyncDelegate;
 }
 
@@ -54,7 +54,7 @@ class SyncTaskManager;
 // Owned by SyncFileSystemService (which is a per-profile object).
 class DriveFileSyncService : public RemoteFileSyncService,
                              public LocalChangeProcessor,
-                             public drive::APIUtilObserver,
+                             public drive_backend::APIUtilObserver,
                              public SyncTaskManager::Client,
                              public base::NonThreadSafe,
                              public base::SupportsWeakPtr<DriveFileSyncService>,
@@ -74,13 +74,14 @@ class DriveFileSyncService : public RemoteFileSyncService,
   static scoped_ptr<DriveFileSyncService> CreateForTesting(
       Profile* profile,
       const base::FilePath& base_dir,
-      scoped_ptr<drive::APIUtilInterface> api_util,
+      scoped_ptr<drive_backend::APIUtilInterface> api_util,
       scoped_ptr<DriveMetadataStore> metadata_store);
 
   // Destroys |sync_service| and passes the ownership of |sync_client| to caller
   // for testing.
-  static scoped_ptr<drive::APIUtilInterface> DestroyAndPassAPIUtilForTesting(
-      scoped_ptr<DriveFileSyncService> sync_service);
+  static scoped_ptr<drive_backend::APIUtilInterface>
+      DestroyAndPassAPIUtilForTesting(
+          scoped_ptr<DriveFileSyncService> sync_service);
 
   // RemoteFileSyncService overrides.
   virtual void AddServiceObserver(Observer* observer) OVERRIDE;
@@ -142,7 +143,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
  private:
   friend class SyncTaskManager;
-  friend class drive::LocalSyncDelegate;
+  friend class drive_backend::LocalSyncDelegate;
 
   friend class DriveFileSyncServiceFakeTest;
   friend class DriveFileSyncServiceSyncTest;
@@ -158,11 +159,12 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   void Initialize(scoped_ptr<SyncTaskManager> task_manager,
                   const SyncStatusCallback& callback);
-  void InitializeForTesting(scoped_ptr<SyncTaskManager> task_manager,
-                            const base::FilePath& base_dir,
-                            scoped_ptr<drive::APIUtilInterface> sync_client,
-                            scoped_ptr<DriveMetadataStore> metadata_store,
-                            const SyncStatusCallback& callback);
+  void InitializeForTesting(
+      scoped_ptr<SyncTaskManager> task_manager,
+      const base::FilePath& base_dir,
+      scoped_ptr<drive_backend::APIUtilInterface> sync_client,
+      scoped_ptr<DriveMetadataStore> metadata_store,
+      const SyncStatusCallback& callback);
 
   void DidInitializeMetadataStore(const SyncStatusCallback& callback,
                                   SyncStatusCode status,
@@ -376,13 +378,13 @@ class DriveFileSyncService : public RemoteFileSyncService,
   std::string sync_root_resource_id();
 
   scoped_ptr<DriveMetadataStore> metadata_store_;
-  scoped_ptr<drive::APIUtilInterface> api_util_;
+  scoped_ptr<drive_backend::APIUtilInterface> api_util_;
 
   Profile* profile_;
 
   scoped_ptr<SyncTaskManager> task_manager_;
 
-  scoped_ptr<drive::LocalSyncDelegate> running_local_sync_task_;
+  scoped_ptr<drive_backend::LocalSyncDelegate> running_local_sync_task_;
 
   // The current remote service state. This does NOT reflect the
   // sync_enabled_ flag, while GetCurrentState() DOES reflect the flag

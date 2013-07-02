@@ -14,8 +14,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
-#include "chrome/browser/sync_file_system/drive/api_util.h"
-#include "chrome/browser/sync_file_system/drive/fake_drive_service_helper.h"
+#include "chrome/browser/sync_file_system/drive_backend/api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/fake_remote_change_processor.h"
@@ -37,6 +37,10 @@ using google_apis::GDataErrorCode;
 using google_apis::ResourceEntry;
 
 namespace sync_file_system {
+
+using drive_backend::APIUtil;
+using drive_backend::APIUtilInterface;
+using drive_backend::FakeDriveServiceHelper;
 
 namespace {
 
@@ -96,7 +100,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     drive_uploader_ = new ::drive::DriveUploader(
         fake_drive_service_, base::MessageLoopProxy::current().get());
 
-    fake_drive_helper_.reset(new drive::FakeDriveServiceHelper(
+    fake_drive_helper_.reset(new FakeDriveServiceHelper(
         fake_drive_service_, drive_uploader_));
 
     bool done = false;
@@ -112,16 +116,15 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     EXPECT_EQ(SYNC_STATUS_OK, status);
     EXPECT_TRUE(created);
 
-    scoped_ptr<drive::APIUtil> api_util(
-        drive::APIUtil::CreateForTesting(
-            &profile_,
-            scoped_ptr< ::drive::DriveServiceInterface>(fake_drive_service_),
-            scoped_ptr< ::drive::DriveUploaderInterface>(drive_uploader_)));
+    scoped_ptr<APIUtil> api_util(APIUtil::CreateForTesting(
+        &profile_,
+        scoped_ptr< ::drive::DriveServiceInterface>(fake_drive_service_),
+        scoped_ptr< ::drive::DriveUploaderInterface>(drive_uploader_)));
 
     remote_sync_service_ = DriveFileSyncService::CreateForTesting(
         &profile_,
         fake_drive_helper_->base_dir_path(),
-        api_util.PassAs<drive::APIUtilInterface>(),
+        api_util.PassAs<APIUtilInterface>(),
         metadata_store.Pass());
 
     local_sync_service_->SetLocalChangeProcessor(remote_sync_service_.get());
@@ -413,7 +416,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
   ::drive::FakeDriveService* fake_drive_service_;
   ::drive::DriveUploader* drive_uploader_;
-  scoped_ptr<drive::FakeDriveServiceHelper> fake_drive_helper_;
+  scoped_ptr<FakeDriveServiceHelper> fake_drive_helper_;
   std::map<GURL, CannedSyncableFileSystem*> file_systems_;
 
   scoped_ptr<DriveFileSyncService> remote_sync_service_;
@@ -443,7 +446,7 @@ void DriveFileSyncServiceSyncTest::TestRemoteToLocalBasic() {
   std::string sync_root_folder_id;
   EXPECT_EQ(google_apis::HTTP_CREATED,
             fake_drive_helper_->AddOrphanedFolder(
-                drive::APIUtil::GetSyncRootDirectoryName(),
+                APIUtil::GetSyncRootDirectoryName(),
                 &sync_root_folder_id));
 
   std::string origin_root_folder_id;
@@ -486,7 +489,7 @@ void DriveFileSyncServiceSyncTest::TestRemoteFileUpdate() {
   std::string sync_root_folder_id;
   EXPECT_EQ(google_apis::HTTP_CREATED,
             fake_drive_helper_->AddOrphanedFolder(
-                drive::APIUtil::GetSyncRootDirectoryName(),
+                APIUtil::GetSyncRootDirectoryName(),
                 &sync_root_folder_id));
 
   std::string origin_root_folder_id;
@@ -534,7 +537,7 @@ void DriveFileSyncServiceSyncTest::TestRemoteFileDeletion() {
   std::string sync_root_folder_id;
   EXPECT_EQ(google_apis::HTTP_CREATED,
             fake_drive_helper_->AddOrphanedFolder(
-                drive::APIUtil::GetSyncRootDirectoryName(),
+                APIUtil::GetSyncRootDirectoryName(),
                 &sync_root_folder_id));
 
   std::string origin_root_folder_id;

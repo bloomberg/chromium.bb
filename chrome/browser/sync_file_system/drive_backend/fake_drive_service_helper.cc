@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive/fake_drive_service_helper.h"
+#include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/sync_file_system/drive/api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/api_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -21,7 +21,7 @@ using google_apis::ResourceEntry;
 using google_apis::ResourceList;
 
 namespace sync_file_system {
-namespace drive {
+namespace drive_backend {
 
 namespace {
 
@@ -72,8 +72,8 @@ void DownloadResultCallback(GDataErrorCode* error_out,
 }  // namespace
 
 FakeDriveServiceHelper::FakeDriveServiceHelper(
-    ::drive::FakeDriveService* fake_drive_service,
-    ::drive::DriveUploaderInterface* drive_uploader)
+    drive::FakeDriveService* fake_drive_service,
+    drive::DriveUploaderInterface* drive_uploader)
     : fake_drive_service_(fake_drive_service),
       drive_uploader_(drive_uploader) {
   Initialize();
@@ -175,7 +175,7 @@ GDataErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
   fake_drive_service_->SearchByTitle(
-      drive::APIUtil::GetSyncRootDirectoryName(), std::string(),
+      APIUtil::GetSyncRootDirectoryName(), std::string(),
       base::Bind(&ResourceListResultCallback, &error, &resource_list));
   FlushMessageLoop();
   if (error != google_apis::HTTP_SUCCESS)
@@ -309,5 +309,5 @@ void FakeDriveServiceHelper::FlushMessageLoop() {
   base::MessageLoop::current()->RunUntilIdle();
 }
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system

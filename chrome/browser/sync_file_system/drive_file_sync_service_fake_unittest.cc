@@ -17,8 +17,8 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/browser/sync_file_system/drive/api_util.h"
-#include "chrome/browser/sync_file_system/drive/fake_drive_service_helper.h"
+#include "chrome/browser/sync_file_system/drive_backend/api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
@@ -52,13 +52,16 @@ using ::drive::DriveServiceInterface;
 using ::drive::DriveUploaderInterface;
 using ::drive::FakeDriveService;
 
+using extensions::Extension;
+using extensions::DictionaryBuilder;
 using google_apis::GDataErrorCode;
 using google_apis::ResourceEntry;
 
-using extensions::Extension;
-using extensions::DictionaryBuilder;
-
 namespace sync_file_system {
+
+using drive_backend::APIUtil;
+using drive_backend::APIUtilInterface;
+using drive_backend::FakeDriveServiceHelper;
 
 namespace {
 
@@ -198,10 +201,10 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     DriveUploaderInterface* drive_uploader = new ::drive::DriveUploader(
         fake_drive_service_, base::MessageLoopProxy::current().get());
 
-    fake_drive_helper_.reset(new drive::FakeDriveServiceHelper(
+    fake_drive_helper_.reset(new FakeDriveServiceHelper(
         fake_drive_service_, drive_uploader));
 
-    api_util_ = drive::APIUtil::CreateForTesting(
+    api_util_ = APIUtil::CreateForTesting(
         profile_.get(),
         scoped_ptr<DriveServiceInterface>(fake_drive_service_),
         scoped_ptr<DriveUploaderInterface>(drive_uploader)).Pass();
@@ -222,7 +225,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     // Setup the sync root directory.
     EXPECT_EQ(google_apis::HTTP_CREATED,
               fake_drive_helper_->AddOrphanedFolder(
-                  drive::APIUtil::GetSyncRootDirectoryName(),
+                  APIUtil::GetSyncRootDirectoryName(),
                   &sync_root_resource_id_));
     metadata_store()->SetSyncRootDirectory(sync_root_resource_id_);
   }
@@ -231,7 +234,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     sync_service_ = DriveFileSyncService::CreateForTesting(
         profile_.get(),
         fake_drive_helper_->base_dir_path(),
-        api_util_.PassAs<drive::APIUtilInterface>(),
+        api_util_.PassAs<APIUtilInterface>(),
         metadata_store_.Pass()).Pass();
     sync_service_->AddFileStatusObserver(&mock_file_status_observer_);
     sync_service_->SetRemoteChangeProcessor(mock_remote_processor());
@@ -290,7 +293,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     EXPECT_EQ(d_size, metadata_store()->disabled_origins().size());
   }
 
-  drive::APIUtilInterface* api_util() {
+  APIUtilInterface* api_util() {
     if (api_util_)
       return api_util_.get();
     return sync_service_->api_util_.get();
@@ -422,12 +425,12 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
   ExtensionService* extension_service_;
 
   FakeDriveService* fake_drive_service_;
-  scoped_ptr<drive::FakeDriveServiceHelper> fake_drive_helper_;
+  scoped_ptr<FakeDriveServiceHelper> fake_drive_helper_;
 
   StrictMock<MockFileStatusObserver> mock_file_status_observer_;
   StrictMock<MockRemoteChangeProcessor> mock_remote_processor_;
 
-  scoped_ptr<drive::APIUtil> api_util_;
+  scoped_ptr<APIUtil> api_util_;
   scoped_ptr<DriveMetadataStore> metadata_store_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncServiceFakeTest);

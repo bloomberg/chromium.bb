@@ -21,8 +21,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync_file_system/drive/api_util.h"
-#include "chrome/browser/sync_file_system/drive/local_sync_delegate.h"
+#include "chrome/browser/sync_file_system/drive_backend/api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/local_sync_delegate.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
@@ -139,7 +139,7 @@ scoped_ptr<DriveFileSyncService> DriveFileSyncService::Create(
 scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
     Profile* profile,
     const base::FilePath& base_dir,
-    scoped_ptr<drive::APIUtilInterface> api_util,
+    scoped_ptr<drive_backend::APIUtilInterface> api_util,
     scoped_ptr<DriveMetadataStore> metadata_store) {
   scoped_ptr<DriveFileSyncService> service(new DriveFileSyncService(profile));
   scoped_ptr<SyncTaskManager> task_manager(
@@ -154,7 +154,7 @@ scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
   return service.Pass();
 }
 
-scoped_ptr<drive::APIUtilInterface>
+scoped_ptr<drive_backend::APIUtilInterface>
 DriveFileSyncService::DestroyAndPassAPIUtilForTesting(
     scoped_ptr<DriveFileSyncService> sync_service) {
   return sync_service->api_util_.Pass();
@@ -360,7 +360,7 @@ void DriveFileSyncService::Initialize(
   temporary_file_dir_ =
       profile_->GetPath().Append(GetSyncFileSystemDir()).Append(kTempDirName);
 
-  api_util_.reset(new drive::APIUtil(profile_));
+  api_util_.reset(new drive_backend::APIUtil(profile_));
   api_util_->AddObserver(this);
 
   metadata_store_.reset(new DriveMetadataStore(
@@ -376,7 +376,7 @@ void DriveFileSyncService::Initialize(
 void DriveFileSyncService::InitializeForTesting(
     scoped_ptr<SyncTaskManager> task_manager,
     const base::FilePath& base_dir,
-    scoped_ptr<drive::APIUtilInterface> api_util,
+    scoped_ptr<drive_backend::APIUtilInterface> api_util,
     scoped_ptr<DriveMetadataStore> metadata_store,
     const SyncStatusCallback& callback) {
   DCHECK(!metadata_store_);
@@ -644,7 +644,7 @@ void DriveFileSyncService::DoApplyLocalChange(
   }
 
   DCHECK(!running_local_sync_task_);
-  running_local_sync_task_.reset(new drive::LocalSyncDelegate(
+  running_local_sync_task_.reset(new drive_backend::LocalSyncDelegate(
       this, local_file_change, local_file_path, local_file_metadata, url));
   running_local_sync_task_->Run(base::Bind(
       &DriveFileSyncService::DidApplyLocalChange, AsWeakPtr(), callback));

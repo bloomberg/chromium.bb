@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_LOCAL_SYNC_DELEGATE_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_LOCAL_SYNC_DELEGATE_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_LOCAL_SYNC_DELEGATE_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_LOCAL_SYNC_DELEGATE_H_
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -19,7 +19,7 @@ namespace sync_file_system {
 class ConflictResolutionResolver;
 class DriveMetadataStore;
 
-namespace drive {
+namespace drive_backend {
 
 class APIUtil;
 
@@ -114,7 +114,7 @@ class LocalSyncDelegate {
       google_apis::GDataErrorCode error);
 
   DriveMetadataStore* metadata_store();
-  drive::APIUtilInterface* api_util();
+  APIUtilInterface* api_util();
   RemoteChangeHandler* remote_change_handler();
   ConflictResolutionResolver* conflict_resolution_resolver();
 
@@ -138,7 +138,7 @@ class LocalSyncDelegate {
   DISALLOW_COPY_AND_ASSIGN(LocalSyncDelegate);
 };
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_LOCAL_SYNC_DELEGATE_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_LOCAL_SYNC_DELEGATE_H_

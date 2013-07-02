@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FAKE_API_UTIL_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FAKE_API_UTIL_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_FAKE_API_UTIL_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_FAKE_API_UTIL_H_
 
 #include <map>
 #include <string>
@@ -11,7 +11,7 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
-#include "chrome/browser/sync_file_system/drive/api_util_interface.h"
+#include "chrome/browser/sync_file_system/drive_backend/api_util_interface.h"
 #include "webkit/browser/fileapi/syncable/sync_file_type.h"
 
 class GURL;
@@ -22,7 +22,7 @@ class ResourceEntry;
 }
 
 namespace sync_file_system {
-namespace drive {
+namespace drive_backend {
 
 class FakeAPIUtil : public APIUtilInterface {
  public:
@@ -126,7 +126,7 @@ class FakeAPIUtil : public APIUtilInterface {
   DISALLOW_COPY_AND_ASSIGN(FakeAPIUtil);
 };
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FAKE_API_UTIL_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_FAKE_API_UTIL_H_

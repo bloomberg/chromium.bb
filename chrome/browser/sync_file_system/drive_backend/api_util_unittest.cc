@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive/api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/api_util.h"
 
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
@@ -23,17 +23,17 @@
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
-using ::drive::DriveServiceInterface;
-using ::drive::DriveUploaderInterface;
-using ::drive::FakeDriveService;
-using ::drive::UploadCompletionCallback;
+using drive::DriveServiceInterface;
+using drive::DriveUploaderInterface;
+using drive::FakeDriveService;
+using drive::UploadCompletionCallback;
 using google_apis::GDataErrorCode;
 using google_apis::ProgressCallback;
 using google_apis::ResourceEntry;
 using google_apis::ResourceList;
 
 namespace sync_file_system {
-namespace drive {
+namespace drive_backend {
 
 namespace {
 
@@ -1157,5 +1157,5 @@ TEST_F(APIUtilTest, CreateDirectory_WAPI) {
 
 #endif  // !defined(OS_ANDROID)
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system

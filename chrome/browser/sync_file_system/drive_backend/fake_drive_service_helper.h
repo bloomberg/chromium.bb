@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FAKE_DRIVE_SERVICE_HELPER_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FAKE_DRIVE_SERVICE_HELPER_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_FAKE_DRIVE_SERVICE_HELPER_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_FAKE_DRIVE_SERVICE_HELPER_H_
 
 #include <string>
 
@@ -17,12 +17,12 @@ class FilePath;
 }
 
 namespace sync_file_system {
-namespace drive {
+namespace drive_backend {
 
 class FakeDriveServiceHelper {
  public:
-  FakeDriveServiceHelper(::drive::FakeDriveService* fake_drive_service,
-                         ::drive::DriveUploaderInterface* drive_uploader);
+  FakeDriveServiceHelper(drive::FakeDriveService* fake_drive_service,
+                         drive::DriveUploaderInterface* drive_uploader);
   virtual ~FakeDriveServiceHelper();
 
   google_apis::GDataErrorCode AddOrphanedFolder(
@@ -74,11 +74,11 @@ class FakeDriveServiceHelper {
   base::FilePath temp_dir_;
 
   // Not own.
-  ::drive::FakeDriveService* fake_drive_service_;
-  ::drive::DriveUploaderInterface* drive_uploader_;
+  drive::FakeDriveService* fake_drive_service_;
+  drive::DriveUploaderInterface* drive_uploader_;
 };
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FAKE_DRIVE_SERVICE_HELPER_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_FAKE_DRIVE_SERVICE_HELPER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive/metadata_db_migration_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
@@ -19,7 +19,7 @@
 #define FPL FILE_PATH_LITERAL
 
 namespace sync_file_system {
-namespace drive {
+namespace drive_backend {
 
 namespace {
 
@@ -143,7 +143,7 @@ TEST(DriveMetadataDBMigrationUtilTest, MigrationFromV0) {
   EXPECT_EQ(SYNC_STATUS_OK, LevelDBStatusToSyncStatusCode(status));
 
   // Migrate the database.
-  drive::MigrateDatabaseFromV0ToV1(db.get());
+  MigrateDatabaseFromV0ToV1(db.get());
 
   scoped_ptr<leveldb::Iterator> itr(db->NewIterator(leveldb::ReadOptions()));
 
@@ -256,7 +256,7 @@ TEST(DriveMetadataDBMigrationUtilTest, MigrationFromV1) {
   RevokeSyncableFileSystem();
 
   // Migrate the database.
-  drive::MigrateDatabaseFromV1ToV2(db.get());
+  MigrateDatabaseFromV1ToV2(db.get());
 
   scoped_ptr<leveldb::Iterator> itr(db->NewIterator(leveldb::ReadOptions()));
 
@@ -305,5 +305,5 @@ TEST(DriveMetadataDBMigrationUtilTest, MigrationFromV1) {
   EXPECT_EQ(RemoveWapiIdPrefix(kResourceId3), itr->value().ToString());
 }
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive/fake_api_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/fake_api_util.h"
 
 #include <string>
 
@@ -13,7 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_file_system {
-namespace drive {
+namespace drive_backend {
 
 namespace {
 
@@ -137,5 +137,5 @@ TEST(FakeAPIUtilTest, DeleteFile) {
   EXPECT_TRUE(api_util.remote_resources().find(resource_id)->second.deleted);
 }
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system

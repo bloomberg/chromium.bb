@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_API_UTIL_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_API_UTIL_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_API_UTIL_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_API_UTIL_H_
 
 #include <map>
 #include <string>
@@ -13,7 +13,7 @@
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
-#include "chrome/browser/sync_file_system/drive/api_util_interface.h"
+#include "chrome/browser/sync_file_system/drive_backend/api_util_interface.h"
 #include "net/base/network_change_notifier.h"
 
 class GURL;
@@ -22,13 +22,13 @@ class Profile;
 namespace drive { class DriveUploaderInterface; }
 
 namespace sync_file_system {
-namespace drive {
+namespace drive_backend {
 
 // This class is responsible for talking to the Drive service to get and put
 // Drive directories, files and metadata.
 // This class is owned by DriveFileSyncService.
-class APIUtil : public drive::APIUtilInterface,
-                public ::drive::DriveServiceObserver,
+class APIUtil : public APIUtilInterface,
+                public drive::DriveServiceObserver,
                 public net::NetworkChangeNotifier::ConnectionTypeObserver,
                 public base::NonThreadSafe,
                 public base::SupportsWeakPtr<APIUtil> {
@@ -52,8 +52,8 @@ class APIUtil : public drive::APIUtilInterface,
 
   static scoped_ptr<APIUtil> CreateForTesting(
       Profile* profile,
-      scoped_ptr< ::drive::DriveServiceInterface> drive_service,
-      scoped_ptr< ::drive::DriveUploaderInterface> drive_uploader);
+      scoped_ptr<drive::DriveServiceInterface> drive_service,
+      scoped_ptr<drive::DriveUploaderInterface> drive_uploader);
 
   // APIUtilInterface overrides.
   virtual void GetDriveDirectoryForSyncRoot(const ResourceIdCallback& callback)
@@ -116,8 +116,8 @@ class APIUtil : public drive::APIUtilInterface,
   // Constructor for test use.
   APIUtil(Profile* profile,
           const GURL& base_url,
-          scoped_ptr< ::drive::DriveServiceInterface> drive_service,
-          scoped_ptr< ::drive::DriveUploaderInterface> drive_uploader);
+          scoped_ptr<drive::DriveServiceInterface> drive_service,
+          scoped_ptr<drive::DriveUploaderInterface> drive_uploader);
 
   void GetDriveRootResourceId(const GDataErrorCallback& callback);
   void DidGetDriveRootResourceId(
@@ -233,8 +233,8 @@ class APIUtil : public drive::APIUtilInterface,
 
   std::string GetRootResourceId() const;
 
-  scoped_ptr< ::drive::DriveServiceInterface> drive_service_;
-  scoped_ptr< ::drive::DriveUploaderInterface> drive_uploader_;
+  scoped_ptr<drive::DriveServiceInterface> drive_service_;
+  scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
 
   google_apis::GDataWapiUrlGenerator wapi_url_generator_;
   google_apis::DriveApiUrlGenerator drive_api_url_generator_;
@@ -249,7 +249,7 @@ class APIUtil : public drive::APIUtilInterface,
   DISALLOW_COPY_AND_ASSIGN(APIUtil);
 };
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_API_UTIL_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_API_UTIL_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_API_UTIL_INTERFACE_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_API_UTIL_INTERFACE_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_API_UTIL_INTERFACE_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_API_UTIL_INTERFACE_H_
 
 #include <string>
 
@@ -23,7 +23,7 @@ class DriveUploaderInterface;
 }
 
 namespace sync_file_system {
-namespace drive {
+namespace drive_backend {
 
 class APIUtilObserver {
  public:
@@ -192,7 +192,7 @@ class APIUtilInterface {
   DISALLOW_COPY_AND_ASSIGN(APIUtilInterface);
 };
 
-}  // namespace drive
+}  // namespace drive_backend
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_API_UTIL_INTERFACE_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_API_UTIL_INTERFACE_H_

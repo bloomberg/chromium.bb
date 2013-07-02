@@ -18,7 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/sync_file_system/drive/metadata_db_migration_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/file_metadata.h"
@@ -173,10 +173,10 @@ SyncStatusCode MigrateDatabaseIfNeeded(leveldb::DB* db) {
 
   switch (version) {
     case 0:
-      drive::MigrateDatabaseFromV0ToV1(db);
+      drive_backend::MigrateDatabaseFromV0ToV1(db);
       // fall-through
     case 1:
-      drive::MigrateDatabaseFromV1ToV2(db);
+      drive_backend::MigrateDatabaseFromV1ToV2(db);
       // fall-through
     case 2:
       DCHECK_EQ(2, kCurrentDatabaseVersion);
@@ -208,7 +208,7 @@ SyncStatusCode ReadContents(DBContents* contents) {
     if (key == kSyncRootDirectoryKey) {
       std::string resource_id = itr->value().ToString();
       if (IsDriveAPIDisabled())
-        resource_id = drive::AddWapiFolderPrefix(resource_id);
+        resource_id = drive_backend::AddWapiFolderPrefix(resource_id);
       contents->sync_root_directory_resource_id = resource_id;
       continue;
     }
@@ -223,8 +223,8 @@ SyncStatusCode ReadContents(DBContents* contents) {
       DCHECK(success);
 
       if (IsDriveAPIDisabled()) {
-        metadata.set_resource_id(
-            drive::AddWapiIdPrefix(metadata.resource_id(), metadata.type()));
+        metadata.set_resource_id(drive_backend::AddWapiIdPrefix(
+            metadata.resource_id(), metadata.type()));
       }
 
       success = contents->metadata_map[origin].insert(
@@ -238,7 +238,7 @@ SyncStatusCode ReadContents(DBContents* contents) {
       DCHECK(origin.is_valid());
 
       std::string origin_resource_id = IsDriveAPIDisabled()
-          ? drive::AddWapiFolderPrefix(itr->value().ToString())
+          ? drive_backend::AddWapiFolderPrefix(itr->value().ToString())
           : itr->value().ToString();
 
       DCHECK(!ContainsKey(contents->incremental_sync_origins, origin));
@@ -251,7 +251,7 @@ SyncStatusCode ReadContents(DBContents* contents) {
       DCHECK(origin.is_valid());
 
       std::string origin_resource_id = IsDriveAPIDisabled()
-          ? drive::AddWapiFolderPrefix(itr->value().ToString())
+          ? drive_backend::AddWapiFolderPrefix(itr->value().ToString())
           : itr->value().ToString();
 
       DCHECK(!ContainsKey(contents->disabled_origins, origin));
@@ -443,7 +443,7 @@ void DriveMetadataStore::UpdateEntry(
   if (IsDriveAPIDisabled()) {
     DriveMetadata metadata_in_db(metadata);
     metadata_in_db.set_resource_id(
-        drive::RemoveWapiIdPrefix(metadata.resource_id()));
+        drive_backend::RemoveWapiIdPrefix(metadata.resource_id()));
     bool success = metadata_in_db.SerializeToString(&value);
     DCHECK(success);
   } else {
@@ -511,7 +511,7 @@ void DriveMetadataStore::AddIncrementalSyncOrigin(
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
   batch->Delete(CreateKeyForOriginRoot(origin, DISABLED_ORIGIN));
   batch->Put(CreateKeyForOriginRoot(origin, INCREMENTAL_SYNC_ORIGIN),
-             drive::RemoveWapiIdPrefix(resource_id));
+             drive_backend::RemoveWapiIdPrefix(resource_id));
   WriteToDB(batch.Pass(),
             base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
 }
@@ -522,7 +522,8 @@ void DriveMetadataStore::SetSyncRootDirectory(const std::string& resource_id) {
   sync_root_directory_resource_id_ = resource_id;
 
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
-  batch->Put(kSyncRootDirectoryKey, drive::RemoveWapiIdPrefix(resource_id));
+  batch->Put(kSyncRootDirectoryKey,
+             drive_backend::RemoveWapiIdPrefix(resource_id));
   return WriteToDB(batch.Pass(),
                    base::Bind(&DriveMetadataStore::UpdateDBStatus,
                               AsWeakPtr()));
@@ -550,7 +551,7 @@ void DriveMetadataStore::SetOriginRootDirectory(
   DCHECK(!key.empty());
 
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
-  batch->Put(key, drive::RemoveWapiIdPrefix(resource_id));
+  batch->Put(key, drive_backend::RemoveWapiIdPrefix(resource_id));
   WriteToDB(batch.Pass(),
             base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
 }
@@ -608,7 +609,7 @@ void DriveMetadataStore::DisableOrigin(
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
   batch->Delete(CreateKeyForOriginRoot(origin, INCREMENTAL_SYNC_ORIGIN));
   batch->Put(CreateKeyForOriginRoot(origin, DISABLED_ORIGIN),
-             drive::RemoveWapiIdPrefix(resource_id));
+             drive_backend::RemoveWapiIdPrefix(resource_id));
   AppendMetadataDeletionToBatch(metadata_map_, origin, batch.get());
   metadata_map_.erase(origin);
 

@@ -14,7 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/sync_file_system/drive/metadata_db_migration_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_db_migration_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/file_metadata.h"
@@ -53,7 +53,7 @@ std::string GetResourceID(const ResourceIdByOrigin& sync_origins,
 
 std::string CreateResourceId(const std::string& resource_id) {
   return IsDriveAPIDisabled() ? resource_id
-                              : drive::RemoveWapiIdPrefix(resource_id);
+                              : drive_backend::RemoveWapiIdPrefix(resource_id);
 }
 
 DriveMetadata CreateMetadata(const std::string& resource_id,
