@@ -29,42 +29,36 @@
 #include "native_client/tests/toolchain/utils.h"
 
 /* Volatile to prevent library-call constant folding optimizations. */
-volatile float f32[] =  {5.0, 16.0, 10.0, M_PI, M_PI_2, M_E };
-volatile double f64[] = {5.0, 16.0, 10.0, M_PI, M_PI_2, M_E };
+volatile float f32[] =  {NAN, -INFINITY, -HUGE_VALF,
+                         /* e^(-M_PI) may be broken on mips QEMU. */
+                         -0.5, -0.0, 0.0,
+                         5.0, 16.0, 10.0, M_PI, M_PI_2, M_E,
+                         HUGE_VALF, INFINITY };
+volatile double f64[] = {NAN, -INFINITY, -HUGE_VAL,
+                         /* e^(-M_PI) may be broken on mips QEMU. */
+                         -0.5, -0.0, 0.0,
+                         5.0, 16.0, 10.0, M_PI, M_PI_2, M_E,
+                         HUGE_VAL, INFINITY };
 
 volatile float base32 = 2.0;
+volatile float neg_base32 = -2.0;
 volatile double base64 = 2.0;
+volatile double neg_base64 = -2.0;
+
 /*
- * c.f. for a list of these
- * llvm-trunk/lib/CodeGen/SelectionDAG/TargetLowering.cpp
+ * The LLVM language reference considers this undefined for values < -0.0.
+ * In practice hardware sqrt instructions returns NaN in that case.
+ * We will need to guarantee this behavior.
  */
 double llvm_intrinsic_sqrt(double) __asm__("llvm.sqrt.f64");
 float llvm_intrinsic_sqrtf(float) __asm__("llvm.sqrt.f32");
 
-double llvm_intrinsic_log(double) __asm__("llvm.log.f64");
-float llvm_intrinsic_logf(float) __asm__("llvm.log.f32");
-
-double llvm_intrinsic_log2(double) __asm__("llvm.log2.f64");
-float llvm_intrinsic_log2f(float) __asm__("llvm.log2.f32");
-
-double llvm_intrinsic_log10(double) __asm__("llvm.log10.f64");
-float llvm_intrinsic_log10f(float) __asm__("llvm.log10.f32");
-
-double llvm_intrinsic_exp(double) __asm__("llvm.exp.f64");
-float llvm_intrinsic_expf(float) __asm__("llvm.exp.f32");
-
-double llvm_intrinsic_exp2(double) __asm__("llvm.exp2.f64");
-float llvm_intrinsic_exp2f(float) __asm__("llvm.exp2.f32");
-
-double llvm_intrinsic_sin(double) __asm__("llvm.sin.f64");
-float llvm_intrinsic_sinf(float) __asm__("llvm.sin.f32");
-
-double llvm_intrinsic_cos(double) __asm__("llvm.cos.f64");
-float llvm_intrinsic_cosf(float) __asm__("llvm.cos.f32");
-
-double llvm_intrinsic_pow(double, double) __asm__("llvm.pow.f64");
-float llvm_intrinsic_powf(float, float) __asm__("llvm.pow.f32");
-
+/*
+ * Note: This can end up printing NAN and INFINITY values.
+ * For floating point conversions to strings, C99 only asks for the
+ * prefix to match "nan" and "inf".  The case can vary as well.
+ * Watch out for standard library changes.
+ */
 #define print_op1(prec, op, x)                                      \
   printf("%s (math.h): %." #prec "f\n", #op, op(x));                \
   printf("%s (builtin): %." #prec "f\n", #op, __builtin_ ## op(x));
@@ -73,14 +67,22 @@ float llvm_intrinsic_powf(float, float) __asm__("llvm.pow.f32");
   printf("%s (llvm): %." #prec "f\n", #op, llvm_intrinsic_ ## op(x))
 
 #define print_op2(prec, op, x, y)                                       \
-  printf("%s (math.h): %." #prec "f\n", #op, op(x, y));                 \
-  printf("%s (builtin): %." #prec "f\n", #op, __builtin_ ## op(x, y));
-
-#define print_op2_llvm(prec, op, x, y)                                  \
-  printf("%s (llvm): %." #prec "f\n", #op, llvm_intrinsic_ ## op(x, y))
+  printf("%s(%f, %f) (math.h): %." #prec "f\n", #op, x, y, op(x, y));   \
+  printf("%s(%f, %f) (builtin): %." #prec "f\n", #op, \
+         x, y, __builtin_ ## op(x, y));
 
 int main(int argc, char* argv[]) {
   int i;
+
+  /*
+   * Sqrt can end up converting SNaN to infinity under MIPS QEMU 0.12.
+   * For now, use 0.0f / 0.0f to work around that.
+   * http://code.google.com/p/nativeclient/issues/detail?id=3533
+   *
+   * Replace the NAN entries.
+   */
+  volatile float zero = 0.0f; f32[0] = zero / zero; f64[0] = zero / zero;
+
   for (i = 0; i < ARRAY_SIZE_UNSAFE(f32); ++i) {
     printf("\nf32 value is: %.6f\n",  f32[i]);
     print_op1(5, sqrtf, f32[i]);
@@ -92,6 +94,7 @@ int main(int argc, char* argv[]) {
     print_op1(4, exp2f, f32[i]);
     print_op1(5, sinf, f32[i]);
     print_op1(5, cosf, f32[i]);
+    print_op2(5, powf, neg_base32, f32[i]);
     print_op2(5, powf, base32, f32[i]);
   }
 
@@ -106,6 +109,7 @@ int main(int argc, char* argv[]) {
     print_op1(6, exp2, f64[i]);
     print_op1(6, sin, f64[i]);
     print_op1(6, cos, f64[i]);
+    print_op2(6, pow, neg_base64, f64[i]);
     print_op2(6, pow, base64, f64[i]);
   }
 
