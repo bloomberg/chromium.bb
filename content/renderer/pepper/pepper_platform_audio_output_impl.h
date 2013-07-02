@@ -75,7 +75,8 @@ class PepperPlatformAudioOutputImpl
   // I/O thread except to send messages and get the message loop.
   scoped_ptr<media::AudioOutputIPC> ipc_;
 
-  base::MessageLoopProxy* main_message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> main_message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformAudioOutputImpl);
 };

@@ -101,6 +101,7 @@ class PepperPlatformAudioInputImpl
   scoped_ptr<media::AudioInputIPC> ipc_;
 
   scoped_refptr<base::MessageLoopProxy> main_message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
   // THIS MUST ONLY BE ACCESSED ON THE MAIN THREAD.
   base::WeakPtr<PepperPluginDelegateImpl> plugin_delegate_;
