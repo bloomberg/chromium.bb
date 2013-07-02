@@ -95,7 +95,7 @@ template<class HolderContainer, class Wrappable>
 inline v8::Handle<v8::Value> toV8Fast(TestNode* impl, const HolderContainer& container, Wrappable* wrappable)
 {
     if (UNLIKELY(!impl))
-        return v8Null(container.GetIsolate());
+        return v8::Null(container.GetIsolate());
     v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast(impl, container, wrappable);
     if (!wrapper.IsEmpty())
         return wrapper;
@@ -107,7 +107,7 @@ inline v8::Handle<v8::Value> toV8FastForMainWorld(TestNode* impl, const HolderCo
 {
     ASSERT(worldType(container.GetIsolate()) == MainWorld);
     if (UNLIKELY(!impl))
-        return v8Null(container.GetIsolate());
+        return v8::Null(container.GetIsolate());
     v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
     if (!wrapper.IsEmpty())
         return wrapper;

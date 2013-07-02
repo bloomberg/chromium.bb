@@ -99,7 +99,7 @@ static void unsignedLongLongAttrAttrSetterCallback(v8::Local<v8::String> name, v
 static void immutableSerializedScriptValueAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    v8SetReturnValue(info, imp->immutableSerializedScriptValue() ? imp->immutableSerializedScriptValue()->deserialize() : v8::Handle<v8::Value>(v8Null(info.GetIsolate())));
+    v8SetReturnValue(info, imp->immutableSerializedScriptValue() ? imp->immutableSerializedScriptValue()->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
     return;
 }
 

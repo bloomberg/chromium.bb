@@ -83,42 +83,58 @@ static void anotherFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Val
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMIndexedProperty");
     V8TestCustomAccessors::indexedPropertyGetterCustom(index, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMIndexedProperty");
     V8TestCustomAccessors::indexedPropertySetterCustom(index, value, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMIndexedProperty");
     V8TestCustomAccessors::indexedPropertyDeleterCustom(index, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
     V8TestCustomAccessors::namedPropertyGetterCustom(name, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
     V8TestCustomAccessors::namedPropertySetterCustom(name, value, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
     V8TestCustomAccessors::namedPropertyDeleterCustom(name, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
     V8TestCustomAccessors::namedPropertyEnumeratorCustom(info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
     V8TestCustomAccessors::namedPropertyQueryCustom(name, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 } // namespace TestCustomAccessorsV8Internal

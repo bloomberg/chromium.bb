@@ -66,7 +66,7 @@ template <typename T> void V8_USE(T) { }
 static void valueAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
-    v8SetReturnValue(info, imp->value() ? imp->value()->deserialize() : v8::Handle<v8::Value>(v8Null(info.GetIsolate())));
+    v8SetReturnValue(info, imp->value() ? imp->value()->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
     return;
 }
 
@@ -93,7 +93,7 @@ static void valueAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Va
 static void readonlyValueAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
-    v8SetReturnValue(info, imp->readonlyValue() ? imp->readonlyValue()->deserialize() : v8::Handle<v8::Value>(v8Null(info.GetIsolate())));
+    v8SetReturnValue(info, imp->readonlyValue() ? imp->readonlyValue()->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
     return;
 }
 
@@ -112,7 +112,7 @@ static void cachedValueAttrGetter(v8::Local<v8::String> name, const v8::Property
     }
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     RefPtr<SerializedScriptValue> serialized = imp->cachedValue();
-    value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8Null(info.GetIsolate()));
+    value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(propertyName, value);
     v8SetReturnValue(info, value);
     return;
@@ -149,7 +149,7 @@ static void cachedReadonlyValueAttrGetter(v8::Local<v8::String> name, const v8::
     }
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     RefPtr<SerializedScriptValue> serialized = imp->cachedReadonlyValue();
-    value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8Null(info.GetIsolate()));
+    value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(propertyName, value);
     v8SetReturnValue(info, value);
     return;

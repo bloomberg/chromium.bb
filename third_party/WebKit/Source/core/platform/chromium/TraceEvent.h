@@ -794,6 +794,7 @@ private:
 };
 
 class SamplingState0Scope {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
     SamplingState0Scope(const char* name)
     {

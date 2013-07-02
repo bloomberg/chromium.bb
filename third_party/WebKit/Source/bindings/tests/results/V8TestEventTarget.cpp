@@ -178,7 +178,9 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMIndexedProperty");
     TestEventTargetV8Internal::indexedPropertyGetter(index, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void indexedPropertyDeleter(unsigned index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
@@ -195,7 +197,9 @@ static void indexedPropertyDeleter(unsigned index, const v8::PropertyCallbackInf
 
 static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMIndexedProperty");
     TestEventTargetV8Internal::indexedPropertyDeleter(index, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -218,7 +222,9 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
     TestEventTargetV8Internal::namedPropertyGetter(name, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -244,7 +250,9 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
 
 static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
     TestEventTargetV8Internal::namedPropertySetter(name, value, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
@@ -257,7 +265,9 @@ static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyC
 
 static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
     TestEventTargetV8Internal::namedPropertyDeleter(name, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
@@ -293,12 +303,16 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 
 static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
     TestEventTargetV8Internal::namedPropertyEnumerator(info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMNamedProperty");
     TestEventTargetV8Internal::namedPropertyQuery(name, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 } // namespace TestEventTargetV8Internal

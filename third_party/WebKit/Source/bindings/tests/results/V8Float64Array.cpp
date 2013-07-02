@@ -108,12 +108,16 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMIndexedProperty");
     V8Float64Array::indexedPropertyGetterCustom(index, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    TRACE_EVENT_SAMPLING_STATE0("Blink\0Blink-DOMIndexedProperty");
     V8Float64Array::indexedPropertySetterCustom(index, value, info);
+    TRACE_EVENT_SAMPLING_STATE0("V8\0V8-Execution");
 }
 
 } // namespace Float64ArrayV8Internal

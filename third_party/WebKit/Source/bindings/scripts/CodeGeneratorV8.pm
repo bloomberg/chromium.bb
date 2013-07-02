@@ -3283,11 +3283,13 @@ sub GenerateImplementationIndexedPropertyGetterCallback
 
     my $code = "static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMIndexedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::indexedPropertyGetterCustom(index, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::indexedPropertyGetter(index, info);\n";
     }
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3301,11 +3303,13 @@ sub GenerateImplementationIndexedPropertySetterCallback
 
     my $code = "static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMIndexedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::indexedPropertySetterCustom(index, value, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::indexedPropertySetter(index, value, info);\n";
     }
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3319,11 +3323,13 @@ sub GenerateImplementationIndexedPropertyDeleterCallback
 
     my $code = "static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
     $code .= "{\n";
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMIndexedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::indexedPropertyDeleterCustom(index, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::indexedPropertyDeleter(index, info);\n";
     }
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3459,11 +3465,13 @@ sub GenerateImplementationNamedPropertyGetterCallback
 
     my $code = "static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMNamedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::namedPropertyGetterCustom(name, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertyGetter(name, info);\n";
     }
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3477,11 +3485,13 @@ sub GenerateImplementationNamedPropertySetterCallback
 
     my $code = "static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMNamedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::namedPropertySetterCustom(name, value, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertySetter(name, value, info);\n";
     }
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3495,11 +3505,13 @@ sub GenerateImplementationNamedPropertyDeleterCallback
 
     my $code = "static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
     $code .= "{\n";
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMNamedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::namedPropertyDeleterCustom(name, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertyDeleter(name, info);\n";
     }
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3513,11 +3525,13 @@ sub GenerateImplementationNamedPropertyEnumeratorCallback
 
     my $code = "static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)\n";
     $code .= "{\n";
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMNamedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::namedPropertyEnumeratorCustom(info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertyEnumerator(info);\n";
     }
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3531,11 +3545,13 @@ sub GenerateImplementationNamedPropertyQueryCallback
 
     my $code = "static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)\n";
     $code .= "{\n";
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"Blink\\0Blink-DOMNamedProperty\");\n";
     if ($hasCustom) {
         $code .= "    ${v8ClassName}::namedPropertyQueryCustom(name, info);\n";
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertyQuery(name, info);\n";
     }
+    $code .= "    TRACE_EVENT_SAMPLING_STATE0(\"V8\\0V8-Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
