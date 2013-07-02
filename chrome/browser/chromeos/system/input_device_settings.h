@@ -10,6 +10,11 @@
 namespace chromeos {
 namespace system {
 
+// Min/max possible pointer sensitivity values. Defined in CrOS inputcontrol
+// scripts (see kTpControl/kMouseControl in the source file).
+const int kMinPointerSensitivity = 1;
+const int kMaxPointerSensitivity = 5;
+
 typedef base::Callback<void(bool)> DeviceExistsCallback;
 
 namespace touchpad_settings {

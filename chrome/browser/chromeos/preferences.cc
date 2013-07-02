@@ -627,22 +627,26 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     const int sensitivity = mouse_sensitivity_.GetValue();
     system::mouse_settings::SetSensitivity(sensitivity);
     if (pref_name) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Mouse.Sensitivity.Changed", sensitivity, 1, 5, 5);
+      UMA_HISTOGRAM_ENUMERATION("Mouse.PointerSensitivity.Changed",
+                                sensitivity,
+                                system::kMaxPointerSensitivity + 1);
     } else {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Mouse.Sensitivity.Started", sensitivity, 1, 5, 5);
+      UMA_HISTOGRAM_ENUMERATION("Mouse.PointerSensitivity.Started",
+                                sensitivity,
+                                system::kMaxPointerSensitivity + 1);
     }
   }
   if (!pref_name || *pref_name == prefs::kTouchpadSensitivity) {
     const int sensitivity = touchpad_sensitivity_.GetValue();
     system::touchpad_settings::SetSensitivity(sensitivity);
     if (pref_name) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Touchpad.Sensitivity.Changed", sensitivity, 1, 5, 5);
+      UMA_HISTOGRAM_ENUMERATION("Touchpad.PointerSensitivity.Changed",
+                                sensitivity,
+                                system::kMaxPointerSensitivity + 1);
     } else {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Touchpad.Sensitivity.Started", sensitivity, 1, 5, 5);
+      UMA_HISTOGRAM_ENUMERATION("Touchpad.PointerSensitivity.Started",
+                                sensitivity,
+                                system::kMaxPointerSensitivity + 1);
     }
   }
   if (!pref_name || *pref_name == prefs::kPrimaryMouseButtonRight) {

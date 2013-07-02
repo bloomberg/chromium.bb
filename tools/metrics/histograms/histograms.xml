@@ -4226,11 +4226,31 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Mouse.PointerSensitivity.Changed" enum="PointerSensitivity">
+  <summary>
+    Tracks mouse sensitivity setting changes by the user. This replaces the old
+    Mouse.Sensitivity.Changed metric.
+  </summary>
+</histogram>
+
+<histogram name="Mouse.PointerSensitivity.Started" enum="PointerSensitivity">
+  <summary>
+    Tracks mouse sensitivity setting on startup. This replaces the old
+    Mouse.Sensitivity.Started metric.
+  </summary>
+</histogram>
+
 <histogram name="Mouse.Sensitivity.Changed" enum="PointerSensitivity">
+  <obsolete>
+    Deprecated as of 6/2013, replaced by Mouse.PointerSensitivity.Changed.
+  </obsolete>
   <summary>Tracks mouse sensitivity setting.</summary>
 </histogram>
 
 <histogram name="Mouse.Sensitivity.Started" enum="PointerSensitivity">
+  <obsolete>
+    Deprecated as of 6/2013, replaced by Mouse.PointerSensitivity.Started.
+  </obsolete>
   <summary>Tracks mouse sensitivity setting on startup.</summary>
 </histogram>
 
@@ -11880,11 +11900,31 @@ other types of suffix sets.
   <summary>Tracks touchpad natural scroll setting on startup.</summary>
 </histogram>
 
+<histogram name="Touchpad.PointerSensitivity.Changed" enum="PointerSensitivity">
+  <summary>
+    Tracks touchpad sensitivity setting changes by the user. This replaces the
+    old Touchpad.Sensitivity.Changed metric.
+  </summary>
+</histogram>
+
+<histogram name="Touchpad.PointerSensitivity.Started" enum="PointerSensitivity">
+  <summary>
+    Tracks touchpad sensitivity setting on startup. This replaces the old
+    Touchpad.Sensitivity.Started metric.
+  </summary>
+</histogram>
+
 <histogram name="Touchpad.Sensitivity.Changed" enum="PointerSensitivity">
+  <obsolete>
+    Deprecated as of 6/2013, replaced by Touchpad.PointerSensitivity.Changed.
+  </obsolete>
   <summary>Tracks touchpad sensitivity setting changes by the user.</summary>
 </histogram>
 
 <histogram name="Touchpad.Sensitivity.Started" enum="PointerSensitivity">
+  <obsolete>
+    Deprecated as of 6/2013, replaced by Touchpad.PointerSensitivity.Started.
+  </obsolete>
   <summary>Tracks touchpad sensitivity setting on startup.</summary>
 </histogram>
 
