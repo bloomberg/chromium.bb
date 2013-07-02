@@ -1437,10 +1437,6 @@ crbug.com/244921 http/tests/navigation/back-twice-without-commit.html [ Failure 
 # Crashes according to crbug.com/245294
 crbug.com/244216 fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Crash Pass ]
 
-# New virtual test suite. This needs to be updated with more specific
-# expectations once we have more data from running the tests on the bots.
-crbug.com/244266 virtual/threaded/transitions [ Pass Failure ImageOnlyFailure Timeout Crash ]
-
 crbug.com/248938 virtual/threaded/animations/animation-direction-reverse-fill-mode.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/suspend-transform-animation.html [ Slow ]
 crbug.com/248938 [ Linux ] virtual/threaded/animations/animation-direction-reverse-fill-mode-hardware.html [ Slow ]
@@ -1504,6 +1500,36 @@ crbug.com/248938 [ Win Linux ] virtual/threaded/animations/change-transform-styl
 crbug.com/248938 [ Win ] virtual/threaded/animations/3d/transform-perspective.html [ Slow ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/matrix-anim.html [ Pass Timeout ]
 crbug.com/248938 [ Win ] virtual/threaded/animations/animation-direction-reverse-hardware.html [ Slow ]
+crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/override-transition-crash.html [ Pass Timeout ]
+crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
+crbug.com/248938 [ Debug ] virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure Timeout ]
+crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/transitions/hang-with-bad-transition-list.html [ Pass Timeout ]
+crbug.com/248938 virtual/threaded/transitions/extra-transition.html [ Pass Failure Timeout ]
+crbug.com/248938 [ Debug ] virtual/threaded/transitions/interrupt-zero-duration.html [ Pass Failure Timeout ]
+crbug.com/248938 [ Mac ] virtual/threaded/transitions/move-after-transition.html [ Pass ImageOnlyFailure Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/move-after-transition.html [ Pass Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/cubic-bezier-overflow-color.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/transitions/svg-text-shadow-transition.html [ Pass ImageOnlyFailure Timeout ]
+crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.html [ Pass Failure ]
+crbug.com/248938 [ Debug ] virtual/threaded/transitions/3d/interrupted-transition.html [ Pass Timeout ]
+crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/mask-transitions.html [ Pass Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/cubic-bezier-overflow-length.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/transitions/interrupted-accelerated-transition.html [ Pass Failure Timeout ]
+crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/bad-transition-shorthand-crash.html [ Pass Timeout Crash ]
+crbug.com/248938 virtual/threaded/transitions/suspend-transform-transition.html [ Pass ImageOnlyFailure Timeout ]
+crbug.com/248938 virtual/threaded/transitions/start-transform-transition.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/transitions/opacity-transition-zindex.html [ Pass ImageOnlyFailure Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/transitions/change-values-during-transition.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/cubic-bezier-overflow-svg-length.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/transitions/transition-end-event-destroy-iframe.html [ Pass Timeout ]
+crbug.com/248938 [ Win Mac ] virtual/threaded/transitions/steps-timing-function.html [ Pass Failure ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-rendering.html [ Pass Timeout ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/cubic-bezier-overflow-shadow.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/transitions/cancel-transition.html [ Pass Failure Timeout ]
+crbug.com/248938 [ Debug ] virtual/threaded/transitions/longhand-vs-shorthand-initial.html [ Pass Timeout ]
 
 crbug.com/255724 [ Mac Debug ] animations/animation-direction-normal.html [ Failure ]
 
