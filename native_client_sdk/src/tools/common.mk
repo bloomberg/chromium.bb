@@ -78,10 +78,23 @@ else  # TOOLCHAIN=all
 # Verify we selected a valid toolchain for this example
 #
 ifeq (,$(findstring $(TOOLCHAIN),$(VALID_TOOLCHAINS)))
+
+# Only fail to build if this is a top-level make. When building recursively, we
+# don't care if an example can't build with this toolchain.
+ifeq ($(MAKELEVEL),0)
   $(warning Availbile choices are: $(VALID_TOOLCHAINS))
   $(error Can not use TOOLCHAIN=$(TOOLCHAIN) on this example.)
+else
+
+# Dummy targets for recursive make with unsupported toolchain...
+.PHONY: all clean install
+all:
+clean:
+install:
+
 endif
 
+else  # TOOLCHAIN is valid...
 
 #
 # Build Configuration
@@ -443,5 +456,7 @@ CHECK_FOR_CHROME: check_for_chrome
 DEBUG: debug
 LAUNCH: run
 RUN: run
+
+endif  # TOOLCHAIN is valid...
 
 endif  # TOOLCHAIN=all
