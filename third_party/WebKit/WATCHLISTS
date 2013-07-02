@@ -189,7 +189,7 @@
                   'haraken@chromium.org',
                   'marja+watch@chromium.org',
                   'nbarth@chromium.org' ],
-    'canvas': [ 'cabanier@adobe.com' ],
+    'canvas': [ 'cabanier@adobe.com', 'aandrey+blink@chromium.org' ],
     'custom_elements': [ 'dominicc+watchlist@chromium.org', 'dglazkov+blink@chromium.org' ],
     'layers': [ 'blink-layers@chromium.org' ],
     'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
