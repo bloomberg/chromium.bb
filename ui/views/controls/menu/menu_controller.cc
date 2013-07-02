@@ -795,8 +795,10 @@ void MenuController::SetSelection(MenuItemView* menu_item,
   }
 
   // Notify the new path it is selected.
-  for (size_t i = paths_differ_at; i < new_size; ++i)
+  for (size_t i = paths_differ_at; i < new_size; ++i) {
+    ScrollToVisible(new_path[i]);
     new_path[i]->SetSelected(true);
+  }
 
   if (menu_item && menu_item->GetDelegate())
     menu_item->GetDelegate()->SelectionChanged(menu_item);
