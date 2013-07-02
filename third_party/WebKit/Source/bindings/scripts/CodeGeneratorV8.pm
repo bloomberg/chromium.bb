@@ -1382,20 +1382,6 @@ END
     ${implClassName}* imp = ${v8ClassName}::toNative(holder);
 END
     } else {
-        my $reflect = $attribute->extendedAttributes->{"Reflect"};
-        my $url = $attribute->extendedAttributes->{"URL"};
-        if ($getterStringUsesImp && $reflect && !$url && InheritsInterface($interface, "Node") && $attrType eq "DOMString") {
-            # Generate super-compact call for regular attribute getter:
-            my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
-            $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
-            $code .= "    v8SetReturnValue(info, v8String(imp->${functionName}(" . join(", ", @arguments) . "), info.GetIsolate(), ReturnUnsafeHandle));\n";
-            $code .= "    return;\n";
-            $code .= "}\n\n";
-            $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
-            $implementation{nameSpaceInternal}->add($code);
-            return;
-            # Skip the rest of the function!
-        }
         if ($attribute->type eq "SerializedScriptValue" && $attrExt->{"CachedAttribute"}) {
             $code .= <<END;
     v8::Handle<v8::String> propertyName = v8::String::NewSymbol("${attrName}");
@@ -1807,22 +1793,6 @@ END
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
 END
     } else {
-        my $reflect = $attribute->extendedAttributes->{"Reflect"};
-        if ($reflect && InheritsInterface($interface, "Node") && $attrType eq "DOMString") {
-            # Generate super-compact call for regular attribute setter:
-            my $contentAttributeName = $reflect eq "VALUE_IS_MISSING" ? lc $attrName : $reflect;
-            my $namespace = NamespaceForAttributeName($interfaceName, $contentAttributeName);
-            AddToImplIncludes("${namespace}.h");
-            $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
-            $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, value);\n";
-            $code .= "    imp->setAttribute(${namespace}::${contentAttributeName}Attr, stringResource);\n";
-            $code .= "}\n\n";
-            $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
-            $implementation{nameSpaceInternal}->add($code);
-            return;
-            # Skip the rest of the function!
-        }
-
         if (!$attribute->isStatic) {
             $code .= <<END;
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
@@ -1945,7 +1915,6 @@ END
 END
     }
 
-    $code .= "    return;\n";
     $code .= "}\n\n";  # end of setter
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
     $implementation{nameSpaceInternal}->add($code);
