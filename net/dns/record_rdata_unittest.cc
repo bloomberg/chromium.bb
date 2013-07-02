@@ -18,18 +18,18 @@ TEST(RecordRdataTest, ParseSrvRecord) {
   // records, but it works well enough for this test.
 
   const char record[] = {
-    0x00, 0x01,
-    0x00, 0x02,
-    0x00, 0x50,
-    0x03, 'w', 'w', 'w',
-    0x06, 'g', 'o', 'o', 'g', 'l', 'e',
-    0x03, 'c', 'o', 'm',
-    0x00,
-    0x01, 0x01,
-    0x01, 0x02,
-    0x01, 0x03,
-    0x04, 'w', 'w', 'w', '2',
-    0xc0, 0x0a,  // Pointer to "google.com"
+    '\x00', '\x01',
+    '\x00', '\x02',
+    '\x00', '\x50',
+    '\x03', 'w', 'w', 'w',
+    '\x06', 'g', 'o', 'o', 'g', 'l', 'e',
+    '\x03', 'c', 'o', 'm',
+    '\x00',
+    '\x01', '\x01',
+    '\x01', '\x02',
+    '\x01', '\x03',
+    '\x04', 'w', 'w', 'w', '2',
+    '\xc0', '\x0a',  // Pointer to "google.com"
   };
 
   DnsRecordParser parser(record, sizeof(record), 0);
@@ -65,7 +65,7 @@ TEST(RecordRdataTest, ParseARecord) {
   // records, but it works well enough for this test.
 
   const char record[] = {
-    0x7F, 0x00, 0x00, 0x01  // 127.0.0.1
+    '\x7F', '\x00', '\x00', '\x01'  // 127.0.0.1
   };
 
   DnsRecordParser parser(record, sizeof(record), 0);
@@ -86,10 +86,10 @@ TEST(RecordRdataTest, ParseAAAARecord) {
   // records, but it works well enough for this test.
 
   const char record[] = {
-    0x12, 0x34, 0x56, 0x78,
-    0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x09  // 1234:5678::9A
+    '\x12', '\x34', '\x56', '\x78',
+    '\x00', '\x00', '\x00', '\x00',
+    '\x00', '\x00', '\x00', '\x00',
+    '\x00', '\x00', '\x00', '\x09'  // 1234:5678::9A
   };
 
   DnsRecordParser parser(record, sizeof(record), 0);
@@ -111,10 +111,10 @@ TEST(RecordRdataTest, ParseCnameRecord) {
   // records, but it works well enough for this test.
 
   const char record[] = {
-    0x03, 'w', 'w', 'w',
-    0x06, 'g', 'o', 'o', 'g', 'l', 'e',
-    0x03, 'c', 'o', 'm',
-    0x00
+    '\x03', 'w', 'w', 'w',
+    '\x06', 'g', 'o', 'o', 'g', 'l', 'e',
+    '\x03', 'c', 'o', 'm',
+    '\x00'
   };
 
   DnsRecordParser parser(record, sizeof(record), 0);
@@ -135,10 +135,10 @@ TEST(RecordRdataTest, ParsePtrRecord) {
   // records, but it works well enough for this test.
 
   const char record[] = {
-    0x03, 'w', 'w', 'w',
-    0x06, 'g', 'o', 'o', 'g', 'l', 'e',
-    0x03, 'c', 'o', 'm',
-    0x00
+    '\x03', 'w', 'w', 'w',
+    '\x06', 'g', 'o', 'o', 'g', 'l', 'e',
+    '\x03', 'c', 'o', 'm',
+    '\x00'
   };
 
   DnsRecordParser parser(record, sizeof(record), 0);
@@ -159,9 +159,9 @@ TEST(RecordRdataTest, ParseTxtRecord) {
   // records, but it works well enough for this test.
 
   const char record[] = {
-    0x03, 'w', 'w', 'w',
-    0x06, 'g', 'o', 'o', 'g', 'l', 'e',
-    0x03, 'c', 'o', 'm'
+    '\x03', 'w', 'w', 'w',
+    '\x06', 'g', 'o', 'o', 'g', 'l', 'e',
+    '\x03', 'c', 'o', 'm'
   };
 
   DnsRecordParser parser(record, sizeof(record), 0);
@@ -187,11 +187,11 @@ TEST(RecordRdataTest, ParseNsecRecord) {
   // records, but it works well enough for this test.
 
   const char record[] = {
-    0x03, 'w', 'w', 'w',
-    0x06, 'g', 'o', 'o', 'g', 'l', 'e',
-    0x03, 'c', 'o', 'm',
-    0x00,
-    0x00, 0x02, 0x40, 0x01
+    '\x03', 'w', 'w', 'w',
+    '\x06', 'g', 'o', 'o', 'g', 'l', 'e',
+    '\x03', 'c', 'o', 'm',
+    '\x00',
+    '\x00', '\x02', '\x40', '\x01'
   };
 
   DnsRecordParser parser(record, sizeof(record), 0);

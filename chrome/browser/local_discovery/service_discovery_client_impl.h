@@ -89,7 +89,7 @@ class ServiceWatcherImpl : public ServiceWatcher,
     bool update_pending_;
   };
 
-  typedef std::map<std::string, linked_ptr<ServiceListeners>>
+  typedef std::map<std::string, linked_ptr<ServiceListeners> >
       ServiceListenersMap;
 
   void AddService(const std::string& service);

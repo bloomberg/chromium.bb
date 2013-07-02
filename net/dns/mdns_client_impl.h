@@ -24,7 +24,7 @@ namespace net {
 
 // A connection to the network for multicast DNS clients. It reads data into
 // DnsResponse objects and alerts the delegate that a packet has been received.
-class MDnsConnection {
+class NET_EXPORT_PRIVATE MDnsConnection {
  public:
   class SocketFactory {
    public:
@@ -97,7 +97,7 @@ class MDnsConnection {
 
 class MDnsListenerImpl;
 
-class MDnsClientImpl : public MDnsClient {
+class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
  public:
   // The core object exists while the MDnsClient is listening, and is deleted
   // whenever the number of listeners reaches zero. The deletion happens

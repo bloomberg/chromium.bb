@@ -21,90 +21,90 @@ namespace net {
 static const uint8 kTestResponsesDifferentAnswers[] = {
   // Answer 1
   // ghs.l.google.com in DNS format.
-  0x03, 'g', 'h', 's',
-  0x01, 'l',
-  0x06, 'g', 'o', 'o', 'g', 'l', 'e',
-  0x03, 'c', 'o', 'm',
-  0x00,
-  0x00, 0x01,         // TYPE is A.
-  0x00, 0x01,         // CLASS is IN.
-  0x00, 0x00,         // TTL (4 bytes) is 53 seconds.
-  0x00, 0x35,
-  0x00, 0x04,         // RDLENGTH is 4 bytes.
-  0x4a, 0x7d,         // RDATA is the IP: 74.125.95.121
-  0x5f, 0x79,
+  '\x03', 'g', 'h', 's',
+  '\x01', 'l',
+  '\x06', 'g', 'o', 'o', 'g', 'l', 'e',
+  '\x03', 'c', 'o', 'm',
+  '\x00',
+  '\x00', '\x01',         // TYPE is A.
+  '\x00', '\x01',         // CLASS is IN.
+  '\x00', '\x00',         // TTL (4 bytes) is 53 seconds.
+  '\x00', '\x35',
+  '\x00', '\x04',         // RDLENGTH is 4 bytes.
+  '\x4a', '\x7d',         // RDATA is the IP: 74.125.95.121
+  '\x5f', '\x79',
 
   // Answer 2
   // Pointer to answer 1
-  0xc0, 0x00,
-  0x00, 0x01,         // TYPE is A.
-  0x00, 0x01,         // CLASS is IN.
-  0x00, 0x00,         // TTL (4 bytes) is 53 seconds.
-  0x00, 0x35,
-  0x00, 0x04,         // RDLENGTH is 4 bytes.
-  0x4a, 0x7d,         // RDATA is the IP: 74.125.95.122
-  0x5f, 0x80,
+  '\xc0', '\x00',
+  '\x00', '\x01',         // TYPE is A.
+  '\x00', '\x01',         // CLASS is IN.
+  '\x00', '\x00',         // TTL (4 bytes) is 53 seconds.
+  '\x00', '\x35',
+  '\x00', '\x04',         // RDLENGTH is 4 bytes.
+  '\x4a', '\x7d',         // RDATA is the IP: 74.125.95.122
+  '\x5f', '\x80',
 };
 
 static const uint8 kTestResponsesSameAnswers[] = {
   // Answer 1
   // ghs.l.google.com in DNS format.
-  0x03, 'g', 'h', 's',
-  0x01, 'l',
-  0x06, 'g', 'o', 'o', 'g', 'l', 'e',
-  0x03, 'c', 'o', 'm',
-  0x00,
-  0x00, 0x01,         // TYPE is A.
-  0x00, 0x01,         // CLASS is IN.
-  0x00, 0x00,         // TTL (4 bytes) is 53 seconds.
-  0x00, 0x35,
-  0x00, 0x04,         // RDLENGTH is 4 bytes.
-  0x4a, 0x7d,         // RDATA is the IP: 74.125.95.121
-  0x5f, 0x79,
+  '\x03', 'g', 'h', 's',
+  '\x01', 'l',
+  '\x06', 'g', 'o', 'o', 'g', 'l', 'e',
+  '\x03', 'c', 'o', 'm',
+  '\x00',
+  '\x00', '\x01',         // TYPE is A.
+  '\x00', '\x01',         // CLASS is IN.
+  '\x00', '\x00',         // TTL (4 bytes) is 53 seconds.
+  '\x00', '\x35',
+  '\x00', '\x04',         // RDLENGTH is 4 bytes.
+  '\x4a', '\x7d',         // RDATA is the IP: 74.125.95.121
+  '\x5f', '\x79',
 
   // Answer 2
   // Pointer to answer 1
-  0xc0, 0x00,
-  0x00, 0x01,         // TYPE is A.
-  0x00, 0x01,         // CLASS is IN.
-  0x00, 0x00,         // TTL (4 bytes) is 112 seconds.
-  0x00, 0x70,
-  0x00, 0x04,         // RDLENGTH is 4 bytes.
-  0x4a, 0x7d,         // RDATA is the IP: 74.125.95.121
-  0x5f, 0x79,
+  '\xc0', '\x00',
+  '\x00', '\x01',         // TYPE is A.
+  '\x00', '\x01',         // CLASS is IN.
+  '\x00', '\x00',         // TTL (4 bytes) is 112 seconds.
+  '\x00', '\x70',
+  '\x00', '\x04',         // RDLENGTH is 4 bytes.
+  '\x4a', '\x7d',         // RDATA is the IP: 74.125.95.121
+  '\x5f', '\x79',
 };
 
 static const uint8 kTestResponseTwoRecords[] = {
   // Answer 1
   // ghs.l.google.com in DNS format. (A)
-  0x03, 'g', 'h', 's',
-  0x01, 'l',
-  0x06, 'g', 'o', 'o', 'g', 'l', 'e',
-  0x03, 'c', 'o', 'm',
-  0x00,
-  0x00, 0x01,         // TYPE is A.
-  0x00, 0x01,         // CLASS is IN.
-  0x00, 0x00,         // TTL (4 bytes) is 53 seconds.
-  0x00, 0x35,
-  0x00, 0x04,         // RDLENGTH is 4 bytes.
-  0x4a, 0x7d,         // RDATA is the IP: 74.125.95.121
-  0x5f, 0x79,
+  '\x03', 'g', 'h', 's',
+  '\x01', 'l',
+  '\x06', 'g', 'o', 'o', 'g', 'l', 'e',
+  '\x03', 'c', 'o', 'm',
+  '\x00',
+  '\x00', '\x01',         // TYPE is A.
+  '\x00', '\x01',         // CLASS is IN.
+  '\x00', '\x00',         // TTL (4 bytes) is 53 seconds.
+  '\x00', '\x35',
+  '\x00', '\x04',         // RDLENGTH is 4 bytes.
+  '\x4a', '\x7d',         // RDATA is the IP: 74.125.95.121
+  '\x5f', '\x79',
   // Answer 2
   // ghs.l.google.com in DNS format. (AAAA)
-  0x03, 'g', 'h', 's',
-  0x01, 'l',
-  0x06, 'g', 'o', 'o', 'g', 'l', 'e',
-  0x03, 'c', 'o', 'm',
-  0x00,
-  0x00, 0x1c,         // TYPE is AAA.
-  0x00, 0x01,         // CLASS is IN.
-  0x00, 0x00,         // TTL (4 bytes) is 53 seconds.
-  0x00, 0x35,
-  0x00, 0x10,         // RDLENGTH is 4 bytes.
-  0x4a, 0x7d, 0x4a, 0x7d,
-  0x5f, 0x79, 0x5f, 0x79,
-  0x5f, 0x79, 0x5f, 0x79,
-  0x5f, 0x79, 0x5f, 0x79,
+  '\x03', 'g', 'h', 's',
+  '\x01', 'l',
+  '\x06', 'g', 'o', 'o', 'g', 'l', 'e',
+  '\x03', 'c', 'o', 'm',
+  '\x00',
+  '\x00', '\x1c',         // TYPE is AAA.
+  '\x00', '\x01',         // CLASS is IN.
+  '\x00', '\x00',         // TTL (4 bytes) is 53 seconds.
+  '\x00', '\x35',
+  '\x00', '\x10',         // RDLENGTH is 4 bytes.
+  '\x4a', '\x7d', '\x4a', '\x7d',
+  '\x5f', '\x79', '\x5f', '\x79',
+  '\x5f', '\x79', '\x5f', '\x79',
+  '\x5f', '\x79', '\x5f', '\x79',
 };
 
 class RecordRemovalMock {
