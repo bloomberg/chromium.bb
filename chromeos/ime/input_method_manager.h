@@ -131,6 +131,9 @@ class CHROMEOS_EXPORT InputMethodManager {
   //             (http://crbug.com/236747)
   virtual bool MigrateOldInputMethods(
       std::vector<std::string>* input_method_ids) = 0;
+  virtual bool MigrateKoreanKeyboard(
+      const std::string& keyboard_id,
+      std::vector<std::string>* input_method_ids) = 0;
 
   // Updates a configuration of a system input method engine with |value|.
   // Returns true if the configuration is correctly set.

@@ -68,6 +68,12 @@ bool MockInputMethodManager::MigrateOldInputMethods(
   return false;
 }
 
+bool MockInputMethodManager::MigrateKoreanKeyboard(
+    const std::string& keyboard_id,
+    std::vector<std::string>* input_method_ids) {
+  return false;
+}
+
 bool MockInputMethodManager::SetInputMethodConfig(
     const std::string& section,
     const std::string& config_name,

@@ -401,19 +401,6 @@ TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Zh) {
   EXPECT_EQ(pinyin_ime_id, input_method_ids[1]);  // Pinyin for US keybaord.
 }
 
-// Korean keyboard + Korean UI = Korean keyboard + mozc-hangul.
-TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_KR_And_Ko) {
-  // Korean keyboard
-  const InputMethodDescriptor* descriptor =
-      util_.GetInputMethodDescriptorFromId("xkb:kr:kr104:kor");
-  ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
-  std::vector<std::string> input_method_ids;
-  util_.GetFirstLoginInputMethodIds("ko", *descriptor, &input_method_ids);
-  ASSERT_EQ(2U, input_method_ids.size());
-  EXPECT_EQ("xkb:kr:kr104:kor", input_method_ids[0]);
-  EXPECT_EQ("mozc-hangul", input_method_ids[1]);  // Mozc for JP keybaord.
-}
-
 // US keyboard + Russian UI = US keyboard + Russsian keyboard
 TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Ru) {
   const InputMethodDescriptor* descriptor =

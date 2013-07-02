@@ -100,10 +100,6 @@ m17n:vi:vni	us	vi
 # not work fine. The 4 input methods in m17n-db (>= 1.6.0) don't require the
 # feature.
 
-# Korean
-mozc-hangul	kr(kr104)	ko
-xkb:kr:kr104:kor	kr(kr104)	ko
-
 # Keyboard layouts.
 xkb:br::por	br	pt-BR
 xkb:bg::bul	bg	bg

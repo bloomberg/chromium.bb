@@ -739,6 +739,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   // Do not check |*pref_name| of the prefs for remembering current/previous
   // input methods here. We're only interested in initial values of the prefs.
 
+  // TODO(nona): remove all IME preference entries. crbug.com/256102
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     if (!pref_name ||
         *pref_name == language_prefs::kChewingBooleanPrefs[i].pref_name) {
@@ -776,9 +777,13 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   }
   if (!pref_name ||
       *pref_name == prefs::kLanguageHangulKeyboard) {
-    SetLanguageConfigString(language_prefs::kHangulSectionName,
-                            language_prefs::kHangulKeyboardConfigName,
-                            hangul_keyboard_.GetValue());
+    std::vector<std::string> new_input_method_ids;
+    if (input_method_manager_->MigrateKoreanKeyboard(
+            hangul_keyboard_.GetValue(),
+            &new_input_method_ids)) {
+      preload_engines_.SetValue(JoinString(new_input_method_ids, ','));
+      hangul_keyboard_.SetValue("dummy_value_already_migrated");
+    }
   }
   if (!pref_name || *pref_name == prefs::kLanguageHangulHanjaBindingKeys) {
     SetLanguageConfigString(language_prefs::kHangulSectionName,

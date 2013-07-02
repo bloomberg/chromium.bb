@@ -97,6 +97,17 @@ const struct MigrationInputMethodList {
     "_comp_ime_ekbifjdfhkmdeeajnolmgdlmkllopefizh-hant-t-i0-und" },
 };
 
+const struct MigrationHangulKeyboardToInputMethodID {
+  const char* keyboard_id;
+  const char* ime_id;
+} kMigrationHangulKeyboardToInputMethodID[] = {
+  { "2", "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_2set" },
+  { "3f", "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_3setfinal" },
+  { "39", "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_3set390" },
+  { "3s", "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_3setnoshift" },
+  { "ro", "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_romaja" },
+};
+
 }  // namespace
 
 InputMethodManagerImpl::InputMethodManagerImpl(
@@ -307,6 +318,28 @@ bool InputMethodManagerImpl::MigrateOldInputMethods(
   return rewritten;
 }
 
+bool InputMethodManagerImpl::MigrateKoreanKeyboard(
+    const std::string& keyboard_id,
+    std::vector<std::string>* input_method_ids) {
+  std::vector<std::string>::iterator it =
+      std::find(active_input_method_ids_.begin(),
+                active_input_method_ids_.end(),
+                "mozc-hangul");
+  if (it == active_input_method_ids_.end())
+    return false;
+
+  for (size_t i = 0;
+       i < ARRAYSIZE_UNSAFE(kMigrationHangulKeyboardToInputMethodID); ++i) {
+    if (kMigrationHangulKeyboardToInputMethodID[i].keyboard_id == keyboard_id) {
+      *it = kMigrationHangulKeyboardToInputMethodID[i].ime_id;
+      input_method_ids->assign(active_input_method_ids_.begin(),
+                               active_input_method_ids_.end());
+      return true;
+    }
+  }
+  return false;
+}
+
 bool InputMethodManagerImpl::SetInputMethodConfig(
     const std::string& section,
     const std::string& config_name,
@@ -316,6 +349,7 @@ bool InputMethodManagerImpl::SetInputMethodConfig(
 
   if (state_ == STATE_TERMINATING)
     return false;
+
   return ibus_controller_->SetInputMethodConfig(section, config_name, value);
 }
 
@@ -679,10 +713,6 @@ bool InputMethodManagerImpl::SwitchInputMethod(
     case ui::VKEY_DBE_DBCSCHAR:
       input_method_ids_to_switch.push_back(nacl_mozc_jp_id);
       input_method_ids_to_switch.push_back("xkb:jp::jpn");
-      break;
-    case ui::VKEY_HANGUL:  // Hangul (or right Alt) key on Korean keyboard
-      input_method_ids_to_switch.push_back("mozc-hangul");
-      input_method_ids_to_switch.push_back("xkb:kr:kr104:kor");
       break;
     default:
       NOTREACHED();
