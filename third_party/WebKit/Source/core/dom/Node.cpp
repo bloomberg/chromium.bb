@@ -827,12 +827,24 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType)
     if (!attached()) // changed compared to what?
         return;
 
+    // FIXME: Switch all callers to use setNeedsLayerUpdate and get rid of SyntheticStyleChange.
+    if (changeType == SyntheticStyleChange) {
+        setNeedsLayerUpdate();
+        return;
+    }
+
     StyleChangeType existingChangeType = styleChangeType();
     if (changeType > existingChangeType)
         setStyleChange(changeType);
 
     if (existingChangeType == NoStyleChange)
         markAncestorsWithChildNeedsStyleRecalc();
+}
+
+void Node::setNeedsLayerUpdate()
+{
+    setFlag(NeedsLayerUpdate);
+    setNeedsStyleRecalc(InlineStyleChange);
 }
 
 void Node::lazyAttach(ShouldSetAttached shouldSetAttached)

@@ -89,7 +89,7 @@ SVGElement::~SVGElement()
 
 void SVGElement::willRecalcStyle(StyleChange change)
 {
-    if (!hasSVGRareData() || styleChangeType() == SyntheticStyleChange)
+    if (!hasSVGRareData() || needsLayerUpdate())
         return;
     // If the style changes because of a regular property change (not induced by SMIL animations themselves)
     // reset the "computed style without SMIL style properties", so the base value change gets reflected.

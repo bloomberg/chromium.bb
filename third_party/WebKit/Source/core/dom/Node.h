@@ -87,14 +87,13 @@ typedef int ExceptionCode;
 
 const int nodeStyleChangeShift = 15;
 
-// SyntheticStyleChange means that we need to go through the entire style change logic even though
-// no style property has actually changed. It is used to restructure the tree when, for instance,
-// RenderLayers are created or destroyed due to animation changes.
 enum StyleChangeType {
     NoStyleChange = 0,
     InlineStyleChange = 1 << nodeStyleChangeShift,
-    SyntheticStyleChange = 2 << nodeStyleChangeShift,
-    FullStyleChange = 3 << nodeStyleChangeShift,
+    FullStyleChange = 2 << nodeStyleChangeShift,
+
+    // FIXME: SyntheticStyleChange is deprecated, instead you should use setNeedsLayerUpdate().
+    SyntheticStyleChange = 3 << nodeStyleChangeShift,
 };
 
 class NodeRareDataBase {
@@ -375,7 +374,14 @@ public:
     void clearChildNeedsStyleRecalc() { clearFlag(ChildNeedsStyleRecalcFlag); }
 
     void setNeedsStyleRecalc(StyleChangeType changeType = FullStyleChange);
-    void clearNeedsStyleRecalc() { m_nodeFlags &= ~StyleChangeMask; }
+    void clearNeedsStyleRecalc()
+    {
+        m_nodeFlags &= ~StyleChangeMask;
+        clearFlag(NeedsLayerUpdate);
+    }
+
+    void setNeedsLayerUpdate();
+    bool needsLayerUpdate() const { return getFlag(NeedsLayerUpdate); }
 
     void setIsLink(bool f) { setFlag(f, IsLinkFlag); }
     void setIsLink() { setFlag(IsLinkFlag); }
@@ -737,10 +743,12 @@ private:
         IsInShadowTreeFlag = 1 << 26,
         IsCustomElement = 1 << 27,
 
+        NeedsLayerUpdate = 1 << 28,
+
         DefaultNodeFlags = IsParsingChildrenFinishedFlag
     };
 
-    // 4 bits remaining
+    // 3 bits remaining
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); } 
