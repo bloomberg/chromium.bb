@@ -7,6 +7,7 @@
 
 #include <jni.h>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_pump.h"
@@ -36,6 +37,7 @@ class BASE_EXPORT MessagePumpForUI : public MessagePump {
 
  private:
   RunLoop* run_loop_;
+  base::android::ScopedJavaGlobalRef<jobject> system_message_handler_obj_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpForUI);
 };

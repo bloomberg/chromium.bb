@@ -16,13 +16,6 @@
 
 using base::android::ScopedJavaLocalRef;
 
-namespace {
-
-base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >
-    g_system_message_handler_obj = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 // ----------------------------------------------------------------------------
 // Native JNI methods called by Java.
 // ----------------------------------------------------------------------------
@@ -81,23 +74,23 @@ void MessagePumpForUI::Start(Delegate* delegate) {
   if (!run_loop_->BeforeRun())
     NOTREACHED();
 
-  DCHECK(g_system_message_handler_obj.Get().is_null());
+  DCHECK(system_message_handler_obj_.is_null());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
 
-  g_system_message_handler_obj.Get().Reset(
+  system_message_handler_obj_.Reset(
       Java_SystemMessageHandler_create(env, reinterpret_cast<jint>(delegate)));
 }
 
 void MessagePumpForUI::Quit() {
-  if (!g_system_message_handler_obj.Get().is_null()) {
+  if (!system_message_handler_obj_.is_null()) {
     JNIEnv* env = base::android::AttachCurrentThread();
     DCHECK(env);
 
     Java_SystemMessageHandler_removeTimer(env,
-        g_system_message_handler_obj.Get().obj());
-    g_system_message_handler_obj.Get().Reset();
+        system_message_handler_obj_.obj());
+    system_message_handler_obj_.Reset();
   }
 
   if (run_loop_) {
@@ -108,17 +101,17 @@ void MessagePumpForUI::Quit() {
 }
 
 void MessagePumpForUI::ScheduleWork() {
-  DCHECK(!g_system_message_handler_obj.Get().is_null());
+  DCHECK(!system_message_handler_obj_.is_null());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
 
   Java_SystemMessageHandler_setTimer(env,
-      g_system_message_handler_obj.Get().obj());
+      system_message_handler_obj_.obj());
 }
 
 void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
-  DCHECK(!g_system_message_handler_obj.Get().is_null());
+  DCHECK(!system_message_handler_obj_.is_null());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
@@ -128,7 +121,7 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   // Note that we're truncating to milliseconds as required by the java side,
   // even though delayed_work_time is microseconds resolution.
   Java_SystemMessageHandler_setDelayedTimer(env,
-      g_system_message_handler_obj.Get().obj(), millis);
+      system_message_handler_obj_.obj(), millis);
 }
 
 // static
