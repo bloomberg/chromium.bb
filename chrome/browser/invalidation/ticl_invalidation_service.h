@@ -26,11 +26,6 @@ namespace syncer {
 class Invalidator;
 }
 
-// TODO: Remove this dependency.  See crbug.com/243482.
-namespace extensions {
-class PushMessagingApiTest;
-}
-
 namespace invalidation {
 
 // This InvalidationService wraps the C++ Invalidation Client (TICL) library.
@@ -95,7 +90,6 @@ class TiclInvalidationService
   void InitForTest(syncer::Invalidator* invalidator);
 
   friend class TiclInvalidationServiceTestDelegate;
-  friend class extensions::PushMessagingApiTest;
 
  private:
   bool IsReadyToStart();
