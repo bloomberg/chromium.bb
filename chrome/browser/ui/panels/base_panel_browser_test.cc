@@ -410,33 +410,6 @@ Panel* BasePanelBrowserTest::CreatePanel(const std::string& panel_name) {
   return CreatePanelWithParams(params);
 }
 
-Panel* BasePanelBrowserTest::CreateInactivePanel(
-    const std::string& panel_name) {
-  // Create an active panel first, instead of inactive panel. This is because
-  // certain window managers on Linux, like icewm, will always activate the
-  // new window.
-  Panel* panel = CreatePanel(panel_name);
-
-#if defined(OS_LINUX)
-  // For certain window managers on Linux, like icewm, panel activation and
-  // deactivation notification might not get tiggered when non-panel window is
-  // activated or deactivated. So we deactivate the panel directly.
-  panel->Deactivate();
-#else
-  // Make the panel lose focus by activating the browser window. This is
-  // because:
-  // 1) On Windows, deactivating the panel window might cause the application
-  //    to lose the foreground status. When this occurs, trying to activate
-  //    the panel window again will not be allowed by the system.
-  // 2) On MacOS, deactivating a window is not supported by Cocoa.
-  browser()->window()->Activate();
-#endif
-
-  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
-
-  return panel;
-}
-
 Panel* BasePanelBrowserTest::CreateDockedPanel(const std::string& name,
                                                const gfx::Rect& bounds) {
   Panel* panel = CreatePanelWithBounds(name, bounds);
@@ -473,6 +446,48 @@ Panel* BasePanelBrowserTest::CreateStackedPanel(const std::string& name,
   EXPECT_EQ(PanelCollection::STACKED, panel->collection()->type());
   WaitForBoundsAnimationFinished(panel);
   return panel;
+}
+
+Panel* BasePanelBrowserTest::CreateInactivePanel(const std::string& name) {
+  // Create an active panel first, instead of inactive panel. This is because
+  // certain window managers on Linux, like icewm, will always activate the
+  // new window.
+  Panel* panel = CreatePanel(name);
+
+  DeactivatePanel(panel);
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+
+  return panel;
+}
+
+Panel* BasePanelBrowserTest::CreateInactiveDetachedPanel(
+    const std::string& name, const gfx::Rect& bounds) {
+  // Create an active panel first, instead of inactive panel. This is because
+  // certain window managers on Linux, like icewm, will always activate the
+  // new window.
+  Panel* panel = CreateDetachedPanel(name, bounds);
+
+  DeactivatePanel(panel);
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+
+  return panel;
+}
+
+void BasePanelBrowserTest::DeactivatePanel(Panel* panel) {
+#if defined(OS_LINUX)
+  // For certain window managers on Linux, like icewm, panel activation and
+  // deactivation notification might not get tiggered when non-panel window is
+  // activated or deactivated. So we deactivate the panel directly.
+  panel->Deactivate();
+#else
+  // Make the panel lose focus by activating the browser window. This is
+  // because:
+  // 1) On Windows, deactivating the panel window might cause the application
+  //    to lose the foreground status. When this occurs, trying to activate
+  //    the panel window again will not be allowed by the system.
+  // 2) On MacOS, deactivating a window is not supported by Cocoa.
+  browser()->window()->Activate();
+#endif
 }
 
 // static

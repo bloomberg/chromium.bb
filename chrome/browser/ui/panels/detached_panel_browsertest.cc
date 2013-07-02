@@ -59,13 +59,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
   panel_manager->CloseAll();
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_DrawAttentionOnActive DISABLED_DrawAttentionOnActive
-#else
-#define MAYBE_DrawAttentionOnActive DrawAttentionOnActive
-#endif
-IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, MAYBE_DrawAttentionOnActive) {
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionOnActive) {
   // Create a detached panel that is initially active.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -73,7 +67,6 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, MAYBE_DrawAttentionOnActive) {
 
   // Test that the attention should not be drawn if the detached panel is in
   // focus.
-  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);  // doublecheck active state
   EXPECT_FALSE(panel->IsDrawingAttention());
   panel->FlashFrame(true);
   EXPECT_FALSE(panel->IsDrawingAttention());
@@ -82,19 +75,10 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, MAYBE_DrawAttentionOnActive) {
   panel->Close();
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_DrawAttentionOnInactive DISABLED_DrawAttentionOnInactive
-#else
-#define MAYBE_DrawAttentionOnInactive DrawAttentionOnInactive
-#endif
-IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
-                       MAYBE_DrawAttentionOnInactive) {
-  // Create two panels so that first panel becomes inactive.
-  Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
-  CreateDetachedPanel("2", gfx::Rect(100, 100, 250, 200));
-  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
-
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionOnInactive) {
+  // Create an inactive detached panel.
+  Panel* panel =
+      CreateInactiveDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   scoped_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
@@ -113,38 +97,25 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
   PanelManager::GetInstance()->CloseAll();
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_DrawAttentionResetOnActivate DISABLED_DrawAttentionResetOnActivate
-#else
-#define MAYBE_DrawAttentionResetOnActivate DrawAttentionResetOnActivate
-#endif
-IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
-                       MAYBE_DrawAttentionResetOnActivate) {
-  // Create 2 panels so we end up with an inactive panel that can
-  // be made to draw attention.
-  Panel* panel1 = CreateDetachedPanel("test panel1",
-                                      gfx::Rect(300, 200, 250, 200));
-  Panel* panel2 = CreateDetachedPanel("test panel2",
-                                      gfx::Rect(100, 100, 250, 200));
-  WaitForPanelActiveState(panel1, SHOW_AS_INACTIVE);
-
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionResetOnActivate) {
+  // Create an inactive detached panel.
+  Panel* panel =
+      CreateInactiveDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      CreateNativePanelTesting(panel1));
+      CreateNativePanelTesting(panel));
 
   // Test that the attention is drawn when the detached panel is not in focus.
-  panel1->FlashFrame(true);
-  EXPECT_TRUE(panel1->IsDrawingAttention());
+  panel->FlashFrame(true);
+  EXPECT_TRUE(panel->IsDrawingAttention());
   EXPECT_TRUE(native_panel_testing->VerifyDrawingAttention());
 
   // Test that the attention is cleared when panel gets focus.
-  panel1->Activate();
-  WaitForPanelActiveState(panel1, SHOW_AS_ACTIVE);
-  EXPECT_FALSE(panel1->IsDrawingAttention());
+  panel->Activate();
+  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
+  EXPECT_FALSE(panel->IsDrawingAttention());
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
-  panel1->Close();
-  panel2->Close();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 // http://crbug.com/143247
