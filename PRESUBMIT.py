@@ -1010,7 +1010,7 @@ def GetPreferredTrySlaves(project, change):
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
     return ['win_rel', 'win7_aura', 'win:compile']
   if all(re.search('(^|[/_])android[/_.]', f) for f in files):
-    return ['android_dbg', 'android_clang_dbg']
+    return ['android_aosp', 'android_dbg', 'android_clang_dbg']
   if all(re.search('^native_client_sdk', f) for f in files):
     return ['linux_nacl_sdk', 'win_nacl_sdk', 'mac_nacl_sdk']
   if all(re.search('[/_]ios[/_.]', f) for f in files):
@@ -1038,5 +1038,12 @@ def GetPreferredTrySlaves(project, change):
   # Same for chromeos.
   if any(re.search('[/_](aura|chromeos)', f) for f in files):
     trybots += ['linux_chromeos_clang:compile', 'linux_chromeos_asan']
+
+  # The AOSP bot doesn't build the chrome/ layer, so ignore any changes to it
+  # unless they're .gyp(i) files as changes to those files can break the gyp
+  # step on that bot.
+  if (not all(re.search('^chrome', f) for f in files) or
+      any(re.search('\.gypi?$', f) for f in files)):
+    trybots += ['android_aosp']
 
   return trybots
