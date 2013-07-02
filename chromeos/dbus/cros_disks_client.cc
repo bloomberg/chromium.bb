@@ -159,8 +159,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // CrosDisksClient override.
   virtual void Unmount(const std::string& device_path,
                        UnmountOptions options,
-                       const UnmountCallback& callback,
-                       const UnmountCallback& error_callback) OVERRIDE {
+                       const base::Closure& callback,
+                       const base::Closure& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kUnmount);
     dbus::MessageWriter writer(&method_call);
@@ -176,7 +176,6 @@ class CrosDisksClientImpl : public CrosDisksClient {
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CrosDisksClientImpl::OnUnmount,
                                   weak_ptr_factory_.GetWeakPtr(),
-                                  device_path,
                                   callback,
                                   error_callback));
   }
@@ -287,15 +286,14 @@ class CrosDisksClientImpl : public CrosDisksClient {
   }
 
   // Handles the result of Unount and calls |callback| or |error_callback|.
-  void OnUnmount(const std::string& device_path,
-                 const UnmountCallback& callback,
-                 const UnmountCallback& error_callback,
+  void OnUnmount(const base::Closure& callback,
+                 const base::Closure& error_callback,
                  dbus::Response* response) {
     if (!response) {
-      error_callback.Run(device_path);
+      error_callback.Run();
       return;
     }
-    callback.Run(device_path);
+    callback.Run();
   }
 
   // Handles the result of EnumerateAutoMountableDevices and calls |callback| or
@@ -447,12 +445,11 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
 
   virtual void Unmount(const std::string& device_path,
                        UnmountOptions options,
-                       const UnmountCallback& callback,
-                       const UnmountCallback& error_callback) OVERRIDE {
+                       const base::Closure& callback,
+                       const base::Closure& error_callback) OVERRIDE {
     // Not mounted.
     if (mounted_to_source_path_map_.count(device_path) == 0) {
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE, base::Bind(error_callback, device_path));
+      base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
       return;
     }
 
@@ -464,7 +461,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
         base::Bind(base::IgnoreResult(&base::Delete),
                    base::FilePath::FromUTF8Unsafe(device_path),
                    true /* recursive */),
-        base::Bind(callback, device_path),
+        callback,
         true /* task_is_slow */);
   }
 

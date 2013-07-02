@@ -28,8 +28,8 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
 
 void FakeCrosDisksClient::Unmount(const std::string& device_path,
                                   UnmountOptions options,
-                                  const UnmountCallback& callback,
-                                  const UnmountCallback& error_callback) {
+                                  const base::Closure& callback,
+                                  const base::Closure& error_callback) {
   DCHECK(!callback.is_null());
   DCHECK(!error_callback.is_null());
 
@@ -37,9 +37,7 @@ void FakeCrosDisksClient::Unmount(const std::string& device_path,
   last_unmount_device_path_ = device_path;
   last_unmount_options_ = options;
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(unmount_success_ ? callback : error_callback,
-                 device_path));
+      FROM_HERE, unmount_success_ ? callback : error_callback);
   if(!unmount_listener_.is_null())
     unmount_listener_.Run();
 }
@@ -64,9 +62,7 @@ void FakeCrosDisksClient::FormatDevice(const std::string& device_path,
         FROM_HERE,
         base::Bind(callback, device_path, true));
   } else {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(error_callback));
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
   }
 }
 

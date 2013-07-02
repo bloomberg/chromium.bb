@@ -27,8 +27,8 @@ class FakeCrosDisksClient : public CrosDisksClient {
                      const ErrorCallback& error_callback) OVERRIDE;
   virtual void Unmount(const std::string& device_path,
                        UnmountOptions options,
-                       const UnmountCallback& callback,
-                       const UnmountCallback& error_callback) OVERRIDE;
+                       const base::Closure& callback,
+                       const base::Closure& error_callback) OVERRIDE;
   virtual void EnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE;

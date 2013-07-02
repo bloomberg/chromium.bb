@@ -90,11 +90,13 @@ class DiskMountManagerImpl : public DiskMountManager {
                                 base::Bind(&DiskMountManagerImpl::OnUnmountPath,
                                            weak_ptr_factory_.GetWeakPtr(),
                                            callback,
-                                           true),
+                                           true,
+                                           mount_path),
                                 base::Bind(&DiskMountManagerImpl::OnUnmountPath,
                                            weak_ptr_factory_.GetWeakPtr(),
                                            callback,
-                                           false));
+                                           false,
+                                           mount_path));
   }
 
   // DiskMountManager override.
@@ -173,9 +175,15 @@ class DiskMountManagerImpl : public DiskMountManager {
           devices_to_unmount[i],
           UNMOUNT_OPTIONS_NONE,
           base::Bind(&DiskMountManagerImpl::OnUnmountDeviceRecursively,
-                     weak_ptr_factory_.GetWeakPtr(), cb_data, true),
+                     weak_ptr_factory_.GetWeakPtr(),
+                     cb_data,
+                     true,
+                     devices_to_unmount[i]),
           base::Bind(&DiskMountManagerImpl::OnUnmountDeviceRecursively,
-                     weak_ptr_factory_.GetWeakPtr(), cb_data, false));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     cb_data,
+                     false,
+                     devices_to_unmount[i]));
     }
   }
 
