@@ -498,6 +498,20 @@ function testWebRequestAPI() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that getProcessId is defined and returns a non-zero
+// value corresponding to the processId of the guest process.
+function testGetProcessId() {
+  var webview = document.createElement('webview');
+  webview.setAttribute('src', 'data:text/html,trigger navigation');
+  var firstLoad = function() {
+    webview.removeEventListener('loadstop', firstLoad);
+    embedder.test.assertTrue(webview.getProcessId() > 0);
+    embedder.test.succeed();
+  };
+  webview.addEventListener('loadstop', firstLoad);
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testSize': testSize,
   'testAPIMethodExistence': testAPIMethodExistence,
@@ -516,7 +530,8 @@ embedder.test.testList = {
   'testNewWindowNoPreventDefault': testNewWindowNoPreventDefault,
   'testNewWindowNoReferrerLink': testNewWindowNoReferrerLink,
   'testContentLoadEvent': testContentLoadEvent,
-  'testWebRequestAPI': testWebRequestAPI
+  'testWebRequestAPI': testWebRequestAPI,
+  'testGetProcessId': testGetProcessId
 };
 
 onload = function() {

@@ -18,7 +18,6 @@ var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autosize', 'minheight',
 // All exposed api methods for <webview>, these are forwarded to the browser
 // plugin.
 var WEB_VIEW_API_METHODS = [
-  'getProcessId',
   'reload',
   'stop',
   'terminate'
@@ -51,9 +50,10 @@ var WEB_VIEW_EXT_EVENTS = {
     fields: []
   },
   'loadcommit': {
-    customHandler: function(WebView, event) {
-      WebView.currentEntryIndex_ = event.currentEntryIndex;
-      WebView.entryCount_ = event.entryCount;
+    customHandler: function(webview, event) {
+      webview.currentEntryIndex_ = event.currentEntryIndex;
+      webview.entryCount_ = event.entryCount;
+      webview.processId_ = event.processId;
     },
     evt: loadCommitEvent,
     fields: ['url', 'isTopLevel']
@@ -89,6 +89,9 @@ WebView.prototype.entryCount_;
 
 /** @type {number} */
 WebView.prototype.currentEntryIndex_;
+
+/** @type {number} */
+WebView.prototype.processId_;
 
 /**
  * @constructor
@@ -185,6 +188,10 @@ WebView.prototype.setupWebviewNodeMethods_ = function() {
 
   webviewNode['forward'] = function() {
     webviewNode.go(1);
+  };
+
+  webviewNode['getProcessId'] = function() {
+    return self.processId_;
   };
 
   webviewNode['go'] = function(relativeIndex) {

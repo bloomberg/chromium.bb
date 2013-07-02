@@ -11,4 +11,9 @@ const char kEventContentLoad[] = "webview.onContentLoad";
 const char kEventLoadCommit[] = "webview.onLoadCommit";
 const char kEventLoadStop[] = "webview.onLoadStop";
 
+// Internal parameters/properties on events.
+const char kInternalCurrentEntryIndex[] = "currentEntryIndex";
+const char kInternalEntryCount[] = "entryCount";
+const char kInternalProcessId[] = "processId";
+
 }  // namespace webview

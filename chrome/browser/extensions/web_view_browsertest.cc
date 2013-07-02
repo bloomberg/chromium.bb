@@ -559,6 +559,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPI) {
              "web_view/shim");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGetProcessId) {
+  TestHelper("testGetProcessId",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/src_attribute"))
       << message_;

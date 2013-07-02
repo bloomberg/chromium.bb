@@ -106,10 +106,12 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
   scoped_ptr<DictionaryValue> args(new DictionaryValue());
   args->SetString(guestview::kUrl, url.spec());
   args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
-  args->SetInteger(guestview::kInternalCurrentEntryIndex,
+  args->SetInteger(webview::kInternalCurrentEntryIndex,
       web_contents()->GetController().GetCurrentEntryIndex());
-  args->SetInteger(guestview::kInternalEntryCount,
+  args->SetInteger(webview::kInternalEntryCount,
       web_contents()->GetController().GetEntryCount());
+  args->SetInteger(webview::kInternalProcessId,
+      web_contents()->GetRenderProcessHost()->GetID());
   DispatchEvent(new GuestView::Event(webview::kEventLoadCommit, args.Pass()));
 }
 
