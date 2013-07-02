@@ -38,78 +38,76 @@ console.table = function(vararg) { }
 /**
  * @constructor
  */
-function InjectedScriptHost() { }
-InjectedScriptHost.prototype.storageId = function(object) { }
-InjectedScriptHost.prototype.getInternalProperties = function(object) { }
+function InjectedScriptHostClass() { }
+InjectedScriptHostClass.prototype.storageId = function(object) { }
+InjectedScriptHostClass.prototype.getInternalProperties = function(object) { }
 /**
  * @param {Function} func
  */
-InjectedScriptHost.prototype.functionDetails = function(func) { }
+InjectedScriptHostClass.prototype.functionDetails = function(func) { }
 /**
  * @param {*} object
  */
-InjectedScriptHost.prototype.isHTMLAllCollection = function(object) { }
+InjectedScriptHostClass.prototype.isHTMLAllCollection = function(object) { }
 /**
  * @param {*} object
  */
-InjectedScriptHost.prototype.internalConstructorName = function(object) { }
+InjectedScriptHostClass.prototype.internalConstructorName = function(object) { }
 /**
  * @param {*} object
  */
-InjectedScriptHost.prototype.copyText = function(object) { }
-InjectedScriptHost.prototype.clearConsoleMessages = function() { }
+InjectedScriptHostClass.prototype.copyText = function(object) { }
+InjectedScriptHostClass.prototype.clearConsoleMessages = function() { }
 /**
  * @param {number} index
  */
-InjectedScriptHost.prototype.inspectedObject = function(index) { }
+InjectedScriptHostClass.prototype.inspectedObject = function(index) { }
 /**
  * @param {*} object
  * @return {number}
  */
-InjectedScriptHost.prototype.objectId = function(object) { }
+InjectedScriptHostClass.prototype.objectId = function(object) { }
 /**
  * @param {*} object
  */
-InjectedScriptHost.prototype.releaseObjectId = function(object) { }
+InjectedScriptHostClass.prototype.releaseObjectId = function(object) { }
 /**
  * @param {*} object
  */
-InjectedScriptHost.prototype.databaseId = function(object) { }
+InjectedScriptHostClass.prototype.databaseId = function(object) { }
 /**
  * @param {*} object
  * @param {Object} hints
  */
-InjectedScriptHost.prototype.inspect = function(object, hints) { }
+InjectedScriptHostClass.prototype.inspect = function(object, hints) { }
 /**
  * @param {*} object
  */
-InjectedScriptHost.prototype.type = function(object) { }
+InjectedScriptHostClass.prototype.type = function(object) { }
 /**
  * @param {*} object
  */
-InjectedScriptHost.prototype.getEventListeners = function(object) { }
+InjectedScriptHostClass.prototype.getEventListeners = function(object) { }
 /**
  * @param {string} expression
  */
-InjectedScriptHost.prototype.evaluate = function(expression) { }
+InjectedScriptHostClass.prototype.evaluate = function(expression) { }
 /**
  * @param {*} fn
  */
-InjectedScriptHost.prototype.debugFunction = function(fn) { }
+InjectedScriptHostClass.prototype.debugFunction = function(fn) { }
 /**
  * @param {*} fn
  */
-InjectedScriptHost.prototype.undebugFunction = function(fn) { }
+InjectedScriptHostClass.prototype.undebugFunction = function(fn) { }
 /**
  * @param {*} fn
  */
-InjectedScriptHost.prototype.monitorFunction = function(fn) { }
+InjectedScriptHostClass.prototype.monitorFunction = function(fn) { }
 /**
  * @param {*} fn
  */
-InjectedScriptHost.prototype.unmonitorFunction = function(fn) { }
-
-
+InjectedScriptHostClass.prototype.unmonitorFunction = function(fn) { }
 
 /**
  * @param {function(...)} fun
@@ -117,7 +115,14 @@ InjectedScriptHost.prototype.unmonitorFunction = function(fn) { }
  * @param {string} variableName
  * @param {*} newValue
  */
-InjectedScriptHost.prototype.setFunctionVariableValue = function(fun, scopeNumber, variableName, newValue) { }
+InjectedScriptHostClass.prototype.setFunctionVariableValue = function(fun, scopeNumber, variableName, newValue) { }
+
+/** @type {!InjectedScriptHostClass} */
+var InjectedScriptHost;
+/** @type {!Window} */
+var inspectedWindow;
+/** @type {number} */
+var injectedScriptId;
 
 /**
  * @constructor

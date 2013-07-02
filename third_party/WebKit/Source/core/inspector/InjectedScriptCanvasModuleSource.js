@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,9 +29,10 @@
  */
 
 /**
- * @param {InjectedScriptHost} InjectedScriptHost
+ * @param {InjectedScriptHostClass} InjectedScriptHost
  * @param {Window} inspectedWindow
  * @param {number} injectedScriptId
+ * @param {!InjectedScript} injectedScript
  */
 (function (InjectedScriptHost, inspectedWindow, injectedScriptId, injectedScript) {
 
@@ -601,7 +602,7 @@ ReplayableCall.prototype = {
     },
 
     /**
-     * @param {Cache} cache
+     * @param {!Cache} cache
      * @return {!Call}
      */
     replay: function(cache)
@@ -2690,7 +2691,6 @@ CallFormatter.prototype = {
     /**
      * @param {*} value
      * @return {!CanvasAgent.CallArgument}
-     * @suppress {checkTypes}
      */
     formatValue: function(value)
     {
@@ -2704,10 +2704,10 @@ CallFormatter.prototype = {
         var remoteObject = injectedScript.wrapObject(value, "", true, false);
         var result = {
             description: remoteObject.description || ("" + value),
-            type: remoteObject.type
+            type: /** @type {CanvasAgent.CallArgumentType} */ (remoteObject.type)
         };
         if (remoteObject.subtype)
-            result.subtype = remoteObject.subtype;
+            result.subtype = /** @type {CanvasAgent.CallArgumentSubtype} */ (remoteObject.subtype);
         if (remoteObject.objectId)
             injectedScript.releaseObject(remoteObject.objectId);
         return result;
@@ -3538,7 +3538,6 @@ InjectedCanvasModule.prototype = {
      * @param {number} argumentIndex
      * @param {string} objectGroup
      * @return {!Object|string}
-     * @suppress {checkTypes}
      */
     evaluateTraceLogCallArgument: function(traceLogId, callIndex, argumentIndex, objectGroup)
     {

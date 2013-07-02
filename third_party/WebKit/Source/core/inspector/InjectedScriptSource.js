@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2007 Apple Inc.  All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,8 +34,11 @@
  */
 (function (InjectedScriptHost, inspectedWindow, injectedScriptId) {
 
-// Protect against Object overwritten by the user code.
-var Object = {}.constructor;
+/**
+ * Protect against Object overwritten by the user code.
+ * @suppress {duplicate}
+ */
+var Object = /** @type {function(new:Object, *=)} */ ({}.constructor);
 
 /**
  * @param {Arguments} array
