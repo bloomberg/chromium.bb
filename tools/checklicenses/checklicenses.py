@@ -308,6 +308,7 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',  # http://crbug.com/98450
     ],
     'third_party/mesa/src': [
+        'BSD (2 clause) ISC',
         'GPL (v2)',
         'GPL (v3 or later)',
         'MIT/X11 (BSD like) GPL (v3 or later) with Bison parser exception',
