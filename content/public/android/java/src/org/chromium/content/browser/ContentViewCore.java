@@ -56,6 +56,7 @@ import org.chromium.content.browser.accessibility.BrowserAccessibilityManager;
 import org.chromium.content.browser.input.AdapterInputConnection;
 import org.chromium.content.browser.input.HandleView;
 import org.chromium.content.browser.input.ImeAdapter;
+import org.chromium.content.browser.input.InputMethodManagerWrapper;
 import org.chromium.content.browser.input.ImeAdapter.AdapterInputConnectionFactory;
 import org.chromium.content.browser.input.InsertionHandleController;
 import org.chromium.content.browser.input.SelectPopupDialog;
@@ -510,9 +511,8 @@ import java.util.Map;
     }
 
     private ImeAdapter createImeAdapter(Context context) {
-        return new ImeAdapter(context, getSelectionHandleController(),
-                getInsertionHandleController(),
-                new ImeAdapter.ViewEmbedder() {
+        return new ImeAdapter(new InputMethodManagerWrapper(context),
+                new ImeAdapter.ImeAdapterDelegate() {
                     @Override
                     public void onImeEvent(boolean isFinish) {
                         getContentViewClient().onImeEvent();
@@ -559,6 +559,12 @@ import java.util.Map;
                                 }
                             }
                         };
+                    }
+
+                    @Override
+                    public void hideSelectionAndInsertionHandles() {
+                        getInsertionHandleController().hideAndDisallowAutomaticShowing();
+                        getSelectionHandleController().hideAndDisallowAutomaticShowing();
                     }
                 }
         );
