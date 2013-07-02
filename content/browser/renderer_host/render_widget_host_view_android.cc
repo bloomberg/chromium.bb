@@ -79,6 +79,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     RenderWidgetHostImpl* widget_host,
     ContentViewCoreImpl* content_view_core)
     : host_(widget_host),
+      needs_begin_frame_(false),
       are_layers_attached_(true),
       content_view_core_(NULL),
       ime_adapter_android_(this),
@@ -426,8 +427,13 @@ void RenderWidgetHostViewAndroid::OnSetNeedsBeginFrame(
     bool enabled) {
   TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::OnSetNeedsBeginFrame",
                "enabled", enabled);
-  if (content_view_core_)
+  // ContentViewCoreImpl handles multiple subscribers to the BeginFrame, so
+  // we have to make sure calls to ContentViewCoreImpl's SetNeedsBeginFrame
+  // are balanced, even if RenderWidgetHostViewAndroid's may not be.
+  if (content_view_core_ && needs_begin_frame_ != enabled) {
     content_view_core_->SetNeedsBeginFrame(enabled);
+    needs_begin_frame_ = enabled;
+  }
 }
 
 void RenderWidgetHostViewAndroid::OnStartContentIntent(

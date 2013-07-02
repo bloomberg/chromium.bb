@@ -68,6 +68,7 @@ CompositorOutputSurface::CompositorOutputSurface(
 
 CompositorOutputSurface::~CompositorOutputSurface() {
   DCHECK(CalledOnValidThread());
+  SetNeedsBeginFrame(false);
   if (!HasClient())
     return;
   UpdateSmoothnessTakesPriority(false);
@@ -134,7 +135,8 @@ void CompositorOutputSurface::OnUpdateVSyncParameters(
 #if defined(OS_ANDROID)
 void CompositorOutputSurface::SetNeedsBeginFrame(bool enable) {
   DCHECK(CalledOnValidThread());
-  Send(new ViewHostMsg_SetNeedsBeginFrame(routing_id_, enable));
+  if (needs_begin_frame_ != enable)
+    Send(new ViewHostMsg_SetNeedsBeginFrame(routing_id_, enable));
   OutputSurface::SetNeedsBeginFrame(enable);
 }
 

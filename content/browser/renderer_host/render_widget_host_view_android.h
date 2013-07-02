@@ -250,6 +250,9 @@ class RenderWidgetHostViewAndroid
   // The model object.
   RenderWidgetHostImpl* host_;
 
+  // Used to track whether this render widget needs a BeginFrame.
+  bool needs_begin_frame_;
+
   // Whether or not this widget is potentially attached to the view hierarchy.
   // This view may not actually be attached if this is true, but it should be
   // treated as such, because as soon as a ContentViewCore is set the layer

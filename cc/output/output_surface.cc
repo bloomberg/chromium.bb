@@ -96,7 +96,8 @@ OutputSurface::OutputSurface(
       pending_swap_buffers_(0),
       needs_begin_frame_(false),
       begin_frame_pending_(false),
-      client_(NULL) {
+      client_(NULL),
+      check_for_retroactive_begin_frame_pending_(false) {
 }
 
 OutputSurface::OutputSurface(
@@ -110,7 +111,8 @@ OutputSurface::OutputSurface(
       pending_swap_buffers_(0),
       needs_begin_frame_(false),
       begin_frame_pending_(false),
-      client_(NULL) {
+      client_(NULL),
+      check_for_retroactive_begin_frame_pending_(false) {
 }
 
 OutputSurface::OutputSurface(
@@ -126,7 +128,8 @@ OutputSurface::OutputSurface(
       pending_swap_buffers_(0),
       needs_begin_frame_(false),
       begin_frame_pending_(false),
-      client_(NULL) {
+      client_(NULL),
+      check_for_retroactive_begin_frame_pending_(false) {
 }
 
 void OutputSurface::InitializeBeginFrameEmulation(
@@ -218,17 +221,20 @@ base::TimeDelta OutputSurface::RetroactiveBeginFramePeriod() {
 }
 
 void OutputSurface::PostCheckForRetroactiveBeginFrame() {
-  if (!skipped_begin_frame_args_.IsValid())
+  if (!skipped_begin_frame_args_.IsValid() ||
+      check_for_retroactive_begin_frame_pending_)
     return;
 
   base::MessageLoop::current()->PostTask(
      FROM_HERE,
      base::Bind(&OutputSurface::CheckForRetroactiveBeginFrame,
                 weak_ptr_factory_.GetWeakPtr()));
+  check_for_retroactive_begin_frame_pending_ = true;
 }
 
 void OutputSurface::CheckForRetroactiveBeginFrame() {
   TRACE_EVENT0("cc", "OutputSurface::CheckForRetroactiveBeginFrame");
+  check_for_retroactive_begin_frame_pending_ = false;
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks alternative_deadline =
       skipped_begin_frame_args_.frame_time +
