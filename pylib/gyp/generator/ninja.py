@@ -773,6 +773,20 @@ class NinjaWriter:
         [QuoteShellArgument('-I' + self.GypPathToNinja(i, env), self.flavor)
          for i in include_dirs])
 
+    library_dirs = config.get('library_dirs', [])
+    if self.flavor == 'win':
+      library_dirs = [
+          self.msvs_settings.ConvertVSMacros(library_dir, config_name)
+          for library_dir in library_dirs]
+      self.WriteVariableList('libdirs',
+           [QuoteShellArgument('-LIBPATH:' + self.GypPathToNinja(l),
+                               self.flavor)
+           for l in library_dirs])
+    else:
+      self.WriteVariableList('libdirs',
+           [QuoteShellArgument('-L' + self.GypPathToNinja(l), self.flavor)
+           for l in library_dirs])
+
     pch_commands = precompiled_header.GetPchBuildCommands()
     if self.flavor == 'mac':
       self.WriteVariableList('cflags_pch_c',
@@ -1427,12 +1441,12 @@ def _AddWinLinkRules(master_ninja, embed_manifest, link_incremental):
   master_ninja.rule('solink' + rule_name_suffix,
                     description=dlldesc, command=dllcmd,
                     rspfile='$dll.rsp',
-                    rspfile_content='$libs $in_newline $ldflags',
+                    rspfile_content='$libdirs $libs $in_newline $ldflags',
                     restat=True)
   master_ninja.rule('solink_module' + rule_name_suffix,
                     description=dlldesc, command=dllcmd,
                     rspfile='$dll.rsp',
-                    rspfile_content='$libs $in_newline $ldflags',
+                    rspfile_content='$libdirs $libs $in_newline $ldflags',
                     restat=True)
   # Note that ldflags goes at the end so that it has the option of
   # overriding default settings earlier in the command line.
@@ -1444,7 +1458,7 @@ def _AddWinLinkRules(master_ninja, embed_manifest, link_incremental):
                     description='LINK%s $out' % rule_name_suffix.upper(),
                     command=exe_cmd,
                     rspfile='$out.rsp',
-                    rspfile_content='$in_newline $libs $ldflags')
+                    rspfile_content='$in_newline $libdirs $libs $ldflags')
 
 
 def GenerateOutputForConfig(target_list, target_dicts, data, params,
@@ -1689,20 +1703,21 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       restat=True,
       command=(mtime_preserving_solink_base % {
           'suffix': '-Wl,--whole-archive $in $solibs -Wl,--no-whole-archive '
-          '$libs'}),
+          '$libdirs $libs'}),
       pool='link_pool')
     master_ninja.rule(
       'solink_module',
       description='SOLINK(module) $lib',
       restat=True,
       command=(mtime_preserving_solink_base % {
-          'suffix': '-Wl,--start-group $in $solibs -Wl,--end-group $libs'}),
+          'suffix': '-Wl,--start-group $in $solibs -Wl,--end-group '
+          '$libdirs $libs'}),
       pool='link_pool')
     master_ninja.rule(
       'link',
       description='LINK $out',
       command=('$ld $ldflags -o $out '
-               '-Wl,--start-group $in $solibs -Wl,--end-group $libs'),
+               '-Wl,--start-group $in $solibs -Wl,--end-group $libdirs $libs'),
       pool='link_pool')
   elif flavor == 'win':
     master_ninja.rule(
@@ -1769,21 +1784,21 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       description='SOLINK $lib, POSTBUILDS',
       restat=True,
       command=(mtime_preserving_solink_base % {
-          'suffix': '$in $solibs $libs$postbuilds'}),
+          'suffix': '$in $solibs $libdirs $libs$postbuilds'}),
       pool='link_pool')
     master_ninja.rule(
       'solink_module',
       description='SOLINK(module) $lib, POSTBUILDS',
       restat=True,
       command=(mtime_preserving_solink_base % {
-          'suffix': '$in $solibs $libs$postbuilds'}),
+          'suffix': '$in $solibs $libdirs $libs$postbuilds'}),
       pool='link_pool')
 
     master_ninja.rule(
       'link',
       description='LINK $out, POSTBUILDS',
       command=('$ld $ldflags -o $out '
-               '$in $solibs $libs$postbuilds'),
+               '$in $solibs $libdirs $libs$postbuilds'),
       pool='link_pool')
     master_ninja.rule(
       'infoplist',

@@ -1031,12 +1031,13 @@ def _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config):
     spec: The target dictionary containing the properties of the target.
     config_type: The configuration type, a number as defined by Microsoft.
     config_name: The name of the configuration.
-    config: The dictionnary that defines the special processing to be done
+    config: The dictionary that defines the special processing to be done
             for this configuration.
   """
   # Get the information for this configuration
   include_dirs, resource_include_dirs = _GetIncludeDirs(config)
   libraries = _GetLibraries(spec)
+  library_dirs = _GetLibraryDirs(config)
   out_file, vc_tool, _ = _GetOutputFilePathAndTool(spec, msbuild=False)
   defines = _GetDefines(config)
   defines = [_EscapeCppDefineForMSVS(d) for d in defines]
@@ -1066,6 +1067,8 @@ def _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config):
               'AdditionalIncludeDirectories', resource_include_dirs)
   # Add in libraries.
   _ToolAppend(tools, 'VCLinkerTool', 'AdditionalDependencies', libraries)
+  _ToolAppend(tools, 'VCLinkerTool', 'AdditionalLibraryDirectories',
+              library_dirs)
   if out_file:
     _ToolAppend(tools, vc_tool, 'OutputFile', out_file, only_if_unset=True)
   # Add defines.
@@ -1105,7 +1108,7 @@ def _GetIncludeDirs(config):
   """Returns the list of directories to be used for #include directives.
 
   Arguments:
-    config: The dictionnary that defines the special processing to be done
+    config: The dictionary that defines the special processing to be done
             for this configuration.
   Returns:
     The list of directory paths.
@@ -1119,6 +1122,21 @@ def _GetIncludeDirs(config):
   include_dirs = _FixPaths(include_dirs)
   resource_include_dirs = _FixPaths(resource_include_dirs)
   return include_dirs, resource_include_dirs
+
+
+def _GetLibraryDirs(config):
+  """Returns the list of directories to be used for library search paths.
+
+  Arguments:
+    config: The dictionary that defines the special processing to be done
+            for this configuration.
+  Returns:
+    The list of directory paths.
+  """
+
+  library_dirs = config.get('library_dirs', [])
+  library_dirs = _FixPaths(library_dirs)
+  return library_dirs
 
 
 def _GetLibraries(spec):
@@ -1189,7 +1207,7 @@ def _GetDefines(config):
   """Returns the list of preprocessor definitions for this configuation.
 
   Arguments:
-    config: The dictionnary that defines the special processing to be done
+    config: The dictionary that defines the special processing to be done
             for this configuration.
   Returns:
     The list of preprocessor definitions.
@@ -1226,7 +1244,7 @@ def _ConvertToolsToExpectedForm(tools):
   """Convert tools to a form expected by Visual Studio.
 
   Arguments:
-    tools: A dictionnary of settings; the tool name is the key.
+    tools: A dictionary of settings; the tool name is the key.
   Returns:
     A list of Tool objects.
   """
@@ -1255,8 +1273,8 @@ def _AddConfigurationToMSVS(p, spec, tools, config, config_type, config_name):
   Arguments:
     p: The target project being generated.
     spec: the target project dict.
-    tools: A dictionnary of settings; the tool name is the key.
-    config: The dictionnary that defines the special processing to be done
+    tools: A dictionary of settings; the tool name is the key.
+    config: The dictionary that defines the special processing to be done
             for this configuration.
     config_type: The configuration type, a number as defined by Microsoft.
     config_name: The name of the configuration.
@@ -2787,6 +2805,7 @@ def _FinalizeMSBuildSettings(spec, configuration):
     msbuild_settings = MSVSSettings.ConvertToMSBuildSettings(msvs_settings)
   include_dirs, resource_include_dirs = _GetIncludeDirs(configuration)
   libraries = _GetLibraries(spec)
+  library_dirs = _GetLibraryDirs(configuration)
   out_file, _, msbuild_tool = _GetOutputFilePathAndTool(spec, msbuild=True)
   defines = _GetDefines(configuration)
   if converted:
@@ -2820,6 +2839,8 @@ def _FinalizeMSBuildSettings(spec, configuration):
   # set, to prevent inheriting default libraries from the enviroment.
   _ToolSetOrAppend(msbuild_settings, 'Link', 'AdditionalDependencies',
                   libraries)
+  _ToolAppend(msbuild_settings, 'Link', 'AdditionalLibraryDirectories',
+              library_dirs)
   if out_file:
     _ToolAppend(msbuild_settings, msbuild_tool, 'OutputFile', out_file,
                 only_if_unset=True)

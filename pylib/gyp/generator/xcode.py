@@ -1211,6 +1211,12 @@ exit 1
         xcbc.AppendBuildSetting('FRAMEWORK_SEARCH_PATHS', include_dir)
       for include_dir in configuration.get('include_dirs', []):
         xcbc.AppendBuildSetting('HEADER_SEARCH_PATHS', include_dir)
+      for library_dir in configuration.get('library_dirs', []):
+        if library_dir not in xcode_standard_library_dirs and (
+            not xcbc.HasBuildSetting(_library_search_paths_var) or
+            library_dir not in xcbc.GetBuildSetting(_library_search_paths_var)):
+          xcbc.AppendBuildSetting(_library_search_paths_var, library_dir)
+
       if 'defines' in configuration:
         for define in configuration['defines']:
           set_define = EscapeXCodeArgument(define)
