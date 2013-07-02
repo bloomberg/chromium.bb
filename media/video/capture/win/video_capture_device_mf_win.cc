@@ -335,13 +335,41 @@ void VideoCaptureDeviceMFWin::Allocate(
   ScopedComPtr<IMFMediaType> type;
   if (FAILED(hr = reader_->GetNativeMediaType(
           MF_SOURCE_READER_FIRST_VIDEO_STREAM, found_capability.stream_index,
-          type.Receive())) ||
-      FAILED(hr = reader_->SetCurrentMediaType(
-          MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, type))) {
+          type.Receive()))) {
     OnError(hr);
     return;
   }
+  // Set the framerate in the configuration struct retrieved before. This call
+  // cannot fail since it's just writing a number in the IMFMediaType*.
+  MFSetAttributeRatio(
+      type, MF_MT_FRAME_RATE, static_cast<UINT32>(frame_rate), 1);
 
+  if (FAILED(hr = reader_->SetCurrentMediaType(
+                 MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, type))) {
+    OnError(hr);
+    return;
+  }
+  // Usually the driver supports a discrete set of capture frame rates, and will
+  // set the actual framerate as close as possible to the requested one; in the
+  // future (TODO(mcasas)) we'll need to retrieve it for later comparisons with
+  // user requested mandatory constraints.
+#if !defined(NDEBUG)
+  ScopedComPtr<IMFMediaType> type_read;
+  if (SUCCEEDED(
+          hr = reader_->GetNativeMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM,
+                                           found_capability.stream_index,
+                                           type_read.Receive()))) {
+    UINT32 temp_frame_rate_num = 0;
+    UINT32 temp_frame_rate_denom = 0;
+    if (SUCCEEDED(MFGetAttributeRatio(type_read,
+                                      MF_MT_FRAME_RATE,
+                                      &temp_frame_rate_num,
+                                      &temp_frame_rate_denom))) {
+      DLOG(WARNING) << "Actual camera framerate: " << temp_frame_rate_num << "/"
+                    << temp_frame_rate_denom;
+    }
+  }
+#endif  // if defined(NDEBUG)
   observer_->OnFrameInfo(found_capability);
 }
 
