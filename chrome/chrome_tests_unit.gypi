@@ -108,8 +108,6 @@
         'browser/download/test_download_shelf.h',
         'browser/drive/dummy_drive_service.cc',
         'browser/drive/dummy_drive_service.h',
-        'browser/drive/mock_drive_service.cc',
-        'browser/drive/mock_drive_service.h',
         'browser/drive/fake_drive_service.cc',
         'browser/drive/fake_drive_service.h',
         'browser/extensions/api/messaging/native_messaging_test_util.cc',
