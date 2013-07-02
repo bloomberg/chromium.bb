@@ -714,8 +714,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
       IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
 
   // 'waitButton' is the default choice.
-  int choice = NSRunAlertPanel(titleText, explanationText,
-                               waitTitle, exitTitle, nil);
+  int choice = NSRunAlertPanel(titleText, @"%@",
+                               waitTitle, exitTitle, nil, explanationText);
   return choice == NSAlertDefaultReturn ? YES : NO;
 }
 
