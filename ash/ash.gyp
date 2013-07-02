@@ -129,6 +129,8 @@
         'keyboard_overlay/keyboard_overlay_delegate.h',
         'keyboard_overlay/keyboard_overlay_view.cc',
         'keyboard_overlay/keyboard_overlay_view.h',
+        'launcher/alternate_app_list_button.cc',
+        'launcher/alternate_app_list_button.h',
         'launcher/app_list_button.cc',
         'launcher/app_list_button.h',
         'launcher/launcher.cc',

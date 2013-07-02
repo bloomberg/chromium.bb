@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher_model_observer.h"
 
 namespace ash {
@@ -22,7 +23,7 @@ int LauncherItemTypeToWeight(LauncherItemType type) {
     case TYPE_PLATFORM_APP:
       return 1;
     case TYPE_APP_LIST:
-      return 2;
+      return ash::switches::UseAlternateShelfLayout() ? 0 : 2;
     case TYPE_APP_PANEL:
       return 3;
   }
@@ -148,7 +149,8 @@ void LauncherModel::RemoveObserver(LauncherModelObserver* observer) {
 
 int LauncherModel::ValidateInsertionIndex(LauncherItemType type,
                                           int index) const {
-  DCHECK(index >= 0 && index <= item_count());
+  DCHECK(index >= 0 && index <= item_count() +
+      (ash::switches::UseAlternateShelfLayout() ? 1 : 0));
 
   // Clamp |index| to the allowed range for the type as determined by |weight|.
   LauncherItem weight_dummy;

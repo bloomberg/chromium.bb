@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -383,9 +384,14 @@ ash::LauncherID ChromeLauncherControllerPerBrowser::CreateAppLauncherItem(
     const std::string& app_id,
     ash::LauncherItemStatus status) {
   DCHECK(controller);
+  int index = 0;
   // Panels are inserted on the left so as not to push all existing panels over.
-  int index = controller->GetLauncherItemType() == ash::TYPE_APP_PANEL ?
-      0 : model_->item_count();
+  if (controller->GetLauncherItemType() != ash::TYPE_APP_PANEL) {
+    index = model_->item_count();
+    // For the alternate shelf layout increment index (insert after app icon).
+    if (ash::switches::UseAlternateShelfLayout())
+      ++index;
+  }
   return InsertAppLauncherItem(controller, app_id, status, index);
 }
 
@@ -1229,6 +1235,11 @@ void ChromeLauncherControllerPerBrowser::UpdateAppLaunchersFromPref() {
   // of iterators because of model mutations as part of the loop.
   std::vector<std::string>::const_iterator pref_app_id(pinned_apps.begin());
   int index = 0;
+  int max_index = model_->item_count();
+  if (ash::switches::UseAlternateShelfLayout()) {
+    ++index;
+    ++max_index;
+  }
   for (; index < model_->item_count() && pref_app_id != pinned_apps.end();
        ++index) {
     // If the next app launcher according to the pref is present in the model,
@@ -1257,6 +1268,7 @@ void ChromeLauncherControllerPerBrowser::UpdateAppLaunchersFromPref() {
             MoveItemWithoutPinnedStateChangeNotification(index, index + 1);
           } else {
             LauncherItemClosed(item.id);
+            --max_index;
           }
           --index;
         }
@@ -1429,6 +1441,9 @@ int ChromeLauncherControllerPerBrowser::GetChromeIconIndexFromPref() const {
   size_t index = profile_->GetPrefs()->GetInteger(prefs::kShelfChromeIconIndex);
   const base::ListValue* pinned_apps_pref =
   profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
+  if (ash::switches::UseAlternateShelfLayout())
+    return std::max(static_cast<size_t>(1),
+                    std::min(pinned_apps_pref->GetSize(), index));
   return std::max(static_cast<size_t>(0),
                   std::min(pinned_apps_pref->GetSize(), index));
 }

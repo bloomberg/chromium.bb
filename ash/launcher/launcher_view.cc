@@ -9,6 +9,7 @@
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/drag_drop/drag_image_view.h"
+#include "ash/launcher/alternate_app_list_button.h"
 #include "ash/launcher/app_list_button.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_delegate.h"
@@ -441,7 +442,8 @@ void LauncherView::OnShelfAlignmentChanged() {
   LayoutToIdealBounds();
   for (int i=0; i < view_model_->view_size(); ++i) {
     // TODO: remove when AppIcon is a Launcher Button.
-    if (TYPE_APP_LIST == model_->items()[i].type) {
+    if (TYPE_APP_LIST == model_->items()[i].type &&
+        !ash::switches::UseAlternateShelfLayout()) {
       ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
       static_cast<AppListButton*>(view_model_->view_at(i))->SetImageAlignment(
           shelf->SelectValueForShelfAlignment(
@@ -683,6 +685,7 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     return;
 
   int first_panel_index = model_->FirstPanelIndex();
+  // TODO(harrym): if alternate shelf layout stays, rename app_list_index.
   int app_list_index = first_panel_index - 1;
 
   // Initial x,y values account both leading_inset in primary
@@ -698,8 +701,12 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
       leading_inset(),
       leading_inset(),
       0);
-  int w = shelf->PrimaryAxisValue(kLauncherPreferredSize, width());
-  int h = shelf->PrimaryAxisValue(height(), kLauncherPreferredSize);
+
+  int shelf_size = ash::switches::UseAlternateShelfLayout() ?
+      ShelfLayoutManager::kShelfSize : kLauncherPreferredSize;
+
+  int w = shelf->PrimaryAxisValue(shelf_size, width());
+  int h = shelf->PrimaryAxisValue(height(), shelf_size);
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
@@ -901,21 +908,26 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     }
 
     case TYPE_APP_LIST: {
-      // TODO(dave): turn this into a LauncherButton too.
-      AppListButton* button = new AppListButton(this, this);
-      ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
-      button->SetImageAlignment(
-          shelf->SelectValueForShelfAlignment(
-              views::ImageButton::ALIGN_CENTER,
-              views::ImageButton::ALIGN_LEFT,
-              views::ImageButton::ALIGN_RIGHT,
-              views::ImageButton::ALIGN_CENTER),
-          shelf->SelectValueForShelfAlignment(
-              views::ImageButton::ALIGN_TOP,
-              views::ImageButton::ALIGN_MIDDLE,
-              views::ImageButton::ALIGN_MIDDLE,
-              views::ImageButton::ALIGN_BOTTOM));
-      view = button;
+      if (ash::switches::UseAlternateShelfLayout()) {
+        view = new AlternateAppListButton(this, this,
+            tooltip_->shelf_layout_manager()->shelf_widget());
+      } else {
+        // TODO(dave): turn this into a LauncherButton too.
+        AppListButton* button = new AppListButton(this, this);
+        ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
+        button->SetImageAlignment(
+            shelf->SelectValueForShelfAlignment(
+                views::ImageButton::ALIGN_CENTER,
+                views::ImageButton::ALIGN_LEFT,
+                views::ImageButton::ALIGN_RIGHT,
+                views::ImageButton::ALIGN_CENTER),
+            shelf->SelectValueForShelfAlignment(
+                views::ImageButton::ALIGN_TOP,
+                views::ImageButton::ALIGN_MIDDLE,
+                views::ImageButton::ALIGN_MIDDLE,
+                views::ImageButton::ALIGN_BOTTOM));
+        view = button;
+      }
       break;
     }
 
@@ -1023,17 +1035,36 @@ void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
 
 bool LauncherView::SameDragType(LauncherItemType typea,
                                 LauncherItemType typeb) const {
-  switch (typea) {
-    case TYPE_TABBED:
-    case TYPE_PLATFORM_APP:
+  if (ash::switches::UseAlternateShelfLayout()) {
+    // TODO(harrym): Allow app list to be repositionable, if this goes live
+    // (no flag) the pref file has to be updated so the changes persist.
+    switch (typea) {
+     case TYPE_TABBED:
+     case TYPE_PLATFORM_APP:
       return (typeb == TYPE_TABBED || typeb == TYPE_PLATFORM_APP);
-    case TYPE_APP_SHORTCUT:
-    case TYPE_BROWSER_SHORTCUT:
-      return (typeb == TYPE_APP_SHORTCUT || typeb == TYPE_BROWSER_SHORTCUT);
-    case TYPE_WINDOWED_APP:
-    case TYPE_APP_LIST:
-    case TYPE_APP_PANEL:
-      return typeb == typea;
+     case TYPE_APP_SHORTCUT:
+     case TYPE_APP_LIST:
+     case TYPE_BROWSER_SHORTCUT:
+      return (typeb == TYPE_APP_SHORTCUT ||
+              typeb == TYPE_APP_LIST ||
+              typeb == TYPE_BROWSER_SHORTCUT);
+     case TYPE_WINDOWED_APP:
+     case TYPE_APP_PANEL:
+       return typeb == typea;
+    }
+  } else {
+    switch (typea) {
+      case TYPE_TABBED:
+      case TYPE_PLATFORM_APP:
+        return (typeb == TYPE_TABBED || typeb == TYPE_PLATFORM_APP);
+      case TYPE_APP_SHORTCUT:
+      case TYPE_BROWSER_SHORTCUT:
+        return (typeb == TYPE_APP_SHORTCUT || typeb == TYPE_BROWSER_SHORTCUT);
+      case TYPE_WINDOWED_APP:
+      case TYPE_APP_LIST:
+      case TYPE_APP_PANEL:
+        return typeb == typea;
+    }
   }
   NOTREACHED();
   return false;
@@ -1339,6 +1370,8 @@ void LauncherView::LauncherItemMoved(int start_index, int target_index) {
 }
 
 void LauncherView::LauncherStatusChanged() {
+  if (ash::switches::UseAlternateShelfLayout())
+    return;
   AppListButton* app_list_button =
       static_cast<AppListButton*>(GetAppListButtonView());
   if (model_->status() == LauncherModel::STATUS_LOADING)

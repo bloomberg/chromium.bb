@@ -121,13 +121,31 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
         Shell::GetInstance()->delegate()->CreateAppListViewDelegate());
     aura::Window* container = GetRootWindowController(window->GetRootWindow())->
         GetContainer(kShellWindowId_AppListContainer);
-    view->InitAsBubble(
-        container,
-        pagination_model_.get(),
-        Launcher::ForWindow(container)->GetAppListButtonView(),
-        gfx::Point(),
-        GetBubbleArrow(container),
-        true /* border_accepts_events */);
+    // TODO(harrym): find a better solution for this.
+    if (ash::switches::UseAlternateShelfLayout()) {
+      gfx::Rect applist_button_bounds = Launcher::ForWindow(container)->
+          GetAppListButtonView()->GetBoundsInScreen();
+      gfx::Point anchor = applist_button_bounds.origin();
+      if (anchor.x() == 0)
+        anchor.set_x(applist_button_bounds.right());
+      if (anchor.y() == 0)
+        anchor.set_y(applist_button_bounds.bottom());
+      view->InitAsBubble(
+          container,
+          pagination_model_.get(),
+          NULL,
+          anchor,
+          GetBubbleArrow(container),
+          true /* border_accepts_events */);
+    } else {
+      view->InitAsBubble(
+          container,
+          pagination_model_.get(),
+          Launcher::ForWindow(container)->GetAppListButtonView(),
+          gfx::Point(),
+          GetBubbleArrow(container),
+          true /* border_accepts_events */);
+    }
     if (ash::switches::UseAlternateShelfLayout())
       view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
     SetView(view);

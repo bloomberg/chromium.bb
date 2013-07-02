@@ -489,6 +489,8 @@ void ShelfWidget::SetAlignment(ShelfAlignment alignment) {
 
 void ShelfWidget::SetDimsShelf(bool dimming) {
   delegate_view_->SetDimmed(dimming);
+  if (launcher_)
+    launcher_->GetAppListButtonView()->SchedulePaint();
 }
 
 bool ShelfWidget::GetDimsShelf() const {
