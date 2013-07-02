@@ -211,6 +211,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	struct wl_closure *closure;
 	const struct wl_message *message;
 	uint32_t p[2];
+	uint32_t resource_flags;
 	int opcode, size;
 	int len;
 
@@ -247,6 +248,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 			break;
 
 		resource = wl_map_lookup(&client->objects, p[0]);
+		resource_flags = wl_map_lookup_flags(&client->objects, p[0]);
 		if (resource == NULL) {
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_OBJECT,
@@ -266,6 +268,19 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		}
 
 		message = &object->interface->methods[opcode];
+		if (!(resource_flags & WL_MAP_ENTRY_LEGACY) &&
+		    resource->version > 0 &&
+		    resource->version < wl_message_get_since(message)) {
+			wl_resource_post_error(client->display_resource,
+					       WL_DISPLAY_ERROR_INVALID_METHOD,
+					       "invalid method %d, object %s@%u",
+					       opcode,
+					       object->interface->name,
+					       object->id);
+			break;
+		}
+
+
 		closure = wl_connection_demarshal(client->connection, size,
 						  &client->objects, message);
 		len -= size;
