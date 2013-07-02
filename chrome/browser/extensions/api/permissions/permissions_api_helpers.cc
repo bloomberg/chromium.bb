@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/bluetooth_device_permission.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
@@ -36,7 +35,7 @@ const char kInvalidOrigin[] =
 const char kUnknownPermissionError[] =
     "'*' is not a recognized permission.";
 const char kUnsupportedPermissionId[] =
-    "Only the bluetoothDevices and usbDevices permissions support arguments.";
+    "Only the usbDevices permission supports arguments.";
 
 }  // namespace
 
@@ -95,14 +94,9 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
 
         // Explicitly check the permissions that accept arguments until the bug
         // referenced above is fixed.
-        const APIPermissionInfo* bluetooth_device_permission_info =
-            info->GetByID(APIPermission::kBluetoothDevice);
         const APIPermissionInfo* usb_device_permission_info =
             info->GetByID(APIPermission::kUsbDevice);
-        if (permission_name == bluetooth_device_permission_info->name()) {
-          permission = new BluetoothDevicePermission(
-              bluetooth_device_permission_info);
-        } else if (permission_name == usb_device_permission_info->name()) {
+        if (permission_name == usb_device_permission_info->name()) {
           permission = new UsbDevicePermission(usb_device_permission_info);
         } else {
           *error = kUnsupportedPermissionId;

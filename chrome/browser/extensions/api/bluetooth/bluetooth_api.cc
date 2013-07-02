@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/bluetooth.h"
-#include "chrome/common/extensions/permissions/bluetooth_device_permission.h"
+#include "chrome/common/extensions/permissions/bluetooth_permission.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -47,10 +47,10 @@ const char kCouldNotGetLocalOutOfBandPairingData[] =
     "Could not get local Out Of Band Pairing Data";
 const char kCouldNotSetOutOfBandPairingData[] =
     "Could not set Out Of Band Pairing Data";
-const char kDevicePermissionDenied[] = "Permission to access device denied";
 const char kFailedToConnect[] = "Connection failed";
 const char kInvalidDevice[] = "Invalid device";
 const char kInvalidUuid[] = "Invalid UUID";
+const char kPermissionDenied[] = "Permission to add profile denied.";
 const char kPlatformNotSupported[] =
     "This operation is not supported on your platform";
 const char kProfileAlreadyRegistered[] =
@@ -123,6 +123,13 @@ bool BluetoothAddProfileFunction::RunImpl() {
 
   if (!BluetoothDevice::IsUUIDValid(params->profile.uuid)) {
     SetError(kInvalidUuid);
+    return false;
+  }
+
+  BluetoothPermission::CheckParam param(params->profile.uuid);
+  if (!PermissionsData::CheckAPIPermissionWithParam(
+          GetExtension(), APIPermission::kBluetooth, &param)) {
+    SetError(kPermissionDenied);
     return false;
   }
 
@@ -374,14 +381,6 @@ bool BluetoothConnectFunction::DoWork(scoped_refptr<BluetoothAdapter> adapter) {
   scoped_ptr<Connect::Params> params(Connect::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
   const bluetooth::ConnectOptions& options = params->options;
-
-  BluetoothDevicePermission::CheckParam param(options.device.address);
-  if (!PermissionsData::CheckAPIPermissionWithParam(
-          GetExtension(), APIPermission::kBluetoothDevice, &param)) {
-    SetError(kDevicePermissionDenied);
-    SendResponse(false);
-    return false;
-  }
 
   if (!BluetoothDevice::IsUUIDValid(options.profile.uuid)) {
     SetError(kInvalidUuid);

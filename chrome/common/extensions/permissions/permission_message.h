@@ -54,7 +54,6 @@ class PermissionMessage {
     kBluetooth,
     kUsb,
     kSystemIndicator,
-    kBluetoothDevice,
     kUsbDevice,
     kMediaGalleriesAllGalleriesWrite,
     kSystemInfoDisplay,
@@ -65,6 +64,7 @@ class PermissionMessage {
     kMusicManagerPrivate,
     kWebConnectable,
     kActivityLogPrivate,
+    kBluetoothDevices,
     kEnumBoundary,
   };
 
