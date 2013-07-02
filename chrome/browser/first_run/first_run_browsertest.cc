@@ -137,7 +137,7 @@ class FirstRunMasterPrefsBrowserTestT
 // bot configurations do not have another profile (browser) to import from and
 // thus the import must not be expected to have occurred.
 int MaskExpectedImportState(int expected_import_state) {
-  scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
+  scoped_refptr<ImporterList> importer_list(new ImporterList());
   importer_list->DetectSourceProfilesHack(
       g_browser_process->GetApplicationLocale());
   int source_profile_count = importer_list->count();

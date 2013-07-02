@@ -13,7 +13,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/importer/importer_type.h"
 #include "googleurl/src/gurl.h"
-#include "net/url_request/url_request_context_getter.h"
 
 // Types needed for importing data from other browsers and the Google Toolbar.
 namespace importer {
@@ -43,9 +42,6 @@ struct SourceProfile {
   // The application locale. Stored because we can only access it from the UI
   // thread on the browser process. This is only used by the Firefox importer.
   std::string locale;
-
-  // The URLRequestContextGetter is only used for Google Toolbar.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter;
 };
 
 // Contains information needed for importing bookmarks/search engine urls, etc.

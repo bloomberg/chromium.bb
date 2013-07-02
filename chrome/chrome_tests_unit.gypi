@@ -934,7 +934,6 @@
         'browser/importer/ie_importer_unittest_win.cc',
         'browser/importer/profile_writer_unittest.cc',
         'browser/importer/safari_importer_unittest.mm',
-        'browser/importer/toolbar_importer_unittest.cc',
         'browser/internal_auth_unittest.cc',
         'browser/invalidation/invalidation_service_android_unittest.cc',
         'browser/invalidation/invalidation_service_test_template.cc',

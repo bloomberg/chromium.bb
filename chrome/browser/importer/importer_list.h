@@ -13,7 +13,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace importer {
 class ImporterListObserver;
@@ -22,7 +21,7 @@ struct SourceProfile;
 
 class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
  public:
-  explicit ImporterList(net::URLRequestContextGetter* request_context_getter);
+  ImporterList();
 
   // Detects the installed browsers and their associated profiles, then stores
   // their information in a list. It returns the list of description of all
@@ -76,9 +75,6 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
 
   // The list of profiles with the default one first.
   ScopedVector<importer::SourceProfile> source_profiles_;
-
-  // Needed for Google Toolbar Import to connect to Toolbar server.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // The ID of the thread DetectSourceProfiles() is called on. Only valid after
   // DetectSourceProfiles() is called and until SourceProfilesLoaded() has

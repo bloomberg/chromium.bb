@@ -27,9 +27,8 @@ enum ImporterType {
 #if defined(OS_MACOSX)
   TYPE_SAFARI          = 3,
 #endif
-  TYPE_GOOGLE_TOOLBAR5 = 4,
-  // Identifies a 'bookmarks.html' file.
-  TYPE_BOOKMARKS_FILE  = 5
+  // Value 4 was the (now deleted) Google Toolbar importer.
+  TYPE_BOOKMARKS_FILE  = 5  // Identifies a 'bookmarks.html' file.
 };
 
 // Creates an Importer of the specified |type|.

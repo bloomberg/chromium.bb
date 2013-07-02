@@ -683,7 +683,7 @@ void AutoImport(
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   bool local_state_file_exists = file_util::PathExists(local_state_path);
 
-  scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
+  scoped_refptr<ImporterList> importer_list(new ImporterList());
   importer_list->DetectSourceProfilesHack(
       g_browser_process->GetApplicationLocale());
 

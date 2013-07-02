@@ -5,7 +5,6 @@
 #include "chrome/browser/importer/importer_host.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,21 +17,14 @@
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/importer_type.h"
 #include "chrome/browser/importer/in_process_importer_bridge.h"
-#include "chrome/browser/importer/toolbar_importer_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
@@ -44,9 +36,7 @@ ImporterHost::ImporterHost()
       is_source_readable_(true),
       headless_(false),
       parent_window_(NULL),
-      browser_(NULL),
       observer_(NULL) {
-  BrowserList::AddObserver(this);
 }
 
 void ImporterHost::ShowWarningDialog() {
@@ -149,49 +139,11 @@ void ImporterHost::StartImportSettings(
     return;
   }
 
-#if defined(OS_WIN)
-  // For google toolbar import, we need the user to log in and store their GAIA
-  // credentials.
-  if (source_profile.importer_type == importer::TYPE_GOOGLE_TOOLBAR5) {
-    toolbar_importer_utils::IsGoogleGAIACookieInstalled(
-        base::Bind(&ImporterHost::OnGoogleGAIACookieChecked,
-                   weak_ptr_factory_.GetWeakPtr()),
-        profile_);
-    is_source_readable_ = false;
-  }
-#endif
-
   CheckForLoadedModels(items);
   InvokeTaskIfDone();
 }
 
-void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
-#if defined(OS_WIN)
-  if (!result) {
-    chrome::ShowMessageBox(
-        NULL,
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-        l10n_util::GetStringUTF16(IDS_IMPORTER_GOOGLE_LOGIN_TEXT),
-        chrome::MESSAGE_BOX_TYPE_INFORMATION);
-
-    GURL url("https://accounts.google.com/ServiceLogin");
-    if (browser_)
-      chrome::AddSelectedTabWithURL(browser_, url,
-                                    content::PAGE_TRANSITION_TYPED);
-
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &ImporterHost::OnImportLockDialogEnd,
-        weak_ptr_factory_.GetWeakPtr(), false));
-  } else {
-    is_source_readable_ = true;
-    InvokeTaskIfDone();
-  }
-#endif
-}
-
 ImporterHost::~ImporterHost() {
-  BrowserList::RemoveObserver(this);
-
   if (installed_bookmark_observer_) {
     DCHECK(profile_);
     BookmarkModelFactory::GetForProfile(profile_)->RemoveObserver(this);
@@ -274,9 +226,4 @@ void ImporterHost::Observe(int type,
   DCHECK(type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
   registrar_.RemoveAll();
   InvokeTaskIfDone();
-}
-
-void ImporterHost::OnBrowserRemoved(Browser* browser) {
-  if (browser_ == browser)
-    browser_ = NULL;
 }

@@ -1462,7 +1462,6 @@
         'browser/importer/ie_importer_browsertest_win.cc',
         'browser/importer/importer_unittest_utils.cc',
         'browser/importer/importer_unittest_utils.h',
-        'browser/importer/toolbar_importer_utils_browsertest.cc',
         'browser/infobars/infobar_extension_apitest.cc',
         'browser/infobars/infobars_browsertest.cc',
         'browser/loadtimes_extension_bindings_browsertest.cc',

@@ -8,7 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/importer/bookmarks_file_importer.h"
 #include "chrome/browser/importer/firefox3_importer.h"
-#include "chrome/browser/importer/toolbar_importer.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/importer/ie_importer.h"
@@ -35,7 +34,7 @@ enum ImporterTypeMetrics {
 #if defined(OS_MACOSX)
   IMPORTER_METRICS_SAFARI          = 4,
 #endif
-  IMPORTER_METRICS_GOOGLE_TOOLBAR5 = 5,
+  IMPORTER_METRICS_GOOGLE_TOOLBAR5 = 5,  // obsolete
   IMPORTER_METRICS_BOOKMARKS_FILE  = 6,
 
   // Insert new values here. Never remove any existing values, as this enum is
@@ -60,8 +59,6 @@ Importer* CreateImporterByType(ImporterType type) {
     case TYPE_SAFARI:
       return new SafariImporter(base::mac::GetUserLibraryPath());
 #endif
-    case TYPE_GOOGLE_TOOLBAR5:
-      return new Toolbar5Importer();
     default:
       NOTREACHED();
       return NULL;
@@ -90,9 +87,6 @@ void LogImporterUseToMetrics(const std::string& metric_postfix,
       metrics_type = IMPORTER_METRICS_SAFARI;
       break;
 #endif
-    case TYPE_GOOGLE_TOOLBAR5:
-      metrics_type = IMPORTER_METRICS_GOOGLE_TOOLBAR5;
-      break;
     case TYPE_BOOKMARKS_FILE:
       metrics_type = IMPORTER_METRICS_BOOKMARKS_FILE;
       break;

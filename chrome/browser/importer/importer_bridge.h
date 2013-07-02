@@ -25,9 +25,6 @@ namespace importer {
 struct URLKeywordInfo;
 }
 
-// TODO: remove this, see friend declaration in ImporterBridge.
-class Toolbar5Importer;
-
 namespace content {
 struct PasswordForm;
 }
@@ -85,10 +82,6 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
 
  protected:
   friend class base::RefCountedThreadSafe<ImporterBridge>;
-  // TODO: In order to run Toolbar5Importer OOP we need to cut this
-  // connection, but as an interim step we allow Toolbar5Import to break
-  // the abstraction here and assume import is in-process.
-  friend class Toolbar5Importer;
 
   virtual ~ImporterBridge();
 

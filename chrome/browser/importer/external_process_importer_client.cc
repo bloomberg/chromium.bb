@@ -293,9 +293,6 @@ void ExternalProcessImporterClient::StartProcessOnIOThread(
       base::IntToString(IDS_IMPORT_FROM_FIREFOX),
       l10n_util::GetStringUTF8(IDS_IMPORT_FROM_FIREFOX));
   localized_strings.SetString(
-      base::IntToString(IDS_IMPORT_FROM_GOOGLE_TOOLBAR),
-      l10n_util::GetStringUTF8(IDS_IMPORT_FROM_GOOGLE_TOOLBAR));
-  localized_strings.SetString(
       base::IntToString(IDS_IMPORT_FROM_SAFARI),
       l10n_util::GetStringUTF8(IDS_IMPORT_FROM_SAFARI));
   localized_strings.SetString(

@@ -3278,7 +3278,7 @@ void TestingAutomationProvider::ImportSettings(Browser* browser,
   import_settings_data_.browser = browser;
   import_settings_data_.reply_message = reply_message;
 
-  importer_list_ = new ImporterList(NULL);
+  importer_list_ = new ImporterList();
   importer_list_->DetectSourceProfiles("en-US", this);
 }
 

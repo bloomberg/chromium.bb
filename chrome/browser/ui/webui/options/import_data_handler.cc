@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
-#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_type.h"
 #include "chrome/browser/profiles/profile.h"
@@ -65,8 +64,7 @@ void ImportDataHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 }
 
 void ImportDataHandler::InitializeHandler() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  importer_list_ = new ImporterList(profile->GetRequestContext());
+  importer_list_ = new ImporterList();
   importer_list_->DetectSourceProfiles(
       g_browser_process->GetApplicationLocale(), this);
 }
@@ -111,16 +109,8 @@ void ImportDataHandler::ImportData(const ListValue* args) {
                                      state);
     import_did_succeed_ = false;
 
-    // The Google Toolbar importer doesn't work for the out-of-process import.
-    // This is the only entry point for this importer (it is never used on first
-    // run). See discussion on http://crbug.com/219419 for details.
-    if (source_profile.importer_type == importer::TYPE_GOOGLE_TOOLBAR5)
-      importer_host_ = new ImporterHost;
-    else
-      importer_host_ = new ExternalProcessImporterHost;
+    importer_host_ = new ExternalProcessImporterHost();
     importer_host_->SetObserver(this);
-    importer_host_->set_browser(
-        chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
     Profile* profile = Profile::FromWebUI(web_ui());
     importer_host_->StartImportSettings(source_profile, profile,
                                         import_services,
