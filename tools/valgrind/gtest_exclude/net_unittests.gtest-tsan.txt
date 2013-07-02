@@ -22,3 +22,6 @@ URLRequestTest.FileTest
 
 # http://crbug.com/92439
 ServerBoundCertServiceTest.*
+
+# Fails flakily. http://crbug.com/255775
+SimpleIndexFileTest.WriteThenLoadIndex

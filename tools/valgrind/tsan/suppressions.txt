@@ -1100,3 +1100,18 @@
   ...
   fun:media::FFmpegVideoDecoder::Decode
 }
+{
+  bug_256792
+  ThreadSanitizer:Race
+  fun:media::AudioManagerLinux::~AudioManagerLinux
+  fun:content::MockAudioManager::~MockAudioManager
+  fun:content::MockAudioManager::~MockAudioManager
+  fun:base::DefaultDeleter::operator()
+  fun:base::internal::scoped_ptr_impl::~scoped_ptr_impl
+  fun:scoped_ptr::~scoped_ptr
+  fun:content::MediaStreamManagerTest::~MediaStreamManagerTest
+  fun:content::MediaStreamManagerTest_MakeAndCancelMediaAccessRequest_Test::~MediaStreamManagerTest_MakeAndCancelMediaAccessRequest_Test
+  fun:content::MediaStreamManagerTest_MakeAndCancelMediaAccessRequest_Test::~MediaStreamManagerTest_MakeAndCancelMediaAccessRequest_Test
+  fun:testing::Test::DeleteSelf_
+  fun:testing::internal::HandleSehExceptionsInMethodIfSupported
+}
