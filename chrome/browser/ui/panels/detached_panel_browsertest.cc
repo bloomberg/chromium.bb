@@ -118,21 +118,12 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionResetOnActivate) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_ClickTitlebar DISABLED_ClickTitlebar
-#else
-#define MAYBE_ClickTitlebar ClickTitlebar
-#endif
-IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, MAYBE_ClickTitlebar) {
-  PanelManager* panel_manager = PanelManager::GetInstance();
-
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, ClickTitlebar) {
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   EXPECT_FALSE(panel->IsMinimized());
 
   // Clicking on an active detached panel's titlebar has no effect, regardless
   // of modifier.
-  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);  // doublecheck active state
   scoped_ptr<NativePanelTesting> test_panel(
       CreateNativePanelTesting(panel));
   test_panel->PressLeftMouseButtonTitlebar(panel->GetBounds().origin());
@@ -146,17 +137,14 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, MAYBE_ClickTitlebar) {
   EXPECT_TRUE(panel->IsActive());
   EXPECT_FALSE(panel->IsMinimized());
 
-  // Create a second panel to cause the first to become inactive.
-  CreateDetachedPanel("2", gfx::Rect(100, 200, 230, 345));
-  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
-
   // Clicking on an inactive detached panel's titlebar activates it.
+  DeactivatePanel(panel);
   test_panel->PressLeftMouseButtonTitlebar(panel->GetBounds().origin());
   test_panel->ReleaseMouseButtonTitlebar();
   WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
   EXPECT_FALSE(panel->IsMinimized());
 
-  panel_manager->CloseAll();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
