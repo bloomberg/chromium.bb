@@ -579,13 +579,15 @@ def ExpandXcodeVariables(string, expansions):
   return string
 
 
-def EscapeXCodeArgument(s):
-  """We must escape the arguments that we give to XCode so that it knows not to
-     split on spaces and to respect backslash and quote literals."""
+def EscapeXcodeDefine(s):
+  """We must escape the defines that we give to XCode so that it knows not to
+     split on spaces and to respect backslash and quote literals. However, we
+     must not quote the define, or Xcode will incorrectly intepret variables
+     especially $(inherited)."""
   s = s.replace('\\', '\\\\')
   s = s.replace('"', '\\"')
-  return '"' + s + '"'
-
+  s = s.replace(' ', '\\ ')
+  return s
 
 
 def PerformBuild(data, configurations, params):
@@ -1219,7 +1221,7 @@ exit 1
 
       if 'defines' in configuration:
         for define in configuration['defines']:
-          set_define = EscapeXCodeArgument(define)
+          set_define = EscapeXcodeDefine(define)
           xcbc.AppendBuildSetting('GCC_PREPROCESSOR_DEFINITIONS', set_define)
       if 'xcode_settings' in configuration:
         for xck, xcv in configuration['xcode_settings'].iteritems():
