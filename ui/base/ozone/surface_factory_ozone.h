@@ -26,7 +26,7 @@ class SurfaceFactoryOzone {
   // native surface.
   virtual const char* DefaultDisplaySpec();
 
-  // Sets the implementation delegate.
+  // Sets the implementation delegate. Ownership is retained by the caller.
   UI_EXPORT static void SetInstance(SurfaceFactoryOzone* impl);
 
   // TODO(rjkroege): Add a status code if necessary.
@@ -63,6 +63,9 @@ class SurfaceFactoryOzone {
   // must be done outside of the sandbox, they must have been completed
   // in InitializeHardware. Returns NULL on error.
   virtual gfx::VSyncProvider* GetVSyncProvider(gfx::AcceleratedWidget w) = 0;
+
+ private:
+  static SurfaceFactoryOzone* impl_; // not owned
 };
 
 }  // namespace ui

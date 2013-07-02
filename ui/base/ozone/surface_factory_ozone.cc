@@ -9,9 +9,8 @@
 
 namespace ui {
 
-// Implementation.
-static base::LazyInstance<scoped_ptr<SurfaceFactoryOzone> > impl_ =
-    LAZY_INSTANCE_INITIALIZER;
+// static
+SurfaceFactoryOzone* SurfaceFactoryOzone::impl_ = NULL;
 
 SurfaceFactoryOzone::SurfaceFactoryOzone() {
 }
@@ -20,11 +19,12 @@ SurfaceFactoryOzone::~SurfaceFactoryOzone() {
 }
 
 SurfaceFactoryOzone* SurfaceFactoryOzone::GetInstance() {
-  return impl_.Get().get();
+  CHECK(impl_) << "SurfaceFactoryOzone accessed before constructed";
+  return impl_;
 }
 
 void SurfaceFactoryOzone::SetInstance(SurfaceFactoryOzone* impl) {
-  impl_.Get().reset(impl);
+  impl_ = impl;
 }
 
 const char* SurfaceFactoryOzone::DefaultDisplaySpec() {
