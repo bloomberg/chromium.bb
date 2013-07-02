@@ -6,12 +6,19 @@
  * Creates and starts downloading and then resizing of the image. Finally,
  * returns the image using the callback.
  *
+ * @param {string} id Request ID.
  * @param {Cache} cache Cache object.
  * @param {Object} request Request message as a hash array.
  * @param {function} callback Callback used to send the response.
  * @constructor
  */
-function Request(cache, request, callback) {
+function Request(id, cache, request, callback) {
+  /**
+   * @type {string}
+   * @private
+   */
+  this.id_ = id;
+
   /**
    * @type {Cache}
    * @private
@@ -71,6 +78,14 @@ function Request(cache, request, callback) {
    */
   this.downloadCallback_ = null;
 }
+
+/**
+ * Returns ID of the request.
+ * @return {string} Request ID.
+ */
+Request.prototype.getId = function() {
+  return this.id_;
+};
 
 /**
  * Returns priority of the request. The higher priority, the faster it will

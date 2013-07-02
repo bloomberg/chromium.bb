@@ -13,24 +13,38 @@ function Worker() {
    * However, if they have to be downloaded, then these requests are moved
    * to pendingRequests_.
    *
-   * @type {Request}
+   * @type {Array.<Request>}
    * @private
    */
   this.newRequests_ = [];
 
   /**
+   * List of requests being checked for availability in cache.
+   * @type {Array.<Request>}
+   * @private
+   */
+  this.cacheCheckRequests_ = [];
+
+  /**
    * List of pending requests for images to be downloaded.
-   * @type {Request}
+   * @type {Array.<Request>}
    * @private
    */
   this.pendingRequests_ = [];
 
   /**
    * List of requests being processed.
-   * @type {Request}
+   * @type {Array.<Request>}
    * @private
    */
   this.activeRequests_ = [];
+
+  /**
+   * Hash array of requests being added to the queue, but not finalized yet.
+   * @type {Object}
+   * @private
+   */
+  this.requests_ = {};
 
   /**
    * If the worker has been started.
@@ -57,12 +71,39 @@ Worker.MAXIMUM_IN_PARALLEL = 5;
 Worker.prototype.add = function(request) {
   if (!this.started_) {
     this.newRequests_.push(request);
+    this.requests_[request.getId()] = request;
     return;
   }
 
   // Already started, so cache is available. Items available in cache will
   // be served immediately, other enqueued.
+  this.requests_[request.getId()] = request;
   this.serveCachedOrEnqueue_(request);
+};
+
+/**
+ * Removes a request from the worker (if exists).
+ * @param {string} requestId Unique ID of the request.
+ */
+Worker.prototype.remove = function(requestId) {
+  var request = this.requests_[requestId];
+  if (!request)
+    return;
+
+  // Remove from the internal queues with pending tasks.
+  var newIndex = this.pendingRequests_.indexOf(request);
+  if (newIndex != -1)
+    this.newRequests_.splice(newIndex, 1);
+  var cacheCheckIndex = this.cacheCheckRequests_.indexOf(request);
+  if (cacheCheckIndex != -1)
+    this.cacheCheckRequests_.splice(cacheCheckIndex, 1);
+  var pendingIndex = this.pendingRequests_.indexOf(request);
+  if (pendingIndex != -1)
+    this.pendingRequests_.splice(pendingIndex, 1);
+
+  // Cancel the request.
+  request.cancel();
+  delete this.requests_[requestId];
 };
 
 /**
@@ -72,9 +113,22 @@ Worker.prototype.add = function(request) {
  * @private
  */
 Worker.prototype.serveCachedOrEnqueue_ = function(request) {
-  request.loadFromCacheAndProcess(function() {}, function() {
-    // Not available in cache.
-    this.pendingRequests_.push(request);
+  this.cacheCheckRequests_.push(request);
+
+  var onSuccess = function() {
+    // The item is available. Remove from the cache queue.
+    var index = this.cacheCheckRequests_.indexOf(request);
+    if (index != -1)
+      this.cacheCheckRequests_.splice(index, 1);
+  }.bind(this);
+
+  var onFailure = function() {
+    // Not available in cache. Move to the pending queue.
+    var index = this.cacheCheckRequests_.indexOf(request);
+    if (index != -1) {
+      this.cacheCheckRequests_.splice(index, 1);
+      this.pendingRequests_.push(request);
+    }
 
     // Sort requests by priorities.
     this.pendingRequests_.sort(function(a, b) {
@@ -84,7 +138,9 @@ Worker.prototype.serveCachedOrEnqueue_ = function(request) {
     // Continue handling the most important requests (if started).
     if (this.started_)
       this.continue_();
-  }.bind(this));
+  }.bind(this);
+
+  request.loadFromCacheAndProcess(onSuccess, onFailure);
 };
 
 /**
@@ -136,7 +192,8 @@ Worker.prototype.finish_ = function(request) {
   var index = this.activeRequests_.indexOf(request);
   if (index < 0)
     console.warn('Request not found.');
-  delete this.activeRequests_.splice(index, 1);
+  this.activeRequests_.splice(index, 1);
+  delete this.requests_[request.getId()];
 
   // Continue handling the most important requests (if started).
   if (this.started_)

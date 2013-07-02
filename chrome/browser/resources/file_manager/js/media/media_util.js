@@ -205,6 +205,7 @@ ThumbnailLoader.prototype.cancel = function() {
     this.image_.onload = function() {};
     this.image_.onerror = function() {};
     util.cancelLoadImage(this.taskId_);
+    this.taskId_ = null;
   }
 };
 

@@ -8,13 +8,6 @@
  */
 function ImageLoader() {
   /**
-   * Hash array of active requests.
-   * @type {Object}
-   * @private
-   */
-  this.requests_ = {};
-
-  /**
    * Persistent cache object.
    * @type {Cache}
    * @private
@@ -78,15 +71,11 @@ ImageLoader.prototype.onMessage_ = function(senderId, request, callback) {
   var requestId = senderId + ':' + request.taskId;
   if (request.cancel) {
     // Cancel a task.
-    if (requestId in this.requests_) {
-      this.requests_[requestId].cancel();
-      delete this.requests_[requestId];
-    }
+    this.worker_.remove(requestId);
     return false;  // No callback calls.
   } else {
     // Create a request task and add it to the worker (queue).
-    var requestTask = new Request(this.cache_, request, callback);
-    this.requests_[requestId] = requestTask;
+    var requestTask = new Request(requestId, this.cache_, request, callback);
     this.worker_.add(requestTask);
     return true;  // Request will call the callback.
   }
