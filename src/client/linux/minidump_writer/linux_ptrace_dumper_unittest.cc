@@ -28,7 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // linux_ptrace_dumper_unittest.cc:
-// Unit tests for google_breakpad::LinuxPtraceDumoer.
+// Unit tests for google_breakpad::LinuxPtraceDumper.
 //
 // This file was renamed from linux_dumper_unittest.cc and modified due
 // to LinuxDumper being splitted into two classes.
@@ -57,6 +57,10 @@
 #include "common/linux/safe_readlink.h"
 #include "common/memory.h"
 #include "common/using_std_string.h"
+
+#ifndef PR_SET_PTRACER
+#define PR_SET_PTRACER 0x59616d61
+#endif
 
 using namespace google_breakpad;
 
