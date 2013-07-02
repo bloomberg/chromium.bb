@@ -267,13 +267,11 @@ float FETurbulence::noise2D(int channel, PaintingData& paintingData, StitchData&
     return linearInterpolation(sy, a, b);
 }
 
-unsigned char FETurbulence::calculateTurbulenceValueForPoint(int channel, PaintingData& paintingData, StitchData& stitchData, const FloatPoint& point)
+unsigned char FETurbulence::calculateTurbulenceValueForPoint(int channel, PaintingData& paintingData, StitchData& stitchData, const FloatPoint& point, float baseFrequencyX, float baseFrequencyY)
 {
     float tileWidth = paintingData.filterSize.width();
     float tileHeight = paintingData.filterSize.height();
     ASSERT(tileWidth > 0 && tileHeight > 0);
-    float baseFrequencyX = m_baseFrequencyX;
-    float baseFrequencyY = m_baseFrequencyY;
     // Adjust the base frequencies if necessary for stitching.
     if (m_stitchTiles) {
         // When stitching tiled turbulence, the frequencies must be adjusted
@@ -331,7 +329,7 @@ unsigned char FETurbulence::calculateTurbulenceValueForPoint(int channel, Painti
     return static_cast<unsigned char>(turbulenceFunctionResult * 255);
 }
 
-inline void FETurbulence::fillRegion(Uint8ClampedArray* pixelArray, PaintingData& paintingData, int startY, int endY)
+inline void FETurbulence::fillRegion(Uint8ClampedArray* pixelArray, PaintingData& paintingData, int startY, int endY, float baseFrequencyX, float baseFrequencyY)
 {
     IntRect filterRegion = absolutePaintRect();
     IntPoint point(0, filterRegion.y() + startY);
@@ -345,14 +343,14 @@ inline void FETurbulence::fillRegion(Uint8ClampedArray* pixelArray, PaintingData
         for (int x = 0; x < filterRegion.width(); ++x) {
             point.setX(point.x() + 1);
             for (channel = 0; channel < 4; ++channel, ++indexOfPixelChannel)
-                pixelArray->set(indexOfPixelChannel, calculateTurbulenceValueForPoint(channel, paintingData, stitchData, filter()->mapAbsolutePointToLocalPoint(point)));
+                pixelArray->set(indexOfPixelChannel, calculateTurbulenceValueForPoint(channel, paintingData, stitchData, filter()->mapAbsolutePointToLocalPoint(point), baseFrequencyX, baseFrequencyY));
         }
     }
 }
 
 void FETurbulence::fillRegionWorker(FillRegionParameters* parameters)
 {
-    parameters->filter->fillRegion(parameters->pixelArray, *parameters->paintingData, parameters->startY, parameters->endY);
+    parameters->filter->fillRegion(parameters->pixelArray, *parameters->paintingData, parameters->startY, parameters->endY, parameters->baseFrequencyX, parameters->baseFrequencyY);
 }
 
 void FETurbulence::applySoftware()
@@ -368,6 +366,8 @@ void FETurbulence::applySoftware()
 
     PaintingData paintingData(m_seed, roundedIntSize(filterPrimitiveSubregion().size()));
     initPaint(paintingData);
+    float baseFrequencyX = 1.0f / filter()->applyHorizontalScale(1.0f / m_baseFrequencyX);
+    float baseFrequencyY = 1.0f / filter()->applyVerticalScale(1.0f / m_baseFrequencyY);
 
     int optimalThreadNumber = (absolutePaintRect().width() * absolutePaintRect().height()) / s_minimalRectDimension;
     if (optimalThreadNumber > 1) {
@@ -391,6 +391,8 @@ void FETurbulence::applySoftware()
                 params.startY = startY;
                 startY += i < jobsWithExtra ? stepY + 1 : stepY;
                 params.endY = startY;
+                params.baseFrequencyX = baseFrequencyX;
+                params.baseFrequencyY = baseFrequencyY;
             }
 
             // Execute parallel jobs
@@ -400,18 +402,20 @@ void FETurbulence::applySoftware()
     }
 
     // Fallback to single threaded mode if there is no room for a new thread or the paint area is too small.
-    fillRegion(pixelArray, paintingData, 0, absolutePaintRect().height());
+    fillRegion(pixelArray, paintingData, 0, absolutePaintRect().height(), baseFrequencyX, baseFrequencyY);
 }
 
-SkShader* FETurbulence::createShader(const IntRect& filterRegion) const
+SkShader* FETurbulence::createShader(const IntRect& filterRegion)
 {
     const SkISize size = SkISize::Make(filterRegion.width(), filterRegion.height());
+    float baseFrequencyX = 1.0f / filter()->applyHorizontalScale(1.0f / m_baseFrequencyX);
+    const float baseFrequencyY = 1.0f / filter()->applyVerticalScale(1.0f / m_baseFrequencyY);
     return (type() == FETURBULENCE_TYPE_FRACTALNOISE) ?
-        SkPerlinNoiseShader::CreateFractalNoise(SkFloatToScalar(baseFrequencyX()),
-            SkFloatToScalar(baseFrequencyY()), numOctaves(), SkFloatToScalar(seed()),
+        SkPerlinNoiseShader::CreateFractalNoise(SkFloatToScalar(baseFrequencyX),
+            SkFloatToScalar(baseFrequencyY), numOctaves(), SkFloatToScalar(seed()),
             stitchTiles() ? &size : 0) :
-        SkPerlinNoiseShader::CreateTubulence(SkFloatToScalar(baseFrequencyX()),
-            SkFloatToScalar(baseFrequencyY()), numOctaves(), SkFloatToScalar(seed()),
+        SkPerlinNoiseShader::CreateTubulence(SkFloatToScalar(baseFrequencyX),
+            SkFloatToScalar(baseFrequencyY), numOctaves(), SkFloatToScalar(seed()),
             stitchTiles() ? &size : 0);
 }
 

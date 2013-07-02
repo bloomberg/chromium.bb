@@ -229,6 +229,15 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
     FilterEffectList oldEffects;
     m_effects.swap(oldEffects);
 
+    // Inverse zoom the pre-zoomed CSS shorthand filters, so that they are in the zoom as the unzoomed reference filters
+    const RenderStyle* style = renderer->style();
+    float zoom = style ? style->effectiveZoom() : 1.0f;
+    float invZoom = 1.0f / zoom;
+    // Apply zoom to filter region here so that applyHorizontalScale/applyVerticalScale will
+    // work while create hardware filters through FE<some filter effect>::createImageFilter()
+    setFilterRegion(FloatRect(0, 0, 1, 1));
+    setAbsoluteFilterRegion(FloatRect(0, 0, zoom, zoom));
+
     RefPtr<FilterEffect> previousEffect = m_sourceGraphic;
     for (size_t i = 0; i < operations.operations().size(); ++i) {
         RefPtr<FilterEffect> effect;
@@ -361,14 +370,16 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
         }
         case FilterOperation::BLUR: {
             BlurFilterOperation* blurOperation = static_cast<BlurFilterOperation*>(filterOperation);
-            float stdDeviation = floatValueForLength(blurOperation->stdDeviation(), 0);
+            float stdDeviation = floatValueForLength(blurOperation->stdDeviation(), 0) * invZoom;
             effect = FEGaussianBlur::create(this, stdDeviation, stdDeviation);
             break;
         }
         case FilterOperation::DROP_SHADOW: {
             DropShadowFilterOperation* dropShadowOperation = static_cast<DropShadowFilterOperation*>(filterOperation);
-            effect = FEDropShadow::create(this, dropShadowOperation->stdDeviation(), dropShadowOperation->stdDeviation(),
-                                                dropShadowOperation->x(), dropShadowOperation->y(), dropShadowOperation->color(), 1);
+            float stdDeviation = dropShadowOperation->stdDeviation() * invZoom;
+            float x = dropShadowOperation->x() * invZoom;
+            float y = dropShadowOperation->y() * invZoom;
+            effect = FEDropShadow::create(this, stdDeviation, stdDeviation, x, y, dropShadowOperation->color(), 1);
             break;
         }
         case FilterOperation::CUSTOM:
@@ -479,10 +490,15 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
         return false;
     }
 
+    // Get the zoom factor to scale the filterSourceRect input
+    const RenderLayerModelObject* renderer = renderLayer->renderer();
+    const RenderStyle* style = renderer ? renderer->style() : 0;
+    float zoom = style ? style->effectiveZoom() : 1.0f;
+
     AffineTransform absoluteTransform;
     absoluteTransform.translate(filterBoxRect.x(), filterBoxRect.y());
     filter->setAbsoluteTransform(absoluteTransform);
-    filter->setAbsoluteFilterRegion(filterSourceRect);
+    filter->setAbsoluteFilterRegion(AffineTransform().scale(zoom).mapRect(filterSourceRect));
     filter->setFilterRegion(absoluteTransform.inverse().mapRect(filterSourceRect));
     filter->lastEffect()->determineFilterPrimitiveSubregion();
     

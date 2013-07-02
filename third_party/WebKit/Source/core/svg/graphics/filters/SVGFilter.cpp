@@ -39,14 +39,14 @@ float SVGFilter::applyHorizontalScale(float value) const
 {
     if (m_effectBBoxMode)
         value *= m_targetBoundingBox.width();
-    return Filter::applyHorizontalScale(value) * absoluteFilterRegion().width() / filterRegion().width();
+    return Filter::applyHorizontalScale(value);
 }
 
 float SVGFilter::applyVerticalScale(float value) const
 {
     if (m_effectBBoxMode)
         value *= m_targetBoundingBox.height();
-    return Filter::applyVerticalScale(value) * absoluteFilterRegion().height() / filterRegion().height();
+    return Filter::applyVerticalScale(value);
 }
 
 PassRefPtr<SVGFilter> SVGFilter::create(const AffineTransform& absoluteTransform, const FloatRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)

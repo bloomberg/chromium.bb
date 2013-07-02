@@ -109,6 +109,8 @@ private:
         PaintingData* paintingData;
         int startY;
         int endY;
+        float baseFrequencyX;
+        float baseFrequencyY;
     };
 
     static void fillRegionWorker(FillRegionParameters*);
@@ -118,12 +120,12 @@ private:
     virtual void applySoftware() OVERRIDE;
     virtual bool applySkia() OVERRIDE;
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
-    SkShader* createShader(const IntRect& filterRegion) const;
+    SkShader* createShader(const IntRect& filterRegion);
 
     inline void initPaint(PaintingData&);
     float noise2D(int channel, PaintingData&, StitchData&, const FloatPoint&);
-    unsigned char calculateTurbulenceValueForPoint(int channel, PaintingData&, StitchData&, const FloatPoint&);
-    inline void fillRegion(Uint8ClampedArray*, PaintingData&, int, int);
+    unsigned char calculateTurbulenceValueForPoint(int channel, PaintingData&, StitchData&, const FloatPoint&, float, float);
+    inline void fillRegion(Uint8ClampedArray*, PaintingData&, int, int, float, float);
 
     TurbulenceType m_type;
     float m_baseFrequencyX;

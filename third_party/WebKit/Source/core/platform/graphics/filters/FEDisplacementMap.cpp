@@ -205,8 +205,10 @@ bool FEDisplacementMap::applySkia()
     SkAutoTUnref<SkImageFilter> displSource(new SkBitmapSource(displBitmap));
     SkDisplacementMapEffect::ChannelSelectorType typeX = toSkiaMode(m_xChannelSelector);
     SkDisplacementMapEffect::ChannelSelectorType typeY = toSkiaMode(m_yChannelSelector);
+    // FIXME : Only applyHorizontalScale is used and applyVerticalScale is ignored
+    // This can be fixed by adding a 2nd scale parameter to SkDisplacementMapEffect
     SkAutoTUnref<SkImageFilter> displEffect(new SkDisplacementMapEffect(
-        typeX, typeY, SkFloatToScalar(m_scale), displSource, colorSource));
+        typeX, typeY, SkFloatToScalar(filter()->applyHorizontalScale(m_scale)), displSource, colorSource));
     SkPaint paint;
     paint.setImageFilter(displEffect);
     resultImage->context()->drawBitmap(colorBitmap, 0, 0, &paint);
@@ -219,7 +221,9 @@ SkImageFilter* FEDisplacementMap::createImageFilter(SkiaImageFilterBuilder* buil
     SkImageFilter* displ = builder->build(inputEffect(1), operatingColorSpace());
     SkDisplacementMapEffect::ChannelSelectorType typeX = toSkiaMode(m_xChannelSelector);
     SkDisplacementMapEffect::ChannelSelectorType typeY = toSkiaMode(m_yChannelSelector);
-    return new SkDisplacementMapEffect(typeX, typeY, SkFloatToScalar(m_scale), displ, color);
+    // FIXME : Only applyHorizontalScale is used and applyVerticalScale is ignored
+    // This can be fixed by adding a 2nd scale parameter to SkDisplacementMapEffect
+    return new SkDisplacementMapEffect(typeX, typeY, SkFloatToScalar(filter()->applyHorizontalScale(m_scale)), displ, color);
 }
 
 static TextStream& operator<<(TextStream& ts, const ChannelSelectorType& type)

@@ -341,7 +341,9 @@ bool FEGaussianBlur::applySkia()
 SkImageFilter* FEGaussianBlur::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
-    return new SkBlurImageFilter(SkFloatToScalar(m_stdX), SkFloatToScalar(m_stdY), input);
+    float stdX = filter()->applyHorizontalScale(m_stdX);
+    float stdY = filter()->applyVerticalScale(m_stdY);
+    return new SkBlurImageFilter(SkFloatToScalar(stdX), SkFloatToScalar(stdY), input);
 }
 
 TextStream& FEGaussianBlur::externalRepresentation(TextStream& ts, int indent) const
