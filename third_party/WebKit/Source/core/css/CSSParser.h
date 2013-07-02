@@ -87,6 +87,7 @@ public:
         InvalidMediaQueryError,
         InvalidKeyframeSelectorError,
         InvalidSelectorPseudoError,
+        UnterminatedCommentError,
         GeneralError
     };
 

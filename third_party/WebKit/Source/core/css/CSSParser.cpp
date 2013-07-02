@@ -10681,6 +10681,7 @@ restartAfterComment:
     case CharacterSlash:
         // Ignore comments. They are not even considered as white spaces.
         if (*currentCharacter<SrcCharacterType>() == '*') {
+            const CSSParserLocation startLocation = currentLocation();
             if (m_sourceDataHandler) {
                 unsigned startOffset = (is8BitSource() ? currentCharacter<LChar>() - m_dataStart8.get() : currentCharacter<UChar>() - m_dataStart16.get()) - 1; // Start with a slash.
                 m_sourceDataHandler->startComment(startOffset - m_parsedTextPrefixLength);
@@ -10692,6 +10693,7 @@ restartAfterComment:
                 if (*currentCharacter<SrcCharacterType>() == '\0') {
                     // Unterminated comments are simply ignored.
                     currentCharacter<SrcCharacterType>() -= 2;
+                    reportError(startLocation, UnterminatedCommentError);
                     break;
                 }
                 ++currentCharacter<SrcCharacterType>();
@@ -11137,6 +11139,11 @@ void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
 
     case InvalidKeyframeSelectorError:
         builder.appendLiteral("Invalid CSS keyframe selector: ");
+        break;
+
+    case UnterminatedCommentError:
+        content.setLength(0);
+        builder.appendLiteral("Unterminated CSS comment");
         break;
 
     default:
