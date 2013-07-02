@@ -2385,6 +2385,7 @@
             'common/extensions/api/api.gyp:api',
             'debugger',
             'installer_util',
+            'sync_file_system_drive_proto',
             'sync_file_system_proto',
             '../cc/cc.gyp:cc',
             '../components/components.gyp:autofill_content_browser',
@@ -3265,6 +3266,19 @@
       'variables': {
         'proto_in_dir': 'browser/sync_file_system',
         'proto_out_dir': 'chrome/browser/sync_file_system',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # Protobuf compiler / generator for Sync FileSystem protocol buffer.
+      'target_name': 'sync_file_system_drive_proto',
+      'type': 'static_library',
+      'sources': [
+        'browser/sync_file_system/drive_backend/metadata_database.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'browser/sync_file_system/drive_backend',
+        'proto_out_dir': 'chrome/browser/sync_file_system/drive_backend',
       },
       'includes': [ '../build/protoc.gypi' ]
     },
