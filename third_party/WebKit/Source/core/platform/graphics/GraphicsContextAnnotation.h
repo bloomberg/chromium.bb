@@ -34,14 +34,10 @@
 #ifndef GraphicsContextAnnotation_h
 #define GraphicsContextAnnotation_h
 
-#if ENABLE(GRAPHICS_CONTEXT_ANNOTATIONS)
 #define ANNOTATE_GRAPHICS_CONTEXT(paintInfo, renderer) \
     GraphicsContextAnnotator scopedGraphicsContextAnnotator; \
     if (UNLIKELY(paintInfo.context->annotationMode())) \
         scopedGraphicsContextAnnotator.annotate(paintInfo, renderer)
-#else
-#define ANNOTATE_GRAPHICS_CONTEXT(paint, renderer) do { } while (0)
-#endif
 
 namespace WebCore {
 

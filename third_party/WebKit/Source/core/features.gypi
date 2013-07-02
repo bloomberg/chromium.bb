@@ -38,7 +38,6 @@
       'ENABLE_CSS_REGIONS=1',
       'ENABLE_CUSTOM_SCHEME_HANDLER=0',
       'ENABLE_ENCRYPTED_MEDIA_V2=1',
-      'ENABLE_GRAPHICS_CONTEXT_ANNOTATIONS=<(enable_graphics_context_annotations)',
       'ENABLE_SVG_FONTS=1',
       'ENABLE_TOUCH_ICON_LOADING=<(enable_touch_icon_loading)',
       'ENABLE_XHR_TIMEOUT=0',
@@ -51,10 +50,8 @@
     # We have to nest variables inside variables so that they can be overridden
     # through GYP_DEFINES.
     'variables': {
-      'enable_graphics_context_annotations%': 0,
       'enable_touch_icon_loading%' : 0,
     },
-    'enable_graphics_context_annotations%': '<(enable_graphics_context_annotations)',
     'conditions': [
       ['use_concatenated_impulse_responses==1', {
         # Use concatenated HRTF impulse responses
