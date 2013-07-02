@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -13,6 +13,9 @@
 #include <stdlib.h>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability.h"
+
+#include "native_client/src/shared/platform/platform_init.h"
 
 #include "native_client/src/trusted/service_runtime/dyn_array.h"
 
@@ -27,56 +30,75 @@ int ReadWriteTest(void) {
     6 };
 
   struct DynArray da;
-  int             i;
+  size_t          i;
+  ssize_t         j;
   int             nerrors = 0;
 
   printf("\nReadWriteTest\n");
-  DynArrayCtor(&da, 2);
+
+  if (!DynArrayCtor(&da, 2)) {
+    fprintf(stderr, "dyn_array_test: DynArrayCtor failed\n");
+    ++nerrors;
+    goto done;
+  }
 
   for (i = 0; i < NACL_ARRAY_SIZE(test_data); ++i) {
-    if (!DynArraySet(&da, i, (void *) test_data[i])) {
-      printf("insert for position %d failed\n", i);
+    if (!DynArraySet(&da, i, (void *) (uintptr_t) test_data[i])) {
+      fprintf(stderr,
+              "dyn_array_test: insert for position %"NACL_PRIuS" failed\n",
+              i);
       ++nerrors;
     }
   }
 
   for (i = 0; i < NACL_ARRAY_SIZE(test_data); ++i) {
-    if ((int) DynArrayGet(&da, i) != test_data[i]) {
-      printf("check for value at position %d failed\n", i);
+    if ((int) (uintptr_t) DynArrayGet(&da, i) != test_data[i]) {
+      fprintf(stderr,
+              "dyn_array_test: check for value at position %"NACL_PRIuS
+              " failed\n", i);
       ++nerrors;
     }
   }
 
   DynArrayDtor(&da);
 
-  DynArrayCtor(&da, 10);
+  if (!DynArrayCtor(&da, 10)) {
+    fprintf(stderr, "dyn_array_test: DynArrayCtor failed\n");
+    ++nerrors;
+    goto done;
+  }
 
-  for (i = NACL_ARRAY_SIZE(test_data); --i >= 0; ) {
-    if (!DynArraySet(&da, i, (void *) test_data[i])) {
-      printf("insert for position %d failed\n", i);
+  for (j = NACL_ARRAY_SIZE(test_data); --j >= 0; ) {
+    if (!DynArraySet(&da, j, (void *) (uintptr_t) test_data[j])) {
+      fprintf(stderr,
+              "dyn_array_test: insert for position %"NACL_PRIdS" failed\n",
+              j);
       ++nerrors;
     }
   }
 
-  for (i = NACL_ARRAY_SIZE(test_data); --i >= 0; ) {
-    if ((int) DynArrayGet(&da, i) != test_data[i]) {
-      printf("check for value at position %d failed\n", i);
+  for (j = NACL_ARRAY_SIZE(test_data); --j >= 0; ) {
+    if ((int) (uintptr_t) DynArrayGet(&da, j) != test_data[j]) {
+      fprintf(stderr,
+              "dyn_array_test: check for value at position %"NACL_PRIdS
+              " failed\n", j);
       ++nerrors;
     }
   }
 
   DynArrayDtor(&da);
 
-  printf(0 != nerrors ? "FAIL\n" : "OK\n");
+done:
+  printf(0 != nerrors ? "FAILED\n" : "PASSED\n");
   return nerrors;
 }
 
 
 int FfsTest(void) {
   static struct {
-    int   pos;
-    void  *val;
-    int   expected;
+    size_t  pos;
+    void    *val;
+    size_t  expected;
   } test_data[] = {
     { 1, (void *) 0xdeadbeef, 0 },
     { 3, (void *) 0xdeadbeef, 0 },
@@ -159,41 +181,51 @@ int FfsTest(void) {
     { 63, (void *) 0xdeadbeef, 67 },
   };
   struct DynArray da;
-  int             ix;
+  size_t          ix;
   int             nerrors = 0;
 
   printf("\nFFS test\n");
-  DynArrayCtor(&da, 32);
+
+  if (!DynArrayCtor(&da, 32)) {
+    fprintf(stderr, "dyn_array_test: DynArrayCtor failed\n");
+    ++nerrors;
+    goto done;
+  }
 
   for (ix = 0; ix < NACL_ARRAY_SIZE(test_data); ++ix) {
     if (!DynArraySet(&da, test_data[ix].pos, test_data[ix].val)) {
-      printf("setting at position %d to 0x%x, test_data entry %d faild\n",
-             test_data[ix].pos, (uintptr_t) test_data[ix].val, ix);
+      fprintf(stderr,
+              "dyn_array_test: setting at position %"NACL_PRIuS" to 0x%08"
+              NACL_PRIxPTR", test_data entry %"NACL_PRIuS" failed\n",
+              test_data[ix].pos, (uintptr_t) test_data[ix].val, ix);
       ++nerrors;
     }
     if (DynArrayFirstAvail(&da) != test_data[ix].expected) {
-      printf("ix %d, first avail: expected %d, got %d\n",
-             ix,
-             test_data[ix].expected,
-             DynArrayFirstAvail(&da));
+      fprintf(stderr,
+              "dyn_array_test: ix %"NACL_PRIuS", first avail: expected %"
+              NACL_PRIuS", got %"NACL_PRIuS"\n",
+              ix, test_data[ix].expected, DynArrayFirstAvail(&da));
       ++nerrors;
     }
   }
 
   DynArrayDtor(&da);
-  printf(0 != nerrors ? "FAIL\n" : "OK\n");
+
+done:
+  printf(0 != nerrors ? "FAILED\n" : "PASSED\n");
   return nerrors;
 }
 
 
 int main(void) {
-  int nerrors;
+  int nerrors = 0;
 
-  nerrors = ReadWriteTest();
+  NaClPlatformInit();
+
+  nerrors += ReadWriteTest();
   nerrors += FfsTest();
 
-  if (0 == nerrors) {
-    printf("PASS\n");
-  }
-  return nerrors;
+  NaClPlatformFini();
+
+  return nerrors != 0;
 }
