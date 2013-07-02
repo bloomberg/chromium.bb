@@ -5,17 +5,8 @@
 <style>
 
 </style>
-<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
-<script src="../../cr.js"></script>
-<script src="../event_target.js"></script>
-<script src="list_single_selection_model.js"></script>
+<script src="webui_resource_test.js"></script>
 <script src="list_selection_model_test_util.js"></script>
-<script>
-
-goog.require('goog.testing.jsunit');
-
-</script>
-
 </head>
 <body>
 
@@ -67,8 +58,8 @@ function testAdjust4() {
 
   adjust(sm, 99, 1, 0);
 
-  assertEquals('lead', -1, sm.leadIndex);
-  assertEquals('anchor', -1, sm.anchorIndex);
+  assertEquals(-1, sm.leadIndex, 'lead');
+  assertEquals(-1, sm.anchorIndex, 'anchor');
   assertArrayEquals([], sm.selectedIndexes);
 }
 
@@ -79,8 +70,8 @@ function testAdjust5() {
 
   adjust(sm, 0, 0, 10);
 
-  assertEquals('lead', 10, sm.leadIndex);
-  assertEquals('anchor', 10, sm.anchorIndex);
+  assertEquals(10, sm.leadIndex,'lead');
+  assertEquals(10, sm.anchorIndex, 'anchor');
   assertArrayEquals([10], sm.selectedIndexes);
 }
 
@@ -89,8 +80,8 @@ function testSelectedIndex1() {
 
   sm.selectedIndex = 99;
 
-  assertEquals('lead', 99, sm.leadIndex);
-  assertEquals('anchor', 99, sm.anchorIndex);
+  assertEquals(99, sm.leadIndex, 'lead');
+  assertEquals(99, sm.anchorIndex, 'anchor');
   assertArrayEquals([99], sm.selectedIndexes);
 }
 
@@ -99,8 +90,8 @@ function testLeadIndex1() {
 
   sm.leadIndex = 99;
 
-  assertEquals('lead', 99, sm.leadIndex);
-  assertEquals('anchor', 99, sm.anchorIndex);
+  assertEquals(99, sm.leadIndex, 'lead');
+  assertEquals(99, sm.anchorIndex, 'anchor');
   assertArrayEquals([], sm.selectedIndexes);
 }
 
@@ -109,8 +100,8 @@ function testLeadIndex2() {
 
   sm.leadIndex = 99;
 
-  assertEquals('lead', -1, sm.leadIndex);
-  assertEquals('anchor', -1, sm.anchorIndex);
+  assertEquals(-1, sm.leadIndex, 'lead');
+  assertEquals(-1, sm.anchorIndex, 'anchor');
   assertArrayEquals([], sm.selectedIndexes);
 }
 
