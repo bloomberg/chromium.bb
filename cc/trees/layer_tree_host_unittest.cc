@@ -2147,10 +2147,6 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
         child_layer2_(FakeContentLayer::Create(&client_)),
         num_commits_(0) {}
 
-  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->impl_side_painting = false;
-  }
-
   virtual void BeginTest() OVERRIDE {
     layer_tree_host()->SetViewportSize(gfx::Size(100, 100));
     root_layer_->SetBounds(gfx::Size(100, 100));

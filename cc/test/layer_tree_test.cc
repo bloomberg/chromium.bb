@@ -627,9 +627,4 @@ scoped_refptr<cc::ContextProvider> LayerTreeTest::
   return compositor_thread_contexts_;
 }
 
-LayerTreeHost* LayerTreeTest::layer_tree_host() {
-  DCHECK(proxy()->IsMainThread() || proxy()->IsMainThreadBlocked());
-  return layer_tree_host_.get();
-}
-
 }  // namespace cc
