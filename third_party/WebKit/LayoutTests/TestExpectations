@@ -913,9 +913,6 @@ webkit.org/b/91012 touchadjustment/focusout-on-touch.html [ Skip ]
 webkit.org/b/78159 compositing/iframes/scrolling-iframe.html [ Failure Pass ]
 webkit.org/b/78159 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Failure Pass ]
 
-webkit.org/b/79224 [ Win ] fast/canvas/webgl/tex-image-with-format-and-type.html [ Failure Pass ]
-webkit.org/b/79224 [ Win ] virtual/gpu/fast/canvas/webgl/tex-image-with-format-and-type.html [ Failure Pass ]
-
 webkit.org/b/80498 [ Linux Win ] fast/workers/worker-multi-startup.html [ Crash Pass ]
 
 webkit.org/b/91946 fast/events/rtl-scrollbar.html [ Failure Pass ]
