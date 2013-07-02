@@ -72,8 +72,6 @@ AutofillPopupViewGtk::~AutofillPopupViewGtk() {
 }
 
 void AutofillPopupViewGtk::Hide() {
-  AutofillPopupView::Hide();
-
   delete this;
 }
 

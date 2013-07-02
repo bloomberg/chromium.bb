@@ -72,8 +72,6 @@ AutofillPopupViewBridge::~AutofillPopupViewBridge() {
 }
 
 void AutofillPopupViewBridge::Hide() {
-  AutofillPopupView::Hide();
-
   delete this;
 }
 

@@ -38,8 +38,6 @@ void AutofillPopupViewAndroid::Show() {
 }
 
 void AutofillPopupViewAndroid::Hide() {
-  AutofillPopupView::Hide();
-
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AutofillPopupGlue_hide(env, java_object_.obj());
   delete this;

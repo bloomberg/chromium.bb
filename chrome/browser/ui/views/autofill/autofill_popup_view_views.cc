@@ -164,8 +164,6 @@ void AutofillPopupViewViews::UpdateBoundsAndRedrawPopup() {
 }
 
 void AutofillPopupViewViews::HideInternal() {
-  AutofillPopupView::Hide();
-
   observing_widget_->RemoveObserver(this);
 }
 
