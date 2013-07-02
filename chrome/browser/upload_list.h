@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 
@@ -66,6 +67,7 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
 
  private:
   friend class base::RefCountedThreadSafe<UploadList>;
+  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseLogEntries);
 
   // Manages the background thread work for LoadUploadListAsynchronously().
   void LoadUploadListAndInformDelegateOfCompletion();
