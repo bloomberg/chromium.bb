@@ -7,6 +7,6 @@ SUBDIRS = src protocol $(doc_subdir) tests cursor
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 aclocaldir = $(datadir)/aclocal
-aclocal_DATA = wayland-scanner.m4 wayland-scanner.mk
+aclocal_DATA = wayland-scanner.m4
 
-EXTRA_DIST = wayland-scanner.mk
+dist_pkgdata_DATA = wayland-scanner.mk
