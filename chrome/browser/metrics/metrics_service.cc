@@ -175,7 +175,6 @@
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/memory_details.h"
-#include "chrome/browser/metrics/compression_utils.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_log_serializer.h"
 #include "chrome/browser/metrics/metrics_reporting_scheduler.h"
@@ -270,21 +269,6 @@ const size_t kUploadLogAvoidRetransmitSize = 50000;
 
 // Interval, in minutes, between state saves.
 const int kSaveStateIntervalMinutes = 5;
-
-// Name of field trial for that sends gzipped UMA protobufs.
-const char kGzippedProtobufsTrialName[] = "GZippedProtobufs";
-
-// Divisor for the gzipped protobufs trial.
-const int kGzippedProtobufsTrialDivisor = 100;
-
-// Quotient for the gzipped protobufs trial.
-const int kGzippedProtobufsTrialQuotient = 50;
-
-// Name of the group with gzipped protobufs.
-const char kGzippedProtobufsGroupName[] = "GzippedProtobufsEnabled";
-
-// Name of the group with non-gzipped protobufs.
-const char kNonGzippedProtobufsGroupName[] = "GzippedProtobufsDisabled";
 
 enum ResponseStatus {
   UNKNOWN_FAILURE,
@@ -486,7 +470,6 @@ MetricsService::MetricsService()
       reporting_active_(false),
       test_mode_active_(false),
       state_(INITIALIZED),
-      gzipped_protobufs_group_(0),
       low_entropy_source_(kLowEntropySourceNotSet),
       idle_since_last_transmission_(false),
       next_window_id_(0),
@@ -1435,29 +1418,6 @@ void MetricsService::PrepareFetchWithStagedLog() {
     current_fetch_->SetRequestContext(
         g_browser_process->system_request_context());
     current_fetch_->SetUploadData(kMimeType, log_manager_.staged_log_text());
-
-    // Compress the protobufs 50% of the time. This can be used to see if
-    // compressed protobufs are being mishandled by machines between the
-    // client/server or monitoring programs/firewalls on the client.
-    bool gzip_protobuf_before_uploading = GzipProtobufsBeforeUploading();
-    if (gzip_protobuf_before_uploading) {
-      std::string log_text = log_manager_.staged_log_text();
-      std::string compressed_log_text;
-      bool compression_successful = chrome::GzipCompress(log_text,
-                                                         &compressed_log_text);
-      DCHECK(compression_successful);
-      if (compression_successful) {
-        current_fetch_->SetUploadData(kMimeType, compressed_log_text);
-        // Tell the server that we're uploading gzipped protobufs.
-        current_fetch_->SetExtraRequestHeaders("content-encoding: gzip");
-        UMA_HISTOGRAM_PERCENTAGE(
-            "UMA.ProtoCompressionRatio",
-            100 * compressed_log_text.size() / log_text.size());
-      }
-    }
-    UMA_HISTOGRAM_BOOLEAN("UMA.ProtoGzipped",
-                          gzip_protobuf_before_uploading);
-
     // We already drop cookies server-side, but we might as well strip them out
     // client-side as well.
     current_fetch_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -1865,23 +1825,6 @@ void MetricsService::StartExternalMetrics() {
   external_metrics_->Start();
 }
 #endif
-
-bool MetricsService::GzipProtobufsBeforeUploading() {
-  if (!gzipped_protobufs_trial_.get()) {
-    gzipped_protobufs_trial_ = base::FieldTrialList::FactoryGetFieldTrial(
-        kGzippedProtobufsTrialName,
-        kGzippedProtobufsTrialDivisor,
-        kNonGzippedProtobufsGroupName,
-        2013,
-        8,
-        1,
-        NULL);
-    gzipped_protobufs_group_ = gzipped_protobufs_trial_->AppendGroup(
-        kGzippedProtobufsGroupName,
-        kGzippedProtobufsTrialQuotient);
-  }
-  return gzipped_protobufs_trial_->group() == gzipped_protobufs_group_;
-}
 
 // static
 bool MetricsServiceHelper::IsMetricsReportingEnabled() {
