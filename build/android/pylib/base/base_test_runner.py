@@ -148,7 +148,7 @@ class BaseTestRunner(object):
     """Creates a forwarder instance if needed and forward a port."""
     if not self._forwarder:
       self._forwarder = Forwarder(self.adb, self.build_type)
-    self._forwarder.Run(port_pairs, self.tool, '127.0.0.1')
+    self._forwarder.Run(port_pairs, self.tool)
 
   def StartForwarder(self, port_pairs):
     """Starts TCP traffic forwarding for the given |port_pairs|.

@@ -147,7 +147,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
                                                         'Debug')
       host_port = ChromeDriverTest._http_server._server.server_port
       ChromeDriverTest._forwarder.Run(
-          [(host_port, host_port)], valgrind_tools.BaseTool(), '127.0.0.1')
+          [(host_port, host_port)], valgrind_tools.BaseTool())
 
   @staticmethod
   def GlobalTearDown():

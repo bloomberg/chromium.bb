@@ -32,9 +32,6 @@ def main(argv):
                     help='Verbose level (multiple times for more)')
   parser.add_option('--device',
                     help='Serial number of device we should use.')
-  parser.add_option('--host',
-                    help='Host address to forward to from the host machine. '
-                    '127.0.0.1 by default', default='127.0.0.1')
   parser.add_option('--debug', action='store_const', const='Debug',
                     dest='build_type', default='Release',
                     help='Use Debug build of host tools instead of Release.')
@@ -57,7 +54,7 @@ def main(argv):
   tool = CreateTool(None, adb)
   forwarder_instance = forwarder.Forwarder(adb, options.build_type)
   try:
-    forwarder_instance.Run(port_pairs, tool, options.host)
+    forwarder_instance.Run(port_pairs, tool)
     while True:
       time.sleep(60)
   except KeyboardInterrupt:

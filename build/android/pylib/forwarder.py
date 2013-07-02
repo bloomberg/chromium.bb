@@ -53,7 +53,7 @@ class Forwarder(object):
     self._device_forwarder_path_on_host = os.path.join(
         cmd_helper.OutDirectory.get(), build_type, 'forwarder_dist')
 
-  def Run(self, port_pairs, tool, host_name):
+  def Run(self, port_pairs, tool):
     """Runs the forwarder.
 
     Args:
@@ -64,8 +64,6 @@ class Forwarder(object):
                  DevicePortForHostPort method.
       tool: Tool class to use to get wrapper, if necessary, for executing the
             forwarder (see valgrind_tools.py).
-      host_name: Address to forward to, must be addressable from the
-                 host machine. Usually use loopback '127.0.0.1'.
 
     Raises:
       Exception on failure to forward the port.
@@ -73,6 +71,7 @@ class Forwarder(object):
     with self._lock:
       self._InitDeviceLocked(tool)
       self._InitHostLocked()
+      host_name = '127.0.0.1'
       redirection_commands = [
           '%d:%d:%d:%s' % (self._host_adb_control_port, device, host,
                            host_name) for device, host in port_pairs]

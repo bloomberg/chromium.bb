@@ -156,7 +156,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       # forwarder will stomp on them otherwise.
       port_pairs.append(http_server_ports)
       self.forwarder = forwarder.Forwarder(self.adb, self.build_type)
-      self.forwarder.Run(port_pairs, self.tool, '127.0.0.1')
+      self.forwarder.Run(port_pairs, self.tool)
     self.flags.AddFlags(['--enable-test-intents'])
 
   def TearDown(self):

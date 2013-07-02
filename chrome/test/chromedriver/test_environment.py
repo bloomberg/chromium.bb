@@ -98,7 +98,7 @@ class AndroidTestEnvironment(DesktopTestEnvironment):
     self._forwarder.Run(
         [(ANDROID_TEST_HTTP_PORT, ANDROID_TEST_HTTP_PORT),
          (ANDROID_TEST_HTTPS_PORT, ANDROID_TEST_HTTPS_PORT)],
-        valgrind_tools.BaseTool(), '127.0.0.1')
+        valgrind_tools.BaseTool())
 
   # override
   def GlobalTearDown(self):
