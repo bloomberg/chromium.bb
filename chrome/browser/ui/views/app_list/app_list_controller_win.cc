@@ -865,6 +865,28 @@ void AppListController::Init(Profile* initial_profile) {
         ShowAppListDuringModeSwitch(initial_profile);
   }
 
+  // Migrate from legacy app launcher if we are on a non-canary and non-chromium
+  // build.
+#if defined(GOOGLE_CHROME_BUILD)
+  if (!InstallUtil::IsChromeSxSProcess() &&
+      !chrome_launcher_support::GetAnyAppHostPath().empty()) {
+    chrome_launcher_support::InstallationState state =
+        chrome_launcher_support::GetAppLauncherInstallationState();
+    if (state == chrome_launcher_support::NOT_INSTALLED) {
+      // If app_host.exe is found but can't be located in the registry,
+      // skip the migration as this is likely a developer build.
+      return;
+    } else if (state == chrome_launcher_support::INSTALLED_AT_SYSTEM_LEVEL) {
+      chrome_launcher_support::UninstallLegacyAppLauncher(
+          chrome_launcher_support::SYSTEM_LEVEL_INSTALLATION);
+    } else if (state == chrome_launcher_support::INSTALLED_AT_USER_LEVEL) {
+      chrome_launcher_support::UninstallLegacyAppLauncher(
+          chrome_launcher_support::USER_LEVEL_INSTALLATION);
+    }
+    EnableAppList();
+  }
+#endif
+
   // Instantiate AppListController so it listens for profile deletions.
   AppListController::GetInstance();
 
@@ -889,25 +911,21 @@ void AppListController::EnableAppList() {
   // shortcut, they can restore it by pinning the start menu or desktop
   // shortcut.
   PrefService* local_state = g_browser_process->local_state();
-  bool has_been_enabled = local_state->GetBoolean(
-      apps::prefs::kAppLauncherHasBeenEnabled);
-  if (!has_been_enabled) {
-    local_state->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled, true);
-    ShellIntegration::ShortcutLocations shortcut_locations;
-    shortcut_locations.on_desktop = true;
-    shortcut_locations.in_quick_launch_bar = true;
-    shortcut_locations.in_applications_menu = true;
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    shortcut_locations.applications_menu_subdir = dist->GetAppShortCutName();
-    base::FilePath user_data_dir(
-        g_browser_process->profile_manager()->user_data_dir());
+  local_state->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled, true);
+  ShellIntegration::ShortcutLocations shortcut_locations;
+  shortcut_locations.on_desktop = true;
+  shortcut_locations.in_quick_launch_bar = true;
+  shortcut_locations.in_applications_menu = true;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  shortcut_locations.applications_menu_subdir = dist->GetAppShortCutName();
+  base::FilePath user_data_dir(
+      g_browser_process->profile_manager()->user_data_dir());
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&CreateAppListShortcuts,
-                   user_data_dir, GetAppModelId(), shortcut_locations));
-  }
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&CreateAppListShortcuts,
+                  user_data_dir, GetAppModelId(), shortcut_locations));
 }
 
 void AppListController::DisableAppList() {

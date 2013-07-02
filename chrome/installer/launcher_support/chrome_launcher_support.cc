@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/process_util.h"
 #include "base/strings/string16.h"
 #include "base/win/registry.h"
 
@@ -141,6 +142,24 @@ base::FilePath FindExeRelativeToSetupExe(const base::FilePath setup_exe_path,
 }
 
 }  // namespace
+
+void UninstallLegacyAppLauncher(InstallationLevel level) {
+  base::FilePath setup_exe(GetSetupExeFromRegistry(level, kAppHostAppId));
+  if (setup_exe.empty())
+    return;
+  string16 uninstall_arguments;
+  if (GetClientStateValue(level,
+                          kAppHostAppId,
+                          kUninstallArgumentsField,
+                          &uninstall_arguments)) {
+    CommandLine uninstall_cmd = CommandLine::FromString(
+        L"\"" + setup_exe.value() + L"\" " + uninstall_arguments);
+
+    VLOG(1) << "Uninstalling legacy app launcher with command line: "
+            << uninstall_cmd.GetCommandLineString();
+    base::LaunchProcess(uninstall_cmd, base::LaunchOptions(), NULL);
+  }
+}
 
 base::FilePath GetSetupExeForInstallationLevel(InstallationLevel level) {
   // Look in the registry for Chrome Binaries first.

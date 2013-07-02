@@ -52,6 +52,11 @@ base::FilePath GetAnyChromePath();
 // The file path returned (if any) is guaranteed to exist.
 base::FilePath GetAnyAppHostPath();
 
+// Uninstalls the legacy app launcher by launching setup.exe with the uninstall
+// arguments from the App Launcher ClientState registry key. The uninstall will
+// run asynchronously.
+void UninstallLegacyAppLauncher(InstallationLevel level);
+
 // Returns true if App Host is installed (system-level or user-level),
 // or in the same directory as the current executable.
 bool IsAppHostPresent();
