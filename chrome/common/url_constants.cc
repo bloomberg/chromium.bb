@@ -65,6 +65,7 @@ const char kChromeUIPolicyURL[] = "chrome://policy/";
 const char kChromeUIProfileSigninConfirmationURL[] =
     "chrome://profile-signin-confirmation/";
 const char kChromeUIPrintURL[] = "chrome://print/";
+const char kChromeUIRestartURL[] = "chrome://restart/";
 const char kChromeUISessionFaviconURL[] = "chrome://session-favicon/";
 const char kChromeUISettingsURL[] = "chrome://settings/";
 const char kChromeUISettingsFrameURL[] = "chrome://settings-frame/";
@@ -193,6 +194,7 @@ const char kChromeUIPredictorsHost[] = "predictors";
 const char kChromeUIPrintHost[] = "print";
 const char kChromeUIProfilerHost[] = "profiler";
 const char kChromeUIQuotaInternalsHost[] = "quota-internals";
+const char kChromeUIRestartHost[] = "restart";
 const char kChromeUISessionFaviconHost[] = "session-favicon";
 const char kChromeUISettingsHost[] = "settings";
 const char kChromeUISettingsFrameHost[] = "settings-frame";
@@ -512,7 +514,8 @@ const char* const kChromeDebugURLs[] = {
   content::kChromeUIGpuCrashURL,
   content::kChromeUIGpuHangURL,
   content::kChromeUIPpapiFlashCrashURL,
-  content::kChromeUIPpapiFlashHangURL
+  content::kChromeUIPpapiFlashHangURL,
+  chrome::kChromeUIRestartURL
 };
 const int kNumberOfChromeDebugURLs =
     static_cast<int>(arraysize(kChromeDebugURLs));

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
@@ -160,6 +161,11 @@ bool WillHandleBrowserAboutURL(GURL* url,
   } else if (host == chrome::kChromeUIHelpHost) {
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUIHelpHost + url->path();
+  } else if (host == chrome::kChromeUIRestartHost) {
+    // Call AttemptRestart after chrome::Navigate() completes to avoid access of
+    // gtk objects after they are destoyed by BrowserWindowGtk::Close().
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&chrome::AttemptRestart));
   }
   GURL::Replacements replacements;
   replacements.SetHostStr(host);
