@@ -35,3 +35,8 @@ IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationHelperBrowserTest,
 #endif
   EXPECT_FALSE(ui::HasBeenShutdown(browser()->profile()));
 }
+
+IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationHelperBrowserTest,
+                       HasNoSyncedExtensions) {
+  EXPECT_FALSE(ui::HasSyncedExtensions(browser()->profile()));
+}

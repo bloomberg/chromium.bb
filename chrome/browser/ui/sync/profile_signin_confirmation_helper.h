@@ -23,6 +23,10 @@ SkColor GetSigninConfirmationPromptBarColor(SkAlpha alpha);
 // profile was created.
 bool HasBeenShutdown(Profile* profile);
 
+// Determines whether there are any synced extensions installed (that
+// shouldn't be ignored).
+bool HasSyncedExtensions(Profile* profile);
+
 // Determines whether the user should be prompted to create a new
 // profile before signin.
 void CheckShouldPromptForNewProfile(

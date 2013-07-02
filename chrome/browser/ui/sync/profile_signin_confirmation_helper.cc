@@ -68,27 +68,6 @@ bool HasBookmarks(Profile* profile) {
   return has_bookmarks;
 }
 
-bool HasSyncedExtensions(Profile* profile) {
-  extensions::ExtensionSystem* system =
-      extensions::ExtensionSystem::Get(profile);
-  if (system && system->extension_service()) {
-    const ExtensionSet* extensions = system->extension_service()->extensions();
-    for (ExtensionSet::const_iterator iter = extensions->begin();
-         iter != extensions->end(); ++iter) {
-      // The webstore is synced so that it stays put on the new tab
-      // page, but since it's installed by default we don't want to
-      // consider it when determining if the profile is dirty.
-      if (extensions::sync_helper::IsSyncable(iter->get()) &&
-          (*iter)->id() != extension_misc::kWebStoreAppId) {
-        VLOG(1) << "ProfileSigninConfirmationHelper: "
-                << "profile contains a synced extension: " << (*iter)->id();
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 // Helper functions for Chrome profile signin.
 class ProfileSigninConfirmationHelper
     : public base::RefCounted<ProfileSigninConfirmationHelper> {
@@ -215,6 +194,28 @@ bool HasBeenShutdown(Profile* profile) {
   if (has_been_shutdown)
     VLOG(1) << "ProfileSigninConfirmationHelper: profile is not new";
   return has_been_shutdown;
+}
+
+bool HasSyncedExtensions(Profile* profile) {
+  extensions::ExtensionSystem* system =
+      extensions::ExtensionSystem::Get(profile);
+  if (system && system->extension_service()) {
+    const ExtensionSet* extensions = system->extension_service()->extensions();
+    for (ExtensionSet::const_iterator iter = extensions->begin();
+         iter != extensions->end(); ++iter) {
+      // The webstore is synced so that it stays put on the new tab
+      // page, but since it's installed by default we don't want to
+      // consider it when determining if the profile is dirty.
+      if (extensions::sync_helper::IsSyncable(iter->get()) &&
+          (*iter)->id() != extension_misc::kWebStoreAppId &&
+          (*iter)->id() != extension_misc::kChromeAppId) {
+        VLOG(1) << "ProfileSigninConfirmationHelper: "
+                << "profile contains a synced extension: " << (*iter)->id();
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 void CheckShouldPromptForNewProfile(
