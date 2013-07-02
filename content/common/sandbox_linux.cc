@@ -52,6 +52,14 @@ bool AddResourceLimit(int resource, rlim_t limit) {
   return rc == 0;
 }
 
+bool IsRunningTSAN() {
+#if defined(THREAD_SANITIZER)
+  return true;
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 namespace content {
@@ -123,6 +131,10 @@ bool LinuxSandbox::InitializeSandbox() {
   if (!linux_sandbox->IsSingleThreaded()) {
     std::string error_message = "InitializeSandbox() called with multiple "
                                 "threads in process " + process_type;
+    // TSAN starts a helper thread. So we don't start the sandbox and don't
+    // even report an error about it.
+    if (IsRunningTSAN())
+      return false;
     // The GPU process is allowed to call InitializeSandbox() with threads for
     // now, because it loads third party libraries.
     if (process_type != switches::kGpuProcess)
