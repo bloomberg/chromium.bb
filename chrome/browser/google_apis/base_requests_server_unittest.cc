@@ -93,7 +93,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
             test_util::CreateCopyResultCallback(&result_code, &temp_file)),
         GetContentCallback(),
         ProgressCallback(),
-        test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
+        test_server_.GetURL("/files/gdata/testfile.txt"),
         GetTestCachedFilePath(
             base::FilePath::FromUTF8Unsafe("cached_testfile.txt")));
     request_sender_->StartRequestWithRetry(request);
@@ -106,10 +106,10 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/files/chromeos/gdata/testfile.txt", http_request_.relative_url);
+  EXPECT_EQ("/files/gdata/testfile.txt", http_request_.relative_url);
 
   const base::FilePath expected_path =
-      test_util::GetTestFilePath("chromeos/gdata/testfile.txt");
+      test_util::GetTestFilePath("gdata/testfile.txt");
   std::string expected_contents;
   file_util::ReadFileToString(expected_path, &expected_contents);
   EXPECT_EQ(expected_contents, contents);
@@ -127,7 +127,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_NonExistentFile) {
             test_util::CreateCopyResultCallback(&result_code, &temp_file)),
         GetContentCallback(),
         ProgressCallback(),
-        test_server_.GetURL("/files/chromeos/gdata/no-such-file.txt"),
+        test_server_.GetURL("/files/gdata/no-such-file.txt"),
         GetTestCachedFilePath(
             base::FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
     request_sender_->StartRequestWithRetry(request);
@@ -135,7 +135,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_NonExistentFile) {
   }
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/files/chromeos/gdata/no-such-file.txt",
+  EXPECT_EQ("/files/gdata/no-such-file.txt",
             http_request_.relative_url);
   // Do not verify the not found message.
 }

@@ -54,7 +54,7 @@ MockDriveService::MockDriveService() {
 
   // Fill in the default values for mock data.
   directory_data_ =
-      test_util::LoadJSONFile("chromeos/gdata/new_folder_entry.json");
+      test_util::LoadJSONFile("gdata/new_folder_entry.json");
 }
 
 MockDriveService::~MockDriveService() {}

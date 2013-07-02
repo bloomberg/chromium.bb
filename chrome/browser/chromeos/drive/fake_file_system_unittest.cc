@@ -21,9 +21,9 @@ class FakeFileSystemTest : public ::testing::Test {
     // Initialize FakeDriveService.
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
-        "chromeos/gdata/root_feed.json");
+        "gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
-        "chromeos/gdata/account_metadata.json");
+        "gdata/account_metadata.json");
 
     // Create a testee instance.
     fake_file_system_.reset(new FakeFileSystem(fake_drive_service_.get()));

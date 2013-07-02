@@ -218,9 +218,9 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     EXPECT_TRUE(done);
 
     fake_drive_service_->LoadResourceListForWapi(
-        "chromeos/sync_file_system/initialize.json");
+        "sync_file_system/initialize.json");
     fake_drive_service()->LoadAccountMetadataForWapi(
-        "chromeos/sync_file_system/account_metadata.json");
+        "sync_file_system/account_metadata.json");
 
     // Setup the sync root directory.
     EXPECT_EQ(google_apis::HTTP_CREATED,

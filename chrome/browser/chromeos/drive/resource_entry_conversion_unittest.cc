@@ -17,7 +17,7 @@ namespace drive {
 
 TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
   scoped_ptr<base::Value> value =
-      google_apis::test_util::LoadJSONFile("chromeos/gdata/file_entry.json");
+      google_apis::test_util::LoadJSONFile("gdata/file_entry.json");
   ASSERT_TRUE(value.get());
 
   scoped_ptr<google_apis::ResourceEntry> gdata_resource_entry(
@@ -95,7 +95,7 @@ TEST(ResourceEntryConversionTest,
      ConvertToResourceEntry_HostedDocument) {
   scoped_ptr<base::Value> value =
       google_apis::test_util::LoadJSONFile(
-          "chromeos/gdata/hosted_document_entry.json");
+          "gdata/hosted_document_entry.json");
   ASSERT_TRUE(value.get());
 
   scoped_ptr<google_apis::ResourceEntry> gdata_resource_entry(
@@ -176,7 +176,7 @@ TEST(ResourceEntryConversionTest,
      ConvertToResourceEntry_Directory) {
   scoped_ptr<base::Value> value =
       google_apis::test_util::LoadJSONFile(
-          "chromeos/gdata/directory_entry.json");
+          "gdata/directory_entry.json");
   ASSERT_TRUE(value.get());
 
   scoped_ptr<google_apis::ResourceEntry> gdata_resource_entry(
@@ -247,7 +247,7 @@ TEST(ResourceEntryConversionTest,
      ConvertToResourceEntry_DeletedHostedDocument) {
   scoped_ptr<base::Value> value =
       google_apis::test_util::LoadJSONFile(
-          "chromeos/gdata/deleted_hosted_document_entry.json");
+          "gdata/deleted_hosted_document_entry.json");
   ASSERT_TRUE(value.get());
 
   scoped_ptr<google_apis::ResourceEntry> gdata_resource_entry(
@@ -327,7 +327,7 @@ TEST(ResourceEntryConversionTest,
 TEST(ResourceEntryConversionTest,
      ConvertToResourceEntry_SharedWithMeEntry) {
   scoped_ptr<base::Value> value = google_apis::test_util::LoadJSONFile(
-      "chromeos/gdata/shared_with_me_entry.json");
+      "gdata/shared_with_me_entry.json");
   ASSERT_TRUE(value.get());
 
   scoped_ptr<google_apis::ResourceEntry> gdata_resource_entry(

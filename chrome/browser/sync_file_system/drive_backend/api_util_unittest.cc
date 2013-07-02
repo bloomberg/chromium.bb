@@ -265,7 +265,7 @@ class APIUtilTest : public testing::Test {
         scoped_ptr<DriveUploaderInterface>(fake_drive_uploader_));
 
     fake_drive_service_->LoadResourceListForWapi(
-        "chromeos/sync_file_system/initialize.json");
+        "sync_file_system/initialize.json");
   }
 
   virtual void TearDown() OVERRIDE {
@@ -437,7 +437,7 @@ void DidDeleteFile(bool* done_out,
 
 void APIUtilTest::TestGetSyncRoot() {
   fake_drive_service()->LoadAccountMetadataForWapi(
-      "chromeos/sync_file_system/account_metadata.json");
+      "sync_file_system/account_metadata.json");
   SetUpSyncRootDirectory();
 
   bool done = false;
@@ -454,7 +454,7 @@ void APIUtilTest::TestGetSyncRoot() {
 
 void APIUtilTest::TestCreateSyncRoot() {
   fake_drive_service()->LoadAccountMetadataForWapi(
-      "chromeos/sync_file_system/account_metadata.json");
+      "sync_file_system/account_metadata.json");
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   std::string resource_id;
@@ -478,7 +478,7 @@ void APIUtilTest::TestCreateSyncRoot() {
 
 void APIUtilTest::TestCreateSyncRoot_Conflict() {
   fake_drive_service()->LoadAccountMetadataForWapi(
-      "chromeos/sync_file_system/account_metadata.json");
+      "sync_file_system/account_metadata.json");
   fake_drive_service()->set_make_directory_conflict(true);
 
   bool done = false;
@@ -577,7 +577,7 @@ void APIUtilTest::TestCreateOriginDirectory_Conflict() {
 
 void APIUtilTest::TestGetLargestChangeStamp() {
   fake_drive_service()->LoadAccountMetadataForWapi(
-      "chromeos/sync_file_system/account_metadata.json");
+      "sync_file_system/account_metadata.json");
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;

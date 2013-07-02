@@ -106,9 +106,9 @@ class DriveURLRequestJobTest : public testing::Test {
     // Initialize FakeDriveService.
     fake_drive_service_.reset(new FakeDriveService);
     ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
-        "chromeos/gdata/root_feed.json"));
+        "gdata/root_feed.json"));
     ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
-        "chromeos/gdata/account_metadata.json"));
+        "gdata/account_metadata.json"));
 
     // Initialize FakeFileSystem.
     fake_file_system_.reset(

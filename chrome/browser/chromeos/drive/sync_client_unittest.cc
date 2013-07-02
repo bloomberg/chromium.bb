@@ -81,9 +81,9 @@ class SyncClientTest : public testing::Test {
     profile_.reset(new TestingProfile);
 
     drive_service_.reset(new SyncClientTestDriveService);
-    drive_service_->LoadResourceListForWapi("chromeos/gdata/empty_feed.json");
+    drive_service_->LoadResourceListForWapi("gdata/empty_feed.json");
     drive_service_->LoadAccountMetadataForWapi(
-        "chromeos/gdata/account_metadata.json");
+        "gdata/account_metadata.json");
 
     scheduler_.reset(new JobScheduler(profile_.get(), drive_service_.get(),
                                       base::MessageLoopProxy::current()));

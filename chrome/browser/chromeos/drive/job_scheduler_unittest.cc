@@ -97,11 +97,11 @@ class JobSchedulerTest : public testing::Test {
 
     fake_drive_service_.reset(new FakeDriveService());
     fake_drive_service_->LoadResourceListForWapi(
-        "chromeos/gdata/root_feed.json");
+        "gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
-        "chromeos/gdata/account_metadata.json");
+        "gdata/account_metadata.json");
     fake_drive_service_->LoadAppListForDriveApi(
-        "chromeos/drive/applist.json");
+        "drive/applist.json");
 
     scheduler_.reset(new JobScheduler(profile_.get(),
                                       fake_drive_service_.get(),

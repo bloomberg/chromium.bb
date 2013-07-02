@@ -107,7 +107,7 @@ class GDataWapiRequestsTest : public testing::Test {
       // copied document but for now, just return "file_entry.json"
       scoped_ptr<net::test_server::BasicHttpResponse> result(
           test_util::CreateHttpResponseFromFile(
-              test_util::GetTestFilePath("chromeos/gdata/file_entry.json")));
+              test_util::GetTestFilePath("gdata/file_entry.json")));
       return result.PassAs<net::test_server::HttpResponse>();
     }
 
@@ -121,7 +121,7 @@ class GDataWapiRequestsTest : public testing::Test {
       // Process the default feed.
       scoped_ptr<net::test_server::BasicHttpResponse> result(
           test_util::CreateHttpResponseFromFile(
-              test_util::GetTestFilePath("chromeos/gdata/root_feed.json")));
+              test_util::GetTestFilePath("gdata/root_feed.json")));
       return result.PassAs<net::test_server::HttpResponse>();
     } else {
       // Process a feed for a single resource ID.
@@ -130,7 +130,7 @@ class GDataWapiRequestsTest : public testing::Test {
       if (resource_id == "file:2_file_resource_id") {
         scoped_ptr<net::test_server::BasicHttpResponse> result(
             test_util::CreateHttpResponseFromFile(
-                test_util::GetTestFilePath("chromeos/gdata/file_entry.json")));
+                test_util::GetTestFilePath("gdata/file_entry.json")));
         return result.PassAs<net::test_server::HttpResponse>();
       } else if (resource_id == "folder:root/contents" &&
                  request.method == net::test_server::METHOD_POST) {
@@ -140,7 +140,7 @@ class GDataWapiRequestsTest : public testing::Test {
         scoped_ptr<net::test_server::BasicHttpResponse> result(
             test_util::CreateHttpResponseFromFile(
                 test_util::GetTestFilePath(
-                    "chromeos/gdata/directory_entry.json")));
+                    "gdata/directory_entry.json")));
         return result.PassAs<net::test_server::HttpResponse>();
       } else if (resource_id ==
                  "folder:root/contents/file:2_file_resource_id" &&
@@ -151,7 +151,7 @@ class GDataWapiRequestsTest : public testing::Test {
         // matter.
         scoped_ptr<net::test_server::BasicHttpResponse> result(
             test_util::CreateHttpResponseFromFile(
-                test_util::GetTestFilePath("chromeos/gdata/testfile.txt")));
+                test_util::GetTestFilePath("gdata/testfile.txt")));
         return result.PassAs<net::test_server::HttpResponse>();
       } else if (resource_id == "invalid_resource_id") {
         // Check if this is an authorization request for an app.
@@ -160,7 +160,7 @@ class GDataWapiRequestsTest : public testing::Test {
             request.content.find("<docs:authorizedApp>") != std::string::npos) {
           scoped_ptr<net::test_server::BasicHttpResponse> result(
               test_util::CreateHttpResponseFromFile(
-                  test_util::GetTestFilePath("chromeos/gdata/testfile.txt")));
+                  test_util::GetTestFilePath("gdata/testfile.txt")));
           return result.PassAs<net::test_server::HttpResponse>();
         }
       }
@@ -181,7 +181,7 @@ class GDataWapiRequestsTest : public testing::Test {
     scoped_ptr<net::test_server::BasicHttpResponse> result(
         test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath(
-                "chromeos/gdata/account_metadata.json")));
+                "gdata/account_metadata.json")));
     if (absolute_url.query().find("include-installed-apps=true") ==
         string::npos) {
       // Exclude the list of installed apps.
@@ -267,7 +267,7 @@ class GDataWapiRequestsTest : public testing::Test {
     // file, but for now, just return file_entry.json.
     scoped_ptr<net::test_server::BasicHttpResponse> response =
         test_util::CreateHttpResponseFromFile(
-            test_util::GetTestFilePath("chromeos/gdata/file_entry.json"));
+            test_util::GetTestFilePath("gdata/file_entry.json"));
     // response.code() is set to SUCCESS. Change it to CREATED if it's a new
     // file.
     if (absolute_url.path() == "/upload_new_file")
@@ -364,7 +364,7 @@ TEST_F(GDataWapiRequestsTest, GetResourceListRequest_DefaultFeed) {
   // Sanity check of the result.
   scoped_ptr<ResourceList> expected(
       ResourceList::ExtractAndParse(
-          *test_util::LoadJSONFile("chromeos/gdata/root_feed.json")));
+          *test_util::LoadJSONFile("gdata/root_feed.json")));
   ASSERT_TRUE(result_data);
   EXPECT_EQ(expected->title(), result_data->title());
 }
@@ -378,7 +378,7 @@ TEST_F(GDataWapiRequestsTest, GetResourceListRequest_ValidFeed) {
     GetResourceListRequest* request = new GetResourceListRequest(
         request_sender_.get(),
         *url_generator_,
-        test_server_.GetURL("/files/chromeos/gdata/root_feed.json"),
+        test_server_.GetURL("/files/gdata/root_feed.json"),
         0,              // start changestamp
         std::string(),  // search string
         std::string(),  // directory resource ID
@@ -391,13 +391,13 @@ TEST_F(GDataWapiRequestsTest, GetResourceListRequest_ValidFeed) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/files/chromeos/gdata/root_feed.json?v=3&alt=json&showroot=true&"
+  EXPECT_EQ("/files/gdata/root_feed.json?v=3&alt=json&showroot=true&"
             "showfolders=true&include-shared=true&max-results=500",
             http_request_.relative_url);
 
   scoped_ptr<ResourceList> expected(
       ResourceList::ExtractAndParse(
-          *test_util::LoadJSONFile("chromeos/gdata/root_feed.json")));
+          *test_util::LoadJSONFile("gdata/root_feed.json")));
   ASSERT_TRUE(result_data);
   EXPECT_EQ(expected->title(), result_data->title());
 }
@@ -413,7 +413,7 @@ TEST_F(GDataWapiRequestsTest, GetResourceListRequest_InvalidFeed) {
     GetResourceListRequest* request = new GetResourceListRequest(
         request_sender_.get(),
         *url_generator_,
-        test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
+        test_server_.GetURL("/files/gdata/testfile.txt"),
         0,              // start changestamp
         std::string(),  // search string
         std::string(),  // directory resource ID
@@ -426,7 +426,7 @@ TEST_F(GDataWapiRequestsTest, GetResourceListRequest_InvalidFeed) {
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/files/chromeos/gdata/testfile.txt?v=3&alt=json&showroot=true&"
+  EXPECT_EQ("/files/gdata/testfile.txt?v=3&alt=json&showroot=true&"
             "showfolders=true&include-shared=true&max-results=500",
             http_request_.relative_url);
   EXPECT_FALSE(result_data);
@@ -482,7 +482,7 @@ TEST_F(GDataWapiRequestsTest, GetResourceEntryRequest_ValidResourceId) {
             "?v=3&alt=json&showroot=true",
             http_request_.relative_url);
   EXPECT_TRUE(test_util::VerifyJsonData(
-      test_util::GetTestFilePath("chromeos/gdata/file_entry.json"),
+      test_util::GetTestFilePath("gdata/file_entry.json"),
       result_data.get()));
 }
 
@@ -536,7 +536,7 @@ TEST_F(GDataWapiRequestsTest, GetAccountMetadataRequest) {
 
   scoped_ptr<AccountMetadata> expected(
       AccountMetadata::CreateFrom(
-          *test_util::LoadJSONFile("chromeos/gdata/account_metadata.json")));
+          *test_util::LoadJSONFile("gdata/account_metadata.json")));
 
   ASSERT_TRUE(result_data.get());
   EXPECT_EQ(expected->largest_changestamp(),
@@ -576,7 +576,7 @@ TEST_F(GDataWapiRequestsTest,
 
   scoped_ptr<AccountMetadata> expected(
       AccountMetadata::CreateFrom(
-          *test_util::LoadJSONFile("chromeos/gdata/account_metadata.json")));
+          *test_util::LoadJSONFile("gdata/account_metadata.json")));
 
   ASSERT_TRUE(result_data.get());
   EXPECT_EQ(expected->largest_changestamp(),

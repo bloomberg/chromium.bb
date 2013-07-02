@@ -258,10 +258,10 @@ class DriveTestVolume {
       Profile* profile) {
     fake_drive_service_ = new drive::FakeDriveService;
     fake_drive_service_->LoadResourceListForWapi(
-        "chromeos/gdata/empty_feed.json");
+        "gdata/empty_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
-        "chromeos/gdata/account_metadata.json");
-    fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
+        "gdata/account_metadata.json");
+    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
     integration_service_ = new drive::DriveIntegrationService(
         profile,
         fake_drive_service_,

@@ -76,7 +76,7 @@ const char kTestFileContent[] = "This is some test content.";
 // All files except test_dir/empty_file.foo, which is empty, initially contain
 // kTestFileContent.
 const char kTestRootFeed[] =
-    "chromeos/gdata/remote_file_system_apitest_root_feed.json";
+    "gdata/remote_file_system_apitest_root_feed.json";
 
 // Sets up the initial file system state for native local and restricted native
 // local file systems. The hierarchy is the same as for the drive file system.
@@ -314,8 +314,8 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     fake_drive_service_ = new drive::FakeDriveService;
     fake_drive_service_->LoadResourceListForWapi(kTestRootFeed);
     fake_drive_service_->LoadAccountMetadataForWapi(
-        "chromeos/gdata/account_metadata.json");
-    fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
+        "gdata/account_metadata.json");
+    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
     return new drive::DriveIntegrationService(profile,
                                               fake_drive_service_,

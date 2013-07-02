@@ -93,9 +93,9 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     fake_drive_service_ = new ::drive::FakeDriveService();
     fake_drive_service_->Initialize(&profile_);
     ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
-        "chromeos/sync_file_system/account_metadata.json"));
+        "sync_file_system/account_metadata.json"));
     ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
-        "chromeos/gdata/root_feed.json"));
+        "gdata/root_feed.json"));
 
     drive_uploader_ = new ::drive::DriveUploader(
         fake_drive_service_, base::MessageLoopProxy::current().get());

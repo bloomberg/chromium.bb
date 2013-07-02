@@ -73,9 +73,9 @@ class ChangeListLoaderTest : public testing::Test {
 
     drive_service_.reset(new FakeDriveService);
     ASSERT_TRUE(drive_service_->LoadResourceListForWapi(
-        "chromeos/gdata/root_feed.json"));
+        "gdata/root_feed.json"));
     ASSERT_TRUE(drive_service_->LoadAccountMetadataForWapi(
-        "chromeos/gdata/account_metadata.json"));
+        "gdata/account_metadata.json"));
 
     scheduler_.reset(new JobScheduler(profile_.get(), drive_service_.get(),
                                       base::MessageLoopProxy::current()));
