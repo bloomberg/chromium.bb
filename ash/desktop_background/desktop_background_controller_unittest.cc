@@ -10,6 +10,7 @@
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -109,12 +110,10 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
     test::AshTestBase::SetUp();
     // Ash shell initialization creates wallpaper. Reset it so we can manually
     // control wallpaper creation and animation in our tests.
-    RootWindow* root = Shell::GetPrimaryRootWindow();
-    root->SetProperty(kDesktopController,
-        static_cast<DesktopBackgroundWidgetController*>(NULL));
-    root->SetProperty(kAnimatingDesktopController,
-        static_cast<AnimatingDesktopController*>(NULL));
-
+    RootWindowController* root_window_controller =
+        Shell::GetPrimaryRootWindowController();
+    root_window_controller->SetWallpaperController(NULL);
+    root_window_controller->SetAnimatingWallpaperController(NULL);
     controller_ = Shell::GetInstance()->desktop_background_controller();
   }
 
@@ -134,9 +133,9 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
   // Runs kAnimatingDesktopController's animation to completion.
   // TODO(bshe): Don't require tests to run animations; it's slow.
   void RunDesktopControllerAnimation() {
-    RootWindow* root = Shell::GetPrimaryRootWindow();
     DesktopBackgroundWidgetController* controller =
-        root->GetProperty(kAnimatingDesktopController)->GetController(false);
+        Shell::GetPrimaryRootWindowController()->
+        animating_wallpaper_controller()->GetController(false);
     ASSERT_NO_FATAL_FAILURE(RunAnimationForWidget(controller->widget()));
   }
 
@@ -304,21 +303,22 @@ TEST_F(DesktopBackgroundControllerTest, ControllerOwnership) {
 
   // The new wallpaper is ready to start animating. kAnimatingDesktopController
   // holds the widget controller instance. kDesktopController will get it later.
-  RootWindow* root = Shell::GetPrimaryRootWindow();
-  EXPECT_TRUE(
-      root->GetProperty(kAnimatingDesktopController)->GetController(false));
+  RootWindowController* root_window_controller =
+      Shell::GetPrimaryRootWindowController();
+  EXPECT_TRUE(root_window_controller->animating_wallpaper_controller()->
+              GetController(false));
 
   // kDesktopController will receive the widget controller when the animation
   // is done.
-  EXPECT_FALSE(root->GetProperty(kDesktopController));
+  EXPECT_FALSE(root_window_controller->wallpaper_controller());
 
   // Force the widget's layer animation to play to completion.
   RunDesktopControllerAnimation();
 
   // Ownership has moved from kAnimatingDesktopController to kDesktopController.
-  EXPECT_FALSE(
-      root->GetProperty(kAnimatingDesktopController)->GetController(false));
-  EXPECT_TRUE(root->GetProperty(kDesktopController));
+  EXPECT_FALSE(root_window_controller->animating_wallpaper_controller()->
+               GetController(false));
+  EXPECT_TRUE(root_window_controller->wallpaper_controller());
 }
 
 // Test for crbug.com/149043 "Unlock screen, no launcher appears". Ensure we
@@ -345,10 +345,11 @@ TEST_F(DesktopBackgroundControllerTest, BackgroundMovementDuringUnlock) {
 
   // In this state we have two desktop background views stored in different
   // properties. Both are in the lock screen background container.
-  RootWindow* root = Shell::GetPrimaryRootWindow();
-  EXPECT_TRUE(
-      root->GetProperty(kAnimatingDesktopController)->GetController(false));
-  EXPECT_TRUE(root->GetProperty(kDesktopController));
+  RootWindowController* root_window_controller =
+      Shell::GetPrimaryRootWindowController();
+  EXPECT_TRUE(root_window_controller->animating_wallpaper_controller()->
+              GetController(false));
+  EXPECT_TRUE(root_window_controller->wallpaper_controller());
   EXPECT_EQ(0, ChildCountForContainer(kDesktopBackgroundId));
   EXPECT_EQ(2, ChildCountForContainer(kLockScreenBackgroundId));
 
@@ -386,33 +387,37 @@ TEST_F(DesktopBackgroundControllerTest, ChangeWallpaperQuick) {
   // Change to a new wallpaper.
   controller->CreateEmptyWallpaper();
 
-  RootWindow* root = Shell::GetPrimaryRootWindow();
+  RootWindowController* root_window_controller =
+      Shell::GetPrimaryRootWindowController();
   DesktopBackgroundWidgetController* animating_controller =
-      root->GetProperty(kAnimatingDesktopController)->GetController(false);
+      root_window_controller->animating_wallpaper_controller()->
+      GetController(false);
   EXPECT_TRUE(animating_controller);
-  EXPECT_TRUE(root->GetProperty(kDesktopController));
+  EXPECT_TRUE(root_window_controller->wallpaper_controller());
 
   // Change to another wallpaper before animation finished.
   controller->CreateEmptyWallpaper();
 
   // The animating controller should immediately move to desktop controller.
-  EXPECT_EQ(animating_controller, root->GetProperty(kDesktopController));
+  EXPECT_EQ(animating_controller,
+            root_window_controller->wallpaper_controller());
 
   // Cache the new animating controller.
-  animating_controller =
-      root->GetProperty(kAnimatingDesktopController)->GetController(false);
+  animating_controller = root_window_controller->
+      animating_wallpaper_controller()->GetController(false);
 
   // Run wallpaper show animation to completion.
   ASSERT_NO_FATAL_FAILURE(
       RunAnimationForWidget(
-          root->GetProperty(kAnimatingDesktopController)->GetController(false)->
-              widget()));
+          root_window_controller->animating_wallpaper_controller()->
+              GetController(false)->widget()));
 
-  EXPECT_TRUE(root->GetProperty(kDesktopController));
-  EXPECT_FALSE(
-      root->GetProperty(kAnimatingDesktopController)->GetController(false));
+  EXPECT_TRUE(root_window_controller->wallpaper_controller());
+  EXPECT_FALSE(root_window_controller->animating_wallpaper_controller()->
+               GetController(false));
   // The desktop controller should be the last created animating controller.
-  EXPECT_EQ(animating_controller, root->GetProperty(kDesktopController));
+  EXPECT_EQ(animating_controller,
+            root_window_controller->wallpaper_controller());
 }
 
 TEST_F(DesktopBackgroundControllerTest, GetAppropriateResolution) {

@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -32,8 +33,6 @@
 #include "ui/views/widget/widget.h"
 
 using ash::internal::DesktopBackgroundWidgetController;
-using ash::internal::kAnimatingDesktopController;
-using ash::internal::kDesktopController;
 using content::BrowserThread;
 
 namespace ash {
@@ -359,13 +358,6 @@ bool DesktopBackgroundController::MoveDesktopToUnlockedContainer() {
                                    GetBackgroundContainerId(false));
 }
 
-void DesktopBackgroundController::OnWindowDestroying(aura::Window* window) {
-  window->SetProperty(kDesktopController,
-      static_cast<internal::DesktopBackgroundWidgetController*>(NULL));
-  window->SetProperty(kAnimatingDesktopController,
-      static_cast<internal::AnimatingDesktopController*>(NULL));
-}
-
 bool DesktopBackgroundController::DefaultWallpaperIsAlreadyLoadingOrLoaded(
     const base::FilePath& image_file, int image_resource_id) const {
   return (wallpaper_loader_ &&
@@ -402,12 +394,6 @@ void DesktopBackgroundController::OnDefaultWallpaperLoadCompleted(
   wallpaper_loader_ = NULL;
 }
 
-void DesktopBackgroundController::NotifyAnimationFinished() {
-  Shell* shell = Shell::GetInstance();
-  shell->GetPrimaryRootWindowController()->HandleDesktopBackgroundVisible();
-  shell->user_wallpaper_delegate()->OnWallpaperAnimationFinished();
-}
-
 ui::Layer* DesktopBackgroundController::SetColorLayerForContainer(
     SkColor color,
     aura::RootWindow* root_window,
@@ -417,12 +403,6 @@ ui::Layer* DesktopBackgroundController::SetColorLayerForContainer(
 
   Shell::GetContainer(root_window,container_id)->
       layer()->Add(background_layer);
-
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DesktopBackgroundController::NotifyAnimationFinished,
-                 weak_ptr_factory_.GetWeakPtr()));
-
   return background_layer;
 }
 
@@ -449,17 +429,10 @@ void DesktopBackgroundController::InstallDesktopController(
       NOTREACHED();
       return;
   }
-  // Ensure we're only observing the root window once. Don't rely on a window
-  // property check as those can be cleared by tests resetting the background.
-  if (!root_window->HasObserver(this))
-    root_window->AddObserver(this);
+  GetRootWindowController(root_window)->SetAnimatingWallpaperController(
+      new internal::AnimatingDesktopController(component));
 
-  internal::AnimatingDesktopController* animating_controller =
-      root_window->GetProperty(kAnimatingDesktopController);
-  if (animating_controller)
-    animating_controller->StopAnimating();
-  root_window->SetProperty(kAnimatingDesktopController,
-                           new internal::AnimatingDesktopController(component));
+  component->StartAnimating(GetRootWindowController(root_window));
 }
 
 void DesktopBackgroundController::InstallDesktopControllerForAllWindows() {
@@ -473,33 +446,36 @@ void DesktopBackgroundController::InstallDesktopControllerForAllWindows() {
 bool DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
                                                             int dst_container) {
   bool moved = false;
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  for (Shell::RootWindowList::iterator iter = root_windows.begin();
-    iter != root_windows.end(); ++iter) {
-    aura::RootWindow* root_window = *iter;
+  Shell::RootWindowControllerList controllers =
+      Shell::GetAllRootWindowControllers();
+  for (Shell::RootWindowControllerList::iterator iter = controllers.begin();
+    iter != controllers.end(); ++iter) {
+    internal::RootWindowController* root_window_controller = *iter;
     // In the steady state (no animation playing) the background widget
-    // controller exists in the kDesktopController property.
-    DesktopBackgroundWidgetController* desktop_controller = root_window->
-        GetProperty(kDesktopController);
+    // controller exists in the RootWindowController.
+    DesktopBackgroundWidgetController* desktop_controller =
+        root_window_controller->wallpaper_controller();
     if (desktop_controller) {
-      moved |= desktop_controller->Reparent(root_window,
-                                            src_container,
-                                            dst_container);
+      moved |= desktop_controller->Reparent(
+          root_window_controller->root_window(),
+          src_container,
+          dst_container);
     }
     // During desktop show animations the controller lives in
-    // kAnimatingDesktopController.
+    // AnimatingDesktopController owned by RootWindowController.
     // NOTE: If a wallpaper load happens during a desktop show animation there
     // can temporarily be two desktop background widgets.  We must reparent
     // both of them - one above and one here.
     DesktopBackgroundWidgetController* animating_controller =
-        root_window->GetProperty(kAnimatingDesktopController) ?
-        root_window->GetProperty(kAnimatingDesktopController)->
+        root_window_controller->animating_wallpaper_controller() ?
+        root_window_controller->animating_wallpaper_controller()->
             GetController(false) :
         NULL;
     if (animating_controller) {
-      moved |= animating_controller->Reparent(root_window,
-                                              src_container,
-                                              dst_container);
+      moved |= animating_controller->Reparent(
+          root_window_controller->root_window(),
+          src_container,
+          dst_container);
     }
   }
   return moved;

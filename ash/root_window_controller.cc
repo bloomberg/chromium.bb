@@ -9,6 +9,7 @@
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
+#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
 #include "ash/session_state_delegate.h"
@@ -177,7 +178,7 @@ RootWindowController::RootWindowController(aura::RootWindow* root_window)
   SetRootWindowController(root_window, this);
   screen_dimmer_.reset(new ScreenDimmer(root_window));
 
-  stacking_controller_.reset(new ash::StackingController);
+  stacking_controller_.reset(new StackingController);
   aura::client::SetStackingClient(root_window, stacking_controller_.get());
 }
 
@@ -202,7 +203,24 @@ RootWindowController* RootWindowController::ForActiveRootWindow() {
   return GetRootWindowController(Shell::GetActiveRootWindow());
 }
 
+void RootWindowController::SetWallpaperController(
+    DesktopBackgroundWidgetController* controller) {
+  wallpaper_controller_.reset(controller);
+}
+
+void RootWindowController::SetAnimatingWallpaperController(
+    AnimatingDesktopController* controller) {
+  if (animating_wallpaper_controller_.get())
+    animating_wallpaper_controller_->StopAnimating();
+  animating_wallpaper_controller_.reset(controller);
+}
+
 void RootWindowController::Shutdown() {
+  if (animating_wallpaper_controller_.get())
+    animating_wallpaper_controller_->StopAnimating();
+  wallpaper_controller_.reset();
+  animating_wallpaper_controller_.reset();
+
   CloseChildWindows();
   if (Shell::GetActiveRootWindow() == root_window_) {
     Shell::GetInstance()->set_active_root_window(
@@ -272,11 +290,11 @@ void RootWindowController::InitLayoutManagers() {
 void RootWindowController::InitForPrimaryDisplay() {
   DCHECK(!shelf_.get());
   aura::Window* shelf_container =
-      GetContainer(ash::internal::kShellWindowId_ShelfContainer);
+      GetContainer(internal::kShellWindowId_ShelfContainer);
   // TODO(harrym): Remove when status area is view.
   aura::Window* status_container =
-      GetContainer(ash::internal::kShellWindowId_StatusContainer);
-  shelf_.reset(new ash::ShelfWidget(
+      GetContainer(internal::kShellWindowId_StatusContainer);
+  shelf_.reset(new ShelfWidget(
       shelf_container, status_container, workspace_controller()));
 
   // Create Docked windows layout manager
@@ -368,9 +386,26 @@ void RootWindowController::HandleInitialDesktopBackgroundAnimationStarted() {
   }
 }
 
-void RootWindowController::HandleDesktopBackgroundVisible() {
+void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
+  // Make sure the wallpaper is visible.
   system_background_->SetColor(SK_ColorBLACK);
   boot_splash_screen_.reset();
+
+  Shell::GetInstance()->user_wallpaper_delegate()->
+      OnWallpaperAnimationFinished();
+  // Only removes old component when wallpaper animation finished. If we
+  // remove the old one before the new wallpaper is done fading in there will
+  // be a white flash during the animation.
+  if (animating_wallpaper_controller()) {
+    DesktopBackgroundWidgetController* controller =
+        animating_wallpaper_controller()->GetController(true);
+    // |desktop_widget_| should be the same animating widget we try to move
+    // to |kDesktopController|. Otherwise, we may close |desktop_widget_|
+    // before move it to |kDesktopController|.
+    DCHECK_EQ(controller->widget(), widget);
+    // Release the old controller and close its background widget.
+    SetWallpaperController(controller);
+  }
 }
 
 void RootWindowController::CloseChildWindows() {
@@ -389,10 +424,8 @@ void RootWindowController::CloseChildWindows() {
     shelf_->shelf_layout_manager()->set_workspace_controller(NULL);
 
   // Close background widget first as it depends on tooltip.
-  root_window_->SetProperty(kDesktopController,
-      static_cast<DesktopBackgroundWidgetController*>(NULL));
-  root_window_->SetProperty(kAnimatingDesktopController,
-                            static_cast<AnimatingDesktopController*>(NULL));
+  wallpaper_controller_.reset();
+  animating_wallpaper_controller_.reset();
 
   workspace_controller_.reset();
   aura::client::SetTooltipClient(root_window_.get(), NULL);
@@ -443,15 +476,13 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
   if (!menu_model)
     return;
 
-  internal::DesktopBackgroundWidgetController* background =
-      root_window_->GetProperty(kDesktopController);
   // Background controller may not be set yet if user clicked on status are
   // before initial animation completion. See crbug.com/222218
-  if (!background)
+  if (!wallpaper_controller_.get())
     return;
 
   views::MenuRunner menu_runner(menu_model.get());
-  if (menu_runner.RunMenuAt(background->widget(),
+  if (menu_runner.RunMenuAt(wallpaper_controller_->widget(),
           NULL, gfx::Rect(location_in_screen, gfx::Size()),
           views::MenuItemView::TOPLEFT, source_type,
           views::MenuRunner::CONTEXT_MENU) ==
@@ -478,7 +509,7 @@ aura::Window* RootWindowController::GetFullscreenWindow() const {
   aura::Window* container = workspace_controller_->GetActiveWorkspaceWindow();
   for (size_t i = 0; i < container->children().size(); ++i) {
     aura::Window* child = container->children()[i];
-    if (ash::wm::IsWindowFullscreen(child))
+    if (wm::IsWindowFullscreen(child))
       return child;
   }
   return NULL;

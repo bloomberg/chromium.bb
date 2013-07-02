@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -68,7 +67,7 @@ class WallpaperResizer;
 
 // Loads selected desktop wallpaper from file system asynchronously and updates
 // background layer if loaded successfully.
-class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
+class ASH_EXPORT DesktopBackgroundController {
  public:
   enum BackgroundMode {
     BACKGROUND_NONE,
@@ -135,9 +134,6 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   // Move all desktop widgets to unlocked container.
   // Returns true if the desktop moved.
   bool MoveDesktopToUnlockedContainer();
-
-  // WindowObserver implementation.
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
  private:
   friend class internal::DesktopBackgroundControllerTest;

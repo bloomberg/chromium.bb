@@ -5,23 +5,67 @@
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 
 #include "ash/ash_export.h"
+#include "ash/desktop_background/user_wallpaper_delegate.h"
+#include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/window_property.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/widget/widget.h"
-
-// Exported for tests.
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(
-    ASH_EXPORT, ash::internal::DesktopBackgroundWidgetController*);
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(
-    ASH_EXPORT, ash::internal::AnimatingDesktopController*);
+#include "ui/views/widget/widget_observer.h"
 
 namespace ash {
 namespace internal {
+namespace {
 
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(DesktopBackgroundWidgetController,
-                                 kDesktopController, NULL);
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(AnimatingDesktopController,
-                                 kAnimatingDesktopController, NULL);
+class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
+                                       public views::WidgetObserver {
+ public:
+  ShowWallpaperAnimationObserver(RootWindowController* root_window_controller,
+                                 views::Widget* desktop_widget,
+                                 bool is_initial_animation)
+      : root_window_controller_(root_window_controller),
+        desktop_widget_(desktop_widget),
+        is_initial_animation_(is_initial_animation) {
+    DCHECK(desktop_widget_);
+    desktop_widget_->AddObserver(this);
+  }
+
+  virtual ~ShowWallpaperAnimationObserver() {
+    StopObservingImplicitAnimations();
+    if (desktop_widget_)
+      desktop_widget_->RemoveObserver(this);
+  }
+
+ private:
+  // Overridden from ui::ImplicitAnimationObserver:
+  virtual void OnImplicitAnimationsScheduled() OVERRIDE {
+    if (is_initial_animation_) {
+      root_window_controller_->
+          HandleInitialDesktopBackgroundAnimationStarted();
+    }
+  }
+
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    root_window_controller_->OnWallpaperAnimationFinished(desktop_widget_);
+    delete this;
+  }
+
+  // Overridden from views::WidgetObserver.
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
+    delete this;
+  }
+
+  RootWindowController* root_window_controller_;
+  views::Widget* desktop_widget_;
+
+  // Is this object observing the initial brightness/grayscale animation?
+  const bool is_initial_animation_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShowWallpaperAnimationObserver);
+};
+
+}  // namespace
 
 DesktopBackgroundWidgetController::DesktopBackgroundWidgetController(
     views::Widget* widget) : widget_(widget) {
@@ -63,8 +107,7 @@ bool DesktopBackgroundWidgetController::Reparent(aura::RootWindow* root_window,
     views::Widget::ReparentNativeView(widget_->GetNativeView(),
         root_window->GetChildById(dest_container));
     return true;
-  }
-  if (layer_) {
+  } else if (layer_) {
     ui::Layer* layer = layer_.get();
     root_window->GetChildById(src_container)->layer()->Remove(layer);
     root_window->GetChildById(dest_container)->layer()->Add(layer);
@@ -72,6 +115,22 @@ bool DesktopBackgroundWidgetController::Reparent(aura::RootWindow* root_window,
   }
   // Nothing to reparent.
   return false;
+}
+
+void DesktopBackgroundWidgetController::StartAnimating(
+    RootWindowController* root_window_controller) {
+  if (widget_) {
+    ui::ScopedLayerAnimationSettings settings(
+        widget_->GetNativeView()->layer()->GetAnimator());
+    settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+    settings.AddObserver(new ShowWallpaperAnimationObserver(
+        root_window_controller, widget_,
+        Shell::GetInstance()->user_wallpaper_delegate()->
+            ShouldShowInitialAnimation()));
+    widget_->Show();
+    widget_->GetNativeView()->SetName("DesktopBackgroundView");
+  } else if (layer_)
+    root_window_controller->OnWallpaperAnimationFinished(NULL);
 }
 
 AnimatingDesktopController::AnimatingDesktopController(

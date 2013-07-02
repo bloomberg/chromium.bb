@@ -27,6 +27,8 @@ class Point;
 }
 
 namespace views {
+class Widget;
+
 namespace corewm {
 class InputMethodEventFilter;
 class RootWindowEventFilter;
@@ -46,7 +48,9 @@ class ToplevelWindowEventHandler;
 namespace internal {
 
 class AlwaysOnTopController;
+class AnimatingDesktopController;
 class BootSplashScreen;
+class DesktopBackgroundWidgetController;
 class DockedWindowLayoutManager;
 class PanelLayoutManager;
 class RootWindowLayoutManager;
@@ -124,6 +128,15 @@ class ASH_EXPORT RootWindowController {
   // Disables projection touch HUD.
   void DisableTouchHudProjection();
 
+  DesktopBackgroundWidgetController* wallpaper_controller() {
+    return wallpaper_controller_.get();
+  }
+  void SetWallpaperController(DesktopBackgroundWidgetController* controller);
+  AnimatingDesktopController* animating_wallpaper_controller() {
+    return animating_wallpaper_controller_.get();
+  }
+  void SetAnimatingWallpaperController(AnimatingDesktopController* controller);
+
   // Access the shelf layout manager associated with this root
   // window controller, NULL if no such shelf exists.
   ShelfLayoutManager* GetShelfLayoutManager();
@@ -179,9 +192,11 @@ class ASH_EXPORT RootWindowController {
   // hiding animation (if the screen is non-NULL).
   void HandleInitialDesktopBackgroundAnimationStarted();
 
-  // Called when the login background is fully visible.  Updates |background_|
-  // to be black and drops |boot_splash_screen_|.
-  void HandleDesktopBackgroundVisible();
+  // Called when the wallpaper ainmation is finished. Updates |background_|
+  // to be black and drops |boot_splash_screen_| and moves the wallpaper
+  // controller into the root window controller. |widget| holds the wallpaper
+  // image, or NULL if the background is a solid color.
+  void OnWallpaperAnimationFinished(views::Widget* widget);
 
   // Deletes associated objects and clears the state, but doesn't delete
   // the root window yet. This is used to delete a secondary displays'
@@ -249,6 +264,9 @@ class ASH_EXPORT RootWindowController {
   scoped_ptr<ToplevelWindowEventHandler> lock_modal_container_handler_;
   scoped_ptr<ToplevelWindowEventHandler> panel_container_handler_;
   scoped_ptr<ToplevelWindowEventHandler> docked_container_handler_;
+
+  scoped_ptr<DesktopBackgroundWidgetController> wallpaper_controller_;
+  scoped_ptr<AnimatingDesktopController> animating_wallpaper_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };

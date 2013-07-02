@@ -21,79 +21,13 @@
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_animation_observer.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace ash {
 namespace internal {
 namespace {
-
-class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
-                                       public views::WidgetObserver {
- public:
-  ShowWallpaperAnimationObserver(aura::RootWindow* root_window,
-                                 views::Widget* desktop_widget,
-                                 bool is_initial_animation)
-      : root_window_(root_window),
-        desktop_widget_(desktop_widget),
-        is_initial_animation_(is_initial_animation) {
-    DCHECK(desktop_widget_);
-    desktop_widget_->AddObserver(this);
-  }
-
-  virtual ~ShowWallpaperAnimationObserver() {
-    StopObservingImplicitAnimations();
-    if (desktop_widget_)
-      desktop_widget_->RemoveObserver(this);
-  }
-
- private:
-  // Overridden from ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsScheduled() OVERRIDE {
-    if (is_initial_animation_) {
-      GetRootWindowController(root_window_)->
-          HandleInitialDesktopBackgroundAnimationStarted();
-    }
-  }
-
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
-    GetRootWindowController(root_window_)->HandleDesktopBackgroundVisible();
-    ash::Shell::GetInstance()->user_wallpaper_delegate()->
-        OnWallpaperAnimationFinished();
-    // Only removes old component when wallpaper animation finished. If we
-    // remove the old one before the new wallpaper is done fading in there will
-    // be a white flash during the animation.
-    if (root_window_->GetProperty(kAnimatingDesktopController)) {
-      DesktopBackgroundWidgetController* controller =
-          root_window_->GetProperty(kAnimatingDesktopController)->
-              GetController(true);
-      // |desktop_widget_| should be the same animating widget we try to move
-      // to |kDesktopController|. Otherwise, we may close |desktop_widget_|
-      // before move it to |kDesktopController|.
-      DCHECK_EQ(controller->widget(), desktop_widget_);
-      // Release the old controller and close its background widget.
-      root_window_->SetProperty(kDesktopController, controller);
-    }
-    delete this;
-  }
-
-  // Overridden from views::WidgetObserver.
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
-    delete this;
-  }
-
-  aura::RootWindow* root_window_;
-  views::Widget* desktop_widget_;
-
-  // Is this object observing the initial brightness/grayscale animation?
-  const bool is_initial_animation_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShowWallpaperAnimationObserver);
-};
 
 // For our scaling ratios we need to round positive numbers.
 int RoundPositive(double x) {
@@ -196,13 +130,16 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
   views::corewm::SetWindowVisibilityAnimationType(
       desktop_widget->GetNativeView(), animation_type);
 
+  RootWindowController* root_window_controller =
+      GetRootWindowController(root_window);
+
   // Enable wallpaper transition for the following cases:
   // 1. Initial(OOBE) wallpaper animation.
   // 2. Wallpaper fades in from a non empty background.
   // 3. From an empty background, chrome transit to a logged in user session.
   // 4. From an empty background, guest user logged in.
   if (wallpaper_delegate->ShouldShowInitialAnimation() ||
-      root_window->GetProperty(kAnimatingDesktopController) ||
+      root_window_controller->animating_wallpaper_controller() ||
       Shell::GetInstance()->session_state_delegate()->NumberOfLoggedInUsers()) {
     views::corewm::SetWindowVisibilityAnimationTransition(
         desktop_widget->GetNativeView(), views::corewm::ANIMATE_SHOW);
@@ -213,14 +150,6 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
   }
 
   desktop_widget->SetBounds(params.parent->bounds());
-  ui::ScopedLayerAnimationSettings settings(
-      desktop_widget->GetNativeView()->layer()->GetAnimator());
-  settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
-  settings.AddObserver(new ShowWallpaperAnimationObserver(
-      root_window, desktop_widget,
-      wallpaper_delegate->ShouldShowInitialAnimation()));
-  desktop_widget->Show();
-  desktop_widget->GetNativeView()->SetName("DesktopBackgroundView");
   return desktop_widget;
 }
 
