@@ -932,6 +932,10 @@ class ChromiumAndroidDriver(driver.Driver):
             self._port, 'Forwarder', self._android_commands.adb_command() + ['shell', '%s -D %s' % (self._driver_details.device_forwarder_path(), FORWARD_PORTS)])
         self._forwarder_process.start()
 
+        deadline = time.time() + DRIVER_START_STOP_TIMEOUT_SECS
+        if not self._wait_for_server_process_output(self._forwarder_process, deadline, 'Forwarding device port'):
+            return False
+
         self._android_commands.run(['logcat', '-c'])
         self._android_commands.run(['shell', 'echo'] + self._android_driver_cmd_line(pixel_tests, per_test_args) + ['>', self._driver_details.command_line_file()])
         start_result = self._android_commands.run(['shell', 'am', 'start', '-e', 'RunInSubThread', '-n', self._driver_details.activity_name()])
@@ -981,16 +985,9 @@ class ChromiumAndroidDriver(driver.Driver):
         threading.Thread(name='DeadlockDetector', target=deadlock_detector,
                          args=([self._server_process, self._read_stdout_process, self._read_stderr_process], normal_startup_event)).start()
 
-        output = ''
-        line = self._server_process.read_stdout_line(deadline)
-        while not self._server_process.timed_out and not self.has_crashed() and line.rstrip() != '#READY':
-            output += line
-            line = self._server_process.read_stdout_line(deadline)
-
-        if self._server_process.timed_out and not self.has_crashed():
-            # The test driver crashed during startup, or when the deadlock detector hit
-            # a deadlock and killed the fifo reading/writing processes.
-            _log.error('Failed to start the test driver: \n%s' % output)
+        # The test driver might crash during startup or when the deadlock detector hits
+        # a deadlock and kills the fifo reading/writing processes.
+        if not self._wait_for_server_process_output(self._server_process, deadline, '#READY'):
             return False
 
         # Inform the deadlock detector that the startup is successful without deadlock.
@@ -1048,3 +1045,16 @@ class ChromiumAndroidDriver(driver.Driver):
                 if last_char in ('#', '$'):
                     return
             last_char = current_char
+
+    def _wait_for_server_process_output(self, server_process, deadline, text):
+        output = ''
+        line = server_process.read_stdout_line(deadline)
+        while not server_process.timed_out and not server_process.has_crashed() and not text in line.rstrip():
+            output += line
+            line = server_process.read_stdout_line(deadline)
+
+        if server_process.timed_out or server_process.has_crashed():
+            _log.error('Failed to start the %s process: \n%s' % (server_process.name(), output))
+            return False
+
+        return True
