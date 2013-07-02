@@ -1665,7 +1665,6 @@ crbug.com/229120 virtual/deferred/fast/images/jpeg-with-color-profile.html [ Ima
 crbug.com/229120 virtual/deferred/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ ImageOnlyFailure ]
 crbug.com/229120 virtual/deferred/fast/images/png-with-color-profile.html [ ImageOnlyFailure ]
 crbug.com/229120 virtual/deferred/fast/images/rgb-png-with-cmyk-color-profile.html [ ImageOnlyFailure ]
-crbug.com/229120 virtual/deferred/fast/images/webp-color-profile-lossy.html [ ImageOnlyFailure ]
 crbug.com/229120 virtual/deferred/fast/images/ycbcr-with-cmyk-color-profile.html [ ImageOnlyFailure ]
 
 crbug.com/246749 [ Debug ] inspector/extensions/extensions-panel.html [ Timeout Pass ]
