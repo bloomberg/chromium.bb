@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
             text run at (155,0) width 157: "http://www.weather.com"
       RenderTable {TABLE} at (0,41) size 450x215
         RenderTableSection {TBODY} at (0,0) size 450x214
-          RenderTableRow {TR} at (0,0) size 450x17
+          RenderTableRow {TR} at (0,0) size 450x29
             RenderTableCell {TD} at (0,0) size 325x17 [r=0 c=0 rs=1 cs=3]
               RenderImage {IMG} at (0,0) size 318x17
             RenderTableCell {TD} at (325,0) size 125x214 [r=0 c=3 rs=2 cs=1]
@@ -32,14 +32,14 @@ layer at (0,0) size 800x600
                       RenderBR {BR} at (0,154) size 0x19
                       RenderBR {BR} at (0,174) size 0x19
                       RenderBR {BR} at (0,194) size 0x19
-          RenderTableRow {TR} at (0,17) size 450x197
-            RenderTableCell {TD} at (0,17) size 167x105 [r=1 c=0 rs=1 cs=1]
+          RenderTableRow {TR} at (0,29) size 450x185
+            RenderTableCell {TD} at (0,29) size 167x105 [r=1 c=0 rs=1 cs=1]
               RenderImage {IMG} at (0,0) size 167x105
               RenderText {#text} at (0,0) size 0x0
-            RenderTableCell {TD} at (167,105) size 4x20 [r=1 c=1 rs=1 cs=1]
+            RenderTableCell {TD} at (167,111) size 4x20 [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (0,0) size 4x19
                 text run at (0,0) width 4: " "
-            RenderTableCell {TD} at (171,17) size 154x80 [r=1 c=2 rs=1 cs=1]
+            RenderTableCell {TD} at (171,29) size 154x80 [r=1 c=2 rs=1 cs=1]
               RenderInline {FONT} at (0,0) size 145x80
                 RenderInline {B} at (0,0) size 68x16
                   RenderText {#text} at (0,0) size 68x16

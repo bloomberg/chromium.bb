@@ -1799,33 +1799,6 @@ crbug.com/251149 [ Mac Win Debug ] media/media-constants.html [ Pass Crash ]
 
 crbug.com/252038 [ Debug ] editing/selection/fake-doubleclick.html [ Pass Failure ]
 
-# Temporary expectations until I fix issue 'More than one rowspaning cell present in a table'
-crbug.com/249600 fast/table/giantRowspan2.html [ Failure ]
-crbug.com/249600 tables/mozilla/bugs/bug13169.html [ Failure ]
-crbug.com/249600 tables/mozilla/bugs/bug133756-1.html [ Failure ]
-crbug.com/249600 tables/mozilla/bugs/bug133756-2.html [ Failure ]
-crbug.com/249600 tables/mozilla/bugs/bug220536.html [ Failure ]
-crbug.com/249600 tables/mozilla/bugs/bug7714.html [ Failure ]
-crbug.com/249600 tables/mozilla/core/row_span.html [ Failure ]
-crbug.com/249600 tables/mozilla_expected_failures/bugs/bug131020-3.html [ Failure ]
-crbug.com/249600 tables/mozilla_expected_failures/bugs/bug65372.html [ Failure ]
-crbug.com/249600 tables/mozilla/bugs/bug73321.html [ Failure ]
-crbug.com/249600 tables/mozilla_expected_failures/bugs/bug23847.html [ Failure ]
-
-# New baselines are needed on all ports
-crbug.com/78724 tables/mozilla/bugs/bug17138.html [ Failure ]
-crbug.com/78724 tables/mozilla/bugs/bug17548.html [ Failure ]
-crbug.com/78724 tables/mozilla/bugs/bug8858.html [ Failure ]
-crbug.com/78724 tables/mozilla/core/cell_heights.html [ Failure ]
-crbug.com/78724 tables/mozilla/other/test6.html [ Failure ]
-crbug.com/78724 tables/mozilla_expected_failures/bugs/bug1010.html [ Failure ]
-crbug.com/78724 tables/mozilla_expected_failures/bugs/bug6933.html [ Failure ]
-crbug.com/78724 [ Linux ] tables/mozilla/core/bloomberg.html [ ImageOnlyFailure ]
-crbug.com/78724 [ Win Mac ] tables/mozilla/core/bloomberg.html [ Failure ]
-crbug.com/78724 [ Linux ] tables/mozilla_expected_failures/bugs/bug58402-2.html [ ImageOnlyFailure ]
-crbug.com/78724 [ Win Mac ] tables/mozilla_expected_failures/bugs/bug58402-2.html [ Failure ]
-crbug.com/78724 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ Failure ]
-
 crbug.com/252865 [ Debug ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Failure Pass ]
 
 crbug.com/252573 [ Mac Win ] fast/forms/empty-textarea-toggle-disabled.html [ Pass Timeout ]
@@ -1839,6 +1812,5 @@ crbug.com/255359 [ Debug ] fast/events/resize-events-count.html [ Pass Failure ]
 crbug.com/255359 [ Debug ] fast/events/resize-events-fixed-layout.html [ Pass Failure ]
 
 crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Failure ]
-
 
 crbug.com/256226 [ Win7 Mac Debug ] webmidi/requestmidiaccess.html [ Crash ]
