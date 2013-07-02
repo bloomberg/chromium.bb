@@ -128,6 +128,8 @@ struct wl_listener *wl_client_get_destroy_listener(struct wl_client *client,
 
 struct wl_resource *
 wl_client_get_object(struct wl_client *client, uint32_t id);
+void
+wl_client_post_no_memory(struct wl_client *client);
 
 struct wl_listener {
 	struct wl_list link;

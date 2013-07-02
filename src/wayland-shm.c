@@ -115,7 +115,7 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 
 	buffer = malloc(sizeof *buffer);
 	if (buffer == NULL) {
-		wl_resource_post_no_memory(resource);
+		wl_client_post_no_memory(client);
 		return;
 	}
 
@@ -129,6 +129,13 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 
 	buffer->resource =
 		wl_resource_create(client, &wl_buffer_interface, 1, id);
+	if (buffer->resource == NULL) {
+		wl_client_post_no_memory(client);
+		shm_pool_unref(pool);
+		free(buffer);
+		return;
+	}
+
 	wl_resource_set_implementation(buffer->resource,
 				       &shm_buffer_interface,
 				       buffer, destroy_buffer);
@@ -182,7 +189,7 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 
 	pool = malloc(sizeof *pool);
 	if (pool == NULL) {
-		wl_resource_post_no_memory(resource);
+		wl_client_post_no_memory(client);
 		goto err_close;
 	}
 
@@ -207,8 +214,12 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 
 	pool->resource =
 		wl_resource_create(client, &wl_shm_pool_interface, 1, id);
-	if (!pool->resource)
-		goto err_free;
+	if (!pool->resource) {
+		wl_client_post_no_memory(client);
+		munmap(pool->data, pool->size);
+		free(pool);
+		return;
+	}
 
 	wl_resource_set_implementation(pool->resource,
 				       &shm_pool_interface,
@@ -233,6 +244,11 @@ bind_shm(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client, &wl_shm_interface, 1, id);
+	if (!resource) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
 	wl_resource_set_implementation(resource, &shm_interface, data, NULL);
 
 	wl_shm_send_format(resource, WL_SHM_FORMAT_ARGB8888);
@@ -276,6 +292,11 @@ wl_shm_buffer_create(struct wl_client *client,
 
 	buffer->resource =
 		wl_resource_create(client, &wl_buffer_interface, 1, id);
+	if (buffer->resource == NULL) {
+		free(buffer);
+		return NULL;
+	}
+
 	wl_resource_set_implementation(buffer->resource,
 				       &shm_buffer_interface,
 				       buffer, destroy_buffer);

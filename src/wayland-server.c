@@ -405,6 +405,13 @@ wl_client_get_object(struct wl_client *client, uint32_t id)
 }
 
 WL_EXPORT void
+wl_client_post_no_memory(struct wl_client *client)
+{
+	wl_resource_post_error(client->display_resource,
+			       WL_DISPLAY_ERROR_NO_MEMORY, "no memory");
+}
+
+WL_EXPORT void
 wl_resource_post_no_memory(struct wl_resource *resource)
 {
 	wl_resource_post_error(resource->client->display_resource,
@@ -599,6 +606,11 @@ display_sync(struct wl_client *client,
 	uint32_t serial;
 
 	callback = wl_resource_create(client, &wl_callback_interface, 1, id);
+	if (callback == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
 	serial = wl_display_get_serial(client->display);
 	wl_callback_send_done(callback, serial);
 	wl_resource_destroy(callback);
@@ -621,6 +633,11 @@ display_get_registry(struct wl_client *client,
 
 	registry_resource =
 		wl_resource_create(client, &wl_registry_interface, 1, id);
+	if (registry_resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
 	wl_resource_set_implementation(registry_resource,
 				       &registry_interface,
 				       display, unbind_resource);
@@ -655,6 +672,11 @@ bind_display(struct wl_client *client,
 
 	client->display_resource =
 		wl_resource_create(client, &wl_display_interface, 1, id);
+	if (client->display_resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
 	wl_resource_set_implementation(client->display_resource,
 				       &display_interface, display,
 				       destroy_client_display_resource);
@@ -1007,10 +1029,8 @@ wl_resource_create(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = malloc(sizeof *resource);
-	if (resource == NULL) {
-		wl_resource_post_no_memory(client->display_resource);
+	if (resource == NULL)
 		return NULL;
-	}
 
 	if (id == 0)
 		id = wl_map_insert_new(&client->objects, 0, NULL);
@@ -1087,7 +1107,11 @@ wl_client_add_object(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client, interface, -1, id);
-	wl_resource_set_implementation(resource, implementation, data, NULL);
+	if (resource == NULL)
+		wl_client_post_no_memory(client);
+	else
+		wl_resource_set_implementation(resource,
+					       implementation, data, NULL);
 
 	return resource;
 }
@@ -1105,7 +1129,11 @@ wl_client_new_object(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client, interface, -1, 0);
-	wl_resource_set_implementation(resource, implementation, data, NULL);
+	if (resource == NULL)
+		wl_client_post_no_memory(client);
+	else
+		wl_resource_set_implementation(resource,
+					       implementation, data, NULL);
 
 	return resource;
 }
