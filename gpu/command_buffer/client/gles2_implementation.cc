@@ -2236,8 +2236,7 @@ void GLES2Implementation::ReadPixels(
     if (buffer && buffer->shm_id() != -1) {
       helper_->ReadPixels(xoffset, yoffset, width, height, format, type,
                           buffer->shm_id(), buffer->shm_offset(),
-                          0, 0);
-      buffer->set_transfer_ready_token(helper_->InsertToken());
+                          0, 0, true);
       CheckGLError();
     }
     return;
@@ -2269,7 +2268,8 @@ void GLES2Implementation::ReadPixels(
     helper_->ReadPixels(
         xoffset, yoffset, width, num_rows, format, type,
         buffer.shm_id(), buffer.offset(),
-        GetResultShmId(), GetResultShmOffset());
+        GetResultShmId(), GetResultShmOffset(),
+        false);
     WaitForCmd();
     if (*result != 0) {
       // when doing a y-flip we have to iterate through top-to-bottom chunks
@@ -3175,36 +3175,31 @@ void GLES2Implementation::DeleteQueriesEXTHelper(
     return;
   }
   // When you delete a query you can't mark its memory as unused until it's
-  // completed.
+  // either completed, or deleted in the gpu process.
   // Note: If you don't do this you won't mess up the service but you will mess
   // up yourself.
 
-  // TODO(gman): Consider making this faster by putting pending quereies
-  // on some queue to be removed when they are finished.
   bool query_pending = false;
   for (GLsizei ii = 0; ii < n; ++ii) {
     QueryTracker::Query* query = query_tracker_->GetQuery(queries[ii]);
-    if (query && query->Pending()) {
+    if (query && !query->CheckResultsAvailable(helper_)) {
       query_pending = true;
       break;
     }
   }
 
+  helper_->DeleteQueriesEXTImmediate(n, queries);
+
   if (query_pending) {
+    // This should make sure that the GPU process have deleted the queries
+    // and given up any claim on the shared memory that goes along with
+    // those queries so that we can safely re-use the shared memory.
     WaitForCmd();
   }
 
   for (GLsizei ii = 0; ii < n; ++ii) {
-    QueryTracker::Query* query = query_tracker_->GetQuery(queries[ii]);
-    if (query && query->Pending()) {
-      if (!query->CheckResultsAvailable(helper_)) {
-        // Should only get here on context lost.
-        MustBeContextLost();
-      }
-    }
     query_tracker_->RemoveQuery(queries[ii], helper_->IsContextLost());
   }
-  helper_->DeleteQueriesEXTImmediate(n, queries);
 }
 
 // TODO(gman): Remove this. Queries are not shared resources.
