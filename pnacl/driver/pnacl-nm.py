@@ -20,6 +20,7 @@ EXTRA_ENV = {
 }
 
 PATTERNS = [
+  ( '(-.*)',    "env.append('FLAGS', $0)"),
   ( '(.*)',     "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
