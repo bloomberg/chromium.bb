@@ -75,6 +75,10 @@ class CC_EXPORT Picture
               gfx::Rect content_rect,
               float contents_scale);
 
+  // Draw the picture directly into the given canvas, without applying any
+  // clip/scale/layer transformations.
+  void Replay(SkCanvas* canvas);
+
   scoped_ptr<base::Value> AsValue() const;
 
   class CC_EXPORT PixelRefIterator {

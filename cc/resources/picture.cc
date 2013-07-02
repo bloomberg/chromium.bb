@@ -311,6 +311,17 @@ void Picture::Raster(
                    "num_pixels_rasterized", bounds.width() * bounds.height());
 }
 
+void Picture::Replay(SkCanvas* canvas) {
+  TRACE_EVENT_BEGIN0("cc", "Picture::Replay");
+  DCHECK(picture_);
+
+  picture_->draw(canvas);
+  SkIRect bounds;
+  canvas->getClipDeviceBounds(&bounds);
+  TRACE_EVENT_END1("cc", "Picture::Replay",
+                   "num_pixels_replayed", bounds.width() * bounds.height());
+}
+
 scoped_ptr<base::Value> Picture::AsValue() const {
   SkDynamicMemoryWStream stream;
 

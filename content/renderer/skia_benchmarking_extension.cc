@@ -5,6 +5,7 @@
 #include "content/renderer/skia_benchmarking_extension.h"
 
 #include "base/values.h"
+#include "cc/base/math_util.h"
 #include "cc/resources/picture.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "third_party/WebKit/public/web/WebArrayBuffer.h"
@@ -15,6 +16,7 @@
 #include "third_party/skia/src/utils/debugger/SkDebugCanvas.h"
 #include "third_party/skia/src/utils/debugger/SkDrawCommand.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/skia_util.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebFrame;
@@ -46,19 +48,25 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
         "if (typeof(chrome.skiaBenchmarking) == 'undefined') {"
         "  chrome.skiaBenchmarking = {};"
         "};"
-        "chrome.skiaBenchmarking.rasterize = function(picture, scale, rect) {"
+        "chrome.skiaBenchmarking.rasterize = function(picture, params) {"
         "  /* "
         "     Rasterizes a Picture JSON-encoded by cc::Picture::AsValue()."
         "     @param {Object} picture A json-encoded cc::Picture."
-        "     @param {Number} scale (optional) Rendering scale."
-        "     @param [Number, Number, Number, Number] clip_rect (optional)."
-        "     @returns { 'width': {Number}, 'height': {Number},"
-        "                'data': {ArrayBuffer} }"
+        "     @param {"
+        "                 'scale':  {Number},"
+        "                 'stop':   {Number},"
+        "                 'clip':   [Number, Number, Number, Number]"
+        "     } (optional) Rasterization parameters."
+        "     @returns {"
+        "                 'width':  {Number},"
+        "                 'height': {Number},"
+        "                 'data':   {ArrayBuffer}"
+        "     }"
         "     @returns undefined if the arguments are invalid or the picture"
         "                        version is not supported."
         "   */"
         "  native function Rasterize();"
-        "  return Rasterize(picture, scale, rect);"
+        "  return Rasterize(picture, params);"
         "};"
         "chrome.skiaBenchmarking.getOps = function(picture) {"
         "  /* "
@@ -93,26 +101,29 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     if (!picture.get())
       return;
 
-    float scale = 1.0f;
-    if (args.Length() > 1 && args[1]->IsNumber())
-      scale = std::max(0.01, std::min(100.0, args[1]->NumberValue()));
+    double scale = 1.0;
+    gfx::Rect clip_rect(picture->LayerRect());
+    int stop_index = -1;
 
-    gfx::RectF clip(picture->LayerRect());
-    if (args.Length() > 2 && args[2]->IsArray()) {
-      v8::Array* a = v8::Array::Cast(*args[2]);
-      if (a->Length() == 4
-          && a->Get(0)->IsNumber()
-          && a->Get(1)->IsNumber()
-          && a->Get(2)->IsNumber()
-          && a->Get(3)->IsNumber()) {
-        clip.SetRect(a->Get(0)->NumberValue(), a->Get(1)->NumberValue(),
-                     a->Get(2)->NumberValue(), a->Get(3)->NumberValue());
-        clip.Intersect(picture->LayerRect());
+    if (args.Length() > 1) {
+      scoped_ptr<content::V8ValueConverter> converter(
+          content::V8ValueConverter::create());
+      scoped_ptr<base::Value> params_value(
+          converter->FromV8Value(args[1], v8::Context::GetCurrent()));
+
+      const base::DictionaryValue* params_dict = NULL;
+      if (params_value.get() && params_value->GetAsDictionary(&params_dict)) {
+        params_dict->GetDouble("scale", &scale);
+        params_dict->GetInteger("stop", &stop_index);
+
+        const base::Value* clip_value = NULL;
+        if (params_dict->Get("clip", &clip_value))
+          cc::MathUtil::FromValue(clip_value, &clip_rect);
       }
     }
 
-    // cc::Picture::Raster() clips before scaling, so the clip needs to be
-    // scaled explicitly.
+    gfx::RectF clip(clip_rect);
+    clip.Intersect(picture->LayerRect());
     clip.Scale(scale);
     gfx::Rect snapped_clip = gfx::ToEnclosingRect(clip);
 
@@ -126,12 +137,26 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
                      snapped_clip.height());
     if (!bitmap.allocPixels())
       return;
-
     bitmap.eraseARGB(0, 0, 0, 0);
+
     SkCanvas canvas(bitmap);
     canvas.translate(SkFloatToScalar(-clip.x()),
                      SkFloatToScalar(-clip.y()));
-    picture->Raster(&canvas, NULL, snapped_clip, scale);
+    canvas.clipRect(gfx::RectToSkRect(snapped_clip));
+    canvas.scale(scale, scale);
+    canvas.translate(picture->LayerRect().x(),
+                     picture->LayerRect().y());
+
+    // First, build a debug canvas for the given picture.
+    SkDebugCanvas debug_canvas(picture->LayerRect().width(),
+                               picture->LayerRect().height());
+    picture->Replay(&debug_canvas);
+
+    // Raster the requested command subset into the bitmap-backed canvas.
+    int last_index = debug_canvas.getSize() - 1;
+    debug_canvas.drawTo(&canvas, stop_index < 0
+                        ? last_index
+                        : std::min(last_index, stop_index));
 
     WebKit::WebArrayBuffer buffer =
         WebKit::WebArrayBuffer::create(bitmap.getSize(), 1);
@@ -166,7 +191,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
 
     gfx::Rect bounds = picture->LayerRect();
     SkDebugCanvas canvas(bounds.width(), bounds.height());
-    picture->Raster(&canvas, NULL, bounds, 1.0f);
+    picture->Replay(&canvas);
 
     v8::Local<v8::Array> result = v8::Array::New(canvas.getSize());
     for (int i = 0; i < canvas.getSize(); ++i) {
