@@ -1039,8 +1039,10 @@ void FrameView::layout(bool allowSubtree)
             root->layout();
 
             bool autosized = document->textAutosizer()->processSubtree(root);
-            if (autosized && root->needsLayout())
+            if (autosized && root->needsLayout()) {
+                TRACE_EVENT0("webkit", "2nd layout due to Text Autosizing");
                 root->layout();
+            }
 
             endDeferredRepaints();
             m_inLayout = false;

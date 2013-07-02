@@ -26,6 +26,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Settings.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderObject.h"
@@ -123,6 +124,8 @@ void TextAutosizer::recalculateMultipliers()
 
 bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
 {
+    TRACE_EVENT0("webkit", "TextAutosizer::processSubtree");
+
     // FIXME: Text Autosizing should only be enabled when m_document->page()->mainFrame()->view()->useFixedLayout()
     // is true, but for now it's useful to ignore this so that it can be tested on desktop.
     if (!m_document->settings() || !m_document->settings()->textAutosizingEnabled() || layoutRoot->view()->printing() || !m_document->page())
