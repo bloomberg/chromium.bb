@@ -82,38 +82,25 @@ void OnGetFileByPathForOpen(
                  base::Owned(open_error)));
 }
 
-// Helper function to run SnapshotFileCallback from
-// FileSystemProxy::CreateSnapshotFile().
-void CallSnapshotFileCallback(
-    const FileSystemOperation::SnapshotFileCallback& callback,
+// Runs |callback| with the arguments based on the given arguments.
+void RunSnapshotFileCallback(
+    const fileapi::FileSystemOperation::SnapshotFileCallback& callback,
+    base::PlatformFileError error,
     const base::PlatformFileInfo& file_info,
-    FileError file_error,
     const base::FilePath& local_path,
-    scoped_ptr<ResourceEntry> entry) {
-  scoped_refptr<ShareableFileReference> file_ref;
-  base::PlatformFileError error =
-      FileErrorToPlatformError(file_error);
+    webkit_blob::ScopedFile::ScopeOutPolicy scope_out_policy) {
+  // ShareableFileReference is thread *unsafe* class. So it is necessary to
+  // create the instance (by invoking GetOrCreate) on IO thread, though
+  // most drive file system related operations run on UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // If the file is a hosted document, a temporary JSON file is created to
-  // represent the document. The JSON file is not cached and its lifetime
-  // is managed by ShareableFileReference.
-  if (error == base::PLATFORM_FILE_OK &&
-      entry && entry->file_specific_info().is_hosted_document()) {
-    file_ref = ShareableFileReference::GetOrCreate(
-        local_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  }
-
-  // When reading file, last modified time specified in file info will be
-  // compared to the last modified time of the local version of the drive file.
-  // Since those two values don't generally match (last modification time on the
-  // drive server vs. last modification time of the local, downloaded file), so
-  // we have to opt out from this check. We do this by unsetting last_modified
-  // value in the file info passed to the CreateSnapshot caller.
-  base::PlatformFileInfo final_file_info(file_info);
-  final_file_info.last_modified = base::Time();
-
-  callback.Run(error, final_file_info, local_path, file_ref);
+  scoped_refptr<webkit_blob::ShareableFileReference> file_reference =
+      webkit_blob::ShareableFileReference::GetOrCreate(
+          webkit_blob::ScopedFile(
+              local_path, scope_out_policy,
+              BrowserThread::GetMessageLoopProxyForThread(
+                  BrowserThread::FILE)));
+  callback.Run(error, file_info, local_path, file_reference);
 }
 
 // Emits debug log when FileSystem::CloseFile() is complete.
@@ -123,22 +110,6 @@ void EmitDebugLogForCloseFile(const base::FilePath& local_path,
 }
 
 }  // namespace
-
-DirectoryEntry ResourceEntryToDirectoryEntry(
-    const ResourceEntry& resource_entry) {
-  base::PlatformFileInfo file_info;
-  util::ConvertResourceEntryToPlatformFileInfo(
-      resource_entry.file_info(), &file_info);
-
-  DirectoryEntry entry;
-  entry.name = resource_entry.base_name();
-  entry.is_directory = file_info.is_directory;
-  entry.size = file_info.size;
-  entry.last_modified_time = file_info.last_modified;
-  return entry;
-}
-
-// FileSystemProxy class implementation.
 
 FileSystemProxy::FileSystemProxy(
     FileSystemInterface* file_system)
@@ -168,13 +139,9 @@ void FileSystemProxy::GetFileInfo(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::GetResourceEntryByPath,
-                 base::Unretained(file_system_),
-                 file_path,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&FileSystemProxy::OnGetMetadata,
-                                this,
-                                callback))));
+      base::Bind(&internal::FileApiWorker::GetFileInfo,
+                 base::Unretained(worker_.get()),
+                 file_path, google_apis::CreateRelayCallback(callback)));
 }
 
 void FileSystemProxy::Copy(
@@ -238,13 +205,9 @@ void FileSystemProxy::ReadDirectory(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::ReadDirectoryByPath,
-                 base::Unretained(file_system_),
-                 file_path,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&FileSystemProxy::OnReadDirectory,
-                                this,
-                                callback))));
+      base::Bind(&internal::FileApiWorker::ReadDirectory,
+                 base::Unretained(worker_.get()),
+                 file_path, google_apis::CreateRelayCallback(callback)));
 }
 
 void FileSystemProxy::Remove(
@@ -533,47 +496,15 @@ void FileSystemProxy::CreateSnapshotFile(
                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
                    base::PlatformFileInfo(),
                    base::FilePath(),
-                   scoped_refptr<ShareableFileReference>(NULL)));
+                   scoped_refptr<ShareableFileReference>()));
     return;
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::GetResourceEntryByPath,
-                 base::Unretained(file_system_),
-                 file_path,
+      base::Bind(&internal::FileApiWorker::CreateSnapshotFile,
+                 base::Unretained(worker_.get()), file_path,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&FileSystemProxy::OnGetResourceEntryByPath,
-                                this,
-                                file_path,
-                                callback))));
-}
-
-void FileSystemProxy::OnGetResourceEntryByPath(
-    const base::FilePath& entry_path,
-    const FileSystemOperation::SnapshotFileCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (error != FILE_ERROR_OK || !entry.get()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                 base::PlatformFileInfo(),
-                 base::FilePath(),
-                 scoped_refptr<ShareableFileReference>(NULL));
-    return;
-  }
-
-  base::PlatformFileInfo file_info;
-  util::ConvertResourceEntryToPlatformFileInfo(entry->file_info(), &file_info);
-
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::GetFileByPath,
-                 base::Unretained(file_system_),
-                 entry_path,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&CallSnapshotFileCallback,
-                                callback,
-                                file_info))));
+                     base::Bind(&RunSnapshotFileCallback, callback))));
 }
 
 void FileSystemProxy::CreateWritableSnapshotFile(
@@ -655,50 +586,6 @@ void FileSystemProxy::CallFileSystemMethodOnUIThreadInternal(
   // If |file_system_| is NULL, it means the file system has already shut down.
   if (file_system_)
     method_call.Run();
-}
-
-void FileSystemProxy::OnGetMetadata(
-    const FileSystemOperation::GetMetadataCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(FileErrorToPlatformError(error),
-                 base::PlatformFileInfo());
-    return;
-  }
-  DCHECK(entry.get());
-
-  base::PlatformFileInfo file_info;
-  util::ConvertResourceEntryToPlatformFileInfo(entry->file_info(), &file_info);
-
-  callback.Run(base::PLATFORM_FILE_OK, file_info);
-}
-
-void FileSystemProxy::OnReadDirectory(
-    const FileSystemOperation::ReadDirectoryCallback&
-    callback,
-    FileError error,
-    scoped_ptr<ResourceEntryVector> resource_entries) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(FileErrorToPlatformError(error),
-                 std::vector<DirectoryEntry>(),
-                 false);
-    return;
-  }
-  DCHECK(resource_entries.get());
-
-  std::vector<DirectoryEntry> entries;
-  // Convert Drive files to something File API stack can understand.
-  for (size_t i = 0; i < resource_entries->size(); ++i) {
-    const ResourceEntry& resource_entry = (*resource_entries)[i];
-    entries.push_back(ResourceEntryToDirectoryEntry(resource_entry));
-  }
-
-  callback.Run(base::PLATFORM_FILE_OK, entries, false);
 }
 
 void FileSystemProxy::OnCreateWritableSnapshotFile(

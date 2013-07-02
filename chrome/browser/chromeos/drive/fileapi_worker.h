@@ -5,9 +5,20 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_WORKER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_WORKER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/platform_file.h"
+#include "webkit/common/blob/scoped_file.h"
+
+namespace base {
+class FilePath;
+}  // namespace base
+
+namespace fileapi {
+struct DirectoryEntry;
+}  // namespace fileapi
 
 namespace drive {
 
@@ -22,12 +33,30 @@ class FileApiWorker {
  public:
   typedef base::Callback<
       void(base::PlatformFileError result)> StatusCallback;
+  typedef base::Callback<
+      void(base::PlatformFileError result,
+           const base::PlatformFileInfo& file_info)> GetFileInfoCallback;
+  typedef base::Callback<
+      void(base::PlatformFileError result,
+           const std::vector<fileapi::DirectoryEntry>& file_list,
+           bool has_more)> ReadDirectoryCallback;
+  typedef base::Callback<
+      void(base::PlatformFileError result,
+           const base::PlatformFileInfo& file_info,
+           const base::FilePath& snapshot_file_path,
+           webkit_blob::ScopedFile::ScopeOutPolicy scope_out_policy)>
+      CreateSnapshotFileCallback;
 
   // |file_system| must not be NULL.
   explicit FileApiWorker(FileSystemInterface* file_system);
   ~FileApiWorker();
 
   FileSystemInterface* file_system() { return file_system_; }
+
+  // Returns the metadata info of the file at |file_path|.
+  // Called from FileSystemProxy::GetFileInfo().
+  void GetFileInfo(const base::FilePath& file_path,
+                   const GetFileInfoCallback& callback);
 
   // Copies a file from |src_file_path| to |dest_file_path|.
   // Called from FileSystemProxy::Copy().
@@ -40,6 +69,11 @@ class FileApiWorker {
   void Move(const base::FilePath& src_file_path,
             const base::FilePath& dest_file_path,
             const StatusCallback& callback);
+
+  // Reads the contents of the directory at |file_path|.
+  // Called from FileSystemProxy::ReadDirectory().
+  void ReadDirectory(const base::FilePath& file_path,
+                     const ReadDirectoryCallback& callback);
 
   // Removes a file at |file_path|. Called from FileSystemProxy::Remove().
   void Remove(const base::FilePath& file_path,
@@ -64,6 +98,11 @@ class FileApiWorker {
   void Truncate(const base::FilePath& file_path,
                 int64 length,
                 const StatusCallback& callback);
+
+  // Creates a snapshot for the file at |file_path|.
+  // Called from FileSystemProxy::CreateSnapshotFile().
+  void CreateSnapshotFile(const base::FilePath& file_path,
+                          const CreateSnapshotFileCallback& callback);
 
   // Changes timestamp of the file at |file_path| to |last_access_time| and
   // |last_modified_time|. Called from FileSystemProxy::TouchFile().

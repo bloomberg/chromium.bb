@@ -117,31 +117,6 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void CallFileSystemMethodOnUIThreadInternal(
       const base::Closure& method_call);
 
-  // Helper callback for relaying reply for metadata retrieval request to the
-  // calling thread.
-  void OnGetMetadata(
-      const fileapi::FileSystemOperation::GetMetadataCallback&
-          callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
-
-  // Helper callback for relaying reply for GetResourceEntryByPath() to the
-  // calling thread.
-  void OnGetResourceEntryByPath(
-      const base::FilePath& entry_path,
-      const fileapi::FileSystemOperation::SnapshotFileCallback&
-          callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
-
-  // Helper callback for relaying reply for ReadDirectory() to the calling
-  // thread.
-  void OnReadDirectory(
-      const fileapi::FileSystemOperation::ReadDirectoryCallback&
-          callback,
-      FileError error,
-      scoped_ptr<ResourceEntryVector> resource_entries);
-
   // Helper callback for relaying reply for CreateWritableSnapshotFile() to
   // the calling thread.
   void OnCreateWritableSnapshotFile(
