@@ -398,33 +398,6 @@ wl_client_get_credentials(struct wl_client *client,
 		*gid = client->ucred.gid;
 }
 
-uint32_t
-wl_client_add_resource(struct wl_client *client,
-		       struct wl_resource *resource) WL_DEPRECATED;
-
-WL_EXPORT uint32_t
-wl_client_add_resource(struct wl_client *client,
-		       struct wl_resource *resource)
-{
-	if (resource->object.id == 0) {
-		resource->object.id =
-			wl_map_insert_new(&client->objects,
-					  WL_MAP_ENTRY_LEGACY, resource);
-	} else if (wl_map_insert_at(&client->objects, WL_MAP_ENTRY_LEGACY,
-				  resource->object.id, resource) < 0) {
-		wl_resource_post_error(client->display_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "invalid new id %d",
-				       resource->object.id);
-		return 0;
-	}
-
-	resource->client = client;
-	wl_signal_init(&resource->destroy_signal);
-
-	return resource->object.id;
-}
-
 WL_EXPORT struct wl_resource *
 wl_client_get_object(struct wl_client *client, uint32_t id)
 {
@@ -1015,19 +988,6 @@ wl_display_get_destroy_listener(struct wl_display *display,
 	return wl_signal_get(&display->destroy_signal, notify);
 }
 
-WL_EXPORT struct wl_resource *
-wl_client_add_object(struct wl_client *client,
-		     const struct wl_interface *interface,
-		     const void *implementation, uint32_t id, void *data)
-{
-	struct wl_resource *resource;
-
-	resource = wl_resource_create(client, interface, -1, id);
-	wl_resource_set_implementation(resource, implementation, data, NULL);
-
-	return resource;
-}
-
 WL_EXPORT void
 wl_resource_set_implementation(struct wl_resource *resource,
 			       const void *implementation,
@@ -1078,6 +1038,65 @@ wl_resource_create(struct wl_client *client,
 	return resource;
 }
 
+WL_EXPORT void
+wl_log_set_handler_server(wl_log_func_t handler)
+{
+	wl_log_handler = handler;
+}
+
+/* Deprecated functions below. */
+
+uint32_t
+wl_client_add_resource(struct wl_client *client,
+		       struct wl_resource *resource) WL_DEPRECATED;
+
+WL_EXPORT uint32_t
+wl_client_add_resource(struct wl_client *client,
+		       struct wl_resource *resource)
+{
+	if (resource->object.id == 0) {
+		resource->object.id =
+			wl_map_insert_new(&client->objects,
+					  WL_MAP_ENTRY_LEGACY, resource);
+	} else if (wl_map_insert_at(&client->objects, WL_MAP_ENTRY_LEGACY,
+				  resource->object.id, resource) < 0) {
+		wl_resource_post_error(client->display_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "invalid new id %d",
+				       resource->object.id);
+		return 0;
+	}
+
+	resource->client = client;
+	wl_signal_init(&resource->destroy_signal);
+
+	return resource->object.id;
+}
+
+struct wl_resource *
+wl_client_add_object(struct wl_client *client,
+		     const struct wl_interface *interface,
+		     const void *implementation,
+		     uint32_t id, void *data) WL_DEPRECATED;
+
+WL_EXPORT struct wl_resource *
+wl_client_add_object(struct wl_client *client,
+		     const struct wl_interface *interface,
+		     const void *implementation, uint32_t id, void *data)
+{
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client, interface, -1, id);
+	wl_resource_set_implementation(resource, implementation, data, NULL);
+
+	return resource;
+}
+
+struct wl_resource *
+wl_client_new_object(struct wl_client *client,
+		     const struct wl_interface *interface,
+		     const void *implementation, void *data) WL_DEPRECATED;
+
 WL_EXPORT struct wl_resource *
 wl_client_new_object(struct wl_client *client,
 		     const struct wl_interface *interface,
@@ -1089,10 +1108,4 @@ wl_client_new_object(struct wl_client *client,
 	wl_resource_set_implementation(resource, implementation, data, NULL);
 
 	return resource;
-}
-
-WL_EXPORT void
-wl_log_set_handler_server(wl_log_func_t handler)
-{
-	wl_log_handler = handler;
 }
