@@ -519,6 +519,8 @@ void ShelfWidget::CreateLauncher() {
   launcher_->SetVisible(
       shell->session_state_delegate()->IsActiveUserSessionStarted());
 
+  shelf_layout_manager_->LayoutShelf();
+
   Show();
 }
 

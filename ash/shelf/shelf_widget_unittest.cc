@@ -8,6 +8,7 @@
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_view.h"
+#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -23,6 +24,7 @@
 namespace ash {
 
 namespace {
+
 ShelfWidget* GetShelfWidget() {
   return Launcher::ForPrimaryDisplay()->shelf_widget();
 }
@@ -153,5 +155,41 @@ TEST_F(ShelfWidgetTest, DontReferenceLauncherAfterDeletion) {
   widget->Init(params);
   widget->SetFullscreen(true);
 }
+
+#if defined(OS_CHROMEOS)
+// Verifies launcher is created with correct size after user login and when its
+// container and status widget has finished sizing.
+// See http://crbug.com/252533
+TEST_F(ShelfWidgetTest, LauncherInitiallySizedAfterLogin) {
+  SetUserLoggedIn(false);
+  UpdateDisplay("300x200,400x300");
+
+  ShelfWidget* shelf = NULL;
+  Shell::RootWindowControllerList controllers(
+      Shell::GetAllRootWindowControllers());
+  for (Shell::RootWindowControllerList::const_iterator i = controllers.begin();
+       i != controllers.end();
+       ++i) {
+    if (!(*i)->shelf()->launcher()) {
+      shelf = (*i)->shelf();
+      break;
+    }
+  }
+  ASSERT_TRUE(shelf != NULL);
+
+  SetUserLoggedIn(true);
+  Shell::GetInstance()->CreateLauncher();
+
+  Launcher* launcher = shelf->launcher();
+  ASSERT_TRUE(launcher != NULL);
+
+  const int status_width =
+      shelf->status_area_widget()->GetWindowBoundsInScreen().width();
+  EXPECT_GT(status_width, 0);
+  EXPECT_EQ(status_width,
+            shelf->GetContentsView()->width() -
+                launcher->GetLauncherViewForTest()->width());
+}
+#endif
 
 }  // namespace ash
