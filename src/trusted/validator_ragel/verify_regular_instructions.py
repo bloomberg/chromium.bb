@@ -127,20 +127,34 @@ def CheckValid64bitInstruction(instruction, dis, precondition, postcondition):
     print 'warning: validator rejected %s with precondition %s' % (
         dis, precondition)
   else:
-    assert actual_postcondition == postcondition, (
+    # We are checking for implication, not for equality, because in some cases
+    # specification computes postcondition with better precision.
+    # For example, xchg with memory is not treated as zero-extending
+    # instruction, so validator thinks that postcondition of
+    #   xchg %eax, (%rip)
+    # is Condition(default), while in fact it's Condition(%rax is restricted).
+    # (https://code.google.com/p/nativeclient/issues/detail?id=3071)
+    # TODO(shcherbina): change it to equality test when such cases
+    # are eliminated.
+    assert postcondition.Implies(actual_postcondition), (
         'validator incorrectly determined postcondition %s '
         'for %s where specification predicted %s'
         % (actual_postcondition, dis, postcondition))
+    if postcondition != actual_postcondition:
+      print (
+          'warning: validator reported too broad postcondition %s for %s, '
+          'where specification predicted %s'
+          % (actual_postcondition, dis, postcondition))
 
 
-def CheckInvalid64bitInstruction(instruction, dis):
+def CheckInvalid64bitInstruction(instruction, dis, sandboxing_error):
   for precondition in spec.Condition.All():
     result, _ = ValidateAndGetPostcondition(
         instruction, precondition)
     assert not result, (
         'validator incorrectly accepted %s with precondition %s, '
         'while specification rejected because %s'
-        % (dis, precondition, e))
+        % (dis, precondition, sandboxing_error))
 
 
 def ValidateInstruction(instruction):
@@ -197,7 +211,7 @@ def ValidateInstruction(instruction):
       CheckValid64bitInstruction(instruction, dis, precondition, postcondition)
       return True
     except spec.SandboxingError as e:
-      CheckInvalid64bitInstruction(instruction, dis)
+      CheckInvalid64bitInstruction(instruction, dis, sandboxing_error=e)
     except spec.DoNotMatchError:
       # TODO(shcherbina): When text-based specification is complete,
       # it should raise.

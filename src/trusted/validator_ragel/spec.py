@@ -385,13 +385,12 @@ def _ProcessOperandWrites(instruction, write_operands, zero_extending=False):
   postcondition = Condition()
   for op in write_operands:
     # TODO(shcherbina): disallow writes to
-    #   rbp, rsp
     #   cs, ds, es, fs, gs
     if op in ['%r15', '%r15d', '%r15w', '%r15b']:
       raise SandboxingError('changes to r15 are not allowed', instruction)
-    if op in ['%bpl', '%bp']:
+    if op in ['%bpl', '%bp', '%rbp']:
       raise SandboxingError('changes to rbp are not allowed', instruction)
-    if op in ['%spl', '%sp']:
+    if op in ['%spl', '%sp', '%rsp']:
       raise SandboxingError('changes to rsp are not allowed', instruction)
 
     if op in REG32_TO_REG64 and zero_extending:
