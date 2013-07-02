@@ -277,12 +277,23 @@ void AutofillExternalDelegate::ApplyAutofillWarnings(
     std::vector<base::string16>* autofill_icons,
     std::vector<int>* autofill_unique_ids) {
   if (!autofill_query_field_.should_autocomplete) {
-    // If autofill is disabled and we had suggestions, show a warning instead.
-    autofill_values->assign(
-        1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
-    autofill_labels->assign(1, base::string16());
-    autofill_icons->assign(1, base::string16());
-    autofill_unique_ids->assign(1, WebAutofillClient::MenuItemIDWarningMessage);
+    // Autofill is disabled.  If there were some profile or credit card
+    // suggestions to show, show a warning instead.  Otherwise, clear out the
+    // list of suggestions.
+    if (!autofill_unique_ids->empty() && (*autofill_unique_ids)[0] > 0) {
+      // If autofill is disabled and we had suggestions, show a warning instead.
+      autofill_values->assign(
+          1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
+      autofill_labels->assign(1, base::string16());
+      autofill_icons->assign(1, base::string16());
+      autofill_unique_ids->assign(1,
+                                  WebAutofillClient::MenuItemIDWarningMessage);
+    } else {
+      autofill_values->clear();
+      autofill_labels->clear();
+      autofill_icons->clear();
+      autofill_unique_ids->clear();
+    }
   } else if (autofill_unique_ids->size() > 1 &&
              (*autofill_unique_ids)[0] ==
                  WebAutofillClient::MenuItemIDWarningMessage) {

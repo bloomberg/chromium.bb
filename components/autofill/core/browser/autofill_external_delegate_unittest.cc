@@ -256,6 +256,34 @@ TEST_F(AutofillExternalDelegateUnitTest, AutofillWarnings) {
                                             autofill_ids);
 }
 
+// Test that the Autofill popup doesn't display a warning explaining why
+// Autofill is disabled for a website when there are no Autofill suggestions.
+// Regression test for http://crbug.com/105636
+TEST_F(AutofillExternalDelegateUnitTest, NoAutofillWarningsWithoutSuggestions) {
+  const FormData form;
+  FormFieldData field;
+  field.is_focusable = true;
+  field.should_autocomplete = false;
+  const gfx::RectF element_bounds;
+
+  external_delegate_->OnQuery(kQueryId, form, field, element_bounds, true);
+
+  EXPECT_CALL(manager_delegate_,
+              ShowAutofillPopup(_, _, _, _, _, _, _)).Times(0);
+  EXPECT_CALL(manager_delegate_, HideAutofillPopup()).Times(1);
+
+  // This should not call ShowAutofillPopup.
+  std::vector<base::string16> autofill_item;
+  autofill_item.push_back(base::string16());
+  std::vector<int> autofill_ids;
+  autofill_ids.push_back(WebAutofillClient::MenuItemIDAutocompleteEntry);
+  external_delegate_->OnSuggestionsReturned(kQueryId,
+                                            autofill_item,
+                                            autofill_item,
+                                            autofill_item,
+                                            autofill_ids);
+}
+
 // Test that the Autofill delegate doesn't try and fill a form with a
 // negative unique id.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
