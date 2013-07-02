@@ -28,7 +28,3 @@ DiskCacheBackendTest.ShutdownWithPendingIO_Fast
 # http://crbug.com/61908 - It's too slow
 DirectoryListerTest.BigDirRecursiveTest
 
-# Fails. http://crbug.com/256421
-HTTPSRequestTest.HTTPSExpiredTest
-SSLClientSocketTest.ConnectExpired
-URLFetcherBadHTTPSTest.BadHTTPSTest
