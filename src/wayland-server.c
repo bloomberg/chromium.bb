@@ -672,7 +672,6 @@ static void
 destroy_client_display_resource(struct wl_resource *resource)
 {
 	resource->client->display_resource = NULL;
-	free(resource);
 }
 
 static void
