@@ -423,10 +423,3 @@ name=http://crbug.com/234484
 ...
 *!chrome::`anonymous namespace'::SetOverlayIcon
 
-INVALID HEAP ARGUMENT
-name=http://crbug.com/253578
-# allocated with operator new[], freed with operator delete
-...
-libGLESv2.dll!rx::ShaderExecutable::~ShaderExecutable
-libGLESv2.dll!rx::ShaderExecutable9::~ShaderExecutable9
-libGLESv2.dll!rx::ShaderExecutable9::`scalar deleting destructor'
