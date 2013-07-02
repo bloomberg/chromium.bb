@@ -1344,6 +1344,8 @@ crbug.com/234758 [ Mac Debug ] fast/workers/worker-document-leak.html [ Pass Tim
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Crash Pass ]
 crbug.com/234758 [ Debug ] virtual/gpu/fast/canvas/canvas-strokePath-gradient-shadow.html [ Pass Timeout ]
 
+crbug.com/256445 [ Mac Debug ] webaudio/pannernode-basic.html [ Failure ]
+
 crbug.com/237250 [ SnowLeopard Debug ] media/video-source-load.html [ Crash Pass ]
 crbug.com/237250 [ SnowLeopard Debug ] media/media-fragments/TC0081.html [ Crash Pass ]
 crbug.com/237250 [ SnowLeopard Debug ] media/media-fragments/TC0070.html [ Crash Pass ]
