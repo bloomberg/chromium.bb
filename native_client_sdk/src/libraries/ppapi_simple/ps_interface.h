@@ -52,6 +52,7 @@ const PPB_Graphics2D* PSInterfaceGraphics2D();
 const PPB_Graphics3D* PSInterfaceGraphics3D();
 const PPB_ImageData* PSInterfaceImageData();
 const PPB_Instance* PSInterfaceInstance();
+const PPB_Messaging* PSInterfaceMessaging();
 const PPB_MessageLoop* PSInterfaceMessageLoop();
 const PPB_MouseCursor* PSInterfaceMouseCursor();
 const PPB_URLLoader* PSInterfaceURLLoader();
