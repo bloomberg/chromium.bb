@@ -1128,6 +1128,7 @@
     '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/devtools_resources.h',
     '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/devtools_resources_map.cc',
     '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/devtools_resources_map.h',
+    '<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/grit/tracing_resources.h',
     '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/grit/webui_resources_map.cc',
   ],
   'conditions': [
@@ -1165,6 +1166,7 @@
     }, {  # OS!="ios"
       'dependencies': [
         'browser/devtools/devtools_resources.gyp:devtools_resources',
+        'browser/tracing/tracing_resources.gyp:tracing_resources',
         '../cc/cc.gyp:cc',
         '../net/net.gyp:http_server',
         '../printing/printing.gyp:printing',

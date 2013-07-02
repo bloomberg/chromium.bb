@@ -56,6 +56,7 @@
         ['OS != "ios"', {
           'dependencies': [
             '../content/browser/devtools/devtools_resources.gyp:devtools_resources',
+            '../content/browser/tracing/tracing_resources.gyp:tracing_resources',
           ],
           'actions': [
             {

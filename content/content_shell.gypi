@@ -285,6 +285,7 @@
       'type': 'none',
       'dependencies': [
         'browser/devtools/devtools_resources.gyp:devtools_resources',
+        'browser/tracing/tracing_resources.gyp:tracing_resources',
         'content_resources.gyp:content_resources',
         'content_shell_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
@@ -302,6 +303,7 @@
           'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings/app_locale_settings_en-US.pak',

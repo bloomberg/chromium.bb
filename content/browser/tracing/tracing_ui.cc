@@ -29,7 +29,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/url_constants.h"
-#include "grit/content_resources.h"
+#include "grit/tracing_resources.h"
 #include "ipc/ipc_channel.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 

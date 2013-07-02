@@ -31,10 +31,6 @@
         <include name="IDR_RENDERER_SANDBOX_PROFILE" file="renderer/renderer.sb" type="BINDATA" />
         <include name="IDR_UTILITY_SANDBOX_PROFILE" file="utility/utility.sb" type="BINDATA" />
       </if>
-      <if expr="not is_android">
-        <include name="IDR_TRACING_HTML" file="../third_party/trace-viewer/src/about_tracing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_TRACING_JS" file="../third_party/trace-viewer/src/about_tracing.js" flattenhtml="true" type="BINDATA" />
-      </if>
     </includes>
   </release>
 </grit>
