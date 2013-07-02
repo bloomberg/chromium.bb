@@ -91,13 +91,10 @@ void ChromeShellWindowDelegate::AddNewContents(
     const gfx::Rect& initial_pos,
     bool user_gesture,
     bool* was_blocked) {
-#if defined(OS_MACOSX) || defined(OS_WIN) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (!disable_external_open_for_testing_) {
     new_contents->SetDelegate(new ShellWindowLinkDelegate());
     return;
   }
-#endif
   Browser* browser =
       chrome::FindOrCreateTabbedBrowser(profile, chrome::GetActiveDesktop());
   // Force all links to open in a new tab, even if they were trying to open a
