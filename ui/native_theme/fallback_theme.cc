@@ -62,7 +62,6 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
   static const SkColor kTextfieldReadOnlyBackground = SK_ColorWHITE;
   static const SkColor kTextfieldSelectionBackgroundFocused =
       SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
-  static const SkColor kTextfieldSelectionBackgroundUnfocused = SK_ColorLTGRAY;
   static const SkColor kTextfieldSelectionColor =
       color_utils::AlphaBlend(SK_ColorBLACK,
           kTextfieldSelectionBackgroundFocused, 0xdd);
@@ -154,8 +153,6 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
       return kTextfieldSelectionColor;
     case kColorId_TextfieldSelectionBackgroundFocused:
       return kTextfieldSelectionBackgroundFocused;
-    case kColorId_TextfieldSelectionBackgroundUnfocused:
-      return kTextfieldSelectionBackgroundUnfocused;
 
     // Tree
     case kColorId_TreeBackground:

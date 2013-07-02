@@ -644,7 +644,7 @@ void RenderText::Draw(Canvas* canvas) {
     canvas->ClipRect(clip_rect);
   }
 
-  if (!text().empty())
+  if (!text().empty() && focused())
     DrawSelection(canvas);
 
   if (cursor_enabled() && cursor_visible() && focused())
@@ -757,7 +757,6 @@ RenderText::RenderText()
       cursor_color_(kDefaultColor),
       selection_color_(kDefaultColor),
       selection_background_focused_color_(kDefaultSelectionBackgroundColor),
-      selection_background_unfocused_color_(kDefaultSelectionBackgroundColor),
       focused_(false),
       composition_range_(ui::Range::InvalidRange()),
       colors_(kDefaultColor),
@@ -1018,12 +1017,9 @@ void RenderText::UpdateCachedBoundsAndOffset() {
 }
 
 void RenderText::DrawSelection(Canvas* canvas) {
-  const SkColor color = focused() ?
-      selection_background_focused_color_ :
-      selection_background_unfocused_color_;
   const std::vector<Rect> sel = GetSubstringBounds(selection());
   for (std::vector<Rect>::const_iterator i = sel.begin(); i < sel.end(); ++i)
-    canvas->FillRect(*i, color);
+    canvas->FillRect(*i, selection_background_focused_color_);
 }
 
 }  // namespace gfx

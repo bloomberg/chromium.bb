@@ -1131,8 +1131,6 @@ void NativeTextfieldViews::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
       ui::NativeTheme::kColorId_TextfieldSelectionColor));
   render_text->set_selection_background_focused_color(theme->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
-  render_text->set_selection_background_unfocused_color(theme->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundUnfocused));
 }
 
 void NativeTextfieldViews::UpdateCursor() {

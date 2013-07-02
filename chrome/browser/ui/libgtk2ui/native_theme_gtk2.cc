@@ -218,8 +218,6 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
       return GetEntryStyle()->text[GTK_STATE_SELECTED];
     case kColorId_TextfieldSelectionBackgroundFocused:
       return GetEntryStyle()->base[GTK_STATE_SELECTED];
-    case kColorId_TextfieldSelectionBackgroundUnfocused:
-      return GetEntryStyle()->base[GTK_STATE_ACTIVE];
 
     // Tree
     // Table
