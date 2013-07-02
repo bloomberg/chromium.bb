@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/template_url.h"
 
+#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "google_apis/google_api_keys.h"
@@ -155,7 +157,8 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(const string16& search_terms)
     : search_terms(search_terms),
       accepted_suggestion(NO_SUGGESTIONS_AVAILABLE),
       cursor_position(string16::npos),
-      omnibox_start_margin(-1) {
+      omnibox_start_margin(-1),
+      append_extra_query_params(false) {
 }
 
 TemplateURLRef::SearchTermsArgs::~SearchTermsArgs() {
@@ -227,159 +230,21 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
   if (!valid_)
     return std::string();
 
-  if (replacements_.empty())
-    return parsed_url_;
+  std::string url(HandleReplacements(search_terms_args, search_terms_data));
 
-  // Determine if the search terms are in the query or before. We're escaping
-  // space as '+' in the former case and as '%20' in the latter case.
-  bool is_in_query = true;
-  for (Replacements::iterator i = replacements_.begin();
-       i != replacements_.end(); ++i) {
-    if (i->type == SEARCH_TERMS) {
-      string16::size_type query_start = parsed_url_.find('?');
-      is_in_query = query_start != string16::npos &&
-          (static_cast<string16::size_type>(i->index) > query_start);
-      break;
-    }
-  }
-
-  std::string input_encoding;
-  string16 encoded_terms;
-  string16 encoded_original_query;
-  owner_->EncodeSearchTerms(search_terms_args, is_in_query, &input_encoding,
-      &encoded_terms, &encoded_original_query);
-
-  std::string url = parsed_url_;
-
-  // replacements_ is ordered in ascending order, as such we need to iterate
-  // from the back.
-  for (Replacements::reverse_iterator i = replacements_.rbegin();
-       i != replacements_.rend(); ++i) {
-    switch (i->type) {
-      case ENCODING:
-        url.insert(i->index, input_encoding);
-        break;
-
-      case GOOGLE_ASSISTED_QUERY_STATS:
-        if (!search_terms_args.assisted_query_stats.empty()) {
-          // Get the base URL without substituting AQS to avoid infinite
-          // recursion.  We need the URL to find out if it meets all
-          // AQS requirements (e.g. HTTPS protocol check).
-          // See TemplateURLRef::SearchTermsArgs for more details.
-          SearchTermsArgs search_terms_args_without_aqs(search_terms_args);
-          search_terms_args_without_aqs.assisted_query_stats.clear();
-          GURL base_url(ReplaceSearchTermsUsingTermsData(
-              search_terms_args_without_aqs, search_terms_data));
-          if (base_url.SchemeIs(chrome::kHttpsScheme)) {
-            url.insert(i->index,
-                       "aqs=" + search_terms_args.assisted_query_stats + "&");
-          }
-        }
-        break;
-
-      case GOOGLE_BASE_URL:
-        url.insert(i->index, search_terms_data.GoogleBaseURLValue());
-        break;
-
-      case GOOGLE_BASE_SUGGEST_URL:
-        url.insert(i->index, search_terms_data.GoogleBaseSuggestURLValue());
-        break;
-
-      case GOOGLE_CURSOR_POSITION:
-        if (search_terms_args.cursor_position != string16::npos)
-          url.insert(i->index,
-                     base::StringPrintf("cp=%" PRIuS "&",
-                                        search_terms_args.cursor_position));
-        break;
-
-      case GOOGLE_INSTANT_ENABLED:
-        url.insert(i->index, search_terms_data.InstantEnabledParam());
-        break;
-
-      case GOOGLE_INSTANT_EXTENDED_ENABLED:
-        url.insert(i->index, search_terms_data.InstantExtendedEnabledParam());
-        break;
-
-      case GOOGLE_NTP_IS_THEMED:
-        url.insert(i->index, search_terms_data.NTPIsThemedParam());
-        break;
-
-      case GOOGLE_OMNIBOX_START_MARGIN:
-        if (search_terms_args.omnibox_start_margin >= 0) {
-          url.insert(i->index, "es_sm=" +
-              base::IntToString(search_terms_args.omnibox_start_margin) + "&");
-        }
-        break;
-
-      case GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION:
-        if (search_terms_args.accepted_suggestion >= 0 ||
-            !search_terms_args.assisted_query_stats.empty()) {
-          url.insert(i->index, "oq=" + UTF16ToUTF8(encoded_original_query) +
-                               "&");
-        }
-        break;
-
-      case GOOGLE_RLZ: {
-        // On platforms that don't have RLZ, we still want this branch
-        // to happen so that we replace the RLZ template with the
-        // empty string.  (If we don't handle this case, we hit a
-        // NOTREACHED below.)
-        string16 rlz_string = search_terms_data.GetRlzParameterValue();
-        if (!rlz_string.empty()) {
-          url.insert(i->index, "rlz=" + UTF16ToUTF8(rlz_string) + "&");
-        }
-        break;
-      }
-
-      case GOOGLE_SEARCH_CLIENT: {
-        std::string client = search_terms_data.GetSearchClient();
-        if (!client.empty())
-          url.insert(i->index, "client=" + client + "&");
-        break;
-      }
-
-      case GOOGLE_SEARCH_FIELDTRIAL_GROUP:
-        // We are not currently running any fieldtrials that modulate the search
-        // url.  If we do, then we'd have some conditional insert such as:
-        // url.insert(i->index, used_www ? "gcx=w&" : "gcx=c&");
-        break;
-
-      case GOOGLE_SUGGEST_CLIENT:
-        url.insert(i->index, search_terms_data.GetSuggestClient());
-        break;
-
-      case GOOGLE_UNESCAPED_SEARCH_TERMS: {
-        std::string unescaped_terms;
-        base::UTF16ToCodepage(search_terms_args.search_terms,
-                              input_encoding.c_str(),
-                              base::OnStringConversionError::SKIP,
-                              &unescaped_terms);
-        url.insert(i->index, std::string(unescaped_terms.begin(),
-                                         unescaped_terms.end()));
-        break;
-      }
-
-      case GOOGLE_ZERO_PREFIX_URL:
-        if (!search_terms_args.zero_prefix_url.empty()) {
-          const std::string& escaped_zero_prefix_url =
-              net::EscapeQueryParamValue(search_terms_args.zero_prefix_url,
-                                         true);
-          url.insert(i->index, "url=" + escaped_zero_prefix_url + "&");
-        }
-
-        break;
-
-      case LANGUAGE:
-        url.insert(i->index, search_terms_data.GetApplicationLocale());
-        break;
-
-      case SEARCH_TERMS:
-        url.insert(i->index, UTF16ToUTF8(encoded_terms));
-        break;
-
-      default:
-        NOTREACHED();
-        break;
+  // If the user specified additional query params on the command line, add
+  // them.
+  if (search_terms_args.append_extra_query_params) {
+    std::string query_params(CommandLine::ForCurrentProcess()->
+        GetSwitchValueASCII(switches::kExtraSearchQueryParams));
+    GURL gurl(url);
+    if (!query_params.empty() && gurl.is_valid()) {
+      GURL::Replacements replacements;
+      const std::string existing_query_params(gurl.query());
+      if (!existing_query_params.empty())
+        query_params += "&" + existing_query_params;
+      replacements.SetQueryStr(query_params);
+      return gurl.ReplaceComponents(replacements).possibly_invalid_spec();
     }
   }
 
@@ -731,6 +596,168 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
       url_parse::Parsed::REF : url_parse::Parsed::QUERY;
   host_ = url.host();
   path_ = url.path();
+}
+
+std::string TemplateURLRef::HandleReplacements(
+    const SearchTermsArgs& search_terms_args,
+    const SearchTermsData& search_terms_data) const {
+  if (replacements_.empty())
+    return parsed_url_;
+
+  // Determine if the search terms are in the query or before. We're escaping
+  // space as '+' in the former case and as '%20' in the latter case.
+  bool is_in_query = true;
+  for (Replacements::iterator i = replacements_.begin();
+       i != replacements_.end(); ++i) {
+    if (i->type == SEARCH_TERMS) {
+      string16::size_type query_start = parsed_url_.find('?');
+      is_in_query = query_start != string16::npos &&
+          (static_cast<string16::size_type>(i->index) > query_start);
+      break;
+    }
+  }
+
+  std::string input_encoding;
+  string16 encoded_terms;
+  string16 encoded_original_query;
+  owner_->EncodeSearchTerms(search_terms_args, is_in_query, &input_encoding,
+      &encoded_terms, &encoded_original_query);
+
+  std::string url = parsed_url_;
+
+  // replacements_ is ordered in ascending order, as such we need to iterate
+  // from the back.
+  for (Replacements::reverse_iterator i = replacements_.rbegin();
+       i != replacements_.rend(); ++i) {
+    switch (i->type) {
+      case ENCODING:
+        url.insert(i->index, input_encoding);
+        break;
+
+      case GOOGLE_ASSISTED_QUERY_STATS:
+        if (!search_terms_args.assisted_query_stats.empty()) {
+          // Get the base URL without substituting AQS to avoid infinite
+          // recursion.  We need the URL to find out if it meets all
+          // AQS requirements (e.g. HTTPS protocol check).
+          // See TemplateURLRef::SearchTermsArgs for more details.
+          SearchTermsArgs search_terms_args_without_aqs(search_terms_args);
+          search_terms_args_without_aqs.assisted_query_stats.clear();
+          GURL base_url(ReplaceSearchTermsUsingTermsData(
+              search_terms_args_without_aqs, search_terms_data));
+          if (base_url.SchemeIs(chrome::kHttpsScheme)) {
+            url.insert(i->index,
+                       "aqs=" + search_terms_args.assisted_query_stats + "&");
+          }
+        }
+        break;
+
+      case GOOGLE_BASE_URL:
+        url.insert(i->index, search_terms_data.GoogleBaseURLValue());
+        break;
+
+      case GOOGLE_BASE_SUGGEST_URL:
+        url.insert(i->index, search_terms_data.GoogleBaseSuggestURLValue());
+        break;
+
+      case GOOGLE_CURSOR_POSITION:
+        if (search_terms_args.cursor_position != string16::npos)
+          url.insert(i->index,
+                     base::StringPrintf("cp=%" PRIuS "&",
+                                        search_terms_args.cursor_position));
+        break;
+
+      case GOOGLE_INSTANT_ENABLED:
+        url.insert(i->index, search_terms_data.InstantEnabledParam());
+        break;
+
+      case GOOGLE_INSTANT_EXTENDED_ENABLED:
+        url.insert(i->index, search_terms_data.InstantExtendedEnabledParam());
+        break;
+
+      case GOOGLE_NTP_IS_THEMED:
+        url.insert(i->index, search_terms_data.NTPIsThemedParam());
+        break;
+
+      case GOOGLE_OMNIBOX_START_MARGIN:
+        if (search_terms_args.omnibox_start_margin >= 0) {
+          url.insert(i->index, "es_sm=" +
+              base::IntToString(search_terms_args.omnibox_start_margin) + "&");
+        }
+        break;
+
+      case GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION:
+        if (search_terms_args.accepted_suggestion >= 0 ||
+            !search_terms_args.assisted_query_stats.empty()) {
+          url.insert(i->index, "oq=" + UTF16ToUTF8(encoded_original_query) +
+                               "&");
+        }
+        break;
+
+      case GOOGLE_RLZ: {
+        // On platforms that don't have RLZ, we still want this branch
+        // to happen so that we replace the RLZ template with the
+        // empty string.  (If we don't handle this case, we hit a
+        // NOTREACHED below.)
+        string16 rlz_string = search_terms_data.GetRlzParameterValue();
+        if (!rlz_string.empty()) {
+          url.insert(i->index, "rlz=" + UTF16ToUTF8(rlz_string) + "&");
+        }
+        break;
+      }
+
+      case GOOGLE_SEARCH_CLIENT: {
+        std::string client = search_terms_data.GetSearchClient();
+        if (!client.empty())
+          url.insert(i->index, "client=" + client + "&");
+        break;
+      }
+
+      case GOOGLE_SEARCH_FIELDTRIAL_GROUP:
+        // We are not currently running any fieldtrials that modulate the search
+        // url.  If we do, then we'd have some conditional insert such as:
+        // url.insert(i->index, used_www ? "gcx=w&" : "gcx=c&");
+        break;
+
+      case GOOGLE_SUGGEST_CLIENT:
+        url.insert(i->index, search_terms_data.GetSuggestClient());
+        break;
+
+      case GOOGLE_UNESCAPED_SEARCH_TERMS: {
+        std::string unescaped_terms;
+        base::UTF16ToCodepage(search_terms_args.search_terms,
+                              input_encoding.c_str(),
+                              base::OnStringConversionError::SKIP,
+                              &unescaped_terms);
+        url.insert(i->index, std::string(unescaped_terms.begin(),
+                                         unescaped_terms.end()));
+        break;
+      }
+
+      case GOOGLE_ZERO_PREFIX_URL:
+        if (!search_terms_args.zero_prefix_url.empty()) {
+          const std::string& escaped_zero_prefix_url =
+              net::EscapeQueryParamValue(search_terms_args.zero_prefix_url,
+                                         true);
+          url.insert(i->index, "url=" + escaped_zero_prefix_url + "&");
+        }
+
+        break;
+
+      case LANGUAGE:
+        url.insert(i->index, search_terms_data.GetApplicationLocale());
+        break;
+
+      case SEARCH_TERMS:
+        url.insert(i->index, UTF16ToUTF8(encoded_terms));
+        break;
+
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  return url;
 }
 
 

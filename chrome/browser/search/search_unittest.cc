@@ -583,6 +583,14 @@ TEST_F(SearchTest, CommandLineOverrides) {
   // URL doesn't contain "google".
   local_instant_url = GetLocalInstantURL(profile());
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalGoogleNtpUrl), local_instant_url);
+
+  // If we specify extra search query params, they should be inserted into the
+  // query portion of the instant URL.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kExtraSearchQueryParams, "a=b");
+  instant_url = GetInstantURL(profile(), kDisableStartMargin);
+  ASSERT_TRUE(instant_url.is_valid());
+  EXPECT_EQ("http://www.bar.com/webhp?a=b&strk", instant_url.spec());
 }
 
 }  // namespace chrome

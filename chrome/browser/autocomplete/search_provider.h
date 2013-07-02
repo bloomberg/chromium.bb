@@ -74,6 +74,9 @@ class SearchProvider : public AutocompleteProvider,
   // whether we should allow inline autocompletion and what the transition type
   // should be.  |accepted_suggestion| and |omnibox_start_margin| are used along
   // with |input_text| to generate Assisted Query Stats.
+  // |append_extra_query_params| should be set if |template_url| is the default
+  // search engine, so the destination URL will contain any
+  // command-line-specified query params.
   static AutocompleteMatch CreateSearchSuggestion(
       AutocompleteProvider* autocomplete_provider,
       int relevance,
@@ -84,7 +87,8 @@ class SearchProvider : public AutocompleteProvider,
       const AutocompleteInput& input,
       bool is_keyword,
       int accepted_suggestion,
-      int omnibox_start_margin);
+      int omnibox_start_margin,
+      bool append_extra_query_params);
 
   // AutocompleteProvider:
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;

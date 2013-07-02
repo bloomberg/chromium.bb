@@ -88,10 +88,13 @@ TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
   return NULL;
 }
 
-GURL TemplateURLRefToGURL(const TemplateURLRef& ref, int start_margin) {
+GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
+                          int start_margin,
+                          bool append_extra_query_params) {
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(string16());
   search_terms_args.omnibox_start_margin = start_margin;
+  search_terms_args.append_extra_query_params = append_extra_query_params;
   return GURL(ref.ReplaceSearchTerms(search_terms_args));
 }
 
@@ -105,14 +108,14 @@ bool MatchesOrigin(const GURL& my_url, const GURL& other_url) {
 
 bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
   GURL search_url =
-      TemplateURLRefToGURL(template_url->url_ref(), kDisableStartMargin);
+      TemplateURLRefToGURL(template_url->url_ref(), kDisableStartMargin, false);
   if (search_url.is_valid() && MatchesOriginAndPath(url, search_url))
     return true;
 
   // "URLCount() - 1" because we already tested url_ref above.
   for (size_t i = 0; i < template_url->URLCount() - 1; ++i) {
     TemplateURLRef ref(template_url, i);
-    search_url = TemplateURLRefToGURL(ref, kDisableStartMargin);
+    search_url = TemplateURLRefToGURL(ref, kDisableStartMargin, false);
     if (search_url.is_valid() && MatchesOriginAndPath(url, search_url))
       return true;
   }
@@ -181,7 +184,7 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
 
   const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
   const GURL instant_url =
-      TemplateURLRefToGURL(instant_url_ref, kDisableStartMargin);
+      TemplateURLRefToGURL(instant_url_ref, kDisableStartMargin, false);
   return instant_url.is_valid() &&
       (MatchesOriginAndPath(url, instant_url) ||
        (extended_api_enabled && MatchesAnySearchURL(url, template_url)));
@@ -442,7 +445,7 @@ GURL GetInstantURL(Profile* profile, int start_margin) {
 
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
   GURL instant_url =
-      TemplateURLRefToGURL(template_url->instant_url_ref(), start_margin);
+      TemplateURLRefToGURL(template_url->instant_url_ref(), start_margin, true);
 
   // Extended mode requires HTTPS.  Force it unless the base URL was overridden
   // on the command line, in which case we allow HTTP (see comments on
@@ -669,7 +672,7 @@ bool DefaultSearchProviderSupportsInstant(Profile* profile) {
     return false;
 
   GURL instant_url = TemplateURLRefToGURL(template_url->instant_url_ref(),
-                                          kDisableStartMargin);
+                                          kDisableStartMargin, false);
   // Extended mode instant requires a search terms replacement key.
   return instant_url.is_valid() &&
          (!IsInstantExtendedAPIEnabled() ||

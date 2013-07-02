@@ -58,7 +58,7 @@ class TemplateURLRef {
     ~SearchTermsArgs();
 
     // The search terms (query).
-    const string16 search_terms;
+    string16 search_terms;
 
     // The original (input) query.
     string16 original_query;
@@ -85,6 +85,15 @@ class TemplateURLRef {
     // The URL of the current webpage to be used for experimental zero-prefix
     // suggestions.
     std::string zero_prefix_url;
+
+    // If set, ReplaceSearchTerms() will automatically append any extra query
+    // params specified via the --extra-search-query-params command-line
+    // argument.  Generally, this should be set when dealing with the search or
+    // instant TemplateURLRefs of the default search engine and the caller cares
+    // about the query portion of the URL.  Since neither TemplateURLRef nor
+    // indeed TemplateURL know whether a TemplateURL is the default search
+    // engine, callers instead must set this manually.
+    bool append_extra_query_params;
   };
 
   TemplateURLRef(TemplateURL* owner, Type type);
@@ -244,6 +253,13 @@ class TemplateURLRef {
 
   // Extracts the query key and host from the url.
   void ParseHostAndSearchTermKey(
+      const SearchTermsData& search_terms_data) const;
+
+  // Replaces all replacements in |parsed_url_| with their actual values and
+  // returns the result.  This is the main functionality of
+  // ReplaceSearchTermsUsingTermsData().
+  std::string HandleReplacements(
+      const SearchTermsArgs& search_terms_args,
       const SearchTermsData& search_terms_data) const;
 
   // The TemplateURL that contains us.  This should outlive us.

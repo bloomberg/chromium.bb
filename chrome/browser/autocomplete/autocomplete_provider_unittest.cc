@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/strings/string16.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_observer.h"
@@ -184,6 +186,8 @@ class AutocompleteProviderTest : public testing::Test,
   void ResetControllerWithKeywordAndSearchProviders();
   void ResetControllerWithKeywordProvider();
   void RunExactKeymatchTest(bool allow_exact_keyword_match);
+
+  void CopyResults();
 
   AutocompleteResult result_;
   scoped_ptr<AutocompleteController> controller_;
@@ -416,12 +420,16 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
       controller_->result().default_match()->type);
 }
 
+void AutocompleteProviderTest::CopyResults() {
+  result_.CopyFrom(controller_->result());
+}
+
 void AutocompleteProviderTest::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (controller_->done()) {
-    result_.CopyFrom(controller_->result());
+    CopyResults();
     base::MessageLoop::current()->Quit();
   }
 }
@@ -478,6 +486,21 @@ TEST_F(AutocompleteProviderTest, AllowExactKeywordMatch) {
   ResetControllerWithKeywordAndSearchProviders();
   RunExactKeymatchTest(true);
   RunExactKeymatchTest(false);
+}
+
+// Ensures matches from (only) the default search provider respect any extra
+// query params set on the command line.
+TEST_F(AutocompleteProviderTest, ExtraQueryParams) {
+  ResetControllerWithKeywordAndSearchProviders();
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kExtraSearchQueryParams, "a=b");
+  RunExactKeymatchTest(true);
+  CopyResults();
+  ASSERT_EQ(2U, result_.size());
+  EXPECT_EQ("http://keyword/test",
+            result_.match_at(0)->destination_url.possibly_invalid_spec());
+  EXPECT_EQ("http://defaultturl/k%20test?a=b",
+            result_.match_at(1)->destination_url.possibly_invalid_spec());
 }
 
 // Test that redundant associated keywords are removed.

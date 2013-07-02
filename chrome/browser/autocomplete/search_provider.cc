@@ -265,7 +265,8 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
     const AutocompleteInput& input,
     bool is_keyword,
     int accepted_suggestion,
-    int omnibox_start_margin) {
+    int omnibox_start_margin,
+    bool append_extra_query_params) {
   AutocompleteMatch match(autocomplete_provider, relevance, false, type);
 
   if (!template_url)
@@ -333,6 +334,8 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
   match.search_terms_args->original_query = input_text;
   match.search_terms_args->accepted_suggestion = accepted_suggestion;
   match.search_terms_args->omnibox_start_margin = omnibox_start_margin;
+  match.search_terms_args->append_extra_query_params =
+      append_extra_query_params;
   // This is the destination URL sans assisted query stats.  This must be set
   // so the AutocompleteController can properly de-dupe; the controller will
   // eventually overwrite it before it reaches the user.
@@ -1374,7 +1377,8 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
       providers_.GetKeywordProviderURL() : providers_.GetDefaultProviderURL();
   AutocompleteMatch match = CreateSearchSuggestion(this, relevance, type,
       template_url, query_string, input_text, input_, is_keyword,
-      accepted_suggestion, omnibox_start_margin_);
+      accepted_suggestion, omnibox_start_margin_,
+      !is_keyword || providers_.default_provider().empty());
   if (!match.destination_url.is_valid())
     return;
   match.RecordAdditionalInfo(kRelevanceFromServerKey,

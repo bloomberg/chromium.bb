@@ -315,7 +315,7 @@ void ZeroSuggestProvider::AddMatchToMap(int relevance,
   // of passing in -1.
   AutocompleteMatch match = SearchProvider::CreateSearchSuggestion(
       this, relevance, type, template_url, query_string, query_string,
-      AutocompleteInput(), false, accepted_suggestion, -1);
+      AutocompleteInput(), false, accepted_suggestion, -1, true);
   if (!match.destination_url.is_valid())
     return;
 

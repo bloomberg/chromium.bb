@@ -50,6 +50,7 @@ GURL GetDefaultSearchURLForSearchTerms(Profile* profile,
   const TemplateURLRef& search_url = default_provider->url_ref();
   DCHECK(search_url.SupportsReplacement());
   TemplateURLRef::SearchTermsArgs search_terms_args(terms);
+  search_terms_args.append_extra_query_params = true;
   return GURL(search_url.ReplaceSearchTerms(search_terms_args));
 }
 

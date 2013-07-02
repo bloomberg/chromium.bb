@@ -740,6 +740,10 @@ const char kExtensionProcess[]              = "extension-process";
 // Frequency in seconds for Extensions auto-update.
 const char kExtensionsUpdateFrequency[]     = "extensions-update-frequency";
 
+// Additional query params to insert in the search and instant URLs.  Useful for
+// testing.
+const char kExtraSearchQueryParams[]        = "extra-search-query-params";
+
 // Fakes the channel of the browser for purposes of Variations filtering. This
 // is to be used for testing only. Possible values are "stable", "beta", "dev"
 // and "canary". Note that this only applies if the browser's reported channel

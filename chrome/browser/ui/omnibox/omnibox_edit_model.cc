@@ -1242,7 +1242,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
               AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, default_provider,
               text, text, input, false,
               TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
-              controller_->GetOmniboxBounds().x());
+              controller_->GetOmniboxBounds().x(), true);
         } else {
           // Can't create a new search match. Leave |match| as is, with an
           // invalid destination_url. This shouldn't ever happen. For example,

@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/base_paths.h"
+#include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(ENABLE_RLZ)
@@ -1031,4 +1033,39 @@ TEST_F(TemplateURLTest, ReplaceSearchTermsInURL) {
   EXPECT_TRUE(url.ReplaceSearchTermsInURL(
       GURL("http://google.com/alt/?q=#q=123"), search_terms, &result));
   EXPECT_EQ(GURL("http://google.com/alt/?q=#q=Bob Morane"), result);
+}
+
+// Test the |append_extra_query_params| field of SearchTermsArgs.
+TEST_F(TemplateURLTest, ExtraQueryParams) {
+  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
+  TemplateURLData data;
+  // Pick a URL with replacements before, during, and after the query, to ensure
+  // we don't goof up any of them.
+  data.SetURL("{google:baseURL}search?q={searchTerms}"
+      "#{google:originalQueryForSuggestion}x");
+  TemplateURL url(NULL, data);
+
+  // Baseline: no command-line args, no |append_extra_query_params| flag.
+  TemplateURLRef::SearchTermsArgs search_terms(ASCIIToUTF16("abc"));
+  search_terms.original_query = ASCIIToUTF16("def");
+  search_terms.accepted_suggestion = 0;
+  EXPECT_EQ("http://www.google.com/search?q=abc#oq=def&x",
+            url.url_ref().ReplaceSearchTerms(search_terms));
+
+  // Set the flag.  Since there are no command-line args, this should have no
+  // effect.
+  search_terms.append_extra_query_params = true;
+  EXPECT_EQ("http://www.google.com/search?q=abc#oq=def&x",
+            url.url_ref().ReplaceSearchTerms(search_terms));
+
+  // Now append the command-line arg.  This should be inserted into the query.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kExtraSearchQueryParams, "a=b");
+  EXPECT_EQ("http://www.google.com/search?a=b&q=abc#oq=def&x",
+            url.url_ref().ReplaceSearchTerms(search_terms));
+
+  // Turn off the flag.  Now the command-line arg should be ignored again.
+  search_terms.append_extra_query_params = false;
+  EXPECT_EQ("http://www.google.com/search?q=abc#oq=def&x",
+            url.url_ref().ReplaceSearchTerms(search_terms));
 }

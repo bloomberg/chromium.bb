@@ -812,13 +812,15 @@ TEST_F(SearchProviderTest, CommandLineOverrides) {
 
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
                                                       "http://www.bar.com/");
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kExtraSearchQueryParams, "a=b");
 
   TestData cases[] = {
     { ASCIIToUTF16("k a"), 2,
       { ResultInfo(GURL("http://keyword/a"),
                    AutocompleteMatchType::SEARCH_OTHER_ENGINE,
                    ASCIIToUTF16("k a")),
-        ResultInfo(GURL("http://www.bar.com/k%20a"),
+        ResultInfo(GURL("http://www.bar.com/k%20a?a=b"),
                    AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
                    ASCIIToUTF16("k a")) } },
   };

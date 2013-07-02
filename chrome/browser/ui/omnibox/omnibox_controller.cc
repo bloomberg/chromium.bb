@@ -266,5 +266,5 @@ void OmniboxController::CreateAndSetInstantMatch(
 
   current_match_ = SearchProvider::CreateSearchSuggestion(
       NULL, 0, match_type, template_url, query_string, input_text,
-      AutocompleteInput(), false, 0, -1);
+      AutocompleteInput(), false, 0, -1, true);
 }

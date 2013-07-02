@@ -894,8 +894,9 @@ class SearchTermTask : public HistoryProviderTask {
         template_service->GetDefaultSearchProvider();
     if (search_engine) {
       const TemplateURLRef* search_url = &search_engine->url_ref();
-      std::string url = search_url->ReplaceSearchTerms(
-                     TemplateURLRef::SearchTermsArgs(row->search_term()));
+      TemplateURLRef::SearchTermsArgs search_terms_args(row->search_term());
+      search_terms_args.append_extra_query_params = true;
+      std::string url = search_url->ReplaceSearchTerms(search_terms_args);
       if (!url.empty()) {
         row->set_url(GURL(url));
         row->set_template_url_id(search_engine->id());

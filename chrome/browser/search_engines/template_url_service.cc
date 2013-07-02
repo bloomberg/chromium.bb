@@ -1391,7 +1391,12 @@ void TemplateURLService::Init(const Initializer* initializers,
       data.short_name = UTF8ToUTF16(initializers[i].content);
       data.SetKeyword(UTF8ToUTF16(initializers[i].keyword));
       data.SetURL(osd_url);
-      AddNoNotify(new TemplateURL(profile_, data), true);
+      TemplateURL* template_url = new TemplateURL(profile_, data);
+      AddNoNotify(template_url, true);
+
+      // Set the first provided identifier to be the default.
+      if (i == 0)
+        SetDefaultSearchProviderNoNotify(template_url);
     }
   }
 

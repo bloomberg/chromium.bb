@@ -208,6 +208,7 @@ extern const char kEventPageSuspendingTime[];
 extern const char kExplicitlyAllowedPorts[];
 extern const char kExtensionProcess[];
 extern const char kExtensionsUpdateFrequency[];
+extern const char kExtraSearchQueryParams[];
 extern const char kFakeVariationsChannel[];
 extern const char kFlagSwitchesBegin[];
 extern const char kFlagSwitchesEnd[];
