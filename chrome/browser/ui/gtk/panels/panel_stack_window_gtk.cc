@@ -220,6 +220,7 @@ void PanelStackWindowGtk::EnsureWindowCreated() {
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
   gtk_window_set_decorated(window_, false);
   gtk_window_set_resizable(window_, false);
+  gtk_window_set_focus_on_map(window_, false);
   gtk_widget_show(GTK_WIDGET(window_));
   gdk_window_move_resize(gtk_widget_get_window(GTK_WIDGET(window_)),
       panel->GetBounds().x(), panel->GetBounds().y(), 1, 1);

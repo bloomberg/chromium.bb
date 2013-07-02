@@ -907,22 +907,15 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   panel_manager->CloseAll();
 }
 
-// http://crbug.com/240459 some panel tests are flaky on Linux/GTK.
-#if defined(TOOLKIT_GTK)
-#define MAYBE_AddNewPanelToGroupWithDetachedPanelWithCollapseToFit \
-    DISABLED_AddNewPanelToGroupWithDetachedPanelWithCollapseToFit
-#else
-#define MAYBE_AddNewPanelToGroupWithDetachedPanelWithCollapseToFit \
-    AddNewPanelToGroupWithDetachedPanelWithCollapseToFit
-#endif
 IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
-    MAYBE_AddNewPanelToGroupWithDetachedPanelWithCollapseToFit) {
+                       AddNewPanelToGroupWithDetachedPanelWithCollapseToFit) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create 2 detached panels.
   // Since P2 is active, it will not get collapsed when the new panel to stack
   // with needs the space.
-  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(100, 310, 200, 200));
+  Panel* panel1 =
+      CreateInactiveDetachedPanel("1", gfx::Rect(100, 310, 200, 200));
   Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(300, 300, 150, 200));
   ASSERT_EQ(2, panel_manager->num_panels());
   ASSERT_EQ(0, panel_manager->num_stacks());
