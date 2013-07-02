@@ -46,6 +46,7 @@ namespace sync_file_system {
 
 namespace drive_backend {
 class LocalSyncDelegate;
+class RemoteSyncDelegate;
 }
 
 class SyncTaskManager;
@@ -144,6 +145,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
  private:
   friend class SyncTaskManager;
   friend class drive_backend::LocalSyncDelegate;
+  friend class drive_backend::RemoteSyncDelegate;
 
   friend class DriveFileSyncServiceFakeTest;
   friend class DriveFileSyncServiceSyncTest;
@@ -207,9 +209,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback);
 
-  void DidApplyLocalChange(const SyncStatusCallback& callback,
-                           SyncStatusCode status);
-
   void UpdateRegisteredOrigins();
 
   void StartBatchSync(const SyncStatusCallback& callback);
@@ -237,58 +236,11 @@ class DriveFileSyncService : public RemoteFileSyncService,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> feed);
 
-  // Remote synchronization related methods.
-  void DidPrepareForProcessRemoteChange(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      SyncStatusCode status,
-      const SyncFileMetadata& metadata,
-      const FileChangeList& changes);
-  void DidResolveConflictToLocalChange(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      SyncStatusCode status);
-  void DownloadForRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param);
-  void DidGetTemporaryFileForDownload(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      bool success);
-  void DidDownloadFileForRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      google_apis::GDataErrorCode error,
-      const std::string& md5_checksum,
-      int64 file_size,
-      const base::Time& updated_time);
-  void DidApplyRemoteChange(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      SyncStatusCode status);
-  void DidCleanUpForRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      bool success);
-  void DeleteMetadataForRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param);
-  void CompleteRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      SyncStatusCode status);
-  void AbortRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      SyncStatusCode status);
-  void FinalizeRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      SyncStatusCode status);
-  void HandleConflictForRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      SyncFileType remote_file_change);
-  void HandleLocalWinForRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param);
-  void ResolveConflictToLocalForRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param);
-  void HandleRemoteWinForRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      SyncFileType remote_file_type);
-  void HandleManualResolutionForRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param);
-  void StartOverRemoteSync(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      SyncStatusCode status);
+  void DidProcessRemoteChange(const SyncFileCallback& sync_callback,
+                              const SyncStatusCallback& completion_callback,
+                              SyncStatusCode status);
+  void DidApplyLocalChange(const SyncStatusCallback& callback,
+                           SyncStatusCode status);
 
   // Returns true if |pending_changes_| was updated.
   bool AppendRemoteChange(
@@ -312,6 +264,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
   void RemoveRemoteChange(const fileapi::FileSystemURL& url);
   void MaybeMarkAsIncrementalSyncOrigin(const GURL& origin);
 
+  // TODO(kinuko,tzik): Move this out of DriveFileSyncService.
   void MarkConflict(
       const fileapi::FileSystemURL& url,
       DriveMetadata* drive_metadata,
@@ -320,11 +273,6 @@ class DriveFileSyncService : public RemoteFileSyncService,
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback,
       SyncStatusCode status);
-
-  void DidGetResourceEntryForConflictResolution(
-      scoped_ptr<ProcessRemoteChangeParam> param,
-      google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::ResourceEntry> entry);
 
   // A wrapper implementation to GDataErrorCodeToSyncStatusCode which returns
   // authentication error if the user is not signed in.
@@ -385,6 +333,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
   scoped_ptr<SyncTaskManager> task_manager_;
 
   scoped_ptr<drive_backend::LocalSyncDelegate> running_local_sync_task_;
+  scoped_ptr<drive_backend::RemoteSyncDelegate> running_remote_sync_task_;
 
   // The current remote service state. This does NOT reflect the
   // sync_enabled_ flag, while GetCurrentState() DOES reflect the flag
