@@ -5,32 +5,22 @@
 #ifndef CHROME_RENDERER_PRERENDER_PRERENDER_WEBMEDIAPLAYER_H_
 #define CHROME_RENDERER_PRERENDER_PRERENDER_WEBMEDIAPLAYER_H_
 
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
+#include "base/callback.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "webkit/renderer/media/webmediaplayer_impl.h"
 
 namespace prerender {
 
-// Substitute for WebMediaPlayerImpl to be used in prerendered pages. Defers
-// the loading of the media till the prerendered page is swapped in.
-class PrerenderWebMediaPlayer
-    : public content::RenderViewObserver,
-      public webkit_media::WebMediaPlayerImpl {
+// Defers media player loading in prerendered pages until the prerendered page
+// is swapped in.
+//
+// TODO(scherkus): Rename as this class no longer inherits WebMediaPlayer.
+class PrerenderWebMediaPlayer : public content::RenderViewObserver {
  public:
-  PrerenderWebMediaPlayer(
-      content::RenderView* render_view,
-      WebKit::WebFrame* frame,
-      WebKit::WebMediaPlayerClient* client,
-      base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
-      const webkit_media::WebMediaPlayerParams& params);
+  // Will run |closure| to continue loading the media resource once the page is
+  // swapped in.
+  PrerenderWebMediaPlayer(content::RenderView* render_view,
+                          const base::Closure& closure);
   virtual ~PrerenderWebMediaPlayer();
-
-  // WebMediaPlayerImpl methods:
-  virtual void load(const WebKit::WebURL& url, CORSMode cors_mode) OVERRIDE;
-  virtual void load(const WebKit::WebURL& url,
-                    WebKit::WebMediaSource* media_source,
-                    CORSMode cors_mode) OVERRIDE;
 
  private:
   // RenderViewObserver method:
@@ -39,10 +29,7 @@ class PrerenderWebMediaPlayer
   void OnSetIsPrerendering(bool is_prerendering);
 
   bool is_prerendering_;
-  bool url_loaded_;
-  scoped_ptr<WebKit::WebURL> url_to_load_;
-  scoped_ptr<WebKit::WebMediaSource> media_source_to_load_;
-  CORSMode cors_mode_;
+  base::Closure continue_loading_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderWebMediaPlayer);
 };

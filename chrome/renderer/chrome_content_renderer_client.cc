@@ -463,22 +463,21 @@ WebPlugin* ChromeContentRendererClient::CreatePluginReplacement(
   return placeholder->plugin();
 }
 
-webkit_media::WebMediaPlayerImpl*
-ChromeContentRendererClient::OverrideCreateWebMediaPlayer(
+void ChromeContentRendererClient::DeferMediaLoad(
     content::RenderView* render_view,
-    WebKit::WebFrame* frame,
-    WebKit::WebMediaPlayerClient* client,
-    base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
-    const webkit_media::WebMediaPlayerParams& params) {
+    const base::Closure& closure) {
 #if defined(OS_ANDROID)
   // Chromium for Android doesn't support prerender yet.
-  return NULL;
+  closure.Run();
+  return;
 #else
-  if (!prerender::PrerenderHelper::IsPrerendering(render_view))
-    return NULL;
+  if (!prerender::PrerenderHelper::IsPrerendering(render_view)) {
+    closure.Run();
+    return;
+  }
 
-  return new prerender::PrerenderWebMediaPlayer(
-      render_view, frame, client, delegate, params);
+  // Lifetime is tied to |render_view| via content::RenderViewObserver.
+  new prerender::PrerenderWebMediaPlayer(render_view, closure);
 #endif
 }
 

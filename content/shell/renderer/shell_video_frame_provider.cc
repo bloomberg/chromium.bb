@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/simple_video_frame_provider.h"
+#include "content/shell/renderer/shell_video_frame_provider.h"
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "media/base/video_frame.h"
 
-namespace webkit_media {
+namespace content {
 
-SimpleVideoFrameProvider::SimpleVideoFrameProvider(
+ShellVideoFrameProvider::ShellVideoFrameProvider(
     const gfx::Size& size,
     const base::TimeDelta& frame_duration,
     const base::Closure& error_cb,
@@ -24,39 +24,39 @@ SimpleVideoFrameProvider::SimpleVideoFrameProvider(
       repaint_cb_(repaint_cb) {
 }
 
-SimpleVideoFrameProvider::~SimpleVideoFrameProvider() {}
+ShellVideoFrameProvider::~ShellVideoFrameProvider() {}
 
-void SimpleVideoFrameProvider::Start() {
-  DVLOG(1) << "SimpleVideoFrameProvider::Start";
+void ShellVideoFrameProvider::Start() {
+  DVLOG(1) << "ShellVideoFrameProvider::Start";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   state_ = kStarted;
   message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&SimpleVideoFrameProvider::GenerateFrame, this));
+      base::Bind(&ShellVideoFrameProvider::GenerateFrame, this));
 }
 
-void SimpleVideoFrameProvider::Stop() {
-  DVLOG(1) << "SimpleVideoFrameProvider::Stop";
+void ShellVideoFrameProvider::Stop() {
+  DVLOG(1) << "ShellVideoFrameProvider::Stop";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   state_ = kStopped;
 }
 
-void SimpleVideoFrameProvider::Play() {
-  DVLOG(1) << "SimpleVideoFrameProvider::Play";
+void ShellVideoFrameProvider::Play() {
+  DVLOG(1) << "ShellVideoFrameProvider::Play";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (state_ == kPaused)
     state_ = kStarted;
 }
 
-void SimpleVideoFrameProvider::Pause() {
-  DVLOG(1) << "SimpleVideoFrameProvider::Pause";
+void ShellVideoFrameProvider::Pause() {
+  DVLOG(1) << "ShellVideoFrameProvider::Pause";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (state_ == kStarted)
     state_ = kPaused;
 }
 
-void SimpleVideoFrameProvider::GenerateFrame() {
-  DVLOG(1) << "SimpleVideoFrameProvider::GenerateFrame";
+void ShellVideoFrameProvider::GenerateFrame() {
+  DVLOG(1) << "ShellVideoFrameProvider::GenerateFrame";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (state_ == kStopped)
     return;
@@ -76,8 +76,8 @@ void SimpleVideoFrameProvider::GenerateFrame() {
   current_time_ += frame_duration_;
   message_loop_proxy_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&SimpleVideoFrameProvider::GenerateFrame, this),
+      base::Bind(&ShellVideoFrameProvider::GenerateFrame, this),
       frame_duration_);
 }
 
-}  // namespace webkit_media
+}  // namespace content

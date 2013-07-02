@@ -27,6 +27,7 @@ class WebMediaPlayerParams {
   // all others may be null.
   WebMediaPlayerParams(
       const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
+      const base::Callback<void(const base::Closure&)>& defer_load_cb,
       const scoped_refptr<media::AudioRendererSink>& audio_renderer_sink,
       const scoped_refptr<media::GpuVideoDecoder::Factories>& gpu_factories,
       const scoped_refptr<media::MediaLog>& media_log);
@@ -34,6 +35,10 @@ class WebMediaPlayerParams {
 
   const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy() const {
     return message_loop_proxy_;
+  }
+
+  base::Callback<void(const base::Closure&)> defer_load_cb() const {
+    return defer_load_cb_;
   }
 
   const scoped_refptr<media::AudioRendererSink>& audio_renderer_sink() const {
@@ -51,6 +56,7 @@ class WebMediaPlayerParams {
 
  private:
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  base::Callback<void(const base::Closure&)> defer_load_cb_;
   scoped_refptr<media::AudioRendererSink> audio_renderer_sink_;
   scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories_;
   scoped_refptr<media::MediaLog> media_log_;

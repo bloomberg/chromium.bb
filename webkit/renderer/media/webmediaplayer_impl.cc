@@ -139,6 +139,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       pending_seek_seconds_(0.0f),
       client_(client),
       delegate_(delegate),
+      defer_load_cb_(params.defer_load_cb()),
       media_log_(params.media_log()),
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
@@ -242,37 +243,26 @@ URLSchemeForHistogram URLScheme(const GURL& url) {
 }  // anonymous namespace
 
 void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  LoadSetup(url);
-
-  // Otherwise it's a regular request which requires resolving the URL first.
-  GURL gurl(url);
-  data_source_.reset(new BufferedDataSource(
-      main_loop_,
-      frame_,
-      media_log_.get(),
-      base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
-  data_source_->Initialize(
-      url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
-      base::Bind(
-          &WebMediaPlayerImpl::DataSourceInitialized,
-          AsWeakPtr(), gurl));
-
-  is_local_source_ = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
+  load(url, NULL, cors_mode);
 }
 
 void WebMediaPlayerImpl::load(const WebKit::WebURL& url,
                               WebKit::WebMediaSource* media_source,
                               CORSMode cors_mode) {
-  LoadSetup(url);
-
-  // Media source pipelines can start immediately.
-  supports_save_ = false;
-  StartPipeline(media_source);
+  if (!defer_load_cb_.is_null()) {
+    defer_load_cb_.Run(base::Bind(
+        &WebMediaPlayerImpl::DoLoad, AsWeakPtr(), url, media_source,
+        cors_mode));
+    return;
+  }
+  DoLoad(url, media_source, cors_mode);
 }
 
-void WebMediaPlayerImpl::LoadSetup(const WebKit::WebURL& url) {
+void WebMediaPlayerImpl::DoLoad(const WebKit::WebURL& url,
+                                WebKit::WebMediaSource* media_source,
+                                CORSMode cors_mode) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+
   GURL gurl(url);
   UMA_HISTOGRAM_ENUMERATION("Media.URLScheme", URLScheme(gurl), kMaxURLScheme);
 
@@ -286,6 +276,27 @@ void WebMediaPlayerImpl::LoadSetup(const WebKit::WebURL& url) {
   SetNetworkState(WebMediaPlayer::NetworkStateLoading);
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
+
+  // Media source pipelines can start immediately.
+  if (media_source) {
+    supports_save_ = false;
+    StartPipeline(media_source);
+    return;
+  }
+
+  // Otherwise it's a regular request which requires resolving the URL first.
+  data_source_.reset(new BufferedDataSource(
+      main_loop_,
+      frame_,
+      media_log_.get(),
+      base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
+  data_source_->Initialize(
+      url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
+      base::Bind(
+          &WebMediaPlayerImpl::DataSourceInitialized,
+          AsWeakPtr(), gurl));
+
+  is_local_source_ = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
 }
 
 void WebMediaPlayerImpl::play() {

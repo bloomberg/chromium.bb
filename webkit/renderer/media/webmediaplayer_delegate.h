@@ -17,13 +17,13 @@ class WebMediaPlayerDelegate {
   WebMediaPlayerDelegate() {}
 
   // The specified player started playing media.
-  virtual void DidPlay(WebKit::WebMediaPlayer* player) {}
+  virtual void DidPlay(WebKit::WebMediaPlayer* player) = 0;
 
   // The specified player stopped playing media.
-  virtual void DidPause(WebKit::WebMediaPlayer* player) {}
+  virtual void DidPause(WebKit::WebMediaPlayer* player) = 0;
 
   // The specified player was destroyed. Do not call any methods on it.
-  virtual void PlayerGone(WebKit::WebMediaPlayer* player) {}
+  virtual void PlayerGone(WebKit::WebMediaPlayer* player) = 0;
 
  protected:
   virtual ~WebMediaPlayerDelegate() {}

@@ -12,6 +12,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/shell/renderer/shell_media_stream_client.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/shell/renderer/webkit_test_runner.h"
@@ -143,6 +144,13 @@ ShellContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
 #else
   return NULL;
 #endif
+}
+
+webkit_media::MediaStreamClient*
+ShellContentRendererClient::OverrideCreateMediaStreamClient() {
+  if (!shell_media_stream_client_)
+    shell_media_stream_client_.reset(new ShellMediaStreamClient());
+  return shell_media_stream_client_.get();
 }
 
 WebMIDIAccessor*

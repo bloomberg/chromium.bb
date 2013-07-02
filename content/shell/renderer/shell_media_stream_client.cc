@@ -4,13 +4,13 @@
 
 #include "content/shell/renderer/shell_media_stream_client.h"
 
+#include "content/shell/renderer/shell_video_frame_provider.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "webkit/renderer/media/media_stream_audio_renderer.h"
-#include "webkit/renderer/media/simple_video_frame_provider.h"
 
 using namespace WebKit;
 
@@ -54,7 +54,7 @@ ShellMediaStreamClient::GetVideoFrameProvider(
   if (!IsMockMediaStreamWithVideo(url))
     return NULL;
 
-  return new webkit_media::SimpleVideoFrameProvider(
+  return new ShellVideoFrameProvider(
       gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
       base::TimeDelta::FromMilliseconds(kVideoCaptureFrameDurationMs),
       error_cb,

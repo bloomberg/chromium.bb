@@ -95,6 +95,8 @@
         'shell/renderer/shell_render_process_observer.h',
         'shell/renderer/shell_render_view_observer.cc',
         'shell/renderer/shell_render_view_observer.h',
+        'shell/renderer/shell_video_frame_provider.cc',
+        'shell/renderer/shell_video_frame_provider.h',
         'shell/renderer/webkit_test_runner.cc',
         'shell/renderer/webkit_test_runner.h',
         'shell/shell.cc',

@@ -62,8 +62,6 @@
         'media_stream_audio_renderer.h',
         'media_stream_client.h',
         'preload.h',
-        'simple_video_frame_provider.cc',
-        'simple_video_frame_provider.h',
         'texttrack_impl.cc',
         'texttrack_impl.h',
         'video_frame_provider.cc',

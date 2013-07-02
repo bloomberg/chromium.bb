@@ -515,9 +515,12 @@ void WebKitTestRunner::captureHistoryForWindow(
   history->swap(result);
 }
 
+// TODO(scherkus): Remove once https://codereview.chromium.org/18130006
+// rolls into Chromium.
 WebMediaPlayer* WebKitTestRunner::createWebMediaPlayer(
-    WebFrame* frame, const WebURL& url, WebMediaPlayerClient* client)
-{
+    WebFrame* frame,
+    const WebURL& url,
+    WebMediaPlayerClient* client) {
   if (!shell_media_stream_client_) {
     shell_media_stream_client_.reset(new ShellMediaStreamClient());
   }
@@ -534,10 +537,12 @@ WebMediaPlayer* WebKitTestRunner::createWebMediaPlayer(
 #if defined(OS_ANDROID)
   return NULL;
 #else
-  // TODO(scherkus): Use RenderViewImpl::createMediaPlayer() instead of
-  // duplicating code here, see http://crbug.com/239826
   webkit_media::WebMediaPlayerParams params(
-      GetMediaThreadMessageLoopProxy(), NULL, NULL, new media::MediaLog());
+      GetMediaThreadMessageLoopProxy(),
+      base::Callback<void(const base::Closure&)>(),
+      NULL,
+      NULL,
+      new media::MediaLog());
   return new webkit_media::WebMediaPlayerImpl(
       frame,
       client,

@@ -2852,7 +2852,14 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 #if defined(ENABLE_WEBRTC) && !defined(GOOGLE_TV)
-  if (MediaStreamImpl::CheckMediaStream(url)) {
+  webkit_media::MediaStreamClient* media_stream_client =
+      GetContentClient()->renderer()->OverrideCreateMediaStreamClient();
+  if (!media_stream_client) {
+    EnsureMediaStreamImpl();
+    media_stream_client = media_stream_impl_;
+  }
+
+  if (media_stream_client->IsMediaStream(url)) {
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
     bool found_neon =
         (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
@@ -2860,7 +2867,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 #endif  // defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
     EnsureMediaStreamImpl();
     return new webkit_media::WebMediaPlayerMS(
-        frame, client, AsWeakPtr(), media_stream_impl_, new RenderMediaLog());
+        frame, client, AsWeakPtr(), media_stream_client, new RenderMediaLog());
   }
 #endif
 
@@ -2940,15 +2947,14 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 
   webkit_media::WebMediaPlayerParams params(
       RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
-      sink, gpu_factories, new RenderMediaLog());
-  WebMediaPlayer* media_player =
-      GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(
-          this, frame, client, AsWeakPtr(), params);
-  if (!media_player) {
-    media_player = new webkit_media::WebMediaPlayerImpl(
-        frame, client, AsWeakPtr(), params);
-  }
-  return media_player;
+      base::Bind(&ContentRendererClient::DeferMediaLoad,
+                 base::Unretained(GetContentClient()->renderer()),
+                 static_cast<RenderView*>(this)),
+      sink,
+      gpu_factories,
+      new RenderMediaLog());
+  return new webkit_media::WebMediaPlayerImpl(
+      frame, client, AsWeakPtr(), params);
 }
 
 WebApplicationCacheHost* RenderViewImpl::createApplicationCacheHost(

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_SIMPLE_VIDEO_FRAME_PROVIDER_H_
-#define WEBKIT_RENDERER_MEDIA_SIMPLE_VIDEO_FRAME_PROVIDER_H_
+#ifndef CONTENT_RENDERER_MEDIA_SHELL_VIDEO_FRAME_PROVIDER_H_
+#define CONTENT_RENDERER_MEDIA_SHELL_VIDEO_FRAME_PROVIDER_H_
 
 #include "base/time/time.h"
 #include "ui/gfx/size.h"
@@ -13,29 +13,29 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace webkit_media {
+namespace content {
 
 // A simple implementation of VideoFrameProvider generates raw frames and
 // passes them to webmediaplayer.
 // Since non-black pixel values are required in the layout test, e.g.,
 // media/video-capture-canvas.html, this class should generate frame with
 // only non-black pixels.
-class SimpleVideoFrameProvider : public VideoFrameProvider {
+class ShellVideoFrameProvider : public webkit_media::VideoFrameProvider {
  public:
-  SimpleVideoFrameProvider(
+  ShellVideoFrameProvider(
       const gfx::Size& size,
       const base::TimeDelta& frame_duration,
       const base::Closure& error_cb,
       const RepaintCB& repaint_cb);
 
-  // VideoFrameProvider implementation.
+  // webkit_media::VideoFrameProvider implementation.
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void Play() OVERRIDE;
   virtual void Pause() OVERRIDE;
 
  protected:
-  virtual ~SimpleVideoFrameProvider();
+  virtual ~ShellVideoFrameProvider();
 
  private:
   enum State {
@@ -55,9 +55,9 @@ class SimpleVideoFrameProvider : public VideoFrameProvider {
   base::Closure error_cb_;
   RepaintCB repaint_cb_;
 
-  DISALLOW_COPY_AND_ASSIGN(SimpleVideoFrameProvider);
+  DISALLOW_COPY_AND_ASSIGN(ShellVideoFrameProvider);
 };
 
-}  // namespace webkit_media
+}  // namespace content
 
-#endif  // WEBKIT_RENDERER_MEDIA_SIMPLE_VIDEO_FRAME_PROVIDER_H_
+#endif  // CONTENT_RENDERER_MEDIA_SHELL_VIDEO_FRAME_PROVIDER_H_

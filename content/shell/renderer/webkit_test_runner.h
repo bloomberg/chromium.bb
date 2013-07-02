@@ -94,6 +94,9 @@ class WebKitTestRunner : public RenderViewObserver,
       WebTestRunner::WebTestProxyBase* proxy,
       WebKit::WebVector<WebKit::WebHistoryItem>* history,
       size_t* currentEntryIndex);
+
+  // TODO(scherkus): Remove once https://codereview.chromium.org/18130006
+  // rolls into Chromium.
   virtual WebKit::WebMediaPlayer* createWebMediaPlayer(
       WebKit::WebFrame* frame,
       const WebKit::WebURL& url,
@@ -134,6 +137,8 @@ class WebKitTestRunner : public RenderViewObserver,
 
   bool focus_on_next_commit_;
 
+  // TODO(scherkus): Remove this after switching to using
+  // RenderViewImpl::createMediaPlayer() http://crbug.com/239826
   scoped_ptr<ShellMediaStreamClient> shell_media_stream_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);

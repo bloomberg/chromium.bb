@@ -202,11 +202,6 @@ WebKit::WebMediaStream MediaStreamImpl::GetMediaStream(
 }
 
 bool MediaStreamImpl::IsMediaStream(const GURL& url) {
-  return CheckMediaStream(url);
-}
-
-// static
-bool MediaStreamImpl::CheckMediaStream(const GURL& url) {
   WebKit::WebMediaStream descriptor(
       WebKit::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
 

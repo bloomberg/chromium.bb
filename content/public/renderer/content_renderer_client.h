@@ -31,7 +31,6 @@ class WebFrame;
 class WebHyphenator;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
-class WebMediaPlayerClient;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebPlugin;
@@ -55,9 +54,8 @@ struct WebPluginInfo;
 }
 
 namespace webkit_media {
-class WebMediaPlayerDelegate;
-class WebMediaPlayerImpl;
-class WebMediaPlayerParams;
+class MediaLoadDelegate;
+class MediaStreamClient;
 }
 
 namespace content {
@@ -126,14 +124,11 @@ class CONTENT_EXPORT ContentRendererClient {
       std::string* error_html,
       string16* error_description) {}
 
-  // Allows embedder to override creating a WebMediaPlayerImpl. If it returns
-  // NULL the content layer will create the media player.
-  virtual webkit_media::WebMediaPlayerImpl* OverrideCreateWebMediaPlayer(
-      RenderView* render_view,
-      WebKit::WebFrame* frame,
-      WebKit::WebMediaPlayerClient* client,
-      base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
-      const webkit_media::WebMediaPlayerParams& params);
+  // Allows the embedder to control when media resources are loaded. Embedders
+  // can run |closure| immediately if they don't wish to defer media resource
+  // loading.
+  virtual void DeferMediaLoad(RenderView* render_view,
+                              const base::Closure& closure);
 
   // Allows the embedder to override creating a WebMediaStreamCenter. If it
   // returns NULL the content layer will create the stream center.
@@ -145,6 +140,10 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual WebKit::WebRTCPeerConnectionHandler*
   OverrideCreateWebRTCPeerConnectionHandler(
       WebKit::WebRTCPeerConnectionHandlerClient* client);
+
+  // Allows the embedder to override creating a MediaStreamClient. If it returns
+  // NULL the content layer will create the media stream client.
+  virtual webkit_media::MediaStreamClient* OverrideCreateMediaStreamClient();
 
   // Allows the embedder to override creating a WebMIDIAccessor.  If it
   // returns NULL the content layer will create the MIDI accessor.
