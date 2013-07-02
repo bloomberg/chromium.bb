@@ -83,12 +83,12 @@
 
 namespace WebCore {
 
-const int DragController::LinkDragBorderInset = 2;
-const int DragController::MaxOriginalImageArea = 1500 * 1500;
 const int DragController::DragIconRightInset = 7;
 const int DragController::DragIconBottomInset = 3;
 
-const float DragController::DragImageAlpha = 0.75f;
+static const int MaxOriginalImageArea = 1500 * 1500;
+static const int LinkDragBorderInset = 2;
+static const float DragImageAlpha = 0.75f;
 
 static PlatformMouseEvent createMouseEvent(DragData* dragData)
 {
@@ -687,27 +687,6 @@ static void prepareClipboardForImageDrag(Frame* source, Clipboard* clipboard, El
     clipboard->declareAndWriteDragImage(node, !linkURL.isEmpty() ? linkURL : imageURL, label, source);
 }
 
-static IntPoint dragLocForDHTMLDrag(const IntPoint& mouseDraggedPoint, const IntPoint& dragOrigin, const IntPoint& dragImageOffset, bool isLinkImage)
-{
-    // dragImageOffset is the cursor position relative to the lower-left corner of the image.
-    const int yOffset = -dragImageOffset.y();
-
-    if (isLinkImage)
-        return IntPoint(mouseDraggedPoint.x() - dragImageOffset.x(), mouseDraggedPoint.y() + yOffset);
-
-    return IntPoint(dragOrigin.x() - dragImageOffset.x(), dragOrigin.y() + yOffset);
-}
-
-static IntPoint dragLocForSelectionDrag(Frame* src)
-{
-    IntRect draggingRect = enclosingIntRect(src->selection()->bounds());
-    int xpos = draggingRect.maxX();
-    xpos = draggingRect.x() < xpos ? draggingRect.x() : xpos;
-    int ypos = draggingRect.maxY();
-    ypos = draggingRect.y() < ypos ? draggingRect.y() : ypos;
-    return IntPoint(xpos, ypos);
-}
-
 bool DragController::populateDragClipboard(Frame* src, const DragState& state, const IntPoint& dragOrigin)
 {
     ASSERT(src);
@@ -731,7 +710,6 @@ bool DragController::populateDragClipboard(Frame* src, const DragState& state, c
 
     Node* node = state.m_dragSrc.get();
 
-    Image* image = node->isElementNode() ? getImage(toElement(node)) : 0;
     if (state.m_dragType == DragSourceActionSelection) {
         if (enclosingTextFormControl(src->selection()->start())) {
             clipboard->writePlainText(src->editor()->selectedTextForClipboard());
@@ -742,10 +720,7 @@ bool DragController::populateDragClipboard(Frame* src, const DragState& state, c
             clipboard->writeRange(selectionRange.get(), src);
         }
     } else if ((m_dragSourceAction & DragSourceActionImage)
-        && !imageURL.isEmpty() && node && node->isElementNode() && image && !image->isNull()) {
-        // We shouldn't be starting a drag for an image that can't provide an extension.
-        // This is an early detection for problems encountered later upon drop.
-        ASSERT(!image->filenameExtension().isEmpty());
+        && !imageURL.isEmpty() && node && node->isElementNode()) {
         Element* element = toElement(node);
         prepareClipboardForImageDrag(src, clipboard, element, linkURL, imageURL, hitTestResult.altDisplayString());
     } else if ((m_dragSourceAction & DragSourceActionLink) && !linkURL.isEmpty()) {
@@ -755,6 +730,79 @@ bool DragController::populateDragClipboard(Frame* src, const DragState& state, c
     }
     // FIXME: For DHTML/draggable element drags, write element markup to clipboard.
     return true;
+}
+
+static IntPoint dragLocationForDHTMLDrag(const IntPoint& mouseDraggedPoint, const IntPoint& dragOrigin, const IntPoint& dragImageOffset, bool isLinkImage)
+{
+    // dragImageOffset is the cursor position relative to the lower-left corner of the image.
+    const int yOffset = -dragImageOffset.y();
+
+    if (isLinkImage)
+        return IntPoint(mouseDraggedPoint.x() - dragImageOffset.x(), mouseDraggedPoint.y() + yOffset);
+
+    return IntPoint(dragOrigin.x() - dragImageOffset.x(), dragOrigin.y() + yOffset);
+}
+
+static IntPoint dragLocationForSelectionDrag(Frame* sourceFrame)
+{
+    IntRect draggingRect = enclosingIntRect(sourceFrame->selection()->bounds());
+    int xpos = draggingRect.maxX();
+    xpos = draggingRect.x() < xpos ? draggingRect.x() : xpos;
+    int ypos = draggingRect.maxY();
+    ypos = draggingRect.y() < ypos ? draggingRect.y() : ypos;
+    return IntPoint(xpos, ypos);
+}
+
+static const IntSize& maxDragImageSize()
+{
+#if OS(DARWIN)
+    // Match Safari's drag image size.
+    static const IntSize maxDragImageSize(400, 400);
+#else
+    static const IntSize maxDragImageSize(200, 200);
+#endif
+    return maxDragImageSize;
+}
+
+static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, const IntPoint& dragOrigin, const IntRect& imageRect, IntPoint& dragImageOffset)
+{
+    OwnPtr<DragImage> dragImage;
+    IntPoint origin;
+
+    if (image->size().height() * image->size().width() <= MaxOriginalImageArea
+        && (dragImage = DragImage::create(image, element->renderer() ? element->renderer()->shouldRespectImageOrientation() : DoNotRespectImageOrientation))) {
+        IntSize originalSize = imageRect.size();
+        origin = imageRect.location();
+
+        dragImage->fitToMaxSize(imageRect.size(), maxDragImageSize());
+        dragImage->dissolveToFraction(DragImageAlpha);
+        IntSize newSize = dragImage->size();
+
+        // Properly orient the drag image and orient it differently if it's smaller than the original
+        float scale = newSize.width() / (float)originalSize.width();
+        float dx = origin.x() - dragOrigin.x();
+        dx *= scale;
+        origin.setX((int)(dx + 0.5));
+        float dy = origin.y() - dragOrigin.y();
+        dy *= scale;
+        origin.setY((int)(dy + 0.5));
+    }
+
+    dragImageOffset = dragOrigin + origin;
+    return dragImage.release();
+}
+
+static PassOwnPtr<DragImage> dragImageForLink(const KURL& linkURL, const String& linkText, float deviceScaleFactor, const IntPoint& mouseDraggedPoint, IntPoint& dragLoc, IntPoint& dragImageOffset)
+{
+    FontDescription fontDescription;
+    RenderTheme::defaultTheme()->systemFont(WebCore::CSSValueNone, fontDescription);
+    OwnPtr<DragImage> dragImage = DragImage::create(linkURL, linkText, fontDescription, deviceScaleFactor);
+
+    IntSize size = dragImage ? dragImage->size() : IntSize();
+    dragImageOffset = IntPoint(-size.width() / 2, -LinkDragBorderInset);
+    dragLoc = IntPoint(mouseDraggedPoint.x() + dragImageOffset.x(), mouseDraggedPoint.y() + dragImageOffset.y());
+
+    return dragImage.release();
 }
 
 bool DragController::startDrag(Frame* src, const DragState& state, DragOperation srcOp, const PlatformMouseEvent& dragEvent, const IntPoint& dragOrigin)
@@ -780,11 +828,11 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
 
     OwnPtr<DragImage> dragImage;
     IntPoint dragLoc(0, 0);
-    IntPoint dragImageOffset(0, 0);
+    m_dragOffset = IntPoint();
 
     Clipboard* clipboard = state.m_dragClipboard.get();
     if (state.m_dragType == DragSourceActionDHTML)
-        dragImage = clipboard->createDragImage(dragImageOffset);
+        dragImage = clipboard->createDragImage(m_dragOffset);
     if (state.m_dragType == DragSourceActionSelection || !imageURL.isEmpty() || !linkURL.isEmpty())
         // Selection, image, and link drags receive a default set of allowed drag operations that
         // follows from:
@@ -794,11 +842,8 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
     // We allow DHTML/JS to set the drag image, even if its a link, image or text we're dragging.
     // This is in the spirit of the IE API, which allows overriding of pasteboard data and DragOp.
     if (dragImage) {
-        dragLoc = dragLocForDHTMLDrag(mouseDraggedPoint, dragOrigin, dragImageOffset, !linkURL.isEmpty());
-        m_dragOffset = dragImageOffset;
+        dragLoc = dragLocationForDHTMLDrag(mouseDraggedPoint, dragOrigin, m_dragOffset, !linkURL.isEmpty());
     }
-
-    bool startedDrag = true; // optimism - we almost always manage to start the drag
 
     Node* node = state.m_dragSrc.get();
 
@@ -807,20 +852,25 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
             dragImage = src->dragImageForSelection();
             if (dragImage)
                 dragImage->dissolveToFraction(DragImageAlpha);
-            dragLoc = dragLocForSelectionDrag(src);
+            dragLoc = dragLocationForSelectionDrag(src);
             m_dragOffset = IntPoint(dragOrigin.x() - dragLoc.x(), dragOrigin.y() - dragLoc.y());
         }
         doSystemDrag(dragImage.get(), dragLoc, dragOrigin, clipboard, src, false);
     } else if ((m_dragSourceAction & DragSourceActionImage)
         && !imageURL.isEmpty() && node && node->isElementNode()) {
         Element* element = toElement(node);
+        Image* image = getImage(element);
+        if (!image || image->isNull())
+            return false;
+        // We shouldn't be starting a drag for an image that can't provide an extension.
+        // This is an early detection for problems encountered later upon drop.
+        ASSERT(!image->filenameExtension().isEmpty());
         m_draggingImageURL = imageURL;
         if (!dragImage) {
-            doImageDrag(element, dragOrigin, hitTestResult.imageRect(), clipboard, src, m_dragOffset);
-        } else {
-            // DHTML defined drag image
-            doSystemDrag(dragImage.get(), dragLoc, dragOrigin, clipboard, src, false);
+            dragImage = dragImageForImage(element, image, dragOrigin, hitTestResult.imageRect(), m_dragOffset);
+            dragLoc = m_dragOffset;
         }
+        doSystemDrag(dragImage.get(), dragLoc, dragOrigin, clipboard, src, false);
     } else if ((m_dragSourceAction & DragSourceActionLink) && !linkURL.isEmpty()) {
         if (src->selection()->isCaret() && src->selection()->isContentEditable()) {
             // a user can initiate a drag on a link without having any text
@@ -833,59 +883,23 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
         }
 
         if (!dragImage) {
-            FontDescription fontDescription;
-            RenderTheme::defaultTheme()->systemFont(WebCore::CSSValueNone, fontDescription);
-            float deviceScaleFactor = src->page() ? src->page()->deviceScaleFactor() : 1;
-            dragImage = DragImage::create(linkURL, hitTestResult.textContent(), fontDescription, deviceScaleFactor);
-            IntSize size = dragImage ? dragImage->size() : IntSize();
-            m_dragOffset = IntPoint(-size.width() / 2, -LinkDragBorderInset);
-            dragLoc = IntPoint(mouseDraggedPoint.x() + m_dragOffset.x(), mouseDraggedPoint.y() + m_dragOffset.y());
+            ASSERT(src->page());
+            float deviceScaleFactor = src->page()->deviceScaleFactor();
+            dragImage = dragImageForLink(linkURL, hitTestResult.textContent(), deviceScaleFactor, mouseDraggedPoint, dragLoc, m_dragOffset);
         }
         doSystemDrag(dragImage.get(), dragLoc, mouseDraggedPoint, clipboard, src, true);
     } else if (state.m_dragType == DragSourceActionDHTML) {
-        if (dragImage) {
-            ASSERT(m_dragSourceAction & DragSourceActionDHTML);
-            doSystemDrag(dragImage.get(), dragLoc, dragOrigin, clipboard, src, false);
-        } else {
-            startedDrag = false;
-        }
+        if (!dragImage)
+            return false;
+        ASSERT(m_dragSourceAction & DragSourceActionDHTML);
+        doSystemDrag(dragImage.get(), dragLoc, dragOrigin, clipboard, src, false);
     } else {
         // draggableNode() determined an image or link node was draggable, but it turns out the
         // image or link had no URL, so there is nothing to drag.
-        startedDrag = false;
+        return false;
     }
 
-    return startedDrag;
-}
-
-void DragController::doImageDrag(Element* element, const IntPoint& dragOrigin, const IntRect& rect, Clipboard* clipboard, Frame* frame, IntPoint& dragImageOffset)
-{
-    IntPoint mouseDownPoint = dragOrigin;
-    OwnPtr<DragImage> dragImage;
-    IntPoint origin;
-
-    Image* image = getImage(element);
-    if (image && image->size().height() * image->size().width() <= MaxOriginalImageArea
-        && (dragImage = DragImage::create(image, element->renderer() ? element->renderer()->shouldRespectImageOrientation() : DoNotRespectImageOrientation))) {
-        IntSize originalSize = rect.size();
-        origin = rect.location();
-
-        dragImage->fitToMaxSize(rect.size(), maxDragImageSize());
-        dragImage->dissolveToFraction(DragImageAlpha);
-        IntSize newSize = dragImage->size();
-
-        // Properly orient the drag image and orient it differently if it's smaller than the original
-        float scale = newSize.width() / (float)originalSize.width();
-        float dx = origin.x() - mouseDownPoint.x();
-        dx *= scale;
-        origin.setX((int)(dx + 0.5));
-        float dy = origin.y() - mouseDownPoint.y();
-        dy *= scale;
-        origin.setY((int)(dy + 0.5));
-    }
-
-    dragImageOffset = mouseDownPoint + origin;
-    doSystemDrag(dragImage.get(), dragImageOffset, dragOrigin, clipboard, frame, false);
+    return true;
 }
 
 void DragController::doSystemDrag(DragImage* image, const IntPoint& dragLoc, const IntPoint& eventPos, Clipboard* clipboard, Frame* frame, bool forLink)
@@ -937,17 +951,6 @@ bool DragController::isCopyKeyDown(DragData*)
 #else
     return false;
 #endif
-}
-
-const IntSize& DragController::maxDragImageSize()
-{
-#if OS(DARWIN)
-    // Match Safari's drag image size.
-    static const IntSize maxDragImageSize(400, 400);
-#else
-    static const IntSize maxDragImageSize(200, 200);
-#endif
-    return maxDragImageSize;
 }
 
 void DragController::cleanupAfterSystemDrag()
