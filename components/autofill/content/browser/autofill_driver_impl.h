@@ -49,6 +49,8 @@ class AutofillDriverImpl : public AutofillDriver,
   virtual bool RendererIsAvailable() OVERRIDE;
   virtual void SendFormDataToRenderer(int query_id,
                                       const FormData& data) OVERRIDE;
+  virtual void SendAutofillTypePredictionsToRenderer(
+      const std::vector<FormStructure*>& forms) OVERRIDE;
 
   AutofillExternalDelegate* autofill_external_delegate() {
     return autofill_external_delegate_.get();

@@ -4,10 +4,13 @@
 
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 
+#include "base/command_line.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "components/autofill/core/common/autofill_messages.h"
+#include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
@@ -93,6 +96,23 @@ void AutofillDriverImpl::SendFormDataToRenderer(int query_id,
   content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   host->Send(
       new AutofillMsg_FormDataFilled(host->GetRoutingID(), query_id, data));
+}
+
+void AutofillDriverImpl::SendAutofillTypePredictionsToRenderer(
+    const std::vector<FormStructure*>& forms) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kShowAutofillTypePredictions))
+    return;
+
+  content::RenderViewHost* host = GetWebContents()->GetRenderViewHost();
+  if (!host)
+    return;
+
+  std::vector<FormDataPredictions> type_predictions;
+  FormStructure::GetFieldTypePredictions(forms, &type_predictions);
+  host->Send(
+      new AutofillMsg_FieldTypePredictionsAvailable(host->GetRoutingID(),
+                                                    type_predictions));
 }
 
 bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {

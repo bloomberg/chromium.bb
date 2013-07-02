@@ -27,6 +27,10 @@ struct FormDataPredictions {
   FormDataPredictions();
   FormDataPredictions(const FormDataPredictions& other);
   ~FormDataPredictions();
+
+  // Added for the sake of testing.
+  bool operator==(const FormDataPredictions& predictions) const;
+  bool operator!=(const FormDataPredictions& predictions) const;
 };
 
 }  // namespace autofill

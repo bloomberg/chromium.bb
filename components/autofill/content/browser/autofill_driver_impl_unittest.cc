@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
@@ -13,6 +14,8 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "components/autofill/core/common/autofill_messages.h"
+#include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/form_data_predictions.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -100,6 +103,28 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
     return true;
   }
 
+  // Searches for an |AutofillMsg_FieldTypePredictionsAvailable| message in the
+  // queue of sent IPC messages. If none is present, returns false. Otherwise,
+  // extracts the first |AutofillMsg_FieldTypePredictionsAvailable| message,
+  // fills the output parameter with the values of the message's parameter, and
+  // clears the queue of sent messages.
+  bool GetFieldTypePredictionsAvailable(
+      std::vector<FormDataPredictions>* predictions) {
+    const uint32 kMsgID = AutofillMsg_FieldTypePredictionsAvailable::ID;
+    const IPC::Message* message =
+        process()->sink().GetFirstMessageMatching(kMsgID);
+    if (!message)
+      return false;
+    Tuple1<std::vector<FormDataPredictions> > autofill_param;
+    AutofillMsg_FieldTypePredictionsAvailable::Read(message, &autofill_param);
+    if (predictions)
+      *predictions = autofill_param.a;
+
+    process()->sink().ClearMessages();
+    return true;
+  }
+
+
   scoped_ptr<TestAutofillManagerDelegate> test_manager_delegate_;
   scoped_ptr<TestAutofillDriverImpl> driver_;
 };
@@ -135,6 +160,32 @@ TEST_F(AutofillDriverImplTest, FormDataSentToRenderer) {
                                                &output_form_data));
   EXPECT_EQ(input_page_id, output_page_id);
   EXPECT_EQ(input_form_data, output_form_data);
+}
+
+TEST_F(AutofillDriverImplTest, TypePredictionsNotSentToRendererWhenDisabled) {
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  FormStructure form_structure(form, std::string());
+  std::vector<FormStructure*> forms(1, &form_structure);
+  driver_->SendAutofillTypePredictionsToRenderer(forms);
+  EXPECT_FALSE(GetFieldTypePredictionsAvailable(NULL));
+}
+
+TEST_F(AutofillDriverImplTest, TypePredictionsSentToRendererWhenEnabled) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kShowAutofillTypePredictions);
+
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  FormStructure form_structure(form, std::string());
+  std::vector<FormStructure*> forms(1, &form_structure);
+  std::vector<FormDataPredictions> expected_type_predictions;
+  FormStructure::GetFieldTypePredictions(forms, &expected_type_predictions);
+  driver_->SendAutofillTypePredictionsToRenderer(forms);
+
+  std::vector<FormDataPredictions> output_type_predictions;
+  EXPECT_TRUE(GetFieldTypePredictionsAvailable(&output_type_predictions));
+  EXPECT_EQ(expected_type_predictions, output_type_predictions);
 }
 
 }  // namespace autofill

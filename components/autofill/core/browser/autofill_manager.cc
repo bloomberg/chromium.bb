@@ -776,7 +776,7 @@ void AutofillManager::OnLoadedServerPredictions(
 #endif  // #if defined(TOOLKIT_VIEWS)
 
   // If the corresponding flag is set, annotate forms with the predicted types.
-  SendAutofillTypePredictions(form_structures_.get());
+  driver_->SendAutofillTypePredictionsToRenderer(form_structures_.get());
 }
 
 void AutofillManager::OnDidEndTextFieldEditing() {
@@ -801,23 +801,6 @@ std::string AutofillManager::GetAutocheckoutURLPrefix() const {
 
 bool AutofillManager::IsAutofillEnabled() const {
   return manager_delegate_->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
-}
-
-void AutofillManager::SendAutofillTypePredictions(
-    const std::vector<FormStructure*>& forms) const {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kShowAutofillTypePredictions))
-    return;
-
-  RenderViewHost* host = driver_->GetWebContents()->GetRenderViewHost();
-  if (!host)
-    return;
-
-  std::vector<FormDataPredictions> type_predictions;
-  FormStructure::GetFieldTypePredictions(forms, &type_predictions);
-  host->Send(
-      new AutofillMsg_FieldTypePredictionsAvailable(host->GetRoutingID(),
-                                                    type_predictions));
 }
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
@@ -1100,7 +1083,7 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
 
   // Annotate the updated form with its predicted types.
   std::vector<FormStructure*> forms(1, *updated_form);
-  SendAutofillTypePredictions(forms);
+  driver_->SendAutofillTypePredictionsToRenderer(forms);
 
   return true;
 }
@@ -1189,7 +1172,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   // For the |non_queryable_forms|, we have all the field type info we're ever
   // going to get about them.  For the other forms, we'll wait until we get a
   // response from the server.
-  SendAutofillTypePredictions(non_queryable_forms);
+  driver_->SendAutofillTypePredictionsToRenderer(non_queryable_forms);
 }
 
 int AutofillManager::GUIDToID(const GUIDPair& guid) const {

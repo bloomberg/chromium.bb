@@ -19,4 +19,17 @@ FormDataPredictions::FormDataPredictions(const FormDataPredictions& other)
 FormDataPredictions::~FormDataPredictions() {
 }
 
+bool FormDataPredictions::operator==(
+    const FormDataPredictions& predictions) const {
+  return (data == predictions.data &&
+          signature == predictions.signature &&
+          experiment_id == predictions.experiment_id &&
+          fields == predictions.fields);
+}
+
+bool FormDataPredictions::operator!=(
+    const FormDataPredictions& predictions) const {
+  return !operator==(predictions);
+}
+
 }  // namespace autofill

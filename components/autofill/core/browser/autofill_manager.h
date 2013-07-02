@@ -318,11 +318,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   void UpdateInitialInteractionTimestamp(
       const base::TimeTicks& interaction_timestamp);
 
-  // Send our current field type predictions to the renderer. This is a no-op if
-  // the appropriate command-line flag is not set.
-  void SendAutofillTypePredictions(
-      const std::vector<FormStructure*>& forms) const;
-
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
   AutofillDriver* driver_;
