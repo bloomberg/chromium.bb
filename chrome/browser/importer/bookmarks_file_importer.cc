@@ -5,12 +5,12 @@
 #include "chrome/browser/importer/bookmarks_file_importer.h"
 
 #include "base/bind.h"
-#include "chrome/browser/bookmarks/bookmark_html_reader.h"
-#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
-#include "chrome/browser/favicon/imported_favicon_usage.h"
+#include "chrome/browser/importer/bookmark_html_reader.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer/imported_bookmark_entry.h"
+#include "chrome/common/importer/imported_favicon_usage.h"
 #include "grit/generated_resources.h"
 
 namespace {

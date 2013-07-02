@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
+#include "chrome/common/importer/imported_bookmark_entry.h"
 
 ImportedBookmarkEntry::ImportedBookmarkEntry()
     : in_toolbar(false),

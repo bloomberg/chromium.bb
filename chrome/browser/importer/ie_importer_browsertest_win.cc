@@ -6,10 +6,10 @@
 #include <windows.h>
 #include <unknwn.h>
 #include <intshcut.h>
-#include <shlguid.h>
-#include <urlhist.h>
-#include <shlobj.h>
 #include <propvarutil.h>
+#include <shlguid.h>
+#include <shlobj.h>
+#include <urlhist.h>
 
 #include <algorithm>
 #include <vector>
@@ -28,8 +28,6 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
-#include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/importer/ie_importer_test_registry_overrider_win.h"
@@ -43,6 +41,8 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/importer/imported_bookmark_entry.h"
+#include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/password_form.h"

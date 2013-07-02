@@ -5,7 +5,7 @@
 #include "chrome/browser/importer/importer_unittest_utils.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
+#include "chrome/common/importer/imported_bookmark_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 void TestEqualBookmarkEntry(const ImportedBookmarkEntry& entry,

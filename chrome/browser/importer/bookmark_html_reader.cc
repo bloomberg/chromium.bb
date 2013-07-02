@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_html_reader.h"
+#include "chrome/browser/importer/bookmark_html_reader.h"
 
 #include "base/callback.h"
 #include "base/file_util.h"
@@ -11,9 +11,9 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/favicon/favicon_util.h"
-#include "chrome/browser/favicon/imported_favicon_usage.h"
+#include "chrome/common/importer/imported_bookmark_entry.h"
+#include "chrome/common/importer/imported_favicon_usage.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/data_url.h"
 #include "net/base/escape.h"

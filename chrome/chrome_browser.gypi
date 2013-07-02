@@ -236,8 +236,8 @@
         'browser/bookmarks/bookmark_codec.h',
         'browser/bookmarks/bookmark_expanded_state_tracker.cc',
         'browser/bookmarks/bookmark_expanded_state_tracker.h',
-        'browser/bookmarks/bookmark_html_reader.cc',
-        'browser/bookmarks/bookmark_html_reader.h',
+        'browser/importer/bookmark_html_reader.cc',
+        'browser/importer/bookmark_html_reader.h',
         'browser/bookmarks/bookmark_html_writer.cc',
         'browser/bookmarks/bookmark_html_writer.h',
         'browser/bookmarks/bookmark_index.cc',
@@ -263,8 +263,8 @@
         'browser/bookmarks/bookmark_title_match.h',
         'browser/bookmarks/bookmark_utils.cc',
         'browser/bookmarks/bookmark_utils.h',
-        'browser/bookmarks/imported_bookmark_entry.cc',
-        'browser/bookmarks/imported_bookmark_entry.h',
+        'common/importer/imported_bookmark_entry.cc',
+        'common/importer/imported_bookmark_entry.h',
         'browser/browser_about_handler.cc',
         'browser/browser_about_handler.h',
         'browser/browser_process.cc',
@@ -561,8 +561,8 @@
         'browser/favicon/favicon_types.h',
         'browser/favicon/favicon_util.cc',
         'browser/favicon/favicon_util.h',
-        'browser/favicon/imported_favicon_usage.cc',
-        'browser/favicon/imported_favicon_usage.h',
+        'common/importer/imported_favicon_usage.cc',
+        'common/importer/imported_favicon_usage.h',
         'browser/file_select_helper.cc',
         'browser/file_select_helper.h',
         'browser/first_run/first_run.cc',
@@ -2925,7 +2925,7 @@
           'sources!': [
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.
-            'browser/bookmarks/bookmark_html_reader.cc',
+            'browser/importer/bookmark_html_reader.cc',
             'browser/bookmarks/bookmark_html_writer.cc',
             'browser/ssl/ssl_add_certificate.cc',
 

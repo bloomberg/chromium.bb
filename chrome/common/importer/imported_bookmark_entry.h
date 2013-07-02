@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BOOKMARKS_IMPORTED_BOOKMARK_ENTRY_H_
-#define CHROME_BROWSER_BOOKMARKS_IMPORTED_BOOKMARK_ENTRY_H_
+#ifndef CHROME_COMMON_IMPORTER_IMPORTED_BOOKMARK_ENTRY_H_
+#define CHROME_COMMON_IMPORTER_IMPORTED_BOOKMARK_ENTRY_H_
 
 #include <vector>
 
@@ -25,4 +25,4 @@ struct ImportedBookmarkEntry {
   base::Time creation_time;
 };
 
-#endif  // CHROME_BROWSER_BOOKMARKS_IMPORTED_BOOKMARK_ENTRY_H_
+#endif  // CHROME_COMMON_IMPORTER_IMPORTED_BOOKMARK_ENTRY_H_

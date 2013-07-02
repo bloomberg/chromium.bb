@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_HTML_READER_H_
-#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_HTML_READER_H_
+#ifndef CHROME_BROWSER_IMPORTER_BOOKMARK_HTML_READER_H_
+#define CHROME_BROWSER_IMPORTER_BOOKMARK_HTML_READER_H_
 
 #include <string>
 #include <vector>
@@ -94,4 +94,4 @@ bool ParseMinimumBookmarkFromLine(const std::string& line,
 
 }  // namespace bookmark_html_reader
 
-#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_HTML_READER_H_
+#endif  // CHROME_BROWSER_IMPORTER_BOOKMARK_HTML_READER_H_
