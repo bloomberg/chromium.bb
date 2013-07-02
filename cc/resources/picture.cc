@@ -219,8 +219,8 @@ void Picture::Record(ContentLayerClient* painter,
   painter->PaintContents(canvas, layer_rect_, &opaque_layer_rect);
 
   base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
-  stats_instrumentation->AddPaint(duration,
-                                  layer_rect_.width() * layer_rect_.height());
+  stats_instrumentation->AddRecord(duration,
+                                   layer_rect_.width() * layer_rect_.height());
 
   canvas->restore();
   picture_->endRecording();
