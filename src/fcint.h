@@ -37,6 +37,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <errno.h>
+#include <limits.h>
 #include <unistd.h>
 #include <stddef.h>
 #include <sys/types.h>
@@ -109,7 +110,7 @@ FC_ASSERT_STATIC (sizeof (FcRef) == sizeof (int));
 typedef enum _FcValueBinding {
     FcValueBindingWeak, FcValueBindingStrong, FcValueBindingSame,
     /* to make sure sizeof (FcValueBinding) == 4 even with -fshort-enums */
-    FcValueBindingEnd = 0xffffffff
+    FcValueBindingEnd = INT_MAX
 } FcValueBinding;
 
 #define FcStrdup(s) ((FcChar8 *) strdup ((const char *) (s)))
