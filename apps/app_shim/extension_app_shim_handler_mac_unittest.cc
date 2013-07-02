@@ -35,6 +35,7 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   MOCK_METHOD2(LaunchApp, void(Profile*, const Extension*));
   MOCK_METHOD2(LaunchShim, void(Profile*, const Extension*));
 
+  MOCK_METHOD0(MaybeTerminate, void());
 };
 
 class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
@@ -204,9 +205,14 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
 
   // Launch the shim, adding an entry in the map.
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL));
+  // App should not be launched here.
+  EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get()))
+      .Times(0);
+  EXPECT_EQ(true, handler_->OnShimLaunch(&host_aa_,
+                                         APP_SHIM_LAUNCH_REGISTER_ONLY));
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
 
+  // Closing all windows does not quit the shim.
   handler_->OnAppDeactivated(&profile_a_, kTestAppIdA);
   EXPECT_EQ(0, host_aa_.close_count());
 
@@ -231,8 +237,37 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
   handler_->OnShimFocus(&host_aa_, APP_SHIM_FOCUS_REOPEN);
 
   // Quit closes the shim.
+  EXPECT_CALL(*delegate_, MaybeTerminate())
+      .WillOnce(Return());
   handler_->OnShimQuit(&host_aa_);
   EXPECT_EQ(1, host_aa_.close_count());
+}
+
+TEST_F(ExtensionAppShimHandlerTest, MaybeTerminate) {
+  const AppShimLaunchType register_only = APP_SHIM_LAUNCH_REGISTER_ONLY;
+
+  // Launch shims, adding entries in the map.
+  EXPECT_EQ(true, handler_->OnShimLaunch(&host_aa_, register_only));
+  EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
+
+  EXPECT_EQ(true, handler_->OnShimLaunch(&host_ab_, register_only));
+  EXPECT_EQ(&host_ab_, handler_->FindHost(&profile_a_, kTestAppIdB));
+
+  // The following quits should not terminate.
+  ShellWindowList shell_window_list;
+  EXPECT_CALL(*delegate_, GetWindows(_, _))
+      .WillRepeatedly(Return(shell_window_list));
+  EXPECT_CALL(*delegate_, MaybeTerminate())
+      .Times(0);
+
+  // Quit when there are other shims.
+  handler_->OnShimQuit(&host_aa_);
+
+  // Quit after a browser window has opened.
+  handler_->Observe(chrome::NOTIFICATION_BROWSER_OPENED,
+                    content::NotificationService::AllSources(),
+                    content::NotificationService::NoDetails());
+  handler_->OnShimQuit(&host_ab_);
 }
 
 TEST_F(ExtensionAppShimHandlerTest, RegisterOnly) {

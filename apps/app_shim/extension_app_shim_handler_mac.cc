@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -80,8 +81,16 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(
       web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
 }
 
+void ExtensionAppShimHandler::Delegate::MaybeTerminate() {
+  bool shell_windows_left =
+      extensions::ShellWindowRegistry::IsShellWindowRegisteredInAnyProfile(0);
+  if (!shell_windows_left)
+    chrome::AttemptExit();
+}
+
 ExtensionAppShimHandler::ExtensionAppShimHandler()
-    : delegate_(new Delegate) {
+    : delegate_(new Delegate),
+      browser_opened_ever_(false) {
   // This is instantiated in BrowserProcessImpl::PreMainMessageLoopRun with
   // AppShimHostManager. Since PROFILE_CREATED is not fired until
   // ProfileManager::GetLastUsedProfile/GetLastOpenedProfiles, this should catch
@@ -91,6 +100,8 @@ ExtensionAppShimHandler::ExtensionAppShimHandler()
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
@@ -207,6 +218,9 @@ void ExtensionAppShimHandler::OnShimQuit(Host* host) {
 
   DCHECK_NE(0u, hosts_.count(make_pair(profile, host->GetAppId())));
   hosts_.find(make_pair(profile, host->GetAppId()))->second->OnAppClosed();
+
+  if (!browser_opened_ever_ && hosts_.empty())
+    delegate_->MaybeTerminate();
 }
 
 void ExtensionAppShimHandler::set_delegate(Delegate* delegate) {
@@ -217,6 +231,14 @@ void ExtensionAppShimHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
+    registrar_.Remove(
+        this, chrome::NOTIFICATION_BROWSER_OPENED,
+        content::NotificationService::AllBrowserContextsAndSources());
+    browser_opened_ever_ = true;
+    return;
+  }
+
   Profile* profile = content::Source<Profile>(source).ptr();
   if (profile->IsOffTheRecord())
     return;
