@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGTextContentElement : SVGStyledElement {
+interface SVGTextContentElement : SVGGraphicsElement {
     // lengthAdjust Types
     const unsigned short LENGTHADJUST_UNKNOWN          = 0;
     const unsigned short LENGTHADJUST_SPACING          = 1;
@@ -45,6 +45,6 @@ interface SVGTextContentElement : SVGStyledElement {
                          [Default=Undefined,IsIndex] optional unsigned long length);
 };
 
+// FIXME: SVGTextContentElement is not supposed to implement SVGExternalResourcesRequired.
 SVGTextContentElement implements SVGExternalResourcesRequired;
-SVGTextContentElement implements SVGTests;
 

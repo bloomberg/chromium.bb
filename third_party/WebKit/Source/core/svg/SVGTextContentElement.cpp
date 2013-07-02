@@ -58,12 +58,11 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGTextContentElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(textLength)
     REGISTER_LOCAL_ANIMATED_PROPERTY(lengthAdjust)
     REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGStyledElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
+    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 SVGTextContentElement::SVGTextContentElement(const QualifiedName& tagName, Document* document)
-    : SVGStyledElement(tagName, document)
+    : SVGGraphicsElement(tagName, document)
     , m_textLength(LengthModeOther)
     , m_specifiedTextLength(LengthModeOther)
     , m_lengthAdjust(SVGLengthAdjustSpacing)
@@ -228,13 +227,13 @@ bool SVGTextContentElement::isPresentationAttribute(const QualifiedName& name) c
 {
     if (name.matches(XMLNames::spaceAttr))
         return true;
-    return SVGStyledElement::isPresentationAttribute(name);
+    return SVGGraphicsElement::isPresentationAttribute(name);
 }
 
 void SVGTextContentElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
     if (!isSupportedAttribute(name))
-        SVGStyledElement::collectStyleForPresentationAttribute(name, value, style);
+        SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
     else if (name.matches(XMLNames::spaceAttr)) {
         DEFINE_STATIC_LOCAL(const AtomicString, preserveString, ("preserve", AtomicString::ConstructFromLiteral));
 
@@ -250,7 +249,7 @@ void SVGTextContentElement::parseAttribute(const QualifiedName& name, const Atom
     SVGParsingError parseError = NoError;
 
     if (!isSupportedAttribute(name))
-        SVGStyledElement::parseAttribute(name, value);
+        SVGGraphicsElement::parseAttribute(name, value);
     else if (name == SVGNames::lengthAdjustAttr) {
         SVGLengthAdjustType propertyValue = SVGPropertyTraits<SVGLengthAdjustType>::fromString(value);
         if (propertyValue > 0)
@@ -269,7 +268,7 @@ void SVGTextContentElement::parseAttribute(const QualifiedName& name, const Atom
 void SVGTextContentElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {
-        SVGStyledElement::svgAttributeChanged(attrName);
+        SVGGraphicsElement::svgAttributeChanged(attrName);
         return;
     }
 

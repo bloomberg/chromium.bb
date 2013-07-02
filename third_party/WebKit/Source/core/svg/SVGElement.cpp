@@ -41,7 +41,6 @@
 #include "core/svg/SVGElementRareData.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGSVGElement.h"
-#include "core/svg/SVGTextElement.h"
 
 namespace WebCore {
 
@@ -257,10 +256,6 @@ bool SVGElement::getBoundingBox(FloatRect& rect, SVGLocatable::StyleUpdateStrate
 {
     if (isSVGGraphicsElement()) {
         rect = toSVGGraphicsElement(this)->getBBox(styleUpdateStrategy);
-        return true;
-    }
-    if (hasTagName(SVGNames::textTag)) {
-        rect = static_cast<SVGTextElement*>(this)->getBBox(styleUpdateStrategy);
         return true;
     }
     return false;
