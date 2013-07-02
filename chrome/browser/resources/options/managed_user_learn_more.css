@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #managed-user-learn-more {
-  width: 612px;
+  width: 722px;
 }
 
 #managed-user-learn-more-text {
@@ -13,6 +13,8 @@
 }
 
 #managed-user-learn-more-image {
-  background-image: url('managed_user_learn_more.png');
-  height: 177px;  /* Placeholder value */
+  background-image: -webkit-image-set(
+      url('../../../../ui/resources/default_100_percent/supervised_illustration_start.png') 1x,
+      url('../../../../ui/resources/default_200_percent/supervised_illustration_start.png') 2x);
+  height: 344px;
 }
