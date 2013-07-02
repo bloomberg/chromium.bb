@@ -64,6 +64,11 @@
         'shell/android/shell_manager.h',
         'shell/app/shell_main_delegate.cc',
         'shell/app/shell_main_delegate.h',
+        'shell/app/webkit_test_platform_support.h',
+        'shell/app/webkit_test_platform_support_android.cc',
+        'shell/app/webkit_test_platform_support_linux.cc',
+        'shell/app/webkit_test_platform_support_mac.mm',
+        'shell/app/webkit_test_platform_support_win.cc',
         'shell/common/shell_content_client.cc',
         'shell/common/shell_content_client.h',
         'shell/common/shell_messages.cc',
@@ -146,11 +151,6 @@
         'shell/shell_web_contents_view_delegate.h',
         'shell/webkit_test_controller.cc',
         'shell/webkit_test_controller.h',
-        'shell/webkit_test_platform_support.h',
-        'shell/webkit_test_platform_support_android.cc',
-        'shell/webkit_test_platform_support_linux.cc',
-        'shell/webkit_test_platform_support_mac.mm',
-        'shell/webkit_test_platform_support_win.cc',
       ],
       'msvs_settings': {
         'VCLinkerTool': {
@@ -502,8 +502,8 @@
             '..',
           ],
           'sources': [
-            'shell/shell_content_main.cc',
-            'shell/shell_content_main.h',
+            'shell/app/shell_content_main.cc',
+            'shell/app/shell_content_main.h',
           ],
           'copies': [
             {

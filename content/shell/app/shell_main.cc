@@ -12,7 +12,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "content/shell/shell_content_main.h"
+#include "content/shell/app/shell_content_main.h"
 #endif
 
 #if defined(OS_WIN)
