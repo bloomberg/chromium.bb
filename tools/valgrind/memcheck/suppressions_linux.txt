@@ -45,3 +45,16 @@
    fun:_ZN3gfx12_GLOBAL__N_126RunMoveCursorLeftRightTestEPNS_10RenderTextERKSt6vectorINS_14SelectionModelESaIS4_EENS_21VisualCursorDirectionE
    fun:_ZN3gfx46RenderTextTest_TruncatedCursorMovementLTR_Test8TestBodyEv
 }
+{
+   bug_256886
+   Memcheck:Unaddressable
+   fun:_ZNKSbItN4base20string16_char_traitsESaItEE7_M_dataEv
+   fun:_ZNKSbItN4base20string16_char_traitsESaItEE6_M_repEv
+   fun:_ZNSbItN4base20string16_char_traitsESaItEEC1ERKS2_
+   fun:_ZNK4aura6Window5titleEv
+   fun:_ZN3ash4test20TestLauncherDelegate8GetTitleERKNS_12LauncherItemE
+   fun:_ZN3ash8internal12LauncherView17GetAccessibleNameEPKN5views4ViewE
+   fun:_ZN3ash8internal12LauncherView18MouseEnteredButtonEPN5views4ViewE
+   fun:_ZN3ash8internal14LauncherButton14OnMouseEnteredERKN2ui10MouseEventE
+   fun:_ZN5views4View12OnMouseEventEPN2ui10MouseEventE
+}
