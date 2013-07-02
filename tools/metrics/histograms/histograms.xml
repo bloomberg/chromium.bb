@@ -5742,6 +5742,28 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.OutOfOrderPacketsReceived">
+  <summary>
+    The number of times packets the current received packet had a lower sequence
+    number than the previously received packet sequence number.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.PacketGapReceived">
+  <summary>
+    The number of missing packets between the current received packet and the
+    previously largest received packet sequence number.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.PacketGapSent">
+  <summary>
+    The number of missing packets between the current received packet and the
+    previously largest received packet sequence number, as reported by the
+    remote end of the connection.
+  </summary>
+</histogram>
+
 <histogram name="Net.RenegotiationExtensionSupported">
   <summary>
     True if the HTTP request was sent to a server which supports the TLS
