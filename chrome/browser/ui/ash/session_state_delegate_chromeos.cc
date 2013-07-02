@@ -44,8 +44,7 @@ void SessionStateDelegateChromeos::LockScreen() {
   if (!CanLockScreen())
     return;
 
-  // TODO(antrim): Additional logging for http://crbug.com/173178.
-  LOG(WARNING) << "Requesting screen lock from SessionStateDelegate";
+  VLOG(1) << "Requesting screen lock from SessionStateDelegate";
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
       RequestLockScreen();
 }

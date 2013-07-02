@@ -39,8 +39,7 @@ void SuspendObserver::SuspendImminent() {
   if (profile && profile->GetPrefs()->GetBoolean(prefs::kEnableScreenLock) &&
       UserManager::Get()->CanCurrentUserLock() && !screen_locked_) {
     screen_lock_callback_ = power_client_->GetSuspendReadinessCallback();
-    // TODO(antrim) : additional logging for crbug/173178
-    LOG(WARNING) << "Requesting screen lock from SuspendObserver";
+    VLOG(1) << "Requesting screen lock from SuspendObserver";
     session_client_->RequestLockScreen();
   }
 
@@ -53,14 +52,14 @@ void SuspendObserver::ScreenIsLocked() {
 
   // Stop blocking suspend after the screen is locked.
   if (!screen_lock_callback_.is_null()) {
-    LOG(WARNING) << "Locking screen due to suspend.";
+    VLOG(1) << "Screen locked due to suspend";
     // Run the callback asynchronously.  ScreenIsLocked() is currently
     // called asynchronously after RequestLockScreen(), but this guards
     // against it being made synchronous later.
     base::MessageLoop::current()->PostTask(FROM_HERE, screen_lock_callback_);
     screen_lock_callback_.Reset();
   } else {
-    LOG(WARNING) << "Locking screen without suspend.";
+    VLOG(1) << "Screen locked without suspend";
   }
 }
 
