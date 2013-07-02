@@ -226,16 +226,6 @@ void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
       }
     }
 
-    // Move tasks not present in |new_pending_tasks| to |completed_tasks_|.
-    for (GraphNodeMap::iterator it = pending_tasks_.begin();
-         it != pending_tasks_.end(); ++it) {
-      internal::WorkerPoolTask* task = it->first;
-
-      // Task has completed if not present in |new_pending_tasks|.
-      if (!new_pending_tasks.contains(task))
-        completed_tasks_.push_back(task);
-    }
-
     // Build new running task set.
     for (GraphNodeMap::iterator it = running_tasks_.begin();
          it != running_tasks_.end(); ++it) {
@@ -264,6 +254,18 @@ void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
 
       if (!node->num_dependencies())
         new_ready_to_run_tasks.push(node);
+
+      // Erase the task from old pending tasks.
+      pending_tasks_.erase(task);
+    }
+
+    completed_tasks_.reserve(completed_tasks_.size() + pending_tasks_.size());
+
+    // The items left in |pending_tasks_| need to be canceled.
+    for (GraphNodeMap::const_iterator it = pending_tasks_.begin();
+         it != pending_tasks_.end();
+         ++it) {
+      completed_tasks_.push_back(it->first);
     }
 
     // Swap task sets.
@@ -341,12 +343,10 @@ void WorkerPool::Inner::Run() {
         GraphNode* dependent_node = *it;
 
         dependent_node->remove_dependency();
-        // Dependent is not ready unless number of dependencies are 0.
-        if (dependent_node->num_dependencies())
-          continue;
-
-        // Task is ready. Add it to |ready_to_run_tasks_|.
-        ready_to_run_tasks_.push(dependent_node);
+        // Task is ready if it has no dependencies. Add it to
+        // |ready_to_run_tasks_|.
+        if (!dependent_node->num_dependencies())
+          ready_to_run_tasks_.push(dependent_node);
       }
     }
 
