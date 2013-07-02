@@ -130,9 +130,10 @@ void ParseAppListAndRun(
 GDataWapiService::GDataWapiService(
     net::URLRequestContextGetter* url_request_context_getter,
     const GURL& base_url,
+    const GURL& base_download_url,
     const std::string& custom_user_agent)
     : url_request_context_getter_(url_request_context_getter),
-      url_generator_(base_url),
+      url_generator_(base_url, base_download_url),
       custom_user_agent_(custom_user_agent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

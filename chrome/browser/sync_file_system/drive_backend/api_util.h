@@ -116,6 +116,7 @@ class APIUtil : public APIUtilInterface,
   // Constructor for test use.
   APIUtil(Profile* profile,
           const GURL& base_url,
+          const GURL& base_download_url,
           scoped_ptr<drive::DriveServiceInterface> drive_service,
           scoped_ptr<drive::DriveUploaderInterface> drive_uploader);
 

@@ -85,8 +85,9 @@ class DriveApiRequestsTest : public testing::Test {
         base::Bind(&DriveApiRequestsTest::HandleContentResponse,
                    base::Unretained(this)));
 
+    GURL test_base_url = test_util::GetBaseUrlForTesting(test_server_.port());
     url_generator_.reset(new DriveApiUrlGenerator(
-        test_util::GetBaseUrlForTesting(test_server_.port())));
+        test_base_url, test_base_url.Resolve("download/")));
 
     // Reset the server's expected behavior just in case.
     ResetExpectedResponse();

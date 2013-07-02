@@ -158,11 +158,13 @@ DriveIntegrationService::DriveIntegrationService(
     drive_service_.reset(new DriveAPIService(
         g_browser_process->system_request_context(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
+        GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
         GetDriveUserAgent()));
   } else {
     drive_service_.reset(new GDataWapiService(
         g_browser_process->system_request_context(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
+        GURL(google_apis::GDataWapiUrlGenerator::kBaseDownloadUrlForProduction),
         GetDriveUserAgent()));
   }
   scheduler_.reset(new JobScheduler(

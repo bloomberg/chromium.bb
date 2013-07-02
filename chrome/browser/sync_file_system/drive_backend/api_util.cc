@@ -42,6 +42,7 @@ const char kSyncRootDirectoryNameDev[] = "Chrome Syncable FileSystem Dev";
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 const char kFakeServerBaseUrl[] = "https://fake_server/";
+const char kFakeDownloadServerBaseUrl[] = "https://fake_download_server/";
 
 void EmptyGDataErrorCodeCallback(google_apis::GDataErrorCode error) {}
 
@@ -140,19 +141,25 @@ std::string GetMimeTypeFromTitle(const std::string& title) {
 
 APIUtil::APIUtil(Profile* profile)
     : wapi_url_generator_(
-          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction)),
+          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
+          GURL(google_apis::GDataWapiUrlGenerator::
+               kBaseDownloadUrlForProduction)),
       drive_api_url_generator_(
-          GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
+          GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
+          GURL(google_apis::DriveApiUrlGenerator::
+               kBaseDownloadUrlForProduction)),
       upload_next_key_(0) {
   if (IsDriveAPIDisabled()) {
     drive_service_.reset(new drive::GDataWapiService(
         profile->GetRequestContext(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
+        GURL(google_apis::GDataWapiUrlGenerator::kBaseDownloadUrlForProduction),
         std::string() /* custom_user_agent */));
   } else {
     drive_service_.reset(new drive::DriveAPIService(
         profile->GetRequestContext(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
+        GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
         std::string() /* custom_user_agent */));
   }
 
@@ -171,16 +178,18 @@ scoped_ptr<APIUtil> APIUtil::CreateForTesting(
   return make_scoped_ptr(new APIUtil(
       profile,
       GURL(kFakeServerBaseUrl),
+      GURL(kFakeDownloadServerBaseUrl),
       drive_service.Pass(),
       drive_uploader.Pass()));
 }
 
 APIUtil::APIUtil(Profile* profile,
                  const GURL& base_url,
+                 const GURL& base_download_url,
                  scoped_ptr<drive::DriveServiceInterface> drive_service,
                  scoped_ptr<drive::DriveUploaderInterface> drive_uploader)
-    : wapi_url_generator_(base_url),
-      drive_api_url_generator_(base_url),
+    : wapi_url_generator_(base_url, base_download_url),
+      drive_api_url_generator_(base_url, base_download_url),
       upload_next_key_(0) {
   drive_service_ = drive_service.Pass();
   drive_service_->Initialize(profile);

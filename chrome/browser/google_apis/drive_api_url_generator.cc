@@ -41,8 +41,10 @@ GURL AddMaxResultParam(const GURL& url, int max_results) {
 
 }  // namespace
 
-DriveApiUrlGenerator::DriveApiUrlGenerator(const GURL& base_url)
-    : base_url_(base_url) {
+DriveApiUrlGenerator::DriveApiUrlGenerator(const GURL& base_url,
+                                           const GURL& base_download_url)
+    : base_url_(base_url),
+      base_download_url_(base_download_url) {
   // Do nothing.
 }
 
@@ -52,6 +54,8 @@ DriveApiUrlGenerator::~DriveApiUrlGenerator() {
 
 const char DriveApiUrlGenerator::kBaseUrlForProduction[] =
     "https://www.googleapis.com";
+const char DriveApiUrlGenerator::kBaseDownloadUrlForProduction[] =
+    "https://www.googledrive.com/host/";
 
 GURL DriveApiUrlGenerator::GetAboutUrl() const {
   return base_url_.Resolve(kDriveV2AboutUrl);
@@ -151,6 +155,11 @@ GURL DriveApiUrlGenerator::GetInitiateUploadExistingFileUrl(
       kDriveV2InitiateUploadExistingFileUrlPrefix +
       net::EscapePath(resource_id));
   return AddResumableUploadParam(url);
+}
+
+GURL DriveApiUrlGenerator::GenerateDownloadFileUrl(
+    const std::string& resource_id) const {
+  return base_download_url_.Resolve(net::EscapePath(resource_id));
 }
 
 }  // namespace google_apis

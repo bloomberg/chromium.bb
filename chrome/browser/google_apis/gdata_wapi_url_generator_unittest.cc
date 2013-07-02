@@ -12,7 +12,9 @@ namespace google_apis {
 class GDataWapiUrlGeneratorTest : public testing::Test {
  public:
   GDataWapiUrlGeneratorTest()
-      : url_generator_(GURL(GDataWapiUrlGenerator::kBaseUrlForProduction)) {
+      : url_generator_(
+          GURL(GDataWapiUrlGenerator::kBaseUrlForProduction),
+          GURL(GDataWapiUrlGenerator::kBaseDownloadUrlForProduction)) {
   }
 
  protected:
@@ -194,6 +196,12 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateAccountMetadataUrl) {
       "https://docs.google.com/feeds/metadata/default?v=3&alt=json"
       "&showroot=true",
       url_generator_.GenerateAccountMetadataUrl(false).spec());
+}
+
+TEST_F(GDataWapiUrlGeneratorTest, GenerateDownloadFileUrl) {
+  EXPECT_EQ(
+      "https://www.googledrive.com/host/resourceId",
+      url_generator_.GenerateDownloadFileUrl("file:resourceId").spec());
 }
 
 }  // namespace google_apis

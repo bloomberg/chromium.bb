@@ -17,11 +17,15 @@ namespace google_apis {
 // for production, and the local server for testing.
 class GDataWapiUrlGenerator {
  public:
-  explicit GDataWapiUrlGenerator(const GURL& base_url);
+  // The
+  GDataWapiUrlGenerator(const GURL& base_url, const GURL& base_download_url);
   ~GDataWapiUrlGenerator();
 
   // The base URL for communicating with the WAPI server for production.
   static const char kBaseUrlForProduction[];
+
+  // The base URL for the file download server for production.
+  static const char kBaseDownloadUrlForProduction[];
 
   // Adds additional parameters for API version, output content type and to
   // show folders in the feed are added to document feed URLs.
@@ -119,8 +123,12 @@ class GDataWapiUrlGenerator {
   // list of installed third party applications.
   GURL GenerateAccountMetadataUrl(bool include_installed_apps) const;
 
+  // Generates a URL for downloading a file.
+  GURL GenerateDownloadFileUrl(const std::string& resource_id) const;
+
  private:
   const GURL base_url_;
+  const GURL base_download_url_;
 };
 
 }  // namespace google_apis

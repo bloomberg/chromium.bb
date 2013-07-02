@@ -57,6 +57,9 @@ const char kGetChangesListURL[] = "/feeds/default/private/changes";
 const char GDataWapiUrlGenerator::kBaseUrlForProduction[] =
     "https://docs.google.com/";
 
+const char GDataWapiUrlGenerator::kBaseDownloadUrlForProduction[] =
+    "https://www.googledrive.com/host/";
+
 // static
 GURL GDataWapiUrlGenerator::AddStandardUrlParams(const GURL& url) {
   GURL result = net::AppendOrReplaceQueryParameter(url, "v", "3");
@@ -83,8 +86,10 @@ GURL GDataWapiUrlGenerator::AddFeedUrlParams(
   return result;
 }
 
-GDataWapiUrlGenerator::GDataWapiUrlGenerator(const GURL& base_url)
-    : base_url_(GURL(base_url)) {
+GDataWapiUrlGenerator::GDataWapiUrlGenerator(const GURL& base_url,
+                                             const GURL& base_download_url)
+    : base_url_(base_url),
+      base_download_url_(base_download_url) {
 }
 
 GDataWapiUrlGenerator::~GDataWapiUrlGenerator() {
@@ -213,6 +218,15 @@ GURL GDataWapiUrlGenerator::GenerateAccountMetadataUrl(
         result, "include-installed-apps", "true");
   }
   return result;
+}
+
+GURL GDataWapiUrlGenerator::GenerateDownloadFileUrl(
+    const std::string& resource_id) const {
+  // Strip the file type prefix before the colon character.
+  size_t colon = resource_id.find(':');
+  return base_download_url_.Resolve(net::EscapePath(
+      colon == std::string::npos ? resource_id
+                                 : resource_id.substr(colon + 1)));
 }
 
 }  // namespace google_apis

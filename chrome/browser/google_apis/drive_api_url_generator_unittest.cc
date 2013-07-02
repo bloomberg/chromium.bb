@@ -13,8 +13,12 @@ namespace google_apis {
 class DriveApiUrlGeneratorTest : public testing::Test {
  public:
   DriveApiUrlGeneratorTest()
-      : url_generator_(GURL(DriveApiUrlGenerator::kBaseUrlForProduction)),
-        test_url_generator_(test_util::GetBaseUrlForTesting(12345)) {
+      : url_generator_(
+            GURL(DriveApiUrlGenerator::kBaseUrlForProduction),
+            GURL(DriveApiUrlGenerator::kBaseDownloadUrlForProduction)),
+        test_url_generator_(
+            test_util::GetBaseUrlForTesting(12345),
+            test_util::GetBaseUrlForTesting(12345).Resolve("download/")) {
   }
 
  protected:
@@ -254,6 +258,18 @@ TEST_F(DriveApiUrlGeneratorTest, GetInitiateUploadExistingFileUrl) {
       "?uploadType=resumable",
       test_url_generator_.GetInitiateUploadExistingFileUrl(
           "file:file_id").spec());
+}
+
+TEST_F(DriveApiUrlGeneratorTest, GenerateDownloadFileUrl) {
+  EXPECT_EQ(
+      "https://www.googledrive.com/host/resourceId",
+      url_generator_.GenerateDownloadFileUrl("resourceId").spec());
+  EXPECT_EQ(
+      "https://www.googledrive.com/host/file%3AresourceId",
+      url_generator_.GenerateDownloadFileUrl("file:resourceId").spec());
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/download/resourceId",
+      test_url_generator_.GenerateDownloadFileUrl("resourceId").spec());
 }
 
 }  // namespace google_apis

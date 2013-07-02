@@ -42,10 +42,12 @@ class GDataWapiService : public DriveServiceInterface,
  public:
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |base_url| is used to generate URLs for communicating with the WAPI
+  // |base_download_url| is used to generate URLs for downloading file with WAPI
   // |custom_user_agent| is used for the User-Agent header in HTTP
   // requests issued through the service if the value is not empty.
   GDataWapiService(net::URLRequestContextGetter* url_request_context_getter,
                    const GURL& base_url,
+                   const GURL& base_download_url,
                    const std::string& custom_user_agent);
   virtual ~GDataWapiService();
 

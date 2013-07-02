@@ -65,7 +65,9 @@ FakeAPIUtil::RemoteResource::~RemoteResource() {}
 FakeAPIUtil::FakeAPIUtil()
     : largest_changestamp_(0),
       url_generator_(
-          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction)) {}
+          GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
+          GURL(google_apis::GDataWapiUrlGenerator::
+               kBaseDownloadUrlForProduction)) {}
 
 FakeAPIUtil::~FakeAPIUtil() {}
 

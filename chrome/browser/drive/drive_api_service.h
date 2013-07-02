@@ -38,11 +38,14 @@ class DriveAPIService : public DriveServiceInterface,
  public:
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |base_url| is used to generate URLs for communication with the drive API.
+  // |base_download_url| is used to generate URLs for downloading file from the
+  // drive API.
   // |custom_user_agent| will be used for the User-Agent header in HTTP
   // requests issues through the service if the value is not empty.
   DriveAPIService(
       net::URLRequestContextGetter* url_request_context_getter,
       const GURL& base_url,
+      const GURL& base_download_url,
       const std::string& custom_user_agent);
   virtual ~DriveAPIService();
 

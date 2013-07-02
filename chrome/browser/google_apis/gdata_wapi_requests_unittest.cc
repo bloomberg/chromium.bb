@@ -80,8 +80,9 @@ class GDataWapiRequestsTest : public testing::Test {
         base::Bind(&GDataWapiRequestsTest::HandleUploadRequest,
                    base::Unretained(this)));
 
+    GURL test_base_url = test_util::GetBaseUrlForTesting(test_server_.port());
     url_generator_.reset(new GDataWapiUrlGenerator(
-        test_util::GetBaseUrlForTesting(test_server_.port())));
+        test_base_url, test_base_url.Resolve("download/")));
 
     received_bytes_ = 0;
     content_length_ = 0;
