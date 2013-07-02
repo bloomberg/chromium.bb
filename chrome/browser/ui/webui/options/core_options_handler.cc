@@ -472,26 +472,41 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args, PrefType type) {
 
   switch (type) {
     case TYPE_BOOLEAN:
-      CHECK_EQ(base::Value::TYPE_BOOLEAN, value->GetType());
+      if (!value->IsType(base::Value::TYPE_BOOLEAN)) {
+        NOTREACHED();
+        return;
+      }
       break;
     case TYPE_INTEGER: {
       // In JS all numbers are doubles.
       double double_value;
-      CHECK(value->GetAsDouble(&double_value));
+      if (!value->GetAsDouble(&double_value)) {
+        NOTREACHED();
+        return;
+      }
       int int_value = static_cast<int>(double_value);
       temp_value.reset(new base::FundamentalValue(int_value));
       value = temp_value.get();
       break;
     }
     case TYPE_DOUBLE:
-      CHECK_EQ(base::Value::TYPE_DOUBLE, value->GetType());
+      if (!value->IsType(base::Value::TYPE_DOUBLE)) {
+        NOTREACHED();
+        return;
+      }
       break;
     case TYPE_STRING:
-      CHECK_EQ(base::Value::TYPE_STRING, value->GetType());
+      if (!value->IsType(base::Value::TYPE_STRING)) {
+        NOTREACHED();
+        return;
+      }
       break;
     case TYPE_URL: {
       std::string original;
-      CHECK(value->GetAsString(&original));
+      if (!value->GetAsString(&original)) {
+        NOTREACHED();
+        return;
+      }
       GURL fixed = URLFixerUpper::FixupURL(original, std::string());
       temp_value.reset(new base::StringValue(fixed.spec()));
       value = temp_value.get();
@@ -500,11 +515,17 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args, PrefType type) {
     case TYPE_LIST: {
       // In case we have a List pref we got a JSON string.
       std::string json_string;
-      CHECK(value->GetAsString(&json_string));
+      if (!value->GetAsString(&json_string)) {
+        NOTREACHED();
+        return;
+      }
       temp_value.reset(
           base::JSONReader::Read(json_string));
       value = temp_value.get();
-      CHECK_EQ(base::Value::TYPE_LIST, value->GetType());
+      if (!value->IsType(base::Value::TYPE_LIST)) {
+        NOTREACHED();
+        return;
+      }
       break;
     }
     default:

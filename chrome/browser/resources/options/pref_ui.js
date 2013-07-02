@@ -463,6 +463,36 @@ cr.define('options', function() {
   };
 
   /////////////////////////////////////////////////////////////////////////////
+  // PrefPortNumber class:
+
+  // Define a constructor that uses an input element as its underlying element.
+  var PrefPortNumber = cr.ui.define('input');
+
+  PrefPortNumber.prototype = {
+    // Set up the prototype chain
+    __proto__: PrefTextField.prototype,
+
+    /**
+     * Initialization function for the cr.ui framework.
+     */
+    decorate: function() {
+      var self = this;
+      self.type = 'text';
+      self.dataType = 'text';
+      PrefTextField.prototype.decorate.call(this);
+      self.oninput = function() {
+        // Note that using <input type="number"> is insufficient to restrict
+        // the input as it allows negative numbers and does not limit the
+        // number of charactes typed even if a range is set.  Furthermore,
+        // it sometimes produces strange repaint artifacts.
+        var filtered = self.value.replace(/[^0-9]/g, '');
+        if (filtered != self.value)
+          self.value = filtered;
+      };
+    }
+  };
+
+  /////////////////////////////////////////////////////////////////////////////
   // PrefButton class:
 
   // Define a constructor that uses a button element as its underlying element.
@@ -520,6 +550,7 @@ cr.define('options', function() {
     PrefRange: PrefRange,
     PrefSelect: PrefSelect,
     PrefTextField: PrefTextField,
+    PrefPortNumber: PrefPortNumber,
     PrefButton: PrefButton
   };
 

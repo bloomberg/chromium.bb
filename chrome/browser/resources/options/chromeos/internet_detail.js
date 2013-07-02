@@ -252,6 +252,15 @@ cr.define('options.internet', function() {
       });
 
       // Proxy
+      ['proxy-host-single-port',
+       'secure-proxy-port',
+       'socks-port',
+       'ftp-proxy-port',
+       'proxy-host-port'
+      ].forEach(function(id) {
+        options.PrefPortNumber.decorate($(id));
+      });
+
       options.proxyexceptions.ProxyExceptions.decorate($('ignored-host-list'));
       $('remove-host').addEventListener('click',
                                         this.handleRemoveProxyExceptions_);
