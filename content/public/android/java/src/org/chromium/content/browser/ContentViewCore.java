@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1393,6 +1393,11 @@ import java.util.Map;
             int pid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
             if (pid > 0) {
                 ChildProcessLauncher.bindAsHighPriority(pid);
+                // Normally the initial binding is removed in onRenderProcessSwap(), but it is
+                // possible to construct WebContents and spawn the renderer before passing it to
+                // ContentViewCore. In this case there will be no onRendererSwap() call and the
+                // initial binding will be removed here.
+                ChildProcessLauncher.removeInitialBinding(pid);
             }
         }
         setAccessibilityState(mAccessibilityManager.isEnabled());
@@ -2359,6 +2364,12 @@ import java.util.Map;
             if (newPid > 0) {
                 ChildProcessLauncher.bindAsHighPriority(newPid);
             }
+        }
+
+        // We want to remove the initial binding even if the ContentView is not attached, so that
+        // renderers for ContentViews loading in background do not retain the high priority.
+        if (newPid > 0) {
+            ChildProcessLauncher.removeInitialBinding(newPid);
         }
     }
 

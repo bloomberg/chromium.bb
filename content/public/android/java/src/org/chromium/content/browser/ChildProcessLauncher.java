@@ -153,7 +153,7 @@ public class ChildProcessLauncher {
             String[] commandLine, boolean inSandbox) {
         ChildProcessConnection connection = allocateConnection(context, inSandbox);
         if (connection != null) {
-            connection.bind(commandLine);
+            connection.start(commandLine);
         }
         return connection;
     }
@@ -308,14 +308,27 @@ public class ChildProcessLauncher {
     @CalledByNative
     static void stop(int pid) {
         Log.d(TAG, "stopping child connection: pid=" + pid);
-
         ChildProcessConnection connection = mServiceMap.remove(pid);
         if (connection == null) {
             Log.w(TAG, "Tried to stop non-existent connection to pid: " + pid);
             return;
         }
-        connection.unbind();
+        connection.stop();
         freeConnection(connection);
+    }
+
+    /**
+     * Remove the initial child process binding. Child processes are bound with initial binding to
+     * protect them from getting killed before they are put to use. This method allows to remove the
+     * binding once it is no longer needed.
+     */
+    static void removeInitialBinding(int pid) {
+        ChildProcessConnection connection = mServiceMap.get(pid);
+        if (connection == null) {
+            Log.w(TAG, "Tried to remove a binding for a non-existent connection to pid: " + pid);
+            return;
+        }
+        connection.removeInitialBinding();
     }
 
     /**
@@ -331,7 +344,7 @@ public class ChildProcessLauncher {
             Log.w(TAG, "Tried to bind a non-existent connection to pid: " + pid);
             return;
         }
-        connection.bindHighPriority();
+        connection.attachAsActive();
     }
 
     /**
@@ -345,7 +358,7 @@ public class ChildProcessLauncher {
             Log.w(TAG, "Tried to unbind non-existent connection to pid: " + pid);
             return;
         }
-        connection.unbindHighPriority(false);
+        connection.detachAsActive();
     }
 
     /**
