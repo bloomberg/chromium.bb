@@ -218,6 +218,8 @@ class MediaCodecBridge {
                 int channelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
                 int channelConfig = (channelCount == 1) ? AudioFormat.CHANNEL_OUT_MONO :
                         AudioFormat.CHANNEL_OUT_STEREO;
+                // Using 16bit PCM for output. Keep this value in sync with
+                // kBytesPerAudioOutputSample in media_codec_bridge.cc.
                 int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, channelConfig,
                         AudioFormat.ENCODING_PCM_16BIT);
                 mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, channelConfig,

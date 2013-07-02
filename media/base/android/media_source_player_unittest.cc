@@ -141,6 +141,23 @@ class MediaSourcePlayerTest : public testing::Test {
     return ack_params;
   }
 
+  MediaPlayerHostMsg_ReadFromDemuxerAck_Params
+        CreateReadFromDemuxerAckForVideo() {
+    MediaPlayerHostMsg_ReadFromDemuxerAck_Params ack_params;
+    ack_params.type = DemuxerStream::VIDEO;
+    ack_params.access_units.resize(1);
+    ack_params.access_units[0].status = DemuxerStream::kOk;
+    scoped_refptr<DecoderBuffer> buffer =
+        ReadTestDataFile("vp8-I-frame-320x240");
+    ack_params.access_units[0].data = std::vector<uint8>(
+        buffer->GetData(), buffer->GetData() + buffer->GetDataSize());
+    return ack_params;
+  }
+
+  base::TimeTicks StartTimeTicks() {
+    return player_->start_time_ticks_;
+  }
+
  protected:
   scoped_ptr<MockMediaPlayerManager> manager_;
   scoped_ptr<MediaSourcePlayer> player_;
@@ -267,7 +284,6 @@ TEST_F(MediaSourcePlayerTest, StartAfterSeekFinish) {
     return;
 
   // Test decoder job will not start until all pending seek event is handled.
-
   MediaPlayerHostMsg_DemuxerReady_Params params;
   params.audio_codec = kCodecVorbis;
   params.audio_channels = 2;
@@ -323,6 +339,77 @@ TEST_F(MediaSourcePlayerTest, StartImmediatelyAfterPause) {
   // The decoder job should finish and a new request will be sent.
   EXPECT_EQ(2, manager_->num_requests());
   EXPECT_FALSE(GetMediaDecoderJob(true)->is_decoding());
+}
+
+TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
+  if (!MediaCodecBridge::IsAvailable())
+    return;
+
+  // Test that when Start() is called, video decoder jobs will wait for audio
+  // decoder job before start decoding the data.
+  MediaPlayerHostMsg_DemuxerReady_Params params;
+  params.audio_codec = kCodecVorbis;
+  params.audio_channels = 2;
+  params.audio_sampling_rate = 44100;
+  params.is_audio_encrypted = false;
+  scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vorbis-extradata");
+  params.audio_extra_data = std::vector<uint8>(
+      buffer->GetData(),
+      buffer->GetData() + buffer->GetDataSize());
+  params.video_codec = kCodecVP8;
+  params.video_size = gfx::Size(320, 240);
+  params.is_video_encrypted = false;
+  Start(params);
+  EXPECT_EQ(0, manager_->num_requests());
+
+  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture(
+      new gfx::SurfaceTextureBridge(0));
+  gfx::ScopedJavaSurface surface(surface_texture.get());
+  player_->SetVideoSurface(surface.Pass());
+  EXPECT_EQ(1u, manager_->last_seek_request_id());
+  player_->OnSeekRequestAck(manager_->last_seek_request_id());
+
+  MediaDecoderJob* audio_decoder_job = GetMediaDecoderJob(true);
+  MediaDecoderJob* video_decoder_job = GetMediaDecoderJob(false);
+  EXPECT_EQ(2, manager_->num_requests());
+  EXPECT_FALSE(audio_decoder_job->is_decoding());
+  EXPECT_FALSE(video_decoder_job->is_decoding());
+
+  // Sending audio data to player, audio decoder should not start.
+  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForVideo());
+  EXPECT_FALSE(video_decoder_job->is_decoding());
+
+  // Sending video data to player, both decoders should start now.
+  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio());
+  EXPECT_TRUE(audio_decoder_job->is_decoding());
+  EXPECT_TRUE(video_decoder_job->is_decoding());
+}
+
+TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
+  if (!MediaCodecBridge::IsAvailable())
+    return;
+
+  // Test start time ticks will reset after decoder job underruns.
+  StartAudioDecoderJob();
+  EXPECT_TRUE(NULL != GetMediaDecoderJob(true));
+  EXPECT_EQ(1, manager_->num_requests());
+  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio());
+  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+
+  manager_->message_loop()->Run();
+  // The decoder job should finish and a new request will be sent.
+  EXPECT_EQ(2, manager_->num_requests());
+  EXPECT_FALSE(GetMediaDecoderJob(true)->is_decoding());
+  base::TimeTicks previous = StartTimeTicks();
+
+  // Let the decoder timeout and execute the OnDecoderStarved() callback.
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  manager_->message_loop()->RunUntilIdle();
+
+  // Send new data to the decoder. This should reset the start time ticks.
+  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio());
+  base::TimeTicks current = StartTimeTicks();
+  EXPECT_LE(100.0, (current - previous).InMillisecondsF());
 }
 
 }  // namespace media
