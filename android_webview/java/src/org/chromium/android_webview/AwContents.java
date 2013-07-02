@@ -964,13 +964,13 @@ public class AwContents {
     }
 
     public String[] getHttpAuthUsernamePassword(String host, String realm) {
-        return HttpAuthDatabase.getInstance(mContentViewCore.getContext())
+        return mBrowserContext.getHttpAuthDatabase(mContentViewCore.getContext())
                 .getHttpAuthUsernamePassword(host, realm);
     }
 
     public void setHttpAuthUsernamePassword(String host, String realm, String username,
             String password) {
-        HttpAuthDatabase.getInstance(mContentViewCore.getContext())
+        mBrowserContext.getHttpAuthDatabase(mContentViewCore.getContext())
                 .setHttpAuthUsernamePassword(host, realm, username, password);
     }
 
