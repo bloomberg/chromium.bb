@@ -14,7 +14,7 @@ function foo(a, b) {
     WebInspector.settings.showWhitespacesInEditor.set(true);
     var textEditor = InspectorTest.createTestEditor();
     textEditor.overrideViewportForTest(0, undefined, 3);
-    textEditor.mimeType = "text/javascript";
+    textEditor.setMimeType("text/javascript");
     textEditor.setText(foo.toString());
     InspectorTest.addResult("Actual text:");
     InspectorTest.addResult(textEditor.text());

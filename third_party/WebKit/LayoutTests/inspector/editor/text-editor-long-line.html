@@ -7,7 +7,7 @@
 function test()
 {
     var textEditor = InspectorTest.createTestEditor();
-    textEditor.mimeType = "text/javascript";
+    textEditor.setMimeType("text/javascript");
     textEditor._mainPanel._highlighter.setHighlightLineLimit(100);
 
     var src = "this.field = \"foo\"; /* comment */ function bar() { return null; }";

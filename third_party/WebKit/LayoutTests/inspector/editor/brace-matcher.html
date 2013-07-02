@@ -19,7 +19,7 @@ function bar() {
 
     var textEditor = InspectorTest.createTestEditor();
     textEditor.overrideViewportForTest(0, undefined, 3);
-    textEditor.mimeType = "text/javascript";
+    textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
     textEditor.setText(bar.toString());
     InspectorTest.addResult(textEditor.text());
