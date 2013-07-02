@@ -198,6 +198,10 @@ void RenderViewDevToolsAgentHost::OnClientAttached() {
 
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
       render_view_host_->GetProcess()->GetID());
+
+  // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
+  // ExtensionProcessManager no longer relies on this notification.
+  DevToolsManagerImpl::GetInstance()->NotifyObservers(this, true);
 }
 
 void RenderViewDevToolsAgentHost::OnClientDetached() {
@@ -220,6 +224,10 @@ void RenderViewDevToolsAgentHost::OnClientDetached() {
     ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
         render_process_host->GetID());
   }
+
+  // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
+  // ExtensionProcessManager no longer relies on this notification.
+  DevToolsManagerImpl::GetInstance()->NotifyObservers(this, false);
 }
 
 RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {

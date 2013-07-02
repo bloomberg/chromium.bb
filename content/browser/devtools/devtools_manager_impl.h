@@ -61,6 +61,7 @@ class CONTENT_EXPORT DevToolsManagerImpl
 
  private:
   friend class DevToolsAgentHostImpl;
+  friend class RenderViewDevToolsAgentHost;
   friend struct DefaultSingletonTraits<DevToolsManagerImpl>;
 
   // DevToolsAgentHost::CloseListener implementation.

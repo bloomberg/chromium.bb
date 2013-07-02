@@ -132,7 +132,6 @@ void DevToolsManagerImpl::BindClientHost(
   agent_to_client_host_[agent_host] = client_host;
   client_to_agent_host_[client_host] = agent_host;
   agent_host->set_close_listener(this);
-  NotifyObservers(agent_host, true);
 }
 
 void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHostImpl* agent_host,
@@ -153,7 +152,6 @@ void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHostImpl* agent_host,
         FROM_HERE,
         base::Bind(&DevToolsNetLogObserver::Detach));
   }
-  NotifyObservers(agent_host, false);
   // Lazy agent hosts can be deleted from within detach.
   // Do not access agent_host below this line.
   agent_host->Detach();
