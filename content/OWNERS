@@ -19,4 +19,3 @@ per-file content_renderer.gypi=jamesr@chromium.org
 per-file content_renderer.gypi=jochen@chromium.org
 per-file content_shell.gypi=jochen@chromium.org
 per-file content_tests.gypi=jochen@chromium.org
-per-file content_shell_and_tests.gyp=jochen@chromium.org

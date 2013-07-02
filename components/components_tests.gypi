@@ -43,7 +43,7 @@
             'encryptor',
 
             # Dependencies of intercept_navigation_resource_throttle_unittest.cc
-            '../content/content_shell_and_tests.gyp:test_support_content',
+            '../content/content.gyp:test_support_content',
             '../skia/skia.gyp:skia',
             'navigation_interception',
 
@@ -93,7 +93,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_perf',
-            '../content/content_shell_and_tests.gyp:test_support_content',
+            '../content/content.gyp:test_support_content',
             '../testing/gtest.gyp:gtest',
             '../ui/compositor/compositor.gyp:compositor',
             'visitedlink_browser',

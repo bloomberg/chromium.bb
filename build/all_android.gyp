@@ -17,7 +17,7 @@
       'target_name': 'All',
       'type': 'none',
       'dependencies': [
-        '../content/content_shell_and_tests.gyp:content_shell_apk',
+        '../content/content.gyp:content_shell_apk',
         '<@(android_app_targets)',
         'android_builder_tests',
         '../android_webview/android_webview.gyp:android_webview_apk',
@@ -33,7 +33,7 @@
       'type': 'none',
       'dependencies': [
         '../third_party/WebKit/public/all.gyp:all_blink',
-        '../content/content_shell_and_tests.gyp:content_shell_apk',
+        '../content/content.gyp:content_shell_apk',
       ],
     }, # target_name: all_webkit
     {
@@ -56,9 +56,9 @@
         '../cc/cc_tests.gyp:cc_unittests',
         '../chrome/chrome.gyp:unit_tests',
         '../components/components.gyp:components_unittests',
-        '../content/content_shell_and_tests.gyp:content_shell_test_apk',
-        '../content/content_shell_and_tests.gyp:content_unittests',
-        '../content/content_shell_and_tests.gyp:content_browsertests',
+        '../content/content.gyp:content_browsertests',
+        '../content/content.gyp:content_shell_test_apk',
+        '../content/content.gyp:content_unittests',
         '../gpu/gpu.gyp:gl_tests',
         '../gpu/gpu.gyp:gpu_unittests',
         '../ipc/ipc.gyp:ipc_tests',
@@ -98,9 +98,9 @@
             '../cc/cc_tests.gyp:cc_unittests_apk',
             '../chrome/chrome.gyp:unit_tests_apk',
             '../components/components.gyp:components_unittests_apk',
-            '../content/content_shell_and_tests.gyp:content_browsertests_apk',
-            '../content/content_shell_and_tests.gyp:content_unittests_apk',
-            '../content/content_shell_and_tests.gyp:video_decode_accelerator_unittest_apk',
+            '../content/content.gyp:content_browsertests_apk',
+            '../content/content.gyp:content_unittests_apk',
+            '../content/content.gyp:video_decode_accelerator_unittest_apk',
             '../gpu/gpu.gyp:gl_tests_apk',
             '../gpu/gpu.gyp:gpu_unittests_apk',
             '../ipc/ipc.gyp:ipc_tests_apk',
