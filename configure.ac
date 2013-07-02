@@ -127,7 +127,6 @@ fi
 AM_CONDITIONAL([HAVE_PUBLICAN], [test "x$PUBLICAN" != "x"])
 
 AC_CONFIG_FILES([Makefile
-		 wayland-scanner.m4
 		 cursor/Makefile
 		 cursor/wayland-cursor.pc
 		 cursor/wayland-cursor-uninstalled.pc
@@ -138,8 +137,10 @@ AC_CONFIG_FILES([Makefile
 		 src/Makefile
 		 src/wayland-server-uninstalled.pc
 		 src/wayland-client-uninstalled.pc
+		 src/wayland-scanner-uninstalled.pc
 		 src/wayland-server.pc
 		 src/wayland-client.pc
+		 src/wayland-scanner.pc
 		 src/wayland-version.h
 		 protocol/Makefile
 		 tests/Makefile])

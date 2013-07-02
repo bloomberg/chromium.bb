@@ -57,6 +57,9 @@ wayland_scanner_SOURCES =				\
 wayland_scanner_LDADD = $(EXPAT_LIBS) libwayland-util.la
 
 $(BUILT_SOURCES) : wayland-scanner
+
+scannerpkgconfigdir = $(datadir)/pkgconfig
+scannerpkgconfig_DATA = wayland-scanner.pc
 endif
 
 BUILT_SOURCES =					\
