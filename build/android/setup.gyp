@@ -26,6 +26,27 @@
   ],
   'targets': [
     {
+      'target_name': 'get_build_device_configurations',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'get configurations',
+          'inputs': [
+            'gyp/util/build_device.py',
+            'gyp/get_device_configuration.py',
+          ],
+          'outputs': [
+            '<(build_device_config_path)',
+            '<(build_device_config_path).fake',
+          ],
+          'action': [
+            'python', 'gyp/get_device_configuration.py',
+            '--output=<(build_device_config_path)',
+          ],
+        }
+      ],
+    },
+    {
       # Target for creating common output build directories. Creating output
       # dirs beforehand ensures that build scripts can assume these folders to
       # exist and there are no race conditions resulting from build scripts
@@ -37,11 +58,11 @@
         {
           'action_name': 'create_java_output_dirs',
           'variables' : {
-          'output_dirs' : [
-            '<(PRODUCT_DIR)/apks',
-            '<(PRODUCT_DIR)/lib.java',
-            '<(PRODUCT_DIR)/test.lib.java',
-           ]
+            'output_dirs' : [
+              '<(PRODUCT_DIR)/apks',
+              '<(PRODUCT_DIR)/lib.java',
+              '<(PRODUCT_DIR)/test.lib.java',
+            ]
           },
           'inputs' : [],
           # By not specifying any outputs, we ensure that this command isn't

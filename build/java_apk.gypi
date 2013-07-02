@@ -246,6 +246,7 @@
           },
           'dependencies': [
             '<(DEPTH)/tools/android/md5sum/md5sum.gyp:md5sum',
+            '<(DEPTH)/build/android/setup.gyp:get_build_device_configurations',
           ],
           'actions': [
             {
@@ -258,6 +259,7 @@
                 '<(DEPTH)/build/android/gyp/util/build_utils.py',
                 '<(DEPTH)/build/android/gyp/create_device_library_links.py',
                 '<(apk_install_record)',
+                '<(build_device_config_path)',
                 '<(ordered_libraries_file)',
               ],
               'outputs': [
@@ -265,6 +267,7 @@
               ],
               'action': [
                 'python', '<(DEPTH)/build/android/gyp/create_device_library_links.py',
+                '--build-device-configuration=<(build_device_config_path)',
                 '--libraries-json=<(ordered_libraries_file)',
                 '--script-host-path=<(symlink_script_host_path)',
                 '--script-device-path=<(symlink_script_device_path)',
@@ -353,21 +356,18 @@
           'inputs': [
             '<(DEPTH)/build/android/gyp/util/build_utils.py',
             '<(DEPTH)/build/android/gyp/apk_install.py',
+            '<(build_device_config_path)',
             '<(incomplete_apk_path)',
           ],
           'outputs': [
             '<(apk_install_record)',
-            # If a user switches the connected device, the APK may need to be
-            # installed even if there have been no changes. To ensure that the
-            # APK on the device is always up-to-date, this step should always
-            # be triggered.
-            '<(apk_install_record).fake',
           ],
           'action': [
             'python', '<(DEPTH)/build/android/gyp/apk_install.py',
             '--android-sdk-tools=<(android_sdk_tools)',
             '--apk-path=<(incomplete_apk_path)',
-            '--install-record=<(apk_install_record)'
+            '--build-device-configuration=<(build_device_config_path)',
+            '--install-record=<(apk_install_record)',
           ],
         },
       ],

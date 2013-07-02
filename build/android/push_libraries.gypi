@@ -29,17 +29,14 @@
     '<(DEPTH)/build/android/gyp/util/md5_check.py',
     '<(DEPTH)/build/android/gyp/push_libraries.py',
     '<(strip_stamp)',
+    '<(build_device_config_path)',
   ],
   'outputs': [
     '<(push_stamp)',
-    # If a user switches the connected device, new libraries may
-    # need to be pushed even if there have been no changes. To
-    # ensure that the libraries on the device are always
-    # up-to-date, this step should always be triggered.
-    '<(push_stamp).fake',
   ],
   'action': [
     'python', '<(DEPTH)/build/android/gyp/push_libraries.py',
+    '--build-device-configuration=<(build_device_config_path)',
     '--libraries-dir=<(libraries_source_dir)',
     '--device-dir=<(device_library_dir)',
     '--libraries-json=<(ordered_libraries_file)',

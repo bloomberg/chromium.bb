@@ -1087,6 +1087,10 @@
     'android_app_version_name%': 'Developer Build',
     'android_app_version_code%': 0,
 
+
+    # Contains data about the attached devices for gyp_managed_install.
+    'build_device_config_path': '<(PRODUCT_DIR)/build_devices.cfg',
+
     'sas_dll_exists': '<!(python <(DEPTH)/build/dir_exists.py <(sas_dll_path))',
     'wix_exists': '<!(python <(DEPTH)/build/dir_exists.py <(wix_path))',
 

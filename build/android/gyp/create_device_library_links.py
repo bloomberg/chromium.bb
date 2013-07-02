@@ -16,17 +16,17 @@ import optparse
 import os
 import sys
 
+from util import build_device
 from util import build_utils
 from util import md5_check
 
 BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(BUILD_ANDROID_DIR)
 
-from pylib import android_commands
 from pylib.utils import apk_helper
 
-def RunShellCommand(adb, cmd):
-  output = adb.RunShellCommand(cmd)
+def RunShellCommand(device, cmd):
+  output = device.RunShellCommand(cmd)
 
   if output:
     raise Exception(
@@ -53,15 +53,19 @@ def CreateSymlinkScript(options):
 
 
 def TriggerSymlinkScript(options):
+  device = build_device.GetBuildDeviceFromPath(
+      options.build_device_configuration)
+  if not device:
+    return
+
   apk_package = apk_helper.GetPackageName(options.apk)
   apk_libraries_dir = '/data/data/%s/lib' % apk_package
 
-  adb = android_commands.AndroidCommands()
   device_dir = os.path.dirname(options.script_device_path)
   mkdir_cmd = ('if [ ! -e %(dir)s ]; then mkdir -p %(dir)s; fi ' %
       { 'dir': device_dir })
-  RunShellCommand(adb, mkdir_cmd)
-  adb.PushIfNeeded(options.script_host_path, options.script_device_path)
+  RunShellCommand(device, mkdir_cmd)
+  device.PushIfNeeded(options.script_host_path, options.script_device_path)
 
   trigger_cmd = (
       'APK_LIBRARIES_DIR=%(apk_libraries_dir)s; '
@@ -72,15 +76,10 @@ def TriggerSymlinkScript(options):
           'target_dir': options.target_dir,
           'script_device_path': options.script_device_path
           }
-  RunShellCommand(adb, trigger_cmd)
+  RunShellCommand(device, trigger_cmd)
 
 
 def main(argv):
-  if not build_utils.IsDeviceReady():
-    build_utils.PrintBigWarning(
-        'Zero (or multiple) devices attached. Skipping creating symlinks.')
-    return
-
   parser = optparse.OptionParser()
   parser.add_option('--apk', help='Path to the apk.')
   parser.add_option('--script-host-path',
@@ -92,6 +91,8 @@ def main(argv):
   parser.add_option('--target-dir',
       help='Device directory that contains the target libraries for symlinks.')
   parser.add_option('--stamp', help='Path to touch on success.')
+  parser.add_option('--build-device-configuration',
+      help='Path to build device configuration.')
   options, _ = parser.parse_args()
 
   required_options = ['apk', 'libraries_json', 'script_host_path',

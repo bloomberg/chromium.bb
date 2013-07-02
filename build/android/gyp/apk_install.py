@@ -14,20 +14,18 @@ import re
 import subprocess
 import sys
 
+from util import build_device
 from util import build_utils
 from util import md5_check
 
 BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(BUILD_ANDROID_DIR)
 
-from pylib import android_commands
 from pylib.utils import apk_helper
 
-
-def GetMetadata(apk_package):
+def GetNewMetadata(device, apk_package):
   """Gets the metadata on the device for the apk_package apk."""
-  adb = android_commands.AndroidCommands()
-  output = adb.RunShellCommand('ls -l /data/app/')
+  output = device.RunShellCommand('ls -l /data/app/')
   # Matches lines like:
   # -rw-r--r-- system   system    7376582 2013-04-19 16:34 org.chromium.chrome.testshell.apk
   # -rw-r--r-- system   system    7376582 2013-04-19 16:34 org.chromium.chrome.testshell-1.apk
@@ -35,23 +33,19 @@ def GetMetadata(apk_package):
   matches = filter(apk_matcher, output)
   return matches[0] if matches else None
 
-
-def HasInstallMetadataChanged(apk_package, metadata_path):
+def HasInstallMetadataChanged(device, apk_package, metadata_path):
   """Checks if the metadata on the device for apk_package has changed."""
   if not os.path.exists(metadata_path):
     return True
 
   with open(metadata_path, 'r') as expected_file:
-    return expected_file.read() != GetMetadata(apk_package)
+    return expected_file.read() != device.GetInstallMetadata(apk_package)
 
 
-def RecordInstallMetadata(apk_package, metadata_path):
+def RecordInstallMetadata(device, apk_package, metadata_path):
   """Records the metadata from the device for apk_package."""
-  metadata = GetMetadata(apk_package)
+  metadata = GetNewMetadata(device, apk_package)
   if not metadata:
-    if not android_commands.AndroidCommands().IsRootEnabled():
-      raise Exception('APK install failed unexpectedly -- root not enabled on '
-                      'the device (run adb root).')
     raise Exception('APK install failed unexpectedly.')
 
   with open(metadata_path, 'w') as outfile:
@@ -59,11 +53,6 @@ def RecordInstallMetadata(apk_package, metadata_path):
 
 
 def main(argv):
-  if not build_utils.IsDeviceReady():
-    build_utils.PrintBigWarning(
-        'Zero (or multiple) devices attached. Skipping APK install.')
-    return
-
   parser = optparse.OptionParser()
   parser.add_option('--android-sdk-tools',
       help='Path to Android SDK tools.')
@@ -71,28 +60,29 @@ def main(argv):
       help='Path to .apk to install.')
   parser.add_option('--install-record',
       help='Path to install record (touched only when APK is installed).')
+  parser.add_option('--build-device-configuration',
+      help='Path to build device configuration.')
   parser.add_option('--stamp',
       help='Path to touch on success.')
   options, _ = parser.parse_args()
 
-  # TODO(cjhopman): Should this install to all devices/be configurable?
-  install_cmd = [
-      os.path.join(options.android_sdk_tools, 'adb'),
-      'install', '-r',
-      options.apk_path]
+  device = build_device.GetBuildDeviceFromPath(
+      options.build_device_configuration)
+  if not device:
+    return
 
-  serial_number = android_commands.AndroidCommands().Adb().GetSerialNumber()
+  serial_number = device.GetSerialNumber()
   apk_package = apk_helper.GetPackageName(options.apk_path)
 
   metadata_path = '%s.%s.device.time.stamp' % (options.apk_path, serial_number)
 
   # If the APK on the device does not match the one that was last installed by
   # the build, then the APK has to be installed (regardless of the md5 record).
-  force_install = HasInstallMetadataChanged(apk_package, metadata_path)
+  force_install = HasInstallMetadataChanged(device, apk_package, metadata_path)
 
   def Install():
-    build_utils.CheckCallDie(install_cmd)
-    RecordInstallMetadata(apk_package, metadata_path)
+    device.Install(options.apk_path, reinstall=True)
+    RecordInstallMetadata(device, apk_package, metadata_path)
     build_utils.Touch(options.install_record)
 
 
@@ -101,7 +91,6 @@ def main(argv):
       Install,
       record_path=record_path,
       input_paths=[options.apk_path],
-      input_strings=install_cmd,
       force=force_install)
 
   if options.stamp:
