@@ -222,7 +222,7 @@ bool Socket::Connect() {
   }
   int socket_errno;
   socklen_t opt_len = sizeof(socket_errno);
-  if (!getsockopt(socket_, SOL_SOCKET, SO_ERROR, &socket_errno, &opt_len) < 0) {
+  if (getsockopt(socket_, SOL_SOCKET, SO_ERROR, &socket_errno, &opt_len) < 0) {
     LOG(ERROR) << "getsockopt(): " << safe_strerror(errno);
     SetSocketError();
     PRESERVE_ERRNO_HANDLE_EINTR(fcntl(socket_, F_SETFL, kFlags));

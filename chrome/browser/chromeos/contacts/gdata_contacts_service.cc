@@ -645,7 +645,7 @@ class GDataContactsService::DownloadContactsRequest {
       return false;
     }
     const DictionaryValue* category_dict = NULL;
-    if (!category_list->GetSize() == 1 ||
+    if (category_list->GetSize() != 1 ||
         !category_list->GetDictionary(0, &category_dict)) {
       LOG(WARNING) << "Unable to get dictionary from category list of size "
                    << category_list->GetSize();
