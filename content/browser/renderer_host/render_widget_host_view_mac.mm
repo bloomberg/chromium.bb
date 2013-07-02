@@ -2465,6 +2465,8 @@ void RenderWidgetHostViewMac::FrameSwapped() {
 }
 
 - (void)setFrameSize:(NSSize)newSize {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewCocoa::setFrameSize");
+
   // NB: -[NSView setFrame:] calls through -setFrameSize:, so overriding
   // -setFrame: isn't neccessary.
   [super setFrameSize:newSize];
@@ -2472,6 +2474,13 @@ void RenderWidgetHostViewMac::FrameSwapped() {
     renderWidgetHostView_->render_widget_host_->SendScreenRects();
     renderWidgetHostView_->render_widget_host_->WasResized();
   }
+
+  // This call is necessary to make the window wait for a new frame at the new
+  // size to be available before the resize completes. Calling only
+  // setLayerContentsRedrawPolicy:NSViewLayerContentsRedrawOnSetNeedsDisplay on
+  // this is not sufficient.
+  [renderWidgetHostView_->software_layer_ setNeedsDisplay];
+  [renderWidgetHostView_->compositing_iosurface_layer_ setNeedsDisplay];
 }
 
 - (void)callSetNeedsDisplayInRect {
@@ -3649,6 +3658,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 // Delegate methods for the software CALayer
 - (void)drawLayer:(CALayer*)layer
         inContext:(CGContextRef)context {
+  TRACE_EVENT0("browser", "CompositingIOSurfaceLayer::drawLayer");
+
   DCHECK(renderWidgetHostView_->use_core_animation_);
   DCHECK([layer isEqual:renderWidgetHostView_->software_layer_]);
 
