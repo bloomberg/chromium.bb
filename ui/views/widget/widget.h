@@ -165,7 +165,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // If NULL, a default implementation will be constructed.
     WidgetDelegate* delegate;
     bool child;
-    bool transient;
     // If TRANSLUCENT_WINDOW, the widget may be fully or partially transparent.
     // If OPAQUE_WINDOW, we can perform optimizations based on the widget being
     // fully opaque.  Defaults to TRANSLUCENT_WINDOW if

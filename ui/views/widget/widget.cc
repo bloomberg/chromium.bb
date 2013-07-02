@@ -104,7 +104,6 @@ Widget::InitParams::InitParams()
     : type(TYPE_WINDOW),
       delegate(NULL),
       child(false),
-      transient(false),
       opacity((ViewsDelegate::views_delegate &&
                ViewsDelegate::views_delegate->UseTransparentWindows()) ?
               TRANSLUCENT_WINDOW : INFER_OPACITY),
@@ -130,7 +129,6 @@ Widget::InitParams::InitParams(Type type)
     : type(type),
       delegate(NULL),
       child(type == TYPE_CONTROL),
-      transient(type == TYPE_BUBBLE || type == TYPE_POPUP || type == TYPE_MENU),
       opacity((type == TYPE_WINDOW &&
                ViewsDelegate::views_delegate &&
                ViewsDelegate::views_delegate->UseTransparentWindows()) ?
