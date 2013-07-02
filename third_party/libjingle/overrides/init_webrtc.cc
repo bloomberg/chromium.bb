@@ -53,21 +53,17 @@ DestroyWebRtcMediaEngineFunction g_destroy_webrtc_media_engine = NULL;
 // Returns the full or relative path to the libpeerconnection module depending
 // on what platform we're on.
 static base::FilePath GetLibPeerConnectionPath() {
-#if defined(OS_WIN)
-  base::FilePath path(FILE_PATH_LITERAL("libpeerconnection.dll"));
-#elif defined(OS_MACOSX)
-  // Simulate '@loader_path/Libraries'.
   base::FilePath path;
   CHECK(PathService::Get(base::DIR_MODULE, &path));
+#if defined(OS_WIN)
+  path = path.Append(FILE_PATH_LITERAL("libpeerconnection.dll"));
+#elif defined(OS_MACOSX)
+  // Simulate '@loader_path/Libraries'.
   path = path.Append(FILE_PATH_LITERAL("Libraries"))
              .Append(FILE_PATH_LITERAL("libpeerconnection.so"));
 #elif defined(OS_ANDROID)
-  base::FilePath path;
-  CHECK(PathService::Get(base::DIR_MODULE, &path));
   path = path.Append(FILE_PATH_LITERAL("libpeerconnection.so"));
 #else
-  base::FilePath path;
-  CHECK(PathService::Get(base::DIR_MODULE, &path));
   path = path.Append(FILE_PATH_LITERAL("lib"))
              .Append(FILE_PATH_LITERAL("libpeerconnection.so"));
 #endif
