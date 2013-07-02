@@ -610,11 +610,13 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // Ensure any field trials specified on the command line are initialized.
   // Also stop the metrics service so that we don't pollute UMA.
   if (command_line->HasSwitch(switches::kForceFieldTrials)) {
-    std::string persistent = command_line->GetSwitchValueASCII(
-        switches::kForceFieldTrials);
-    bool ret = base::FieldTrialList::CreateTrialsFromString(persistent);
-    CHECK(ret) << "Invalid --" << switches::kForceFieldTrials <<
-                  " list specified.";
+    // Create field trials without activating them, so that this behaves in a
+    // consistent manner with field trials created from the server.
+    bool result = base::FieldTrialList::CreateTrialsFromString(
+        command_line->GetSwitchValueASCII(switches::kForceFieldTrials),
+        base::FieldTrialList::DONT_ACTIVATE_TRIALS);
+    CHECK(result) << "Invalid --" << switches::kForceFieldTrials
+                  << " list specified.";
   }
 
   chrome_variations::VariationsService* variations_service =

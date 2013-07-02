@@ -393,7 +393,8 @@ TEST_F(FieldTrialTest, Restore) {
   ASSERT_FALSE(FieldTrialList::TrialExists("Some_name"));
   ASSERT_FALSE(FieldTrialList::TrialExists("xxx"));
 
-  FieldTrialList::CreateTrialsFromString("Some_name/Winner/xxx/yyyy/");
+  FieldTrialList::CreateTrialsFromString("Some_name/Winner/xxx/yyyy/",
+                                         FieldTrialList::DONT_ACTIVATE_TRIALS);
 
   FieldTrial* trial = FieldTrialList::Find("Some_name");
   ASSERT_NE(static_cast<FieldTrial*>(NULL), trial);
@@ -407,12 +408,14 @@ TEST_F(FieldTrialTest, Restore) {
 }
 
 TEST_F(FieldTrialTest, BogusRestore) {
-  EXPECT_FALSE(FieldTrialList::CreateTrialsFromString("MissingSlash"));
-  EXPECT_FALSE(FieldTrialList::CreateTrialsFromString("MissingGroupName/"));
   EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
-      "MissingFinalSlash/gname"));
+      "MissingSlash", FieldTrialList::DONT_ACTIVATE_TRIALS));
   EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
-      "noname, only group/"));
+      "MissingGroupName/", FieldTrialList::DONT_ACTIVATE_TRIALS));
+  EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
+      "MissingFinalSlash/gname", FieldTrialList::DONT_ACTIVATE_TRIALS));
+  EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
+      "noname, only group/", FieldTrialList::DONT_ACTIVATE_TRIALS));
 }
 
 TEST_F(FieldTrialTest, DuplicateRestore) {
@@ -426,16 +429,19 @@ TEST_F(FieldTrialTest, DuplicateRestore) {
   EXPECT_EQ("Some name/Winner/", save_string);
 
   // It is OK if we redundantly specify a winner.
-  EXPECT_TRUE(FieldTrialList::CreateTrialsFromString(save_string));
+  EXPECT_TRUE(FieldTrialList::CreateTrialsFromString(
+      save_string, FieldTrialList::DONT_ACTIVATE_TRIALS));
 
   // But it is an error to try to change to a different winner.
-  EXPECT_FALSE(FieldTrialList::CreateTrialsFromString("Some name/Loser/"));
+  EXPECT_FALSE(FieldTrialList::CreateTrialsFromString(
+      "Some name/Loser/", FieldTrialList::DONT_ACTIVATE_TRIALS));
 }
 
-TEST_F(FieldTrialTest, CreateTrialsFromStringAreActive) {
+TEST_F(FieldTrialTest, CreateTrialsFromStringActive) {
   ASSERT_FALSE(FieldTrialList::TrialExists("Abc"));
   ASSERT_FALSE(FieldTrialList::TrialExists("Xyz"));
-  ASSERT_TRUE(FieldTrialList::CreateTrialsFromString("Abc/def/Xyz/zyx/"));
+  ASSERT_TRUE(FieldTrialList::CreateTrialsFromString(
+      "Abc/def/Xyz/zyx/", FieldTrialList::ACTIVATE_TRIALS));
 
   FieldTrial::ActiveGroups active_groups;
   FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
@@ -446,11 +452,52 @@ TEST_F(FieldTrialTest, CreateTrialsFromStringAreActive) {
   EXPECT_EQ("zyx", active_groups[1].group_name);
 }
 
-TEST_F(FieldTrialTest, CreateTrialsFromStringObserver) {
+TEST_F(FieldTrialTest, CreateTrialsFromStringNotActive) {
+  ASSERT_FALSE(FieldTrialList::TrialExists("Abc"));
+  ASSERT_FALSE(FieldTrialList::TrialExists("Xyz"));
+  ASSERT_TRUE(FieldTrialList::CreateTrialsFromString(
+      "Abc/def/Xyz/zyx/", FieldTrialList::DONT_ACTIVATE_TRIALS));
+
+  FieldTrial::ActiveGroups active_groups;
+  FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+  ASSERT_TRUE(active_groups.empty());
+
+  // Check that the values still get returned and querying them activates them.
+  EXPECT_EQ("def", FieldTrialList::FindFullName("Abc"));
+  EXPECT_EQ("zyx", FieldTrialList::FindFullName("Xyz"));
+
+  FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
+  ASSERT_EQ(2U, active_groups.size());
+  EXPECT_EQ("Abc", active_groups[0].trial_name);
+  EXPECT_EQ("def", active_groups[0].group_name);
+  EXPECT_EQ("Xyz", active_groups[1].trial_name);
+  EXPECT_EQ("zyx", active_groups[1].group_name);
+}
+
+TEST_F(FieldTrialTest, CreateTrialsFromStringActiveObserver) {
   ASSERT_FALSE(FieldTrialList::TrialExists("Abc"));
 
   TestFieldTrialObserver observer;
-  ASSERT_TRUE(FieldTrialList::CreateTrialsFromString("Abc/def/"));
+  ASSERT_TRUE(FieldTrialList::CreateTrialsFromString(
+      "Abc/def/", FieldTrialList::ACTIVATE_TRIALS));
+
+  RunLoop().RunUntilIdle();
+  EXPECT_EQ("Abc", observer.trial_name());
+  EXPECT_EQ("def", observer.group_name());
+}
+
+TEST_F(FieldTrialTest, CreateTrialsFromStringNotActiveObserver) {
+  ASSERT_FALSE(FieldTrialList::TrialExists("Abc"));
+
+  TestFieldTrialObserver observer;
+  ASSERT_TRUE(FieldTrialList::CreateTrialsFromString(
+      "Abc/def/", FieldTrialList::DONT_ACTIVATE_TRIALS));
+  RunLoop().RunUntilIdle();
+  // Observer shouldn't be notified.
+  EXPECT_TRUE(observer.trial_name().empty());
+
+  // Check that the values still get returned and querying them activates them.
+  EXPECT_EQ("def", FieldTrialList::FindFullName("Abc"));
 
   RunLoop().RunUntilIdle();
   EXPECT_EQ("Abc", observer.trial_name());

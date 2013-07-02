@@ -186,8 +186,12 @@ int RendererMain(const MainFunctionParams& parameters) {
   if (parsed_command_line.HasSwitch(switches::kForceFieldTrials)) {
     std::string persistent = parsed_command_line.GetSwitchValueASCII(
         switches::kForceFieldTrials);
-    bool ret = base::FieldTrialList::CreateTrialsFromString(persistent);
-    DCHECK(ret);
+    // Field trials are created in an "activated" state to ensure they get
+    // reported in crash reports.
+    bool result = base::FieldTrialList::CreateTrialsFromString(
+        parsed_command_line.GetSwitchValueASCII(switches::kForceFieldTrials),
+        base::FieldTrialList::ACTIVATE_TRIALS);
+    DCHECK(result);
   }
 
 #if defined(ENABLE_PLUGINS)

@@ -151,8 +151,8 @@ TEST_F(InstantExtendedAPIEnabledTest, EnabledViaCommandLineFlag) {
 }
 
 TEST_F(InstantExtendedAPIEnabledTest, EnabledViaFinchFlag) {
-  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
-      "InstantExtended/Group1 espv:42/"));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
+                                                     "Group1 espv:42"));
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
   EXPECT_EQ(42ul, EmbeddedSearchPageVersion());
   ValidateMetrics(INSTANT_EXTENDED_NOT_SET);
@@ -160,8 +160,8 @@ TEST_F(InstantExtendedAPIEnabledTest, EnabledViaFinchFlag) {
 
 TEST_F(InstantExtendedAPIEnabledTest, DisabledViaCommandLineFlag) {
   GetCommandLine()->AppendSwitch(switches::kDisableInstantExtendedAPI);
-  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
-      "InstantExtended/Group1 espv:2/"));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
+                                                     "Group1 espv:2"));
   EXPECT_FALSE(IsInstantExtendedAPIEnabled());
   EXPECT_EQ(0ul, EmbeddedSearchPageVersion());
   ValidateMetrics(INSTANT_EXTENDED_OPT_OUT);
@@ -451,8 +451,8 @@ TEST_F(SearchTest, IsInstantCheckboxEnabledExtendedEnabledWithInstant) {
   EnableInstantExtendedAPIForTesting();
 
   // Enable Instant.
-  ASSERT_TRUE(base::FieldTrialList::CreateTrialsFromString(
-      "InstantExtended/Group1 allow_instant:1/"));
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
+                                                     "Group1 allow_instant:1"));
   ASSERT_TRUE(IsInstantCheckboxVisible());
 
   // Enable suggest.

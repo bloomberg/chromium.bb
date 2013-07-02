@@ -295,6 +295,13 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
 // Only one instance of this class exists.
 class BASE_EXPORT FieldTrialList {
  public:
+  // Specifies whether field trials should be activated (marked as "used"), when
+  // created using |CreateTrialsFromString()|.
+  enum FieldTrialActivationMode {
+    DONT_ACTIVATE_TRIALS,
+    ACTIVATE_TRIALS,
+  };
+
   // Define a separator character to use when creating a persistent form of an
   // instance.  This is intended for use as a command line argument, passed to a
   // second process to mimic our state (i.e., provide the same group name).
@@ -392,8 +399,10 @@ class BASE_EXPORT FieldTrialList {
   // used in a non-browser process, to carry randomly selected state in a
   // browser process into this non-browser process, but could also be invoked
   // through a command line argument to the browser process. The created field
-  // trials are marked as "used" for the purposes of active trial reporting.
-  static bool CreateTrialsFromString(const std::string& prior_trials);
+  // trials are marked as "used" for the purposes of active trial reporting if
+  // |mode| is ACTIVATE_TRIALS.
+  static bool CreateTrialsFromString(const std::string& prior_trials,
+                                     FieldTrialActivationMode mode);
 
   // Create a FieldTrial with the given |name| and using 100% probability for
   // the FieldTrial, force FieldTrial to have the same group string as
