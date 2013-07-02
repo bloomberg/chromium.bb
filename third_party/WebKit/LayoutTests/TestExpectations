@@ -240,10 +240,6 @@ webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Pass Timeo
 webkit.org/b/60877 loader/navigation-while-deferring-loads.html [ Skip ]
 webkit.org/b/60877 loader/load-defer-resume-crash.html [ Skip ]
 
-# Unskip when DeviceMotion is implemented and enabled at runtime.
-crbug.com/229080 fast/dom/DeviceMotion/create-event.html [ Failure ]
-crbug.com/229080 fast/dom/DeviceMotion/optional-event-properties.html [ Failure ]
-
 # Overflowing LayoutUnits cause RenderGeometryMap assertions
 webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-crash.html [ Skip ]
 webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-crash2.html [ Skip ]
@@ -255,29 +251,14 @@ webkit.org/b/100985 media/progress-events-generated-correctly.html [ Failure Pas
 
 # CSS3 Text support is not yet enabled for all properties (must replace CSS3_TEXT with a runtime flag).
 webkit.org/b/112755 fast/css3-text/css3-text-indent/text-indent-each-line.html [ ImageOnlyFailure ]
-webkit.org/b/58491 [ Mac ] fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-underline-position.html [ Failure Pass ]
-webkit.org/b/76173 [ Mac ] fast/css3-text/css3-text-align-last/getComputedStyle/getComputedStyle-text-align-last-inherited.html [ Failure Pass ]
-webkit.org/b/76173 [ Mac ] fast/css3-text/css3-text-align-last/getComputedStyle/getComputedStyle-text-align-last.html [ Failure Pass ]
-webkit.org/b/112755 [ Mac ] fast/css3-text/css3-text-indent/getComputedStyle/getComputedStyle-text-indent.html [ Failure Pass ]
-webkit.org/b/112755 [ Mac ] fast/css3-text/css3-text-indent/getComputedStyle/getComputedStyle-text-indent-inherited.html [ Failure Pass ]
-
-# Chromium does not support smart pasting in text controls yet.
-webkit.org/b/60830 editing/pasteboard/smart-paste-in-text-control.html [ Crash Failure ImageOnlyFailure Pass Timeout ]
 
 # We expect V8 to crash in an orderly fashion instead of throwing a JavaScript out-of-memory error.
 webkit.org/b/103348 fast/js/string-replacement-outofmemory.html [ Crash ]
-
-# This test's image expectations might need updating.
-crbug.com/238633 [ Win Linux ] editing/style/unbold-in-bold.html [ ImageOnlyFailure ]
 
 webkit.org/b/112923 fast/forms/calendar-picker/calendar-picker-appearance-month-popup.html [ ImageOnlyFailure Pass ]
 
 # Skipped until/unless color-correction is reimplemented.
 crbug.com/28005 fast/css/parsing-color-correction.html [ Skip ]
-
-# -----------------------------------------------------------------
-# TESTS TO FIX
-# -----------------------------------------------------------------
 
 # LightTPD doesn't accept unknown HTTP methods
 crbug.com/30536 [ Win ] http/tests/xmlhttprequest/methods-lower-case.html [ Skip ]
@@ -295,8 +276,6 @@ crbug.com/24197 fast/css/disabled-author-styles.html [ Skip ]
 
 # Test itself passes, but causes subsequent tests to fail.
 webkit.org/b/83260 fast/text/international/embed-bidi-style-in-isolate-crash.html [ Skip ]
-
-webkit.org/b/109415 editing/spelling/spellcheck-async.html [ Failure Pass ]
 
 # -----------------------------------------------------------------
 # Inspector tests
@@ -897,10 +876,6 @@ webkit.org/b/75111 fast/workers/storage/use-same-database-in-page-and-workers.ht
 # Crashes due to an OOM error on V8.
 crbug.com/108832 fast/js/array-splice.html [ Crash Timeout ]
 
-# Text failures that look like they can be rebaselined away.
-crbug.com/240353 compositing/tiled-layers-hidpi.html [ Failure ]
-crbug.com/240353 virtual/softwarecompositing/tiled-layers-hidpi.html [ Failure ]
-
 webkit.org/b/48454 compositing/tiling/huge-layer-img.html [ Failure Pass ]
 
 # New reftest failing on Win7.
@@ -1318,8 +1293,6 @@ crbug.com/239811 crbug.com/239811 http/tests/security/mixedContent/about-blank-i
 crbug.com/239811 webkit.org/b/112598 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure Pass ]
 crbug.com/239811 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/data-url-iframe-in-main-frame.html [ Failure Pass ]
 
-# Need rebaseline
-
 crbug.com/230554 [ Linux Mac Debug ] plugins/drag-events.html [ Crash Pass ]
 
 # From WebKit's generic expectations.
@@ -1358,11 +1331,6 @@ crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
 # These tests use paths and need a rebaseline after crbug.com/227397
 crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ ImageOnlyFailure Pass ]
-
-# These tests need a rebasline after crbug.com/224317
-# Note, after the rebaseline need to uncomment another more-specific instance of each of these.
-crbug.com/224317 virtual/softwarecompositing/tiling/huge-layer-img.html [ Slow Failure Pass ]
-crbug.com/224317 fast/forms/basic-buttons.html [ Crash Failure Pass ]
 crbug.com/224317 http/tests/security/canvas-remote-read-data-url-svg-image.html [ Failure Pass ]
 
 crbug.com/234758 [ Win Debug ] tables/mozilla/other/test3.html [ Crash Pass ]

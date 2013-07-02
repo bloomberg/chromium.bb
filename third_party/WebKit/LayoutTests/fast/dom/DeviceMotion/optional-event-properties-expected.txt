@@ -4,95 +4,107 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 event = document.createEvent('DeviceMotionEvent')
-PASS event.acceleration == null is true
-PASS event.accelerationIncludingGravity == null is true
-PASS event.rotationRate == null is true
-PASS event.interval == null is true
+FAIL event = document.createEvent('DeviceMotionEvent') threw exception NotSupportedError: The implementation did not support the requested type of object or operation.
+FAIL event.acceleration == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.accelerationIncludingGravity == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.rotationRate == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.interval == null should be true. Threw exception TypeError: Cannot read property 'interval' of undefined
 event.initDeviceMotionEvent('', false, false, {x: 0, y: 1, z: 2}, {x: 3, y: 4, z: 5}, {alpha: 6, beta: 7, gamma: 8}, 9)
-PASS event.acceleration.x == 0 is true
-PASS event.acceleration.y == 1 is true
-PASS event.acceleration.z == 2 is true
-PASS event.accelerationIncludingGravity.x == 3 is true
-PASS event.accelerationIncludingGravity.y == 4 is true
-PASS event.accelerationIncludingGravity.z == 5 is true
-PASS event.rotationRate.alpha == 6 is true
-PASS event.rotationRate.beta == 7 is true
-PASS event.rotationRate.gamma == 8 is true
-PASS event.interval == 9 is true
-PASS event.initDeviceMotionEvent('', false, false, objectThrowingException, {x: 3, z: 5}, {gamma: 8, beta: 7}, 9) threw exception Error: x getter exception.
-PASS event.initDeviceMotionEvent('', false, false, {x: 0, y: 1, z: 2}, objectThrowingException, {gamma: 8, beta: 7}, 9) threw exception Error: x getter exception.
-PASS event.initDeviceMotionEvent('', false, false, {x: 0, y: 1, z: 2}, {x: 3, z: 5}, objectThrowingException, 9) threw exception Error: alpha getter exception.
-PASS event.initDeviceMotionEvent('', false, false, {x: objectThrowingException, y: 1, z: 2}, {x: 3, y: 4, z: 5}, {alpha: 6, beta: 7, gamma: 8}, 9) threw exception Error: valueOf threw exception.
-PASS event.initDeviceMotionEvent('', false, false, {x: 0, y: 1, z: 2}, {x: 3, y: objectThrowingException, z: 5}, {alpha: 6, beta: 7, gamma: 8}, 9) threw exception Error: valueOf threw exception.
-PASS event.initDeviceMotionEvent('', false, false, {x: 0, y: 1, z: 2}, {x: 3, y: 4, z: 5}, {alpha: 6, beta: 7, gamma: objectThrowingException}, 9) threw exception Error: valueOf threw exception.
+FAIL event.initDeviceMotionEvent('', false, false, {x: 0, y: 1, z: 2}, {x: 3, y: 4, z: 5}, {alpha: 6, beta: 7, gamma: 8}, 9) threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined
+FAIL event.acceleration.x == 0 should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.acceleration.y == 1 should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.acceleration.z == 2 should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.accelerationIncludingGravity.x == 3 should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.accelerationIncludingGravity.y == 4 should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.accelerationIncludingGravity.z == 5 should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.rotationRate.alpha == 6 should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.rotationRate.beta == 7 should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.rotationRate.gamma == 8 should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.interval == 9 should be true. Threw exception TypeError: Cannot read property 'interval' of undefined
+FAIL event.initDeviceMotionEvent('', false, false, objectThrowingException, {x: 3, z: 5}, {gamma: 8, beta: 7}, 9) should throw Error: x getter exception. Threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined.
+FAIL event.initDeviceMotionEvent('', false, false, {x: 0, y: 1, z: 2}, objectThrowingException, {gamma: 8, beta: 7}, 9) should throw Error: x getter exception. Threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined.
+FAIL event.initDeviceMotionEvent('', false, false, {x: 0, y: 1, z: 2}, {x: 3, z: 5}, objectThrowingException, 9) should throw Error: alpha getter exception. Threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined.
+FAIL event.initDeviceMotionEvent('', false, false, {x: objectThrowingException, y: 1, z: 2}, {x: 3, y: 4, z: 5}, {alpha: 6, beta: 7, gamma: 8}, 9) should throw Error: valueOf threw exception. Threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined.
+FAIL event.initDeviceMotionEvent('', false, false, {x: 0, y: 1, z: 2}, {x: 3, y: objectThrowingException, z: 5}, {alpha: 6, beta: 7, gamma: 8}, 9) should throw Error: valueOf threw exception. Threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined.
+FAIL event.initDeviceMotionEvent('', false, false, {x: 0, y: 1, z: 2}, {x: 3, y: 4, z: 5}, {alpha: 6, beta: 7, gamma: objectThrowingException}, 9) should throw Error: valueOf threw exception. Threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined.
 event.initDeviceMotionEvent('', false, false, {y: 1, x: 0}, {x: 3, z: 5}, {gamma: 8, beta: 7}, 9)
-PASS event.acceleration.x == 0 is true
-PASS event.acceleration.y == 1 is true
-PASS event.acceleration.z == null is true
-PASS event.accelerationIncludingGravity.x == 3 is true
-PASS event.accelerationIncludingGravity.y == null is true
-PASS event.accelerationIncludingGravity.z == 5 is true
-PASS event.rotationRate.alpha == null is true
-PASS event.rotationRate.beta == 7 is true
-PASS event.rotationRate.gamma == 8 is true
-PASS event.interval == 9 is true
+FAIL event.initDeviceMotionEvent('', false, false, {y: 1, x: 0}, {x: 3, z: 5}, {gamma: 8, beta: 7}, 9) threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined
+FAIL event.acceleration.x == 0 should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.acceleration.y == 1 should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.acceleration.z == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.accelerationIncludingGravity.x == 3 should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.accelerationIncludingGravity.y == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.accelerationIncludingGravity.z == 5 should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.rotationRate.alpha == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.rotationRate.beta == 7 should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.rotationRate.gamma == 8 should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.interval == 9 should be true. Threw exception TypeError: Cannot read property 'interval' of undefined
 event.initDeviceMotionEvent()
-PASS event.acceleration == null is true
-PASS event.accelerationIncludingGravity == null is true
-PASS event.rotationRate == null is true
-PASS event.interval == null is true
+FAIL event.initDeviceMotionEvent() threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined
+FAIL event.acceleration == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.accelerationIncludingGravity == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.rotationRate == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.interval == null should be true. Threw exception TypeError: Cannot read property 'interval' of undefined
 event.initDeviceMotionEvent('', false, false, [], [], [], [])
-PASS event.acceleration == null is true
-PASS event.accelerationIncludingGravity == null is true
-PASS event.rotationRate == null is true
-PASS event.interval == 0 is true
+FAIL event.initDeviceMotionEvent('', false, false, [], [], [], []) threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined
+FAIL event.acceleration == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.accelerationIncludingGravity == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.rotationRate == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.interval == 0 should be true. Threw exception TypeError: Cannot read property 'interval' of undefined
 event.initDeviceMotionEvent('', false, false, undefined, undefined, undefined, undefined)
-PASS event.acceleration == null is true
-PASS event.accelerationIncludingGravity == null is true
-PASS event.rotationRate == null is true
-PASS event.interval == null is true
+FAIL event.initDeviceMotionEvent('', false, false, undefined, undefined, undefined, undefined) threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined
+FAIL event.acceleration == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.accelerationIncludingGravity == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.rotationRate == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.interval == null should be true. Threw exception TypeError: Cannot read property 'interval' of undefined
 event.initDeviceMotionEvent('', false, false, '', '', '', '')
-PASS event.acceleration == null is true
-PASS event.accelerationIncludingGravity == null is true
-PASS event.rotationRate == null is true
-PASS event.interval == 0 is true
+FAIL event.initDeviceMotionEvent('', false, false, '', '', '', '') threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined
+FAIL event.acceleration == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.accelerationIncludingGravity == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.rotationRate == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.interval == 0 should be true. Threw exception TypeError: Cannot read property 'interval' of undefined
 event.initDeviceMotionEvent('', false, false, null, null, null, null)
-PASS event.acceleration == null is true
-PASS event.accelerationIncludingGravity == null is true
-PASS event.rotationRate == null is true
-PASS event.interval == null is true
+FAIL event.initDeviceMotionEvent('', false, false, null, null, null, null) threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined
+FAIL event.acceleration == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.accelerationIncludingGravity == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.rotationRate == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.interval == null should be true. Threw exception TypeError: Cannot read property 'interval' of undefined
 event.initDeviceMotionEvent('', false, false, {x: null, y: null, z: null}, {x: null, y: null, z: null}, {alpha: null, beta: null, gamma: null}, null)
-PASS event.acceleration == null is true
-PASS event.accelerationIncludingGravity == null is true
-PASS event.rotationRate == null is true
-PASS event.interval == null is true
+FAIL event.initDeviceMotionEvent('', false, false, {x: null, y: null, z: null}, {x: null, y: null, z: null}, {alpha: null, beta: null, gamma: null}, null) threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined
+FAIL event.acceleration == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.accelerationIncludingGravity == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.rotationRate == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.interval == null should be true. Threw exception TypeError: Cannot read property 'interval' of undefined
 event.initDeviceMotionEvent('', false, false, {x: null, y: null, z: 1}, {x: null, y: null, z: 2}, {alpha: null, beta: null, gamma: 3}, null)
-PASS event.acceleration.x == null is true
-PASS event.acceleration.y == null is true
-PASS event.acceleration.z == 1 is true
-PASS event.accelerationIncludingGravity.x == null is true
-PASS event.accelerationIncludingGravity.y == null is true
-PASS event.accelerationIncludingGravity.z == 2 is true
-PASS event.rotationRate.alpha == null is true
-PASS event.rotationRate.beta == null is true
-PASS event.rotationRate.gamma == 3 is true
-PASS event.interval == null is true
+FAIL event.initDeviceMotionEvent('', false, false, {x: null, y: null, z: 1}, {x: null, y: null, z: 2}, {alpha: null, beta: null, gamma: 3}, null) threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined
+FAIL event.acceleration.x == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.acceleration.y == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.acceleration.z == 1 should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.accelerationIncludingGravity.x == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.accelerationIncludingGravity.y == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.accelerationIncludingGravity.z == 2 should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.rotationRate.alpha == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.rotationRate.beta == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.rotationRate.gamma == 3 should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.interval == null should be true. Threw exception TypeError: Cannot read property 'interval' of undefined
 event.initDeviceMotionEvent('', false, false, {x: undefined, y: undefined, z: undefined}, {x: undefined, y: undefined, z: undefined}, {alpha: undefined, beta: undefined, gamma: undefined}, undefined)
-PASS event.acceleration == null is true
-PASS event.accelerationIncludingGravity == null is true
-PASS event.rotationRate == null is true
-PASS event.interval == null is true
+FAIL event.initDeviceMotionEvent('', false, false, {x: undefined, y: undefined, z: undefined}, {x: undefined, y: undefined, z: undefined}, {alpha: undefined, beta: undefined, gamma: undefined}, undefined) threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined
+FAIL event.acceleration == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.accelerationIncludingGravity == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.rotationRate == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.interval == null should be true. Threw exception TypeError: Cannot read property 'interval' of undefined
 event.initDeviceMotionEvent('', false, false, {x: undefined, y: undefined, z: 1}, {x: undefined, y: undefined, z: 2}, {alpha: undefined, beta: undefined, gamma: 3}, undefined)
-PASS event.acceleration.x == null is true
-PASS event.acceleration.y == null is true
-PASS event.acceleration.z == 1 is true
-PASS event.accelerationIncludingGravity.x == null is true
-PASS event.accelerationIncludingGravity.y == null is true
-PASS event.accelerationIncludingGravity.z == 2 is true
-PASS event.rotationRate.alpha == null is true
-PASS event.rotationRate.beta == null is true
-PASS event.rotationRate.gamma == 3 is true
-PASS event.interval == null is true
+FAIL event.initDeviceMotionEvent('', false, false, {x: undefined, y: undefined, z: 1}, {x: undefined, y: undefined, z: 2}, {alpha: undefined, beta: undefined, gamma: 3}, undefined) threw exception TypeError: Cannot call method 'initDeviceMotionEvent' of undefined
+FAIL event.acceleration.x == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.acceleration.y == null should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.acceleration.z == 1 should be true. Threw exception TypeError: Cannot read property 'acceleration' of undefined
+FAIL event.accelerationIncludingGravity.x == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.accelerationIncludingGravity.y == null should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.accelerationIncludingGravity.z == 2 should be true. Threw exception TypeError: Cannot read property 'accelerationIncludingGravity' of undefined
+FAIL event.rotationRate.alpha == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.rotationRate.beta == null should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.rotationRate.gamma == 3 should be true. Threw exception TypeError: Cannot read property 'rotationRate' of undefined
+FAIL event.interval == null should be true. Threw exception TypeError: Cannot read property 'interval' of undefined
 PASS successfullyParsed is true
 
 TEST COMPLETE
