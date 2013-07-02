@@ -3274,7 +3274,6 @@
             'rendering/svg/SVGTextRunRenderingContext.h',
             'svg/ColorDistance.cpp',
             'svg/ColorDistance.h',
-            'svg/ElementTimeControl.h',
             'svg/GradientAttributes.h',
             'svg/LinearGradientAttributes.h',
             'svg/PatternAttributes.h',

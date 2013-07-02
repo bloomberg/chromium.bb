@@ -267,6 +267,7 @@ SVGAnimatedPreserveAspectRatio
 SVGAnimatedRect
 SVGAnimatedString
 SVGAnimatedTransformList
+SVGAnimationElement
 SVGCircleElement
 SVGClipPathElement
 SVGColor
