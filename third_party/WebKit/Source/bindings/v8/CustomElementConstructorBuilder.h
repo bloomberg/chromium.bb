@@ -48,6 +48,7 @@ class Document;
 class Element;
 class QualifiedName;
 class ScriptState;
+class V8PerContextData;
 class WrapperTypeInfo;
 
 // Handles the scripting-specific parts of the Custom Elements element
@@ -68,7 +69,7 @@ public:
     bool findTagName(const AtomicString& customElementType, QualifiedName& tagName) const;
     PassRefPtr<CustomElementCallback> createCallback(Document*);
     bool createConstructor(Document*, CustomElementDefinition*);
-    void didRegisterDefinition(CustomElementDefinition*, const HashSet<Element*>& upgradeCandidates) const;
+    bool didRegisterDefinition(CustomElementDefinition*, const HashSet<Element*>& upgradeCandidates) const;
 
     // This method collects a return value for the bindings. It is
     // safe to call this method even if the builder failed; it will
@@ -76,7 +77,7 @@ public:
     ScriptValue bindingsReturnValue() const;
 
 private:
-    bool hasValidPrototypeChainFor(WrapperTypeInfo*) const;
+    bool hasValidPrototypeChainFor(V8PerContextData*, WrapperTypeInfo*) const;
     bool prototypeIsValid() const;
 
     v8::Handle<v8::Context> m_context;

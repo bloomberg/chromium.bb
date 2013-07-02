@@ -1,0 +1,12 @@
+Tests destroying a context, then trying to register a new custom element.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS destroyed context
+PASS caught expected exception "InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."
+PASS child done
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

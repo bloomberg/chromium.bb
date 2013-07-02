@@ -67,7 +67,11 @@ v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> i
     if (!definition)
         return createUpgradeCandidateWrapper(impl, creationContext, isolate, createTypeExtensionUpgradeCandidateWrapper);
 
-    v8::Handle<v8::Object> prototype = V8PerContextData::from(context)->customElementPrototypes()->get(definition->type()).newLocal(isolate);
+    V8PerContextData* perContextData = V8PerContextData::from(context);
+    if (!perContextData)
+        return v8::Handle<v8::Object>();
+
+    v8::Handle<v8::Object> prototype = perContextData->customElementPrototypes()->get(definition->type()).newLocal(isolate);
     WrapperTypeInfo* typeInfo = CustomElementHelpers::findWrapperType(prototype);
     if (!typeInfo) {
         // FIXME: When can this happen?
@@ -79,6 +83,7 @@ v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> i
         return v8::Handle<v8::Object>();
 
     wrapper->SetPrototype(prototype);
+
     V8DOMWrapper::associateObjectWithWrapper(impl, typeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
     return wrapper;
 }

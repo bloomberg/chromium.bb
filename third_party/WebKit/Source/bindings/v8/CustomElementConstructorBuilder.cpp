@@ -82,19 +82,25 @@ bool CustomElementConstructorBuilder::validateOptions()
     v8::Handle<v8::Value> prototypeValue = prototypeScriptValue.v8Value();
     if (prototypeValue.IsEmpty() || !prototypeValue->IsObject())
         return false;
-
     m_prototype = v8::Handle<v8::Object>::Cast(prototypeValue);
-    if (hasValidPrototypeChainFor(&V8HTMLElement::info)) {
+
+    V8PerContextData* perContextData;
+    if (!(perContextData = V8PerContextData::from(m_context))) {
+        // FIXME: This should generate an InvalidContext exception at a later point.
+        return false;
+    }
+
+    if (hasValidPrototypeChainFor(perContextData, &V8HTMLElement::info)) {
         m_namespaceURI = HTMLNames::xhtmlNamespaceURI;
         return true;
     }
 
-    if (hasValidPrototypeChainFor(&V8SVGElement::info)) {
+    if (hasValidPrototypeChainFor(perContextData, &V8SVGElement::info)) {
         m_namespaceURI = SVGNames::svgNamespaceURI;
         return true;
     }
 
-    if (hasValidPrototypeChainFor(&V8Element::info)) {
+    if (hasValidPrototypeChainFor(perContextData, &V8Element::info)) {
         m_namespaceURI = nullAtom;
         // This generates a different DOM exception, so we feign success for now.
         return true;
@@ -212,13 +218,17 @@ bool CustomElementConstructorBuilder::prototypeIsValid() const
     return true;
 }
 
-void CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinition* definition, const HashSet<Element*>& upgradeCandidates) const
+bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinition* definition, const HashSet<Element*>& upgradeCandidates) const
 {
     ASSERT(!m_constructor.IsEmpty());
 
+    V8PerContextData* perContextData = V8PerContextData::from(m_context);
+    if (!perContextData)
+        return false;
+
     // Bindings retrieve the prototype when needed from per-context data.
     v8::Persistent<v8::Object> persistentPrototype(m_context->GetIsolate(), m_prototype);
-    V8PerContextData::from(m_context)->customElementPrototypes()->add(definition->type(), UnsafePersistent<v8::Object>(persistentPrototype));
+    perContextData->customElementPrototypes()->add(definition->type(), UnsafePersistent<v8::Object>(persistentPrototype));
 
     // Upgrade any wrappers already created for this definition
     for (HashSet<Element*>::const_iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
@@ -230,6 +240,8 @@ void CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinit
         }
         wrapper->SetPrototype(m_prototype);
     }
+
+    return true;
 }
 
 ScriptValue CustomElementConstructorBuilder::bindingsReturnValue() const
@@ -237,9 +249,9 @@ ScriptValue CustomElementConstructorBuilder::bindingsReturnValue() const
     return ScriptValue(m_constructor);
 }
 
-bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(WrapperTypeInfo* typeInfo) const
+bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(V8PerContextData* perContextData, WrapperTypeInfo* typeInfo) const
 {
-    v8::Handle<v8::Object> elementConstructor = v8::Handle<v8::Object>::Cast(V8PerContextData::from(m_context)->constructorForType(typeInfo));
+    v8::Handle<v8::Object> elementConstructor = v8::Handle<v8::Object>::Cast(perContextData->constructorForType(typeInfo));
     if (elementConstructor.IsEmpty())
         return false;
     v8::Handle<v8::Object> elementPrototype = v8::Handle<v8::Object>::Cast(elementConstructor->Get(v8String("prototype", m_context->GetIsolate())));

@@ -133,7 +133,10 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
 
     // Upgrade elements that were waiting for this definition.
     CustomElementUpgradeCandidateMap::ElementSet upgradeCandidates = m_candidates.takeUpgradeCandidatesFor(definition.get());
-    constructorBuilder->didRegisterDefinition(definition.get(), upgradeCandidates);
+    if (!constructorBuilder->didRegisterDefinition(definition.get(), upgradeCandidates)) {
+        ec = NOT_SUPPORTED_ERR;
+        return;
+    }
 
     for (CustomElementUpgradeCandidateMap::ElementSet::iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
         (*it)->setNeedsStyleRecalc(); // :unresolved has changed
