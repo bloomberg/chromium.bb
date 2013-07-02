@@ -2150,17 +2150,9 @@ void StyleResolver::applyPropertyToCurrentStyle(CSSPropertyID id, CSSValue* valu
         applyProperty(id, value);
 }
 
-// SVG handles zooming in a different way compared to CSS. The whole document is scaled instead
-// of each individual length value in the render style / tree. CSSPrimitiveValue::computeLength*()
-// multiplies each resolved length with the zoom multiplier - so for SVG we need to disable that.
-// Though all CSS values that can be applied to outermost <svg> elements (width/height/border/padding...)
-// need to respect the scaling. RenderBox (the parent class of RenderSVGRoot) grabs values like
-// width/height/border/padding/... from the RenderStyle -> for SVG these values would never scale,
-// if we'd pass a 1.0 zoom factor everyhwere. So we only pass a zoom factor of 1.0 for specific
-// properties that are NOT allowed to scale within a zoomed SVG document (letter/word-spacing/font-size).
 bool StyleResolver::useSVGZoomRules()
 {
-    return m_state.element() && m_state.element()->isSVGElement();
+    return m_state.useSVGZoomRules();
 }
 
 static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, const StyleResolverState& state, GridLength& workingLength)
@@ -2560,7 +2552,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
                 fontDescription.setUsePrinterFont(document()->printing());
 
                 // Handle the zoom factor.
-                fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(document(), state.style(), fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), useSVGZoomRules()));
+                fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(document(), state.style(), fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), m_state.useSVGZoomRules()));
                 setFontDescription(fontDescription);
             }
         } else if (value->isFontValue()) {
@@ -3377,7 +3369,7 @@ void StyleResolver::initializeFontStyle(Settings* settings)
 void StyleResolver::setFontSize(FontDescription& fontDescription, float size)
 {
     fontDescription.setSpecifiedSize(size);
-    fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(document(), m_state.style(), fontDescription.isAbsoluteSize(), size, useSVGZoomRules()));
+    fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(document(), m_state.style(), fontDescription.isAbsoluteSize(), size, m_state.useSVGZoomRules()));
 }
 
 bool StyleResolver::colorFromPrimitiveValueIsDerivedFromElement(CSSPrimitiveValue* value)
