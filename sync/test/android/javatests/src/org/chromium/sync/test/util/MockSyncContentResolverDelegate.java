@@ -105,7 +105,7 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
                     mSyncAutomaticallyMap.remove(createKey(account, authority));
                     break;
                 case 1:
-                    mSyncAutomaticallyMap.put(createKey(account, authority), false);
+                    mSyncAutomaticallyMap.put(createKey(account, authority), true);
                     break;
                 default:
                     throw new IllegalArgumentException("Unable to understand syncable argument: " +
