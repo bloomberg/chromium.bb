@@ -134,18 +134,6 @@ static const int kInstructionsPadding = 6;
 // Tag for the 'Other bookmarks' button.
 static const int kOtherFolderButtonTag = 1;
 
-// TODO(kuan): change chrome::kNTPBookmarkBarHeight to this new height when
-// search_ntp replaces ntp4; for now, while both versions exist, this new height
-// is only needed locally.
-static const int kSearchNewTabBookmarkBarHeight = 40;
-
-// TODO(kuan): change BookmarkBarView::kNewtabHorizontalPadding and
-// BookmarkBarView::kNewtabVerticalPadding to these new values when search_ntp
-// replaces ntp4; for now, while both versions exist, these new values are only
-// needed locally.
-static const int kSearchNewTabHorizontalPadding = 2;
-static const int kSearchNewTabVerticalPadding = 5;
-
 // Tag for the 'Apps Shortcut' button.
 static const int kAppsShortcutButtonTag = 2;
 
@@ -336,18 +324,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
       extension->GetType());
 }
 
-int GetNewtabHorizontalPadding() {
-  return chrome::IsInstantExtendedAPIEnabled()
-         ? kSearchNewTabHorizontalPadding
-         : BookmarkBarView::kNewtabHorizontalPadding;
-}
-
-int GetNewtabVerticalPadding() {
-  return chrome::IsInstantExtendedAPIEnabled()
-         ? kSearchNewTabVerticalPadding
-         : BookmarkBarView::kNewtabVerticalPadding;
-}
-
 }  // namespace
 
 // DropLocation ---------------------------------------------------------------
@@ -440,8 +416,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
 
 // static
 const int BookmarkBarView::kMaxButtonWidth = 150;
-const int BookmarkBarView::kNewtabHorizontalPadding = 8;
-const int BookmarkBarView::kNewtabVerticalPadding = 12;
+const int BookmarkBarView::kNewtabHorizontalPadding = 2;
 const int BookmarkBarView::kToolbarAttachedBookmarkBarOverlap = 3;
 
 static const gfx::ImageSkia& GetDefaultFavicon() {
@@ -691,7 +666,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
 
   if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
     double current_state = 1 - size_animation_->GetCurrentValue();
-    width += 2 * static_cast<int>(GetNewtabHorizontalPadding() * current_state);
+    width += 2 * static_cast<int>(kNewtabHorizontalPadding * current_state);
   }
 
   gfx::Size other_bookmarked_pref;
@@ -1724,9 +1699,9 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 
   if (IsDetached()) {
     double current_state = 1 - size_animation_->GetCurrentValue();
-    x += static_cast<int>(GetNewtabHorizontalPadding() * current_state);
+    x += static_cast<int>(kNewtabHorizontalPadding * current_state);
     y += (View::height() - browser_defaults::kBookmarkBarHeight) / 2;
-    width -= static_cast<int>(GetNewtabHorizontalPadding() * current_state);
+    width -= static_cast<int>(kNewtabHorizontalPadding * current_state);
     separator_margin -= static_cast<int>(kSeparatorMargin * current_state);
   } else {
     // For the attached appearance, pin the content to the bottom of the bar
@@ -1831,15 +1806,12 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
     x += kRightMargin;
     prefsize.set_width(x);
     if (IsDetached()) {
-      x += static_cast<int>(GetNewtabHorizontalPadding() *
+      x += static_cast<int>(kNewtabHorizontalPadding *
           (1 - size_animation_->GetCurrentValue()));
-      int ntp_bookmark_bar_height =
-          chrome::IsInstantExtendedAPIEnabled()
-          ? kSearchNewTabBookmarkBarHeight : chrome::kNTPBookmarkBarHeight;
       prefsize.set_height(
           browser_defaults::kBookmarkBarHeight +
           static_cast<int>(
-              (ntp_bookmark_bar_height -
+              (chrome::kNTPBookmarkBarHeight -
                browser_defaults::kBookmarkBarHeight) *
               (1 - size_animation_->GetCurrentValue())));
     } else {

@@ -10,9 +10,9 @@
 namespace chrome {
 
 // The Bookmark bar height, when visible in "new tab page" mode.
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK)
 const int kNTPBookmarkBarHeight = 57;
-#elif defined(OS_MACOSX)
+#elif defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 const int kNTPBookmarkBarHeight = 40;
 #endif
 

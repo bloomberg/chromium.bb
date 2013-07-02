@@ -341,78 +341,40 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     // bar to be docked.
     double current_state = 1 - host_view_->GetAnimationValue();
 
-    // In Search NTP, the detached bookmark bar is different from regular NTP:
-    // - there's no padding around the bar
-    // - there's a separator below the bar
-    // - if animating between pinned and unpinned states:
-    //   - cross-fade the bar backgrounds
-    //   - fade in/out the separator between toolbar and bookmark bar.
-    if (chrome::IsInstantExtendedAPIEnabled()) {
-      ThemeService* ts =
-          ThemeServiceFactory::GetForProfile(browser_->profile());
-      if (current_state == 0.0 || current_state == 1.0) {
-        PaintDetachedBookmarkBar(canvas, host_view_, ts);
-        return;
-      }
-      // While animating, set opacity to cross-fade between attached and
-      // detached backgrounds including their respective separators.
-      int detached_alpha = static_cast<uint8>(current_state * 255);
-      int attached_alpha = 255 - detached_alpha;
-      if (browser_->bookmark_bar_state() == BookmarkBar::DETACHED) {
-        // To animate from attached to detached state:
-        // - fade out attached background
-        // - fade in detached background.
-        canvas->SaveLayerAlpha(attached_alpha);
-        PaintAttachedBookmarkBar(canvas, host_view_, browser_view_,
-                                 browser_->host_desktop_type(),
-                                 toolbar_overlap);
-        canvas->Restore();
-        canvas->SaveLayerAlpha(detached_alpha);
-        PaintDetachedBookmarkBar(canvas, host_view_, ts);
-      } else {
-        // To animate from detached to attached state:
-        // - fade out detached background
-        // - fade in attached background.
-        canvas->SaveLayerAlpha(detached_alpha);
-        PaintDetachedBookmarkBar(canvas, host_view_, ts);
-        canvas->Restore();
-        canvas->SaveLayerAlpha(attached_alpha);
-        PaintAttachedBookmarkBar(canvas, host_view_, browser_view_,
-                                 browser_->host_desktop_type(),
-                                 toolbar_overlap);
-      }
-      canvas->Restore();
+    ThemeService* ts =
+        ThemeServiceFactory::GetForProfile(browser_->profile());
+    if (current_state == 0.0 || current_state == 1.0) {
+      PaintDetachedBookmarkBar(canvas, host_view_, ts);
       return;
     }
-
-    // Draw the background to match the new tab page.
-    ui::ThemeProvider* tp = host_view_->GetThemeProvider();
-    int height = 0;
-    WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
-    if (contents && contents->GetView())
-      height = contents->GetView()->GetContainerSize().height();
-    NtpBackgroundUtil::PaintBackgroundDetachedMode(
-        tp, canvas,
-        gfx::Rect(0, toolbar_overlap, host_view_->width(),
-                  host_view_->height() - toolbar_overlap),
-        height);
-
-    double h_padding =
-        static_cast<double>(BookmarkBarView::kNewtabHorizontalPadding) *
-        current_state;
-    double v_padding =
-        static_cast<double>(BookmarkBarView::kNewtabVerticalPadding) *
-        current_state;
-
-    SkRect rect;
-    double roundness = 0;
-    DetachableToolbarView::CalculateContentArea(current_state, h_padding,
-        v_padding, &rect, &roundness, host_view_);
-    DetachableToolbarView::PaintContentAreaBackground(canvas, tp, rect,
-                                                      roundness);
-    DetachableToolbarView::PaintContentAreaBorder(canvas, tp, rect, roundness);
-    if (!toolbar_overlap)
-      DetachableToolbarView::PaintHorizontalBorderForState(canvas, host_view_);
+    // While animating, set opacity to cross-fade between attached and
+    // detached backgrounds including their respective separators.
+    int detached_alpha = static_cast<uint8>(current_state * 255);
+    int attached_alpha = 255 - detached_alpha;
+    if (browser_->bookmark_bar_state() == BookmarkBar::DETACHED) {
+      // To animate from attached to detached state:
+      // - fade out attached background
+      // - fade in detached background.
+      canvas->SaveLayerAlpha(attached_alpha);
+      PaintAttachedBookmarkBar(canvas, host_view_, browser_view_,
+                               browser_->host_desktop_type(),
+                               toolbar_overlap);
+      canvas->Restore();
+      canvas->SaveLayerAlpha(detached_alpha);
+      PaintDetachedBookmarkBar(canvas, host_view_, ts);
+    } else {
+      // To animate from detached to attached state:
+      // - fade out detached background
+      // - fade in attached background.
+      canvas->SaveLayerAlpha(detached_alpha);
+      PaintDetachedBookmarkBar(canvas, host_view_, ts);
+      canvas->Restore();
+      canvas->SaveLayerAlpha(attached_alpha);
+      PaintAttachedBookmarkBar(canvas, host_view_, browser_view_,
+                               browser_->host_desktop_type(),
+                               toolbar_overlap);
+    }
+    canvas->Restore();
   } else {
     gfx::Point background_image_offset =
         browser_view_->OffsetPointForToolbarBackgroundImage(
