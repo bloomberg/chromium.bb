@@ -41,6 +41,9 @@ public class JavaBrowserViewRendererHelper {
         if (bitmap == null || bitmap.getWidth() != width || bitmap.getHeight() != height) {
             bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             if (ownerKey != 0) {
+                if (sBitmapCache.size() > AwContents.getNativeInstanceCount()) {
+                    sBitmapCache.evictAll();
+                }
                 sBitmapCache.put(ownerKey, bitmap);
             }
         }
