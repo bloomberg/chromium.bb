@@ -85,7 +85,7 @@
         "name": "connect",
         "nocompile": true,
         "type": "function",
-        "description": "Connects to the content script(s) in the specified tab. The $ref:runtime.onConnect event is fired in each content script running in the specified tab for the current extension. For more details, see <a href='content_scripts.html#messaging'>Content Script Messaging</a>.",
+        "description": "Connects to the content script(s) in the specified tab. The $ref:runtime.onConnect event is fired in each content script running in the specified tab for the current extension. For more details, see <a href='messaging.html'>Content Script Messaging</a>.",
         "parameters": [
           {
             "type": "integer",
