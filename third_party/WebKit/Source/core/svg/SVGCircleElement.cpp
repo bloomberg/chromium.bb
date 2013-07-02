@@ -64,7 +64,6 @@ bool SVGCircleElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGTests::addSupportedAttributes(supportedAttributes);
         SVGLangSpace::addSupportedAttributes(supportedAttributes);
         SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::cxAttr);
@@ -86,8 +85,7 @@ void SVGCircleElement::parseAttribute(const QualifiedName& name, const AtomicStr
         setCyBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
     else if (name == SVGNames::rAttr)
         setRBaseValue(SVGLength::construct(LengthModeOther, value, parseError, ForbidNegativeLengths));
-    else if (SVGTests::parseAttribute(name, value)
-             || SVGLangSpace::parseAttribute(name, value)
+    else if (SVGLangSpace::parseAttribute(name, value)
              || SVGExternalResourcesRequired::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();
@@ -110,9 +108,6 @@ void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (isLengthAttribute)
         updateRelativeLengthsInformation();
-
-    if (SVGTests::handleAttributeChange(this, attrName))
-        return;
 
     RenderSVGShape* renderer = toRenderSVGShape(this->renderer());
     if (!renderer)

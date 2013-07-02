@@ -94,7 +94,6 @@ bool SVGAElement::isSupportedAttribute(const QualifiedName& attrName)
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
         SVGURIReference::addSupportedAttributes(supportedAttributes);
-        SVGTests::addSupportedAttributes(supportedAttributes);
         SVGLangSpace::addSupportedAttributes(supportedAttributes);
         SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::targetAttr);
@@ -115,8 +114,6 @@ void SVGAElement::parseAttribute(const QualifiedName& name, const AtomicString& 
     }
 
     if (SVGURIReference::parseAttribute(name, value))
-        return;
-    if (SVGTests::parseAttribute(name, value))
         return;
     if (SVGLangSpace::parseAttribute(name, value))
         return;

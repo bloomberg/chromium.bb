@@ -214,7 +214,6 @@ bool SVGTextContentElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGTests::addSupportedAttributes(supportedAttributes);
         SVGLangSpace::addSupportedAttributes(supportedAttributes);
         SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::lengthAdjustAttr);
@@ -256,8 +255,7 @@ void SVGTextContentElement::parseAttribute(const QualifiedName& name, const Atom
             setLengthAdjustBaseValue(propertyValue);
     } else if (name == SVGNames::textLengthAttr) {
         m_textLength.value = SVGLength::construct(LengthModeOther, value, parseError, ForbidNegativeLengths);
-    } else if (SVGTests::parseAttribute(name, value)
-               || SVGExternalResourcesRequired::parseAttribute(name, value)) {
+    } else if (SVGExternalResourcesRequired::parseAttribute(name, value)) {
     } else if (SVGLangSpace::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();
@@ -273,9 +271,6 @@ void SVGTextContentElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     SVGElementInstance::InvalidationGuard invalidationGuard(this);
-
-    if (SVGTests::handleAttributeChange(this, attrName))
-        return;
 
     if (attrName == SVGNames::textLengthAttr)
         m_specifiedTextLength = m_textLength.value;
