@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class Profile;
 

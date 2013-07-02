@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class HostContentSettingsMap;
 class InfoBarService;

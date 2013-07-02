@@ -35,9 +35,9 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/page_transition_types.h"
 #include "crypto/secure_hash.h"
-#include "googleurl/src/url_canon.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/url_canon.h"
 
 using content::BrowserThread;
 using content::PageTransition;

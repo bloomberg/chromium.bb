@@ -14,9 +14,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/url_pattern.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
+#include "url/gurl.h"
 
 using extensions::MenuItem;
 using extensions::URLPatternSet;

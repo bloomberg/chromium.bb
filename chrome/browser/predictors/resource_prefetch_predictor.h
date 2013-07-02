@@ -22,7 +22,7 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/glue/resource_type.h"
 
 class PredictorsHandler;

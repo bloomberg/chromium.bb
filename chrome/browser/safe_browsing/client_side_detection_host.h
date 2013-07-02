@@ -17,7 +17,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace safe_browsing {
 class ClientPhishingRequest;

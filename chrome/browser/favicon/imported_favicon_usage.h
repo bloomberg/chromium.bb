@@ -8,7 +8,7 @@
 #include <set>
 #include <vector>
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // Used to correlate favicons to imported bookmarks.
 struct ImportedFaviconUsage {

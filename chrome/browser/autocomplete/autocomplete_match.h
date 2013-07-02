@@ -13,7 +13,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/autocomplete_match_type.h"
 #include "content/public/common/page_transition_types.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class AutocompleteProvider;
 class Profile;

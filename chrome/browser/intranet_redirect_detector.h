@@ -12,10 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 class PrefRegistrySimple;
 

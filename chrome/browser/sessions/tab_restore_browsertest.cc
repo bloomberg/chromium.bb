@@ -26,10 +26,10 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
+#include "url/gurl.h"
 
 class TabRestoreTest : public InProcessBrowserTest {
  public:

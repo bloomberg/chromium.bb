@@ -12,9 +12,9 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/history/history_types.h"
-#include "googleurl/src/gurl.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
+#include "url/gurl.h"
 
 namespace history {
 

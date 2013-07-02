@@ -13,7 +13,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
@@ -22,6 +21,7 @@
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_test_job.h"
+#include "url/gurl.h"
 
 namespace em = enterprise_management;
 

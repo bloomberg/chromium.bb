@@ -12,7 +12,7 @@
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/common/content_settings_types.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content_settings {
 

@@ -46,9 +46,9 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "googleurl/src/gurl.h"
 #include "gpu/config/gpu_info.h"
 #include "ui/gfx/screen.h"
+#include "url/gurl.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_ANDROID)

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace google_apis {
 

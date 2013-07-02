@@ -16,10 +16,10 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_filter.h"
+#include "url/gurl.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;

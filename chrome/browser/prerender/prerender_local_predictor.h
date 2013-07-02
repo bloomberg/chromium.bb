@@ -13,7 +13,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/visit_database.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class HistoryService;
 

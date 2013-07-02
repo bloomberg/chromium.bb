@@ -10,7 +10,7 @@
 #include "base/supports_user_data.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
 #include "content/public/browser/download_item.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // --- Private 10.8 API for showing progress ---
 // rdar://12058866 http://www.openradar.me/12058866

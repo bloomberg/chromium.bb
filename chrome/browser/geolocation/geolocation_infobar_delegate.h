@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_INFOBAR_DELEGATE_H_
 
+#include <string>
+
 #include "chrome/browser/geolocation/geolocation_permission_request_id.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "googleurl/src/gurl.h"
-
-#include <string>
+#include "url/gurl.h"
 
 class GeolocationInfoBarQueueController;
 class InfoBarService;

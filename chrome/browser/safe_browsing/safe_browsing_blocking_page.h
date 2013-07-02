@@ -36,7 +36,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "content/public/browser/interstitial_page_delegate.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class MalwareDetails;
 class SafeBrowsingBlockingPageFactory;

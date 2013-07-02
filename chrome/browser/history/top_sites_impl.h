@@ -26,9 +26,9 @@
 #include "chrome/browser/history/top_sites_backend.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/thumbnail_score.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 class Profile;
 

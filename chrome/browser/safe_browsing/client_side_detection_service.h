@@ -30,9 +30,9 @@
 #include "base/time/time.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 class SafeBrowsingService;
 

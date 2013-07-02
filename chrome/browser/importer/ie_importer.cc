@@ -41,9 +41,9 @@
 #include "chrome/common/url_constants.h"
 #include "components/webdata/encryptor/ie7_password.h"
 #include "content/public/common/password_form.h"
-#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 namespace {
 

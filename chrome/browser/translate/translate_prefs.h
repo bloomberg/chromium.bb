@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class PrefService;
 class Profile;

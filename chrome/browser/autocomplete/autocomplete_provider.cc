@@ -14,9 +14,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_util.h"
 #include "net/base/net_util.h"
+#include "url/gurl.h"
+#include "url/url_util.h"
 
 // static
 const size_t AutocompleteProvider::kMaxMatches = 3;

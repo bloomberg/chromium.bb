@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_parse.h"
+#include "url/gurl.h"
+#include "url/url_parse.h"
 
 // The user input for an autocomplete query.  Allows copying.
 class AutocompleteInput {

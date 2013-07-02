@@ -9,11 +9,11 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/host/resource_message_filter.h"
+#include "url/gurl.h"
 
 class Profile;
 

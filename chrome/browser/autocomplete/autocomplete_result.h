@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class AutocompleteInput;
 class AutocompleteProvider;

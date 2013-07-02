@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_INFOBAR_DELEGATE_H_
 
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class GoogleURLTracker;
 

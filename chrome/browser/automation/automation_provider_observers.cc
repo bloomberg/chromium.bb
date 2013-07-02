@@ -79,9 +79,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
 #include "extensions/common/view_type.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 using content::DomOperationNotificationDetails;

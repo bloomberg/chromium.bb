@@ -14,11 +14,11 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
 #include "content/public/test/test_browser_thread.h"
 #include "crypto/sha2.h"
-#include "googleurl/src/gurl.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "url/gurl.h"
 
 using base::Time;
 using content::BrowserThread;

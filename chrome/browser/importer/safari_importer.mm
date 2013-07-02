@@ -20,10 +20,10 @@
 #include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/data_url.h"
 #include "sql/statement.h"
+#include "url/gurl.h"
 
 namespace {
 

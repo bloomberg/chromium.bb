@@ -10,9 +10,9 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/url_canon_ip.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "url/url_canon_ip.h"
 
 namespace {
 

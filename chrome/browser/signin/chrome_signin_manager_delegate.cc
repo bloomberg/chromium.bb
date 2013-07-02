@@ -5,7 +5,7 @@
 #include "chrome/browser/signin/chrome_signin_manager_delegate.h"
 
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace {
 

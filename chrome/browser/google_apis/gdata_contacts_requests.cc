@@ -5,8 +5,8 @@
 #include "chrome/browser/google_apis/gdata_contacts_requests.h"
 
 #include "chrome/browser/google_apis/time_util.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/url_util.h"
+#include "url/gurl.h"
 
 namespace google_apis {
 

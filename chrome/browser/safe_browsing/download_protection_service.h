@@ -19,7 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 
 namespace content {

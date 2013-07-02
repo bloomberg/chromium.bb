@@ -17,11 +17,11 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/test/test_browser_thread.h"
 #include "crypto/sha2.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using ::testing::_;
 using ::testing::Invoke;

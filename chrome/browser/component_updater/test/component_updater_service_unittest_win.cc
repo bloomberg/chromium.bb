@@ -24,7 +24,6 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
-#include "googleurl/src/gurl.h"
 #include "libxml/globals.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/url_request/url_fetcher.h"
@@ -33,6 +32,7 @@
 #include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 using content::TestNotificationTracker;

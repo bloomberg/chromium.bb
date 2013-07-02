@@ -10,8 +10,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 class GaiaOAuthConsumer;
 

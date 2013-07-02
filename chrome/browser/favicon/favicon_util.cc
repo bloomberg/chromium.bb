@@ -8,7 +8,6 @@
 #include "chrome/browser/history/select_favicon_frames.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/child/image_decoder_utils.h"
-#include "googleurl/src/gurl.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -16,6 +15,7 @@
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
+#include "url/gurl.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"

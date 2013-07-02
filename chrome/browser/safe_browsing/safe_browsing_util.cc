@@ -9,9 +9,9 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/google/google_util.h"
 #include "crypto/sha2.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
+#include "url/gurl.h"
+#include "url/url_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/browser_distribution.h"

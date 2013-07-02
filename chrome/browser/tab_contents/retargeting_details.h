@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_RETARGETING_DETAILS_H_
 #define CHROME_BROWSER_TAB_CONTENTS_RETARGETING_DETAILS_H_
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content {
 class WebContents;

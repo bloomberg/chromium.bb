@@ -12,8 +12,8 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/public/browser/interstitial_page_delegate.h"
-#include "googleurl/src/gurl.h"
 #include "net/ssl/ssl_info.h"
+#include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;

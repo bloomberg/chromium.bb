@@ -29,11 +29,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
-#include "googleurl/src/url_parse.h"
-#include "googleurl/src/url_util.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "url/gurl.h"
+#include "url/url_parse.h"
+#include "url/url_util.h"
 
 namespace {
 

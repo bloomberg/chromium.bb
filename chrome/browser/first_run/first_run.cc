@@ -56,7 +56,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 using content::UserMetricsAction;
 

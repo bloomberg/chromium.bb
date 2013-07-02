@@ -43,7 +43,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
@@ -60,6 +59,7 @@
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/notifier/p2p_invalidator.h"
 #include "sync/protocol/sync.pb.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 using invalidation::InvalidationServiceFactory;

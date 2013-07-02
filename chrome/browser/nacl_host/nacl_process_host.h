@@ -16,10 +16,10 @@
 #include "chrome/common/nacl_types.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/socket/tcp_listen_socket.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
+#include "url/gurl.h"
 
 class NaClHostMessageFilter;
 class CommandLine;

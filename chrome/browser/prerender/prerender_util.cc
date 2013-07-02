@@ -8,11 +8,11 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/resource_request_info.h"
-#include "googleurl/src/url_canon.h"
-#include "googleurl/src/url_parse.h"
-#include "googleurl/src/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "url/url_canon.h"
+#include "url/url_parse.h"
+#include "url/url_util.h"
 
 namespace prerender {
 

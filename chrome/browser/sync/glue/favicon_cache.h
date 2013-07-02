@@ -20,10 +20,10 @@
 #include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/syncable_service.h"
+#include "url/gurl.h"
 
 class Profile;
 

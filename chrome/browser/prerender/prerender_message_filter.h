@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class Profile;
 

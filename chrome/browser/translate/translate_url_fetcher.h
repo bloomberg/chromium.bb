@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 class TranslateURLFetcher : public net::URLFetcherDelegate {
  public:

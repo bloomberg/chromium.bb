@@ -26,7 +26,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class HistoryService;
 

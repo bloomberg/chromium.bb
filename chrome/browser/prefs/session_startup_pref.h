@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class PrefService;
 class Profile;

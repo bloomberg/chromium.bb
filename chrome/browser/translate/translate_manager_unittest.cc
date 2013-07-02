@@ -5,8 +5,8 @@
 #include "chrome/browser/translate/translate_manager.h"
 
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 #ifdef FILE_MANAGER_EXTENSION
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"

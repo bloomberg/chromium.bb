@@ -12,7 +12,7 @@
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace history {
 

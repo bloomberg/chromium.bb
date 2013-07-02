@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
+#include "url/gurl.h"
 
 namespace net {
 class NetLog;

@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "chrome/browser/history/history_database.h"
 #include "components/webdata/common/web_database.h"
-#include "googleurl/src/gurl.h"
 #include "sql/statement.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "url/gurl.h"
 
 namespace {
 

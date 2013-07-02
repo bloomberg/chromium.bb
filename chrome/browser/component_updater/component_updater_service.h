@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/version.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequestContextGetter;

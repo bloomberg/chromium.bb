@@ -23,9 +23,9 @@
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/thumbnail_score.h"
 #include "content/public/common/page_transition_types.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
+#include "url/gurl.h"
 
 class PageUsageData;
 

@@ -9,8 +9,8 @@
 #include "base/metrics/histogram.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 using predictors::ResourcePrefetchPredictor;

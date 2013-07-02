@@ -16,7 +16,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/url_util.h"
+#include "url/url_util.h"
 
 HistoryProvider::HistoryProvider(AutocompleteProviderListener* listener,
                                  Profile* profile,

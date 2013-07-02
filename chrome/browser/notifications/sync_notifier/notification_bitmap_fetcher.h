@@ -7,9 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/image_decoder.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLFetcher;

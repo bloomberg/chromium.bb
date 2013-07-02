@@ -11,9 +11,9 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "url/gurl.h"
 
 class GURL;
 

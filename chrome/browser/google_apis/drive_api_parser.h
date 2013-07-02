@@ -13,7 +13,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 // TODO(kochi): Eliminate this dependency once dependency to EntryKind is gone.
 // http://crbug.com/142293
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"

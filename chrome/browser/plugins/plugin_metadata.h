@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/version.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace webkit {
 struct WebPluginInfo;

@@ -12,7 +12,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class Utterance;
 class TtsPlatformImpl;

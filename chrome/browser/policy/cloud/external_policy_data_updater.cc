@@ -13,7 +13,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -21,6 +20,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "url/gurl.h"
 
 namespace policy {
 

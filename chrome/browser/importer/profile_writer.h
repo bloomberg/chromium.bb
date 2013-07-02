@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/history_types.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 struct ImportedBookmarkEntry;
 struct ImportedFaviconUsage;

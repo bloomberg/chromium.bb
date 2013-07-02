@@ -11,9 +11,9 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/three_d_api_types.h"
-#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 
 // ThreeDAPIInfoBarDelegate ---------------------------------------------

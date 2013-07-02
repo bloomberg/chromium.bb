@@ -13,9 +13,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/drive/drive_switches.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "third_party/re2/re2/re2.h"
+#include "url/gurl.h"
 
 namespace drive {
 namespace util {

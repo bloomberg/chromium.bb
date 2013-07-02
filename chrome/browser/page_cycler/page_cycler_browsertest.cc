@@ -25,7 +25,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // TODO(kbr): remove: http://crbug.com/222296
 #if defined(OS_MACOSX)

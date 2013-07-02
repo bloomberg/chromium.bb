@@ -8,7 +8,7 @@
 #include "chrome/browser/google/google_url_tracker_navigation_helper.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class GoogleURLTrackerNavigationHelperImpl
     : public GoogleURLTrackerNavigationHelper,

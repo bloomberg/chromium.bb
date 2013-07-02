@@ -40,7 +40,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,6 +48,7 @@
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
+#include "url/gurl.h"
 
 // TODO(kbr): remove: http://crbug.com/222296
 #if defined(OS_MACOSX)

@@ -8,8 +8,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "googleurl/src/url_parse.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_parse.h"
 
 TEST(AutocompleteInputTest, InputType) {
   struct test_data {

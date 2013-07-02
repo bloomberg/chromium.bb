@@ -18,7 +18,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

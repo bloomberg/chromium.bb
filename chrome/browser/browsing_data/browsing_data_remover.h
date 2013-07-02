@@ -19,7 +19,7 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 #include "webkit/common/quota/quota_types.h"
 
 class ExtensionSpecialStoragePolicy;

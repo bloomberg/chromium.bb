@@ -7,8 +7,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
+#include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_types.h"
 

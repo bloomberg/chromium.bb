@@ -15,10 +15,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/notifications/sync_notifier/notification_bitmap_fetcher.h"
-#include "googleurl/src/gurl.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/sync.pb.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 namespace sync_pb {
 class SyncedNotificationSpecifics;

@@ -21,9 +21,9 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/models/tree_node_model.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 class BookmarkExpandedStateTracker;
 class BookmarkIndex;

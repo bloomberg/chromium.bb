@@ -15,7 +15,7 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace em = enterprise_management;
 

@@ -12,11 +12,11 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/notifications/notification_delegate.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
+#include "url/gurl.h"
 
 // Representation of a notification to be shown to the user.
 // On non-Ash platforms these are rendered as HTML, sometimes described by a

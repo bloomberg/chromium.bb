@@ -8,7 +8,7 @@
 #include <set>
 
 #include "chrome/browser/history/history_details.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // Details for chrome::NOTIFICATION_FAVICON_CHANGED.
 struct FaviconChangedDetails : public history::HistoryDetails {

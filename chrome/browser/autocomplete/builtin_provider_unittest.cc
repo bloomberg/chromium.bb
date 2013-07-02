@@ -11,8 +11,8 @@
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 class BuiltinProviderTest : public testing::Test {
  protected:

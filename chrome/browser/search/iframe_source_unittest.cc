@@ -13,11 +13,11 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread.h"
-#include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 const int kNonInstantRendererPID = 0;
 const char kNonInstantOrigin[] = "http://evil";

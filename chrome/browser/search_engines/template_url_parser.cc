@@ -17,10 +17,10 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "libxml/parser.h"
 #include "libxml/xmlwriter.h"
 #include "ui/gfx/favicon_size.h"
+#include "url/gurl.h"
 
 namespace {
 

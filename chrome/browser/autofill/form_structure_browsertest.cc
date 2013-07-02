@@ -15,7 +15,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/data_driven_test.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace autofill {
 namespace {

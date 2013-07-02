@@ -11,10 +11,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/webdata/common/web_database.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
+#include "url/gurl.h"
 
 namespace {
 

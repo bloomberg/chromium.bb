@@ -15,9 +15,9 @@
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/ref_counted_util.h"
 #include "content/public/common/favicon_url.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 class FaviconHandlerDelegate;
 class Profile;

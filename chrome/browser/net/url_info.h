@@ -20,8 +20,8 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
+#include "url/gurl.h"
 
 namespace chrome_browser_net {
 

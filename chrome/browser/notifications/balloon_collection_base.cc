@@ -7,7 +7,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/notification.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 BalloonCollectionBase::BalloonCollectionBase() {
 }

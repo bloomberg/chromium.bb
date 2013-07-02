@@ -15,9 +15,9 @@
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/data_url.h"
 #include "net/base/escape.h"
+#include "url/gurl.h"
 
 namespace {
 

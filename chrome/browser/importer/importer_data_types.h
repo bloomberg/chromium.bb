@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/importer/importer_type.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // Types needed for importing data from other browsers and the Google Toolbar.
 namespace importer {

@@ -15,7 +15,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/matcher/url_matcher.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 using extensions::URLMatcher;

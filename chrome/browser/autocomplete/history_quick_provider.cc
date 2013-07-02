@@ -39,11 +39,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "googleurl/src/url_parse.h"
-#include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "url/url_parse.h"
+#include "url/url_util.h"
 
 using history::InMemoryURLIndex;
 using history::ScoredHistoryMatch;

@@ -10,7 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/webui/screenshot_source.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"

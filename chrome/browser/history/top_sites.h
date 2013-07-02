@@ -13,9 +13,9 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/common/thumbnail_score.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 class Profile;
 

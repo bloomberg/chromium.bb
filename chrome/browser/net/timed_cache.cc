@@ -4,7 +4,7 @@
 
 #include "chrome/browser/net/timed_cache.h"
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace chrome_browser_net {
 

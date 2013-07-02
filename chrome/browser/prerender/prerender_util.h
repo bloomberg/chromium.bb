@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PRERENDER_PRERENDER_UTIL_H_
 
 #include "base/basictypes.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequest;

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/drive/drive_api_util.h"
 
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace drive {
 namespace util {

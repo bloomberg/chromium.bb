@@ -19,9 +19,9 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_url_fetcher.h"
 #include "chrome/browser/translate/translate_url_util.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 namespace {
 

@@ -44,7 +44,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/process_type.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 #if defined(USE_TCMALLOC)
 #include "chrome/browser/browser_about_handler.h"

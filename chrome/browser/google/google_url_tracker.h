@@ -15,10 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google/google_url_tracker_map_entry.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 class GoogleURLTrackerNavigationHelper;
 class PrefService;

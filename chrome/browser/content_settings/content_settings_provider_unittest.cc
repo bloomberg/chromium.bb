@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_mock_provider.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace content_settings {
 

@@ -10,10 +10,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/captive_portal/testing_utils.h"
 #include "chrome/test/base/testing_profile.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace captive_portal {
 

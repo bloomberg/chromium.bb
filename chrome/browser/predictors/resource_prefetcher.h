@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCHER_H_
 #define CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCHER_H_
 
-#include <map>
 #include <list>
+#include <map>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -14,8 +14,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequestContext;

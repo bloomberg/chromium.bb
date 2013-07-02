@@ -8,8 +8,8 @@
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 TEST(OriginIdentifierValueMapTest, SetGetValue) {
   content_settings::OriginIdentifierValueMap map;

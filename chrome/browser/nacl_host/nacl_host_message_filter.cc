@@ -16,9 +16,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/nacl_host_messages.h"
 #include "extensions/common/constants.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 static base::FilePath GetManifestPath(
     ExtensionInfoMap* extension_info_map, const std::string& manifest) {

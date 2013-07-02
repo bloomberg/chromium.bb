@@ -5,8 +5,8 @@
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 
 #include "chrome/browser/google_apis/test_util.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace google_apis {
 

@@ -14,8 +14,8 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/spellchecker/feedback.h"
 #include "chrome/browser/spellchecker/misspelling.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 class SpellCheckMarker;
 struct SpellCheckResult;

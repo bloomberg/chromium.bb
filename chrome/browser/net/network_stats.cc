@@ -16,7 +16,6 @@
 #include "base/tuple.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
@@ -25,6 +24,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/udp/udp_client_socket.h"
 #include "net/udp/udp_server_socket.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 

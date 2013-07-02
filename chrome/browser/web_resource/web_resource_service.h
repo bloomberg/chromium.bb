@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_resource/json_asynchronous_unpacker.h"
 #include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 class PrefService;
 

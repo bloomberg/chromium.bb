@@ -7,7 +7,7 @@
 
 #include "base/time/time.h"
 #include "chrome/common/translate/translate_errors.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 struct TranslateErrorDetails {
   // The time when this was created

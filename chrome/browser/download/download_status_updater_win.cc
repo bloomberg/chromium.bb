@@ -20,9 +20,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 #include "win8/util/win8_util.h"
 
 // This code doesn't compile with Aura on. TODO(avi): hook it up so that

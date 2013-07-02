@@ -9,7 +9,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 MockSettingsObserver::MockSettingsObserver() {
   registrar_.Add(this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,

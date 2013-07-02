@@ -12,7 +12,6 @@
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
@@ -20,6 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
+#include "url/gurl.h"
 
 namespace {
 

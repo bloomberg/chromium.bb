@@ -9,7 +9,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 // static
 const int AutocompleteClassifier::kDefaultOmniboxProviders =

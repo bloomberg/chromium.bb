@@ -20,10 +20,10 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/url_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/signin_manager.h"

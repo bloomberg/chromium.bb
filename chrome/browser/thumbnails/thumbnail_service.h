@@ -7,8 +7,8 @@
 
 #include "chrome/common/thumbnail_score.h"
 #include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 namespace base {
 class RefCountedMemory;

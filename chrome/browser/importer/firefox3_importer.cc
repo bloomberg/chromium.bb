@@ -25,10 +25,10 @@
 #include "chrome/common/time_format.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/password_form.h"
-#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 

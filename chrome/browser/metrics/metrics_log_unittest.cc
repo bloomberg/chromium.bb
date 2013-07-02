@@ -25,9 +25,9 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
+#include "url/gurl.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)

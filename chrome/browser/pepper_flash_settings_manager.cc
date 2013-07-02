@@ -24,10 +24,10 @@
 #include "content/public/browser/pepper_flash_settings_helper.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_constants.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "url/gurl.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/webplugininfo.h"
 

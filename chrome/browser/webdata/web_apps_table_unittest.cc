@@ -8,9 +8,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/webdata/web_apps_table.h"
 #include "components/webdata/common/web_database.h"
-#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "url/gurl.h"
 
 using base::Time;
 

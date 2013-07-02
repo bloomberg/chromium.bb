@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
+#include "url/gurl.h"
 #include "webkit/browser/appcache/appcache_service.h"
 
 class Profile;

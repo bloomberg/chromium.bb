@@ -12,10 +12,10 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/gurl.h"
 
 IframeSource::IframeSource() {
 }

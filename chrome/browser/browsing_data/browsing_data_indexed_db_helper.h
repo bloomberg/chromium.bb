@@ -16,7 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "content/public/browser/indexed_db_context.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 class Profile;
 

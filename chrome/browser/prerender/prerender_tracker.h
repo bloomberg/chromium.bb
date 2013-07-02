@@ -15,7 +15,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace prerender {
 

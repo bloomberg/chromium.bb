@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/values.h"
-#include "googleurl/src/gurl.h"
 #include "net/test/spawned_test_server/local_test_server.h"
+#include "url/gurl.h"
 
 namespace crypto {
 class RSAPrivateKey;

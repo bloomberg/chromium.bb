@@ -30,12 +30,12 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
-#include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "net/url_request/url_request.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/sys_color_change_listener.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 

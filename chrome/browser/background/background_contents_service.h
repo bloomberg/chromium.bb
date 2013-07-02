@@ -16,8 +16,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/window_container_type.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
 
 class CommandLine;
 class PrefService;

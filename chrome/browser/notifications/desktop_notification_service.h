@@ -18,10 +18,10 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/message_center/notifier_settings.h"
+#include "url/gurl.h"
 
 class ContentSettingsPattern;
 class Notification;

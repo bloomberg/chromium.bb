@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_URL_UTIL_H_
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_URL_UTIL_H_
 
-#include "googleurl/src/gurl.h"
+#include "url/gurl.h"
 
 namespace TranslateURLUtil {
 
