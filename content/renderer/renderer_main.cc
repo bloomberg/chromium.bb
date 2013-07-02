@@ -31,7 +31,6 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
-#include "third_party/libjingle/overrides/init_webrtc.h"
 #include "ui/base/ui_base_switches.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
@@ -45,6 +44,10 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #endif  // OS_MACOSX
+
+#if defined(ENABLE_WEBRTC)
+#include "third_party/libjingle/overrides/init_webrtc.h"
+#endif
 
 namespace content {
 
