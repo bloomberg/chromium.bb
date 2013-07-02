@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/drive/file_change.h"
-#include "testing/gmock/include/gmock/gmock.h"
+
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
 
