@@ -154,26 +154,15 @@ def DownloadSDK8():
   raise SystemExit("After multiple retries, couldn't download Win8 SDK")
 
 
-def DownloadVS2012Update1():
-  """Download Update1 to VS2012. See notes in DownloadSDK8."""
-  update_temp_dir = TempDir()
-  target_path = os.path.join(update_temp_dir, 'vsupdate_KB2707250.exe')
-  standalone_path = os.path.join(update_temp_dir, 'update1_standalone')
+def DownloadVS2012Update3():
+  """Download Update3 to VS2012. See notes in DownloadSDK8."""
+  update3_dir = TempDir()
+  target_path = os.path.join(update3_dir, 'VS2012.3.iso')
   Download(
       ('http://download.microsoft.com/download/'
-       '8/A/5/8A5083CE-CD1C-4294-B094-A6CF8F95AD94/vsupdate_KB2707250.exe'),
+       'D/4/8/D48D1AC2-A297-4C9E-A9D0-A218E6609F06/VS2012.3.iso'),
       target_path)
-  sys.stdout.write(
-      "Running vsupdate_KB2707250.exe to download VS2012 Update 1... "
-      "(this will take a long time, and there's no progress bar)\n")
-  count = 0
-  while count < 5:
-    rc = os.system(target_path + ' /quiet ' + '/layout ' + standalone_path)
-    if rc == 0:
-      return standalone_path
-    count += 1
-    sys.stdout.write('VS2012 Update 1 failed to download, retrying.\n')
-  raise SystemExit("After multiple retries, couldn't download VS2012 Update 1")
+  return target_path
 
 
 class SourceImages2010(object):
@@ -218,13 +207,12 @@ def GetSourceImages2012(local_dir):
   if local_dir:
     return SourceImages2012(
         ex_path=os.path.join(local_dir, 'VS2012_WDX_ENU.iso'),
-        update_path=os.path.join(local_dir, 'update1_standalone'),
+        update_path=os.path.join(local_dir, 'VS2012.3.iso'),
         wdk_iso=os.path.join(local_dir, 'GRMWDK_EN_7600_1.ISO'))
   else:
-    # Do the update first in case it fails or needs elevation.
-    update_path = DownloadVS2012Update1()
     ex_path = DownloadVS2012ExIso()
     wdk_iso = DownloadWDKIso()
+    update_path = DownloadVS2012Update3()
     return SourceImages2012(
         ex_path=ex_path,
         update_path=update_path,
@@ -392,15 +380,17 @@ def ExtractComponents2012(images):
       'Windows Software Development Kit for Metro style Apps-x86_en-us.msi')
   extracted_metro_sdk_path = ExtractMsi(sdk_metro_msi_path)
 
+  extracted_update = ExtractIso(images.update_path)
+
   extracted_compilercore_update = ExtractMsi(os.path.join(
-      images.update_path, r'packages\vc_compilercore86\vc_compilercore86.msi'))
+      extracted_update, r'packages\vc_compilercore86\vc_compilercore86.msi'))
 
   extracted_compilercore_res_update = ExtractMsi(os.path.join(
-      images.update_path,
+      extracted_update,
       r'packages\vc_compilercore86res\enu\vc_compilercore86res.msi'))
 
   extracted_librarycore_update = ExtractMsi(os.path.join(
-      images.update_path, r'packages\vc_librarycore86\vc_librarycore86.msi'))
+      extracted_update, r'packages\vc_librarycore86\vc_librarycore86.msi'))
 
   return ExtractedComponents2012(
       vc_x86=extracted_compilercore,
@@ -549,7 +539,7 @@ def CopyToFinalLocation2012(extracted, target_dir):
   from_headers = [(r'WinDDK\7600.16385.win7_wdk.100208-1538\inc', r'WDK\inc')]
   PullFrom(from_headers, extracted.headers, target_dir)
 
-  # Update 1 bits.
+  # Update bits.
   from_compiler = [(r'Program Files\Microsoft Visual Studio 11.0', '.')]
   PullFrom(from_compiler, extracted.vc_x86_update, target_dir)
 
