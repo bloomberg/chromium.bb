@@ -66,7 +66,7 @@ class FullscreenExitBubbleControllerTest : public CocoaProfileTest {
 
   void AppendTabToStrip() {
     WebContents* web_contents = WebContents::Create(
-        content::WebContents::CreateParams(profile(), site_instance_));
+        content::WebContents::CreateParams(profile(), site_instance_.get()));
     browser()->tab_strip_model()->AppendWebContents(
         web_contents, /*foreground=*/true);
   }

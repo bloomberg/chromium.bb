@@ -111,7 +111,7 @@ void AppShimController::Init() {
       user_data_dir.Append(app_mode::kAppShimSocketName);
   IPC::ChannelHandle handle(socket_path.value());
   channel_ = new IPC::ChannelProxy(handle, IPC::Channel::MODE_NAMED_CLIENT,
-      this, g_io_thread->message_loop_proxy());
+      this, g_io_thread->message_loop_proxy().get());
 
   channel_->Send(new AppShimHostMsg_LaunchApp(
       g_info->profile_dir, g_info->app_mode_id,

@@ -981,11 +981,11 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body.get()) {
     request->set_upload(UploadDataStreamBuilder::Build(
-        request_data.request_body,
+        request_data.request_body.get(),
         filter_->blob_storage_context()->controller(),
         filter_->file_system_context(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).
-            get()));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
+            .get()));
   }
 
   bool allow_download = request_data.allow_download &&

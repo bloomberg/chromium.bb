@@ -71,9 +71,8 @@ TEST(UploadDataStreamBuilderTest, CreateUploadDataStreamWithoutBlob) {
                                 kFileOffset, kFileLength, kFileTime);
   request_body->set_identifier(kIdentifier);
 
-  scoped_ptr<net::UploadDataStream> upload(
-      UploadDataStreamBuilder::Build(
-          request_body, NULL, NULL, base::MessageLoopProxy::current().get()));
+  scoped_ptr<net::UploadDataStream> upload(UploadDataStreamBuilder::Build(
+      request_body.get(), NULL, NULL, base::MessageLoopProxy::current().get()));
 
   EXPECT_EQ(kIdentifier, upload->identifier());
   ASSERT_EQ(request_body->elements()->size(), upload->element_readers().size());
@@ -144,11 +143,10 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
                                 upload_element2.expected_modification_time());
 
   scoped_ptr<net::UploadDataStream> upload(
-      UploadDataStreamBuilder::Build(
-          request_body,
-          &blob_storage_controller,
-          NULL,
-          base::MessageLoopProxy::current().get()));
+      UploadDataStreamBuilder::Build(request_body.get(),
+                                     &blob_storage_controller,
+                                     NULL,
+                                     base::MessageLoopProxy::current().get()));
 
   ASSERT_EQ(2U, upload->element_readers().size());
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[0], upload_element1));
@@ -158,22 +156,22 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
   request_body = new ResourceRequestBody();
   request_body->AppendBlob(blob_url0);
 
-  upload = UploadDataStreamBuilder::Build(
-      request_body,
-      &blob_storage_controller,
-      NULL,
-      base::MessageLoopProxy::current().get());
+  upload =
+      UploadDataStreamBuilder::Build(request_body.get(),
+                                     &blob_storage_controller,
+                                     NULL,
+                                     base::MessageLoopProxy::current().get());
   ASSERT_EQ(0U, upload->element_readers().size());
 
   // Test having only one blob reference.
   request_body = new ResourceRequestBody();
   request_body->AppendBlob(blob_url1);
 
-  upload = UploadDataStreamBuilder::Build(
-      request_body,
-      &blob_storage_controller,
-      NULL,
-      base::MessageLoopProxy::current().get());
+  upload =
+      UploadDataStreamBuilder::Build(request_body.get(),
+                                     &blob_storage_controller,
+                                     NULL,
+                                     base::MessageLoopProxy::current().get());
   ASSERT_EQ(2U, upload->element_readers().size());
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[0], blob_element1));
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[1], blob_element2));
@@ -187,11 +185,11 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
                                 upload_element2.length(),
                                 upload_element2.expected_modification_time());
 
-  upload = UploadDataStreamBuilder::Build(
-      request_body,
-      &blob_storage_controller,
-      NULL,
-      base::MessageLoopProxy::current().get());
+  upload =
+      UploadDataStreamBuilder::Build(request_body.get(),
+                                     &blob_storage_controller,
+                                     NULL,
+                                     base::MessageLoopProxy::current().get());
   ASSERT_EQ(4U, upload->element_readers().size());
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[0], blob_element1));
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[1], blob_element2));
@@ -207,11 +205,11 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
                                 upload_element2.expected_modification_time());
   request_body->AppendBlob(blob_url1);
 
-  upload = UploadDataStreamBuilder::Build(
-      request_body,
-      &blob_storage_controller,
-      NULL,
-      base::MessageLoopProxy::current().get());
+  upload =
+      UploadDataStreamBuilder::Build(request_body.get(),
+                                     &blob_storage_controller,
+                                     NULL,
+                                     base::MessageLoopProxy::current().get());
   ASSERT_EQ(4U, upload->element_readers().size());
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[0], upload_element1));
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[1], upload_element2));
@@ -227,11 +225,11 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
                                 upload_element2.length(),
                                 upload_element2.expected_modification_time());
 
-  upload = UploadDataStreamBuilder::Build(
-      request_body,
-      &blob_storage_controller,
-      NULL,
-      base::MessageLoopProxy::current().get());
+  upload =
+      UploadDataStreamBuilder::Build(request_body.get(),
+                                     &blob_storage_controller,
+                                     NULL,
+                                     base::MessageLoopProxy::current().get());
   ASSERT_EQ(4U, upload->element_readers().size());
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[0], upload_element1));
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[1], blob_element1));
@@ -249,11 +247,11 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
                                 upload_element2.length(),
                                 upload_element2.expected_modification_time());
 
-  upload = UploadDataStreamBuilder::Build(
-      request_body,
-      &blob_storage_controller,
-      NULL,
-      base::MessageLoopProxy::current().get());
+  upload =
+      UploadDataStreamBuilder::Build(request_body.get(),
+                                     &blob_storage_controller,
+                                     NULL,
+                                     base::MessageLoopProxy::current().get());
   ASSERT_EQ(8U, upload->element_readers().size());
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[0], blob_element1));
   EXPECT_TRUE(AreElementsEqual(*upload->element_readers()[1], blob_element2));

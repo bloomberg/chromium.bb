@@ -42,7 +42,7 @@ RendererWebIDBDatabaseImpl::~RendererWebIDBDatabaseImpl() {
   thread_safe_sender_->Send(new IndexedDBHostMsg_DatabaseDestroyed(
       ipc_database_id_));
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->DatabaseDestroyed(ipc_database_id_);
 }
 
@@ -81,17 +81,14 @@ void RendererWebIDBDatabaseImpl::createTransaction(
     unsigned short mode)
 {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
-  dispatcher->RequestIDBDatabaseCreateTransaction(ipc_database_id_,
-                                                  transaction_id,
-                                                  callbacks,
-                                                  object_store_ids,
-                                                  mode);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+  dispatcher->RequestIDBDatabaseCreateTransaction(
+      ipc_database_id_, transaction_id, callbacks, object_store_ids, mode);
 }
 
 void RendererWebIDBDatabaseImpl::close() {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBDatabaseClose(ipc_database_id_,
                                       ipc_database_callbacks_id_);
 }
@@ -104,10 +101,14 @@ void RendererWebIDBDatabaseImpl::get(
     bool key_only,
     WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
-  dispatcher->RequestIDBDatabaseGet(
-      ipc_database_id_, transaction_id, object_store_id, index_id,
-      IndexedDBKeyRange(key_range), key_only, callbacks);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+  dispatcher->RequestIDBDatabaseGet(ipc_database_id_,
+                                    transaction_id,
+                                    object_store_id,
+                                    index_id,
+                                    IndexedDBKeyRange(key_range),
+                                    key_only,
+                                    callbacks);
 }
 
 void RendererWebIDBDatabaseImpl::put(
@@ -120,11 +121,16 @@ void RendererWebIDBDatabaseImpl::put(
     const WebVector<long long>& web_index_ids,
     const WebVector<WebIndexKeys>& web_index_keys) {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
-  dispatcher->RequestIDBDatabasePut(
-      ipc_database_id_, transaction_id, object_store_id,
-      value, IndexedDBKey(key), put_mode, callbacks,
-      web_index_ids, web_index_keys);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+  dispatcher->RequestIDBDatabasePut(ipc_database_id_,
+                                    transaction_id,
+                                    object_store_id,
+                                    value,
+                                    IndexedDBKey(key),
+                                    put_mode,
+                                    callbacks,
+                                    web_index_ids,
+                                    web_index_keys);
 }
 
 void RendererWebIDBDatabaseImpl::setIndexKeys(
@@ -174,11 +180,16 @@ void RendererWebIDBDatabaseImpl::openCursor(
     TaskType task_type,
     WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
-  dispatcher->RequestIDBDatabaseOpenCursor(
-      ipc_database_id_,
-      transaction_id, object_store_id, index_id,
-      IndexedDBKeyRange(key_range), direction, key_only, task_type, callbacks);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+  dispatcher->RequestIDBDatabaseOpenCursor(ipc_database_id_,
+                                           transaction_id,
+                                           object_store_id,
+                                           index_id,
+                                           IndexedDBKeyRange(key_range),
+                                           direction,
+                                           key_only,
+                                           task_type,
+                                           callbacks);
 }
 
 void RendererWebIDBDatabaseImpl::count(
@@ -188,11 +199,13 @@ void RendererWebIDBDatabaseImpl::count(
     const WebKit::WebIDBKeyRange& key_range,
     WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
-  dispatcher->RequestIDBDatabaseCount(
-      ipc_database_id_,
-      transaction_id, object_store_id, index_id,
-      IndexedDBKeyRange(key_range), callbacks);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+  dispatcher->RequestIDBDatabaseCount(ipc_database_id_,
+                                      transaction_id,
+                                      object_store_id,
+                                      index_id,
+                                      IndexedDBKeyRange(key_range),
+                                      callbacks);
 }
 
 void RendererWebIDBDatabaseImpl::deleteRange(
@@ -201,11 +214,12 @@ void RendererWebIDBDatabaseImpl::deleteRange(
     const WebKit::WebIDBKeyRange& key_range,
     WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
-  dispatcher->RequestIDBDatabaseDeleteRange(
-      ipc_database_id_,
-      transaction_id, object_store_id,
-      IndexedDBKeyRange(key_range), callbacks);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+  dispatcher->RequestIDBDatabaseDeleteRange(ipc_database_id_,
+                                            transaction_id,
+                                            object_store_id,
+                                            IndexedDBKeyRange(key_range),
+                                            callbacks);
 }
 
 void RendererWebIDBDatabaseImpl::clear(
@@ -213,10 +227,9 @@ void RendererWebIDBDatabaseImpl::clear(
     long long object_store_id,
     WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBDatabaseClear(
-      ipc_database_id_,
-      transaction_id, object_store_id, callbacks);
+      ipc_database_id_, transaction_id, object_store_id, callbacks);
 }
 
 void RendererWebIDBDatabaseImpl::createIndex(

@@ -35,7 +35,7 @@
 }
 
 - (BOOL)ensureContext {
-  if (context_)
+  if (context_.get())
     return YES;
 
   if (!renderWidgetHostView_)
@@ -46,12 +46,12 @@
     [context_->nsgl_context() clearDrawable];
   }
 
-  if (!context_) {
+  if (!context_.get()) {
     context_ = content::CompositingIOSurfaceContext::Get(
         renderWidgetHostView_->window_number());
   }
 
-  return context_ ? YES : NO;
+  return context_.get() ? YES : NO;
 }
 
 - (void)updateScaleFactor {
@@ -89,7 +89,7 @@
 }
 
 - (void)releaseCGLContext:(CGLContextObj)glContext {
-  if (!context_)
+  if (!context_.get())
     return;
 
   DCHECK(glContext == context_->cgl_context());
@@ -100,7 +100,7 @@
              pixelFormat:(CGLPixelFormatObj)pixelFormat
             forLayerTime:(CFTimeInterval)timeInterval
              displayTime:(const CVTimeStamp*)timeStamp {
-  if (!context_ || !renderWidgetHostView_ ||
+  if (!context_.get() || !renderWidgetHostView_ ||
       !renderWidgetHostView_->compositing_iosurface_) {
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);

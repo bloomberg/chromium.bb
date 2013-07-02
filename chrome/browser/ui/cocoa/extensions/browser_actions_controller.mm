@@ -487,10 +487,10 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   for (ExtensionList::const_iterator iter =
            toolbarModel_->toolbar_items().begin();
        iter != toolbarModel_->toolbar_items().end(); ++iter) {
-    if (![self shouldDisplayBrowserAction:*iter])
+    if (![self shouldDisplayBrowserAction:iter->get()])
       continue;
 
-    [self createActionButtonForExtension:*iter withIndex:i++];
+    [self createActionButtonForExtension:iter->get() withIndex:i++];
   }
 
   CGFloat width = [self savedWidth];
@@ -579,9 +579,9 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   for (ExtensionList::const_iterator iter =
            toolbarModel_->toolbar_items().begin();
        iter != toolbarModel_->toolbar_items().end(); ++iter) {
-    if (![self shouldDisplayBrowserAction:*iter])
+    if (![self shouldDisplayBrowserAction:iter->get()])
       continue;
-    BrowserActionButton* button = [self buttonForExtension:(*iter)];
+    BrowserActionButton* button = [self buttonForExtension:(iter->get())];
     if (!button)
       continue;
     if (![button isBeingDragged])
@@ -672,7 +672,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   for (ExtensionList::const_iterator iter =
            toolbarModel_->toolbar_items().begin();
        iter != toolbarModel_->toolbar_items().end(); ++iter) {
-    BrowserActionButton* button = [self buttonForExtension:(*iter)];
+    BrowserActionButton* button = [self buttonForExtension:(iter->get())];
     NSRect buttonFrame = [button frame];
     if (NSContainsRect([containerView_ bounds], buttonFrame))
       continue;
@@ -712,7 +712,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   for (ExtensionList::const_iterator iter =
            toolbarModel_->toolbar_items().begin();
        iter != toolbarModel_->toolbar_items().end(); ++iter) {
-    BrowserActionButton* button = [self buttonForExtension:(*iter)];
+    BrowserActionButton* button = [self buttonForExtension:(iter->get())];
     CGFloat intersectionWidth =
         NSWidth(NSIntersectionRect(draggedButtonFrame, [button frame]));
 
@@ -878,7 +878,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   const extensions::ExtensionList& toolbar_items =
       toolbarModel_->toolbar_items();
   if (index < toolbar_items.size()) {
-    const Extension* extension = toolbar_items[index];
+    const Extension* extension = toolbar_items[index].get();
     return [buttons_ objectForKey:base::SysUTF8ToNSString(extension->id())];
   }
   return nil;

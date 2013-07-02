@@ -51,10 +51,10 @@ TEST(IndexedDBDispatcherTest, ValueSizeTest) {
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter(
       new IPC::SyncMessageFilter(NULL));
   scoped_refptr<ThreadSafeSender> thread_safe_sender(new ThreadSafeSender(
-      message_loop_proxy, sync_message_filter));
+      message_loop_proxy.get(), sync_message_filter.get()));
 
   MockCallbacks callbacks;
-  IndexedDBDispatcher dispatcher(thread_safe_sender);
+  IndexedDBDispatcher dispatcher(thread_safe_sender.get());
   IndexedDBKey key(0, WebIDBKey::NumberType);
   dispatcher.RequestIDBDatabasePut(ipc_dummy_id,
                                    transaction_id,

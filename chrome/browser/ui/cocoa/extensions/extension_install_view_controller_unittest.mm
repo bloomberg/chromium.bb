@@ -251,7 +251,7 @@ TEST_F(ExtensionInstallViewControllerTest, OAuthIssues) {
   chrome::MockExtensionInstallPromptDelegate delegate;
 
   ExtensionInstallPrompt::Prompt prompt =
-      chrome::BuildExtensionInstallPrompt(extension_);
+      chrome::BuildExtensionInstallPrompt(extension_.get());
   std::vector<string16> permissions;
   permissions.push_back(UTF8ToUTF16("warning 1"));
   prompt.SetPermissions(permissions);

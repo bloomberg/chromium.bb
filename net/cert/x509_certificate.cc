@@ -221,7 +221,7 @@ void SplitOnChar(const base::StringPiece& src,
 bool X509Certificate::LessThan::operator()(
     const scoped_refptr<X509Certificate>& lhs,
     const scoped_refptr<X509Certificate>& rhs) const {
-  if (lhs == rhs)
+  if (lhs.get() == rhs.get())
     return false;
 
   int rv = memcmp(lhs->fingerprint_.data, rhs->fingerprint_.data,

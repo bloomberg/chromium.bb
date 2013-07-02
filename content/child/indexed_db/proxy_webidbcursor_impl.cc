@@ -38,14 +38,14 @@ RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
         new IndexedDBHostMsg_CursorDestroyed(ipc_cursor_id_));
   }
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->CursorDestroyed(ipc_cursor_id_);
 }
 
 void RendererWebIDBCursorImpl::advance(unsigned long count,
                                        WebIDBCallbacks* callbacks_ptr) {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   ResetPrefetchCache();
   dispatcher->RequestIDBCursorAdvance(
@@ -56,7 +56,7 @@ void RendererWebIDBCursorImpl::continueFunction(
     const WebIDBKey& key,
     WebIDBCallbacks* callbacks_ptr) {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   if (key.type() == WebIDBKey::NullType) {
@@ -147,7 +147,7 @@ void RendererWebIDBCursorImpl::ResetPrefetchCache() {
   }
 
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBCursorPrefetchReset(
       used_prefetches_, prefetch_keys_.size(), ipc_cursor_id_);
   prefetch_keys_.clear();

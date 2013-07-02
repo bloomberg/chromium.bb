@@ -241,10 +241,12 @@ void DnsSdServer::DoLoop(int rv) {
   // TODO(maksymb): Check what happened if buffer will be overflowed
   do {
     if (rv > 0)
-      ProcessMessage(rv, recv_buf_);
-    rv = socket_->RecvFrom(recv_buf_, recv_buf_->size(), &recv_address_,
-                           base::Bind(&DnsSdServer::DoLoop,
-                                      base::Unretained(this)));
+      ProcessMessage(rv, recv_buf_.get());
+    rv = socket_->RecvFrom(
+        recv_buf_.get(),
+        recv_buf_->size(),
+        &recv_address_,
+        base::Bind(&DnsSdServer::DoLoop, base::Unretained(this)));
   } while (rv > 0);
 
   // TODO(maksymb): Add handler for errors

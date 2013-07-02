@@ -1867,7 +1867,7 @@ void MetricsService::StartExternalMetrics() {
 #endif
 
 bool MetricsService::GzipProtobufsBeforeUploading() {
-  if (!gzipped_protobufs_trial_) {
+  if (!gzipped_protobufs_trial_.get()) {
     gzipped_protobufs_trial_ = base::FieldTrialList::FactoryGetFieldTrial(
         kGzippedProtobufsTrialName,
         kGzippedProtobufsTrialDivisor,

@@ -46,8 +46,8 @@ bool IndexedDBMessageFilter::OnMessageReceived(const IPC::Message& msg) {
 IndexedDBMessageFilter::~IndexedDBMessageFilter() {}
 
 void IndexedDBMessageFilter::DispatchMessage(const IPC::Message& msg) {
-  IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_)->
-      OnMessageReceived(msg);
+  IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get())
+      ->OnMessageReceived(msg);
 }
 
 void IndexedDBMessageFilter::OnStaleMessageReceived(const IPC::Message& msg) {

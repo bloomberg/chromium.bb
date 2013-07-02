@@ -50,7 +50,7 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
 
 PictureLayerTiling::~PictureLayerTiling() {
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-    client_->DestroyTile(it->second);
+    client_->DestroyTile(it->second.get());
 }
 
 void PictureLayerTiling::SetClient(PictureLayerTilingClient* client) {
@@ -338,7 +338,7 @@ gfx::Size PictureLayerTiling::CoverageIterator::texture_size() const {
 void PictureLayerTiling::Reset() {
   live_tiles_rect_ = gfx::Rect();
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-    client_->DestroyTile(it->second);
+    client_->DestroyTile(it->second.get());
   tiles_.clear();
 }
 
@@ -510,7 +510,7 @@ void PictureLayerTiling::SetLiveTilesRect(
     // though it was in the live rect.
     if (found == tiles_.end())
       continue;
-    client_->DestroyTile(found->second);
+    client_->DestroyTile(found->second.get());
     tiles_.erase(found);
   }
 

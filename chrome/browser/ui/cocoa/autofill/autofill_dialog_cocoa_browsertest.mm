@@ -44,7 +44,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   virtual ~TestAutofillDialogController() {}
 
   virtual void ViewClosed() OVERRIDE {
-    DCHECK(runner_);
+    DCHECK(runner_.get());
     runner_->Quit();
     AutofillDialogControllerImpl::ViewClosed();
   }
@@ -92,7 +92,7 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
   TestAutofillDialogController* controller() { return controller_; }
 
   void RunMessageLoop() {
-    DCHECK(runner_);
+    DCHECK(runner_.get());
     runner_->Run();
   }
 

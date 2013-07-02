@@ -91,13 +91,13 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter(
       new IPC::SyncMessageFilter(NULL));
   scoped_refptr<ThreadSafeSender> thread_safe_sender(new ThreadSafeSender(
-      message_loop_proxy, sync_message_filter));
+      message_loop_proxy.get(), sync_message_filter.get()));
 
-  MockDispatcher dispatcher(thread_safe_sender);
+  MockDispatcher dispatcher(thread_safe_sender.get());
 
   {
-    RendererWebIDBCursorImpl cursor(
-        RendererWebIDBCursorImpl::kInvalidCursorId, thread_safe_sender);
+    RendererWebIDBCursorImpl cursor(RendererWebIDBCursorImpl::kInvalidCursorId,
+                                    thread_safe_sender.get());
 
     // Call continue() until prefetching should kick in.
     int continue_calls = 0;

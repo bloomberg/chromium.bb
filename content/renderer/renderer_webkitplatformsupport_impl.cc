@@ -386,7 +386,8 @@ RendererWebKitPlatformSupportImpl::createLocalStorageNamespace() {
 
 WebIDBFactory* RendererWebKitPlatformSupportImpl::idbFactory() {
   if (!web_idb_factory_)
-    web_idb_factory_.reset(new RendererWebIDBFactoryImpl(thread_safe_sender_));
+    web_idb_factory_.reset(
+        new RendererWebIDBFactoryImpl(thread_safe_sender_.get()));
   return web_idb_factory_.get();
 }
 

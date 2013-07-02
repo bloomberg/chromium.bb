@@ -108,13 +108,13 @@ IndexedDBContextImpl::IndexedDBContextImpl(
 
 IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  if (!idb_factory_) {
+  if (!idb_factory_.get()) {
     // Prime our cache of origins with existing databases so we can
     // detect when dbs are newly created.
     GetOriginSet();
     idb_factory_ = IndexedDBFactory::Create();
   }
-  return idb_factory_;
+  return idb_factory_.get();
 }
 
 std::vector<GURL> IndexedDBContextImpl::GetAllOrigins() {
@@ -288,7 +288,7 @@ quota::QuotaManagerProxy* IndexedDBContextImpl::quota_manager_proxy() {
 }
 
 IndexedDBContextImpl::~IndexedDBContextImpl() {
-  if (idb_factory_) {
+  if (idb_factory_.get()) {
     IndexedDBFactory* factory = idb_factory_.get();
     factory->AddRef();
     idb_factory_ = NULL;

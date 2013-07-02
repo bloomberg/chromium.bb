@@ -111,7 +111,7 @@ void ShowSSLClientCertificateSelector(
     CFIndex index =
         CFArrayGetFirstIndexOfValue(identities_, range, [panel_ identity]);
     if (index != -1)
-      cert = certificates_[index];
+      cert = certificates_[index].get();
     else
       NOTREACHED();
   }

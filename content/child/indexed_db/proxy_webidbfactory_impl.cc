@@ -28,9 +28,9 @@ void RendererWebIDBFactoryImpl::getDatabaseNames(
     WebIDBCallbacks* callbacks,
     const WebString& database_identifier) {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
-  dispatcher->RequestIDBFactoryGetDatabaseNames(
-      callbacks, database_identifier.utf8());
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+  dispatcher->RequestIDBFactoryGetDatabaseNames(callbacks,
+                                                database_identifier.utf8());
 }
 
 void RendererWebIDBFactoryImpl::open(
@@ -41,10 +41,13 @@ void RendererWebIDBFactoryImpl::open(
     WebIDBDatabaseCallbacks* database_callbacks,
     const WebString& database_identifier) {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
-  dispatcher->RequestIDBFactoryOpen(
-      name, version, transaction_id, callbacks, database_callbacks,
-      database_identifier.utf8());
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+  dispatcher->RequestIDBFactoryOpen(name,
+                                    version,
+                                    transaction_id,
+                                    callbacks,
+                                    database_callbacks,
+                                    database_identifier.utf8());
 }
 
 void RendererWebIDBFactoryImpl::deleteDatabase(
@@ -52,7 +55,7 @@ void RendererWebIDBFactoryImpl::deleteDatabase(
     WebIDBCallbacks* callbacks,
     const WebString& database_identifier) {
   IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_);
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBFactoryDeleteDatabase(
       name, callbacks, database_identifier.utf8());
 }

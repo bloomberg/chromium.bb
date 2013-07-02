@@ -43,7 +43,7 @@ void NSRunLoopRunAllPending() {
   // Put a delayed selector on the queue. All other pending delayed selectors
   // will run before this, after which the internal loop can end.
   base::scoped_nsobject<CocoaQuitTask> quit_task(
-      [[CocoaQuitTask alloc] initWithMessagePump:message_pump]);
+      [[CocoaQuitTask alloc] initWithMessagePump:message_pump.get()]);
 
   [quit_task performSelector:@selector(doQuit)
                   withObject:nil

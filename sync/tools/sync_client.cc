@@ -336,7 +336,7 @@ int SyncClientMain(int argc, char* argv[]) {
   // TODO(akalin): Replace this with just the context getter once
   // HttpPostProviderFactory is removed.
   scoped_ptr<HttpPostProviderFactory> post_factory(
-      new HttpBridgeFactory(context_getter,
+      new HttpBridgeFactory(context_getter.get(),
                             kUserAgent,
                             base::Bind(&StubNetworkTimeUpdateCallback)));
   // Used only when committing bookmarks, so it's okay to leave this

@@ -460,7 +460,7 @@ void IndexedDBDispatcher::OnSuccessIDBDatabase(
   // If an upgrade was performed, count will be non-zero.
   if (!databases_.count(ipc_object_id))
     databases_[ipc_object_id] = new RendererWebIDBDatabaseImpl(
-        ipc_object_id, ipc_database_callbacks_id, thread_safe_sender_);
+        ipc_object_id, ipc_database_callbacks_id, thread_safe_sender_.get());
   DCHECK_EQ(databases_.count(ipc_object_id), 1u);
   callbacks->onSuccess(databases_[ipc_object_id], metadata);
   pending_callbacks_.Remove(ipc_callbacks_id);
@@ -557,7 +557,7 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(
     return;
 
   RendererWebIDBCursorImpl* cursor =
-      new RendererWebIDBCursorImpl(ipc_object_id, thread_safe_sender_);
+      new RendererWebIDBCursorImpl(ipc_object_id, thread_safe_sender_.get());
   cursors_[ipc_object_id] = cursor;
   callbacks->onSuccess(cursor, key, primary_key, web_value);
 
@@ -626,8 +626,10 @@ void IndexedDBDispatcher::OnUpgradeNeeded(
   DCHECK(callbacks);
   WebIDBMetadata metadata(ConvertMetadata(p.idb_metadata));
   DCHECK(!databases_.count(p.ipc_database_id));
-  databases_[p.ipc_database_id] = new RendererWebIDBDatabaseImpl(
-      p.ipc_database_id, p.ipc_database_callbacks_id, thread_safe_sender_);
+  databases_[p.ipc_database_id] =
+      new RendererWebIDBDatabaseImpl(p.ipc_database_id,
+                                     p.ipc_database_callbacks_id,
+                                     thread_safe_sender_.get());
   callbacks->onUpgradeNeeded(
       p.old_version,
       databases_[p.ipc_database_id],

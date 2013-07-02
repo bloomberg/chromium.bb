@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(SSLCertificateViewerCocoaTest, Basic) {
       WebContentsModalDialogManager::FromWebContents(web_contents);
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsShowingDialog());
 
-  ShowCertificateViewer(web_contents, window, cert);
+  ShowCertificateViewer(web_contents, window, cert.get());
 
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsShowingDialog());
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(SSLCertificateViewerCocoaTest, HideShow) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   SSLCertificateViewerCocoa* viewer =
-      [[SSLCertificateViewerCocoa alloc] initWithCertificate:cert];
+      [[SSLCertificateViewerCocoa alloc] initWithCertificate:cert.get()];
   [viewer displayForWebContents:web_contents];
 
   content::RunAllPendingInMessageLoop();

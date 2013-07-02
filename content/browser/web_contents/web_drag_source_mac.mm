@@ -388,7 +388,8 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
         contents_));
 
     // The finalizer will take care of closing and deletion.
-    dragFileDownloader->Start(new PromiseFileFinalizer(dragFileDownloader));
+    dragFileDownloader->Start(new PromiseFileFinalizer(
+        dragFileDownloader.get()));
   } else {
     // The writer will take care of closing and deletion.
     BrowserThread::PostTask(BrowserThread::FILE,

@@ -1636,7 +1636,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                  projectorImage:projector
                      throbImage:projectorGlow
                      durationMS:kRecordingDurationMs
-             animationContainer:animationContainer_] autorelease];
+             animationContainer:animationContainer_.get()] autorelease];
 
           iconView = projectingView;
         } else if (theme && chrome::ShouldShowRecordingIndicator(contents)) {
@@ -1655,7 +1655,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                      throbImage:recording
                      durationMS:kRecordingDurationMs
                   throbPosition:kThrobPositionBottomRight
-             animationContainer:animationContainer_] autorelease];
+             animationContainer:animationContainer_.get()] autorelease];
 
           iconView = recordingView;
         } else if (chrome::IsPlayingAudio(contents) ||
@@ -1666,7 +1666,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
             tabAudioIndicatorViewMac = [[[TabAudioIndicatorViewMac alloc]
                 initWithFrame:frame] autorelease];
             [tabAudioIndicatorViewMac
-                setAnimationContainer:animationContainer_];
+                setAnimationContainer:animationContainer_.get()];
           }
           [tabAudioIndicatorViewMac
               setIsPlayingAudio:chrome::IsPlayingAudio(contents)];

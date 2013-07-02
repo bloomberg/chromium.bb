@@ -492,7 +492,7 @@ void RenderWidgetHostViewMac::EnableCoreAnimation() {
 
 bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceAndLayer() {
   if (compositing_iosurface_layer_ &&
-      [compositing_iosurface_layer_ context] &&
+      [compositing_iosurface_layer_ context].get() &&
       compositing_iosurface_) {
     return true;
   }
@@ -1103,7 +1103,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurfaceToVideoFrame(
       !compositing_iosurface_->HasIOSurface())
     return;
 
-  if (!target) {
+  if (!target.get()) {
     NOTREACHED();
     return;
   }

@@ -87,8 +87,8 @@ class ActionBoxMenuBubbleControllerTest : public CocoaProfileTest {
                          .Set("background", extensions::DictionaryBuilder()
                              .Set("page", ""))))
         .Build();
-    service_->AddExtension(extension);
-    model->AddExtension(*extension, command_id);
+    service_->AddExtension(extension.get());
+    model->AddExtension(*extension.get(), command_id);
     return extension;
   }
 

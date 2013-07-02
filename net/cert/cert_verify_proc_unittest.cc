@@ -902,7 +902,7 @@ TEST_F(CertVerifyProcTest, CybertrustGTERoot) {
                          "cybertrust_baltimore_root.pem");
   ASSERT_TRUE(baltimore_root.get());
 
-  ScopedTestRoot scoped_root(baltimore_root);
+  ScopedTestRoot scoped_root(baltimore_root.get());
 
   // Ensure that ONLY the Baltimore CyberTrust Root is trusted. This
   // simulates Keychain removing support for the GTE CyberTrust Root.
@@ -917,8 +917,12 @@ TEST_F(CertVerifyProcTest, CybertrustGTERoot) {
   // works. Only the first two certificates are included in the chain.
   int flags = 0;
   CertVerifyResult verify_result;
-  int error = Verify(cybertrust_basic, "cacert.omniroot.com", flags, NULL,
-                     empty_cert_list_, &verify_result);
+  int error = Verify(cybertrust_basic.get(),
+                     "cacert.omniroot.com",
+                     flags,
+                     NULL,
+                     empty_cert_list_,
+                     &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 
@@ -936,8 +940,12 @@ TEST_F(CertVerifyProcTest, CybertrustGTERoot) {
   scoped_refptr<X509Certificate> baltimore_chain_1 =
       X509Certificate::CreateFromHandle(cybertrust_basic->os_cert_handle(),
                                         intermediate_chain_1);
-  error = Verify(baltimore_chain_1, "cacert.omniroot.com", flags, NULL,
-                 empty_cert_list_, &verify_result);
+  error = Verify(baltimore_chain_1.get(),
+                 "cacert.omniroot.com",
+                 flags,
+                 NULL,
+                 empty_cert_list_,
+                 &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 
@@ -955,8 +963,12 @@ TEST_F(CertVerifyProcTest, CybertrustGTERoot) {
   scoped_refptr<X509Certificate> baltimore_chain_2 =
       X509Certificate::CreateFromHandle(cybertrust_basic->os_cert_handle(),
                                         intermediate_chain_2);
-  error = Verify(baltimore_chain_2, "cacert.omniroot.com", flags, NULL,
-                 empty_cert_list_, &verify_result);
+  error = Verify(baltimore_chain_2.get(),
+                 "cacert.omniroot.com",
+                 flags,
+                 NULL,
+                 empty_cert_list_,
+                 &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 
@@ -971,8 +983,12 @@ TEST_F(CertVerifyProcTest, CybertrustGTERoot) {
   scoped_refptr<X509Certificate> baltimore_chain_with_root =
       X509Certificate::CreateFromHandle(cybertrust_basic->os_cert_handle(),
                                         intermediate_chain_2);
-  error = Verify(baltimore_chain_with_root, "cacert.omniroot.com", flags,
-                 NULL, empty_cert_list_, &verify_result);
+  error = Verify(baltimore_chain_with_root.get(),
+                 "cacert.omniroot.com",
+                 flags,
+                 NULL,
+                 empty_cert_list_,
+                 &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 
