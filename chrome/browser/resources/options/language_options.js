@@ -201,10 +201,11 @@ cr.define('options', function() {
         if (match) {
           var addLanguageCode = match[1];
           $('language-options-list').addLanguage(addLanguageCode);
+          this.addBlockedLanguage_(addLanguageCode);
         } else {
           OptionsPage.navigateToPage('addLanguage');
         }
-      };
+      }.bind(this);
 
       if (!cr.isMac) {
         // Set up the button for editing custom spelling dictionary.
@@ -363,6 +364,42 @@ cr.define('options', function() {
         OptionsPage.navigateToPage(pageName);
       };
       return button;
+    },
+
+    /**
+     * Adds a language to the preference 'translate_blocked_languages'. If
+     * |langCode| is already added, nothing happens. |langCode| is converted
+     * to a Translate language synonym before added.
+     * @param {string} langCode A language code like 'en'
+     * @private
+     */
+    addBlockedLanguage_: function(langCode) {
+      langCode = this.convertLangCodeForTranslation_(langCode);
+      if (this.translateBlockedLanguages_.indexOf(langCode) == -1) {
+        this.translateBlockedLanguages_.push(langCode);
+        Preferences.setListPref(TRANSLATE_BLOCKED_LANGUAGES_PREF,
+                                this.translateBlockedLanguages_, true);
+      }
+    },
+
+    /**
+     * Removes a language from the preference 'translate_blocked_languages'.
+     * If |langCode| doesn't exist in the preference, nothing happens.
+     * |langCode| is converted to a Translate language synonym before removed.
+     * @param {string} langCode A language code like 'en'
+     * @private
+     */
+    removeBlockedLanguage_: function(langCode) {
+      langCode = this.convertLangCodeForTranslation_(langCode);
+      if (this.translateBlockedLanguages_.indexOf(langCode) != -1) {
+        this.translateBlockedLanguages_ =
+            this.translateBlockedLanguages_.filter(
+                function(langCodeNotTranslated) {
+                  return langCodeNotTranslated != langCode;
+                });
+        Preferences.setListPref(TRANSLATE_BLOCKED_LANGUAGES_PREF,
+                                this.translateBlockedLanguages_, true);
+      }
     },
 
     /**
@@ -795,20 +832,10 @@ cr.define('options', function() {
       var languageOptionsList = $('language-options-list');
       var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
 
-      var langCode = this.convertLangCodeForTranslation_(selectedLanguageCode);
-      var blockedLanguages = this.translateBlockedLanguages_;
-      if (checked && blockedLanguages.indexOf(langCode) == -1) {
-        blockedLanguages.push(langCode);
-      } else if (!checked && blockedLanguages.indexOf(langCode) != -1) {
-        blockedLanguages =
-            blockedLanguages.filter(function(langCodeNotTranslated) {
-              return langCodeNotTranslated != langCode;
-            });
-      }
-      this.translateBlockedLanguages_ = blockedLanguages;
-
-      Preferences.setListPref(TRANSLATE_BLOCKED_LANGUAGES_PREF,
-                              this.translateBlockedLanguages_, true);
+      if (checked)
+        this.addBlockedLanguage_(selectedLanguageCode);
+      else
+        this.removeBlockedLanguage_(selectedLanguageCode);
     },
 
     /**
@@ -847,7 +874,9 @@ cr.define('options', function() {
       var selectedIndex = languagesSelect.selectedIndex;
       if (selectedIndex >= 0) {
         var selection = languagesSelect.options[selectedIndex];
-        $('language-options-list').addLanguage(String(selection.value));
+        var langCode = String(selection.value);
+        $('language-options-list').addLanguage(langCode);
+        this.addBlockedLanguage_(langCode);
         OptionsPage.closeOverlay();
       }
     },
