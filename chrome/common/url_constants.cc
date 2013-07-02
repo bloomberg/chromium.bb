@@ -120,6 +120,8 @@ const char kChromeUIFileManagerURL[] = "chrome://files/";
 #if defined(USE_AURA)
 const char kChromeUIGestureConfigURL[] = "chrome://gesture/";
 const char kChromeUIGestureConfigHost[] = "gesture";
+const char kChromeUISalsaURL[] = "chrome://salsa/";
+const char kChromeUISalsaHost[] = "salsa";
 #endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)

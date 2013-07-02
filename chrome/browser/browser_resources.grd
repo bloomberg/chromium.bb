@@ -342,6 +342,11 @@
         <include name="IDR_QUICKOFFICE_EDITOR_MANIFEST"
         file="resources\quick_office\manifest_experimental.json" type="BINDATA" />
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <include name="IDR_SALSA_CSS" file="resources\chromeos\salsa.css" type="BINDATA" />
+        <include name="IDR_SALSA_HTML" file="resources\chromeos\salsa.html" type="BINDATA" />
+        <include name="IDR_SALSA_JS" file="resources\chromeos\salsa.js" type="BINDATA" />
+      </if>
       <if expr="pp_ifdef('use_ash')">
         <include name="IDR_GESTURE_CONFIG_CSS" file="resources\gesture_config.css" type="BINDATA" />
         <include name="IDR_GESTURE_CONFIG_HTML" file="resources\gesture_config.html" type="BINDATA" />

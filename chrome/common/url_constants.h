@@ -114,6 +114,8 @@ extern const char kChromeUIFileManagerURL[];
 #if defined(USE_AURA)
 extern const char kChromeUIGestureConfigURL[];
 extern const char kChromeUIGestureConfigHost[];
+extern const char kChromeUISalsaURL[];
+extern const char kChromeUISalsaHost[];
 #endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
