@@ -598,8 +598,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual void SetWaitSyncPointCallback(
       const WaitSyncPointCallback& callback) OVERRIDE;
 
-  virtual void SetStreamTextureManager(StreamTextureManager* manager) OVERRIDE;
-
   virtual AsyncPixelTransferManager*
       GetAsyncPixelTransferManager() OVERRIDE;
   virtual void ResetAsyncPixelTransferManagerForTest() OVERRIDE;
@@ -708,6 +706,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   MemoryTracker* memory_tracker() {
     return group_->memory_tracker();
+  }
+
+  StreamTextureManager* stream_texture_manager() const {
+    return group_->stream_texture_manager();
   }
 
   bool EnsureGPUMemoryAvailable(size_t estimated_size) {
@@ -1657,7 +1659,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   ShaderCacheCallback shader_cache_callback_;
 
-  StreamTextureManager* stream_texture_manager_;
   scoped_ptr<AsyncPixelTransferManager> async_pixel_transfer_manager_;
 
   // The format of the back buffer_
@@ -2136,7 +2137,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       offscreen_target_samples_(0),
       offscreen_target_buffer_preserved_(true),
       offscreen_saved_color_format_(0),
-      stream_texture_manager_(NULL),
       back_buffer_color_format_(0),
       back_buffer_has_depth_(false),
       back_buffer_has_stencil_(false),
@@ -2760,11 +2760,8 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
               ->UnbindTexture(GL_FRAMEBUFFER, texture_ref);
         }
       }
-      GLuint service_id = texture->service_id();
-      if (texture->IsStreamTexture() && stream_texture_manager_) {
-        stream_texture_manager_->DestroyStreamTexture(service_id);
-      }
 #if defined(OS_MACOSX)
+      GLuint service_id = texture->service_id();
       if (texture->target() == GL_TEXTURE_RECTANGLE_ARB) {
         ReleaseIOSurfaceForTexture(service_id);
       }
@@ -3066,10 +3063,6 @@ void GLES2DecoderImpl::SetShaderCacheCallback(
 void GLES2DecoderImpl::SetWaitSyncPointCallback(
     const WaitSyncPointCallback& callback) {
   wait_sync_point_callback_ = callback;
-}
-
-void GLES2DecoderImpl::SetStreamTextureManager(StreamTextureManager* manager) {
-  stream_texture_manager_ = manager;
 }
 
 AsyncPixelTransferManager*
@@ -3867,9 +3860,10 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
     case GL_TEXTURE_EXTERNAL_OES:
       unit.bound_texture_external_oes = texture_ref;
       if (texture->IsStreamTexture()) {
-        DCHECK(stream_texture_manager_);
+        DCHECK(stream_texture_manager());
         StreamTexture* stream_tex =
-            stream_texture_manager_->LookupStreamTexture(texture->service_id());
+            stream_texture_manager()->LookupStreamTexture(
+                texture->service_id());
         if (stream_tex)
           stream_tex->Update();
       }
@@ -9338,10 +9332,10 @@ error::Error GLES2DecoderImpl::HandleCreateStreamTextureCHROMIUM(
     return error::kNoError;
   }
 
-  if (!stream_texture_manager_)
+  if (!stream_texture_manager())
     return error::kInvalidArguments;
 
-  GLuint object_id = stream_texture_manager_->CreateStreamTexture(
+  GLuint object_id = stream_texture_manager()->CreateStreamTexture(
       texture->service_id(), client_id);
 
   if (object_id) {
@@ -9361,11 +9355,11 @@ error::Error GLES2DecoderImpl::HandleDestroyStreamTextureCHROMIUM(
     const cmds::DestroyStreamTextureCHROMIUM& c) {
   GLuint client_id = c.texture;
   TextureRef* texture_ref = texture_manager()->GetTexture(client_id);
-  if (texture_ref && texture_ref->texture()->IsStreamTexture()) {
-    if (!stream_texture_manager_)
+  if (texture_ref && texture_manager()->IsStreamTextureOwner(texture_ref)) {
+    if (!stream_texture_manager())
       return error::kInvalidArguments;
 
-    stream_texture_manager_->DestroyStreamTexture(texture_ref->service_id());
+    stream_texture_manager()->DestroyStreamTexture(texture_ref->service_id());
     texture_manager()->SetStreamTexture(texture_ref, false);
   } else {
     LOCAL_SET_GL_ERROR(
@@ -9577,9 +9571,9 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   }
 
   if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
-    DCHECK(stream_texture_manager_);
+    DCHECK(stream_texture_manager());
     StreamTexture* stream_tex =
-        stream_texture_manager_->LookupStreamTexture(
+        stream_texture_manager()->LookupStreamTexture(
             source_texture->service_id());
     if (!stream_tex) {
       LOCAL_SET_GL_ERROR(

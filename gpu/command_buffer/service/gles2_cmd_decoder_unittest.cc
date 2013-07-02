@@ -5628,11 +5628,8 @@ TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUM) {
       false,   // request stencil
       true);   // bind generates resource
 
-  StrictMock<MockStreamTextureManager> manager;
-  decoder_->SetStreamTextureManager(&manager);
-
-  EXPECT_CALL(manager, CreateStreamTexture(kServiceTextureId,
-                                           client_texture_id_))
+  EXPECT_CALL(*stream_texture_manager(), CreateStreamTexture(
+      kServiceTextureId, client_texture_id_))
       .WillOnce(Return(kObjectId))
       .RetiresOnSaturation();
 
@@ -5646,6 +5643,10 @@ TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUM) {
   TextureRef* texture_ref = GetTexture(client_texture_id_);
   EXPECT_TRUE(texture_ref != NULL);
   EXPECT_TRUE(texture_ref->texture()->IsStreamTexture());
+  EXPECT_CALL(*stream_texture_manager(),
+              DestroyStreamTexture(kServiceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
 }
 
 TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUMBadId) {
@@ -5707,6 +5708,11 @@ TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUMAlreadySet) {
   cmd.Init(client_texture_id_, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  EXPECT_CALL(*stream_texture_manager(),
+              DestroyStreamTexture(kServiceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
 }
 
 TEST_F(GLES2DecoderManualInitTest, BindStreamTextureCHROMIUM) {
@@ -5720,9 +5726,7 @@ TEST_F(GLES2DecoderManualInitTest, BindStreamTextureCHROMIUM) {
       false,   // request stencil
       true);   // bind generates resource
 
-  StrictMock<MockStreamTextureManager> manager;
   StrictMock<MockStreamTexture> stream_texture;
-  decoder_->SetStreamTextureManager(&manager);
 
   TextureRef* texture_ref = GetTexture(client_texture_id_);
   group().texture_manager()->SetStreamTexture(texture_ref, true);
@@ -5730,7 +5734,7 @@ TEST_F(GLES2DecoderManualInitTest, BindStreamTextureCHROMIUM) {
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kServiceTextureId))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(manager, LookupStreamTexture(kServiceTextureId))
+  EXPECT_CALL(*stream_texture_manager(), LookupStreamTexture(kServiceTextureId))
       .WillOnce(Return(&stream_texture))
       .RetiresOnSaturation();
   EXPECT_CALL(stream_texture, Update())
@@ -5741,6 +5745,11 @@ TEST_F(GLES2DecoderManualInitTest, BindStreamTextureCHROMIUM) {
   cmd.Init(GL_TEXTURE_EXTERNAL_OES, client_texture_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  EXPECT_CALL(*stream_texture_manager(),
+              DestroyStreamTexture(kServiceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
 }
 
 TEST_F(GLES2DecoderManualInitTest, BindStreamTextureCHROMIUMInvalid) {
@@ -5766,6 +5775,11 @@ TEST_F(GLES2DecoderManualInitTest, BindStreamTextureCHROMIUMInvalid) {
   cmd2.Init(GL_TEXTURE_CUBE_MAP, client_texture_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  EXPECT_CALL(*stream_texture_manager(),
+              DestroyStreamTexture(kServiceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
 }
 
 TEST_F(GLES2DecoderManualInitTest, DestroyStreamTextureCHROMIUM) {
@@ -5779,13 +5793,11 @@ TEST_F(GLES2DecoderManualInitTest, DestroyStreamTextureCHROMIUM) {
       false,   // request stencil
       true);   // bind generates resource
 
-  StrictMock<MockStreamTextureManager> manager;
-  decoder_->SetStreamTextureManager(&manager);
-
   TextureRef* texture_ref = GetTexture(client_texture_id_);
   group().texture_manager()->SetStreamTexture(texture_ref, true);
 
-  EXPECT_CALL(manager, DestroyStreamTexture(kServiceTextureId))
+  EXPECT_CALL(*stream_texture_manager(),
+              DestroyStreamTexture(kServiceTextureId))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -5807,9 +5819,6 @@ TEST_F(GLES2DecoderManualInitTest, DestroyStreamTextureCHROMIUMInvalid) {
       false,   // request depth
       false,   // request stencil
       true);   // bind generates resource
-
-  TextureRef* texture_ref = GetTexture(client_texture_id_);
-  group().texture_manager()->SetStreamTexture(texture_ref, false);
 
   DestroyStreamTextureCHROMIUM cmd;
   cmd.Init(client_texture_id_);
@@ -5836,7 +5845,7 @@ TEST_F(GLES2DecoderManualInitTest, DestroyStreamTextureCHROMIUMBadId) {
 
 TEST_F(GLES2DecoderManualInitTest, StreamTextureCHROMIUMNullMgr) {
   InitDecoder(
-      "GL_CHROMIUM_stream_texture",  // extensions
+      "",  // extensions
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5871,21 +5880,20 @@ TEST_F(GLES2DecoderManualInitTest, ReCreateStreamTextureCHROMIUM) {
       false,   // request stencil
       true);   // bind generates resource
 
-  StrictMock<MockStreamTextureManager> manager;
   StrictMock<MockStreamTexture> stream_texture;
-  decoder_->SetStreamTextureManager(&manager);
 
-  EXPECT_CALL(manager, LookupStreamTexture(kServiceTextureId))
+  EXPECT_CALL(*stream_texture_manager(), LookupStreamTexture(kServiceTextureId))
       .WillOnce(Return(&stream_texture))
       .RetiresOnSaturation();
   EXPECT_CALL(stream_texture, Update())
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(manager, DestroyStreamTexture(kServiceTextureId))
+  EXPECT_CALL(*stream_texture_manager(),
+              DestroyStreamTexture(kServiceTextureId))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(manager, CreateStreamTexture(kServiceTextureId,
-                                           client_texture_id_))
+  EXPECT_CALL(*stream_texture_manager(),
+              CreateStreamTexture(kServiceTextureId, client_texture_id_))
       .WillOnce(Return(kObjectId))
       .RetiresOnSaturation();
 
@@ -5906,6 +5914,11 @@ TEST_F(GLES2DecoderManualInitTest, ReCreateStreamTextureCHROMIUM) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(texture_ref->texture()->IsStreamTexture());
+
+  EXPECT_CALL(*stream_texture_manager(),
+              DestroyStreamTexture(kServiceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
 }
 
 TEST_F(GLES2DecoderManualInitTest, ProduceAndConsumeStreamTextureCHROMIUM) {
@@ -5919,9 +5932,7 @@ TEST_F(GLES2DecoderManualInitTest, ProduceAndConsumeStreamTextureCHROMIUM) {
       false,   // request stencil
       true);   // bind generates resource
 
-  StrictMock<MockStreamTextureManager> manager;
   StrictMock<MockStreamTexture> stream_texture;
-  decoder_->SetStreamTextureManager(&manager);
 
   TextureRef* texture_ref = GetTexture(client_texture_id_);
   group().texture_manager()->SetStreamTexture(texture_ref, true);
@@ -5929,7 +5940,7 @@ TEST_F(GLES2DecoderManualInitTest, ProduceAndConsumeStreamTextureCHROMIUM) {
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kServiceTextureId))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(manager, LookupStreamTexture(kServiceTextureId))
+  EXPECT_CALL(*stream_texture_manager(), LookupStreamTexture(kServiceTextureId))
       .WillOnce(Return(&stream_texture))
       .RetiresOnSaturation();
   EXPECT_CALL(stream_texture, Update())
@@ -5979,6 +5990,11 @@ TEST_F(GLES2DecoderManualInitTest, ProduceAndConsumeStreamTextureCHROMIUM) {
 
   // Service ID is restored.
   EXPECT_EQ(kServiceTextureId, texture_ref->service_id());
+
+  EXPECT_CALL(*stream_texture_manager(),
+              DestroyStreamTexture(kServiceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
 }
 
 TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleBindTexture) {

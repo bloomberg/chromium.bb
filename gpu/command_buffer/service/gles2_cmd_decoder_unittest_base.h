@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
+#include "gpu/command_buffer/service/stream_texture_manager_mock.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
@@ -135,6 +136,11 @@ class GLES2DecoderTestBase : public testing::Test {
 
   ProgramManager* program_manager() {
     return group_->program_manager();
+  }
+
+  ::testing::StrictMock<MockStreamTextureManager>*
+  stream_texture_manager() const {
+    return stream_texture_manager_.get();
   }
 
   void DoCreateProgram(GLuint client_id, GLuint service_id);
@@ -527,6 +533,8 @@ class GLES2DecoderTestBase : public testing::Test {
   void AddExpectationsForVertexAttribManager();
 
   scoped_ptr< ::testing::StrictMock<MockCommandBufferEngine> > engine_;
+  scoped_ptr< ::testing::StrictMock<MockStreamTextureManager> >
+      stream_texture_manager_;
   scoped_refptr<ContextGroup> group_;
 };
 

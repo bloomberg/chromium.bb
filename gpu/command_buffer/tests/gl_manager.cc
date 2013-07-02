@@ -133,6 +133,7 @@ void GLManager::Initialize(const GLManager::Options& options) {
     context_group = new gles2::ContextGroup(mailbox_manager_.get(),
                                             options.image_manager,
                                             NULL,
+                                            NULL,
                                             options.bind_generates_resource);
   }
 

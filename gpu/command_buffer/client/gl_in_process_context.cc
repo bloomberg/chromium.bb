@@ -376,7 +376,7 @@ bool GLInProcessContextImpl::Initialize(
     decoder_.reset(gles2::GLES2Decoder::Create(
         context_group ? context_group->decoder_->GetContextGroup()
                       : new gles2::ContextGroup(
-                            NULL, NULL, NULL, bind_generates_resource)));
+                            NULL, NULL, NULL, NULL, bind_generates_resource)));
 
     gpu_scheduler_.reset(new GpuScheduler(command_buffer_.get(),
                                           decoder_.get(),

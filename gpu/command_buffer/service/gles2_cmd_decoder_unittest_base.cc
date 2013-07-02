@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
@@ -90,10 +91,18 @@ void GLES2DecoderTestBase::InitDecoder(
   Framebuffer::ClearFramebufferCompleteComboMap();
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::GLInterface::SetGLInterface(gl_.get());
+
+  // Only create stream texture manager if extension is requested.
+  std::vector<std::string> list;
+  base::SplitString(std::string(extensions), ' ', &list);
+  if (std::find(list.begin(), list.end(),
+                "GL_CHROMIUM_stream_texture") != list.end())
+      stream_texture_manager_.reset(new StrictMock<MockStreamTextureManager>);
   group_ = scoped_refptr<ContextGroup>(new ContextGroup(
       NULL,
       NULL,
       memory_tracker_,
+      stream_texture_manager_.get(),
       bind_generates_resource));
   // These two workarounds are always turned on.
   group_->feature_info(

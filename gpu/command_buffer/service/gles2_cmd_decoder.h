@@ -176,8 +176,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual void SetResizeCallback(
       const base::Callback<void(gfx::Size, float)>& callback) = 0;
 
-  virtual void SetStreamTextureManager(StreamTextureManager* manager) = 0;
-
   // Interface to performing async pixel transfers.
   virtual AsyncPixelTransferManager* GetAsyncPixelTransferManager() = 0;
   virtual void ResetAsyncPixelTransferManagerForTest() = 0;

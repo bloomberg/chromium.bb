@@ -141,10 +141,15 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   if (share_group) {
     context_group_ = share_group->context_group_;
   } else {
+    gpu::StreamTextureManager* stream_texture_manager = NULL;
+#if defined(OS_ANDROID)
+    stream_texture_manager = channel_->stream_texture_manager();
+#endif
     context_group_ = new gpu::gles2::ContextGroup(
         mailbox_manager,
         image_manager,
         new GpuCommandBufferMemoryTracker(channel),
+        stream_texture_manager,
         true);
   }
 }
@@ -535,10 +540,6 @@ void GpuCommandBufferStub::OnInitialize(
         base::Bind(&GpuCommandBufferStub::OnCommandProcessed,
                    base::Unretained(this)));
   }
-
-#if defined(OS_ANDROID)
-  decoder_->SetStreamTextureManager(channel_->stream_texture_manager());
-#endif
 
   if (!command_buffer_->SetSharedStateBuffer(shared_state_shm.Pass())) {
     DLOG(ERROR) << "Failed to map shared stae buffer.";
