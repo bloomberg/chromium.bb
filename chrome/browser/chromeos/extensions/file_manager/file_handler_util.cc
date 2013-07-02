@@ -521,7 +521,13 @@ class ExtensionTaskExecutor {
   };
 
   typedef std::vector<FileDefinition> FileDefinitionList;
-  class PermissionSetter;
+
+  // Checks legitimacy of file url and grants file RO access permissions from
+  // handler (target) extension and its renderer process.
+  static FileDefinitionList SetupFileAccessPermissions(
+      scoped_refptr<fileapi::FileSystemContext> file_system_context_handler,
+      const scoped_refptr<const Extension>& handler_extension,
+      const std::vector<FileSystemURL>& file_urls);
 
   void DidOpenFileSystem(const std::vector<FileSystemURL>& file_urls,
                          base::PlatformFileError result,
@@ -614,40 +620,21 @@ ExtensionTaskExecutor::FileDefinition::FileDefinition() : is_directory(false) {
 ExtensionTaskExecutor::FileDefinition::~FileDefinition() {
 }
 
-class ExtensionTaskExecutor::PermissionSetter {
- public:
-  PermissionSetter(
-      scoped_refptr<fileapi::FileSystemContext> file_system_context_handler,
-      const scoped_refptr<const Extension>& handler_extension,
-      const std::vector<FileSystemURL>& file_urls)
-      : file_system_context_handler_(file_system_context_handler),
-        handler_extension_(handler_extension),
-        urls_(file_urls) {
-    DCHECK(handler_extension.get());
-  }
+// static
+ExtensionTaskExecutor::FileDefinitionList
+ExtensionTaskExecutor::SetupFileAccessPermissions(
+    scoped_refptr<fileapi::FileSystemContext> file_system_context_handler,
+    const scoped_refptr<const Extension>& handler_extension,
+    const std::vector<FileSystemURL>& file_urls) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(handler_extension.get());
 
-  FileDefinitionList SetupPermission() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    ExtensionTaskExecutor::FileDefinitionList file_list;
-    for (std::vector<FileSystemURL>::iterator iter = urls_.begin();
-         iter != urls_.end();
-         ++iter) {
-      // Set up file permission access.
-      ExtensionTaskExecutor::FileDefinition file;
-      if (!SetupFileAccessPermissions(*iter, &file))
-        continue;
-      file_list.push_back(file);
-    }
-    return file_list;
-  }
+  fileapi::ExternalFileSystemMountPointProvider* external_provider_handler =
+      file_system_context_handler->external_provider();
 
- private:
-  // Checks legitimacy of file url and grants file RO access permissions from
-  // handler (target) extension and its renderer process.
-  bool SetupFileAccessPermissions(const FileSystemURL& url,
-                                  FileDefinition* file) {
-    fileapi::ExternalFileSystemMountPointProvider* external_provider_handler =
-        file_system_context_handler_->external_provider();
+  FileDefinitionList file_list;
+  for (size_t i = 0; i < file_urls.size(); ++i) {
+    const FileSystemURL& url = file_urls[i];
 
     // Check if this file system entry exists first.
     base::PlatformFileInfo file_info;
@@ -658,13 +645,13 @@ class ExtensionTaskExecutor::PermissionSetter {
     bool is_drive_file = url.type() == fileapi::kFileSystemTypeDrive;
     DCHECK(!is_drive_file || drive::util::IsUnderDriveMountPoint(local_path));
 
-    // If the file is under gdata mount point, there is no actual file to be
+    // If the file is under drive mount point, there is no actual file to be
     // found on the url.path().
     if (!is_drive_file) {
       if (!file_util::PathExists(local_path) ||
           file_util::IsLink(local_path) ||
           !file_util::GetFileInfo(local_path, &file_info)) {
-        return false;
+        continue;
       }
     }
 
@@ -672,20 +659,17 @@ class ExtensionTaskExecutor::PermissionSetter {
     // ensure that the target extension can access only this FS entry and
     // prevent from traversing FS hierarchy upward.
     external_provider_handler->GrantFileAccessToExtension(
-        handler_extension_->id(), virtual_path);
+        handler_extension->id(), virtual_path);
 
     // Output values.
-    file->virtual_path = virtual_path;
-    file->is_directory = file_info.is_directory;
-    file->absolute_path = local_path;
-    return true;
+    FileDefinition file;
+    file.virtual_path = virtual_path;
+    file.is_directory = file_info.is_directory;
+    file.absolute_path = local_path;
+    file_list.push_back(file);
   }
-
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_handler_;
-  scoped_refptr<const Extension> handler_extension_;
-  std::vector<FileSystemURL> urls_;
-  DISALLOW_COPY_AND_ASSIGN(PermissionSetter);
-};
+  return file_list;
+}
 
 ExtensionTaskExecutor::ExtensionTaskExecutor(
     Profile* profile,
@@ -727,14 +711,15 @@ void ExtensionTaskExecutor::DidOpenFileSystem(
     return;
   }
 
-  PermissionSetter* permission_setter = new PermissionSetter(
-      GetFileSystemContextForExtension(profile_, extension_->id()), extension_,
-      file_urls);
+  scoped_refptr<fileapi::FileSystemContext> file_system_context(
+      GetFileSystemContextForExtension(profile_, extension_->id()));
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&PermissionSetter::SetupPermission,
-                 base::Owned(permission_setter)),
+      base::Bind(&SetupFileAccessPermissions,
+                 file_system_context,
+                 extension_,
+                 file_urls),
       base::Bind(&ExtensionTaskExecutor::ExecuteFileActionsOnUIThread,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_system_name,
