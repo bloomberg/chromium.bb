@@ -370,7 +370,7 @@ cricket::IPseudoTcpNotify::WriteResult PseudoTcpAdapter::Core::TcpWritePacket(
   if (result == net::ERR_IO_PENDING) {
     socket_write_pending_ = true;
     return IPseudoTcpNotify::WR_SUCCESS;
-  } if (result == net::ERR_MSG_TOO_BIG) {
+  } else if (result == net::ERR_MSG_TOO_BIG) {
     return IPseudoTcpNotify::WR_TOO_LARGE;
   } else if (result < 0) {
     return IPseudoTcpNotify::WR_FAIL;
