@@ -835,10 +835,10 @@ static bool shouldEmitExtraNewlineForNode(Node* node)
 
 static int collapsedSpaceLength(RenderText* renderer, int textEnd)
 {
-    const UChar* characters = renderer->text()->bloatedCharacters();
-    int length = renderer->text()->length();
+    const String& text = renderer->text();
+    int length = text.length();
     for (int i = textEnd; i < length; ++i) {
-        if (!renderer->style()->isCollapsibleWhiteSpace(characters[i]))
+        if (!renderer->style()->isCollapsibleWhiteSpace(text[i]))
             return i - textEnd;
     }
 
@@ -1862,10 +1862,9 @@ static inline bool isCombiningVoicedSoundMark(UChar character)
 
 static inline bool containsKanaLetters(const String& pattern)
 {
-    const UChar* characters = pattern.bloatedCharacters();
     unsigned length = pattern.length();
     for (unsigned i = 0; i < length; ++i) {
-        if (isKanaLetter(characters[i]))
+        if (isKanaLetter(pattern[i]))
             return true;
     }
     return false;
