@@ -1788,6 +1788,6 @@ crbug.com/255359 [ Debug ] fast/events/resize-events-fixed-layout.html [ Pass Fa
 
 crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Failure ]
 
-crbug.com/256226 [ Win7 Mac Debug ] webmidi/requestmidiaccess.html [ Crash ]
+crbug.com/256226 [ Win7 Mac Linux Debug ] webmidi/requestmidiaccess.html [ Crash ]
 
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Pass Failure ]
