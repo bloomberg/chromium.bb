@@ -1613,14 +1613,13 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
   channel_.reset();
   gpu_message_filter_ = NULL;
 
-  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
-  for (size_t i = 0; i < widgets.size(); ++i) {
-    if (widgets[i]->GetProcess()->GetID() != GetID())
-      continue;
-    RenderWidgetHostImpl::From(widgets[i])->OnMessageReceived(
-        ViewHostMsg_RenderViewGone(widgets[i]->GetRoutingID(),
+  IDMap<IPC::Listener>::iterator iter(&listeners_);
+  while (!iter.IsAtEnd()) {
+    iter.GetCurrentValue()->OnMessageReceived(
+        ViewHostMsg_RenderViewGone(iter.GetCurrentKey(),
                                    static_cast<int>(status),
                                    exit_code));
+    iter.Advance();
   }
 
   ClearTransportDIBCache();

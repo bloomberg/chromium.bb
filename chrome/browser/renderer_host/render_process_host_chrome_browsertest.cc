@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/process_util.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -16,6 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 
 using content::RenderViewHost;
 using content::RenderWidgetHost;
@@ -351,4 +354,67 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
+}
+
+// This class's goal is to close the browser window when a renderer process has
+// crashed. It does so by monitoring WebContents for RenderViewGone event and
+// closing the passed in TabStripModel. This is used in the following test case.
+class WindowDestroyer : public content::WebContentsObserver {
+ public:
+  WindowDestroyer(content::WebContents* web_contents, TabStripModel* model)
+      : content::WebContentsObserver(web_contents),
+        tab_strip_model_(model) {
+  }
+
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
+    // Wait for the window to be destroyed, which will ensure all other
+    // RenderViewHost objects are deleted before we return and proceed with
+    // the next iteration of notifications.
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_BROWSER_CLOSED,
+        content::NotificationService::AllSources());
+    tab_strip_model_->CloseAllTabs();
+    observer.Wait();
+  }
+
+ private:
+  TabStripModel* tab_strip_model_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowDestroyer);
+};
+
+// Test to ensure that while iterating through all listeners in
+// RenderProcessHost and invalidating them, we remove them properly and don't
+// access already freed objects. See http://crbug.com/255524.
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
+                       CloseAllTabsDuringProcessDied) {
+  GURL url(chrome::kChromeUINewTabURL);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  WebContents* wc1 = browser()->tab_strip_model()->GetWebContentsAt(0);
+  WebContents* wc2 = browser()->tab_strip_model()->GetWebContentsAt(1);
+  EXPECT_EQ(wc1->GetRenderProcessHost(), wc2->GetRenderProcessHost());
+
+  // Create an object that will close the window on a process crash.
+  WindowDestroyer destroyer(wc1, browser()->tab_strip_model());
+
+  // Use NOTIFICATION_BROWSER_CLOSED instead of NOTIFICATION_WINDOW_CLOSED,
+  // since the latter is not implemented on OSX and the test will timeout,
+  // causing it to fail.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+
+  // Kill the renderer process, simulating a crash. This should the ProcessDied
+  // method to be called. Alternatively, RenderProcessHost::OnChannelError can
+  // be called to directly force a call to ProcessDied.
+  base::KillProcess(wc1->GetRenderProcessHost()->GetHandle(), -1, true);
+
+  observer.Wait();
 }
