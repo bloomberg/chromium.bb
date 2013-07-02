@@ -156,6 +156,7 @@ extern const char kEnableDevToolsExperiments[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
+extern const char kEnableFastUnload[];
 extern const char kEnableFileCookies[];
 extern const char kEnableGoogleNowIntegration[];
 extern const char kEnableInstantExtendedAPI[];

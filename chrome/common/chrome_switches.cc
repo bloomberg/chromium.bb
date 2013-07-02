@@ -548,6 +548,11 @@ const char kExtensionsInActionBox[]         = "extensions-in-action-box";
 // manifest.
 const char kExtensionsOnChromeURLs[]        = "extensions-on-chrome-urls";
 
+// Enable the fast unload controller, which speeds up tab/window close by
+// running a tab's onunload js handler independently of the GUI -
+// crbug.com/142458 .
+const char kEnableFastUnload[]         = "enable-fast-unload";
+
 // By default, cookies are not allowed on file://. They are needed for testing,
 // for example page cycler and layout tests. See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";

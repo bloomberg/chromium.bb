@@ -1443,12 +1443,25 @@ bool BrowserWindowGtk::CanClose() const {
   if (!browser_->ShouldCloseWindow())
     return false;
 
+  bool fast_tab_closing_enabled =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableFastUnload);
+
   if (!browser_->tab_strip_model()->empty()) {
     // Tab strip isn't empty.  Hide the window (so it appears to have closed
     // immediately) and close all the tabs, allowing the renderers to shut
     // down. When the tab strip is empty we'll be called back again.
     gtk_widget_hide(GTK_WIDGET(window_));
     browser_->OnWindowClosing();
+
+    if (fast_tab_closing_enabled)
+      browser_->tab_strip_model()->CloseAllTabs();
+    return false;
+  } else if (fast_tab_closing_enabled &&
+      !browser_->HasCompletedUnloadProcessing()) {
+    // The browser needs to finish running unload handlers.
+    // Hide the window (so it appears to have closed immediately), and
+    // the browser will call us back again when it is ready to close.
+    gtk_widget_hide(GTK_WIDGET(window_));
     return false;
   }
 

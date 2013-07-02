@@ -107,6 +107,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/fast_unload_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -232,6 +233,12 @@ BrowserWindow* CreateBrowserWindow(Browser* browser) {
   return BrowserWindow::CreateBrowserWindow(browser);
 }
 
+// Is the fast tab unload experiment enabled?
+bool IsFastTabUnloadEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableFastUnload);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -331,7 +338,6 @@ Browser::Browser(const CreateParams& params)
       initial_show_state_(params.initial_show_state),
       is_session_restore_(params.is_session_restore),
       host_desktop_type_(params.host_desktop_type),
-      unload_controller_(new chrome::UnloadController(this)),
       weak_factory_(this),
       content_setting_bubble_model_delegate_(
           new BrowserContentSettingBubbleModelDelegate(this)),
@@ -346,6 +352,12 @@ Browser::Browser(const CreateParams& params)
   // that is disallowed by policy. The crash prevents the disabled window type
   // from opening at all, but the path that triggered it should be fixed.
   CHECK(IncognitoModePrefs::CanOpenBrowser(profile_));
+
+  // TODO(jeremy): Move to initializer list once flag is removed.
+  if (IsFastTabUnloadEnabled())
+    fast_unload_controller_.reset(new chrome::FastUnloadController(this));
+  else
+    unload_controller_.reset(new chrome::UnloadController(this));
 
   if (!app_name_.empty())
     chrome::RegisterAppPrefs(app_name_, profile_);
@@ -584,10 +596,19 @@ bool Browser::ShouldCloseWindow() {
   if (!CanCloseWithInProgressDownloads())
     return false;
 
+  if (IsFastTabUnloadEnabled())
+    return fast_unload_controller_->ShouldCloseWindow();
   return unload_controller_->ShouldCloseWindow();
 }
 
+bool Browser::HasCompletedUnloadProcessing() const {
+  DCHECK(IsFastTabUnloadEnabled());
+  return fast_unload_controller_->HasCompletedUnloadProcessing();
+}
+
 bool Browser::IsAttemptingToCloseBrowser() const {
+  if (IsFastTabUnloadEnabled())
+    return fast_unload_controller_->is_attempting_to_close_browser();
   return unload_controller_->is_attempting_to_close_browser();
 }
 
@@ -631,7 +652,8 @@ void Browser::OnWindowClosing() {
       content::Source<Browser>(this),
       content::NotificationService::NoDetails());
 
-  tab_strip_model_->CloseAllTabs();
+  if (!IsFastTabUnloadEnabled())
+    tab_strip_model_->CloseAllTabs();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1170,6 +1192,8 @@ void Browser::HandleKeyboardEvent(content::WebContents* source,
 }
 
 bool Browser::TabsNeedBeforeUnloadFired() {
+  if (IsFastTabUnloadEnabled())
+    return fast_unload_controller_->TabsNeedBeforeUnloadFired();
   return unload_controller_->TabsNeedBeforeUnloadFired();
 }
 
@@ -1306,7 +1330,13 @@ void Browser::LoadingStateChanged(WebContents* source) {
 }
 
 void Browser::CloseContents(WebContents* source) {
-  if (unload_controller_->CanCloseContents(source))
+  bool can_close_contents;
+  if (IsFastTabUnloadEnabled())
+    can_close_contents = fast_unload_controller_->CanCloseContents(source);
+  else
+    can_close_contents = unload_controller_->CanCloseContents(source);
+
+  if (can_close_contents)
     chrome::CloseWebContents(this, source, true);
 }
 
@@ -1369,8 +1399,13 @@ gfx::Rect Browser::GetRootWindowResizerRect() const {
 void Browser::BeforeUnloadFired(WebContents* web_contents,
                                 bool proceed,
                                 bool* proceed_to_fire_unload) {
-  *proceed_to_fire_unload =
-      unload_controller_->BeforeUnloadFired(web_contents, proceed);
+  if (IsFastTabUnloadEnabled()) {
+    *proceed_to_fire_unload =
+        fast_unload_controller_->BeforeUnloadFired(web_contents, proceed);
+  } else {
+    *proceed_to_fire_unload =
+        unload_controller_->BeforeUnloadFired(web_contents, proceed);
+  }
 }
 
 bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {

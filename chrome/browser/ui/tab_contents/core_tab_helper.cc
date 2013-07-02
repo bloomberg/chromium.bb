@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -93,6 +95,16 @@ void CoreTabHelper::OnCloseStarted() {
 void CoreTabHelper::OnCloseCanceled() {
   close_start_time_ = base::TimeTicks();
   before_unload_end_time_ = base::TimeTicks();
+  unload_detached_start_time_ = base::TimeTicks();
+}
+
+void CoreTabHelper::OnUnloadStarted() {
+  before_unload_end_time_ = base::TimeTicks::Now();
+}
+
+void CoreTabHelper::OnUnloadDetachedStarted() {
+  if (unload_detached_start_time_.is_null())
+    unload_detached_start_time_ = base::TimeTicks::Now();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -106,12 +118,30 @@ void CoreTabHelper::WasShown() {
 void CoreTabHelper::WebContentsDestroyed(WebContents* web_contents) {
   // OnCloseStarted isn't called in unit tests.
   if (!close_start_time_.is_null()) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    base::TimeTicks unload_start_time = close_start_time_;
-    if (!before_unload_end_time_.is_null())
-      unload_start_time = before_unload_end_time_;
-    UMA_HISTOGRAM_TIMES("Tab.Close", now - close_start_time_);
-    UMA_HISTOGRAM_TIMES("Tab.Close.UnloadTime", now - unload_start_time);
+    bool fast_tab_close_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableFastUnload);
+
+    if (fast_tab_close_enabled) {
+      base::TimeTicks now = base::TimeTicks::Now();
+      base::TimeDelta close_time = now - close_start_time_;
+      UMA_HISTOGRAM_TIMES("Tab.Close", close_time);
+
+      base::TimeTicks unload_start_time = close_start_time_;
+      base::TimeTicks unload_end_time = now;
+      if (!before_unload_end_time_.is_null())
+        unload_start_time = before_unload_end_time_;
+      if (!unload_detached_start_time_.is_null())
+        unload_end_time = unload_detached_start_time_;
+      base::TimeDelta unload_time = unload_end_time - unload_start_time;
+      UMA_HISTOGRAM_TIMES("Tab.Close.UnloadTime", unload_time);
+    } else {
+      base::TimeTicks now = base::TimeTicks::Now();
+      base::TimeTicks unload_start_time = close_start_time_;
+      if (!before_unload_end_time_.is_null())
+        unload_start_time = before_unload_end_time_;
+      UMA_HISTOGRAM_TIMES("Tab.Close", now - close_start_time_);
+      UMA_HISTOGRAM_TIMES("Tab.Close.UnloadTime", now - unload_start_time);
+    }
   }
 
 }

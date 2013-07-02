@@ -541,6 +541,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kExtensionsOnChromeURLs)
   },
   {
+    "enable-fast-unload",
+    IDS_FLAGS_ENABLE_FAST_UNLOAD_NAME,
+    IDS_FLAGS_ENABLE_FAST_UNLOAD_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableFastUnload)
+  },
+  {
     "enable-adview",
     IDS_FLAGS_ENABLE_ADVIEW_NAME,
     IDS_FLAGS_ENABLE_ADVIEW_DESCRIPTION,

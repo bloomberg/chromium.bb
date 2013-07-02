@@ -973,6 +973,8 @@
         'browser/ui/extensions/native_app_window.h',
         'browser/ui/external_protocol_dialog_delegate.cc',
         'browser/ui/external_protocol_dialog_delegate.h',
+        'browser/ui/fast_unload_controller.cc',
+        'browser/ui/fast_unload_controller.h',
         'browser/ui/find_bar/find_bar.h',
         'browser/ui/find_bar/find_bar_controller.cc',
         'browser/ui/find_bar/find_bar_controller.h',

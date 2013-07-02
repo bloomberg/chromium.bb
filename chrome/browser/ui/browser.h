@@ -66,6 +66,7 @@ struct WebApplicationInfo;
 
 namespace chrome {
 class BrowserCommandController;
+class FastUnloadController;
 class UnloadController;
 }
 
@@ -293,6 +294,13 @@ class Browser : public TabStripModelObserver,
   // Gives beforeunload handlers the chance to cancel the close.
   bool ShouldCloseWindow();
 
+  // Figure out if there are tabs that have beforeunload handlers.
+  // It starts beforeunload/unload processing as a side-effect.
+  bool TabsNeedBeforeUnloadFired();
+
+  // Returns true if all tabs' beforeunload/unload events have fired.
+  bool HasCompletedUnloadProcessing() const;
+
   bool IsAttemptingToCloseBrowser() const;
 
   // Invoked when the window containing us is closing. Performs the necessary
@@ -429,9 +437,6 @@ class Browser : public TabStripModelObserver,
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
-
-  // Figure out if there are tabs that have beforeunload handlers.
-  bool TabsNeedBeforeUnloadFired();
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
@@ -865,6 +870,7 @@ class Browser : public TabStripModelObserver,
   const chrome::HostDesktopType host_desktop_type_;
 
   scoped_ptr<chrome::UnloadController> unload_controller_;
+  scoped_ptr<chrome::FastUnloadController> fast_unload_controller_;
 
   // The following factory is used to close the frame at a later time.
   base::WeakPtrFactory<Browser> weak_factory_;
