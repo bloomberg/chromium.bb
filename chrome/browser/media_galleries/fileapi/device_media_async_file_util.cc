@@ -91,8 +91,7 @@ bool DeviceMediaAsyncFileUtil::CreateOrOpen(
   if (!callback.is_null()) {
     base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY,
-                 base::PassPlatformFile(&invalid_file),
-                 false);
+                 base::PassPlatformFile(&invalid_file));
   }
   return true;
 }

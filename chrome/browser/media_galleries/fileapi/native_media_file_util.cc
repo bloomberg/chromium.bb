@@ -145,8 +145,7 @@ bool NativeMediaFileUtil::CreateOrOpen(
   base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
   if (!callback.is_null()) {
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY,
-                 base::PassPlatformFile(&invalid_file),
-                 false);
+                 base::PassPlatformFile(&invalid_file));
   }
   return true;
 }

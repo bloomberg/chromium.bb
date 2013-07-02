@@ -130,6 +130,14 @@ class ReadDirectoryHelper {
   DISALLOW_COPY_AND_ASSIGN(ReadDirectoryHelper);
 };
 
+void RunCreateOrOpenCallback(
+    const AsyncFileUtil::CreateOrOpenCallback& callback,
+    base::PlatformFileError result,
+    base::PassPlatformFile file,
+    bool created) {
+  callback.Run(result, file);
+}
+
 }  // namespace
 
 AsyncFileUtilAdapter::AsyncFileUtilAdapter(
@@ -153,7 +161,7 @@ bool AsyncFileUtilAdapter::CreateOrOpen(
            context_ptr, url, file_flags),
       Bind(&FileSystemFileUtil::Close, Unretained(sync_file_util_.get()),
            base::Owned(context_ptr)),
-      callback);
+      Bind(&RunCreateOrOpenCallback, callback));
 }
 
 bool AsyncFileUtilAdapter::EnsureFileExists(

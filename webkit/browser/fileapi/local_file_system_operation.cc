@@ -529,8 +529,7 @@ void LocalFileSystemOperation::DidWrite(
 void LocalFileSystemOperation::DidOpenFile(
     const OpenFileCallback& callback,
     base::PlatformFileError rv,
-    base::PassPlatformFile file,
-    bool unused) {
+    base::PassPlatformFile file) {
   if (rv == base::PLATFORM_FILE_OK)
     CHECK_NE(base::kNullProcessHandle, peer_handle_);
   callback.Run(rv, file.ReleaseValue(),

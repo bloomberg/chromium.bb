@@ -43,7 +43,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
   typedef base::Callback<
       void(base::PlatformFileError result)> StatusCallback;
 
-  typedef base::FileUtilProxy::CreateOrOpenCallback CreateOrOpenCallback;
+  typedef base::Callback<
+      void(base::PlatformFileError result,
+           base::PassPlatformFile file)> CreateOrOpenCallback;
 
   typedef base::Callback<
       void(base::PlatformFileError result,
