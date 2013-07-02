@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
+#include "chrome/browser/chromeos/extensions/file_manager/drive_test_util.h"
+
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -14,8 +14,6 @@
 namespace drive_test_util {
 
 namespace {
-
-const char kDriveMountPointName[] = "drive";
 
 // Helper class used to wait for |OnFileSystemMounted| event from a drive file
 // system.
@@ -65,16 +63,18 @@ void WaitUntilDriveMountPointIsAdded(Profile* profile) {
           profile);
   DCHECK(integration_service);
 
-  DriveMountPointWaiter mount_point_waiter(integration_service);
-
+  const std::string drive_mount_point_name =
+      drive::util::GetDriveMountPointPath().BaseName().AsUTF8Unsafe();
   base::FilePath ignored;
   // GetRegisteredPath succeeds iff the mount point exists.
-  if (!content::BrowserContext::GetMountPoints(profile)->
-      GetRegisteredPath(kDriveMountPointName, &ignored)) {
-    LOG(WARNING) << "Waiting for drive mount point to get mounted.";
-    mount_point_waiter.Wait();
-    LOG(WARNING) << "Drive mount point found.";
-  }
+  if (content::BrowserContext::GetMountPoints(profile)->
+      GetRegisteredPath(drive_mount_point_name, &ignored))
+    return;
+
+  DriveMountPointWaiter mount_point_waiter(integration_service);
+  LOG(INFO) << "Waiting for drive mount point to get mounted.";
+  mount_point_waiter.Wait();
+  LOG(INFO) << "Drive mount point found.";
 }
 
 }  // namespace drive_test_util
