@@ -32,7 +32,7 @@
 
     // Extensions
 
-    [Replaceable] readonly attribute HTMLAllCollection all;
+    [Replaceable, ImplementedAs=allForBinding] readonly attribute HTMLAllCollection all;
 
     [DeprecateAs=DocumentClear] void clear();
 

@@ -400,6 +400,7 @@ public:
     PassRefPtr<HTMLCollection> forms();
     PassRefPtr<HTMLCollection> anchors();
     PassRefPtr<HTMLCollection> scripts();
+    PassRefPtr<HTMLCollection> allForBinding();
     PassRefPtr<HTMLCollection> all();
 
     PassRefPtr<HTMLCollection> windowNamedItems(const AtomicString& name);
