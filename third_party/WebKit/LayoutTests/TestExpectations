@@ -1765,6 +1765,8 @@ crbug.com/251079 [ Debug ] fast/parser/fragment-parser.html [ Pass Timeout ]
 
 crbug.com/251091 [ Mac ] http/tests/xmlviewer/dumpAsText/xmlviewer.xml [ Pass Crash ]
 
+crbug.com/256506 [ Win Debug ] crypto/worker-random-values-limits.html [ Pass Crash ]
+
 crbug.com/244266 [ Win Debug ] virtual/threaded/animations/animation-controller-drt-api.html [ Failure Pass ]
 
 crbug.com/251149 [ Mac Win Debug ] media/media-constants.html [ Pass Crash ]
