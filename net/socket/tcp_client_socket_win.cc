@@ -122,11 +122,10 @@ int SetupSocket(SOCKET socket) {
 // Creates a new socket and sets default parameters for it. Returns
 // the OS error code (or 0 on success).
 int CreateSocket(int family, SOCKET* socket) {
-  *socket = WSASocket(family, SOCK_STREAM, IPPROTO_TCP, NULL, 0,
-                      WSA_FLAG_OVERLAPPED);
+  *socket = CreatePlatformSocket(family, SOCK_STREAM, IPPROTO_TCP);
   if (*socket == INVALID_SOCKET) {
     int os_error = WSAGetLastError();
-    LOG(ERROR) << "WSASocket failed: " << os_error;
+    LOG(ERROR) << "CreatePlatformSocket failed: " << os_error;
     return os_error;
   }
   int error = SetupSocket(*socket);

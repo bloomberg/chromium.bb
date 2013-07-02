@@ -30,6 +30,8 @@ void CheckEventWait(WSAEVENT hEvent, DWORD wait_rv, DWORD expected) {
 #pragma optimize( "", on )
 #pragma warning (default: 4748)
 
+net::PlatformSocketFactory* g_socket_factory = NULL;
+
 }  // namespace
 
 void AssertEventNotSignaled(WSAEVENT hEvent) {
@@ -46,6 +48,17 @@ bool ResetEventIfSignaled(WSAEVENT hEvent) {
   BOOL ok = WSAResetEvent(hEvent);
   CHECK(ok);
   return true;
+}
+
+void PlatformSocketFactory::SetInstance(PlatformSocketFactory* factory) {
+  g_socket_factory = factory;
+}
+
+SOCKET CreatePlatformSocket(int family, int type, int protocol) {
+  if (g_socket_factory)
+    return g_socket_factory->CreateSocket(family, type, protocol);
+  else
+    return ::WSASocket(family, type, protocol, NULL, 0, WSA_FLAG_OVERLAPPED);
 }
 
 }  // namespace net
