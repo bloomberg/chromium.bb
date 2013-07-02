@@ -77,6 +77,14 @@ class TranslateManager : public content::NotificationObserver {
   // Returns true if |language| is an Accept language for the user profile.
   static bool IsAcceptLanguage(Profile* profile, const std::string& language);
 
+  // Returns the language to translate to. The language returned is the
+  // first language found in the following list that is supported by the
+  // translation service:
+  //     the UI language
+  //     the accept-language list
+  // If no language is found then an empty string is returned.
+  static std::string GetTargetLanguage(PrefService* prefs);
+
   // Let the caller decide if and when we should fetch the language list from
   // the translate server. This is a NOOP if switches::kDisableTranslate is set
   // or if prefs::kEnableTranslate is set to false.
@@ -182,14 +190,6 @@ class TranslateManager : public content::NotificationObserver {
 
   // Notifies to the observers when translate failed.
   void NotifyTranslateError(const TranslateErrorDetails& details);
-
-  // Returns the language to translate to. The language returned is the
-  // first language found in the following list that is supported by the
-  // translation service:
-  //     the UI language
-  //     the accept-language list
-  // If no language is found then an empty string is returned.
-  static std::string GetTargetLanguage(PrefService* prefs);
 
   // Returns the different parameters used to decide whether extra shortcuts
   // are needed.

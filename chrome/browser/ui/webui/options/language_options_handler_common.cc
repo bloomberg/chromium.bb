@@ -125,6 +125,13 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
   localized_strings->SetBoolean("enableTranslateSettings",
                                 enable_translate_settings);
 
+  Profile* profile = Profile::FromWebUI(web_ui());
+  PrefService* prefs = profile->GetPrefs();
+  std::string default_target_language =
+      TranslateManager::GetTargetLanguage(prefs);
+  localized_strings->SetString("defaultTargetLanguage",
+                               default_target_language);
+
   std::vector<std::string> languages;
   TranslateManager::GetSupportedLanguages(&languages);
 

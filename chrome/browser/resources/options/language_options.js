@@ -670,6 +670,20 @@ cr.define('options', function() {
       }
 
       var checkbox = $('dont-translate-in-this-language');
+
+      // If the language corresponds to the default target language (in most
+      // cases, the user's locale language), "Don't Translate" checkbox should
+      // be always checked.
+      var defaultTargetLanguage =
+          loadTimeData.getString('defaultTargetLanguage');
+      if (convertedLangCode == defaultTargetLanguage) {
+        checkbox.disabled = true;
+        checkbox.checked = true;
+        return;
+      }
+
+      checkbox.disabled = false;
+
       var blockedLanguages = this.translateBlockedLanguages_;
       var checked = blockedLanguages.indexOf(convertedLangCode) != -1;
       checkbox.checked = checked;

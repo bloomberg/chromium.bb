@@ -352,15 +352,10 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   // Don't translate similar languages (ex: en-US to en).
-  // When the flag --enable-translate-settings is on, the locale (|target_lang|)
-  // is not needed to be considered because the user can configure the languages
-  // in the settings UI.
-  if (!command_line->HasSwitch(switches::kEnableTranslateSettings)) {
-    if (language_code == target_lang) {
-      TranslateBrowserMetrics::ReportInitiationStatus(
-          TranslateBrowserMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES);
-      return;
-    }
+  if (language_code == target_lang) {
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES);
+    return;
   }
 
   // Don't translate any language the user configured as accepted languages.
