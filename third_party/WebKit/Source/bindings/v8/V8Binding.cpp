@@ -54,7 +54,6 @@
 #include "core/page/Settings.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
-#include "wtf/ArrayBufferContents.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
@@ -91,28 +90,6 @@ v8::Handle<v8::Value> throwNotEnoughArgumentsError(v8::Isolate* isolate)
 {
     return V8ThrowException::throwNotEnoughArgumentsError(isolate);
 }
-
-class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
-    virtual void* Allocate(size_t size) OVERRIDE
-    {
-        void* data;
-        if (WTF::ArrayBufferContents::allocateMemory(size, WTF::ArrayBufferContents::ZeroInitialize, data))
-            return data;
-        return 0;
-    }
-
-    virtual void Free(void* data) OVERRIDE
-    {
-        WTF::ArrayBufferContents::freeMemory(data);
-    }
-};
-
-v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator()
-{
-    DEFINE_STATIC_LOCAL(ArrayBufferAllocator, arrayBufferAllocator, ());
-    return &arrayBufferAllocator;
-}
-
 
 v8::Handle<v8::Value> v8Array(PassRefPtr<DOMStringList> stringList, v8::Isolate* isolate)
 {

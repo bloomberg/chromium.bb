@@ -60,7 +60,7 @@ public:
     void removeView(ArrayBufferView*);
 
     bool transfer(ArrayBufferContents&, Vector<RefPtr<ArrayBufferView> >& neuteredViews);
-    bool isNeutered() { return m_isNeutered; }
+    bool isNeutered() { return !m_contents.data(); }
 
     bool hasDeallocationObserver() { return m_contents.hasDeallocationObserver(); }
     void setDeallocationObserver(ArrayBufferDeallocationObserver* observer) { m_contents.setDeallocationObserver(observer); }
@@ -77,7 +77,6 @@ private:
 
     ArrayBufferContents m_contents;
     ArrayBufferView* m_firstView;
-    bool m_isNeutered;
 };
 
 int ArrayBuffer::clampValue(int x, int left, int right)
@@ -129,7 +128,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::create(unsigned numElements, unsigned eleme
 }
 
 ArrayBuffer::ArrayBuffer(ArrayBufferContents& contents)
-    : m_firstView(0), m_isNeutered(false)
+    : m_firstView(0)
 {
     contents.transfer(m_contents);
 }

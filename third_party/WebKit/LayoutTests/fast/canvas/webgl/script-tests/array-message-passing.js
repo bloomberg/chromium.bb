@@ -207,10 +207,5 @@ window.addEventListener('message', windowHandleMessage);
 for (var t = 0; t < testList.length; ++t) {
     var currentTest = testList[t];
     var message = {testNum: t, testData: currentTest[1]};
-    try {
-        window.postMessage(message, '*');
-    } catch(e) {
-        testFailed(currentTest[0], ": unexpected postMessage exception " + e);
-        doneTest();
-    }
+    window.postMessage(message, '*');
 }
