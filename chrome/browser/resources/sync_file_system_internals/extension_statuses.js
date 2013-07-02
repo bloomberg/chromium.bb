@@ -33,7 +33,8 @@ function createElementFromText(elementName, text) {
 
 /**
  * Handles callback from onGetExtensionStatuses.
- * @param {Array} list of dictionaries containing 'extensionID' and 'status'.
+ * @param {Array} list of dictionaries containing 'extensionName',
+ *     'extensionID, 'status'.
  */
 ExtensionStatuses.onGetExtensionStatuses = function(extensionStatuses) {
   var itemContainer = $('extension-entries');
@@ -42,6 +43,7 @@ ExtensionStatuses.onGetExtensionStatuses = function(extensionStatuses) {
   for (var i = 0; i < extensionStatuses.length; i++) {
     var originEntry = extensionStatuses[i];
     var tr = document.createElement('tr');
+    tr.appendChild(createElementFromText('td', originEntry.extensionName));
     tr.appendChild(createElementFromText('td', originEntry.extensionID));
     tr.appendChild(createElementFromText('td', originEntry.status));
     itemContainer.appendChild(tr);

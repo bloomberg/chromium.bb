@@ -9,9 +9,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/sync_file_system_internals_resources.h"
@@ -40,12 +43,23 @@ void ExtensionStatusesHandler::GetExtensionStatuses(
   SyncFileSystemServiceFactory::GetForProfile(profile_)->GetExtensionStatusMap(
       &status_map);
 
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(extension_service);
   base::ListValue list;
   for (std::map<GURL, std::string>::const_iterator itr = status_map.begin();
        itr != status_map.end();
        ++itr) {
+    std::string extension_id = itr->first.HostNoBrackets();
+
+    // Join with human readable extension name.
+    const extensions::Extension* extension =
+        extension_service->GetExtensionById(extension_id, true);
+    DCHECK(extension);
+
     base::DictionaryValue* dict = new DictionaryValue;
-    dict->SetString("extensionID", itr->first.spec());
+    dict->SetString("extensionID", extension_id);
+    dict->SetString("extensionName", extension->name());
     dict->SetString("status", itr->second);
     list.Append(dict);
   }
