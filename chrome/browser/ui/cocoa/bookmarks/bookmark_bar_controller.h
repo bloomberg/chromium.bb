@@ -258,7 +258,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   BOOL showFolderMenus_;
 
   // If YES then state changes (for example, from hidden to shown) are animated.
-  // This is turned off for instant extended and for unit tests.
+  // This is turned off for unit tests.
   BOOL stateAnimationsEnabled_;
 
   // If YES then changes inside the bookmark bar (for example, removing a

@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/themes/theme_service_factory.h"
@@ -44,7 +43,6 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
-#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -472,9 +470,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // Add padding to the detached bookmark bar.
   // The state of our morph (if any); 1 is total bubble, 0 is the regular bar.
   CGFloat morph = [self detachedMorphProgress];
-  CGFloat padding = chrome::IsInstantExtendedAPIEnabled()
-                    ? bookmarks::kSearchNTPBookmarkBarPadding
-                    : bookmarks::kNTPBookmarkBarPadding;
+  CGFloat padding = bookmarks::kNTPBookmarkBarPadding;
   buttonViewFrame =
       NSInsetRect(buttonViewFrame, morph * padding, morph * padding);
 
@@ -905,10 +901,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [[self backgroundGradientView] setShowsDivider:YES];
     [[self view] setHidden:NO];
     AnimatableView* view = [self animatableView];
-    CGFloat newHeight = chrome::IsInstantExtendedAPIEnabled()
-                        ? bookmarks::kSearchNewTabBookmarkBarHeight
-                        : chrome::kNTPBookmarkBarHeight;
-    [view animateToNewHeight:newHeight
+    [view animateToNewHeight:chrome::kNTPBookmarkBarHeight
                     duration:kBookmarkBarAnimationDuration];
   } else if ([self isAnimatingFromState:BookmarkBar::DETACHED
                                 toState:BookmarkBar::SHOW]) {
@@ -952,8 +945,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     case BookmarkBar::SHOW:
       return bookmarks::kBookmarkBarHeight;
     case BookmarkBar::DETACHED:
-      if (chrome::IsInstantExtendedAPIEnabled())
-        return bookmarks::kSearchNewTabBookmarkBarHeight;
       return chrome::kNTPBookmarkBarHeight;
     case BookmarkBar::HIDDEN:
       return 0;
