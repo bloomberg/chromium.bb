@@ -30,6 +30,7 @@
 namespace WebCore {
 
 class FrameView;
+class HTMLBodyElement;
 class HTMLElement;
 
 class HTMLDocument : public Document, public CachedResourceClient {
@@ -76,6 +77,7 @@ protected:
     HTMLDocument(Frame*, const KURL&, DocumentClassFlags extendedDocumentClasses = DefaultDocumentClass);
 
 private:
+    HTMLBodyElement* bodyAsHTMLBodyElement() const;
     void addItemToMap(HashCountedSet<AtomicStringImpl*>&, const AtomicString&);
     void removeItemFromMap(HashCountedSet<AtomicStringImpl*>&, const AtomicString&);
 

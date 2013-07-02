@@ -130,60 +130,48 @@ bool HTMLDocument::hasFocus()
     return false;
 }
 
+inline HTMLBodyElement* HTMLDocument::bodyAsHTMLBodyElement() const
+{
+    HTMLElement* element = body();
+    return (element && element->hasTagName(bodyTag)) ? toHTMLBodyElement(element) : 0;
+}
+
 String HTMLDocument::bgColor()
 {
-    HTMLElement* b = body();
-    HTMLBodyElement* bodyElement = (b && b->hasTagName(bodyTag)) ? static_cast<HTMLBodyElement*>(b) : 0;
-
-    if (!bodyElement)
-        return String();
-    return bodyElement->bgColor();
+    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
+        return bodyElement->bgColor();
+    return String();
 }
 
 void HTMLDocument::setBgColor(const String& value)
 {
-    HTMLElement* b = body();
-    HTMLBodyElement* bodyElement = (b && b->hasTagName(bodyTag)) ? static_cast<HTMLBodyElement*>(b) : 0;
-
-    if (bodyElement)
+    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
         bodyElement->setBgColor(value);
 }
 
 String HTMLDocument::fgColor()
 {
-    HTMLElement* b = body();
-    HTMLBodyElement* bodyElement = (b && b->hasTagName(bodyTag)) ? static_cast<HTMLBodyElement*>(b) : 0;
-
-    if (!bodyElement)
-        return String();
-    return bodyElement->text();
+    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
+        return bodyElement->text();
+    return String();
 }
 
 void HTMLDocument::setFgColor(const String& value)
 {
-    HTMLElement* b = body();
-    HTMLBodyElement* bodyElement = (b && b->hasTagName(bodyTag)) ? static_cast<HTMLBodyElement*>(b) : 0;
-
-    if (bodyElement)
+    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
         bodyElement->setText(value);
 }
 
 String HTMLDocument::alinkColor()
 {
-    HTMLElement* b = body();
-    HTMLBodyElement* bodyElement = (b && b->hasTagName(bodyTag)) ? static_cast<HTMLBodyElement*>(b) : 0;
-
-    if (!bodyElement)
-        return String();
-    return bodyElement->aLink();
+    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
+        return bodyElement->aLink();
+    return String();
 }
 
 void HTMLDocument::setAlinkColor(const String& value)
 {
-    HTMLElement* b = body();
-    HTMLBodyElement* bodyElement = (b && b->hasTagName(bodyTag)) ? static_cast<HTMLBodyElement*>(b) : 0;
-
-    if (bodyElement) {
+    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement()) {
         // This check is a bit silly, but some benchmarks like to set the
         // document's link colors over and over to the same value and we
         // don't want to incur a style update each time.
@@ -194,20 +182,14 @@ void HTMLDocument::setAlinkColor(const String& value)
 
 String HTMLDocument::linkColor()
 {
-    HTMLElement* b = body();
-    HTMLBodyElement* bodyElement = (b && b->hasTagName(bodyTag)) ? static_cast<HTMLBodyElement*>(b) : 0;
-
-    if (!bodyElement)
-        return String();
-    return bodyElement->link();
+    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
+        return bodyElement->link();
+    return String();
 }
 
 void HTMLDocument::setLinkColor(const String& value)
 {
-    HTMLElement* b = body();
-    HTMLBodyElement* bodyElement = (b && b->hasTagName(bodyTag)) ? static_cast<HTMLBodyElement*>(b) : 0;
-
-    if (bodyElement) {
+    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement()) {
         // This check is a bit silly, but some benchmarks like to set the
         // document's link colors over and over to the same value and we
         // don't want to incur a style update each time.
@@ -218,20 +200,14 @@ void HTMLDocument::setLinkColor(const String& value)
 
 String HTMLDocument::vlinkColor()
 {
-    HTMLElement* b = body();
-    HTMLBodyElement* bodyElement = (b && b->hasTagName(bodyTag)) ? static_cast<HTMLBodyElement*>(b) : 0;
-
-    if (!bodyElement)
-        return String();
-    return bodyElement->vLink();
+    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement())
+        return bodyElement->vLink();
+    return String();
 }
 
 void HTMLDocument::setVlinkColor(const String& value)
 {
-    HTMLElement* b = body();
-    HTMLBodyElement* bodyElement = (b && b->hasTagName(bodyTag)) ? static_cast<HTMLBodyElement*>(b) : 0;
-
-    if (bodyElement) {
+    if (HTMLBodyElement* bodyElement = bodyAsHTMLBodyElement()) {
         // This check is a bit silly, but some benchmarks like to set the
         // document's link colors over and over to the same value and we
         // don't want to incur a style update each time.
