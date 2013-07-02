@@ -44,6 +44,11 @@ public:
     ArrayBufferContents();
     ArrayBufferContents(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy);
 
+    // Use with care. data must be allocated with allocateMemory.
+    // ArrayBufferContents will take ownership of the data and free it (using freeMemorY)
+    // upon destruction.
+    ArrayBufferContents(void* data, unsigned sizeInBytes);
+
     ~ArrayBufferContents();
 
     void clear();
@@ -55,6 +60,9 @@ public:
     void setDeallocationObserver(ArrayBufferDeallocationObserver* observer) { m_deallocationObserver = observer; }
 
     void transfer(ArrayBufferContents& other);
+
+    static bool allocateMemory(size_t, InitializationPolicy, void*& data);
+    static void freeMemory(void* data);
 
 private:
     void* m_data;

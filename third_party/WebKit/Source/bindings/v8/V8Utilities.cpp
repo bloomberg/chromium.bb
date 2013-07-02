@@ -31,11 +31,11 @@
 #include "config.h"
 #include "bindings/v8/V8Utilities.h"
 
-#include "V8ArrayBuffer.h"
 #include "V8MessagePort.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
