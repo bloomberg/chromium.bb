@@ -91,6 +91,11 @@ void LocallyManagedUserCreationController::SetManagerProfile(
 void LocallyManagedUserCreationController::StartCreation() {
   DCHECK(creation_context_);
   VLOG(1) << "Starting supervised user creation";
+  timeout_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
+      this,
+      &LocallyManagedUserCreationController::CreationTimedOut);
+
   UserManager::Get()->StartLocallyManagedUserCreationTransaction(
       creation_context_->display_name);
 
@@ -111,6 +116,7 @@ void LocallyManagedUserCreationController::StartCreation() {
 
 void LocallyManagedUserCreationController::OnAuthenticationFailure(
     ManagedUserAuthenticator::AuthState error) {
+  timeout_timer_.Stop();
   ErrorCode code = NO_ERROR;
   switch (error) {
     case ManagedUserAuthenticator::NO_MOUNT:
@@ -146,11 +152,6 @@ void LocallyManagedUserCreationController::OnMountSuccess(
 }
 
 void LocallyManagedUserCreationController::OnAddKeySuccess() {
-  timeout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
-      this,
-      &LocallyManagedUserCreationController::CreationTimedOut);
-
   creation_context_->service =
       ManagedUserRegistrationServiceFactory::GetForProfile(
           creation_context_->manager_profile);
@@ -167,20 +168,18 @@ void LocallyManagedUserCreationController::OnAddKeySuccess() {
 void LocallyManagedUserCreationController::RegistrationCallback(
     const GoogleServiceAuthError& error,
     const std::string& token) {
-  timeout_timer_.Stop();
   if (error.state() == GoogleServiceAuthError::NONE) {
     TokenFetched(token);
   } else {
-    // Do not report error if we cancelled request.
+    timeout_timer_.Stop();
     LOG(ERROR) << "Managed user creation failed. Error code " << error.state();
-    if (error.state() == GoogleServiceAuthError::REQUEST_CANCELED)
-      return;
     if (consumer_)
       consumer_->OnCreationError(CLOUD_SERVER_ERROR);
   }
 }
 
 void LocallyManagedUserCreationController::CreationTimedOut() {
+  LOG(ERROR) << "Supervised user creation timed out.";
   if (consumer_)
     consumer_->OnCreationTimeout();
 }
@@ -218,6 +217,7 @@ void LocallyManagedUserCreationController::TokenFetched(
 
 void LocallyManagedUserCreationController::OnManagedUserFilesStored(
     bool success) {
+  timeout_timer_.Stop();
   if (!success) {
     if (consumer_)
       consumer_->OnCreationError(TOKEN_WRITE_FAILED);
