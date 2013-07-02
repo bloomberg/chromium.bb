@@ -16,9 +16,6 @@ const char kBackgroundColorInsteadOfCheckerboard[] =
 
 const char kDisableThreadedAnimation[] = "disable-threaded-animation";
 
-// Do not predict whether the tile will be either solid color or transparent.
-const char kDisableColorEstimator[] = "disable-color-estimator";
-
 // Paint content on the main thread instead of the compositor thread.
 // Overrides the kEnableImplSidePainting flag.
 const char kDisableImplSidePainting[] = "disable-impl-side-painting";

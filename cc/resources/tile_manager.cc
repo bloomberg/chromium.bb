@@ -98,7 +98,6 @@ scoped_ptr<TileManager> TileManager::Create(
     TileManagerClient* client,
     ResourceProvider* resource_provider,
     size_t num_raster_threads,
-    bool use_color_estimator,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     bool use_map_image) {
   return make_scoped_ptr(
@@ -110,7 +109,6 @@ scoped_ptr<TileManager> TileManager::Create(
                       PixelBufferRasterWorkerPool::Create(
                           resource_provider, num_raster_threads),
                       num_raster_threads,
-                      use_color_estimator,
                       rendering_stats_instrumentation,
                       resource_provider->best_texture_format()));
 }
@@ -120,7 +118,6 @@ TileManager::TileManager(
     ResourceProvider* resource_provider,
     scoped_ptr<RasterWorkerPool> raster_worker_pool,
     size_t num_raster_threads,
-    bool use_color_estimator,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     GLenum texture_format)
     : client_(client),
@@ -128,7 +125,6 @@ TileManager::TileManager(
       raster_worker_pool_(raster_worker_pool.Pass()),
       ever_exceeded_memory_budget_(false),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
-      use_color_estimator_(use_color_estimator),
       did_initialize_visible_tile_(false),
       texture_format_(texture_format) {
   raster_worker_pool_->SetClient(this);
@@ -736,7 +732,6 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
       tile->content_rect(),
       tile->contents_scale(),
       mts.raster_mode,
-      use_color_estimator_,
       metadata,
       rendering_stats_instrumentation_,
       base::Bind(&TileManager::OnRasterTaskCompleted,

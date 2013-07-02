@@ -24,7 +24,6 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   NULL,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   1,
-                  false,
                   NULL,
                   GL_RGBA) {}
 
@@ -34,7 +33,6 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   resource_provider,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   1,
-                  false,
                   NULL,
                   resource_provider->best_texture_format()) {}
-}
+}  // namespace cc

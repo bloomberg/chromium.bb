@@ -1525,7 +1525,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
     tile_manager_ = TileManager::Create(this,
                                         resource_provider.get(),
                                         settings_.num_raster_threads,
-                                        settings_.use_color_estimator,
                                         rendering_stats_instrumentation_,
                                         using_map_image);
     UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());

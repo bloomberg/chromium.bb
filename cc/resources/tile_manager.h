@@ -64,7 +64,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
       TileManagerClient* client,
       ResourceProvider* resource_provider,
       size_t num_raster_threads,
-      bool use_color_estimator,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       bool use_map_image);
   virtual ~TileManager();
@@ -96,7 +95,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
               ResourceProvider* resource_provider,
               scoped_ptr<RasterWorkerPool> raster_worker_pool,
               size_t num_raster_threads,
-              bool use_color_estimator,
               RenderingStatsInstrumentation* rendering_stats_instrumentation,
               GLenum texture_format);
 
@@ -159,7 +157,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
-  bool use_color_estimator_;
   bool did_initialize_visible_tile_;
 
   GLenum texture_format_;

@@ -145,7 +145,6 @@ class RasterWorkerPoolPerfTest : public testing::Test {
               gfx::Rect(),
               1.0,
               HIGH_QUALITY_RASTER_MODE,
-              false,
               RasterTaskMetadata(),
               NULL,
               base::Bind(&RasterWorkerPoolPerfTest::OnRasterTaskCompleted),

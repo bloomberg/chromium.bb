@@ -205,14 +205,12 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   // even if they later get canceled by another call to ScheduleTasks().
   virtual void ScheduleTasks(RasterTask::Queue* queue) = 0;
 
-  // TODO(vmpstr): Try to elimiate some variables.
   static RasterTask CreateRasterTask(
       const Resource* resource,
       PicturePileImpl* picture_pile,
       gfx::Rect content_rect,
       float contents_scale,
       RasterMode raster_mode,
-      bool use_color_estimator,
       const RasterTaskMetadata& metadata,
       RenderingStatsInstrumentation* rendering_stats,
       const RasterTask::Reply& reply,

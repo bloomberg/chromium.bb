@@ -17,6 +17,10 @@ namespace cc {
 
 namespace {
 
+// Flag to indicate whether we should try and detect that
+// a tile is of solid color.
+const bool kUseColorEstimator = true;
+
 scoped_ptr<base::Value> RasterModeAsValue(RasterMode raster_mode) {
   switch (raster_mode) {
     case HIGH_QUALITY_NO_LCD_RASTER_MODE:
@@ -55,7 +59,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
                            gfx::Rect content_rect,
                            float contents_scale,
                            RasterMode raster_mode,
-                           bool use_color_estimator,
                            const RasterTaskMetadata& metadata,
                            RenderingStatsInstrumentation* rendering_stats,
                            const RasterWorkerPool::RasterTask::Reply& reply,
@@ -65,7 +68,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         content_rect_(content_rect),
         contents_scale_(contents_scale),
         raster_mode_(raster_mode),
-        use_color_estimator_(use_color_estimator),
         metadata_(metadata),
         rendering_stats_(rendering_stats),
         reply_(reply) {}
@@ -95,7 +97,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
                                             analysis_.is_solid_color);
 
     // Clear the flag if we're not using the estimator.
-    analysis_.is_solid_color &= use_color_estimator_;
+    analysis_.is_solid_color &= kUseColorEstimator;
   }
 
   bool RunRasterOnThread(SkDevice* device, unsigned thread_index) {
@@ -180,7 +182,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   gfx::Rect content_rect_;
   float contents_scale_;
   RasterMode raster_mode_;
-  bool use_color_estimator_;
   RasterTaskMetadata metadata_;
   RenderingStatsInstrumentation* rendering_stats_;
   const RasterWorkerPool::RasterTask::Reply reply_;
@@ -419,7 +420,6 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
     gfx::Rect content_rect,
     float contents_scale,
     RasterMode raster_mode,
-    bool use_color_estimator,
     const RasterTaskMetadata& metadata,
     RenderingStatsInstrumentation* rendering_stats,
     const RasterTask::Reply& reply,
@@ -429,7 +429,6 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
                                                  content_rect,
                                                  contents_scale,
                                                  raster_mode,
-                                                 use_color_estimator,
                                                  metadata,
                                                  rendering_stats,
                                                  reply,
