@@ -9,6 +9,8 @@
 @rdfa_output:
   2: [0] improper memory address - bad index
   return code: 1
+@spec:
+  2: register %rbx should be restricted, while in fact '%rcx' is restricted
 ----------------------------------------------------------------------
 @hex:
   # Second operand is zero-extended fine.
@@ -19,6 +21,8 @@
      2:	41 8a 04 0f                                  	mov    (%r15,%rcx,1),%al
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # But we can't just ignore first operand: if it's rsp or rbp, that would
@@ -31,3 +35,6 @@
 @rdfa_output:
   0: [0] improper %rbp sandboxing
   return code: 1
+@spec:
+  0: ('%rbp should not be restricted when zero-extending %ecx', Instruction(0x0: 87 e9  xchg %ebp,%ecx))
+  2: register %rcx should be restricted, while in fact None is restricted

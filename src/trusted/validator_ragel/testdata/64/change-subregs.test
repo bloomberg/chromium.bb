@@ -6,6 +6,8 @@
 @rdfa_output:
   0: [0] error - %spl or %sp is changed
   return code: 1
+@spec:
+  0: ('changes to rsp are not allowed', Instruction(0x0: 66 29 c4  sub %ax,%sp))
 ----------------------------------------------------------------------
 @hex:
   66 29 c5
@@ -14,6 +16,8 @@
 @rdfa_output:
   0: [0] error - %bpl or %bp is changed
   return code: 1
+@spec:
+  0: ('changes to rbp are not allowed', Instruction(0x0: 66 29 c5  sub %ax,%bp))
 ----------------------------------------------------------------------
 @hex:
   47 29 c7
@@ -22,6 +26,8 @@
 @rdfa_output:
   0: [0] error - %r15 is changed
   return code: 1
+@spec:
+  0: ('changes to r15 are not allowed', Instruction(0x0: 47 29 c7  sub %r8d,%r15d))
 ----------------------------------------------------------------------
 @hex:
   40 88 c5

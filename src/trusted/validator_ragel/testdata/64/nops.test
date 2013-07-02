@@ -18,7 +18,7 @@
 @rdfa_output:
   return code: 0
 @spec:
-  1: unrecognized instruction 'xchg %ax,%ax'
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   0F 1F 84 00 00 00 00 00

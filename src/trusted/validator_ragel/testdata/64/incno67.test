@@ -5,3 +5,5 @@
      0:	ff 05 a4 76 39 00                            	incl   0x3976a4(%rip)        # 0x3976aa
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

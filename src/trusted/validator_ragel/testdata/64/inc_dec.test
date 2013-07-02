@@ -16,3 +16,5 @@
      7:	23 34 0c                                     	and    (%rsp,%rcx,1),%esi
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

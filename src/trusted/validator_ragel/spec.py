@@ -321,7 +321,7 @@ def _GetLegacyPrefixes(instruction):
   return result
 
 
-def ProcessMemoryAccess(instruction, operands):
+def _ProcessMemoryAccess(instruction, operands):
   """Make sure that memory access is valid and return precondition required.
 
   (only makes sense for 64-bit instructions)
@@ -367,7 +367,7 @@ def ProcessMemoryAccess(instruction, operands):
   return precondition
 
 
-def ProcessOperandWrites(instruction, write_operands, zero_extending=False):
+def _ProcessOperandWrites(instruction, write_operands, zero_extending=False):
   """Check that writes to operands are valid, return postcondition established.
 
   (only makes sense for 64-bit instructions)
@@ -393,14 +393,24 @@ def ProcessOperandWrites(instruction, write_operands, zero_extending=False):
       raise SandboxingError('changes to rbp are not allowed', instruction)
     if op in ['%spl', '%sp']:
       raise SandboxingError('changes to rsp are not allowed', instruction)
+
     if op in REG32_TO_REG64 and zero_extending:
-      assert postcondition == Condition()
+      if not postcondition.Implies(Condition()):
+        raise SandboxingError(
+            '%s when zero-extending %s'
+            % (postcondition.WhyNotImplies(Condition()), op),
+            instruction)
+
       r = REG32_TO_REG64[op]
       if r in ['%rbp', '%rsp']:
         postcondition = Condition(restricted_instead_of_sandboxed=r)
       else:
         postcondition = Condition(restricted=r)
   return postcondition
+
+
+def _InstructionNameIn(name, candidates):
+  return re.match('(%s)[bwlq]?$' % '|'.join(candidates), name) is not None
 
 
 def ValidateRegularInstruction(instruction, bitness):
@@ -448,9 +458,6 @@ def ValidateRegularInstruction(instruction, bitness):
     except DoNotMatchError:
       pass
 
-  precondition = Condition()
-  postcondition = Condition()
-
   _, name, ops = _ParseInstruction(instruction)
   # TODO(shcherbina): prohibit excessive prefixes.
 
@@ -460,17 +467,46 @@ def ValidateRegularInstruction(instruction, bitness):
       raise SandboxingError(
           'segments in memory references are not allowed', instruction)
 
-  if name == 'mov':
-    write_ops = [ops[1]]
+  if bitness == 32:
+    if _InstructionNameIn(
+        name,
+        ['mov', 'add', 'sub', 'and', 'or', 'xor',
+         'xchg', 'xadd',
+         'inc', 'dec', 'neg', 'not',
+        ]):
+      return Condition(), Condition()
+    else:
+      raise DoNotMatchError(instruction)
 
-    if bitness == 64:
-      precondition = ProcessMemoryAccess(instruction, ops)
-      postcondition = ProcessOperandWrites(
-          instruction, write_ops, zero_extending=True)
+  elif bitness == 64:
+    precondition = Condition()
+    postcondition = Condition()
+    zero_extending = False
+
+    if _InstructionNameIn(
+          name, ['mov', 'add', 'sub', 'and', 'or', 'xor']):
+      assert len(ops) == 2
+      zero_extending = True
+      write_ops = [ops[1]]
+    elif _InstructionNameIn(name, ['xchg', 'xadd']):
+      assert len(ops) == 2
+      zero_extending = True
+      write_ops = ops
+    elif _InstructionNameIn(name, ['inc', 'dec', 'neg', 'not']):
+      assert len(ops) == 1
+      zero_extending = True
+      write_ops = ops
+    else:
+      raise DoNotMatchError(instruction)
+
+    precondition = _ProcessMemoryAccess(instruction, ops)
+    postcondition = _ProcessOperandWrites(
+        instruction, write_ops, zero_extending)
 
     return precondition, postcondition
 
-  raise DoNotMatchError(instruction)
+  else:
+    assert False, bitness
 
 
 def ValidateDirectJump(instruction):
