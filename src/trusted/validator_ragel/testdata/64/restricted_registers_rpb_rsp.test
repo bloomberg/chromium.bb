@@ -86,4 +86,4 @@
   2: [0] improper %rbp sandboxing
   return code: 1
 @spec:
-  2: ('changes to rbp are not allowed', Instruction(0x2: 48 89 e5  mov %rsp,%rbp))
+  2: %rbp should not be restricted

@@ -7,3 +7,5 @@
 @rdfa_output:
   0: [0] improper %rsp sandboxing
   return code: 1
+@spec:
+  0: register %rsp should be restricted, while in fact None is restricted

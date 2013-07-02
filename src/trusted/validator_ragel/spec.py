@@ -309,6 +309,37 @@ class Condition(object):
     yield Condition(restricted_instead_of_sandboxed='%rsp')
 
 
+def _ValidateSpecialStackInstruction(instruction):
+  # Validate 64-bit instruction that is in special relationship with rsp/rbp.
+
+  if instruction.disasm in ['mov %rsp,%rbp', 'mov %rbp,%rsp']:
+    return Condition(), Condition()
+
+  m = re.match(
+      'and %s,%%rsp$' % _ImmediateRE(),
+      instruction.disasm)
+  if m is not None:
+    # TODO(shcherbina): check that immediate is negative (we'd have to look at
+    # bytes to do it).
+    return Condition(), Condition()
+
+  if (instruction.disasm in ['add %r15,%rbp', 'add %r15,%rbp'] or
+      re.match(r'lea (0x0+)?\(%rbp,%r15,1\),%rbp$', instruction.disasm)):
+    return Condition(restricted_instead_of_sandboxed='%rbp'), Condition()
+
+  if (instruction.disasm in ['add %r15,%rsp', 'add %r15,%rsp'] or
+      re.match(r'lea (0x0+)?\(%rsp,%r15,1\),%rsp$', instruction.disasm)):
+    return Condition(restricted_instead_of_sandboxed='%rsp'), Condition()
+
+  # TODO(shcherbina): disallow this instruction once
+  # http://code.google.com/p/nativeclient/issues/detail?id=3070
+  # is fixed.
+  if instruction.disasm == 'or %r15,%rsp':
+    return Condition(restricted_instead_of_sandboxed='%rsp'), Condition()
+
+  raise DoNotMatchError(instruction)
+
+
 def _GetLegacyPrefixes(instruction):
   result = []
   for b in instruction.bytes:
@@ -454,6 +485,12 @@ def ValidateRegularInstruction(instruction, bitness):
     try:
       _ValidateTlsInstruction(instruction)
       return Condition(), Condition()
+    except DoNotMatchError:
+      pass
+
+  if bitness == 64:
+    try:
+      return _ValidateSpecialStackInstruction(instruction)
     except DoNotMatchError:
       pass
 
