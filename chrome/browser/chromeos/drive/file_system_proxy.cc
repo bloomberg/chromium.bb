@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/fileapi_worker.h"
 #include "chrome/browser/chromeos/drive/webkit_file_stream_reader_impl.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/time_util.h"
@@ -141,13 +142,15 @@ DirectoryEntry ResourceEntryToDirectoryEntry(
 
 FileSystemProxy::FileSystemProxy(
     FileSystemInterface* file_system)
-    : file_system_(file_system) {
+    : file_system_(file_system),
+      worker_(new internal::FileApiWorker(file_system)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void FileSystemProxy::DetachFromFileSystem() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   file_system_ = NULL;
+  worker_.reset();
 }
 
 void FileSystemProxy::GetFileInfo(
@@ -190,14 +193,10 @@ void FileSystemProxy::Copy(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::Copy,
-                 base::Unretained(file_system_),
-                 src_file_path,
-                 dest_file_path,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&FileSystemProxy::OnStatusCallback,
-                                this,
-                                callback))));
+      base::Bind(&internal::FileApiWorker::Copy,
+                 base::Unretained(worker_.get()),
+                 src_file_path, dest_file_path,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void FileSystemProxy::Move(
@@ -216,14 +215,10 @@ void FileSystemProxy::Move(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::Move,
-                 base::Unretained(file_system_),
-                 src_file_path,
-                 dest_file_path,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&FileSystemProxy::OnStatusCallback,
-                                this,
-                                callback))));
+      base::Bind(&internal::FileApiWorker::Move,
+                 base::Unretained(worker_.get()),
+                 src_file_path, dest_file_path,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void FileSystemProxy::ReadDirectory(
@@ -267,14 +262,10 @@ void FileSystemProxy::Remove(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::Remove,
-                 base::Unretained(file_system_),
-                 file_path,
-                 recursive,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&FileSystemProxy::OnStatusCallback,
-                                this,
-                                callback))));
+      base::Bind(&internal::FileApiWorker::Remove,
+                 base::Unretained(worker_.get()),
+                 file_path, recursive,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void FileSystemProxy::CreateDirectory(
@@ -293,15 +284,10 @@ void FileSystemProxy::CreateDirectory(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::CreateDirectory,
-                 base::Unretained(file_system_),
-                 file_path,
-                 exclusive,
-                 recursive,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&FileSystemProxy::OnStatusCallback,
-                                this,
-                                callback))));
+      base::Bind(&internal::FileApiWorker::CreateDirectory,
+                 base::Unretained(worker_.get()),
+                 file_path, exclusive, recursive,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void FileSystemProxy::CreateFile(
@@ -319,14 +305,10 @@ void FileSystemProxy::CreateFile(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::CreateFile,
-                 base::Unretained(file_system_),
-                 file_path,
-                 exclusive,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&FileSystemProxy::OnStatusCallback,
-                                this,
-                                callback))));
+      base::Bind(&internal::FileApiWorker::CreateFile,
+                 base::Unretained(worker_.get()),
+                 file_path, exclusive,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void FileSystemProxy::Truncate(
@@ -334,13 +316,6 @@ void FileSystemProxy::Truncate(
     int64 length,
     const FileSystemOperation::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (length < 0) {
-    MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
-    return;
-  }
 
   base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
@@ -351,12 +326,10 @@ void FileSystemProxy::Truncate(
   }
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::TruncateFile,
-                 base::Unretained(file_system_),
+      base::Bind(&internal::FileApiWorker::Truncate,
+                 base::Unretained(worker_.get()),
                  file_path, length,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&FileSystemProxy::OnStatusCallback,
-                                this, callback))));
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void FileSystemProxy::OnOpenFileForWriting(
@@ -541,13 +514,10 @@ void FileSystemProxy::TouchFile(
     return;
 
   CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::TouchFile,
-                 base::Unretained(file_system_),
+      base::Bind(&internal::FileApiWorker::TouchFile,
+                 base::Unretained(worker_.get()),
                  file_path, last_access_time, last_modified_time,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&FileSystemProxy::OnStatusCallback,
-                                this,
-                                callback))));
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void FileSystemProxy::CreateSnapshotFile(
@@ -685,12 +655,6 @@ void FileSystemProxy::CallFileSystemMethodOnUIThreadInternal(
   // If |file_system_| is NULL, it means the file system has already shut down.
   if (file_system_)
     method_call.Run();
-}
-
-void FileSystemProxy::OnStatusCallback(
-    const fileapi::FileSystemOperation::StatusCallback& callback,
-    FileError error) {
-  callback.Run(FileErrorToPlatformError(error));
 }
 
 void FileSystemProxy::OnGetMetadata(

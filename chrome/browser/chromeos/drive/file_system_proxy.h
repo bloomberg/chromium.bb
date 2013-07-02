@@ -10,7 +10,7 @@
 
 namespace fileapi {
 class FileSystemURL;
-}
+}  // namespace fileapi
 
 namespace drive {
 
@@ -18,6 +18,10 @@ class FileSystemInterface;
 class ResourceEntry;
 
 typedef std::vector<ResourceEntry> ResourceEntryVector;
+
+namespace internal {
+class FileApiWorker;
+}  // namespace internal
 
 // Implementation of File API's remote file system proxy for Drive-backed
 // file system.
@@ -113,12 +117,6 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void CallFileSystemMethodOnUIThreadInternal(
       const base::Closure& method_call);
 
-  // Helper callback for relaying reply for status callbacks to the
-  // calling thread.
-  void OnStatusCallback(
-      const fileapi::FileSystemOperation::StatusCallback& callback,
-      FileError error);
-
   // Helper callback for relaying reply for metadata retrieval request to the
   // calling thread.
   void OnGetMetadata(
@@ -180,7 +178,10 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // Returns |file_system_| on UI thread.
   FileSystemInterface* GetFileSystemOnUIThread();
 
+  // TODO(hidehiko): Remove |file_system_| when all the core implementation
+  // is moved to FileApiWorker.
   FileSystemInterface* file_system_;
+  scoped_ptr<internal::FileApiWorker> worker_;
 };
 
 }  // namespace drive
