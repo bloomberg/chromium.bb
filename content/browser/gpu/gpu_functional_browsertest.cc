@@ -96,30 +96,42 @@ class GpuFunctionalTest : public ContentBrowserTest {
   base::FilePath gpu_test_dir_;
 };
 
-IN_PROC_BROWSER_TEST_F(GpuFunctionalTest,
-                       MANUAL_TestFeatureHardwareAccelerated) {
+#if defined(OS_LINUX) && !defined(NDEBUG)
+// http://crbug.com/254724
+#define IF_NOT_DEBUG_LINUX(x) DISABLED_ ## x
+#else
+#define IF_NOT_DEBUG_LINUX(x) x
+#endif
+
+IN_PROC_BROWSER_TEST_F(
+    GpuFunctionalTest,
+    IF_NOT_DEBUG_LINUX(MANUAL_TestFeatureHardwareAccelerated)) {
   VerifyHardwareAccelerated("WebGL: ");
   VerifyHardwareAccelerated("Canvas: ");
   VerifyHardwareAccelerated("3D CSS: ");
 }
 
 // Verify that gpu process is spawned in webgl example.
-IN_PROC_BROWSER_TEST_F(GpuFunctionalTest, MANUAL_TestWebGL) {
+IN_PROC_BROWSER_TEST_F(GpuFunctionalTest,
+                       IF_NOT_DEBUG_LINUX(MANUAL_TestWebGL)) {
   VerifyGPUProcessOnPage("functional_webgl.html", false);
 }
 
 // Verify that gpu process is spawned when viewing a 2D canvas.
-IN_PROC_BROWSER_TEST_F(GpuFunctionalTest, MANUAL_Test2dCanvas) {
+IN_PROC_BROWSER_TEST_F(GpuFunctionalTest,
+                       IF_NOT_DEBUG_LINUX(MANUAL_Test2dCanvas)) {
   VerifyGPUProcessOnPage("functional_canvas_demo.html", false);
 }
 
 // Verify that gpu process is spawned when viewing a 3D CSS page.
-IN_PROC_BROWSER_TEST_F(GpuFunctionalTest, MANUAL_Test3dCss) {
+IN_PROC_BROWSER_TEST_F(GpuFunctionalTest,
+                       IF_NOT_DEBUG_LINUX(MANUAL_Test3dCss)) {
   VerifyGPUProcessOnPage("functional_3d_css.html", false);
 }
 
 // Verify that gpu process is started when viewing video.
-IN_PROC_BROWSER_TEST_F(GpuFunctionalTest, MANUAL_TestGpuWithVideo) {
+IN_PROC_BROWSER_TEST_F(GpuFunctionalTest,
+                       IF_NOT_DEBUG_LINUX(MANUAL_TestGpuWithVideo)) {
   VerifyGPUProcessOnPage("functional_video.html", true);
 }
 

@@ -25,7 +25,14 @@ class GpuCrashTest : public ContentBrowserTest {
   base::FilePath gpu_test_dir_;
 };
 
-IN_PROC_BROWSER_TEST_F(GpuCrashTest, MANUAL_Kill) {
+#if defined(OS_LINUX) && !defined(NDEBUG)
+// http://crbug.com/254724
+#define IF_NOT_DEBUG_LINUX(x) DISABLED_ ## x
+#else
+#define IF_NOT_DEBUG_LINUX(x) x
+#endif
+
+IN_PROC_BROWSER_TEST_F(GpuCrashTest, IF_NOT_DEBUG_LINUX(MANUAL_Kill)) {
   DOMMessageQueue message_queue;
 
   content::GpuDataManagerImpl::GetInstance()->
@@ -51,7 +58,8 @@ IN_PROC_BROWSER_TEST_F(GpuCrashTest, MANUAL_Kill) {
   EXPECT_EQ("\"SUCCESS\"", m);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuCrashTest, MANUAL_WebkitLoseContext) {
+IN_PROC_BROWSER_TEST_F(GpuCrashTest,
+                       IF_NOT_DEBUG_LINUX(MANUAL_WebkitLoseContext)) {
   DOMMessageQueue message_queue;
 
   NavigateToURL(

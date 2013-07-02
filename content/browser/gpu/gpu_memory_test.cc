@@ -215,9 +215,17 @@ class GpuMemoryTest : public ContentBrowserTest {
   base::FilePath gpu_test_dir_;
 };
 
+#if defined(OS_LINUX) && !defined(NDEBUG)
+// http://crbug.com/254724
+#define IF_NOT_DEBUG_LINUX(x) DISABLED_ ## x
+#else
+#define IF_NOT_DEBUG_LINUX(x) x
+#endif
+
 // When trying to load something that doesn't fit into our total GPU memory
 // limit, we shouldn't exceed that limit.
-IN_PROC_BROWSER_TEST_F(GpuMemoryTest, SingleWindowDoesNotExceedLimit) {
+IN_PROC_BROWSER_TEST_F(GpuMemoryTest,
+                       IF_NOT_DEBUG_LINUX(SingleWindowDoesNotExceedLimit)) {
   if (!AllowTestsToRun())
     return;
 

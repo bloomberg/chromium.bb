@@ -189,6 +189,9 @@ UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
 
 173794 LINUX NVIDIA : conformance_attribs_gl_disabled_vertex_attrib = FLAKY
 
+254742 LINUX DEBUG : conformance_attribs_gl_enable_vertex_atrib = TIMEOUT
+254742 LINUX DEBUG : conformance_attribs_gl_vertex_attrib_zero_issues = TIMEOUT
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Temprory entries: they should be removed once the bugs are fixed.
