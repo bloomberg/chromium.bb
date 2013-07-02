@@ -19,7 +19,7 @@ class WebSocketStream;
 
 // WebSocketStreamBase is the base class of WebSocketStream.
 // net/http code uses this interface to handle WebSocketStream.
-class WebSocketStreamBase {
+class NET_EXPORT WebSocketStreamBase {
  public:
   class Factory {
    public:

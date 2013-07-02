@@ -1081,6 +1081,7 @@
         'websockets/websocket_job.h',
         'websockets/websocket_net_log_params.cc',
         'websockets/websocket_net_log_params.h',
+        'websockets/websocket_stream.cc',
         'websockets/websocket_stream.h',
         'websockets/websocket_stream_base.h',
         'websockets/websocket_throttle.cc',
