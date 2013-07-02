@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 #include "content/browser/media/webrtc_identity_store.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -23,17 +23,19 @@ class WebRTCIdentityStoreTest : public testing::Test {
  public:
   WebRTCIdentityStoreTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        sequenced_worker_pool_(
-            new base::SequencedWorkerPool(3, "WebRTCIdentityStoreTest")),
+        pool_owner_(
+            new base::SequencedWorkerPoolOwner(3, "WebRTCIdentityStoreTest")),
         webrtc_identity_store_(new WebRTCIdentityStore()) {
-    webrtc_identity_store_->SetTaskRunnerForTesting(sequenced_worker_pool_);
+    webrtc_identity_store_->SetTaskRunnerForTesting(pool_owner_->pool());
   }
 
-  virtual ~WebRTCIdentityStoreTest() { sequenced_worker_pool_->Shutdown(); }
+  virtual ~WebRTCIdentityStoreTest() {
+    pool_owner_->pool()->Shutdown();
+  }
 
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool_;
+  scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
   scoped_ptr<WebRTCIdentityStore> webrtc_identity_store_;
 };
 
@@ -56,7 +58,7 @@ TEST_F(WebRTCIdentityStoreTest, RequestIdentity) {
           "b",
           base::Bind(&OnRequestCompleted, &completed));
   ASSERT_FALSE(cancel_callback.is_null());
-  sequenced_worker_pool_->FlushForTesting();
+  pool_owner_->pool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(completed);
 }
@@ -71,7 +73,7 @@ TEST_F(WebRTCIdentityStoreTest, CancelRequest) {
           base::Bind(&OnRequestCompleted, &completed));
   ASSERT_FALSE(cancel_callback.is_null());
   cancel_callback.Run();
-  sequenced_worker_pool_->FlushForTesting();
+  pool_owner_->pool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(completed);
 }
@@ -95,7 +97,7 @@ TEST_F(WebRTCIdentityStoreTest, MultipleRequests) {
         base::Bind(&OnRequestCompleted, &completed_2));
   ASSERT_FALSE(cancel_callback_2.is_null());
 
-  sequenced_worker_pool_->FlushForTesting();
+  pool_owner_->pool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(completed_1);
   EXPECT_TRUE(completed_2);
