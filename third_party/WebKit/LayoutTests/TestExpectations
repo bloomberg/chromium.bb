@@ -185,6 +185,8 @@ crbug.com/247466 [ Debug ] inspector/debugger/script-formatter-console.html [ Sk
 crbug.com/247466 [ Debug ] inspector/debugger/script-formatter-search.html [ Skip ]
 crbug.com/247466 [ Debug ] inspector/debugger/linkifier.html [ Skip ]
 
+crbug.com/256518 [ Win7 Debug ] pointer-lock/mouse-event-delivery.html [ Crash ]
+
 # Sometimes the output includes an empty line, sometimes it doesn't. Flake.
 crbug.com/239874 http/tests/xmlhttprequest/send-data-view.html [ Failure Pass ]
 
