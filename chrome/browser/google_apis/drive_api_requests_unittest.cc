@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -41,6 +42,7 @@ const char kTestChildrenResponse[] =
 
 const char kTestUploadExistingFilePath[] = "/upload/existingfile/path";
 const char kTestUploadNewFilePath[] = "/upload/newfile/path";
+const char kTestDownloadPathPrefix[] = "/download/";
 
 }  // namespace
 
@@ -84,10 +86,13 @@ class DriveApiRequestsTest : public testing::Test {
     test_server_.RegisterRequestHandler(
         base::Bind(&DriveApiRequestsTest::HandleContentResponse,
                    base::Unretained(this)));
+    test_server_.RegisterRequestHandler(
+        base::Bind(&DriveApiRequestsTest::HandleDownloadRequest,
+                   base::Unretained(this)));
 
     GURL test_base_url = test_util::GetBaseUrlForTesting(test_server_.port());
     url_generator_.reset(new DriveApiUrlGenerator(
-        test_base_url, test_base_url.Resolve("download/")));
+        test_base_url, test_base_url.Resolve(kTestDownloadPathPrefix)));
 
     // Reset the server's expected behavior just in case.
     ResetExpectedResponse();
@@ -302,6 +307,28 @@ class DriveApiRequestsTest : public testing::Test {
     response->set_code(net::HTTP_OK);
     response->set_content_type(expected_content_type_);
     response->set_content(expected_content_);
+    return response.PassAs<net::test_server::HttpResponse>();
+  }
+
+  // Handles a request for downloading a file.
+  scoped_ptr<net::test_server::HttpResponse> HandleDownloadRequest(
+      const net::test_server::HttpRequest& request) {
+    http_request_ = request;
+
+    const GURL absolute_url = test_server_.GetURL(request.relative_url);
+    std::string id;
+    if (!test_util::RemovePrefix(absolute_url.path(),
+                                 kTestDownloadPathPrefix,
+                                 &id)) {
+      return scoped_ptr<net::test_server::HttpResponse>();
+    }
+
+    // For testing, returns a text with |id| repeated 3 times.
+    scoped_ptr<net::test_server::BasicHttpResponse> response(
+        new net::test_server::BasicHttpResponse);
+    response->set_code(net::HTTP_OK);
+    response->set_content(id + id + id);
+    response->set_content_type("text/plain");
     return response.PassAs<net::test_server::HttpResponse>();
   }
 
@@ -1339,6 +1366,42 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETagConflicting) {
             http_request_.relative_url);
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_TRUE(http_request_.content.empty());
+}
+
+TEST_F(DriveApiRequestsTest, DownloadFileRequest) {
+  const base::FilePath kDownloadedFilePath =
+      temp_dir_.path().AppendASCII("cache_file");
+  const std::string kTestId("dummyId");
+
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  base::FilePath temp_file;
+  {
+    base::RunLoop run_loop;
+    drive::DownloadFileRequest* request = new drive::DownloadFileRequest(
+        request_sender_.get(),
+        *url_generator_,
+        kTestId,
+        kDownloadedFilePath,
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&result_code, &temp_file)),
+        GetContentCallback(),
+        ProgressCallback());
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  std::string contents;
+  file_util::ReadFileToString(temp_file, &contents);
+  base::Delete(temp_file, false);
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ(kTestDownloadPathPrefix + kTestId, http_request_.relative_url);
+  EXPECT_EQ(kDownloadedFilePath, temp_file);
+
+  const std::string expected_contents = kTestId + kTestId + kTestId;
+  EXPECT_EQ(expected_contents, contents);
 }
 
 }  // namespace google_apis

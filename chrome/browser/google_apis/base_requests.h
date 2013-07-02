@@ -438,8 +438,8 @@ typedef base::Callback<void(GDataErrorCode error,
                             const base::FilePath& temp_file)>
     DownloadActionCallback;
 
-// This class performs the request for downloading of a given document/file.
-class DownloadFileRequest : public UrlFetchRequestBase {
+// This is a base class for performing the request for downloading a file.
+class DownloadFileRequestBase : public UrlFetchRequestBase {
  public:
   // download_action_callback:
   //   This callback is called when the download is complete. Must not be null.
@@ -458,13 +458,14 @@ class DownloadFileRequest : public UrlFetchRequestBase {
   // output_file_path:
   //   Specifies the file path to save the downloaded file.
   //
-  DownloadFileRequest(RequestSender* sender,
-                      const DownloadActionCallback& download_action_callback,
-                      const GetContentCallback& get_content_callback,
-                      const ProgressCallback& progress_callback,
-                      const GURL& download_url,
-                      const base::FilePath& output_file_path);
-  virtual ~DownloadFileRequest();
+  DownloadFileRequestBase(
+      RequestSender* sender,
+      const DownloadActionCallback& download_action_callback,
+      const GetContentCallback& get_content_callback,
+      const ProgressCallback& progress_callback,
+      const GURL& download_url,
+      const base::FilePath& output_file_path);
+  virtual ~DownloadFileRequestBase();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -488,7 +489,7 @@ class DownloadFileRequest : public UrlFetchRequestBase {
   const GURL download_url_;
   const base::FilePath output_file_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(DownloadFileRequest);
+  DISALLOW_COPY_AND_ASSIGN(DownloadFileRequestBase);
 };
 
 }  // namespace google_apis

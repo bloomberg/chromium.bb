@@ -489,6 +489,25 @@ class GetUploadStatusRequest : public GetUploadStatusRequestBase {
   DISALLOW_COPY_AND_ASSIGN(GetUploadStatusRequest);
 };
 
+
+//========================== DownloadFileRequest ==========================
+
+// This class performs the request for downloading of a specified file.
+class DownloadFileRequest : public DownloadFileRequestBase {
+ public:
+  // See also DownloadFileRequestBase's comment for parameters meaning.
+  DownloadFileRequest(RequestSender* sender,
+                      const GDataWapiUrlGenerator& url_generator,
+                      const DownloadActionCallback& download_action_callback,
+                      const GetContentCallback& get_content_callback,
+                      const ProgressCallback& progress_callback,
+                      const std::string& resource_id,
+                      const base::FilePath& output_file_path);
+  virtual ~DownloadFileRequest();
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadFileRequest);
+};
+
 }  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_REQUESTS_H_

@@ -602,9 +602,9 @@ GetUploadStatusRequestBase::GetExtraRequestHeaders() const {
   return headers;
 }
 
-//============================ DownloadFileRequest ===========================
+//============================ DownloadFileRequestBase =========================
 
-DownloadFileRequest::DownloadFileRequest(
+DownloadFileRequestBase::DownloadFileRequestBase(
     RequestSender* sender,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
@@ -622,38 +622,40 @@ DownloadFileRequest::DownloadFileRequest(
   // get_content_callback may be null.
 }
 
-DownloadFileRequest::~DownloadFileRequest() {}
+DownloadFileRequestBase::~DownloadFileRequestBase() {}
 
 // Overridden from UrlFetchRequestBase.
-GURL DownloadFileRequest::GetURL() const {
+GURL DownloadFileRequestBase::GetURL() const {
   return download_url_;
 }
 
-bool DownloadFileRequest::GetOutputFilePath(base::FilePath* local_file_path) {
+bool DownloadFileRequestBase::GetOutputFilePath(
+    base::FilePath* local_file_path) {
   // Configure so that the downloaded content is saved to |output_file_path_|.
   *local_file_path = output_file_path_;
   return true;
 }
 
-void DownloadFileRequest::OnURLFetchDownloadProgress(const URLFetcher* source,
-                                                     int64 current,
-                                                     int64 total) {
+void DownloadFileRequestBase::OnURLFetchDownloadProgress(
+    const URLFetcher* source,
+    int64 current,
+    int64 total) {
   if (!progress_callback_.is_null())
     progress_callback_.Run(current, total);
 }
 
-bool DownloadFileRequest::ShouldSendDownloadData() {
+bool DownloadFileRequestBase::ShouldSendDownloadData() {
   return !get_content_callback_.is_null();
 }
 
-void DownloadFileRequest::OnURLFetchDownloadData(
+void DownloadFileRequestBase::OnURLFetchDownloadData(
     const URLFetcher* source,
     scoped_ptr<std::string> download_data) {
   if (!get_content_callback_.is_null())
     get_content_callback_.Run(HTTP_SUCCESS, download_data.Pass());
 }
 
-void DownloadFileRequest::ProcessURLFetchResults(const URLFetcher* source) {
+void DownloadFileRequestBase::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
 
   // Take over the ownership of the the downloaded temp file.
@@ -668,7 +670,8 @@ void DownloadFileRequest::ProcessURLFetchResults(const URLFetcher* source) {
   OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
 }
 
-void DownloadFileRequest::RunCallbackOnPrematureFailure(GDataErrorCode code) {
+void DownloadFileRequestBase::RunCallbackOnPrematureFailure(
+    GDataErrorCode code) {
   download_action_callback_.Run(code, base::FilePath());
 }
 

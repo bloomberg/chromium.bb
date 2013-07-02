@@ -86,7 +86,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
   base::FilePath temp_file;
   {
     base::RunLoop run_loop;
-    DownloadFileRequest* request = new DownloadFileRequest(
+    DownloadFileRequestBase* request = new DownloadFileRequestBase(
         request_sender_.get(),
         test_util::CreateQuitCallback(
             &run_loop,
@@ -120,7 +120,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_NonExistentFile) {
   base::FilePath temp_file;
   {
     base::RunLoop run_loop;
-    DownloadFileRequest* request = new DownloadFileRequest(
+    DownloadFileRequestBase* request = new DownloadFileRequestBase(
         request_sender_.get(),
         test_util::CreateQuitCallback(
             &run_loop,

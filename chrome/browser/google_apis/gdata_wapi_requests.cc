@@ -711,4 +711,27 @@ void GetUploadStatusRequest::OnRangeRequestComplete(
   callback_.Run(response, ParseResourceEntry(value.Pass()));
 }
 
+
+//========================== DownloadFileRequest ==========================
+
+DownloadFileRequest::DownloadFileRequest(
+    RequestSender* sender,
+    const GDataWapiUrlGenerator& url_generator,
+    const DownloadActionCallback& download_action_callback,
+    const GetContentCallback& get_content_callback,
+    const ProgressCallback& progress_callback,
+    const std::string& resource_id,
+    const base::FilePath& output_file_path)
+    : DownloadFileRequestBase(
+          sender,
+          download_action_callback,
+          get_content_callback,
+          progress_callback,
+          url_generator.GenerateDownloadFileUrl(resource_id),
+          output_file_path) {
+}
+
+DownloadFileRequest::~DownloadFileRequest() {
+}
+
 }  // namespace google_apis

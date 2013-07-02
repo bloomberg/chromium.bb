@@ -25,7 +25,7 @@ using google_apis::AuthorizeAppCallback;
 using google_apis::CancelCallback;
 using google_apis::ChangeList;
 using google_apis::DownloadActionCallback;
-using google_apis::DownloadFileRequest;
+using google_apis::DownloadFileRequestBase;
 using google_apis::EntryActionCallback;
 using google_apis::FileList;
 using google_apis::FileResource;
@@ -491,13 +491,14 @@ CancelCallback DriveAPIService::DownloadFile(
   DCHECK(!download_action_callback.is_null());
   // get_content_callback may be null.
 
+  // TODO(kinaba): crbug.com/254025: use resource_id based download request.
   return sender_->StartRequestWithRetry(
-      new DownloadFileRequest(sender_.get(),
-                              download_action_callback,
-                              get_content_callback,
-                              progress_callback,
-                              download_url,
-                              local_cache_path));
+      new DownloadFileRequestBase(sender_.get(),
+                                  download_action_callback,
+                                  get_content_callback,
+                                  progress_callback,
+                                  download_url,
+                                  local_cache_path));
 }
 
 CancelCallback DriveAPIService::DeleteResource(
