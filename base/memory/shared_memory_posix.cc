@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "base/file_util.h"
@@ -149,11 +150,46 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     if (!FilePathForMemoryName(*options.name, &path))
       return false;
 
-    fp = file_util::OpenFile(path, "w+x");
-    if (fp == NULL && options.open_existing) {
-      // "w+" will truncate if it already exists.
-      fp = file_util::OpenFile(path, "a+");
+    // Make sure that the file is opened without any permission
+    // to other users on the system.
+    const mode_t kOwnerOnly = S_IRUSR | S_IWUSR;
+
+    // First, try to create the file.
+    int fd = HANDLE_EINTR(
+        open(path.value().c_str(), O_RDWR | O_CREAT | O_EXCL, kOwnerOnly));
+    if (fd == -1 && options.open_existing) {
+      // If this doesn't work, try and open an existing file in append mode.
+      // Opening an existing file in a world writable directory has two main
+      // security implications:
+      // - Attackers could plant a file under their control, so ownership of
+      //   the file is checked below.
+      // - Attackers could plant a symbolic link so that an unexpected file
+      //   is opened, so O_NOFOLLOW is passed to open().
+      fd = HANDLE_EINTR(
+          open(path.value().c_str(), O_RDWR | O_APPEND | O_NOFOLLOW));
+
+      // Check that the current user owns the file.
+      // If uid != euid, then a more complex permission model is used and this
+      // API is not appropriate.
+      const uid_t real_uid = getuid();
+      const uid_t effective_uid = geteuid();
+      struct stat sb;
+      if (fd >= 0 &&
+          (fstat(fd, &sb) != 0 || sb.st_uid != real_uid ||
+           sb.st_uid != effective_uid)) {
+        LOG(ERROR) <<
+            "Invalid owner when opening existing shared memory file.";
+        HANDLE_EINTR(close(fd));
+        return false;
+      }
+
+      // An existing file was opened, so its size should not be fixed.
       fix_size = false;
+    }
+    fp = NULL;
+    if (fd >= 0) {
+      // "a+" is always appropriate: if it's a new file, a+ is similar to w+.
+      fp = fdopen(fd, "a+");
     }
   }
   if (fp && fix_size) {

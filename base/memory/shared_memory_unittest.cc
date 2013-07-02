@@ -8,6 +8,8 @@
 #endif
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/test/multiprocess_test.h"
 #include "base/threading/platform_thread.h"
@@ -21,6 +23,9 @@
 
 #if defined(OS_POSIX)
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #endif
 
 static const int kNumThreads = 5;
@@ -401,7 +406,73 @@ TEST(SharedMemoryTest, AnonymousExecutable) {
   EXPECT_EQ(0, mprotect(shared_memory.memory(), shared_memory.requested_size(),
                         PROT_READ | PROT_EXEC));
 }
-#endif
+
+// Android supports a different permission model than POSIX for its "ashmem"
+// shared memory implementation. So the tests about file permissions are not
+// included on Android.
+#if !defined(OS_ANDROID)
+
+// Set a umask and restore the old mask on destruction.
+class ScopedUmaskSetter {
+ public:
+  explicit ScopedUmaskSetter(mode_t target_mask) {
+    old_umask_ = umask(target_mask);
+  }
+  ~ScopedUmaskSetter() { umask(old_umask_); }
+ private:
+  mode_t old_umask_;
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedUmaskSetter);
+};
+
+// Create a shared memory object, check its permissions.
+TEST(SharedMemoryTest, FilePermissionsAnonymous) {
+  const uint32 kTestSize = 1 << 8;
+
+  SharedMemory shared_memory;
+  SharedMemoryCreateOptions options;
+  options.size = kTestSize;
+  // Set a file mode creation mask that gives all permissions.
+  ScopedUmaskSetter permissive_mask(S_IWGRP | S_IWOTH);
+
+  EXPECT_TRUE(shared_memory.Create(options));
+
+  int shm_fd = shared_memory.handle().fd;
+  struct stat shm_stat;
+  EXPECT_EQ(0, fstat(shm_fd, &shm_stat));
+  // Neither the group, nor others should be able to read the shared memory
+  // file.
+  EXPECT_FALSE(shm_stat.st_mode & S_IRWXO);
+  EXPECT_FALSE(shm_stat.st_mode & S_IRWXG);
+}
+
+// Create a shared memory object, check its permissions.
+TEST(SharedMemoryTest, FilePermissionsNamed) {
+  const uint32 kTestSize = 1 << 8;
+
+  SharedMemory shared_memory;
+  SharedMemoryCreateOptions options;
+  options.size = kTestSize;
+  std::string shared_mem_name = "shared_perm_test-" + IntToString(getpid()) +
+      "-" + Uint64ToString(RandUint64());
+  options.name = &shared_mem_name;
+  // Set a file mode creation mask that gives all permissions.
+  ScopedUmaskSetter permissive_mask(S_IWGRP | S_IWOTH);
+
+  EXPECT_TRUE(shared_memory.Create(options));
+  // Clean-up the backing file name immediately, we don't need it.
+  EXPECT_TRUE(shared_memory.Delete(shared_mem_name));
+
+  int shm_fd = shared_memory.handle().fd;
+  struct stat shm_stat;
+  EXPECT_EQ(0, fstat(shm_fd, &shm_stat));
+  // Neither the group, nor others should have been able to open the shared
+  // memory file while its name existed.
+  EXPECT_FALSE(shm_stat.st_mode & S_IRWXO);
+  EXPECT_FALSE(shm_stat.st_mode & S_IRWXG);
+}
+#endif  // !defined(OS_ANDROID)
+
+#endif  // defined(OS_POSIX)
 
 // Map() will return addresses which are aligned to the platform page size, this
 // varies from platform to platform though.  Since we'd like to advertise a
