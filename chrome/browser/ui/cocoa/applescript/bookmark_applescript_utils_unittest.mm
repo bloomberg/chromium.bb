@@ -6,7 +6,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/test/base/model_test_utils.h"
+#include "chrome/browser/bookmarks/bookmark_model_test_utils.h"
 
 @implementation FakeAppDelegate
 
@@ -66,7 +66,7 @@ void BookmarkAppleScriptTest::SetUp() {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string modelString("a f1:[ b d c ] d f2:[ e f g ] h ");
-  model_test_utils::AddNodesFromModelString(model, root, modelString);
+  BookmarkModelTestUtils::AddNodesFromModelString(model, root, modelString);
   bookmarkBar_.reset([[BookmarkFolderAppleScript alloc]
       initWithBookmarkNode:model->bookmark_bar_node()]);
 }

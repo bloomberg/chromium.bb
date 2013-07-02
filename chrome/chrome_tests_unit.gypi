@@ -226,8 +226,6 @@
         'test/base/in_process_browser_test.h',
         'test/base/javascript_test_observer.cc',
         'test/base/javascript_test_observer.h',
-        'test/base/model_test_utils.cc',
-        'test/base/model_test_utils.h',
         'test/base/module_system_test.cc',
         'test/base/module_system_test.h',
         'test/base/profile_mock.cc',
