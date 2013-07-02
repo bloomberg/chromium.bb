@@ -3,10 +3,10 @@
     {{?has_toc}}
     {{#toc_items}}
     <li>
-      <a href=#{{link}}>{{{title}}}</a>
+      <a href="#{{link}}">{{{title}}}</a>
       {{?subheadings}}
       <ol>
-        {{#subheadings}}<li><a href=#{{link}}>{{{title}}}</a></li>{{/}}
+        {{#subheadings}}<li><a href="#{{link}}">{{{title}}}</a></li>{{/}}
       </ol>
       {{/}}
     </li>
