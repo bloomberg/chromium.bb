@@ -550,10 +550,8 @@ DirectoryTree.prototype.selectPath = function(path) {
   if ((this.entry && this.entry.fullPath == path) || this.currentPath_ == path)
     return;
   this.currentPath_ = path;
-  if (DirectoryTreeUtil.shouldHideTree(path)) {
-    this.clearTree_(true);
+  if (DirectoryTreeUtil.shouldHideTree(path))
     return;
-  }
 
   this.selectPathInternal_(path);
 };
