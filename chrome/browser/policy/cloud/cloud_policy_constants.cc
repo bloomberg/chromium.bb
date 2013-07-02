@@ -32,6 +32,8 @@ const char kValueUserAffiliationManaged[] = "managed";
 const char kValueUserAffiliationNone[] = "none";
 
 const char kChromeDevicePolicyType[] = "google/chromeos/device";
+// TODO(joaodasilva): add a new constant for Android here.
+// http://crbug.com/248527
 #if defined(OS_CHROMEOS)
 const char kChromeUserPolicyType[] = "google/chromeos/user";
 #else

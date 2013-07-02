@@ -49,7 +49,7 @@ CloudPolicyClientRegistrationHelper::~CloudPolicyClientRegistrationHelper() {
 }
 
 void CloudPolicyClientRegistrationHelper::StartRegistrationWithLoginToken(
-    const std::string& login_token,
+    const std::string& login_refresh_token,
     const base::Closure& callback) {
   DVLOG(1) << "Starting registration process with login token";
   DCHECK(!client_->is_registered());
@@ -67,7 +67,7 @@ void CloudPolicyClientRegistrationHelper::StartRegistrationWithLoginToken(
   oauth2_access_token_fetcher_->Start(
       gaia_urls->oauth2_chrome_client_id(),
       gaia_urls->oauth2_chrome_client_secret(),
-      login_token,
+      login_refresh_token,
       scopes);
 }
 

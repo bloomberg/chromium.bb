@@ -1,0 +1,53 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_POLICY_CLOUD_USER_POLICY_SIGNIN_SERVICE_ANDROID_H_
+#define CHROME_BROWSER_POLICY_CLOUD_USER_POLICY_SIGNIN_SERVICE_ANDROID_H_
+
+#include <string>
+
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_base.h"
+
+class Profile;
+
+namespace policy {
+
+class CloudPolicyClientRegistrationHelper;
+
+// A specialization of the UserPolicySigninServiceBase for Android.
+class UserPolicySigninService : public UserPolicySigninServiceBase {
+ public:
+  // Creates a UserPolicySigninService associated with the passed |profile|.
+  explicit UserPolicySigninService(Profile* profile);
+  virtual ~UserPolicySigninService();
+
+  // Registers a CloudPolicyClient for fetching policy for |username|.
+  // |services_token| is an OAuth2 token for the userinfo and DM services.
+  // |callback| is invoked once the CloudPolicyClient is ready to fetch policy,
+  // or once it is determined that |username| is not a managed account.
+  void RegisterPolicyClient(const std::string& username,
+                            const std::string& services_token,
+                            const PolicyRegistrationCallback& callback);
+
+ private:
+  void CallPolicyRegistrationCallback(scoped_ptr<CloudPolicyClient> client,
+                                      PolicyRegistrationCallback callback);
+
+  // BrowserContextKeyedService implementation:
+  virtual void Shutdown() OVERRIDE;
+
+  // CloudPolicyService::Observer implementation:
+  virtual void OnInitializationCompleted(CloudPolicyService* service) OVERRIDE;
+
+  scoped_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserPolicySigninService);
+};
+
+}  // namespace policy
+
+#endif  // CHROME_BROWSER_POLICY_CLOUD_USER_POLICY_SIGNIN_SERVICE_ANDROID_H_

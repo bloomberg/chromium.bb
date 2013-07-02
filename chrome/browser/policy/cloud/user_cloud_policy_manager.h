@@ -46,10 +46,6 @@ class UserCloudPolicyManager : public CloudPolicyManager,
   // Virtual for mocking.
   virtual bool IsClientRegistered() const;
 
-  // Register the CloudPolicyClient using the passed OAuth token. This contacts
-  // the DMServer to mint a new DMToken.
-  void RegisterClient(const std::string& access_token);
-
   // Creates a CloudPolicyClient for this client. Used in situations where
   // callers want to create a DMToken without actually initializing the
   // profile's policy infrastructure.

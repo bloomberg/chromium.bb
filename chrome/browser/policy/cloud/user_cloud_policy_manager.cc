@@ -58,13 +58,4 @@ bool UserCloudPolicyManager::IsClientRegistered() const {
   return client() && client()->is_registered();
 }
 
-void UserCloudPolicyManager::RegisterClient(const std::string& access_token) {
-  DCHECK(client()) << "Callers must invoke Initialize() first";
-  if (!client()->is_registered()) {
-    DVLOG(1) << "Registering client with access token: " << access_token;
-    client()->Register(em::DeviceRegisterRequest::BROWSER,
-                       access_token, std::string(), false, std::string());
-  }
-}
-
 }  // namespace policy

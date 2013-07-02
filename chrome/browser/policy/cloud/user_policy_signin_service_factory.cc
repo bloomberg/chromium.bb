@@ -6,13 +6,18 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
-#include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/policy/cloud/user_policy_signin_service_android.h"
+#else
+#include "chrome/browser/policy/cloud/user_policy_signin_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
+#endif
 
 namespace policy {
 
@@ -20,7 +25,9 @@ UserPolicySigninServiceFactory::UserPolicySigninServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "UserPolicySigninService",
         BrowserContextDependencyManager::GetInstance()) {
+#if !defined(OS_ANDROID)
   DependsOn(TokenServiceFactory::GetInstance());
+#endif
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(UserCloudPolicyManagerFactory::GetInstance());
 }

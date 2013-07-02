@@ -41,10 +41,10 @@ class CloudPolicyClientRegistrationHelper : public OAuth2AccessTokenConsumer,
       enterprise_management::DeviceRegisterRequest::Type registration_type);
   virtual ~CloudPolicyClientRegistrationHelper();
 
-  // Starts the client registration process. The |oauth2_login_token| is used
+  // Starts the client registration process. The |login_refresh_token| is used
   // to mint a new token for the userinfo and DM services.
   // |callback| is invoked when the registration is complete.
-  void StartRegistrationWithLoginToken(const std::string& oauth2_login_token,
+  void StartRegistrationWithLoginToken(const std::string& login_refresh_token,
                                        const base::Closure& callback);
 
   // Starts the client registration process. The |services_token| is an OAuth2
