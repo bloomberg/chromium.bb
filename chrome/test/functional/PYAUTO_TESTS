@@ -41,7 +41,6 @@
       'extensions',
       'fullscreen_mouselock',
       'gtalk.test_basic',
-      'imports',
       'infobars',
       'media.media_basic_playback',
       'multiprofile',
@@ -152,12 +151,6 @@
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/113090
       '-extensions.ExtensionsTest.testAllowIncognitoExtension',
-      # Disabled on vista in the actual test. crbug.com/89767
-      # -imports.ImportsTest.testImportFirefoxDataTwice
-      # Disabled on vista in the actual test. crbug.com/89767
-      # -imports.ImportsTest.testFirefoxImportFromPrefs
-      # Disabled on vista in the actual test. crbug.com/89767
-      # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
       # crbug.com/171490
       '-passwords.PasswordTest.testPasswdInfoNotStoredWhenAutocompleteOff',
       # crbug.com/117569
@@ -186,8 +179,6 @@
       # Fails on chrome-mac-10_7-qa only: crbug.com/124886
       '-fullscreen_mouselock.FullscreenMouselockTest.testPrefsForFullscreenExit',
       '-fullscreen_mouselock.FullscreenMouselockTest.testNoMouseLockWhenCancelFS',
-      # crbug.com/114244
-      '-imports.ImportsTest.testImportSafariDataTwice',
       # crbug.com/121484
       '-multiprofile.MultiprofileTest.test20NewProfiles',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
@@ -243,8 +234,6 @@
       # ===========================
       # No codesign verification on ChromeOS.
       '-codesign',
-      # Import tests are invalid on ChromeOS since Chrome is the only browser.
-      '-imports',
       # Sync is already signed in with the login account.
       # So one-click infobar tests do tno apply to chromeos.
       '-infobars.OneClickInfobarTest',
