@@ -284,6 +284,38 @@ bool ShillServiceClientStub::CallActivateCellularModemAndBlock(
   return true;
 }
 
+void ShillServiceClientStub::GetLoadableProfileEntries(
+    const dbus::ObjectPath& service_path,
+    const DictionaryValueCallback& callback) {
+  if (callback.is_null())
+    return;
+
+  // Provide a dictionary with a single { profile_path, service_path } entry
+  // if the Profile property is set, or an empty dictionary.
+  scoped_ptr<base::DictionaryValue> result_properties(
+      new base::DictionaryValue);
+  base::DictionaryValue* service_properties =
+      GetModifiableServiceProperties(service_path.value());
+  if (service_properties) {
+    std::string profile_path;
+    if (service_properties->GetStringWithoutPathExpansion(
+            flimflam::kProfileProperty, &profile_path)) {
+      result_properties->SetStringWithoutPathExpansion(
+          profile_path, service_path.value());
+    }
+  } else {
+    LOG(WARNING) << "Service not in profile: " << service_path.value();
+  }
+
+  DBusMethodCallStatus call_status = DBUS_METHOD_CALL_SUCCESS;
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&PassStubServiceProperties,
+                 callback,
+                 call_status,
+                 base::Owned(result_properties.release())));
+}
+
 ShillServiceClient::TestInterface* ShillServiceClientStub::GetTestInterface() {
   return this;
 }

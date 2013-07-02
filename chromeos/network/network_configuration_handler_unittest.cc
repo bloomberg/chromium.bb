@@ -10,6 +10,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
+#include "chromeos/dbus/mock_shill_profile_client.h"
 #include "chromeos/dbus/mock_shill_service_client.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -68,14 +69,27 @@ void DBusErrorCallback(const std::string& error_name,
       << error_message << ")";
 }
 
+class TestCallback {
+ public:
+  TestCallback() : run_count_(0) {}
+  void Run() {
+    ++run_count_;
+  }
+  int run_count() const { return run_count_; }
+
+ private:
+  int run_count_;
+};
+
 }  // namespace
 
 class NetworkConfigurationHandlerTest : public testing::Test {
  public:
   NetworkConfigurationHandlerTest()
- : mock_manager_client_(NULL),
-   mock_service_client_(NULL),
-   dictionary_value_result_(NULL) {}
+      : mock_manager_client_(NULL),
+        mock_profile_client_(NULL),
+        mock_service_client_(NULL),
+        dictionary_value_result_(NULL) {}
   virtual ~NetworkConfigurationHandlerTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -85,6 +99,8 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
     mock_manager_client_ =
         mock_dbus_thread_manager->mock_shill_manager_client();
+    mock_profile_client_ =
+        mock_dbus_thread_manager->mock_shill_profile_client();
     mock_service_client_ =
         mock_dbus_thread_manager->mock_shill_service_client();
 
@@ -143,14 +159,31 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     callback.Run(dbus::ObjectPath("/service/2"));
   }
 
-  void OnRemove(const dbus::ObjectPath& service_path,
-                    const base::Closure& callback,
-                    const ShillClientHelper::ErrorCallback& error_callback) {
-    callback.Run();
+  void OnGetLoadableProfileEntries(
+      const dbus::ObjectPath& service_path,
+      const ShillClientHelper::DictionaryValueCallback& callback) {
+    base::DictionaryValue entries;
+    entries.SetString("profile1", "entry1");
+    entries.SetString("profile2", "entry2");
+    callback.Run(DBUS_METHOD_CALL_SUCCESS, entries);
+  }
+
+  void OnDeleteEntry(const dbus::ObjectPath& profile_path,
+                     const std::string& entry_path,
+                     const base::Closure& callback,
+                     const ShillClientHelper::ErrorCallback& error_callback) {
+    // Don't run the callback immediately to emulate actual behavior.
+    message_loop_.PostTask(FROM_HERE, callback);
+  }
+
+  bool PendingProfileEntryDeleterForTest(const std::string& service_path) {
+    return network_configuration_handler_->
+        PendingProfileEntryDeleterForTest(service_path);
   }
 
  protected:
   MockShillManagerClient* mock_manager_client_;
+  MockShillProfileClient* mock_profile_client_;
   MockShillServiceClient* mock_service_client_;
   scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
@@ -313,16 +346,25 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
 TEST_F(NetworkConfigurationHandlerTest, RemoveConfiguration) {
   std::string service_path = "/service/1";
 
+  TestCallback test_callback;
   EXPECT_CALL(
       *mock_service_client_,
-      Remove(_, _, _)).WillOnce(
-          Invoke(this,
-                 &NetworkConfigurationHandlerTest::OnRemove));
+      GetLoadableProfileEntries(_, _)).WillOnce(Invoke(
+          this,
+          &NetworkConfigurationHandlerTest::OnGetLoadableProfileEntries));
+  EXPECT_CALL(
+      *mock_profile_client_,
+      DeleteEntry(_, _, _, _)).WillRepeatedly(Invoke(
+          this,
+          &NetworkConfigurationHandlerTest::OnDeleteEntry));
+
   network_configuration_handler_->RemoveConfiguration(
       service_path,
-      base::Bind(&base::DoNothing),
+      base::Bind(&TestCallback::Run, base::Unretained(&test_callback)),
       base::Bind(&ErrorCallback, false, service_path));
   message_loop_.RunUntilIdle();
+  EXPECT_EQ(1, test_callback.run_count());
+  EXPECT_FALSE(PendingProfileEntryDeleterForTest(service_path));
 }
 
 }  // namespace chromeos

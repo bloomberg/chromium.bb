@@ -26,14 +26,16 @@ namespace {
 #endif
 
 // Error callback for GetProperties.
-void OnGetPropertiesError(
+void OnGetDictionaryError(
+    const std::string& method_name,
     const dbus::ObjectPath& service_path,
     const ShillServiceClient::DictionaryValueCallback& callback,
     const std::string& error_name,
     const std::string& error_message) {
   const std::string log_string =
-      "Failed to call org.chromium.shill.Service.GetProperties for: " +
-      service_path.value() + ": " + error_name + ": " + error_message;
+      "Failed to call org.chromium.shill.Service." + method_name +
+      " for: " + service_path.value() + ": " +
+      error_name + ": " + error_message;
 
   // Suppress ERROR messages for UnknownMethod/Object" since this can
   // happen under normal conditions. See crbug.com/130660 and crbug.com/222210.
@@ -76,7 +78,8 @@ class ShillServiceClientImpl : public ShillServiceClient {
     GetHelper(service_path)->CallDictionaryValueMethodWithErrorCallback(
         &method_call,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS),
-        base::Bind(&OnGetPropertiesError, service_path, callback));
+        base::Bind(&OnGetDictionaryError, "GetProperties",
+                   service_path, callback));
   }
 
   virtual void SetProperty(const dbus::ObjectPath& service_path,
@@ -185,6 +188,18 @@ class ShillServiceClientImpl : public ShillServiceClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(carrier);
     return GetHelper(service_path)->CallVoidMethodAndBlock(&method_call);
+  }
+
+  virtual void GetLoadableProfileEntries(
+      const dbus::ObjectPath& service_path,
+      const DictionaryValueCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
+                                 shill::kGetLoadableProfileEntriesFunction);
+    GetHelper(service_path)->CallDictionaryValueMethodWithErrorCallback(
+        &method_call,
+        base::Bind(callback, DBUS_METHOD_CALL_SUCCESS),
+        base::Bind(&OnGetDictionaryError, "GetLoadableProfileEntries",
+                   service_path, callback));
   }
 
   virtual ShillServiceClient::TestInterface* GetTestInterface() OVERRIDE {

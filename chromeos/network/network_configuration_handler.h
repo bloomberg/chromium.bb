@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_CONFIGURATION_HANDLER_H_
 #define CHROMEOS_NETWORK_NETWORK_CONFIGURATION_HANDLER_H_
 
+#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -13,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 
@@ -88,14 +91,12 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
       const network_handler::StringResultCallback& callback,
       const network_handler::ErrorCallback& error_callback);
 
-  // Removes the network |service_path| from the remembered network list in the
-  // active Shill profile. The network may still show up in the visible networks
-  // after this, but no profile configuration will remain. See note on
-  // |callback| and |error_callback|, in class description above.
+  // Removes the network |service_path| from any profiles that include it.
+  // See note on |callback| and |error_callback| in class description above.
   void RemoveConfiguration(
       const std::string& service_path,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const;
+      const network_handler::ErrorCallback& error_callback);
 
   // Construct and initialize an instance for testing.
   static NetworkConfigurationHandler* InitializeForTest(
@@ -104,6 +105,7 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
  protected:
   friend class NetworkHandler;
   friend class NetworkConfigurationHandlerTest;
+  class ProfileEntryDeleter;
 
   NetworkConfigurationHandler();
   void Init(NetworkStateHandler* network_state_handler);
@@ -112,7 +114,19 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
       const network_handler::StringResultCallback& callback,
       const dbus::ObjectPath& service_path);
 
+  // Called from ProfileEntryDeleter instances when they complete causing
+  // this class to delete the instance.
+  void ProfileEntryDeleterCompleted(const std::string& service_path);
+
+  bool PendingProfileEntryDeleterForTest(const std::string& service_path) {
+    return profile_entry_deleters_.count(service_path);
+  }
+
+  // Unowned associated NetworkStateHandler* (global or test instance).
   NetworkStateHandler* network_state_handler_;
+
+  // Map of in-progress deleter instances. Owned by this class.
+  std::map<std::string, ProfileEntryDeleter*> profile_entry_deleters_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationHandler);
 };
