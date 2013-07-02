@@ -31,6 +31,7 @@
 #ifndef RenderFlexibleBox_h
 #define RenderFlexibleBox_h
 
+#include "core/rendering/OrderIterator.h"
 #include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
@@ -72,23 +73,6 @@ private:
     enum PositionedLayoutMode {
         FlipForRowReverse,
         NoFlipForRowReverse,
-    };
-
-    class OrderIterator {
-        WTF_MAKE_NONCOPYABLE(OrderIterator);
-    public:
-        OrderIterator(const RenderFlexibleBox*);
-        void setOrderValues(Vector<int>&);
-        RenderBox* currentChild() const { return m_currentChild; }
-        RenderBox* first();
-        RenderBox* next();
-        void reset();
-
-    private:
-        const RenderFlexibleBox* m_flexibleBox;
-        RenderBox* m_currentChild;
-        Vector<int> m_orderValues;
-        Vector<int>::const_iterator m_orderValuesIterator;
     };
 
     typedef HashMap<const RenderBox*, LayoutUnit> InflexibleFlexItemSize;

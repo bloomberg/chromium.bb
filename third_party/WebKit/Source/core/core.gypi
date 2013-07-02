@@ -1299,6 +1299,8 @@
             'rendering/ImageQualityController.h',
             'rendering/ImageQualityController.cpp',
             'rendering/LayoutState.cpp',
+            'rendering/OrderIterator.cpp',
+            'rendering/OrderIterator.h',
             'rendering/LayoutRepainter.cpp',
             'rendering/PointerEventsHitRules.cpp',
             'rendering/PointerEventsHitRules.h',
