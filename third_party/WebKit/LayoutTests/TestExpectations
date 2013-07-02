@@ -1713,6 +1713,7 @@ crbug.com/245520 [ Mac ] compositing/repaint/transform-style-change.html [ Image
 webkit.org/b/60109 [ Linux Release ] inspector/elements/edit-dom-actions.html [ Slow ]
 crbug.com/247979 [ Win Mac Release ] inspector/elements/edit-dom-actions.html [ Slow Failure Pass ]
 crbug.com/247979 [ Win7 Debug ] inspector/elements/edit-dom-actions.html [ Timeout ]
+crbug.com/247979 [ Mac Linux Debug ] inspector/elements/edit-dom-actions.html [ Pass Timeout ]
 crbug.com/247981 [ Debug ] inspector/profiler/heap-snapshot-get-profile-crash.html [ Pass Crash ]
 crbug.com/247982 [ Win7 Debug ] virtual/deferred/fast/images/exif-orientation-css.html [ ImageOnlyFailure Pass ]
 crbug.com/247982 [ Win7 Debug ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
