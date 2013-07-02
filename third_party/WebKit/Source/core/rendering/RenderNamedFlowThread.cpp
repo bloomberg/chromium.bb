@@ -463,6 +463,9 @@ bool RenderNamedFlowThread::isChildAllowed(RenderObject* child, RenderStyle* sty
 
     ASSERT(child->node()->isElementNode());
     RenderObject* parentRenderer = NodeRenderingContext(child->node()).parentRenderer();
+    if (!parentRenderer)
+        return true;
+
     return parentRenderer->isChildAllowed(child, style);
 }
 

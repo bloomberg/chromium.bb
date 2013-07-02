@@ -66,6 +66,7 @@ public:
 
     void registerNamedFlowContentNode(Node*, RenderNamedFlowThread*);
     void unregisterNamedFlowContentNode(Node*);
+    bool isContentNodeRegisteredWithAnyNamedFlow(const Node*) const;
 
     bool hasFlowThreadsWithAutoLogicalHeightRegions() const { return m_flowThreadsWithAutoLogicalHeightRegions; }
     void incrementFlowThreadsWithAutoLogicalHeightRegions() { ++m_flowThreadsWithAutoLogicalHeightRegions; }
@@ -91,7 +92,7 @@ private:
     unsigned m_flowThreadsWithAutoLogicalHeightRegions;
     OwnPtr<RenderNamedFlowThreadList> m_renderNamedFlowThreadList;
     // maps a content node to its render flow thread.
-    HashMap<Node*, RenderNamedFlowThread*> m_mapNamedFlowContentNodes;
+    HashMap<const Node*, RenderNamedFlowThread*> m_mapNamedFlowContentNodes;
 };
 
 }

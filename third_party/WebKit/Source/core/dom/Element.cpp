@@ -1385,6 +1385,7 @@ void Element::detach(const AttachContext& context)
         data->setIsInCanvasSubtree(false);
         data->resetComputedStyle();
         data->resetDynamicRestyleObservations();
+        data->setIsInsideRegion(false);
     }
     if (ElementShadow* shadow = this->shadow())
         shadow->detach(context);
@@ -2331,6 +2332,19 @@ bool Element::isUnresolvedCustomElement()
     return isCustomElement() && document()->registry()->isUnresolved(this);
 }
 
+void Element::setIsInsideRegion(bool value)
+{
+    if (value == isInsideRegion())
+        return;
+
+    ensureElementRareData()->setIsInsideRegion(value);
+}
+
+bool Element::isInsideRegion() const
+{
+    return hasRareData() ? elementRareData()->isInsideRegion() : false;
+}
+
 void Element::setRegionOversetState(RegionOversetState state)
 {
     ensureElementRareData()->setRegionOversetState(state);
@@ -2627,6 +2641,22 @@ RenderRegion* Element::renderRegion() const
         return toRenderRegion(renderer());
 
     return 0;
+}
+
+bool Element::shouldMoveToFlowThread(RenderStyle* styleToUse) const
+{
+    ASSERT(styleToUse);
+
+    if (FullscreenController::isActiveFullScreenElement(this))
+        return false;
+
+    if (isInShadowTree())
+        return false;
+
+    if (styleToUse->flowThread().isEmpty())
+        return false;
+
+    return !isRegisteredWithNamedFlow();
 }
 
 const AtomicString& Element::webkitRegionOverset() const

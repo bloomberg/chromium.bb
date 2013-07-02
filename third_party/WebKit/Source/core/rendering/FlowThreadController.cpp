@@ -116,7 +116,7 @@ void FlowThreadController::registerNamedFlowContentNode(Node* contentNode, Rende
 void FlowThreadController::unregisterNamedFlowContentNode(Node* contentNode)
 {
     ASSERT(contentNode && contentNode->isElementNode());
-    HashMap<Node*, RenderNamedFlowThread*>::iterator it = m_mapNamedFlowContentNodes.find(contentNode);
+    HashMap<const Node*, RenderNamedFlowThread*>::iterator it = m_mapNamedFlowContentNodes.find(contentNode);
     ASSERT(it != m_mapNamedFlowContentNodes.end());
     ASSERT(it->value);
     ASSERT(it->value->hasContentNode(contentNode));
@@ -223,6 +223,11 @@ void FlowThreadController::updateFlowThreadsIntoConstrainedPhase()
         flowRenderer->setInConstrainedLayoutPhase(true);
         flowRenderer->clearNeedsTwoPhasesLayout();
     }
+}
+
+bool FlowThreadController::isContentNodeRegisteredWithAnyNamedFlow(const Node* contentNode) const
+{
+    return m_mapNamedFlowContentNodes.contains(contentNode);
 }
 
 #ifndef NDEBUG

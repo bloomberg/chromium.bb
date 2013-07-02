@@ -82,6 +82,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/Partitions.h"
+#include "core/rendering/FlowThreadController.h"
 #include "core/rendering/RenderBox.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
@@ -1191,6 +1192,11 @@ bool Node::canStartSelection() const
             return false;
     }
     return parentOrShadowHostNode() ? parentOrShadowHostNode()->canStartSelection() : true;
+}
+
+bool Node::isRegisteredWithNamedFlow() const
+{
+    return document()->renderView()->flowThreadController()->isContentNodeRegisteredWithAnyNamedFlow(this);
 }
 
 Element* Node::shadowHost() const

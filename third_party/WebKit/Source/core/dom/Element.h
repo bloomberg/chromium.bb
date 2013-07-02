@@ -481,6 +481,9 @@ public:
 
     bool isUnresolvedCustomElement();
 
+    void setIsInsideRegion(bool);
+    bool isInsideRegion() const;
+
     void setRegionOversetState(RegionOversetState);
     RegionOversetState regionOversetState() const;
 
@@ -605,6 +608,7 @@ public:
     PassRefPtr<RenderStyle> originalStyleForRenderer();
 
     RenderRegion* renderRegion() const;
+    virtual bool shouldMoveToFlowThread(RenderStyle*) const;
     const AtomicString& webkitRegionOverset() const;
     Vector<RefPtr<Range> > webkitGetRegionFlowRanges() const;
 
