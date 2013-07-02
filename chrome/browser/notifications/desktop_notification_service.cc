@@ -20,6 +20,8 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -50,45 +52,12 @@
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
+using message_center::NotifierId;
 using WebKit::WebNotificationPresenter;
 using WebKit::WebTextDirection;
 using WebKit::WebSecurityOrigin;
 
 const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
-
-namespace {
-
-void ToggleListPrefItem(PrefService* prefs, const char* key,
-                        const std::string& item, bool flag) {
-  ListPrefUpdate update(prefs, key);
-  base::ListValue* const list = update.Get();
-  if (flag) {
-    // AppendIfNotPresent will delete |adding_value| when the same value
-    // already exists.
-    base::StringValue* const adding_value = new base::StringValue(item);
-    list->AppendIfNotPresent(adding_value);
-  } else {
-    base::StringValue removed_value(item);
-    list->Remove(removed_value, NULL);
-  }
-}
-
-void CopySetFromPrefToMemory(PrefService* prefs, const char* key,
-                             std::set<std::string>* dst) {
-  dst->clear();
-  const base::ListValue* pref_list = prefs->GetList(key);
-  for (size_t i = 0; i < pref_list->GetSize(); ++i) {
-    std::string element;
-    if (!pref_list->GetString(i, &element) && element.empty()) {
-      LOG(WARNING) << i << "-th element is not a string for "
-                   << key;
-      continue;
-    }
-    dst->insert(element);
-  }
-}
-
-}  // namespace
 
 // NotificationPermissionInfoBarDelegate --------------------------------------
 
@@ -234,6 +203,8 @@ void DesktopNotificationService::RegisterUserPrefs(
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kMessageCenterDisabledSystemComponentIds,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kMessageCenterEnabledSyncNotifierIds,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static
@@ -351,22 +322,53 @@ DesktopNotificationService::DesktopNotificationService(
     NotificationUIManager* ui_manager)
     : profile_(profile),
       ui_manager_(ui_manager) {
-  OnDisabledExtensionIdsChanged();
-  OnDisabledSystemComponentIdsChanged();
+  OnStringListPrefChanged(
+      prefs::kMessageCenterDisabledExtensionIds, &disabled_extension_ids_);
+  OnStringListPrefChanged(
+      prefs::kMessageCenterDisabledSystemComponentIds,
+      &disabled_system_component_ids_);
+  OnStringListPrefChanged(
+      prefs::kMessageCenterEnabledSyncNotifierIds, &enabled_sync_notifier_ids_);
   disabled_extension_id_pref_.Init(
       prefs::kMessageCenterDisabledExtensionIds,
       profile_->GetPrefs(),
       base::Bind(
-          &DesktopNotificationService::OnDisabledExtensionIdsChanged,
-          base::Unretained(this)));
+          &DesktopNotificationService::OnStringListPrefChanged,
+          base::Unretained(this),
+          base::Unretained(prefs::kMessageCenterDisabledExtensionIds),
+          base::Unretained(&disabled_extension_ids_)));
   disabled_system_component_id_pref_.Init(
       prefs::kMessageCenterDisabledSystemComponentIds,
       profile_->GetPrefs(),
       base::Bind(
-          &DesktopNotificationService::OnDisabledSystemComponentIdsChanged,
-          base::Unretained(this)));
+          &DesktopNotificationService::OnStringListPrefChanged,
+          base::Unretained(this),
+          base::Unretained(prefs::kMessageCenterDisabledSystemComponentIds),
+          base::Unretained(&disabled_system_component_ids_)));
+  enabled_sync_notifier_id_pref_.Init(
+      prefs::kMessageCenterEnabledSyncNotifierIds,
+      profile_->GetPrefs(),
+      base::Bind(
+          &DesktopNotificationService::OnStringListPrefChanged,
+          base::Unretained(this),
+          base::Unretained(prefs::kMessageCenterEnabledSyncNotifierIds),
+          base::Unretained(&enabled_sync_notifier_ids_)));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
+  // TODO(mukai, petewil): invoking notifier_service here directly may cause
+  // crashes on several tests, since notifier_service relies on
+  // NotificationUIManager in g_browser_process. To suppress the crashes,
+  // here checks if it really needs to ping notifier_service here.
+  if (!enabled_sync_notifier_ids_.empty()) {
+    notifier::ChromeNotifierService* notifier_service =
+        notifier::ChromeNotifierServiceFactory::GetInstance()->GetForProfile(
+            profile, Profile::EXPLICIT_ACCESS);
+    for (std::set<std::string>::const_iterator it =
+             enabled_sync_notifier_ids_.begin();
+         it != enabled_sync_notifier_ids_.end(); ++it) {
+      notifier_service->OnSyncedNotificationServiceEnabled(*it, true);
+    }
+  }
 }
 
 DesktopNotificationService::~DesktopNotificationService() {
@@ -534,7 +536,8 @@ string16 DesktopNotificationService::DisplayNameForOriginInProcessId(
           &extensions);
       for (ExtensionSet::const_iterator iter = extensions.begin();
            iter != extensions.end(); ++iter) {
-        if (IsExtensionEnabled((*iter)->id()))
+        NotifierId notifier_id(NotifierId::APPLICATION, (*iter)->id());
+        if (IsNotifierEnabled(notifier_id))
           return UTF8ToUTF16((*iter)->name());
       }
     }
@@ -557,49 +560,88 @@ NotificationUIManager* DesktopNotificationService::GetUIManager() {
   return ui_manager_;
 }
 
-bool DesktopNotificationService::IsExtensionEnabled(const std::string& id) {
-  return disabled_extension_ids_.find(id) == disabled_extension_ids_.end();
+bool DesktopNotificationService::IsNotifierEnabled(
+    const NotifierId& notifier_id) {
+  switch (notifier_id.type) {
+    case NotifierId::APPLICATION:
+      return disabled_extension_ids_.find(notifier_id.id) ==
+          disabled_extension_ids_.end();
+    case NotifierId::WEB_PAGE:
+      return GetContentSetting(notifier_id.url) == CONTENT_SETTING_ALLOW;
+    case NotifierId::SYSTEM_COMPONENT:
+      return disabled_system_component_ids_.find(
+          message_center::ToString(notifier_id.system_component_type)) ==
+          disabled_system_component_ids_.end();
+    case NotifierId::SYNCED_NOTIFICATION_SERVICE:
+      return enabled_sync_notifier_ids_.find(notifier_id.id) !=
+          enabled_sync_notifier_ids_.end();
+  }
+
+  NOTREACHED();
+  return false;
 }
 
-void DesktopNotificationService::SetExtensionEnabled(
-    const std::string& id, bool enabled) {
-  // Do not touch |disabled_extension_ids_|. It will be updated at
-  // OnDisabledExtensionIdsChanged() which will be called when the pref changes.
-  ToggleListPrefItem(
-      profile_->GetPrefs(),
-      prefs::kMessageCenterDisabledExtensionIds,
-      id,
-      !enabled);
+void DesktopNotificationService::SetNotifierEnabled(
+    const NotifierId& notifier_id,
+    bool enabled) {
+  DCHECK_NE(NotifierId::WEB_PAGE, notifier_id.type);
+
+  bool add_new_item = false;
+  const char* pref_name = NULL;
+  scoped_ptr<base::StringValue> id;
+  switch (notifier_id.type) {
+    case NotifierId::APPLICATION:
+      pref_name = prefs::kMessageCenterDisabledExtensionIds;
+      add_new_item = !enabled;
+      id.reset(new base::StringValue(notifier_id.id));
+      break;
+    case NotifierId::SYSTEM_COMPONENT:
+      pref_name = prefs::kMessageCenterDisabledSystemComponentIds;
+      add_new_item = !enabled;
+      id.reset(new base::StringValue(
+          message_center::ToString(notifier_id.system_component_type)));
+      break;
+    case NotifierId::SYNCED_NOTIFICATION_SERVICE:
+      pref_name = prefs::kMessageCenterEnabledSyncNotifierIds;
+      // Adding a new item if |enabled| == true, since synced notification
+      // services are opt-in.
+      add_new_item = enabled;
+      id.reset(new base::StringValue(notifier_id.id));
+      break;
+    default:
+      NOTREACHED();
+  }
+  DCHECK(pref_name != NULL);
+
+  {
+    ListPrefUpdate update(profile_->GetPrefs(), pref_name);
+    base::ListValue* const list = update.Get();
+    if (add_new_item) {
+      // AppendIfNotPresent will delete |adding_value| when the same value
+      // already exists.
+      list->AppendIfNotPresent(id.release());
+    } else {
+      list->Remove(*id, NULL);
+    }
+  }
 }
 
-void DesktopNotificationService::OnDisabledExtensionIdsChanged() {
-  CopySetFromPrefToMemory(profile_->GetPrefs(),
-                          prefs::kMessageCenterDisabledExtensionIds,
-                          &disabled_extension_ids_);
+bool DesktopNotificationService::IsExtensionEnabled(
+    const std::string& extension_id) {
+  return IsNotifierEnabled(NotifierId(NotifierId::APPLICATION, extension_id));
 }
 
-bool DesktopNotificationService::IsSystemComponentEnabled(
-    message_center::Notifier::SystemComponentNotifierType type) {
-  return disabled_system_component_ids_.find(message_center::ToString(type)) ==
-         disabled_system_component_ids_.end();
-}
-
-void DesktopNotificationService::SetSystemComponentEnabled(
-    message_center::Notifier::SystemComponentNotifierType type, bool enabled) {
-  // Do not touch |disabled_extension_ids_|. It will be updated at
-  // OnDisabledExtensionIdsChanged() which will be called when the pref changes.
-  ToggleListPrefItem(
-      profile_->GetPrefs(),
-      prefs::kMessageCenterDisabledSystemComponentIds,
-      message_center::ToString(type),
-      !enabled);
-}
-
-void DesktopNotificationService::OnDisabledSystemComponentIdsChanged() {
-  disabled_system_component_ids_.clear();
-  CopySetFromPrefToMemory(profile_->GetPrefs(),
-                          prefs::kMessageCenterDisabledSystemComponentIds,
-                          &disabled_system_component_ids_);
+void DesktopNotificationService::OnStringListPrefChanged(
+    const char* pref_name, std::set<std::string>* ids_field) {
+  ids_field->clear();
+  const base::ListValue* pref_list = profile_->GetPrefs()->GetList(pref_name);
+  for (size_t i = 0; i < pref_list->GetSize(); ++i) {
+    std::string element;
+    if (pref_list->GetString(i, &element) && !element.empty())
+      ids_field->insert(element);
+    else
+      LOG(WARNING) << i << "-th element is not a string for " << pref_name;
+  }
 }
 
 WebKit::WebNotificationPresenter::Permission
@@ -631,8 +673,9 @@ void DesktopNotificationService::Observe(
 
   extensions::Extension* extension =
       content::Details<extensions::Extension>(details).ptr();
-  if (IsExtensionEnabled(extension->id()))
+  NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
+  if (IsNotifierEnabled(notifier_id))
     return;
 
-  SetExtensionEnabled(extension->id(), true);
+  SetNotifierEnabled(notifier_id, true);
 }

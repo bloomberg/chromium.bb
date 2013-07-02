@@ -276,22 +276,11 @@ bool NotifierSettingsView::IsScrollable() {
   return scroller_->height() < scroller_->contents()->height();
 }
 
-void NotifierSettingsView::UpdateIconImage(const std::string& id,
+void NotifierSettingsView::UpdateIconImage(const NotifierId& notifier_id,
                                            const gfx::Image& icon) {
   for (std::set<NotifierButton*>::iterator iter = buttons_.begin();
        iter != buttons_.end(); ++iter) {
-    if ((*iter)->notifier().id == id) {
-      (*iter)->UpdateIconImage(icon);
-      return;
-    }
-  }
-}
-
-void NotifierSettingsView::UpdateFavicon(const GURL& url,
-                                         const gfx::Image& icon) {
-  for (std::set<NotifierButton*>::iterator iter = buttons_.begin();
-       iter != buttons_.end(); ++iter) {
-    if ((*iter)->notifier().url == url) {
+    if ((*iter)->notifier().notifier_id == notifier_id) {
       (*iter)->UpdateIconImage(icon);
       return;
     }

@@ -17,6 +17,10 @@
 class NotificationUIManager;
 class Profile;
 
+namespace message_center {
+struct Notifier;
+}
+
 namespace notifier {
 
 // The ChromeNotifierService holds notifications which represent the state of
@@ -56,8 +60,18 @@ class ChromeNotifierService : public syncer::SyncableService,
   // The caller must not free it.
   notifier::SyncedNotification* FindNotificationByKey(const std::string& key);
 
+  // Get the list of synced notification services and fill their meta data to
+  // |notifiers|.
+  void GetSyncedNotificationServices(
+      std::vector<message_center::Notifier*>* notifiers);
+
   // Called when we dismiss a notification.
   void MarkNotificationAsDismissed(const std::string& id);
+
+  // Called when a notier is enabled or disabled.
+  void OnSyncedNotificationServiceEnabled(
+      const std::string& notifier_id,
+      bool enabled);
 
   // functions for test
   void AddForTest(scoped_ptr<notifier::SyncedNotification> notification) {

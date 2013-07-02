@@ -106,20 +106,6 @@ using browser_sync::TypedUrlModelAssociator;
 using browser_sync::UIDataTypeController;
 using content::BrowserThread;
 
-namespace {
-// Based on command line switches, make the call to use SyncedNotifications or
-// not.
-// TODO(petewil): Remove this when the SyncedNotifications feature is ready
-// to be turned on by default, and just use a disable switch instead then.
-bool UseSyncedNotifications(CommandLine* command_line) {
-  if (command_line->HasSwitch(switches::kDisableSyncSyncedNotifications))
-    return false;
-  if (command_line->HasSwitch(switches::kEnableSyncSyncedNotifications))
-    return true;
-  return false;
-}
-}  // namespace
-
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     Profile* profile, CommandLine* command_line)
     : profile_(profile),
@@ -283,13 +269,16 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             syncer::APP_SETTINGS, this, profile_, pss));
   }
 
+#if !defined(OS_ANDROID)
   // Synced Notifications sync datatype is disabled by default.
   // TODO(petewil): Switch to enabled by default once datatype support is done.
-  if (UseSyncedNotifications(command_line_)) {
+  if (notifier::ChromeNotifierServiceFactory::UseSyncedNotifications(
+          command_line_)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             syncer::SYNCED_NOTIFICATIONS, this, profile_, pss));
   }
+#endif
 
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
   // Dictionary sync is enabled by default.

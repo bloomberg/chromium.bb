@@ -224,7 +224,9 @@ void MessageCenterNotificationManager::DisableExtension(
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(
           profile_notification->profile());
-  service->SetExtensionEnabled(extension_id, false);
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::APPLICATION, extension_id);
+  service->SetNotifierEnabled(notifier_id, false);
 }
 
 void MessageCenterNotificationManager::DisableNotificationsFromSource(
@@ -243,9 +245,9 @@ void MessageCenterNotificationManager::DisableNotificationsFromSource(
       chrome::kChromeUIScheme) {
     const std::string name =
         profile_notification->notification().origin_url().host();
-    const message_center::Notifier::SystemComponentNotifierType type =
-        message_center::ParseSystemComponentName(name);
-    service->SetSystemComponentEnabled(type, false);
+    message_center::NotifierId notifier_id(
+        message_center::ParseSystemComponentName(name));
+    service->SetNotifierEnabled(notifier_id, false);
   } else {
     service->DenyPermission(profile_notification->notification().origin_url());
   }
@@ -482,8 +484,10 @@ std::string
       DesktopNotificationServiceFactory::GetForProfile(profile());
   for (ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
-    if (desktop_service->IsExtensionEnabled((*iter)->id()))
+    if (desktop_service->IsNotifierEnabled(message_center::NotifierId(
+            message_center::NotifierId::APPLICATION, (*iter)->id()))) {
       return (*iter)->id();
+    }
   }
   return std::string();
 }

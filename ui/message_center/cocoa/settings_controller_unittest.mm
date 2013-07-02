@@ -30,7 +30,8 @@ namespace {
 Notifier* NewNotifier(const std::string& id,
                       const std::string& title,
                       bool enabled) {
-  return new Notifier(id, base::UTF8ToUTF16(title), enabled);
+  NotifierId notifier_id(NotifierId::APPLICATION, id);
+  return new Notifier(notifier_id, base::UTF8ToUTF16(title), enabled);
 }
 
 }  // namespace

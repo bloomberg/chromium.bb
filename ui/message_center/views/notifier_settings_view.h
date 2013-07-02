@@ -26,9 +26,8 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   bool IsScrollable();
 
   // Overridden from NotifierSettingsDelegate:
-  virtual void UpdateIconImage(const std::string& id,
+  virtual void UpdateIconImage(const NotifierId& notifier_id,
                                const gfx::Image& icon) OVERRIDE;
-  virtual void UpdateFavicon(const GURL& url, const gfx::Image& icon) OVERRIDE;
 
   void set_provider(NotifierSettingsProvider* new_provider) {
     provider_ = new_provider;

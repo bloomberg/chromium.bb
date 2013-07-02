@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/i18n/string_compare.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
@@ -33,6 +36,7 @@
 #endif
 
 using message_center::Notifier;
+using message_center::NotifierId;
 
 namespace {
 
@@ -104,16 +108,27 @@ void MessageCenterSettingsController::GetNotifierList(
       continue;
     }
 
-    notifiers->push_back(new message_center::Notifier(
-        extension->id(),
+    NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
+    notifiers->push_back(new Notifier(
+        notifier_id,
         UTF8ToUTF16(extension->name()),
-        notification_service->IsExtensionEnabled(extension->id())));
+        notification_service->IsNotifierEnabled(notifier_id)));
     app_icon_loader_->FetchImage(extension->id());
   }
-  if (comparator)
-    std::sort(notifiers->begin(), notifiers->end(), *comparator);
-  else
-    std::sort(notifiers->begin(), notifiers->end(), SimpleCompareNotifiers);
+
+  if (notifier::ChromeNotifierServiceFactory::UseSyncedNotifications(
+          CommandLine::ForCurrentProcess())) {
+    notifier::ChromeNotifierService* sync_notifier_service =
+        notifier::ChromeNotifierServiceFactory::GetInstance()->GetForProfile(
+            profile, Profile::EXPLICIT_ACCESS);
+    sync_notifier_service->GetSyncedNotificationServices(notifiers);
+
+    if (comparator)
+      std::sort(notifiers->begin(), notifiers->end(), *comparator);
+    else
+      std::sort(notifiers->begin(), notifiers->end(), SimpleCompareNotifiers);
+  }
+
   int app_count = notifiers->size();
 
   ContentSettingsForOneType settings;
@@ -133,10 +148,11 @@ void MessageCenterSettingsController::GetNotifierList(
     std::string url_pattern = iter->primary_pattern.ToString();
     string16 name = UTF8ToUTF16(url_pattern);
     GURL url(url_pattern);
-    notifiers->push_back(new message_center::Notifier(
-        url,
+    NotifierId notifier_id(url);
+    notifiers->push_back(new Notifier(
+        notifier_id,
         name,
-        notification_service->GetContentSetting(url) == CONTENT_SETTING_ALLOW));
+        notification_service->IsNotifierEnabled(notifier_id)));
     patterns_[name] = iter->primary_pattern;
     FaviconService::FaviconForURLParams favicon_params(
         profile, url, chrome::FAVICON | chrome::TOUCH_ICON,
@@ -155,12 +171,11 @@ void MessageCenterSettingsController::GetNotifierList(
 #if defined(OS_CHROMEOS)
   const string16 screenshot_name =
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME);
-  message_center::Notifier* const screenshot_notifier =
-      new message_center::Notifier(
-          message_center::Notifier::SCREENSHOT,
-          screenshot_name,
-          notification_service->IsSystemComponentEnabled(
-              message_center::Notifier::SCREENSHOT));
+  NotifierId screenshot_notifier_id(NotifierId::SCREENSHOT);
+  Notifier* const screenshot_notifier = new Notifier(
+      screenshot_notifier_id,
+      screenshot_name,
+      notification_service->IsNotifierEnabled(screenshot_notifier_id));
   screenshot_notifier->icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_SCREENSHOT_NOTIFICATION_ICON);
@@ -183,41 +198,45 @@ void MessageCenterSettingsController::SetNotifierEnabled(
   DesktopNotificationService* notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
 
-  switch (notifier.type) {
-    case Notifier::APPLICATION:
-      notification_service->SetExtensionEnabled(notifier.id, enabled);
-      break;
-    case Notifier::WEB_PAGE: {
-      ContentSetting default_setting =
-          notification_service->GetDefaultContentSetting(NULL);
-      DCHECK(default_setting == CONTENT_SETTING_ALLOW ||
-             default_setting == CONTENT_SETTING_BLOCK ||
-             default_setting == CONTENT_SETTING_ASK);
-      if ((enabled && default_setting != CONTENT_SETTING_ALLOW) ||
-          (!enabled && default_setting == CONTENT_SETTING_ALLOW)) {
-        if (notifier.url.is_valid()) {
-          if (enabled)
-            notification_service->GrantPermission(notifier.url);
-          else
-            notification_service->DenyPermission(notifier.url);
-        } else {
-          LOG(ERROR) << "Invalid url pattern: " << notifier.url.spec();
-        }
+  if (notifier.notifier_id.type == NotifierId::WEB_PAGE) {
+    // WEB_PAGE notifier cannot handle in DesktopNotificationService
+    // since it has the exact URL pattern.
+    // TODO(mukai): fix this.
+    ContentSetting default_setting =
+        notification_service->GetDefaultContentSetting(NULL);
+    DCHECK(default_setting == CONTENT_SETTING_ALLOW ||
+           default_setting == CONTENT_SETTING_BLOCK ||
+           default_setting == CONTENT_SETTING_ASK);
+    if ((enabled && default_setting != CONTENT_SETTING_ALLOW) ||
+        (!enabled && default_setting == CONTENT_SETTING_ALLOW)) {
+      if (notifier.notifier_id.url.is_valid()) {
+        if (enabled)
+          notification_service->GrantPermission(notifier.notifier_id.url);
+        else
+          notification_service->DenyPermission(notifier.notifier_id.url);
       } else {
-        std::map<string16, ContentSettingsPattern>::const_iterator iter =
-            patterns_.find(notifier.name);
-        if (iter != patterns_.end()) {
-          notification_service->ClearSetting(iter->second);
-        } else {
-          LOG(ERROR) << "Invalid url pattern: " << notifier.url.spec();
-        }
+        LOG(ERROR) << "Invalid url pattern: "
+                   << notifier.notifier_id.url.spec();
       }
-      break;
+    } else {
+      std::map<string16, ContentSettingsPattern>::const_iterator iter =
+          patterns_.find(notifier.name);
+      if (iter != patterns_.end()) {
+        notification_service->ClearSetting(iter->second);
+      } else {
+        LOG(ERROR) << "Invalid url pattern: "
+                   << notifier.notifier_id.url.spec();
+      }
     }
-    case message_center::Notifier::SYSTEM_COMPONENT:
-      notification_service->SetSystemComponentEnabled(
-          notifier.system_component_type, enabled);
-      break;
+  } else {
+    notification_service->SetNotifierEnabled(notifier.notifier_id, enabled);
+    if (notifier.notifier_id.type == NotifierId::SYNCED_NOTIFICATION_SERVICE) {
+      notifier::ChromeNotifierService* notifier_service =
+          notifier::ChromeNotifierServiceFactory::GetInstance()->GetForProfile(
+              profile, Profile::EXPLICIT_ACCESS);
+      notifier_service->OnSyncedNotificationServiceEnabled(
+          notifier.notifier_id.id, enabled);
+    }
   }
 }
 
@@ -232,7 +251,7 @@ void MessageCenterSettingsController::OnFaviconLoaded(
     const chrome::FaviconImageResult& favicon_result) {
   FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
                     observers_,
-                    UpdateFavicon(url, favicon_result.image));
+                    UpdateIconImage(NotifierId(url), favicon_result.image));
 }
 
 
@@ -240,5 +259,6 @@ void MessageCenterSettingsController::SetAppImage(const std::string& id,
                                                   const gfx::ImageSkia& image) {
   FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
                     observers_,
-                    UpdateIconImage(id, gfx::Image(image)));
+                    UpdateIconImage(NotifierId(NotifierId::APPLICATION, id),
+                                    gfx::Image(image)));
 }

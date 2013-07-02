@@ -93,8 +93,8 @@ const int kCorrectedCheckmarkPadding =
 // Sets the icon on the checkbox corresponding to |notifiers_[index]|.
 - (void)setIcon:(NSImage*)icon forNotifierIndex:(size_t)index;
 
-- (void)setIcon:(NSImage*)icon forAppId:(const std::string&)id;
-- (void)setIcon:(NSImage*)icon forURL:(const GURL&)url;
+- (void)setIcon:(NSImage*)icon
+  forNotifierId:(const message_center::NotifierId&)id;
 
 // Returns the NSButton corresponding to the checkbox for |notifiers_[index]|.
 - (NSButton*)buttonForNotifierAtIndex:(size_t)index;
@@ -104,14 +104,9 @@ namespace message_center {
 
 NotifierSettingsObserverMac::~NotifierSettingsObserverMac() {}
 
-void NotifierSettingsObserverMac::UpdateIconImage(const std::string& id,
+void NotifierSettingsObserverMac::UpdateIconImage(const NotifierId& notifier_id,
                                                   const gfx::Image& icon) {
-  [settings_controller_ setIcon:icon.AsNSImage() forAppId:id];
-}
-
-void NotifierSettingsObserverMac::UpdateFavicon(const GURL& url,
-                                                const gfx::Image& icon) {
-  [settings_controller_ setIcon:icon.AsNSImage() forURL:url];
+  [settings_controller_ setIcon:icon.AsNSImage() forNotifierId:notifier_id];
 }
 
 }  // namespace message_center
@@ -285,18 +280,10 @@ void NotifierSettingsObserverMac::UpdateFavicon(const GURL& url,
   [button setNeedsDisplay:YES];
 }
 
-- (void)setIcon:(NSImage*)icon forAppId:(const std::string&)id {
+- (void)setIcon:(NSImage*)icon
+  forNotifierId:(const message_center::NotifierId&)id {
   for (size_t i = 0; i < notifiers_.size(); ++i) {
-    if (notifiers_[i]->id == id) {
-      [self setIcon:icon forNotifierIndex:i];
-      return;
-    }
-  }
-}
-
-- (void)setIcon:(NSImage*)icon forURL:(const GURL&)url {
-  for (size_t i = 0; i < notifiers_.size(); ++i) {
-    if (notifiers_[i]->url == url) {
+    if (notifiers_[i]->notifier_id == id) {
       [self setIcon:icon forNotifierIndex:i];
       return;
     }

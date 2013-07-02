@@ -1241,6 +1241,11 @@ const char kMessageCenterDisabledExtensionIds[] =
 const char kMessageCenterDisabledSystemComponentIds[] =
     "message_center.disabled_system_component_ids";
 
+// List pref containing the system component ids which are allowed to send
+// notifications to the message center.
+extern const char kMessageCenterEnabledSyncNotifierIds[] =
+    "message_center.enabled_sync_notifier_ids";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

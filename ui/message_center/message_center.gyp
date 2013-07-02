@@ -151,6 +151,7 @@
         '../../testing/gtest.gyp:gtest',
         '../ui.gyp:run_ui_unittests',
         '../ui.gyp:ui',
+        '../../url/url.gyp:url_lib',
         'message_center',
         'message_center_test_support',
       ],

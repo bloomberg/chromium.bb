@@ -8,18 +8,28 @@
 
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "grit/ui_strings.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
 
 namespace notifier {
+namespace {
+
+const char kSampleSyncedNotificationServiceId[] = "sample-synced-service";
+
+}
 
 bool ChromeNotifierService::avoid_bitmap_fetching_for_test_ = false;
 
@@ -251,6 +261,27 @@ SyncedNotification* ChromeNotifierService::FindNotificationByKey(
   return NULL;
 }
 
+void ChromeNotifierService::GetSyncedNotificationServices(
+    std::vector<message_center::Notifier*>* notifiers) {
+  // TODO(mukai|petewil): should check the profile's eligibility before adding
+  // the sample app.
+
+  // Currently we just use kSampleSyncedNotificationServiceId as a place holder.
+  // TODO(petewil): Really obtain the list of apps from the server and create
+  // the list of ids here.
+  DesktopNotificationService* desktop_notification_service =
+      DesktopNotificationServiceFactory::GetForProfile(profile_);
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::SYNCED_NOTIFICATION_SERVICE,
+      kSampleSyncedNotificationServiceId);
+  notifiers->push_back(new message_center::Notifier(
+      notifier_id,
+      l10n_util::GetStringUTF16(
+          IDS_MESSAGE_CENTER_SAMPLE_SYNCED_NOTIFICATION_SERVICE_NAME),
+      desktop_notification_service->IsNotifierEnabled(notifier_id)));
+  // TODO(mukai): should add icon for the sample app.
+}
+
 void ChromeNotifierService::MarkNotificationAsDismissed(
     const std::string& key) {
   SyncedNotification* notification = FindNotificationByKey(key);
@@ -289,6 +320,11 @@ void ChromeNotifierService::Add(scoped_ptr<SyncedNotification> notification) {
   // Start the bitmap fetching, Show() will be called when the last bitmap
   // either arrives or times out.
   notification_copy->StartBitmapFetch();
+}
+
+void ChromeNotifierService::OnSyncedNotificationServiceEnabled(
+    const std::string& notifier_id, bool enabled) {
+  // TODO(petewil): start/stop syncing
 }
 
 }  // namespace notifier

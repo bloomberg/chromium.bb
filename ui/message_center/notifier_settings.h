@@ -17,13 +17,20 @@ namespace message_center {
 class NotifierSettingsDelegate;
 class NotifierSettingsProvider;
 
-// The struct to hold the information of notifiers. The information will be
-// used by NotifierSettingsView.
-struct MESSAGE_CENTER_EXPORT Notifier {
+// Brings up the settings dialog and returns a weak reference to the delegate,
+// which is typically the view. If the dialog already exists, it is brought to
+// the front, otherwise it is created.
+MESSAGE_CENTER_EXPORT NotifierSettingsDelegate* ShowSettings(
+    NotifierSettingsProvider* provider,
+    gfx::NativeView context);
+
+// The struct to distinguish the notifiers.
+struct MESSAGE_CENTER_EXPORT NotifierId {
   enum NotifierType {
     APPLICATION,
     WEB_PAGE,
     SYSTEM_COMPONENT,
+    SYNCED_NOTIFICATION_SERVICE,
   };
 
   enum SystemComponentNotifierType {
@@ -31,19 +38,21 @@ struct MESSAGE_CENTER_EXPORT Notifier {
     SCREENSHOT,
   };
 
-  // Constructor for APPLICATION type.
-  Notifier(const std::string& id, const string16& name, bool enabled);
+  // Constructor for APPLICATION and SYNCED_NOTIFICATION_SERVICE type.
+  NotifierId(NotifierType type, const std::string& id);
 
   // Constructor for WEB_PAGE type.
-  Notifier(const GURL& url, const string16& name, bool enabled);
+  explicit NotifierId(const GURL& url);
 
   // Constructor for SYSTEM_COMPONENT type.
-  Notifier(SystemComponentNotifierType type,
-           const string16& name, bool enabled);
+  explicit NotifierId(SystemComponentNotifierType type);
 
-  ~Notifier();
+  bool operator==(const NotifierId& other) const;
 
-  // The identifier of the app notifier. Empty if it's URL_PATTERN.
+  NotifierType type;
+
+  // The identifier of the app notifier. Empty if it's not APPLICATION or
+  // SYNCED_NOTIFICATION_SERVICE.
   std::string id;
 
   // The URL pattern of the notifer.
@@ -51,6 +60,15 @@ struct MESSAGE_CENTER_EXPORT Notifier {
 
   // The type of system component notifier.
   SystemComponentNotifierType system_component_type;
+};
+
+// The struct to hold the information of notifiers. The information will be
+// used by NotifierSettingsView.
+struct MESSAGE_CENTER_EXPORT Notifier {
+  Notifier(const NotifierId& notifier_id, const string16& name, bool enabled);
+  ~Notifier();
+
+  NotifierId notifier_id;
 
   // The human-readable name of the notifier such like the extension name.
   // It can be empty.
@@ -58,9 +76,6 @@ struct MESSAGE_CENTER_EXPORT Notifier {
 
   // True if the source is allowed to send notifications. True is default.
   bool enabled;
-
-  // The type of notifier: Chrome app, URL pattern, or System component.
-  NotifierType type;
 
   // The icon image of the notifier. The extension icon or favicon.
   gfx::Image icon;
@@ -70,8 +85,8 @@ struct MESSAGE_CENTER_EXPORT Notifier {
 };
 
 MESSAGE_CENTER_EXPORT std::string ToString(
-    Notifier::SystemComponentNotifierType type);
-MESSAGE_CENTER_EXPORT Notifier::SystemComponentNotifierType
+    NotifierId::SystemComponentNotifierType type);
+MESSAGE_CENTER_EXPORT NotifierId::SystemComponentNotifierType
     ParseSystemComponentName(const std::string& name);
 
 // An observer class implemented by the view of the NotifierSettings to get
@@ -79,11 +94,8 @@ MESSAGE_CENTER_EXPORT Notifier::SystemComponentNotifierType
 class MESSAGE_CENTER_EXPORT NotifierSettingsObserver {
  public:
   // Called when an icon in the controller has been updated.
-  virtual void UpdateIconImage(const std::string& id,
+  virtual void UpdateIconImage(const NotifierId& notifier_id,
                                const gfx::Image& icon) = 0;
-
-  // Called when the controller detects that a favicon has changed.
-  virtual void UpdateFavicon(const GURL& url, const gfx::Image& icon) = 0;
 };
 
 // A class used by NotifierSettingsView to integrate with a setting system

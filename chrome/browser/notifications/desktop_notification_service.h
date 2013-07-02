@@ -152,21 +152,17 @@ class DesktopNotificationService : public BrowserContextKeyedService,
   WebKit::WebNotificationPresenter::Permission
       HasPermission(const GURL& origin);
 
-  // Returns true if the extension of the specified |id| is allowed to send
+  // Returns true if the notifier with |notifier_id| is allowed to send
   // notifications.
-  bool IsExtensionEnabled(const std::string& id);
+  bool IsNotifierEnabled(const message_center::NotifierId& notifier_id);
 
-  // Updates the availability of the extension to send notifications.
-  void SetExtensionEnabled(const std::string& id, bool enabled);
+  // Updates the availability of the notifier.
+  void SetNotifierEnabled(const message_center::NotifierId& notifier_id,
+                          bool enabled);
 
-  // Returns true if the system component of the specified |id| is allowed to
-  // send notifications.
-  bool IsSystemComponentEnabled(
-      message_center::Notifier::SystemComponentNotifierType type);
-
-  // Updates the availability of the system component to send notifications.
-  void SetSystemComponentEnabled(
-      message_center::Notifier::SystemComponentNotifierType type, bool enabled);
+  // IsExtensionEnabled is obsoleted, do not use this.
+  // TODO(mukai): remove this.
+  bool IsExtensionEnabled(const std::string& extension_id);
 
  private:
   // Takes a notification object and shows it in the UI.
@@ -182,11 +178,18 @@ class DesktopNotificationService : public BrowserContextKeyedService,
 
   NotificationUIManager* GetUIManager();
 
+  // Called when the string list pref has been changed.
+  void OnStringListPrefChanged(
+      const char* pref_name, std::set<std::string>* ids_field);
+
   // Called when the disabled_extension_id pref has been changed.
   void OnDisabledExtensionIdsChanged();
 
   // Called when the disabled_system_component_id pref has been changed.
   void OnDisabledSystemComponentIdsChanged();
+
+  // Called when the enabled_sync_notifier_id pref has been changed.
+  void OnEnabledSyncNotifierIdsChanged();
 
   // content::NotificationObserver override.
   virtual void Observe(int type,
@@ -203,14 +206,20 @@ class DesktopNotificationService : public BrowserContextKeyedService,
   // Prefs listener for disabled_extension_id.
   StringListPrefMember disabled_extension_id_pref_;
 
-  // Prefs listener for disabled_extension_id.
+  // Prefs listener for disabled_system_component_id.
   StringListPrefMember disabled_system_component_id_pref_;
+
+  // Prefs listener for enabled_sync_notifier_id.
+  StringListPrefMember enabled_sync_notifier_id_pref_;
 
   // On-memory data for the availability of extensions.
   std::set<std::string> disabled_extension_ids_;
 
   // On-memory data for the availability of system_component.
   std::set<std::string> disabled_system_component_ids_;
+
+  // On-memory data for the availability of sync notifiers.
+  std::set<std::string> enabled_sync_notifier_ids_;
 
   // Registrar for the other kind of notifications (event signaling).
   content::NotificationRegistrar registrar_;
