@@ -57,107 +57,128 @@ void SVGPreserveAspectRatio::setMeetOrSlice(unsigned short meetOrSlice, Exceptio
     m_meetOrSlice = static_cast<SVGMeetOrSliceType>(meetOrSlice);
 }
 
-void SVGPreserveAspectRatio::parse(const String& value)
-{
-    const UChar* begin = value.bloatedCharacters();
-    parse(begin, begin + value.length(), true);
-}
-
-bool SVGPreserveAspectRatio::parse(const UChar*& currParam, const UChar* end, bool validate)
+template<typename CharType>
+bool SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, const CharType* end, bool validate)
 {
     // FIXME: Rewrite this parser, without gotos!
-    if (!skipOptionalSVGSpaces(currParam, end))
+    if (!skipOptionalSVGSpaces(ptr, end))
         goto bailOut;
 
-    if (*currParam == 'd') {
-        if (!skipString(currParam, end, "defer"))
+    if (*ptr == 'd') {
+        if (!skipString(ptr, end, "defer"))
             goto bailOut;
 
         // FIXME: We just ignore the "defer" here.
-        if (currParam == end)
+        if (ptr == end)
             return true;
 
-        if (!skipOptionalSVGSpaces(currParam, end))
+        if (!skipOptionalSVGSpaces(ptr, end))
             goto bailOut;
     }
 
-    if (*currParam == 'n') {
-        if (!skipString(currParam, end, "none"))
+    if (*ptr == 'n') {
+        if (!skipString(ptr, end, "none"))
             goto bailOut;
         m_align = SVG_PRESERVEASPECTRATIO_NONE;
-        skipOptionalSVGSpaces(currParam, end);
-    } else if (*currParam == 'x') {
-        if ((end - currParam) < 8)
+        skipOptionalSVGSpaces(ptr, end);
+    } else if (*ptr == 'x') {
+        if ((end - ptr) < 8)
             goto bailOut;
-        if (currParam[1] != 'M' || currParam[4] != 'Y' || currParam[5] != 'M')
+        if (ptr[1] != 'M' || ptr[4] != 'Y' || ptr[5] != 'M')
             goto bailOut;
-        if (currParam[2] == 'i') {
-            if (currParam[3] == 'n') {
-                if (currParam[6] == 'i') {
-                    if (currParam[7] == 'n')
+        if (ptr[2] == 'i') {
+            if (ptr[3] == 'n') {
+                if (ptr[6] == 'i') {
+                    if (ptr[7] == 'n')
                         m_align = SVG_PRESERVEASPECTRATIO_XMINYMIN;
-                    else if (currParam[7] == 'd')
+                    else if (ptr[7] == 'd')
                         m_align = SVG_PRESERVEASPECTRATIO_XMINYMID;
                     else
                         goto bailOut;
-                } else if (currParam[6] == 'a' && currParam[7] == 'x')
+                } else if (ptr[6] == 'a' && ptr[7] == 'x')
                      m_align = SVG_PRESERVEASPECTRATIO_XMINYMAX;
                 else
                      goto bailOut;
-             } else if (currParam[3] == 'd') {
-                if (currParam[6] == 'i') {
-                    if (currParam[7] == 'n')
+            } else if (ptr[3] == 'd') {
+                if (ptr[6] == 'i') {
+                    if (ptr[7] == 'n')
                         m_align = SVG_PRESERVEASPECTRATIO_XMIDYMIN;
-                    else if (currParam[7] == 'd')
+                    else if (ptr[7] == 'd')
                         m_align = SVG_PRESERVEASPECTRATIO_XMIDYMID;
                     else
                         goto bailOut;
-                } else if (currParam[6] == 'a' && currParam[7] == 'x')
+                } else if (ptr[6] == 'a' && ptr[7] == 'x')
                     m_align = SVG_PRESERVEASPECTRATIO_XMIDYMAX;
                 else
                     goto bailOut;
             } else
                 goto bailOut;
-        } else if (currParam[2] == 'a' && currParam[3] == 'x') {
-            if (currParam[6] == 'i') {
-                if (currParam[7] == 'n')
+        } else if (ptr[2] == 'a' && ptr[3] == 'x') {
+            if (ptr[6] == 'i') {
+                if (ptr[7] == 'n')
                     m_align = SVG_PRESERVEASPECTRATIO_XMAXYMIN;
-                else if (currParam[7] == 'd')
+                else if (ptr[7] == 'd')
                     m_align = SVG_PRESERVEASPECTRATIO_XMAXYMID;
                 else
                     goto bailOut;
-            } else if (currParam[6] == 'a' && currParam[7] == 'x')
+            } else if (ptr[6] == 'a' && ptr[7] == 'x')
                 m_align = SVG_PRESERVEASPECTRATIO_XMAXYMAX;
             else
                 goto bailOut;
         } else
             goto bailOut;
-        currParam += 8;
-        skipOptionalSVGSpaces(currParam, end);
+        ptr += 8;
+        skipOptionalSVGSpaces(ptr, end);
     } else
         goto bailOut;
 
-    if (currParam < end) {
-        if (*currParam == 'm') {
-            if (!skipString(currParam, end, "meet"))
+    if (ptr < end) {
+        if (*ptr == 'm') {
+            if (!skipString(ptr, end, "meet"))
                 goto bailOut;
-            skipOptionalSVGSpaces(currParam, end);
-        } else if (*currParam == 's') {
-            if (!skipString(currParam, end, "slice"))
+            skipOptionalSVGSpaces(ptr, end);
+        } else if (*ptr == 's') {
+            if (!skipString(ptr, end, "slice"))
                 goto bailOut;
-            skipOptionalSVGSpaces(currParam, end);
+            skipOptionalSVGSpaces(ptr, end);
             if (m_align != SVG_PRESERVEASPECTRATIO_NONE)
                 m_meetOrSlice = SVG_MEETORSLICE_SLICE;
         }
     }
 
-    if (end != currParam && validate) {
+    if (end != ptr && validate) {
 bailOut:
         m_align = SVG_PRESERVEASPECTRATIO_XMIDYMID;
         m_meetOrSlice = SVG_MEETORSLICE_MEET;
         return false;
     }
     return true;
+}
+
+void SVGPreserveAspectRatio::parse(const String& string)
+{
+    if (string.isEmpty()) {
+        const LChar* ptr = 0;
+        parseInternal(ptr, ptr, true);
+    } else if (string.is8Bit()) {
+        const LChar* ptr = string.characters8();
+        const LChar* end = ptr + string.length();
+        parseInternal(ptr, end, true);
+    } else {
+        const UChar* ptr = string.characters16();
+        const UChar* end = ptr + string.length();
+        parseInternal(ptr, end, true);
+    }
+}
+
+bool SVGPreserveAspectRatio::parse(const LChar*& ptr, const LChar* end, bool validate)
+{
+    return parseInternal(ptr, end, validate);
+}
+
+bool SVGPreserveAspectRatio::parse(const UChar*& ptr, const UChar* end, bool validate)
+{
+    return parseInternal(ptr, end, validate);
 }
 
 void SVGPreserveAspectRatio::transformRect(FloatRect& destRect, FloatRect& srcRect)

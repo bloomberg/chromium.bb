@@ -29,7 +29,8 @@
 
 namespace WebCore {
 
-static int parseTransformParamList(const UChar*& ptr, const UChar* end, float* values, int required, int optional)
+template<typename CharType>
+static int parseTransformParamList(const CharType*& ptr, const CharType* end, float* values, int required, int optional)
 {
     int optionalParams = 0, requiredParams = 0;
     
@@ -90,7 +91,8 @@ SVGTransformable::~SVGTransformable()
 {
 }
 
-bool SVGTransformable::parseTransformValue(unsigned type, const UChar*& ptr, const UChar* end, SVGTransform& transform)
+template<typename CharType>
+static bool parseTransformValueInternal(unsigned type, const CharType*& ptr, const CharType* end, SVGTransform& transform)
 {
     if (type == SVGTransform::SVG_TRANSFORM_UNKNOWN)
         return false;
@@ -133,32 +135,43 @@ bool SVGTransformable::parseTransformValue(unsigned type, const UChar*& ptr, con
     return true;
 }
 
-static const UChar skewXDesc[] =  {'s', 'k', 'e', 'w', 'X'};
-static const UChar skewYDesc[] =  {'s', 'k', 'e', 'w', 'Y'};
-static const UChar scaleDesc[] =  {'s', 'c', 'a', 'l', 'e'};
-static const UChar translateDesc[] =  {'t', 'r', 'a', 'n', 's', 'l', 'a', 't', 'e'};
-static const UChar rotateDesc[] =  {'r', 'o', 't', 'a', 't', 'e'};
-static const UChar matrixDesc[] =  {'m', 'a', 't', 'r', 'i', 'x'};
-
-static inline bool parseAndSkipType(const UChar*& currTransform, const UChar* end, unsigned short& type)
+bool SVGTransformable::parseTransformValue(unsigned type, const LChar*& ptr, const LChar* end, SVGTransform& transform)
 {
-    if (currTransform >= end)
+    return parseTransformValueInternal(type, ptr, end, transform);
+}
+
+bool SVGTransformable::parseTransformValue(unsigned type, const UChar*& ptr, const UChar* end, SVGTransform& transform)
+{
+    return parseTransformValueInternal(type, ptr, end, transform);
+}
+
+static const LChar skewXDesc[] =  {'s', 'k', 'e', 'w', 'X'};
+static const LChar skewYDesc[] =  {'s', 'k', 'e', 'w', 'Y'};
+static const LChar scaleDesc[] =  {'s', 'c', 'a', 'l', 'e'};
+static const LChar translateDesc[] =  {'t', 'r', 'a', 'n', 's', 'l', 'a', 't', 'e'};
+static const LChar rotateDesc[] =  {'r', 'o', 't', 'a', 't', 'e'};
+static const LChar matrixDesc[] =  {'m', 'a', 't', 'r', 'i', 'x'};
+
+template<typename CharType>
+static inline bool parseAndSkipType(const CharType*& ptr, const CharType* end, unsigned short& type)
+{
+    if (ptr >= end)
         return false;
 
-    if (*currTransform == 's') {
-        if (skipString(currTransform, end, skewXDesc, WTF_ARRAY_LENGTH(skewXDesc)))
+    if (*ptr == 's') {
+        if (skipString(ptr, end, skewXDesc, WTF_ARRAY_LENGTH(skewXDesc)))
             type = SVGTransform::SVG_TRANSFORM_SKEWX;
-        else if (skipString(currTransform, end, skewYDesc, WTF_ARRAY_LENGTH(skewYDesc)))
+        else if (skipString(ptr, end, skewYDesc, WTF_ARRAY_LENGTH(skewYDesc)))
             type = SVGTransform::SVG_TRANSFORM_SKEWY;
-        else if (skipString(currTransform, end, scaleDesc, WTF_ARRAY_LENGTH(scaleDesc)))
+        else if (skipString(ptr, end, scaleDesc, WTF_ARRAY_LENGTH(scaleDesc)))
             type = SVGTransform::SVG_TRANSFORM_SCALE;
         else
             return false;
-    } else if (skipString(currTransform, end, translateDesc, WTF_ARRAY_LENGTH(translateDesc)))
+    } else if (skipString(ptr, end, translateDesc, WTF_ARRAY_LENGTH(translateDesc)))
         type = SVGTransform::SVG_TRANSFORM_TRANSLATE;
-    else if (skipString(currTransform, end, rotateDesc, WTF_ARRAY_LENGTH(rotateDesc)))
+    else if (skipString(ptr, end, rotateDesc, WTF_ARRAY_LENGTH(rotateDesc)))
         type = SVGTransform::SVG_TRANSFORM_ROTATE;
-    else if (skipString(currTransform, end, matrixDesc, WTF_ARRAY_LENGTH(matrixDesc)))
+    else if (skipString(ptr, end, matrixDesc, WTF_ARRAY_LENGTH(matrixDesc)))
         type = SVGTransform::SVG_TRANSFORM_MATRIX;
     else
         return false;
@@ -166,42 +179,62 @@ static inline bool parseAndSkipType(const UChar*& currTransform, const UChar* en
     return true;
 }
 
-SVGTransform::SVGTransformType SVGTransformable::parseTransformType(const String& typeString)
+SVGTransform::SVGTransformType SVGTransformable::parseTransformType(const String& string)
 {
+    if (string.isEmpty())
+        return SVGTransform::SVG_TRANSFORM_UNKNOWN;
     unsigned short type = SVGTransform::SVG_TRANSFORM_UNKNOWN;
-    const UChar* characters = typeString.bloatedCharacters();
-    parseAndSkipType(characters, characters + typeString.length(), type);
+    if (string.is8Bit()) {
+        const LChar* ptr = string.characters8();
+        const LChar* end = ptr + string.length();
+        parseAndSkipType(ptr, end, type);
+    } else {
+        const UChar* ptr = string.characters16();
+        const UChar* end = ptr + string.length();
+        parseAndSkipType(ptr, end, type);
+    }
     return static_cast<SVGTransform::SVGTransformType>(type);
 }
 
-bool SVGTransformable::parseTransformAttribute(SVGTransformList& list, const UChar*& currTransform, const UChar* end, TransformParsingMode mode)
+template<typename CharType>
+bool SVGTransformable::parseTransformAttributeInternal(SVGTransformList& list, const CharType*& ptr, const CharType* end, TransformParsingMode mode)
 {
     if (mode == ClearList)
         list.clear();
 
     bool delimParsed = false;
-    while (currTransform < end) {
+    while (ptr < end) {
         delimParsed = false;
         unsigned short type = SVGTransform::SVG_TRANSFORM_UNKNOWN;
-        skipOptionalSVGSpaces(currTransform, end);
+        skipOptionalSVGSpaces(ptr, end);
 
-        if (!parseAndSkipType(currTransform, end, type))
+        if (!parseAndSkipType(ptr, end, type))
             return false;
 
         SVGTransform transform;
-        if (!parseTransformValue(type, currTransform, end, transform))
+        if (!parseTransformValue(type, ptr, end, transform))
             return false;
 
         list.append(transform);
-        skipOptionalSVGSpaces(currTransform, end);
-        if (currTransform < end && *currTransform == ',') {
+        skipOptionalSVGSpaces(ptr, end);
+        if (ptr < end && *ptr == ',') {
             delimParsed = true;
-            ++currTransform;
+            ++ptr;
         }
-        skipOptionalSVGSpaces(currTransform, end);
+        skipOptionalSVGSpaces(ptr, end);
     }
 
     return !delimParsed;
+}
+
+bool SVGTransformable::parseTransformAttribute(SVGTransformList& list, const LChar*& ptr, const LChar* end, TransformParsingMode mode)
+{
+    return parseTransformAttributeInternal(list, ptr, end, mode);
+}
+
+bool SVGTransformable::parseTransformAttribute(SVGTransformList& list, const UChar*& ptr, const UChar* end, TransformParsingMode mode)
+{
+    return parseTransformAttributeInternal(list, ptr, end, mode);
 }
 
 }

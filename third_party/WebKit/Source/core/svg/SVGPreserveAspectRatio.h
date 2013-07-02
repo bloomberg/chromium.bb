@@ -68,11 +68,15 @@ public:
                            float physWidth, float physHeight) const;
 
     void parse(const String&);
-    bool parse(const UChar*& currParam, const UChar* end, bool validate);
+    bool parse(const LChar*& ptr, const LChar* end, bool validate);
+    bool parse(const UChar*& ptr, const UChar* end, bool validate);
 
     String valueAsString() const;
 
 private:
+    template<typename CharType>
+    bool parseInternal(const CharType*& ptr, const CharType* end, bool validate);
+
     SVGPreserveAspectRatioType m_align;
     SVGMeetOrSliceType m_meetOrSlice;
 };

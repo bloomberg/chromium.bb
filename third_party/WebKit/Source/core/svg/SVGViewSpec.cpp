@@ -200,98 +200,107 @@ void SVGViewSpec::reset()
     m_viewTargetString = emptyString();
 }
 
-static const UChar svgViewSpec[] = {'s', 'v', 'g', 'V', 'i', 'e', 'w'};
-static const UChar viewBoxSpec[] = {'v', 'i', 'e', 'w', 'B', 'o', 'x'};
-static const UChar preserveAspectRatioSpec[] = {'p', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'A', 's', 'p', 'e', 'c', 't', 'R', 'a', 't', 'i', 'o'};
-static const UChar transformSpec[] = {'t', 'r', 'a', 'n', 's', 'f', 'o', 'r', 'm'};
-static const UChar zoomAndPanSpec[] = {'z', 'o', 'o', 'm', 'A', 'n', 'd', 'P', 'a', 'n'};
-static const UChar viewTargetSpec[] =  {'v', 'i', 'e', 'w', 'T', 'a', 'r', 'g', 'e', 't'};
+static const LChar svgViewSpec[] = {'s', 'v', 'g', 'V', 'i', 'e', 'w'};
+static const LChar viewBoxSpec[] = {'v', 'i', 'e', 'w', 'B', 'o', 'x'};
+static const LChar preserveAspectRatioSpec[] = {'p', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'A', 's', 'p', 'e', 'c', 't', 'R', 'a', 't', 'i', 'o'};
+static const LChar transformSpec[] = {'t', 'r', 'a', 'n', 's', 'f', 'o', 'r', 'm'};
+static const LChar zoomAndPanSpec[] = {'z', 'o', 'o', 'm', 'A', 'n', 'd', 'P', 'a', 'n'};
+static const LChar viewTargetSpec[] =  {'v', 'i', 'e', 'w', 'T', 'a', 'r', 'g', 'e', 't'};
 
-bool SVGViewSpec::parseViewSpec(const String& viewSpec)
+template<typename CharType>
+bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end)
 {
-    const UChar* currViewSpec = viewSpec.bloatedCharacters();
-    const UChar* end = currViewSpec + viewSpec.length();
-
-    if (currViewSpec >= end || !m_contextElement)
+    if (!skipString(ptr, end, svgViewSpec, WTF_ARRAY_LENGTH(svgViewSpec)))
         return false;
 
-    if (!skipString(currViewSpec, end, svgViewSpec, WTF_ARRAY_LENGTH(svgViewSpec)))
+    if (ptr >= end || *ptr != '(')
         return false;
+    ptr++;
 
-    if (currViewSpec >= end || *currViewSpec != '(')
-        return false;
-    currViewSpec++;
-
-    while (currViewSpec < end && *currViewSpec != ')') {
-        if (*currViewSpec == 'v') {
-            if (skipString(currViewSpec, end, viewBoxSpec, WTF_ARRAY_LENGTH(viewBoxSpec))) {
-                if (currViewSpec >= end || *currViewSpec != '(')
+    while (ptr < end && *ptr != ')') {
+        if (*ptr == 'v') {
+            if (skipString(ptr, end, viewBoxSpec, WTF_ARRAY_LENGTH(viewBoxSpec))) {
+                if (ptr >= end || *ptr != '(')
                     return false;
-                currViewSpec++;
+                ptr++;
                 FloatRect viewBox;
-                if (!SVGFitToViewBox::parseViewBox(m_contextElement->document(), currViewSpec, end, viewBox, false))
+                if (!SVGFitToViewBox::parseViewBox(m_contextElement->document(), ptr, end, viewBox, false))
                     return false;
                 setViewBoxBaseValue(viewBox);
-                if (currViewSpec >= end || *currViewSpec != ')')
+                if (ptr >= end || *ptr != ')')
                     return false;
-                currViewSpec++;
-            } else if (skipString(currViewSpec, end, viewTargetSpec, WTF_ARRAY_LENGTH(viewTargetSpec))) {
-                if (currViewSpec >= end || *currViewSpec != '(')
+                ptr++;
+            } else if (skipString(ptr, end, viewTargetSpec, WTF_ARRAY_LENGTH(viewTargetSpec))) {
+                if (ptr >= end || *ptr != '(')
                     return false;
-                const UChar* viewTargetStart = ++currViewSpec;
-                while (currViewSpec < end && *currViewSpec != ')')
-                    currViewSpec++;
-                if (currViewSpec >= end)
+                const CharType* viewTargetStart = ++ptr;
+                while (ptr < end && *ptr != ')')
+                    ptr++;
+                if (ptr >= end)
                     return false;
-                setViewTargetString(String(viewTargetStart, currViewSpec - viewTargetStart));
-                currViewSpec++;
+                setViewTargetString(String(viewTargetStart, ptr - viewTargetStart));
+                ptr++;
             } else
                 return false;
-        } else if (*currViewSpec == 'z') {
-            if (!skipString(currViewSpec, end, zoomAndPanSpec, WTF_ARRAY_LENGTH(zoomAndPanSpec)))
+        } else if (*ptr == 'z') {
+            if (!skipString(ptr, end, zoomAndPanSpec, WTF_ARRAY_LENGTH(zoomAndPanSpec)))
                 return false;
-            if (currViewSpec >= end || *currViewSpec != '(')
+            if (ptr >= end || *ptr != '(')
                 return false;
-            currViewSpec++;
-            if (!parseZoomAndPan(currViewSpec, end, m_zoomAndPan))
+            ptr++;
+            if (!parseZoomAndPan(ptr, end, m_zoomAndPan))
                 return false;
-            if (currViewSpec >= end || *currViewSpec != ')')
+            if (ptr >= end || *ptr != ')')
                 return false;
-            currViewSpec++;
-        } else if (*currViewSpec == 'p') {
-            if (!skipString(currViewSpec, end, preserveAspectRatioSpec, WTF_ARRAY_LENGTH(preserveAspectRatioSpec)))
+            ptr++;
+        } else if (*ptr == 'p') {
+            if (!skipString(ptr, end, preserveAspectRatioSpec, WTF_ARRAY_LENGTH(preserveAspectRatioSpec)))
                 return false;
-            if (currViewSpec >= end || *currViewSpec != '(')
+            if (ptr >= end || *ptr != '(')
                 return false;
-            currViewSpec++;
+            ptr++;
             SVGPreserveAspectRatio preserveAspectRatio;
-            if (!preserveAspectRatio.parse(currViewSpec, end, false))
+            if (!preserveAspectRatio.parse(ptr, end, false))
                 return false;
             setPreserveAspectRatioBaseValue(preserveAspectRatio);
-            if (currViewSpec >= end || *currViewSpec != ')')
+            if (ptr >= end || *ptr != ')')
                 return false;
-            currViewSpec++;
-        } else if (*currViewSpec == 't') {
-            if (!skipString(currViewSpec, end, transformSpec, WTF_ARRAY_LENGTH(transformSpec)))
+            ptr++;
+        } else if (*ptr == 't') {
+            if (!skipString(ptr, end, transformSpec, WTF_ARRAY_LENGTH(transformSpec)))
                 return false;
-            if (currViewSpec >= end || *currViewSpec != '(')
+            if (ptr >= end || *ptr != '(')
                 return false;
-            currViewSpec++;
-            SVGTransformable::parseTransformAttribute(m_transform, currViewSpec, end, SVGTransformable::DoNotClearList);
-            if (currViewSpec >= end || *currViewSpec != ')')
+            ptr++;
+            SVGTransformable::parseTransformAttribute(m_transform, ptr, end, SVGTransformable::DoNotClearList);
+            if (ptr >= end || *ptr != ')')
                 return false;
-            currViewSpec++;
+            ptr++;
         } else
             return false;
 
-        if (currViewSpec < end && *currViewSpec == ';')
-            currViewSpec++;
+        if (ptr < end && *ptr == ';')
+            ptr++;
     }
     
-    if (currViewSpec >= end || *currViewSpec != ')')
+    if (ptr >= end || *ptr != ')')
         return false;
 
     return true;
+}
+
+bool SVGViewSpec::parseViewSpec(const String& spec)
+{
+    if (spec.isEmpty() || !m_contextElement)
+        return false;
+    if (spec.is8Bit()) {
+        const LChar* ptr = spec.characters8();
+        const LChar* end = ptr + spec.length();
+        return parseViewSpecInternal(ptr, end);
+    }
+    const UChar* ptr = spec.characters16();
+    const UChar* end = ptr + spec.length();
+    return parseViewSpecInternal(ptr, end);
 }
 
 }

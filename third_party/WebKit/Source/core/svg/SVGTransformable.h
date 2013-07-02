@@ -39,12 +39,20 @@ public:
 
     virtual ~SVGTransformable();
 
-    static bool parseTransformAttribute(SVGTransformList&, const UChar*& ptr, const UChar* end, TransformParsingMode mode = ClearList);
+    static bool parseTransformAttribute(SVGTransformList&, const LChar*& ptr, const LChar* end, TransformParsingMode = ClearList);
+    static bool parseTransformAttribute(SVGTransformList&, const UChar*& ptr, const UChar* end, TransformParsingMode = ClearList);
+
+    static bool parseTransformValue(unsigned type, const LChar*& ptr, const LChar* end, SVGTransform&);
     static bool parseTransformValue(unsigned type, const UChar*& ptr, const UChar* end, SVGTransform&);
+
     static SVGTransform::SVGTransformType parseTransformType(const String&);
 
     virtual AffineTransform localCoordinateSpaceTransform(SVGLocatable::CTMScope) const { return animatedLocalTransform(); }
     virtual AffineTransform animatedLocalTransform() const = 0;
+
+private:
+    template<typename CharType>
+    static bool parseTransformAttributeInternal(SVGTransformList&, const CharType*& ptr, const CharType* end, TransformParsingMode);
 };
 
 } // namespace WebCore

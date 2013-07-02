@@ -62,6 +62,7 @@ public:
         return false;
     }
 
+    static bool parseViewBox(Document*, const LChar*& start, const LChar* end, FloatRect& viewBox, bool validate = true);
     static bool parseViewBox(Document*, const UChar*& start, const UChar* end, FloatRect& viewBox, bool validate = true);
 
 private:

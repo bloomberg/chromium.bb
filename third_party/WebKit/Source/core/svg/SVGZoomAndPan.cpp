@@ -36,10 +36,11 @@ void SVGZoomAndPan::addSupportedAttributes(HashSet<QualifiedName>& supportedAttr
     supportedAttributes.add(SVGNames::zoomAndPanAttr);
 }
 
-static const UChar disable[] =  {'d', 'i', 's', 'a', 'b', 'l', 'e'};
-static const UChar magnify[] =  {'m', 'a', 'g', 'n', 'i', 'f', 'y'};
+static const LChar disable[] =  {'d', 'i', 's', 'a', 'b', 'l', 'e'};
+static const LChar magnify[] =  {'m', 'a', 'g', 'n', 'i', 'f', 'y'};
 
-bool SVGZoomAndPan::parseZoomAndPan(const UChar*& start, const UChar* end, SVGZoomAndPanType& zoomAndPan)
+template<typename CharType>
+static bool parseZoomAndPanInternal(const CharType*& start, const CharType* end, SVGZoomAndPanType& zoomAndPan)
 {
     if (skipString(start, end, disable, WTF_ARRAY_LENGTH(disable))) {
         zoomAndPan = SVGZoomAndPanDisable;
@@ -50,6 +51,16 @@ bool SVGZoomAndPan::parseZoomAndPan(const UChar*& start, const UChar* end, SVGZo
         return true;
     }
     return false;
+}
+
+bool SVGZoomAndPan::parseZoomAndPan(const LChar*& start, const LChar* end, SVGZoomAndPanType& zoomAndPan)
+{
+    return parseZoomAndPanInternal(start, end, zoomAndPan);
+}
+
+bool SVGZoomAndPan::parseZoomAndPan(const UChar*& start, const UChar* end, SVGZoomAndPanType& zoomAndPan)
+{
+    return parseZoomAndPanInternal(start, end, zoomAndPan);
 }
 
 NO_RETURN_DUE_TO_ASSERT void SVGZoomAndPan::ref()

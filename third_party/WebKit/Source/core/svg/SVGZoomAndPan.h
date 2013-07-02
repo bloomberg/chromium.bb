@@ -55,6 +55,7 @@ public:
         return static_cast<SVGZoomAndPanType>(number);
     }
 
+    static bool parseZoomAndPan(const LChar*& start, const LChar* end, SVGZoomAndPanType&);
     static bool parseZoomAndPan(const UChar*& start, const UChar* end, SVGZoomAndPanType&);
 
     template<class SVGElementTarget>
