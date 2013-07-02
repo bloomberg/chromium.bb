@@ -75,7 +75,9 @@ void MessageCenterSettingsController::GetNotifierList(
     std::vector<Notifier*>* notifiers) {
   DCHECK(notifiers);
   // TODO(mukai): Fix this for multi-profile.
-  Profile* profile = ProfileManager::GetDefaultProfile();
+  // Temporarily use the last used profile to prevent chrome from crashing when
+  // the default profile is not loaded.
+  Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
   DesktopNotificationService* notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
 
