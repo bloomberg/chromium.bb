@@ -49,7 +49,6 @@ const char* WorkerGlobalScopeCrypto::supplementName()
     return "WorkerGlobalScopeCrypto";
 }
 
-// static
 WorkerGlobalScopeCrypto* WorkerGlobalScopeCrypto::from(ScriptExecutionContext* context)
 {
     WorkerGlobalScopeCrypto* supplement = static_cast<WorkerGlobalScopeCrypto*>(Supplement<ScriptExecutionContext>::from(context, supplementName()));
@@ -60,7 +59,6 @@ WorkerGlobalScopeCrypto* WorkerGlobalScopeCrypto::from(ScriptExecutionContext* c
     return supplement;
 }
 
-// static
 WorkerCrypto* WorkerGlobalScopeCrypto::crypto(ScriptExecutionContext* context)
 {
     return WorkerGlobalScopeCrypto::from(context)->crypto();

@@ -29,6 +29,10 @@
 [
     NoInterfaceObject,
 ] interface SubtleCrypto {
-    // TODO(eroman): Work in progress: http://crbug.com/245025.
+    [RaisesException] CryptoOperation encrypt(Dictionary algorithm);
+    [RaisesException] CryptoOperation decrypt(Dictionary algorithm);
+    [RaisesException] CryptoOperation sign(Dictionary algorithm);
+    [RaisesException, ImplementedAs=verifySignature] CryptoOperation verify(Dictionary algorithm);
+    [RaisesException] CryptoOperation digest(Dictionary algorithm);
 };
 

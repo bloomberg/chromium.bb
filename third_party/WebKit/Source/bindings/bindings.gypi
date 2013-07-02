@@ -133,6 +133,7 @@
             'v8/WorkerScriptDebugServer.cpp',
             'v8/WorkerScriptDebugServer.h',
             'v8/WrapperTypeInfo.h',
+            'v8/custom/V8AlgorithmCustom.cpp',
             'v8/custom/V8ArrayBufferCustom.cpp',
             'v8/custom/V8ArrayBufferCustom.h',
             'v8/custom/V8ArrayBufferViewCustom.cpp',

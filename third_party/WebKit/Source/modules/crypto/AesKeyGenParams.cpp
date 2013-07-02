@@ -29,48 +29,21 @@
  */
 
 #include "config.h"
-#include "modules/crypto/DOMWindowCrypto.h"
+#include "modules/crypto/AesKeyGenParams.h"
 
-#include "core/page/DOMWindow.h"
-#include "core/page/Frame.h"
-#include "modules/crypto/Crypto.h"
+#include "public/platform/WebCryptoAlgorithmParams.h"
 
 namespace WebCore {
 
-DOMWindowCrypto::DOMWindowCrypto(DOMWindow* window)
-    : DOMWindowProperty(window->frame())
+unsigned short AesKeyGenParams::length() const
 {
+    return m_algorithm.aesKeyGenParams()->length();
 }
 
-DOMWindowCrypto::~DOMWindowCrypto()
+AesKeyGenParams::AesKeyGenParams(const WebKit::WebCryptoAlgorithm& algorithm)
+    : Algorithm(algorithm)
 {
-}
-
-const char* DOMWindowCrypto::supplementName()
-{
-    return "DOMWindowCrypto";
-}
-
-DOMWindowCrypto* DOMWindowCrypto::from(DOMWindow* window)
-{
-    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(Supplement<DOMWindow>::from(window, supplementName()));
-    if (!supplement) {
-        supplement = new DOMWindowCrypto(window);
-        provideTo(window, supplementName(), adoptPtr(supplement));
-    }
-    return supplement;
-}
-
-Crypto* DOMWindowCrypto::crypto(DOMWindow* window)
-{
-    return DOMWindowCrypto::from(window)->crypto();
-}
-
-Crypto* DOMWindowCrypto::crypto() const
-{
-    if (!m_crypto && frame())
-        m_crypto = Crypto::create();
-    return m_crypto.get();
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

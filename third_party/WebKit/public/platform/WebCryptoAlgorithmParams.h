@@ -28,49 +28,65 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/crypto/DOMWindowCrypto.h"
+#ifndef WebCryptoAlgorithmParams_h
+#define WebCryptoAlgorithmParams_h
 
-#include "core/page/DOMWindow.h"
-#include "core/page/Frame.h"
-#include "modules/crypto/Crypto.h"
+#include "WebCommon.h"
+#include "WebCryptoAlgorithm.h"
+#include "WebVector.h"
 
-namespace WebCore {
+namespace WebKit {
 
-DOMWindowCrypto::DOMWindowCrypto(DOMWindow* window)
-    : DOMWindowProperty(window->frame())
-{
-}
+// NOTE: For documentation on the meaning of each of the parameters see the
+//       Web crypto spec:
+//
+//       http://www.w3.org/TR/WebCryptoAPI
+//
+//       The parameters in the spec have the same name, minus the "WebCrypto" prefix.
 
-DOMWindowCrypto::~DOMWindowCrypto()
-{
-}
-
-const char* DOMWindowCrypto::supplementName()
-{
-    return "DOMWindowCrypto";
-}
-
-DOMWindowCrypto* DOMWindowCrypto::from(DOMWindow* window)
-{
-    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(Supplement<DOMWindow>::from(window, supplementName()));
-    if (!supplement) {
-        supplement = new DOMWindowCrypto(window);
-        provideTo(window, supplementName(), adoptPtr(supplement));
+class WebCryptoAlgorithmParams {
+public:
+    WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsType type)
+        : m_type(type)
+    {
     }
-    return supplement;
-}
 
-Crypto* DOMWindowCrypto::crypto(DOMWindow* window)
-{
-    return DOMWindowCrypto::from(window)->crypto();
-}
+    virtual ~WebCryptoAlgorithmParams() { }
 
-Crypto* DOMWindowCrypto::crypto() const
-{
-    if (!m_crypto && frame())
-        m_crypto = Crypto::create();
-    return m_crypto.get();
-}
+    WebCryptoAlgorithmParamsType type() const { return m_type; }
 
-} // namespace WebCore
+private:
+    WebCryptoAlgorithmParamsType m_type;
+};
+
+class WebCryptoAesCbcParams : public WebCryptoAlgorithmParams {
+public:
+    WebCryptoAesCbcParams(unsigned char* iv, size_t ivSize)
+        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesCbcParams)
+        , m_iv(iv, ivSize)
+    {
+    }
+
+    const WebVector<unsigned char>& iv() const { return m_iv; }
+
+private:
+    const WebVector<unsigned char> m_iv;
+};
+
+class WebCryptoAesKeyGenParams : public WebCryptoAlgorithmParams {
+public:
+    WebCryptoAesKeyGenParams(unsigned short length)
+        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesKeyGenParams)
+        , m_length(length)
+    {
+    }
+
+    unsigned short length() const { return m_length; }
+
+private:
+    const unsigned short m_length;
+};
+
+} // namespace WebKit
+
+#endif

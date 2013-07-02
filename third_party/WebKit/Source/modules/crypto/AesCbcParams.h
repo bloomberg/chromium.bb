@@ -28,49 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/crypto/DOMWindowCrypto.h"
+#ifndef AesCbcParams_h
+#define AesCbcParams_h
 
-#include "core/page/DOMWindow.h"
-#include "core/page/Frame.h"
-#include "modules/crypto/Crypto.h"
+#include "modules/crypto/Algorithm.h"
+#include "wtf/Uint8Array.h"
 
 namespace WebCore {
 
-DOMWindowCrypto::DOMWindowCrypto(DOMWindow* window)
-    : DOMWindowProperty(window->frame())
-{
-}
+typedef int ExceptionCode;
 
-DOMWindowCrypto::~DOMWindowCrypto()
-{
-}
+class AesCbcParams : public Algorithm {
+public:
+    static PassRefPtr<AesCbcParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new AesCbcParams(algorithm)); }
 
-const char* DOMWindowCrypto::supplementName()
-{
-    return "DOMWindowCrypto";
-}
+    Uint8Array* iv();
 
-DOMWindowCrypto* DOMWindowCrypto::from(DOMWindow* window)
-{
-    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(Supplement<DOMWindow>::from(window, supplementName()));
-    if (!supplement) {
-        supplement = new DOMWindowCrypto(window);
-        provideTo(window, supplementName(), adoptPtr(supplement));
-    }
-    return supplement;
-}
+private:
+    explicit AesCbcParams(const WebKit::WebCryptoAlgorithm&);
 
-Crypto* DOMWindowCrypto::crypto(DOMWindow* window)
-{
-    return DOMWindowCrypto::from(window)->crypto();
-}
-
-Crypto* DOMWindowCrypto::crypto() const
-{
-    if (!m_crypto && frame())
-        m_crypto = Crypto::create();
-    return m_crypto.get();
-}
+    RefPtr<Uint8Array> m_iv;
+};
 
 } // namespace WebCore
+
+#endif

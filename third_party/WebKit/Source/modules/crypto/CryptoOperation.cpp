@@ -29,48 +29,43 @@
  */
 
 #include "config.h"
-#include "modules/crypto/DOMWindowCrypto.h"
+#include "modules/crypto/CryptoOperation.h"
 
-#include "core/page/DOMWindow.h"
-#include "core/page/Frame.h"
-#include "modules/crypto/Crypto.h"
+#include "modules/crypto/AesCbcParams.h"
+#include "modules/crypto/AesKeyGenParams.h"
+#include "modules/crypto/Algorithm.h"
 
 namespace WebCore {
 
-DOMWindowCrypto::DOMWindowCrypto(DOMWindow* window)
-    : DOMWindowProperty(window->frame())
-{
-}
+namespace {
 
-DOMWindowCrypto::~DOMWindowCrypto()
+PassRefPtr<Algorithm> createAlgorithm(const WebKit::WebCryptoAlgorithm& algorithm)
 {
-}
-
-const char* DOMWindowCrypto::supplementName()
-{
-    return "DOMWindowCrypto";
-}
-
-DOMWindowCrypto* DOMWindowCrypto::from(DOMWindow* window)
-{
-    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(Supplement<DOMWindow>::from(window, supplementName()));
-    if (!supplement) {
-        supplement = new DOMWindowCrypto(window);
-        provideTo(window, supplementName(), adoptPtr(supplement));
+    switch (algorithm.paramsType()) {
+    case WebKit::WebCryptoAlgorithmParamsTypeNone:
+        return Algorithm::create(algorithm);
+    case WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams:
+        return AesCbcParams::create(algorithm);
+    case WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
+        return AesKeyGenParams::create(algorithm);
     }
-    return supplement;
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
-Crypto* DOMWindowCrypto::crypto(DOMWindow* window)
+} // namespace
+
+CryptoOperation::CryptoOperation(const WebKit::WebCryptoAlgorithm& algorithm)
+    : m_algorithm(algorithm)
 {
-    return DOMWindowCrypto::from(window)->crypto();
+    ScriptWrappable::init(this);
 }
 
-Crypto* DOMWindowCrypto::crypto() const
+Algorithm* CryptoOperation::algorithm()
 {
-    if (!m_crypto && frame())
-        m_crypto = Crypto::create();
-    return m_crypto.get();
+    if (!m_algorithmNode)
+        m_algorithmNode = createAlgorithm(m_algorithm);
+    return m_algorithmNode.get();
 }
 
 } // namespace WebCore

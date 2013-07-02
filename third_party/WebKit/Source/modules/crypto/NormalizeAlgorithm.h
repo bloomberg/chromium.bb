@@ -28,49 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/crypto/DOMWindowCrypto.h"
+#ifndef NormalizeAlgorithm_h
+#define NormalizeAlgorithm_h
 
-#include "core/page/DOMWindow.h"
-#include "core/page/Frame.h"
-#include "modules/crypto/Crypto.h"
+#include "wtf/Assertions.h"
+
+namespace WebKit { class WebCryptoAlgorithm; }
 
 namespace WebCore {
 
-DOMWindowCrypto::DOMWindowCrypto(DOMWindow* window)
-    : DOMWindowProperty(window->frame())
-{
-}
+class Dictionary;
 
-DOMWindowCrypto::~DOMWindowCrypto()
-{
-}
+typedef int ExceptionCode;
 
-const char* DOMWindowCrypto::supplementName()
-{
-    return "DOMWindowCrypto";
-}
+enum AlgorithmOperation {
+    Encrypt,
+    Decrypt,
+    Sign,
+    Verify,
+    Digest,
+    GenerateKey,
+    DeriveKey,
+    WrapKey,
+    UnwrapKey,
+    // <---- End of list
+    NumberOfAlgorithmOperations,
+};
 
-DOMWindowCrypto* DOMWindowCrypto::from(DOMWindow* window)
-{
-    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(Supplement<DOMWindow>::from(window, supplementName()));
-    if (!supplement) {
-        supplement = new DOMWindowCrypto(window);
-        provideTo(window, supplementName(), adoptPtr(supplement));
-    }
-    return supplement;
-}
-
-Crypto* DOMWindowCrypto::crypto(DOMWindow* window)
-{
-    return DOMWindowCrypto::from(window)->crypto();
-}
-
-Crypto* DOMWindowCrypto::crypto() const
-{
-    if (!m_crypto && frame())
-        m_crypto = Crypto::create();
-    return m_crypto.get();
-}
+// Normalizes an algorithm identifier (dictionary) into a WebCryptoAlgorithm. If
+// normalization fails then returns false and sets |ec|.
+bool normalizeAlgorithm(const Dictionary&, AlgorithmOperation, WebKit::WebCryptoAlgorithm&, ExceptionCode&) WARN_UNUSED_RETURN;
 
 } // namespace WebCore
+
+#endif

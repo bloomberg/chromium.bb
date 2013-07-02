@@ -28,49 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/crypto/DOMWindowCrypto.h"
+#ifndef AesKeyGenParams_h
+#define AesKeyGenParams_h
 
-#include "core/page/DOMWindow.h"
-#include "core/page/Frame.h"
-#include "modules/crypto/Crypto.h"
+#include "modules/crypto/Algorithm.h"
+#include "public/platform/WebCryptoAlgorithm.h"
 
 namespace WebCore {
 
-DOMWindowCrypto::DOMWindowCrypto(DOMWindow* window)
-    : DOMWindowProperty(window->frame())
-{
-}
+typedef int ExceptionCode;
 
-DOMWindowCrypto::~DOMWindowCrypto()
-{
-}
+class AesKeyGenParams : public Algorithm {
+public:
+    static PassRefPtr<AesKeyGenParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new AesKeyGenParams(algorithm)); }
 
-const char* DOMWindowCrypto::supplementName()
-{
-    return "DOMWindowCrypto";
-}
+    unsigned short length() const;
 
-DOMWindowCrypto* DOMWindowCrypto::from(DOMWindow* window)
-{
-    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(Supplement<DOMWindow>::from(window, supplementName()));
-    if (!supplement) {
-        supplement = new DOMWindowCrypto(window);
-        provideTo(window, supplementName(), adoptPtr(supplement));
-    }
-    return supplement;
-}
-
-Crypto* DOMWindowCrypto::crypto(DOMWindow* window)
-{
-    return DOMWindowCrypto::from(window)->crypto();
-}
-
-Crypto* DOMWindowCrypto::crypto() const
-{
-    if (!m_crypto && frame())
-        m_crypto = Crypto::create();
-    return m_crypto.get();
-}
+private:
+    explicit AesKeyGenParams(const WebKit::WebCryptoAlgorithm&);
+};
 
 } // namespace WebCore
+
+#endif

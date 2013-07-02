@@ -73,6 +73,12 @@ public:
         initialize(size);
     }
 
+    template <typename U>
+    WebVector(const U* values, size_t size)
+    {
+        initializeFrom(values, size);
+    }
+
     WebVector(const WebVector<T>& other)
     {
         initializeFrom(other.m_ptr, other.m_size);

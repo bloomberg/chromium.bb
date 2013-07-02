@@ -31,6 +31,9 @@
 #include "modules/crypto/SubtleCrypto.h"
 
 #include "core/dom/ExceptionCode.h"
+#include "modules/crypto/CryptoOperation.h"
+#include "modules/crypto/NormalizeAlgorithm.h"
+#include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 
 namespace WebCore {
@@ -40,4 +43,44 @@ SubtleCrypto::SubtleCrypto()
     ScriptWrappable::init(this);
 }
 
+PassRefPtr<CryptoOperation> SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+{
+    WebKit::WebCryptoAlgorithm algorithm;
+    if (!normalizeAlgorithm(rawAlgorithm, Encrypt, algorithm, ec))
+        return 0;
+    return CryptoOperation::create(algorithm);
 }
+
+PassRefPtr<CryptoOperation> SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+{
+    WebKit::WebCryptoAlgorithm algorithm;
+    if (!normalizeAlgorithm(rawAlgorithm, Decrypt, algorithm, ec))
+        return 0;
+    return CryptoOperation::create(algorithm);
+}
+
+PassRefPtr<CryptoOperation> SubtleCrypto::sign(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+{
+    WebKit::WebCryptoAlgorithm algorithm;
+    if (!normalizeAlgorithm(rawAlgorithm, Sign, algorithm, ec))
+        return 0;
+    return CryptoOperation::create(algorithm);
+}
+
+PassRefPtr<CryptoOperation> SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+{
+    WebKit::WebCryptoAlgorithm algorithm;
+    if (!normalizeAlgorithm(rawAlgorithm, Verify, algorithm, ec))
+        return 0;
+    return CryptoOperation::create(algorithm);
+}
+
+PassRefPtr<CryptoOperation> SubtleCrypto::digest(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+{
+    WebKit::WebCryptoAlgorithm algorithm;
+    if (!normalizeAlgorithm(rawAlgorithm, Digest, algorithm, ec))
+        return 0;
+    return CryptoOperation::create(algorithm);
+}
+
+} // namespace WebCore

@@ -29,48 +29,30 @@
  */
 
 #include "config.h"
-#include "modules/crypto/DOMWindowCrypto.h"
+#include "modules/crypto/Algorithm.h"
 
-#include "core/page/DOMWindow.h"
-#include "core/page/Frame.h"
-#include "modules/crypto/Crypto.h"
+#include "V8AesCbcParams.h"
+#include "V8AesKeyGenParams.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 
-DOMWindowCrypto::DOMWindowCrypto(DOMWindow* window)
-    : DOMWindowProperty(window->frame())
+v8::Handle<v8::Object> wrap(Algorithm* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-}
+    ASSERT(impl);
 
-DOMWindowCrypto::~DOMWindowCrypto()
-{
-}
-
-const char* DOMWindowCrypto::supplementName()
-{
-    return "DOMWindowCrypto";
-}
-
-DOMWindowCrypto* DOMWindowCrypto::from(DOMWindow* window)
-{
-    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(Supplement<DOMWindow>::from(window, supplementName()));
-    if (!supplement) {
-        supplement = new DOMWindowCrypto(window);
-        provideTo(window, supplementName(), adoptPtr(supplement));
+    // Wrap as the more derived type.
+    switch (impl->type()) {
+    case WebKit::WebCryptoAlgorithmParamsTypeNone:
+        return V8Algorithm::createWrapper(impl, creationContext, isolate);
+    case WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams:
+        return wrap(static_cast<AesCbcParams*>(impl), creationContext, isolate);
+    case WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
+        return wrap(static_cast<AesKeyGenParams*>(impl), creationContext, isolate);
     }
-    return supplement;
-}
 
-Crypto* DOMWindowCrypto::crypto(DOMWindow* window)
-{
-    return DOMWindowCrypto::from(window)->crypto();
-}
-
-Crypto* DOMWindowCrypto::crypto() const
-{
-    if (!m_crypto && frame())
-        m_crypto = Crypto::create();
-    return m_crypto.get();
+    ASSERT_NOT_REACHED();
+    return v8::Handle<v8::Object>();
 }
 
 } // namespace WebCore

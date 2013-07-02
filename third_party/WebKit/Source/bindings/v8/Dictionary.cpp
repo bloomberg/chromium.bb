@@ -327,6 +327,18 @@ bool Dictionary::get(const String& key, RefPtr<Uint8Array>& value) const
     return true;
 }
 
+bool Dictionary::get(const String& key, RefPtr<ArrayBufferView>& value) const
+{
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return false;
+
+    value = 0;
+    if (V8ArrayBufferView::HasInstance(v8Value, m_isolate, worldType(m_isolate)))
+        value = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(v8Value));
+    return true;
+}
+
 bool Dictionary::get(const String& key, RefPtr<MIDIPort>& value) const
 {
     v8::Local<v8::Value> v8Value;

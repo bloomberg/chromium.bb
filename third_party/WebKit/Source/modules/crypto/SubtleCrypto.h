@@ -36,16 +36,26 @@
 
 namespace WebCore {
 
+class CryptoOperation;
+class Dictionary;
+
 typedef int ExceptionCode;
 
 class SubtleCrypto : public ScriptWrappable, public RefCounted<SubtleCrypto> {
 public:
     static PassRefPtr<SubtleCrypto> create() { return adoptRef(new SubtleCrypto()); }
 
+    PassRefPtr<CryptoOperation> encrypt(const Dictionary&, ExceptionCode&);
+    PassRefPtr<CryptoOperation> decrypt(const Dictionary&, ExceptionCode&);
+    PassRefPtr<CryptoOperation> sign(const Dictionary&, ExceptionCode&);
+    // Note that this is not named "verify" because when compiling on Mac that expands to a macro and breaks.
+    PassRefPtr<CryptoOperation> verifySignature(const Dictionary&, ExceptionCode&);
+    PassRefPtr<CryptoOperation> digest(const Dictionary&, ExceptionCode&);
+
 private:
     SubtleCrypto();
 };
 
-}
+} // namespace WebCore
 
 #endif
