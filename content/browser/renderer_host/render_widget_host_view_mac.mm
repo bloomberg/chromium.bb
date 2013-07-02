@@ -2361,11 +2361,6 @@ void RenderWidgetHostViewMac::FrameSwapped() {
   }
 }
 
-- (void)viewDidMoveToSuperview {
-  if ([[self superview] wantsLayer])
-    renderWidgetHostView_->EnableCoreAnimation();
-}
-
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {
   NSWindow* oldWindow = [self window];
 
@@ -2373,6 +2368,13 @@ void RenderWidgetHostViewMac::FrameSwapped() {
   // prevents a flash when the current tab is closed.
   if (!renderWidgetHostView_->use_core_animation_)
     [oldWindow disableScreenUpdatesUntilFlush];
+
+  // If the new window for this view is using CoreAnimation then enable
+  // CoreAnimation on this view.
+  if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED_LAZY &&
+      [[newWindow contentView] wantsLayer]) {
+    renderWidgetHostView_->EnableCoreAnimation();
+  }
 
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
