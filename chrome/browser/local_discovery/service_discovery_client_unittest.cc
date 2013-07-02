@@ -151,6 +151,7 @@ class ServiceDiscoveryTest : public ::testing::Test {
             scoped_ptr<net::MDnsConnection::SocketFactory>(
                 socket_factory_)) {
     net::MDnsClient::SetInstance(&mdns_client_);
+    mdns_client_.StartListening();
   }
 
   virtual ~ServiceDiscoveryTest() {

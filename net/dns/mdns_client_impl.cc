@@ -434,40 +434,27 @@ void MDnsClientImpl::Core::QueryCache(
 
 MDnsClientImpl::MDnsClientImpl(
     scoped_ptr<MDnsConnection::SocketFactory> socket_factory)
-    : listen_refs_(0), socket_factory_(socket_factory.Pass()) {
+    : socket_factory_(socket_factory.Pass()) {
 }
 
 MDnsClientImpl::~MDnsClientImpl() {
 }
 
-bool MDnsClientImpl::AddListenRef() {
-  if (!core_.get()) {
-    core_.reset(new Core(this, socket_factory_.get()));
-    if (!core_->Init()) {
-      core_.reset();
-      return false;
-    }
+bool MDnsClientImpl::StartListening() {
+  DCHECK(!core_.get());
+  core_.reset(new Core(this, socket_factory_.get()));
+  if (!core_->Init()) {
+    core_.reset();
+    return false;
   }
-  listen_refs_++;
   return true;
 }
 
-void MDnsClientImpl::SubtractListenRef() {
-  listen_refs_--;
-  if (listen_refs_ == 0) {
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &MDnsClientImpl::Shutdown, base::Unretained(this)));
-  }
+void MDnsClientImpl::StopListening() {
+  core_.reset();
 }
 
-void MDnsClientImpl::Shutdown() {
-  // We need to check that new listeners haven't been created.
-  if (listen_refs_ == 0) {
-    core_.reset();
-  }
-}
-
-bool MDnsClientImpl::IsListeningForTests() {
+bool MDnsClientImpl::IsListening() const {
   return core_.get() != NULL;
 }
 
@@ -500,7 +487,6 @@ MDnsListenerImpl::MDnsListenerImpl(
 bool MDnsListenerImpl::Start() {
   DCHECK(!started_);
 
-  if (!client_->AddListenRef()) return false;
   started_ = true;
 
   DCHECK(client_->core());
@@ -513,7 +499,6 @@ MDnsListenerImpl::~MDnsListenerImpl() {
   if (started_) {
     DCHECK(client_->core());
     client_->core()->RemoveListener(this);
-    client_->SubtractListenRef();
   }
 }
 

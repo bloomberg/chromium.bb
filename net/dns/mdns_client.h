@@ -143,6 +143,13 @@ class NET_EXPORT MDnsClient {
       int flags,
       const MDnsTransaction::ResultCallback& callback) = 0;
 
+  virtual bool StartListening() = 0;
+
+  // Do not call this inside callbacks from related MDnsListener and
+  // MDnsTransaction objects.
+  virtual void StopListening() = 0;
+  virtual bool IsListening() const = 0;
+
   // Lazily create and return static instance for MDnsClient.
   static MDnsClient* GetInstance();
 

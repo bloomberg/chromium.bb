@@ -181,24 +181,14 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
       int flags,
       const MDnsTransaction::ResultCallback& callback) OVERRIDE;
 
-  // Returns true when the client is listening for network packets.
-  bool IsListeningForTests();
-
-  bool AddListenRef();
-  void SubtractListenRef();
+  virtual bool StartListening() OVERRIDE;
+  virtual void StopListening() OVERRIDE;
+  virtual bool IsListening() const OVERRIDE;
 
   Core* core() { return core_.get(); }
 
  private:
-  // This method causes the client to stop listening for packets. The
-  // call for it is deferred through the message loop after the last
-  // listener is removed. If another listener is added after a
-  // shutdown is scheduled but before it actually runs, the shutdown
-  // will be canceled.
-  void Shutdown();
-
   scoped_ptr<Core> core_;
-  int listen_refs_;
 
   scoped_ptr<MDnsConnection::SocketFactory> socket_factory_;
 

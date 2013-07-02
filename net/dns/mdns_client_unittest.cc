@@ -347,6 +347,7 @@ class MDnsTest : public ::testing::Test {
  public:
   MDnsTest();
   virtual ~MDnsTest();
+  virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
   void DeleteTransaction();
   void DeleteBothListeners();
@@ -393,12 +394,11 @@ MDnsTest::MDnsTest() {
 MDnsTest::~MDnsTest() {
 }
 
+void MDnsTest::SetUp() {
+  test_client_->StartListening();
+}
+
 void MDnsTest::TearDown() {
-  base::MessageLoop::current()->RunUntilIdle();
-
-  ASSERT_FALSE(test_client_->IsListeningForTests());
-
-  base::MessageLoop::current()->AssertIdle();
 }
 
 void MDnsTest::SimulatePacketReceive(const char* packet, unsigned size) {
@@ -448,8 +448,6 @@ TEST_F(MDnsTest, PassiveListeners) {
   ASSERT_TRUE(listener_privet->Start());
   ASSERT_TRUE(listener_printer->Start());
 
-  ASSERT_TRUE(test_client_->IsListeningForTests());
-
   // Send the same packet twice to ensure no records are double-counted.
 
   EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
@@ -476,8 +474,6 @@ TEST_F(MDnsTest, PassiveListeners) {
 
   listener_privet.reset();
   listener_printer.reset();
-
-  ASSERT_TRUE(test_client_->IsListeningForTests());
 }
 
 TEST_F(MDnsTest, PassiveListenersCacheCleanup) {
@@ -490,8 +486,6 @@ TEST_F(MDnsTest, PassiveListenersCacheCleanup) {
       dns_protocol::kTypePTR, "_privet._tcp.local", &delegate_privet);
 
   ASSERT_TRUE(listener_privet->Start());
-
-  ASSERT_TRUE(test_client_->IsListeningForTests());
 
   EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
       .Times(Exactly(1))
@@ -526,8 +520,6 @@ TEST_F(MDnsTest, MalformedPacket) {
       dns_protocol::kTypePTR, "_printer._tcp.local", &delegate_printer);
 
   ASSERT_TRUE(listener_printer->Start());
-
-  ASSERT_TRUE(test_client_->IsListeningForTests());
 
   EXPECT_CALL(delegate_printer, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
       .Times(Exactly(1))
@@ -565,8 +557,6 @@ TEST_F(MDnsTest, TransactionWithEmptyCache) {
 
   ASSERT_TRUE(transaction_privet->Start());
 
-  EXPECT_TRUE(test_client_->IsListeningForTests());
-
   PtrRecordCopyContainer record_privet;
 
   EXPECT_CALL(*this, MockableRecordCallback(MDnsTransaction::RESULT_RECORD, _))
@@ -594,8 +584,6 @@ TEST_F(MDnsTest, TransactionCacheOnlyNoResult) {
       .Times(Exactly(1));
 
   ASSERT_TRUE(transaction_privet->Start());
-
-  EXPECT_FALSE(test_client_->IsListeningForTests());
 }
 
 TEST_F(MDnsTest, TransactionWithCache) {
@@ -606,8 +594,6 @@ TEST_F(MDnsTest, TransactionWithCache) {
       &delegate_irrelevant);
 
   ASSERT_TRUE(listener_irrelevant->Start());
-
-  EXPECT_TRUE(test_client_->IsListeningForTests());
 
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
 
@@ -644,8 +630,6 @@ TEST_F(MDnsTest, AdditionalRecords) {
 
   ASSERT_TRUE(listener_privet->Start());
 
-  ASSERT_TRUE(test_client_->IsListeningForTests());
-
   EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
       .Times(Exactly(1))
       .WillOnce(Invoke(
@@ -673,8 +657,6 @@ TEST_F(MDnsTest, TransactionTimeout) {
 
   ASSERT_TRUE(transaction_privet->Start());
 
-  EXPECT_TRUE(test_client_->IsListeningForTests());
-
   EXPECT_CALL(*this,
               MockableRecordCallback(MDnsTransaction::RESULT_NO_RESULTS, NULL))
       .Times(Exactly(1))
@@ -695,8 +677,6 @@ TEST_F(MDnsTest, TransactionMultipleRecords) {
                      base::Unretained(this)));
 
   ASSERT_TRUE(transaction_privet->Start());
-
-  EXPECT_TRUE(test_client_->IsListeningForTests());
 
   PtrRecordCopyContainer record_privet;
   PtrRecordCopyContainer record_privet2;
@@ -736,8 +716,6 @@ TEST_F(MDnsTest, TransactionReentrantDelete) {
 
   ASSERT_TRUE(transaction_->Start());
 
-  EXPECT_TRUE(test_client_->IsListeningForTests());
-
   EXPECT_CALL(*this, MockableRecordCallback(MDnsTransaction::RESULT_NO_RESULTS,
                                             NULL))
       .Times(Exactly(1))
@@ -755,8 +733,6 @@ TEST_F(MDnsTest, TransactionReentrantDeleteFromCache) {
       dns_protocol::kTypeA, "codereview.chromium.local",
       &delegate_irrelevant);
   ASSERT_TRUE(listener_irrelevant->Start());
-
-  ASSERT_TRUE(test_client_->IsListeningForTests());
 
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
 
@@ -806,8 +782,6 @@ TEST_F(MDnsTest, TransactionReentrantCacheLookupStart) {
 
   ASSERT_TRUE(transaction1->Start());
 
-  EXPECT_TRUE(test_client_->IsListeningForTests());
-
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
 }
 
@@ -833,8 +807,6 @@ TEST_F(MDnsTest, ListenerReentrantDelete) {
   EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
       .Times(Exactly(1))
       .WillOnce(InvokeWithoutArgs(this, &MDnsTest::DeleteBothListeners));
-
-  EXPECT_TRUE(test_client_->IsListeningForTests());
 
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
 
