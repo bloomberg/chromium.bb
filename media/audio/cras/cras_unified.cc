@@ -301,6 +301,8 @@ uint32 CrasUnifiedStream::DispatchCallback(size_t frames,
     case CRAS_STREAM_UNIFIED:
       return ReadWriteAudio(frames, input_samples, output_samples,
                             input_ts, output_ts);
+    default:
+      break;
   }
 
   return 0;
