@@ -381,6 +381,7 @@
             'svg/SVGFETileElement.idl',
             'svg/SVGFETurbulenceElement.idl',
             'svg/SVGFilterElement.idl',
+            'svg/SVGFilterPrimitiveStandardAttributes.idl',
             'svg/SVGFitToViewBox.idl',
             'svg/SVGFontElement.idl',
             'svg/SVGFontFaceElement.idl',

@@ -25,8 +25,7 @@
 
 [
     DoNotCheckConstants
-] interface SVGFEConvolveMatrixElement : SVGStyledElement,
-                                         SVGFilterPrimitiveStandardAttributes {
+] interface SVGFEConvolveMatrixElement : SVGStyledElement {
     // Edge Mode Values
     const unsigned short SVG_EDGEMODE_UNKNOWN   = 0;
     const unsigned short SVG_EDGEMODE_DUPLICATE = 1;
@@ -47,3 +46,4 @@
     readonly attribute SVGAnimatedBoolean     preserveAlpha;
 };
 
+SVGFEConvolveMatrixElement implements SVGFilterPrimitiveStandardAttributes;

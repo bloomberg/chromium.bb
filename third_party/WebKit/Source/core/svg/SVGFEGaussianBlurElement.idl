@@ -23,8 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-interface SVGFEGaussianBlurElement : SVGStyledElement,
-                                     SVGFilterPrimitiveStandardAttributes {
+interface SVGFEGaussianBlurElement : SVGStyledElement {
     readonly attribute SVGAnimatedString in1;
     readonly attribute SVGAnimatedNumber stdDeviationX;
     readonly attribute SVGAnimatedNumber stdDeviationY;
@@ -33,3 +32,4 @@ interface SVGFEGaussianBlurElement : SVGStyledElement,
                          [Default=Undefined] optional float stdDeviationY);
 };
 
+SVGFEGaussianBlurElement implements SVGFilterPrimitiveStandardAttributes;

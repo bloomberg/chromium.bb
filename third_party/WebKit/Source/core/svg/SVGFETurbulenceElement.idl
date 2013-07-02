@@ -25,8 +25,7 @@
 
 [
     DoNotCheckConstants
-] interface SVGFETurbulenceElement : SVGStyledElement,
-                                     SVGFilterPrimitiveStandardAttributes {
+] interface SVGFETurbulenceElement : SVGStyledElement {
     // Turbulence Types
     const unsigned short SVG_TURBULENCE_TYPE_UNKNOWN      = 0;
     const unsigned short SVG_TURBULENCE_TYPE_FRACTALNOISE = 1;
@@ -45,3 +44,4 @@
     readonly attribute SVGAnimatedEnumeration type;
 };
 
+SVGFETurbulenceElement implements SVGFilterPrimitiveStandardAttributes;
