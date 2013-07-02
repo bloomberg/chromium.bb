@@ -3,7 +3,7 @@ include_rules = [
   "-content",
   "+chrome/browser/google_apis",
 
-  # BrowserThread should be gone: crbug.com/251577, crbug.com/256112
+  # BrowserThread should be gone: crbug.com/256112
   "!content/public/browser/browser_thread.h",
 ]
 

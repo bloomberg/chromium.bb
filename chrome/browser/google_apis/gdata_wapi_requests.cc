@@ -46,7 +46,6 @@ void DidParseResourceListOnBlockingPool(
     const GetResourceListCallback& callback,
     GDataErrorCode error,
     scoped_ptr<ResourceList> resource_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   // resource_list being NULL indicates there was a parsing error.
@@ -61,7 +60,6 @@ void DidParseResourceListOnBlockingPool(
 void ParseResourceListAndRun(const GetResourceListCallback& callback,
                              GDataErrorCode error,
                              scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (!value) {
@@ -81,7 +79,6 @@ void ParseResourceListAndRun(const GetResourceListCallback& callback,
 void ParseAccounetMetadataAndRun(const GetAccountMetadataCallback& callback,
                                  GDataErrorCode error,
                                  scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (!value) {
@@ -122,7 +119,6 @@ void ParseOpenLinkAndRun(const std::string& app_id,
                          const AuthorizeAppCallback& callback,
                          GDataErrorCode error,
                          scoped_ptr<base::Value> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (!value) {
