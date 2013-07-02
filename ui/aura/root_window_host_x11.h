@@ -103,6 +103,10 @@ class RootWindowHostX11 : public RootWindowHost,
   // Update is_internal_display_ based on delegate_ state
   void UpdateIsInternalDisplay();
 
+  // Set the CrOS touchpad "tap paused" property. It is used to temporarily
+  // turn off the Tap-to-click feature when the mouse pointer is invisible.
+  void SetCrOSTapPaused(bool state);
+
   RootWindowHostDelegate* delegate_;
 
   // The display and the native X window hosting the root window.

@@ -770,31 +770,7 @@ void RootWindowHostX11::UnConfineCursor() {
 }
 
 void RootWindowHostX11::OnCursorVisibilityChanged(bool show) {
-#if defined(OS_CHROMEOS)
-  // Temporarily pause tap-to-click when the cursor is hidden.
-  Atom prop = atom_cache_.GetAtom("Tap Paused");
-  unsigned char value = !show;
-  XIDeviceList dev_list =
-      ui::DeviceListCacheX::GetInstance()->GetXI2DeviceList(xdisplay_);
-
-  // Only slave pointer devices could possibly have tap-paused property.
-  for (int i = 0; i < dev_list.count; i++) {
-    if (dev_list[i].use == XISlavePointer) {
-      Atom old_type;
-      int old_format;
-      unsigned long old_nvalues, bytes;
-      unsigned char* data;
-      int result = XIGetProperty(xdisplay_, dev_list[i].deviceid, prop, 0, 0,
-                                 False, AnyPropertyType, &old_type, &old_format,
-                                 &old_nvalues, &bytes, &data);
-      if (result != Success)
-        continue;
-      XFree(data);
-      XIChangeProperty(xdisplay_, dev_list[i].deviceid, prop, XA_INTEGER, 8,
-                       PropModeReplace, &value, 1);
-    }
-  }
-#endif
+  SetCrOSTapPaused(!show);
 }
 
 void RootWindowHostX11::MoveCursorTo(const gfx::Point& location) {
@@ -909,6 +885,10 @@ void RootWindowHostX11::OnRootWindowInitialized(RootWindow* root_window) {
   if (!delegate_ || root_window != GetRootWindow())
     return;
   UpdateIsInternalDisplay();
+
+  // We have to enable Tap-to-click by default because the cursor is set to
+  // visible in Shell::InitRootWindowController.
+  SetCrOSTapPaused(false);
 }
 
 bool RootWindowHostX11::DispatchEventForRootWindow(
@@ -1087,6 +1067,34 @@ void RootWindowHostX11::UpdateIsInternalDisplay() {
   gfx::Screen* screen = gfx::Screen::GetScreenFor(root_window);
   gfx::Display display = screen->GetDisplayNearestWindow(root_window);
   is_internal_display_ = display.IsInternal();
+}
+
+void RootWindowHostX11::SetCrOSTapPaused(bool state) {
+#if defined(OS_CHROMEOS)
+  // Temporarily pause tap-to-click when the cursor is hidden.
+  Atom prop = atom_cache_.GetAtom("Tap Paused");
+  unsigned char value = state;
+  XIDeviceList dev_list =
+      ui::DeviceListCacheX::GetInstance()->GetXI2DeviceList(xdisplay_);
+
+  // Only slave pointer devices could possibly have tap-paused property.
+  for (int i = 0; i < dev_list.count; i++) {
+    if (dev_list[i].use == XISlavePointer) {
+      Atom old_type;
+      int old_format;
+      unsigned long old_nvalues, bytes;
+      unsigned char* data;
+      int result = XIGetProperty(xdisplay_, dev_list[i].deviceid, prop, 0, 0,
+                                 False, AnyPropertyType, &old_type, &old_format,
+                                 &old_nvalues, &bytes, &data);
+      if (result != Success)
+        continue;
+      XFree(data);
+      XIChangeProperty(xdisplay_, dev_list[i].deviceid, prop, XA_INTEGER, 8,
+                       PropModeReplace, &value, 1);
+    }
+  }
+#endif
 }
 
 // static
