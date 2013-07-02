@@ -75,9 +75,23 @@ String SVGTransformList::valueAsString() const
 
 void SVGTransformList::parse(const String& transform)
 {
-    const UChar* start = transform.bloatedCharacters();
-    if (!SVGTransformable::parseTransformAttribute(*this, start, start + transform.length()))
+    if (transform.isEmpty()) {
+        // FIXME: The parseTransformAttribute function secretly calls clear()
+        // based on a |mode| parameter. We should study whether we should
+        // remove the |mode| parameter and force callers to call clear()
+        // themselves.
         clear();
+    } else if (transform.is8Bit()) {
+        const LChar* ptr = transform.characters8();
+        const LChar* end = ptr + transform.length();
+        if (!SVGTransformable::parseTransformAttribute(*this, ptr, end))
+            clear();
+    } else {
+        const UChar* ptr = transform.characters16();
+        const UChar* end = ptr + transform.length();
+        if (!SVGTransformable::parseTransformAttribute(*this, ptr, end))
+            clear();
+    }
 }
 
 } // namespace WebCore

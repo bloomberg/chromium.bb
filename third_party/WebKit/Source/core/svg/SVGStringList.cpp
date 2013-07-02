@@ -44,21 +44,34 @@ void SVGStringList::reset(const String& string)
         append(emptyString());
 }
 
-void SVGStringList::parse(const String& data, UChar delimiter)
+template<typename CharType>
+void SVGStringList::parseInternal(const CharType*& ptr, const CharType* end, UChar delimiter)
 {
-    // TODO : more error checking/reporting
-    clear();
-
-    const UChar* ptr = data.bloatedCharacters();
-    const UChar* end = ptr + data.length();
     while (ptr < end) {
-        const UChar* start = ptr;
+        const CharType* start = ptr;
         while (ptr < end && *ptr != delimiter && !isSVGSpace(*ptr))
             ptr++;
         if (ptr == start)
             break;
         append(String(start, ptr - start));
         skipOptionalSVGSpacesOrDelimiter(ptr, end, delimiter);
+    }
+}
+
+void SVGStringList::parse(const String& data, UChar delimiter)
+{
+    // FIXME: Add more error checking and reporting.
+    clear();
+    if (data.isEmpty())
+        return;
+    if (data.is8Bit()) {
+        const LChar* ptr = data.characters8();
+        const LChar* end = ptr + data.length();
+        parseInternal(ptr, end, delimiter);
+    } else {
+        const UChar* ptr = data.characters16();
+        const UChar* end = ptr + data.length();
+        parseInternal(ptr, end, delimiter);
     }
 }
 

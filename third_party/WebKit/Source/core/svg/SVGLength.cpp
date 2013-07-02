@@ -28,13 +28,11 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/svg/SVGParserUtilities.h"
-
-#include <wtf/MathExtras.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/MathExtras.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-// Helper functions
 static inline unsigned int storeUnit(SVGLengthMode mode, SVGLengthType type)
 {
     return (mode << 4) | type;
@@ -83,7 +81,8 @@ static inline String lengthTypeToString(SVGLengthType type)
     return String();
 }
 
-inline SVGLengthType stringToLengthType(const UChar*& ptr, const UChar* end)
+template<typename CharType>
+static SVGLengthType stringToLengthType(const CharType*& ptr, const CharType* end)
 {
     if (ptr == end)
         return LengthTypeNumber;
@@ -217,23 +216,36 @@ float SVGLength::valueAsPercentage() const
     return m_valueInSpecifiedUnits;
 }
 
+template<typename CharType>
+static bool parseValueInternal(const String& string, float& convertedNumber, SVGLengthType& type)
+{
+    const CharType* ptr = string.getCharacters<CharType>();
+    const CharType* end = ptr + string.length();
+
+    if (!parseNumber(ptr, end, convertedNumber, false))
+        return false;
+
+    type = stringToLengthType(ptr, end);
+    ASSERT(ptr <= end);
+    if (type == LengthTypeUnknown)
+        return false;
+
+    return true;
+}
+
 void SVGLength::setValueAsString(const String& string, ExceptionCode& ec)
 {
     if (string.isEmpty())
         return;
 
     float convertedNumber = 0;
-    const UChar* ptr = string.bloatedCharacters();
-    const UChar* end = ptr + string.length();
+    SVGLengthType type = LengthTypeUnknown;
 
-    if (!parseNumber(ptr, end, convertedNumber, false)) {
-        ec = SYNTAX_ERR;
-        return;
-    }
+    bool success = string.is8Bit() ?
+        parseValueInternal<LChar>(string, convertedNumber, type) :
+        parseValueInternal<UChar>(string, convertedNumber, type);
 
-    SVGLengthType type = stringToLengthType(ptr, end);
-    ASSERT(ptr <= end);
-    if (type == LengthTypeUnknown) {
+    if (!success) {
         ec = SYNTAX_ERR;
         return;
     }

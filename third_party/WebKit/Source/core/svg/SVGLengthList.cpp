@@ -27,15 +27,13 @@
 
 namespace WebCore {
 
-void SVGLengthList::parse(const String& value, SVGLengthMode mode)
+template<typename CharType>
+void SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end, SVGLengthMode mode)
 {
-    clear();
     ExceptionCode ec = 0;
 
-    const UChar* ptr = value.bloatedCharacters();
-    const UChar* end = ptr + value.length();
     while (ptr < end) {
-        const UChar* start = ptr;
+        const CharType* start = ptr;
         while (ptr < end && *ptr != ',' && !isSVGSpace(*ptr))
             ptr++;
         if (ptr == start)
@@ -50,6 +48,22 @@ void SVGLengthList::parse(const String& value, SVGLengthMode mode)
             return;
         append(length);
         skipOptionalSVGSpacesOrDelimiter(ptr, end);
+    }
+}
+
+void SVGLengthList::parse(const String& value, SVGLengthMode mode)
+{
+    clear();
+    if (value.isEmpty())
+        return;
+    if (value.is8Bit()) {
+        const LChar* ptr = value.characters8();
+        const LChar* end = ptr + value.length();
+        parseInternal(ptr, end, mode);
+    } else {
+        const UChar* ptr = value.characters16();
+        const UChar* end = ptr + value.length();
+        parseInternal(ptr, end, mode);
     }
 }
 

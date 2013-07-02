@@ -32,6 +32,10 @@ public:
 
     void parse(const String& value, SVGLengthMode); 
     String valueAsString() const;
+
+private:
+    template<typename CharType>
+    void parseInternal(const CharType*& ptr, const CharType* end, SVGLengthMode);
 };
 
 template<>
