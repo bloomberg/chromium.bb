@@ -8,6 +8,7 @@
 #include <cpu-features.h>
 
 #include "base/android/jni_array.h"
+#include "base/android/memory_pressure_listener_android.h"
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
 #include "content/child/child_thread.h"
@@ -101,6 +102,7 @@ void InternalInitChildProcess(const std::vector<int>& file_ids,
   content::SurfaceTexturePeer::InitInstance(
       new SurfaceTexturePeerChildImpl(service));
 
+  base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(env);
 }
 
 }  // namespace <anonymous>
