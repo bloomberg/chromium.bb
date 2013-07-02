@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import multiprocessing
 import optparse
 import os
 import sys
@@ -39,8 +40,9 @@ def CopyFilesFromTo(filelist, srcdir, dstdir):
 
 
 def UpdateHelpers(pepperdir, platform, clobber=False):
-  if not os.path.exists(os.path.join(pepperdir, 'tools')):
-    buildbot_common.ErrorExit('Examples depend on missing tools.')
+  tools_dir = os.path.join(pepperdir, 'tools')
+  if not os.path.exists(tools_dir):
+    buildbot_common.ErrorExit('SDK tools dir is missing: %s' % tools_dir)
 
   exampledir = os.path.join(pepperdir, 'examples')
   if clobber:
@@ -58,15 +60,15 @@ def UpdateHelpers(pepperdir, platform, clobber=False):
 
   # Copy tools scripts and make includes
   buildbot_common.CopyDir(os.path.join(SDK_SRC_DIR, 'tools', '*.py'),
-      os.path.join(pepperdir, 'tools'))
+      tools_dir)
   buildbot_common.CopyDir(os.path.join(SDK_SRC_DIR, 'tools', '*.mk'),
-      os.path.join(pepperdir, 'tools'))
+      tools_dir)
 
   # On Windows add a prebuilt make
   if platform == 'win':
     buildbot_common.BuildStep('Add MAKE')
     http_download.HttpDownload(GSTORE + MAKE,
-                               os.path.join(pepperdir, 'tools', 'make.exe'))
+                               os.path.join(tools_dir, 'make.exe'))
 
 
 def ValidateToolchains(toolchains):
@@ -145,31 +147,44 @@ def BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config,
                         verbose):
   make_dir = os.path.join(pepperdir, branch)
   print "\n\nMake: " + make_dir
+
   if platform == 'win':
     # We need to modify the environment to build host on Windows.
     make = os.path.join(make_dir, 'make.bat')
   else:
     make = 'make'
 
+  env = None
+  if os.environ.get('USE_GOMA') == '1':
+    env = dict(os.environ)
+    env['NACL_COMPILER_PREFIX'] = 'gomacc'
+    # Add -m32 to the CFLAGS when building using i686-nacl-gcc
+    # otherwise goma won't recognise it as different to the x86_64
+    # build.
+    env['X86_32_CFLAGS'] = '-m32'
+    env['X86_32_CXXFLAGS'] = '-m32'
+    jobs = '50'
+  else:
+    jobs = str(multiprocessing.cpu_count())
 
-  extra_args = ['CONFIG='+config]
+  make_cmd = [make, '-j', jobs, 'TOOLCHAIN=all']
+
+  make_cmd.append('CONFIG='+config)
   if not deps:
-    extra_args += ['IGNORE_DEPS=1']
+    make_cmd.append('IGNORE_DEPS=1')
 
   if verbose:
-    extra_args += ['V=1']
+    make_cmd.append('V=1')
 
   try:
-    buildbot_common.Run([make, '-j8', 'TOOLCHAIN=all'] + extra_args,
-                        cwd=make_dir)
+    buildbot_common.Run(make_cmd, cwd=make_dir, env=env)
   except:
     print 'Failed to build ' + branch
     raise
 
   if clean:
     # Clean to remove temporary files but keep the built
-    buildbot_common.Run([make, '-j8', 'clean', 'TOOLCHAIN=all'] + extra_args,
-                        cwd=make_dir)
+    buildbot_common.Run(make_cmd + ['clean'], cwd=make_dir, env=env)
 
 
 def BuildProjects(pepperdir, platform, project_tree, deps=True,

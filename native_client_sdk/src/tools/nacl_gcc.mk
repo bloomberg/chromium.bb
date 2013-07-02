@@ -22,26 +22,29 @@ LD_ARM := -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_arm/$(CONFIG)
 # We always link with the C++ compiler but include -Wl,-as-needed flag
 # in LD_FLAGS so the linker should drop libc++ unless it's actually needed.
 #
-X86_32_CC ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-gcc
-X86_32_CXX ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++
-X86_32_LINK ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++
-X86_32_LIB ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-ar
-X86_32_STRIP ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-strip
-X86_32_NM ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-nm
+X86_TC_BIN ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin
+ARM_TC_BIN ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin
 
-X86_64_CC ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-gcc
-X86_64_CXX ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-g++
-X86_64_LINK ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-g++
-X86_64_LIB ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-ar
-X86_64_STRIP ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-strip
-X86_64_NM ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/x86_64-nacl-nm
+X86_32_CC ?= $(NACL_COMPILER_PREFIX) $(X86_TC_BIN)/i686-nacl-gcc
+X86_32_CXX ?= $(NACL_COMPILER_PREFIX) $(X86_TC_BIN)/i686-nacl-g++
+X86_32_LINK ?= $(X86_TC_BIN)/i686-nacl-g++
+X86_32_LIB ?= $(X86_TC_BIN)/i686-nacl-ar
+X86_32_STRIP ?= $(X86_TC_BIN)/i686-nacl-strip
+X86_32_NM ?= $(X86_TC_BIN)/i686-nacl-nm
 
-ARM_CC ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-gcc
-ARM_CXX ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
-ARM_LINK ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
-ARM_LIB ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-ar
-ARM_STRIP ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-strip
-ARM_NM ?= $(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-nm
+X86_64_CC ?= $(NACL_COMPILER_PREFIX) $(X86_TC_BIN)/x86_64-nacl-gcc
+X86_64_CXX ?= $(NACL_COMPILER_PREFIX) $(X86_TC_BIN)/x86_64-nacl-g++
+X86_64_LINK ?= $(X86_TC_BIN)/x86_64-nacl-g++
+X86_64_LIB ?= $(X86_TC_BIN)/x86_64-nacl-ar
+X86_64_STRIP ?= $(X86_TC_BIN)/x86_64-nacl-strip
+X86_64_NM ?= $(X86_TC_BIN)/x86_64-nacl-nm
+
+ARM_CC ?= $(NACL_COMPILER_PREFIX) $(ARM_TC_BIN)/arm-nacl-gcc
+ARM_CXX ?= $(NACL_COMPILER_PREFIX) $(ARM_TC_BIN)/arm-nacl-g++
+ARM_LINK ?= $(ARM_TC_BIN)/arm-nacl-g++
+ARM_LIB ?= $(ARM_TC_BIN)/arm-nacl-ar
+ARM_STRIP ?= $(ARM_TC_BIN)/arm-nacl-strip
+ARM_NM ?= $(ARM_TC_BIN)/arm-nacl-nm
 
 # Architecture-specific flags
 X86_32_CFLAGS ?=

@@ -7,16 +7,16 @@
 #   http://www.gnu.org/software/make/manual/make.html
 #
 
-
 #
 # Paths to Tools
 #
-PNACL_CC ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang -c
-PNACL_CXX ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++ -c
-PNACL_LINK ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++
-PNACL_LIB ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-ar
-PNACL_STRIP ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-strip
-PNACL_FINALIZE ?= $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-finalize
+PNACL_BIN = $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin
+PNACL_CC ?= $(PNACL_BIN)/pnacl-clang -c
+PNACL_CXX ?= $(PNACL_BIN)/pnacl-clang++ -c
+PNACL_LINK ?= $(PNACL_BIN)/pnacl-clang++
+PNACL_LIB ?= $(PNACL_BIN)/pnacl-ar
+PNACL_STRIP ?= $(PNACL_BIN)/pnacl-strip
+PNACL_FINALIZE ?= $(PNACL_BIN)/pnacl-finalize
 
 #
 # Compile Macro

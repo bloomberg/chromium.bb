@@ -14,8 +14,8 @@
 # We use the C++ compiler for everything and then use the -Wl,-as-needed flag
 # in the linker to drop libc++ unless it's actually needed.
 #
-HOST_CC ?= gcc
-HOST_CXX ?= g++
+HOST_CC ?= $(NACL_COMPILER_PREFIX) gcc
+HOST_CXX ?= $(NACL_COMPILER_PREFIX) g++
 HOST_LINK ?= g++
 HOST_LIB ?= ar
 HOST_STRIP ?= strip
