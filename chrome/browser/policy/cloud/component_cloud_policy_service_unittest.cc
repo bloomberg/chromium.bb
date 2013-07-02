@@ -106,7 +106,6 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     cache_ = new ResourceCache(temp_dir_.path());
-    ASSERT_TRUE(cache_->IsOpen());
     service_.reset(new ComponentCloudPolicyService(
         &delegate_, &store_, make_scoped_ptr(cache_)));
 

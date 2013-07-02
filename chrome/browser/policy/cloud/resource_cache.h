@@ -10,16 +10,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/files/file_path.h"
 #include "base/threading/non_thread_safe.h"
-
-namespace base {
-class FilePath;
-}
-
-namespace leveldb {
-class DB;
-}
 
 namespace policy {
 
@@ -32,11 +24,7 @@ namespace policy {
 class ResourceCache : public base::NonThreadSafe {
  public:
   explicit ResourceCache(const base::FilePath& cache_path);
-  ~ResourceCache();
-
-  // Returns true if the underlying database was opened, and false otherwise.
-  // When this returns false then all the other operations will fail.
-  bool IsOpen() const { return db_; }
+  virtual ~ResourceCache();
 
   // Stores |data| under (key, subkey). Returns true if the store suceeded, and
   // false otherwise.
@@ -63,12 +51,23 @@ class ResourceCache : public base::NonThreadSafe {
                          const std::set<std::string>& subkeys_to_keep);
 
  private:
-  std::string GetStringWithPrefix(const std::string& s);
-  std::string CreatePathPrefix(const std::string& key);
-  std::string CreatePath(const std::string& key, const std::string& subkey);
-  std::string GetSubkey(const std::string& path);
+  // Points |path| at the cache directory for |key| and returns whether the
+  // directory exists. If |allow_create| is |true|, the directory is created if
+  // it did not exist yet.
+  bool VerifyKeyPath(const std::string& key,
+                     bool allow_create,
+                     base::FilePath* path);
 
-  scoped_ptr<leveldb::DB> db_;
+  // Points |path| at the file in which data for (key, subkey) should be stored
+  // and returns whether the parent directory of this file exists. If
+  // |allow_create_key| is |true|, the directory is created if it did not exist
+  // yet. This method does not check whether the file at |path| exists or not.
+  bool VerifyKeyPathAndGetSubkeyPath(const std::string& key,
+                                     bool allow_create_key,
+                                     const std::string& subkey,
+                                     base::FilePath* subkey_path);
+
+  base::FilePath cache_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceCache);
 };

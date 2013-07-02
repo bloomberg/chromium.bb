@@ -28,7 +28,7 @@ const char kData1[] = "{}";
 TEST(ResourceCacheTest, StoreAndLoad) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ResourceCache cache(temp_dir.path().AppendASCII("db"));
+  ResourceCache cache(temp_dir.path());
 
   // No data initially.
   std::string data;
