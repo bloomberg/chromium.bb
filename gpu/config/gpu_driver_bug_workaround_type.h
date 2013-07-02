@@ -58,8 +58,6 @@
          use_current_program_after_successful_link)          \
   GPU_OP(USE_NON_ZERO_SIZE_FOR_CLIENT_SIDE_STREAM_BUFFERS,   \
          use_non_zero_size_for_client_side_stream_buffers)   \
-  GPU_OP(DISABLE_ASYNC_READPIXELS,                           \
-         disable_async_readpixels)                           \
 
 namespace gpu {
 
@@ -77,3 +75,4 @@ GPU_EXPORT std::string GpuDriverBugWorkaroundTypeToString(
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_DRIVER_BUG_WORKAROUND_TYPE_H_
+

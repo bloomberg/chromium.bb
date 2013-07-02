@@ -213,7 +213,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual void SetWaitSyncPointCallback(
       const WaitSyncPointCallback& callback) = 0;
 
-  virtual void WaitForReadPixels(base::Closure callback) = 0;
   virtual uint32 GetTextureUploadCount() = 0;
   virtual base::TimeDelta GetTotalTextureUploadTime() = 0;
   virtual base::TimeDelta GetTotalProcessingCommandsTime() = 0;

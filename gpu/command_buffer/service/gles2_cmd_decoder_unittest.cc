@@ -2316,8 +2316,7 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(
   cmd.Init(in_read_x, in_read_y, in_read_width, in_read_height,
            kFormat, GL_UNSIGNED_BYTE,
            pixels_shm_id, pixels_shm_offset,
-           result_shm_id, result_shm_offset,
-           false);
+           result_shm_id, result_shm_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 
   GLint unpadded_row_size = emu.ComputeImageDataSize(in_read_width, 1);
@@ -2394,8 +2393,7 @@ TEST_F(GLES2DecoderTest, ReadPixels) {
   ReadPixels cmd;
   cmd.Init(0, 0, kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE,
            pixels_shm_id, pixels_shm_offset,
-           result_shm_id, result_shm_offset,
-           false);
+           result_shm_id, result_shm_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   for (GLint yy = 0; yy < kHeight; ++yy) {
     EXPECT_TRUE(emu.CompareRowSegment(
@@ -2442,8 +2440,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, ReadPixelsNoAlphaBackbuffer) {
   ReadPixels cmd;
   cmd.Init(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
            pixels_shm_id, pixels_shm_offset,
-           result_shm_id, result_shm_offset,
-           false);
+           result_shm_id, result_shm_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   for (GLint yy = 0; yy < kHeight; ++yy) {
     EXPECT_TRUE(emu.CompareRowSegment(
@@ -2480,41 +2477,34 @@ TEST_F(GLES2DecoderTest, ReadPixelsInvalidArgs) {
   ReadPixels cmd;
   cmd.Init(0, 0, -1, 1, GL_RGB, GL_UNSIGNED_BYTE,
            pixels_shm_id, pixels_shm_offset,
-           result_shm_id, result_shm_offset,
-           false);
+           result_shm_id, result_shm_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
   cmd.Init(0, 0, 1, -1, GL_RGB, GL_UNSIGNED_BYTE,
            pixels_shm_id, pixels_shm_offset,
-           result_shm_id, result_shm_offset,
-           false);
+           result_shm_id, result_shm_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
   cmd.Init(0, 0, 1, 1, GL_RGB, GL_INT,
            pixels_shm_id, pixels_shm_offset,
-           result_shm_id, result_shm_offset,
-           false);
+           result_shm_id, result_shm_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
   cmd.Init(0, 0, 1, 1, GL_RGB, GL_UNSIGNED_BYTE,
            kInvalidSharedMemoryId, pixels_shm_offset,
-           result_shm_id, result_shm_offset,
-           false);
+           result_shm_id, result_shm_offset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   cmd.Init(0, 0, 1, 1, GL_RGB, GL_UNSIGNED_BYTE,
            pixels_shm_id, kInvalidSharedMemoryOffset,
-           result_shm_id, result_shm_offset,
-           false);
+           result_shm_id, result_shm_offset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   cmd.Init(0, 0, 1, 1, GL_RGB, GL_UNSIGNED_BYTE,
            pixels_shm_id, pixels_shm_offset,
-           kInvalidSharedMemoryId, result_shm_offset,
-           false);
+           kInvalidSharedMemoryId, result_shm_offset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   cmd.Init(0, 0, 1, 1, GL_RGB, GL_UNSIGNED_BYTE,
            pixels_shm_id, pixels_shm_offset,
-           result_shm_id, kInvalidSharedMemoryOffset,
-           false);
+           result_shm_id, kInvalidSharedMemoryOffset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
@@ -4942,8 +4932,7 @@ TEST_F(GLES2DecoderTest, ReadPixelsGLError) {
   ReadPixels cmd;
   cmd.Init(x, y, width, height, kFormat, GL_UNSIGNED_BYTE,
            pixels_shm_id, pixels_shm_offset,
-           result_shm_id, result_shm_offset,
-           false);
+           result_shm_id, result_shm_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
@@ -6675,9 +6664,8 @@ TEST_F(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnReadPixels) {
   uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
   ReadPixels cmd;
   cmd.Init(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
-           pixels_shm_id, pixels_shm_offset,
-           result_shm_id, result_shm_offset,
-           false);
+         pixels_shm_id, pixels_shm_offset,
+         result_shm_id, result_shm_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -6736,9 +6724,8 @@ TEST_F(GLES2DecoderManualInitTest,
   uint32 pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
   ReadPixels cmd;
   cmd.Init(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
-           pixels_shm_id, pixels_shm_offset,
-           result_shm_id, result_shm_offset,
-           false);
+         pixels_shm_id, pixels_shm_offset,
+         result_shm_id, result_shm_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }

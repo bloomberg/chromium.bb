@@ -2301,14 +2301,6 @@ void GLRenderer::DoGetFramebufferPixels(
                                      NULL,
                                      GL_STREAM_READ));
 
-  WebKit::WebGLId query = 0;
-  if (is_async) {
-    query = context_->createQueryEXT();
-    GLC(context_, context_->beginQueryEXT(
-        GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM,
-        query));
-  }
-
   GLC(context_,
       context_->readPixels(window_rect.x(),
                            window_rect.y(),
@@ -2334,7 +2326,6 @@ void GLRenderer::DoGetFramebufferPixels(
                  base::Unretained(this),
                  cleanup_callback,
                  buffer,
-                 query,
                  dest_pixels,
                  window_rect.size());
   // Save the finished_callback so it can be cancelled.
@@ -2345,11 +2336,10 @@ void GLRenderer::DoGetFramebufferPixels(
   pending_async_read_pixels_.front()->buffer = buffer;
 
   if (is_async) {
-    GLC(context_, context_->endQueryEXT(
-        GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM));
-    SyncPointHelper::SignalQuery(
+    unsigned sync_point = context_->insertSyncPoint();
+    SyncPointHelper::SignalSyncPoint(
         context_,
-        query,
+        sync_point,
         finished_callback);
   } else {
     resource_provider_->Finish();
@@ -2362,14 +2352,9 @@ void GLRenderer::DoGetFramebufferPixels(
 void GLRenderer::FinishedReadback(
     const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback,
     unsigned source_buffer,
-    unsigned query,
     uint8* dest_pixels,
     gfx::Size size) {
   DCHECK(!pending_async_read_pixels_.empty());
-
-  if (query != 0) {
-    GLC(context_, context_->deleteQueryEXT(query));
-  }
 
   PendingAsyncReadPixels* current_read = pending_async_read_pixels_.back();
   // Make sure we service the readbacks in order.
