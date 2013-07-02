@@ -100,12 +100,10 @@ class MockVideoCaptureControllerEventHandler
 class MockVideoCaptureManager : public VideoCaptureManager {
  public:
   MockVideoCaptureManager()
-      : video_session_id_(kStartOpenSessionId) {}
+      : video_session_id_(kStartOpenSessionId),
+        device_name_("fake_device_0", "/dev/video0") {}
 
   void Init() {
-    device_name_.unique_id = "/dev/video0";
-    device_name_.device_name = "fake_device_0";
-
     video_capture_device_.reset(
         media::FakeVideoCaptureDevice::Create(device_name_));
     ASSERT_TRUE(video_capture_device_.get() != NULL);

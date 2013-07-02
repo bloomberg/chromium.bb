@@ -144,7 +144,9 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   typedef std::map<int, DeviceEntry> VideoCaptureDevices;
   VideoCaptureDevices devices_;  // Maps capture_session_id to DeviceEntry.
 
-  // Set to true if using fake devices for testing, false by default.
+  // Set to true if using fake video capture devices for testing,
+  // false by default.  This is only used for the MEDIA_DEVICE_VIDEO_CAPTURE
+  // device type.
   bool use_fake_device_;
 
   // Only accessed from device thread.
@@ -153,6 +155,12 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // VideoCaptureDevice is one-to-one mapped to VideoCaptureController.
   typedef std::map<media::VideoCaptureDevice*, Controller*> Controllers;
   Controllers controllers_;
+
+  // We cache the enumerated video capture devices in GetAvailableDevices
+  // (e.g. called by OnEnumerateDevices) and then look up the requested ID when
+  // a device is opened (see OnOpen).
+  // Used only on the device thread.
+  media::VideoCaptureDevice::Names video_capture_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureManager);
 };

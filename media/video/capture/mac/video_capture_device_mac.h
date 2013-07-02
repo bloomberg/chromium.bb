@@ -52,7 +52,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
     kError
   };
 
-  VideoCaptureDevice::Name device_name_;
+  Name device_name_;
   VideoCaptureDevice::EventHandler* observer_;
   InternalState state_;
 

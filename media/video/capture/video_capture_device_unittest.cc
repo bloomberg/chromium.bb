@@ -127,9 +127,7 @@ class VideoCaptureDeviceTest : public testing::Test {
 };
 
 TEST_F(VideoCaptureDeviceTest, OpenInvalidDevice) {
-  VideoCaptureDevice::Name device_name;
-  device_name.device_name = "jibberish";
-  device_name.unique_id = "jibberish";
+  VideoCaptureDevice::Name device_name("jibberish", "jibberish");
   VideoCaptureDevice* device = VideoCaptureDevice::Create(device_name);
   EXPECT_TRUE(device == NULL);
 }

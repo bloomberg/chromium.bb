@@ -347,8 +347,7 @@ void ScreenCaptureDevice::Core::DoCapture() {
 
 ScreenCaptureDevice::ScreenCaptureDevice(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : core_(new Core(task_runner)) {
-  name_.device_name = "Screen";
+    : core_(new Core(task_runner)), name_("Screen", "Screen") {
 }
 
 ScreenCaptureDevice::~ScreenCaptureDevice() {
@@ -356,7 +355,7 @@ ScreenCaptureDevice::~ScreenCaptureDevice() {
 }
 
 void ScreenCaptureDevice::SetScreenCapturerForTest(
-  scoped_ptr<webrtc::ScreenCapturer> capturer) {
+    scoped_ptr<webrtc::ScreenCapturer> capturer) {
   core_->SetScreenCapturerForTest(capturer.Pass());
 }
 

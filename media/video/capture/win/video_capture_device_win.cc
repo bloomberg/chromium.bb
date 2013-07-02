@@ -15,10 +15,11 @@
 using base::win::ScopedComPtr;
 using base::win::ScopedVariant;
 
+namespace media {
 namespace {
 
 // Finds and creates a DirectShow Video Capture filter matching the device_name.
-HRESULT GetDeviceFilter(const media::VideoCaptureDevice::Name& device_name,
+HRESULT GetDeviceFilter(const VideoCaptureDevice::Name& device_name,
                         IBaseFilter** filter) {
   DCHECK(filter);
 
@@ -58,7 +59,7 @@ HRESULT GetDeviceFilter(const media::VideoCaptureDevice::Name& device_name,
     }
     if (name.type() == VT_BSTR) {
       std::string device_path(base::SysWideToUTF8(V_BSTR(&name)));
-      if (device_path.compare(device_name.unique_id) == 0) {
+      if (device_path.compare(device_name.id()) == 0) {
         // We have found the requested device
         hr = moniker->BindToObject(0, 0, IID_IBaseFilter,
                                    capture_filter.ReceiveVoid());
@@ -145,8 +146,6 @@ void DeleteMediaType(AM_MEDIA_TYPE* mt) {
 
 }  // namespace
 
-namespace media {
-
 // static
 void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   if (VideoCaptureDeviceMFWin::PlatformSupported()) {
@@ -202,7 +201,6 @@ void VideoCaptureDeviceWin::GetDeviceNames(Names* device_names) {
   ScopedComPtr<IMoniker> moniker;
   int index = 0;
   while (enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK) {
-    Name device;
     ScopedComPtr<IPropertyBag> prop_bag;
     hr = moniker->BindToStorage(0, 0, IID_IPropertyBag, prop_bag.ReceiveVoid());
     if (FAILED(hr)) {
@@ -227,16 +225,18 @@ void VideoCaptureDeviceWin::GetDeviceNames(Names* device_names) {
           lstrlenW(str_ptr) < name_length ||
           (!(LowerCaseEqualsASCII(str_ptr, str_ptr + name_length,
                                   kGoogleCameraAdapter)))) {
-        device.device_name = base::SysWideToUTF8(str_ptr);
+        std::string id;
+        std::string device_name(base::SysWideToUTF8(str_ptr));
         name.Reset();
         hr = prop_bag->Read(L"DevicePath", name.Receive(), 0);
-        if (FAILED(hr)) {
-          device.unique_id = device.device_name;
-        } else if (name.type() == VT_BSTR) {
-          device.unique_id = base::SysWideToUTF8(V_BSTR(&name));
+        if (FAILED(hr) || name.type() != VT_BSTR) {
+          id = device_name;
+        } else {
+          DCHECK_EQ(name.type(), VT_BSTR);
+          id = base::SysWideToUTF8(V_BSTR(&name));
         }
 
-        device_names->push_back(device);
+        device_names->push_back(Name(device_name, id));
       }
     }
     moniker.Release();

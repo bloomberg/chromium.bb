@@ -23,16 +23,53 @@ namespace media {
 
 class MEDIA_EXPORT VideoCaptureDevice {
  public:
+  // Represents a capture device name and ID.
+  // You should not create an instance of this class directly by e.g. setting
+  // various properties directly.  Instead use
+  // VideoCaptureDevice::GetDeviceNames to do this for you and if you need to
+  // cache your own copy of a name, you can do so via the copy constructor.
+  // The reason for this is that a device name might contain platform specific
+  // settings that are relevant only to the platform specific implementation of
+  // VideoCaptureDevice::Create.
+  class Name {
+   public:
+    Name() {}
+    Name(const std::string& name, const std::string& id)
+        : device_name_(name), unique_id_(id) {}
+    ~Name() {}
 
-  struct Name {
     // Friendly name of a device
-    std::string device_name;
+    const std::string& name() const { return device_name_; }
 
     // Unique name of a device. Even if there are multiple devices with the same
     // friendly name connected to the computer this will be unique.
-    std::string unique_id;
+    const std::string& id() const { return unique_id_; }
+
+    // These operators are needed due to storing the name in an STL container.
+    // In the shared build, all methods from the STL container will be exported
+    // so even though they're not used, they're still depended upon.
+    bool operator==(const Name& other) const {
+      return other.id() == unique_id_ && other.name() == device_name_;
+    }
+    bool operator<(const Name& other) const {
+      return unique_id_ < other.id();
+    }
+
+   private:
+    std::string device_name_;
+    std::string unique_id_;
+    // Allow generated copy constructor and assignment.
   };
-  typedef std::list<Name> Names;
+
+  // Manages a list of Name entries.
+  class MEDIA_EXPORT Names
+      : public NON_EXPORTED_BASE(std::list<Name>) {
+   public:
+    // Returns NULL if no entry was found by that ID.
+    Name* FindById(const std::string& id);
+
+    // Allow generated copy constructor and assignment.
+  };
 
   class MEDIA_EXPORT EventHandler {
    public:

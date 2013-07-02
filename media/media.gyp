@@ -391,6 +391,7 @@
         'video/capture/mac/video_capture_device_qtkit_mac.mm',
 
         'video/capture/video_capture.h',
+        'video/capture/video_capture_device.cc',
         'video/capture/video_capture_device.h',
         'video/capture/video_capture_device_dummy.cc',
         'video/capture/video_capture_device_dummy.h',

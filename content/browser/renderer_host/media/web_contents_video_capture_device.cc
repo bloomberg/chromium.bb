@@ -1238,14 +1238,13 @@ media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
                                                        &render_view_id))
     return NULL;
 
-  media::VideoCaptureDevice::Name name;
-  base::SStringPrintf(&name.device_name,
+  std::string device_name;
+  base::SStringPrintf(&device_name,
                       "WebContents[%.*s]",
                       static_cast<int>(device_id.size()), device_id.data());
-  name.unique_id = device_id;
-
   return new WebContentsVideoCaptureDevice(
-      name, render_process_id, render_view_id);
+      media::VideoCaptureDevice::Name(device_name, device_id),
+      render_process_id, render_view_id);
 }
 
 void WebContentsVideoCaptureDevice::Allocate(

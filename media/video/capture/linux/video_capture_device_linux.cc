@@ -109,9 +109,8 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   while (!enumerator.Next().empty()) {
     base::FileEnumerator::FileInfo info = enumerator.GetInfo();
 
-    Name name;
-    name.unique_id = path.value() + info.GetName().value();
-    if ((fd = open(name.unique_id.c_str() , O_RDONLY)) < 0) {
+    std::string unique_id = path.value() + info.GetName().value();
+    if ((fd = open(unique_id.c_str() , O_RDONLY)) < 0) {
       // Failed to open this device.
       continue;
     }
@@ -122,8 +121,8 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
         !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) {
       // This is a V4L2 video capture device
       if (HasUsableFormats(fd)) {
-        name.device_name = base::StringPrintf("%s", cap.card);
-        device_names->push_back(name);
+        Name device_name(base::StringPrintf("%s", cap.card), unique_id);
+        device_names->push_back(device_name);
       } else {
         DVLOG(1) << "No usable formats reported by " << info.GetName().value();
       }
@@ -139,7 +138,7 @@ VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
   // Test opening the device driver. This is to make sure it is available.
   // We will reopen it again in our worker thread when someone
   // allocates the camera.
-  int fd = open(device_name.unique_id.c_str(), O_RDONLY);
+  int fd = open(device_name.id().c_str(), O_RDONLY);
   if (fd < 0) {
     DVLOG(1) << "Cannot open device";
     delete self;
@@ -234,7 +233,7 @@ void VideoCaptureDeviceLinux::OnAllocate(int width,
   observer_ = observer;
 
   // Need to open camera with O_RDWR after Linux kernel 3.3.
-  if ((device_fd_ = open(device_name_.unique_id.c_str(), O_RDWR)) < 0) {
+  if ((device_fd_ = open(device_name_.id().c_str(), O_RDWR)) < 0) {
     SetErrorState("Failed to open V4L2 device driver.");
     return;
   }

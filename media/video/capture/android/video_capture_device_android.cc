@@ -51,17 +51,16 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
     ScopedJavaLocalRef<jobject> ci =
         Java_ChromiumCameraInfo_getAt(env, camera_id);
 
-    Name name;
-    name.unique_id = base::StringPrintf(
-        "%d", Java_ChromiumCameraInfo_getId(env, ci.obj()));
-    name.device_name = base::android::ConvertJavaStringToUTF8(
-        Java_ChromiumCameraInfo_getDeviceName(env, ci.obj()));
+    Name name(
+        base::android::ConvertJavaStringToUTF8(
+            Java_ChromiumCameraInfo_getDeviceName(env, ci.obj())),
+        base::StringPrintf("%d", Java_ChromiumCameraInfo_getId(env, ci.obj())));
     device_names->push_back(name);
 
     DVLOG(1) << "VideoCaptureDevice::GetDeviceNames: camera device_name="
-             << name.device_name
+             << name.name()
              << ", unique_id="
-             << name.unique_id
+             << name.id()
              << ", orientation "
              << Java_ChromiumCameraInfo_getOrientation(env, ci.obj());
   }
@@ -99,7 +98,7 @@ VideoCaptureDeviceAndroid::~VideoCaptureDeviceAndroid() {
 
 bool VideoCaptureDeviceAndroid::Init() {
   int id;
-  if (!base::StringToInt(device_name_.unique_id, &id))
+  if (!base::StringToInt(device_name_.id(), &id))
     return false;
 
   JNIEnv* env = AttachCurrentThread();

@@ -56,9 +56,8 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
 
   NSDictionary* capture_devices = [VideoCaptureDeviceQTKit deviceNames];
   for (NSString* key in capture_devices) {
-    Name name;
-    name.device_name = [[capture_devices valueForKey:key] UTF8String];
-    name.unique_id = [key UTF8String];
+    Name name([[capture_devices valueForKey:key] UTF8String],
+              [key UTF8String]);
     device_names->push_back(name);
   }
 }
@@ -98,7 +97,7 @@ void VideoCaptureDeviceMac::Allocate(int width, int height, int frame_rate,
 
   observer_ = observer;
   NSString* deviceId =
-      [NSString stringWithUTF8String:device_name_.unique_id.c_str()];
+      [NSString stringWithUTF8String:device_name_.id().c_str()];
 
   [capture_device_ setFrameReceiver:this];
 
@@ -167,20 +166,17 @@ bool VideoCaptureDeviceMac::Init() {
 
   Names device_names;
   GetDeviceNames(&device_names);
-  for (Names::iterator it = device_names.begin();
-       it != device_names.end();
-       ++it) {
-    if (device_name_.unique_id == it->unique_id) {
-      capture_device_ =
-          [[VideoCaptureDeviceQTKit alloc] initWithFrameReceiver:this];
-      if (!capture_device_) {
-        return false;
-      }
-      state_ = kIdle;
-      return true;
-    }
-  }
-  return false;
+  Name* found = device_names.FindById(device_name_.id());
+  if (!found)
+    return false;
+
+  capture_device_ =
+      [[VideoCaptureDeviceQTKit alloc] initWithFrameReceiver:this];
+  if (!capture_device_)
+    return false;
+
+  state_ = kIdle;
+  return true;
 }
 
 void VideoCaptureDeviceMac::ReceiveFrame(
