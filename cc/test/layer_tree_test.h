@@ -150,7 +150,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   bool TestEnded() const { return ended_; }
 
-  LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
+  LayerTreeHost* layer_tree_host();
   bool delegating_renderer() const { return delegating_renderer_; }
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE;
