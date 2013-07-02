@@ -98,6 +98,13 @@ class LinuxPort(chromium.ChromiumPort):
         self._version = 'lucid'  # We only support lucid right now.
         self._architecture = arch
 
+    def additional_drt_flag(self):
+        flags = super(LinuxPort, self).additional_drt_flag()
+        # FIXME: Temporarily disable the sandbox on Linux until we can get
+        # stacktraces via breakpad. http://crbug.com/247431
+        flags += ['--no-sandbox']
+        return flags
+
     def default_baseline_search_path(self):
         port_names = self.FALLBACK_PATHS[self._architecture]
         return map(self._webkit_baseline_path, port_names)
