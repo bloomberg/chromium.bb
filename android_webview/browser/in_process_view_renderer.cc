@@ -448,7 +448,7 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
   if (pixels == NULL) {
     TRACE_EVENT0("android_webview", "RenderToAuxBitmap");
     ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
-        env, clip.width(), clip.height(), jcanvas));
+        env, clip.width(), clip.height(), jcanvas, web_contents_));
     if (!jbitmap.obj()) {
       TRACE_EVENT_INSTANT0("android_webview",
                            "EarlyOut_BitmapAllocFail",
@@ -540,7 +540,8 @@ InProcessViewRenderer::CapturePicture() {
   // for |canvas| as we don't have java canvas at this point (and it would be
   // software anyway).
   ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
-      env, picture->width(), picture->height(), ScopedJavaLocalRef<jobject>()));
+      env, picture->width(), picture->height(), ScopedJavaLocalRef<jobject>(),
+      NULL));
   if (!jbitmap.obj())
     return ScopedJavaLocalRef<jobject>();
 

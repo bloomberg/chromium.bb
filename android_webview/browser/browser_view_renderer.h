@@ -55,7 +55,8 @@ class BrowserViewRenderer {
         JNIEnv* env,
         int width,
         int height,
-        const base::android::JavaRef<jobject>& jcanvas) = 0;
+        const base::android::JavaRef<jobject>& jcanvas,
+        void* owner_key) = 0;
 
     // Draws the provided Java Bitmap into the provided Java Canvas.
     virtual void DrawBitmapIntoCanvas(
