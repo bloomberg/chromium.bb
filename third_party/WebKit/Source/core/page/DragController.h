@@ -84,6 +84,7 @@ namespace WebCore {
         
         void placeDragCaret(const IntPoint&);
         
+        bool populateDragClipboard(Frame* src, const DragState&, const IntPoint& dragOrigin);
         bool startDrag(Frame* src, const DragState&, DragOperation srcOp, const PlatformMouseEvent& dragEvent, const IntPoint& dragOrigin);
         static const IntSize& maxDragImageSize();
         

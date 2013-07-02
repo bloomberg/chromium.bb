@@ -3279,6 +3279,12 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
             }
         } 
         
+        Page* page = m_frame->page();
+        DragController* dragController = page ? page->dragController() : 0;
+        if (!dragController || !dragController->populateDragClipboard(m_frame, dragState(), m_mouseDownPos)) {
+            m_mouseDownMayStartDrag = false;
+            goto cleanupDrag;
+        }
         m_mouseDownMayStartDrag = dispatchDragSrcEvent(eventNames().dragstartEvent, m_mouseDown)
             && !m_frame->selection()->isInPasswordField();
         

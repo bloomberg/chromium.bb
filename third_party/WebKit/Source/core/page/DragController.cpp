@@ -708,6 +708,55 @@ static IntPoint dragLocForSelectionDrag(Frame* src)
     return IntPoint(xpos, ypos);
 }
 
+bool DragController::populateDragClipboard(Frame* src, const DragState& state, const IntPoint& dragOrigin)
+{
+    ASSERT(src);
+
+    if (!src->view() || !src->contentRenderer())
+        return false;
+
+    HitTestResult hitTestResult = src->eventHandler()->hitTestResultAtPoint(dragOrigin, HitTestRequest::ReadOnly | HitTestRequest::Active);
+    // FIXME: Can this even happen? I guess it's possible, but should verify
+    // with a layout test.
+    if (!state.m_dragSrc->contains(hitTestResult.innerNode())) {
+        // The original node being dragged isn't under the drag origin anymore... maybe it was
+        // hidden or moved out from under the cursor. Regardless, we don't want to start a drag on
+        // something that's not actually under the drag origin.
+        return false;
+    }
+    const KURL& linkURL = hitTestResult.absoluteLinkURL();
+    const KURL& imageURL = hitTestResult.absoluteImageURL();
+
+    Clipboard* clipboard = state.m_dragClipboard.get();
+
+    Node* node = state.m_dragSrc.get();
+
+    Image* image = node->isElementNode() ? getImage(toElement(node)) : 0;
+    if (state.m_dragType == DragSourceActionSelection) {
+        if (enclosingTextFormControl(src->selection()->start())) {
+            clipboard->writePlainText(src->editor()->selectedTextForClipboard());
+        } else {
+            RefPtr<Range> selectionRange = src->selection()->toNormalizedRange();
+            ASSERT(selectionRange);
+
+            clipboard->writeRange(selectionRange.get(), src);
+        }
+    } else if ((m_dragSourceAction & DragSourceActionImage)
+        && !imageURL.isEmpty() && node && node->isElementNode() && image && !image->isNull()) {
+        // We shouldn't be starting a drag for an image that can't provide an extension.
+        // This is an early detection for problems encountered later upon drop.
+        ASSERT(!image->filenameExtension().isEmpty());
+        Element* element = toElement(node);
+        prepareClipboardForImageDrag(src, clipboard, element, linkURL, imageURL, hitTestResult.altDisplayString());
+    } else if ((m_dragSourceAction & DragSourceActionLink) && !linkURL.isEmpty()) {
+        // Simplify whitespace so the title put on the clipboard resembles what the user sees
+        // on the web page. This includes replacing newlines with spaces.
+        clipboard->writeURL(linkURL, hitTestResult.textContent().simplifyWhiteSpace(), src);
+    }
+    // FIXME: For DHTML/draggable element drags, write element markup to clipboard.
+    return true;
+}
+
 bool DragController::startDrag(Frame* src, const DragState& state, DragOperation srcOp, const PlatformMouseEvent& dragEvent, const IntPoint& dragOrigin)
 {
     ASSERT(src);
@@ -721,8 +770,8 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
         // hidden or moved out from under the cursor. Regardless, we don't want to start a drag on
         // something that's not actually under the drag origin.
         return false;
-    KURL linkURL = hitTestResult.absoluteLinkURL();
-    KURL imageURL = hitTestResult.absoluteImageURL();
+    const KURL& linkURL = hitTestResult.absoluteLinkURL();
+    const KURL& imageURL = hitTestResult.absoluteImageURL();
 
     IntPoint mouseDraggedPoint = src->view()->windowToContents(dragEvent.position());
 
@@ -753,18 +802,7 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
 
     Node* node = state.m_dragSrc.get();
 
-    Image* image = node->isElementNode() ? getImage(toElement(node)) : 0;
     if (state.m_dragType == DragSourceActionSelection) {
-        if (!clipboard->hasData()) {
-            if (enclosingTextFormControl(src->selection()->start())) {
-                clipboard->writePlainText(src->editor()->selectedTextForClipboard());
-            } else {
-                RefPtr<Range> selectionRange = src->selection()->toNormalizedRange();
-                ASSERT(selectionRange);
-
-                clipboard->writeRange(selectionRange.get(), src);
-            }
-        }
         if (!dragImage) {
             dragImage = src->dragImageForSelection();
             if (dragImage)
@@ -773,31 +811,17 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
             m_dragOffset = IntPoint(dragOrigin.x() - dragLoc.x(), dragOrigin.y() - dragLoc.y());
         }
         doSystemDrag(dragImage.get(), dragLoc, dragOrigin, clipboard, src, false);
-    } else if (!imageURL.isEmpty() && node && node->isElementNode() && image && !image->isNull()
-               && (m_dragSourceAction & DragSourceActionImage)) {
-        // We shouldn't be starting a drag for an image that can't provide an extension.
-        // This is an early detection for problems encountered later upon drop.
-        ASSERT(!image->filenameExtension().isEmpty());
+    } else if ((m_dragSourceAction & DragSourceActionImage)
+        && !imageURL.isEmpty() && node && node->isElementNode()) {
         Element* element = toElement(node);
-        if (!clipboard->hasData()) {
-            m_draggingImageURL = imageURL;
-            prepareClipboardForImageDrag(src, clipboard, element, linkURL, imageURL, hitTestResult.altDisplayString());
-        }
-
+        m_draggingImageURL = imageURL;
         if (!dragImage) {
-            IntRect imageRect = hitTestResult.imageRect();
-            imageRect.setLocation(m_page->mainFrame()->view()->rootViewToContents(src->view()->contentsToRootView(imageRect.location())));
             doImageDrag(element, dragOrigin, hitTestResult.imageRect(), clipboard, src, m_dragOffset);
         } else {
             // DHTML defined drag image
             doSystemDrag(dragImage.get(), dragLoc, dragOrigin, clipboard, src, false);
         }
-    } else if (!linkURL.isEmpty() && (m_dragSourceAction & DragSourceActionLink)) {
-        if (!clipboard->hasData())
-            // Simplify whitespace so the title put on the clipboard resembles what the user sees
-            // on the web page. This includes replacing newlines with spaces.
-            clipboard->writeURL(linkURL, hitTestResult.textContent().simplifyWhiteSpace(), src);
-
+    } else if ((m_dragSourceAction & DragSourceActionLink) && !linkURL.isEmpty()) {
         if (src->selection()->isCaret() && src->selection()->isContentEditable()) {
             // a user can initiate a drag on a link without having any text
             // selected.  In this case, we should expand the selection to
