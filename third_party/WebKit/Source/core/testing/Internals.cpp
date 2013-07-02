@@ -1900,7 +1900,9 @@ String Internals::getCurrentCursorInfo(Document* document, ExceptionCode& ec)
 PassRefPtr<ArrayBuffer> Internals::serializeObject(PassRefPtr<SerializedScriptValue> value) const
 {
     String stringValue = value->toWireString();
-    return ArrayBuffer::create(static_cast<const void*>(stringValue.impl()->bloatedCharacters()), stringValue.sizeInBytes());
+    RefPtr<ArrayBuffer> buffer = ArrayBuffer::createUninitialized(stringValue.length(), sizeof(UChar));
+    stringValue.copyTo(static_cast<UChar*>(buffer->data()), stringValue.length());
+    return buffer.release();
 }
 
 PassRefPtr<SerializedScriptValue> Internals::deserializeBuffer(PassRefPtr<ArrayBuffer> buffer) const
