@@ -12,8 +12,8 @@
       <div i18n-content="inputMethodInstructions"></div>
 </if>
     </div>
-    <div class="language-options">
-      <div class="language-options-left">
+    <div class="language-options" i18n-values="enabled:enableTranslateSettings">
+      <div id="language-options-languages">
         <h3 i18n-content="languages"></h3>
         <list id="language-options-list"></list>
         <div class="language-options-lower-left">
@@ -23,7 +23,7 @@
         </div>
         <div id="language-options-list-dropmarker"></div>
       </div>
-      <div class="language-options-right">
+      <div id="language-options-details">
         <h3 id="language-options-language-name"></h3>
 <if expr="os == 'win32' or pp_ifdef('chromeos')">
         <div class="language-options-contents">
