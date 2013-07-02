@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<script>
+if (window.testRunner)
+    testRunner.overridePreference("WebKitCSSGridLayoutEnabled", 1);
+</script>
+<link href="resources/grid.css" rel="stylesheet">
+<style>
+  .grid {
+    white-space: pre;
+  }
+  .a {
+    height: 100%;
+    width: 30px;
+    background: salmon;
+  }
+</style>
+<body>
+  <div class="grid">
+
+    <div class="a"></div> &#9;
+  </div>
+</body>
+</html>

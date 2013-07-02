@@ -7,4 +7,3 @@ PASS The formtarget attribute was successfully used.
 PASS successfullyParsed is true
 
 TEST COMPLETE
- 

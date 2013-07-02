@@ -211,7 +211,8 @@ bool Text::textRendererIsNeeded(const NodeRenderingContext& context)
         return true;
 
     RenderObject* parent = context.parentRenderer();
-    if (parent->isTable() || parent->isTableRow() || parent->isTableSection() || parent->isRenderTableCol() || parent->isFrameSet())
+    if (parent->isTable() || parent->isTableRow() || parent->isTableSection() || parent->isRenderTableCol() || parent->isFrameSet()
+        || parent->isFlexibleBox() || parent->isRenderGrid())
         return false;
     
     if (context.style()->preserveNewline()) // pre/pre-wrap/pre-line always make renderers.
