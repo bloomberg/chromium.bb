@@ -422,11 +422,17 @@ static void
 destroy_resource(void *element, void *data)
 {
 	struct wl_resource *resource = element;
+	struct wl_client *client = resource->client;
+	uint32_t flags;
 
 	wl_signal_emit(&resource->destroy_signal, resource);
 
+	flags = wl_map_lookup_flags(&client->objects, resource->object.id);
 	if (resource->destroy)
 		resource->destroy(resource);
+
+	if (!(flags & WL_MAP_ENTRY_LEGACY))
+		free(resource);
 }
 
 WL_EXPORT void
@@ -437,9 +443,6 @@ wl_resource_destroy(struct wl_resource *resource)
 
 	id = resource->object.id;
 	destroy_resource(resource, NULL);
-
-	if (!(wl_map_lookup_flags(&client->objects, id) & WL_MAP_ENTRY_LEGACY))
-		free(resource);
 
 	if (id < WL_SERVER_ID_START) {
 		if (client->display_resource) {
