@@ -1795,5 +1795,3 @@ crbug.com/256226 [ Win7 Mac Linux Debug ] webmidi/requestmidiaccess.html [ Crash
 
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Pass Failure ]
 
-Bug(jchaffraix) fast/html/marquee-scroll.html [ Failure ]
-Bug(jchaffraix) fast/inline-block/003.html [ Failure ]
