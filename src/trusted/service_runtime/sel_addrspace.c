@@ -125,7 +125,8 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                NACL_SYSCALL_START_ADDR >> NACL_PAGESHIFT,
                PROT_NONE,
                PROT_NONE,
-               NACL_VMMAP_ENTRY_ANONYMOUS);
+               NULL,
+               0);
 
   start_addr = nap->mem_start + NACL_SYSCALL_START_ADDR;
   /*
@@ -156,7 +157,8 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                region_size >> NACL_PAGESHIFT,
                PROT_READ | PROT_EXEC,
                PROT_READ | PROT_EXEC,
-               NACL_VMMAP_ENTRY_ANONYMOUS);
+               NULL,
+               0);
 
   start_addr = NaClUserToSys(nap, nap->dynamic_text_start);
   region_size = nap->dynamic_text_end - nap->dynamic_text_start;
@@ -180,7 +182,8 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  region_size >> NACL_PAGESHIFT,
                  PROT_READ | PROT_EXEC,
                  PROT_READ | PROT_EXEC,
-                 NACL_VMMAP_ENTRY_MAPPED);
+                 nap->text_shm,
+                 0);
   }
 
   if (0 != nap->rodata_start) {
@@ -222,7 +225,8 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  region_size >> NACL_PAGESHIFT,
                  PROT_READ,
                  PROT_READ,
-                 NACL_VMMAP_ENTRY_ANONYMOUS);
+                 NULL,
+                 0);
   }
 
   /*
@@ -256,7 +260,8 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  region_size >> NACL_PAGESHIFT,
                  PROT_READ | PROT_WRITE,
                  PROT_READ | PROT_WRITE,
-                 NACL_VMMAP_ENTRY_ANONYMOUS);
+                 NULL,
+                 0);
   }
 
   /* stack is read/write but not execute */
@@ -288,7 +293,8 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                nap->stack_size >> NACL_PAGESHIFT,
                PROT_READ | PROT_WRITE,
                PROT_READ | PROT_WRITE,
-               NACL_VMMAP_ENTRY_ANONYMOUS);
+               NULL,
+               0);
   return LOAD_OK;
 }
 

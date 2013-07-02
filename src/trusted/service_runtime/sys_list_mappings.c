@@ -103,7 +103,7 @@ static void NaClSysListMappingsVisit(void *statev,
       /* size= */ size,
       /* prot= */ vmep->prot,
       /* max_prot= */ vmep->max_prot,
-      /* vmmap_type= */ (uint32_t) vmep->vmmap_type);
+      /* vmmap_type= */ vmep->desc != NULL);
 }
 
 static void NaClSysListMappingsDyncodeVisit(void *statev,

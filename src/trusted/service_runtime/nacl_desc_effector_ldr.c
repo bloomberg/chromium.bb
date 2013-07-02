@@ -35,7 +35,6 @@ static void NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
   uintptr_t                   endaddr;
   uintptr_t                   usraddr;
   struct NaClVmmapEntry const *map_region;
-  enum NaClVmmapEntryType     entry_type;
 
   for (addr = sysaddr, endaddr = sysaddr + nbytes;
        addr < endaddr;
@@ -44,38 +43,26 @@ static void NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
 
     map_region = NaClVmmapFindPage(&self->nap->mem_map,
                                    usraddr >> NACL_PAGESHIFT);
-    if (NULL == map_region) {
-      entry_type = NACL_VMMAP_ENTRY_ANONYMOUS;
+    if (NULL == map_region || NULL == map_region->desc) {
+      /*
+       * No memory in address space, and we have only MEM_RESERVE'd
+       * the address space; or memory is in address space, but not
+       * backed by a file.
+       */
+      if (!VirtualFree((void *) addr, 0, MEM_RELEASE)) {
+        NaClLog(LOG_FATAL,
+                ("NaClDescEffLdrUnmapMemory: VirtualFree at user addr"
+                 " 0x%08"NACL_PRIxPTR" (sys 0x%08"NACL_PRIxPTR") failed:"
+                 " error %d\n"),
+                usraddr, addr, GetLastError());
+      }
     } else {
-      entry_type = map_region->vmmap_type;
-    }
-
-    switch (entry_type) {
-      case NACL_VMMAP_ENTRY_ANONYMOUS:
-        /*
-         * No memory in address space, and we have only MEM_RESERVE'd
-         * the address space; or memory is in address space, but not
-         * backed by a file.
-         */
-        if (!VirtualFree((void *) addr, 0, MEM_RELEASE)) {
-          NaClLog(LOG_FATAL,
-                  ("NaClDescEffLdrUnmapMemory: VirtualFree at user addr"
-                   " 0x%08"NACL_PRIxPTR" (sys 0x%08"NACL_PRIxPTR") failed:"
-                   " error %d\n"),
-                  usraddr, addr, GetLastError());
-        }
-        break;
-      case NACL_VMMAP_ENTRY_MAPPED:
-        if (!UnmapViewOfFile((void *) addr)) {
-          NaClLog(LOG_FATAL,
-                  ("NaClDescEffLdrUnmapMemory: UnmapViewOfFile failed"
-                   " addr 0x%08x, error %d\n"),
-                  addr, GetLastError());
-        }
-        break;
-      default:
-        NaClLog(LOG_FATAL, "NaClDescEffLdrUnmapMemory: invalid vmmap_type\n");
-        break;
+      if (!UnmapViewOfFile((void *) addr)) {
+        NaClLog(LOG_FATAL,
+                ("NaClDescEffLdrUnmapMemory: UnmapViewOfFile failed"
+                 " addr 0x%08x, error %d\n"),
+                addr, GetLastError());
+      }
     }
   }
 }

@@ -1472,7 +1472,6 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
 
   /* [0, length) */
   if (length > 0) {
-    enum NaClVmmapEntryType vmmap_type;
     int max_prot;
 
     if (NULL == ndp) {
@@ -1716,14 +1715,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
     if (map_result != sysaddr) {
       NaClLog(LOG_FATAL, "system mmap did not honor NACL_ABI_MAP_FIXED\n");
     }
-    /*
-     * windows nacl_host_desc implementation requires that PROT_NONE
-     * memory be freed using VirtualFree rather than
-     * UnmapViewOfFile.  TODO(bsy): remove this ugliness.
-     */
-    vmmap_type = (NULL == ndp || NACL_ABI_PROT_NONE == prot) ?
-                 NACL_VMMAP_ENTRY_ANONYMOUS :
-                 NACL_VMMAP_ENTRY_MAPPED;
+
     /*
      * TODO(phosek): we're recording potentially wrong info here, we shall add
      * attribute bits to NaClDesc about open flags and use that info instead.
@@ -1735,7 +1727,8 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
                               length >> NACL_PAGESHIFT,
                               NaClProtMap(prot),
                               NaClProtMap(max_prot),
-                              vmmap_type);
+                              ndp,
+                              offset);
   }
   /*
    * If we are mapping beyond the end of the file, we fill this space
@@ -1863,51 +1856,46 @@ static int32_t MunmapInternal(struct NaClApp *nap,
       continue;
     }
     NaClLog(3,
-            ("NaClSysMunmap: addr 0x%08x, type 0x%x\n"),
-            addr, (int) entry->vmmap_type);
-    switch (entry->vmmap_type) {
-      case NACL_VMMAP_ENTRY_ANONYMOUS:
-        /*
-         * Anonymous memory; we just decommit it and thus
-         * make it inaccessible.
-         */
-        if (!VirtualFree((void *) addr,
-                         NACL_MAP_PAGESIZE,
-                         MEM_DECOMMIT)) {
-          int error = GetLastError();
-          NaClLog(LOG_FATAL,
-                  ("NaClSysMunmap: Could not VirtualFree MEM_DECOMMIT"
-                   " addr 0x%08x, error %d (0x%x)\n"),
-                  addr, error, error);
-        }
-        break;
-      case NACL_VMMAP_ENTRY_MAPPED:
-        if (!UnmapViewOfFile((void *) addr)) {
-          int error = GetLastError();
-          NaClLog(LOG_FATAL,
-                  ("NaClSysMunmap: UnmapViewOfFile failed"
-                   " addr 0x%08x, error %d (0x%x)\n"),
-                  addr, error, error);
-        }
-        /*
-         * Fill the address space hole that we opened
-         * with UnmapViewOfFile().
-         */
-        if (!VirtualAlloc((void *) addr, NACL_MAP_PAGESIZE, MEM_RESERVE,
-                          PAGE_READWRITE)) {
-          NaClLog(LOG_FATAL, "MunmapInternal: "
-                  "failed to fill hole with VirtualAlloc(), error %d\n",
-                  GetLastError());
-        }
-        break;
-      default:
-        NaClLog(LOG_FATAL, "MunmapInternal: invalid vmmap_type\n");
-        break;
+            ("NaClSysMunmap: addr 0x%08x, desc 0x%08"NACL_PRIxPTR"\n"),
+            addr, (uintptr_t) entry->desc);
+    if (NULL == entry->desc) {
+      /*
+       * Anonymous memory; we just decommit it and thus
+       * make it inaccessible.
+       */
+      if (!VirtualFree((void *) addr,
+                       NACL_MAP_PAGESIZE,
+                       MEM_DECOMMIT)) {
+        int error = GetLastError();
+        NaClLog(LOG_FATAL,
+                ("NaClSysMunmap: Could not VirtualFree MEM_DECOMMIT"
+                 " addr 0x%08x, error %d (0x%x)\n"),
+                addr, error, error);
+      }
+    } else {
+      if (!UnmapViewOfFile((void *) addr)) {
+        int error = GetLastError();
+        NaClLog(LOG_FATAL,
+                ("NaClSysMunmap: UnmapViewOfFile failed"
+                 " addr 0x%08x, error %d (0x%x)\n"),
+                addr, error, error);
+      }
+      /*
+       * Fill the address space hole that we opened
+       * with UnmapViewOfFile().
+       */
+      if (!VirtualAlloc((void *) addr, NACL_MAP_PAGESIZE, MEM_RESERVE,
+                        PAGE_READWRITE)) {
+        NaClLog(LOG_FATAL, "MunmapInternal: "
+                "failed to fill hole with VirtualAlloc(), error %d\n",
+                GetLastError());
+      }
     }
     NaClVmmapRemove(&nap->mem_map,
                     NaClSysToUser(nap, (uintptr_t) addr) >> NACL_PAGESHIFT,
                     NACL_PAGES_PER_MAP,
-                    NACL_VMMAP_ENTRY_ANONYMOUS);
+                    NULL,
+                    0);
   }
   return 0;
 }
@@ -1932,7 +1920,8 @@ static int32_t MunmapInternal(struct NaClApp *nap,
   NaClVmmapRemove(&nap->mem_map,
                   NaClSysToUser(nap, (uintptr_t) sysaddr) >> NACL_PAGESHIFT,
                   length >> NACL_PAGESHIFT,
-                  NACL_VMMAP_ENTRY_ANONYMOUS);
+                  NULL,
+                  0);
   return 0;
 }
 #endif
@@ -2046,8 +2035,8 @@ static int32_t MprotectInternal(struct NaClApp *nap,
     if (NULL == entry) {
       continue;
     }
-    NaClLog(3, "MprotectInternal: addr 0x%08x, vmmap_type 0x%x\n",
-            addr, (int) entry->vmmap_type);
+    NaClLog(3, "MprotectInternal: addr 0x%08x, desc 0x%08"NACL_PRIxPTR"\n",
+            addr, (uintptr_t) entry->desc);
     /* Change the page protection */
     if (!VirtualProtect((void *) addr,
                         NACL_MAP_PAGESIZE,
