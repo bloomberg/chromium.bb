@@ -344,6 +344,7 @@ syncer::SyncError DeleteDirectiveHandler::ProcessLocalDeleteDirective(
   if (!sync_processor_) {
     return syncer::SyncError(
         FROM_HERE,
+        syncer::SyncError::DATATYPE_ERROR,
         "Cannot send local delete directive to sync",
         syncer::HISTORY_DELETE_DIRECTIVES);
   }
@@ -372,7 +373,10 @@ syncer::SyncError DeleteDirectiveHandler::ProcessSyncChanges(
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!sync_processor_) {
     return syncer::SyncError(
-        FROM_HERE, "Sync is disabled.", syncer::HISTORY_DELETE_DIRECTIVES);
+        FROM_HERE,
+        syncer::SyncError::DATATYPE_ERROR,
+        "Sync is disabled.",
+        syncer::HISTORY_DELETE_DIRECTIVES);
   }
 
   syncer::SyncDataList delete_directives;

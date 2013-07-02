@@ -135,6 +135,7 @@ syncer::SyncError ThemeSyncableService::ProcessSyncChanges(
 
   if (!sync_processor_.get()) {
     return syncer::SyncError(FROM_HERE,
+                             syncer::SyncError::DATATYPE_ERROR,
                              "Theme syncable service is not started.",
                              syncer::THEMES);
   }
@@ -180,8 +181,8 @@ syncer::SyncError ThemeSyncableService::ProcessSyncChanges(
   }
 
   return syncer::SyncError(FROM_HERE,
-                           base::StringPrintf(
-                               "Didn't find valid theme specifics."),
+                           syncer::SyncError::DATATYPE_ERROR,
+                           "Didn't find valid theme specifics",
                            syncer::THEMES);
 }
 

@@ -326,6 +326,7 @@ syncer::SyncError FaviconCache::ProcessSyncChanges(
   if (!favicon_images_sync_processor_.get() ||
       !favicon_tracking_sync_processor_.get()) {
     return syncer::SyncError(FROM_HERE,
+                             syncer::SyncError::DATATYPE_ERROR,
                              "One or both favicon types disabled.",
                              change_list[0].sync_data().GetDataType());
   }

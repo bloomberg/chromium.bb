@@ -67,7 +67,10 @@ MockSyncErrorFactory::~MockSyncErrorFactory() {}
 syncer::SyncError MockSyncErrorFactory::CreateAndUploadError(
     const tracked_objects::Location& location,
     const std::string& message) {
-  return syncer::SyncError(location, message, type_);
+  return syncer::SyncError(location,
+                           syncer::SyncError::DATATYPE_ERROR,
+                           message,
+                           type_);
 }
 
 class TestHarness : public PolicyProviderTestHarness {

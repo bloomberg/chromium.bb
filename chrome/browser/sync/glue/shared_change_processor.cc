@@ -95,7 +95,10 @@ syncer::SyncError SharedChangeProcessor::GetSyncData(
   DCHECK(backend_loop_->BelongsToCurrentThread());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
-    syncer::SyncError error(FROM_HERE, "Change processor disconnected.", type_);
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::DATATYPE_ERROR,
+                            "Change processor disconnected.",
+                            type_);
     return error;
   }
   return generic_change_processor_->GetSyncDataForType(type_,
@@ -122,7 +125,10 @@ syncer::SyncError SharedChangeProcessor::ProcessSyncChanges(
   if (disconnected_) {
     // The DTC that disconnects us must ensure it posts a StopSyncing task.
     // If we reach this, it means it just hasn't executed yet.
-    syncer::SyncError error(FROM_HERE, "Change processor disconnected.", type_);
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::DATATYPE_ERROR,
+                            "Change processor disconnected.",
+                            type_);
     return error;
   }
   return generic_change_processor_->ProcessSyncChanges(
@@ -173,7 +179,10 @@ syncer::SyncError SharedChangeProcessor::CreateAndUploadError(
   if (!disconnected_) {
     return error_handler_->CreateAndUploadError(location, message, type_);
   } else {
-    return syncer::SyncError(location, message, type_);
+    return syncer::SyncError(location,
+                             syncer::SyncError::DATATYPE_ERROR,
+                             message,
+                             type_);
   }
 }
 

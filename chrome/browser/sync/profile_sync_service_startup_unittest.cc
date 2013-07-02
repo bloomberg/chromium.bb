@@ -513,7 +513,10 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   DataTypeManager::ConfigureStatus status = DataTypeManager::ABORTED;
   syncer::SyncError error(
-      FROM_HERE, "Association failed.", syncer::BOOKMARKS);
+      FROM_HERE,
+      syncer::SyncError::DATATYPE_ERROR,
+      "Association failed.",
+      syncer::BOOKMARKS);
   std::map<syncer::ModelType, syncer::SyncError> errors;
   errors[syncer::BOOKMARKS] = error;
   DataTypeManager::ConfigureResult result(

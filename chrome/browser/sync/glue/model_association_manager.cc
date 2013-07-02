@@ -311,11 +311,11 @@ bool ModelAssociationManager::GetControllersNeedingStart(
 void ModelAssociationManager::AppendToFailedDatatypesAndLogError(
     DataTypeController::StartResult result,
     const syncer::SyncError& error) {
-  failed_data_types_info_[error.type()] = error;
+  failed_data_types_info_[error.model_type()] = error;
   LOG(ERROR) << "Failed to associate models for "
-             << syncer::ModelTypeToString(error.type());
+             << syncer::ModelTypeToString(error.model_type());
   UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
-                            ModelTypeToHistogramInt(error.type()),
+                            ModelTypeToHistogramInt(error.model_type()),
                             syncer::MODEL_TYPE_COUNT);
 }
 
@@ -386,7 +386,7 @@ void ModelAssociationManager::TypeStartCallback(
   // Any other result requires reconfiguration. Pass it on through the callback.
   LOG(ERROR) << "Failed to configure " << started_dtc->name();
   DCHECK(local_merge_result.error().IsSet());
-  DCHECK_EQ(started_dtc->type(), local_merge_result.error().type());
+  DCHECK_EQ(started_dtc->type(), local_merge_result.error().model_type());
   DataTypeManager::ConfigureStatus configure_status =
       DataTypeManager::ABORTED;
   switch (start_result) {

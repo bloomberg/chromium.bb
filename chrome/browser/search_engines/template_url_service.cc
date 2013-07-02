@@ -890,8 +890,10 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& change_list) {
   if (!models_associated_) {
-    syncer::SyncError error(FROM_HERE, "Models not yet associated.",
-                    syncer::SEARCH_ENGINES);
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::DATATYPE_ERROR,
+                            "Models not yet associated.",
+                            syncer::SEARCH_ENGINES);
     return error;
   }
   DCHECK(loaded_);

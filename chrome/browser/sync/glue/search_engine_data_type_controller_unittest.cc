@@ -164,7 +164,10 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _, _));
   syncable_service_.set_merge_data_and_start_syncing_error(
-      syncer::SyncError(FROM_HERE, "Error", syncer::SEARCH_ENGINES));
+      syncer::SyncError(FROM_HERE,
+                        syncer::SyncError::DATATYPE_ERROR,
+                        "Error",
+                        syncer::SEARCH_ENGINES));
 
   Start();
   EXPECT_EQ(DataTypeController::DISABLED, search_engine_dtc_->state());

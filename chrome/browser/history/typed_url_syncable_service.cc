@@ -119,6 +119,7 @@ syncer::SyncError TypedUrlSyncableService::ProcessSyncChanges(
   // TODO(mgist): Add implementation
 
   return syncer::SyncError(FROM_HERE,
+                           syncer::SyncError::DATATYPE_ERROR,
                            "Typed url syncable service is not implemented.",
                            syncer::TYPED_URLS);
 }

@@ -48,7 +48,9 @@ void NonFrontendDataTypeController::LoadModels(
   start_association_called_.Reset();
   start_models_failed_ = false;
   if (state_ != NOT_RUNNING) {
-    model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
+    model_load_callback.Run(type(),
+                            syncer::SyncError(FROM_HERE,
+                                              syncer::SyncError::DATATYPE_ERROR,
                                               "Model already loaded",
                                               type()));
     return;
@@ -63,7 +65,9 @@ void NonFrontendDataTypeController::LoadModels(
     // get a false it means they failed.
     DCHECK(state_ == NOT_RUNNING || state_ == MODEL_STARTING
            || state_ == DISABLED);
-    model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
+    model_load_callback.Run(type(),
+                            syncer::SyncError(FROM_HERE,
+                                              syncer::SyncError::DATATYPE_ERROR,
                                               "Failed loading",
                                               type()));
     return;
@@ -88,7 +92,9 @@ void NonFrontendDataTypeController::StartAssociating(
   start_callback_ = start_callback;
   if (!StartAssociationAsync()) {
     syncer::SyncError error(
-        FROM_HERE, "Failed to post StartAssociation", type());
+        FROM_HERE,
+        syncer::SyncError::DATATYPE_ERROR,
+        "Failed to post StartAssociation", type());
     syncer::SyncMergeResult local_merge_result(type());
     local_merge_result.set_error(error);
     StartDoneImpl(ASSOCIATION_FAILED,
@@ -418,7 +424,10 @@ void NonFrontendDataTypeController::StartAssociation() {
 
   bool sync_has_nodes = false;
   if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
-    syncer::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::UNRECOVERABLE_ERROR,
+                            "Failed to load sync nodes",
+                            type());
     local_merge_result.set_error(error);
     StartDone(UNRECOVERABLE_ERROR,
               local_merge_result,

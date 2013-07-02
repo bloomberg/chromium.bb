@@ -83,7 +83,10 @@ void GenericChangeProcessor::CommitChangesFromSyncModel() {
     return;
   if (!local_service_.get()) {
     syncer::ModelType type = syncer_changes_[0].sync_data().GetDataType();
-    syncer::SyncError error(FROM_HERE, "Local service destroyed.", type);
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::DATATYPE_ERROR,
+                            "Local service destroyed.",
+                            type);
     error_handler()->OnSingleDatatypeUnrecoverableError(error.location(),
                                                         error.message());
     return;
@@ -107,9 +110,11 @@ syncer::SyncError GenericChangeProcessor::GetSyncDataForType(
   if (root.InitByTagLookup(syncer::ModelTypeToRootTag(type)) !=
           syncer::BaseNode::INIT_OK) {
     syncer::SyncError error(FROM_HERE,
-                    "Server did not create the top-level " + type_name +
-                    " node. We might be running against an out-of-date server.",
-                    type);
+                            syncer::SyncError::DATATYPE_ERROR,
+                            "Server did not create the top-level " + type_name +
+                                " node. We might be running against an out-of-"
+                                "date server.",
+                            type);
     return error;
   }
 
@@ -125,8 +130,10 @@ syncer::SyncError GenericChangeProcessor::GetSyncDataForType(
     if (sync_child_node.InitByIdLookup(*it) !=
             syncer::BaseNode::INIT_OK) {
       syncer::SyncError error(FROM_HERE,
-                      "Failed to fetch child node for type " + type_name + ".",
-                       type);
+                              syncer::SyncError::DATATYPE_ERROR,
+                              "Failed to fetch child node for type " +
+                                  type_name + ".",
+                              type);
       return error;
     }
     current_sync_data->push_back(syncer::SyncData::CreateRemoteData(
@@ -221,6 +228,7 @@ syncer::SyncError AttemptDelete(
     if (tag.empty()) {
       syncer::SyncError error(
           FROM_HERE,
+          syncer::SyncError::DATATYPE_ERROR,
           "Failed to delete " + type_str + " node. Local data, empty tag. " +
               change.location().ToString(),
           type);
@@ -297,8 +305,10 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
               syncer::ModelTypeToRootTag(change.sync_data().GetDataType())) !=
                   syncer::BaseNode::INIT_OK) {
         syncer::SyncError error(FROM_HERE,
-                        "Failed to look up root node for type " + type_str,
-                        type);
+                                syncer::SyncError::DATATYPE_ERROR,
+                                "Failed to look up root node for type " +
+                                    type_str,
+                                type);
         error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                                             error.message());
         NOTREACHED();
@@ -461,6 +471,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
     } else {
       syncer::SyncError error(
           FROM_HERE,
+          syncer::SyncError::DATATYPE_ERROR,
           "Received unset SyncChange in the change processor, " +
               change.location().ToString(),
           type);

@@ -30,30 +30,43 @@ FailedDataTypesHandler::FailedDataTypesHandler() {
 FailedDataTypesHandler::~FailedDataTypesHandler() {
 }
 
-bool FailedDataTypesHandler::UpdateFailedDataTypes(
-    const TypeErrorMap& errors,
-    FailureType failure_type) {
-  if (failure_type == RUNTIME) {
-    runtime_errors_.insert(errors.begin(), errors.end());
-  } else if (failure_type == STARTUP) {
-    startup_errors_.insert(errors.begin(), errors.end());
-  } else if (failure_type == CRYPTO) {
-    crypto_errors_.insert(errors.begin(), errors.end());
-  } else {
-    NOTREACHED();
-  }
+bool FailedDataTypesHandler::UpdateFailedDataTypes(const TypeErrorMap& errors) {
+  if (errors.empty())
+    return false;
 
-  return !errors.empty();
+  for (TypeErrorMap::const_iterator iter = errors.begin(); iter != errors.end();
+       ++iter) {
+    syncer::SyncError::ErrorType failure_type = iter->second.error_type();
+    switch (failure_type) {
+      case syncer::SyncError::UNRECOVERABLE_ERROR:
+      case syncer::SyncError::DATATYPE_ERROR:
+        fatal_errors_.insert(*iter);
+        break;
+      case syncer::SyncError::CRYPTO_ERROR:
+        crypto_errors_.insert(*iter);
+        break;
+      case syncer::SyncError::PERSISTENCE_ERROR:
+        persistence_errors_.insert(*iter);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+  return true;
 }
 
 void FailedDataTypesHandler::Reset() {
-  startup_errors_.clear();
-  runtime_errors_.clear();
+  fatal_errors_.clear();
   crypto_errors_.clear();
+  persistence_errors_.clear();
 }
 
 void FailedDataTypesHandler::ResetCryptoErrors() {
   crypto_errors_.clear();
+}
+
+void FailedDataTypesHandler::ResetPersistenceErrors() {
+  persistence_errors_.clear();
 }
 
 FailedDataTypesHandler::TypeErrorMap FailedDataTypesHandler::GetAllErrors()
@@ -61,9 +74,9 @@ FailedDataTypesHandler::TypeErrorMap FailedDataTypesHandler::GetAllErrors()
   TypeErrorMap result;
 
   if (AnyFailedDataType()) {
-    result = startup_errors_;
-    result.insert(runtime_errors_.begin(), runtime_errors_.end());
+    result = fatal_errors_;
     result.insert(crypto_errors_.begin(), crypto_errors_.end());
+    result.insert(persistence_errors_.begin(), persistence_errors_.end());
   }
   return result;
 }
@@ -75,9 +88,7 @@ syncer::ModelTypeSet FailedDataTypesHandler::GetFailedTypes() const {
 }
 
 syncer::ModelTypeSet FailedDataTypesHandler::GetFatalErrorTypes() const {
-  syncer::ModelTypeSet result = GetTypesFromErrorMap(startup_errors_);
-  result.PutAll(GetTypesFromErrorMap(runtime_errors_));
-  return result;
+  return GetTypesFromErrorMap(fatal_errors_);;
 }
 
 syncer::ModelTypeSet FailedDataTypesHandler::GetCryptoErrorTypes() const {
@@ -85,9 +96,15 @@ syncer::ModelTypeSet FailedDataTypesHandler::GetCryptoErrorTypes() const {
   return result;
 }
 
+syncer::ModelTypeSet FailedDataTypesHandler::GetPersistenceErrorTypes() const {
+  syncer::ModelTypeSet result = GetTypesFromErrorMap(persistence_errors_);
+  return result;
+}
+
 bool FailedDataTypesHandler::AnyFailedDataType() const {
-  return (!startup_errors_.empty() || !runtime_errors_.empty() ||
-          !crypto_errors_.empty());
+  // Note: persistence errors are not failed types. They just trigger automatic
+  // unapply + getupdates, at which point they are associated like normal.
+  return !fatal_errors_.empty() || !crypto_errors_.empty();
 }
 
 }  // namespace browser_sync

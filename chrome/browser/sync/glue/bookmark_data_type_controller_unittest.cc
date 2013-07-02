@@ -259,8 +259,9 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAssociationFailed) {
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
   EXPECT_CALL(*model_associator_, AssociateModels(_, _)).
       WillRepeatedly(Return(syncer::SyncError(FROM_HERE,
-                                     "error",
-                                     syncer::BOOKMARKS)));
+                                              syncer::SyncError::DATATYPE_ERROR,
+                                              "error",
+                                              syncer::BOOKMARKS)));
 
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _, _));

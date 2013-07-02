@@ -14,31 +14,23 @@ namespace browser_sync {
 // Class to keep track of data types that have encountered an error during sync.
 class FailedDataTypesHandler {
  public:
-  enum FailureType {
-    // The dataype failed at startup.
-    STARTUP,
-
-    // The datatype encountered a runtime error.
-    RUNTIME,
-
-    // The datatype encountered a cryptographer related error.
-    CRYPTO
-  };
   typedef std::map<syncer::ModelType, syncer::SyncError> TypeErrorMap;
 
   explicit FailedDataTypesHandler();
   ~FailedDataTypesHandler();
 
-  // Called with the result of sync configuration. The types with errors
-  // are obtained from the |result|.
-  bool UpdateFailedDataTypes(const TypeErrorMap& errors,
-                             FailureType failure_type);
+  // Update the failed datatypes. Types will be added to their corresponding
+  // error map based on their |error_type()|.
+  bool UpdateFailedDataTypes(const TypeErrorMap& errors);
 
   // Resets the current set of data type errors.
   void Reset();
 
   // Resets the set of types with cryptographer errors.
   void ResetCryptoErrors();
+
+  // Resets the set of types with persistence errors.
+  void ResetPersistenceErrors();
 
   // Returns a list of all the errors this class has recorded.
   TypeErrorMap GetAllErrors() const;
@@ -52,18 +44,23 @@ class FailedDataTypesHandler {
   // Returns the types that are failing due to cryptographer errors.
   syncer::ModelTypeSet GetCryptoErrorTypes() const;
 
+  // Returns the types that are failing due to persistence errors.
+  syncer::ModelTypeSet GetPersistenceErrorTypes() const;
+
  private:
   // Returns true if there are any types with errors.
   bool AnyFailedDataType() const;
 
-  // List of data types that failed at startup due to association errors.
-  TypeErrorMap startup_errors_;
-
-  // List of data types that failed at runtime.
-  TypeErrorMap runtime_errors_;
+  // List of data types that failed at startup due to association errors or
+  // runtime due to data type errors.
+  TypeErrorMap fatal_errors_;
 
   // List of data types that failed due to the cryptographer not being ready.
   TypeErrorMap crypto_errors_;
+
+  // List of data type that failed because sync did not persist the newest
+  // version of their data.
+  TypeErrorMap persistence_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(FailedDataTypesHandler);
 };

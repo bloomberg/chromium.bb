@@ -171,7 +171,10 @@ TEST_F(SyncModelAssociationManagerTest, TypeFailModelAssociation) {
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   std::map<syncer::ModelType, syncer::SyncError> errors;
-  syncer::SyncError error(FROM_HERE, "Failed", syncer::BOOKMARKS);
+  syncer::SyncError error(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "Failed",
+                          syncer::BOOKMARKS);
   errors[syncer::BOOKMARKS] = error;
   DataTypeManager::ConfigureResult expected_result(
       DataTypeManager::PARTIAL_SUCCESS,
@@ -202,7 +205,10 @@ TEST_F(SyncModelAssociationManagerTest, TypeReturnUnrecoverableError) {
   syncer::ModelTypeSet types;
   types.Put(syncer::BOOKMARKS);
   std::map<syncer::ModelType, syncer::SyncError> errors;
-  syncer::SyncError error(FROM_HERE, "Failed", syncer::BOOKMARKS);
+  syncer::SyncError error(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "Failed",
+                          syncer::BOOKMARKS);
   errors[syncer::BOOKMARKS] = error;
   DataTypeManager::ConfigureResult expected_result(
       DataTypeManager::UNRECOVERABLE_ERROR,

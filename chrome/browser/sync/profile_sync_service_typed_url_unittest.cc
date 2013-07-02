@@ -943,9 +943,11 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailToGetTypedURLs) {
   sync_entries.push_back(sync_entry);
 
   EXPECT_CALL(error_handler_, CreateAndUploadError(_, _, _)).
-              WillOnce(Return(syncer::SyncError(FROM_HERE,
-                                        "Unit test",
-                                        syncer::TYPED_URLS)));
+              WillOnce(Return(syncer::SyncError(
+                                  FROM_HERE,
+                                  syncer::SyncError::DATATYPE_ERROR,
+                                  "Unit test",
+                                  syncer::TYPED_URLS)));
   StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
   // Errors getting typed URLs will cause an unrecoverable error (since we can
   // do *nothing* in that case).

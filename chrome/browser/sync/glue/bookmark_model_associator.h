@@ -141,8 +141,11 @@ class BookmarkModelAssociator
 
   // Check whether bookmark model and sync model are synced by comparing
   // their transaction versions.
-  void CheckModelSyncState(syncer::SyncMergeResult* local_merge_result,
-                           syncer::SyncMergeResult* syncer_merge_result) const;
+  // Returns a PERSISTENCE_ERROR if a transaction mismatch was detected where
+  // the native model has a newer transaction verison.
+  syncer::SyncError CheckModelSyncState(
+      syncer::SyncMergeResult* local_merge_result,
+      syncer::SyncMergeResult* syncer_merge_result) const;
 
   BookmarkModel* bookmark_model_;
   Profile* profile_;

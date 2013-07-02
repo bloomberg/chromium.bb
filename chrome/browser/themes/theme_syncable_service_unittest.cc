@@ -505,8 +505,9 @@ TEST_F(ThemeSyncableServiceTest, StopSync) {
   // ProcessSyncChanges() should return error when sync has stopped.
   error = theme_sync_service_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_TRUE(error.IsSet());
-  EXPECT_EQ(syncer::THEMES, error.type());
-  EXPECT_EQ("Theme syncable service is not started.",
+  EXPECT_EQ(syncer::THEMES, error.model_type());
+  EXPECT_EQ("datatype error was encountered: Theme syncable service is not "
+                "started.",
             error.message());
 }
 

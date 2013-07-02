@@ -348,8 +348,9 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
     const syncer::SyncChangeList& change_list) {
   if (!models_associated_) {
     syncer::SyncError error(FROM_HERE,
-                    "Models not yet associated.",
-                    PREFERENCES);
+                            syncer::SyncError::DATATYPE_ERROR,
+                            "Models not yet associated.",
+                            PREFERENCES);
     return error;
   }
   base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);

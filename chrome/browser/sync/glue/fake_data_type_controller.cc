@@ -64,11 +64,17 @@ void FakeDataTypeController::FinishStart(StartResult result) {
   } else if (result == ASSOCIATION_FAILED) {
     state_ = DISABLED;
     local_merge_result.set_error(
-        syncer::SyncError(FROM_HERE, "Association failed", type()));
+        syncer::SyncError(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "Association failed",
+                          type()));
   } else {
     state_ = NOT_RUNNING;
     local_merge_result.set_error(
-        syncer::SyncError(FROM_HERE, "Fake error", type()));
+        syncer::SyncError(FROM_HERE,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "Fake error",
+                          type()));
   }
   StartCallback start_callback = last_start_callback_;
   last_start_callback_.Reset();
@@ -89,7 +95,10 @@ void FakeDataTypeController::Stop() {
 
   // The DTM still expects |last_start_callback_| to be called back.
   if (!last_start_callback_.is_null()) {
-    syncer::SyncError error(FROM_HERE, "Fake error", type_);
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::DATATYPE_ERROR,
+                            "Fake error",
+                            type_);
     syncer::SyncMergeResult local_merge_result(type_);
     local_merge_result.set_error(error);
     last_start_callback_.Run(ABORTED,

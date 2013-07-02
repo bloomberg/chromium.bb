@@ -323,7 +323,9 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   syncable_service_.set_merge_data_and_start_syncing_error(
       syncer::SyncError(FROM_HERE,
-                        "Sync Error", non_ui_dtc_->type()));
+                        syncer::SyncError::DATATYPE_ERROR,
+                        "Sync Error",
+                        non_ui_dtc_->type()));
   Start();
   WaitForDTC();
   EXPECT_EQ(DataTypeController::DISABLED, non_ui_dtc_->state());
@@ -381,7 +383,10 @@ TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringAssociation) {
                       SetArgumentPointee<0>(true),
                       Return(true)));
   EXPECT_CALL(*change_processor_.get(), GetSyncData(_)).WillOnce(
-      Return(syncer::SyncError(FROM_HERE, "Disconnected.", AUTOFILL_PROFILE)));
+      Return(syncer::SyncError(FROM_HERE,
+                               syncer::SyncError::DATATYPE_ERROR,
+                               "Disconnected.",
+                               AUTOFILL_PROFILE)));
   EXPECT_CALL(*change_processor_.get(), Disconnect())
       .WillOnce(DoAll(SignalEvent(&pause_db_thread), Return(true)));
   EXPECT_CALL(service_, DeactivateDataType(_));

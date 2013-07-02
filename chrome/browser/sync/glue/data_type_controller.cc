@@ -23,7 +23,10 @@ syncer::SyncError DataTypeController::CreateAndUploadError(
     const std::string& message,
     syncer::ModelType type) {
   ChromeReportUnrecoverableError();
-  return syncer::SyncError(location, message, type);
+  return syncer::SyncError(location,
+                           syncer::SyncError::DATATYPE_ERROR,
+                           message,
+                           type);
 }
 
 void DataTypeController::RecordUnrecoverableError(

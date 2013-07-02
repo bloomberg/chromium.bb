@@ -35,9 +35,11 @@ void NonUIDataTypeController::LoadModels(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!model_load_callback.is_null());
   if (state() != NOT_RUNNING) {
-    model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
-                                                      "Model already running",
-                                                      type()));
+    model_load_callback.Run(type(),
+                            syncer::SyncError(FROM_HERE,
+                                              syncer::SyncError::DATATYPE_ERROR,
+                                              "Model already running",
+                                              type()));
     return;
   }
 
@@ -92,7 +94,10 @@ void NonUIDataTypeController::StartAssociating(
   start_callback_ = start_callback;
   if (!StartAssociationAsync()) {
     syncer::SyncError error(
-        FROM_HERE, "Failed to post StartAssociation", type());
+        FROM_HERE,
+        syncer::SyncError::DATATYPE_ERROR,
+        "Failed to post StartAssociation",
+        type());
     syncer::SyncMergeResult local_merge_result(type());
     local_merge_result.set_error(error);
     StartDoneImpl(ASSOCIATION_FAILED,
@@ -273,9 +278,11 @@ void NonUIDataTypeController::AbortModelLoad() {
   StopModels();
   ModelLoadCallback model_load_callback = model_load_callback_;
   model_load_callback_.Reset();
-  model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
-                                                    "ABORTED",
-                                                    type()));
+  model_load_callback.Run(type(),
+                          syncer::SyncError(FROM_HERE,
+                                            syncer::SyncError::DATATYPE_ERROR,
+                                            "ABORTED",
+                                            type()));
 }
 
 void NonUIDataTypeController::DisableImpl(
@@ -323,7 +330,10 @@ void NonUIDataTypeController::
       type(),
       weak_ptr_factory.GetWeakPtr());
   if (!local_service_.get()) {
-    syncer::SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::DATATYPE_ERROR,
+                            "Failed to connect to syncer.",
+                            type());
     local_merge_result.set_error(error);
     StartDone(ASSOCIATION_FAILED,
               local_merge_result,
@@ -340,7 +350,10 @@ void NonUIDataTypeController::
 
   bool sync_has_nodes = false;
   if (!shared_change_processor->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
-    syncer::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::UNRECOVERABLE_ERROR,
+                            "Failed to load sync nodes",
+                            type());
     local_merge_result.set_error(error);
     StartDone(UNRECOVERABLE_ERROR,
               local_merge_result,
@@ -418,4 +431,4 @@ void NonUIDataTypeController::StopLocalService() {
   local_service_.reset();
 }
 
-}  // namepsace browser_sync
+}  // namespace browser_sync

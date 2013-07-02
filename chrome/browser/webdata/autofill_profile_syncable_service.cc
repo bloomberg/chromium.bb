@@ -228,8 +228,10 @@ syncer::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
     const syncer::SyncChangeList& change_list) {
   DCHECK(CalledOnValidThread());
   if (!sync_processor_.get()) {
-    syncer::SyncError error(FROM_HERE, "Models not yet associated.",
-                    syncer::AUTOFILL_PROFILE);
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::DATATYPE_ERROR,
+                            "Models not yet associated.",
+                            syncer::AUTOFILL_PROFILE);
     return error;
   }
 

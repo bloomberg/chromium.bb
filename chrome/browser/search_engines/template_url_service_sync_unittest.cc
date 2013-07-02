@@ -124,7 +124,10 @@ syncer::SyncError TestChangeProcessor::ProcessSyncChanges(
     const syncer::SyncChangeList& change_list) {
   if (erroneous_)
     return syncer::SyncError(
-        FROM_HERE, "Some error.", syncer::SEARCH_ENGINES);
+        FROM_HERE,
+        syncer::SyncError::DATATYPE_ERROR,
+        "Some error.",
+        syncer::SEARCH_ENGINES);
 
   change_map_.erase(change_map_.begin(), change_map_.end());
   for (syncer::SyncChangeList::const_iterator iter = change_list.begin();

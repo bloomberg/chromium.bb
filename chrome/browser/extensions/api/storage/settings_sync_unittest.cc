@@ -97,6 +97,7 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
     if (fail_all_requests_) {
       return syncer::SyncError(
           FROM_HERE,
+          syncer::SyncError::DATATYPE_ERROR,
           "MockSyncChangeProcessor: configured to fail",
           change_list[0].sync_data().GetDataType());
     }

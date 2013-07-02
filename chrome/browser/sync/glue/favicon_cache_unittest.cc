@@ -77,7 +77,10 @@ syncer::SyncError TestChangeProcessor::ProcessSyncChanges(
     const syncer::SyncChangeList& change_list) {
   if (erroneous_) {
     return syncer::SyncError(
-        FROM_HERE, "Some error.", change_list[0].sync_data().GetDataType());
+        FROM_HERE,
+        syncer::SyncError::DATATYPE_ERROR,
+        "Some error.",
+        change_list[0].sync_data().GetDataType());
   }
 
   change_list_.insert(change_list_.end(),

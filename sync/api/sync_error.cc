@@ -17,9 +17,28 @@ SyncError::SyncError() {
 }
 
 SyncError::SyncError(const tracked_objects::Location& location,
-                     const std::string& message,
-                     ModelType type) {
-  Init(location, message, type);
+                     ErrorType error_type,
+                     const std::string& custom_message,
+                     ModelType model_type) {
+  std::string type_message;
+  switch (error_type) {
+    case UNRECOVERABLE_ERROR:
+      type_message = "unrecoverable error was encountered: ";
+      break;
+    case DATATYPE_ERROR:
+      type_message = "datatype error was encountered: ";
+      break;
+    case PERSISTENCE_ERROR:
+      type_message = "persistence error was encountered: ";
+      break;
+    case CRYPTO_ERROR:
+      type_message = "cryptographer error was encountered: ";
+      break;
+    default:
+      NOTREACHED();
+      type_message = "invalid error: ";
+  }
+  Init(location, type_message + custom_message, model_type, error_type);
   PrintLogError();
 }
 
@@ -42,7 +61,8 @@ void SyncError::Copy(const SyncError& other) {
   if (other.IsSet()) {
     Init(other.location(),
          other.message(),
-         other.type());
+         other.model_type(),
+         other.error_type());
   } else {
     Clear();
   }
@@ -51,26 +71,29 @@ void SyncError::Copy(const SyncError& other) {
 void SyncError::Clear() {
   location_.reset();
   message_ = std::string();
-  type_ = UNSPECIFIED;
+  model_type_ = UNSPECIFIED;
+  error_type_ = UNSET;
 }
 
 void SyncError::Reset(const tracked_objects::Location& location,
                       const std::string& message,
-                      ModelType type) {
-  Init(location, message, type);
+                      ModelType model_type) {
+  Init(location, message, model_type, DATATYPE_ERROR);
   PrintLogError();
 }
 
 void SyncError::Init(const tracked_objects::Location& location,
                      const std::string& message,
-                     ModelType type) {
+                     ModelType model_type,
+                     ErrorType error_type) {
   location_.reset(new tracked_objects::Location(location));
   message_ = message;
-  type_ = type;
+  model_type_ = model_type;
+  error_type_ = error_type;
 }
 
 bool SyncError::IsSet() const {
-  return location_.get() != NULL;
+  return error_type_ != UNSET;
 }
 
 
@@ -84,17 +107,22 @@ const std::string& SyncError::message() const {
   return message_;
 }
 
-ModelType SyncError::type() const {
+ModelType SyncError::model_type() const {
   CHECK(IsSet());
-  return type_;
+  return model_type_;
+}
+
+SyncError::ErrorType SyncError::error_type() const {
+  CHECK(IsSet());
+  return error_type_;
 }
 
 std::string SyncError::ToString() const {
   if (!IsSet()) {
     return std::string();
   }
-  return location_->ToString() + ", " + ModelTypeToString(type_) +
-      ", Sync Error: " + message_;
+  return location_->ToString() + ", " + ModelTypeToString(model_type_) +
+      " " + message_;
 }
 
 void SyncError::PrintLogError() const {
@@ -102,7 +130,7 @@ void SyncError::PrintLogError() const {
                                   location_->line_number(),
                                   logging::LOG_ERROR).stream(),
               LOG_IS_ON(ERROR))
-      << ModelTypeToString(type_) << ", Sync Error: " << message_;
+      << ModelTypeToString(model_type_) << " " << message_;
 }
 
 void PrintTo(const SyncError& sync_error, std::ostream* os) {

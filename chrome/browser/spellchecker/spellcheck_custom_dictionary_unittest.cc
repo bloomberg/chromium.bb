@@ -154,7 +154,10 @@ class SyncErrorFactoryStub : public syncer::SyncErrorFactory {
       const tracked_objects::Location& location,
       const std::string& message) OVERRIDE {
     (*error_counter_)++;
-    return syncer::SyncError(location, message, syncer::DICTIONARY);
+    return syncer::SyncError(location,
+                             syncer::SyncError::DATATYPE_ERROR,
+                             message,
+                             syncer::DICTIONARY);
   }
 
  private:

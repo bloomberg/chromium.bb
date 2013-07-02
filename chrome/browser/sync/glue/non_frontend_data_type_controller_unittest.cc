@@ -250,7 +250,10 @@ TEST_F(SyncNonFrontendDataTypeControllerTest, StartAssociationFailed) {
       WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
   EXPECT_CALL(*model_associator_, AssociateModels(_, _)).
       WillOnce(
-          Return(syncer::SyncError(FROM_HERE, "Error", syncer::BOOKMARKS)));
+          Return(syncer::SyncError(FROM_HERE,
+                                   syncer::SyncError::DATATYPE_ERROR,
+                                   "Error",
+                                   syncer::BOOKMARKS)));
   EXPECT_CALL(*dtc_mock_.get(), RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
   // Set up association to fail with an association failed error.

@@ -141,6 +141,7 @@ syncer::SyncError SyncableSettingsStorage::StartSyncing(
   if (maybe_settings->HasError()) {
     return syncer::SyncError(
         FROM_HERE,
+        syncer::SyncError::DATATYPE_ERROR,
         std::string("Failed to get settings: ") + maybe_settings->error(),
         sync_processor_->type());
   }
@@ -240,6 +241,7 @@ syncer::SyncError SyncableSettingsStorage::ProcessSyncChanges(
   if (!sync_processor_.get()) {
     return syncer::SyncError(
         FROM_HERE,
+        syncer::SyncError::DATATYPE_ERROR,
         std::string("Sync is inactive for ") + extension_id_,
         syncer::UNSPECIFIED);
   }
@@ -260,6 +262,7 @@ syncer::SyncError SyncableSettingsStorage::ProcessSyncChanges(
       if (maybe_settings->HasError()) {
         errors.push_back(syncer::SyncError(
             FROM_HERE,
+            syncer::SyncError::DATATYPE_ERROR,
             std::string("Error getting current sync state for ") +
                 extension_id_ + "/" + key + ": " + maybe_settings->error(),
             sync_processor_->type()));
@@ -339,6 +342,7 @@ syncer::SyncError SyncableSettingsStorage::OnSyncAdd(
   if (result->HasError()) {
     return syncer::SyncError(
         FROM_HERE,
+        syncer::SyncError::DATATYPE_ERROR,
         std::string("Error pushing sync add to local settings: ") +
             result->error(),
         sync_processor_->type());
@@ -358,6 +362,7 @@ syncer::SyncError SyncableSettingsStorage::OnSyncUpdate(
   if (result->HasError()) {
     return syncer::SyncError(
         FROM_HERE,
+        syncer::SyncError::DATATYPE_ERROR,
         std::string("Error pushing sync update to local settings: ") +
             result->error(),
         sync_processor_->type());
@@ -375,6 +380,7 @@ syncer::SyncError SyncableSettingsStorage::OnSyncDelete(
   if (result->HasError()) {
     return syncer::SyncError(
         FROM_HERE,
+        syncer::SyncError::DATATYPE_ERROR,
         std::string("Error pushing sync remove to local settings: ") +
             result->error(),
         sync_processor_->type());

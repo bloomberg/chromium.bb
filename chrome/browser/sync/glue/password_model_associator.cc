@@ -71,6 +71,7 @@ syncer::SyncError PasswordModelAssociator::AssociateModels(
                               ModelTypeToHistogramInt(syncer::PASSWORDS),
                               syncer::MODEL_TYPE_COUNT);
     return syncer::SyncError(FROM_HERE,
+                             syncer::SyncError::DATATYPE_ERROR,
                              "Could not get the password entries.",
                              model_type());
   }

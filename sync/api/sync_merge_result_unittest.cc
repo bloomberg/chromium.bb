@@ -24,7 +24,7 @@ TEST_F(SyncMergeResultTest, Unset) {
 }
 
 TEST_F(SyncMergeResultTest, SetError) {
-  SyncError error(FROM_HERE, "message", BOOKMARKS);
+  SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR, "message", BOOKMARKS);
   SyncMergeResult merge_result(BOOKMARKS);
 
   merge_result.set_error(error);

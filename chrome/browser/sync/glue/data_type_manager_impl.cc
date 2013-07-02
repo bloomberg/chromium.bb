@@ -35,9 +35,11 @@ GenerateCryptoErrorsForTypes(syncer::ModelTypeSet encrypted_types) {
   FailedDataTypesHandler::TypeErrorMap crypto_errors;
   for (syncer::ModelTypeSet::Iterator iter = encrypted_types.First();
          iter.Good(); iter.Inc()) {
-    crypto_errors[iter.Get()] = syncer::SyncError(FROM_HERE,
-                                                  "Cryptographer not ready.",
-                                                  iter.Get());
+    crypto_errors[iter.Get()] = syncer::SyncError(
+        FROM_HERE,
+        syncer::SyncError::CRYPTO_ERROR,
+        "",
+        iter.Get());
   }
   return crypto_errors;
 }
@@ -187,9 +189,7 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
         failed_data_types_handler_->GetCryptoErrorTypes());
     FailedDataTypesHandler::TypeErrorMap crypto_errors =
         GenerateCryptoErrorsForTypes(encrypted_types);
-    failed_data_types_handler_->UpdateFailedDataTypes(
-        crypto_errors,
-        FailedDataTypesHandler::CRYPTO);
+    failed_data_types_handler_->UpdateFailedDataTypes(crypto_errors);
   } else {
     failed_data_types_handler_->ResetCryptoErrors();
   }
@@ -298,7 +298,9 @@ void DataTypeManagerImpl::DownloadReady(
     std::string error_msg =
         "Configuration failed for types " +
         syncer::ModelTypeSetToString(failed_configuration_types);
-    syncer::SyncError error(FROM_HERE, error_msg,
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::UNRECOVERABLE_ERROR,
+                            error_msg,
                             failed_configuration_types.First().Get());
     Abort(UNRECOVERABLE_ERROR, error);
     return;
@@ -394,15 +396,12 @@ void DataTypeManagerImpl::OnModelAssociationDone(
           failed_data_types_handler_->GetCryptoErrorTypes());
       FailedDataTypesHandler::TypeErrorMap crypto_errors =
           GenerateCryptoErrorsForTypes(encrypted_types);
-      failed_data_types_handler_->UpdateFailedDataTypes(
-          crypto_errors,
-          FailedDataTypesHandler::CRYPTO);
+      failed_data_types_handler_->UpdateFailedDataTypes(crypto_errors);
     }
     if (!result.failed_data_types.empty()) {
       needs_reconfigure_ = true;
       failed_data_types_handler_->UpdateFailedDataTypes(
-          result.failed_data_types,
-          FailedDataTypesHandler::STARTUP);
+          result.failed_data_types);
     }
   }
 
@@ -489,7 +488,7 @@ void DataTypeManagerImpl::Abort(ConfigureStatus status,
   DCHECK_NE(OK, status);
   std::map<syncer::ModelType, syncer::SyncError> errors;
   if (error.IsSet())
-    errors[error.type()] = error;
+    errors[error.model_type()] = error;
   ConfigureResult result(status,
                          last_requested_types_,
                          errors,

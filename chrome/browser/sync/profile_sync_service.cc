@@ -860,16 +860,17 @@ void ProfileSyncService::DisableBrokenDatatype(
   // passed onto the change processor.
   DeactivateDataType(type);
 
-  syncer::SyncError error(from_here, message, type);
+  syncer::SyncError error(from_here,
+                          syncer::SyncError::DATATYPE_ERROR,
+                          message,
+                          type);
 
   std::map<syncer::ModelType, syncer::SyncError> errors;
   errors[type] = error;
 
   // Update this before posting a task. So if a configure happens before
   // the task that we are going to post, this type would still be disabled.
-  failed_data_types_handler_.UpdateFailedDataTypes(
-      errors,
-      FailedDataTypesHandler::RUNTIME);
+  failed_data_types_handler_.UpdateFailedDataTypes(errors);
 
   base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ProfileSyncService::ReconfigureDatatypeManager,
@@ -1277,7 +1278,7 @@ void ProfileSyncService::OnConfigureDone(
     std::string message =
         "Sync configuration failed with status " +
         DataTypeManager::ConfigureStatusToString(configure_status_) +
-        " during " + syncer::ModelTypeToString(error.type()) +
+        " during " + syncer::ModelTypeToString(error.model_type()) +
         ": " + error.message();
     LOG(ERROR) << "ProfileSyncService error: " << message;
     OnInternalUnrecoverableError(error.location(),

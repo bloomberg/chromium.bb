@@ -40,7 +40,9 @@ void FrontendDataTypeController::LoadModels(
   DCHECK(!model_load_callback.is_null());
 
   if (state_ != NOT_RUNNING) {
-    model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
+    model_load_callback.Run(type(),
+                            syncer::SyncError(FROM_HERE,
+                                              syncer::SyncError::DATATYPE_ERROR,
                                               "Model already running",
                                               type()));
     return;
@@ -170,7 +172,10 @@ bool FrontendDataTypeController::Associate() {
 
   bool sync_has_nodes = false;
   if (!model_associator()->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
-    syncer::SyncError error(FROM_HERE, "Failed to load sync nodes", type());
+    syncer::SyncError error(FROM_HERE,
+                            syncer::SyncError::UNRECOVERABLE_ERROR,
+                            "Failed to load sync nodes",
+                            type());
     local_merge_result.set_error(error);
     StartDone(UNRECOVERABLE_ERROR, local_merge_result, syncer_merge_result);
     return false;
@@ -223,7 +228,9 @@ void FrontendDataTypeController::AbortModelLoad() {
   state_ = NOT_RUNNING;
   ModelLoadCallback model_load_callback = model_load_callback_;
   model_load_callback_.Reset();
-  model_load_callback.Run(type(), syncer::SyncError(FROM_HERE,
+  model_load_callback.Run(type(),
+                          syncer::SyncError(FROM_HERE,
+                                            syncer::SyncError::DATATYPE_ERROR,
                                             "Aborted",
                                             type()));
 }
