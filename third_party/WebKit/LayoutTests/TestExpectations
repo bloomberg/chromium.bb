@@ -220,6 +220,7 @@ crbug.com/249707 [ Debug ] fast/dom/StyleSheet/gc-rule-children-wrappers.html [ 
 
 # Needs rebaseline.
 crbug.com/82280 fast/forms/select/listbox-appearance-basic.html [ Failure ]
+crbug.com/82280 fast/forms/disabled-select-change-index.html [ ImageOnlyFailure Pass ]
 
 crbug.com/239554 http/tests/security/frameNavigation/opener.html [ Pass Timeout ]
 
