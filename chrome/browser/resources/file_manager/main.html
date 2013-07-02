@@ -320,15 +320,17 @@
             </div>
           </div>
           <div class="preview-panel" visibility="hidden">
-            <div>
-              <div class="preview-thumbnails"></div>
-            </div>
-            <div id="preview-lines">
-              <div class="preview-summary">
-                <span class="preview-text"></span>
-                <span class="calculating-size" hidden></span>
+            <div class="left">
+              <div>
+                <div class="preview-thumbnails"></div>
               </div>
-              <div id="search-breadcrumbs" class="breadcrumbs"></div>
+              <div id="preview-lines">
+                <div class="preview-summary">
+                  <span class="preview-text"></span>
+                  <span class="calculating-size" hidden></span>
+                </div>
+                <div id="search-breadcrumbs" class="breadcrumbs"></div>
+              </div>
             </div>
             <div class="right buttonbar" visibleif="full-page">
               <button id="tasks" class="combobutton" menu="#tasks-menu"
@@ -340,23 +342,26 @@
           </div>
           <div id="unmounted-panel"></div>
           <div id="format-panel">
-              <div class="error"></div>
-              <button id="format-button" command="#format"></button>
+            <div class="error"></div>
+            <button id="format-button" command="#format"></button>
           </div>
         </div>
       </div>
     </div>
     <div class=dialog-footer invisibleif="full-page">
-      <button id="new-folder" i18n-content=NEW_FOLDER_BUTTON_LABEL
-              visibleif="saveas-file folder" command="#newfolder" tabindex="4">
-      </button>
-      <div id="filename-input-box" visibleif="saveas-file">
-        <div class=filename-label i18n-content=FILENAME_LABEL></div>
-        <input type=text spellcheck=false tabindex="5">
-      </div>
-      <div class=preparing-label i18n-content=PREPARING_LABEL></div>
-      <div class=progress-bar>
-        <div class=progress-track></div>
+      <div class="left">
+        <button id="new-folder" i18n-content=NEW_FOLDER_BUTTON_LABEL
+                visibleif="saveas-file folder" command="#newfolder"
+                tabindex="4">
+        </button>
+        <div id="filename-input-box">
+          <div class=filename-label i18n-content=FILENAME_LABEL></div>
+          <input type=text spellcheck=false tabindex="5">
+        </div>
+        <div class=preparing-label i18n-content=PREPARING_LABEL></div>
+        <div class=progress-bar>
+          <div class=progress-track></div>
+        </div>
       </div>
       <div class="right buttonbar">
         <select id="file-type"></select>

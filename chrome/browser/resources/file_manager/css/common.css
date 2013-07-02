@@ -120,10 +120,6 @@ input.common[type='checkbox']::after {
   height: 31px;
 }
 
-.buttonbar.right {
-  -webkit-box-pack: end;
-}
-
 .buttonbar button:active img {
   opacity: 1.0;
 }

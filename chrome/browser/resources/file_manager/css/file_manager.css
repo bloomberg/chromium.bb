@@ -489,6 +489,7 @@ div.splitter {
 }
 
 .dialog-footer .progress-bar {
+  -webkit-box-flex: 1;
   -webkit-margin-end: 20px;
   -webkit-margin-start: 20px;
 }
@@ -1093,6 +1094,19 @@ input.rename {
   opacity: 0;
 }
 
+.preview-panel > .left,
+.dialog-footer > .left {
+  -webkit-box-align: center;
+  -webkit-box-flex: 1;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.preview-panel > .right,
+.dialog-footer > .right {
+  -webkit-box-pack: end;
+}
+
 .preview-thumbnails {
   -webkit-box-orient: horizontal;
   display: -webkit-box;
@@ -1421,6 +1435,10 @@ list .detail-name > .file-checkbox::before,
   color: #333;
   display: -webkit-box;
   padding-right: 4px;
+}
+
+body:not([type='saveas-file']) #filename-input-box {
+  display: none;
 }
 
 /* A vertical spring. */
