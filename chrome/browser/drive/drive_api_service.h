@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/drive/drive_service_interface.h"
@@ -18,6 +19,7 @@ class Profile;
 
 namespace base {
 class FilePath;
+class TaskRunner;
 }
 
 namespace google_apis {
@@ -37,6 +39,7 @@ class DriveAPIService : public DriveServiceInterface,
                         public google_apis::AuthServiceObserver {
  public:
   // |url_request_context_getter| is used to initialize URLFetcher.
+  // |blocking_task_runner| is used to run blocking tasks (like parsing JSON).
   // |base_url| is used to generate URLs for communication with the drive API.
   // |base_download_url| is used to generate URLs for downloading file from the
   // drive API.
@@ -44,6 +47,7 @@ class DriveAPIService : public DriveServiceInterface,
   // requests issues through the service if the value is not empty.
   DriveAPIService(
       net::URLRequestContextGetter* url_request_context_getter,
+      base::TaskRunner* blocking_task_runner,
       const GURL& base_url,
       const GURL& base_download_url,
       const std::string& custom_user_agent);
@@ -161,6 +165,7 @@ class DriveAPIService : public DriveServiceInterface,
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
   net::URLRequestContextGetter* url_request_context_getter_;
+  scoped_refptr<base::TaskRunner> blocking_task_runner_;
   Profile* profile_;
   scoped_ptr<google_apis::RequestSender> sender_;
   ObserverList<DriveServiceObserver> observers_;

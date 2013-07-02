@@ -8,10 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/auth_service.h"
@@ -131,6 +129,7 @@ void DidParseResourceListOnBlockingPool(
 // Sends a task to parse the JSON value into ResourceList on blocking pool,
 // with a callback which is called when the task is done.
 void ParseResourceListOnBlockingPoolAndRun(
+    scoped_refptr<base::TaskRunner> blocking_task_runner,
     const GetResourceListCallback& callback,
     GDataErrorCode error,
     scoped_ptr<base::Value> value) {
@@ -144,7 +143,7 @@ void ParseResourceListOnBlockingPoolAndRun(
   }
 
   PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
+      blocking_task_runner.get(),
       FROM_HERE,
       base::Bind(&ParseResourceListOnBlockingPool, base::Passed(&value)),
       base::Bind(&DidParseResourceListOnBlockingPool, callback));
@@ -261,10 +260,12 @@ const char kDriveApiRootDirectoryResourceId[] = "root";
 
 DriveAPIService::DriveAPIService(
     net::URLRequestContextGetter* url_request_context_getter,
+    base::TaskRunner* blocking_task_runner,
     const GURL& base_url,
     const GURL& base_download_url,
     const std::string& custom_user_agent)
     : url_request_context_getter_(url_request_context_getter),
+      blocking_task_runner_(blocking_task_runner),
       profile_(NULL),
       url_generator_(base_url, base_download_url),
       custom_user_agent_(custom_user_agent) {
@@ -332,7 +333,9 @@ CancelCallback DriveAPIService::GetAllResourceList(
           false,  // include deleted
           0,
           kMaxNumFilesResourcePerRequest,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun,
+                     blocking_task_runner_,
+                     callback)));
 }
 
 CancelCallback DriveAPIService::GetResourceListInDirectory(
@@ -358,7 +361,9 @@ CancelCallback DriveAPIService::GetResourceListInDirectory(
               drive::util::EscapeQueryStringValue(
                   directory_resource_id).c_str()),
           kMaxNumFilesResourcePerRequest,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun,
+                     blocking_task_runner_,
+                     callback)));
 }
 
 CancelCallback DriveAPIService::Search(
@@ -374,7 +379,9 @@ CancelCallback DriveAPIService::Search(
           url_generator_,
           drive::util::TranslateQuery(search_query),
           kMaxNumFilesResourcePerRequestForSearch,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun,
+                     blocking_task_runner_,
+                     callback)));
 }
 
 CancelCallback DriveAPIService::SearchByTitle(
@@ -401,7 +408,9 @@ CancelCallback DriveAPIService::SearchByTitle(
           url_generator_,
           query,
           kMaxNumFilesResourcePerRequest,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun,
+                     blocking_task_runner_,
+                     callback)));
 }
 
 CancelCallback DriveAPIService::GetChangeList(
@@ -417,7 +426,9 @@ CancelCallback DriveAPIService::GetChangeList(
           true,  // include deleted
           start_changestamp,
           kMaxNumFilesResourcePerRequest,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun,
+                     blocking_task_runner_,
+                     callback)));
 }
 
 CancelCallback DriveAPIService::ContinueGetResourceList(
@@ -430,7 +441,9 @@ CancelCallback DriveAPIService::ContinueGetResourceList(
       new ContinueGetFileListRequest(
           sender_.get(),
           override_url,
-          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun,
+                     blocking_task_runner_,
+                     callback)));
 }
 
 CancelCallback DriveAPIService::GetResourceEntry(

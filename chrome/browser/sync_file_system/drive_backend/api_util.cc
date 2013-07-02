@@ -152,12 +152,14 @@ APIUtil::APIUtil(Profile* profile)
   if (IsDriveAPIDisabled()) {
     drive_service_.reset(new drive::GDataWapiService(
         profile->GetRequestContext(),
+        content::BrowserThread::GetBlockingPool(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseDownloadUrlForProduction),
         std::string() /* custom_user_agent */));
   } else {
     drive_service_.reset(new drive::DriveAPIService(
         profile->GetRequestContext(),
+        content::BrowserThread::GetBlockingPool(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
         GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
         std::string() /* custom_user_agent */));

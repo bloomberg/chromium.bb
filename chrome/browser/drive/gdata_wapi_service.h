@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -20,6 +21,7 @@ class Profile;
 
 namespace base {
 class FilePath;
+class TaskRunner;
 }
 
 namespace google_apis {
@@ -41,11 +43,13 @@ class GDataWapiService : public DriveServiceInterface,
                          public google_apis::AuthServiceObserver {
  public:
   // |url_request_context_getter| is used to initialize URLFetcher.
+  // |blocking_task_runner| is used to run blocking tasks (like parsing JSON).
   // |base_url| is used to generate URLs for communicating with the WAPI
   // |base_download_url| is used to generate URLs for downloading file with WAPI
   // |custom_user_agent| is used for the User-Agent header in HTTP
   // requests issued through the service if the value is not empty.
   GDataWapiService(net::URLRequestContextGetter* url_request_context_getter,
+                   base::TaskRunner* blocking_task_runner,
                    const GURL& base_url,
                    const GURL& base_download_url,
                    const std::string& custom_user_agent);
@@ -165,6 +169,7 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
   net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
+  scoped_refptr<base::TaskRunner> blocking_task_runner_;
   scoped_ptr<google_apis::RequestSender> sender_;
   ObserverList<DriveServiceObserver> observers_;
   // Request objects should hold a copy of this, rather than a const
