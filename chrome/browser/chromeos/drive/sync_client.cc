@@ -322,9 +322,15 @@ void SyncClient::OnUploadFileComplete(const std::string& resource_id,
   if (error == FILE_ERROR_OK) {
     DVLOG(1) << "Uploaded " << resource_id;
   } else {
-    // TODO(satorux): We should re-queue if the error is recoverable.
-    LOG(WARNING) << "Failed to upload " << resource_id << ": "
-                 << FileErrorToString(error);
+    switch (error) {
+      case FILE_ERROR_NO_CONNECTION:
+        // Re-queue the task so that we'll retry once the connection is back.
+        AddTaskToQueue(UPLOAD, resource_id);
+        break;
+      default:
+        LOG(WARNING) << "Failed to upload " << resource_id << ": "
+                     << FileErrorToString(error);
+    }
   }
 }
 

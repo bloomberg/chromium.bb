@@ -12,6 +12,7 @@
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -79,6 +80,9 @@ class SyncClientTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     profile_.reset(new TestingProfile);
+
+    fake_network_change_notifier_.reset(
+        new test_util::FakeNetworkChangeNotifier);
 
     drive_service_.reset(new SyncClientTestDriveService);
     drive_service_->LoadResourceListForWapi("gdata/empty_feed.json");
@@ -184,6 +188,8 @@ class SyncClientTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<test_util::FakeNetworkChangeNotifier>
+      fake_network_change_notifier_;
   scoped_ptr<SyncClientTestDriveService> drive_service_;
   DummyOperationObserver observer_;
   scoped_ptr<JobScheduler> scheduler_;
@@ -287,6 +293,49 @@ TEST_F(SyncClientTest, ExistingPinnedFiles) {
                                            std::string(), &cache_file));
   EXPECT_TRUE(file_util::ReadFileToString(cache_file, &content));
   EXPECT_EQ(kLocalContent, content);
+}
+
+TEST_F(SyncClientTest, RetryOnDisconnection) {
+  // Let the service go down.
+  drive_service_->set_offline(true);
+  // Change the network connection state after some delay, to test that
+  // FILE_ERROR_NO_CONNECTION is handled by SyncClient correctly.
+  // Without this delay, JobScheduler will keep the jobs unrun and SyncClient
+  // will receive no error.
+  base::MessageLoopProxy::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&test_util::FakeNetworkChangeNotifier::SetConnectionType,
+                 base::Unretained(fake_network_change_notifier_.get()),
+                 net::NetworkChangeNotifier::CONNECTION_NONE),
+      TestTimeouts::tiny_timeout());
+
+  // Try fetch and upload.
+  sync_client_->AddFetchTask(resource_ids_["foo"]);
+  sync_client_->AddUploadTask(resource_ids_["dirty"]);
+  base::RunLoop().RunUntilIdle();
+
+  // Not yet fetched nor uploaded.
+  FileCacheEntry cache_entry;
+  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["foo"], std::string(),
+                                    &cache_entry));
+  EXPECT_FALSE(cache_entry.is_present());
+  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["dirty"], std::string(),
+                                    &cache_entry));
+  EXPECT_TRUE(cache_entry.is_dirty());
+
+  // Switch to online.
+  fake_network_change_notifier_->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  drive_service_->set_offline(false);
+  base::RunLoop().RunUntilIdle();
+
+  // Fetched and uploaded.
+  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["foo"], std::string(),
+                                    &cache_entry));
+  EXPECT_TRUE(cache_entry.is_present());
+  EXPECT_TRUE(cache_->GetCacheEntry(resource_ids_["dirty"], std::string(),
+                                    &cache_entry));
+  EXPECT_FALSE(cache_entry.is_dirty());
 }
 
 }  // namespace internal
