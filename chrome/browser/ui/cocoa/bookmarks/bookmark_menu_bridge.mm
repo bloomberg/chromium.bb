@@ -9,6 +9,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -256,6 +257,12 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
     // Add menus for 'Open All Bookmarks'.
     [menu addItem:[NSMenuItem separatorItem]];
     bool enabled = child_count != 0;
+
+    IncognitoModePrefs::Availability incognito_availability =
+        IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
+    bool incognito_enabled =
+        enabled && incognito_availability != IncognitoModePrefs::DISABLED;
+
     AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL,
                   IDS_BOOKMARK_BAR_OPEN_ALL,
                   node, menu, enabled);
@@ -264,7 +271,7 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
                   node, menu, enabled);
     AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
                   IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
-                  node, menu, enabled);
+                  node, menu, incognito_enabled);
   }
 }
 
