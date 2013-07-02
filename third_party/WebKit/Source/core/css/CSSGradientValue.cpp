@@ -28,7 +28,7 @@
 
 #include "CSSValueKeywords.h"
 #include "core/css/CSSCalculationValue.h"
-#include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleResolverState.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/GeneratorGeneratedImage.h"
@@ -114,11 +114,11 @@ struct GradientStop {
     { }
 };
 
-PassRefPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesResolved(StyleResolver* styleResolver)
+PassRefPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesResolved(StyleResolverState& styleResolverState)
 {
     bool derived = false;
     for (unsigned i = 0; i < m_stops.size(); i++)
-        if (styleResolver->colorFromPrimitiveValueIsDerivedFromElement(m_stops[i].m_color.get())) {
+        if (m_stops[i].m_color->colorIsDerivedFromElement()) {
             m_stops[i].m_colorIsDerivedFromElement = true;
             derived = true;
             break;
@@ -137,7 +137,7 @@ PassRefPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesResolved(StyleR
     }
 
     for (unsigned i = 0; i < result->m_stops.size(); i++)
-        result->m_stops[i].m_resolvedColor = styleResolver->resolveColorFromPrimitiveValue(result->m_stops[i].m_color.get());
+        result->m_stops[i].m_resolvedColor = styleResolverState.resolveColorFromPrimitiveValue(result->m_stops[i].m_color.get());
 
     return result.release();
 }
