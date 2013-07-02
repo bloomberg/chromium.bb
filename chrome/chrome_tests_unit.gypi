@@ -1141,6 +1141,7 @@
         'browser/sessions/session_backend_unittest.cc',
         'browser/sessions/session_service_unittest.cc',
         'browser/sessions/session_types_unittest.cc',
+        'browser/local_discovery/local_domain_resolver_unittest.cc',
         'browser/local_discovery/service_discovery_client_unittest.cc',
         'browser/shell_integration_unittest.cc',
         'browser/shell_integration_win_unittest.cc',
@@ -2516,6 +2517,7 @@
         }],
         ['enable_mdns != 1', {
             'sources!' : [
+              'browser/local_discovery/local_domain_resolver_unittest.cc',
               'browser/local_discovery/service_discovery_client_unittest.cc',
             ],
         }],

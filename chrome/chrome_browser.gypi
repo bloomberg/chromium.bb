@@ -1800,6 +1800,8 @@
         'browser/service/service_process_control.cc',
         'browser/service/service_process_control_mac.mm',
         'browser/service/service_process_control.h',
+        'browser/local_discovery/local_domain_resolver.cc',
+        'browser/local_discovery/local_domain_resolver.h',
         'browser/local_discovery/service_discovery_client.cc',
         'browser/local_discovery/service_discovery_client.h',
         'browser/local_discovery/service_discovery_client_impl.cc',
@@ -3178,6 +3180,8 @@
         }],
         ['enable_mdns != 1', {
             'sources!': [
+              'browser/local_discovery/local_domain_resolver.cc',
+              'browser/local_discovery/local_domain_resolver.h',
               'browser/local_discovery/service_discovery_client.cc',
               'browser/local_discovery/service_discovery_client.h',
               'browser/local_discovery/service_discovery_client_impl.cc',
