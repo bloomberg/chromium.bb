@@ -103,7 +103,8 @@ void LocalTranslator::TranslateOpenVPN() {
   // Copy only the first entry if existing.
   const base::ListValue* certKUs = NULL;
   std::string certKU;
-  if (onc_object_->GetListWithoutPathExpansion(vpn::kRemoteCertKU, &certKUs) &&
+  if (onc_object_->GetListWithoutPathExpansion(openvpn::kRemoteCertKU,
+                                               &certKUs) &&
       certKUs->GetString(0, &certKU)) {
     shill_dictionary_->SetStringWithoutPathExpansion(
         flimflam::kOpenVPNRemoteCertKUProperty, certKU);
@@ -112,7 +113,8 @@ void LocalTranslator::TranslateOpenVPN() {
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
        it.Advance()) {
     scoped_ptr<base::Value> translated;
-    if (it.key() == vpn::kSaveCredentials || it.key() == vpn::kRemoteCertKU) {
+    if (it.key() == vpn::kSaveCredentials ||
+        it.key() == openvpn::kRemoteCertKU) {
       translated.reset(it.value().DeepCopy());
     } else {
       // Shill wants all Provider/VPN fields to be strings.

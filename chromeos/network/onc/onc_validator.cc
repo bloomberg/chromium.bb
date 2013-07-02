@@ -580,7 +580,7 @@ bool Validator::ValidateVPN(
 bool Validator::ValidateIPsec(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
-  using namespace onc::vpn;
+  using namespace onc::ipsec;
   using namespace onc::certificate;
 
   static const char* kValidAuthentications[] = { kPSK, kCert, NULL };
@@ -588,7 +588,7 @@ bool Validator::ValidateIPsec(
   // Using strict bit-wise OR to check all conditions.
   if (FieldExistsAndHasNoValidValue(*result, kAuthenticationType,
                                     kValidAuthentications) |
-      FieldExistsAndHasNoValidValue(*result, kClientCertType,
+      FieldExistsAndHasNoValidValue(*result, vpn::kClientCertType,
                                     kValidCertTypes)) {
     return false;
   }
@@ -598,19 +598,19 @@ bool Validator::ValidateIPsec(
   std::string auth;
   result->GetStringWithoutPathExpansion(kAuthenticationType, &auth);
   if (auth == kCert) {
-    allRequiredExist &= RequireField(*result, kClientCertType) &
+    allRequiredExist &= RequireField(*result, vpn::kClientCertType) &
         RequireField(*result, kServerCARef);
   }
   std::string cert_type;
-  result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
+  result->GetStringWithoutPathExpansion(vpn::kClientCertType, &cert_type);
 
   if (CertPatternInDevicePolicy(cert_type))
     return false;
 
   if (cert_type == kPattern)
-    allRequiredExist &= RequireField(*result, kClientCertPattern);
+    allRequiredExist &= RequireField(*result, vpn::kClientCertPattern);
   else if (cert_type == kRef)
-    allRequiredExist &= RequireField(*result, kClientCertRef);
+    allRequiredExist &= RequireField(*result, vpn::kClientCertRef);
 
   return !error_on_missing_field_ || allRequiredExist;
 }
@@ -618,7 +618,6 @@ bool Validator::ValidateIPsec(
 bool Validator::ValidateOpenVPN(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
-  using namespace onc::vpn;
   using namespace onc::openvpn;
   using namespace onc::certificate;
 
@@ -632,23 +631,24 @@ bool Validator::ValidateOpenVPN(
   // Using strict bit-wise OR to check all conditions.
   if (FieldExistsAndHasNoValidValue(*result, kAuthRetry,
                                     kValidAuthRetryValues) |
-      FieldExistsAndHasNoValidValue(*result, kClientCertType, kValidCertTypes) |
+      FieldExistsAndHasNoValidValue(*result, vpn::kClientCertType,
+                                    kValidCertTypes) |
       FieldExistsAndHasNoValidValue(*result, kRemoteCertTLS,
                                     kValidCertTlsValues)) {
     return false;
   }
 
-  bool allRequiredExist = RequireField(*result, kClientCertType);
+  bool allRequiredExist = RequireField(*result, vpn::kClientCertType);
   std::string cert_type;
-  result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
+  result->GetStringWithoutPathExpansion(vpn::kClientCertType, &cert_type);
 
   if (CertPatternInDevicePolicy(cert_type))
     return false;
 
   if (cert_type == kPattern)
-    allRequiredExist &= RequireField(*result, kClientCertPattern);
+    allRequiredExist &= RequireField(*result, vpn::kClientCertPattern);
   else if (cert_type == kRef)
-    allRequiredExist &= RequireField(*result, kClientCertRef);
+    allRequiredExist &= RequireField(*result, vpn::kClientCertRef);
 
   return !error_on_missing_field_ || allRequiredExist;
 }

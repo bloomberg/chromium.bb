@@ -122,14 +122,15 @@ void ShillToONCTranslator::TranslateOpenVPN() {
           flimflam::kOpenVPNRemoteCertKUProperty, &certKU)) {
     scoped_ptr<base::ListValue> certKUs(new base::ListValue);
     certKUs->AppendString(certKU);
-    onc_object_->SetWithoutPathExpansion(vpn::kRemoteCertKU, certKUs.release());
+    onc_object_->SetWithoutPathExpansion(openvpn::kRemoteCertKU,
+                                         certKUs.release());
   }
 
   for (const OncFieldSignature* field_signature = onc_signature_->fields;
        field_signature->onc_field_name != NULL; ++field_signature) {
     const std::string& onc_field_name = field_signature->onc_field_name;
     if (onc_field_name == vpn::kSaveCredentials ||
-        onc_field_name == vpn::kRemoteCertKU) {
+        onc_field_name == openvpn::kRemoteCertKU) {
       CopyProperty(field_signature);
       continue;
     }

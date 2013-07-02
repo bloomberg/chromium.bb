@@ -118,20 +118,20 @@ void Normalizer::NormalizeEAP(base::DictionaryValue* eap) {
 }
 
 void Normalizer::NormalizeIPsec(base::DictionaryValue* ipsec) {
-  using namespace vpn;
+  using namespace ipsec;
 
   std::string auth_type;
   ipsec->GetStringWithoutPathExpansion(kAuthenticationType, &auth_type);
-  RemoveEntryUnless(ipsec, kClientCertType, auth_type == kCert);
+  RemoveEntryUnless(ipsec, vpn::kClientCertType, auth_type == kCert);
   RemoveEntryUnless(ipsec, kServerCARef, auth_type == kCert);
   RemoveEntryUnless(ipsec, kPSK, auth_type == kPSK);
-  RemoveEntryUnless(ipsec, kSaveCredentials, auth_type == kPSK);
+  RemoveEntryUnless(ipsec, vpn::kSaveCredentials, auth_type == kPSK);
 
   std::string clientcert_type;
-  ipsec->GetStringWithoutPathExpansion(kClientCertType, &clientcert_type);
-  RemoveEntryUnless(ipsec, kClientCertPattern,
+  ipsec->GetStringWithoutPathExpansion(vpn::kClientCertType, &clientcert_type);
+  RemoveEntryUnless(ipsec, vpn::kClientCertPattern,
                     clientcert_type == certificate::kPattern);
-  RemoveEntryUnless(ipsec, kClientCertRef,
+  RemoveEntryUnless(ipsec, vpn::kClientCertRef,
                     clientcert_type == certificate::kRef);
 
   int ike_version = -1;

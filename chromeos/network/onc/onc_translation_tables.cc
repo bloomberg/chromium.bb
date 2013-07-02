@@ -40,13 +40,13 @@ const FieldTranslationEntry eap_fields[] = {
 
 const FieldTranslationEntry ipsec_fields[] = {
   // Ignored by Shill, not necessary to synchronize.
-  // { vpn::kAuthenticationType, flimflam::kL2tpIpsecAuthenticationType },
-  { vpn::kGroup, shill::kL2tpIpsecTunnelGroupProperty },
+  // { ipsec::kAuthenticationType, flimflam::kL2tpIpsecAuthenticationType },
+  { ipsec::kGroup, shill::kL2tpIpsecTunnelGroupProperty },
   // Ignored by Shill, not necessary to synchronize.
-  // { vpn::kIKEVersion, flimflam::kL2tpIpsecIkeVersion },
-  { vpn::kPSK, flimflam::kL2tpIpsecPskProperty },
+  // { ipsec::kIKEVersion, flimflam::kL2tpIpsecIkeVersion },
+  { ipsec::kPSK, flimflam::kL2tpIpsecPskProperty },
   { vpn::kSaveCredentials, flimflam::kSaveCredentialsProperty },
-  { vpn::kServerCARef, flimflam::kL2tpIpsecCaCertNssProperty },
+  { ipsec::kServerCARef, flimflam::kL2tpIpsecCaCertNssProperty },
   { NULL }
 };
 
@@ -60,30 +60,30 @@ const FieldTranslationEntry l2tp_fields[] = {
 };
 
 const FieldTranslationEntry openvpn_fields[] = {
-  { vpn::kAuth, flimflam::kOpenVPNAuthProperty },
-  { vpn::kAuthNoCache, flimflam::kOpenVPNAuthNoCacheProperty },
-  { vpn::kAuthRetry, flimflam::kOpenVPNAuthRetryProperty },
-  { vpn::kCipher, flimflam::kOpenVPNCipherProperty },
-  { vpn::kCompLZO, flimflam::kOpenVPNCompLZOProperty },
-  { vpn::kCompNoAdapt, flimflam::kOpenVPNCompNoAdaptProperty },
-  { vpn::kKeyDirection, flimflam::kOpenVPNKeyDirectionProperty },
-  { vpn::kNsCertType, flimflam::kOpenVPNNsCertTypeProperty },
+  { openvpn::kAuth, flimflam::kOpenVPNAuthProperty },
+  { openvpn::kAuthNoCache, flimflam::kOpenVPNAuthNoCacheProperty },
+  { openvpn::kAuthRetry, flimflam::kOpenVPNAuthRetryProperty },
+  { openvpn::kCipher, flimflam::kOpenVPNCipherProperty },
+  { openvpn::kCompLZO, flimflam::kOpenVPNCompLZOProperty },
+  { openvpn::kCompNoAdapt, flimflam::kOpenVPNCompNoAdaptProperty },
+  { openvpn::kKeyDirection, flimflam::kOpenVPNKeyDirectionProperty },
+  { openvpn::kNsCertType, flimflam::kOpenVPNNsCertTypeProperty },
   { vpn::kPassword, flimflam::kOpenVPNPasswordProperty },
-  { vpn::kPort, flimflam::kOpenVPNPortProperty },
-  { vpn::kProto, flimflam::kOpenVPNProtoProperty },
-  { vpn::kPushPeerInfo, flimflam::kOpenVPNPushPeerInfoProperty },
-  { vpn::kRemoteCertEKU, flimflam::kOpenVPNRemoteCertEKUProperty },
+  { openvpn::kPort, flimflam::kOpenVPNPortProperty },
+  { openvpn::kProto, flimflam::kOpenVPNProtoProperty },
+  { openvpn::kPushPeerInfo, flimflam::kOpenVPNPushPeerInfoProperty },
+  { openvpn::kRemoteCertEKU, flimflam::kOpenVPNRemoteCertEKUProperty },
   // This field is converted during translation, see onc_translator_*.
-  // { vpn::kRemoteCertKU, flimflam::kOpenVPNRemoteCertKUProperty },
-  { vpn::kRemoteCertTLS, flimflam::kOpenVPNRemoteCertTLSProperty },
-  { vpn::kRenegSec, flimflam::kOpenVPNRenegSecProperty },
+  // { openvpn::kRemoteCertKU, flimflam::kOpenVPNRemoteCertKUProperty },
+  { openvpn::kRemoteCertTLS, flimflam::kOpenVPNRemoteCertTLSProperty },
+  { openvpn::kRenegSec, flimflam::kOpenVPNRenegSecProperty },
   { vpn::kSaveCredentials, flimflam::kSaveCredentialsProperty },
-  { vpn::kServerCARef, flimflam::kOpenVPNCaCertNSSProperty },
-  { vpn::kServerPollTimeout, flimflam::kOpenVPNServerPollTimeoutProperty },
-  { vpn::kShaper, flimflam::kOpenVPNShaperProperty },
-  { vpn::kStaticChallenge, flimflam::kOpenVPNStaticChallengeProperty },
-  { vpn::kTLSAuthContents, flimflam::kOpenVPNTLSAuthContentsProperty },
-  { vpn::kTLSRemote, flimflam::kOpenVPNTLSRemoteProperty },
+  { openvpn::kServerCARef, flimflam::kOpenVPNCaCertNSSProperty },
+  { openvpn::kServerPollTimeout, flimflam::kOpenVPNServerPollTimeoutProperty },
+  { openvpn::kShaper, flimflam::kOpenVPNShaperProperty },
+  { openvpn::kStaticChallenge, flimflam::kOpenVPNStaticChallengeProperty },
+  { openvpn::kTLSAuthContents, flimflam::kOpenVPNTLSAuthContentsProperty },
+  { openvpn::kTLSRemote, flimflam::kOpenVPNTLSRemoteProperty },
   { vpn::kUsername, flimflam::kOpenVPNUserProperty },
   { NULL }
 };

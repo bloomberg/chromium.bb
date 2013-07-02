@@ -453,14 +453,20 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   if (vpn) {
     ProviderType type = vpn->provider_type();
     std::string type_dict_name = ProviderTypeToONCDictKey(type);
-    ParseVPNUIProperty(&ca_cert_ui_data_, vpn, type_dict_name,
-                       onc::vpn::kServerCARef);
-    ParseVPNUIProperty(&psk_passphrase_ui_data_, vpn, type_dict_name,
-                       onc::vpn::kPSK);
+
+    if (type == PROVIDER_TYPE_L2TP_IPSEC_PSK) {
+      ParseVPNUIProperty(&ca_cert_ui_data_, vpn, type_dict_name,
+                         onc::ipsec::kServerCARef);
+      ParseVPNUIProperty(&psk_passphrase_ui_data_, vpn, type_dict_name,
+                         onc::ipsec::kPSK);
+      ParseVPNUIProperty(&group_name_ui_data_, vpn, type_dict_name,
+                         onc::ipsec::kGroup);
+    } else { // OpenVPN
+      ParseVPNUIProperty(&ca_cert_ui_data_, vpn, type_dict_name,
+                         onc::openvpn::kServerCARef);
+    }
     ParseVPNUIProperty(&user_cert_ui_data_, vpn, type_dict_name,
                        onc::vpn::kClientCertRef);
-    ParseVPNUIProperty(&group_name_ui_data_, vpn, type_dict_name,
-                       onc::vpn::kGroup);
 
     const std::string credentials_dict_name(
         type == PROVIDER_TYPE_L2TP_IPSEC_PSK ?

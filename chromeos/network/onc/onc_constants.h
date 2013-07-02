@@ -218,29 +218,44 @@ CHROMEOS_EXPORT extern const char kUseSystemCAs[];
 }  // namespace eap
 
 namespace vpn {
-CHROMEOS_EXPORT extern const char kAuthNoCache[];
-CHROMEOS_EXPORT extern const char kAuthRetry[];
-CHROMEOS_EXPORT extern const char kAuth[];
-CHROMEOS_EXPORT extern const char kAuthenticationType[];
 CHROMEOS_EXPORT extern const char kAutoConnect[];
-CHROMEOS_EXPORT extern const char kCert[];
-CHROMEOS_EXPORT extern const char kCipher[];
 CHROMEOS_EXPORT extern const char kClientCertPattern[];
 CHROMEOS_EXPORT extern const char kClientCertRef[];
 CHROMEOS_EXPORT extern const char kClientCertType[];
-CHROMEOS_EXPORT extern const char kCompLZO[];
-CHROMEOS_EXPORT extern const char kCompNoAdapt[];
+CHROMEOS_EXPORT extern const char kHost[];
+CHROMEOS_EXPORT extern const char kIPsec[];
+CHROMEOS_EXPORT extern const char kL2TP[];
+CHROMEOS_EXPORT extern const char kOpenVPN[];
+CHROMEOS_EXPORT extern const char kPassword[];
+CHROMEOS_EXPORT extern const char kSaveCredentials[];
+CHROMEOS_EXPORT extern const char kTypeL2TP_IPsec[];
+CHROMEOS_EXPORT extern const char kType[];
+CHROMEOS_EXPORT extern const char kUsername[];
+}  // namespace vpn
+
+namespace ipsec {
+CHROMEOS_EXPORT extern const char kAuthenticationType[];
+CHROMEOS_EXPORT extern const char kCert[];
 CHROMEOS_EXPORT extern const char kEAP[];
 CHROMEOS_EXPORT extern const char kGroup[];
-CHROMEOS_EXPORT extern const char kHost[];
 CHROMEOS_EXPORT extern const char kIKEVersion[];
-CHROMEOS_EXPORT extern const char kIPsec[];
-CHROMEOS_EXPORT extern const char kKeyDirection[];
-CHROMEOS_EXPORT extern const char kL2TP[];
-CHROMEOS_EXPORT extern const char kNsCertType[];
-CHROMEOS_EXPORT extern const char kOpenVPN[];
 CHROMEOS_EXPORT extern const char kPSK[];
-CHROMEOS_EXPORT extern const char kPassword[];
+CHROMEOS_EXPORT extern const char kServerCARef[];
+CHROMEOS_EXPORT extern const char kXAUTH[];
+}  // namespace ipsec
+
+namespace openvpn {
+CHROMEOS_EXPORT extern const char kAuthNoCache[];
+CHROMEOS_EXPORT extern const char kAuthRetry[];
+CHROMEOS_EXPORT extern const char kAuth[];
+CHROMEOS_EXPORT extern const char kCipher[];
+CHROMEOS_EXPORT extern const char kCompLZO[];
+CHROMEOS_EXPORT extern const char kCompNoAdapt[];
+CHROMEOS_EXPORT extern const char kInteract[];
+CHROMEOS_EXPORT extern const char kKeyDirection[];
+CHROMEOS_EXPORT extern const char kNoInteract[];
+CHROMEOS_EXPORT extern const char kNone[];
+CHROMEOS_EXPORT extern const char kNsCertType[];
 CHROMEOS_EXPORT extern const char kPort[];
 CHROMEOS_EXPORT extern const char kProto[];
 CHROMEOS_EXPORT extern const char kPushPeerInfo[];
@@ -248,26 +263,15 @@ CHROMEOS_EXPORT extern const char kRemoteCertEKU[];
 CHROMEOS_EXPORT extern const char kRemoteCertKU[];
 CHROMEOS_EXPORT extern const char kRemoteCertTLS[];
 CHROMEOS_EXPORT extern const char kRenegSec[];
-CHROMEOS_EXPORT extern const char kSaveCredentials[];
 CHROMEOS_EXPORT extern const char kServerCARef[];
 CHROMEOS_EXPORT extern const char kServerCertRef[];
 CHROMEOS_EXPORT extern const char kServerPollTimeout[];
+CHROMEOS_EXPORT extern const char kServer[];
 CHROMEOS_EXPORT extern const char kShaper[];
 CHROMEOS_EXPORT extern const char kStaticChallenge[];
 CHROMEOS_EXPORT extern const char kTLSAuthContents[];
 CHROMEOS_EXPORT extern const char kTLSRemote[];
-CHROMEOS_EXPORT extern const char kTypeL2TP_IPsec[];
-CHROMEOS_EXPORT extern const char kType[];
-CHROMEOS_EXPORT extern const char kUsername[];
 CHROMEOS_EXPORT extern const char kVerb[];
-CHROMEOS_EXPORT extern const char kXAUTH[];
-}  // namespace vpn
-
-namespace openvpn {
-CHROMEOS_EXPORT extern const char kNone[];
-CHROMEOS_EXPORT extern const char kInteract[];
-CHROMEOS_EXPORT extern const char kNoInteract[];
-CHROMEOS_EXPORT extern const char kServer[];
 }  // namespace openvpn
 
 namespace substitutes {

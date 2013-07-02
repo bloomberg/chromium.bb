@@ -67,18 +67,18 @@ const OncFieldSignature eap_fields[] = {
 
 const OncFieldSignature ipsec_fields[] = {
   { kRecommended, &kRecommendedSignature },
-  { vpn::kAuthenticationType, &kStringSignature },
+  { ipsec::kAuthenticationType, &kStringSignature },
   { vpn::kClientCertPattern, &kCertificatePatternSignature },
   { vpn::kClientCertRef, &kStringSignature },
   { vpn::kClientCertType, &kStringSignature },
-  { vpn::kGroup, &kStringSignature },
-  { vpn::kIKEVersion, &kIntegerSignature },
-  { vpn::kPSK, &kStringSignature },
+  { ipsec::kGroup, &kStringSignature },
+  { ipsec::kIKEVersion, &kIntegerSignature },
+  { ipsec::kPSK, &kStringSignature },
   { vpn::kSaveCredentials, &kBoolSignature },
-  { vpn::kServerCARef, &kStringSignature },
+  { ipsec::kServerCARef, &kStringSignature },
   // Not yet supported.
-  //  { vpn::kEAP, &kEAPSignature },
-  //  { vpn::kXAUTH, &kXAUTHSignature },
+  //  { ipsec::kEAP, &kEAPSignature },
+  //  { ipsec::kXAUTH, &kXAUTHSignature },
   { NULL }
 };
 
@@ -92,37 +92,37 @@ const OncFieldSignature l2tp_fields[] = {
 
 const OncFieldSignature openvpn_fields[] = {
   { kRecommended, &kRecommendedSignature },
-  { vpn::kAuth, &kStringSignature },
-  { vpn::kAuthNoCache, &kBoolSignature },
-  { vpn::kAuthRetry, &kStringSignature },
-  { vpn::kCipher, &kStringSignature },
+  { openvpn::kAuth, &kStringSignature },
+  { openvpn::kAuthNoCache, &kBoolSignature },
+  { openvpn::kAuthRetry, &kStringSignature },
+  { openvpn::kCipher, &kStringSignature },
   { vpn::kClientCertPattern, &kCertificatePatternSignature },
   { vpn::kClientCertRef, &kStringSignature },
   { vpn::kClientCertType, &kStringSignature },
-  { vpn::kCompLZO, &kStringSignature },
-  { vpn::kCompNoAdapt, &kBoolSignature },
-  { vpn::kKeyDirection, &kStringSignature },
-  { vpn::kNsCertType, &kStringSignature },
+  { openvpn::kCompLZO, &kStringSignature },
+  { openvpn::kCompNoAdapt, &kBoolSignature },
+  { openvpn::kKeyDirection, &kStringSignature },
+  { openvpn::kNsCertType, &kStringSignature },
   { vpn::kPassword, &kStringSignature },
-  { vpn::kPort, &kIntegerSignature },
-  { vpn::kProto, &kStringSignature },
-  { vpn::kPushPeerInfo, &kBoolSignature },
-  { vpn::kRemoteCertEKU, &kStringSignature },
-  { vpn::kRemoteCertKU, &kStringListSignature },
-  { vpn::kRemoteCertTLS, &kStringSignature },
-  { vpn::kRenegSec, &kIntegerSignature },
+  { openvpn::kPort, &kIntegerSignature },
+  { openvpn::kProto, &kStringSignature },
+  { openvpn::kPushPeerInfo, &kBoolSignature },
+  { openvpn::kRemoteCertEKU, &kStringSignature },
+  { openvpn::kRemoteCertKU, &kStringListSignature },
+  { openvpn::kRemoteCertTLS, &kStringSignature },
+  { openvpn::kRenegSec, &kIntegerSignature },
   { vpn::kSaveCredentials, &kBoolSignature },
-  { vpn::kServerCARef, &kStringSignature },
+  { openvpn::kServerCARef, &kStringSignature },
   // Not supported, yet.
-  { vpn::kServerCertRef, &kStringSignature },
-  { vpn::kServerPollTimeout, &kIntegerSignature },
-  { vpn::kShaper, &kIntegerSignature },
-  { vpn::kStaticChallenge, &kStringSignature },
-  { vpn::kTLSAuthContents, &kStringSignature },
-  { vpn::kTLSRemote, &kStringSignature },
+  { openvpn::kServerCertRef, &kStringSignature },
+  { openvpn::kServerPollTimeout, &kIntegerSignature },
+  { openvpn::kShaper, &kIntegerSignature },
+  { openvpn::kStaticChallenge, &kStringSignature },
+  { openvpn::kTLSAuthContents, &kStringSignature },
+  { openvpn::kTLSRemote, &kStringSignature },
   { vpn::kUsername, &kStringSignature },
   // Not supported, yet.
-  { vpn::kVerb, &kStringSignature },
+  { openvpn::kVerb, &kStringSignature },
   { NULL }
 };
 
@@ -381,10 +381,10 @@ struct CredentialEntry {
 
 const CredentialEntry credentials[] = {
   { &kEAPSignature, onc::eap::kPassword },
-  { &kIPsecSignature, onc::vpn::kPSK },
+  { &kIPsecSignature, onc::ipsec::kPSK },
   { &kL2TPSignature, onc::vpn::kPassword },
   { &kOpenVPNSignature, onc::vpn::kPassword },
-  { &kOpenVPNSignature, onc::vpn::kTLSAuthContents },
+  { &kOpenVPNSignature, onc::openvpn::kTLSAuthContents },
   { &kWiFiSignature, onc::wifi::kPassphrase },
   { NULL }
 };
