@@ -215,10 +215,27 @@ def _CheckChromiumPlatformMacros(input_api, output_api, source_file_filter=None)
     return []
 
 
+def _CompileDevtoolsFrontend(input_api, output_api):
+    if not input_api.platform.startswith('linux'):
+        return []
+    local_paths = [f.LocalPath() for f in input_api.AffectedFiles()]
+    if any("devtools/front_end" in path for path in local_paths):
+        lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+            "Source", "devtools", "scripts", "compile_frontend.py")
+        out, _ = input_api.subprocess.Popen(
+            [input_api.python_executable, lint_path],
+            stdout=input_api.subprocess.PIPE,
+            stderr=input_api.subprocess.STDOUT).communicate()
+        if "WARNING" in out or "ERROR" in out:
+            return [output_api.PresubmitError(out)]
+    return []
+
+
 def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_CommonChecks(input_api, output_api))
     results.extend(_CheckStyle(input_api, output_api))
+    results.extend(_CompileDevtoolsFrontend(input_api, output_api))
     return results
 
 
