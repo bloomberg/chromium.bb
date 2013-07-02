@@ -480,18 +480,16 @@ void BrowserPlugin::OnAttachACK(
   }
 }
 
-void BrowserPlugin::OnBuffersSwapped(int guest_instance_id,
-                                     const gfx::Size& size,
-                                     std::string mailbox_name,
-                                     int gpu_route_id,
-                                     int gpu_host_id) {
+void BrowserPlugin::OnBuffersSwapped(
+    int guest_instance_id,
+    const BrowserPluginMsg_BuffersSwapped_Params& params) {
   DCHECK(guest_instance_id == guest_instance_id_);
   EnableCompositing(true);
 
-  compositing_helper_->OnBuffersSwapped(size,
-                                        mailbox_name,
-                                        gpu_route_id,
-                                        gpu_host_id,
+  compositing_helper_->OnBuffersSwapped(params.size,
+                                        params.mailbox_name,
+                                        params.route_id,
+                                        params.host_id,
                                         GetDeviceScaleFactor());
 }
 

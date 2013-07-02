@@ -44,12 +44,6 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
   void OnPluginAtPositionRequest(const IPC::Message& message,
                                  int request_id,
                                  const gfx::Point& position);
-  void OnUnhandledSwap(const IPC::Message& message,
-                       int guest_instance_id,
-                       const gfx::Size& size,
-                       std::string mailbox_name,
-                       int gpu_route_id,
-                       int gpu_host_id);
 
   int browser_plugin_instance_id_counter_;
   IDMap<BrowserPlugin> pending_allocate_guest_instance_id_requests_;

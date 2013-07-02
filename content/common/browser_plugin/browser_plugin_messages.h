@@ -80,6 +80,14 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_Attach_ACK_Params)
   IPC_STRUCT_MEMBER(std::string, name)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(BrowserPluginMsg_BuffersSwapped_Params)
+  IPC_STRUCT_MEMBER(gfx::Size, size)
+  IPC_STRUCT_MEMBER(gfx::Rect, damage_rect)
+  IPC_STRUCT_MEMBER(std::string, mailbox_name)
+  IPC_STRUCT_MEMBER(int, route_id)
+  IPC_STRUCT_MEMBER(int, host_id)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
   // The current URL of the guest.
   IPC_STRUCT_MEMBER(GURL, url)
@@ -414,12 +422,9 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_UpdatedName,
 // When HW accelerated buffers are swapped in the guest, the message
 // is forwarded to the embedder to notify it of a new texture
 // available for compositing.
-IPC_MESSAGE_CONTROL5(BrowserPluginMsg_BuffersSwapped,
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_BuffersSwapped,
                      int /* instance_id */,
-                     gfx::Size /* size */,
-                     std::string /* mailbox_name */,
-                     int /* route_id */,
-                     int /* gpu_host_id */)
+                     BrowserPluginMsg_BuffersSwapped_Params)
 
 IPC_MESSAGE_CONTROL4(BrowserPluginMsg_CompositorFrameSwapped,
                      int /* instance_id */,

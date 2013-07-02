@@ -161,13 +161,13 @@ void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
   // If accelerated surface buffers are getting swapped then we're not using
   // the software path.
   guest_->clear_damage_buffer();
+  BrowserPluginMsg_BuffersSwapped_Params guest_params;
+  guest_params.size = params.size;
+  guest_params.mailbox_name = params.mailbox_name;
+  guest_params.route_id = params.route_id;
+  guest_params.host_id = gpu_host_id;
   guest_->SendMessageToEmbedder(
-      new BrowserPluginMsg_BuffersSwapped(
-          guest_->instance_id(),
-          params.size,
-          params.mailbox_name,
-          params.route_id,
-          gpu_host_id));
+      new BrowserPluginMsg_BuffersSwapped(guest_->instance_id(), guest_params));
 }
 
 void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
