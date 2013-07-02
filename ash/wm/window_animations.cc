@@ -396,13 +396,22 @@ base::TimeDelta CrossFadeImpl(aura::Window* window,
 }
 
 void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
-  DCHECK(window->TargetVisibility());
+  // Some test results in invoking CrossFadeToBounds when window is not visible.
+  // No animation is necessary in that case, thus just change the bounds and
+  // quit.
+  if (!window->TargetVisibility()) {
+    window->SetBounds(new_bounds);
+    return;
+  }
+
   const gfx::Rect old_bounds = window->bounds();
 
   // Create fresh layers for the window and all its children to paint into.
   // Takes ownership of the old layer and all its children, which will be
   // cleaned up after the animation completes.
-  ui::Layer* old_layer = views::corewm::RecreateWindowLayers(window, false);
+  // Specify |set_bounds| to true here to keep the old bounds in the child
+  // windows of |window|.
+  ui::Layer* old_layer = views::corewm::RecreateWindowLayers(window, true);
   ui::Layer* new_layer = window->layer();
 
   // Resize the window to the new size, which will force a layout and paint.

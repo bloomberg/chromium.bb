@@ -232,11 +232,8 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
   if (key == internal::kWindowTrackedByWorkspaceKey &&
       GetTrackedByWorkspace(window)) {
     workspace_manager()->OnTrackedByWorkspaceChanged(workspace_, window);
-    if (wm::IsWindowMaximized(window)) {
-      SetChildBoundsDirect(
-          window, ScreenAsh::GetMaximizedWindowBoundsInParent(
-              window->parent()->parent()));
-    }
+    if (wm::IsWindowMaximized(window))
+      SetMaximizedOrFullscreenBounds(window);
   }
 
   if (key == aura::client::kAlwaysOnTopKey &&
@@ -357,7 +354,7 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
         gfx::Rect bounds_in_parent =
             ScreenAsh::ConvertRectFromScreen(window->parent()->parent(),
                                              *restore);
-        SetChildBoundsDirect(
+        CrossFadeToBounds(
             window,
             BaseLayoutManager::BoundsWithScreenEdgeVisible(
                 window->parent()->parent(),
@@ -368,6 +365,9 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
     }
 
     case ui::SHOW_STATE_MAXIMIZED:
+      CrossFadeToBounds(window, ScreenAsh::GetMaximizedWindowBoundsInParent(
+          window->parent()->parent()));
+      break;
     case ui::SHOW_STATE_FULLSCREEN:
       SetMaximizedOrFullscreenBounds(window);
       break;
