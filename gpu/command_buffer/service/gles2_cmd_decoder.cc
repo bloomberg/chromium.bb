@@ -1510,6 +1510,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   size_t GetBackbufferMemoryTotal();
 
   virtual bool WasContextLost() OVERRIDE;
+  virtual bool WasContextLostByRobustnessExtension() OVERRIDE;
   virtual void LoseContext(uint32 reset_status) OVERRIDE;
 
 #if defined(OS_MACOSX)
@@ -1692,6 +1693,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   bool has_robustness_extension_;
   GLenum reset_status_;
+  bool reset_by_robustness_extension_;
 
   // These flags are used to override the state of the shared feature_info_
   // member.  Because the same FeatureInfo instance may be shared among many
@@ -2150,6 +2152,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       frame_number_(0),
       has_robustness_extension_(false),
       reset_status_(GL_NO_ERROR),
+      reset_by_robustness_extension_(false),
       force_webgl_glsl_validation_(false),
       derivatives_explicitly_enabled_(false),
       frag_depth_explicitly_enabled_(false),
@@ -8999,6 +9002,7 @@ bool GLES2DecoderImpl::WasContextLost() {
     if (status != GL_NO_ERROR) {
       // The graphics card was reset. Signal a lost context to the application.
       reset_status_ = status;
+      reset_by_robustness_extension_ = true;
       LOG(ERROR) << (surface_->IsOffscreen() ? "Offscreen" : "Onscreen")
                  << " context lost via ARB/EXT_robustness. Reset status = "
                  << GLES2Util::GetStringEnum(status);
@@ -9006,6 +9010,10 @@ bool GLES2DecoderImpl::WasContextLost() {
     }
   }
   return false;
+}
+
+bool GLES2DecoderImpl::WasContextLostByRobustnessExtension() {
+  return WasContextLost() && reset_by_robustness_extension_;
 }
 
 void GLES2DecoderImpl::LoseContext(uint32 reset_status) {

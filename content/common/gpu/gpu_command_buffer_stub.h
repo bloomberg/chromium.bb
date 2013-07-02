@@ -137,6 +137,8 @@ class GpuCommandBufferStub
 
   void SetLatencyInfoCallback(const LatencyInfoCallback& callback);
 
+  void MarkContextLost();
+
  private:
   GpuMemoryManager* GetMemoryManager();
   bool MakeCurrent();
@@ -196,6 +198,8 @@ class GpuCommandBufferStub
   bool HasMoreWork();
 
   void ScheduleDelayedWork(int64 delay);
+
+  bool CheckContextLost();
 
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they

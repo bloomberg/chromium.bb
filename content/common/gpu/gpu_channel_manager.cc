@@ -278,6 +278,10 @@ uint64 GpuChannelManager::MessagesProcessed() {
 }
 
 void GpuChannelManager::LoseAllContexts() {
+  for (GpuChannelMap::iterator iter = gpu_channels_.begin();
+       iter != gpu_channels_.end(); ++iter) {
+    iter->second->MarkAllContextsLost();
+  }
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&GpuChannelManager::OnLoseAllContexts,

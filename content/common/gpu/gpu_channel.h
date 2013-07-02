@@ -124,6 +124,7 @@ class GpuChannel : public IPC::Listener,
   GpuCommandBufferStub* LookupCommandBuffer(int32 route_id);
 
   void LoseAllContexts();
+  void MarkAllContextsLost();
 
   // Destroy channel and all contained contexts.
   void DestroySoon();
