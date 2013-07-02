@@ -1492,6 +1492,7 @@
             'rendering/style/ContentData.cpp',
             'rendering/style/CounterDirectives.cpp',
             'rendering/style/FillLayer.cpp',
+            'rendering/style/GridCoordinate.h',
             'rendering/style/KeyframeList.cpp',
             'rendering/style/KeyframeList.h',
             'rendering/style/NinePieceImage.cpp',
