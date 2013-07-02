@@ -1968,6 +1968,9 @@
   "SupervisedUsersEnabled": {
   },
 
+  "SupervisedUserCreationEnabled": {
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

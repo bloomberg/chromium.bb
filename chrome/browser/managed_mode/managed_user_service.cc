@@ -181,6 +181,8 @@ void ManagedUserService::RegisterUserPrefs(
   registry->RegisterStringPref(
       prefs::kManagedUserCustodianName, std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kManagedUserCreationAllowed, true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

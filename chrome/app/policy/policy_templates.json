@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 222
+#   For your editing convenience: highest ID currently used: 223
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -5067,11 +5067,27 @@
           'example_value': True,
           'id': 219,
           'caption': '''Enable supervised users.''',
-          'desc': '''If set to true, it is possible to create and log in as a supervised user.
+          'desc': '''If set to true, supervised users can be created and used.
 
-          If set to false or not configured, supervised users creation and login will be disabled. All existing supervised users will be hidden.
+          If set to false or not configured, supervised-user creation and login will be disabled. All existing supervised users will be hidden.
 
-          NOTE: The default behavior for consumer and enterprise devices differs: on consumer devices supervised users are enabled by default, but on enterprice devices they aren't.'''
+          NOTE: The default behavior for consumer and enterprise devices differs: on consumer devices supervised users are enabled by default, but on enterprise devices they are disabled by default.'''
+        },
+        {
+          'name': 'SupervisedUserCreationEnabled',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome.*:29-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': True,
+          'id': 223,
+          'caption': '''Enable creation of supervised users.''',
+          'desc': '''If set to false, supervised-user creation by this user will be disabled. Any existing supervised users will still be available.
+
+          If set to true or not configured, supervised users can be created and managed by this user.'''
         },
       ],
     },

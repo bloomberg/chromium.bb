@@ -61,6 +61,7 @@ cr.define('options', function() {
       if (loadTimeData.getBoolean('managedUsersEnabled')) {
         $('create-profile-managed-container').hidden = false;
       }
+
       $('manage-profile-cancel').onclick =
           $('delete-profile-cancel').onclick = function(event) {
         OptionsPage.closeOverlay();
@@ -426,7 +427,7 @@ cr.define('options', function() {
      * @override
      */
     didShowPage: function() {
-      chrome.send('requestSignedInText');
+      chrome.send('requestCreateProfileUpdate');
       chrome.send('requestDefaultProfileIcons');
       chrome.send('requestNewProfileDefaults');
 
@@ -445,6 +446,9 @@ cr.define('options', function() {
       $('create-profile-name-label').hidden = true;
       $('create-profile-name').hidden = true;
       $('create-profile-ok').disabled = true;
+      $('create-profile-managed-signed-in').disabled = true;
+      $('create-profile-managed-signed-in').hidden = true;
+      $('create-profile-managed-not-signed-in').hidden = true;
     },
 
     /** @override */
@@ -539,7 +543,7 @@ cr.define('options', function() {
 
     /**
      * Updates the signed-in or not-signed-in UI when in create mode. Called by
-     * the handler in response to the 'requestSignedInText' message.
+     * the handler in response to the 'requestCreateProfileUpdate' message.
      * @param {string} email The email address of the currently signed-in user.
      *     An empty string indicates that the user is not signed in.
      * @private
@@ -549,13 +553,36 @@ cr.define('options', function() {
       var isSignedIn = email !== '';
       $('create-profile-managed-signed-in').hidden = !isSignedIn;
       $('create-profile-managed-not-signed-in').hidden = isSignedIn;
-      $('create-profile-managed').disabled = !isSignedIn;
+
       if (isSignedIn) {
         $('create-profile-managed-signed-in-label').textContent =
             loadTimeData.getStringF(
                 'manageProfilesManagedSignedInLabel', email);
       } else {
         $('create-profile-managed').checked = false;
+      }
+    },
+
+    /**
+     * Updates the status of the "create managed user" checkbox. Called by the
+     * handler in response to the 'requestCreateProfileUpdate' message or a
+     * change in the (policy-controlled) pref that prohibits creating managed
+     * users, after the signed-in status has been updated.
+     * @param {boolean} allowed True if creating managed users should be
+     *     allowed.
+     * @private
+     */
+    updateManagedUsersAllowed_: function(allowed) {
+      var isSignedIn = this.signedInEmail_ !== '';
+      $('create-profile-managed').disabled = !isSignedIn || !allowed;
+
+      $('create-profile-managed-not-signed-in-link').hidden = !allowed;
+      if (!allowed) {
+        $('create-profile-managed').checked = false;
+        $('create-profile-managed-indicator').setAttribute('controlled-by',
+                                                           'policy');
+      } else {
+        $('create-profile-managed-indicator').removeAttribute('controlled-by');
       }
     },
   };
@@ -567,6 +594,7 @@ cr.define('options', function() {
     'onRemoteError',
     'onSuccess',
     'updateCreateInProgress',
+    'updateManagedUsersAllowed',
     'updateSignedInStatus',
   ].forEach(function(name) {
     CreateProfileOverlay[name] = function() {

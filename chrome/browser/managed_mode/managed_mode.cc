@@ -51,7 +51,8 @@ void ManagedMode::InitImpl(Profile* profile) {
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  if (ManagedUserService::AreManagedUsersEnabled()) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableManagedUsers)) {
     RecordAction(UserMetricsAction("ManagedMode_StartupEnableManagedSwitch"));
   }
 

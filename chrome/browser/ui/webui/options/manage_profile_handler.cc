@@ -127,10 +127,17 @@ void ManageProfileHandler::GetLocalizedValues(
 void ManageProfileHandler::InitializeHandler() {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  content::NotificationService::AllSources());
+
+  pref_change_registrar_.Init(Profile::FromWebUI(web_ui())->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kManagedUserCreationAllowed,
+      base::Bind(&ManageProfileHandler::OnCreateManagedUserPrefChange,
+                 base::Unretained(this)));
 }
 
 void ManageProfileHandler::InitializePage() {
   SendProfileNames();
+  OnCreateManagedUserPrefChange();
 }
 
 void ManageProfileHandler::RegisterMessages() {
@@ -146,8 +153,8 @@ void ManageProfileHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("requestHasProfileShortcuts",
       base::Bind(&ManageProfileHandler::RequestHasProfileShortcuts,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("requestSignedInText",
-      base::Bind(&ManageProfileHandler::RequestSignedInText,
+  web_ui()->RegisterMessageCallback("requestCreateProfileUpdate",
+      base::Bind(&ManageProfileHandler::RequestCreateProfileUpdate,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("profileIconSelectionChanged",
       base::Bind(&ManageProfileHandler::ProfileIconSelectionChanged,
@@ -392,13 +399,24 @@ void ManageProfileHandler::RequestHasProfileShortcuts(const ListValue* args) {
                                weak_factory_.GetWeakPtr()));
 }
 
-void ManageProfileHandler::RequestSignedInText(const base::ListValue* args) {
+void ManageProfileHandler::RequestCreateProfileUpdate(
+    const base::ListValue* args) {
   SigninManagerBase* manager =
       SigninManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
   string16 username = UTF8ToUTF16(manager->GetAuthenticatedUsername());
   StringValue username_value(username);
   web_ui()->CallJavascriptFunction("CreateProfileOverlay.updateSignedInStatus",
                                    username_value);
+
+  OnCreateManagedUserPrefChange();
+}
+
+void ManageProfileHandler::OnCreateManagedUserPrefChange() {
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  base::FundamentalValue allowed(
+      prefs->GetBoolean(prefs::kManagedUserCreationAllowed));
+  web_ui()->CallJavascriptFunction(
+      "CreateProfileOverlay.updateManagedUsersAllowed", allowed);
 }
 
 void ManageProfileHandler::OnHasProfileShortcuts(bool has_shortcuts) {

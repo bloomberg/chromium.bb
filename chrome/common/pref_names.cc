@@ -1224,6 +1224,10 @@ const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 const char kDefaultManagedModeFilteringBehavior[] =
     "profile.managed.default_filtering_behavior";
 
+// Whether this user is permitted to create managed users.
+const char kManagedUserCreationAllowed[] =
+    "profile.managed_user_creation_allowed";
+
 // List pref containing the users managed by this user.
 const char kManagedUsers[] = "profile.managed_users";
 

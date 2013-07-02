@@ -331,6 +331,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kContentPackManualBehaviorURLs,
     prefs::kManagedModeManualURLs,
     Value::TYPE_DICTIONARY },
+  { key::kSupervisedUserCreationEnabled,
+    prefs::kManagedUserCreationAllowed,
+    Value::TYPE_BOOLEAN },
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,

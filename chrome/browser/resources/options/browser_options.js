@@ -148,6 +148,13 @@ cr.define('options', function() {
         chrome.send('themesReset');
       };
 
+      if (loadTimeData.getBoolean('profileIsManaged')) {
+        if ($('themes-GTK-button'))
+          $('themes-GTK-button').disabled = true;
+        $('themes-reset').disabled = true;
+        $('themes-gallery').disabled = true;
+      }
+
       // Device section (ChromeOS only).
       if (cr.isChromeOS) {
         $('keyboard-settings-button').onclick = function(evt) {
@@ -200,10 +207,6 @@ cr.define('options', function() {
           $('profiles-create').disabled = true;
           $('profiles-delete').disabled = true;
           $('profiles-list').canDeleteItems = false;
-          if ($('themes-GTK-button'))
-            $('themes-GTK-button').disabled = true;
-          $('themes-reset').disabled = true;
-          $('themes-gallery').disabled = true;
         }
       }
 
