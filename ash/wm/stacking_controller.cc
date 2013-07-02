@@ -4,11 +4,13 @@
 
 #include "ash/wm/stacking_controller.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -50,6 +52,11 @@ bool HasTransientParentWindow(aura::Window* window) {
 
 bool IsPanelAttached(aura::Window* window) {
   return window->GetProperty(internal::kPanelAttachedKey);
+}
+
+internal::AlwaysOnTopController*
+GetAlwaysOnTopController(aura::RootWindow* root_window) {
+  return GetRootWindowController(root_window)->always_on_top_controller();
 }
 
 }  // namespace
@@ -142,22 +149,6 @@ aura::Window* StackingController::GetSystemModalContainer(
   }
 
   return container;
-}
-
-// TODO(oshima): Remove this once extended desktop is on by default.
-internal::AlwaysOnTopController*
-StackingController::GetAlwaysOnTopController(aura::RootWindow* root_window) {
-  internal::AlwaysOnTopController* controller =
-      root_window->GetProperty(internal::kAlwaysOnTopControllerKey);
-  if (!controller) {
-    controller = new internal::AlwaysOnTopController;
-    controller->SetAlwaysOnTopContainer(
-        root_window->GetChildById(
-            internal::kShellWindowId_AlwaysOnTopContainer));
-    // RootWindow owns the AlwaysOnTopController object.
-    root_window->SetProperty(internal::kAlwaysOnTopControllerKey, controller);
-  }
-  return controller;
 }
 
 }  // namespace ash

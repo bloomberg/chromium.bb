@@ -17,17 +17,11 @@ class Rect;
 namespace ash {
 class FramePainter;
 namespace internal {
-class AlwaysOnTopController;
 class RootWindowController;
 
 // Shell-specific window property keys.
 
 // Alphabetical sort.
-
-// A Key to store AlwaysOnTopController per RootWindow. The value is
-// owned by the RootWindow.
-extern const aura::WindowProperty<internal::AlwaysOnTopController*>* const
-    kAlwaysOnTopControllerKey;
 
 // A property key to indicate that an in progress drag should be continued
 // after the window is reparented to another container.

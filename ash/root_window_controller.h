@@ -45,6 +45,7 @@ class ToplevelWindowEventHandler;
 
 namespace internal {
 
+class AlwaysOnTopController;
 class BootSplashScreen;
 class DockedWindowLayoutManager;
 class PanelLayoutManager;
@@ -86,6 +87,10 @@ class ASH_EXPORT RootWindowController {
 
   WorkspaceController* workspace_controller() {
     return workspace_controller_.get();
+  }
+
+  AlwaysOnTopController* always_on_top_controller() {
+    return always_on_top_controller_.get();
   }
 
   ScreenDimmer* screen_dimmer() { return screen_dimmer_.get(); }
@@ -230,6 +235,7 @@ class ASH_EXPORT RootWindowController {
 
   scoped_ptr<ScreenDimmer> screen_dimmer_;
   scoped_ptr<WorkspaceController> workspace_controller_;
+  scoped_ptr<AlwaysOnTopController> always_on_top_controller_;
 
   // Heads-up displays for touch events. These HUDs are not owned by the root
   // window controller and manage their own lifetimes.

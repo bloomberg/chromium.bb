@@ -39,7 +39,6 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/activation_controller.h"
-#include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/app_list_controller.h"
 #include "ash/wm/ash_activation_controller.h"
 #include "ash/wm/ash_focus_rules.h"
@@ -938,16 +937,8 @@ void Shell::InitRootWindowController(
   controller->InitLayoutManagers();
   controller->InitTouchHuds();
 
-  // TODO(oshima): Move the instance to RootWindowController when
-  // the extended desktop is enabled by default.
-  internal::AlwaysOnTopController* always_on_top_controller =
-      new internal::AlwaysOnTopController;
-  always_on_top_controller->SetAlwaysOnTopContainer(
-      root_window->GetChildById(internal::kShellWindowId_AlwaysOnTopContainer));
-  root_window->SetProperty(internal::kAlwaysOnTopControllerKey,
-                           always_on_top_controller);
   if (GetPrimaryRootWindowController()->GetSystemModalLayoutManager(NULL)->
-          has_modal_background()) {
+      has_modal_background()) {
     controller->GetSystemModalLayoutManager(NULL)->CreateModalBackground();
   }
 

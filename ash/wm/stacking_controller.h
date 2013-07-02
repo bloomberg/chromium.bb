@@ -40,10 +40,6 @@ class ASH_EXPORT StackingController : public aura::client::StackingClient {
   aura::Window* GetSystemModalContainer(aura::RootWindow* root,
                                         aura::Window* window) const;
 
-  // Returns the AlwaysOnTopController of the |root_window|.
-  internal::AlwaysOnTopController* GetAlwaysOnTopController(
-      aura::RootWindow* root_window);
-
   DISALLOW_COPY_AND_ASSIGN(StackingController);
 };
 

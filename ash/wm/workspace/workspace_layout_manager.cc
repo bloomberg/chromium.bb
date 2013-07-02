@@ -5,11 +5,13 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
 #include "ash/ash_switches.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/base_layout_manager.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
@@ -240,8 +242,8 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
   if (key == aura::client::kAlwaysOnTopKey &&
       window->GetProperty(aura::client::kAlwaysOnTopKey)) {
     internal::AlwaysOnTopController* controller =
-        window->GetRootWindow()->GetProperty(
-            internal::kAlwaysOnTopControllerKey);
+        GetRootWindowController(window->GetRootWindow())->
+            always_on_top_controller();
     controller->GetContainer(window)->AddChild(window);
   }
 }

@@ -23,6 +23,8 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/touch/touch_hud_projection.h"
+#include "ash/touch/touch_observer_hud.h"
+#include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/boot_splash_screen.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
@@ -263,6 +265,8 @@ void RootWindowController::InitLayoutManagers() {
   always_on_top_container->SetLayoutManager(
       new BaseLayoutManager(
           always_on_top_container->GetRootWindow()));
+  always_on_top_controller_.reset(new internal::AlwaysOnTopController);
+  always_on_top_controller_->SetAlwaysOnTopContainer(always_on_top_container);
 }
 
 void RootWindowController::InitForPrimaryDisplay() {
@@ -337,22 +341,19 @@ void RootWindowController::OnLauncherCreated() {
 }
 
 void RootWindowController::ShowLauncher() {
-  if (!shelf_.get() || !shelf_->launcher())
+  if (!shelf_->launcher())
     return;
   shelf_->launcher()->SetVisible(true);
   shelf_->status_area_widget()->Show();
 }
 
 void RootWindowController::OnLoginStateChanged(user::LoginStatus status) {
-  // TODO(oshima): remove if when launcher per display is enabled by
-  // default.
-  if (shelf_)
-    shelf_->shelf_layout_manager()->UpdateVisibilityState();
+  shelf_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
 void RootWindowController::UpdateAfterLoginStatusChange(
     user::LoginStatus status) {
-  if (shelf_.get() && shelf_->status_area_widget())
+  if (shelf_->status_area_widget())
     shelf_->status_area_widget()->UpdateAfterLoginStatusChange(status);
 }
 
@@ -373,6 +374,8 @@ void RootWindowController::HandleDesktopBackgroundVisible() {
 }
 
 void RootWindowController::CloseChildWindows() {
+  if (!shelf_.get())
+    return;
   // panel_layout_manager_ needs to be shut down before windows are destroyed.
   if (panel_layout_manager_) {
     panel_layout_manager_->Shutdown();
@@ -380,10 +383,9 @@ void RootWindowController::CloseChildWindows() {
   }
 
   // TODO(harrym): Remove when Status Area Widget is a child view.
-  if (shelf_)
-    shelf_->ShutdownStatusAreaWidget();
+  shelf_->ShutdownStatusAreaWidget();
 
-  if (shelf_.get() && shelf_->shelf_layout_manager())
+  if (shelf_->shelf_layout_manager())
     shelf_->shelf_layout_manager()->set_workspace_controller(NULL);
 
   // Close background widget first as it depends on tooltip.
@@ -423,13 +425,13 @@ void RootWindowController::DisableTouchHudProjection() {
 }
 
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
-  return shelf_.get() ? shelf_->shelf_layout_manager() : NULL;
+  return shelf_->shelf_layout_manager();
 }
 
 SystemTray* RootWindowController::GetSystemTray() {
   // We assume in throughout the code that this will not return NULL. If code
   // triggers this for valid reasons, it should test status_area_widget first.
-  CHECK(shelf_.get() && shelf_->status_area_widget());
+  CHECK(shelf_->status_area_widget());
   return shelf_->status_area_widget()->system_tray();
 }
 
