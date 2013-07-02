@@ -15,7 +15,7 @@ import verify_filelist
 
 
 def Verify(platform, rules_contents, directory_list):
-  rules = verify_filelist.Rules(platform, 'test', rules_contents)
+  rules = verify_filelist.Rules('test', platform, rules_contents)
   rules.VerifyDirectoryList(directory_list)
 
 

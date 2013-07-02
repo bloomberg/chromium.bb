@@ -32,15 +32,16 @@ class VerifyException(Exception):
   pass
 
 class Rules(object):
-  def __init__(self, platform, filename, contents=None):
+  def __init__(self, filename, platform=None, contents=None):
     self.glob_prefixes = []
     self.exact_filenames = set()
     self.filename = filename
-    self.platform = platform
-    self.exe_ext = '.exe' if platform == 'win' else ''
+    self.platform = platform or getos.GetPlatform()
+    self.exe_ext = '.exe' if self.platform == 'win' else ''
 
-    if platform not in VALID_PLATFORMS:
-      raise ParseException(self.filename, 1, 'Unknown platform %s' % platform)
+    if self.platform not in VALID_PLATFORMS:
+      raise ParseException(self.filename, 1,
+                           'Unknown platform %s' % self.platform)
 
     if not contents:
       with open(filename) as f:
@@ -141,8 +142,8 @@ def GetDirectoryList(directory_path):
   return result
 
 
-def Verify(platform, rule_path, directory_path):
-  rules = Rules(platform, rule_path)
+def Verify(rule_path, directory_path, platform=None):
+  rules = Rules(rule_path, platform=platform)
   directory_list = GetDirectoryList(directory_path)
   rules.VerifyDirectoryList(directory_list)
 
@@ -164,7 +165,7 @@ def main(args):
     platform = getos.GetPlatform()
 
   try:
-    return Verify(platform, rule_path, directory_path)
+    return Verify(rule_path, directory_path, platform)
   except ParseException, e:
     print >> sys.stderr, 'Error parsing rules:\n', e
     return 1

@@ -61,21 +61,21 @@ GYPBUILD_DIR = 'gypbuild'
 options = None
 
 
-def GetGlibcToolchain(platform, arch):
+def GetGlibcToolchain(arch):
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
-  tcname = 'toolchain_%s_%s.tar.bz2' % (platform, arch)
+  tcname = 'toolchain_%s_%s.tar.bz2' % (getos.GetPlatform(), arch)
   return os.path.join(tcdir, tcname)
 
 
-def GetNewlibToolchain(platform, arch):
+def GetNewlibToolchain(arch):
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
-  tcname = 'naclsdk_%s_%s.tgz' % (platform, arch)
+  tcname = 'naclsdk_%s_%s.tgz' % (getos.GetPlatform(), arch)
   return os.path.join(tcdir, tcname)
 
 
-def GetPNaClToolchain(os_platform, arch):
+def GetPNaClToolchain(arch):
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
-  tcname = 'naclsdk_pnacl_%s_%s.tgz' % (os_platform, arch)
+  tcname = 'naclsdk_pnacl_%s_%s.tgz' % (getos.GetPlatform(), arch)
   return os.path.join(tcdir, tcname)
 
 
@@ -120,7 +120,7 @@ def GetSconsArgs(tcpath, outdir, arch, xarch=None):
 
   Only used for pnacl builds.
   """
-  if sys.platform in ['cygwin', 'win32']:
+  if getos.GetPlatform() == 'win':
     scons = 'scons.bat'
   else:
     scons = './scons'
@@ -180,8 +180,9 @@ def BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision,
   open(os.path.join(pepperdir, 'README'), 'w').write(readme_text)
 
 
-def BuildStepUntarToolchains(pepperdir, platform, arch, toolchains):
+def BuildStepUntarToolchains(pepperdir, arch, toolchains):
   buildbot_common.BuildStep('Untar Toolchains')
+  platform = getos.GetPlatform()
   tcname = platform + '_' + arch
   tmpdir = os.path.join(OUT_DIR, 'tc_temp')
   buildbot_common.RemoveDir(tmpdir)
@@ -189,7 +190,7 @@ def BuildStepUntarToolchains(pepperdir, platform, arch, toolchains):
 
   if 'newlib' in toolchains:
     # Untar the newlib toolchains
-    tarfile = GetNewlibToolchain(platform, arch)
+    tarfile = GetNewlibToolchain(arch)
     buildbot_common.Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile],
                         cwd=NACL_DIR)
 
@@ -208,7 +209,7 @@ def BuildStepUntarToolchains(pepperdir, platform, arch, toolchains):
 
   if 'glibc' in toolchains:
     # Untar the glibc toolchains
-    tarfile = GetGlibcToolchain(platform, arch)
+    tarfile = GetGlibcToolchain(arch)
     buildbot_common.Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile],
                         cwd=NACL_DIR)
 
@@ -222,7 +223,7 @@ def BuildStepUntarToolchains(pepperdir, platform, arch, toolchains):
     tmpdir = os.path.join(tmpdir, 'pnacl')
     buildbot_common.RemoveDir(tmpdir)
     buildbot_common.MakeDir(tmpdir)
-    tarfile = GetPNaClToolchain(platform, arch)
+    tarfile = GetPNaClToolchain(arch)
     buildbot_common.Run([sys.executable, CYGTAR, '-C', tmpdir, '-xf', tarfile],
                         cwd=NACL_DIR)
 
@@ -232,7 +233,7 @@ def BuildStepUntarToolchains(pepperdir, platform, arch, toolchains):
 
   buildbot_common.RemoveDir(tmpdir)
 
-  if options.gyp and sys.platform not in ['cygwin', 'win32']:
+  if options.gyp and platform != 'win':
     # If the gyp options is specified we install a toolchain
     # wrapper so that gyp can switch toolchains via a commandline
     # option.
@@ -368,7 +369,7 @@ TOOLCHAIN_LIBS = {
 }
 
 
-def GypNinjaInstall(pepperdir, platform, toolchains):
+def GypNinjaInstall(pepperdir, toolchains):
   build_dir = GYPBUILD_DIR
   ninja_out_dir = os.path.join(OUT_DIR, build_dir, 'Release')
   tools_files = [
@@ -377,18 +378,17 @@ def GypNinjaInstall(pepperdir, platform, toolchains):
     ['irt_core_newlib_x32.nexe', 'irt_core_x86_32.nexe'],
     ['irt_core_newlib_x64.nexe', 'irt_core_x86_64.nexe'],
   ]
-  if sys.platform not in ['cygwin', 'win32']:
-    minidump_files = [
-      ['dump_syms', 'dump_syms'],
-      ['minidump_dump', 'minidump_dump'],
-      ['minidump_stackwalk', 'minidump_stackwalk']
-    ]
-    tools_files.extend(minidump_files)
+
+  platform = getos.GetPlatform()
 
   # TODO(binji): dump_syms doesn't currently build on Windows. See
   # http://crbug.com/245456
   if platform != 'win':
-    tools_files.append(['dump_syms', 'dump_syms'])
+    tools_files += [
+      ['dump_syms', 'dump_syms'],
+      ['minidump_dump', 'minidump_dump'],
+      ['minidump_stackwalk', 'minidump_stackwalk']
+    ]
 
   if platform != 'mac':
     # Mac doesn't build 64-bit binaries.
@@ -437,7 +437,7 @@ def GypNinjaInstall(pepperdir, platform, toolchains):
 
 
 
-def GypNinjaBuild_NaCl(platform, rel_out_dir):
+def GypNinjaBuild_NaCl(rel_out_dir):
   gyp_py = os.path.join(NACL_DIR, 'build', 'gyp_nacl')
   nacl_core_sdk_gyp = os.path.join(NACL_DIR, 'build', 'nacl_core_sdk.gyp')
   all_gyp = os.path.join(NACL_DIR, 'build', 'all.gyp')
@@ -448,6 +448,7 @@ def GypNinjaBuild_NaCl(platform, rel_out_dir):
   GypNinjaBuild('arm', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_arm)
   GypNinjaBuild('ia32', gyp_py, all_gyp, 'ncval_new', out_dir)
 
+  platform = getos.GetPlatform()
   if platform == 'win':
     NinjaBuild('sel_ldr64', out_dir)
   elif platform == 'linux':
@@ -467,10 +468,10 @@ def GypNinjaBuild_NaCl(platform, rel_out_dir):
           os.path.join(SRC_DIR, out_dir, 'Release', dst))
 
 
-def GypNinjaBuild_Breakpad(platform, rel_out_dir):
+def GypNinjaBuild_Breakpad(rel_out_dir):
   # TODO(binji): dump_syms doesn't currently build on Windows. See
   # http://crbug.com/245456
-  if platform == 'win':
+  if getos.GetPlatform() == 'win':
     return
 
   gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
@@ -546,12 +547,13 @@ def NinjaBuild(targets, out_dir):
   buildbot_common.Run(['ninja', '-C', out_config_dir] + targets, cwd=SRC_DIR)
 
 
-def BuildStepBuildToolchains(pepperdir, platform, toolchains):
+def BuildStepBuildToolchains(pepperdir, toolchains):
   buildbot_common.BuildStep('SDK Items')
 
-  GypNinjaBuild_NaCl(platform, GYPBUILD_DIR)
-  GypNinjaBuild_Breakpad(platform, GYPBUILD_DIR)
+  GypNinjaBuild_NaCl(GYPBUILD_DIR)
+  GypNinjaBuild_Breakpad(GYPBUILD_DIR)
 
+  platform = getos.GetPlatform()
   tcname = platform + '_x86'
   newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
   glibcdir = os.path.join(pepperdir, 'toolchain', tcname + '_glibc')
@@ -563,7 +565,7 @@ def BuildStepBuildToolchains(pepperdir, platform, toolchains):
   if 'arm' in toolchains:
     GypNinjaBuild_PPAPI('arm', GYPBUILD_DIR + '-arm')
 
-  GypNinjaInstall(pepperdir, platform, toolchains)
+  GypNinjaInstall(pepperdir, toolchains)
 
   if 'newlib' in toolchains:
     InstallNaClHeaders(GetToolchainNaClInclude('newlib', newlibdir, 'x86'),
@@ -626,12 +628,12 @@ def MakeDirectoryOrClobber(pepperdir, dirname, clobber):
   return dirpath
 
 
-def BuildStepUpdateHelpers(pepperdir, platform, clobber):
+def BuildStepUpdateHelpers(pepperdir, clobber):
   buildbot_common.BuildStep('Update project helpers')
-  build_projects.UpdateHelpers(pepperdir, platform, clobber=clobber)
+  build_projects.UpdateHelpers(pepperdir, clobber=clobber)
 
 
-def BuildStepUpdateUserProjects(pepperdir, platform, toolchains,
+def BuildStepUpdateUserProjects(pepperdir, toolchains,
                                 build_experimental, clobber):
   buildbot_common.BuildStep('Update examples and libraries')
 
@@ -647,7 +649,7 @@ def BuildStepUpdateUserProjects(pepperdir, platform, toolchains,
 
     if 'host' in toolchains:
       toolchains.remove('host')
-      toolchains.append(platform)
+      toolchains.append(getos.GetPlatform())
 
     filters['TOOLS'] = toolchains
 
@@ -661,37 +663,20 @@ def BuildStepUpdateUserProjects(pepperdir, platform, toolchains,
   ]
 
   tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
-  build_projects.UpdateProjects(pepperdir, platform, tree, clobber=clobber,
+  build_projects.UpdateProjects(pepperdir, tree, clobber=clobber,
                                 toolchains=toolchains)
 
 
-def BuildStepMakeAll(pepperdir, platform, directory, step_name,
-                     clean=False, deps=True, config='Debug'):
+def BuildStepMakeAll(pepperdir, directory, step_name,
+                     deps=True, clean=False, config='Debug'):
   buildbot_common.BuildStep(step_name)
-  make_dir = os.path.join(pepperdir, directory)
-
-  print "\n\nMake: " + make_dir
-  if platform == 'win':
-    make = os.path.join(make_dir, 'make.bat')
-  else:
-    make = 'make'
-
-  extra_args = ['CONFIG='+config]
-  if not deps:
-    extra_args += ['IGNORE_DEPS=1']
-
-  buildbot_common.Run([make, '-j8', 'TOOLCHAIN=all'] + extra_args,
-                      cwd=make_dir)
-  if clean:
-    # Clean to remove temporary files but keep the built libraries.
-    buildbot_common.Run([make, '-j8', 'clean', 'TOOLCHAIN=all'] + extra_args,
-                        cwd=make_dir)
+  build_projects.BuildProjectsBranch(pepperdir, directory, clean, deps, config)
 
 
-def BuildStepBuildLibraries(pepperdir, platform, directory):
-  BuildStepMakeAll(pepperdir, platform, directory, 'Build Libraries Debug',
+def BuildStepBuildLibraries(pepperdir, directory):
+  BuildStepMakeAll(pepperdir, directory, 'Build Libraries Debug',
       clean=True, config='Debug')
-  BuildStepMakeAll(pepperdir, platform, directory, 'Build Libraries Release',
+  BuildStepMakeAll(pepperdir, directory, 'Build Libraries Release',
       clean=True, config='Release')
 
 
@@ -715,11 +700,11 @@ def GenerateNotice(fileroot, output_filename='NOTICE', extra_files=None):
   generate_notice.Generate(output_filename, fileroot, license_files)
 
 
-def BuildStepVerifyFilelist(pepperdir, platform):
+def BuildStepVerifyFilelist(pepperdir):
   buildbot_common.BuildStep('Verify SDK Files')
   file_list_path = os.path.join(SCRIPT_DIR, 'sdk_files.list')
   try:
-    verify_filelist.Verify(platform, file_list_path, pepperdir)
+    verify_filelist.Verify(file_list_path, pepperdir)
     print 'OK'
   except verify_filelist.ParseException, e:
     buildbot_common.ErrorExit('Parsing sdk_files.list failed:\n\n%s' % e)
@@ -894,7 +879,6 @@ def main(args):
 
   global options
   options, args = parser.parse_args(args[1:])
-  platform = getos.GetPlatform()
   arch = 'x86'
 
   generate_make.use_gyp = options.gyp
@@ -915,7 +899,7 @@ def main(args):
   pepper_old = str(chrome_version - 1)
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
   pepperdir_old = os.path.join(OUT_DIR, 'pepper_' + pepper_old)
-  tarname = 'naclsdk_' + platform + '.tar.bz2'
+  tarname = 'naclsdk_' + getos.GetPlatform() + '.tar.bz2'
   tarfile = os.path.join(OUT_DIR, tarname)
 
   if options.release:
@@ -931,26 +915,26 @@ def main(args):
     BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
     BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
     BuildStepDownloadToolchains()
-    BuildStepUntarToolchains(pepperdir, platform, arch, toolchains)
+    BuildStepUntarToolchains(pepperdir, arch, toolchains)
 
   BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision, nacl_revision)
-  BuildStepBuildToolchains(pepperdir, platform, toolchains)
+  BuildStepBuildToolchains(pepperdir, toolchains)
 
-  BuildStepUpdateHelpers(pepperdir, platform, True)
-  BuildStepUpdateUserProjects(pepperdir, platform, toolchains,
+  BuildStepUpdateHelpers(pepperdir, True)
+  BuildStepUpdateUserProjects(pepperdir, toolchains,
                               options.build_experimental, True)
 
   # Ship with libraries prebuilt, so run that first.
-  BuildStepBuildLibraries(pepperdir, platform, 'src')
+  BuildStepBuildLibraries(pepperdir, 'src')
   GenerateNotice(pepperdir)
 
   # Verify the SDK contains what we expect.
-  BuildStepVerifyFilelist(pepperdir, platform)
+  BuildStepVerifyFilelist(pepperdir)
 
   if not options.skip_tar:
     BuildStepTarBundle(pepper_ver, tarfile)
 
-  if options.build_ports and platform == 'linux':
+  if options.build_ports and getos.GetPlatform() == 'linux':
     ports_tarfile = os.path.join(OUT_DIR, 'naclports.tar.bz2')
     BuildStepSyncNaClPorts()
     BuildStepBuildNaClPorts(pepper_ver, pepperdir)
@@ -961,7 +945,7 @@ def main(args):
   if options.archive:
     BuildStepArchiveBundle('build', pepper_ver, chrome_revision, nacl_revision,
                            tarfile)
-    if options.build_ports and platform == 'linux':
+    if options.build_ports and getos.GetPlatform() == 'linux':
       BuildStepArchiveBundle('naclports', pepper_ver, chrome_revision,
                              nacl_revision, ports_tarfile)
     BuildStepArchiveSDKTools()

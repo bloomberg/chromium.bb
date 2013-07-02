@@ -25,9 +25,9 @@ sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import getos
 
 
-def BuildStepBuildExamples(pepperdir, platform):
+def BuildStepBuildExamples(pepperdir):
   for config in ('Debug', 'Release'):
-    build_sdk.BuildStepMakeAll(pepperdir, platform, 'examples',
+    build_sdk.BuildStepMakeAll(pepperdir, 'examples',
                                'Build Examples (%s)' % config,
                                deps=False, config=config)
 
@@ -43,18 +43,17 @@ def BuildStepCopyTests(pepperdir, toolchains, build_experimental):
     filters['EXPERIMENTAL'] = False
 
   tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
-  platform = getos.GetPlatform()
-  build_projects.UpdateHelpers(pepperdir, platform, clobber=False)
-  build_projects.UpdateProjects(pepperdir, platform, tree, clobber=False,
+  build_projects.UpdateHelpers(pepperdir, clobber=False)
+  build_projects.UpdateProjects(pepperdir, tree, clobber=False,
                                 toolchains=toolchains)
 
 
-def BuildStepBuildTests(pepperdir, platform):
+def BuildStepBuildTests(pepperdir):
   for config in ('Debug', 'Release'):
-    build_sdk.BuildStepMakeAll(pepperdir, platform, 'testlibs',
+    build_sdk.BuildStepMakeAll(pepperdir, 'testlibs',
                                'Build Test Libraries (%s)' % config,
                                config=config)
-    build_sdk.BuildStepMakeAll(pepperdir, platform, 'tests',
+    build_sdk.BuildStepMakeAll(pepperdir, 'tests',
                                'Build Tests (%s)' % config,
                                deps=False, config=config)
 
@@ -63,6 +62,7 @@ def main(args):
   parser = optparse.OptionParser()
   parser.add_option('--experimental', help='build experimental tests',
                     action='store_true')
+  parser.add_option('--verbose', help='Verbose output', action='store_true')
 
   if 'NACL_SDK_ROOT' in os.environ:
     # We don't want the currently configured NACL_SDK_ROOT to have any effect
@@ -71,15 +71,17 @@ def main(args):
 
   options, args = parser.parse_args(args[1:])
 
-  platform = getos.GetPlatform()
   pepper_ver = str(int(build_version.ChromeMajorVersion()))
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
   toolchains = ['newlib', 'glibc', 'pnacl']
-  toolchains.append(platform)
+  toolchains.append(getos.GetPlatform())
 
-  BuildStepBuildExamples(pepperdir, platform)
+  if options.verbose:
+    build_projects.verbose = True
+
+  BuildStepBuildExamples(pepperdir)
   BuildStepCopyTests(pepperdir, toolchains, options.experimental)
-  BuildStepBuildTests(pepperdir, platform)
+  BuildStepBuildTests(pepperdir)
 
   return 0
 

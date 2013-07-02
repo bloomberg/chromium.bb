@@ -31,6 +31,12 @@ LIB_DICT = {
 }
 VALID_TOOLCHAINS = ['newlib', 'glibc', 'pnacl', 'win', 'linux', 'mac']
 
+# Global verbosity setting.
+# If set to try (normally via a command line arg) then build_projects will
+# add V=1 to all calls to 'make'
+verbose = False
+
+
 
 def CopyFilesFromTo(filelist, srcdir, dstdir):
   for filename in filelist:
@@ -39,7 +45,7 @@ def CopyFilesFromTo(filelist, srcdir, dstdir):
     buildbot_common.CopyFile(srcpath, dstpath)
 
 
-def UpdateHelpers(pepperdir, platform, clobber=False):
+def UpdateHelpers(pepperdir, clobber=False):
   tools_dir = os.path.join(pepperdir, 'tools')
   if not os.path.exists(tools_dir):
     buildbot_common.ErrorExit('SDK tools dir is missing: %s' % tools_dir)
@@ -65,7 +71,7 @@ def UpdateHelpers(pepperdir, platform, clobber=False):
       tools_dir)
 
   # On Windows add a prebuilt make
-  if platform == 'win':
+  if getos.GetPlatform() == 'win':
     buildbot_common.BuildStep('Add MAKE')
     http_download.HttpDownload(GSTORE + MAKE,
                                os.path.join(tools_dir, 'make.exe'))
@@ -78,7 +84,7 @@ def ValidateToolchains(toolchains):
         ', '.join(invalid_toolchains)))
 
 
-def UpdateProjects(pepperdir, platform, project_tree, toolchains,
+def UpdateProjects(pepperdir, project_tree, toolchains,
                    clobber=False, configs=None, first_toolchain=False):
   if configs is None:
     configs = ['Debug', 'Release']
@@ -91,6 +97,7 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
 
   # Create the library output directories
   libdir = os.path.join(pepperdir, 'lib')
+  platform = getos.GetPlatform()
   for config in configs:
     for arch in LIB_DICT[platform]:
       dirpath = os.path.join(libdir, '%s_%s_host' % (platform, arch), config)
@@ -143,12 +150,11 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
                                        targets)
 
 
-def BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config,
-                        verbose):
+def BuildProjectsBranch(pepperdir, branch, deps, clean, config):
   make_dir = os.path.join(pepperdir, branch)
   print "\n\nMake: " + make_dir
 
-  if platform == 'win':
+  if getos.GetPlatform() == 'win':
     # We need to modify the environment to build host on Windows.
     make = os.path.join(make_dir, 'make.bat')
   else:
@@ -176,31 +182,24 @@ def BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config,
   if verbose:
     make_cmd.append('V=1')
 
-  try:
-    buildbot_common.Run(make_cmd, cwd=make_dir, env=env)
-  except:
-    print 'Failed to build ' + branch
-    raise
-
+  buildbot_common.Run(make_cmd, cwd=make_dir, env=env)
   if clean:
     # Clean to remove temporary files but keep the built
     buildbot_common.Run(make_cmd + ['clean'], cwd=make_dir, env=env)
 
 
-def BuildProjects(pepperdir, platform, project_tree, deps=True,
-                  clean=False, config='Debug', verbose=False):
+def BuildProjects(pepperdir, project_tree, deps=True,
+                  clean=False, config='Debug'):
   # First build libraries
   build_order = ['src', 'testlibs']
   for branch in build_order:
     if branch in project_tree:
-      BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config,
-                          verbose)
+      BuildProjectsBranch(pepperdir, branch, deps, clean, config)
 
   # Build everything else.
   for branch in project_tree:
     if branch not in build_order:
-      BuildProjectsBranch(pepperdir, platform, branch, deps, clean, config,
-                          verbose)
+      BuildProjectsBranch(pepperdir, branch, deps, clean, config)
 
 
 def main(args):
@@ -237,15 +236,14 @@ def main(args):
 
   pepper_ver = str(int(build_version.ChromeMajorVersion()))
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
-  platform = getos.GetPlatform()
 
   if not options.toolchain:
     options.toolchain = ['newlib', 'glibc', 'pnacl', 'host']
 
   if 'host' in options.toolchain:
     options.toolchain.remove('host')
-    options.toolchain.append(platform)
-    print 'Adding platform: ' + platform
+    options.toolchain.append(getos.GetPlatform())
+    print 'Adding platform: ' + getos.GetPlatform()
 
   ValidateToolchains(options.toolchain)
 
@@ -265,9 +263,13 @@ def main(args):
   project_tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
   parse_dsc.PrintProjectTree(project_tree)
 
-  UpdateHelpers(pepperdir, platform, clobber=options.clobber)
-  UpdateProjects(pepperdir, platform, project_tree, options.toolchain,
+  UpdateHelpers(pepperdir, clobber=options.clobber)
+  UpdateProjects(pepperdir, project_tree, options.toolchain,
                  clobber=options.clobber)
+
+  if options.verbose:
+    global verbose
+    verbose = True
 
   if options.build:
     if options.config:
@@ -275,8 +277,7 @@ def main(args):
     else:
       configs = ['Debug', 'Release']
     for config in configs:
-      BuildProjects(pepperdir, platform, project_tree,
-                    config=config, verbose=options.verbose)
+      BuildProjects(pepperdir, project_tree, config=config)
 
   return 0
 
