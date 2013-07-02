@@ -321,7 +321,7 @@ static base::Value* PopulateInterfaceDescriptor(int interface_number,
   descriptor.alternate_setting = alternate_setting;
   descriptor.interface_class = interface_class;
   descriptor.interface_subclass = interface_subclass;
-  descriptor.interface_protocol = interface_subclass;
+  descriptor.interface_protocol = interface_protocol;
   descriptor.endpoints = *endpoints;
   return descriptor.ToValue().release();
 }

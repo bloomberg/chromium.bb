@@ -104,6 +104,22 @@ void UsbService::FindDevices(const uint16 vendor_id,
 #endif  // defined(OS_CHROMEOS)
 }
 
+void UsbService::EnumerateDevices(
+    std::vector<scoped_refptr<UsbDevice> >* devices) {
+  devices->clear();
+
+  DeviceVector enumerated_devices;
+  EnumerateDevicesImpl(&enumerated_devices);
+
+  for (DeviceVector::iterator it = enumerated_devices.begin();
+       it != enumerated_devices.end(); ++it) {
+    PlatformUsbDevice device = it->device();
+    UsbDevice* const wrapper = LookupOrCreateDevice(device);
+    if (wrapper)
+      devices->push_back(wrapper);
+  }
+}
+
 void UsbService::FindDevicesImpl(const uint16 vendor_id,
                                  const uint16 product_id,
                                  vector<scoped_refptr<UsbDevice> >* devices,
@@ -120,12 +136,11 @@ void UsbService::FindDevicesImpl(const uint16 vendor_id,
     return;
 
   DeviceVector enumerated_devices;
-  EnumerateDevices(&enumerated_devices);
-  if (enumerated_devices.empty())
-    return;
+  EnumerateDevicesImpl(&enumerated_devices);
 
-  for (unsigned int i = 0; i < enumerated_devices.size(); ++i) {
-    PlatformUsbDevice device = enumerated_devices[i].device();
+  for (DeviceVector::iterator it = enumerated_devices.begin();
+       it != enumerated_devices.end(); ++it) {
+    PlatformUsbDevice device = it->device();
     if (DeviceMatches(device, vendor_id, product_id)) {
       UsbDevice* const wrapper = LookupOrCreateDevice(device);
       if (wrapper)
@@ -165,7 +180,7 @@ PlatformUsbDevice UsbService::RefCountedPlatformUsbDevice::device() {
   return device_;
 }
 
-void UsbService::EnumerateDevices(DeviceVector* output) {
+void UsbService::EnumerateDevicesImpl(DeviceVector* output) {
   STLClearObject(output);
 
   libusb_device** devices = NULL;

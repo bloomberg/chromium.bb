@@ -40,6 +40,10 @@ class UsbService : public BrowserContextKeyedService {
                    std::vector<scoped_refptr<UsbDevice> >* devices,
                    const base::Callback<void()>& callback);
 
+  // Find all of the devices attached to the system, inserting them into
+  // |devices|. Clears |devices| before use.
+  void EnumerateDevices(std::vector<scoped_refptr<UsbDevice> >* devices);
+
   // This function should not be called by normal code. It is invoked by a
   // UsbDevice's Close function and disposes of the associated platform handle.
   void CloseDevice(scoped_refptr<UsbDevice> device);
@@ -79,7 +83,7 @@ class UsbService : public BrowserContextKeyedService {
                        bool success);
 
   // Populates |output| with the result of enumerating all attached USB devices.
-  void EnumerateDevices(DeviceVector* output);
+  void EnumerateDevicesImpl(DeviceVector* output);
 
   // If a UsbDevice wrapper corresponding to |device| has already been created,
   // returns it. Otherwise, opens the device, creates a wrapper, and associates
