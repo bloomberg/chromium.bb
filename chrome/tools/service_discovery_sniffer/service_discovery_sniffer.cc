@@ -6,37 +6,39 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/browser/local_discovery/service_discovery_sniffer.h"
+#include "chrome/tools/service_discovery_sniffer/service_discovery_sniffer.h"
 
 namespace local_discovery {
 
-Service::Service(std::string service_name) : changed_(false) {
+ServicePrinter::ServicePrinter(std::string service_name) : changed_(false) {
   service_resolver_ =
       ServiceDiscoveryClient::GetInstance()->CreateServiceResolver(
           service_name,
-          base::Bind(&Service::OnServiceResolved, base::Unretained(this)));
+          base::Bind(&ServicePrinter::OnServiceResolved,
+                     base::Unretained(this)));
 }
 
-Service::~Service() {
+ServicePrinter::~ServicePrinter() {
 }
 
-void Service::Added() {
+void ServicePrinter::Added() {
   changed_ = false;
   service_resolver_->StartResolving();
 }
 
-void Service::Changed() {
+void ServicePrinter::Changed() {
   changed_ = true;
   service_resolver_->StartResolving();
 }
 
-void Service::Removed() {
+void ServicePrinter::Removed() {
   printf("Service Removed: %s\n",
          service_resolver_->GetServiceDescription().instance_name().c_str());
 }
 
-void Service::OnServiceResolved(ServiceResolver::RequestStatus status,
+void ServicePrinter::OnServiceResolved(ServiceResolver::RequestStatus status,
                                 const ServiceDescription& service) {
   if (changed_) {
     printf("Service Updated: %s\n", service.instance_name().c_str());
@@ -58,21 +60,25 @@ void Service::OnServiceResolved(ServiceResolver::RequestStatus status,
   }
 }
 
-ServiceType::ServiceType(std::string service_type) : watcher_(
-    ServiceDiscoveryClient::GetInstance()->CreateServiceWatcher(
-        service_type, this))  {
-  watcher_->Start();
+ServiceTypePrinter::ServiceTypePrinter(std::string service_type)  {
+  watcher_ = ServiceDiscoveryClient::GetInstance()->CreateServiceWatcher(
+      service_type, this);
+}
+
+bool ServiceTypePrinter::Start() {
+  if (!watcher_->Start()) return false;
   watcher_->DiscoverNewServices(false);
   watcher_->ReadCachedServices();
+  return true;
 }
 
-ServiceType::~ServiceType() {
+ServiceTypePrinter::~ServiceTypePrinter() {
 }
 
-void ServiceType::OnServiceUpdated(ServiceWatcher::UpdateType update,
+void ServiceTypePrinter::OnServiceUpdated(ServiceWatcher::UpdateType update,
                                    const std::string& service_name) {
   if (update == ServiceWatcher::UPDATE_ADDED) {
-    services_[service_name].reset(new Service(service_name));
+    services_[service_name].reset(new ServicePrinter(service_name));
     services_[service_name]->Added();
   } else if (update == ServiceWatcher::UPDATE_CHANGED) {
     services_[service_name]->Changed();
@@ -94,9 +100,11 @@ int main(int argc, char** argv) {
   }
 
   { // To guarantee/make explicit the ordering constraint.
-    local_discovery::ServiceType print_changes(
+    local_discovery::ServiceTypePrinter print_changes(
         std::string(argv[1]) + "._tcp.local");
 
+    if (!print_changes.Start())
+      printf("Could not start the DNS-SD client\n");
     message_loop.Run();
   }
 }

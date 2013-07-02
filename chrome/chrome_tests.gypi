@@ -3390,8 +3390,8 @@
             '../base/base.gyp:test_support_base',
           ],
           'sources': [
-            'browser/local_discovery/service_discovery_sniffer.h',
-            'browser/local_discovery/service_discovery_sniffer.cc',
+            'tools/service_discovery_sniffer/service_discovery_sniffer.h',
+            'tools/service_discovery_sniffer/service_discovery_sniffer.cc',
           ],
         }]
     }],

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_SNIFFER_H_
-#define CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_SNIFFER_H_
+#ifndef CHROME_TOOLS_SERVICE_DISCOVERY_SNIFFER_SERVICE_DISCOVERY_SNIFFER_H_
+#define CHROME_TOOLS_SERVICE_DISCOVERY_SNIFFER_SERVICE_DISCOVERY_SNIFFER_H_
 
 #include <map>
 #include <string>
@@ -13,10 +13,11 @@
 
 namespace local_discovery {
 
-class Service {
+// Resolves a service and prints out information regarding it to the console.
+class ServicePrinter {
  public:
-  explicit Service(std::string service_name);
-  ~Service();
+  explicit ServicePrinter(std::string service_name);
+  ~ServicePrinter();
 
   void Added();
   void Changed();
@@ -28,23 +29,30 @@ class Service {
 
   bool changed_;
   scoped_ptr<ServiceResolver> service_resolver_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServicePrinter);
 };
 
-class ServiceType : public ServiceWatcher::Delegate {
+// Monitors a service type and prints information regarding all services on it
+// to the console.
+class ServiceTypePrinter : public ServiceWatcher::Delegate {
  public:
-  explicit ServiceType(std::string service_type);
-  virtual ~ServiceType();
+  explicit ServiceTypePrinter(std::string service_type);
+  virtual ~ServiceTypePrinter();
 
+  bool Start();
   virtual void OnServiceUpdated(ServiceWatcher::UpdateType,
                                 const std::string& service_name) OVERRIDE;
 
  private:
-  typedef std::map<std::string, linked_ptr<Service> > ServiceMap;
+  typedef std::map<std::string, linked_ptr<ServicePrinter> > ServiceMap;
 
   ServiceMap services_;
   scoped_ptr<ServiceWatcher> watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceTypePrinter);
 };
 
 }  // namespace local_discovery
 
-#endif  // CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_SNIFFER_H_
+#endif  // CHROME_TOOLS_SERVICE_DISCOVERY_SNIFFER_SERVICE_DISCOVERY_SNIFFER_H_
