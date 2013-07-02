@@ -3285,7 +3285,7 @@ PassRefPtr<StyleImage> StyleResolver::generatedOrPendingFromValue(CSSPropertyID 
 
 PassRefPtr<StyleImage> StyleResolver::setOrPendingFromValue(CSSPropertyID property, CSSImageSetValue* value)
 {
-    RefPtr<StyleImage> image = value->cachedOrPendingImageSet(document());
+    RefPtr<StyleImage> image = value->cachedOrPendingImageSet(m_state.elementStyleResources().deviceScaleFactor());
     if (image && image->isPendingImage())
         m_state.elementStyleResources().addPendingImageProperty(property, value);
     return image.release();
@@ -3293,7 +3293,7 @@ PassRefPtr<StyleImage> StyleResolver::setOrPendingFromValue(CSSPropertyID proper
 
 PassRefPtr<StyleImage> StyleResolver::cursorOrPendingFromValue(CSSPropertyID property, CSSCursorImageValue* value)
 {
-    RefPtr<StyleImage> image = value->cachedOrPendingImage(document());
+    RefPtr<StyleImage> image = value->cachedOrPendingImage(m_state.elementStyleResources().deviceScaleFactor());
     if (image && image->isPendingImage())
         m_state.elementStyleResources().addPendingImageProperty(property, value);
     return image.release();

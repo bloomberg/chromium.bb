@@ -27,6 +27,7 @@
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/VisitedLinkState.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderTheme.h"
 
 namespace WebCore {
@@ -93,6 +94,9 @@ void StyleResolverState::initForStyleResolve(Document* document, Element* e, Ren
     m_style = 0;
     m_elementStyleResources.clear();
     m_fontDirty = false;
+
+    if (Page* page = document->page())
+        m_elementStyleResources.setDeviceScaleFactor(page->deviceScaleFactor());
 }
 
 

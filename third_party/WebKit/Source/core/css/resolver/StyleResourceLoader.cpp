@@ -76,7 +76,7 @@ void StyleResourceLoader::loadPendingSVGDocuments(RenderStyle* renderStyle, cons
     }
 }
 
-PassRefPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* pendingImage)
+PassRefPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* pendingImage, float deviceScaleFactor)
 {
     if (pendingImage->cssImageValue()) {
         CSSImageValue* imageValue = pendingImage->cssImageValue();
@@ -91,12 +91,12 @@ PassRefPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* 
 
     if (pendingImage->cssCursorImageValue()) {
         CSSCursorImageValue* cursorImageValue = pendingImage->cssCursorImageValue();
-        return cursorImageValue->cachedImage(m_cachedResourceLoader);
+        return cursorImageValue->cachedImage(m_cachedResourceLoader, deviceScaleFactor);
     }
 
     if (pendingImage->cssImageSetValue()) {
         CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue();
-        return imageSetValue->cachedImageSet(m_cachedResourceLoader);
+        return imageSetValue->cachedImageSet(m_cachedResourceLoader, deviceScaleFactor);
     }
 
     return 0;
@@ -133,7 +133,7 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementSty
         case CSSPropertyBackgroundImage: {
             for (FillLayer* backgroundLayer = style->accessBackgroundLayers(); backgroundLayer; backgroundLayer = backgroundLayer->next()) {
                 if (backgroundLayer->image() && backgroundLayer->image()->isPendingImage())
-                    backgroundLayer->setImage(loadPendingImage(static_cast<StylePendingImage*>(backgroundLayer->image())));
+                    backgroundLayer->setImage(loadPendingImage(static_cast<StylePendingImage*>(backgroundLayer->image()), elementStyleResources.deviceScaleFactor()));
             }
             break;
         }
@@ -142,7 +142,7 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementSty
                 if (contentData->isImage()) {
                     StyleImage* image = static_cast<ImageContentData*>(contentData)->image();
                     if (image->isPendingImage()) {
-                        RefPtr<StyleImage> loadedImage = loadPendingImage(static_cast<StylePendingImage*>(image));
+                        RefPtr<StyleImage> loadedImage = loadPendingImage(static_cast<StylePendingImage*>(image), elementStyleResources.deviceScaleFactor());
                         if (loadedImage)
                             static_cast<ImageContentData*>(contentData)->setImage(loadedImage.release());
                     }
@@ -156,7 +156,7 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementSty
                     CursorData& currentCursor = cursorList->at(i);
                     if (StyleImage* image = currentCursor.image()) {
                         if (image->isPendingImage())
-                            currentCursor.setImage(loadPendingImage(static_cast<StylePendingImage*>(image)));
+                            currentCursor.setImage(loadPendingImage(static_cast<StylePendingImage*>(image), elementStyleResources.deviceScaleFactor()));
                     }
                 }
             }
@@ -164,19 +164,19 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementSty
         }
         case CSSPropertyListStyleImage: {
             if (style->listStyleImage() && style->listStyleImage()->isPendingImage())
-                style->setListStyleImage(loadPendingImage(static_cast<StylePendingImage*>(style->listStyleImage())));
+                style->setListStyleImage(loadPendingImage(static_cast<StylePendingImage*>(style->listStyleImage()), elementStyleResources.deviceScaleFactor()));
             break;
         }
         case CSSPropertyBorderImageSource: {
             if (style->borderImageSource() && style->borderImageSource()->isPendingImage())
-                style->setBorderImageSource(loadPendingImage(static_cast<StylePendingImage*>(style->borderImageSource())));
+                style->setBorderImageSource(loadPendingImage(static_cast<StylePendingImage*>(style->borderImageSource()), elementStyleResources.deviceScaleFactor()));
             break;
         }
         case CSSPropertyWebkitBoxReflect: {
             if (StyleReflection* reflection = style->boxReflect()) {
                 const NinePieceImage& maskImage = reflection->mask();
                 if (maskImage.image() && maskImage.image()->isPendingImage()) {
-                    RefPtr<StyleImage> loadedImage = loadPendingImage(static_cast<StylePendingImage*>(maskImage.image()));
+                    RefPtr<StyleImage> loadedImage = loadPendingImage(static_cast<StylePendingImage*>(maskImage.image()), elementStyleResources.deviceScaleFactor());
                     reflection->setMask(NinePieceImage(loadedImage.release(), maskImage.imageSlices(), maskImage.fill(), maskImage.borderSlices(), maskImage.outset(), maskImage.horizontalRule(), maskImage.verticalRule()));
                 }
             }
@@ -184,13 +184,13 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementSty
         }
         case CSSPropertyWebkitMaskBoxImageSource: {
             if (style->maskBoxImageSource() && style->maskBoxImageSource()->isPendingImage())
-                style->setMaskBoxImageSource(loadPendingImage(static_cast<StylePendingImage*>(style->maskBoxImageSource())));
+                style->setMaskBoxImageSource(loadPendingImage(static_cast<StylePendingImage*>(style->maskBoxImageSource()), elementStyleResources.deviceScaleFactor()));
             break;
         }
         case CSSPropertyWebkitMaskImage: {
             for (FillLayer* maskLayer = style->accessMaskLayers(); maskLayer; maskLayer = maskLayer->next()) {
                 if (maskLayer->image() && maskLayer->image()->isPendingImage())
-                    maskLayer->setImage(loadPendingImage(static_cast<StylePendingImage*>(maskLayer->image())));
+                    maskLayer->setImage(loadPendingImage(static_cast<StylePendingImage*>(maskLayer->image()), elementStyleResources.deviceScaleFactor()));
             }
             break;
         }

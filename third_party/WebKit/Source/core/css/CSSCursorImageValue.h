@@ -27,7 +27,6 @@
 
 namespace WebCore {
 
-class Document;
 class Element;
 class SVGElement;
 
@@ -52,8 +51,8 @@ public:
     String customCssText() const;
 
     bool updateIfSVGCursorIsUsed(Element*);
-    StyleImage* cachedImage(CachedResourceLoader*);
-    StyleImage* cachedOrPendingImage(Document*);
+    StyleImage* cachedImage(CachedResourceLoader*, float deviceScaleFactor);
+    StyleImage* cachedOrPendingImage(float deviceScaleFactor);
 
     void removeReferencedElement(SVGElement*);
 

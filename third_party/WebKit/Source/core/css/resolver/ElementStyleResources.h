@@ -51,6 +51,9 @@ public:
     void setHasPendingShaders(bool hasPendingShaders) { m_hasPendingShaders = hasPendingShaders; }
     bool hasPendingShaders() const { return m_hasPendingShaders; }
 
+    float deviceScaleFactor() const { return m_deviceScaleFactor; }
+    void setDeviceScaleFactor(float deviceScaleFactor) { m_deviceScaleFactor = deviceScaleFactor; }
+
     void addPendingImageProperty(const CSSPropertyID&, CSSValue*);
     void addPendingSVGDocument(FilterOperation*, CSSSVGDocumentValue*);
 
@@ -60,6 +63,7 @@ private:
     PendingImagePropertyMap m_pendingImageProperties;
     PendingSVGDocumentMap m_pendingSVGDocuments;
     bool m_hasPendingShaders;
+    float m_deviceScaleFactor;
 };
 
 } // namespace WebCore

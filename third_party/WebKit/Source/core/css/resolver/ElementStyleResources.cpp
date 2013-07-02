@@ -29,6 +29,7 @@ namespace WebCore {
 
 ElementStyleResources::ElementStyleResources()
     : m_hasPendingShaders(false)
+    , m_deviceScaleFactor(1)
 {
 }
 
@@ -47,6 +48,7 @@ void ElementStyleResources::clear()
     m_pendingImageProperties.clear();
     m_pendingSVGDocuments.clear();
     m_hasPendingShaders = false;
+    m_deviceScaleFactor = 1;
 }
 
 }

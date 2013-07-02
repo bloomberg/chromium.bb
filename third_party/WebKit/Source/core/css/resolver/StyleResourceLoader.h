@@ -52,7 +52,7 @@ private:
     void loadPendingSVGDocuments(RenderStyle*, const ElementStyleResources&);
     void loadPendingShaders(RenderStyle*, const ElementStyleResources&);
 
-    PassRefPtr<StyleImage> loadPendingImage(StylePendingImage*);
+    PassRefPtr<StyleImage> loadPendingImage(StylePendingImage*, float deviceScaleFactor);
     void loadPendingImages(RenderStyle*, const ElementStyleResources&);
     void loadPendingShapeImage(RenderStyle*, ShapeValue*);
 

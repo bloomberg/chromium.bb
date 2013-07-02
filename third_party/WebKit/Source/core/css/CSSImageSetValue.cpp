@@ -34,7 +34,6 @@
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
-#include "core/page/Page.h"
 #include "core/rendering/style/StyleCachedImageSet.h"
 #include "core/rendering/style/StylePendingImage.h"
 #include <wtf/MemoryInstrumentationVector.h>
@@ -90,15 +89,11 @@ CSSImageSetValue::ImageWithScale CSSImageSetValue::bestImageForScaleFactor()
     return image;
 }
 
-StyleCachedImageSet* CSSImageSetValue::cachedImageSet(CachedResourceLoader* loader)
+StyleCachedImageSet* CSSImageSetValue::cachedImageSet(CachedResourceLoader* loader, float deviceScaleFactor)
 {
     ASSERT(loader);
 
-    Document* document = loader->document();
-    if (Page* page = document->page())
-        m_scaleFactor = page->deviceScaleFactor();
-    else
-        m_scaleFactor = 1;
+    m_scaleFactor = deviceScaleFactor;
 
     if (!m_imagesInSet.size())
         fillImageSet();
@@ -108,25 +103,23 @@ StyleCachedImageSet* CSSImageSetValue::cachedImageSet(CachedResourceLoader* load
         // All forms of scale should be included: Page::pageScaleFactor(), Frame::pageZoomFactor(),
         // and any CSS transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
         ImageWithScale image = bestImageForScaleFactor();
-        CachedResourceRequest request(ResourceRequest(document->completeURL(image.imageURL)), cachedResourceRequestInitiators().css);
-        if (CachedResourceHandle<CachedImage> cachedImage = loader->requestImage(request)) {
-            m_imageSet = StyleCachedImageSet::create(cachedImage.get(), image.scaleFactor, this);
-            m_accessedBestFitImage = true;
+        if (Document* document = loader->document()) {
+            CachedResourceRequest request(ResourceRequest(document->completeURL(image.imageURL)), cachedResourceRequestInitiators().css);
+            if (CachedResourceHandle<CachedImage> cachedImage = loader->requestImage(request)) {
+                m_imageSet = StyleCachedImageSet::create(cachedImage.get(), image.scaleFactor, this);
+                m_accessedBestFitImage = true;
+            }
         }
     }
 
     return (m_imageSet && m_imageSet->isCachedImageSet()) ? static_cast<StyleCachedImageSet*>(m_imageSet.get()) : 0;
 }
 
-StyleImage* CSSImageSetValue::cachedOrPendingImageSet(Document* document)
+StyleImage* CSSImageSetValue::cachedOrPendingImageSet(float deviceScaleFactor)
 {
-    if (!m_imageSet)
+    if (!m_imageSet) {
         m_imageSet = StylePendingImage::create(this);
-    else if (document && !m_imageSet->isPendingImage()) {
-        float deviceScaleFactor = 1;
-        if (Page* page = document->page())
-            deviceScaleFactor = page->deviceScaleFactor();
-
+    } else if (!m_imageSet->isPendingImage()) {
         // If the deviceScaleFactor has changed, we may not have the best image loaded, so we have to re-assess.
         if (deviceScaleFactor != m_scaleFactor) {
             m_accessedBestFitImage = false;

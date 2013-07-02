@@ -31,7 +31,6 @@
 namespace WebCore {
 
 class CachedResourceLoader;
-class Document;
 class StyleCachedImageSet;
 class StyleImage;
 
@@ -44,10 +43,10 @@ public:
     }
     ~CSSImageSetValue();
 
-    StyleCachedImageSet* cachedImageSet(CachedResourceLoader*);
+    StyleCachedImageSet* cachedImageSet(CachedResourceLoader*, float deviceScaleFactor);
 
     // Returns a StyleCachedImageSet if the best fit image has been cached already, otherwise a StylePendingImage.
-    StyleImage* cachedOrPendingImageSet(Document*);
+    StyleImage* cachedOrPendingImageSet(float);
 
     String customCssText() const;
 
