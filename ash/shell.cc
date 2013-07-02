@@ -849,11 +849,7 @@ SystemTray* Shell::GetPrimarySystemTray() {
 
 LauncherDelegate* Shell::GetLauncherDelegate() {
   if (!launcher_delegate_) {
-    if (!launcher_model_)
-      launcher_model_.reset(new LauncherModel);
-    // Attempt to create the Launcher. This may fail if the application is not
-    // ready to create it yet, in which case the app is responsible for calling
-    // ash::Shell::CreateLauncher() when ready.
+    launcher_model_.reset(new LauncherModel);
     launcher_delegate_.reset(
         delegate_->CreateLauncherDelegate(launcher_model_.get()));
   }
@@ -893,6 +889,10 @@ void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
   root->ShowRootWindow();
   // Activate new root for testing.
   active_root_window_ = root;
+
+  // Create a launcher if a user is already logged.
+  if (Shell::GetInstance()->session_state_delegate()->NumberOfLoggedInUsers())
+    controller->shelf()->CreateLauncher();
 }
 
 void Shell::DoInitialWorkspaceAnimation() {

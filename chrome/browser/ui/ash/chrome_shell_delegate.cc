@@ -256,10 +256,7 @@ app_list::AppListViewDelegate*
 
 ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(
     ash::LauncherModel* model) {
-  // Defer Launcher creation until DefaultProfile is created.
-  if (!ProfileManager::IsGetDefaultProfileAllowed())
-    return NULL;
-
+  DCHECK(ProfileManager::IsGetDefaultProfileAllowed());
   // TODO(oshima): This is currently broken with multiple launchers.
   // Refactor so that there is just one launcher delegate in the
   // shell.

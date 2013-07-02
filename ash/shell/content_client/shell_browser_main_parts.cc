@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell/shell_delegate_impl.h"
 #include "ash/shell/window_watcher.h"
+#include "ash/system/user/login_status.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -121,6 +122,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   ash::Shell::CreateInstance(delegate_);
   ash::Shell::GetInstance()->set_browser_context(browser_context_.get());
+  ash::Shell::GetInstance()->CreateLauncher();
+  ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
+      user::LOGGED_IN_USER);
 
   window_watcher_.reset(new ash::shell::WindowWatcher);
   gfx::Screen* screen = Shell::GetInstance()->GetScreen();

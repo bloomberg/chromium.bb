@@ -538,18 +538,10 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   //   2) if passed alone, to signal that the indicated user has already
   //      logged in and we should behave accordingly.
   // This handles case 2.
-  if (parsed_command_line().HasSwitch(switches::kLoginUser) &&
-      !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
-    std::string username =
-        parsed_command_line().GetSwitchValueASCII(switches::kLoginUser);
-    UserManager* user_manager = UserManager::Get();
-    // In case of multi-profiles --login-profile will contain user_id_hash.
-    std::string username_hash =
-        parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
-    user_manager->UserLoggedIn(username, username_hash, true);
-    VLOG(1) << "Relaunching browser for user: " << username
-            << " with hash: " << username_hash;
-
+  bool immediate_login =
+      parsed_command_line().HasSwitch(switches::kLoginUser) &&
+      !parsed_command_line().HasSwitch(switches::kLoginPassword);
+  if (immediate_login){
     // Redirects Chrome logging to the user data dir.
     logging::RedirectChromeLogging(parsed_command_line());
 
@@ -590,6 +582,18 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
+
+  if (immediate_login) {
+    std::string username =
+        parsed_command_line().GetSwitchValueASCII(switches::kLoginUser);
+    UserManager* user_manager = UserManager::Get();
+    // In case of multi-profiles --login-profile will contain user_id_hash.
+    std::string username_hash =
+        parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
+    user_manager->UserLoggedIn(username, username_hash, true);
+    VLOG(1) << "Relaunching browser for user: " << username
+            << " with hash: " << username_hash;
+  }
 }
 
 void ChromeBrowserMainPartsChromeos::PostProfileInit() {

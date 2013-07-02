@@ -42,6 +42,8 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   virtual void RemoveSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;
 
+  // TODO(oshima): Use state machine instead of using boolean variables.
+
   // Updates the internal state that indicates whether a session is in progress
   // and there is an active user. If |has_active_user| is |false|,
   // |active_user_session_started_| is reset to |false| as well (see below for

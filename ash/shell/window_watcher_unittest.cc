@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell/shell_delegate_impl.h"
+#include "ash/system/user/login_status.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/root_window.h"
 
@@ -22,8 +23,11 @@ TEST_F(WindowWatcherTest, ShellDeleteInstance) {
 
   shell::ShellDelegateImpl* delegate = new ash::shell::ShellDelegateImpl;
   Shell::CreateInstance(delegate);
-
   Shell::GetPrimaryRootWindow()->ShowRootWindow();
+  Shell::GetInstance()->CreateLauncher();
+  Shell::GetInstance()->UpdateAfterLoginStatusChange(
+      user::LOGGED_IN_USER);
+
   window_watcher.reset(new ash::shell::WindowWatcher);
 
   delegate->SetWatcher(window_watcher.get());
