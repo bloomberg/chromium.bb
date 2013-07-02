@@ -1106,7 +1106,7 @@
   fun:media::AudioManagerLinux::~AudioManagerLinux
   fun:content::MockAudioManager::~MockAudioManager
   fun:content::MockAudioManager::~MockAudioManager
-  fun:base::DefaultDeleter::operator()
+  fun:base::DefaultDeleter*
   fun:base::internal::scoped_ptr_impl::~scoped_ptr_impl
   fun:scoped_ptr::~scoped_ptr
   fun:content::MediaStreamManagerTest::~MediaStreamManagerTest
