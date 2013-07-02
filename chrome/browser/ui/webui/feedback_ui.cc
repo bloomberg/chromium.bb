@@ -117,7 +117,6 @@ void ReadDirectoryCallback(size_t max_saved,
                            std::vector<std::string>* saved_screenshots,
                            base::Closure callback,
                            drive::FileError error,
-                           bool hide_hosted_documents,
                            scoped_ptr<drive::ResourceEntryVector> entries) {
   if (error != drive::FILE_ERROR_OK) {
     callback.Run();

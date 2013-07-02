@@ -114,7 +114,7 @@ class FakeFileSystem : public FileSystemInterface {
       const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void ReadDirectoryByPath(
       const base::FilePath& file_path,
-      const ReadDirectoryWithSettingCallback& callback) OVERRIDE;
+      const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void RefreshDirectory(
       const base::FilePath& file_path,
       const FileOperationCallback& callback) OVERRIDE;

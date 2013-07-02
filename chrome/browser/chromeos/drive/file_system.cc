@@ -580,7 +580,7 @@ void FileSystem::GetResourceEntryByPathAfterGetEntry2(
 
 void FileSystem::ReadDirectoryByPath(
     const base::FilePath& directory_path,
-    const ReadDirectoryWithSettingCallback& callback) {
+    const ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -640,7 +640,7 @@ void FileSystem::LoadDirectoryIfNeededAfterGetEntry(
 
 void FileSystem::ReadDirectoryByPathAfterLoad(
     const base::FilePath& directory_path,
-    const ReadDirectoryWithSettingCallback& callback,
+    const ReadDirectoryCallback& callback,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -656,7 +656,7 @@ void FileSystem::ReadDirectoryByPathAfterLoad(
 }
 
 void FileSystem::ReadDirectoryByPathAfterRead(
-    const ReadDirectoryWithSettingCallback& callback,
+    const ReadDirectoryCallback& callback,
     FileError error,
     scoped_ptr<ResourceEntryVector> entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -664,13 +664,21 @@ void FileSystem::ReadDirectoryByPathAfterRead(
 
   if (error != FILE_ERROR_OK) {
     callback.Run(error,
-                 hide_hosted_docs_,
                  scoped_ptr<ResourceEntryVector>());
     return;
   }
   DCHECK(entries.get());  // This is valid for empty directories too.
 
-  callback.Run(FILE_ERROR_OK, hide_hosted_docs_, entries.Pass());
+  // TODO(satorux): Stop handling hide_hosted_docs_ here. crbug.com/256520.
+  scoped_ptr<ResourceEntryVector> filtered(new ResourceEntryVector);
+  for (size_t i = 0; i < entries->size(); ++i) {
+    if (hide_hosted_docs_ &&
+        entries->at(i).file_specific_info().is_hosted_document()) {
+      continue;
+    }
+    filtered->push_back(entries->at(i));
+  }
+  callback.Run(FILE_ERROR_OK, filtered.Pass());
 }
 
 void FileSystem::RefreshDirectory(

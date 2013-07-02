@@ -166,12 +166,11 @@ class FileSystemTest : public testing::Test {
   scoped_ptr<ResourceEntryVector> ReadDirectoryByPathSync(
       const base::FilePath& file_path) {
     FileError error = FILE_ERROR_FAILED;
-    bool unused_hide_hosted_documents;
     scoped_ptr<ResourceEntryVector> entries;
     file_system_->ReadDirectoryByPath(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(
-            &error, &unused_hide_hosted_documents, &entries));
+            &error, &entries));
     google_apis::test_util::RunBlockingPoolTask();
 
     return entries.Pass();

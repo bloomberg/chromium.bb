@@ -142,7 +142,6 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemOperation::ReadDirectoryCallback&
           callback,
       FileError error,
-      bool hide_hosted_documents,
       scoped_ptr<ResourceEntryVector> resource_entries);
 
   // Helper callback for relaying reply for CreateWritableSnapshotFile() to

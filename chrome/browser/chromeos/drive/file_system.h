@@ -145,7 +145,7 @@ class FileSystem : public FileSystemInterface,
       const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void ReadDirectoryByPath(
       const base::FilePath& directory_path,
-      const ReadDirectoryWithSettingCallback& callback) OVERRIDE;
+      const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void RefreshDirectory(
       const base::FilePath& directory_path,
       const FileOperationCallback& callback) OVERRIDE;
@@ -305,10 +305,10 @@ class FileSystem : public FileSystemInterface,
   // |callback| must not be null.
   void ReadDirectoryByPathAfterLoad(
       const base::FilePath& directory_path,
-      const ReadDirectoryWithSettingCallback& callback,
+      const ReadDirectoryCallback& callback,
       FileError error);
   void ReadDirectoryByPathAfterRead(
-      const ReadDirectoryWithSettingCallback& callback,
+      const ReadDirectoryCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntryVector> entries);
 

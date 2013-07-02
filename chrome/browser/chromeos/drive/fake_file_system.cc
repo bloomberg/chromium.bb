@@ -206,7 +206,7 @@ void FakeFileSystem::GetResourceEntryByPath(
 
 void FakeFileSystem::ReadDirectoryByPath(
     const base::FilePath& file_path,
-    const ReadDirectoryWithSettingCallback& callback) {
+    const ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

@@ -716,7 +716,6 @@ void FileSystemProxy::OnReadDirectory(
     const FileSystemOperation::ReadDirectoryCallback&
     callback,
     FileError error,
-    bool hide_hosted_documents,
     scoped_ptr<ResourceEntryVector> resource_entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -732,11 +731,6 @@ void FileSystemProxy::OnReadDirectory(
   // Convert Drive files to something File API stack can understand.
   for (size_t i = 0; i < resource_entries->size(); ++i) {
     const ResourceEntry& resource_entry = (*resource_entries)[i];
-    if (resource_entry.has_file_specific_info() &&
-        resource_entry.file_specific_info().is_hosted_document() &&
-        hide_hosted_documents) {
-      continue;
-    }
     entries.push_back(ResourceEntryToDirectoryEntry(resource_entry));
   }
 

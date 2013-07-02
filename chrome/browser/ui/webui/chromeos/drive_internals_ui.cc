@@ -238,7 +238,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when ReadDirectoryByPath() is complete.
   void OnReadDirectoryByPath(const base::FilePath& parent_path,
                              drive::FileError error,
-                             bool hide_hosted_documents,
                              scoped_ptr<drive::ResourceEntryVector> entries);
 
   // Called as the iterator for DebugInfoCollector::IterateFileCache().
@@ -722,7 +721,6 @@ void DriveInternalsWebUIHandler::OnGetResourceEntryByPath(
 void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
     const base::FilePath& parent_path,
     drive::FileError error,
-    bool hide_hosted_documents,
     scoped_ptr<drive::ResourceEntryVector> entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
