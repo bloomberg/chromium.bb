@@ -6,8 +6,8 @@
 
 # For app bundles built with ASan, copies the runtime lib
 # (libclang_rt.asan_osx_dynamic.dylib), on which their executables depend, from
-# the compiler installation path to appname.app/Contents/Resources and fixes the
-# dylib's install name in the binary to be relative to @executable_path.
+# the compiler installation path into the bundle and fixes the dylib's install
+# name in the binary to be relative to @executable_path.
 
 set -e
 
@@ -35,11 +35,21 @@ if [[ "${DYLIB_BASENAME}" != "${ASAN_DYLIB_NAME}" ]]; then
   exit 1
 fi
 
-LIBRARIES_DIR="$(dirname "${BINARY_DIR}")/Libraries"
-mkdir -p "${LIBRARIES_DIR}"
-cp "${ASAN_DYLIB}" "${LIBRARIES_DIR}"
+# Check whether the directory containing the executable binary is named
+# "MacOS". In this case we're building a full-fledged OSX app and will put
+# the runtime into appname.app/Contents/Libraries/. Otherwise this is probably
+# an iOS gtest app, and the ASan runtime is put next to the executable.
+UPPER_DIR=$(dirname "${BINARY_DIR}")
+if [ "${UPPER_DIR}" == "MacOS" ]; then
+  LIBRARIES_DIR="${UPPER_DIR}/Libraries"
+  mkdir -p "${LIBRARIES_DIR}"
+  NEW_LC_ID_DYLIB="@executable_path/../Libraries/${ASAN_DYLIB_NAME}"
+else
+  LIBRARIES_DIR="${BINARY_DIR}"
+  NEW_LC_ID_DYLIB="@executable_path/${ASAN_DYLIB_NAME}"
+fi
 
-NEW_LC_ID_DYLIB="@executable_path/../Libraries/${ASAN_DYLIB_NAME}"
+cp "${ASAN_DYLIB}" "${LIBRARIES_DIR}"
 
 # Make LC_ID_DYLIB of the runtime copy point to its location.
 install_name_tool \
