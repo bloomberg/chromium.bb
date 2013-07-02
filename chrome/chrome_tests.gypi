@@ -929,6 +929,7 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
+    # This is the new ChromeDriver based on DevTools.
     {
       'target_name': 'chromedriver2_lib',
       'type': 'static_library',
@@ -953,14 +954,7 @@
         'test/chromedriver/capabilities.h',
         'test/chromedriver/chrome_launcher.cc',
         'test/chromedriver/chrome_launcher.h',
-        'test/chromedriver/chromedriver.cc',
-        'test/chromedriver/chromedriver.h',
         'test/chromedriver/command.h',
-        'test/chromedriver/command_executor.h',
-        'test/chromedriver/command_executor_impl.cc',
-        'test/chromedriver/command_executor_impl.h',
-        'test/chromedriver/command_names.cc',
-        'test/chromedriver/command_names.h',
         'test/chromedriver/commands.cc',
         'test/chromedriver/commands.h',
         'test/chromedriver/element_commands.cc',
@@ -985,23 +979,6 @@
         'test/chromedriver/util.h',
         'test/chromedriver/window_commands.cc',
         'test/chromedriver/window_commands.h',
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
-    },
-    # This is the new ChromeDriver based on DevTools.
-    {
-      'target_name': 'chromedriver2',
-      'type': 'loadable_module',
-      'dependencies': [
-        'chromedriver2_lib',
-        '../base/base.gyp:base',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/chromedriver/chromedriver_shared_library.cc',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -1076,8 +1053,6 @@
         'test/chromedriver/chrome/stub_web_view.h',
         'test/chromedriver/chrome/web_view_impl_unittest.cc',
         'test/chromedriver/chrome_launcher_unittest.cc',
-        'test/chromedriver/chromedriver_unittest.cc',
-        'test/chromedriver/command_executor_impl_unittest.cc',
         'test/chromedriver/commands_unittest.cc',
         'test/chromedriver/fake_session_accessor.cc',
         'test/chromedriver/fake_session_accessor.h',

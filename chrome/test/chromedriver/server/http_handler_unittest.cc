@@ -4,50 +4,34 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/command_executor.h"
-#include "chrome/test/chromedriver/command_names.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class DummyExecutor : public CommandExecutor {
- public:
-  DummyExecutor() : status_(kOk) {}
-  explicit DummyExecutor(StatusCode status) : status_(status) {}
-  virtual ~DummyExecutor() {}
-
-  virtual void Init() OVERRIDE {}
-  virtual void ExecuteCommand(const std::string& name,
-                              const base::DictionaryValue& params,
-                              const std::string& session_id,
-                              StatusCode* status,
-                              scoped_ptr<base::Value>* value,
-                              std::string* out_session_id) OVERRIDE {
-    *status = status_;
-    value->reset(new base::FundamentalValue(1));
-    *out_session_id = "session_id";
-  }
-
- private:
-  StatusCode status_;
-};
+Status DummyCommand(
+    Status status,
+    const base::DictionaryValue& params,
+    const std::string& session_id,
+    scoped_ptr<base::Value>* value,
+    std::string* out_session_id) {
+  value->reset(new base::FundamentalValue(1));
+  *out_session_id = "session_id";
+  return status;
+}
 
 }  // namespace
 
 TEST(HttpHandlerTest, HandleOutsideOfBaseUrl) {
   Logger log;
-  HttpHandler handler(
-      &log,
-      scoped_ptr<CommandExecutor>(new DummyExecutor()),
-      scoped_ptr<HttpHandler::CommandMap>(new HttpHandler::CommandMap()),
-      "base/url/");
+  HttpHandler handler(&log, "base/url/");
   HttpRequest request(kGet, "base/path", "body");
   HttpResponse response;
   handler.Handle(request, &response);
@@ -56,11 +40,7 @@ TEST(HttpHandlerTest, HandleOutsideOfBaseUrl) {
 
 TEST(HttpHandlerTest, HandleUnknownCommand) {
   Logger log;
-  HttpHandler handler(
-      &log,
-      scoped_ptr<CommandExecutor>(new DummyExecutor()),
-      scoped_ptr<HttpHandler::CommandMap>(new HttpHandler::CommandMap()),
-      "/");
+  HttpHandler handler(&log, "/");
   HttpRequest request(kGet, "/path", std::string());
   HttpResponse response;
   handler.Handle(request, &response);
@@ -68,13 +48,12 @@ TEST(HttpHandlerTest, HandleUnknownCommand) {
 }
 
 TEST(HttpHandlerTest, HandleNewSession) {
-  scoped_ptr<HttpHandler::CommandMap> map(new HttpHandler::CommandMap());
-  map->push_back(CommandMapping(kPost, "session", CommandNames::kNewSession));
   Logger log;
-  HttpHandler handler(
-      &log,
-      scoped_ptr<CommandExecutor>(new DummyExecutor()),
-      map.Pass(), "/base/");
+  HttpHandler handler(&log, "/base/");
+  handler.command_map_.reset(new HttpHandler::CommandMap());
+  handler.command_map_->push_back(
+      CommandMapping(kPost, internal::kNewSessionPathPattern,
+                     base::Bind(&DummyCommand, Status(kOk))));
   HttpRequest request(kPost, "/base/session", std::string());
   HttpResponse response;
   handler.Handle(request, &response);
@@ -86,13 +65,10 @@ TEST(HttpHandlerTest, HandleNewSession) {
 }
 
 TEST(HttpHandlerTest, HandleInvalidPost) {
-  scoped_ptr<HttpHandler::CommandMap> map(new HttpHandler::CommandMap());
-  map->push_back(CommandMapping(kPost, "path", "cmd"));
   Logger log;
-  HttpHandler handler(
-      &log,
-      scoped_ptr<CommandExecutor>(new DummyExecutor()),
-      map.Pass(), "/");
+  HttpHandler handler(&log, "/");
+  handler.command_map_->push_back(
+      CommandMapping(kPost, "path", base::Bind(&DummyCommand, Status(kOk))));
   HttpRequest request(kPost, "/path", "should be a dictionary");
   HttpResponse response;
   handler.Handle(request, &response);
@@ -100,13 +76,11 @@ TEST(HttpHandlerTest, HandleInvalidPost) {
 }
 
 TEST(HttpHandlerTest, HandleUnimplementedCommand) {
-  scoped_ptr<HttpHandler::CommandMap> map(new HttpHandler::CommandMap());
-  map->push_back(CommandMapping(kPost, "path", "cmd"));
   Logger log;
-  HttpHandler handler(
-      &log,
-      scoped_ptr<CommandExecutor>(new DummyExecutor(kUnknownCommand)),
-      map.Pass(), "/");
+  HttpHandler handler(&log, "/");
+  handler.command_map_->push_back(
+      CommandMapping(kPost, "path",
+                     base::Bind(&DummyCommand, Status(kUnknownCommand))));
   HttpRequest request(kPost, "/path", std::string());
   HttpResponse response;
   handler.Handle(request, &response);
@@ -114,13 +88,10 @@ TEST(HttpHandlerTest, HandleUnimplementedCommand) {
 }
 
 TEST(HttpHandlerTest, HandleCommand) {
-  scoped_ptr<HttpHandler::CommandMap> map(new HttpHandler::CommandMap());
-  map->push_back(CommandMapping(kPost, "path", "cmd"));
   Logger log;
-  HttpHandler handler(
-      &log,
-      scoped_ptr<CommandExecutor>(new DummyExecutor()),
-      map.Pass(), "/");
+  HttpHandler handler(&log, "/");
+  handler.command_map_->push_back(
+      CommandMapping(kPost, "path", base::Bind(&DummyCommand, Status(kOk))));
   HttpRequest request(kPost, "/path", std::string());
   HttpResponse response;
   handler.Handle(request, &response);
@@ -137,7 +108,7 @@ TEST(HttpHandlerTest, HandleCommand) {
 }
 
 TEST(MatchesCommandTest, DiffMethod) {
-  CommandMapping command(kPost, "path", "command");
+  CommandMapping command(kPost, "path", base::Bind(&DummyCommand, Status(kOk)));
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_FALSE(internal::MatchesCommand(
@@ -147,7 +118,8 @@ TEST(MatchesCommandTest, DiffMethod) {
 }
 
 TEST(MatchesCommandTest, DiffPathLength) {
-  CommandMapping command(kPost, "path/path", "command");
+  CommandMapping command(kPost, "path/path",
+                         base::Bind(&DummyCommand, Status(kOk)));
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_FALSE(internal::MatchesCommand(
@@ -161,7 +133,8 @@ TEST(MatchesCommandTest, DiffPathLength) {
 }
 
 TEST(MatchesCommandTest, DiffPaths) {
-  CommandMapping command(kPost, "path/apath", "command");
+  CommandMapping command(kPost, "path/apath",
+                         base::Bind(&DummyCommand, Status(kOk)));
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_FALSE(internal::MatchesCommand(
@@ -169,7 +142,8 @@ TEST(MatchesCommandTest, DiffPaths) {
 }
 
 TEST(MatchesCommandTest, Substitution) {
-  CommandMapping command(kPost, "path/:sessionId/space/:a/:b", "command");
+  CommandMapping command(kPost, "path/:sessionId/space/:a/:b",
+                         base::Bind(&DummyCommand, Status(kOk)));
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_TRUE(internal::MatchesCommand(

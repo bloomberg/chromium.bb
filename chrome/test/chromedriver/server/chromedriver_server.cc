@@ -16,7 +16,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/version.h"
-#include "chrome/test/chromedriver/command_executor_impl.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/server/http_response.h"
 #include "third_party/mongoose/mongoose.h"
@@ -181,9 +180,7 @@ int main(int argc, char *argv[]) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
 
   scoped_ptr<Log> log(new Logger(log_level));
-  scoped_ptr<CommandExecutor> executor(new CommandExecutorImpl(log.get()));
-  HttpHandler handler(
-      log.get(), executor.Pass(), HttpHandler::CreateCommandMap(), url_base);
+  HttpHandler handler(log.get(), url_base);
   base::WaitableEvent shutdown_event(false, false);
   MongooseUserData user_data = { &handler, &shutdown_event };
 

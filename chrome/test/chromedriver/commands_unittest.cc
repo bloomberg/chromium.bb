@@ -15,7 +15,6 @@
 #include "chrome/test/chromedriver/chrome/stub_chrome.h"
 #include "chrome/test/chromedriver/chrome/stub_web_view.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
-#include "chrome/test/chromedriver/command_executor_impl.h"
 #include "chrome/test/chromedriver/commands.h"
 #include "chrome/test/chromedriver/element_commands.h"
 #include "chrome/test/chromedriver/fake_session_accessor.h"

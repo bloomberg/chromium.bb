@@ -5,18 +5,21 @@ ChromeDriver is an implementation of the WebDriver standard,
 which allows users to automate testing of their website across browsers.
 
 =====Getting started=====
-Build ChromeDriver by building the 'chromedriver2' target. This will create
-a shared library in the build folder named 'chromedriver2.dll' (win),
-'chromedriver2.so' (mac), or 'libchromedriver2.so' (linux).
+Build ChromeDriver by building the 'chromedriver2_server' target. This will
+create an executable binary in the build folder named 'chromedriver2_server.exe'
+on Windows or 'chromedriver2_server' on Mac and Linux.
 
 Once built, ChromeDriver can be used interactively with python.
-This can be easily done by running python in this directory (or including
-this directory in your PYTHONPATH).
 
+$ export PYTHONPATH=<THIS_DIR>/server:<THIS_DIR>/client
 $ python
+>>> import server
 >>> import chromedriver
->>> driver = chromedriver.ChromeDriver('/path/to/chromedriver2/library')
+>>> cd_server = server.Server('/path/to/chromedriver2_server/executable')
+>>> driver = chromedriver.ChromeDriver(cd_server.GetUrl())
 >>> driver.Load('http://www.google.com')
+>>> driver.Quit()
+>>> cd_server.Kill()
 
 ChromeDriver will use the system installed Chrome by default.
 
@@ -26,28 +29,16 @@ adb_commands.py and the adb tool from the Android SDK must be set in PATH. For
 more detailed instructions see the wiki:
     https://code.google.com/p/chromedriver/wiki/ChromeDriver2forAndroid
 
-NOTE: on 64-bit OSX machines (most modern ones, including laptops) it is
-necessary to set the environment variable VERSIONER_PYTHON_PREFER_32_BIT=yes,
-because the 'chromedriver2.so' library is 32-bit, while on 64-bit OSX machines
-(most modern ones including laptops), python starts as a 64-bit binary by
-default and would not be able to load the library.
-
 =====Architecture=====
 ChromeDriver is shipped separately from Chrome. It controls Chrome out of
-process through DevTools (WebKit Inspector). ChromeDriver is a shared library
-which exports a few functions for executing WebDriver-standard commands, which
-are packaged in JSON. For internal use, a custom python client for ChromeDriver
-is available in chromedriver.py, which works on desktop (win/mac/linux) with
-the shared library ChromeDriver.
+process through DevTools (WebKit Inspector). ChromeDriver is a standalone server
+executable which communicates via the WebDriver JSON wire protocol. This can be
+used with the open source WebDriver client libraries.
 
-The ChromeDriver shared library runs commands on the same thread that calls
-ExecuteCommand. It doesn't create any additional threads except for the IO
-thread. The IO thread is used to keep reading incoming data from Chrome in the
-background.
-
-ChromeDriver is also available as a standalone server executable which
-communicates via the WebDriver JSON wire protocol. This can be used with the
-open source WebDriver client libraries.
+When a new session is created, a new thread is started that is dedicated to the
+session. All commands for the session runs on this thread. This thread is
+stopped when the session is deleted. Besides, there is an IO thread and it is
+used to keep reading incoming data from Chrome in the background.
 
 =====Code structure=====
 Code under the 'chrome' subdirectory is intended to be unaware of WebDriver and
@@ -67,10 +58,17 @@ Javascript helper scripts.
 4) chrome/test/chromedriver/net
 Code to deal with network communication, such as connection to DevTools.
 
-5) chrome/test/chromedriver/server
-Code for the chromedriver server.
+5) chrome/test/chromedriver/client
+Code for a python client.
 
-6) chrome/test/chromedriver/third_party
+6) chrome/test/chromedriver/server
+Code for the chromedriver server.
+A python wrapper to the chromedriver server.
+
+7) chrome/test/chromedriver/extension
+An extension used for automating the desktop browser.
+
+8) chrome/test/chromedriver/third_party
 Third party libraries used by chromedriver.
 
 =====Testing=====
