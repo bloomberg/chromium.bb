@@ -161,10 +161,8 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
             return 0;
         if (!m_context) {
             m_context = CanvasRenderingContext2D::create(this, RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ? static_cast<Canvas2DContextAttributes*>(attrs) : 0, document()->inQuirksMode());
-            if (m_context) {
-                // Need to make sure a RenderLayer and compositing layer get created for the Canvas
-                setNeedsStyleRecalc(SyntheticStyleChange);
-            }
+            if (m_context)
+                setNeedsLayerUpdate();
         }
         return m_context.get();
     }
@@ -185,10 +183,8 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
                 return 0;
             if (!m_context) {
                 m_context = WebGLRenderingContext::create(this, static_cast<WebGLContextAttributes*>(attrs));
-                if (m_context) {
-                    // Need to make sure a RenderLayer and compositing layer get created for the Canvas
-                    setNeedsStyleRecalc(SyntheticStyleChange);
-                }
+                if (m_context)
+                    setNeedsLayerUpdate();
             }
             return m_context.get();
         }
@@ -476,7 +472,7 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     return true;
 }
 
-void HTMLCanvasElement::createImageBuffer() const
+void HTMLCanvasElement::createImageBuffer()
 {
     ASSERT(!m_imageBuffer);
 
@@ -509,10 +505,9 @@ void HTMLCanvasElement::createImageBuffer() const
     m_imageBuffer->context()->setStrokeThickness(1);
     m_contextStateSaver = adoptPtr(new GraphicsContextStateSaver(*m_imageBuffer->context()));
 
-    if (m_context && m_context->is2d()) {
-        // Recalculate compositing requirements if acceleration state changed.
-        const_cast<HTMLCanvasElement*>(this)->setNeedsStyleRecalc(SyntheticStyleChange);
-    }
+    // Recalculate compositing requirements if acceleration state changed.
+    if (m_context && m_context->is2d())
+        setNeedsLayerUpdate();
 }
 
 GraphicsContext* HTMLCanvasElement::drawingContext() const
@@ -531,7 +526,7 @@ GraphicsContext* HTMLCanvasElement::existingDrawingContext() const
 ImageBuffer* HTMLCanvasElement::buffer() const
 {
     if (!m_hasCreatedImageBuffer)
-        createImageBuffer();
+        const_cast<HTMLCanvasElement*>(this)->createImageBuffer();
     return m_imageBuffer.get();
 }
 
@@ -545,7 +540,7 @@ Image* HTMLCanvasElement::copiedImage() const
     return m_copiedImage.get();
 }
 
-void HTMLCanvasElement::clearImageBuffer() const
+void HTMLCanvasElement::clearImageBuffer()
 {
     ASSERT(m_hasCreatedImageBuffer);
     ASSERT(!m_didClearImageBuffer);
