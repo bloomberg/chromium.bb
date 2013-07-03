@@ -393,7 +393,8 @@ class DiskMountManagerImpl : public DiskMountManager {
         device_path,
         kFormatVFAT,
         base::Bind(&DiskMountManagerImpl::OnFormatDevice,
-                   weak_ptr_factory_.GetWeakPtr()),
+                   weak_ptr_factory_.GetWeakPtr(),
+                   device_path),
         base::Bind(&DiskMountManagerImpl::OnFormatDevice,
                    weak_ptr_factory_.GetWeakPtr(),
                    device_path,
@@ -403,8 +404,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   // Callback for FormatDevice.
   // TODO(tbarzic): Pass FormatError instead of bool.
   void OnFormatDevice(const std::string& device_path, bool success) {
-    FormatError error_code =
-        success ? FORMAT_ERROR_NONE : FORMAT_ERROR_UNKNOWN;
+    FormatError error_code = success ? FORMAT_ERROR_NONE : FORMAT_ERROR_UNKNOWN;
     NotifyFormatStatusUpdate(FORMAT_STARTED, error_code, device_path);
   }
 

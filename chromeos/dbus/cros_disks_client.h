@@ -204,10 +204,8 @@ class CHROMEOS_EXPORT CrosDisksClient {
                          > EnumerateAutoMountableDevicesCallback;
 
   // A callback to handle the result of FormatDevice.
-  // The first argument is the device path.
-  // The second argument is true when formatting succeeded, false otherwise.
-  typedef base::Callback<void(const std::string& device_path,
-                              bool format_succeeded)> FormatDeviceCallback;
+  // The argument is true when formatting succeeded.
+  typedef base::Callback<void(bool format_succeeded)> FormatDeviceCallback;
 
   // A callback to handle the result of GetDeviceProperties.
   // The argument is the information about the specified device.

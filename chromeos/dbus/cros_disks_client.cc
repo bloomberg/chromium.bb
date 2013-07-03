@@ -207,7 +207,6 @@ class CrosDisksClientImpl : public CrosDisksClient {
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CrosDisksClientImpl::OnFormatDevice,
                                   weak_ptr_factory_.GetWeakPtr(),
-                                  device_path,
                                   callback,
                                   error_callback));
   }
@@ -318,8 +317,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // Handles the result of FormatDevice and calls |callback| or
   // |error_callback|.
-  void OnFormatDevice(const std::string& device_path,
-                      const FormatDeviceCallback& callback,
+  void OnFormatDevice(const FormatDeviceCallback& callback,
                       const ErrorCallback& error_callback,
                       dbus::Response* response) {
     if (!response) {
@@ -333,7 +331,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
       error_callback.Run();
       return;
     }
-    callback.Run(device_path, success);
+    callback.Run(success);
   }
 
   // Handles the result of GetDeviceProperties and calls |callback| or

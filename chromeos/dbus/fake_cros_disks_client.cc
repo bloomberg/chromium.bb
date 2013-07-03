@@ -58,9 +58,8 @@ void FakeCrosDisksClient::FormatDevice(const std::string& device_path,
   last_format_device_device_path_ = device_path;
   last_format_device_filesystem_ = filesystem;
   if (format_device_success_) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, device_path, true));
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                                base::Bind(callback, true));
   } else {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE, error_callback);
   }
