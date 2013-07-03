@@ -142,7 +142,9 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#else
 #include "chrome/browser/ui/active_tab_tracker.h"
 #endif
 
@@ -782,7 +784,10 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // (i.e., even if --no-first-run is passed).
   bool is_first_run = false;
   // Android's first run is done in Java instead of native.
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  // Force MediaCaptureDevicesDispatcher created on UI thread.
+  MediaCaptureDevicesDispatcher::GetInstance();
+#else
   process_singleton_.reset(new ChromeProcessSingleton(
       user_data_dir_, base::Bind(&ProcessSingletonNotificationCallback)));
 

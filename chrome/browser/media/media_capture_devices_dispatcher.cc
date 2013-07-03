@@ -103,6 +103,11 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
       is_device_enumeration_disabled_(false),
       media_stream_capture_indicator_(new MediaStreamCaptureIndicator()),
       audio_stream_indicator_(new AudioStreamIndicator()) {
+  // MediaCaptureDevicesDispatcher is a singleton. It should be created on
+  // UI thread. Otherwise, it will not receive
+  // content::NOTIFICATION_WEB_CONTENTS_DESTROYED, and that will result in
+  // possible use after free.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   notifications_registrar_.Add(
       this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
