@@ -476,9 +476,7 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
 #if defined(ENABLE_DASHBOARD_SUPPORT) && ENABLE_DASHBOARD_SUPPORT
     case CSSPropertyWebkitDashboardRegion: return 410;
 #endif
-#if defined(ENABLE_ACCELERATED_OVERFLOW_SCROLLING) && ENABLE_ACCELERATED_OVERFLOW_SCROLLING
-    case CSSPropertyWebkitOverflowScrolling: return 411;
-#endif
+    // CSSPropertyWebkitOverflowScrolling was 411.
     case CSSPropertyWebkitAppRegion: return 412;
     case CSSPropertyWebkitFilter: return 413;
     case CSSPropertyWebkitBoxDecorationBreak: return 414;

@@ -414,4 +414,3 @@ orientation
 user-zoom
 -webkit-tap-highlight-color
 -webkit-app-region
--webkit-overflow-scrolling condition=ACCELERATED_OVERFLOW_SCROLLING

@@ -843,10 +843,6 @@ no-limit
 manual
 // auto
 
-// -webkit-overflow-scrolling
-// auto
-touch condition=ACCELERATED_OVERFLOW_SCROLLING
-
 // -webkit-writing-mode
 // SVG compatibility
 lr
