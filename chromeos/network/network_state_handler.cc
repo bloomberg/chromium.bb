@@ -80,6 +80,7 @@ NetworkStateHandler::NetworkStateHandler() {
 
 NetworkStateHandler::~NetworkStateHandler() {
   STLDeleteContainerPointers(network_list_.begin(), network_list_.end());
+  STLDeleteContainerPointers(favorite_list_.begin(), favorite_list_.end());
   STLDeleteContainerPointers(device_list_.begin(), device_list_.end());
 }
 
