@@ -1,0 +1,41 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROMEOS_NETWORK_FAVORITE_STATE_H_
+#define CHROMEOS_NETWORK_FAVORITE_STATE_H_
+
+#include "chromeos/network/managed_state.h"
+
+namespace chromeos {
+
+// A simple class to provide essential information for Services created
+// by Shill corresponding to Profile Entries (i.e. 'preferred' or 'favorite'
+// networks).
+// Note: NetworkStateHandler will store an entry for each member of
+// Manager.ServiceCompleteList, even for visible entries that are not
+// favorites. This is necessary to avoid unnecessarily re-requesting entries,
+// and to limit the code complexity. The is_favorite() accessor is used to skip
+// entries that are not actually favorites.
+class CHROMEOS_EXPORT FavoriteState : public ManagedState {
+ public:
+  explicit FavoriteState(const std::string& path);
+  virtual ~FavoriteState();
+
+  // ManagedState overrides
+  virtual bool PropertyChanged(const std::string& key,
+                               const base::Value& value) OVERRIDE;
+
+  // Accessors
+  const std::string& profile_path() const { return profile_path_; }
+  bool is_favorite() const { return !profile_path_.empty(); }
+
+ private:
+  std::string profile_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(FavoriteState);
+};
+
+}  // namespace chromeos
+
+#endif  // CHROMEOS_NETWORK_FAVORITE_STATE_H_

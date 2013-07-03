@@ -184,8 +184,8 @@ class NetworkConfigurationHandler::ProfileEntryDeleter
     // Run the callback if this is the last pending deletion.
     if (!callback_.is_null())
       callback_.Run();
-    // TODO(stevenjb): Request NetworkStateHandler manager update to update
-    // ServiceCompleteList once FavoriteStates are implemented.
+    // Request NetworkStateHandler manager update to update ServiceCompleteList.
+    owner_->network_state_handler_->UpdateManagerProperties();
     owner_->ProfileEntryDeleterCompleted(service_path_);  // Deletes this.
   }
 

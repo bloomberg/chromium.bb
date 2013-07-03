@@ -213,7 +213,8 @@ void ShillManagerClientStub::ConfigureService(
     // Add a new service to the service client stub because none exists, yet.
     service_client->AddServiceWithIPConfig(service_path, guid, type,
                                            flimflam::kStateIdle, ipconfig_path,
-                                           true);  // Add service to watch list.
+                                           true /* visible */,
+                                           true /* watch */);
     existing_properties = service_client->GetServiceProperties(service_path);
   }
 
@@ -398,13 +399,17 @@ void ShillManagerClientStub::MoveServiceToIndex(
 }
 
 void ShillManagerClientStub::AddManagerService(const std::string& service_path,
+                                               bool add_to_visible_list,
                                                bool add_to_watch_list) {
-  if (GetListProperty(flimflam::kServicesProperty)->AppendIfNotPresent(
+  // Always add to ServiceCompleteListProperty.
+  GetListProperty(shill::kServiceCompleteListProperty)->AppendIfNotPresent(
+      base::Value::CreateStringValue(service_path));
+  // If visible, add to Services and notify if new.
+  if (add_to_visible_list &&
+      GetListProperty(flimflam::kServicesProperty)->AppendIfNotPresent(
       base::Value::CreateStringValue(service_path))) {
     CallNotifyObserversPropertyChanged(flimflam::kServicesProperty, 0);
   }
-  GetListProperty(shill::kServiceCompleteListProperty)->AppendIfNotPresent(
-      base::Value::CreateStringValue(service_path));
   if (add_to_watch_list)
     AddServiceToWatchList(service_path);
 }
@@ -478,13 +483,10 @@ void ShillManagerClientStub::PassStubProperties(
     const DictionaryValueCallback& callback) const {
   scoped_ptr<base::DictionaryValue> stub_properties(
       stub_properties_.DeepCopy());
-  // Remove disabled services from the list
+  // Remove disabled services from the list.
   stub_properties->SetWithoutPathExpansion(
       flimflam::kServicesProperty,
       GetEnabledServiceList(flimflam::kServicesProperty));
-  stub_properties->SetWithoutPathExpansion(
-      shill::kServiceCompleteListProperty,
-      GetEnabledServiceList(shill::kServiceCompleteListProperty));
   stub_properties->SetWithoutPathExpansion(
       flimflam::kServiceWatchListProperty,
       GetEnabledServiceList(flimflam::kServiceWatchListProperty));

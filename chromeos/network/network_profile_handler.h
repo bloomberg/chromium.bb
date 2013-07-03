@@ -25,6 +25,7 @@ class DictionaryValue;
 namespace chromeos {
 
 class NetworkProfileObserver;
+class NetworkStateHandler;
 
 class CHROMEOS_EXPORT NetworkProfileHandler
     : public ShillPropertyChangedObserver {
@@ -55,14 +56,18 @@ class CHROMEOS_EXPORT NetworkProfileHandler
   friend class NetworkHandler;
   NetworkProfileHandler();
 
+  // Add ShillManagerClient property observer and request initial list.
+  // Sets |network_state_handler_| for triggering Manager updates (can be NULL).
+  void Init(NetworkStateHandler* network_state_handler);
+
   void AddProfile(const NetworkProfile& profile);
   void RemoveProfile(const std::string& profile_path);
 
  private:
+  NetworkStateHandler* network_state_handler_;
   ProfileList profiles_;
   ObserverList<NetworkProfileObserver> observers_;
 
- protected:
   // For Shill client callbacks
   base::WeakPtrFactory<NetworkProfileHandler> weak_ptr_factory_;
 

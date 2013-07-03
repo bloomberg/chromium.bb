@@ -15,6 +15,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -43,7 +44,8 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
       : handler_(handler),
         manager_changed_count_(0),
         network_count_(0),
-        default_network_change_count_(0) {
+        default_network_change_count_(0),
+        favorite_count_(0) {
   }
 
   virtual ~TestObserver() {
@@ -61,6 +63,9 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
       default_network_ = "";
       default_network_connection_state_ = "";
     }
+    NetworkStateHandler::FavoriteStateList favorites;
+    handler_->GetFavoriteList(&favorites);
+    favorite_count_ = favorites.size();
   }
 
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE {
@@ -90,6 +95,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   std::string default_network_connection_state() {
     return default_network_connection_state_;
   }
+  size_t favorite_count() { return favorite_count_; }
 
   int PropertyUpdatesForService(const std::string& service_path) {
     return property_updates_[service_path];
@@ -111,6 +117,7 @@ class TestObserver : public chromeos::NetworkStateHandlerObserver {
   size_t default_network_change_count_;
   std::string default_network_;
   std::string default_network_connection_state_;
+  size_t favorite_count_;
   std::map<std::string, int> property_updates_;
   std::map<std::string, int> connection_state_changes_;
   std::map<std::string, std::string> network_connection_state_;
@@ -163,23 +170,24 @@ class NetworkStateHandlerTest : public testing::Test {
     ShillServiceClient::TestInterface* service_test =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     service_test->ClearServices();
+    const bool add_to_visible = true;
     const bool add_to_watchlist = true;
     service_test->AddService(kShillManagerClientStubDefaultService,
                              kShillManagerClientStubDefaultService,
                              flimflam::kTypeEthernet, flimflam::kStateOnline,
-                             add_to_watchlist);
+                             add_to_visible, add_to_watchlist);
     service_test->AddService(kShillManagerClientStubDefaultWireless,
                              kShillManagerClientStubDefaultWireless,
                              flimflam::kTypeWifi, flimflam::kStateOnline,
-                             add_to_watchlist);
+                             add_to_visible, add_to_watchlist);
     service_test->AddService(kShillManagerClientStubWireless2,
                              kShillManagerClientStubWireless2,
                              flimflam::kTypeWifi, flimflam::kStateIdle,
-                             add_to_watchlist);
+                             add_to_visible, add_to_watchlist);
     service_test->AddService(kShillManagerClientStubCellular,
                              kShillManagerClientStubCellular,
                              flimflam::kTypeCellular, flimflam::kStateIdle,
-                             add_to_watchlist);
+                             add_to_visible, add_to_watchlist);
   }
 
   base::MessageLoopForUI message_loop_;
@@ -191,7 +199,6 @@ class NetworkStateHandlerTest : public testing::Test {
 };
 
 TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
-  EXPECT_EQ(1u, test_observer_->manager_changed_count());
   // Ensure that the network list is the expected size.
   const size_t kNumShillManagerClientStubImplServices = 4;
   EXPECT_EQ(kNumShillManagerClientStubImplServices,
@@ -213,7 +220,8 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
 }
 
 TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
-  EXPECT_EQ(1u, test_observer_->manager_changed_count());
+  // There may be several manager changes during initialization.
+  size_t initial_changed_count = test_observer_->manager_changed_count();
   // Enable a technology.
   EXPECT_NE(NetworkStateHandler::TECHNOLOGY_ENABLED,
             network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
@@ -221,13 +229,13 @@ TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
       flimflam::kTypeWimax, true, network_handler::ErrorCallback());
   // The technology state should immediately change to ENABLING and we should
   // receive a manager changed callback.
-  EXPECT_EQ(2u, test_observer_->manager_changed_count());
+  EXPECT_EQ(initial_changed_count + 1, test_observer_->manager_changed_count());
   EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_ENABLING,
             network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
   message_loop_.RunUntilIdle();
   // Ensure we receive another manager changed callbacks when the technology
   // becomes enabled.
-  EXPECT_EQ(3u, test_observer_->manager_changed_count());
+  EXPECT_EQ(initial_changed_count + 2, test_observer_->manager_changed_count());
   EXPECT_EQ(NetworkStateHandler::TECHNOLOGY_ENABLED,
             network_state_handler_->GetTechnologyState(flimflam::kTypeWimax));
 }
@@ -283,6 +291,18 @@ TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(eth1));
+}
+
+TEST_F(NetworkStateHandlerTest, FavoriteState) {
+  // Set the profile entry of a service
+  const std::string wifi1 = kShillManagerClientStubDefaultWireless;
+  ShillProfileClient::TestInterface* profile_test =
+      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+  EXPECT_TRUE(profile_test->AddService("/profile/default", wifi1));
+  message_loop_.RunUntilIdle();
+  network_state_handler_->UpdateManagerProperties();
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(1u, test_observer_->favorite_count());
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {

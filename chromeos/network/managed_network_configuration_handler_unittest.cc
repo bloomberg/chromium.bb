@@ -132,7 +132,9 @@ class ShillProfileTestClient {
 
 class TestNetworkProfileHandler : public NetworkProfileHandler {
  public:
-  TestNetworkProfileHandler() {}
+  TestNetworkProfileHandler() {
+    Init(NULL /* No NetworkStateHandler */);
+  }
   virtual ~TestNetworkProfileHandler() {}
 
   void AddProfileForTest(const NetworkProfile& profile) {

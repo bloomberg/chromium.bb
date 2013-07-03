@@ -18,6 +18,7 @@ class Value;
 namespace chromeos {
 
 class DeviceState;
+class FavoriteState;
 class NetworkState;
 
 // Base class for states managed by NetworkStateManger which are associated
@@ -26,6 +27,7 @@ class ManagedState {
  public:
   enum ManagedType {
     MANAGED_TYPE_NETWORK,
+    MANAGED_TYPE_FAVORITE,
     MANAGED_TYPE_DEVICE
   };
 
@@ -39,6 +41,7 @@ class ManagedState {
   // NULL if it is not.
   NetworkState* AsNetworkState();
   DeviceState* AsDeviceState();
+  FavoriteState* AsFavoriteState();
 
   // Called by NetworkStateHandler when a property was received. The return
   // value indicates if the state changed and is used to reduce the number of

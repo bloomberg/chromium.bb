@@ -16,6 +16,7 @@
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "dbus/object_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +48,7 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
       ManagedState::ManagedType type,
       const std::string& path,
       const base::DictionaryValue& properties) OVERRIDE {
-    AddPropertyUpdate(GetTypeString(type), path);
+    AddInitialPropertyUpdate(GetTypeString(type), path);
   }
 
   virtual void ProfileListChanged() OVERRIDE {
@@ -86,6 +87,10 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
   std::map<std::string, int>& property_updates(const std::string& type) {
     return property_updates_[type];
   }
+  std::map<std::string, int>& initial_property_updates(
+      const std::string& type) {
+    return initial_property_updates_[type];
+  }
   int list_updates(const std::string& type) { return list_updates_[type]; }
   int manager_updates() { return manager_updates_; }
   int errors() { return errors_; }
@@ -94,6 +99,8 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
   std::string GetTypeString(ManagedState::ManagedType type) {
     if (type == ManagedState::MANAGED_TYPE_NETWORK) {
       return flimflam::kServicesProperty;
+    } else if (type == ManagedState::MANAGED_TYPE_FAVORITE) {
+      return shill::kServiceCompleteListProperty;
     } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
       return flimflam::kDevicesProperty;
     }
@@ -120,6 +127,13 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     property_updates(type)[path] += 1;
   }
 
+  void AddInitialPropertyUpdate(const std::string& type,
+                                const std::string& path) {
+    if (type.empty())
+      return;
+    initial_property_updates(type)[path] += 1;
+  }
+
   void AddStateListUpdate(const std::string& type) {
     if (type.empty())
       return;
@@ -130,6 +144,7 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
   std::map<std::string, std::vector<std::string> > entries_;
   // Map of list-type -> map of paths -> update counts
   std::map<std::string, std::map<std::string, int> > property_updates_;
+  std::map<std::string, std::map<std::string, int> > initial_property_updates_;
   // Map of list-type -> list update counts
   std::map<std::string, int > list_updates_;
   int manager_updates_;
@@ -143,7 +158,8 @@ class ShillPropertyHandlerTest : public testing::Test {
   ShillPropertyHandlerTest()
       : manager_test_(NULL),
         device_test_(NULL),
-        service_test_(NULL) {
+        service_test_(NULL),
+        profile_test_(NULL) {
   }
   virtual ~ShillPropertyHandlerTest() {
   }
@@ -162,6 +178,9 @@ class ShillPropertyHandlerTest : public testing::Test {
     service_test_ =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     ASSERT_TRUE(service_test_);
+    profile_test_ =
+        DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+    ASSERT_TRUE(profile_test_);
     SetupShillPropertyHandler();
     message_loop_.RunUntilIdle();
   }
@@ -187,7 +206,7 @@ class ShillPropertyHandlerTest : public testing::Test {
                   bool add_to_watch_list) {
     ASSERT_TRUE(IsValidType(type));
     service_test_->AddService(id, id, type, state,
-                              add_to_watch_list);
+                              true /* visible */, add_to_watch_list);
   }
 
   void AddServiceWithIPConfig(const std::string& type,
@@ -197,7 +216,21 @@ class ShillPropertyHandlerTest : public testing::Test {
                               bool add_to_watch_list) {
     ASSERT_TRUE(IsValidType(type));
     service_test_->AddServiceWithIPConfig(id, id, type, state,
-                                          ipconfig_path, add_to_watch_list);
+                                          ipconfig_path,
+                                          true /* visible */,
+                                          add_to_watch_list);
+  }
+
+  void AddServiceToProfile(const std::string& type,
+                           const std::string& id,
+                           bool visible) {
+    service_test_->AddService(id, id, type, flimflam::kStateIdle,
+                              visible, false /* watch */);
+    std::vector<std::string> profiles;
+    profile_test_->GetProfilePaths(&profiles);
+    ASSERT_TRUE(profiles.size() > 0);
+    base::DictionaryValue properties;  // Empty entry
+    profile_test_->AddService(profiles[0], id);
   }
 
   void RemoveService(const std::string& id) {
@@ -246,6 +279,7 @@ class ShillPropertyHandlerTest : public testing::Test {
   ShillManagerClient::TestInterface* manager_test_;
   ShillDeviceClient::TestInterface* device_test_;
   ShillServiceClient::TestInterface* service_test_;
+  ShillProfileClient::TestInterface* profile_test_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShillPropertyHandlerTest);
@@ -333,8 +367,8 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
   EXPECT_EQ(kNumShillManagerClientStubImplServices + 1,
             listener_->entries(flimflam::kServicesProperty).size());
   // Service receives an initial property update.
-  EXPECT_EQ(1, listener_->
-            property_updates(flimflam::kServicesProperty)[kTestServicePath]);
+  EXPECT_EQ(1, listener_->initial_property_updates(
+      flimflam::kServicesProperty)[kTestServicePath]);
   // Change a property.
   base::FundamentalValue scan_interval(3);
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
@@ -344,8 +378,8 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   // Property change triggers an update.
-  EXPECT_EQ(2, listener_->
-            property_updates(flimflam::kServicesProperty)[kTestServicePath]);
+  EXPECT_EQ(1, listener_->property_updates(
+      flimflam::kServicesProperty)[kTestServicePath]);
 
   // Add the existing service to the watch list.
   AddService(flimflam::kTypeWifi, kTestServicePath,
@@ -365,8 +399,8 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
   // Property change should trigger another update.
-  EXPECT_EQ(3, listener_->
-            property_updates(flimflam::kServicesProperty)[kTestServicePath]);
+  EXPECT_EQ(2, listener_->property_updates(
+      flimflam::kServicesProperty)[kTestServicePath]);
 
   // Remove a service
   RemoveService(kTestServicePath);
@@ -404,8 +438,8 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
              flimflam::kStateIdle, true);
   message_loop_.RunUntilIdle();
   // This is the initial property update.
-  EXPECT_EQ(1, listener_->
-            property_updates(flimflam::kServicesProperty)[kTestServicePath1]);
+  EXPECT_EQ(1, listener_->initial_property_updates(
+      flimflam::kServicesProperty)[kTestServicePath1]);
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(kTestServicePath1),
       shill::kIPConfigProperty,
@@ -414,8 +448,8 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
   message_loop_.RunUntilIdle();
   // IPConfig property change on the service should trigger property updates for
   // IP Address and DNS.
-  EXPECT_EQ(3, listener_->
-            property_updates(flimflam::kServicesProperty)[kTestServicePath1]);
+  EXPECT_EQ(2, listener_->property_updates(
+      flimflam::kServicesProperty)[kTestServicePath1]);
 
   // Now, Add a new watched service with the IPConfig already set.
   const std::string kTestServicePath2("test_wifi_service2");
@@ -424,8 +458,68 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
   message_loop_.RunUntilIdle();
   // A watched service with the IPConfig property already set must
   // trigger property updates for IP Address and DNS when added.
-  EXPECT_EQ(3, listener_->
-            property_updates(flimflam::kServicesProperty)[kTestServicePath2]);
+  EXPECT_EQ(2, listener_->property_updates(
+      flimflam::kServicesProperty)[kTestServicePath2]);
+}
+
+TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServiceCompleteList) {
+  // Initial list updates.
+  EXPECT_EQ(1, listener_->list_updates(flimflam::kServicesProperty));
+  EXPECT_EQ(1, listener_->list_updates(shill::kServiceCompleteListProperty));
+
+  // Add a new entry to the profile only; should trigger a single list update
+  // for both Services and ServiceCompleteList, and a single property update
+  // for ServiceCompleteList.
+  const std::string kTestServicePath1("stub_wifi_profile_only1");
+  AddServiceToProfile(flimflam::kTypeWifi, kTestServicePath1, false);
+  shill_property_handler_->UpdateManagerProperties();
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(2, listener_->list_updates(flimflam::kServicesProperty));
+  EXPECT_EQ(2, listener_->list_updates(shill::kServiceCompleteListProperty));
+  EXPECT_EQ(0, listener_->initial_property_updates(
+      flimflam::kServicesProperty)[kTestServicePath1]);
+  EXPECT_EQ(1, listener_->initial_property_updates(
+      shill::kServiceCompleteListProperty)[kTestServicePath1]);
+  EXPECT_EQ(0, listener_->property_updates(
+      flimflam::kServicesProperty)[kTestServicePath1]);
+  EXPECT_EQ(0, listener_->property_updates(
+      shill::kServiceCompleteListProperty)[kTestServicePath1]);
+
+  // Add a new entry to the services and the profile; should also trigger a
+  // single list update for both Services and ServiceCompleteList, and should
+  // trigger tow property updates for Services (one when the Profile propety
+  // changes, and one for the Request) and one ServiceCompleteList change for
+  // the Request.
+  const std::string kTestServicePath2("stub_wifi_profile_only2");
+  AddServiceToProfile(flimflam::kTypeWifi, kTestServicePath2, true);
+  shill_property_handler_->UpdateManagerProperties();
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(3, listener_->list_updates(flimflam::kServicesProperty));
+  EXPECT_EQ(3, listener_->list_updates(shill::kServiceCompleteListProperty));
+  EXPECT_EQ(1, listener_->initial_property_updates(
+      flimflam::kServicesProperty)[kTestServicePath2]);
+  EXPECT_EQ(1, listener_->initial_property_updates(
+      shill::kServiceCompleteListProperty)[kTestServicePath2]);
+  // Expect one property update for the Profile property of the Network.
+  EXPECT_EQ(1, listener_->property_updates(
+      flimflam::kServicesProperty)[kTestServicePath2]);
+  EXPECT_EQ(0, listener_->property_updates(
+      shill::kServiceCompleteListProperty)[kTestServicePath2]);
+
+  // Change a property of a Network in a Profile.
+  base::FundamentalValue scan_interval(3);
+  DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
+      dbus::ObjectPath(kTestServicePath2),
+      flimflam::kScanIntervalProperty,
+      scan_interval,
+      base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
+  message_loop_.RunUntilIdle();
+  // Property change should trigger an update for the Network only; no
+  // property updates pushed by Shill affect Favorites.
+  EXPECT_EQ(2, listener_->property_updates(
+      flimflam::kServicesProperty)[kTestServicePath2]);
+  EXPECT_EQ(0, listener_->property_updates(
+      shill::kServiceCompleteListProperty)[kTestServicePath2]);
 }
 
 }  // namespace chromeos

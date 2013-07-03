@@ -68,10 +68,11 @@ class NetworkStateNotifierTest : public AshTestBase {
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     service_test->ClearServices();
     const bool add_to_watchlist = true;
+    const bool add_to_visible = true;
     // Create wifi and cellular networks and set to online.
     service_test->AddService("wifi1", "wifi1",
                              flimflam::kTypeWifi, flimflam::kStateOnline,
-                             add_to_watchlist);
+                             add_to_visible, add_to_watchlist);
     RunAllPendingInMessageLoop();
   }
 

@@ -13,6 +13,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/network/network_profile_observer.h"
+#include "chromeos/network/network_state_handler.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -126,6 +127,11 @@ void NetworkProfileHandler::OnPropertyChanged(const std::string& name,
                    *it),
         base::Bind(&LogProfileRequestError, *it));
   }
+
+  // When the profile list changes, ServiceCompleteList may also change, so
+  // trigger a Manager update to request the updated list.
+  if (network_state_handler_)
+    network_state_handler_->UpdateManagerProperties();
 }
 
 void NetworkProfileHandler::GetProfilePropertiesCallback(
@@ -180,7 +186,13 @@ const NetworkProfile* NetworkProfileHandler::GetProfileForUserhash(
 }
 
 NetworkProfileHandler::NetworkProfileHandler()
-    : weak_ptr_factory_(this) {
+    : network_state_handler_(NULL),
+      weak_ptr_factory_(this) {
+}
+
+void NetworkProfileHandler::Init(NetworkStateHandler* network_state_handler) {
+  network_state_handler_ = network_state_handler;
+
   DBusThreadManager::Get()->GetShillManagerClient()->
       AddPropertyChangedObserver(this);
 

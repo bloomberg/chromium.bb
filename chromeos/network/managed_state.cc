@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -26,6 +27,8 @@ ManagedState* ManagedState::Create(ManagedType type, const std::string& path) {
   switch (type) {
     case MANAGED_TYPE_NETWORK:
       return new NetworkState(path);
+    case MANAGED_TYPE_FAVORITE:
+      return new FavoriteState(path);
     case MANAGED_TYPE_DEVICE:
       return new DeviceState(path);
   }
@@ -41,6 +44,12 @@ NetworkState* ManagedState::AsNetworkState() {
 DeviceState* ManagedState::AsDeviceState() {
   if (managed_type() == MANAGED_TYPE_DEVICE)
     return static_cast<DeviceState*>(this);
+  return NULL;
+}
+
+FavoriteState* ManagedState::AsFavoriteState() {
+  if (managed_type() == MANAGED_TYPE_FAVORITE)
+    return static_cast<FavoriteState*>(this);
   return NULL;
 }
 

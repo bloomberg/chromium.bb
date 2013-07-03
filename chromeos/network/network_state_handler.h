@@ -61,6 +61,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
  public:
   typedef std::vector<ManagedState*> ManagedStateList;
   typedef std::vector<const NetworkState*> NetworkStateList;
+  typedef std::vector<const FavoriteState*> FavoriteStateList;
 
   enum TechnologyState {
     TECHNOLOGY_UNAVAILABLE,
@@ -77,6 +78,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
                    const tracked_objects::Location& from_here);
   void RemoveObserver(NetworkStateHandlerObserver* observer,
                       const tracked_objects::Location& from_here);
+
+  // Requests all Manager properties, specifically to update the complete
+  // list of services which determines the list of Favorites. This should be
+  // called any time a new service is configured or a Profile is loaded.
+  void UpdateManagerProperties();
 
   // Returns the state for technology |type|. kMatchTypeMobile (only) is
   // also supported.
@@ -139,6 +145,16 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // the scope of the calling function (i.e. they may later become invalid, but
   // only on the UI thread).
   void GetNetworkList(NetworkStateList* list) const;
+
+  // Sets |list| to contain the list of favorite (aka "preferred") networks.
+  // See GetNetworkList() for usage, and notes for |favorite_list_|.
+  // Favorites that are visible have the same path() as the entries in
+  // GetNetworkList(), so GetNetworkState() can be used to determine if a
+  // favorite is visible and retrieve the complete properties (and vice-versa).
+  void GetFavoriteList(FavoriteStateList* list) const;
+
+  // Finds and returns a favorite state by |service_path| or NULL if not found.
+  const FavoriteState* GetFavoriteState(const std::string& service_path) const;
 
   // Requests a network scan. This may trigger updates to the network
   // list, which will trigger the appropriate observer calls.
@@ -287,8 +303,15 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Observer list
   ObserverList<NetworkStateHandlerObserver> observers_;
 
-  // Lists of managed states
+  // List of managed network states
   ManagedStateList network_list_;
+
+  // List of managed favorite states; this list includes all entries in
+  // Manager.ServiceCompleteList, but only entries with a non-empty Profile
+  // property are returned in GetFavoriteList().
+  ManagedStateList favorite_list_;
+
+  // List of managed device states
   ManagedStateList device_list_;
 
   // Keeps track of the default network for notifying observers when it changes.

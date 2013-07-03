@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
@@ -112,6 +113,11 @@ void NetworkStateHandler::RemoveObserver(
       from_here.file_name(), from_here.line_number(),
       network_event_log::LOG_LEVEL_DEBUG,
       "NetworkStateHandler::RemoveObserver", "");
+}
+
+void NetworkStateHandler::UpdateManagerProperties() {
+  NET_LOG_USER("UpdateManagerProperties", "");
+  shill_property_handler_->UpdateManagerProperties();
 }
 
 NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
@@ -268,6 +274,28 @@ void NetworkStateHandler::GetNetworkList(NetworkStateList* list) const {
   }
 }
 
+void NetworkStateHandler::GetFavoriteList(FavoriteStateList* list) const {
+  DCHECK(list);
+  FavoriteStateList result;
+  list->clear();
+  for (ManagedStateList::const_iterator iter = favorite_list_.begin();
+       iter != favorite_list_.end(); ++iter) {
+    const FavoriteState* favorite = (*iter)->AsFavoriteState();
+    DCHECK(favorite);
+    if (favorite->is_favorite())
+      list->push_back(favorite);
+  }
+}
+
+const FavoriteState* NetworkStateHandler::GetFavoriteState(
+    const std::string& service_path) const {
+  ManagedState* managed =
+      GetModifiableManagedState(&favorite_list_, service_path);
+  if (!managed)
+    return NULL;
+  return managed->AsFavoriteState();
+}
+
 void NetworkStateHandler::RequestScan() const {
   NET_LOG_USER("RequestScan", "");
   shill_property_handler_->RequestScan();
@@ -342,7 +370,8 @@ void NetworkStateHandler::GetNetworkStatePropertiesForTest(
 void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
                                             const base::ListValue& entries) {
   ManagedStateList* managed_list = GetManagedList(type);
-  VLOG(2) << "UpdateManagedList: " << type;
+  NET_LOG_DEBUG(base::StringPrintf("UpdateManagedList:%d", type),
+                base::StringPrintf("%"PRIuS, entries.GetSize()));
   // Create a map of existing entries.
   std::map<std::string, ManagedState*> managed_map;
   for (ManagedStateList::iterator iter = managed_list->begin();
@@ -412,8 +441,12 @@ void NetworkStateHandler::UpdateManagedStateProperties(
     NetworkState* network = managed->AsNetworkState();
     DCHECK(network);
     // Signal connection state changed after all properties have been updated.
-    if (ConnectionStateChanged(network, prev_connection_state))
+    if (ConnectionStateChanged(network, prev_connection_state)) {
       OnNetworkConnectionStateChanged(network);
+      // If the network did not already have a profile entry, refresh favorites.
+      if (network->profile_path().empty())
+        UpdateManagerProperties();
+    }
     NetworkPropertiesUpdated(network);
   }
   managed->set_update_requested(false);
@@ -423,6 +456,13 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
     const std::string& service_path,
     const std::string& key,
     const base::Value& value) {
+  // Update any associated FavoriteState.
+  ManagedState* favorite =
+      GetModifiableManagedState(&favorite_list_, service_path);
+  if (favorite)
+    favorite->PropertyChanged(key, value);
+
+  // Update the NetworkState.
   NetworkState* network = GetModifiableNetworkState(service_path);
   if (!network)
     return;
@@ -494,6 +534,11 @@ void NetworkStateHandler::ManagedStateListChanged(
     // The list order may have changed, so check if the default network changed.
     if (CheckDefaultNetworkChanged())
       OnDefaultNetworkChanged();
+  } else if (type == ManagedState::MANAGED_TYPE_FAVORITE) {
+    NET_LOG_DEBUG("FavoriteListChanged",
+                  base::StringPrintf("Size:%"PRIuS, favorite_list_.size()));
+    FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
+                      NetworkListChanged());
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     NET_LOG_DEBUG("DeviceListChanged",
                   base::StringPrintf("Size:%"PRIuS, device_list_.size()));
@@ -541,6 +586,8 @@ NetworkStateHandler::ManagedStateList* NetworkStateHandler::GetManagedList(
   switch (type) {
     case ManagedState::MANAGED_TYPE_NETWORK:
       return &network_list_;
+    case ManagedState::MANAGED_TYPE_FAVORITE:
+      return &favorite_list_;
     case ManagedState::MANAGED_TYPE_DEVICE:
       return &device_list_;
   }

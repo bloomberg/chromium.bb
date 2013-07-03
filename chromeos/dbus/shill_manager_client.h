@@ -66,6 +66,7 @@ class CHROMEOS_EXPORT ShillManagerClient {
 
     // Add/Remove/ClearService should only be called from ShillServiceClient.
     virtual void AddManagerService(const std::string& service_path,
+                                   bool add_to_visible_list,
                                    bool add_to_watch_list) = 0;
     virtual void RemoveManagerService(const std::string& service_path) = 0;
     virtual void ClearManagerServices() = 0;

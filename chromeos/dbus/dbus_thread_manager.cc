@@ -103,7 +103,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         DebugDaemonClient::Create(client_type_, system_bus_.get()));
 
     // Construction order of the Stub implementations of the Shill clients
-    // matters; stub clients may depend only on clients previously constructed.
+    // matters; stub clients may only have construction dependencies on clients
+    // previously constructed.
     shill_manager_client_.reset(
         ShillManagerClient::Create(client_type_override_, system_bus_.get()));
     shill_device_client_.reset(

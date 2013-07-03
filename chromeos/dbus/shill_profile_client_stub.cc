@@ -149,6 +149,8 @@ void ShillProfileClientStub::AddEntry(const std::string& profile_path,
   DCHECK(profile);
   profile->entries.SetWithoutPathExpansion(entry_path,
                                            properties.DeepCopy());
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      AddManagerService(entry_path, false /* visible */, false /* watch */);
 }
 
 bool ShillProfileClientStub::AddService(const std::string& profile_path,
@@ -184,6 +186,14 @@ bool ShillProfileClientStub::AddService(const std::string& profile_path,
   profile->entries.SetWithoutPathExpansion(service_path,
                                            service_properties->DeepCopy());
   return true;
+}
+
+void ShillProfileClientStub::GetProfilePaths(
+    std::vector<std::string>* profiles) {
+  for (ProfileMap::iterator iter = profiles_.begin();
+       iter != profiles_.end(); ++iter) {
+    profiles->push_back(iter->first);
+  }
 }
 
 ShillProfileClientStub::ProfileProperties* ShillProfileClientStub::GetProfile(

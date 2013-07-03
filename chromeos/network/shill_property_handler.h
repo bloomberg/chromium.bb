@@ -91,8 +91,13 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   explicit ShillPropertyHandler(Listener* listener);
   virtual ~ShillPropertyHandler();
 
-  // Sends an initial property request and sets up the observer.
+  // Sets up the observer and calls UpdateManagerProperties().
   void Init();
+
+  // Requests all Manager properties. Called from Init() and any time
+  // properties that do not signal changes might have been updated (e.g.
+  // ServiceCompleteList).
+  void UpdateManagerProperties();
 
   // Returns true if |technology| is available, enabled, etc.
   bool IsTechnologyAvailable(const std::string& technology) const;
@@ -101,7 +106,7 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   bool IsTechnologyUninitialized(const std::string& technology) const;
 
   // Asynchronously sets the enabled state for |technology|.
-  // Note: Modifes Manager state. Calls |error_callback| on failure.
+  // Note: Modifies Manager state. Calls |error_callback| on failure.
   void SetTechnologyEnabled(
       const std::string& technology,
       bool enabled,
@@ -125,13 +130,32 @@ class CHROMEOS_EXPORT ShillPropertyHandler
                                  const base::Value& value) OVERRIDE;
 
  private:
+  typedef std::map<ManagedState::ManagedType, std::set<std::string> >
+      TypeRequestMap;
+
   // Callback for dbus method fetching properties.
   void ManagerPropertiesCallback(DBusMethodCallStatus call_status,
                                  const base::DictionaryValue& properties);
+
+  // Notifies the listener when a ManagedStateList has changed and all pending
+  // updates have been received. |key| can either identify the list that
+  // has changed or an empty string if multiple lists may have changed.
+  void CheckPendingStateListUpdates(const std::string& key);
+
   // Called form OnPropertyChanged() and ManagerPropertiesCallback().
   // Returns true if observers should be notified.
   bool ManagerPropertyChanged(const std::string& key,
                               const base::Value& value);
+
+  // Requests properties for new entries in the list for |type| as follows:
+  // * Any new Device objects for MANAGED_TYPE_DEVICE
+  // * Any new Service objects for MANAGED_TYPE_NETWORK
+  // * Additional new Service objects for MANAGED_TYPE_FAVORITE that were not
+  //   requested for MANAGED_TYPE_NETWORK (i.e. only request objects once).
+  // For this to avoid duplicate requests, this must be called with
+  // MANAGED_TYPE_NETWORK before MANAGED_TYPE_FAVORITE.
+  void UpdateProperties(ManagedState::ManagedType type,
+                        const base::ListValue& entries);
 
   // Updates the Shill property observers to observe any entries for |type|.
   void UpdateObserved(ManagedState::ManagedType type,
@@ -164,9 +188,6 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   void NetworkServicePropertyChangedCallback(const std::string& path,
                                              const std::string& key,
                                              const base::Value& value);
-  void NetworkDevicePropertyChangedCallback(const std::string& path,
-                                            const std::string& key,
-                                            const base::Value& value);
 
   // Callback for getting the IPConfig property of a Network. Handled here
   // instead of in NetworkState so that all asynchronous requests are done
@@ -175,6 +196,10 @@ class CHROMEOS_EXPORT ShillPropertyHandler
                            DBusMethodCallStatus call_status,
                            const base::DictionaryValue& properties);
 
+  void NetworkDevicePropertyChangedCallback(const std::string& path,
+                                            const std::string& key,
+                                            const base::Value& value);
+
   // Pointer to containing class (owns this)
   Listener* listener_;
 
@@ -182,7 +207,11 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   ShillManagerClient* shill_manager_;
 
   // Pending update list for each managed state type
-  std::map<ManagedState::ManagedType, std::set<std::string> > pending_updates_;
+  TypeRequestMap pending_updates_;
+
+  // List of states for which properties have been requested, for each managed
+  // state type
+  TypeRequestMap requested_updates_;
 
   // List of network services with Shill property changed observers
   ShillPropertyObserverMap observed_networks_;

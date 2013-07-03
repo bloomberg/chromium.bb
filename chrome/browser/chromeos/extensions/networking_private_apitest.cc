@@ -118,13 +118,14 @@ class ExtensionNetworkingPrivateApiTest :
                            flimflam::kTypeCellular, "stub_cellular_device1");
 
     const bool add_to_watchlist = true;
+    const bool add_to_visible = true;
     service_test->AddService("stub_ethernet", "eth0",
                              flimflam::kTypeEthernet, flimflam::kStateOnline,
-                             add_to_watchlist);
+                             add_to_visible, add_to_watchlist);
 
     service_test->AddService("stub_wifi1", "wifi1",
                              flimflam::kTypeWifi, flimflam::kStateOnline,
-                             add_to_watchlist);
+                             add_to_visible, add_to_watchlist);
     service_test->SetServiceProperty("stub_wifi1",
                                      flimflam::kSecurityProperty,
                                      base::StringValue(flimflam::kSecurityWep));
@@ -139,7 +140,7 @@ class ExtensionNetworkingPrivateApiTest :
 
     service_test->AddService("stub_wifi2", "wifi2_PSK",
                              flimflam::kTypeWifi, flimflam::kStateIdle,
-                             add_to_watchlist);
+                             add_to_visible, add_to_watchlist);
     service_test->SetServiceProperty("stub_wifi2",
                                      flimflam::kGuidProperty,
                                      base::StringValue("stub_wifi2"));
@@ -165,7 +166,7 @@ class ExtensionNetworkingPrivateApiTest :
 
     service_test->AddService("stub_cellular1", "cellular1",
                              flimflam::kTypeCellular, flimflam::kStateIdle,
-                             add_to_watchlist);
+                             add_to_visible, add_to_watchlist);
     service_test->SetServiceProperty(
         "stub_cellular1",
         flimflam::kNetworkTechnologyProperty,
@@ -182,7 +183,7 @@ class ExtensionNetworkingPrivateApiTest :
     service_test->AddService("stub_vpn1", "vpn1",
                              flimflam::kTypeVPN,
                              flimflam::kStateOnline,
-                             add_to_watchlist);
+                             add_to_visible, add_to_watchlist);
 
     content::RunAllPendingInMessageLoop();
   }
