@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 
-#include <iostream>
 #include <string>
 
 #include "base/at_exit.h"
@@ -29,8 +29,10 @@ forwarder2::PipeNotifier* g_notifier = NULL;
 
 const int kBufSize = 256;
 
-const char kUnixDomainSocketPath[] = "chrome_device_forwarder";
 const char kDaemonIdentifier[] = "chrome_device_forwarder_daemon";
+
+const char kKillServerCommand[] = "kill-server";
+const char kStartCommand[] = "start";
 
 void KillHandler(int /* unused */) {
   CHECK(g_notifier);
@@ -46,8 +48,6 @@ int GetExitNotifierFD() {
 
 class ServerDelegate : public Daemon::ServerDelegate {
  public:
-  ServerDelegate() : initialized_(false) {}
-
   // Daemon::ServerDelegate:
   virtual void Init() OVERRIDE {
     DCHECK(!g_notifier);
@@ -59,28 +59,45 @@ class ServerDelegate : public Daemon::ServerDelegate {
   }
 
   virtual void OnClientConnected(scoped_ptr<Socket> client_socket) OVERRIDE {
-    if (initialized_) {
+    char buf[kBufSize];
+    const int bytes_read = client_socket->Read(buf, sizeof(buf));
+    if (bytes_read <= 0) {
+      if (client_socket->DidReceiveEvent())
+        return;
+      PError("Read()");
+      return;
+    }
+    const std::string adb_socket_path(buf, bytes_read);
+    if (adb_socket_path == adb_socket_path_) {
       client_socket->WriteString("OK");
       return;
     }
+    if (!adb_socket_path_.empty()) {
+      client_socket->WriteString(
+          base::StringPrintf(
+              "ERROR: Device controller already running (adb_socket_path=%s)",
+              adb_socket_path_.c_str()));
+      return;
+    }
+    adb_socket_path_ = adb_socket_path;
     controller_thread_->message_loop()->PostTask(
         FROM_HERE,
-        base::Bind(&ServerDelegate::StartController, GetExitNotifierFD(),
-                   base::Passed(&client_socket)));
-    initialized_ = true;
+        base::Bind(&ServerDelegate::StartController, adb_socket_path,
+                   GetExitNotifierFD(), base::Passed(&client_socket)));
   }
 
   virtual void OnServerExited() OVERRIDE {}
 
  private:
-  static void StartController(int exit_notifier_fd,
+  static void StartController(const std::string& adb_socket_path,
+                              int exit_notifier_fd,
                               scoped_ptr<Socket> client_socket) {
     forwarder2::DeviceController controller(exit_notifier_fd);
-    if (!controller.Init(kUnixDomainSocketPath)) {
+    if (!controller.Init(adb_socket_path)) {
       client_socket->WriteString(
           base::StringPrintf("ERROR: Could not initialize device controller "
                              "with ADB socket path: %s",
-                             kUnixDomainSocketPath));
+                             adb_socket_path.c_str()));
       return;
     }
     client_socket->WriteString("OK");
@@ -93,17 +110,23 @@ class ServerDelegate : public Daemon::ServerDelegate {
 
   base::AtExitManager at_exit_manager_;  // Used by base::Thread.
   scoped_ptr<base::Thread> controller_thread_;
-  bool initialized_;
+  std::string adb_socket_path_;
 };
 
 class ClientDelegate : public Daemon::ClientDelegate {
  public:
-  ClientDelegate() : has_failed_(false) {}
+  ClientDelegate(const std::string& adb_socket)
+      : adb_socket_(adb_socket),
+        has_failed_(false) {
+  }
 
   bool has_failed() const { return has_failed_; }
 
   // Daemon::ClientDelegate:
   virtual void OnDaemonReady(Socket* daemon_socket) OVERRIDE {
+    // Send the adb socket path to the daemon.
+    CHECK(daemon_socket->Write(adb_socket_.c_str(),
+                               adb_socket_.length()));
     char buf[kBufSize];
     const int bytes_read = daemon_socket->Read(
         buf, sizeof(buf) - 1 /* leave space for null terminator */);
@@ -119,26 +142,31 @@ class ClientDelegate : public Daemon::ClientDelegate {
   }
 
  private:
+  const std::string adb_socket_;
   bool has_failed_;
 };
 
 int RunDeviceForwarder(int argc, char** argv) {
-  CommandLine::Init(argc, argv);  // Needed by logging.
-  const bool kill_server = CommandLine::ForCurrentProcess()->HasSwitch(
-      "kill-server");
-  if ((kill_server && argc != 2) || (!kill_server && argc != 1)) {
-    std::cerr << "Usage: device_forwarder [--kill-server]" << std::endl;
+  if (argc != 2) {
+    fprintf(stderr,
+            "Usage: %s kill-server|<adb_socket>\n"
+            "  <adb_socket> is the abstract Unix Domain Socket path "
+            "where Adb is configured to forward from.\n", argv[0]);
     return 1;
   }
-  ClientDelegate client_delegate;
+  CommandLine::Init(argc, argv);  // Needed by logging.
+  const char* const command =
+      !strcmp(argv[1], kKillServerCommand) ? kKillServerCommand : kStartCommand;
+  ClientDelegate client_delegate(argv[1]);
   ServerDelegate daemon_delegate;
   const char kLogFilePath[] = "";  // Log to logcat.
   Daemon daemon(kLogFilePath, kDaemonIdentifier, &client_delegate,
                 &daemon_delegate, &GetExitNotifierFD);
 
-  if (kill_server)
+  if (command == kKillServerCommand)
     return !daemon.Kill();
 
+  DCHECK(command == kStartCommand);
   if (!daemon.SpawnIfNeeded())
     return 1;
   return client_delegate.has_failed();
