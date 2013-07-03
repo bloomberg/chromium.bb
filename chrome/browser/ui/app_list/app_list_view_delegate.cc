@@ -102,7 +102,10 @@ void AppListViewDelegate::GetShortcutPathForApp(
   DCHECK(service);
   const extensions::Extension* extension =
       service->GetInstalledExtension(app_id);
-  DCHECK(extension);
+  if (!extension) {
+    callback.Run(base::FilePath());
+    return;
+  }
 
   base::FilePath app_data_dir(
       web_app::GetWebAppDataDirectory(profile_->GetPath(),
