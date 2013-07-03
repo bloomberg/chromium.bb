@@ -11,6 +11,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_MMAN_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_MMAN_H_
 
+#include <sys/types.h>
+
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 
 #ifdef __cplusplus
