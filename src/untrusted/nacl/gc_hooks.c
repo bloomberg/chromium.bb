@@ -9,5 +9,12 @@
 
 void nacl_register_gc_hooks(TYPE_nacl_gc_hook prehook,
                             TYPE_nacl_gc_hook posthook) {
-  __libnacl_irt_blockhook.register_block_hooks(prehook, posthook);
+  /*
+   * There is no sense in caching the result of this IRT interface
+   * query because we only use the result once.
+   */
+  struct nacl_irt_blockhook irt_blockhook;
+  __libnacl_mandatory_irt_query(NACL_IRT_BLOCKHOOK_v0_1,
+                                &irt_blockhook, sizeof(irt_blockhook));
+  irt_blockhook.register_block_hooks(prehook, posthook);
 }
