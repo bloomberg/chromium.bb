@@ -39,9 +39,8 @@ namespace WebCore {
 
 static void addAllCodePoints(USet* smartSet, const String& string)
 {
-    const UChar* characters = string.bloatedCharacters();
     for (size_t i = 0; i < string.length(); i++)
-        uset_add(smartSet, characters[i]);
+        uset_add(smartSet, string[i]);
 }
 
 // This is mostly a port of the code in WebCore/editing/SmartReplaceCF.cpp
@@ -55,7 +54,7 @@ static USet* getSmartSet(bool isPreviousCharacter)
         // Whitespace and newline (kCFCharacterSetWhitespaceAndNewline)
         UErrorCode ec = U_ZERO_ERROR;
         String whitespaceAndNewline = ASCIILiteral("[[:WSpace:] [\\u000A\\u000B\\u000C\\u000D\\u0085]]");
-        smartSet = uset_openPattern(whitespaceAndNewline.bloatedCharacters(), whitespaceAndNewline.length(), &ec);
+        smartSet = uset_openPattern(whitespaceAndNewline.charactersWithNullTermination().data(), whitespaceAndNewline.length(), &ec);
         ASSERT(U_SUCCESS(ec));
 
         // CJK ranges
@@ -79,7 +78,7 @@ static USet* getSmartSet(bool isPreviousCharacter)
             // Punctuation (kCFCharacterSetPunctuation)
             UErrorCode ec = U_ZERO_ERROR;
             String punctuationClass = ASCIILiteral("[:P:]");
-            USet* icuPunct = uset_openPattern(punctuationClass.bloatedCharacters(), punctuationClass.length(), &ec);
+            USet* icuPunct = uset_openPattern(punctuationClass.charactersWithNullTermination().data(), punctuationClass.length(), &ec);
             ASSERT(U_SUCCESS(ec));
             uset_addAll(smartSet, icuPunct);
             uset_close(icuPunct);
