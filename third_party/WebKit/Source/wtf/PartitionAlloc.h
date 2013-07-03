@@ -136,7 +136,7 @@ struct PartitionRoot {
 };
 
 WTF_EXPORT void partitionAllocInit(PartitionRoot*);
-WTF_EXPORT void partitionAllocShutdown(PartitionRoot*);
+WTF_EXPORT bool partitionAllocShutdown(PartitionRoot*);
 
 WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionBucket*);
 WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPageHeader*);
@@ -184,7 +184,7 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
     size_t index = size >> kBucketShift;
     ASSERT(index < kNumBuckets);
     ASSERT(size == index << kBucketShift);
-#if defined(ADDRESS_SANITIZER) || (!defined(NDEBUG) && !defined(DEBUG_PARTITION_ALLOC))
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     return malloc(size);
 #else
     PartitionBucket* bucket = &root->buckets[index];
@@ -195,7 +195,7 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
 ALWAYS_INLINE void partitionFree(void* ptr)
 {
     ASSERT(isMainThread());
-#if defined(ADDRESS_SANITIZER) || (!defined(NDEBUG) && !defined(DEBUG_PARTITION_ALLOC))
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     free(ptr);
 #else
     uintptr_t pointerAsUint = reinterpret_cast<uintptr_t>(ptr);

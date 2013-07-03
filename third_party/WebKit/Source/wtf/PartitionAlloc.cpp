@@ -85,10 +85,10 @@ static void partitionCollectIfSuperPage(PartitionPageHeader* partitionPage, Vect
         superPages->append(superPage);
 }
 
-static void partitionAllocShutdownBucket(PartitionBucket* bucket, Vector<PartitionPageHeader*>* superPages)
+static bool partitionAllocShutdownBucket(PartitionBucket* bucket, Vector<PartitionPageHeader*>* superPages)
 {
     // Failure here indicates a memory leak.
-    ASSERT(!bucket->numFullPages);
+    bool noLeaks = !bucket->numFullPages;
     PartitionFreepagelistEntry* entry = bucket->freePages;
     while (entry) {
         PartitionFreepagelistEntry* next = entry->next;
@@ -98,17 +98,20 @@ static void partitionAllocShutdownBucket(PartitionBucket* bucket, Vector<Partiti
     }
     PartitionPageHeader* page = bucket->currPage;
     do {
-        // Failure here indicates a memory leak.
-        ASSERT(bucket == &bucket->root->buckets[kFreePageBucket] || !page->numAllocatedSlots);
+        if (page->numAllocatedSlots)
+            noLeaks = false;
         PartitionPageHeader* next = page->next;
         if (page != &bucket->root->seedPage)
             partitionCollectIfSuperPage(page, superPages);
         page = next;
     } while (page != bucket->currPage);
+
+    return noLeaks;
 }
 
-void partitionAllocShutdown(PartitionRoot* root)
+bool partitionAllocShutdown(PartitionRoot* root)
 {
+    bool noLeaks = true;
     ASSERT(root->initialized);
     root->initialized = false;
     // As we iterate through all the partition pages, we keep a list of all the
@@ -126,15 +129,18 @@ void partitionAllocShutdown(PartitionRoot* root)
     for (i = 0; i < kNumBuckets; ++i) {
         if (i != kFreePageBucket) {
             PartitionBucket* bucket = &root->buckets[i];
-            partitionAllocShutdownBucket(bucket, &superPages);
+            if (!partitionAllocShutdownBucket(bucket, &superPages))
+                noLeaks = false;
         }
     }
     // Finally, free the freepage bucket.
-    partitionAllocShutdownBucket(&root->buckets[kFreePageBucket], &superPages);
+    (void) partitionAllocShutdownBucket(&root->buckets[kFreePageBucket], &superPages);
     // Now that we've examined all partition pages in all buckets, it's safe
     // to free all our super pages.
     for (Vector<PartitionPageHeader*>::iterator it = superPages.begin(); it != superPages.end(); ++it)
         partitionFreeSuperPage(*it);
+
+    return noLeaks;
 }
 
 static ALWAYS_INLINE PartitionPageHeader* partitionAllocPage(PartitionRoot* root)

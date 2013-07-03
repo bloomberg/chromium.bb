@@ -46,7 +46,7 @@
 #endif
 #endif // OS(UNIX)
 
-#if defined(NDEBUG) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 namespace {
 
@@ -67,7 +67,9 @@ static void TestSetup()
 
 static void TestShutdown()
 {
-    partitionAllocShutdown(&root);
+    // We expect no leaks in the general case. We have a test for leak
+    // detection.
+    EXPECT_TRUE(partitionAllocShutdown(&root));
 }
 
 static WTF::PartitionPageHeader* GetFullPage(size_t size)
@@ -131,6 +133,14 @@ TEST(WTF_PartitionAlloc, Basic)
     EXPECT_EQ(0, bucket->freePages);
 
     TestShutdown();
+}
+
+// Check that we can detect a memory leak.
+TEST(WTF_PartitionAlloc, SimpleLeak)
+{
+    TestSetup();
+    void* leakedPtr = partitionAlloc(&root, kTestAllocSize);
+    EXPECT_FALSE(partitionAllocShutdown(&root));
 }
 
 // Test multiple allocations, and freelist handling.
@@ -382,4 +392,4 @@ TEST(WTF_PartitionAlloc, MappingCollision)
 
 } // namespace
 
-#endif // defined(NDEBUG) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+#endif // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)

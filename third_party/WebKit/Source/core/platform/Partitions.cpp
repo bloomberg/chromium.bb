@@ -44,7 +44,10 @@ void Partitions::init()
 
 void Partitions::shutdown()
 {
-    partitionAllocShutdown(&m_objectModelRoot);
+    // We could ASSERT here for a memory leak within the partition, but it leads
+    // to very hard to diagnose ASSERTs, so it's best to leave leak checking for
+    // the valgrind and heapcheck bots, which run without partitions.
+    (void) partitionAllocShutdown(&m_objectModelRoot);
 }
 #endif
 
