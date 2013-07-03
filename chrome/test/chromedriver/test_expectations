@@ -87,6 +87,21 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'VisibilityTest.testElementHiddenByOverflowYIsNotVisible',
     'VisibilityTest.tooSmallAWindowWithOverflowHiddenIsNotAProblem',
     'WindowTest.*',
+    # https://code.google.com/p/chromedriver/issues/detail?id=412
+    'ClickTest.testCanClickOnAnElementWithTopSetToANegativeNumber',
+    'ClickTest.testShouldBeAbleToClickOnAnElementInTheViewport',
+    'ExecutingAsyncJavascriptTest.shouldBeAbleToExecuteAsynchronousScripts',
+    'FormHandlingTest.testShouldClickOnSubmitInputElements',
+    'FrameSwitchingTest.testShouldBeAbleToClickInAFrame',
+    'FrameSwitchingTest.testShouldBeAbleToSwitchToTheTopIfTheFrameIsDeletedFromUnderUs',
+    'FrameSwitchingTest.testShouldAllowTheUserToSwitchToAnIFrameAndRemainFocusedOnIt',
+    'FrameSwitchingTest.testShouldBeAbleToClickInASubFrame',
+    'FrameSwitchingTest.testShouldNotSwitchMagicallyToTheTopWindow',
+    'ImplicitWaitTest.testShouldImplicitlyWaitUntilAtLeastOneElementIsFoundWhenSearchingForMany',
+    'ImplicitWaitTest.testShouldImplicitlyWaitForAnElementToBeVisibleBeforeInteracting',
+    'ImplicitWaitTest.testShouldReturnAfterFirstAttemptToFindManyAfterDisablingImplicitWaits',
+    'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
+    'XPathElementFindingTest.testShouldBeAbleToSearchForMultipleAttributes',
 ]
 
 
