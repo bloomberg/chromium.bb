@@ -161,6 +161,7 @@ public:
         int selectionStart,
         int selectionEnd);
     virtual bool confirmComposition();
+    virtual bool confirmComposition(ConfirmCompositionBehavior selectionBehavior);
     virtual bool confirmComposition(const WebString& text);
     virtual bool compositionRange(size_t* location, size_t* length);
     virtual WebTextInputInfo textInputInfo();
@@ -592,6 +593,8 @@ private:
     // have changed. Note that this should only be called when the Autofill
     // popup is showing.
     void refreshAutofillPopup();
+
+    bool confirmComposition(const WebString& text, ConfirmCompositionBehavior);
 
     // Returns true if the view was scrolled.
     bool scrollViewWithKeyboard(int keyCode, int modifiers);

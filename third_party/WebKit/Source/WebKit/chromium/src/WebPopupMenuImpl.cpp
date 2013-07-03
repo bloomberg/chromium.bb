@@ -304,6 +304,11 @@ bool WebPopupMenuImpl::confirmComposition()
     return false;
 }
 
+bool WebPopupMenuImpl::confirmComposition(ConfirmCompositionBehavior)
+{
+    return false;
+}
+
 bool WebPopupMenuImpl::confirmComposition(const WebString&)
 {
     return false;

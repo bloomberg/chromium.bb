@@ -2129,10 +2129,20 @@ bool WebViewImpl::setComposition(
 
 bool WebViewImpl::confirmComposition()
 {
-    return confirmComposition(WebString());
+    return confirmComposition(DoNotKeepSelection);
+}
+
+bool WebViewImpl::confirmComposition(ConfirmCompositionBehavior selectionBehavior)
+{
+    return confirmComposition(WebString(), selectionBehavior);
 }
 
 bool WebViewImpl::confirmComposition(const WebString& text)
+{
+    return confirmComposition(text, DoNotKeepSelection);
+}
+
+bool WebViewImpl::confirmComposition(const WebString& text, ConfirmCompositionBehavior selectionBehavior)
 {
     Frame* focused = focusedWebCoreFrame();
     if (!focused || !m_imeAcceptEvents)
@@ -2153,10 +2163,17 @@ bool WebViewImpl::confirmComposition(const WebString& text)
     }
 
     if (editor->hasComposition()) {
-        if (text.length())
+        if (text.length()) {
             editor->confirmComposition(String(text));
-        else
+        } else {
+            size_t location;
+            size_t length;
+            caretOrSelectionRange(&location, &length);
+
             editor->confirmComposition();
+            if (selectionBehavior == KeepSelection)
+                editor->setSelectionOffsets(location, location + length);
+        }
     } else
         editor->insertText(String(text), 0);
 

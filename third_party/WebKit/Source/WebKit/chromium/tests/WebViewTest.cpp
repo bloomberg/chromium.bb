@@ -46,6 +46,7 @@
 #include "WebSettings.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "WebWidget.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLDocument.h"
@@ -408,6 +409,50 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo)
     EXPECT_EQ(19, info.selectionEnd);
     EXPECT_EQ(-1, info.compositionStart);
     EXPECT_EQ(-1, info.compositionEnd);
+    webView->close();
+}
+
+TEST_F(WebViewTest, ConfirmCompositionCursorPositionChange)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
+    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "input_field_populated.html");
+    webView->setInitialFocus(false);
+
+    // Set up a composition that needs to be committed.
+    std::string compositionText("hello");
+
+    WebVector<WebCompositionUnderline> emptyUnderlines;
+    webView->setComposition(WebString::fromUTF8(compositionText.c_str()), emptyUnderlines, 3, 3);
+
+    WebTextInputInfo info = webView->textInputInfo();
+    EXPECT_EQ("hello", std::string(info.value.utf8().data()));
+    EXPECT_EQ(3, info.selectionStart);
+    EXPECT_EQ(3, info.selectionEnd);
+    EXPECT_EQ(0, info.compositionStart);
+    EXPECT_EQ(5, info.compositionEnd);
+
+    webView->confirmComposition(WebWidget::KeepSelection);
+    info = webView->textInputInfo();
+    EXPECT_EQ(3, info.selectionStart);
+    EXPECT_EQ(3, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
+    webView->setComposition(WebString::fromUTF8(compositionText.c_str()), emptyUnderlines, 3, 3);
+    info = webView->textInputInfo();
+    EXPECT_EQ("helhellolo", std::string(info.value.utf8().data()));
+    EXPECT_EQ(6, info.selectionStart);
+    EXPECT_EQ(6, info.selectionEnd);
+    EXPECT_EQ(3, info.compositionStart);
+    EXPECT_EQ(8, info.compositionEnd);
+
+    webView->confirmComposition(WebWidget::DoNotKeepSelection);
+    info = webView->textInputInfo();
+    EXPECT_EQ(8, info.selectionStart);
+    EXPECT_EQ(8, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+
     webView->close();
 }
 
