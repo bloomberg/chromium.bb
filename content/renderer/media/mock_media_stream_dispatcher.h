@@ -23,7 +23,10 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       const StreamOptions& components,
       const GURL& url) OVERRIDE;
-  virtual void CancelGenerateStream(int request_id) OVERRIDE;
+  virtual void CancelGenerateStream(
+      int request_id,
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>&
+          event_handler) OVERRIDE;
   virtual void StopStream(const std::string& label) OVERRIDE;
   virtual bool IsStream(const std::string& label) OVERRIDE;
   virtual int video_session_id(const std::string& label, int index) OVERRIDE;

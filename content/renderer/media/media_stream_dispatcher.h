@@ -48,7 +48,9 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const GURL& security_origin);
 
   // Cancel the request for a new media stream to be created.
-  virtual void CancelGenerateStream(int request_id);
+  virtual void CancelGenerateStream(
+      int request_id,
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler);
 
   // Stop a started stream. Label is the label provided in OnStreamGenerated.
   virtual void StopStream(const std::string& label);
@@ -72,6 +74,11 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const std::string& device_id,
       MediaStreamType type,
       const GURL& security_origin);
+
+  // Cancel the request to open a device.
+  virtual void CancelOpenDevice(
+      int request_id,
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler);
 
   // Close a started device. |label| is provided in OnDeviceOpened.
   void CloseDevice(const std::string& label);
@@ -97,11 +104,17 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // opened it.
   struct Stream;
 
+  // An enumeration request is identified by pair (request_id, handler).
+  // It allows multiple clients to make requests and each client could have
+  // its own request_id sequence.
   struct EnumerationRequest {
     EnumerationRequest(
         const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler,
         int request_id);
     ~EnumerationRequest();
+    bool IsThisRequest(
+        int request_id,
+        const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler);
 
     base::WeakPtr<MediaStreamDispatcherEventHandler> handler;
     int request_id;

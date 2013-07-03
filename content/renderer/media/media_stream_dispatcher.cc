@@ -14,6 +14,11 @@
 
 namespace content {
 
+// A request is identified by pair (request_id, handler), or ipc_request.
+// There could be multiple clients making requests and each has its own
+// request_id sequence.
+// The ipc_request is garanteed to be unique when it's created in
+// MediaStreamDispatcher.
 struct MediaStreamDispatcher::Request {
   Request(const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler,
           int request_id,
@@ -21,6 +26,11 @@ struct MediaStreamDispatcher::Request {
       : handler(handler),
         request_id(request_id),
         ipc_request(ipc_request) {
+  }
+  bool IsThisRequest(
+      int request_id1,
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler1) {
+    return (request_id1 == request_id && handler1.get() == handler.get());
   }
   base::WeakPtr<MediaStreamDispatcherEventHandler> handler;
   int request_id;
@@ -43,6 +53,12 @@ MediaStreamDispatcher::EnumerationRequest::EnumerationRequest(
 }
 
 MediaStreamDispatcher::EnumerationRequest::~EnumerationRequest() {}
+
+bool MediaStreamDispatcher::EnumerationRequest::IsThisRequest(
+    int request_id1,
+    const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler1) {
+  return (request_id1 == request_id && handler1.get() == handler.get());
+}
 
 MediaStreamDispatcher::EnumerationState::EnumerationState()
     : ipc_id(-1) {
@@ -85,18 +101,20 @@ void MediaStreamDispatcher::GenerateStream(
                                              security_origin));
 }
 
-void MediaStreamDispatcher::CancelGenerateStream(int request_id) {
+void MediaStreamDispatcher::CancelGenerateStream(
+    int request_id,
+    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DVLOG(1) << "MediaStreamDispatcher::CancelGenerateStream"
            << ", {request_id = " << request_id << "}";
 
   RequestList::iterator it = requests_.begin();
   for (; it != requests_.end(); ++it) {
-    Request& request = *it;
-    if (request.request_id == request_id) {
+    if (it->IsThisRequest(request_id, event_handler)) {
+      int ipc_request = it->ipc_request;
       requests_.erase(it);
       Send(new MediaStreamHostMsg_CancelGenerateStream(routing_id(),
-                                                       request_id));
+                                                       ipc_request));
       break;
     }
   }
@@ -164,8 +182,7 @@ void MediaStreamDispatcher::RemoveEnumerationRequest(
   EnumerationRequestList* requests = &state->requests;
   for (EnumerationRequestList::iterator it = requests->begin();
        it != requests->end(); ++it) {
-    if (it->request_id == request_id &&
-        it->handler.get() == event_handler.get()) {
+    if (it->IsThisRequest(request_id, event_handler)) {
       requests->erase(it);
       if (requests->empty() && state->cached_devices) {
         // No more request and has a label, try to stop the label
@@ -195,6 +212,12 @@ void MediaStreamDispatcher::OpenDevice(
                                          device_id,
                                          type,
                                          security_origin));
+}
+
+void MediaStreamDispatcher::CancelOpenDevice(
+    int request_id,
+    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
+  CancelGenerateStream(request_id, event_handler);
 }
 
 void MediaStreamDispatcher::CloseDevice(const std::string& label) {

@@ -380,7 +380,7 @@ TEST(MediaStreamDispatcherTest, CancelGenerateStream) {
                              components, GURL());
 
   EXPECT_EQ(2u, dispatcher->requests_.size());
-  dispatcher->CancelGenerateStream(kRequestId2);
+  dispatcher->CancelGenerateStream(kRequestId2, handler.get()->AsWeakPtr());
   EXPECT_EQ(1u, dispatcher->requests_.size());
 
   // Complete the creation of stream1.

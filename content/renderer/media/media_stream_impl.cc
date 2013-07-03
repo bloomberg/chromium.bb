@@ -493,7 +493,7 @@ void MediaStreamImpl::FrameWillClose(WebKit::WebFrame* frame) {
             UTF16ToUTF8((*request_it)->descriptor.label()));
       } else {
         media_stream_dispatcher_->CancelGenerateStream(
-            (*request_it)->request_id);
+            (*request_it)->request_id, AsWeakPtr());
       }
       request_it = user_media_requests_.erase(request_it);
     } else {

@@ -49,7 +49,9 @@ void MockMediaStreamDispatcher::GenerateStream(
   ++request_stream_counter_;
 }
 
-void MockMediaStreamDispatcher::CancelGenerateStream(int request_id) {
+void MockMediaStreamDispatcher::CancelGenerateStream(
+  int request_id,
+  const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
   EXPECT_EQ(request_id, request_id_);
 }
 
