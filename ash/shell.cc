@@ -534,12 +534,6 @@ void Shell::Init() {
   if (keyboard::IsKeyboardEnabled())
     keyboard::InitializeKeyboard();
 
-  internal::RootWindowController* root_window_controller =
-      new internal::RootWindowController(root_window);
-  root_window_controller->CreateContainers();
-  root_window_controller->CreateSystemBackground(
-      delegate_->IsFirstRunAfterBoot());
-
   if (command_line->HasSwitch(ash::switches::kAshDisableNewLockAnimations))
     lock_state_controller_.reset(new SessionStateControllerImpl);
   else
@@ -577,8 +571,6 @@ void Shell::Init() {
 
   event_client_.reset(new internal::EventClientImpl);
 
-  InitRootWindowController(root_window_controller);
-
   // This controller needs to be set before SetupManagedWindowMode.
   desktop_background_controller_.reset(new DesktopBackgroundController());
   user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
@@ -604,8 +596,10 @@ void Shell::Init() {
   if (!system_tray_delegate_)
     system_tray_delegate_.reset(SystemTrayDelegate::CreateDummyDelegate());
 
-  // Creates StatusAreaWidget.
-  root_window_controller->InitForPrimaryDisplay();
+  internal::RootWindowController* root_window_controller =
+      new internal::RootWindowController(root_window);
+  InitRootWindowController(root_window_controller,
+                           delegate_->IsFirstRunAfterBoot());
 
   // Initialize system_tray_delegate_ after StatusAreaWidget is created.
   system_tray_delegate_->Initialize();
@@ -873,16 +867,13 @@ void Shell::SetTouchHudProjectionEnabled(bool enabled) {
 }
 
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
-  aura::client::SetFocusClient(root, focus_client_.get());
   internal::RootWindowController* controller =
       new internal::RootWindowController(root);
-  controller->CreateContainers();
   // Pass false for the |is_first_run_after_boot| parameter so we'll show a
   // black background on this display instead of trying to mimic the boot splash
   // screen.
-  controller->CreateSystemBackground(false);
-  InitRootWindowController(controller);
-  controller->InitForPrimaryDisplay();
+  InitRootWindowController(controller, false);
+
   controller->root_window_layout()->OnWindowResized();
   desktop_background_controller_->OnRootWindowAdded(root);
   high_contrast_controller_->OnRootWindowAdded(root);
@@ -901,7 +892,9 @@ void Shell::DoInitialWorkspaceAnimation() {
 }
 
 void Shell::InitRootWindowController(
-    internal::RootWindowController* controller) {
+    internal::RootWindowController* controller,
+    bool first_run_after_boot) {
+
   aura::RootWindow* root_window = controller->root_window();
   DCHECK(activation_client_);
   DCHECK(visibility_controller_.get());
@@ -933,14 +926,7 @@ void Shell::InitRootWindowController(
   if (user_action_client_)
     aura::client::SetUserActionClient(root_window, user_action_client_.get());
 
-  root_window->SetCursor(ui::kCursorPointer);
-  controller->InitLayoutManagers();
-  controller->InitTouchHuds();
-
-  if (GetPrimaryRootWindowController()->GetSystemModalLayoutManager(NULL)->
-      has_modal_background()) {
-    controller->GetSystemModalLayoutManager(NULL)->CreateModalBackground();
-  }
+  controller->Init(first_run_after_boot);
 
   window_cycle_controller_->OnRootWindowAdded(root_window);
 }

@@ -485,8 +485,10 @@ class ASH_EXPORT Shell
   void Init();
 
   // Initializes the root window and root window controller so that it
-  // can host browser windows.
-  void InitRootWindowController(internal::RootWindowController* root);
+  // can host browser windows. |first_run_after_boot| is true for the
+  // primary display only first time after boot.
+  void InitRootWindowController(internal::RootWindowController* root,
+                                bool first_run_after_boot);
 
   // ash::internal::SystemModalContainerEventFilterDelegate overrides:
   virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;

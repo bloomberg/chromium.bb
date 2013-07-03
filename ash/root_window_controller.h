@@ -163,16 +163,9 @@ class ASH_EXPORT RootWindowController {
 
   aura::Window* GetContainer(int container_id);
 
-  void InitLayoutManagers();
-  void CreateContainers();
-
-  // Initializs the RootWindowController for primary display. This
-  // creates
-  void InitForPrimaryDisplay();
-
-  // Initializes |system_background_| and possibly also |boot_splash_screen_|.
-  // |is_first_run_after_boot| determines the background's initial color.
-  void CreateSystemBackground(bool is_first_run_after_boot);
+  // Initializes the RootWindowController. |first_run_after_boot| is
+  // set to true only for primary root window after boot.
+  void Init(bool first_run_after_boot);
 
   // Show launcher view if it was created hidden (before session has started).
   void ShowLauncher();
@@ -222,6 +215,12 @@ class ASH_EXPORT RootWindowController {
   aura::Window* GetFullscreenWindow() const;
 
  private:
+  void InitLayoutManagers();
+
+  // Initializes |system_background_| and possibly also |boot_splash_screen_|.
+  // |is_first_run_after_boot| determines the background's initial color.
+  void CreateSystemBackground(bool is_first_run_after_boot);
+
   // Creates each of the special window containers that holds windows of various
   // types in the shell UI.
   void CreateContainersInRootWindow(aura::RootWindow* root_window);

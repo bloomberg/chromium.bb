@@ -203,6 +203,18 @@ RootWindowController* RootWindowController::ForActiveRootWindow() {
   return GetRootWindowController(Shell::GetActiveRootWindow());
 }
 
+void RootWindowController::EnableTouchHudProjection() {
+  if (touch_hud_projection_)
+    return;
+  set_touch_hud_projection(new TouchHudProjection(root_window_.get()));
+}
+
+void RootWindowController::DisableTouchHudProjection() {
+  if (!touch_hud_projection_)
+    return;
+  touch_hud_projection_->Remove();
+}
+
 void RootWindowController::SetWallpaperController(
     DesktopBackgroundWidgetController* controller) {
   wallpaper_controller_.reset(controller);
@@ -267,88 +279,19 @@ aura::Window* RootWindowController::GetContainer(int container_id) {
   return root_window_->GetChildById(container_id);
 }
 
-void RootWindowController::InitLayoutManagers() {
-  root_window_layout_ =
-      new RootWindowLayoutManager(root_window_.get());
-  root_window_->SetLayoutManager(root_window_layout_);
-
-  aura::Window* default_container =
-      GetContainer(kShellWindowId_DefaultContainer);
-  // Workspace manager has its own layout managers.
-  workspace_controller_.reset(
-      new WorkspaceController(default_container));
-
-  aura::Window* always_on_top_container =
-      GetContainer(kShellWindowId_AlwaysOnTopContainer);
-  always_on_top_container->SetLayoutManager(
-      new BaseLayoutManager(
-          always_on_top_container->GetRootWindow()));
-  always_on_top_controller_.reset(new internal::AlwaysOnTopController);
-  always_on_top_controller_->SetAlwaysOnTopContainer(always_on_top_container);
-}
-
-void RootWindowController::InitForPrimaryDisplay() {
-  DCHECK(!shelf_.get());
-  aura::Window* shelf_container =
-      GetContainer(internal::kShellWindowId_ShelfContainer);
-  // TODO(harrym): Remove when status area is view.
-  aura::Window* status_container =
-      GetContainer(internal::kShellWindowId_StatusContainer);
-  shelf_.reset(new ShelfWidget(
-      shelf_container, status_container, workspace_controller()));
-
-  // Create Docked windows layout manager
-  aura::Window* docked_container = GetContainer(
-      internal::kShellWindowId_DockedContainer);
-  docked_layout_manager_ =
-      new internal::DockedWindowLayoutManager(docked_container);
-  docked_container_handler_.reset(
-      new ToplevelWindowEventHandler(docked_container));
-  docked_container->SetLayoutManager(docked_layout_manager_);
-
-  // Create Panel layout manager
-  aura::Window* panel_container = GetContainer(
-      internal::kShellWindowId_PanelContainer);
-  panel_layout_manager_ =
-      new internal::PanelLayoutManager(panel_container);
-  panel_container_handler_.reset(
-      new PanelWindowEventHandler(panel_container));
-  panel_container->SetLayoutManager(panel_layout_manager_);
-
-  InitKeyboard();
-}
-
-void RootWindowController::CreateContainers() {
+void RootWindowController::Init(bool first_run_after_boot) {
+  root_window_->SetCursor(ui::kCursorPointer);
   CreateContainersInRootWindow(root_window_.get());
-}
+  CreateSystemBackground(first_run_after_boot);
 
-void RootWindowController::CreateSystemBackground(
-    bool is_first_run_after_boot) {
-  SkColor color = SK_ColorBLACK;
-#if defined(OS_CHROMEOS)
-  if (is_first_run_after_boot)
-    color = kChromeOsBootColor;
-#endif
-  system_background_.reset(
-      new SystemBackgroundController(root_window_.get(), color));
+  InitLayoutManagers();
+  InitKeyboard();
+  InitTouchHuds();
 
-#if defined(OS_CHROMEOS)
-  // Make a copy of the system's boot splash screen so we can composite it
-  // onscreen until the desktop background is ready.
-  if (is_first_run_after_boot &&
-      (CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kAshCopyHostBackgroundAtBoot) ||
-       CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kAshAnimateFromBootSplashScreen)))
-    boot_splash_screen_.reset(new BootSplashScreen(root_window_.get()));
-#endif
-}
-
-void RootWindowController::OnLauncherCreated() {
-  if (panel_layout_manager_)
-    panel_layout_manager_->SetLauncher(shelf_->launcher());
-  if (docked_layout_manager_)
-    docked_layout_manager_->SetLauncher(shelf_->launcher());
+  if (Shell::GetPrimaryRootWindowController()->
+      GetSystemModalLayoutManager(NULL)->has_modal_background()) {
+    GetSystemModalLayoutManager(NULL)->CreateModalBackground();
+  }
 }
 
 void RootWindowController::ShowLauncher() {
@@ -356,6 +299,13 @@ void RootWindowController::ShowLauncher() {
     return;
   shelf_->launcher()->SetVisible(true);
   shelf_->status_area_widget()->Show();
+}
+
+void RootWindowController::OnLauncherCreated() {
+  if (panel_layout_manager_)
+    panel_layout_manager_->SetLauncher(shelf_->launcher());
+  if (docked_layout_manager_)
+    docked_layout_manager_->SetLauncher(shelf_->launcher());
 }
 
 void RootWindowController::OnLoginStateChanged(user::LoginStatus status) {
@@ -438,18 +388,6 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   ReparentAllWindows(root_window_.get(), dst);
 }
 
-void RootWindowController::EnableTouchHudProjection() {
-  if (touch_hud_projection_)
-    return;
-  set_touch_hud_projection(new TouchHudProjection(root_window_.get()));
-}
-
-void RootWindowController::DisableTouchHudProjection() {
-  if (!touch_hud_projection_)
-    return;
-  touch_hud_projection_->Remove();
-}
-
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
   return shelf_->shelf_layout_manager();
 }
@@ -490,14 +428,6 @@ void RootWindowController::UpdateShelfVisibility() {
   shelf_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
-void RootWindowController::InitTouchHuds() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAshTouchHud))
-    set_touch_hud_debug(new TouchHudDebug(root_window_.get()));
-  if (Shell::GetInstance()->is_touch_hud_projection_enabled())
-    EnableTouchHudProjection();
-}
-
 aura::Window* RootWindowController::GetFullscreenWindow() const {
   aura::Window* container = workspace_controller_->GetActiveWorkspaceWindow();
   for (size_t i = 0; i < container->children().size(); ++i) {
@@ -530,6 +460,83 @@ void RootWindowController::InitKeyboard() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowController, private:
+
+void RootWindowController::InitLayoutManagers() {
+  root_window_layout_ =
+      new RootWindowLayoutManager(root_window_.get());
+  root_window_->SetLayoutManager(root_window_layout_);
+
+  aura::Window* default_container =
+      GetContainer(kShellWindowId_DefaultContainer);
+  // Workspace manager has its own layout managers.
+  workspace_controller_.reset(
+      new WorkspaceController(default_container));
+
+  aura::Window* always_on_top_container =
+      GetContainer(kShellWindowId_AlwaysOnTopContainer);
+  always_on_top_container->SetLayoutManager(
+      new BaseLayoutManager(
+          always_on_top_container->GetRootWindow()));
+  always_on_top_controller_.reset(new internal::AlwaysOnTopController);
+  always_on_top_controller_->SetAlwaysOnTopContainer(always_on_top_container);
+
+  DCHECK(!shelf_.get());
+  aura::Window* shelf_container =
+      GetContainer(internal::kShellWindowId_ShelfContainer);
+  // TODO(harrym): Remove when status area is view.
+  aura::Window* status_container =
+      GetContainer(internal::kShellWindowId_StatusContainer);
+  shelf_.reset(new ShelfWidget(
+      shelf_container, status_container, workspace_controller()));
+
+  // Create Docked windows layout manager
+  aura::Window* docked_container = GetContainer(
+      internal::kShellWindowId_DockedContainer);
+  docked_layout_manager_ =
+      new internal::DockedWindowLayoutManager(docked_container);
+  docked_container_handler_.reset(
+      new ToplevelWindowEventHandler(docked_container));
+  docked_container->SetLayoutManager(docked_layout_manager_);
+
+  // Create Panel layout manager
+  aura::Window* panel_container = GetContainer(
+      internal::kShellWindowId_PanelContainer);
+  panel_layout_manager_ =
+      new internal::PanelLayoutManager(panel_container);
+  panel_container_handler_.reset(
+      new PanelWindowEventHandler(panel_container));
+  panel_container->SetLayoutManager(panel_layout_manager_);
+}
+
+void RootWindowController::InitTouchHuds() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAshTouchHud))
+    set_touch_hud_debug(new TouchHudDebug(root_window_.get()));
+  if (Shell::GetInstance()->is_touch_hud_projection_enabled())
+    EnableTouchHudProjection();
+}
+
+void RootWindowController::CreateSystemBackground(
+    bool is_first_run_after_boot) {
+  SkColor color = SK_ColorBLACK;
+#if defined(OS_CHROMEOS)
+  if (is_first_run_after_boot)
+    color = kChromeOsBootColor;
+#endif
+  system_background_.reset(
+      new SystemBackgroundController(root_window_.get(), color));
+
+#if defined(OS_CHROMEOS)
+  // Make a copy of the system's boot splash screen so we can composite it
+  // onscreen until the desktop background is ready.
+  if (is_first_run_after_boot &&
+      (CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kAshCopyHostBackgroundAtBoot) ||
+       CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kAshAnimateFromBootSplashScreen)))
+    boot_splash_screen_.reset(new BootSplashScreen(root_window_.get()));
+#endif
+}
 
 void RootWindowController::CreateContainersInRootWindow(
     aura::RootWindow* root_window) {
