@@ -2771,6 +2771,12 @@
                   '-Wl,--warn-shared-textrel',
                 ],
               }],
+              ['OS=="android" and android_webview_build==1', {
+                'ldflags!': [
+                  # Must not turn on --fatal-warnings, see crbug.com/157326.
+                  '-Wl,--fatal-warnings',
+                ],
+              }],
               ['OS=="android" and android_full_debug==0', {
                 # Some configurations are copied from Release_Base to reduce
                 # the binary size.
@@ -2842,6 +2848,12 @@
                   '-Wl,--fatal-warnings',
                   # Warn in case of text relocations.
                   '-Wl,--warn-shared-textrel',
+                ],
+              }],
+              ['OS=="android" and android_webview_build==1', {
+                'ldflags!': [
+                  # Must not turn on --fatal-warnings, see crbug.com/157326.
+                  '-Wl,--fatal-warnings',
                 ],
               }],
               ['clang==1', {
