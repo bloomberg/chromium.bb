@@ -171,17 +171,14 @@ void TextureLayer::Update(ResourceUpdateQueue* queue,
   if (client_) {
     if (uses_mailbox_) {
       TextureMailbox mailbox;
-      if (client_->PrepareTextureMailbox(&mailbox)) {
-        if (mailbox.IsTexture())
-          DCHECK(client_->Context3d());
+      if (client_->PrepareTextureMailbox(&mailbox))
         SetTextureMailbox(mailbox);
-      }
     } else {
       DCHECK(client_->Context3d());
       texture_id_ = client_->PrepareTexture(queue);
+      context_lost_ = client_->Context3d() &&
+          client_->Context3d()->getGraphicsResetStatusARB() != GL_NO_ERROR;
     }
-    context_lost_ = client_->Context3d() &&
-        client_->Context3d()->getGraphicsResetStatusARB() != GL_NO_ERROR;
   }
 
   needs_display_ = false;
