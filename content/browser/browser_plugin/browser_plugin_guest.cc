@@ -414,10 +414,6 @@ void BrowserPluginGuest::Initialize(
   // navigations still continue to function inside the app.
   renderer_prefs->browser_handles_all_top_level_requests = false;
 
-  notification_registrar_.Add(
-      this, NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-      Source<WebContents>(GetWebContents()));
-
   // Listen to embedder visibility changes so that the guest is in a 'shown'
   // state if both the embedder is visible and the BrowserPlugin is marked as
   // visible.
@@ -519,17 +515,6 @@ void BrowserPluginGuest::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
   switch (type) {
-    case NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
-      DCHECK_EQ(Source<WebContents>(source).ptr(), GetWebContents());
-      ResourceRedirectDetails* resource_redirect_details =
-            Details<ResourceRedirectDetails>(details).ptr();
-      bool is_top_level =
-          resource_redirect_details->resource_type == ResourceType::MAIN_FRAME;
-      LoadRedirect(resource_redirect_details->url,
-                   resource_redirect_details->new_url,
-                   is_top_level);
-      break;
-    }
     case NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED: {
       DCHECK_EQ(Source<WebContents>(source).ptr(), embedder_web_contents_);
       embedder_visible_ = *Details<bool>(details).ptr();
@@ -765,21 +750,6 @@ bool BrowserPluginGuest::UnlockMouseIfNecessary(
   return true;
 }
 
-void BrowserPluginGuest::DidStartProvisionalLoadForFrame(
-    int64 frame_id,
-    int64 parent_frame_id,
-    bool is_main_frame,
-    const GURL& validated_url,
-    bool is_error_page,
-    bool is_iframe_srcdoc,
-    RenderViewHost* render_view_host) {
-  // Inform the embedder of the loadStart.
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_LoadStart(instance_id(),
-                                     validated_url,
-                                     is_main_frame));
-}
-
 void BrowserPluginGuest::DidFailProvisionalLoad(
     int64 frame_id,
     bool is_main_frame,
@@ -833,17 +803,6 @@ void BrowserPluginGuest::EndSystemDrag() {
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
   mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
   guest_rvh->ForwardMouseEvent(mouse_event);
-}
-
-void BrowserPluginGuest::LoadRedirect(
-    const GURL& old_url,
-    const GURL& new_url,
-    bool is_top_level) {
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_LoadRedirect(instance_id(),
-                                        old_url,
-                                        new_url,
-                                        is_top_level));
 }
 
 void BrowserPluginGuest::AskEmbedderForGeolocationPermission(

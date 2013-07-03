@@ -28,8 +28,6 @@ var WEB_VIEW_EVENTS = {
   'consolemessage': ['level', 'message', 'line', 'sourceId'],
   'exit' : ['processId', 'reason'],
   'loadabort' : ['url', 'isTopLevel', 'reason'],
-  'loadredirect' : ['oldUrl', 'newUrl', 'isTopLevel'],
-  'loadstart' : ['url', 'isTopLevel'],
   'responsive' : ['processId'],
   'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
   'unresponsive' : ['processId']
@@ -42,6 +40,8 @@ var createEvent = function(name) {
 
 var contentLoadEvent = createEvent('webview.onContentLoad');
 var loadCommitEvent = createEvent('webview.onLoadCommit');
+var loadRedirectEvent = createEvent('webview.onLoadRedirect');
+var loadStartEvent = createEvent('webview.onLoadStart');
 var loadStopEvent = createEvent('webview.onLoadStop');
 
 var WEB_VIEW_EXT_EVENTS = {
@@ -57,8 +57,15 @@ var WEB_VIEW_EXT_EVENTS = {
     },
     evt: loadCommitEvent,
     fields: ['url', 'isTopLevel']
-  }
-  ,
+  },
+  'loadredirect': {
+    evt: loadRedirectEvent,
+    fields: ['isTopLevel', 'oldUrl', 'newUrl']
+  },
+  'loadstart': {
+    evt: loadStartEvent,
+    fields: ['url', 'isTopLevel']
+  },
   'loadstop': {
     evt: loadStopEvent,
     fields: []

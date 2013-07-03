@@ -7,6 +7,8 @@ var embedder = {};
 embedder.baseGuestURL = '';
 embedder.windowOpenGuestURL = '';
 embedder.noReferrerGuestURL = '';
+embedder.redirectGuestURL = '';
+embedder.redirectGuestURLDest = '';
 embedder.tests = {};
 
 embedder.setUp_ = function(config) {
@@ -15,6 +17,9 @@ embedder.setUp_ = function(config) {
       '/extensions/platform_apps/web_view/shim/guest.html';
   embedder.noReferrerGuestURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/guest_noreferrer.html';
+  embedder.redirectGuestURL = embedder.baseGuestURL + '/server-redirect';
+  embedder.redirectGuestURLDest = embedder.baseGuestURL +
+      '/extensions/platform_apps/web_view/shim/guest_redirect.html';
 };
 
 window.runTest = function(testName) {
@@ -512,6 +517,32 @@ function testGetProcessId() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the loadstart event fires at the beginning of a load
+// and the loadredirect event fires when a redirect occurs.
+function testLoadStartLoadRedirect() {
+  var webview = document.createElement('webview');
+  var loadstartCalled = false;
+  webview.setAttribute('src', embedder.redirectGuestURL);
+  webview.addEventListener('loadstart', function(e) {
+    embedder.test.assertTrue(e.isTopLevel);
+    embedder.test.assertEq(embedder.redirectGuestURL, e.url);
+    loadstartCalled = true;
+  });
+  webview.addEventListener('loadredirect', function(e) {
+    embedder.test.assertTrue(e.isTopLevel);
+    embedder.test.assertEq(embedder.redirectGuestURL,
+        e.oldUrl.replace('127.0.0.1', 'localhost'));
+    embedder.test.assertEq(embedder.redirectGuestURLDest,
+        e.newUrl.replace('127.0.0.1', 'localhost'));
+    if (loadstartCalled) {
+      embedder.test.succeed();
+    } else {
+      embedder.test.fail();
+    }
+  });
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testSize': testSize,
   'testAPIMethodExistence': testAPIMethodExistence,
@@ -531,7 +562,8 @@ embedder.test.testList = {
   'testNewWindowNoReferrerLink': testNewWindowNoReferrerLink,
   'testContentLoadEvent': testContentLoadEvent,
   'testWebRequestAPI': testWebRequestAPI,
-  'testGetProcessId': testGetProcessId
+  'testGetProcessId': testGetProcessId,
+  'testLoadStartLoadRedirect': testLoadStartLoadRedirect
 };
 
 onload = function() {

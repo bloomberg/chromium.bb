@@ -4,16 +4,17 @@
 
 #include "chrome/browser/guestview/webview/webview_guest.h"
 
-#include "base/debug/stack_trace.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "chrome/browser/guestview/webview/webview_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
@@ -39,6 +40,10 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents)
                                                       &script_observers_)) {
   notification_registrar_.Add(
       this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::Source<WebContents>(guest_web_contents));
+
+  notification_registrar_.Add(
+      this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       content::Source<WebContents>(guest_web_contents));
 }
 
@@ -84,6 +89,18 @@ void WebViewGuest::Observe(int type,
         LoadHandlerCalled();
       break;
     }
+    case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
+      DCHECK_EQ(content::Source<WebContents>(source).ptr(),
+                guest_web_contents());
+      content::ResourceRedirectDetails* resource_redirect_details =
+          content::Details<content::ResourceRedirectDetails>(details).ptr();
+      bool is_top_level =
+          resource_redirect_details->resource_type == ResourceType::MAIN_FRAME;
+      LoadRedirect(resource_redirect_details->url,
+                   resource_redirect_details->new_url,
+                   is_top_level);
+      break;
+    }
     default:
       NOTREACHED() << "Unexpected notification sent.";
       break;
@@ -115,6 +132,20 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
   DispatchEvent(new GuestView::Event(webview::kEventLoadCommit, args.Pass()));
 }
 
+void WebViewGuest::DidStartProvisionalLoadForFrame(
+    int64 frame_id,
+    int64 parent_frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    bool is_error_page,
+    bool is_iframe_srcdoc,
+    content::RenderViewHost* render_view_host) {
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  args->SetString(guestview::kUrl, validated_url.spec());
+  args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
+  DispatchEvent(new GuestView::Event(webview::kEventLoadStart, args.Pass()));
+}
+
 void WebViewGuest::DidStopLoading(content::RenderViewHost* render_view_host) {
   scoped_ptr<DictionaryValue> args(new DictionaryValue());
   DispatchEvent(new GuestView::Event(webview::kEventLoadStop, args.Pass()));
@@ -136,6 +167,16 @@ void WebViewGuest::WebContentsDestroyed(WebContents* web_contents) {
 void WebViewGuest::LoadHandlerCalled() {
   scoped_ptr<DictionaryValue> args(new DictionaryValue());
   DispatchEvent(new GuestView::Event(webview::kEventContentLoad, args.Pass()));
+}
+
+void WebViewGuest::LoadRedirect(const GURL& old_url,
+                                const GURL& new_url,
+                                bool is_top_level) {
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  args->SetBoolean(guestview::kIsTopLevel, is_top_level);
+  args->SetString(webview::kNewURL, new_url.spec());
+  args->SetString(webview::kOldURL, old_url.spec());
+  DispatchEvent(new GuestView::Event(webview::kEventLoadRedirect, args.Pass()));
 }
 
 void WebViewGuest::AddWebViewToExtensionRendererState() {

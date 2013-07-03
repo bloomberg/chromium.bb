@@ -170,8 +170,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestUnresponsive, OnGuestUnresponsive)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadAbort, OnLoadAbort)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadCommit, OnLoadCommit)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadRedirect, OnLoadRedirect)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStart, OnLoadStart)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_RequestPermission, OnRequestPermission)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
@@ -580,27 +578,6 @@ void BrowserPlugin::OnLoadCommit(
   guest_crashed_ = false;
   if (params.is_top_level)
     UpdateDOMAttribute(browser_plugin::kAttributeSrc, params.url.spec());
-}
-
-void BrowserPlugin::OnLoadRedirect(int guest_instance_id,
-                                   const GURL& old_url,
-                                   const GURL& new_url,
-                                   bool is_top_level) {
-  std::map<std::string, base::Value*> props;
-  props[browser_plugin::kOldURL] = new base::StringValue(old_url.spec());
-  props[browser_plugin::kNewURL] = new base::StringValue(new_url.spec());
-  props[browser_plugin::kIsTopLevel] = new base::FundamentalValue(is_top_level);
-  TriggerEvent(browser_plugin::kEventLoadRedirect, &props);
-}
-
-void BrowserPlugin::OnLoadStart(int guest_instance_id,
-                                const GURL& url,
-                                bool is_top_level) {
-  std::map<std::string, base::Value*> props;
-  props[browser_plugin::kURL] = new base::StringValue(url.spec());
-  props[browser_plugin::kIsTopLevel] = new base::FundamentalValue(is_top_level);
-
-  TriggerEvent(browser_plugin::kEventLoadStart, &props);
 }
 
 void BrowserPlugin::OnRequestPermission(
@@ -1290,8 +1267,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_GuestUnresponsive::ID:
     case BrowserPluginMsg_LoadAbort::ID:
     case BrowserPluginMsg_LoadCommit::ID:
-    case BrowserPluginMsg_LoadRedirect::ID:
-    case BrowserPluginMsg_LoadStart::ID:
     case BrowserPluginMsg_RequestPermission::ID:
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:

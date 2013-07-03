@@ -685,23 +685,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, TerminateGuest) {
   test_guest()->WaitForExit();
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStart) {
-  const char kEmbedderURL[] = "/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, std::string());
-
-  const string16 expected_title = ASCIIToUTF16(kHTMLForGuest);
-  content::TitleWatcher title_watcher(test_embedder()->web_contents(),
-                                      expected_title);
-  // Renavigate the guest to |kHTMLForGuest|.
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(rvh,
-                        base::StringPrintf("SetSrc('%s');", kHTMLForGuest));
-
-  string16 actual_title = title_watcher.WaitAndGetTitle();
-  EXPECT_EQ(expected_title, actual_title);
-}
-
 namespace {
 
 class EmptyHttpResponse : public net::test_server::HttpResponse {
@@ -721,21 +704,6 @@ scoped_ptr<net::test_server::HttpResponse> EmptyResponseHandler(
   }
 
   return scoped_ptr<net::test_server::HttpResponse>();
-}
-
-// Handles |request| by serving a redirect response.
-scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
-    const std::string& path,
-    const GURL& redirect_target,
-    const net::test_server::HttpRequest& request) {
-  if (!StartsWithASCII(path, request.relative_url, true))
-    return scoped_ptr<net::test_server::HttpResponse>();
-
-  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
-      new net::test_server::BasicHttpResponse);
-  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
-  http_response->AddCustomHeader("Location", redirect_target.spec());
-  return http_response.PassAs<net::test_server::HttpResponse>();
 }
 
 }  // namespace
@@ -794,42 +762,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadRedirect) {
-  const char kEmbedderURL[] = "/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, std::string());
-
-  const string16 expected_title = ASCIIToUTF16("redirected");
-  content::TitleWatcher title_watcher(test_embedder()->web_contents(),
-                                      expected_title);
-
-  // Navigate with a redirect and wait until the title changes.
-  const char kRedirectResponsePath[] = "/server-redirect";
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&RedirectResponseHandler,
-                 kRedirectResponsePath,
-                 embedded_test_server()->GetURL("/title1.html")));
-  GURL redirect_url(embedded_test_server()->GetURL(kRedirectResponsePath));
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      test_embedder()->web_contents()->GetRenderViewHost());
-  ExecuteSyncJSFunction(
-      rvh, base::StringPrintf("SetSrc('%s');", redirect_url.spec().c_str()));
-
-  string16 actual_title = title_watcher.WaitAndGetTitle();
-  EXPECT_EQ(expected_title, actual_title);
-
-  // Verify that we heard a loadRedirect during the navigation.
-  scoped_ptr<base::Value> value =
-      content::ExecuteScriptAndGetValue(rvh, "redirectOldUrl");
-  std::string result;
-  EXPECT_TRUE(value->GetAsString(&result));
-  EXPECT_EQ(redirect_url.spec().c_str(), result);
-
-  value = content::ExecuteScriptAndGetValue(rvh, "redirectNewUrl");
-  EXPECT_TRUE(value->GetAsString(&result));
-  EXPECT_EQ(embedded_test_server()->GetURL("/title1.html").spec().c_str(),
-            result);
 }
 
 // Always failing in the win7_aura try bot.  See http://crbug.com/181107.

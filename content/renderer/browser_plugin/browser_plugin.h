@@ -345,11 +345,6 @@ class CONTENT_EXPORT BrowserPlugin :
                    const std::string& type);
   void OnLoadCommit(int instance_id,
                     const BrowserPluginMsg_LoadCommit_Params& params);
-  void OnLoadRedirect(int instance_id,
-                      const GURL& old_url,
-                      const GURL& new_url,
-                      bool is_top_level);
-  void OnLoadStart(int instance_id, const GURL& url, bool is_top_level);
   // Requests permission from the embedder.
   void OnRequestPermission(int instance_id,
                            BrowserPluginPermissionType permission_type,

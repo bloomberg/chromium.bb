@@ -21,11 +21,19 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "ui/compositor/compositor_setup.h"
 #include "ui/gl/gl_switches.h"
 
 using prerender::PrerenderLinkManager;
 using prerender::PrerenderLinkManagerFactory;
+
+namespace {
+  const char kRedirectResponsePath[] = "/server-redirect";
+  const char kRedirectResponseFullPath[] =
+      "/extensions/platform_apps/web_view/shim/guest_redirect.html";
+}  // namespace
 
 // This class intercepts media access request from the embedder. The request
 // should be triggered only if the embedder API (from tests) allows the request
@@ -353,6 +361,21 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
+  // Handles |request| by serving a redirect response.
+  static scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
+      const std::string& path,
+      const GURL& redirect_target,
+      const net::test_server::HttpRequest& request) {
+    if (!StartsWithASCII(path, request.relative_url, true))
+      return scoped_ptr<net::test_server::HttpResponse>();
+
+    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse);
+    http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+    http_response->AddCustomHeader("Location", redirect_target.spec());
+    return http_response.PassAs<net::test_server::HttpResponse>();
+  }
+
   void TestHelper(const std::string& test_name,
                   const std::string& test_passed_msg,
                   const std::string& test_failed_msg,
@@ -361,6 +384,11 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     ExtensionTestMessageListener launched_listener("Launched", false);
     LoadAndLaunchPlatformApp(app_location.c_str());
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&WebViewTest::RedirectResponseHandler,
+                   kRedirectResponsePath,
+                   embedded_test_server()->GetURL(kRedirectResponseFullPath)));
 
     content::WebContents* embedder_web_contents =
         GetFirstShellWindowWebContents();
@@ -554,6 +582,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestContentLoadEvent) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPI) {
   TestHelper("testWebRequestAPI",
+             "DoneShimTest.PASSED",
+             "DoneShimTest.FAILED",
+             "web_view/shim");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadStartLoadRedirect) {
+  TestHelper("testLoadStartLoadRedirect",
              "DoneShimTest.PASSED",
              "DoneShimTest.FAILED",
              "web_view/shim");

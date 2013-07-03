@@ -147,14 +147,6 @@ class CONTENT_EXPORT BrowserPluginGuest
                        const NotificationDetails& details) OVERRIDE;
 
   // WebContentsObserver implementation.
-  virtual void DidStartProvisionalLoadForFrame(
-      int64 frame_id,
-      int64 parent_frame_id,
-      bool is_main_frame,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc,
-      RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidFailProvisionalLoad(
       int64 frame_id,
       bool is_main_frame,
@@ -297,11 +289,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   // Returns the damage buffer corresponding to the handle in resize |params|.
   base::SharedMemory* GetDamageBufferFromEmbedder(
       const BrowserPluginHostMsg_ResizeGuest_Params& params);
-
-  // Called when a redirect notification occurs.
-  void LoadRedirect(const GURL& old_url,
-                    const GURL& new_url,
-                    bool is_top_level);
 
   bool InAutoSizeBounds(const gfx::Size& size) const;
 

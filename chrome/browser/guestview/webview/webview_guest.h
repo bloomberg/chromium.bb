@@ -62,6 +62,14 @@ class WebViewGuest : public GuestView,
       const GURL& url,
       content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidStartProvisionalLoadForFrame(
+      int64 frame_id,
+      int64 parent_frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      bool is_iframe_srcdoc,
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void WebContentsDestroyed(
@@ -69,6 +77,11 @@ class WebViewGuest : public GuestView,
 
   // Called after the load handler is called in the guest's main frame.
   void LoadHandlerCalled();
+
+  // Called when a redirect notification occurs.
+  void LoadRedirect(const GURL& old_url,
+                    const GURL& new_url,
+                    bool is_top_level);
 
   void AddWebViewToExtensionRendererState();
   static void RemoveWebViewFromExtensionRendererState(

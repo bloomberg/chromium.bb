@@ -332,13 +332,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_GuestContentWindowReady,
                      int /* instance_id */,
                      int /* source_routing_id */)
 
-// When the guest begins to load a page, the browser process informs the
-// embedder through the BrowserPluginMsg_LoadStart message.
-IPC_MESSAGE_CONTROL3(BrowserPluginMsg_LoadStart,
-                     int /* instance_id */,
-                     GURL /* url */,
-                     bool /* is_top_level */)
-
 // If the guest fails to commit a page load then it will inform the
 // embedder through the BrowserPluginMsg_LoadAbort. A description
 // of the error will be stored in |type|.  The list of known error
@@ -348,14 +341,6 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_LoadAbort,
                      GURL /* url */,
                      bool /* is_top_level */,
                      std::string /* type */)
-
-// When the guest redirects a navigation, the browser process informs the
-// embedder through the BrowserPluginMsg_LoadRedirect message.
-IPC_MESSAGE_CONTROL4(BrowserPluginMsg_LoadRedirect,
-                     int /* instance_id */,
-                     GURL /* old_url */,
-                     GURL /* new_url */,
-                     bool /* is_top_level */)
 
 // When the guest commits a navigation, the browser process informs
 // the embedder through the BrowserPluginMsg_LoadCommit message.
