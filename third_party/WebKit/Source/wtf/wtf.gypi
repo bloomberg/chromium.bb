@@ -211,6 +211,7 @@
             'text/TextCodecUserDefined.cpp',
             'text/TextEncoding.cpp',
             'text/TextEncodingRegistry.cpp',
+            'text/TextPosition.cpp',
             'text/TextPosition.h',
             'text/WTFString.cpp',
             'text/WTFString.h',

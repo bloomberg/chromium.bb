@@ -221,7 +221,7 @@ protected:
 
     // Also accessed by friend class InspectorStyle.
     virtual bool setStyleText(CSSStyleDeclaration*, const String&);
-    virtual PassOwnPtr<Vector<size_t> > lineEndings() const;
+    virtual PassOwnPtr<Vector<unsigned> > lineEndings() const;
 
 private:
     friend class InspectorStyle;
@@ -275,7 +275,7 @@ protected:
 
     // Also accessed by friend class InspectorStyle.
     virtual bool setStyleText(CSSStyleDeclaration*, const String&);
-    virtual PassOwnPtr<Vector<size_t> > lineEndings() const;
+    virtual PassOwnPtr<Vector<unsigned> > lineEndings() const;
 
 private:
     CSSStyleDeclaration* inlineStyle() const;

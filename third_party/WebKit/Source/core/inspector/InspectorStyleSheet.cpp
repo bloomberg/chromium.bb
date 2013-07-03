@@ -56,6 +56,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/TextPosition.h"
 
 using WebCore::TypeBuilder::Array;
 using WebCore::RuleSourceDataList;
@@ -441,12 +442,12 @@ enum MediaListSource {
     MediaListSourceImportRule
 };
 
-static PassRefPtr<TypeBuilder::CSS::SourceRange> buildSourceRangeObject(const SourceRange& range, Vector<size_t>* lineEndings)
+static PassRefPtr<TypeBuilder::CSS::SourceRange> buildSourceRangeObject(const SourceRange& range, Vector<unsigned>* lineEndings)
 {
     if (!lineEndings)
         return 0;
-    TextPosition start = ContentSearchUtils::textPositionFromOffset(range.start, *lineEndings);
-    TextPosition end = ContentSearchUtils::textPositionFromOffset(range.end, *lineEndings);
+    TextPosition start = TextPosition::fromOffsetAndLineEndings(range.start, *lineEndings);
+    TextPosition end = TextPosition::fromOffsetAndLineEndings(range.end, *lineEndings);
 
     RefPtr<TypeBuilder::CSS::SourceRange> result = TypeBuilder::CSS::SourceRange::create()
         .setStartLine(start.m_line.zeroBasedInt())
@@ -708,7 +709,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
     HashSet<String> foundShorthands;
     String previousPriority;
     String previousStatus;
-    OwnPtr<Vector<size_t> > lineEndings(m_parentStyleSheet ? m_parentStyleSheet->lineEndings() : PassOwnPtr<Vector<size_t> >());
+    OwnPtr<Vector<unsigned> > lineEndings(m_parentStyleSheet ? m_parentStyleSheet->lineEndings() : PassOwnPtr<Vector<unsigned> >());
     RefPtr<CSSRuleSourceData> sourceData = extractSourceData();
     unsigned ruleBodyRangeStart = sourceData ? sourceData->ruleBodyRange.start : 0;
 
@@ -1511,11 +1512,11 @@ PassRefPtr<CSSRuleSourceData> InspectorStyleSheet::ruleSourceDataFor(CSSStyleDec
     return m_parsedStyleSheet->ruleSourceDataAt(ruleIndexByStyle(style));
 }
 
-PassOwnPtr<Vector<size_t> > InspectorStyleSheet::lineEndings() const
+PassOwnPtr<Vector<unsigned> > InspectorStyleSheet::lineEndings() const
 {
     if (!m_parsedStyleSheet->hasText())
-        return PassOwnPtr<Vector<size_t> >();
-    return ContentSearchUtils::lineEndings(m_parsedStyleSheet->text());
+        return PassOwnPtr<Vector<unsigned> >();
+    return WTF::lineEndings(m_parsedStyleSheet->text());
 }
 
 unsigned InspectorStyleSheet::ruleIndexByStyle(CSSStyleDeclaration* pageStyle) const
@@ -1745,9 +1746,9 @@ bool InspectorStyleSheetForInlineStyle::setStyleText(CSSStyleDeclaration* style,
     return !ec;
 }
 
-PassOwnPtr<Vector<size_t> > InspectorStyleSheetForInlineStyle::lineEndings() const
+PassOwnPtr<Vector<unsigned> > InspectorStyleSheetForInlineStyle::lineEndings() const
 {
-    return ContentSearchUtils::lineEndings(elementStyleText());
+    return WTF::lineEndings(elementStyleText());
 }
 
 Document* InspectorStyleSheetForInlineStyle::ownerDocument() const

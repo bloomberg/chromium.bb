@@ -26,6 +26,9 @@
 #define TextPosition_h
 
 #include "wtf/Assertions.h"
+#include "wtf/Vector.h"
+#include "wtf/WTFExport.h"
+#include "wtf/text/WTFString.h"
 
 namespace WTF {
 
@@ -72,14 +75,21 @@ public:
     // A value with line value less than a minimum; used as an impossible position.
     static TextPosition belowRangePosition() { return TextPosition(OrdinalNumber::beforeFirst(), OrdinalNumber::beforeFirst()); }
 
+    // A value corresponding to a position with given offset within text having the specified line ending offsets.
+    WTF_EXPORT static TextPosition fromOffsetAndLineEndings(unsigned, const Vector<unsigned>&);
+
     OrdinalNumber m_line;
     OrdinalNumber m_column;
 };
 
-}
+WTF_EXPORT PassOwnPtr<Vector<unsigned> > lineEndings(const String&);
+
+} // namespace WTF
 
 using WTF::OrdinalNumber;
 
 using WTF::TextPosition;
+
+using WTF::lineEndings;
 
 #endif // TextPosition_h
