@@ -57,6 +57,7 @@ public:
     PassRefPtr<RenderStyle> getAnimatedStyle() const;
 
     double timeToNextService() const;
+    double timeToNextEvent() const;
     
     AnimationControllerPrivate* animationController() const { return m_animationController; }
 

@@ -50,9 +50,9 @@ class Node;
 class RenderObject;
 class RenderStyle;
 
-enum SetChanged {
-    DoNotCallSetChanged = 0,
-    CallSetChanged = 1
+enum SetNeedsStyleRecalc {
+    DoNotCallSetNeedsStyleRecalc = 0,
+    CallSetNeedsStyleRecalc = 1
 };
 
 class AnimationControllerPrivate {
@@ -61,9 +61,8 @@ public:
     AnimationControllerPrivate(Frame*);
     ~AnimationControllerPrivate();
 
-    // Returns the time until the next animation needs to be serviced, or -1 if there are none.
-    double updateAnimations(SetChanged callSetChanged = DoNotCallSetChanged);
-    void updateAnimationTimer(SetChanged callSetChanged = DoNotCallSetChanged);
+    void updateAnimations(double& timeToNextService, double& timeToNextEvent, SetNeedsStyleRecalc callSetNeedsStyleRecalc = DoNotCallSetNeedsStyleRecalc);
+    void scheduleService();
 
     PassRefPtr<CompositeAnimation> accessCompositeAnimation(RenderObject*);
     bool clear(RenderObject*);
@@ -77,7 +76,7 @@ public:
 
     void suspendAnimations();
     void resumeAnimations();
-    void animationFrameCallbackFired();
+    void serviceAnimations();
 
     void suspendAnimationsForDocument(Document*);
     void resumeAnimationsForDocument(Document*);
@@ -103,10 +102,12 @@ public:
 
     void animationWillBeRemoved(AnimationBase*);
 
-    void updateAnimationTimerForRenderer(RenderObject*);
+    void scheduleServiceForRenderer(RenderObject*);
     
 private:
     void animationTimerFired(Timer<AnimationControllerPrivate>*);
+
+    void scheduleService(double timeToNextService, double timeToNextEvent);
 
     void styleAvailable();
     void fireEventsAndUpdateStyle();

@@ -71,16 +71,18 @@
       if (window.testRunner) {
           testRunner.waitUntilDone();
           testRunner.dumpAsText();
-      }
 
-      function doTest() {
-          if (window.testRunner) {
-              document.getElementById('layer-tree').innerText = window.internals.layerTreeAsText(document)
-              testRunner.notifyDone();
-          }
-      }
+        function doTest() {
+            // The layer tree may not have been built by the time the load event fires,
+            // wait for a frame.
+            requestAnimationFrame(function() {
+                document.getElementById('layer-tree').innerText = window.internals.layerTreeAsText(document)
+                testRunner.notifyDone();
+            });
+        }
 
-      window.addEventListener("load", doTest, false);
+        window.addEventListener("load", doTest, false);
+      }
   </script>
 </head>
 <body>
