@@ -1631,7 +1631,6 @@ TEST_F(AutofillDialogControllerTest, WalletServerSideValidationUnrecoverable) {
       wallet::FormFieldError(wallet::FormFieldError::UNKNOWN_ERROR,
                              wallet::FormFieldError::UNKNOWN_LOCATION));
 
-  EXPECT_CALL(*controller()->GetView(), UpdateForErrors()).Times(1);
   controller()->OnDidSaveAddress(std::string(), required_actions, form_errors);
 
   EXPECT_EQ(1U, NotificationsOfType(
@@ -1925,8 +1924,7 @@ TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
 TEST_F(AutofillDialogControllerTest, UpgradeMinimalAddress) {
   // A minimal address being selected should trigger error validation in the
   // view. Called once for each incomplete suggestion.
-  // TODO(dbeam): re-enable this in https://codereview.chromium.org/17688004/.
-  // EXPECT_CALL(*controller()->GetView(), UpdateForErrors()).Times(2);
+  EXPECT_CALL(*controller()->GetView(), UpdateForErrors()).Times(1);
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentWithIdAndAddress(

@@ -356,6 +356,12 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Tells the view to update |section|.
   void UpdateSection(DialogSection section);
 
+  // Tells |view_| to update the validity status of its detail inputs (if
+  // |view_| is non-null). Currently this is used solely for highlighting
+  // invalid suggestions, so if no sections are based on existing data,
+  // |view_->UpdateForErrors()| is not called.
+  void UpdateForErrors();
+
   // Creates a DataModelWrapper item for the item that's checked in the
   // suggestion model for |section|. This may represent Autofill
   // data or Wallet data, depending on whether Wallet is currently enabled.

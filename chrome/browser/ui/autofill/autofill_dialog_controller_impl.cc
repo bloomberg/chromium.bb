@@ -860,8 +860,7 @@ void AutofillDialogControllerImpl::OnWalletFormFieldError(
   if (!wallet_server_validation_recoverable_)
     DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
 
-  if (view_)
-    view_->UpdateForErrors();
+  UpdateForErrors();
 }
 
 void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
@@ -1002,6 +1001,26 @@ void AutofillDialogControllerImpl::RestoreUserInputFromSnapshot(
 void AutofillDialogControllerImpl::UpdateSection(DialogSection section) {
   if (view_)
     view_->UpdateSection(section);
+}
+
+void AutofillDialogControllerImpl::UpdateForErrors() {
+  if (!view_)
+    return;
+
+  // Currently, the view should only need to be updated if there are
+  // |wallet_errors_| or validating a suggestion that's based on existing data.
+  bool should_update = !wallet_errors_.empty();
+  if (!should_update) {
+    for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
+      if (IsEditingExistingData(static_cast<DialogSection>(i))) {
+        should_update = true;
+        break;
+      }
+    }
+  }
+
+  if (should_update)
+    view_->UpdateForErrors();
 }
 
 const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
@@ -1923,6 +1942,7 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
   ResetSectionInput(section);
   ShowEditUiIfBadSuggestion(section);
   UpdateSection(section);
+  UpdateForErrors();
 
   LogSuggestionItemSelectedMetric(*model);
 }
@@ -2505,6 +2525,8 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     ShowEditUiIfBadSuggestion(section);
     UpdateSection(section);
   }
+
+  UpdateForErrors();
 }
 
 void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
