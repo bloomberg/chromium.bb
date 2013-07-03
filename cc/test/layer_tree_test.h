@@ -64,7 +64,6 @@ class TestHooks : public AnimationDelegate {
   virtual void ScheduleComposite() {}
   virtual void DidDeferCommit() {}
   virtual bool CanActivatePendingTree(LayerTreeHostImpl* host_impl);
-  virtual bool CanActivatePendingTreeIfNeeded(LayerTreeHostImpl* host_impl);
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) {}
 

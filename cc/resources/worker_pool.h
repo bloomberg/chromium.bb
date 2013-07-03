@@ -47,39 +47,6 @@ class CC_EXPORT WorkerPoolTask
   bool did_complete_;
 };
 
-class CC_EXPORT GraphNode {
- public:
-  typedef std::vector<GraphNode*> Vector;
-
-  GraphNode(internal::WorkerPoolTask* task, unsigned priority);
-  ~GraphNode();
-
-  WorkerPoolTask* task() { return task_; }
-
-  void add_dependent(GraphNode* dependent) {
-    DCHECK(dependent);
-    dependents_.push_back(dependent);
-  }
-  const Vector& dependents() const { return dependents_; }
-
-  unsigned priority() const { return priority_; }
-
-  unsigned num_dependencies() const { return num_dependencies_; }
-  void add_dependency() { ++num_dependencies_; }
-  void remove_dependency() {
-    DCHECK(num_dependencies_);
-    --num_dependencies_;
-  }
-
- private:
-  WorkerPoolTask* task_;
-  Vector dependents_;
-  unsigned priority_;
-  unsigned num_dependencies_;
-
-  DISALLOW_COPY_AND_ASSIGN(GraphNode);
-};
-
 }  // namespace internal
 }  // namespace cc
 
@@ -109,12 +76,49 @@ class CC_EXPORT WorkerPool {
   virtual void CheckForCompletedTasks();
 
  protected:
+  class CC_EXPORT GraphNode {
+   public:
+    typedef std::vector<GraphNode*> Vector;
+
+    GraphNode();
+    ~GraphNode();
+
+    void set_task(internal::WorkerPoolTask* task) { task_ = task; }
+    internal::WorkerPoolTask* task() { return task_; }
+
+    void add_dependent(GraphNode* dependent) {
+      DCHECK(dependent);
+      dependents_.push_back(dependent);
+    }
+    const Vector& dependents() const {
+      return dependents_;
+    }
+
+    void set_priority(unsigned priority) { priority_ = priority; }
+    unsigned priority() const { return priority_; }
+
+    unsigned num_dependencies() const {
+      return num_dependencies_;
+    }
+    void add_dependency() { ++num_dependencies_; }
+    void remove_dependency() {
+      DCHECK(num_dependencies_);
+      --num_dependencies_;
+    }
+
+   private:
+    internal::WorkerPoolTask* task_;
+    Vector dependents_;
+    unsigned priority_;
+    unsigned num_dependencies_;
+
+    DISALLOW_COPY_AND_ASSIGN(GraphNode);
+  };
   // A task graph contains a unique set of tasks with edges between
   // dependencies pointing in the direction of the dependents. Each task
   // need to be assigned a unique priority and a run count that matches
   // the number of dependencies.
-  typedef ScopedPtrHashMap<internal::WorkerPoolTask*, internal::GraphNode>
-      GraphNodeMap;
+  typedef ScopedPtrHashMap<internal::WorkerPoolTask*, GraphNode> GraphNodeMap;
   typedef GraphNodeMap TaskGraph;
 
   WorkerPool(size_t num_threads, const std::string& thread_name_prefix);

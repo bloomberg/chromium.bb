@@ -750,14 +750,6 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
   }
 
   virtual bool CanActivatePendingTree(LayerTreeHostImpl* impl) OVERRIDE {
-    if (frame_ >= 1)
-      return true;
-
-    return false;
-  }
-
-  virtual bool CanActivatePendingTreeIfNeeded(LayerTreeHostImpl* impl)
-      OVERRIDE {
     frame_++;
     if (frame_ == 1) {
       first_frame_time_ = impl->CurrentFrameTimeTicks();

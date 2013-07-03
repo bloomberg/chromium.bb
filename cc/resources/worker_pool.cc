@@ -64,15 +64,6 @@ bool WorkerPoolTask::HasCompleted() const {
   return did_complete_;
 }
 
-GraphNode::GraphNode(internal::WorkerPoolTask* task, unsigned priority)
-    : task_(task),
-      priority_(priority),
-      num_dependencies_(0) {
-}
-
-GraphNode::~GraphNode() {
-}
-
 }  // namespace internal
 
 // Internal to the worker pool. Any data or logic that needs to be
@@ -99,8 +90,8 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
  private:
   class PriorityComparator {
    public:
-    bool operator()(const internal::GraphNode* a,
-                    const internal::GraphNode* b) {
+    bool operator()(const GraphNode* a,
+                    const GraphNode* b) {
       // In this system, numerically lower priority is run first.
       if (a->priority() != b->priority())
         return a->priority() > b->priority();
@@ -134,8 +125,8 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   GraphNodeMap pending_tasks_;
 
   // Ordered set of tasks that are ready to run.
-  typedef std::priority_queue<internal::GraphNode*,
-                              std::vector<internal::GraphNode*>,
+  typedef std::priority_queue<GraphNode*,
+                              std::vector<GraphNode*>,
                               PriorityComparator> TaskQueue;
   TaskQueue ready_to_run_tasks_;
 
@@ -225,13 +216,11 @@ void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
          it != completed_tasks_.end(); ++it) {
       internal::WorkerPoolTask* task = it->get();
 
-      scoped_ptr<internal::GraphNode> node = new_pending_tasks.take_and_erase(
-          task);
+      scoped_ptr<GraphNode> node = new_pending_tasks.take_and_erase(task);
       if (node) {
-        for (internal::GraphNode::Vector::const_iterator it =
-                 node->dependents().begin();
+        for (GraphNode::Vector::const_iterator it = node->dependents().begin();
              it != node->dependents().end(); ++it) {
-          internal::GraphNode* dependent_node = *it;
+          GraphNode* dependent_node = *it;
           dependent_node->remove_dependency();
         }
       }
@@ -254,7 +243,7 @@ void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
          it != new_pending_tasks.end(); ++it) {
       internal::WorkerPoolTask* task = it->first;
       DCHECK(task);
-      internal::GraphNode* node = it->second;
+      GraphNode* node = it->second;
 
       // Completed tasks should not exist in |new_pending_tasks|.
       DCHECK(!task->HasFinishedRunning());
@@ -347,13 +336,11 @@ void WorkerPool::Inner::Run() {
 
     // Now iterate over all dependents to remove dependency and check
     // if they are ready to run.
-    scoped_ptr<internal::GraphNode> node = running_tasks_.take_and_erase(
-        task.get());
+    scoped_ptr<GraphNode> node = running_tasks_.take_and_erase(task.get());
     if (node) {
-      for (internal::GraphNode::Vector::const_iterator it =
-               node->dependents().begin();
+      for (GraphNode::Vector::const_iterator it = node->dependents().begin();
            it != node->dependents().end(); ++it) {
-        internal::GraphNode* dependent_node = *it;
+        GraphNode* dependent_node = *it;
 
         dependent_node->remove_dependency();
         // Task is ready if it has no dependencies. Add it to
@@ -370,6 +357,15 @@ void WorkerPool::Inner::Run() {
   // We noticed we should exit. Wake up the next worker so it knows it should
   // exit as well (because the Shutdown() code only signals once).
   has_ready_to_run_tasks_cv_.Signal();
+}
+
+WorkerPool::GraphNode::GraphNode()
+    : task_(NULL),
+      priority_(0),
+      num_dependencies_(0) {
+}
+
+WorkerPool::GraphNode::~GraphNode() {
 }
 
 WorkerPool::WorkerPool(size_t num_threads,

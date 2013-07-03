@@ -105,8 +105,6 @@ struct RasterTaskMetadata {
 class CC_EXPORT RasterWorkerPoolClient {
  public:
   virtual bool ShouldForceTasksRequiredForActivationToComplete() const = 0;
-  virtual void DidFinishedRunningTasks() = 0;
-  virtual void DidFinishedRunningTasksRequiredForActivation() = 0;
 
  protected:
   virtual ~RasterWorkerPoolClient() {}
@@ -232,12 +230,31 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   typedef base::hash_map<TaskMapKey,
                          scoped_refptr<internal::WorkerPoolTask> > TaskMap;
 
+  class CC_EXPORT RasterTaskGraph {
+   public:
+    RasterTaskGraph();
+    ~RasterTaskGraph();
+
+    void InsertRasterTask(internal::WorkerPoolTask* raster_task,
+                          const TaskVector& decode_tasks);
+
+   private:
+    friend class RasterWorkerPool;
+
+    TaskGraph graph_;
+    scoped_refptr<internal::WorkerPoolTask> raster_finished_task_;
+    scoped_ptr<GraphNode> raster_finished_node_;
+    unsigned next_priority_;
+
+    DISALLOW_COPY_AND_ASSIGN(RasterTaskGraph);
+  };
+
   RasterWorkerPool(ResourceProvider* resource_provider, size_t num_threads);
 
-  virtual void OnRasterTasksFinished() = 0;
-  virtual void OnRasterTasksRequiredForActivationFinished() = 0;
+  virtual void OnRasterTasksFinished() {}
 
   void SetRasterTasks(RasterTask::Queue* queue);
+  void SetRasterTaskGraph(RasterTaskGraph* graph);
   bool IsRasterTaskRequiredForActivation(
       internal::RasterWorkerPoolTask* task) const;
 
@@ -246,38 +263,9 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   const RasterTask::Queue::TaskVector& raster_tasks() const {
     return raster_tasks_;
   }
-  void set_raster_finished_task(
-      scoped_refptr<internal::WorkerPoolTask> raster_finished_task) {
-    raster_finished_task_ = raster_finished_task;
-  }
-  void set_raster_required_for_activation_finished_task(
-      scoped_refptr<internal::WorkerPoolTask>
-          raster_required_for_activation_finished_task) {
-    raster_required_for_activation_finished_task_ =
-        raster_required_for_activation_finished_task;
-  }
-
-  scoped_refptr<internal::WorkerPoolTask> CreateRasterFinishedTask();
-  scoped_refptr<internal::WorkerPoolTask>
-      CreateRasterRequiredForActivationFinishedTask();
-
-  scoped_ptr<base::Value> ScheduledStateAsValue() const;
-
-  static internal::GraphNode* CreateGraphNodeForTask(
-      internal::WorkerPoolTask* task,
-      unsigned priority,
-      TaskGraph* graph);
-
-  static internal::GraphNode* CreateGraphNodeForRasterTask(
-      internal::WorkerPoolTask* raster_task,
-      const TaskVector& decode_tasks,
-      unsigned priority,
-      TaskGraph* graph);
 
  private:
-  void OnRasterFinished(const internal::WorkerPoolTask* source);
-  void OnRasterRequiredForActivationFinished(
-      const internal::WorkerPoolTask* source);
+  void OnRasterFinished(int64 schedule_raster_tasks_count);
 
   RasterWorkerPoolClient* client_;
   ResourceProvider* resource_provider_;
@@ -286,8 +274,7 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
 
   base::WeakPtrFactory<RasterWorkerPool> weak_ptr_factory_;
   scoped_refptr<internal::WorkerPoolTask> raster_finished_task_;
-  scoped_refptr<internal::WorkerPoolTask>
-      raster_required_for_activation_finished_task_;
+  int64 schedule_raster_tasks_count_;
 };
 
 }  // namespace cc

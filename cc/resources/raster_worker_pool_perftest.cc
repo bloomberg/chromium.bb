@@ -38,12 +38,6 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {
     NOTREACHED();
   }
-  virtual void OnRasterTasksFinished() OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE {
-    NOTREACHED();
-  }
 
   void SetRasterTasks(RasterTask::Queue* queue) {
     RasterWorkerPool::SetRasterTasks(queue);
@@ -62,24 +56,7 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
   }
 
   void BuildTaskGraph() {
-    unsigned priority = 0;
-    TaskGraph graph;
-
-    scoped_refptr<internal::WorkerPoolTask>
-        raster_required_for_activation_finished_task(
-            CreateRasterRequiredForActivationFinishedTask());
-    internal::GraphNode* raster_required_for_activation_finished_node =
-        CreateGraphNodeForTask(
-            raster_required_for_activation_finished_task.get(),
-            priority++,
-            &graph);
-
-    scoped_refptr<internal::WorkerPoolTask> raster_finished_task(
-        CreateRasterFinishedTask());
-    internal::GraphNode* raster_finished_node =
-        CreateGraphNodeForTask(raster_finished_task.get(),
-                               priority++,
-                               &graph);
+    RasterTaskGraph graph;
 
     for (RasterTaskVector::const_iterator it = raster_tasks().begin();
          it != raster_tasks().end(); ++it) {
@@ -89,21 +66,7 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
       DCHECK(perf_it != perf_tasks_.end());
       if (perf_it != perf_tasks_.end()) {
         internal::WorkerPoolTask* perf_task = perf_it->second.get();
-
-        internal::GraphNode* perf_node =
-            CreateGraphNodeForRasterTask(perf_task,
-                                         task->dependencies(),
-                                         priority++,
-                                         &graph);
-
-        if (IsRasterTaskRequiredForActivation(task)) {
-          raster_required_for_activation_finished_node->add_dependency();
-          perf_node->add_dependent(
-              raster_required_for_activation_finished_node);
-        }
-
-        raster_finished_node->add_dependency();
-        perf_node->add_dependent(raster_finished_node);
+        graph.InsertRasterTask(perf_task, task->dependencies());
       }
     }
   }

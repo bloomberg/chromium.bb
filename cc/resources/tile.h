@@ -107,6 +107,18 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
     picture_pile_ = pile;
   }
 
+  // For test only methods.
+  bool HasRasterTaskForTesting() const {
+    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+      if (!managed_state().tile_versions[mode].raster_task_.is_null())
+        return true;
+    }
+    return false;
+  }
+  void ResetRasterTaskForTesting() {
+    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode)
+      managed_state().tile_versions[mode].raster_task_.Reset();
+  }
   RasterMode GetRasterModeForTesting() const {
     return managed_state().raster_mode;
   }
@@ -114,7 +126,6 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
  private:
   // Methods called by by tile manager.
   friend class TileManager;
-  friend class FakeTileManager;
   friend class BinComparator;
   ManagedTileState& managed_state() { return managed_state_; }
   const ManagedTileState& managed_state() const { return managed_state_; }

@@ -570,11 +570,6 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
     return can_activate_;
   }
 
-  virtual bool CanActivatePendingTreeIfNeeded(LayerTreeHostImpl* impl)
-      OVERRIDE {
-    return can_activate_;
-  }
-
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     // We force a second draw here of the first commit before activating
     // the second commit.
