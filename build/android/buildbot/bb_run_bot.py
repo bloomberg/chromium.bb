@@ -78,7 +78,7 @@ def GetEnvironment(host_obj, testing):
   return env
 
 
-def GetCommands(options, bot_config, host_step_script, device_step_script):
+def GetCommands(options, bot_config):
   """Get a formatted list of commands.
 
   Args:
@@ -90,13 +90,13 @@ def GetCommands(options, bot_config, host_step_script, device_step_script):
     list of Command objects.
   """
   property_args = bb_utils.EncodeProperties(options)
-  commands = [[host_step_script,
+  commands = [[bot_config.host_obj.script,
                '--steps=%s' % ','.join(bot_config.host_obj.host_steps)] +
               property_args + (bot_config.host_obj.extra_args or [])]
 
   test_obj = bot_config.test_obj
   if test_obj:
-    run_test_cmd = [device_step_script, '--reboot'] + property_args
+    run_test_cmd = [test_obj.script, '--reboot'] + property_args
     for test in test_obj.tests:
       run_test_cmd.extend(['-f', test])
     if test_obj.extra_args:
@@ -226,10 +226,7 @@ def main(argv):
 
   print 'Using config:', bot_config
 
-  commands = GetCommands(
-      options, bot_config,
-      'build/android/buildbot/bb_host_steps.py',
-      'build/android/buildbot/bb_device_steps.py')
+  commands = GetCommands(options, bot_config)
   for command in commands:
     print 'Will run: ', bb_utils.CommandToString(command)
   print
