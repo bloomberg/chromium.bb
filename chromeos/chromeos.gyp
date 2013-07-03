@@ -26,7 +26,6 @@
         '../url/url.gyp:url_lib',
         'ime/input_method.gyp:gencode',
         'power_manager_proto',
-        'video_activity_update_proto',
       ],
       'defines': [
         'CHROMEOS_IMPLEMENTATION',
@@ -522,7 +521,6 @@
     },
     {
       # Protobuf compiler/generator for power-manager related protocol buffers.
-      # TODO(derat): Remove other protocol buffers in favor of these.
       'target_name': 'power_manager_proto',
       'type': 'static_library',
       'sources': [
@@ -535,20 +533,6 @@
       'variables': {
         'proto_in_dir': '../third_party/cros_system_api/dbus/power_manager',
         'proto_out_dir': 'chromeos/dbus/power_manager',
-      },
-      'includes': ['../build/protoc.gypi'],
-    },
-    {
-      # Protobuf compiler / generator for the VideoActivityUpdate protocol
-      # buffer.
-      'target_name': 'video_activity_update_proto',
-      'type': 'static_library',
-      'sources': [
-        '../third_party/cros_system_api/dbus/video_activity_update.proto',
-      ],
-      'variables': {
-        'proto_in_dir': '../third_party/cros_system_api/dbus/',
-        'proto_out_dir': 'chromeos/dbus',
       },
       'includes': ['../build/protoc.gypi'],
     },

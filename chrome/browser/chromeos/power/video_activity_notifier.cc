@@ -29,8 +29,8 @@ void VideoActivityNotifier::OnVideoDetected(bool is_fullscreen) {
   base::TimeTicks now = base::TimeTicks::Now();
   if (last_notify_time_.is_null() ||
       (now - last_notify_time_).InSeconds() >= kNotifyIntervalSec) {
-    DBusThreadManager::Get()->GetPowerManagerClient()->
-        NotifyVideoActivity(now, is_fullscreen);
+    DBusThreadManager::Get()->GetPowerManagerClient()->NotifyVideoActivity(
+        is_fullscreen);
     last_notify_time_ = now;
   }
 }

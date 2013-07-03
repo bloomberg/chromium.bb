@@ -60,9 +60,7 @@ void FakePowerManagerClient::IncreaseKeyboardBrightness() {
 void FakePowerManagerClient::IncreaseScreenBrightness() {
 }
 
-void FakePowerManagerClient::NotifyVideoActivity(
-    const base::TimeTicks& last_activity_time,
-    bool is_fullscreen) {
+void FakePowerManagerClient::NotifyVideoActivity(bool is_fullscreen) {
 }
 
 void FakePowerManagerClient::DecreaseKeyboardBrightness() {

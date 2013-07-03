@@ -144,9 +144,7 @@ class CHROMEOS_EXPORT PowerManagerClient {
 
   // Notifies the power manager that a video is currently playing. It also
   // includes whether or not the containing window for the video is fullscreen.
-  virtual void NotifyVideoActivity(
-      const base::TimeTicks& last_activity_time,
-      bool is_fullscreen) = 0;
+  virtual void NotifyVideoActivity(bool is_fullscreen) = 0;
 
   // Tells the power manager to begin using |policy|.
   virtual void SetPolicy(
