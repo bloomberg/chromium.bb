@@ -232,6 +232,19 @@ crbug.com/249707 [ Debug ] fast/dom/StyleSheet/gc-rule-children-wrappers.html [ 
 crbug.com/82280 fast/forms/select/listbox-appearance-basic.html [ Failure ]
 crbug.com/82280 fast/forms/disabled-select-change-index.html [ ImageOnlyFailure Pass ]
 
+crbug.com/254971 [ Mac ] fast/css/input-search-padding.html [ ImageOnlyFailure Pass ]
+crbug.com/254971 [ Mac ] fast/css/text-overflow-input.html [ ImageOnlyFailure Pass ]
+crbug.com/254971 [ Mac ] fast/forms/control-restrict-line-height.html [ ImageOnlyFailure Pass ]
+crbug.com/254971 [ Mac ] fast/forms/placeholder-position.html [ ImageOnlyFailure Pass ]
+crbug.com/254971 [ Mac ] fast/forms/placeholder-pseudo-style.html [ ImageOnlyFailure Pass ]
+crbug.com/254971 [ Mac ] fast/forms/search-cancel-button-style-sharing.html [ ImageOnlyFailure Pass ]
+crbug.com/254971 [ Mac ] fast/forms/search-display-none-cancel-button.html [ ImageOnlyFailure Pass ]
+crbug.com/254971 [ Mac ] fast/forms/search-vertical-alignment.html [ ImageOnlyFailure Pass ]
+crbug.com/254971 fast/forms/search/search-appearance-basic.html [ Failure ImageOnlyFailure Pass ]
+crbug.com/254971 [ Mac ] fast/forms/searchfield-heights.html [ ImageOnlyFailure Pass ]
+crbug.com/254971 [ Mac ] fast/repaint/search-field-cancel.html [ ImageOnlyFailure Pass ]
+crbug.com/254971 [ Mac ] fast/speech/input-appearance-searchandspeech.html [ ImageOnlyFailure Pass ]
+
 crbug.com/239554 http/tests/security/frameNavigation/opener.html [ Pass Timeout ]
 
 crbug.com/246105 [ Release ] fast/events/scale-and-scroll-body.html [ ImageOnlyFailure ]

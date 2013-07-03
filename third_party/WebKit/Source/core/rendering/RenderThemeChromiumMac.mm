@@ -664,10 +664,10 @@ NSControlSize RenderThemeChromiumMac::controlSizeForFont(RenderStyle* style) con
     return NSMiniControlSize;
 }
 
-// We don't use controlSizeForFont() for cancel buttons because it needs to fit
+// We don't use controlSizeForFont() for search field decorations because it needs to fit
 // into the search field. The font size will already be modified by
 // setFontFromControlSize() called on the search field.
-static NSControlSize cancelButtonControlSizeForFont(RenderStyle* style)
+static NSControlSize searchFieldControlSizeForFont(RenderStyle* style)
 {
     int fontSize = style->fontSize();
     if (fontSize >= 13)
@@ -1576,7 +1576,7 @@ bool RenderThemeChromiumMac::paintSearchField(RenderObject* o, const PaintInfo& 
 
     NSSearchFieldCell* search = this->search();
     setSearchCellState(o, r);
-    [search setControlSize:controlSizeForFont(o->style())];
+    [search setControlSize:searchFieldControlSizeForFont(o->style())];
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
@@ -1615,7 +1615,7 @@ void RenderThemeChromiumMac::setSearchCellState(RenderObject* o, const IntRect&)
 
 const IntSize* RenderThemeChromiumMac::searchFieldSizes() const
 {
-    static const IntSize sizes[3] = { IntSize(0, 22), IntSize(0, 19), IntSize(0, 17) };
+    static const IntSize sizes[3] = { IntSize(0, 22), IntSize(0, 19), IntSize(0, 15) };
     return sizes;
 }
 
@@ -1635,11 +1635,12 @@ void RenderThemeChromiumMac::setSearchFieldSize(RenderStyle* style) const
     setSizeFromFont(style, searchFieldSizes());
 }
 
+const int searchFieldBorderWidth = 2;
 void RenderThemeChromiumMac::adjustSearchFieldStyle(RenderStyle* style, Element*) const
 {
     // Override border.
     style->resetBorder();
-    const short borderWidth = 2 * style->effectiveZoom();
+    const short borderWidth = searchFieldBorderWidth * style->effectiveZoom();
     style->setBorderLeftWidth(borderWidth);
     style->setBorderLeftStyle(INSET);
     style->setBorderRightWidth(borderWidth);
@@ -1739,16 +1740,17 @@ void RenderThemeChromiumMac::adjustSearchFieldCancelButtonStyle(RenderStyle* sty
 
 const IntSize* RenderThemeChromiumMac::resultsButtonSizes() const
 {
-    static const IntSize sizes[3] = { IntSize(16, 13), IntSize(16, 11), IntSize(16, 9) };
+    static const IntSize sizes[3] = { IntSize(15, 14), IntSize(16, 13), IntSize(14, 11) };
     return sizes;
 }
 
-const int emptyResultsOffset = 9;
 void RenderThemeChromiumMac::adjustSearchFieldDecorationStyle(RenderStyle* style, Element*) const
 {
-    IntSize size = sizeForSystemFont(style, resultsButtonSizes());
-    style->setWidth(Length(size.width() - emptyResultsOffset, Fixed));
-    style->setHeight(Length(size.height(), Fixed));
+    NSControlSize controlSize = controlSizeForSystemFont(style);
+    IntSize searchFieldSize = searchFieldSizes()[controlSize];
+    int width = searchFieldSize.height() / 2 - searchFieldBorderWidth - searchFieldHorizontalPaddings()[controlSize];
+    style->setWidth(Length(width, Fixed));
+    style->setHeight(Length(0, Fixed));
     style->setBoxShadow(nullptr);
 }
 
@@ -1773,21 +1775,29 @@ bool RenderThemeChromiumMac::paintSearchFieldResultsDecoration(RenderObject* o, 
     if (!input->renderer()->isBox())
         return false;
 
+    GraphicsContextStateSaver stateSaver(*paintInfo.context);
+
+    float zoomLevel = o->style()->effectiveZoom();
+    FloatRect unzoomedRect(r);
+    if (zoomLevel != 1) {
+        unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
+        unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
+        paintInfo.context->translate(unzoomedRect.x(), unzoomedRect.y());
+        paintInfo.context->scale(FloatSize(zoomLevel, zoomLevel));
+        paintInfo.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
+    }
+
     LocalCurrentGraphicsContext localContext(paintInfo.context);
 
     NSSearchFieldCell* search = this->search();
     setSearchCellState(input->renderer(), r);
-    [search setControlSize:controlSizeForFont(o->style())];
-
+    [search setControlSize:searchFieldControlSizeForFont(o->style())];
     if ([search searchMenuTemplate] != nil)
         [search setSearchMenuTemplate:nil];
 
     updateActiveState([search searchButtonCell], o);
 
-    FloatRect localBounds = [search searchButtonRectForBounds:NSRect(input->renderBox()->pixelSnappedBorderBoxRect())];
-    localBounds = convertToPaintingRect(input->renderer(), o, localBounds, r);
-
-    [[search searchButtonCell] drawWithFrame:localBounds inView:documentViewFor(o)];
+    [[search searchButtonCell] drawWithFrame:unzoomedRect inView:documentViewFor(o)];
     [[search searchButtonCell] setControlView:nil];
     return false;
 }
