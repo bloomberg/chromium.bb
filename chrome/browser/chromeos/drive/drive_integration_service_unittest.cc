@@ -24,12 +24,6 @@ class DriveIntegrationServiceTest : public testing::Test {
         new DummyFileSystem));
   }
 
-  virtual void TearDown() OVERRIDE {
-    integration_service_.reset();
-    google_apis::test_util::RunBlockingPoolTask();
-    profile_.reset();
-  }
-
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;

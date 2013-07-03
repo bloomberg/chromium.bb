@@ -52,13 +52,6 @@ class WebkitFileStreamReaderImplTest : public ::testing::Test {
     fake_file_system_->Initialize();
   }
 
-  virtual void TearDown() OVERRIDE {
-    fake_file_system_.reset();
-    fake_drive_service_.reset();
-
-    worker_thread_.reset();
-  }
-
   FileSystemInterface* GetFileSystem() {
     return fake_file_system_.get();
   }

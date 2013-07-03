@@ -17,16 +17,10 @@ namespace internal {
 
 class FileCacheMetadataTest : public testing::Test {
  public:
-  FileCacheMetadataTest() {}
-
   virtual void SetUp() OVERRIDE {
     // Create cache directories.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     metadata_.reset(new FileCacheMetadata(NULL));
-  }
-
-  virtual void TearDown() OVERRIDE {
-    metadata_.reset();
   }
 
  protected:

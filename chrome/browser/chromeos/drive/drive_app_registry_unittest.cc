@@ -20,7 +20,6 @@ class DriveAppRegistryTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
 
-    // The fake object will be manually deleted in TearDown().
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 

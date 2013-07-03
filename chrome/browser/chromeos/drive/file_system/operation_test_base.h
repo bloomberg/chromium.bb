@@ -71,7 +71,6 @@ class OperationTestBase : public testing::Test {
 
   // testing::Test overrides.
   virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
 
   // Returns the path of the temporary directory for putting test files.
   base::FilePath temp_dir() const { return temp_dir_.path(); }

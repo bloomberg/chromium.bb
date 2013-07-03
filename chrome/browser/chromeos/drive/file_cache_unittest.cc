@@ -909,10 +909,6 @@ class FileCacheTest : public testing::Test {
     ASSERT_TRUE(cache_->Initialize());
   }
 
-  virtual void TearDown() OVERRIDE {
-    cache_.reset();
-  }
-
   static bool ImportOldDB(FileCache* cache, const base::FilePath& old_db_path) {
     return cache->ImportOldDB(old_db_path);
   }

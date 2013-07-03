@@ -292,10 +292,6 @@ class DriveUploaderTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() OVERRIDE {
-    ASSERT_TRUE(temp_dir_.Delete());
-  }
-
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;

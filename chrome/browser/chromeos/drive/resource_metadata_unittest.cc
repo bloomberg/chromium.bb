@@ -870,9 +870,6 @@ class ResourceMetadataTest : public testing::Test {
     SetUpEntries(resource_metadata_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
-  }
-
   base::ScopedTempDir temp_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>

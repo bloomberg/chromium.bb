@@ -111,17 +111,6 @@ void OperationTestBase::SetUp() {
   ASSERT_EQ(FILE_ERROR_OK, error);
 }
 
-void OperationTestBase::TearDown() {
-  cache_.reset();
-  fake_free_disk_space_getter_.reset();
-  metadata_.reset();
-  scheduler_.reset();
-  fake_drive_service_.reset();
-  profile_.reset();
-
-  blocking_task_runner_ = NULL;
-}
-
 FileError OperationTestBase::GetLocalResourceEntry(const base::FilePath& path,
                                                    ResourceEntry* entry) {
   FileError error = FILE_ERROR_FAILED;

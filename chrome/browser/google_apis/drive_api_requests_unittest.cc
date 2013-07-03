@@ -100,12 +100,6 @@ class DriveApiRequestsTest : public testing::Test {
     content_length_ = 0;
   }
 
-  virtual void TearDown() OVERRIDE {
-    EXPECT_TRUE(test_server_.ShutdownAndWaitUntilComplete());
-    request_context_getter_ = NULL;
-    ResetExpectedResponse();
-  }
-
   content::TestBrowserThreadBundle thread_bundle_;
   net::test_server::EmbeddedTestServer test_server_;
   scoped_ptr<TestingProfile> profile_;

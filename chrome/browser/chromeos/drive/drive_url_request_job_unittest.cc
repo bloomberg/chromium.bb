@@ -129,16 +129,6 @@ class DriveURLRequestJobTest : public testing::Test {
     test_delegate_.reset(new TestDelegate);
   }
 
-  virtual void TearDown() OVERRIDE {
-    test_delegate_.reset();
-    url_request_context_.reset();
-    test_url_request_job_factory_.reset();
-    test_network_delegate_.reset();
-
-    fake_file_system_.reset();
-    fake_drive_service_.reset();
-  }
-
   FileSystemInterface* GetFileSystem() {
     return fake_file_system_.get();
   }

@@ -51,10 +51,6 @@ class ChangeListProcessorTest : public testing::Test {
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
   }
 
-  virtual void TearDown() OVERRIDE {
-    metadata_.reset();
-  }
-
   // Parses a json file at |test_data_path| relative to Chrome test directory
   // into a ScopedVector<drive::internal::ChangeList>.
   ScopedVector<ChangeList> ParseChangeList(const std::string& test_data_path) {

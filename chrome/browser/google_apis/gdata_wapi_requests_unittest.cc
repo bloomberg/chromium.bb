@@ -93,11 +93,6 @@ class GDataWapiRequestsTest : public testing::Test {
     content_length_ = 0;
   }
 
-  virtual void TearDown() OVERRIDE {
-    EXPECT_TRUE(test_server_.ShutdownAndWaitUntilComplete());
-    request_context_getter_ = NULL;
-  }
-
  protected:
   // Handles a request for fetching a resource feed.
   scoped_ptr<net::test_server::HttpResponse> HandleResourceFeedRequest(

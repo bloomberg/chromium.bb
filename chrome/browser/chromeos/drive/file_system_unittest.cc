@@ -83,7 +83,6 @@ class FileSystemTest : public testing::Test {
     fake_network_change_notifier_.reset(
         new test_util::FakeNetworkChangeNotifier);
 
-    // The fake object will be manually deleted in TearDown().
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json");
@@ -142,16 +141,6 @@ class FileSystemTest : public testing::Test {
         base::TimeDelta::FromSeconds(0));
 
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
-  }
-
-  virtual void TearDown() OVERRIDE {
-    ASSERT_TRUE(file_system_);
-    file_system_.reset();
-    scheduler_.reset();
-    fake_drive_service_.reset();
-    cache_.reset();
-    fake_network_change_notifier_.reset();
-    profile_.reset();
   }
 
   // Loads the full resource list via FakeDriveService.
@@ -308,16 +297,17 @@ class FileSystemTest : public testing::Test {
   scoped_ptr<test_util::FakeNetworkChangeNotifier>
       fake_network_change_notifier_;
 
+  scoped_ptr<FakeDriveService> fake_drive_service_;
+  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
+  scoped_ptr<JobScheduler> scheduler_;
+  scoped_ptr<MockDirectoryChangeObserver> mock_directory_observer_;
+
   scoped_ptr<internal::ResourceMetadataStorage,
              test_util::DestroyHelperForTests> metadata_storage_;
   scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<FileSystem> file_system_;
-  scoped_ptr<FakeDriveService> fake_drive_service_;
-  scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
-  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
-  scoped_ptr<MockDirectoryChangeObserver> mock_directory_observer_;
+  scoped_ptr<FileSystem> file_system_;
 };
 
 TEST_F(FileSystemTest, DuplicatedAsyncInitialization) {

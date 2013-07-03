@@ -18,11 +18,6 @@ class MoveOperationTest : public OperationTestBase {
    operation_.reset(new MoveOperation(observer(), scheduler(), metadata()));
  }
 
- virtual void TearDown() OVERRIDE {
-   operation_.reset();
-   OperationTestBase::TearDown();
- }
-
  scoped_ptr<MoveOperation> operation_;
 };
 

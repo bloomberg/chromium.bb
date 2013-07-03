@@ -109,15 +109,6 @@ class JobSchedulerTest : public testing::Test {
     scheduler_->SetDisableThrottling(true);
   }
 
-  virtual void TearDown() OVERRIDE {
-    // The scheduler should be deleted before NetworkLibrary, as it
-    // registers itself as observer of NetworkLibrary.
-    scheduler_.reset();
-    base::RunLoop().RunUntilIdle();
-    fake_drive_service_.reset();
-    fake_network_change_notifier_.reset();
-  }
-
  protected:
   // Sets up FakeNetworkChangeNotifier as if it's connected to a network with
   // the specified connection type.

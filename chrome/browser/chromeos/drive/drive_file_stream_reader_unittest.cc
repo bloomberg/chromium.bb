@@ -51,10 +51,6 @@ class LocalReaderProxyTest : public ::testing::Test {
     ASSERT_TRUE(worker_thread_->Start());
   }
 
-  virtual void TearDown() OVERRIDE {
-    worker_thread_.reset();
-  }
-
   content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir temp_dir_;

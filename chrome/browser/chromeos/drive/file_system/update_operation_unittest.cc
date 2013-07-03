@@ -25,11 +25,6 @@ class UpdateOperationTest : public OperationTestBase {
                                         cache()));
  }
 
- virtual void TearDown() OVERRIDE {
-   operation_.reset();
-   OperationTestBase::TearDown();
- }
-
  scoped_ptr<UpdateOperation> operation_;
 };
 

@@ -59,11 +59,6 @@ class BaseRequestsServerTest : public testing::Test {
                    base::Unretained(&http_request_)));
   }
 
-  virtual void TearDown() OVERRIDE {
-    EXPECT_TRUE(test_server_.ShutdownAndWaitUntilComplete());
-    request_context_getter_ = NULL;
-  }
-
   // Returns a temporary file path suitable for storing the cache file.
   base::FilePath GetTestCachedFilePath(const base::FilePath& file_name) {
     return profile_->GetPath().Append(file_name);

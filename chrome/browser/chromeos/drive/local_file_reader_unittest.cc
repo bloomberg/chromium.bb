@@ -44,20 +44,12 @@ class LocalFileReaderAdapter {
 
 class LocalFileReaderTest : public ::testing::Test {
  protected:
-  LocalFileReaderTest() {
-  }
-
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     worker_thread_.reset(new base::Thread("LocalFileReaderTest"));
     ASSERT_TRUE(worker_thread_->Start());
     file_reader_.reset(
         new LocalFileReader(worker_thread_->message_loop_proxy()));
-  }
-
-  virtual void TearDown() OVERRIDE {
-    file_reader_.reset();
-    worker_thread_.reset();
   }
 
   base::MessageLoop message_loop_;
