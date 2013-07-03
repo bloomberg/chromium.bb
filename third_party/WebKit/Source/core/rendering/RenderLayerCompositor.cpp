@@ -1574,16 +1574,14 @@ CompositingReasons RenderLayerCompositor::directReasonsForCompositing(const Rend
     if (requiresCompositingForTransform(renderer))
         directReasons |= CompositingReason3DTransform;
 
+    // Only zero or one of the following conditions will be true for a given RenderLayer.
     if (requiresCompositingForVideo(renderer))
         directReasons |= CompositingReasonVideo;
-
-    if (requiresCompositingForCanvas(renderer))
+    else if (requiresCompositingForCanvas(renderer))
         directReasons |= CompositingReasonCanvas;
-
-    if (requiresCompositingForPlugin(renderer))
+    else if (requiresCompositingForPlugin(renderer))
         directReasons |= CompositingReasonPlugin;
-
-    if (requiresCompositingForFrame(renderer))
+    else if (requiresCompositingForFrame(renderer))
         directReasons |= CompositingReasonIFrame;
     
     if (requiresCompositingForBackfaceVisibilityHidden(renderer))
