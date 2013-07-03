@@ -12,6 +12,7 @@
 #include "chrome/browser/android/dev_tools_server.h"
 #include "chrome/browser/android/favicon_helper.h"
 #include "chrome/browser/android/intent_helper.h"
+#include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
@@ -64,6 +65,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "IntentHelper", RegisterIntentHelper },
   { "JavascriptAppModalDialog",
     JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog },
+  { "MostVisitedSites", RegisterMostVisitedSites },
   { "NavigationPopup", NavigationPopup::RegisterNavigationPopup },
   { "PersonalDataManagerAndroid",
     autofill::PersonalDataManagerAndroid::Register },
@@ -86,5 +88,5 @@ bool RegisterJni(JNIEnv* env) {
                                arraysize(kChromeRegisteredMethods));
 }
 
-} // namespace android
-} // namespace chrome
+}  // namespace android
+}  // namespace chrome
