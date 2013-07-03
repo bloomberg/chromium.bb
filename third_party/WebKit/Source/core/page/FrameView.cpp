@@ -2035,7 +2035,7 @@ void FrameView::unscheduleRelayout()
 
 void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
-    for (RefPtr<Frame> frame = m_frame; frame; frame = frame->tree()->traverseNext()) {
+    for (Frame* frame = m_frame.get(); frame; frame = frame->tree()->traverseNext()) {
         frame->view()->serviceScrollAnimations();
         frame->animation()->serviceAnimations();
         if (RuntimeEnabledFeatures::webAnimationsEnabled())
