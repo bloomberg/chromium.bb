@@ -118,9 +118,9 @@ void MediaPlayerManagerImpl::FullscreenPlayerSeek(int msec) {
 void MediaPlayerManagerImpl::ExitFullscreen(bool release_media_player) {
   Send(new MediaPlayerMsg_DidExitFullscreen(
       routing_id(), fullscreen_player_id_));
-  fullscreen_player_id_ = -1;
   video_view_.reset();
   MediaPlayerAndroid* player = GetFullscreenPlayer();
+  fullscreen_player_id_ = -1;
   if (!player)
     return;
   if (release_media_player)

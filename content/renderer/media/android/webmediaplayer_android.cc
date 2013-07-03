@@ -292,7 +292,8 @@ void WebMediaPlayerAndroid::DidLoadMediaInfo(
 
 void WebMediaPlayerAndroid::play() {
 #if defined(GOOGLE_TV)
-  if (hasVideo() && needs_external_surface_) {
+  if (hasVideo() && needs_external_surface_ &&
+      !manager_->IsInFullscreen(frame_)) {
     DCHECK(!needs_establish_peer_);
     proxy_->RequestExternalSurface(player_id_, last_computed_rect_);
   }
@@ -624,7 +625,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
       // Use H/W surface for MSE as the content is protected.
       media_source_delegate_) {
     needs_external_surface_ = true;
-    if (!paused())
+    if (!paused() && !manager_->IsInFullscreen(frame_))
       proxy_->RequestExternalSurface(player_id_, last_computed_rect_);
   } else if (stream_texture_factory_ && !stream_texture_proxy_) {
     // Do deferred stream texture creation finally.
@@ -666,6 +667,11 @@ void WebMediaPlayerAndroid::OnDidExitFullscreen() {
   // so reconnect our surface texture for embedded playback.
   if (!paused() && needs_establish_peer_)
     EstablishSurfaceTexturePeer();
+
+#if defined(GOOGLE_TV)
+  if (!paused() && needs_external_surface_)
+    proxy_->RequestExternalSurface(player_id_, last_computed_rect_);
+#endif
 
   frame_->view()->willExitFullScreen();
   frame_->view()->didExitFullScreen();
