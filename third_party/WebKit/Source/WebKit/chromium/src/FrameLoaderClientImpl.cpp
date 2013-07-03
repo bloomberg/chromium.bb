@@ -733,45 +733,19 @@ void FrameLoaderClientImpl::dispatchDidLayout(LayoutMilestones milestones)
         m_webFrame->client()->didFirstVisuallyNonEmptyLayout(m_webFrame);
 }
 
-PolicyAction FrameLoaderClientImpl::decidePolicyForNavigationAction(
-    const NavigationAction& action,
-    const ResourceRequest& request) {
+NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, NavigationType type, NavigationPolicy policy, bool isRedirect)
+{
 
-    // It is valid for this function to be invoked in code paths where the
-    // webview is closed.
-    // The null check here is to fix a crash that seems strange
-    // (see - https://bugs.webkit.org/show_bug.cgi?id=23554).
-    if (m_webFrame->client() && !request.url().isNull()) {
-        NavigationPolicy policy = NavigationPolicyCurrentTab;
-        action.specifiesNavigationPolicy(&policy);
-        WebNavigationPolicy navigationPolicy = static_cast<WebNavigationPolicy>(policy);
+    if (!m_webFrame->client())
+        return NavigationPolicyIgnore;
 
-        // Give the delegate a chance to change the navigation policy.
-        const WebDataSourceImpl* ds = m_webFrame->provisionalDataSourceImpl();
-        if (ds) {
-            KURL url = ds->request().url();
-            ASSERT(!url.protocolIs(backForwardNavigationScheme));
+    if (!m_webFrame->provisionalDataSource())
+        return policy;
 
-            bool isRedirect = ds->isRedirect();
-
-            WebNavigationType webnavType =
-                WebDataSourceImpl::toWebNavigationType(action.type());
-
-            navigationPolicy = m_webFrame->client()->decidePolicyForNavigation(
-                m_webFrame, ds->request(), webnavType, navigationPolicy, isRedirect);
-        }
-
-        if (navigationPolicy == WebNavigationPolicyCurrentTab)
-            return PolicyUse;
-        else if (navigationPolicy == WebNavigationPolicyDownload)
-            return PolicyDownload;
-        else if (navigationPolicy != WebNavigationPolicyIgnore) {
-                WrappedResourceRequest webreq(request);
-                m_webFrame->client()->loadURLExternally(m_webFrame, webreq, navigationPolicy);
-        }
-    }
-
-    return PolicyIgnore;
+    WrappedResourceRequest webRequest(request);
+    WebNavigationPolicy webPolicy = m_webFrame->client()->decidePolicyForNavigation(
+        m_webFrame, webRequest, WebDataSourceImpl::toWebNavigationType(type), static_cast<WebNavigationPolicy>(policy), isRedirect);
+    return static_cast<NavigationPolicy>(webPolicy);
 }
 
 void FrameLoaderClientImpl::dispatchUnableToImplementPolicy(const ResourceError& error)
@@ -824,14 +798,12 @@ void FrameLoaderClientImpl::postProgressFinishedNotification()
         webview->client()->didStopLoading();
 }
 
-// Creates a new connection and begins downloading from that (contrast this
-// with |download|).
-void FrameLoaderClientImpl::startDownload(const ResourceRequest& request, const String& suggestedName)
+void FrameLoaderClientImpl::loadURLExternally(const ResourceRequest& request, NavigationPolicy policy, const String& suggestedName)
 {
     if (m_webFrame->client()) {
         WrappedResourceRequest webreq(request);
         m_webFrame->client()->loadURLExternally(
-            m_webFrame, webreq, WebNavigationPolicyDownload, suggestedName);
+            m_webFrame, webreq, static_cast<WebNavigationPolicy>(policy), suggestedName);
     }
 }
 

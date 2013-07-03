@@ -213,7 +213,7 @@ public:
     virtual void dispatchDidFinishLoad() OVERRIDE { }
     virtual void dispatchDidLayout(LayoutMilestones) OVERRIDE { }
 
-    virtual PolicyAction decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&) OVERRIDE;
+    virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, NavigationType, NavigationPolicy, bool isRedirect) OVERRIDE;
 
     virtual void dispatchUnableToImplementPolicy(const ResourceError&) OVERRIDE { }
 
@@ -224,7 +224,7 @@ public:
     virtual void postProgressEstimateChangedNotification() OVERRIDE { }
     virtual void postProgressFinishedNotification() OVERRIDE { }
 
-    virtual void startDownload(const ResourceRequest&, const String& suggestedName = String()) OVERRIDE { UNUSED_PARAM(suggestedName); }
+    virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& = String()) OVERRIDE { }
 
     virtual void didReceiveDocumentData(const char*, int) OVERRIDE { }
 

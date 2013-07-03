@@ -1896,7 +1896,7 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
     m_documentLoader->setTriggeringAction(action);
 
     const ResourceRequest& request = action.resourceRequest();
-    if (!m_documentLoader->shouldContinueForNavigationPolicy(request))
+    if (!m_documentLoader->shouldContinueForNavigationPolicy(request, DocumentLoader::PolicyCheckStandard))
         return;
 
     // If we have a provisional request for a different document, a fragment scroll should cancel it.
@@ -2021,7 +2021,7 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
         // subsequent activity by the frame which the parent frame isn't
         // supposed to learn. For example, if the child frame navigated to
         // a new URL, the parent frame shouldn't learn the URL.
-        shouldContinue = m_policyDocumentLoader->shouldContinueForNavigationPolicy(m_policyDocumentLoader->request());
+        shouldContinue = m_policyDocumentLoader->shouldContinueForNavigationPolicy(m_policyDocumentLoader->request(), DocumentLoader::PolicyCheckStandard);
     }
 
     // Two reasons we can't continue:
@@ -2097,7 +2097,7 @@ void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formStat
     action.specifiesNavigationPolicy(&navigationPolicy);
 
     if (navigationPolicy == NavigationPolicyDownload) {
-        m_client->startDownload(action.resourceRequest());
+        m_client->loadURLExternally(action.resourceRequest(), navigationPolicy);
         return;
     }
 

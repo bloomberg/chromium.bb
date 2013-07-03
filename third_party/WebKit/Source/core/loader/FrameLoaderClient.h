@@ -32,6 +32,7 @@
 
 #include "core/dom/IconURL.h"
 #include "core/loader/FrameLoaderTypes.h"
+#include "core/loader/NavigationPolicy.h"
 #include "core/page/LayoutMilestones.h"
 #include "core/platform/network/ResourceLoadPriority.h"
 #include <wtf/Forward.h>
@@ -68,7 +69,6 @@ namespace WebCore {
     class IntSize;
     class KURL;
     class MessageEvent;
-    class NavigationAction;
     class Page;
     class PluginView;
     class ResourceError;
@@ -117,7 +117,7 @@ namespace WebCore {
 
         virtual void dispatchDidLayout(LayoutMilestones) { }
 
-        virtual PolicyAction decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&) = 0;
+        virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, NavigationType, NavigationPolicy, bool isRedirect) = 0;
 
         virtual void dispatchUnableToImplementPolicy(const ResourceError&) = 0;
 
@@ -131,7 +131,7 @@ namespace WebCore {
         virtual void postProgressEstimateChangedNotification() = 0;
         virtual void postProgressFinishedNotification() = 0;
 
-        virtual void startDownload(const ResourceRequest&, const String& suggestedName = String()) = 0;
+        virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& suggestedName = String()) = 0;
 
         virtual void didReceiveDocumentData(const char*, int) = 0;
 

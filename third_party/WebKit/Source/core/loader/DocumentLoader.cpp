@@ -399,7 +399,7 @@ void DocumentLoader::handleSubstituteDataLoadSoon()
         handleSubstituteDataLoadNow(0);
 }
 
-bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request)
+bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, PolicyCheckLoadType policyCheckLoadType)
 {
     NavigationAction action = triggeringAction();
     if (action.isEmpty()) {
@@ -424,13 +424,22 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
     if (m_frame->ownerElement() && !m_frame->ownerElement()->document()->contentSecurityPolicy()->allowChildFrameFromSource(request.url()))
         return false;
 
-    PolicyAction policy = frameLoader()->client()->decidePolicyForNavigationAction(action, request);
-    if (policy == PolicyDownload) {
-        ResourceRequest mutableRequest(request);
+    if (request.isNull())
+        return false;
+
+    NavigationPolicy policy = NavigationPolicyCurrentTab;
+    action.specifiesNavigationPolicy(&policy);
+    policy = frameLoader()->client()->decidePolicyForNavigation(request, action.type(), policy, policyCheckLoadType == PolicyCheckRedirect);
+    if (policy == NavigationPolicyCurrentTab)
+        return true;
+    if (policy == NavigationPolicyIgnore)
+        return false;
+
+    ResourceRequest mutableRequest(request);
+    if (policy == NavigationPolicyDownload)
         frameLoader()->setOriginalURLForDownloadRequest(mutableRequest);
-        frameLoader()->client()->startDownload(mutableRequest);
-    }
-    return policy == PolicyUse;
+    frameLoader()->client()->loadURLExternally(mutableRequest, policy);
+    return false;
 }
 
 void DocumentLoader::redirectReceived(CachedResource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
@@ -491,7 +500,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
         return;
 
     frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
-    if (!shouldContinueForNavigationPolicy(newRequest))
+    if (!shouldContinueForNavigationPolicy(newRequest, PolicyCheckRedirect))
         stopLoadingForPolicyChange();
 }
 

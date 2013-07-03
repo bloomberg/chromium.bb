@@ -577,7 +577,7 @@ void HTMLAnchorElement::handleClick(Event* event)
                 request.setHTTPReferrer(referrer);
         }
 
-        frame->loader()->client()->startDownload(request, fastGetAttribute(downloadAttr));
+        frame->loader()->client()->loadURLExternally(request, NavigationPolicyDownload, fastGetAttribute(downloadAttr));
     } else
         frame->loader()->urlSelected(kurl, target(), event, false, hasRel(RelationNoReferrer) ? NeverSendReferrer : MaybeSendReferrer);
 

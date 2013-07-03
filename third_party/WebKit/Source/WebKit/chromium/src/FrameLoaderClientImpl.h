@@ -32,7 +32,6 @@
 #ifndef FrameLoaderClientImpl_h
 #define FrameLoaderClientImpl_h
 
-#include "WebNavigationPolicy.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
@@ -96,7 +95,7 @@ public:
     virtual void dispatchDidFinishDocumentLoad();
     virtual void dispatchDidFinishLoad();
     virtual void dispatchDidLayout(WebCore::LayoutMilestones);
-    virtual WebCore::PolicyAction decidePolicyForNavigationAction(const WebCore::NavigationAction& action, const WebCore::ResourceRequest& request);
+    virtual WebCore::NavigationPolicy decidePolicyForNavigation(const WebCore::ResourceRequest&, WebCore::NavigationType, WebCore::NavigationPolicy, bool isRedirect);
     virtual void dispatchUnableToImplementPolicy(const WebCore::ResourceError&);
     virtual void dispatchWillRequestResource(WebCore::CachedResourceRequest*);
     virtual void dispatchWillSendSubmitEvent(PassRefPtr<WebCore::FormState>);
@@ -104,7 +103,7 @@ public:
     virtual void postProgressStartedNotification();
     virtual void postProgressEstimateChangedNotification();
     virtual void postProgressFinishedNotification();
-    virtual void startDownload(const WebCore::ResourceRequest&, const String& suggestedName = String());
+    virtual void loadURLExternally(const WebCore::ResourceRequest&, WebCore::NavigationPolicy, const String& suggestedName = String());
     virtual void didReceiveDocumentData(const char*, int);
     virtual bool shouldGoToHistoryItem(WebCore::HistoryItem*) const;
     virtual bool shouldStopLoadingForHistoryItem(WebCore::HistoryItem*) const;
@@ -171,11 +170,6 @@ public:
     virtual void dispatchWillInsertBody() OVERRIDE;
 
 private:
-    // Given a NavigationAction, determine the associated WebNavigationPolicy.
-    // For example, a middle click means "open in background tab".
-    static bool actionSpecifiesNavigationPolicy(
-        const WebCore::NavigationAction& action, WebNavigationPolicy* policy);
-
     PassOwnPtr<WebPluginLoadObserver> pluginLoadObserver();
 
     // The WebFrame that owns this object and manages its lifetime. Therefore,

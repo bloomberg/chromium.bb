@@ -126,7 +126,11 @@ namespace WebCore {
         bool scheduleArchiveLoad(CachedResource*, const ResourceRequest&);
         void cancelPendingSubstituteLoad(ResourceLoader*);
 
-        bool shouldContinueForNavigationPolicy(const ResourceRequest&);
+        enum PolicyCheckLoadType {
+            PolicyCheckStandard,
+            PolicyCheckRedirect
+        };
+        bool shouldContinueForNavigationPolicy(const ResourceRequest&, PolicyCheckLoadType);
         const NavigationAction& triggeringAction() const { return m_triggeringAction; }
         void setTriggeringAction(const NavigationAction& action) { m_triggeringAction = action; }
 

@@ -91,9 +91,9 @@ String EmptyChromeClient::acceptLanguages()
     return String();
 }
 
-PolicyAction EmptyFrameLoaderClient::decidePolicyForNavigationAction(const NavigationAction&, const ResourceRequest&)
+NavigationPolicy EmptyFrameLoaderClient::decidePolicyForNavigation(const ResourceRequest&, NavigationType, NavigationPolicy, bool)
 {
-    return PolicyUse;
+    return NavigationPolicyIgnore;
 }
 
 void EmptyFrameLoaderClient::dispatchWillSendSubmitEvent(PassRefPtr<FormState>)
