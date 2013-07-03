@@ -168,9 +168,6 @@ bool IsPrivilegedURLForInstant(const GURL& url);
 // InstantLoader.
 int GetInstantLoaderStalenessTimeoutSec();
 
-// Returns true if |contents| corresponds to an Instant overlay.
-bool IsInstantOverlay(const content::WebContents* contents);
-
 // Returns true if |contents| corresponds to a preloaded instant extended NTP.
 bool IsPreloadedInstantExtendedNTP(const content::WebContents* contents);
 

@@ -566,16 +566,6 @@ int GetInstantLoaderStalenessTimeoutSec() {
   return timeout_sec;
 }
 
-bool IsInstantOverlay(const content::WebContents* contents) {
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->instant_controller() &&
-        it->instant_controller()->instant()->GetOverlayContents() == contents) {
-      return true;
-    }
-  }
-  return false;
-}
-
 bool IsPreloadedInstantExtendedNTP(const content::WebContents* contents) {
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     if (it->instant_controller() &&

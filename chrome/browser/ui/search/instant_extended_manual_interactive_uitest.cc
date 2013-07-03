@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/instant_ntp.h"
-#include "chrome/browser/ui/search/instant_overlay.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -60,7 +59,7 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
         testing::UnitTest::GetInstance()->current_test_info();
     ASSERT_TRUE(StartsWithASCII(test_info->name(), "MANUAL_", true) ||
                 StartsWithASCII(test_info->name(), "DISABLED_", true));
-    // Make IsOffline() return false so we don't try to use the local overlay.
+    // Make IsOffline() return false so we don't try to use the local NTP.
     disable_network_change_notifier_.reset(
         new net::NetworkChangeNotifier::DisableForTest());
   }
@@ -76,47 +75,6 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
 
   content::WebContents* active_tab() {
     return browser()->tab_strip_model()->GetActiveWebContents();
-  }
-
-  bool PressBackspace() {
-    return ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_BACK,
-                                           false, false, false, false);
-  }
-
-  bool PressBackspaceAndWaitForSuggestions() {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_INSTANT_SET_SUGGESTION,
-        content::NotificationService::AllSources());
-    bool result = PressBackspace();
-    observer.Wait();
-    return result;
-  }
-
-  bool PressBackspaceAndWaitForOverlayToShow() {
-    InstantTestModelObserver observer(
-        instant()->model(), SearchMode::MODE_SEARCH_SUGGESTIONS);
-    return PressBackspace() && observer.WaitForExpectedOverlayState() ==
-        SearchMode::MODE_SEARCH_SUGGESTIONS;
-  }
-
-  bool PressEnterAndWaitForNavigationWithTitle(content::WebContents* contents,
-                                               const string16& title) {
-    content::TitleWatcher title_watcher(contents, title);
-    content::WindowedNotificationObserver nav_observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::NotificationService::AllSources());
-    browser()->window()->GetLocationBar()->AcceptInput();
-    nav_observer.Wait();
-    return title_watcher.WaitAndGetTitle() == title;
-  }
-
-  GURL GetActiveTabURL() {
-    return active_tab()->GetController().GetActiveEntry()->GetURL();
-  }
-
-  bool GetSelectionState(bool* selected) {
-    return GetBoolFromJS(instant()->GetOverlayContents(),
-                         "google.ac.gs().api.i()", selected);
   }
 
   bool IsGooglePage(content::WebContents* contents) {
@@ -135,8 +93,7 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_ShowsGoogleNTP) {
   set_browser(browser());
-  instant()->SetInstantEnabled(false, true);
-  instant()->SetInstantEnabled(true, false);
+  instant()->ReloadStaleNTP();
   FocusOmniboxAndWaitForInstantNTPSupport();
 
   content::WindowedNotificationObserver observer(
@@ -155,8 +112,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_ShowsGoogleNTP) {
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_SearchesFromFakebox) {
   set_browser(browser());
-  instant()->SetInstantEnabled(false, true);
-  instant()->SetInstantEnabled(true, false);
+  instant()->ReloadStaleNTP();
   FocusOmniboxAndWaitForInstantNTPSupport();
 
   // Open a new tab page.

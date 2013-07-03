@@ -57,16 +57,6 @@ class OmniboxController : public AutocompleteControllerDelegate {
     return autocomplete_controller_.get();
   }
 
-  bool DoInstant(const AutocompleteMatch& match,
-                 string16 user_text,
-                 string16 full_text,
-                 size_t selection_start,
-                 size_t selection_end,
-                 bool user_input_in_progress,
-                 bool in_escape_handler,
-                 bool just_deleted_text,
-                 bool keyword_is_selected);
-
   // Sets the suggestion text.
   void SetInstantSuggestion(const InstantSuggestion& suggestion);
 
@@ -84,8 +74,6 @@ class OmniboxController : public AutocompleteControllerDelegate {
 
   const AutocompleteMatch& current_match() const { return current_match_; }
 
-  const string16& gray_suggestion() const { return gray_suggestion_; }
-
   // Turns off keyword mode for the current match.
   void ClearPopupKeywordMode() const;
 
@@ -95,11 +83,6 @@ class OmniboxController : public AutocompleteControllerDelegate {
 
   // TODO(beaudoin): Make private once OmniboxEditModel no longer refers to it.
   void DoPreconnect(const AutocompleteMatch& match);
-
-  // TODO(beaudoin): Make private once OmniboxEditModel no longer refers to it.
-  // Invoked when the popup has changed its bounds to |bounds|. |bounds| here
-  // is in screen coordinates.
-  void OnPopupBoundsChanged(const gfx::Rect& bounds);
 
  private:
 
@@ -135,10 +118,6 @@ class OmniboxController : public AutocompleteControllerDelegate {
   // but the ones specifically needed are unclear. We should therefore spend
   // some time to extract these fields and use a tighter structure here.
   AutocompleteMatch current_match_;
-
-  // The completion suggested by instant, displayed in gray text besides
-  // |fill_into_edit|.
-  string16 gray_suggestion_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxController);
 };

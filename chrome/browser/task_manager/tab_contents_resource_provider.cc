@@ -64,10 +64,6 @@ class TabContentsResource : public RendererResource {
   explicit TabContentsResource(content::WebContents* web_contents);
   virtual ~TabContentsResource();
 
-  // Called when the underlying web_contents has been committed and is no
-  // longer an Instant overlay.
-  void InstantCommitted();
-
   // Resource methods:
   virtual Type GetType() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
@@ -83,7 +79,7 @@ class TabContentsResource : public RendererResource {
   static gfx::ImageSkia* prerender_icon_;
   content::WebContents* web_contents_;
   Profile* profile_;
-  bool is_instant_overlay_;
+  bool is_instant_ntp_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsResource);
 };
@@ -96,8 +92,7 @@ TabContentsResource::TabContentsResource(
                        web_contents->GetRenderViewHost()),
       web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      is_instant_overlay_(chrome::IsInstantOverlay(web_contents) ||
-                          chrome::IsPreloadedInstantExtendedNTP(web_contents)) {
+      is_instant_ntp_(chrome::IsPreloadedInstantExtendedNTP(web_contents)) {
   if (!prerender_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     prerender_icon_ = rb.GetImageSkiaNamed(IDR_PRERENDER);
@@ -105,11 +100,6 @@ TabContentsResource::TabContentsResource(
 }
 
 TabContentsResource::~TabContentsResource() {
-}
-
-void TabContentsResource::InstantCommitted() {
-  DCHECK(is_instant_overlay_);
-  is_instant_overlay_ = false;
 }
 
 bool TabContentsResource::HostsExtension() const {
@@ -138,7 +128,7 @@ string16 TabContentsResource::GetTitle() const {
       HostsExtension(),
       profile_->IsOffTheRecord(),
       IsContentsPrerendering(web_contents_),
-      is_instant_overlay_,
+      is_instant_ntp_,
       false);  // is_background
   return l10n_util::GetStringFUTF16(message_id, tab_title);
 }
@@ -220,8 +210,6 @@ void TabContentsResourceProvider::StartUpdating() {
   // Add all the Instant pages.
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     if (it->instant_controller()) {
-      if (it->instant_controller()->instant()->GetOverlayContents())
-        Add(it->instant_controller()->instant()->GetOverlayContents());
       if (it->instant_controller()->instant()->GetNTPContents())
         Add(it->instant_controller()->instant()->GetNTPContents());
     }
@@ -257,8 +245,6 @@ void TabContentsResourceProvider::StartUpdating() {
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 void TabContentsResourceProvider::StopUpdating() {
@@ -271,8 +257,6 @@ void TabContentsResourceProvider::StopUpdating() {
   registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-      content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
       content::NotificationService::AllBrowserContextsAndSources());
 
   // Delete all the resources.
@@ -296,7 +280,6 @@ void TabContentsResourceProvider::Add(WebContents* web_contents) {
   // pages, prerender pages, and background printed pages.
   if (!chrome::FindBrowserWithWebContents(web_contents) &&
       !IsContentsPrerendering(web_contents) &&
-      !chrome::IsInstantOverlay(web_contents) &&
       !chrome::IsPreloadedInstantExtendedNTP(web_contents) &&
       !IsContentsBackgroundPrinted(web_contents)) {
     return;
@@ -340,16 +323,6 @@ void TabContentsResourceProvider::Remove(WebContents* web_contents) {
   delete resource;
 }
 
-void TabContentsResourceProvider::InstantCommitted(WebContents* web_contents) {
-  if (!updating_)
-    return;
-  std::map<WebContents*, TabContentsResource*>::iterator
-      iter = resources_.find(web_contents);
-  DCHECK(iter != resources_.end());
-  if (iter != resources_.end())
-    iter->second->InstantCommitted();
-}
-
 void TabContentsResourceProvider::Observe(
     int type,
     const content::NotificationSource& source,
@@ -366,9 +339,6 @@ void TabContentsResourceProvider::Observe(
       break;
     case content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED:
       Remove(web_contents);
-      break;
-    case chrome::NOTIFICATION_INSTANT_COMMITTED:
-      InstantCommitted(web_contents);
       break;
     default:
       NOTREACHED() << "Unexpected notification.";

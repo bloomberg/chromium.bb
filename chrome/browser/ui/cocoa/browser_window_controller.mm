@@ -1966,11 +1966,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
   return [[toolbarView superview] convertRect:anchorRect toView:nil];
 }
 
-- (void)commitInstant {
-  if (BrowserInstantController* controller = browser_->instant_controller())
-    controller->instant()->CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
-}
-
 - (NSRect)instantFrame {
   // The view's bounds are in its own coordinate system.  Convert that to the
   // window base coordinate system, then translate it into the screen's

@@ -12,7 +12,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/instant_ntp.h"
-#include "chrome/browser/ui/search/instant_overlay.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -31,32 +30,6 @@ std::string WrapScript(const std::string& script) {
 }
 
 }  // namespace
-
-// InstantTestModelObserver --------------------------------------------------
-
-InstantTestModelObserver::InstantTestModelObserver(
-    InstantOverlayModel* model,
-    SearchMode::Type expected_mode_type)
-    : model_(model),
-      expected_mode_type_(expected_mode_type),
-      observed_mode_type_(static_cast<SearchMode::Type>(-1)) {
-  model_->AddObserver(this);
-}
-
-InstantTestModelObserver::~InstantTestModelObserver() {
-  model_->RemoveObserver(this);
-}
-
-SearchMode::Type InstantTestModelObserver::WaitForExpectedOverlayState() {
-  run_loop_.Run();
-  return observed_mode_type_;
-}
-
-void InstantTestModelObserver::OverlayStateChanged(
-    const InstantOverlayModel& model) {
-  observed_mode_type_ = model.mode().mode;
-  run_loop_.Quit();
-}
 
 // InstantTestBase -----------------------------------------------------------
 
@@ -79,9 +52,7 @@ void InstantTestBase::SetupInstant(Browser* browser) {
   service->Add(template_url);  // Takes ownership of |template_url|.
   service->SetDefaultSearchProvider(template_url);
 
-  // TODO(shishir): Fix this ugly hack.
-  instant()->SetInstantEnabled(false, true);
-  instant()->SetInstantEnabled(true, false);
+  instant()->ReloadStaleNTP();
 }
 
 void InstantTestBase::SetInstantURL(const std::string& url) {
@@ -100,13 +71,6 @@ void InstantTestBase::SetInstantURL(const std::string& url) {
 
 void InstantTestBase::Init(const GURL& instant_url) {
   instant_url_ = instant_url;
-}
-
-void InstantTestBase::KillInstantRenderView() {
-  base::KillProcess(
-      instant()->GetOverlayContents()->GetRenderProcessHost()->GetHandle(),
-      content::RESULT_CODE_KILLED,
-      false);
 }
 
 void InstantTestBase::FocusOmnibox() {
@@ -131,36 +95,6 @@ void InstantTestBase::FocusOmniboxAndWaitForInstantNTPSupport() {
 void InstantTestBase::SetOmniboxText(const std::string& text) {
   FocusOmnibox();
   omnibox()->SetUserText(UTF8ToUTF16(text));
-}
-
-bool InstantTestBase::SetOmniboxTextAndWaitForOverlayToShow(
-    const std::string& text) {
-  // The order of events may be:
-  //   { hide, show } or just { show } depending on the order things
-  // flow in from GWS and Chrome's response to hiding the infobar and/or
-  // bookmark bar.  Note, the GWS response is relevant because of the
-  // Instant "MANUAL_*" tests.
-  InstantTestModelObserver first_observer(
-      instant()->model(), SearchMode::MODE_DEFAULT);
-  SetOmniboxText(text);
-
-  SearchMode::Type observed = first_observer.WaitForExpectedOverlayState();
-  if (observed == SearchMode::MODE_DEFAULT) {
-    InstantTestModelObserver second_observer(
-        instant()->model(), SearchMode::MODE_SEARCH_SUGGESTIONS);
-    observed = second_observer.WaitForExpectedOverlayState();
-  }
-  EXPECT_EQ(SearchMode::MODE_SEARCH_SUGGESTIONS, observed);
-  return observed == SearchMode::MODE_SEARCH_SUGGESTIONS;
-}
-
-void InstantTestBase::SetOmniboxTextAndWaitForSuggestion(
-    const std::string& text) {
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_INSTANT_SET_SUGGESTION,
-      content::NotificationService::AllSources());
-  SetOmniboxText(text);
-  observer.Wait();
 }
 
 void InstantTestBase::PressEnterAndWaitForNavigation() {
@@ -193,7 +127,7 @@ bool InstantTestBase::GetStringFromJS(content::WebContents* contents,
 }
 
 bool InstantTestBase::ExecuteScript(const std::string& script) {
-  return content::ExecuteScript(instant()->GetOverlayContents(), script);
+  return content::ExecuteScript(instant()->GetNTPContents(), script);
 }
 
 bool InstantTestBase::CheckVisibilityIs(content::WebContents* contents,
