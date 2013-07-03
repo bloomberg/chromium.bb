@@ -165,9 +165,13 @@ namespace WebCore {
         EventListener* on##attribute(DOMWrapperWorld* isolatedWorld) { return getAttributeEventListener(eventNames().eventName##Event, isolatedWorld); } \
         void setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) { setAttributeEventListener(eventNames().eventName##Event, listener, isolatedWorld); } \
 
-    #define DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(recipient, attribute) \
-        EventListener* on##attribute(DOMWrapperWorld* isolatedWorld) { return recipient ? recipient->getAttributeEventListener(eventNames().attribute##Event, isolatedWorld) : 0; } \
-        void setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) { if (recipient) recipient->setAttributeEventListener(eventNames().attribute##Event, listener, isolatedWorld); } \
+    #define DECLARE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(recipient, attribute) \
+        EventListener* on##attribute(DOMWrapperWorld* isolatedWorld); \
+        void setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld);
+
+    #define DEFINE_FORWARDING_ATTRIBUTE_EVENT_LISTENER(type, recipient, attribute) \
+        EventListener* type::on##attribute(DOMWrapperWorld* isolatedWorld) { return recipient ? recipient->getAttributeEventListener(eventNames().attribute##Event, isolatedWorld) : 0; } \
+        void type::setOn##attribute(PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld) { if (recipient) recipient->setAttributeEventListener(eventNames().attribute##Event, listener, isolatedWorld); }
 
     inline bool EventTarget::isFiringEventListeners()
     {
