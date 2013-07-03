@@ -461,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MANUAL_WebGLGreenTriangle) {
 IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MANUAL_CSS3DBlueBox) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
-  const int64 ref_img_revision_update = 209445;
+  const int64 ref_img_revision_update = 209827;
 
   const ReferencePixel ref_pixels[] = {
     // x, y, r, g, b
