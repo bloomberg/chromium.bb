@@ -30,15 +30,15 @@ FormDataList::FormDataList(const WTF::TextEncoding& c)
 {
 }
 
-void FormDataList::appendString(const String& s)
+void FormDataList::appendString(const String& string)
 {
-    CString cstr = m_encoding.encode(s.bloatedCharacters(), s.length(), WTF::EntitiesForUnencodables);
-    m_items.append(normalizeLineEndingsToCRLF(cstr));
+    CString encodedString = m_encoding.encode(string, WTF::EntitiesForUnencodables);
+    m_items.append(normalizeLineEndingsToCRLF(encodedString));
 }
 
-void FormDataList::appendString(const CString& s)
+void FormDataList::appendString(const CString& string)
 {
-    m_items.append(s);
+    m_items.append(string);
 }
 
 void FormDataList::appendBlob(PassRefPtr<Blob> blob, const String& filename)

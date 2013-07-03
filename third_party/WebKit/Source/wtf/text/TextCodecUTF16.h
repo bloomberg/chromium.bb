@@ -37,8 +37,9 @@ namespace WTF {
 
         TextCodecUTF16(bool littleEndian) : m_littleEndian(littleEndian), m_haveBufferedByte(false) { }
 
-        virtual String decode(const char*, size_t length, bool flush, bool stopOnError, bool& sawError);
-        virtual CString encode(const UChar*, size_t length, UnencodableHandling);
+        virtual String decode(const char*, size_t length, bool flush, bool stopOnError, bool& sawError) OVERRIDE;
+        virtual CString encode(const UChar*, size_t length, UnencodableHandling) OVERRIDE;
+        virtual CString encode(const LChar*, size_t length, UnencodableHandling) OVERRIDE;
 
     private:
         bool m_littleEndian;

@@ -128,7 +128,7 @@ CString TextCodecUTF16::encode(const UChar* characters, size_t length, Unencodab
     ASSERT(length <= numeric_limits<size_t>::max() / 2);
 
     char* bytes;
-    CString string = CString::newUninitialized(length * 2, bytes);
+    CString result = CString::newUninitialized(length * 2, bytes);
 
     // FIXME: CString is not a reasonable data structure for encoded UTF-16, which will have
     // null characters inside it. Perhaps the result of encode should not be a CString.
@@ -146,7 +146,30 @@ CString TextCodecUTF16::encode(const UChar* characters, size_t length, Unencodab
         }
     }
 
-    return string;
+    return result;
+}
+
+CString TextCodecUTF16::encode(const LChar* characters, size_t length, UnencodableHandling)
+{
+    // In the LChar case, we do actually need to performt this check in release.  :)
+    RELEASE_ASSERT(length <= numeric_limits<size_t>::max() / 2);
+
+    char* bytes;
+    CString result = CString::newUninitialized(length * 2, bytes);
+
+    if (m_littleEndian) {
+        for (size_t i = 0; i < length; ++i) {
+            bytes[i * 2] = characters[i];
+            bytes[i * 2 + 1] = 0;
+        }
+    } else {
+        for (size_t i = 0; i < length; ++i) {
+            bytes[i * 2] = 0;
+            bytes[i * 2 + 1] = characters[i];
+        }
+    }
+
+    return result;
 }
 
 } // namespace WTF

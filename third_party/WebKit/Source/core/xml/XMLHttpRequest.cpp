@@ -578,7 +578,7 @@ void XMLHttpRequest::send(Document* document, ExceptionCode& ec)
         if (body.is8Bit())
             m_requestEntityBody = FormData::create(body.characters8(), body.length());
         else
-            m_requestEntityBody = FormData::create(encoding.encode(body.characters16(), body.length(), WTF::EntitiesForUnencodables));
+            m_requestEntityBody = FormData::create(encoding.encode(body, WTF::EntitiesForUnencodables));
         if (m_upload)
             m_requestEntityBody->setAlwaysStream(true);
     }
@@ -603,7 +603,7 @@ void XMLHttpRequest::send(const String& body, ExceptionCode& ec)
         if (body.is8Bit())
             m_requestEntityBody = FormData::create(body.characters8(), body.length());
         else
-            m_requestEntityBody = FormData::create(UTF8Encoding().encode(body.characters16(), body.length(), WTF::EntitiesForUnencodables));
+            m_requestEntityBody = FormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
         if (m_upload)
             m_requestEntityBody->setAlwaysStream(true);
     }

@@ -425,6 +425,23 @@ public:
             return;
         m_buffer.reserveInitialCapacity(length);
         m_buffer.append(characters, length);
+        initalizeFromBuffer(encoding);
+    }
+
+    TextCodecInput(const TextEncoding& encoding, const LChar* characters, size_t length)
+    {
+        m_buffer.reserveInitialCapacity(length);
+        for (size_t i = 0; i < length; ++i)
+            m_buffer.append(characters[i]);
+        initalizeFromBuffer(encoding);
+    }
+
+    const UChar* begin() const { return m_begin; }
+    const UChar* end() const { return m_end; }
+
+private:
+    void initalizeFromBuffer(const TextEncoding& encoding)
+    {
         // FIXME: We should see if there is "force ASCII range" mode in ICU;
         // until then, we change the backslash into a yen sign.
         // Encoding will change the yen sign back into a backslash.
@@ -433,27 +450,13 @@ public:
         m_end = m_begin + m_buffer.size();
     }
 
-    const UChar* begin() const { return m_begin; }
-    const UChar* end() const { return m_end; }
-
-private:
     const UChar* m_begin;
     const UChar* m_end;
     Vector<UChar> m_buffer;
 };
 
-CString TextCodecICU::encode(const UChar* characters, size_t length, UnencodableHandling handling)
+CString TextCodecICU::encodeInternal(const TextCodecInput& input, UnencodableHandling handling)
 {
-    if (!length)
-        return "";
-
-    if (!m_converterICU)
-        createICUConverter();
-    if (!m_converterICU)
-        return CString();
-
-    TextCodecInput input(m_encoding, characters, length);
-
     const UChar* source = input.begin();
     const UChar* end = input.end();
 
@@ -491,6 +494,31 @@ CString TextCodecICU::encode(const UChar* characters, size_t length, Unencodable
     } while (err == U_BUFFER_OVERFLOW_ERROR);
 
     return CString(result.data(), size);
+}
+
+template<typename CharType>
+CString TextCodecICU::encodeCommon(const CharType* characters, size_t length, UnencodableHandling handling)
+{
+    if (!length)
+        return "";
+
+    if (!m_converterICU)
+        createICUConverter();
+    if (!m_converterICU)
+        return CString();
+
+    TextCodecInput input(m_encoding, characters, length);
+    return encodeInternal(input, handling);
+}
+
+CString TextCodecICU::encode(const UChar* characters, size_t length, UnencodableHandling handling)
+{
+    return encodeCommon(characters, length, handling);
+}
+
+CString TextCodecICU::encode(const LChar* characters, size_t length, UnencodableHandling handling)
+{
+    return encodeCommon(characters, length, handling);
 }
 
 } // namespace WTF

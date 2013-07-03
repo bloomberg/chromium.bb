@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef TextCodecICU_h
@@ -35,41 +35,48 @@ typedef struct UConverter UConverter;
 
 namespace WTF {
 
-    class TextCodecICU : public TextCodec {
-    public:
-        static void registerEncodingNames(EncodingNameRegistrar);
-        static void registerCodecs(TextCodecRegistrar);
+class TextCodecInput;
 
-        virtual ~TextCodecICU();
+class TextCodecICU : public TextCodec {
+public:
+    static void registerEncodingNames(EncodingNameRegistrar);
+    static void registerCodecs(TextCodecRegistrar);
 
-    private:
-        TextCodecICU(const TextEncoding&);
-        static PassOwnPtr<TextCodec> create(const TextEncoding&, const void*);
+    virtual ~TextCodecICU();
 
-        virtual String decode(const char*, size_t length, bool flush, bool stopOnError, bool& sawError);
-        virtual CString encode(const UChar*, size_t length, UnencodableHandling);
+private:
+    TextCodecICU(const TextEncoding&);
+    static PassOwnPtr<TextCodec> create(const TextEncoding&, const void*);
 
-        void createICUConverter() const;
-        void releaseICUConverter() const;
-        bool needsGBKFallbacks() const { return m_needsGBKFallbacks; }
-        void setNeedsGBKFallbacks(bool needsFallbacks) { m_needsGBKFallbacks = needsFallbacks; }
-        
-        int decodeToBuffer(UChar* buffer, UChar* bufferLimit, const char*& source,
-            const char* sourceLimit, int32_t* offsets, bool flush, UErrorCode& err);
+    virtual String decode(const char*, size_t length, bool flush, bool stopOnError, bool& sawError) OVERRIDE;
+    virtual CString encode(const UChar*, size_t length, UnencodableHandling) OVERRIDE;
+    virtual CString encode(const LChar*, size_t length, UnencodableHandling) OVERRIDE;
 
-        TextEncoding m_encoding;
-        mutable UConverter* m_converterICU;
-        mutable bool m_needsGBKFallbacks;
-    };
+    template<typename CharType>
+    CString encodeCommon(const CharType*, size_t length, UnencodableHandling);
+    CString encodeInternal(const TextCodecInput&, UnencodableHandling);
 
-    struct ICUConverterWrapper {
-        WTF_MAKE_NONCOPYABLE(ICUConverterWrapper); WTF_MAKE_FAST_ALLOCATED;
-    public:
-        ICUConverterWrapper() : converter(0) { }
-        ~ICUConverterWrapper();
+    void createICUConverter() const;
+    void releaseICUConverter() const;
+    bool needsGBKFallbacks() const { return m_needsGBKFallbacks; }
+    void setNeedsGBKFallbacks(bool needsFallbacks) { m_needsGBKFallbacks = needsFallbacks; }
 
-        UConverter* converter;
-    };
+    int decodeToBuffer(UChar* buffer, UChar* bufferLimit, const char*& source,
+        const char* sourceLimit, int32_t* offsets, bool flush, UErrorCode&);
+
+    TextEncoding m_encoding;
+    mutable UConverter* m_converterICU;
+    mutable bool m_needsGBKFallbacks;
+};
+
+struct ICUConverterWrapper {
+    WTF_MAKE_NONCOPYABLE(ICUConverterWrapper); WTF_MAKE_FAST_ALLOCATED;
+public:
+    ICUConverterWrapper() : converter(0) { }
+    ~ICUConverterWrapper();
+
+    UConverter* converter;
+};
 
 } // namespace WTF
 

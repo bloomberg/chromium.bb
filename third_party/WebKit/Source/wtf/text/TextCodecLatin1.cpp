@@ -212,7 +212,8 @@ useLookupTable16:
     return result16;
 }
 
-static CString encodeComplexWindowsLatin1(const UChar* characters, size_t length, UnencodableHandling handling)
+template<typename CharType>
+static CString encodeComplexWindowsLatin1(const CharType* characters, size_t length, UnencodableHandling handling)
 {
     Vector<char> result(length);
     char* bytes = result.data();
@@ -244,7 +245,8 @@ static CString encodeComplexWindowsLatin1(const UChar* characters, size_t length
     return CString(bytes, resultLength);
 }
 
-CString TextCodecLatin1::encode(const UChar* characters, size_t length, UnencodableHandling handling)
+template<typename CharType>
+CString TextCodecLatin1::encodeCommon(const CharType* characters, size_t length, UnencodableHandling handling)
 {
     {
         char* bytes;
@@ -264,6 +266,16 @@ CString TextCodecLatin1::encode(const UChar* characters, size_t length, Unencoda
 
     // If it wasn't all ASCII, call the function that handles more-complex cases.
     return encodeComplexWindowsLatin1(characters, length, handling);
+}
+
+CString TextCodecLatin1::encode(const UChar* characters, size_t length, UnencodableHandling handling)
+{
+    return encodeCommon(characters, length, handling);
+}
+
+CString TextCodecLatin1::encode(const LChar* characters, size_t length, UnencodableHandling handling)
+{
+    return encodeCommon(characters, length, handling);
 }
 
 } // namespace WTF

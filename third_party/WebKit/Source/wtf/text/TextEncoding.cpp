@@ -64,27 +64,34 @@ String TextEncoding::decode(const char* data, size_t length, bool stopOnError, b
     return newTextCodec(*this)->decode(data, length, true, stopOnError, sawError);
 }
 
-CString TextEncoding::encode(const UChar* characters, size_t length, UnencodableHandling handling) const
+CString TextEncoding::encode(const String& string, UnencodableHandling handling) const
 {
     if (!m_name)
         return CString();
 
-    if (!length)
+    if (string.isEmpty())
         return "";
+
+    // Text exclusively containing Latin-1 characters (U+0000..U+00FF) is left
+    // unaffected by NFC. This is effectively the same as saying that all
+    // Latin-1 text is already normalized to NFC.
+    // Source: http://unicode.org/reports/tr15/
+    if (string.is8Bit())
+        return newTextCodec(*this)->encode(string.characters8(), string.length(), handling);
 
     // FIXME: What's the right place to do normalization?
     // It's a little strange to do it inside the encode function.
     // Perhaps normalization should be an explicit step done before calling encode.
 
-    const UChar* source = characters;
-    size_t sourceLength = length;
+    const UChar* source = string.characters16();
+    size_t length = string.length();
 
     Vector<UChar> normalizedCharacters;
 
     UErrorCode err = U_ZERO_ERROR;
-    if (unorm_quickCheck(source, sourceLength, UNORM_NFC, &err) != UNORM_YES) {
+    if (unorm_quickCheck(source, length, UNORM_NFC, &err) != UNORM_YES) {
         // First try using the length of the original string, since normalization to NFC rarely increases length.
-        normalizedCharacters.grow(sourceLength);
+        normalizedCharacters.grow(length);
         int32_t normalizedLength = unorm_normalize(source, length, UNORM_NFC, 0, normalizedCharacters.data(), length, &err);
         if (err == U_BUFFER_OVERFLOW_ERROR) {
             err = U_ZERO_ERROR;
@@ -94,9 +101,10 @@ CString TextEncoding::encode(const UChar* characters, size_t length, Unencodable
         ASSERT(U_SUCCESS(err));
 
         source = normalizedCharacters.data();
-        sourceLength = normalizedLength;
+        length = normalizedLength;
     }
-    return newTextCodec(*this)->encode(source, sourceLength, handling);
+
+    return newTextCodec(*this)->encode(source, length, handling);
 }
 
 const char* TextEncoding::domName() const

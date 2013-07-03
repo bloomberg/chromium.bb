@@ -284,9 +284,7 @@ void WebPageSerializerImpl::encodeAndFlushBuffer(
     String content = m_dataBuffer.toString();
     m_dataBuffer.clear();
 
-    // Convert the unicode content to target encoding
-    CString encodedContent = param->textEncoding.encode(
-        content.bloatedCharacters(), content.length(), WTF::EntitiesForUnencodables);
+    CString encodedContent = param->textEncoding.encode(content, WTF::EntitiesForUnencodables);
 
     // Send result to the client.
     m_client->didSerializeDataForFrame(param->url,

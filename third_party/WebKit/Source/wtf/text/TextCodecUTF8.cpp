@@ -421,7 +421,8 @@ upConvertTo16Bit:
     return String::adopt(buffer16);
 }
 
-CString TextCodecUTF8::encode(const UChar* characters, size_t length, UnencodableHandling)
+template<typename CharType>
+CString TextCodecUTF8::encodeCommon(const CharType* characters, size_t length)
 {
     // The maximum number of UTF-8 bytes needed per UTF-16 code unit is 3.
     // BMP characters take only one UTF-16 code unit and can take up to 3 bytes (3x).
@@ -439,6 +440,16 @@ CString TextCodecUTF8::encode(const UChar* characters, size_t length, Unencodabl
     }
 
     return CString(reinterpret_cast<char*>(bytes.data()), bytesWritten);
+}
+
+CString TextCodecUTF8::encode(const UChar* characters, size_t length, UnencodableHandling)
+{
+    return encodeCommon(characters, length);
+}
+
+CString TextCodecUTF8::encode(const LChar* characters, size_t length, UnencodableHandling)
+{
+    return encodeCommon(characters, length);
 }
 
 } // namespace WTF

@@ -63,7 +63,8 @@ String TextCodecUserDefined::decode(const char* bytes, size_t length, bool, bool
     return result.toString();
 }
 
-static CString encodeComplexUserDefined(const UChar* characters, size_t length, UnencodableHandling handling)
+template<typename CharType>
+static CString encodeComplexUserDefined(const CharType* characters, size_t length, UnencodableHandling handling)
 {
     Vector<char> result(length);
     char* bytes = result.data();
@@ -89,10 +90,11 @@ static CString encodeComplexUserDefined(const UChar* characters, size_t length, 
     return CString(bytes, resultLength);
 }
 
-CString TextCodecUserDefined::encode(const UChar* characters, size_t length, UnencodableHandling handling)
+template<typename CharType>
+CString TextCodecUserDefined::encodeCommon(const CharType* characters, size_t length, UnencodableHandling handling)
 {
     char* bytes;
-    CString string = CString::newUninitialized(length, bytes);
+    CString result = CString::newUninitialized(length, bytes);
 
     // Convert the string a fast way and simultaneously do an efficient check to see if it's all ASCII.
     UChar ored = 0;
@@ -103,10 +105,20 @@ CString TextCodecUserDefined::encode(const UChar* characters, size_t length, Une
     }
 
     if (!(ored & 0xFF80))
-        return string;
+        return result;
 
     // If it wasn't all ASCII, call the function that handles more-complex cases.
     return encodeComplexUserDefined(characters, length, handling);
+}
+
+CString TextCodecUserDefined::encode(const UChar* characters, size_t length, UnencodableHandling handling)
+{
+    return encodeCommon(characters, length, handling);
+}
+
+CString TextCodecUserDefined::encode(const LChar* characters, size_t length, UnencodableHandling handling)
+{
+    return encodeCommon(characters, length, handling);
 }
 
 } // namespace WTF
