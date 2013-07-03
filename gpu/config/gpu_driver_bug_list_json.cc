@@ -85,7 +85,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.1",
+  "version": "2.2",
   "entries": [
     {
       "id": 1,
@@ -173,9 +173,14 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 9,
-      "description": "Mac AMD drivers get gl_PointCoord backward, rdar://problem/11883495",
+      "description": "Mac AMD drivers get gl_PointCoord backward on OSX 10.8 or earlier",
+      "cr_bugs": [256349],
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "number": "10.9"
+        }
       },
       "vendor_id": "0x1002",
       "features": [
@@ -184,9 +189,14 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 10,
-      "description": "Mac Intel drivers get gl_PointCoord backward, rdar://problem/11883495",
+      "description": "Mac Intel drivers get gl_PointCoord backward on OSX 10.8 or earlier",
+      "cr_bugs": [256349],
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "number": "10.9"
+        }
       },
       "vendor_id": "0x8086",
       "features": [
