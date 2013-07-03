@@ -7548,6 +7548,20 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.ScanResult" enum="WiFiScanResult">
+  <summary>
+    Chrome OS network usage metric describing, for a wifi scan attempt, what
+    scan method is used and whether it ends in a connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.ScanTimeInEbusy" units="milliseconds">
+  <summary>
+    Chrome OS network usage metric describing, for a wifi scan attempt, how many
+    milliseconds were spent waiting to talk to the kernel/drivers.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Wifi.Security" enum="NetworkSecurityType">
   <summary>
     Chrome OS network usage metric.  The security setting for each successful
@@ -7585,6 +7599,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Wifi.TimeToConnect" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time to connect to a WiFi
+    Basic Service Set (which consists of the access point and associated
+    stations on a particular WiFi channel for a specific network).
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Wifi.TimeToInitialize" units="milliseconds">
   <summary>
     Chrome OS network performance metric sampling the time to initialize an
@@ -7618,6 +7640,15 @@ other types of suffix sets.
   <summary>
     Chrome OS network performance metric sampling the time to scan WiFi until a
     connection is found.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.TimeToScanAndConnect" units="milliseconds">
+  <summary>
+    Chrome OS network performance metric sampling the time between the beginning
+    of a WiFi scan (if the scan includes both a progressive scan and a full
+    scan, the TimeToScanAndConnect starts with the first scan of the series) and
+    the completion of a successful connection.
   </summary>
 </histogram>
 
@@ -19559,6 +19590,19 @@ other types of suffix sets.
   <int value="45" label="kReasonCodeCipherSuiteNotSupported"/>
 </enum>
 
+<enum name="WiFiScanResult" type="int">
+  <int value="0" label="ProgressiveScan connected"/>
+  <int value="1" label="ProgressiveScan error then FullScan didn't connect"/>
+  <int value="2" label="ProgressiveScan error then FullScan connected"/>
+  <int value="3"
+      label="ProgressiveScan didn't connect then FullScan didn't connect"/>
+  <int value="4"
+      label="ProgressiveScan didn't connect then FullScan connected"/>
+  <int value="5" label="FullScan didn't connect"/>
+  <int value="6" label="FullScan connected"/>
+  <int value="7" label="Internal error"/>
+</enum>
+
 <enum name="WiFiStatusType" type="int">
   <int value="0" label="kStatusCodeTypeByAp"/>
   <int value="1" label="kStatusCodeTypeByClient"/>
@@ -20972,6 +21016,21 @@ other types of suffix sets.
   <affected-histogram name="Prerender.TimeBetweenPrerenderRequests"/>
   <affected-histogram name="Prerender.TimeSinceLastRecentVisit"/>
   <affected-histogram name="Prerender.TimeUntilUsed2"/>
+</fieldtrial>
+
+<fieldtrial name="ProgressiveScan">
+  <group name="FullScan" label="Using WPA_supplicant to scan."/>
+  <group name="33Percent_4MinMax"
+      label="Progressive scan @ 33%, 4 frequency bins."/>
+  <group name="50Percent_4MinMax"
+      label="Progressive scan @ 50%, 4 frequency bins."/>
+  <group name="50Percent_8MinMax"
+      label="Progressive scan @ 50%, 8 frequency bins."/>
+  <group name="100Percent_8MinMax"
+      label="Progressive scan @ 100%, 8 frequency bins."/>
+  <affected-histogram name="Network.Shill.WiFi.ScanResult"/>
+  <affected-histogram name="Network.Shill.Wifi.TimeToScan"/>
+  <affected-histogram name="Network.Shill.Wifi.TimeToScanAndConnect"/>
 </fieldtrial>
 
 <fieldtrial name="ProxyConnectionImpact">
