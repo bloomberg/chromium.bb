@@ -25,10 +25,10 @@ TEST_F('AccountsOptionsWebUITest', 'testNoCloseOnEnter', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   var inputField = $('userNameEdit');
-  var overlay = $('accountsPage').parentNode;
+  var accountsOptionsPage = AccountsOptions.getInstance();
 
   // Overlay is visible.
-  assertFalse(overlay.classList.contains('transparent'));
+  assertTrue(accountsOptionsPage.visible);
 
   // Simulate pressing the enter key in the edit field.
   inputField.dispatchEvent(createEnterKeyboardEvent('keydown'));
@@ -36,5 +36,5 @@ TEST_F('AccountsOptionsWebUITest', 'testNoCloseOnEnter', function() {
   inputField.dispatchEvent(createEnterKeyboardEvent('keyup'));
 
   // Verify the overlay is still visible.
-  assertFalse(overlay.classList.contains('transparent'));
+  assertTrue(accountsOptionsPage.visible);
 });

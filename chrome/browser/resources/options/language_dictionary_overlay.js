@@ -61,6 +61,12 @@ cr.define('options', function() {
       this.searchField_.onsearch = function(e) {
         this.wordList_.search(e.currentTarget.value);
       }.bind(this);
+      this.searchField_.onkeydown = function(e) {
+        // Don't propagate enter key events. Otherwise the default button will
+        // activate.
+        if (e.keyIdentifier == 'Enter')
+          e.stopPropagation();
+      };
 
       this.noMatchesLabel_ = getRequiredElement(
           'language-dictionary-overlay-no-matches');

@@ -76,6 +76,18 @@ TEST_F('EditDictionaryWebUITest', 'testSearch', function() {
   expectEquals(3, EditDictionaryOverlay.getWordListForTesting().items.length);
 });
 
+TEST_F('EditDictionaryWebUITest', 'testNoCloseOnSearchEnter', function() {
+  var editDictionaryPage = EditDictionaryOverlay.getInstance();
+  assertTrue(editDictionaryPage.visible);
+  var searchField = $('language-dictionary-overlay-search-field');
+  searchField.dispatchEvent(new KeyboardEvent('keydown', {
+    'bubbles': true,
+    'cancelable': true,
+    'keyIdentifier': 'Enter'
+  }));
+  assertTrue(editDictionaryPage.visible);
+});
+
 // Verify that dictionary shows newly added words that arrived in a
 // notification, but ignores duplicate add notifications.
 TEST_F('EditDictionaryWebUITest', 'testAddNotification', function() {
