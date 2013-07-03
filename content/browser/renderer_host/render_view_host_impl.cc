@@ -475,8 +475,8 @@ void RenderViewHostImpl::WasSwappedOut() {
     base::ProcessHandle process_handle = GetProcess()->GetHandle();
     int views = 0;
 
-    // Count the number of widget hosts for the process, which is equivalent to
-    // views using the process as of this writing.
+    // Count the number of active widget hosts for the process, which
+    // is equivalent to views using the process as of this writing.
     RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
     for (size_t i = 0; i < widgets.size(); ++i) {
       if (widgets[i]->GetProcess()->GetID() == GetProcess()->GetID())

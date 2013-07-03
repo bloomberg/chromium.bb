@@ -1320,6 +1320,11 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     // navigation to accomplish that.
     is_reload = false;
 
+    // We refresh timezone when a view is swapped in since timezone
+    // can get out of sync when the system timezone is updated while
+    // the view is swapped out.
+    NotifyTimezoneChange(webview()->mainFrame());
+
     SetSwappedOut(false);
   }
 

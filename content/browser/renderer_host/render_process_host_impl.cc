@@ -85,6 +85,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
@@ -1633,18 +1634,7 @@ int RenderProcessHostImpl::GetActiveViewCount() {
   RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
   for (size_t i = 0; i < widgets.size(); ++i) {
     // Count only RenderWidgetHosts in this process.
-    if (widgets[i]->GetProcess()->GetID() != GetID())
-      continue;
-
-    // All RenderWidgetHosts are swapped in.
-    if (!widgets[i]->IsRenderView()) {
-      num_active_views++;
-      continue;
-    }
-
-    // Don't count swapped out views.
-    RenderViewHost* rvh = RenderViewHost::From(widgets[i]);
-    if (!static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out())
+    if (widgets[i]->GetProcess()->GetID() == GetID())
       num_active_views++;
   }
   return num_active_views;
@@ -1776,7 +1766,9 @@ void RenderProcessHostImpl::OnCompositorSurfaceBuffersSwappedNoHost(
 }
 
 void RenderProcessHostImpl::OnGpuSwitching() {
-  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
+  // We are updating all widgets including swapped out ones.
+  RenderWidgetHost::List widgets =
+      RenderWidgetHostImpl::GetAllRenderWidgetHosts();
   for (size_t i = 0; i < widgets.size(); ++i) {
     if (!widgets[i]->IsRenderView())
       continue;

@@ -129,10 +129,6 @@ std::vector<RenderViewHost*> DevToolsAgentHost::GetValidRenderViewHosts() {
       continue;
 
     RenderViewHost* rvh = RenderViewHost::From(widgets[i]);
-    // Don't report swapped out views.
-    if (static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out())
-      continue;
-
     WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
     // Don't report a RenderViewHost if it is not the current RenderViewHost
     // for some WebContents.

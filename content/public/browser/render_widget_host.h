@@ -122,7 +122,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   static RenderWidgetHost* FromID(int32 process_id, int32 routing_id);
 
   typedef std::vector<RenderWidgetHost*> List;
-  // Returns the global list of render widget hosts.
+
+  // Returns the global list of active render widget hosts.
   static RenderWidgetHost::List GetRenderWidgetHosts();
 
   virtual ~RenderWidgetHost() {}

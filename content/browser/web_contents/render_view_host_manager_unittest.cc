@@ -322,6 +322,47 @@ TEST_F(RenderViewHostManagerTest, WhiteListDidActivateAcceleratedCompositing) {
   EXPECT_TRUE(swapped_out_rvh->is_accelerated_compositing_active());
 }
 
+// Test if RenderViewHost::GetRenderWidgetHosts() only returns active
+// widgets.
+TEST_F(RenderViewHostManagerTest, GetRenderWidgetHostsReturnsActiveViews) {
+  TestRenderViewHost* swapped_out_rvh = CreateSwappedOutRenderViewHost();
+  EXPECT_TRUE(swapped_out_rvh->is_swapped_out());
+
+  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
+  // We know that there is the only one active widget. Another view is
+  // now swapped out, so the swapped out view is not included in the
+  // list.
+  EXPECT_TRUE(widgets.size() == 1);
+  RenderViewHost* rvh = RenderViewHost::From(widgets[0]);
+  EXPECT_FALSE(static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out());
+}
+
+// Test if RenderViewHost::GetRenderWidgetHosts() returns a subset of
+// RenderViewHostImpl::GetAllRenderWidgetHosts().
+// RenderViewHost::GetRenderWidgetHosts() returns only active widgets, but
+// RenderViewHostImpl::GetAllRenderWidgetHosts() returns everything
+// including swapped out ones.
+TEST_F(RenderViewHostManagerTest,
+       GetRenderWidgetHostsWithinGetAllRenderWidgetHosts) {
+  TestRenderViewHost* swapped_out_rvh = CreateSwappedOutRenderViewHost();
+  EXPECT_TRUE(swapped_out_rvh->is_swapped_out());
+
+  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
+  RenderWidgetHost::List all_widgets =
+      RenderWidgetHostImpl::GetAllRenderWidgetHosts();
+
+  for (size_t i = 0; i < widgets.size(); ++i) {
+    bool found = false;
+    for (size_t j = 0; j < all_widgets.size(); ++j) {
+      if (widgets[i] == widgets[j]) {
+        found = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(found);
+  }
+}
+
 // When there is an error with the specified page, renderer exits view-source
 // mode. See WebFrameImpl::DidFail(). We check by this test that
 // EnableViewSourceMode message is sent on every navigation regardless

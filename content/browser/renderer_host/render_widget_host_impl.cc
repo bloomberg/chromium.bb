@@ -264,6 +264,28 @@ std::vector<RenderWidgetHost*> RenderWidgetHost::GetRenderWidgetHosts() {
   for (RoutingIDWidgetMap::const_iterator it = widgets->begin();
        it != widgets->end();
        ++it) {
+    RenderWidgetHost* widget = it->second;
+
+    if (!widget->IsRenderView()) {
+      hosts.push_back(widget);
+      continue;
+    }
+
+    // Add only active RenderViewHosts.
+    RenderViewHost* rvh = RenderViewHost::From(widget);
+    if (!static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out())
+      hosts.push_back(widget);
+  }
+  return hosts;
+}
+
+// static
+std::vector<RenderWidgetHost*> RenderWidgetHostImpl::GetAllRenderWidgetHosts() {
+  std::vector<RenderWidgetHost*> hosts;
+  RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
+  for (RoutingIDWidgetMap::const_iterator it = widgets->begin();
+       it != widgets->end();
+       ++it) {
     hosts.push_back(it->second);
   }
   return hosts;
