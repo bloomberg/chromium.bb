@@ -218,5 +218,41 @@ bool V8TestCallback::callbackWithSequence(Vector<RefPtr<TestObj> > sequenceParam
     return !invokeCallback(m_callback.newLocal(isolate), 1, argv, callbackReturnValue, scriptExecutionContext());
 }
 
+bool V8TestCallback::callbackWithThisArg(int param, ScriptValue thisValue)
+{
+    if (!canInvokeCallback())
+        return true;
+
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+
+    v8::Handle<v8::Context> v8Context = toV8Context(scriptExecutionContext(), m_world.get());
+    if (v8Context.IsEmpty())
+        return true;
+
+    v8::Context::Scope scope(v8Context);
+
+    v8::Handle<v8::Value> paramHandle = v8::Integer::New(param, isolate);
+    if (paramHandle.IsEmpty()) {
+        if (!isScriptControllerTerminating())
+            CRASH();
+        return true;
+    }
+    v8::Handle<v8::Value> thisHandle = thisValue.v8Value();
+    if (thisHandle.IsEmpty()) {
+        if (!isScriptControllerTerminating())
+            CRASH();
+        return true;
+    }
+    ASSERT(thisHandle->isObject());
+
+    v8::Handle<v8::Value> argv[] = {
+        paramHandle
+    };
+
+    bool callbackReturnValue = false;
+    return !invokeCallback(m_callback.newLocal(isolate), v8::Handle<v8::Object>::Cast(thisHandle), 1, argv, callbackReturnValue, scriptExecutionContext());
+}
+
 } // namespace WebCore
 

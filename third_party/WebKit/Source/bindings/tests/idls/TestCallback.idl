@@ -36,4 +36,5 @@ callback interface TestCallback {
   boolean callbackWithStringList(DOMStringList listParam);
   boolean callbackWithBoolean(boolean boolParam);
   boolean callbackWithSequence(sequence<TestObject> sequenceParam);
+  [CallWith=ThisValue] boolean callbackWithThisArg(long param);
 };

@@ -4594,6 +4594,9 @@ END
             foreach my $param (@params) {
                 push(@args, GetNativeTypeForCallbacks($param->type) . " " . $param->name);
             }
+            if (ExtendedAttributeContains($function->extendedAttributes->{"CallWith"}, "ThisValue")) {
+                push(@args, GetNativeType("any") . " thisValue");
+            }
             $code .= join(", ", @args);
             $code .= ");\n";
             $header{classPublic}->add($code);
@@ -4653,9 +4656,9 @@ END
             AddIncludesForType($function->type);
             die "We don't yet support callbacks that return non-boolean values.\n" if $function->type ne "boolean";
             $code .= "\n" . GetNativeTypeForCallbacks($function->type) . " ${v8ClassName}::" . $function->name . "(";
+            my $callWithThisValue = ExtendedAttributeContains($function->extendedAttributes->{"CallWith"}, "ThisValue");
 
             my @args = ();
-            my @argsCheck = ();
             foreach my $param (@params) {
                 my $paramName = $param->name;
                 my $type = $param->type;
@@ -4671,11 +4674,13 @@ END
 
                 push(@args, GetNativeTypeForCallbacks($type) . " " . $paramName);
             }
+            if ($callWithThisValue) {
+                push(@args, GetNativeTypeForCallbacks("any") . " thisValue");
+            }
             $code .= join(", ", @args);
 
             $code .= ")\n";
             $code .= "{\n";
-            $code .= join "", @argsCheck if @argsCheck;
             $code .= "    if (!canInvokeCallback())\n";
             $code .= "        return true;\n\n";
             $code .= "    v8::Isolate* isolate = v8::Isolate::GetCurrent();\n";
@@ -4696,6 +4701,17 @@ END
                 $code .= "    }\n";
                 push(@args, "        ${paramName}Handle");
             }
+            my $thisObjectHandle = "";
+            if ($callWithThisValue) {
+                $code .= "    v8::Handle<v8::Value> thisHandle = thisValue.v8Value();\n";
+                $code .= "    if (thisHandle.IsEmpty()) {\n";
+                $code .= "        if (!isScriptControllerTerminating())\n";
+                $code .= "            CRASH();\n";
+                $code .= "        return true;\n";
+                $code .= "    }\n";
+                $code .= "    ASSERT(thisHandle->isObject());\n";
+                $thisObjectHandle = "v8::Handle<v8::Object>::Cast(thisHandle), ";
+            }
 
             if (scalar(@args) > 0) {
                 $code .= "\n    v8::Handle<v8::Value> argv[] = {\n";
@@ -4705,7 +4721,7 @@ END
                 $code .= "\n    v8::Handle<v8::Value> *argv = 0;\n\n";
             }
             $code .= "    bool callbackReturnValue = false;\n";
-            $code .= "    return !invokeCallback(m_callback.newLocal(isolate), " . scalar(@params) . ", argv, callbackReturnValue, scriptExecutionContext());\n";
+            $code .= "    return !invokeCallback(m_callback.newLocal(isolate), ${thisObjectHandle}" . scalar(@args) . ", argv, callbackReturnValue, scriptExecutionContext());\n";
             $code .= "}\n";
             $implementation{nameSpaceWebCore}->add($code);
         }
