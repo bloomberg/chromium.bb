@@ -31,7 +31,16 @@ function test()
                 InspectorTest.addResult("Logged headers: " + headersArray.join(", "));
                 InspectorTest.addResult("Content: \"" + content + "\"");
             }
-            next();
+            InspectorTest.runAfterPendingDispatches(dumpNetworkRequest);
+
+            function dumpNetworkRequest()
+            {
+                var panel = WebInspector.showPanel("network");
+                var request = panel.requests[panel.requests.length - 1];
+                InspectorTest.addResult("Dumping request: " + request.url);
+                InspectorTest.addResult("  statusCode: " + request.statusCode);
+                next();
+            }
         }
     }
 

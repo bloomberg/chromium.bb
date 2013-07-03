@@ -4,24 +4,34 @@ Loading resource from http://localhost:8080/inspector/network/resources/resource
 Success: 200
 Logged headers: cache-control, expires, pragma
 Content: "Hello world"
+Dumping request: http://localhost:8080/inspector/network/resources/resource.php
+  statusCode: 200
 
 Running: testNetworkResourceCached
 Loading resource from http://localhost:8080/inspector/network/resources/resource.php?cached=1
 Success: 200
 Logged headers: cache-control, expires, last-modified
 Content: "Hello world"
+Dumping request: http://localhost:8080/inspector/network/resources/resource.php?cached=1
+  statusCode: 200
 
 Running: testNetworkResourceIfModifiedSince
 Loading resource from http://localhost:8080/inspector/network/resources/resource.php?cached=1
 Success: 304
 Logged headers: 
 Content: ""
+Dumping request: http://localhost:8080/inspector/network/resources/resource.php?cached=1
+  statusCode: 304
 
 Running: testResourceFromIncorrectURL
 Loading resource from resource.php
 Failed: Couldn't create a loader
+Dumping request: http://localhost:8080/inspector/network/resources/resource.php?cached=1
+  statusCode: 304
 
 Running: testResourceFromFileScheme
 Loading resource from file:///var/www/index.html
 Failed: Can not load local file
+Dumping request: http://localhost:8080/inspector/network/resources/resource.php?cached=1
+  statusCode: 304
 
