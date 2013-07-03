@@ -87,8 +87,9 @@ class AutofillDialogView {
   virtual void ModelChanged() = 0;
 
   // Returns an object that can be used to test that the view is behaving as
-  // expected.
-  virtual TestableAutofillDialogView* GetTestableView() = 0;
+  // expected. This should be implemented on all platforms, but for now returns
+  // NULL on everything but Views.
+  virtual TestableAutofillDialogView* GetTestableView();
 
   // Called by AutofillDialogSignInDelegate when the sign-in page experiences a
   // resize. |pref_size| is the new preferred size of the sign-in page.

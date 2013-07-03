@@ -210,10 +210,6 @@ void AutofillDialogViewAndroid::OnSignInResize(const gfx::Size& pref_size) {
   NOTIMPLEMENTED();
 }
 
-TestableAutofillDialogView* AutofillDialogViewAndroid::GetTestableView() {
-  return NULL;
-}
-
 // TODO(aruslan): bind to the list of accounts population.
 std::vector<std::string> AutofillDialogViewAndroid::GetAvailableUserAccounts() {
   std::vector<std::string> account_names;
