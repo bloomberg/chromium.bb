@@ -5,6 +5,7 @@
 #ifndef SYNC_ENGINE_COMMIT_H_
 #define SYNC_ENGINE_COMMIT_H_
 
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 
 namespace syncer {
@@ -28,6 +29,7 @@ class Syncer;
 // including the syncable::Directory that contains all sync items and the
 // ServerConnectionManager used to contact the server.
 SyncerError BuildAndPostCommits(
+    ModelTypeSet request_types,
     Syncer* syncer,
     sessions::SyncSession* session);
 

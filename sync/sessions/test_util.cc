@@ -8,23 +8,56 @@ namespace syncer {
 namespace sessions {
 namespace test_util {
 
-void SimulateGetEncryptionKeyFailed(sessions::SyncSession* session,
-                                    SyncerStep begin, SyncerStep end) {
+void SimulateGetEncryptionKeyFailed(ModelTypeSet requsted_types,
+                                    sessions::SyncSession* session) {
   session->mutable_status_controller()->set_last_get_key_result(
       SERVER_RESPONSE_VALIDATION_FAILED);
   session->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
 }
 
-void SimulateDownloadUpdatesFailed(sessions::SyncSession* session,
-                                   SyncerStep begin, SyncerStep end) {
+void SimulateConfigureSuccess(ModelTypeSet requsted_types,
+                              sessions::SyncSession* session) {
+  ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
+  session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
+  session->mutable_status_controller()->set_last_download_updates_result(
+      SYNCER_OK);
+}
+
+void SimulateConfigureFailed(ModelTypeSet requsted_types,
+                             sessions::SyncSession* session) {
   session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   session->mutable_status_controller()->set_last_download_updates_result(
       SERVER_RETURN_TRANSIENT_ERROR);
 }
 
-void SimulateCommitFailed(sessions::SyncSession* session,
-                          SyncerStep begin, SyncerStep end) {
+void SimulateConfigureConnectionFailure(ModelTypeSet requsted_types,
+                                        sessions::SyncSession* session) {
+  session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
+  session->mutable_status_controller()->set_last_download_updates_result(
+      NETWORK_CONNECTION_UNAVAILABLE);
+}
+
+void SimulateNormalSuccess(ModelTypeSet requested_types,
+                           const sessions::NudgeTracker& nudge_tracker,
+                           sessions::SyncSession* session) {
+  ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
+  session->mutable_status_controller()->set_commit_result(SYNCER_OK);
+  session->mutable_status_controller()->set_last_download_updates_result(
+      SYNCER_OK);
+}
+
+void SimulateDownloadUpdatesFailed(
+    ModelTypeSet requested_types,
+    const sessions::NudgeTracker& nudge_tracker,
+    sessions::SyncSession* session) {
+  session->mutable_status_controller()->set_last_download_updates_result(
+      SERVER_RETURN_TRANSIENT_ERROR);
+}
+
+void SimulateCommitFailed(ModelTypeSet requested_types,
+                          const sessions::NudgeTracker& nudge_tracker,
+                          sessions::SyncSession* session) {
   session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
   session->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
@@ -32,37 +65,30 @@ void SimulateCommitFailed(sessions::SyncSession* session,
       SERVER_RETURN_TRANSIENT_ERROR);
 }
 
-void SimulateConnectionFailure(sessions::SyncSession* session,
-                               SyncerStep begin, SyncerStep end) {
+void SimulateConnectionFailure(
+                           ModelTypeSet requested_types,
+                           const sessions::NudgeTracker& nudge_tracker,
+                           sessions::SyncSession* session) {
   session->mutable_status_controller()->set_last_download_updates_result(
       NETWORK_CONNECTION_UNAVAILABLE);
 }
 
-void SimulateSuccess(sessions::SyncSession* session,
-                     SyncerStep begin, SyncerStep end) {
-  const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source =
-      session->source().updates_source;
+void SimulatePollSuccess(ModelTypeSet requested_types,
+                         sessions::SyncSession* session) {
   ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
-  switch(end) {
-    case SYNCER_END:
-      session->mutable_status_controller()->set_commit_result(SYNCER_OK);
-      session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
-      session->mutable_status_controller()->set_last_download_updates_result(
-          SYNCER_OK);
-      break;
-    case APPLY_UPDATES:
-      DCHECK(source == sync_pb::GetUpdatesCallerInfo::RECONFIGURATION
-             || source == sync_pb::GetUpdatesCallerInfo::PERIODIC);
-      session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
-      session->mutable_status_controller()->set_last_download_updates_result(
-          SYNCER_OK);
-      break;
-    default:
-      ADD_FAILURE() << "Not a valid END state.";
-  }
+  session->mutable_status_controller()->set_last_download_updates_result(
+      SYNCER_OK);
 }
 
-void SimulateThrottledImpl(sessions::SyncSession* session,
+void SimulatePollFailed(ModelTypeSet requested_types,
+                        sessions::SyncSession* session) {
+  ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
+  session->mutable_status_controller()->set_last_download_updates_result(
+      SERVER_RETURN_TRANSIENT_ERROR);
+}
+
+void SimulateThrottledImpl(
+    sessions::SyncSession* session,
     const base::TimeDelta& delta) {
   session->mutable_status_controller()->set_last_download_updates_result(
       SERVER_RETURN_THROTTLED);
@@ -78,15 +104,20 @@ void SimulateTypesThrottledImpl(
   session->delegate()->OnTypesThrottled(types, delta);
 }
 
-void SimulatePollIntervalUpdateImpl(sessions::SyncSession* session,
+void SimulatePollIntervalUpdateImpl(
+    ModelTypeSet requested_types,
+    sessions::SyncSession* session,
     const base::TimeDelta& new_poll) {
-  SimulateSuccess(session, SYNCER_BEGIN, SYNCER_END);
+  SimulatePollSuccess(requested_types, session);
   session->delegate()->OnReceivedLongPollIntervalUpdate(new_poll);
 }
 
-void SimulateSessionsCommitDelayUpdateImpl(sessions::SyncSession* session,
+void SimulateSessionsCommitDelayUpdateImpl(
+    ModelTypeSet requested_types,
+    const sessions::NudgeTracker& nudge_tracker,
+    sessions::SyncSession* session,
     const base::TimeDelta& new_delay) {
-  SimulateSuccess(session, SYNCER_BEGIN, SYNCER_END);
+  SimulateNormalSuccess(requested_types, nudge_tracker, session);
   session->delegate()->OnReceivedSessionsCommitDelay(new_delay);
 }
 

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/synchronization/lock.h"
 #include "sync/base/sync_export.h"
@@ -19,21 +20,6 @@
 #include "sync/util/extensions_activity_monitor.h"
 
 namespace syncer {
-
-namespace syncable {
-class Entry;
-class MutableEntry;
-}  // namespace syncable
-
-enum SyncerStep {
-  SYNCER_BEGIN,
-  DOWNLOAD_UPDATES,
-  PROCESS_UPDATES,
-  STORE_TIMESTAMPS,
-  APPLY_UPDATES,
-  COMMIT,
-  SYNCER_END
-};
 
 // A Syncer provides a control interface for driving the individual steps
 // of the sync cycle.  Each cycle (hopefully) moves the client into closer
@@ -57,14 +43,23 @@ class SYNC_EXPORT_PRIVATE Syncer {
   bool ExitRequested();
   void RequestEarlyExit();
 
-  // Runs a sync cycle from |first_step| to |last_step|.
-  // Returns true if the cycle completed with |last_step|, and false
-  // if it terminated early due to error / exit requested.
-  virtual bool SyncShare(sessions::SyncSession* session,
-                         SyncerStep first_step,
-                         SyncerStep last_step);
+  virtual bool NormalSyncShare(ModelTypeSet request_types,
+                               const sessions::NudgeTracker& nudge_tracker,
+                               sessions::SyncSession* session);
+  virtual bool ConfigureSyncShare(ModelTypeSet request_types,
+                                  sessions::SyncSession* session);
+  virtual bool PollSyncShare(ModelTypeSet request_types,
+                             sessions::SyncSession* session);
 
  private:
+  void ApplyUpdates(sessions::SyncSession* session);
+  bool DownloadAndApplyUpdates(
+      sessions::SyncSession* session,
+      base::Callback<SyncerError(void)> download_fn);
+
+  void HandleCycleBegin(sessions::SyncSession* session);
+  bool HandleCycleEnd(sessions::SyncSession* session);
+
   bool early_exit_requested_;
   base::Lock early_exit_requested_lock_;
 
@@ -92,10 +87,6 @@ class SYNC_EXPORT_PRIVATE Syncer {
 
   DISALLOW_COPY_AND_ASSIGN(Syncer);
 };
-
-// Utility function declarations.
-void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest);
-const char* SyncerStepToString(const SyncerStep);
 
 }  // namespace syncer
 

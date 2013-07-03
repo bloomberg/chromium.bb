@@ -16,29 +16,19 @@ namespace syncer {
 namespace sessions {
 
 // static
-SyncSession* SyncSession::BuildForNudge(SyncSessionContext* context,
-                                        Delegate* delegate,
-                                        const SyncSourceInfo& source,
-                                        const NudgeTracker* nudge_tracker) {
-  return new SyncSession(context, delegate, source, nudge_tracker);
-}
-
-// static
 SyncSession* SyncSession::Build(SyncSessionContext* context,
                                 Delegate* delegate,
                                 const SyncSourceInfo& source) {
-  return new SyncSession(context, delegate, source, NULL);
+  return new SyncSession(context, delegate, source);
 }
 
 SyncSession::SyncSession(
     SyncSessionContext* context,
     Delegate* delegate,
-    const SyncSourceInfo& source,
-    const NudgeTracker* nudge_tracker)
+    const SyncSourceInfo& source)
     : context_(context),
       source_(source),
-      delegate_(delegate),
-      nudge_tracker_(nudge_tracker) {
+      delegate_(delegate) {
   status_controller_.reset(new StatusController());
 }
 

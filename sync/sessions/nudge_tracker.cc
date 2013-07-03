@@ -28,8 +28,8 @@ NudgeTracker::NudgeTracker()
 
 NudgeTracker::~NudgeTracker() { }
 
-bool NudgeTracker::IsSyncRequired() {
-  for (TypeTrackerMap::iterator it = type_trackers_.begin();
+bool NudgeTracker::IsSyncRequired() const {
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
     if (it->second.IsSyncRequired()) {
       return true;
@@ -193,6 +193,13 @@ SyncSourceInfo NudgeTracker::GetSourceInfo() const {
   }
 
   return SyncSourceInfo(updates_source_, invalidation_map);
+}
+
+void NudgeTracker::SetLegacyNotificationHint(
+    ModelType type,
+    sync_pb::DataTypeProgressMarker* progress) const {
+  DCHECK(type_trackers_.find(type) != type_trackers_.end());
+  type_trackers_.find(type)->second.SetLegacyNotificationHint(progress);
 }
 
 sync_pb::GetUpdatesCallerInfo::GetUpdatesSource NudgeTracker::updates_source()

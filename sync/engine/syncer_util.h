@@ -16,6 +16,7 @@
 #include "sync/engine/syncer_types.h"
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/metahandle_set.h"
+#include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable_id.h"
 
 namespace sync_pb {

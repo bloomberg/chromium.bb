@@ -130,6 +130,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
                            ServerConnectionChangeDuringBackoff);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest,
                            ConnectionChangeCanaryPreemptedByNudge);
+  FRIEND_TEST_ALL_PREFIXES(BackoffTriggersSyncSchedulerTest,
+                           FailGetEncryptionKey);
 
   struct SYNC_EXPORT_PRIVATE WaitInterval {
     enum Mode {
@@ -224,6 +226,9 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
 
   // Creates a session for a poll and performs the sync.
   void PollTimerCallback();
+
+  // Returns the set of types that are enabled and not currently throttled.
+  ModelTypeSet GetEnabledAndUnthrottledTypes();
 
   // Called as we are started to broadcast an initial session snapshot
   // containing data like initial_sync_ended.  Important when the client starts

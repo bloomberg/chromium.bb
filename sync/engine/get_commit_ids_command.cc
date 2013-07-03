@@ -28,9 +28,11 @@ using sessions::StatusController;
 
 GetCommitIdsCommand::GetCommitIdsCommand(
     syncable::BaseTransaction* trans,
+    ModelTypeSet requested_types,
     const size_t commit_batch_size,
     sessions::OrderedCommitSet* commit_set)
     : trans_(trans),
+      requested_types_(requested_types),
       requested_commit_batch_size_(commit_batch_size),
       commit_set_(commit_set) {
 }
@@ -56,15 +58,13 @@ SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
     passphrase_missing = cryptographer->has_pending_keys();
   };
 
-  // If we're comitting, then we must be performing a nudge job and must have a
-  // session with a nudge tracker.
-  DCHECK(session->nudge_tracker());
-
   // We filter out all unready entries from the set of unsynced handles. This
-  // new set of ready and unsynced items (which excludes throttled items as
-  // well) is then what we use to determine what is a candidate for commit.
+  // new set of ready and unsynced items is then what we use to determine what
+  // is a candidate for commit.  The caller of this SyncerCommand is responsible
+  // for ensuring that no throttled types are included among the
+  // requested_types.
   FilterUnreadyEntries(trans_,
-                       session->nudge_tracker()->GetThrottledTypes(),
+                       requested_types_,
                        encrypted_types,
                        passphrase_missing,
                        all_unsynced_handles,
@@ -107,7 +107,7 @@ bool IsEntryInConflict(const syncable::Entry& entry) {
 //    encrypted).
 // 3. It's type is currently throttled.
 // 4. It's a delete but has not been committed.
-bool IsEntryReadyForCommit(ModelTypeSet throttled_types,
+bool IsEntryReadyForCommit(ModelTypeSet requested_types,
                            ModelTypeSet encrypted_types,
                            bool passphrase_missing,
                            const syncable::Entry& entry) {
@@ -130,8 +130,8 @@ bool IsEntryReadyForCommit(ModelTypeSet throttled_types,
     return false;
   }
 
-  // Look at the throttled types.
-  if (throttled_types.Has(type))
+  // Ignore it if it's not in our set of requested types.
+  if (!requested_types.Has(type))
     return false;
 
   if (entry.Get(syncable::IS_DEL) && !entry.Get(syncable::ID).ServerKnows()) {
@@ -164,7 +164,7 @@ bool IsEntryReadyForCommit(ModelTypeSet throttled_types,
 
 void GetCommitIdsCommand::FilterUnreadyEntries(
     syncable::BaseTransaction* trans,
-    ModelTypeSet throttled_types,
+    ModelTypeSet requested_types,
     ModelTypeSet encrypted_types,
     bool passphrase_missing,
     const syncable::Directory::Metahandles& unsynced_handles,
@@ -172,7 +172,7 @@ void GetCommitIdsCommand::FilterUnreadyEntries(
   for (syncable::Directory::Metahandles::const_iterator iter =
        unsynced_handles.begin(); iter != unsynced_handles.end(); ++iter) {
     syncable::Entry entry(trans, syncable::GET_BY_HANDLE, *iter);
-    if (IsEntryReadyForCommit(throttled_types,
+    if (IsEntryReadyForCommit(requested_types,
                               encrypted_types,
                               passphrase_missing,
                               entry)) {

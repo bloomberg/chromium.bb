@@ -188,16 +188,16 @@ class SyncerTest : public testing::Test,
     sessions::SyncSourceInfo source_info(
         sync_pb::GetUpdatesCallerInfo::LOCAL,
         invalidation_map);
-    // Use our dummy nudge tracker.  These tests won't notice that it hasn't
-    // been tracking anything because the server is mocked out and ignores most
-    // of the content of requests sent by the client.
-    session_.reset(
-        SyncSession::BuildForNudge(context_.get(),
-                                   this,
-                                   source_info,
-                                   &nudge_tracker_));
+    session_.reset(SyncSession::Build(context_.get(), this, source_info));
 
-    EXPECT_TRUE(syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END));
+    // Pretend we've seen a local change, to make the nudge_tracker look normal.
+    nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
+
+    EXPECT_TRUE(
+        syncer_->NormalSyncShare(
+            GetRoutingInfoTypes(context_->routing_info()),
+            nudge_tracker_,
+            session_.get()));
   }
 
   void SyncShareConfigure() {
@@ -211,8 +211,9 @@ class SyncerTest : public testing::Test,
     session_.reset(SyncSession::Build(context_.get(),
                                       this,
                                       source_info));
-    EXPECT_TRUE(
-        syncer_->SyncShare(session_.get(), DOWNLOAD_UPDATES, APPLY_UPDATES));
+    EXPECT_TRUE(syncer_->ConfigureSyncShare(
+            GetRoutingInfoTypes(context_->routing_info()),
+            session_.get()));
   }
 
   virtual void SetUp() {
@@ -304,17 +305,6 @@ class SyncerTest : public testing::Test,
     EXPECT_FALSE(client_status.has_hierarchy_conflict_detected());
   }
 
-  void SyncRepeatedlyToTriggerConflictResolution(SyncSession* session) {
-    // We should trigger after less than 6 syncs, but extra does no harm.
-    for (int i = 0 ; i < 6 ; ++i)
-      syncer_->SyncShare(session, SYNCER_BEGIN, SYNCER_END);
-  }
-  void SyncRepeatedlyToTriggerStuckSignal(SyncSession* session) {
-    // We should trigger after less than 10 syncs, but we want to avoid brittle
-    // tests.
-    for (int i = 0 ; i < 12 ; ++i)
-      syncer_->SyncShare(session, SYNCER_BEGIN, SYNCER_END);
-  }
   sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
     sync_pb::EntitySpecifics result;
     AddDefaultFieldValue(BOOKMARKS, &result);
@@ -422,10 +412,11 @@ class SyncerTest : public testing::Test,
 
       ModelSafeRoutingInfo routes;
       GetModelSafeRoutingInfo(&routes);
+      ModelTypeSet types = GetRoutingInfoTypes(routes);
       sessions::OrderedCommitSet output_set(routes);
-      GetCommitIdsCommand command(&wtrans, limit, &output_set);
+      GetCommitIdsCommand command(&wtrans, types, limit, &output_set);
       std::set<int64> ready_unsynced_set;
-      command.FilterUnreadyEntries(&wtrans, ModelTypeSet(),
+      command.FilterUnreadyEntries(&wtrans, types,
                                    ModelTypeSet(), false,
                                    unsynced_handle_view, &ready_unsynced_set);
       command.BuildCommitIds(&wtrans, routes, ready_unsynced_set);
@@ -663,8 +654,7 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
   DoTruncationTest(unsynced_handle_view, expected_order);
 }
 
-// TODO(rlarocque): re-enable this test.
-TEST_F(SyncerTest, DISABLED_GetCommitIdsFiltersThrottledEntries) {
+TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   const ModelTypeSet throttled_types(BOOKMARKS);
   sync_pb::EntitySpecifics bookmark_data;
   AddDefaultFieldValue(BOOKMARKS, &bookmark_data);
@@ -682,11 +672,12 @@ TEST_F(SyncerTest, DISABLED_GetCommitIdsFiltersThrottledEntries) {
     A.Put(NON_UNIQUE_NAME, "bookmark");
   }
 
-  // Now set the throttled types.
-  // context_->throttled_data_type_tracker()->SetUnthrottleTime(
-  //     throttled_types,
-  //     base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1200));
-  SyncShareNudge();
+  // Now sync without enabling bookmarks.
+  syncer_->NormalSyncShare(
+      Difference(GetRoutingInfoTypes(context_->routing_info()),
+                 ModelTypeSet(BOOKMARKS)),
+      nudge_tracker_,
+      session_.get());
 
   {
     // Nothing should have been committed as bookmarks is throttled.
@@ -696,10 +687,11 @@ TEST_F(SyncerTest, DISABLED_GetCommitIdsFiltersThrottledEntries) {
     EXPECT_TRUE(entryA.Get(IS_UNSYNCED));
   }
 
-  // Now unthrottle.
-  // context_->throttled_data_type_tracker()->SetUnthrottleTime(
-  //    throttled_types,
-  //    base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1200));
+  // Sync again with bookmarks enabled.
+  syncer_->NormalSyncShare(
+      GetRoutingInfoTypes(context_->routing_info()),
+      nudge_tracker_,
+      session_.get());
   SyncShareNudge();
   {
     // It should have been committed.
@@ -3213,7 +3205,7 @@ TEST_F(SyncerTest, MergingExistingItems) {
   }
   mock_server_->AddUpdateBookmark(1, 0, "Copy of base", 50, 50,
                                   local_cache_guid(), "-1");
-  SyncRepeatedlyToTriggerConflictResolution(session_.get());
+  SyncShareNudge();
 }
 
 // In this test a long changelog contains a child at the start of the changelog
@@ -3241,7 +3233,7 @@ TEST_F(SyncerTest, LongChangelistWithApplicationConflict) {
     mock_server_->SetChangesRemaining(depth - i);
   }
 
-  syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
+  SyncShareNudge();
 
   // Ensure our folder hasn't somehow applied.
   {
@@ -3288,7 +3280,7 @@ TEST_F(SyncerTest, DontMergeTwoExistingItems) {
   }
   mock_server_->AddUpdateBookmark(1, 0, "Copy of base", 50, 50,
                                   foreign_cache_guid(), "-1");
-  SyncRepeatedlyToTriggerConflictResolution(session_.get());
+  SyncShareNudge();
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry1(&trans, GET_BY_ID, ids_.FromNumber(1));

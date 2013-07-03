@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/download_updates_command.h"
+#include "sync/engine/download.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/nudge_tracker.h"
 #include "sync/test/engine/fake_model_worker.h"
@@ -12,11 +12,11 @@ using ::testing::_;
 
 namespace syncer {
 
-// A test fixture for tests exercising DownloadUpdatesCommandTest.
-class DownloadUpdatesCommandTest : public SyncerCommandTest {
+// A test fixture for tests exercising download updates functions.
+class DownloadUpdatesTest : public SyncerCommandTest {
  protected:
-  DownloadUpdatesCommandTest()
-      : command_(true /* create_mobile_bookmarks_folder */) {}
+  DownloadUpdatesTest() {
+  }
 
   virtual void SetUp() {
     workers()->clear();
@@ -31,13 +31,11 @@ class DownloadUpdatesCommandTest : public SyncerCommandTest {
     SyncerCommandTest::SetUp();
   }
 
-  DownloadUpdatesCommand command_;
-
  private:
-  DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesCommandTest);
+  DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesTest);
 };
 
-TEST_F(DownloadUpdatesCommandTest, ExecuteNoStates) {
+TEST_F(DownloadUpdatesTest, ExecuteNoStates) {
   ConfigureMockServerConnection();
 
   sessions::NudgeTracker nudge_tracker;
@@ -46,14 +44,16 @@ TEST_F(DownloadUpdatesCommandTest, ExecuteNoStates) {
   mock_server()->ExpectGetUpdatesRequestTypes(
       GetRoutingInfoTypes(routing_info()));
   scoped_ptr<sessions::SyncSession> session(
-      sessions::SyncSession::BuildForNudge(context(),
-                                           delegate(),
-                                           nudge_tracker.GetSourceInfo(),
-                                           &nudge_tracker));
-  command_.ExecuteImpl(session.get());
+      sessions::SyncSession::Build(context(),
+                                   delegate(),
+                                   nudge_tracker.GetSourceInfo()));
+  NormalDownloadUpdates(session.get(),
+                        false,
+                        GetRoutingInfoTypes(routing_info()),
+                        nudge_tracker);
 }
 
-TEST_F(DownloadUpdatesCommandTest, ExecuteWithStates) {
+TEST_F(DownloadUpdatesTest, ExecuteWithStates) {
   ConfigureMockServerConnection();
 
   sessions::NudgeTracker nudge_tracker;
@@ -72,22 +72,25 @@ TEST_F(DownloadUpdatesCommandTest, ExecuteWithStates) {
   mock_server()->ExpectGetUpdatesRequestStates(
       nudge_tracker.GetSourceInfo().types);
   scoped_ptr<sessions::SyncSession> session(
-      sessions::SyncSession::BuildForNudge(context(),
-                                           delegate(),
-                                           nudge_tracker.GetSourceInfo(),
-                                           &nudge_tracker));
-  command_.ExecuteImpl(session.get());
+      sessions::SyncSession::Build(context(),
+                                   delegate(),
+                                   nudge_tracker.GetSourceInfo()));
+  NormalDownloadUpdates(session.get(),
+                        false,
+                        GetRoutingInfoTypes(routing_info()),
+                        nudge_tracker);
 }
 
-TEST_F(DownloadUpdatesCommandTest, VerifyAppendDebugInfo) {
+TEST_F(DownloadUpdatesTest, VerifyAppendDebugInfo) {
   sync_pb::DebugInfo debug_info;
   EXPECT_CALL(*(mock_debug_info_getter()), GetAndClearDebugInfo(_))
       .Times(1);
-  command_.AppendClientDebugInfoIfNeeded(session(), &debug_info);
+  // The first of a set of repeated GUs will set it.
+  AppendClientDebugInfoIfNeeded(session(), &debug_info);
 
-  // Now try to add it once more and make sure |GetAndClearDebugInfo| is not
-  // called.
-  command_.AppendClientDebugInfoIfNeeded(session(), &debug_info);
+  // Subsequent GUs will not.
+  // Verify by checking that GetAndClearDebugInfo() is not called again.
+  AppendClientDebugInfoIfNeeded(session(), &debug_info);
 }
 
 }  // namespace syncer

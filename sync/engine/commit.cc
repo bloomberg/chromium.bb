@@ -63,6 +63,7 @@ void ClearSyncingBits(syncable::Directory* dir,
 // return value of this function is true.
 bool PrepareCommitMessage(
     sessions::SyncSession* session,
+    ModelTypeSet requested_types,
     sessions::OrderedCommitSet* commit_set,
     sync_pb::ClientToServerMessage* commit_message,
     ExtensionsActivityMonitor::Records* extensions_activity_buffer) {
@@ -75,7 +76,10 @@ bool PrepareCommitMessage(
 
   // Fetch the items to commit.
   const size_t batch_size = session->context()->max_commit_batch_size();
-  GetCommitIdsCommand get_commit_ids_command(&trans, batch_size, commit_set);
+  GetCommitIdsCommand get_commit_ids_command(&trans,
+                                             requested_types,
+                                             batch_size,
+                                             commit_set);
   get_commit_ids_command.Execute(session);
 
   DVLOG(1) << "Commit message will contain " << commit_set->Size() << " items.";
@@ -94,7 +98,8 @@ bool PrepareCommitMessage(
   return true;
 }
 
-SyncerError BuildAndPostCommitsImpl(Syncer* syncer,
+SyncerError BuildAndPostCommitsImpl(ModelTypeSet requested_types,
+                                    Syncer* syncer,
                                     sessions::SyncSession* session,
                                     sessions::OrderedCommitSet* commit_set) {
   while (!syncer->ExitRequested()) {
@@ -102,6 +107,7 @@ SyncerError BuildAndPostCommitsImpl(Syncer* syncer,
     ExtensionsActivityMonitor::Records extensions_activity_buffer;
 
     if (!PrepareCommitMessage(session,
+                              requested_types,
                               commit_set,
                               &commit_message,
                               &extensions_activity_buffer)) {
@@ -165,10 +171,12 @@ SyncerError BuildAndPostCommitsImpl(Syncer* syncer,
 }  // namespace
 
 
-SyncerError BuildAndPostCommits(Syncer* syncer,
+SyncerError BuildAndPostCommits(ModelTypeSet requested_types,
+                                Syncer* syncer,
                                 sessions::SyncSession* session) {
   sessions::OrderedCommitSet commit_set(session->context()->routing_info());
-  SyncerError result = BuildAndPostCommitsImpl(syncer, session, &commit_set);
+  SyncerError result =
+      BuildAndPostCommitsImpl(requested_types, syncer, session, &commit_set);
   if (result != SYNCER_OK) {
     ClearSyncingBits(session->context()->directory(), commit_set);
   }

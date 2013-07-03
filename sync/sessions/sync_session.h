@@ -101,19 +101,11 @@ class SYNC_EXPORT_PRIVATE SyncSession {
     virtual ~Delegate() {}
   };
 
-  // Build a session with a nudge tracker.  Used for sync cycles with origin of
-  // GU_TRIGGER (ie. notification, local change, and/or refresh request)
-  static SyncSession* BuildForNudge(SyncSessionContext* context,
-                                    Delegate* delegate,
-                                    const SyncSourceInfo& source,
-                                    const NudgeTracker* nudge_tracker);
-
   // Build a session without a nudge tracker.  Used for poll or configure type
   // sync cycles.
   static SyncSession* Build(SyncSessionContext* context,
                             Delegate* delegate,
                             const SyncSourceInfo& source);
-
   ~SyncSession();
 
   // Builds a thread-safe and read-only copy of the current session state.
@@ -134,13 +126,10 @@ class SYNC_EXPORT_PRIVATE SyncSession {
 
   const SyncSourceInfo& source() const { return source_; }
 
-  const NudgeTracker* nudge_tracker() const { return nudge_tracker_; }
-
  private:
   SyncSession(SyncSessionContext* context,
               Delegate* delegate,
-              const SyncSourceInfo& source,
-              const NudgeTracker* nudge_tracker);
+              const SyncSourceInfo& source);
 
   // The context for this session, guaranteed to outlive |this|.
   SyncSessionContext* const context_;
@@ -153,8 +142,6 @@ class SYNC_EXPORT_PRIVATE SyncSession {
 
   // Our controller for various status and error counters.
   scoped_ptr<StatusController> status_controller_;
-
-  const NudgeTracker* nudge_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSession);
 };

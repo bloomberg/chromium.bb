@@ -40,6 +40,7 @@ class SYNC_EXPORT_PRIVATE GetCommitIdsCommand : public SyncerCommand {
   // provided batch_size.  This contents of this "set" will be ordered; see the
   // comments in this class' implementation for details.
   GetCommitIdsCommand(syncable::BaseTransaction* trans,
+                      ModelTypeSet requested_types,
                       const size_t commit_batch_size,
                       sessions::OrderedCommitSet* ordered_commit_set);
   virtual ~GetCommitIdsCommand();
@@ -121,6 +122,9 @@ class SYNC_EXPORT_PRIVATE GetCommitIdsCommand : public SyncerCommand {
 
   // A pointer to a valid transaction not owned by this class.
   syncable::BaseTransaction* trans_;
+
+  // The set of types from which to draw commit IDs.
+  const ModelTypeSet requested_types_;
 
   // Input parameter; see constructor comment.
   const size_t requested_commit_batch_size_;

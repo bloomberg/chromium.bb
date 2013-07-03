@@ -15,25 +15,55 @@ namespace syncer {
 namespace sessions {
 namespace test_util {
 
-void SimulateGetEncryptionKeyFailed(sessions::SyncSession* session,
-                                    SyncerStep begin, SyncerStep end);
-void SimulateDownloadUpdatesFailed(sessions::SyncSession* session,
-                                   SyncerStep begin, SyncerStep end);
-void SimulateCommitFailed(sessions::SyncSession* session,
-                          SyncerStep begin, SyncerStep end);
-void SimulateConnectionFailure(sessions::SyncSession* session,
-                          SyncerStep begin, SyncerStep end);
-void SimulateSuccess(sessions::SyncSession* session,
-                     SyncerStep begin, SyncerStep end);
+// Configure sync cycle successes and failures.
+void SimulateGetEncryptionKeyFailed(ModelTypeSet requested_types,
+                                    sessions::SyncSession* session);
+void SimulateConfigureSuccess(ModelTypeSet requested_types,
+                              sessions::SyncSession* session);
+void SimulateConfigureFailed(ModelTypeSet requested_types,
+                             sessions::SyncSession* session);
+void SimulateConfigureConnectionFailure(ModelTypeSet requested_types,
+                                        sessions::SyncSession* session);
+
+// Normal mode sync cycle successes and failures.
+void SimulateNormalSuccess(ModelTypeSet requested_types,
+                           const sessions::NudgeTracker& nudge_tracker,
+                           sessions::SyncSession* session);
+void SimulateDownloadUpdatesFailed(ModelTypeSet requested_types,
+                                   const sessions::NudgeTracker& nudge_tracker,
+                                   sessions::SyncSession* session);
+void SimulateCommitFailed(ModelTypeSet requested_types,
+                          const sessions::NudgeTracker& nudge_tracker,
+                          sessions::SyncSession* session);
+void SimulateConnectionFailure(ModelTypeSet requested_types,
+                               const sessions::NudgeTracker& nudge_tracker,
+                               sessions::SyncSession* session);
+
+// Poll successes and failures.
+void SimulatePollSuccess(ModelTypeSet requested_types,
+                         sessions::SyncSession* session);
+void SimulatePollFailed(ModelTypeSet requested_types,
+                        sessions::SyncSession* session);
+
 void SimulateThrottledImpl(sessions::SyncSession* session,
     const base::TimeDelta& delta);
+
 void SimulateTypesThrottledImpl(
     sessions::SyncSession* session,
     ModelTypeSet types,
     const base::TimeDelta& delta);
-void SimulatePollIntervalUpdateImpl(sessions::SyncSession* session,
+
+// Works with poll cycles.
+void SimulatePollIntervalUpdateImpl(
+    ModelTypeSet requested_types,
+    sessions::SyncSession* session,
     const base::TimeDelta& new_poll);
-void SimulateSessionsCommitDelayUpdateImpl(sessions::SyncSession* session,
+
+// Works with normal cycles.
+void SimulateSessionsCommitDelayUpdateImpl(
+    ModelTypeSet requested_types,
+    const sessions::NudgeTracker& nudge_tracker,
+    sessions::SyncSession* session,
     const base::TimeDelta& new_delay);
 
 ACTION_P(SimulateThrottled, throttle) {
@@ -45,11 +75,11 @@ ACTION_P2(SimulateTypesThrottled, types, throttle) {
 }
 
 ACTION_P(SimulatePollIntervalUpdate, poll) {
-  SimulatePollIntervalUpdateImpl(arg0, poll);
+  SimulatePollIntervalUpdateImpl(arg0, arg1, poll);
 }
 
 ACTION_P(SimulateSessionsCommitDelayUpdate, poll) {
-  SimulateSessionsCommitDelayUpdateImpl(arg0, poll);
+  SimulateSessionsCommitDelayUpdateImpl(arg0, arg1, arg2, poll);
 }
 
 }  // namespace test_util

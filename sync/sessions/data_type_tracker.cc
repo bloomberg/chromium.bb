@@ -4,6 +4,7 @@
 
 #include "sync/sessions/data_type_tracker.h"
 
+#include "base/logging.h"
 #include "sync/sessions/nudge_tracker.h"
 
 namespace syncer {
@@ -71,6 +72,23 @@ bool DataTypeTracker::HasPendingInvalidation() const {
 
 std::string DataTypeTracker::GetMostRecentInvalidationPayload() const {
   return pending_payloads_.back();
+}
+
+void DataTypeTracker::SetLegacyNotificationHint(
+    sync_pb::DataTypeProgressMarker* progress) const {
+  DCHECK(!IsThrottled())
+      << "We should not make requests if the type is throttled.";
+
+  if (HasPendingInvalidation()) {
+    // The old-style source info can contain only one hint per type.  We grab
+    // the most recent, to mimic the old coalescing behaviour.
+    progress->set_notification_hint(GetMostRecentInvalidationPayload());
+  } else if (HasLocalChangePending()) {
+    // The old-style source info sent up an empty string (as opposed to
+    // nothing at all) when the type was locally nudged, but had not received
+    // any invalidations.
+    progress->set_notification_hint("");
+  }
 }
 
 void DataTypeTracker::FillGetUpdatesTriggersMessage(

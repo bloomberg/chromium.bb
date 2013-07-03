@@ -412,6 +412,5 @@ TEST_F(NudgeTrackerTest, OverlappingThrottleIntervals) {
   EXPECT_TRUE(nudge_tracker.GetThrottledTypes().Empty());
 }
 
-
 }  // namespace sessions
 }  // namespace syncer

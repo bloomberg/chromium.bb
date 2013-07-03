@@ -237,6 +237,14 @@ void SyncSchedulerImpl::Start(Mode mode) {
   }
 }
 
+ModelTypeSet SyncSchedulerImpl::GetEnabledAndUnthrottledTypes() {
+  ModelTypeSet enabled_types =
+      GetRoutingInfoTypes(session_context_->routing_info());
+  ModelTypeSet throttled_types =
+      nudge_tracker_.GetThrottledTypes();
+  return Difference(enabled_types, throttled_types);
+}
+
 void SyncSchedulerImpl::SendInitialSnapshot() {
   DCHECK(CalledOnValidThread());
   scoped_ptr<SyncSession> dummy(
@@ -461,14 +469,14 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
   DVLOG(2) << "Will run normal mode sync cycle with routing info "
            << ModelSafeRoutingInfoToString(session_context_->routing_info());
   scoped_ptr<SyncSession> session(
-      SyncSession::BuildForNudge(
+      SyncSession::Build(
           session_context_,
           this,
-          nudge_tracker_.GetSourceInfo(),
-          &nudge_tracker_));
-  bool premature_exit = !syncer_->SyncShare(session.get(),
-                                            SYNCER_BEGIN,
-                                            SYNCER_END);
+          nudge_tracker_.GetSourceInfo()));
+  bool premature_exit = !syncer_->NormalSyncShare(
+      GetEnabledAndUnthrottledTypes(),
+      nudge_tracker_,
+      session.get());
   AdjustPolling(FORCE_RESET);
 
   bool success = !premature_exit
@@ -507,9 +515,9 @@ bool SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
                                  std::string()));
   scoped_ptr<SyncSession> session(
       SyncSession::Build(session_context_, this, source_info));
-  bool premature_exit = !syncer_->SyncShare(session.get(),
-                                            DOWNLOAD_UPDATES,
-                                            APPLY_UPDATES);
+  bool premature_exit = !syncer_->ConfigureSyncShare(
+      GetRoutingInfoTypes(session_context_->routing_info()),
+      session.get());
   AdjustPolling(FORCE_RESET);
 
   bool success = !premature_exit
@@ -569,7 +577,9 @@ void SyncSchedulerImpl::DoPollSyncSessionJob() {
            << ModelSafeRoutingInfoToString(session_context_->routing_info());
   scoped_ptr<SyncSession> session(
       SyncSession::Build(session_context_, this, info));
-  syncer_->SyncShare(session.get(), DOWNLOAD_UPDATES, APPLY_UPDATES);
+  syncer_->PollSyncShare(
+      GetEnabledAndUnthrottledTypes(),
+      session.get());
 
   AdjustPolling(UPDATE_INTERVAL);
 
