@@ -297,7 +297,7 @@ class GitWrapper(SCMWrapper):
       verbose = ['--verbose']
       printed_path = True
 
-    if revision.startswith('refs/heads/'):
+    if revision.startswith('refs/'):
       rev_type = "branch"
     elif revision.startswith('origin/'):
       # For compatability with old naming, translate 'origin' to 'refs/heads'
@@ -406,29 +406,12 @@ class GitWrapper(SCMWrapper):
       else:
         raise gclient_utils.Error('Invalid Upstream: %s' % upstream_branch)
 
-    if (not re.match(r'^[0-9a-fA-F]{40}$', revision) or
-        not scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=revision)):
+    if not scm.GIT.IsValidRevision(self.checkout_path, revision, sha_only=True):
       # Update the remotes first so we have all the refs.
-      backoff_time = 5
-      for _ in range(10):
-        try:
-          remote_output = scm.GIT.Capture(
-              ['remote'] + verbose + ['update'],
+      remote_output = scm.GIT.Capture(['remote'] + verbose + ['update'],
               cwd=self.checkout_path)
-          break
-        except subprocess2.CalledProcessError, e:
-          # Hackish but at that point, git is known to work so just checking for
-          # 502 in stderr should be fine.
-          if '502' in e.stderr:
-            print(str(e))
-            print('Sleeping %.1f seconds and retrying...' % backoff_time)
-            time.sleep(backoff_time)
-            backoff_time *= 1.3
-            continue
-          raise
-
       if verbose:
-        print(remote_output.strip())
+        print(remote_output)
 
       self._UpdateBranchHeads(options, fetch=True)
 

@@ -100,7 +100,7 @@ class GIT(object):
   def Capture(args, cwd, **kwargs):
     return subprocess2.check_output(
         ['git', '--no-pager'] + args,
-        cwd=cwd, stderr=subprocess2.PIPE, **kwargs)
+        cwd=cwd, stderr=subprocess2.PIPE, **kwargs).strip()
 
   @staticmethod
   def CaptureStatus(files, cwd, upstream_branch):
@@ -121,7 +121,7 @@ class GIT(object):
       command.append(files)
     else:
       command.extend(files)
-    status = GIT.Capture(command, cwd).rstrip()
+    status = GIT.Capture(command, cwd)
     results = []
     if status:
       for statusline in status.splitlines():
@@ -142,7 +142,7 @@ class GIT(object):
     # We could want to look at the svn cred when it has a svn remote but it
     # should be fine for now, users should simply configure their git settings.
     try:
-      return GIT.Capture(['config', 'user.email'], cwd=cwd).strip()
+      return GIT.Capture(['config', 'user.email'], cwd=cwd)
     except subprocess2.CalledProcessError:
       return ''
 
@@ -154,7 +154,7 @@ class GIT(object):
   @staticmethod
   def GetBranchRef(cwd):
     """Returns the full branch reference, e.g. 'refs/heads/master'."""
-    return GIT.Capture(['symbolic-ref', 'HEAD'], cwd=cwd).strip()
+    return GIT.Capture(['symbolic-ref', 'HEAD'], cwd=cwd)
 
   @staticmethod
   def GetBranch(cwd):
@@ -166,7 +166,8 @@ class GIT(object):
     """Returns true if this repo looks like it's using git-svn."""
     # If you have any "svn-remote.*" config keys, we think you're using svn.
     try:
-      GIT.Capture(['config', '--get-regexp', r'^svn-remote\.'], cwd=cwd)
+      GIT.Capture(['config', '--local', '--get-regexp', r'^svn-remote\.'],
+                  cwd=cwd)
       return True
     except subprocess2.CalledProcessError:
       return False
@@ -240,7 +241,7 @@ class GIT(object):
     if url:
       svn_remote_re = re.compile(r'^svn-remote\.([^.]+)\.url (.*)$')
       remotes = GIT.Capture(
-          ['config', '--get-regexp', r'^svn-remote\..*\.url'],
+          ['config', '--local', '--get-regexp', r'^svn-remote\..*\.url'],
           cwd=cwd).splitlines()
       for remote in remotes:
         match = svn_remote_re.match(remote)
@@ -249,8 +250,8 @@ class GIT(object):
           base_url = match.group(2)
           try:
             fetch_spec = GIT.Capture(
-                ['config', 'svn-remote.%s.fetch' % remote],
-                cwd=cwd).strip()
+                ['config', '--local', 'svn-remote.%s.fetch' % remote],
+                cwd=cwd)
             branch = GIT.MatchSvnGlob(url, base_url, fetch_spec, False)
           except subprocess2.CalledProcessError:
             branch = None
@@ -258,8 +259,8 @@ class GIT(object):
             return branch
           try:
             branch_spec = GIT.Capture(
-                ['config', 'svn-remote.%s.branches' % remote],
-                cwd=cwd).strip()
+                ['config', '--local', 'svn-remote.%s.branches' % remote],
+                cwd=cwd)
             branch = GIT.MatchSvnGlob(url, base_url, branch_spec, True)
           except subprocess2.CalledProcessError:
             branch = None
@@ -267,8 +268,8 @@ class GIT(object):
             return branch
           try:
             tag_spec = GIT.Capture(
-                ['config', 'svn-remote.%s.tags' % remote],
-                cwd=cwd).strip()
+                ['config', '--local', 'svn-remote.%s.tags' % remote],
+                cwd=cwd)
             branch = GIT.MatchSvnGlob(url, base_url, tag_spec, True)
           except subprocess2.CalledProcessError:
             branch = None
@@ -285,25 +286,25 @@ class GIT(object):
     branch = GIT.GetBranch(cwd)
     try:
       upstream_branch = GIT.Capture(
-          ['config', 'branch.%s.merge' % branch], cwd=cwd).strip()
+          ['config', '--local', 'branch.%s.merge' % branch], cwd=cwd)
     except subprocess2.CalledProcessError:
       upstream_branch = None
     if upstream_branch:
       try:
         remote = GIT.Capture(
-            ['config', 'branch.%s.remote' % branch], cwd=cwd).strip()
+            ['config', '--local', 'branch.%s.remote' % branch], cwd=cwd)
       except subprocess2.CalledProcessError:
         pass
     else:
       try:
         upstream_branch = GIT.Capture(
-            ['config', 'rietveld.upstream-branch'], cwd=cwd).strip()
+            ['config', '--local', 'rietveld.upstream-branch'], cwd=cwd)
       except subprocess2.CalledProcessError:
         upstream_branch = None
       if upstream_branch:
         try:
           remote = GIT.Capture(
-              ['config', 'rietveld.upstream-remote'], cwd=cwd).strip()
+              ['config', '--local', 'rietveld.upstream-remote'], cwd=cwd)
         except subprocess2.CalledProcessError:
           pass
       else:
@@ -374,14 +375,14 @@ class GIT(object):
   @staticmethod
   def GetPatchName(cwd):
     """Constructs a name for this patch."""
-    short_sha = GIT.Capture(['rev-parse', '--short=4', 'HEAD'], cwd=cwd).strip()
+    short_sha = GIT.Capture(['rev-parse', '--short=4', 'HEAD'], cwd=cwd)
     return "%s#%s" % (GIT.GetBranch(cwd), short_sha)
 
   @staticmethod
   def GetCheckoutRoot(cwd):
     """Returns the top level directory of a git checkout as an absolute path.
     """
-    root = GIT.Capture(['rev-parse', '--show-cdup'], cwd=cwd).strip()
+    root = GIT.Capture(['rev-parse', '--show-cdup'], cwd=cwd)
     return os.path.abspath(os.path.join(cwd, root))
 
   @staticmethod
@@ -440,16 +441,25 @@ class GIT(object):
       return None
 
   @staticmethod
-  def IsValidRevision(cwd, rev):
-    """Verifies the revision is a proper git revision."""
+  def IsValidRevision(cwd, rev, sha_only=False):
+    """Verifies the revision is a proper git revision.
+
+    sha_only: Fail unless rev is a sha hash.
+    """
     # 'git rev-parse foo' where foo is *any* 40 character hex string will return
     # the string and return code 0. So strip one character to force 'git
     # rev-parse' to do a hash table look-up and returns 128 if the hash is not
     # present.
+    lookup_rev = rev
     if re.match(r'^[0-9a-fA-F]{40}$', rev):
-      rev = rev[:-1]
+      lookup_rev = rev[:-1]
     try:
-      GIT.Capture(['rev-parse', rev], cwd=cwd)
+      sha = GIT.Capture(['rev-parse', lookup_rev], cwd=cwd)
+      if lookup_rev != rev:
+        # Make sure we get the original 40 chars back.
+        return rev == sha
+      if sha_only:
+        return sha.startswith(rev)
       return True
     except subprocess2.CalledProcessError:
       return False
