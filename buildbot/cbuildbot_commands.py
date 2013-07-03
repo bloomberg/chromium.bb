@@ -293,9 +293,22 @@ def SetSharedUserPassword(buildroot, password):
     osutils.SafeUnlink(passwd_file, sudo=True)
 
 
-def SetupBoard(buildroot, board, usepkg, extra_env=None, profile=None,
-               chroot_upgrade=True):
-  """Wrapper around setup_board."""
+def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
+               extra_env=None, force=False, profile=None, chroot_upgrade=True):
+  """Wrapper around setup_board.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    board: The board to set up.
+    usepkg: Whether to use binary packages when setting up the board.
+    chrome_binhost_only: If set, only use binary packages on the board for
+      Chrome itself.
+    extra_env: A dictionary of environmental variables to set during generation.
+    force: Whether to remove the board prior to setting it up.
+    profile: The profile to use with this board.
+    chroot_upgrade: Whether to update the chroot. If the chroot is already up to
+      date, you can specify chroot_upgrade=False.
+  """
   cmd = ['./setup_board', '--board=%s' % board,
          '--accept_licenses=@CHROMEOS']
 
@@ -311,12 +324,36 @@ def SetupBoard(buildroot, board, usepkg, extra_env=None, profile=None,
   if not usepkg:
     cmd.extend(_LOCAL_BUILD_FLAGS)
 
+  if chrome_binhost_only:
+    cmd.append('--chrome_binhost_only')
+
+  if force:
+    cmd.append('--force')
+
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
-def Build(buildroot, board, build_autotest, usepkg, nowithdebug, packages=(),
-          skip_chroot_upgrade=True, extra_env=None, chrome_root=None):
-  """Wrapper around build_packages."""
+def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
+          nowithdebug, packages=(), skip_chroot_upgrade=True, extra_env=None,
+          chrome_root=None):
+  """Wrapper around build_packages.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    board: The board to set up.
+    build_autotest: Whether to build autotest-related packages.
+    usepkg: Whether to use binary packages.
+    chrome_binhost_only: If set, only use binary packages on the board for
+      Chrome itself.
+    nowithdebug: Pass the --nowithdebug flag to build_packages (sets the
+      -DNDEBUG compiler flag).
+    packages: Tuple of specific packages we want to build. If empty,
+      build_packages will calculate a list of packages automatically.
+    skip_chroot_upgrade: Whether to skip the chroot update. If the chroot is
+      not yet up to date, you should specify skip_chroot_upgrade=False.
+    extra_env: A dictionary of environmental variables to set during generation.
+    chrome_root: The directory where chrome is stored.
+  """
   cmd = ['./build_packages', '--board=%s' % board,
          '--accept_licenses=@CHROMEOS']
 
@@ -328,6 +365,9 @@ def Build(buildroot, board, build_autotest, usepkg, nowithdebug, packages=(),
 
   if not usepkg:
     cmd.extend(_LOCAL_BUILD_FLAGS)
+
+  if chrome_binhost_only:
+    cmd.append('--chrome_binhost_only')
 
   if nowithdebug:
     cmd.append('--nowithdebug')

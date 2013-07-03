@@ -1407,13 +1407,12 @@ class SetupBoardStage(InitSDKStage):
       if os.path.isdir(board_path) and not chroot_upgrade:
         continue
 
-      commands.SetupBoard(self._build_root,
-                          board=board_to_build,
-                          usepkg=usepkg,
-                          extra_env=self._env,
-                          profile=self._options.profile or
-                            self._build_config['profile'],
-                          chroot_upgrade=chroot_upgrade)
+      commands.SetupBoard(
+          self._build_root, board=board_to_build, usepkg=usepkg,
+          chrome_binhost_only=self._build_config['chrome_binhost_only'],
+          force=self._build_config['board_replace'],
+          extra_env=self._env, chroot_upgrade=chroot_upgrade,
+          profile=self._options.profile or self._build_config['profile'])
       chroot_upgrade = False
 
     commands.SetSharedUserPassword(
@@ -1542,12 +1541,14 @@ class BuildPackagesStage(ArchivingStage):
                                           buildroot=self._build_root)
       commands.WaitForPGOData(self._GetArchitectures(), cpv)
 
+    config = self._build_config
     commands.Build(self._build_root,
                    self._current_board,
                    build_autotest=self._build_autotest,
-                   usepkg=self._build_config['usepkg_build_packages'],
-                   nowithdebug=self._build_config['nowithdebug'],
-                   packages=self._build_config['packages'],
+                   usepkg=config['usepkg_build_packages'],
+                   chrome_binhost_only=config['chrome_binhost_only'],
+                   nowithdebug=config['nowithdebug'],
+                   packages=config['packages'],
                    skip_chroot_upgrade=True,
                    chrome_root=self._options.chrome_root,
                    extra_env=self._env)

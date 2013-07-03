@@ -248,6 +248,9 @@ _settings = dict(
 # usepkg_build_packages -- Use binary packages for build_packages.
   usepkg_build_packages=True,
 
+# chrome_binhost_only -- Only use binaries in build_packages for Chrome itself.
+  chrome_binhost_only=False,
+
 # sync_chrome -- Does this profile need to sync chrome?  If None, we guess based
 #                on other factors.  If True/False, we always do that.
   sync_chrome=None,
@@ -263,6 +266,9 @@ _settings = dict(
 # If you set this to a commit-ish, the gcc ebuild will use it to build the
 # toolchain compiler.
   gcc_githash=None,
+
+# board_replace -- wipe and replace the board inside the chroot.
+  board_replace=False,
 
 # chroot_replace -- wipe and replace chroot, but not source.
   chroot_replace=False,
@@ -677,6 +683,12 @@ paladin = _config(
   trybot_list=True,
   description='Commit Queue',
   upload_standalone_images=False,
+)
+
+# Used for paladin builders that build from source.
+full_paladin = _config(
+  board_replace=True,
+  chrome_binhost_only=True,
 )
 
 # Incremental builders are intended to test the developer workflow.
@@ -1134,12 +1146,16 @@ internal_paladin.add_config('alex-paladin',
   upload_hw_test_artifacts=True,
 )
 
+# x86 full compile
 internal_paladin.add_config('butterfly-paladin',
+  full_paladin,
   boards=['butterfly'],
   paladin_builder_name='butterfly paladin',
 )
 
+# amd64 full compile
 internal_paladin.add_config('falco-paladin',
+  full_paladin,
   boards=['falco'],
   paladin_builder_name='falco paladin',
 )
@@ -1163,6 +1179,7 @@ internal_paladin.add_config('lumpy-paladin',
   upload_hw_test_artifacts=True,
 )
 
+# x86 full unit tests
 internal_paladin.add_config('parrot-paladin',
   boards=['parrot'],
   paladin_builder_name='parrot paladin',
@@ -1185,6 +1202,7 @@ internal_paladin.add_config('sonic-paladin',
   important=False,
 )
 
+# amd64 full unit tests
 internal_paladin.add_config('stout-paladin',
   boards=['stout'],
   quick_unit=False,
@@ -1219,7 +1237,9 @@ internal_arm_paladin.add_config('daisy-paladin',
   upload_hw_test_artifacts=True,
 )
 
+# arm full compile
 internal_arm_paladin.add_config('daisy_spring-paladin',
+  full_paladin,
   boards=['daisy_spring'],
   paladin_builder_name='daisy_spring paladin',
 )
