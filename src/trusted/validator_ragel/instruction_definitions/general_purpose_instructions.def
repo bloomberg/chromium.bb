@@ -118,9 +118,6 @@ bsr Eq Gq, data16 rexw 0x0f 0xbd, amd64 nacl-forbidden
 # reference.
 bswap ry, 0x0f 0xc8
 ######## BT ####################################################################
-# "bt" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
-# this instruction is used for bit manipulation rather than computing viable
-# addresses.
 bt Gv =Ev, 0x0f 0xa3, nacl-forbidden
 bt Ib =Ev, 0x0f 0xba /4, nacl-ia32-forbidden
 ######## BTC ###################################################################

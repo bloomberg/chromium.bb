@@ -5,3 +5,5 @@
      0:	f3 0f bc c3                                  	repz bsf %ebx,%eax
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

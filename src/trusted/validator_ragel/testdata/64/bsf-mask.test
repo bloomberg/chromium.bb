@@ -8,3 +8,5 @@
 @rdfa_output:
   3: [0] improper memory address - bad index
   return code: 1
+@spec:
+  3: register %rax should be restricted, while in fact None is restricted

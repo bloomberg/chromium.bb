@@ -217,6 +217,7 @@ REG32_TO_REG64 = {
     '%r14d' : '%r14',
     '%r15d' : '%r15'}
 
+REGS32 = REG32_TO_REG64.keys()
 REGS64 = REG32_TO_REG64.values()
 
 
@@ -424,7 +425,7 @@ def _ProcessOperandWrites(instruction, write_operands, zero_extending=False):
     if op in ['%spl', '%sp', '%rsp']:
       raise SandboxingError('changes to rsp are not allowed', instruction)
 
-    if op in REG32_TO_REG64 and zero_extending:
+    if op in REGS32 and zero_extending:
       if not postcondition.Implies(Condition()):
         raise SandboxingError(
             '%s when zero-extending %s'
@@ -511,9 +512,19 @@ def ValidateRegularInstruction(instruction, bitness):
          'xchg', 'xadd',
          'inc', 'dec', 'neg', 'not',
          'lea',
+         'adc', 'bsf', 'bsr', 'lzcnt',
+         'btc', 'btr', 'bts', 'bt',
+         'cmp',
+         'cmc',
         ]):
       return Condition(), Condition()
     elif re.match(r'mov[sz][bwl][lqw]$', name):  # MOVSX, MOVSXD, MOVZX
+      return Condition(), Condition()
+    elif name == 'bswap':
+      if ops[0] not in REGS32:
+        raise SandboxingError(
+            'bswap is only allowed with 32-bit operands',
+            instruction)
       return Condition(), Condition()
     else:
       raise DoNotMatchError(instruction)
@@ -548,6 +559,48 @@ def ValidateRegularInstruction(instruction, bitness):
       write_ops = [ops[1]]
       touches_memory = False
       zero_extending = True
+    elif _InstructionNameIn(
+        name,
+        ['adc', 'bsf', 'bsr', 'lzcnt']):
+      # Note: some versions of objdump (including one that is currently used
+      # in targeted tests) decode 'tzcnt' as 'repz bsf'
+      # (see validator_ragel/testdata/32/tzcnt.test)
+      # From sandboxing point of view bsf and tzcnt are the same, so
+      # we ignore this bug here.
+      # Same applies to 32-bit version.
+      assert len(ops) == 2
+      write_ops = [ops[1]]
+    elif _InstructionNameIn(name, ['btc', 'btr', 'bts', 'bt']):
+      assert len(ops) == 2
+      # bt* accept arbitrarily large bit offset when second
+      # operand is memory and offset is in register.
+      # Interestingly, when offset is immediate, it's taken modulo operand size,
+      # even when second operand is memory.
+      # Also, validator currently disallows
+      #   bt* <register>, <register>
+      # which is techincally safe. We disallow it in spec as well for
+      # simplicity.
+      if not re.match(_ImmediateRE() + r'$', ops[0]):
+        raise SandboxingError(
+            'bt* is only allowed with immediate as bit offset',
+            instruction)
+      if _InstructionNameIn(name, ['bt']):
+        write_ops = []
+      else:
+        write_ops = [ops[1]]
+    elif _InstructionNameIn(name, ['cmp']):
+      assert len(ops) == 2
+      write_ops = []
+    elif name == 'bswap':
+      assert len(ops) == 1
+      if ops[0] not in REGS32 + REGS64:
+        raise SandboxingError(
+            'bswap is only allowed with 32-bit and 64-bit operands',
+            instruction)
+      write_ops = ops
+    elif _InstructionNameIn(name, ['cmc']):
+      assert len(ops) == 0
+      write_ops = []
     else:
       raise DoNotMatchError(instruction)
 
