@@ -95,12 +95,18 @@ jint TemplateUrlServiceAndroid::GetTemplateUrlCount(JNIEnv* env, jobject obj) {
   return template_url_service_->GetTemplateURLs().size();
 }
 
+jboolean TemplateUrlServiceAndroid::IsSearchProviderManaged(JNIEnv* env,
+                                                            jobject obj) {
+  return template_url_service_->is_default_search_managed();
+}
+
 base::android::ScopedJavaLocalRef<jobject>
 TemplateUrlServiceAndroid::GetPrepopulatedTemplateUrlAt(JNIEnv* env,
                                                         jobject obj,
                                                         jint index) {
   TemplateURL* template_url = template_url_service_->GetTemplateURLs()[index];
-  if (!IsPrepopulatedTemplate(template_url))
+  if (!IsPrepopulatedTemplate(template_url) &&
+      !template_url->created_by_policy())
    return ScopedJavaLocalRef<jobject>();
 
   return Java_TemplateUrl_create(

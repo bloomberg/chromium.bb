@@ -28,6 +28,7 @@ class TemplateUrlServiceAndroid : public content::NotificationObserver {
   jboolean IsLoaded(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jobject>
       GetPrepopulatedTemplateUrlAt(JNIEnv* env, jobject obj, jint index);
+  jboolean IsSearchProviderManaged(JNIEnv* env, jobject obj);
 
   // NotificationObserver:
   virtual void Observe(int type,

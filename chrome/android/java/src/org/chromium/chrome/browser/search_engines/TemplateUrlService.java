@@ -125,6 +125,9 @@ public class TemplateUrlService {
         nativeSetDefaultSearchProvider(mNativeTemplateUrlServiceAndroid, selectedIndex);
     }
 
+    public boolean isSearchProviderManaged() {
+        return nativeIsSearchProviderManaged(mNativeTemplateUrlServiceAndroid);
+    }
     /**
      * Registers a listener for the TEMPLATE_URL_SERVICE_LOADED notification.
      */
@@ -152,4 +155,5 @@ public class TemplateUrlService {
     private native void nativeSetDefaultSearchProvider(int nativeTemplateUrlServiceAndroid,
             int selectedIndex);
     private native int nativeGetDefaultSearchProvider(int nativeTemplateUrlServiceAndroid);
+    private native boolean nativeIsSearchProviderManaged(int nativeTemplateUrlServiceAndroid);
 }
