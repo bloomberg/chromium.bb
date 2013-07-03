@@ -167,8 +167,6 @@
         'dbus/power_manager_client.h',
         'dbus/power_policy_controller.cc',
         'dbus/power_policy_controller.h',
-        'dbus/power_supply_status.cc',
-        'dbus/power_supply_status.h',
         'dbus/session_manager_client.cc',
         'dbus/session_manager_client.h',
         'dbus/sms_client.cc',

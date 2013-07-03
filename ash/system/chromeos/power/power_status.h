@@ -10,8 +10,8 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/dbus/power_supply_status.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
@@ -52,10 +52,6 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
 
   // Gets the global instance. Initialize must be called first.
   static PowerStatus* Get();
-
-  void set_status_for_testing(const chromeos::PowerSupplyStatus& status) {
-    status_ = status;
-  }
 
   // Adds or removes an observer.
   void AddObserver(Observer* observer);
@@ -105,17 +101,21 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // Returns an string describing the current state for accessibility.
   base::string16 GetAccessibleNameString() const;
 
+  // Updates |proto_|. Does not notify observers.
+  void SetProtoForTesting(const power_manager::PowerSupplyProperties& proto);
+
  protected:
   PowerStatus();
 
  private:
   // Overriden from PowerManagerClient::Observer.
-  virtual void PowerChanged(const chromeos::PowerSupplyStatus& status) OVERRIDE;
+  virtual void PowerChanged(
+      const power_manager::PowerSupplyProperties& proto) OVERRIDE;
 
   ObserverList<Observer> observers_;
 
   // Current state.
-  chromeos::PowerSupplyStatus status_;
+  power_manager::PowerSupplyProperties proto_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerStatus);
 };

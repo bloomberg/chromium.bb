@@ -551,6 +551,8 @@
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos',
+            # Ash #includes power_supply_properties.pb.h directly.
+            '../chromeos/chromeos.gyp:power_manager_proto',
           ],
         }, { # else: chromeos!=1
           'sources/': [
@@ -796,6 +798,10 @@
         ['chromeos!=1', {
           'sources/': [
             ['exclude', 'display/display_error_dialog_unittest.cc'],
+          ],
+        }, {  # chromeos==1
+          'dependencies': [
+            '../chromeos/chromeos.gyp:power_manager_proto',
           ],
         }],
       ],

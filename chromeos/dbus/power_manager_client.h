@@ -13,14 +13,13 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 
-#include "chromeos/dbus/power_supply_status.h"
-
 namespace dbus {
 class Bus;
 }
 
 namespace power_manager {
 class PowerManagementPolicy;
+class PowerSupplyProperties;
 }
 
 namespace chromeos {
@@ -59,7 +58,8 @@ class CHROMEOS_EXPORT PowerManagerClient {
     // Called when updated information about the power supply is available.
     // The status is automatically updated periodically, but
     // RequestStatusUpdate() can be used to trigger an immediate update.
-    virtual void PowerChanged(const PowerSupplyStatus& status) {}
+    virtual void PowerChanged(
+        const power_manager::PowerSupplyProperties& proto) {}
 
     // Called when we go idle for threshold time.
     virtual void IdleNotify(int64 threshold_secs) {}

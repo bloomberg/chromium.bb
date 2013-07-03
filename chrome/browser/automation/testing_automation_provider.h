@@ -25,9 +25,9 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 #if defined(OS_CHROMEOS)
-// TODO(sque): move to a ChromeOS-specific class. See crosbug.com/22081.
-class PowerManagerClientObserverForTesting;
-#endif  // defined(OS_CHROMEOS)
+#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
+#include "chromeos/dbus/power_manager_client.h"
+#endif
 
 class CreditCard;
 
@@ -51,6 +51,9 @@ struct WebPluginInfo;
 // This is an automation provider containing testing calls.
 class TestingAutomationProvider : public AutomationProvider,
                                   public chrome::BrowserListObserver,
+#if defined(OS_CHROMEOS)
+                                  public chromeos::PowerManagerClient::Observer,
+#endif
                                   public content::NotificationObserver {
  public:
   explicit TestingAutomationProvider(Profile* profile);
@@ -72,6 +75,11 @@ class TestingAutomationProvider : public AutomationProvider,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+#if defined(OS_CHROMEOS)
+  // chromeos::PowerManagerClient::Observer:
+  virtual void PowerChanged(const power_manager::PowerSupplyProperties& proto);
+#endif
 
   // IPC Message callbacks.
   void CloseBrowser(int handle, IPC::Message* reply_message);
@@ -1423,9 +1431,7 @@ class TestingAutomationProvider : public AutomationProvider,
   void EnsureTabSelected(Browser* browser, content::WebContents* tab);
 
 #if defined(OS_CHROMEOS)
-  // Avoid scoped ptr here to avoid having to define it completely in the
-  // non-ChromeOS code.
-  PowerManagerClientObserverForTesting* power_manager_observer_;
+  power_manager::PowerSupplyProperties power_supply_properties_;
 #endif  // defined(OS_CHROMEOS)
 
   std::map<std::string, JsonHandler> handler_map_;

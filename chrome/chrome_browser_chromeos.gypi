@@ -22,7 +22,7 @@
       },
       'dependencies': [
         # TODO(tbarzic): Cleanup this list.
-	'attestation_proto',
+        'attestation_proto',
         'app/policy/cloud_policy_codegen.gyp:policy',
         'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
         'browser_extensions',
@@ -47,6 +47,8 @@
         '../build/linux/system.gyp:dbus',
         '../chromeos/chromeos.gyp:chromeos',
         '../chromeos/chromeos.gyp:chromeos_memory',
+        # browser_chromeos #includes power_supply_properties.pb.h directly.
+        '../chromeos/chromeos.gyp:power_manager_proto',
         '../chromeos/ime/input_method.gyp:gencode',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',

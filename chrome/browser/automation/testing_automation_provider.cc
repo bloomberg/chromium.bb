@@ -247,11 +247,7 @@ const int TestingAutomationProvider::kSynchronousCommands[] = {
 };
 
 TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
-    : AutomationProvider(profile)
-#if defined(OS_CHROMEOS)
-      , power_manager_observer_(NULL)
-#endif
-      {
+    : AutomationProvider(profile) {
   BrowserList::AddObserver(this);
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_END,
                  content::NotificationService::AllSources());

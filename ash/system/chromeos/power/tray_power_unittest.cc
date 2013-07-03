@@ -7,11 +7,11 @@
 #include "ash/ash_switches.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_ptr.h"
-#include "chromeos/dbus/power_supply_status.h"
+#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "ui/message_center/fake_message_center.h"
 
-using chromeos::PowerSupplyStatus;
 using message_center::Notification;
+using power_manager::PowerSupplyProperties;
 
 namespace {
 
@@ -69,13 +69,13 @@ class TrayPowerTest : public test::AshTestBase {
     return tray_power_->notification_state_;
   }
 
-  bool MaybeShowUsbChargerNotification(const PowerSupplyStatus& status) {
-    PowerStatus::Get()->set_status_for_testing(status);
+  bool MaybeShowUsbChargerNotification(const PowerSupplyProperties& proto) {
+    PowerStatus::Get()->SetProtoForTesting(proto);
     return tray_power_->MaybeShowUsbChargerNotification();
   }
 
-  bool UpdateNotificationState(const PowerSupplyStatus& status) {
-    PowerStatus::Get()->set_status_for_testing(status);
+  bool UpdateNotificationState(const PowerSupplyProperties& proto) {
+    PowerStatus::Get()->SetProtoForTesting(proto);
     return tray_power_->UpdateNotificationState();
   }
 
@@ -83,18 +83,18 @@ class TrayPowerTest : public test::AshTestBase {
     tray_power_->usb_charger_was_connected_ = connected;
    }
 
-  // Returns a discharging PowerSupplyStatus more appropriate for testing.
-  static PowerSupplyStatus DefaultPowerSupplyStatus() {
-    PowerSupplyStatus status;
-    status.line_power_on = false;
-    status.battery_is_present = true;
-    status.battery_is_full = false;
-    status.battery_seconds_to_empty = 3 * 60 * 60;
-    status.battery_seconds_to_full = 2 * 60 * 60;
-    status.battery_percentage = 50.0;
-    status.is_calculating_battery_time = false;
-    status.battery_state = PowerSupplyStatus::DISCHARGING;
-    return status;
+  // Returns a discharging PowerSupplyProperties more appropriate for testing.
+  static PowerSupplyProperties DefaultPowerSupplyProperties() {
+    PowerSupplyProperties proto;
+    proto.set_external_power(
+        power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED);
+    proto.set_battery_state(
+        power_manager::PowerSupplyProperties_BatteryState_DISCHARGING);
+    proto.set_battery_percent(50.0);
+    proto.set_battery_time_to_empty_sec(3 * 60 * 60);
+    proto.set_battery_time_to_full_sec(2 * 60 * 60);
+    proto.set_is_calculating_battery_time(false);
+    return proto;
   }
 
  private:
@@ -105,25 +105,25 @@ class TrayPowerTest : public test::AshTestBase {
 };
 
 TEST_F(TrayPowerTest, MaybeShowUsbChargerNotification) {
-  PowerSupplyStatus discharging = DefaultPowerSupplyStatus();
+  PowerSupplyProperties discharging = DefaultPowerSupplyProperties();
   EXPECT_FALSE(MaybeShowUsbChargerNotification(discharging));
   EXPECT_EQ(0, message_center()->add_count());
   EXPECT_EQ(0, message_center()->remove_count());
 
   // Notification shows when connecting a USB charger.
-  PowerSupplyStatus usb_connected = DefaultPowerSupplyStatus();
-  usb_connected.line_power_on = true;
-  usb_connected.battery_state = PowerSupplyStatus::CONNECTED_TO_USB;
+  PowerSupplyProperties usb_connected = DefaultPowerSupplyProperties();
+  usb_connected.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_USB);
   EXPECT_TRUE(MaybeShowUsbChargerNotification(usb_connected));
   EXPECT_EQ(1, message_center()->add_count());
   EXPECT_EQ(0, message_center()->remove_count());
 
   // Change in charge does not trigger the notification again.
-  PowerSupplyStatus more_charge = DefaultPowerSupplyStatus();
-  more_charge.line_power_on = true;
-  more_charge.battery_seconds_to_full = 60 * 60;
-  more_charge.battery_percentage = 75.0;
-  more_charge.battery_state = PowerSupplyStatus::CONNECTED_TO_USB;
+  PowerSupplyProperties more_charge = DefaultPowerSupplyProperties();
+  more_charge.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_USB);
+  more_charge.set_battery_time_to_full_sec(60 * 60);
+  more_charge.set_battery_percent(75.0);
   SetUsbChargerConnected(true);
   EXPECT_FALSE(MaybeShowUsbChargerNotification(more_charge));
   EXPECT_EQ(1, message_center()->add_count());
@@ -138,28 +138,33 @@ TEST_F(TrayPowerTest, MaybeShowUsbChargerNotification) {
 
 TEST_F(TrayPowerTest, UpdateNotificationState) {
   // No notifications when no battery present.
-  PowerSupplyStatus no_battery = DefaultPowerSupplyStatus();
-  no_battery.battery_is_present = false;
+  PowerSupplyProperties no_battery = DefaultPowerSupplyProperties();
+  no_battery.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_AC);
+  no_battery.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_NOT_PRESENT);
   EXPECT_FALSE(UpdateNotificationState(no_battery));
   EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
 
   // No notification when calculating remaining battery time.
-  PowerSupplyStatus calculating = DefaultPowerSupplyStatus();
-  calculating.is_calculating_battery_time = true;
+  PowerSupplyProperties calculating = DefaultPowerSupplyProperties();
+  calculating.set_is_calculating_battery_time(true);
   EXPECT_FALSE(UpdateNotificationState(calculating));
   EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
 
   // No notification when charging.
-  PowerSupplyStatus charging = DefaultPowerSupplyStatus();
-  charging.line_power_on = true;
-  charging.battery_state = PowerSupplyStatus::CHARGING;
+  PowerSupplyProperties charging = DefaultPowerSupplyProperties();
+  charging.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_AC);
+  charging.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_CHARGING);
   EXPECT_FALSE(UpdateNotificationState(charging));
   EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
 
   // Critical low battery notification.
-  PowerSupplyStatus critical = DefaultPowerSupplyStatus();
-  critical.battery_seconds_to_empty = 60;
-  critical.battery_percentage = 2.0;
+  PowerSupplyProperties critical = DefaultPowerSupplyProperties();
+  critical.set_battery_time_to_empty_sec(60);
+  critical.set_battery_percent(2.0);
   EXPECT_TRUE(UpdateNotificationState(critical));
   EXPECT_EQ(TrayPower::NOTIFICATION_CRITICAL, notification_state());
 }

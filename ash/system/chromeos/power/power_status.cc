@@ -27,6 +27,23 @@ namespace internal {
 
 namespace {
 
+// Updates |proto| to ensure that its fields are consistent.
+void SanitizeProto(power_manager::PowerSupplyProperties* proto) {
+  DCHECK(proto);
+
+  if (proto->battery_state() ==
+      power_manager::PowerSupplyProperties_BatteryState_FULL)
+    proto->set_battery_percent(100.0);
+
+  if (!proto->is_calculating_battery_time()) {
+    const bool on_line_power = proto->external_power() !=
+        power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
+    if ((on_line_power && proto->battery_time_to_full_sec() < 0) ||
+        (!on_line_power && proto->battery_time_to_empty_sec() < 0))
+      proto->set_is_calculating_battery_time(true);
+  }
+}
+
 base::string16 GetBatteryTimeAccessibilityString(int hour, int min) {
   DCHECK(hour || min);
   if (hour && !min) {
@@ -99,44 +116,49 @@ void PowerStatus::RequestStatusUpdate() {
 }
 
 bool PowerStatus::IsBatteryPresent() const {
-  return status_.battery_is_present;
+  return proto_.battery_state() !=
+      power_manager::PowerSupplyProperties_BatteryState_NOT_PRESENT;
 }
 
 bool PowerStatus::IsBatteryFull() const {
-  return status_.battery_is_full;
+  return proto_.battery_state() ==
+      power_manager::PowerSupplyProperties_BatteryState_FULL;
 }
 
 double PowerStatus::GetBatteryPercent() const {
-  return status_.battery_percentage;
+  return proto_.battery_percent();
 }
 
 int PowerStatus::GetRoundedBatteryPercent() const {
   return std::max(kMinBatteryPercent,
-      static_cast<int>(status_.battery_percentage + 0.5));
+      static_cast<int>(GetBatteryPercent() + 0.5));
 }
 
 bool PowerStatus::IsBatteryTimeBeingCalculated() const {
-  return status_.is_calculating_battery_time;
+  return proto_.is_calculating_battery_time();
 }
 
 base::TimeDelta PowerStatus::GetBatteryTimeToEmpty() const {
-  return base::TimeDelta::FromSeconds(status_.battery_seconds_to_empty);
+  return base::TimeDelta::FromSeconds(proto_.battery_time_to_empty_sec());
 }
 
 base::TimeDelta PowerStatus::GetBatteryTimeToFull() const {
-  return base::TimeDelta::FromSeconds(status_.battery_seconds_to_full);
+  return base::TimeDelta::FromSeconds(proto_.battery_time_to_full_sec());
 }
 
 bool PowerStatus::IsLinePowerConnected() const {
-  return status_.line_power_on;
+  return proto_.external_power() !=
+      power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
 }
 
 bool PowerStatus::IsMainsChargerConnected() const {
-  return status_.battery_state == chromeos::PowerSupplyStatus::CHARGING;
+  return proto_.external_power() ==
+      power_manager::PowerSupplyProperties_ExternalPower_AC;
 }
 
 bool PowerStatus::IsUsbChargerConnected() const {
-  return status_.battery_state == chromeos::PowerSupplyStatus::CONNECTED_TO_USB;
+  return proto_.external_power() ==
+      power_manager::PowerSupplyProperties_ExternalPower_USB;
 }
 
 gfx::ImageSkia PowerStatus::GetBatteryImage(IconSet icon_set) const {
@@ -153,17 +175,17 @@ gfx::ImageSkia PowerStatus::GetBatteryImage(IconSet icon_set) const {
   }
 
   // Get the horizontal offset in the battery icon array image.
-  int offset = (IsUsbChargerConnected() || !status_.line_power_on) ? 0 : 1;
+  int offset = (IsUsbChargerConnected() || !IsLinePowerConnected()) ? 0 : 1;
 
   // Get the icon index in the battery icon array image.
   int index = -1;
-  if (status_.battery_percentage >= 100) {
+  if (GetBatteryPercent() >= 100.0) {
     index = kNumPowerImages - 1;
-  } else if (!status_.battery_is_present) {
+  } else if (!IsBatteryPresent()) {
     index = kNumPowerImages;
   } else {
     index = static_cast<int>(
-        status_.battery_percentage / 100.0 * (kNumPowerImages - 1));
+        GetBatteryPercent() / 100.0 * (kNumPowerImages - 1));
     index = std::max(std::min(index, kNumPowerImages - 2), 0);
   }
 
@@ -175,7 +197,7 @@ gfx::ImageSkia PowerStatus::GetBatteryImage(IconSet icon_set) const {
 
 base::string16 PowerStatus::GetAccessibleNameString() const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (status_.line_power_on && status_.battery_is_full) {
+  if (IsLinePowerConnected() && IsBatteryFull()) {
     return rb.GetLocalizedString(
         IDS_ASH_STATUS_TRAY_BATTERY_FULL_CHARGE_ACCESSIBLE);
   }
@@ -228,11 +250,16 @@ PowerStatus::~PowerStatus() {
       RemoveObserver(this);
 }
 
-void PowerStatus::PowerChanged(const chromeos::PowerSupplyStatus& status) {
-  status_ = status;
-  if (status_.battery_is_full)
-    status_.battery_percentage = 100.0;
+void PowerStatus::SetProtoForTesting(
+    const power_manager::PowerSupplyProperties& proto) {
+  proto_ = proto;
+  SanitizeProto(&proto_);
+}
 
+void PowerStatus::PowerChanged(
+    const power_manager::PowerSupplyProperties& proto) {
+  proto_ = proto;
+  SanitizeProto(&proto_);
   FOR_EACH_OBSERVER(Observer, observers_, OnPowerStatusChanged());
 }
 
