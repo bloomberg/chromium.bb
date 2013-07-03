@@ -421,13 +421,10 @@ PPAPI_RELEASE = $(abspath $(OSNAME)/Release/$(TARGET)$(HOST_EXT));application/x-
 
 
 PAGE ?= index.html
-PAGE_TC_CONFIG = "$(PAGE)?tc=$(TOOLCHAIN)&config=$(CONFIG)"
+PAGE_TC_CONFIG ?= "$(PAGE)?tc=$(TOOLCHAIN)&config=$(CONFIG)"
 
 .PHONY: run
-run: check_for_chrome all
-ifeq (,$(wildcard $(PAGE)))
-	$(error No valid HTML page found at $(PAGE))
-endif
+run: check_for_chrome all $(PAGE)
 	$(RUN_PY) -C $(CURDIR) -P $(PAGE_TC_CONFIG) \
 	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH) $(CHROME_ARGS) \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
@@ -442,7 +439,7 @@ GDB_ARGS += -D $(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/$(SYSARCH)-nacl-gdb
 GDB_ARGS += -D $(abspath $(OUTDIR))/$(TARGET)_$(SYSARCH).nexe
 
 .PHONY: debug
-debug: check_for_chrome all
+debug: check_for_chrome all $(PAGE)
 	$(RUN_PY) $(GDB_ARGS) \
 	    -C $(CURDIR) -P $(PAGE_TC_CONFIG) \
 	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH) $(CHROME_ARGS) \

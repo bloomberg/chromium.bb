@@ -160,6 +160,6 @@ CREATE_HTML := python $(NACL_SDK_ROOT)/tools/create_html.py
 
 define HTML_RULE
 all: $(OUTDIR)/$(1).html
-$(OUTDIR)/$(1).html: $(foreach arch,$(ARCH_SUFFIXES),$(OUTDIR)/$(1)$(arch)) $(GLIBC_SO_LIST)
+$(OUTDIR)/$(1).html: $(OUTDIR)/$(1).pexe
 	$(call LOG,CREATE_HTML,$$@,$(CREATE_HTML) -o $$@ $$^)
 endef
