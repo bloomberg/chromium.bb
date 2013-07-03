@@ -76,6 +76,11 @@
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
+          'ldflags!': [
+              # Remove warnings about text relocations, to prevent build
+              # failure.
+              '-Wl,--warn-shared-textrel'
+          ],
         }],
       ],
     },

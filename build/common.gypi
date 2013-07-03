@@ -2761,10 +2761,14 @@
             ],
             'conditions' : [
               ['OS=="android"', {
-                # Only link with needed input sections. This is to avoid getting
-                # undefined reference to __cxa_bad_typeid in the CDU library.
                 'ldflags': [
+                  '-Wl,--fatal-warnings',
+                  # Only link with needed input sections. This is to avoid
+                  # getting undefined reference to __cxa_bad_typeid in the CDU
+                  # library.
                   '-Wl,--gc-sections',
+                  # Warn in case of text relocations.
+                  '-Wl,--warn-shared-textrel',
                 ],
               }],
               ['OS=="android" and android_full_debug==0', {
@@ -2833,6 +2837,11 @@
                 },
                 'cflags': [
                   '-fomit-frame-pointer',
+                ],
+                'ldflags': [
+                  '-Wl,--fatal-warnings',
+                  # Warn in case of text relocations.
+                  '-Wl,--warn-shared-textrel',
                 ],
               }],
               ['clang==1', {
