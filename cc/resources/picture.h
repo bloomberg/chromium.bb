@@ -118,13 +118,16 @@ class CC_EXPORT Picture
 
  private:
   explicit Picture(gfx::Rect layer_rect);
-  Picture(const base::Value*, bool* success);
   // This constructor assumes SkPicture is already ref'd and transfers
   // ownership to this picture.
   Picture(const skia::RefPtr<SkPicture>&,
           gfx::Rect layer_rect,
           gfx::Rect opaque_rect,
           const PixelRefMap& pixel_refs);
+  // This constructor will call AdoptRef on the SkPicture.
+  Picture(SkPicture*,
+          gfx::Rect layer_rect,
+          gfx::Rect opaque_rect);
   ~Picture();
 
   gfx::Rect layer_rect_;
