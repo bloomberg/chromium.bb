@@ -287,7 +287,6 @@
       'type': 'none',
       'dependencies': [
         'browser/devtools/devtools_resources.gyp:devtools_resources',
-        'browser/tracing/tracing_resources.gyp:tracing_resources',
         'content_resources.gyp:content_resources',
         'content_shell_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
@@ -295,6 +294,13 @@
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
+      ],
+      'conditions': [
+        ['OS!="android" and OS!="ios"', {
+          'dependencies': [
+            'browser/tracing/tracing_resources.gyp:tracing_resources',
+          ],
+        }],
       ],
       'variables': {
         'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',

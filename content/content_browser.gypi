@@ -1166,7 +1166,6 @@
     }, {  # OS!="ios"
       'dependencies': [
         'browser/devtools/devtools_resources.gyp:devtools_resources',
-        'browser/tracing/tracing_resources.gyp:tracing_resources',
         '../cc/cc.gyp:cc',
         '../net/net.gyp:http_server',
         '../printing/printing.gyp:printing',
@@ -1187,6 +1186,7 @@
     }],
     ['OS!="android" and OS!="ios"', {
       'dependencies': [
+        'browser/tracing/tracing_resources.gyp:tracing_resources',
         '../third_party/libyuv/libyuv.gyp:libyuv',
       ],
     }],
