@@ -291,7 +291,7 @@ class LayerTreeHostAnimationTestTickAnimationWhileBackgrounded
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestTickAnimationWhileBackgrounded);
 
-// Ensures that animations continue to be ticked when we are backgrounded.
+// Ensure that an animation's timing function is respected.
 class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
     : public LayerTreeHostAnimationTest {
  public:
@@ -311,11 +311,11 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
   virtual void AnimateLayers(
       LayerTreeHostImpl* host_impl,
       base::TimeTicks monotonic_time) OVERRIDE {
-    LayerAnimationController* controller =
-        layer_tree_host()->root_layer()->children()[0]->
+    LayerAnimationController* controller_impl =
+        host_impl->active_tree()->root_layer()->children()[0]->
         layer_animation_controller();
     Animation* animation =
-        controller->GetAnimation(Animation::Opacity);
+        controller_impl->GetAnimation(Animation::Opacity);
     if (!animation)
       return;
 
@@ -331,14 +331,6 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
     // because of the default ease timing function.
     EXPECT_FLOAT_EQ(linearly_interpolated_opacity, curve->GetValue(time));
 
-    LayerAnimationController* controller_impl =
-        host_impl->active_tree()->root_layer()->children()[0]->
-        layer_animation_controller();
-    Animation* animation_impl =
-        controller_impl->GetAnimation(Animation::Opacity);
-
-    controller->RemoveAnimation(animation->id());
-    controller_impl->RemoveAnimation(animation_impl->id());
     EndTest();
   }
 
