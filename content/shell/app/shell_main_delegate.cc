@@ -40,7 +40,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "content/shell/app/paths_mac.h"
+#include "content/shell/paths_mac.h"
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)

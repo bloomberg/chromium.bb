@@ -7,10 +7,12 @@
 
 #include "base/basictypes.h"
 
+#if defined(OS_MACOSX)
 extern "C" {
 __attribute__((visibility("default")))
 int ContentMain(int argc,
                 const char** argv);
 }  // extern "C"
+#endif  // OS_MACOSX
 
 #endif  // CONTENT_SHELL_APP_SHELL_CONTENT_MAIN_H_
