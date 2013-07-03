@@ -2256,25 +2256,6 @@ GraphicsLayer* RenderLayerCompositor::updateLayerForBottomOverhangArea(bool want
 
 #endif
 
-bool RenderLayerCompositor::viewHasTransparentBackground(Color* backgroundColor) const
-{
-    FrameView* frameView = m_renderView->frameView();
-    if (frameView->isTransparent()) {
-        if (backgroundColor)
-            *backgroundColor = Color(); // Return an invalid color.
-        return true;
-    }
-
-    Color documentBackgroundColor = frameView->documentBackgroundColor();
-    if (!documentBackgroundColor.isValid())
-        documentBackgroundColor = Color::white;
-
-    if (backgroundColor)
-        *backgroundColor = documentBackgroundColor;
-        
-    return documentBackgroundColor.hasAlpha();
-}
-
 void RenderLayerCompositor::updateOverflowControlsLayers()
 {
 #if ENABLE(RUBBER_BANDING)
