@@ -385,23 +385,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "features": [
         "use_non_zero_size_for_client_side_stream_buffers"
       ]
-    },
-    {
-      "id": 25,
-      "cr_bugs": [152225],
-      "description":
-          "Intel OSX drivers prior to mountain lion crashes when using PBOs",
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<",
-          "number": "10.8"
-        }
-      },
-      "vendor_id": "0x8086",
-      "features": [
-        "disable_async_readpixels"
-      ]
     }
   ]
 }
@@ -409,3 +392,4 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 );  // LONG_STRING_CONST macro
 
 }  // namespace gpu
+
