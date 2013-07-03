@@ -6,19 +6,17 @@
       <span i18n-content="optionAllPages"></span>
     </label></div>
     <div class="radio">
-      <label class="page-settings-print-pages-div">
-        <input class="page-settings-custom-radio"
-               name="pages"
-               type="radio"
+      <label class="page-settings-print-pages-div"
+             for="page-settings-custom-input">
+        <input class="page-settings-custom-radio" name="pages" type="radio"
                i18n-values="aria-label:printPagesLabel;">
         <div class="page-settings-custom-input-wrapper">
-          <input class="page-settings-custom-input"
-                 type="text"
+          <input class="page-settings-custom-input" type="text"
+                 id="page-settings-custom-input"
                  i18n-values="placeholder:examplePageRangeText">
         </div>
       </label>
-      <span class="page-settings-custom-hint hint suggestion"
-            aria-hidden="true"
+      <span class="page-settings-custom-hint hint suggestion" aria-hidden="true"
             aria-live="polite"></span>
     </div>
   </div>

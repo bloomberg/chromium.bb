@@ -97,6 +97,8 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this.customInput_, 'blur', this.onCustomInputBlur_.bind(this));
       this.tracker.add(
+          this.customInput_, 'focus', this.onCustomInputFocus_.bind(this));
+      this.tracker.add(
           this.customInput_, 'keyup', this.onCustomInputKeyUp_.bind(this));
       this.tracker.add(
           this.pageRangeTicketItem_,
@@ -158,7 +160,6 @@ cr.define('print_preview', function() {
      */
     onCustomRadioClick_: function() {
       this.customInput_.focus();
-      this.pageRangeTicketItem_.updateValue(this.customInput_.value);
     },
 
     /**
@@ -169,8 +170,16 @@ cr.define('print_preview', function() {
     onCustomInputBlur_: function() {
       if (this.customInput_.value == '') {
         this.allRadio_.checked = true;
-        this.customRadio_.checked = false;
       }
+    },
+
+    /**
+     * Called when the custom input is focused.
+     * @private
+     */
+    onCustomInputFocus_: function() {
+      this.customRadio_.checked = true;
+      this.pageRangeTicketItem_.updateValue(this.customInput_.value);
     },
 
     /**
@@ -185,7 +194,6 @@ cr.define('print_preview', function() {
       if (event.keyIdentifier == 'Enter') {
         this.pageRangeTicketItem_.updateValue(this.customInput_.value);
       } else {
-        this.allRadio_.checked = false;
         this.customRadio_.checked = true;
         this.customInputTimeout_ = setTimeout(
             this.onCustomInputTimeout_.bind(this),
@@ -217,11 +225,9 @@ cr.define('print_preview', function() {
             this.customInput_.value = pageRangeStr;
           }
           this.customRadio_.checked = true;
-          this.allRadio_.checked = false;
           this.setInvalidStateVisible_(!this.pageRangeTicketItem_.isValid());
         } else {
           this.allRadio_.checked = true;
-          this.customRadio_.checked = false;
           this.setInvalidStateVisible_(false);
         }
         fadeInOption(this.getElement());
