@@ -62,9 +62,9 @@ enum IndexedDBBackingStoreErrorSource {
 
 static void RecordInternalError(const char* type,
                                 IndexedDBBackingStoreErrorSource location) {
-  string16 name = ASCIIToUTF16("WebCore.IndexedDB.BackingStore.") +
-                  UTF8ToUTF16(type) + ASCIIToUTF16("Error");
-  base::Histogram::FactoryGet(UTF16ToUTF8(name),
+  std::string name;
+  name.append("WebCore.IndexedDB.BackingStore.").append(type).append("Error");
+  base::Histogram::FactoryGet(name,
                               1,
                               INTERNAL_ERROR_MAX,
                               INTERNAL_ERROR_MAX + 1,
@@ -179,7 +179,7 @@ static int CompareKeys(const LevelDBSlice& a, const LevelDBSlice& b) {
 }
 
 static int CompareIndexKeys(const LevelDBSlice& a, const LevelDBSlice& b) {
-  return Compare(a, b, true  /*index_keys*/);
+  return Compare(a, b, true /*index_keys*/);
 }
 
 class Comparator : public LevelDBComparator {
@@ -231,8 +231,9 @@ WARN_UNUSED_RESULT static bool IsSchemaKnown(LevelDBDatabase* db, bool* known) {
   return true;
 }
 
-WARN_UNUSED_RESULT static bool SetUpMetadata(LevelDBDatabase* db,
-                                             const string16& origin) {
+WARN_UNUSED_RESULT static bool SetUpMetadata(
+    LevelDBDatabase* db,
+    const std::string& origin_identifier) {
   const uint32 latest_known_data_version = kWireVersion;
   const std::vector<char> schema_version_key = SchemaVersionKey::Encode();
   const std::vector<char> data_version_key = DataVersionKey::Encode();
@@ -267,9 +268,9 @@ WARN_UNUSED_RESULT static bool SetUpMetadata(LevelDBDatabase* db,
              LevelDBSlice(schema_version_key),
              db_schema_version);
       const std::vector<char> start_key =
-          DatabaseNameKey::EncodeMinKeyForOrigin(origin);
+          DatabaseNameKey::EncodeMinKeyForOrigin(origin_identifier);
       const std::vector<char> stop_key =
-          DatabaseNameKey::EncodeStopKeyForOrigin(origin);
+          DatabaseNameKey::EncodeStopKeyForOrigin(origin_identifier);
       scoped_ptr<LevelDBIterator> it = db->CreateIterator();
       for (it->Seek(LevelDBSlice(start_key));
            it->IsValid() && CompareKeys(it->Key(), LevelDBSlice(stop_key)) < 0;
@@ -365,7 +366,8 @@ class DefaultLevelDBFactory : public LevelDBFactory {
  public:
   virtual scoped_ptr<LevelDBDatabase> OpenLevelDB(
       const base::FilePath& file_name,
-      const LevelDBComparator* comparator, bool* is_disk_full) OVERRIDE {
+      const LevelDBComparator* comparator,
+      bool* is_disk_full) OVERRIDE {
     return LevelDBDatabase::Open(file_name, comparator, is_disk_full);
   }
   virtual bool DestroyLevelDB(const base::FilePath& file_name) OVERRIDE {
@@ -374,7 +376,7 @@ class DefaultLevelDBFactory : public LevelDBFactory {
 };
 
 IndexedDBBackingStore::IndexedDBBackingStore(
-    const string16& identifier,
+    const std::string& identifier,
     scoped_ptr<LevelDBDatabase> db,
     scoped_ptr<LevelDBComparator> comparator)
     : identifier_(identifier),
@@ -419,13 +421,13 @@ enum IndexedDBLevelDBBackingStoreOpenResult {
 };
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
-    const string16& database_identifier,
+    const std::string& origin_identifier,
     const base::FilePath& path_base,
-    const string16& file_identifier,
+    const std::string& file_identifier,
     WebKit::WebIDBCallbacks::DataLoss* data_loss) {
   *data_loss = WebKit::WebIDBCallbacks::DataLossNone;
   DefaultLevelDBFactory leveldb_factory;
-  return IndexedDBBackingStore::Open(database_identifier,
+  return IndexedDBBackingStore::Open(origin_identifier,
                                      path_base,
                                      file_identifier,
                                      data_loss,
@@ -433,9 +435,9 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 }
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
-    const string16& database_identifier,
+    const std::string& origin_identifier,
     const base::FilePath& path_base,
-    const string16& file_identifier,
+    const std::string& file_identifier,
     WebKit::WebIDBCallbacks::DataLoss* data_loss,
     LevelDBFactory* leveldb_factory) {
   IDB_TRACE("IndexedDBBackingStore::Open");
@@ -465,8 +467,10 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     return scoped_refptr<IndexedDBBackingStore>();
   }
 
-  base::FilePath identifier_path = base::FilePath::FromUTF8Unsafe(
-      UTF16ToUTF8(database_identifier) + ".indexeddb.leveldb");
+  base::FilePath identifier_path =
+      base::FilePath().AppendASCII(origin_identifier).
+      AddExtension(FILE_PATH_LITERAL(".indexeddb.leveldb"));
+
   int limit = file_util::GetMaximumPathComponentLength(path_base);
   if (limit == -1) {
     DLOG(WARNING) << "GetMaximumPathComponentLength returned -1";
@@ -605,13 +609,13 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 }
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
-    const string16& identifier) {
+    const std::string& file_identifier) {
   DefaultLevelDBFactory leveldb_factory;
-  return IndexedDBBackingStore::OpenInMemory(identifier, &leveldb_factory);
+  return IndexedDBBackingStore::OpenInMemory(file_identifier, &leveldb_factory);
 }
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
-    const string16& identifier,
+    const std::string& file_identifier,
     LevelDBFactory* leveldb_factory) {
   IDB_TRACE("IndexedDBBackingStore::OpenInMemory");
 
@@ -635,11 +639,11 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
                               base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MEMORY_SUCCESS);
 
-  return Create(identifier, db.Pass(), comparator.Pass());
+  return Create(file_identifier, db.Pass(), comparator.Pass());
 }
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
-    const string16& identifier,
+    const std::string& identifier,
     scoped_ptr<LevelDBDatabase> db,
     scoped_ptr<LevelDBComparator> comparator) {
   // TODO(jsbell): Handle comparator name changes.
@@ -1232,9 +1236,8 @@ WARN_UNUSED_RESULT static bool GetNewVersionNumber(
   int64 version = last_version + 1;
   PutInt(transaction, LevelDBSlice(last_version_key), version);
 
-  DCHECK(version >
-         last_version);  // TODO(jsbell): Think about how we want to handle
-                         // the overflow scenario.
+  // TODO(jsbell): Think about how we want to handle the overflow scenario.
+  DCHECK(version > last_version);
 
   *new_version_number = version;
   return true;
@@ -2489,12 +2492,9 @@ bool IndexCursorOptions(
     cursor_options->high_open = range.upperOpen();
 
     std::vector<char> found_high_key;
+    // Seek to the *last* key in the set of non-unique keys
     if (!FindGreatestKeyLessThanOrEqual(
-            transaction,
-            cursor_options->high_key,
-            &found_high_key))  // Seek to the *last* key in the set of
-                               // non-unique
-      // keys.
+            transaction, cursor_options->high_key, &found_high_key))
       return false;
 
     // If the target key should not be included, but we end up with a smaller

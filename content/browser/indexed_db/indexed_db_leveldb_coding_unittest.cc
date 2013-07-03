@@ -650,14 +650,12 @@ TEST(IndexedDBLevelDBCodingTest, DecodeLegacyIDBKeyPath) {
   {
     key_paths.push_back(IndexedDBKeyPath(ASCIIToUTF16("foo")));
     char expected[] = {0, 'f', 0, 'o', 0, 'o'};
-    encoded_paths.push_back(
-        std::string(expected, arraysize(expected)));
+    encoded_paths.push_back(std::string(expected, arraysize(expected)));
   }
   {
     key_paths.push_back(IndexedDBKeyPath(ASCIIToUTF16("foo.bar")));
     char expected[] = {0, 'f', 0, 'o', 0, 'o', 0, '.', 0, 'b', 0, 'a', 0, 'r'};
-    encoded_paths.push_back(
-        std::string(expected, arraysize(expected)));
+    encoded_paths.push_back(std::string(expected, arraysize(expected)));
   }
 
   ASSERT_EQ(key_paths.size(), encoded_paths.size());
@@ -750,9 +748,9 @@ TEST(IndexedDBLevelDBCodingTest, ComparisonTest) {
   keys.push_back(MaxDatabaseIdKey::Encode());
   keys.push_back(DatabaseFreeListKey::Encode(0));
   keys.push_back(DatabaseFreeListKey::EncodeMaxKey());
-  keys.push_back(DatabaseNameKey::Encode(ASCIIToUTF16(""), ASCIIToUTF16("")));
-  keys.push_back(DatabaseNameKey::Encode(ASCIIToUTF16(""), ASCIIToUTF16("a")));
-  keys.push_back(DatabaseNameKey::Encode(ASCIIToUTF16("a"), ASCIIToUTF16("a")));
+  keys.push_back(DatabaseNameKey::Encode("", ASCIIToUTF16("")));
+  keys.push_back(DatabaseNameKey::Encode("", ASCIIToUTF16("a")));
+  keys.push_back(DatabaseNameKey::Encode("a", ASCIIToUTF16("a")));
   keys.push_back(
       DatabaseMetaDataKey::Encode(1, DatabaseMetaDataKey::ORIGIN_NAME));
   keys.push_back(

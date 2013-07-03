@@ -14,7 +14,7 @@ namespace content {
 class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
  public:
   IndexedDBFakeBackingStore()
-      : IndexedDBBackingStore(string16(),
+      : IndexedDBBackingStore(std::string(),
                               scoped_ptr<LevelDBDatabase>(),
                               scoped_ptr<LevelDBComparator>()) {}
   virtual std::vector<string16> GetDatabaseNames() OVERRIDE;

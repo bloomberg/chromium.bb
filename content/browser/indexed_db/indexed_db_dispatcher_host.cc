@@ -215,7 +215,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   Context()->GetIDBFactory()->GetDatabaseNames(
       IndexedDBCallbacks::Create(
           this, params.ipc_thread_id, params.ipc_callbacks_id),
-      base::UTF8ToUTF16(params.database_identifier),
+      params.database_identifier,
       indexed_db_path);
 }
 
@@ -247,7 +247,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
            host_transaction_id,
            callbacks,
            database_callbacks,
-           base::UTF8ToUTF16(params.database_identifier),
+           params.database_identifier,
            indexed_db_path);
 }
 
@@ -259,7 +259,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
       params.name,
       IndexedDBCallbacks::Create(
           this, params.ipc_thread_id, params.ipc_callbacks_id),
-      base::UTF8ToUTF16(params.database_identifier),
+      params.database_identifier,
       indexed_db_path);
 }
 

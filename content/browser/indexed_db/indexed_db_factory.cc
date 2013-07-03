@@ -27,16 +27,13 @@ static void CleanWeakMap(std::map<K, base::WeakPtr<M> >* map) {
   }
 }
 
-static string16 ComputeFileIdentifier(const string16& database_identifier) {
-  string16 suffix(ASCIIToUTF16("@1"));
-  string16 result(database_identifier);
-  result.insert(result.end(), suffix.begin(), suffix.end());
-  return result;
+static std::string ComputeFileIdentifier(const std::string& origin_identifier) {
+  return origin_identifier + "@1";
 }
 
 static string16 ComputeUniqueIdentifier(const string16& name,
-                                        const string16& database_identifier) {
-  return ComputeFileIdentifier(database_identifier) + name;
+                                        const std::string& origin_identifier) {
+  return ASCIIToUTF16(ComputeFileIdentifier(origin_identifier)) + name;
 }
 
 IndexedDBFactory::IndexedDBFactory() {}
@@ -52,13 +49,13 @@ void IndexedDBFactory::RemoveIDBDatabaseBackend(
 
 void IndexedDBFactory::GetDatabaseNames(
     scoped_refptr<IndexedDBCallbacks> callbacks,
-    const string16& database_identifier,
+    const std::string& origin_identifier,
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::GetDatabaseNames");
   // TODO(dgrogan): Plumb data_loss back to script eventually?
   WebKit::WebIDBCallbacks::DataLoss data_loss;
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      OpenBackingStore(database_identifier, data_directory, &data_loss);
+      OpenBackingStore(origin_identifier, data_directory, &data_loss);
   if (!backing_store) {
     callbacks->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -73,11 +70,11 @@ void IndexedDBFactory::GetDatabaseNames(
 void IndexedDBFactory::DeleteDatabase(
     const string16& name,
     scoped_refptr<IndexedDBCallbacks> callbacks,
-    const string16& database_identifier,
+    const std::string& origin_identifier,
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::DeleteDatabase");
   const string16 unique_identifier =
-      ComputeUniqueIdentifier(name, database_identifier);
+      ComputeUniqueIdentifier(name, origin_identifier);
 
   IndexedDBDatabaseMap::iterator it =
       database_backend_map_.find(unique_identifier);
@@ -91,7 +88,7 @@ void IndexedDBFactory::DeleteDatabase(
   // TODO(dgrogan): Plumb data_loss back to script eventually?
   WebKit::WebIDBCallbacks::DataLoss data_loss;
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      OpenBackingStore(database_identifier, data_directory, &data_loss);
+      OpenBackingStore(origin_identifier, data_directory, &data_loss);
   if (!backing_store) {
     callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -116,10 +113,10 @@ void IndexedDBFactory::DeleteDatabase(
 }
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
-    const string16& database_identifier,
+    const std::string& origin_identifier,
     const base::FilePath& data_directory,
     WebKit::WebIDBCallbacks::DataLoss* data_loss) {
-  const string16 file_identifier = ComputeFileIdentifier(database_identifier);
+  const std::string file_identifier = ComputeFileIdentifier(origin_identifier);
   const bool open_in_memory = data_directory.empty();
 
   IndexedDBBackingStoreMap::iterator it2 =
@@ -132,7 +129,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
     backing_store = IndexedDBBackingStore::OpenInMemory(file_identifier);
   } else {
     backing_store = IndexedDBBackingStore::Open(
-        database_identifier, data_directory, file_identifier, data_loss);
+        origin_identifier, data_directory, file_identifier, data_loss);
   }
 
   if (backing_store.get()) {
@@ -158,11 +155,11 @@ void IndexedDBFactory::Open(
     int64 transaction_id,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-    const string16& database_identifier,
+    const std::string& origin_identifier,
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::Open");
   const string16 unique_identifier =
-      ComputeUniqueIdentifier(name, database_identifier);
+      ComputeUniqueIdentifier(name, origin_identifier);
 
   scoped_refptr<IndexedDBDatabase> database_backend;
   IndexedDBDatabaseMap::iterator it =
@@ -171,7 +168,7 @@ void IndexedDBFactory::Open(
       WebKit::WebIDBCallbacks::DataLossNone;
   if (it == database_backend_map_.end()) {
     scoped_refptr<IndexedDBBackingStore> backing_store =
-        OpenBackingStore(database_identifier, data_directory, &data_loss);
+        OpenBackingStore(origin_identifier, data_directory, &data_loss);
     if (!backing_store) {
       callbacks->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,

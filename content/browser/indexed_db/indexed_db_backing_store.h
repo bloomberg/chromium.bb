@@ -43,20 +43,21 @@ class CONTENT_EXPORT IndexedDBBackingStore
   class CONTENT_EXPORT Transaction;
 
   static scoped_refptr<IndexedDBBackingStore> Open(
-      const string16& database_identifier,
+      const std::string& origin_identifier,
       const base::FilePath& path_base,
-      const string16& file_identifier,
+      const std::string& file_identifier,
       WebKit::WebIDBCallbacks::DataLoss* data_loss);
+
   static scoped_refptr<IndexedDBBackingStore> Open(
-      const string16& database_identifier,
+      const std::string& origin_identifier,
       const base::FilePath& path_base,
-      const string16& file_identifier,
+      const std::string& file_identifier,
       WebKit::WebIDBCallbacks::DataLoss* data_loss,
       LevelDBFactory* factory);
   static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
-      const string16& identifier);
+      const std::string& file_identifier);
   static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
-      const string16& identifier,
+      const std::string& file_identifier,
       LevelDBFactory* factory);
   base::WeakPtr<IndexedDBBackingStore> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -289,7 +290,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   };
 
  protected:
-  IndexedDBBackingStore(const string16& identifier,
+  IndexedDBBackingStore(const std::string& identifier,
                         scoped_ptr<LevelDBDatabase> db,
                         scoped_ptr<LevelDBComparator> comparator);
   virtual ~IndexedDBBackingStore();
@@ -297,7 +298,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
  private:
   static scoped_refptr<IndexedDBBackingStore> Create(
-      const string16& identifier,
+      const std::string& identifier,
       scoped_ptr<LevelDBDatabase> db,
       scoped_ptr<LevelDBComparator> comparator);
 
@@ -313,7 +314,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
                   IndexedDBObjectStoreMetadata::IndexMap* map)
       WARN_UNUSED_RESULT;
 
-  string16 identifier_;
+  std::string identifier_;
 
   scoped_ptr<LevelDBDatabase> db_;
   scoped_ptr<LevelDBComparator> comparator_;

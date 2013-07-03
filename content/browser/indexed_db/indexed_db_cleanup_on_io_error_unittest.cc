@@ -9,9 +9,7 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
-using WebKit::WebSecurityOrigin;
 using content::IndexedDBBackingStore;
 using content::LevelDBComparator;
 using content::LevelDBDatabase;
@@ -58,17 +56,16 @@ class MockLevelDBFactory : public LevelDBFactory {
 };
 
 TEST(IndexedDBIOErrorTest, CleanUpTest) {
-  WebSecurityOrigin origin(
-      WebSecurityOrigin::createFromString("http://localhost:81"));
+  std::string origin_identifier("http_localhost_81");
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   const base::FilePath path = temp_directory.path();
-  string16 dummy_file_identifier;
+  std::string dummy_file_identifier;
   MockLevelDBFactory mock_leveldb_factory;
   WebKit::WebIDBCallbacks::DataLoss data_loss =
       WebKit::WebIDBCallbacks::DataLossNone;
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      IndexedDBBackingStore::Open(origin.databaseIdentifier(),
+      IndexedDBBackingStore::Open(origin_identifier,
                                   path,
                                   dummy_file_identifier,
                                   &data_loss,

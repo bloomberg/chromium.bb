@@ -11,10 +11,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "webkit/common/database/database_identifier.h"
 
-using WebKit::WebSecurityOrigin;
 using WebKit::WebIDBKey;
 
 namespace content {
@@ -25,7 +25,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
  public:
   IndexedDBBackingStoreTest() {}
   virtual void SetUp() {
-    string16 file_identifier;
+    std::string file_identifier;
     backing_store_ = IndexedDBBackingStore::OpenInMemory(file_identifier);
 
     // useful keys and values during tests
@@ -333,12 +333,14 @@ class MockIDBFactory : public IndexedDBFactory {
   }
 
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
-      const WebSecurityOrigin& origin,
+      const GURL& origin,
       const base::FilePath& data_directory) {
     WebKit::WebIDBCallbacks::DataLoss data_loss =
         WebKit::WebIDBCallbacks::DataLossNone;
-    scoped_refptr<IndexedDBBackingStore> backing_store = OpenBackingStore(
-        origin.databaseIdentifier(), data_directory, &data_loss);
+    scoped_refptr<IndexedDBBackingStore> backing_store =
+        OpenBackingStore(webkit_database::GetIdentifierFromOrigin(origin),
+                         data_directory,
+                         &data_loss);
     EXPECT_EQ(WebKit::WebIDBCallbacks::DataLossNone, data_loss);
     return backing_store;
   }
@@ -348,10 +350,8 @@ class MockIDBFactory : public IndexedDBFactory {
 };
 
 TEST(IndexedDBFactoryTest, BackingStoreLifetime) {
-  WebSecurityOrigin origin1 =
-      WebSecurityOrigin::createFromString("http://localhost:81");
-  WebSecurityOrigin origin2 =
-      WebSecurityOrigin::createFromString("http://localhost:82");
+  GURL origin1("http://localhost:81");
+  GURL origin2("http://localhost:82");
 
   scoped_refptr<MockIDBFactory> factory = MockIDBFactory::Create();
 
@@ -376,10 +376,8 @@ TEST(IndexedDBFactoryTest, BackingStoreLifetime) {
 }
 
 TEST(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
-  WebSecurityOrigin origin1 =
-      WebSecurityOrigin::createFromString("http://localhost:81");
-  WebSecurityOrigin origin2 =
-      WebSecurityOrigin::createFromString("http://localhost:82");
+  GURL origin1("http://localhost:81");
+  GURL origin2("http://localhost:82");
 
   scoped_refptr<MockIDBFactory> factory = MockIDBFactory::Create();
   scoped_refptr<IndexedDBBackingStore> mem_store1 =
@@ -416,15 +414,12 @@ TEST(IndexedDBFactoryTest, RejectLongOrigins) {
   EXPECT_GT(limit, 0);
 
   std::string origin(limit + 1, 'x');
-  WebSecurityOrigin too_long_origin =
-      WebSecurityOrigin::createFromString(WebKit::WebString::fromUTF8(
-          std::string("http://" + origin + ":81/").c_str()));
+  GURL too_long_origin("http://" + origin + ":81/");
   scoped_refptr<IndexedDBBackingStore> diskStore1 =
       factory->TestOpenBackingStore(too_long_origin, base_path);
   EXPECT_FALSE(diskStore1);
 
-  WebSecurityOrigin ok_origin =
-      WebSecurityOrigin::createFromString("http://someorigin.com:82/");
+  GURL ok_origin("http://someorigin.com:82/");
   scoped_refptr<IndexedDBBackingStore> diskStore2 =
       factory->TestOpenBackingStore(ok_origin, base_path);
   EXPECT_TRUE(diskStore2);
