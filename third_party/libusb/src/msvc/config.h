@@ -20,4 +20,5 @@
 /* type of second poll() argument */
 #define POLL_NFDS_TYPE unsigned int
 
-#include <Winsock2.h>
+/* no way to run git describe from MSVC? */
+#define LIBUSB_DESCRIBE ""

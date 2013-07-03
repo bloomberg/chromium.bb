@@ -1,96 +1,41 @@
 diff --git a/libusb/libusb.h b/libusb/libusb.h
-index de2d050..beff229 100644
+index 58b406f..1d0dd7d 100644
 --- a/libusb/libusb.h
 +++ b/libusb/libusb.h
-@@ -833,6 +833,10 @@ typedef void (LIBUSB_CALL *libusb_transfer_cb_fn)(struct libusb_transfer *transf
+@@ -881,6 +881,12 @@ typedef void (LIBUSB_CALL *libusb_transfer_cb_fn)(struct libusb_transfer *transf
   * completed, the library populates the transfer with the results and passes
   * it back to the user.
   */
++
 +#if defined(OS_WIN)
 +#pragma warning(push)
 +#pragma warning(disable:4200)
 +#endif  // defined(OS_WIN)
++
  struct libusb_transfer {
  	/** Handle of the device that this transfer will be submitted to */
  	libusb_device_handle *dev_handle;
-@@ -884,12 +888,15 @@ struct libusb_transfer {
- 	/** Isochronous packet descriptors, for isochronous transfers only. */
- 	struct libusb_iso_packet_descriptor iso_packet_desc
- #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
--	[] /* valid C99 code */
-+       [] /* valid C99 code */
- #else
--	[0] /* non-standard, but usually working code */
-+       [0] /* non-standard, but usually working code */
- #endif
--	;
-+       ;
+@@ -939,6 +945,10 @@ struct libusb_transfer {
+ 	;
  };
+ 
 +#if defined(OS_WIN)
 +#pragma warning(pop)
 +#endif  // defined(OS_WIN)
- 
- /** \ingroup misc
-  * Capabilities supported by this instance of libusb. Test if the running
-diff --git a/libusb/os/poll_windows.h b/libusb/os/poll_windows.h
-index fee89f5..76bab0f 100644
---- a/libusb/os/poll_windows.h
-+++ b/libusb/os/poll_windows.h
-@@ -19,6 +19,9 @@
-  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-  *
-  */
 +
-+#ifndef LIBUSB_POLL_WINDOWS_H
-+#define LIBUSB_POLL_WINDOWS_H
- #pragma once
- 
- #if defined(_MSC_VER)
-@@ -50,19 +53,6 @@ extern enum windows_version windows_version;
- 
- #define MAX_FDS     256
- 
--#define POLLIN      0x0001    /* There is data to read */
--#define POLLPRI     0x0002    /* There is urgent data to read */
--#define POLLOUT     0x0004    /* Writing now will not block */
--#define POLLERR     0x0008    /* Error condition */
--#define POLLHUP     0x0010    /* Hung up */
--#define POLLNVAL    0x0020    /* Invalid request: fd not open */
--
--struct pollfd {
--    int fd;           /* file descriptor */
--    short events;     /* requested events */
--    short revents;    /* returned events */
--};
--
- // access modes
- enum rw_type {
- 	RW_NONE,
-@@ -118,3 +108,4 @@ do {                                                    \
- } while (0)
- #endif
- 
-+#endif /* LIBUSB_POLL_WINDOWS_H */
+ /** \ingroup misc
+  * Capabilities supported by this instance of libusb. Test if the loaded
+  * library supports a given capability by calling
 diff --git a/libusb/os/windows_usb.h b/libusb/os/windows_usb.h
-index b629d18..6dbfaf5 100644
+index ddbd680..7c2fae5 100644
 --- a/libusb/os/windows_usb.h
 +++ b/libusb/os/windows_usb.h
-@@ -101,8 +101,6 @@ const GUID GUID_DEVINTERFACE_USB_DEVICE = { 0xA5DCBF10, 0x6530, 0x11D2, {0x90, 0
+@@ -101,7 +101,7 @@ const GUID GUID_DEVINTERFACE_USB_DEVICE = { 0xA5DCBF10, 0x6530, 0x11D2, {0x90, 0
  #if !defined(GUID_DEVINTERFACE_USB_HUB)
  const GUID GUID_DEVINTERFACE_USB_HUB = { 0xF18A0E88, 0xC30C, 0x11D0, {0x88, 0x15, 0x00, 0xA0, 0xC9, 0x06, 0xBE, 0xD8} };
  #endif
 -const GUID GUID_NULL = { 0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} };
--
++static const GUID GUID_NULL = { 0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} };
+ 
  
  /*
-  * Multiple USB API backend support
-diff --git a/msvc/config.h b/msvc/config.h
-index 43b4d4e..9ac6134 100644
---- a/msvc/config.h
-+++ b/msvc/config.h
-@@ -19,3 +19,5 @@
- 
- /* type of second poll() argument */
- #define POLL_NFDS_TYPE unsigned int
-+
-+#include <Winsock2.h>

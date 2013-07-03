@@ -1,6 +1,6 @@
 Name: libusb
 URL: http://libusb.org
-Version: 1.0.8
+Version: 1.0.9
 License: LGPL 2.1
 License File: src/COPYING
 Security Critical: yes

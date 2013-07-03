@@ -26,11 +26,13 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <time.h>
+#include <stdarg.h>
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
 
 #include <libusb.h>
+#include <version.h>
 
 /* Inside the libusb code, mark all public functions as follows:
  *   return_type API_EXPORTED function_name(params) { ... }
@@ -127,7 +129,10 @@ enum usbi_log_level {
 void usbi_log(struct libusb_context *ctx, enum usbi_log_level level,
 	const char *function, const char *format, ...);
 
-#if !defined(_MSC_VER) || _MSC_VER > 1200
+void usbi_log_v(struct libusb_context *ctx, enum usbi_log_level level,
+	const char *function, const char *format, va_list args);
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1400
 
 #ifdef ENABLE_LOGGING
 #define _usbi_log(ctx, level, ...) usbi_log(ctx, level, __FUNCTION__, __VA_ARGS__)
@@ -145,41 +150,64 @@ void usbi_log(struct libusb_context *ctx, enum usbi_log_level level,
 #define usbi_warn(ctx, ...) _usbi_log(ctx, LOG_LEVEL_WARNING, __VA_ARGS__)
 #define usbi_err(ctx, ...) _usbi_log(ctx, LOG_LEVEL_ERROR, __VA_ARGS__)
 
-#else /* !defined(_MSC_VER) || _MSC_VER > 1200 */
+#else /* !defined(_MSC_VER) || _MSC_VER >= 1400 */
 
-void usbi_log_v(struct libusb_context *ctx, enum usbi_log_level level,
-	const char *function, const char *format, va_list args);
+/* Old MS compilers don't support variadic macros. The code is simple, so we
+ * repeat it for each loglevel. Note that the debug case is special.
+ *
+ * Support for variadic macros was introduced in Visual C++ 2005.
+ * http://msdn.microsoft.com/en-us/library/ms177415%28v=VS.80%29.aspx
+ */
 
+static inline void usbi_info(struct libusb_context *ctx, const char *fmt, ...)
+{
 #ifdef ENABLE_LOGGING
-#define LOG_BODY(ctxt, level) \
-{                             \
-	va_list args;             \
-	va_start (args, format);  \
-	usbi_log_v(ctxt, level, "", format, args); \
-	va_end(args);             \
+	va_list args;
+	va_start(args, fmt);
+	usbi_log_v(ctx, LOG_LEVEL_INFO, "", fmt, args);
+	va_end(args);
+#else
+	(void)ctx;
+#endif
 }
+
+static inline void usbi_warn(struct libusb_context *ctx, const char *fmt, ...)
+{
+#ifdef ENABLE_LOGGING
+	va_list args;
+	va_start(args, fmt);
+	usbi_log_v(ctx, LOG_LEVEL_WARNING, "", fmt, args);
+	va_end(args);
 #else
-#define LOG_BODY(ctxt, level) do { (void)(ctxt); } while(0)
+	(void)ctx;
 #endif
+}
 
-static inline void usbi_info(struct libusb_context *ctx, const char *format,
-	...)
-	LOG_BODY(ctx,LOG_LEVEL_INFO)
-static inline void usbi_warn(struct libusb_context *ctx, const char *format,
-	...)
-	LOG_BODY(ctx,LOG_LEVEL_WARNING)
-static inline void usbi_err( struct libusb_context *ctx, const char *format,
-	...)
-	LOG_BODY(ctx,LOG_LEVEL_ERROR)
+static inline void usbi_err(struct libusb_context *ctx, const char *fmt, ...)
+{
+#ifdef ENABLE_LOGGING
+	va_list args;
+	va_start(args, fmt);
+	usbi_log_v(ctx, LOG_LEVEL_ERROR, "", fmt, args);
+	va_end(args);
+#else
+	(void)ctx;
+#endif
+}
 
-static inline void usbi_dbg(const char *format, ...)
+static inline void usbi_dbg(const char *fmt, ...)
+{
 #ifdef ENABLE_DEBUG_LOGGING
-	LOG_BODY(NULL,LOG_LEVEL_DEBUG)
+	va_list args;
+	va_start(args, fmt);
+	usbi_log_v(NULL, LOG_LEVEL_DEBUG, "", fmt, args);
+	va_end(args);
 #else
-{ }
+	(void)fmt;
 #endif
+}
 
-#endif /* !defined(_MSC_VER) || _MSC_VER > 1200 */
+#endif /* !defined(_MSC_VER) || _MSC_VER >= 1400 */
 
 #define USBI_GET_CONTEXT(ctx) if (!(ctx)) (ctx) = usbi_default_context
 #define DEVICE_CTX(dev) ((dev)->ctx)
@@ -188,6 +216,11 @@ static inline void usbi_dbg(const char *format, ...)
 #define ITRANSFER_CTX(transfer) \
 	(TRANSFER_CTX(USBI_TRANSFER_TO_LIBUSB_TRANSFER(transfer)))
 
+#define IS_EPIN(ep) (0 != ((ep) & LIBUSB_ENDPOINT_IN))
+#define IS_EPOUT(ep) (!IS_EPIN(ep))
+#define IS_XFERIN(xfer) (0 != ((xfer)->endpoint & LIBUSB_ENDPOINT_IN))
+#define IS_XFEROUT(xfer) (!IS_XFERIN(xfer))
+
 /* Internal abstractions for thread synchronization and poll */
 #if defined(THREADS_POSIX)
 #include <os/threads_posix.h>
@@ -195,11 +228,23 @@ static inline void usbi_dbg(const char *format, ...)
 #include <os/threads_windows.h>
 #endif
 
-#if defined(OS_LINUX) || defined(OS_DARWIN)
+#if defined(OS_LINUX) || defined(OS_DARWIN) || defined(OS_OPENBSD)
 #include <unistd.h>
 #include <os/poll_posix.h>
 #elif defined(OS_WINDOWS)
 #include <os/poll_windows.h>
+#endif
+
+#if defined(OS_WINDOWS) && !defined(__GCC__)
+#undef HAVE_GETTIMEOFDAY
+int usbi_gettimeofday(struct timeval *tp, void *tzp);
+#define LIBUSB_GETTIMEOFDAY_WIN32
+#define HAVE_USBI_GETTIMEOFDAY
+#else
+#ifdef HAVE_GETTIMEOFDAY
+#define usbi_gettimeofday(tv, tz) gettimeofday((tv), (tz))
+#define HAVE_USBI_GETTIMEOFDAY
+#endif
 #endif
 
 extern struct libusb_context *usbi_default_context;
@@ -883,6 +928,7 @@ extern const struct usbi_os_backend * const usbi_backend;
 
 extern const struct usbi_os_backend linux_usbfs_backend;
 extern const struct usbi_os_backend darwin_backend;
+extern const struct usbi_os_backend openbsd_backend;
 extern const struct usbi_os_backend windows_backend;
 
 #endif

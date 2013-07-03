@@ -19,20 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  */
-
-#ifndef LIBUSB_POLL_WINDOWS_H
-#define LIBUSB_POLL_WINDOWS_H
 #pragma once
 
 #if defined(_MSC_VER)
 // disable /W4 MSVC warnings that are benign
 #pragma warning(disable:4127) // conditional expression is constant
 #endif
-
-// Uncomment to have poll return with EINTR as soon as a new transfer (fd) is added
-// This should result in a LIBUSB_ERROR_INTERRUPTED being returned by libusb calls,
-// which should give the app an opportunity to resubmit a new fd set.
-//#define DYNAMIC_FDS
 
 // Handle synchronous completion through the overlapped structure
 #if !defined(STATUS_REPARSE)	// reuse the REPARSE status code
@@ -52,6 +44,19 @@ enum windows_version {
 extern enum windows_version windows_version;
 
 #define MAX_FDS     256
+
+#define POLLIN      0x0001    /* There is data to read */
+#define POLLPRI     0x0002    /* There is urgent data to read */
+#define POLLOUT     0x0004    /* Writing now will not block */
+#define POLLERR     0x0008    /* Error condition */
+#define POLLHUP     0x0010    /* Hung up */
+#define POLLNVAL    0x0020    /* Invalid request: fd not open */
+
+struct pollfd {
+    int fd;           /* file descriptor */
+    short events;     /* requested events */
+    short revents;    /* returned events */
+};
 
 // access modes
 enum rw_type {
@@ -108,4 +113,3 @@ do {                                                    \
 } while (0)
 #endif
 
-#endif /* LIBUSB_POLL_WINDOWS_H */

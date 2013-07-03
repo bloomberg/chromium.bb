@@ -27,17 +27,28 @@
 #include <string.h>
 #include <sys/types.h>
 
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
 #include "libusbi.h"
 
 #if defined(OS_LINUX)
 const struct usbi_os_backend * const usbi_backend = &linux_usbfs_backend;
 #elif defined(OS_DARWIN)
 const struct usbi_os_backend * const usbi_backend = &darwin_backend;
+#elif defined(OS_OPENBSD)
+const struct usbi_os_backend * const usbi_backend = &openbsd_backend;
 #elif defined(OS_WINDOWS)
 const struct usbi_os_backend * const usbi_backend = &windows_backend;
 #else
 #error "Unsupported OS"
 #endif
+
+const struct libusb_version libusb_version_internal = {
+	LIBUSB_MAJOR, LIBUSB_MINOR, LIBUSB_MICRO, LIBUSB_NANO, LIBUSB_RC,
+	LIBUSB_DESCRIBE
+};
 
 struct libusb_context *usbi_default_context = NULL;
 static int default_context_refcnt = 0;
@@ -283,6 +294,14 @@ if (cfg != desired)
  * kernel where boundaries occur between logical libusb-level transfers. When
  * a short transfer (or other error) occurs, the kernel will cancel all the
  * subtransfers until the boundary without allowing those transfers to start.
+ *
+ * \section zlp Zero length packets
+ *
+ * - libusb is able to send a packet of zero length to an endpoint simply by
+ * submitting a transfer of zero length. On Linux, this did not work with
+ * libusb versions prior to 1.0.3 and kernel versions prior to 2.6.31.
+ * - The \ref libusb_transfer_flags::LIBUSB_TRANSFER_ADD_ZERO_PACKET
+ * "LIBUSB_TRANSFER_ADD_ZERO_PACKET" flag is currently only supported on Linux.
  */
 
 /**
@@ -1561,11 +1580,10 @@ int API_EXPORTED libusb_init(libusb_context **context)
 {
 	char *dbg = getenv("LIBUSB_DEBUG");
 	struct libusb_context *ctx;
-	int r;
+	int r = 0;
 
 	usbi_mutex_static_lock(&default_context_lock);
 	if (!context && usbi_default_context) {
-		r = 0;
 		usbi_dbg("reusing default context");
 		default_context_refcnt++;
 		usbi_mutex_static_unlock(&default_context_lock);
@@ -1585,7 +1603,13 @@ int API_EXPORTED libusb_init(libusb_context **context)
 			ctx->debug_fixed = 1;
 	}
 
-	usbi_dbg("");
+	usbi_dbg("libusb-%d.%d.%d%s%s%s",
+	         libusb_version_internal.major,
+	         libusb_version_internal.minor,
+	         libusb_version_internal.micro,
+	         libusb_version_internal.rc,
+	         libusb_version_internal.describe[0] ? " git:" : "",
+	         libusb_version_internal.describe);
 
 	if (usbi_backend->init) {
 		r = usbi_backend->init(ctx);
@@ -1665,27 +1689,74 @@ void API_EXPORTED libusb_exit(struct libusb_context *ctx)
 }
 
 /** \ingroup misc
- * Check if the running library has a given capability.
+ * Check at runtime if the loaded library has a given capability.
  *
  * \param capability the \ref libusb_capability to check for
  * \returns 1 if the running library has the capability, 0 otherwise
  */
 int API_EXPORTED libusb_has_capability(uint32_t capability)
 {
-	switch (capability) {
-	case LIBUSB_CAN_GET_DEVICE_SPEED:
+	enum libusb_capability cap = capability;
+	switch (cap) {
+	case LIBUSB_CAP_HAS_CAPABILITY:
 		return 1;
-	default:
-		break;
 	}
 	return 0;
 }
+
+/* this is defined in libusbi.h if needed */
+#ifdef LIBUSB_GETTIMEOFDAY_WIN32
+/*
+ * gettimeofday
+ * Implementation according to:
+ * The Open Group Base Specifications Issue 6
+ * IEEE Std 1003.1, 2004 Edition
+ */
+
+/*
+ *  THIS SOFTWARE IS NOT COPYRIGHTED
+ *
+ *  This source code is offered for use in the public domain. You may
+ *  use, modify or distribute it freely.
+ *
+ *  This code is distributed in the hope that it will be useful but
+ *  WITHOUT ANY WARRANTY. ALL WARRANTIES, EXPRESS OR IMPLIED ARE HEREBY
+ *  DISCLAIMED. This includes but is not limited to warranties of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ *  Contributed by:
+ *  Danny Smith <dannysmith@users.sourceforge.net>
+ */
+
+/* Offset between 1/1/1601 and 1/1/1970 in 100 nanosec units */
+#define _W32_FT_OFFSET (116444736000000000)
+
+int usbi_gettimeofday(struct timeval *tp, void *tzp)
+ {
+  union {
+    unsigned __int64 ns100; /*time since 1 Jan 1601 in 100ns units */
+    FILETIME ft;
+  }  _now;
+
+  if(tp)
+    {
+      GetSystemTimeAsFileTime (&_now.ft);
+      tp->tv_usec=(long)((_now.ns100 / 10) % 1000000 );
+      tp->tv_sec= (long)((_now.ns100 - _W32_FT_OFFSET) / 10000000);
+    }
+  /* Always return 0 as per Open Group Base Specifications Issue 6.
+     Do not set errno on error.  */
+  return 0;
+}
+#endif
 
 void usbi_log_v(struct libusb_context *ctx, enum usbi_log_level level,
 	const char *function, const char *format, va_list args)
 {
 	FILE *stream = stdout;
 	const char *prefix;
+	struct timeval now;
+	static struct timeval first = { 0, 0 };
 
 #ifndef ENABLE_DEBUG_LOGGING
 	USBI_GET_CONTEXT(ctx);
@@ -1696,6 +1767,18 @@ void usbi_log_v(struct libusb_context *ctx, enum usbi_log_level level,
 	if (level == LOG_LEVEL_INFO && ctx->debug < 3)
 		return;
 #endif
+
+	usbi_gettimeofday(&now, NULL);
+	if (!first.tv_sec) {
+		first.tv_sec = now.tv_sec;
+		first.tv_usec = now.tv_usec;
+	}
+	if (now.tv_usec < first.tv_usec) {
+		now.tv_sec--;
+		now.tv_usec += 1000000;
+	}
+	now.tv_sec -= first.tv_sec;
+	now.tv_usec -= first.tv_usec;
 
 	switch (level) {
 	case LOG_LEVEL_INFO:
@@ -1719,7 +1802,8 @@ void usbi_log_v(struct libusb_context *ctx, enum usbi_log_level level,
 		break;
 	}
 
-	fprintf(stream, "libusb:%s [%s] ", prefix, function);
+	fprintf(stream, "libusb: %d.%06d %s [%s] ",
+		(int)now.tv_sec, (int)now.tv_usec, prefix, function);
 
 	vfprintf(stream, format, args);
 
@@ -1778,4 +1862,14 @@ DEFAULT_VISIBILITY const char * LIBUSB_CALL libusb_error_name(int error_code)
 		return "LIBUSB_ERROR_OTHER";
 	}
 	return "**UNKNOWN**";
+}
+
+/** \ingroup misc
+ * Returns a pointer to const struct libusb_version with the version
+ * (major, minor, micro, rc, and nano) of the running library.
+ */
+DEFAULT_VISIBILITY
+const struct libusb_version * LIBUSB_CALL libusb_get_version(void)
+{
+	return &libusb_version_internal;
 }
