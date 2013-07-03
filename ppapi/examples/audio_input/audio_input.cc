@@ -20,6 +20,7 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/utility/completion_callback_factory.h"
+#include "ppapi/utility/threading/lock.h"
 
 // When compiling natively on Windows, PostMessage can be #define-d to
 // something else.
@@ -45,6 +46,7 @@ class MyInstance : public pp::Instance {
         sample_count_(0),
         channel_count_(0),
         samples_(NULL),
+        latency_(0),
         timer_interval_(0),
         pending_paint_(false),
         waiting_for_flush_completion_(false) {
@@ -53,6 +55,8 @@ class MyInstance : public pp::Instance {
     device_detector_.MonitorDeviceChange(NULL, NULL);
     audio_input_.Close();
 
+    // The audio input thread has exited before the previous call returned, so
+    // it is safe to do so now.
     delete[] samples_;
   }
 
@@ -187,13 +191,25 @@ class MyInstance : public pp::Instance {
       *image.GetAddr32(pp::Point(x, mid_height - max_amplitude)) = 0xff404040;
     }
 
-    // Draw our samples.
-    for (int x = 0, i = 0;
-         x < std::min(size.width(), static_cast<int>(sample_count_));
-         x++, i += channel_count_) {
-      int y = samples_[i] * max_amplitude /
-              (std::numeric_limits<int16_t>::max() + 1) + mid_height;
-      *image.GetAddr32(pp::Point(x, y)) = 0xffffffff;
+    {
+      pp::AutoLock auto_lock(lock_);
+
+      // Draw the latency as a red bar at the bottom.
+      PP_DCHECK(latency_ >= 0);
+      int latency_bar_length =
+          latency_ < 1 ? size.width() * latency_ : size.width();
+      for (int x = 0; x < latency_bar_length; ++x) {
+        *image.GetAddr32(pp::Point(x, mid_height + max_amplitude)) = 0xffff0000;
+      }
+
+      // Draw our samples.
+      for (int x = 0, i = 0;
+           x < std::min(size.width(), static_cast<int>(sample_count_));
+           x++, i += channel_count_) {
+        int y = samples_[i] * max_amplitude /
+                (std::numeric_limits<int16_t>::max() + 1) + mid_height;
+        *image.GetAddr32(pp::Point(x, y)) = 0xffffffff;
+      }
     }
 
     return image;
@@ -252,14 +268,13 @@ class MyInstance : public pp::Instance {
     }
   }
 
-  // TODO(viettrungluu): Danger! We really should lock, but which thread
-  // primitives to use? In any case, the |StopCapture()| in the destructor
-  // shouldn't return until this callback is done, so at least we should be
-  // writing to a valid region of memory.
   static void CaptureCallback(const void* samples,
                               uint32_t num_bytes,
+                              PP_TimeDelta latency,
                               void* ctx) {
     MyInstance* thiz = static_cast<MyInstance*>(ctx);
+    pp::AutoLock auto_lock(thiz->lock_);
+    thiz->latency_ = latency;
     uint32_t buffer_size =
         thiz->sample_count_ * thiz->channel_count_ * sizeof(int16_t);
     PP_DCHECK(num_bytes <= buffer_size);
@@ -295,6 +310,8 @@ class MyInstance : public pp::Instance {
   uint32_t channel_count_;
   int16_t* samples_;
 
+  PP_TimeDelta latency_;
+
   int32_t timer_interval_;
 
   // Painting stuff.
@@ -311,6 +328,9 @@ class MyInstance : public pp::Instance {
 
   std::vector<pp::DeviceRef_Dev> enumerate_devices_;
   std::vector<pp::DeviceRef_Dev> monitor_devices_;
+
+  // Protects |samples_| and |latency_|.
+  pp::Lock lock_;
 };
 
 class MyModule : public pp::Module {

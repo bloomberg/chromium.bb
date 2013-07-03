@@ -22,13 +22,20 @@ template <> const char* interface_name<PPB_AudioInput_Dev_0_3>() {
   return PPB_AUDIO_INPUT_DEV_INTERFACE_0_3;
 }
 
+template <> const char* interface_name<PPB_AudioInput_Dev_0_4>() {
+  return PPB_AUDIO_INPUT_DEV_INTERFACE_0_4;
+}
+
 }  // namespace
 
 AudioInput_Dev::AudioInput_Dev() {
 }
 
 AudioInput_Dev::AudioInput_Dev(const InstanceHandle& instance) {
-  if (has_interface<PPB_AudioInput_Dev_0_3>()) {
+  if (has_interface<PPB_AudioInput_Dev_0_4>()) {
+    PassRefFromConstructor(get_interface<PPB_AudioInput_Dev_0_4>()->Create(
+        instance.pp_instance()));
+  } else if (has_interface<PPB_AudioInput_Dev_0_3>()) {
     PassRefFromConstructor(get_interface<PPB_AudioInput_Dev_0_3>()->Create(
         instance.pp_instance()));
   } else if (has_interface<PPB_AudioInput_Dev_0_2>()) {
@@ -42,12 +49,17 @@ AudioInput_Dev::~AudioInput_Dev() {
 
 // static
 bool AudioInput_Dev::IsAvailable() {
-  return has_interface<PPB_AudioInput_Dev_0_3>() ||
+  return has_interface<PPB_AudioInput_Dev_0_4>() ||
+         has_interface<PPB_AudioInput_Dev_0_3>() ||
          has_interface<PPB_AudioInput_Dev_0_2>();
 }
 
 int32_t AudioInput_Dev::EnumerateDevices(
     const CompletionCallbackWithOutput<std::vector<DeviceRef_Dev> >& callback) {
+  if (has_interface<PPB_AudioInput_Dev_0_4>()) {
+    return get_interface<PPB_AudioInput_Dev_0_4>()->EnumerateDevices(
+        pp_resource(), callback.output(), callback.pp_completion_callback());
+  }
   if (has_interface<PPB_AudioInput_Dev_0_3>()) {
     return get_interface<PPB_AudioInput_Dev_0_3>()->EnumerateDevices(
         pp_resource(), callback.output(), callback.pp_completion_callback());
@@ -72,6 +84,10 @@ int32_t AudioInput_Dev::EnumerateDevices(
 int32_t AudioInput_Dev::MonitorDeviceChange(
     PP_MonitorDeviceChangeCallback callback,
     void* user_data) {
+  if (has_interface<PPB_AudioInput_Dev_0_4>()) {
+    return get_interface<PPB_AudioInput_Dev_0_4>()->MonitorDeviceChange(
+        pp_resource(), callback, user_data);
+  }
   if (has_interface<PPB_AudioInput_Dev_0_3>()) {
     return get_interface<PPB_AudioInput_Dev_0_3>()->MonitorDeviceChange(
         pp_resource(), callback, user_data);
@@ -85,13 +101,8 @@ int32_t AudioInput_Dev::Open(const DeviceRef_Dev& device_ref,
                              PPB_AudioInput_Callback audio_input_callback,
                              void* user_data,
                              const CompletionCallback& callback) {
-  if (has_interface<PPB_AudioInput_Dev_0_3>()) {
-    return get_interface<PPB_AudioInput_Dev_0_3>()->Open(
-        pp_resource(), device_ref.pp_resource(), config.pp_resource(),
-        audio_input_callback, user_data, callback.pp_completion_callback());
-  }
-  if (has_interface<PPB_AudioInput_Dev_0_2>()) {
-    return get_interface<PPB_AudioInput_Dev_0_2>()->Open(
+  if (has_interface<PPB_AudioInput_Dev_0_4>()) {
+    return get_interface<PPB_AudioInput_Dev_0_4>()->Open(
         pp_resource(), device_ref.pp_resource(), config.pp_resource(),
         audio_input_callback, user_data, callback.pp_completion_callback());
   }
@@ -99,7 +110,31 @@ int32_t AudioInput_Dev::Open(const DeviceRef_Dev& device_ref,
   return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
+int32_t AudioInput_Dev::Open(
+    const DeviceRef_Dev& device_ref,
+    const AudioConfig& config,
+    PPB_AudioInput_Callback_0_2 audio_input_callback_0_2,
+    void* user_data,
+    const CompletionCallback& callback) {
+  if (has_interface<PPB_AudioInput_Dev_0_3>()) {
+    return get_interface<PPB_AudioInput_Dev_0_3>()->Open(
+        pp_resource(), device_ref.pp_resource(), config.pp_resource(),
+        audio_input_callback_0_2, user_data, callback.pp_completion_callback());
+  }
+  if (has_interface<PPB_AudioInput_Dev_0_2>()) {
+    return get_interface<PPB_AudioInput_Dev_0_2>()->Open(
+        pp_resource(), device_ref.pp_resource(), config.pp_resource(),
+        audio_input_callback_0_2, user_data, callback.pp_completion_callback());
+  }
+
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
+}
+
 bool AudioInput_Dev::StartCapture() {
+  if (has_interface<PPB_AudioInput_Dev_0_4>()) {
+    return PP_ToBool(get_interface<PPB_AudioInput_Dev_0_4>()->StartCapture(
+        pp_resource()));
+  }
   if (has_interface<PPB_AudioInput_Dev_0_3>()) {
     return PP_ToBool(get_interface<PPB_AudioInput_Dev_0_3>()->StartCapture(
         pp_resource()));
@@ -113,6 +148,10 @@ bool AudioInput_Dev::StartCapture() {
 }
 
 bool AudioInput_Dev::StopCapture() {
+  if (has_interface<PPB_AudioInput_Dev_0_4>()) {
+    return PP_ToBool(get_interface<PPB_AudioInput_Dev_0_4>()->StopCapture(
+        pp_resource()));
+  }
   if (has_interface<PPB_AudioInput_Dev_0_3>()) {
     return PP_ToBool(get_interface<PPB_AudioInput_Dev_0_3>()->StopCapture(
         pp_resource()));
@@ -126,7 +165,9 @@ bool AudioInput_Dev::StopCapture() {
 }
 
 void AudioInput_Dev::Close() {
-  if (has_interface<PPB_AudioInput_Dev_0_3>()) {
+  if (has_interface<PPB_AudioInput_Dev_0_4>()) {
+    get_interface<PPB_AudioInput_Dev_0_4>()->Close(pp_resource());
+  } else if (has_interface<PPB_AudioInput_Dev_0_3>()) {
     get_interface<PPB_AudioInput_Dev_0_3>()->Close(pp_resource());
   } else if (has_interface<PPB_AudioInput_Dev_0_2>()) {
     get_interface<PPB_AudioInput_Dev_0_2>()->Close(pp_resource());

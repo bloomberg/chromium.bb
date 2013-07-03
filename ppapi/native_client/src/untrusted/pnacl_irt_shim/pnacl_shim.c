@@ -168,6 +168,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Messaging_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6;
@@ -1435,7 +1436,7 @@ static int32_t Pnacl_M19_PPB_AudioInput_Dev_EnumerateDevices(PP_Resource audio_i
   return iface->EnumerateDevices(audio_input, devices, *callback);
 }
 
-static int32_t Pnacl_M19_PPB_AudioInput_Dev_Open(PP_Resource audio_input, PP_Resource device_ref, PP_Resource config, PPB_AudioInput_Callback audio_input_callback, void* user_data, struct PP_CompletionCallback* callback) {
+static int32_t Pnacl_M19_PPB_AudioInput_Dev_Open(PP_Resource audio_input, PP_Resource device_ref, PP_Resource config, PPB_AudioInput_Callback_0_2 audio_input_callback, void* user_data, struct PP_CompletionCallback* callback) {
   const struct PPB_AudioInput_Dev_0_2 *iface = Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2.real_iface;
   return iface->Open(audio_input, device_ref, config, audio_input_callback, user_data, *callback);
 }
@@ -1484,7 +1485,7 @@ static int32_t Pnacl_M25_PPB_AudioInput_Dev_MonitorDeviceChange(PP_Resource audi
   return iface->MonitorDeviceChange(audio_input, callback, user_data);
 }
 
-static int32_t Pnacl_M25_PPB_AudioInput_Dev_Open(PP_Resource audio_input, PP_Resource device_ref, PP_Resource config, PPB_AudioInput_Callback audio_input_callback, void* user_data, struct PP_CompletionCallback* callback) {
+static int32_t Pnacl_M25_PPB_AudioInput_Dev_Open(PP_Resource audio_input, PP_Resource device_ref, PP_Resource config, PPB_AudioInput_Callback_0_2 audio_input_callback, void* user_data, struct PP_CompletionCallback* callback) {
   const struct PPB_AudioInput_Dev_0_3 *iface = Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3.real_iface;
   return iface->Open(audio_input, device_ref, config, audio_input_callback, user_data, *callback);
 }
@@ -1510,6 +1511,55 @@ static void Pnacl_M25_PPB_AudioInput_Dev_Close(PP_Resource audio_input) {
 }
 
 /* End wrapper methods for PPB_AudioInput_Dev_0_3 */
+
+/* Begin wrapper methods for PPB_AudioInput_Dev_0_4 */
+
+static PP_Resource Pnacl_M29_PPB_AudioInput_Dev_Create(PP_Instance instance) {
+  const struct PPB_AudioInput_Dev_0_4 *iface = Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M29_PPB_AudioInput_Dev_IsAudioInput(PP_Resource resource) {
+  const struct PPB_AudioInput_Dev_0_4 *iface = Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4.real_iface;
+  return iface->IsAudioInput(resource);
+}
+
+static int32_t Pnacl_M29_PPB_AudioInput_Dev_EnumerateDevices(PP_Resource audio_input, struct PP_ArrayOutput* output, struct PP_CompletionCallback* callback) {
+  const struct PPB_AudioInput_Dev_0_4 *iface = Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4.real_iface;
+  return iface->EnumerateDevices(audio_input, *output, *callback);
+}
+
+static int32_t Pnacl_M29_PPB_AudioInput_Dev_MonitorDeviceChange(PP_Resource audio_input, PP_MonitorDeviceChangeCallback callback, void* user_data) {
+  const struct PPB_AudioInput_Dev_0_4 *iface = Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4.real_iface;
+  return iface->MonitorDeviceChange(audio_input, callback, user_data);
+}
+
+static int32_t Pnacl_M29_PPB_AudioInput_Dev_Open(PP_Resource audio_input, PP_Resource device_ref, PP_Resource config, PPB_AudioInput_Callback audio_input_callback, void* user_data, struct PP_CompletionCallback* callback) {
+  const struct PPB_AudioInput_Dev_0_4 *iface = Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4.real_iface;
+  return iface->Open(audio_input, device_ref, config, audio_input_callback, user_data, *callback);
+}
+
+static PP_Resource Pnacl_M29_PPB_AudioInput_Dev_GetCurrentConfig(PP_Resource audio_input) {
+  const struct PPB_AudioInput_Dev_0_4 *iface = Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4.real_iface;
+  return iface->GetCurrentConfig(audio_input);
+}
+
+static PP_Bool Pnacl_M29_PPB_AudioInput_Dev_StartCapture(PP_Resource audio_input) {
+  const struct PPB_AudioInput_Dev_0_4 *iface = Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4.real_iface;
+  return iface->StartCapture(audio_input);
+}
+
+static PP_Bool Pnacl_M29_PPB_AudioInput_Dev_StopCapture(PP_Resource audio_input) {
+  const struct PPB_AudioInput_Dev_0_4 *iface = Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4.real_iface;
+  return iface->StopCapture(audio_input);
+}
+
+static void Pnacl_M29_PPB_AudioInput_Dev_Close(PP_Resource audio_input) {
+  const struct PPB_AudioInput_Dev_0_4 *iface = Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4.real_iface;
+  iface->Close(audio_input);
+}
+
+/* End wrapper methods for PPB_AudioInput_Dev_0_4 */
 
 /* Not generating wrapper methods for PPB_Buffer_Dev_0_4 */
 
@@ -4129,7 +4179,7 @@ struct PPB_AudioInput_Dev_0_2 Pnacl_Wrappers_PPB_AudioInput_Dev_0_2 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_AudioInput_Dev_Create,
     .IsAudioInput = (PP_Bool (*)(PP_Resource resource))&Pnacl_M19_PPB_AudioInput_Dev_IsAudioInput,
     .EnumerateDevices = (int32_t (*)(PP_Resource audio_input, PP_Resource* devices, struct PP_CompletionCallback callback))&Pnacl_M19_PPB_AudioInput_Dev_EnumerateDevices,
-    .Open = (int32_t (*)(PP_Resource audio_input, PP_Resource device_ref, PP_Resource config, PPB_AudioInput_Callback audio_input_callback, void* user_data, struct PP_CompletionCallback callback))&Pnacl_M19_PPB_AudioInput_Dev_Open,
+    .Open = (int32_t (*)(PP_Resource audio_input, PP_Resource device_ref, PP_Resource config, PPB_AudioInput_Callback_0_2 audio_input_callback, void* user_data, struct PP_CompletionCallback callback))&Pnacl_M19_PPB_AudioInput_Dev_Open,
     .GetCurrentConfig = (PP_Resource (*)(PP_Resource audio_input))&Pnacl_M19_PPB_AudioInput_Dev_GetCurrentConfig,
     .StartCapture = (PP_Bool (*)(PP_Resource audio_input))&Pnacl_M19_PPB_AudioInput_Dev_StartCapture,
     .StopCapture = (PP_Bool (*)(PP_Resource audio_input))&Pnacl_M19_PPB_AudioInput_Dev_StopCapture,
@@ -4141,11 +4191,23 @@ struct PPB_AudioInput_Dev_0_3 Pnacl_Wrappers_PPB_AudioInput_Dev_0_3 = {
     .IsAudioInput = (PP_Bool (*)(PP_Resource resource))&Pnacl_M25_PPB_AudioInput_Dev_IsAudioInput,
     .EnumerateDevices = (int32_t (*)(PP_Resource audio_input, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_AudioInput_Dev_EnumerateDevices,
     .MonitorDeviceChange = (int32_t (*)(PP_Resource audio_input, PP_MonitorDeviceChangeCallback callback, void* user_data))&Pnacl_M25_PPB_AudioInput_Dev_MonitorDeviceChange,
-    .Open = (int32_t (*)(PP_Resource audio_input, PP_Resource device_ref, PP_Resource config, PPB_AudioInput_Callback audio_input_callback, void* user_data, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_AudioInput_Dev_Open,
+    .Open = (int32_t (*)(PP_Resource audio_input, PP_Resource device_ref, PP_Resource config, PPB_AudioInput_Callback_0_2 audio_input_callback, void* user_data, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_AudioInput_Dev_Open,
     .GetCurrentConfig = (PP_Resource (*)(PP_Resource audio_input))&Pnacl_M25_PPB_AudioInput_Dev_GetCurrentConfig,
     .StartCapture = (PP_Bool (*)(PP_Resource audio_input))&Pnacl_M25_PPB_AudioInput_Dev_StartCapture,
     .StopCapture = (PP_Bool (*)(PP_Resource audio_input))&Pnacl_M25_PPB_AudioInput_Dev_StopCapture,
     .Close = (void (*)(PP_Resource audio_input))&Pnacl_M25_PPB_AudioInput_Dev_Close
+};
+
+struct PPB_AudioInput_Dev_0_4 Pnacl_Wrappers_PPB_AudioInput_Dev_0_4 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M29_PPB_AudioInput_Dev_Create,
+    .IsAudioInput = (PP_Bool (*)(PP_Resource resource))&Pnacl_M29_PPB_AudioInput_Dev_IsAudioInput,
+    .EnumerateDevices = (int32_t (*)(PP_Resource audio_input, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_AudioInput_Dev_EnumerateDevices,
+    .MonitorDeviceChange = (int32_t (*)(PP_Resource audio_input, PP_MonitorDeviceChangeCallback callback, void* user_data))&Pnacl_M29_PPB_AudioInput_Dev_MonitorDeviceChange,
+    .Open = (int32_t (*)(PP_Resource audio_input, PP_Resource device_ref, PP_Resource config, PPB_AudioInput_Callback audio_input_callback, void* user_data, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_AudioInput_Dev_Open,
+    .GetCurrentConfig = (PP_Resource (*)(PP_Resource audio_input))&Pnacl_M29_PPB_AudioInput_Dev_GetCurrentConfig,
+    .StartCapture = (PP_Bool (*)(PP_Resource audio_input))&Pnacl_M29_PPB_AudioInput_Dev_StartCapture,
+    .StopCapture = (PP_Bool (*)(PP_Resource audio_input))&Pnacl_M29_PPB_AudioInput_Dev_StopCapture,
+    .Close = (void (*)(PP_Resource audio_input))&Pnacl_M29_PPB_AudioInput_Dev_Close
 };
 
 /* Not generating wrapper interface for PPB_Buffer_Dev_0_4 */
@@ -4993,6 +5055,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4 = {
+  .iface_macro = PPB_AUDIO_INPUT_DEV_INTERFACE_0_4,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_AudioInput_Dev_0_4,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1 = {
   .iface_macro = PPB_DEVICEREF_DEV_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_DeviceRef_Dev_0_1,
@@ -5364,6 +5432,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3,
+  &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4,
   &Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6,

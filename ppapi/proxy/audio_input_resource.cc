@@ -14,6 +14,7 @@
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/proxy/serialized_handle.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
@@ -29,9 +30,11 @@ AudioInputResource::AudioInputResource(
       open_state_(BEFORE_OPEN),
       capturing_(false),
       shared_memory_size_(0),
+      audio_input_callback_0_2_(NULL),
       audio_input_callback_(NULL),
       user_data_(NULL),
-      enumeration_helper_(this) {
+      enumeration_helper_(this),
+      bytes_per_second_(0) {
   SendCreate(RENDERER, PpapiHostMsg_AudioInput_Create());
 }
 
@@ -68,47 +71,23 @@ int32_t AudioInputResource::MonitorDeviceChange(
   return enumeration_helper_.MonitorDeviceChange(callback, user_data);
 }
 
+int32_t AudioInputResource::Open0_2(
+    PP_Resource device_ref,
+    PP_Resource config,
+    PPB_AudioInput_Callback_0_2 audio_input_callback_0_2,
+    void* user_data,
+    scoped_refptr<TrackedCallback> callback) {
+  return CommonOpen(device_ref, config, audio_input_callback_0_2, NULL,
+                    user_data, callback);
+}
+
 int32_t AudioInputResource::Open(PP_Resource device_ref,
                                  PP_Resource config,
                                  PPB_AudioInput_Callback audio_input_callback,
                                  void* user_data,
                                  scoped_refptr<TrackedCallback> callback) {
-  std::string device_id;
-  // |device_id| remains empty if |device_ref| is 0, which means the default
-  // device.
-  if (device_ref != 0) {
-    thunk::EnterResourceNoLock<thunk::PPB_DeviceRef_API> enter_device_ref(
-        device_ref, true);
-    if (enter_device_ref.failed())
-      return PP_ERROR_BADRESOURCE;
-    device_id = enter_device_ref.object()->GetDeviceRefData().id;
-  }
-
-  if (TrackedCallback::IsPending(open_callback_))
-    return PP_ERROR_INPROGRESS;
-  if (open_state_ != BEFORE_OPEN)
-    return PP_ERROR_FAILED;
-
-  if (!audio_input_callback)
-    return PP_ERROR_BADARGUMENT;
-  thunk::EnterResourceNoLock<thunk::PPB_AudioConfig_API> enter_config(config,
-                                                                      true);
-  if (enter_config.failed())
-    return PP_ERROR_BADARGUMENT;
-
-  config_ = config;
-  audio_input_callback_ = audio_input_callback;
-  user_data_ = user_data;
-  open_callback_ = callback;
-
-  PpapiHostMsg_AudioInput_Open msg(
-      device_id, enter_config.object()->GetSampleRate(),
-      enter_config.object()->GetSampleFrameCount());
-  Call<PpapiPluginMsg_AudioInput_OpenReply>(
-      RENDERER, msg,
-      base::Bind(&AudioInputResource::OnPluginMsgOpenReply,
-                 base::Unretained(this)));
-  return PP_OK_COMPLETIONPENDING;
+  return CommonOpen(device_ref, config, NULL, audio_input_callback, user_data,
+                    callback);
 }
 
 PP_Resource AudioInputResource::GetCurrentConfig() {
@@ -235,8 +214,8 @@ void AudioInputResource::SetStreamInfo(
 
 void AudioInputResource::StartThread() {
   // Don't start the thread unless all our state is set up correctly.
-  if (!audio_input_callback_ || !socket_.get() || !capturing_ ||
-      !shared_memory_->memory()) {
+  if ((!audio_input_callback_0_2_ && !audio_input_callback_) ||
+      !socket_.get() || !capturing_ || !shared_memory_->memory()) {
     return;
   }
   DCHECK(!audio_input_thread_.get());
@@ -270,10 +249,66 @@ void AudioInputResource::Run() {
     // While closing the stream, we may receive buffers whose size is different
     // from |data_buffer_size|.
     CHECK_LE(buffer->params.size, data_buffer_size);
-    if (buffer->params.size > 0)
-      audio_input_callback_(&buffer->audio[0], buffer->params.size, user_data_);
+    if (buffer->params.size > 0) {
+      if (audio_input_callback_) {
+        PP_TimeDelta latency =
+            static_cast<double>(pending_data) / bytes_per_second_;
+        audio_input_callback_(&buffer->audio[0], buffer->params.size, latency,
+                              user_data_);
+      } else {
+        audio_input_callback_0_2_(&buffer->audio[0], buffer->params.size,
+                                  user_data_);
+      }
+    }
   }
 }
 
+int32_t AudioInputResource::CommonOpen(
+    PP_Resource device_ref,
+    PP_Resource config,
+    PPB_AudioInput_Callback_0_2 audio_input_callback_0_2,
+    PPB_AudioInput_Callback audio_input_callback,
+    void* user_data,
+    scoped_refptr<TrackedCallback> callback) {
+  std::string device_id;
+  // |device_id| remains empty if |device_ref| is 0, which means the default
+  // device.
+  if (device_ref != 0) {
+    thunk::EnterResourceNoLock<thunk::PPB_DeviceRef_API> enter_device_ref(
+        device_ref, true);
+    if (enter_device_ref.failed())
+      return PP_ERROR_BADRESOURCE;
+    device_id = enter_device_ref.object()->GetDeviceRefData().id;
+  }
+
+  if (TrackedCallback::IsPending(open_callback_))
+    return PP_ERROR_INPROGRESS;
+  if (open_state_ != BEFORE_OPEN)
+    return PP_ERROR_FAILED;
+
+  if (!audio_input_callback_0_2 && !audio_input_callback)
+    return PP_ERROR_BADARGUMENT;
+  thunk::EnterResourceNoLock<thunk::PPB_AudioConfig_API> enter_config(config,
+                                                                      true);
+  if (enter_config.failed())
+    return PP_ERROR_BADARGUMENT;
+
+  config_ = config;
+  audio_input_callback_0_2_ = audio_input_callback_0_2;
+  audio_input_callback_ = audio_input_callback;
+  user_data_ = user_data;
+  open_callback_ = callback;
+  bytes_per_second_ = kAudioInputChannels * (kBitsPerAudioInputSample / 8) *
+                      enter_config.object()->GetSampleRate();
+
+  PpapiHostMsg_AudioInput_Open msg(
+      device_id, enter_config.object()->GetSampleRate(),
+      enter_config.object()->GetSampleFrameCount());
+  Call<PpapiPluginMsg_AudioInput_OpenReply>(
+      RENDERER, msg,
+      base::Bind(&AudioInputResource::OnPluginMsgOpenReply,
+                 base::Unretained(this)));
+  return PP_OK_COMPLETIONPENDING;
+}
 }  // namespace proxy
 }  // namespace ppapi

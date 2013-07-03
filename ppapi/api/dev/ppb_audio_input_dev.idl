@@ -8,20 +8,26 @@
  * provides realtime audio input capture.
  */
 
-[generate_thunk]
-
 label Chrome {
   M19 = 0.2,
-  M25 = 0.3
+  M25 = 0.3,
+  M29 = 0.4
 };
 
 /**
  * <code>PPB_AudioInput_Callback</code> defines the type of an audio callback
  * function used to provide the audio buffer with data. This callback will be
  * called on a separate thread from the creation thread.
+ *
+ * @param[in] sample_buffer A buffer providing audio input data.
+ * @param[in] buffer_size_in_bytes The size of the buffer in bytes.
+ * @param[in] latency The time that has elapsed since the data was recorded.
+ * @param[inout] user_data An opaque pointer that was passed into
+ * <code>PPB_AudioInput_Dev.Open()</code>.
  */
 typedef void PPB_AudioInput_Callback([in] mem_t sample_buffer,
                                      [in] uint32_t buffer_size_in_bytes,
+                                     [in, version=0.4] PP_TimeDelta latency,
                                      [inout] mem_t user_data);
 
 /**

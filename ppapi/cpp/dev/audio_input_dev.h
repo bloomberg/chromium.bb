@@ -42,9 +42,18 @@ class AudioInput_Dev : public Resource {
 
   /// If |device_ref| is null (i.e., is_null() returns true), the default device
   /// will be used.
+  ///
+  /// Requires <code>PPB_AudioInput_Dev</code> version 0.4 or up.
   int32_t Open(const DeviceRef_Dev& device_ref,
                const AudioConfig& config,
                PPB_AudioInput_Callback audio_input_callback,
+               void* user_data,
+               const CompletionCallback& callback);
+
+  /// Requires <code>PPB_AudioInput_Dev</code> version 0.2 or 0.3.
+  int32_t Open(const DeviceRef_Dev& device_ref,
+               const AudioConfig& config,
+               PPB_AudioInput_Callback_0_2 audio_input_callback_0_2,
                void* user_data,
                const CompletionCallback& callback);
 

@@ -4,7 +4,7 @@
  */
 
 /**
- * This file defines time and time ticks types.
+ * This file defines time, time ticks and time delta types.
  */
 
 
@@ -29,3 +29,9 @@ typedef double_t PP_Time;
 [assert_size(8)]
 typedef double_t PP_TimeTicks;
 
+/**
+ * A <code>PP_TimeDelta</code> value represents a duration of time which is
+ * measured in seconds.
+ */
+[assert_size(8)]
+typedef double_t PP_TimeDelta;

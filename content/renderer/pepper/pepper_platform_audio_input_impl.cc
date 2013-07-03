@@ -14,6 +14,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "googleurl/src/gurl.h"
 #include "media/audio/audio_manager_base.h"
+#include "ppapi/shared_impl/ppb_audio_config_shared.h"
 
 namespace content {
 
@@ -152,8 +153,9 @@ bool PepperPlatformAudioInputImpl::Initialize(
   client_ = client;
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LINEAR,
-                media::CHANNEL_LAYOUT_MONO, 1, 0,
-                sample_rate, 16, frames_per_buffer);
+                media::CHANNEL_LAYOUT_MONO, ppapi::kAudioInputChannels, 0,
+                sample_rate, ppapi::kBitsPerAudioInputSample,
+                frames_per_buffer);
 
   // We need to open the device and obtain the label and session ID before
   // initializing.

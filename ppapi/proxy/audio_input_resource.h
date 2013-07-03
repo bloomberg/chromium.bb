@@ -44,6 +44,11 @@ class AudioInputResource : public PluginResource,
   virtual int32_t MonitorDeviceChange(
       PP_MonitorDeviceChangeCallback callback,
       void* user_data) OVERRIDE;
+  virtual int32_t Open0_2(PP_Resource device_ref,
+                          PP_Resource config,
+                          PPB_AudioInput_Callback_0_2 audio_input_callback_0_2,
+                          void* user_data,
+                          scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Open(PP_Resource device_ref,
                        PP_Resource config,
                        PPB_AudioInput_Callback audio_input_callback,
@@ -83,6 +88,13 @@ class AudioInputResource : public PluginResource,
   // Run on the audio input thread.
   virtual void Run() OVERRIDE;
 
+  int32_t CommonOpen(PP_Resource device_ref,
+                     PP_Resource config,
+                     PPB_AudioInput_Callback_0_2 audio_input_callback_0_2,
+                     PPB_AudioInput_Callback audio_input_callback,
+                     void* user_data,
+                     scoped_refptr<TrackedCallback> callback);
+
   OpenState open_state_;
 
   // True if capturing the stream.
@@ -104,6 +116,7 @@ class AudioInputResource : public PluginResource,
   scoped_ptr<base::DelegateSimpleThread> audio_input_thread_;
 
   // Callback to call when new samples are available.
+  PPB_AudioInput_Callback_0_2 audio_input_callback_0_2_;
   PPB_AudioInput_Callback audio_input_callback_;
 
   // User data pointer passed verbatim to the callback function.
@@ -118,6 +131,10 @@ class AudioInputResource : public PluginResource,
   ScopedPPResource config_;
 
   DeviceEnumerationResourceHelper enumeration_helper_;
+
+  // The data size (in bytes) of one second of audio input. Used to calculate
+  // latency.
+  size_t bytes_per_second_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputResource);
 };

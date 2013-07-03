@@ -12,6 +12,12 @@
 
 namespace ppapi {
 
+const int kBitsPerAudioInputSample = 16;
+const int kAudioInputChannels = 1;
+
+const int kBitsPerAudioOutputSample = 16;
+const int kAudioOutputChannels = 2;
+
 class PPAPI_SHARED_EXPORT PPB_AudioConfig_Shared
     : public Resource,
       public thunk::PPB_AudioConfig_API {
