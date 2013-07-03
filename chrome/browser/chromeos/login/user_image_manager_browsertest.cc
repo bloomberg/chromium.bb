@@ -250,7 +250,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_NonJPEGImageFromFile) {
   EXPECT_EQ(saved_image.height(), user->image().height());
 }
 
-IN_PROC_BROWSER_TEST_F(UserImageManagerTest, NonJPEGImageFromFile) {
+// http://crbug.com/257009.
+IN_PROC_BROWSER_TEST_F(UserImageManagerTest, DISABLED_NonJPEGImageFromFile) {
   ExpectImageChange();
   UserManager::Get()->GetUsers();  // Load users.
   // Wait for image load.
