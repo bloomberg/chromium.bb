@@ -87,3 +87,18 @@
   return code: 1
 @spec:
   2: %rbp should not be restricted
+----------------------------------------------------------------------
+@hex:
+  # Non-zero-extending modification.
+  11 c4
+  4c 01 fc
+@dis:
+     0:	11 c4                                        	adc    %eax,%esp
+     2:	4c 01 fc                                     	add    %r15,%rsp
+@rdfa_output:
+  0: [0] error - %spl or %sp is changed
+  2: [0] improper %rsp sandboxing
+  return code: 1
+@spec:
+  0: ('non-zero-extending changes to ebp and esp are not allowed', Instruction(0x0: 11 c4  adc %eax,%esp))
+  2: register %rsp should be restricted, while in fact None is restricted

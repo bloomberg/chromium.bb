@@ -425,18 +425,25 @@ def _ProcessOperandWrites(instruction, write_operands, zero_extending=False):
     if op in ['%spl', '%sp', '%rsp']:
       raise SandboxingError('changes to rsp are not allowed', instruction)
 
-    if op in REGS32 and zero_extending:
-      if not postcondition.Implies(Condition()):
-        raise SandboxingError(
-            '%s when zero-extending %s'
-            % (postcondition.WhyNotImplies(Condition()), op),
-            instruction)
+    if op in REGS32:
+      if zero_extending:
+        if not postcondition.Implies(Condition()):
+          raise SandboxingError(
+              '%s when zero-extending %s'
+              % (postcondition.WhyNotImplies(Condition()), op),
+              instruction)
 
-      r = REG32_TO_REG64[op]
-      if r in ['%rbp', '%rsp']:
-        postcondition = Condition(restricted_instead_of_sandboxed=r)
+        r = REG32_TO_REG64[op]
+        if r in ['%rbp', '%rsp']:
+          postcondition = Condition(restricted_instead_of_sandboxed=r)
+        else:
+          postcondition = Condition(restricted=r)
       else:
-        postcondition = Condition(restricted=r)
+        if op in ['%ebp', '%esp']:
+          raise SandboxingError(
+              'non-zero-extending changes to ebp and esp are not allowed',
+              instruction)
+
   return postcondition
 
 
