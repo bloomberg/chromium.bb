@@ -512,6 +512,9 @@ class SVN(object):
       Error: An error occurred while running the svn command.
     """
     stdout = stdout or sys.stdout
+    if file_list is None:
+      # Even if our caller doesn't care about file_list, we use it internally.
+      file_list = []
 
     # svn update and svn checkout use the same pattern: the first three columns
     # are for file status, property status, and lock status.  This is followed

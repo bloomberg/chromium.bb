@@ -591,7 +591,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # copy state, so skip the SCM status check.
     run_scm = command not in ('runhooks', 'recurse', None)
     parsed_url = self.LateOverride(self.url)
-    file_list = []
+    file_list = [] if not options.nohooks else None
     if run_scm and parsed_url:
       if isinstance(parsed_url, self.FileImpl):
         # Special support for single-file checkout.
@@ -612,11 +612,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         self._used_scm = gclient_scm.CreateSCM(
             parsed_url, self.root.root_dir, self.name)
         self._used_scm.RunCommand(command, options, args, file_list)
-        file_list = [os.path.join(self.name, f.strip()) for f in file_list]
+        if file_list:
+          file_list = [os.path.join(self.name, f.strip()) for f in file_list]
 
       # TODO(phajdan.jr): We should know exactly when the paths are absolute.
       # Convert all absolute paths to relative.
-      for i in range(len(file_list)):
+      for i in range(len(file_list or [])):
         # It depends on the command being executed (like runhooks vs sync).
         if not os.path.isabs(file_list[i]):
           continue
@@ -630,7 +631,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # Always parse the DEPS file.
     self.ParseDepsFile()
 
-    self._run_is_done(file_list, parsed_url)
+    self._run_is_done(file_list or [], parsed_url)
 
     if self.recursion_limit:
       # Parse the dependencies of this dependency.

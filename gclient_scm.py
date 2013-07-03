@@ -137,10 +137,6 @@ class SCMWrapper(object):
       self.checkout_path = os.path.join(self._root_dir, self.relpath)
 
   def RunCommand(self, command, options, args, file_list=None):
-    # file_list will have all files that are modified appended to it.
-    if file_list is None:
-      file_list = []
-
     commands = ['cleanup', 'update', 'updatesingle', 'revert',
                 'revinfo', 'status', 'diff', 'pack', 'runhooks']
 
@@ -220,7 +216,7 @@ class GitWrapper(SCMWrapper):
   def GetCheckoutRoot(self):
     return scm.GIT.GetCheckoutRoot(self.checkout_path)
 
-  def GetRevisionDate(self, revision):
+  def GetRevisionDate(self, _revision):
     """Returns the given revision's date in ISO-8601 format (which contains the
     time zone)."""
     # TODO(floitsch): get the time-stamp of the given revision and not just the
@@ -234,11 +230,11 @@ class GitWrapper(SCMWrapper):
     There's no real git equivalent for the svn cleanup command, do a no-op.
     """
 
-  def diff(self, options, args, file_list):
+  def diff(self, options, _args, _file_list):
     merge_base = self._Capture(['merge-base', 'HEAD', 'origin'])
     self._Run(['diff', merge_base], options)
 
-  def pack(self, options, args, file_list):
+  def pack(self, _options, _args, _file_list):
     """Generates a patch file which can be applied to the root of the
     repository.
 
@@ -293,8 +289,9 @@ class GitWrapper(SCMWrapper):
     self._Run(fetch_cmd + quiet, options)
     self._Run(['reset', '--hard', revision] + quiet, options)
     self.UpdateSubmoduleConfig()
-    files = self._Capture(['ls-files']).splitlines()
-    file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+    if file_list is not None:
+      files = self._Capture(['ls-files']).splitlines()
+      file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
@@ -332,7 +329,7 @@ class GitWrapper(SCMWrapper):
         revision = default_rev
 
     rev_str = ' at %s' % revision
-    files = []
+    files = [] if file_list is not None else None
 
     printed_path = False
     verbose = []
@@ -359,8 +356,9 @@ class GitWrapper(SCMWrapper):
       gclient_utils.safe_makedirs(os.path.dirname(self.checkout_path))
       self._Clone(revision, url, options)
       self.UpdateSubmoduleConfig()
-      files = self._Capture(['ls-files']).splitlines()
-      file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+      if file_list is not None:
+        files = self._Capture(['ls-files']).splitlines()
+        file_list.extend([os.path.join(self.checkout_path, f) for f in files])
       if not verbose:
         # Make the output a little prettier. It's nice to have some whitespace
         # between projects when cloning.
@@ -510,7 +508,8 @@ class GitWrapper(SCMWrapper):
       raise gclient_utils.Error(switch_error)
     else:
       # case 3 - the default case
-      files = self._Capture(['diff', upstream_branch, '--name-only']).split()
+      if files is not None:
+        files = self._Capture(['diff', upstream_branch, '--name-only']).split()
       if verbose:
         print('Trying fast-forward merge to branch : %s' % upstream_branch)
       try:
@@ -572,7 +571,8 @@ class GitWrapper(SCMWrapper):
             print('')
 
     self.UpdateSubmoduleConfig()
-    file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+    if file_list is not None:
+      file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
     # If the rebase generated a conflict, abort and ask user to fix
     if self._IsRebasing():
@@ -601,7 +601,7 @@ class GitWrapper(SCMWrapper):
           gclient_utils.rmtree(full_path)
 
 
-  def revert(self, options, args, file_list):
+  def revert(self, options, _args, file_list):
     """Reverts local modifications.
 
     All reverted files will be appended to file_list.
@@ -624,19 +624,23 @@ class GitWrapper(SCMWrapper):
     if deps_revision.startswith('refs/heads/'):
       deps_revision = deps_revision.replace('refs/heads/', 'origin/')
 
-    files = self._Capture(['diff', deps_revision, '--name-only']).split()
+    if file_list is not None:
+      files = self._Capture(['diff', deps_revision, '--name-only']).split()
+
     self._Run(['reset', '--hard', deps_revision], options)
     self._Run(['clean', '-f', '-d'], options)
-    file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
-  def revinfo(self, options, args, file_list):
+    if file_list is not None:
+      file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+
+  def revinfo(self, _options, _args, _file_list):
     """Returns revision"""
     return self._Capture(['rev-parse', 'HEAD'])
 
   def runhooks(self, options, args, file_list):
     self.status(options, args, file_list)
 
-  def status(self, options, args, file_list):
+  def status(self, options, _args, file_list):
     """Display status information."""
     if not os.path.isdir(self.checkout_path):
       print(('\n________ couldn\'t run status in %s:\n'
@@ -644,8 +648,9 @@ class GitWrapper(SCMWrapper):
     else:
       merge_base = self._Capture(['merge-base', 'HEAD', 'origin'])
       self._Run(['diff', '--name-status', merge_base], options)
-      files = self._Capture(['diff', '--name-only', merge_base]).split()
-      file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+      if file_list is not None:
+        files = self._Capture(['diff', '--name-only', merge_base]).split()
+        file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def GetUsableRev(self, rev, options):
     """Finds a useful revision for this repository.
@@ -830,7 +835,8 @@ class GitWrapper(SCMWrapper):
   def _AttemptRebase(self, upstream, files, options, newbase=None,
                      branch=None, printed_path=False):
     """Attempt to rebase onto either upstream or, if specified, newbase."""
-    files.extend(self._Capture(['diff', upstream, '--name-only']).split())
+    if files is not None:
+      files.extend(self._Capture(['diff', upstream, '--name-only']).split())
     revision = upstream
     if newbase:
       revision = newbase
@@ -955,7 +961,7 @@ class GitWrapper(SCMWrapper):
                                 '\tPlease commit, stash, or reset.\n'
                                   % (self.relpath, rev_str))
 
-  def _CheckDetachedHead(self, rev_str, options):
+  def _CheckDetachedHead(self, rev_str, _options):
     # HEAD is detached. Make sure it is safe to move away from (i.e., it is
     # reference by a commit). If not, error out -- most likely a rebase is
     # in progress, try to detect so we can give a better error.
@@ -1057,18 +1063,18 @@ class SVNWrapper(SCMWrapper):
         os.path.join(self.checkout_path, '.'))
     return date.strip()
 
-  def cleanup(self, options, args, file_list):
+  def cleanup(self, options, args, _file_list):
     """Cleanup working copy."""
     self._Run(['cleanup'] + args, options)
 
-  def diff(self, options, args, file_list):
+  def diff(self, options, args, _file_list):
     # NOTE: This function does not currently modify file_list.
     if not os.path.isdir(self.checkout_path):
       raise gclient_utils.Error('Directory %s is not present.' %
           self.checkout_path)
     self._Run(['diff'] + args, options)
 
-  def pack(self, options, args, file_list):
+  def pack(self, _options, args, _file_list):
     """Generates a patch file which can be applied to the root of the
     repository."""
     if not os.path.isdir(self.checkout_path):
@@ -1286,7 +1292,7 @@ class SVNWrapper(SCMWrapper):
           options.revision)
       self._Run(command, options, cwd=self._root_dir)
 
-  def revert(self, options, args, file_list):
+  def revert(self, options, _args, file_list):
     """Reverts local modifications. Subversion specific.
 
     All reverted files will be appended to file_list, even if Subversion
@@ -1318,7 +1324,8 @@ class SVNWrapper(SCMWrapper):
       return self.update(options, [], file_list)
 
     def printcb(file_status):
-      file_list.append(file_status[1])
+      if file_list is not None:
+        file_list.append(file_status[1])
       if logging.getLogger().isEnabledFor(logging.INFO):
         logging.info('%s%s' % (file_status[0], file_status[1]))
       else:
@@ -1340,7 +1347,7 @@ class SVNWrapper(SCMWrapper):
       # Maybe the directory disapeared meanwhile. Do not throw an exception.
       logging.error('Failed to update:\n%s' % str(e))
 
-  def revinfo(self, options, args, file_list):
+  def revinfo(self, _options, _args, _file_list):
     """Display revision"""
     try:
       return scm.SVN.CaptureRevision(self.checkout_path)
@@ -1362,7 +1369,7 @@ class SVNWrapper(SCMWrapper):
     else:
       self._RunAndGetFileList(command, options, file_list)
 
-  def GetUsableRev(self, rev, options):
+  def GetUsableRev(self, rev, _options):
     """Verifies the validity of the revision for this repository."""
     if not scm.SVN.IsValidRevision(url='%s@%s' % (self.url, rev)):
       raise gclient_utils.Error(
