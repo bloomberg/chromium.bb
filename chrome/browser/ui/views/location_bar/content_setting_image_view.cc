@@ -99,8 +99,9 @@ int ContentSettingImageView::GetBuiltInHorizontalPadding() const {
 }
 
 void ContentSettingImageView::Update(content::WebContents* web_contents) {
-  if (web_contents)
-    content_setting_image_model_->UpdateFromWebContents(web_contents);
+  // Note: We explicitly want to call this even if |web_contents| is NULL, so we
+  // get hidden properly while the user is editing the omnibox.
+  content_setting_image_model_->UpdateFromWebContents(web_contents);
 
   if (!content_setting_image_model_->is_visible()) {
     SetVisible(false);
