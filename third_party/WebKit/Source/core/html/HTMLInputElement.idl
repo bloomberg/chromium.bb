@@ -57,6 +57,7 @@
     [TreatNullAs=NullString, SetterRaisesException] attribute DOMString value;
     [SetterRaisesException] attribute Date valueAsDate;
     [SetterRaisesException] attribute double valueAsNumber;
+    [EnabledAtRuntime=inputModeAttribute, Reflect] attribute DOMString inputMode;
 
     [RaisesException] void stepUp(optional long n);
     [RaisesException] void stepDown(optional long n);
