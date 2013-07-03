@@ -509,6 +509,7 @@ def ValidateRegularInstruction(instruction, bitness):
         ['mov', 'add', 'sub', 'and', 'or', 'xor',
          'xchg', 'xadd',
          'inc', 'dec', 'neg', 'not',
+         'lea',
         ]):
       return Condition(), Condition()
     else:
@@ -518,6 +519,7 @@ def ValidateRegularInstruction(instruction, bitness):
     precondition = Condition()
     postcondition = Condition()
     zero_extending = False
+    touches_memory = True
 
     if _InstructionNameIn(
           name, ['mov', 'add', 'sub', 'and', 'or', 'xor']):
@@ -532,10 +534,17 @@ def ValidateRegularInstruction(instruction, bitness):
       assert len(ops) == 1
       zero_extending = True
       write_ops = ops
+    elif name == 'lea':
+      assert len(ops) == 2
+      write_ops = [ops[1]]
+      touches_memory = False
+      zero_extending = True
     else:
       raise DoNotMatchError(instruction)
 
-    precondition = _ProcessMemoryAccess(instruction, ops)
+    if touches_memory:
+      precondition = _ProcessMemoryAccess(instruction, ops)
+
     postcondition = _ProcessOperandWrites(
         instruction, write_ops, zero_extending)
 
@@ -682,7 +691,7 @@ def ValidateSuperinstruction64(superinstruction):
   # Disallow 0xe0 once
   # https://code.google.com/p/nativeclient/issues/detail?id=3164 is fixed.
   and_for_callq_jmpq = re.compile(
-      r'and [$]0x(ffffff)?e0,(?P<register>%e[a-z][a-z]|%r[89]d|%r1[0-4]d)$')
+      r'and [$]0x(f)*e0,(?P<register>%e[a-z][a-z]|%r[89]d|%r1[0-4]d)$')
   add_for_callq_jmpq = re.compile(
       r'add %r15,(?P<register>%r[0-9a-z]+)$')
 
