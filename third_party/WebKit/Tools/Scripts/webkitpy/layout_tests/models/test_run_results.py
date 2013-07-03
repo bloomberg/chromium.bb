@@ -43,6 +43,7 @@ class TestRunResults(object):
         self.remaining = self.total
         self.expectations = expectations
         self.expected = 0
+        self.expected_failures = 0
         self.unexpected = 0
         self.unexpected_failures = 0
         self.unexpected_crashes = 0
@@ -76,6 +77,8 @@ class TestRunResults(object):
             self.expected += 1
             if test_result.type == test_expectations.SKIP:
                 self.expected_skips += 1
+            elif test_result.type != test_expectations.PASS:
+                self.expected_failures += 1
         else:
             self.unexpected_results_by_name[test_result.test_name] = test_result
             self.unexpected += 1

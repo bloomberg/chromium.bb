@@ -62,6 +62,7 @@ class FakeRunResults(object):
         fake_results = fake_results or []
         self.total = total
         self.expected = expected
+        self.expected_failures = 0
         self.unexpected = unexpected
         self.expected_skips = 0
         self.results_by_name = {}

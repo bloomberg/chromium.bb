@@ -301,17 +301,21 @@ class Printer(object):
         if self._options.verbose or unexpected:
             self.writeln("")
 
+        expected_summary_str = ''
+        if run_results.expected_failures > 0:
+            expected_summary_str = " (%d passed, %d didn't)" % (expected - run_results.expected_failures, run_results.expected_failures)
+
         summary = ''
         if unexpected == 0:
             if expected == total:
                 if expected > 1:
-                    summary = "All %d tests ran as expected%s." % (expected, timing_summary)
+                    summary = "All %d tests ran as expected%s%s." % (expected, expected_summary_str, timing_summary)
                 else:
-                    summary = "The test ran as expected%s." % (timing_summary)
+                    summary = "The test ran as expected%s%s." % (expected_summary_str, timing_summary)
             else:
-                summary = "%s ran as expected%s%s." % (grammar.pluralize('test', expected), incomplete_str, timing_summary)
+                summary = "%s ran as expected%s%s%s." % (grammar.pluralize('test', expected), expected_summary_str, incomplete_str, timing_summary)
         else:
-            summary = "%s ran as expected, %d didn't%s%s:" % (grammar.pluralize('test', expected), unexpected, incomplete_str, timing_summary)
+            summary = "%s ran as expected%s, %d didn't%s%s:" % (grammar.pluralize('test', expected), expected_summary_str, unexpected, incomplete_str, timing_summary)
 
         self._print_quiet(summary)
         self._print_quiet("")

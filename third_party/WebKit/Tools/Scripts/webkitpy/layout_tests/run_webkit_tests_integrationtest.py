@@ -53,6 +53,7 @@ from webkitpy.layout_tests import run_webkit_tests
 from webkitpy.layout_tests.port import Port
 from webkitpy.layout_tests.port import test
 from webkitpy.test.skip import skip_if
+from webkitpy.tool import grammar
 from webkitpy.tool.mocktool import MockOptions
 
 
@@ -200,8 +201,13 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, test.UNEXPECTED_FAILURES)
         self.assertEqual(details.retry_results.total, test.TOTAL_RETRIES)
 
-        one_line_summary = "%d tests ran as expected, %d didn't:\n" % (
-            details.initial_results.total - details.initial_results.expected_skips - len(details.initial_results.unexpected_results_by_name),
+        expected_tests = details.initial_results.total - details.initial_results.expected_skips - len(details.initial_results.unexpected_results_by_name)
+        expected_summary_str = ''
+        if details.initial_results.expected_failures > 0:
+            expected_summary_str = " (%d passed, %d didn't)" % (expected_tests - details.initial_results.expected_failures, details.initial_results.expected_failures)
+        one_line_summary = "%d tests ran as expected%s, %d didn't:\n" % (
+            expected_tests,
+            expected_summary_str,
             len(details.initial_results.unexpected_results_by_name))
         self.assertTrue(one_line_summary in logging_stream.buflist)
 
@@ -387,7 +393,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         _, err, _ = logging_run(
             ['--iterations', '2', '--repeat-each', '4', '--debug-rwt-logging', 'passes/text.html', 'failures/expected/text.html'],
             tests_included=True, host=host)
-        self.assertContains(err, "All 16 tests ran as expected.\n")
+        self.assertContains(err, "All 16 tests ran as expected (8 passed, 8 didn't).\n")
 
     def test_run_chunk(self):
         # Test that we actually select the right chunk
