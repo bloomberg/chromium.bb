@@ -109,7 +109,8 @@ NSPoint GetPointForBubble(content::WebContents* web_contents,
 void CreateShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info) {
   // creation_locations will be ignored by CreatePlatformShortcuts on Mac.
   ShellIntegration::ShortcutLocations creation_locations;
-  web_app::CreateShortcuts(shortcut_info, creation_locations);
+  web_app::CreateShortcuts(shortcut_info, creation_locations,
+                           web_app::ALLOW_DUPLICATE_SHORTCUTS);
 }
 
 }  // namespace

@@ -31,7 +31,8 @@ using extensions::Extension;
 
 namespace {
 
-// Creates a shortcut for an application in the applications menu.
+// Creates a shortcut for an application in the applications menu, if there is
+// not already one present.
 void CreateShortcutsInApplicationsMenu(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   ShellIntegration::ShortcutLocations creation_locations;
@@ -39,7 +40,8 @@ void CreateShortcutsInApplicationsMenu(
   // Create the shortcut in the Chrome Apps subdir.
   creation_locations.applications_menu_subdir =
       web_app::GetAppShortcutsSubdirName();
-  web_app::CreateShortcuts(shortcut_info, creation_locations);
+  web_app::CreateShortcuts(shortcut_info, creation_locations,
+                           web_app::DONT_CREATE_DUPLICATE_SHORTCUTS);
 }
 
 bool ShouldCreateShortcutFor(const extensions::Extension* extension) {

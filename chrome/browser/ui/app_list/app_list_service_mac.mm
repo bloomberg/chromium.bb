@@ -166,7 +166,8 @@ void CreateAppListShim(const base::FilePath& profile_path) {
 
   // TODO(tapted): Create a dock icon using chrome/browser/mac/dock.h .
   web_app::CreateShortcuts(shortcut_info,
-                           ShellIntegration::ShortcutLocations());
+                           ShellIntegration::ShortcutLocations(),
+                           web_app::ALLOW_DUPLICATE_SHORTCUTS);
 }
 
 // Check that there is an app list shim. If enabling and there is not, make one.
@@ -195,7 +196,8 @@ void CheckAppListShimOnFileThread(const base::FilePath& profile_path) {
 void CreateShortcutsInDefaultLocation(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   web_app::CreateShortcuts(shortcut_info,
-                           ShellIntegration::ShortcutLocations());
+                           ShellIntegration::ShortcutLocations(),
+                           web_app::ALLOW_DUPLICATE_SHORTCUTS);
 }
 
 AppListControllerDelegateCocoa::AppListControllerDelegateCocoa() {}
