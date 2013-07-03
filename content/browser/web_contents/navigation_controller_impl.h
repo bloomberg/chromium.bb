@@ -213,8 +213,6 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   // Helper class to smooth out runs of duplicate timestamps while still
   // allowing time to jump backwards.
-  //
-  // TODO(akalin): Use CONTENT_EXPORT_PRIVATE once we have that.
   class CONTENT_EXPORT TimeSmoother {
    public:
     // Returns |t| with possibly some time added on.
