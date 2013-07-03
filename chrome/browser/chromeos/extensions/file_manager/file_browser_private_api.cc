@@ -815,7 +815,7 @@ bool GetFileTasksFileBrowserFunction::FindAppTasks(
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
        ++iter) {
-    const Extension* extension = *iter;
+    const Extension* extension = iter->get();
 
     // We don't support using hosted apps to open files.
     if (!extension->is_platform_app())

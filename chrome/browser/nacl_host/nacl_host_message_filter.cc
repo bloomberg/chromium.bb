@@ -88,9 +88,8 @@ void NaClHostMessageFilter::OnLaunchNaCl(
       launch_params.enable_exception_handling,
       off_the_record_,
       profile_directory_);
-  base::FilePath manifest_url = GetManifestPath(
-        extension_info_map_,
-        launch_params.manifest_url);
+  base::FilePath manifest_url =
+      GetManifestPath(extension_info_map_.get(), launch_params.manifest_url);
   host->Launch(this, reply_msg, manifest_url);
 }
 

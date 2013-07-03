@@ -231,7 +231,7 @@ void SelectFileDialogExtension::AddPending(int32 tab_id) {
 
 // static
 bool SelectFileDialogExtension::PendingExists(int32 tab_id) {
-  return PendingDialog::GetInstance()->Find(tab_id) != NULL;
+  return PendingDialog::GetInstance()->Find(tab_id).get() != NULL;
 }
 
 bool SelectFileDialogExtension::HasMultipleFileTypeChoicesImpl() {

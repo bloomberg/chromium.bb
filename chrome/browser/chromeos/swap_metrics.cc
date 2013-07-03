@@ -348,7 +348,7 @@ SwapMetrics::SwapMetrics() : browser_(NULL) {
 }
 
 SwapMetrics::~SwapMetrics() {
-  if (backend_)
+  if (backend_.get())
     backend_->CancelOnUIThread();
   ash::Shell::GetInstance()->RemovePreTargetHandler(this);
   BrowserList::RemoveObserver(this);
@@ -413,7 +413,7 @@ void SwapMetrics::PostTaskRecordMetrics(scoped_refptr<Backend> backend,
 
 void SwapMetrics::StartMetricsCollection(const std::string& reason) {
   // Cancel any existing metrics run.
-  if (backend_)
+  if (backend_.get())
     backend_->CancelOnUIThread();
   backend_ = new Backend(reason);
   PostTaskRecordMetrics(backend_, 0, kMetricsDelayMs[0]);

@@ -383,8 +383,8 @@ scoped_refptr<net::X509Certificate> DecodePEMCertificate(
   std::string decoded = DecodePEM(pem_encoded);
   scoped_refptr<net::X509Certificate> cert =
       net::X509Certificate::CreateFromBytes(decoded.data(), decoded.size());
-  LOG_IF(ERROR, !cert) << "Couldn't create certificate from X509 data: "
-                       << decoded;
+  LOG_IF(ERROR, !cert.get()) << "Couldn't create certificate from X509 data: "
+                             << decoded;
   return cert;
 }
 

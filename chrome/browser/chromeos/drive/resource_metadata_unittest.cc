@@ -125,10 +125,10 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), blocking_task_runner_));
+        temp_dir_.path(), blocking_task_runner_.get()));
     bool success = false;
     base::PostTaskAndReplyWithResult(
-        blocking_task_runner_,
+        blocking_task_runner_.get(),
         FROM_HERE,
         base::Bind(&ResourceMetadataStorage::Initialize,
                    base::Unretained(metadata_storage_.get())),
@@ -141,7 +141,7 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
 
     FileError error = FILE_ERROR_FAILED;
     base::PostTaskAndReplyWithResult(
-        blocking_task_runner_,
+        blocking_task_runner_.get(),
         FROM_HERE,
         base::Bind(&ResourceMetadata::Initialize,
                    base::Unretained(resource_metadata_.get())),
@@ -859,7 +859,7 @@ class ResourceMetadataTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::MessageLoopProxy::current()));
+        temp_dir_.path(), base::MessageLoopProxy::current().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
     resource_metadata_.reset(new ResourceMetadata(

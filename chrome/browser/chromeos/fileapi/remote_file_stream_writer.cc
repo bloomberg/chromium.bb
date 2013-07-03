@@ -78,7 +78,7 @@ void RemoteFileStreamWriter::OnFileOpened(
 
   DCHECK(!local_file_writer_.get());
   local_file_writer_.reset(new fileapi::LocalFileStreamWriter(
-      local_task_runner_, local_path, initial_offset_));
+      local_task_runner_.get(), local_path, initial_offset_));
   int result = local_file_writer_->Write(buf, buf_len, callback);
   if (result != net::ERR_IO_PENDING)
     callback.Run(result);

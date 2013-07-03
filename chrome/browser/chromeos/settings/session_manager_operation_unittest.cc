@@ -172,7 +172,7 @@ TEST_F(SessionManagerOperationTest, RestartLoad) {
   op.Start(&device_settings_test_helper_, owner_key_util_, NULL);
   device_settings_test_helper_.FlushLoops();
   device_settings_test_helper_.FlushRetrieve();
-  EXPECT_TRUE(op.owner_key());
+  EXPECT_TRUE(op.owner_key().get());
   EXPECT_TRUE(op.owner_key()->public_key());
   Mock::VerifyAndClearExpectations(this);
 

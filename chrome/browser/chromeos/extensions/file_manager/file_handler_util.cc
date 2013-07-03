@@ -148,7 +148,7 @@ bool GetFileBrowserHandlers(Profile* profile,
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
        ++iter) {
-    const Extension* extension = *iter;
+    const Extension* extension = iter->get();
     if (profile->IsOffTheRecord() &&
         !service->IsIncognitoEnabled(extension->id()))
       continue;
@@ -746,7 +746,7 @@ void ExtensionTaskExecutor::ExecuteFileActionsOnUIThread(
 
   int handler_pid = ExtractProcessFromExtensionId(profile_, extension_->id());
   if (handler_pid <= 0 &&
-      !extensions::BackgroundInfo::HasLazyBackgroundPage(extension_)) {
+      !extensions::BackgroundInfo::HasLazyBackgroundPage(extension_.get())) {
     ExecuteDoneOnUIThread(false);
     return;
   }
@@ -759,7 +759,7 @@ void ExtensionTaskExecutor::ExecuteFileActionsOnUIThread(
     extensions::LazyBackgroundTaskQueue* queue =
         extensions::ExtensionSystem::Get(profile_)->
         lazy_background_task_queue();
-    if (!queue->ShouldEnqueueTask(profile_, extension_)) {
+    if (!queue->ShouldEnqueueTask(profile_, extension_.get())) {
       ExecuteDoneOnUIThread(false);
       return;
     }
@@ -795,7 +795,8 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
     return;
   }
 
-  SetupHandlerHostFileAccessPermissions(file_list, extension_, handler_pid);
+  SetupHandlerHostFileAccessPermissions(
+      file_list, extension_.get(), handler_pid);
 
   scoped_ptr<ListValue> event_args(new ListValue());
   event_args->Append(new base::StringValue(action_id_));
@@ -838,7 +839,8 @@ void ExtensionTaskExecutor::SetupHandlerHostFileAccessPermissions(
     content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
         handler_pid,
         iter->absolute_path,
-        GetAccessPermissionsForFileBrowserHandler(extension_, action_id_));
+        GetAccessPermissionsForFileBrowserHandler(extension_.get(),
+                                                  action_id_));
   }
 }
 

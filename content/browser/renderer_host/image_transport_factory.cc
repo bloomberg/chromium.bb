@@ -255,7 +255,7 @@ class BrowserCompositorOutputSurfaceProxy
           arraysize(messages_to_filter),
           base::Bind(&BrowserCompositorOutputSurfaceProxy::OnMessageReceived,
                      this),
-          base::MessageLoop::current()->message_loop_proxy());
+          base::MessageLoop::current()->message_loop_proxy().get());
       message_handler_set_ = true;
     }
     surface_map_.AddWithID(surface, surface_id);
@@ -643,7 +643,7 @@ class GpuProcessTransportFactory
                 .PassAs<WebKit::WebGraphicsContext3D>(),
             per_compositor_data_[compositor]->surface_id,
             output_surface_proxy_.get(),
-            base::MessageLoopProxy::current(),
+            base::MessageLoopProxy::current().get(),
             compositor->AsWeakPtr());
     if (data->reflector.get()) {
       data->reflector->CreateSharedTexture();

@@ -77,24 +77,27 @@ class ChangeListLoaderTest : public testing::Test {
     ASSERT_TRUE(drive_service_->LoadAccountMetadataForWapi(
         "gdata/account_metadata.json"));
 
-    scheduler_.reset(new JobScheduler(profile_.get(), drive_service_.get(),
-                                      base::MessageLoopProxy::current()));
+    scheduler_.reset(new JobScheduler(profile_.get(),
+                                      drive_service_.get(),
+                                      base::MessageLoopProxy::current().get()));
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::MessageLoopProxy::current()));
+        temp_dir_.path(), base::MessageLoopProxy::current().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
-    metadata_.reset(new ResourceMetadata(metadata_storage_.get(),
-                                         base::MessageLoopProxy::current()));
+    metadata_.reset(new ResourceMetadata(
+        metadata_storage_.get(), base::MessageLoopProxy::current().get()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
     cache_.reset(new FileCache(metadata_storage_.get(),
                                temp_dir_.path(),
-                               base::MessageLoopProxy::current(),
+                               base::MessageLoopProxy::current().get(),
                                NULL /* free_disk_space_getter */));
     ASSERT_TRUE(cache_->Initialize());
 
-    change_list_loader_.reset(new ChangeListLoader(
-        base::MessageLoopProxy::current(), metadata_.get(), scheduler_.get()));
+    change_list_loader_.reset(
+        new ChangeListLoader(base::MessageLoopProxy::current().get(),
+                             metadata_.get(),
+                             scheduler_.get()));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

@@ -45,7 +45,7 @@ std::string FindScreensaverExtension(ExtensionService* service,
   for (ExtensionSet::const_iterator it = extensions->begin();
       it != extensions->end();
       ++it) {
-    const extensions::Extension* extension = *it;
+    const extensions::Extension* extension = it->get();
     if (extension &&
         extension->id() != exclude_id &&
         extension->HasAPIPermission(extensions::APIPermission::kScreensaver)) {

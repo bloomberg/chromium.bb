@@ -94,7 +94,7 @@ void ChromeInternalLogSource::PopulateExtensionInfoLogs(
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end();
        ++it) {
-    const extensions::Extension* extension = *it;
+    const extensions::Extension* extension = it->get();
     if (extensions_list.empty()) {
       extensions_list = extension->name();
     } else {

@@ -23,7 +23,7 @@ class ResourceMetadataStorageTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::MessageLoopProxy::current()));
+        temp_dir_.path(), base::MessageLoopProxy::current().get()));
     ASSERT_TRUE(storage_->Initialize());
   }
 
@@ -312,7 +312,7 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
 
   // Close DB and reopen.
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::MessageLoopProxy::current()));
+      temp_dir_.path(), base::MessageLoopProxy::current().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Can read data.
@@ -344,7 +344,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB) {
   // Set incompatible version and reopen DB.
   SetDBVersion(ResourceMetadataStorage::kDBVersion - 1);
   storage_.reset(new ResourceMetadataStorage(
-      temp_dir_.path(), base::MessageLoopProxy::current()));
+      temp_dir_.path(), base::MessageLoopProxy::current().get()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Data is erased because of the incompatible version.
@@ -358,7 +358,7 @@ TEST_F(ResourceMetadataStorageTest, WrongPath) {
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &path));
 
   storage_.reset(new ResourceMetadataStorage(
-      path, base::MessageLoopProxy::current()));
+      path, base::MessageLoopProxy::current().get()));
   // Cannot initialize DB beacause the path does not point a directory.
   ASSERT_FALSE(storage_->Initialize());
 }

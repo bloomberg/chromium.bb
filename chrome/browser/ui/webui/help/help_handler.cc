@@ -347,7 +347,7 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
     // If |g_build_date_string| is |NULL|, the date has not yet been assigned.
     // Get the date of the last lsb-release file modification.
     base::FileUtilProxy::GetFileInfo(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
         base::SysInfo::GetLsbReleaseFilePath(),
         base::Bind(&HelpHandler::ProcessLsbFileInfo,
                    weak_factory_.GetWeakPtr()));

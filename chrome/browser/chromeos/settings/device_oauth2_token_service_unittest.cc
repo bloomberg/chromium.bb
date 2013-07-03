@@ -61,7 +61,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
         scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         request_context_getter_(new net::TestURLRequestContextGetter(
             message_loop_.message_loop_proxy())),
-        oauth2_service_(request_context_getter_,
+        oauth2_service_(request_context_getter_.get(),
                         scoped_testing_local_state_.Get()) {
     oauth2_service_.max_refresh_token_validation_retries_ = 0;
     oauth2_service_.set_max_authorization_token_fetch_retries_for_testing(0);

@@ -48,7 +48,7 @@ void CameraDetector::StartPresenceCheck(const base::Closure& callback) {
   presence_check_in_progress_ = true;
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN).get(),
       FROM_HERE,
       base::Bind(&CameraDetector::CheckPresence),
       base::Bind(&CameraDetector::OnPresenceCheckDone, callback));

@@ -522,7 +522,7 @@ void CollectedCookiesViews::AddContentException(views::TreeView* tree_view,
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   host_node->CreateContentException(
-      CookieSettings::Factory::GetForProfile(profile), setting);
+      CookieSettings::Factory::GetForProfile(profile).get(), setting);
   infobar_->UpdateVisibility(true, setting, host_node->GetTitle());
   status_changed_ = true;
 }

@@ -97,7 +97,7 @@ void RtcEncodingVideoCapturer::EncodedVideoSourceClient::OnClosed() {
 
 void RtcEncodingVideoCapturer::EncodedVideoSourceClient::OnBufferReady(
     scoped_refptr<const media::EncodedBitstreamBuffer> buffer) {
-  DCHECK(!finished_ && buffer);
+  DCHECK(!finished_ && buffer.get());
 
   // First buffer constitutes the origin of the time for this bitstream context.
   if (time_base_.is_null())

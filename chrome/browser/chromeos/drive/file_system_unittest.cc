@@ -93,7 +93,7 @@ class FileSystemTest : public testing::Test {
 
     scheduler_.reset(new JobScheduler(profile_.get(),
                                       fake_drive_service_.get(),
-                                      base::MessageLoopProxy::current()));
+                                      base::MessageLoopProxy::current().get()));
 
     ASSERT_TRUE(file_util::CreateDirectory(util::GetCacheRootPath(
         profile_.get()).Append(util::kMetadataDirectory)));
@@ -110,14 +110,14 @@ class FileSystemTest : public testing::Test {
   void SetUpResourceMetadataAndFileSystem() {
     metadata_storage_.reset(new internal::ResourceMetadataStorage(
         util::GetCacheRootPath(profile_.get()).Append(util::kMetadataDirectory),
-        base::MessageLoopProxy::current()));
+        base::MessageLoopProxy::current().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
     cache_.reset(new internal::FileCache(
         metadata_storage_.get(),
         util::GetCacheRootPath(profile_.get()).Append(
             util::kCacheFileDirectory),
-        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current().get(),
         fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
 
@@ -130,7 +130,7 @@ class FileSystemTest : public testing::Test {
         fake_drive_service_.get(),
         scheduler_.get(),
         resource_metadata_.get(),
-        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current().get(),
         util::GetCacheRootPath(profile_.get()).Append(
             util::kTemporaryFileDirectory)));
     file_system_->AddObserver(mock_directory_observer_.get());
@@ -214,8 +214,8 @@ class FileSystemTest : public testing::Test {
         util::GetCacheRootPath(profile_.get()).Append(util::kMetadataDirectory);
     scoped_ptr<internal::ResourceMetadataStorage,
                test_util::DestroyHelperForTests> metadata_storage(
-                   new internal::ResourceMetadataStorage(
-                       metadata_directory, base::MessageLoopProxy::current()));
+        new internal::ResourceMetadataStorage(
+            metadata_directory, base::MessageLoopProxy::current().get()));
 
     scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
         resource_metadata(new internal::ResourceMetadata(

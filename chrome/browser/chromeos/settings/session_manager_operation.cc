@@ -236,7 +236,7 @@ void SignAndStoreSettingsOperation::Run() {
 }
 
 void SignAndStoreSettingsOperation::StartSigning() {
-  if (!owner_key() || !owner_key()->private_key() || username_.empty()) {
+  if (!owner_key().get() || !owner_key()->private_key() || username_.empty()) {
     ReportResult(DeviceSettingsService::STORE_KEY_UNAVAILABLE);
     return;
   }

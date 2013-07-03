@@ -67,7 +67,7 @@ void AddString16ToVector(const string16& str,
 
 std::string RefCountedMemoryToString(
     const scoped_refptr<base::RefCountedMemory>& memory) {
-  if (!memory) {
+  if (!memory.get()) {
     NOTREACHED();
     return std::string();
   }
@@ -82,7 +82,7 @@ std::string RefCountedMemoryToString(
 
 string16 RefCountedMemoryToString16(
     const scoped_refptr<base::RefCountedMemory>& memory) {
-  if (!memory) {
+  if (!memory.get()) {
     NOTREACHED();
     return string16();
   }
@@ -168,11 +168,11 @@ bool SelectionData::IsValid() const {
 }
 
 const unsigned char* SelectionData::GetData() const {
-  return memory_ ? memory_->front() : NULL;
+  return memory_.get() ? memory_->front() : NULL;
 }
 
 size_t SelectionData::GetSize() const {
-  return memory_ ? memory_->size() : 0;
+  return memory_.get() ? memory_->size() : 0;
 }
 
 std::string SelectionData::GetText() const {

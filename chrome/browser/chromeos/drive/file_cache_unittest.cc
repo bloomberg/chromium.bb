@@ -77,11 +77,11 @@ class FileCacheTestOnUIThread : public testing::Test {
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), blocking_task_runner_));
+        temp_dir_.path(), blocking_task_runner_.get()));
 
     bool success = false;
     base::PostTaskAndReplyWithResult(
-        blocking_task_runner_,
+        blocking_task_runner_.get(),
         FROM_HERE,
         base::Bind(&ResourceMetadataStorage::Initialize,
                    base::Unretained(metadata_storage_.get())),
@@ -97,10 +97,9 @@ class FileCacheTestOnUIThread : public testing::Test {
 
     success = false;
     base::PostTaskAndReplyWithResult(
-        blocking_task_runner_,
+        blocking_task_runner_.get(),
         FROM_HERE,
-        base::Bind(&FileCache::Initialize,
-                   base::Unretained(cache_.get())),
+        base::Bind(&FileCache::Initialize, base::Unretained(cache_.get())),
         google_apis::test_util::CreateCopyResultCallback(&success));
     google_apis::test_util::RunBlockingPoolTask();
     ASSERT_TRUE(success);
@@ -898,13 +897,13 @@ class FileCacheTest : public testing::Test {
 
     metadata_storage_.reset(new ResourceMetadataStorage(
         temp_dir_.path().Append(util::kMetadataDirectory),
-        base::MessageLoopProxy::current()));
+        base::MessageLoopProxy::current().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
     cache_.reset(new FileCache(
         metadata_storage_.get(),
         temp_dir_.path().Append(util::kCacheFileDirectory),
-        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current().get(),
         fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
   }
@@ -944,12 +943,12 @@ TEST_F(FileCacheTest, ScanCacheFile) {
 
   // Create a new cache and initialize it.
   metadata_storage_.reset(new ResourceMetadataStorage(
-      metadata_directory, base::MessageLoopProxy::current()));
+      metadata_directory, base::MessageLoopProxy::current().get()));
   ASSERT_TRUE(metadata_storage_->Initialize());
 
   cache_.reset(new FileCache(metadata_storage_.get(),
                              temp_dir_.path().Append(util::kCacheFileDirectory),
-                             base::MessageLoopProxy::current(),
+                             base::MessageLoopProxy::current().get(),
                              fake_free_disk_space_getter_.get()));
   ASSERT_TRUE(cache_->Initialize());
 

@@ -21,7 +21,7 @@ IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
 IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {}
 
 void IndexedDBDatabaseCallbacks::OnForcedClose() {
-  if (!dispatcher_host_)
+  if (!dispatcher_host_.get())
     return;
 
   dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksForcedClose(
@@ -32,7 +32,7 @@ void IndexedDBDatabaseCallbacks::OnForcedClose() {
 
 void IndexedDBDatabaseCallbacks::OnVersionChange(int64 old_version,
                                                         int64 new_version) {
-  if (!dispatcher_host_)
+  if (!dispatcher_host_.get())
     return;
 
   dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksIntVersionChange(
@@ -42,7 +42,7 @@ void IndexedDBDatabaseCallbacks::OnVersionChange(int64 old_version,
 void IndexedDBDatabaseCallbacks::OnAbort(
     int64 host_transaction_id,
     const IndexedDBDatabaseError& error) {
-  if (!dispatcher_host_)
+  if (!dispatcher_host_.get())
     return;
 
   dispatcher_host_->FinishTransaction(host_transaction_id, false);
@@ -55,7 +55,7 @@ void IndexedDBDatabaseCallbacks::OnAbort(
 }
 
 void IndexedDBDatabaseCallbacks::OnComplete(int64 host_transaction_id) {
-  if (!dispatcher_host_)
+  if (!dispatcher_host_.get())
     return;
 
   dispatcher_host_->FinishTransaction(host_transaction_id, true);

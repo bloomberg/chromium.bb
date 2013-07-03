@@ -61,11 +61,11 @@ void RunSnapshotFileCallback(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   scoped_refptr<webkit_blob::ShareableFileReference> file_reference =
-      webkit_blob::ShareableFileReference::GetOrCreate(
-          webkit_blob::ScopedFile(
-              local_path, scope_out_policy,
-              BrowserThread::GetMessageLoopProxyForThread(
-                  BrowserThread::FILE)));
+      webkit_blob::ShareableFileReference::GetOrCreate(webkit_blob::ScopedFile(
+          local_path,
+          scope_out_policy,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
+              .get()));
   callback.Run(error, file_info, local_path, file_reference);
 }
 
@@ -427,7 +427,7 @@ void FileSystemProxy::OnCreateWritableSnapshotFile(
     file_ref = ShareableFileReference::GetOrCreate(
         local_path,
         ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get());
     file_ref->AddFinalReleaseCallback(
         base::Bind(&FileSystemProxy::CloseWritableSnapshotFile,
                    this,

@@ -267,7 +267,7 @@ TEST_F(DeviceSettingsServiceTest, OwnershipStatus) {
   owner_key_util_->Clear();
 
   EXPECT_FALSE(device_settings_service_.HasPrivateOwnerKey());
-  EXPECT_FALSE(device_settings_service_.GetOwnerKey());
+  EXPECT_FALSE(device_settings_service_.GetOwnerKey().get());
   EXPECT_EQ(DeviceSettingsService::OWNERSHIP_UNKNOWN,
             device_settings_service_.GetOwnershipStatus());
 
@@ -276,7 +276,7 @@ TEST_F(DeviceSettingsServiceTest, OwnershipStatus) {
                  base::Unretained(this)));
   FlushDeviceSettings();
   EXPECT_FALSE(device_settings_service_.HasPrivateOwnerKey());
-  ASSERT_TRUE(device_settings_service_.GetOwnerKey());
+  ASSERT_TRUE(device_settings_service_.GetOwnerKey().get());
   EXPECT_FALSE(device_settings_service_.GetOwnerKey()->public_key());
   EXPECT_FALSE(device_settings_service_.GetOwnerKey()->private_key());
   EXPECT_EQ(DeviceSettingsService::OWNERSHIP_NONE,
@@ -291,7 +291,7 @@ TEST_F(DeviceSettingsServiceTest, OwnershipStatus) {
                  base::Unretained(this)));
   FlushDeviceSettings();
   EXPECT_FALSE(device_settings_service_.HasPrivateOwnerKey());
-  ASSERT_TRUE(device_settings_service_.GetOwnerKey());
+  ASSERT_TRUE(device_settings_service_.GetOwnerKey().get());
   ASSERT_TRUE(device_settings_service_.GetOwnerKey()->public_key());
   std::vector<uint8> key;
   ASSERT_TRUE(device_policy_.signing_key()->ExportPublicKey(&key));
@@ -309,7 +309,7 @@ TEST_F(DeviceSettingsServiceTest, OwnershipStatus) {
                  base::Unretained(this)));
   FlushDeviceSettings();
   EXPECT_TRUE(device_settings_service_.HasPrivateOwnerKey());
-  ASSERT_TRUE(device_settings_service_.GetOwnerKey());
+  ASSERT_TRUE(device_settings_service_.GetOwnerKey().get());
   ASSERT_TRUE(device_settings_service_.GetOwnerKey()->public_key());
   ASSERT_TRUE(device_policy_.signing_key()->ExportPublicKey(&key));
   EXPECT_EQ(*device_settings_service_.GetOwnerKey()->public_key(), key);

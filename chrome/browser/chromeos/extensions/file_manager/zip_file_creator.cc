@@ -96,7 +96,8 @@ void ZipFileCreator::StartProcessOnIOThread(base::PlatformFile dest_file) {
   dest_fd.auto_close = true;
 
   UtilityProcessHost* host = UtilityProcessHost::Create(
-      this, BrowserThread::GetMessageLoopProxyForThread(thread_identifier_));
+      this,
+      BrowserThread::GetMessageLoopProxyForThread(thread_identifier_).get());
   host->Send(new ChromeUtilityMsg_CreateZipFile(src_dir_, src_relative_paths_,
                                                 dest_fd));
 }

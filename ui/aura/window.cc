@@ -159,7 +159,7 @@ ui::Layer* Window::RecreateLayer() {
       old_layer->GetTextureMailbox(&mailbox_scale_factor);
   scoped_refptr<ui::Texture> old_texture = old_layer->external_texture();
   if (delegate_ && old_texture.get())
-    old_layer->SetExternalTexture(delegate_->CopyTexture());
+    old_layer->SetExternalTexture(delegate_->CopyTexture().get());
 
   layer_ = new ui::Layer(old_layer->type());
   layer_owner_.reset(layer_);

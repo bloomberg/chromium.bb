@@ -23,8 +23,9 @@ class DriveAppRegistryTest : public testing::Test {
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
-    scheduler_.reset(new JobScheduler(profile_.get(), fake_drive_service_.get(),
-                                      base::MessageLoopProxy::current()));
+    scheduler_.reset(new JobScheduler(profile_.get(),
+                                      fake_drive_service_.get(),
+                                      base::MessageLoopProxy::current().get()));
 
     web_apps_registry_.reset(new DriveAppRegistry(scheduler_.get()));
     web_apps_registry_->Update();

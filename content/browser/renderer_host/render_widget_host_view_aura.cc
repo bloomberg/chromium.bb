@@ -1669,7 +1669,7 @@ void RenderWidgetHostViewAura::BuffersSwapped(
   ui::Texture* current_texture = current_surface_.get();
 
   const gfx::Size surface_size_in_pixel = surface_size;
-  DLOG_IF(ERROR, previous_texture &&
+  DLOG_IF(ERROR, previous_texture.get() &&
       previous_texture->size() != current_texture->size() &&
       SkIRectToRect(damage.getBounds()) != surface_rect) <<
       "Expected full damage rect after size change";

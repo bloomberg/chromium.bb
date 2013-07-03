@@ -73,13 +73,12 @@ TEST_F(WebkitFileStreamReaderImplTest, ReadThenGetLength) {
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
 
-  scoped_ptr<WebkitFileStreamReaderImpl> reader(
-      new WebkitFileStreamReaderImpl(
-          GetFileSystemGetter(),
-          worker_thread_->message_loop_proxy(),
-          kDriveFile,
-          0,  // offset
-          base::Time()));  // expected modification time
+  scoped_ptr<WebkitFileStreamReaderImpl> reader(new WebkitFileStreamReaderImpl(
+      GetFileSystemGetter(),
+      worker_thread_->message_loop_proxy().get(),
+      kDriveFile,
+      0,               // offset
+      base::Time()));  // expected modification time
 
   std::string content;
   ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &content));
@@ -94,13 +93,12 @@ TEST_F(WebkitFileStreamReaderImplTest, GetLengthThenRead) {
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
 
-  scoped_ptr<WebkitFileStreamReaderImpl> reader(
-      new WebkitFileStreamReaderImpl(
-          GetFileSystemGetter(),
-          worker_thread_->message_loop_proxy(),
-          kDriveFile,
-          0,  // offset
-          base::Time()));  // expected modification time
+  scoped_ptr<WebkitFileStreamReaderImpl> reader(new WebkitFileStreamReaderImpl(
+      GetFileSystemGetter(),
+      worker_thread_->message_loop_proxy().get(),
+      kDriveFile,
+      0,               // offset
+      base::Time()));  // expected modification time
 
   net::TestInt64CompletionCallback callback;
   int64 length = reader->GetLength(callback.callback());
@@ -116,13 +114,12 @@ TEST_F(WebkitFileStreamReaderImplTest, ReadWithOffset) {
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
   const int kOffset = 5;
 
-  scoped_ptr<WebkitFileStreamReaderImpl> reader(
-      new WebkitFileStreamReaderImpl(
-          GetFileSystemGetter(),
-          worker_thread_->message_loop_proxy(),
-          kDriveFile,
-          kOffset,
-          base::Time()));  // expected modification time
+  scoped_ptr<WebkitFileStreamReaderImpl> reader(new WebkitFileStreamReaderImpl(
+      GetFileSystemGetter(),
+      worker_thread_->message_loop_proxy().get(),
+      kDriveFile,
+      kOffset,
+      base::Time()));  // expected modification time
 
   std::string content;
   ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &content));
@@ -137,13 +134,12 @@ TEST_F(WebkitFileStreamReaderImplTest, ReadError) {
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("non-existing.txt");
 
-  scoped_ptr<WebkitFileStreamReaderImpl> reader(
-      new WebkitFileStreamReaderImpl(
-          GetFileSystemGetter(),
-          worker_thread_->message_loop_proxy(),
-          kDriveFile,
-          0,  // offset
-          base::Time()));  // expected modification time
+  scoped_ptr<WebkitFileStreamReaderImpl> reader(new WebkitFileStreamReaderImpl(
+      GetFileSystemGetter(),
+      worker_thread_->message_loop_proxy().get(),
+      kDriveFile,
+      0,               // offset
+      base::Time()));  // expected modification time
 
   const int kBufferSize = 10;
   scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(kBufferSize));
@@ -157,13 +153,12 @@ TEST_F(WebkitFileStreamReaderImplTest, GetLengthError) {
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("non-existing.txt");
 
-  scoped_ptr<WebkitFileStreamReaderImpl> reader(
-      new WebkitFileStreamReaderImpl(
-          GetFileSystemGetter(),
-          worker_thread_->message_loop_proxy(),
-          kDriveFile,
-          0,  // offset
-          base::Time()));  // expected modification time
+  scoped_ptr<WebkitFileStreamReaderImpl> reader(new WebkitFileStreamReaderImpl(
+      GetFileSystemGetter(),
+      worker_thread_->message_loop_proxy().get(),
+      kDriveFile,
+      0,               // offset
+      base::Time()));  // expected modification time
 
   net::TestInt64CompletionCallback callback;
   int64 result = reader->GetLength(callback.callback());
@@ -179,12 +174,11 @@ TEST_F(WebkitFileStreamReaderImplTest, LastModification) {
   ASSERT_TRUE(google_apis::util::GetTimeFromString(
       "2011-12-14T00:40:47.330Z", &expected_modification_time));
   scoped_ptr<WebkitFileStreamReaderImpl> reader(
-      new WebkitFileStreamReaderImpl(
-          GetFileSystemGetter(),
-          worker_thread_->message_loop_proxy(),
-          kDriveFile,
-          0,  // offset
-          expected_modification_time));
+      new WebkitFileStreamReaderImpl(GetFileSystemGetter(),
+                                     worker_thread_->message_loop_proxy().get(),
+                                     kDriveFile,
+                                     0,  // offset
+                                     expected_modification_time));
 
   net::TestInt64CompletionCallback callback;
   int64 result = reader->GetLength(callback.callback());
@@ -200,12 +194,11 @@ TEST_F(WebkitFileStreamReaderImplTest, LastModificationError) {
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
 
   scoped_ptr<WebkitFileStreamReaderImpl> reader(
-      new WebkitFileStreamReaderImpl(
-          GetFileSystemGetter(),
-          worker_thread_->message_loop_proxy(),
-          kDriveFile,
-          0,  // offset
-          base::Time::FromInternalValue(1)));
+      new WebkitFileStreamReaderImpl(GetFileSystemGetter(),
+                                     worker_thread_->message_loop_proxy().get(),
+                                     kDriveFile,
+                                     0,  // offset
+                                     base::Time::FromInternalValue(1)));
 
   net::TestInt64CompletionCallback callback;
   int64 result = reader->GetLength(callback.callback());

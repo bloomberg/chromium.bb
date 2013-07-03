@@ -112,7 +112,7 @@ class OverscrollWindowDelegate : public ImageWindowDelegate {
     }
 
     gfx::Image image;
-    if (entry && entry->screenshot()) {
+    if (entry && entry->screenshot().get()) {
       std::vector<gfx::ImagePNGRep> image_reps;
       image_reps.push_back(gfx::ImagePNGRep(entry->screenshot(),
             ui::GetScaleFactorForNativeView(web_contents_window())));
@@ -479,7 +479,7 @@ class OverscrollNavigationOverlay :
         controller.GetEntryAtOffset(offset));
 
     gfx::Image image;
-    if (entry && entry->screenshot()) {
+    if (entry && entry->screenshot().get()) {
       std::vector<gfx::ImagePNGRep> image_reps;
       image_reps.push_back(gfx::ImagePNGRep(entry->screenshot(),
             ui::GetScaleFactorForNativeView(window_.get())));

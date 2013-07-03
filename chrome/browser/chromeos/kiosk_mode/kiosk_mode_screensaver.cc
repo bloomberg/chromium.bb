@@ -191,7 +191,7 @@ void KioskModeScreensaver::ScreensaverPathCallback(
           Extension::NO_FLAGS,
           extensions_dir,
           content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::FILE),
+              content::BrowserThread::FILE).get(),
           new ScreensaverUnpackerClient(
               screensaver_crx,
               base::Bind(

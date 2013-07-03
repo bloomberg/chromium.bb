@@ -105,7 +105,7 @@ class JobSchedulerTest : public testing::Test {
 
     scheduler_.reset(new JobScheduler(profile_.get(),
                                       fake_drive_service_.get(),
-                                      base::MessageLoopProxy::current()));
+                                      base::MessageLoopProxy::current().get()));
     scheduler_->SetDisableThrottling(true);
   }
 

@@ -131,8 +131,8 @@ bool IsPepperPluginEnabled(Profile* profile,
   if (!pepper_info)
     return false;
 
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
-  if (!plugin_prefs)
+  scoped_refptr<PluginPrefs> plugin_prefs = PluginPrefs::GetForProfile(profile);
+  if (!plugin_prefs.get())
     return false;
 
   return plugin_prefs->IsPluginEnabled(pepper_info->ToWebPluginInfo());
@@ -348,7 +348,7 @@ bool ExecuteDefaultAppHandler(Profile* profile,
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
        ++iter) {
-    const Extension* extension = *iter;
+    const Extension* extension = iter->get();
 
     // We don't support using hosted apps to open files.
     if (!extension->is_platform_app())

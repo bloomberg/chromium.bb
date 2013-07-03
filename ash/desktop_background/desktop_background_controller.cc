@@ -360,7 +360,7 @@ bool DesktopBackgroundController::MoveDesktopToUnlockedContainer() {
 
 bool DesktopBackgroundController::DefaultWallpaperIsAlreadyLoadingOrLoaded(
     const base::FilePath& image_file, int image_resource_id) const {
-  return (wallpaper_loader_ &&
+  return (wallpaper_loader_.get() &&
           wallpaper_loader_->file_path() == image_file &&
           wallpaper_loader_->resource_id() == image_resource_id) ||
          (current_wallpaper_.get() &&

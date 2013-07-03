@@ -157,14 +157,14 @@ DriveIntegrationService::DriveIntegrationService(
   } else if (util::IsDriveV2ApiEnabled()) {
     drive_service_.reset(new DriveAPIService(
         g_browser_process->system_request_context(),
-        blocking_task_runner_,
+        blocking_task_runner_.get(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
         GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
         GetDriveUserAgent()));
   } else {
     drive_service_.reset(new GDataWapiService(
         g_browser_process->system_request_context(),
-        blocking_task_runner_,
+        blocking_task_runner_.get(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseDownloadUrlForProduction),
         GetDriveUserAgent()));
@@ -210,7 +210,7 @@ void DriveIntegrationService::Initialize() {
   file_system_->Initialize();
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&InitializeMetadata,
                  cache_root_directory_,

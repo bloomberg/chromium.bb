@@ -29,11 +29,11 @@ class RemoveStaleCacheFilesTest : public testing::Test {
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     metadata_storage_.reset(new ResourceMetadataStorage(
-        temp_dir_.path(), base::MessageLoopProxy::current()));
+        temp_dir_.path(), base::MessageLoopProxy::current().get()));
 
     cache_.reset(new FileCache(metadata_storage_.get(),
                                temp_dir_.path(),
-                               base::MessageLoopProxy::current(),
+                               base::MessageLoopProxy::current().get(),
                                fake_free_disk_space_getter_.get()));
 
     resource_metadata_.reset(new ResourceMetadata(

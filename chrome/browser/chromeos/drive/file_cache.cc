@@ -816,7 +816,7 @@ bool FileCache::ImportOldDB(const base::FilePath& old_db_path) {
   // Copy all entries stored in the old DB.
   bool imported = false;
   {
-    FileCacheMetadata old_data(blocking_task_runner_);
+    FileCacheMetadata old_data(blocking_task_runner_.get());
     if (old_data.Initialize(old_db_path) ==
         FileCacheMetadata::INITIALIZE_OPENED) {
       scoped_ptr<FileCacheMetadata::Iterator> it = old_data.GetIterator();

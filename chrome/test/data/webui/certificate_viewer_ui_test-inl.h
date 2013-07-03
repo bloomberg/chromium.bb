@@ -36,8 +36,8 @@ void CertificateViewerUITest::ShowCertificateViewer() {
   ASSERT_TRUE(browser()->window());
 
   ui::test::TestWebDialogObserver dialog_observer(this);
-  CertificateViewerDialog* dialog = new CertificateViewerDialog(
-      google_cert);
+  CertificateViewerDialog* dialog =
+      new CertificateViewerDialog(google_cert.get());
   dialog->AddObserver(&dialog_observer);
   dialog->Show(browser()->tab_strip_model()->GetActiveWebContents(),
                browser()->window()->GetNativeWindow());

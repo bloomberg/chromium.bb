@@ -57,14 +57,14 @@ void OperationTestBase::SetUp() {
   fake_drive_service_->LoadAccountMetadataForWapi(
       "gdata/account_metadata.json");
 
-  scheduler_.reset(new JobScheduler(profile_.get(), fake_drive_service_.get(),
-                                    blocking_task_runner_));
+  scheduler_.reset(new JobScheduler(
+      profile_.get(), fake_drive_service_.get(), blocking_task_runner_.get()));
 
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
-      temp_dir_.path(), blocking_task_runner_));
+      temp_dir_.path(), blocking_task_runner_.get()));
   bool success = false;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&internal::ResourceMetadataStorage::Initialize,
                  base::Unretained(metadata_storage_.get())),
@@ -77,7 +77,7 @@ void OperationTestBase::SetUp() {
 
   FileError error = FILE_ERROR_FAILED;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::Initialize,
                  base::Unretained(metadata_.get())),
@@ -92,7 +92,7 @@ void OperationTestBase::SetUp() {
                                        fake_free_disk_space_getter_.get()));
   success = false;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&internal::FileCache::Initialize,
                  base::Unretained(cache_.get())),
