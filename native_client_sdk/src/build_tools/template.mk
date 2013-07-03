@@ -4,6 +4,28 @@
 
 # GNU Makefile based on shared rules provided by the Native Client SDK.
 # See README.Makefiles for more details.
+[[]]
+[[def ExpandDict(key, value_in, pre_list=[], post_list=[]):]]
+[[  value = value_in or [] ]]
+[[  pre = pre_list or [] ]]
+[[  post = post_list or [] ]]
+[[  if type(value) is not dict:]]
+[[    out = pre]]
+[[    out.extend(value)]]
+[[    out.extend(post)]]
+[[    if out:]]
+{{key}} = {{' '.join(out)}}
+[[    ]]
+[[    return]]
+[[  ]]
+[[  for subkey in value:]]
+[[    out = pre]]
+[[    out.extend(value[subkey])]]
+[[    out.extend(post)]]
+{{key}}_{{subkey}} = {{' '.join(out)}}
+[[  ]]
+{{key}} = {{key}}_$(TOOLCHAIN)
+[[]]
 
 VALID_TOOLCHAINS := {{' '.join(tools)}}
 {{pre}}
@@ -11,26 +33,21 @@ NACL_SDK_ROOT ?= $(abspath $(CURDIR)/{{rel_sdk}})
 include $(NACL_SDK_ROOT)/tools/common.mk
 
 TARGET = {{targets[0]['NAME']}}
-[[if targets[0].get('DEPS'):]]
-DEPS = {{' '.join(targets[0].get('DEPS', []))}}
-LIBS = $(DEPS) {{' '.join(targets[0].get('LIBS'))}}
-[[else:]]
-LIBS = {{' '.join(targets[0].get('LIBS'))}}
-[[]]
+[[ExpandDict('DEPS', targets[0].get('DEPS', []))]]
+[[ExpandDict('LIBS', targets[0].get('LIBS', []), pre_list=['$(DEPS)'])]]
+
 [[for target in targets:]]
 [[  source_list = (s for s in sorted(target['SOURCES']) if not s.endswith('.h'))]]
 [[  source_list = ' \\\n  '.join(source_list)]]
 [[  sources = target['NAME'] + '_SOURCES']]
 [[  cflags = target['NAME'] + '_CFLAGS']]
-[[  flags = ' '.join(target.get('CCFLAGS', []))]]
-[[  flags += ' '.join(target.get('CXXFLAGS', []))]]
+[[  flags = target.get('CCFLAGS', [])]]
+[[  flags.extend(target.get('CXXFLAGS', []))]]
 [[  if len(targets) == 1:]]
 [[    sources = 'SOURCES']]
 [[    cflags = 'CFLAGS']]
 [[  ]]
-[[  if flags:]]
-{{cflags}} = {{flags}}
-[[  ]]
+[[  ExpandDict(cflags, flags)]]
 {{sources}} = {{source_list}}
 [[]]
 
