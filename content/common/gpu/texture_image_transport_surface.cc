@@ -295,6 +295,13 @@ void TextureImageTransportSurface::BufferPresentedImpl(
     const std::string& mailbox_name) {
   DCHECK(is_swap_buffers_pending_);
   is_swap_buffers_pending_ = false;
+
+  // When we wait for a sync point, we may get called back after the stub is
+  // destroyed. In that case there's no need to do anything with the returned
+  // mailbox.
+  if (stub_destroyed_)
+    return;
+
   // We should not have allowed the backbuffer to be discarded while the ack
   // was pending.
   DCHECK(backbuffer_suggested_allocation_);
