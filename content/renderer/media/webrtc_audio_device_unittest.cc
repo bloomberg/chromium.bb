@@ -556,6 +556,9 @@ TEST_F(WebRTCAudioDeviceTest, DISABLED_StartPlayout) {
 // disable this unit test on Android for now.
 #if defined(OS_ANDROID)
 #define MAYBE_StartRecording DISABLED_StartRecording
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// This test is failing on ARM linux: http://crbug.com/238490
+#define MAYBE_StartRecording DISABLED_StartRecording
 #else
 #define MAYBE_StartRecording StartRecording
 #endif

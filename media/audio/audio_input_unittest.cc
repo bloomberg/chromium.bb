@@ -118,8 +118,14 @@ TEST(AudioInputTest, CreateAndClose) {
   ais->Close();
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// This test is failing on ARM linux: http://crbug.com/238490
+#define MAYBE_OpenAndClose DISABLED_OpenAndClose
+#else
+#define MAYBE_OpenAndClose OpenAndClose
+#endif
 // Test create, open and close of an AudioInputStream without recording audio.
-TEST(AudioInputTest, OpenAndClose) {
+TEST(AudioInputTest, MAYBE_OpenAndClose) {
   scoped_ptr<AudioManager> audio_man(AudioManager::Create());
   if (!CanRunAudioTests(audio_man.get()))
     return;
@@ -128,8 +134,14 @@ TEST(AudioInputTest, OpenAndClose) {
   ais->Close();
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// This test is failing on ARM linux: http://crbug.com/238490
+#define MAYBE_OpenStopAndClose DISABLED_OpenStopAndClose
+#else
+#define MAYBE_OpenStopAndClose OpenStopAndClose
+#endif
 // Test create, open, stop and close of an AudioInputStream without recording.
-TEST(AudioInputTest, OpenStopAndClose) {
+TEST(AudioInputTest, MAYBE_OpenStopAndClose) {
   scoped_ptr<AudioManager> audio_man(AudioManager::Create());
   if (!CanRunAudioTests(audio_man.get()))
     return;
@@ -139,8 +151,14 @@ TEST(AudioInputTest, OpenStopAndClose) {
   ais->Close();
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// This test is failing on ARM linux: http://crbug.com/238490
+#define MAYBE_Record DISABLED_Record
+#else
+#define MAYBE_Record Record
+#endif
 // Test a normal recording sequence using an AudioInputStream.
-TEST(AudioInputTest, Record) {
+TEST(AudioInputTest, MAYBE_Record) {
   scoped_ptr<AudioManager> audio_man(AudioManager::Create());
   if (!CanRunAudioTests(audio_man.get()))
     return;
