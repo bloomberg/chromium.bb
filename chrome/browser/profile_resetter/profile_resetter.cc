@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/management_policy.h"
@@ -135,8 +136,18 @@ void ProfileResetter::ResetHomepage() {
 
 void ProfileResetter::ResetContentSettings() {
   DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
-  // TODO(battre/vabr): Implement
+  PrefService* prefs = profile_->GetPrefs();
+  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+
+  for (int type = 0; type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
+    map->ClearSettingsForOneType(static_cast<ContentSettingsType>(type));
+    if (HostContentSettingsMap::IsSettingAllowedForType(
+            prefs,
+            CONTENT_SETTING_DEFAULT,
+            static_cast<ContentSettingsType>(type)))
+      map->SetDefaultContentSetting(static_cast<ContentSettingsType>(type),
+                                    CONTENT_SETTING_DEFAULT);
+  }
   MarkAsDone(CONTENT_SETTINGS);
 }
 

@@ -5,8 +5,11 @@
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profile_resetter/profile_resetter_test_base.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
@@ -131,11 +134,102 @@ TEST_F(ProfileResetterTest, ResetHomepage) {
 }
 
 TEST_F(ProfileResetterTest, ResetContentSettings) {
+  HostContentSettingsMap* host_content_settings_map =
+      test_util_.profile()->GetHostContentSettingsMap();
+  DesktopNotificationService* notification_service =
+      DesktopNotificationServiceFactory::GetForProfile(test_util_.profile());
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromString("[*.]example.org");
+  std::map<ContentSettingsType, ContentSetting> default_settings;
+
+  for (int type = 0; type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
+    if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+      notification_service->SetDefaultContentSetting(CONTENT_SETTING_BLOCK);
+      notification_service->GrantPermission(GURL("http://foo.de"));
+    } else if (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
+               type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
+               type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
+      // These types are excluded because one can't call
+      // GetDefaultContentSetting() for them.
+    } else {
+      ContentSettingsType content_type = static_cast<ContentSettingsType>(type);
+      ContentSetting default_setting =
+          host_content_settings_map->GetDefaultContentSetting(content_type,
+                                                              NULL);
+      default_settings[content_type] = default_setting;
+      ContentSetting wildcard_setting =
+          default_setting == CONTENT_SETTING_BLOCK ? CONTENT_SETTING_ALLOW
+                                                   : CONTENT_SETTING_BLOCK;
+      ContentSetting site_setting =
+          default_setting == CONTENT_SETTING_ALLOW ? CONTENT_SETTING_ALLOW
+                                                   : CONTENT_SETTING_BLOCK;
+      if (HostContentSettingsMap::IsSettingAllowedForType(
+              test_util_.profile()->GetPrefs(),
+              wildcard_setting,
+              content_type)) {
+        host_content_settings_map->SetDefaultContentSetting(
+            content_type,
+            wildcard_setting);
+      }
+      if (!HostContentSettingsMap::ContentTypeHasCompoundValue(content_type) &&
+          HostContentSettingsMap::IsValueAllowedForType(
+              test_util_.profile()->GetPrefs(),
+              Value::CreateIntegerValue(site_setting),
+              content_type)) {
+        host_content_settings_map->SetContentSetting(
+            pattern,
+            ContentSettingsPattern::Wildcard(),
+            content_type,
+            std::string(),
+            site_setting);
+        ContentSettingsForOneType host_settings;
+        host_content_settings_map->GetSettingsForOneType(
+            content_type, std::string(), &host_settings);
+        EXPECT_EQ(2U, host_settings.size());
+      }
+    }
+  }
+
   resetter_->Reset(
       ProfileResetter::CONTENT_SETTINGS,
       base::Bind(&ProfileResetterMockObject::StopLoop,
                  base::Unretained(&mock_object_)));
   mock_object_.RunLoop();
+
+  for (int type = 0; type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
+    if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+      EXPECT_EQ(CONTENT_SETTING_ASK,
+                notification_service->GetDefaultContentSetting(NULL));
+      EXPECT_EQ(CONTENT_SETTING_ASK,
+                notification_service->GetContentSetting(GURL("http://foo.de")));
+    } else {
+      ContentSettingsType content_type = static_cast<ContentSettingsType>(type);
+      if (HostContentSettingsMap::ContentTypeHasCompoundValue(content_type) ||
+          type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
+          content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
+          content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS)
+        continue;
+      ContentSetting default_setting =
+          host_content_settings_map->GetDefaultContentSetting(content_type,
+                                                              NULL);
+      EXPECT_TRUE(default_settings.count(content_type));
+      EXPECT_EQ(default_settings[content_type], default_setting);
+      if (!HostContentSettingsMap::ContentTypeHasCompoundValue(content_type)) {
+        ContentSetting site_setting =
+            host_content_settings_map->GetContentSetting(
+                GURL("example.org"),
+                GURL(),
+                content_type,
+                std::string());
+        EXPECT_EQ(default_setting, site_setting);
+      }
+
+      ContentSettingsForOneType host_settings;
+      host_content_settings_map->GetSettingsForOneType(
+          content_type, std::string(), &host_settings);
+      EXPECT_EQ(1U, host_settings.size());
+    }
+  }
 }
 
 TEST_F(ExtensionsResetTest, ResetExtensionsByDisabling) {
