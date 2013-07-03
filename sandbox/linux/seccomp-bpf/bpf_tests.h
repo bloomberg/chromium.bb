@@ -22,7 +22,7 @@ namespace sandbox {
 // macros from unit_tests.h to specify the expected error condition.
 #define BPF_DEATH_TEST(test_case_name, test_name, death, policy, aux...)      \
   void BPF_TEST_##test_name(sandbox::BpfTests<aux>::AuxType& BPF_AUX);        \
-  TEST(test_case_name, test_name) {                                           \
+  TEST(test_case_name, DISABLE_IF_THREADED(test_name)) {                      \
     sandbox::BpfTests<aux>::TestArgs arg(BPF_TEST_##test_name, policy);       \
     sandbox::BpfTests<aux>::RunTestInProcess(                                 \
                                    sandbox::BpfTests<aux>::TestWrapper, &arg, \
