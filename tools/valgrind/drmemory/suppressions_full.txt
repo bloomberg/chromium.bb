@@ -1020,7 +1020,7 @@ name=BrowserThreadTest.NotReleasedIfTargetThreadNonExistant leak
 LEAK
 name=deliberate histogram leak
 ...
-*!operator new*
+*!replace_operator_new
 ...
 *!*::*Histogram::FactoryGet
 
@@ -1079,7 +1079,7 @@ name=http://crbug.com/79933 (4)
 # Test intentionally leaks an object.
 LEAK
 name=http://crbug.com/86301
-*!operator new
+*!replace_operator_new
 ...
 *!*_DeadReplyLoopDoesNotDelete_Test::TestBody
 
@@ -1146,25 +1146,25 @@ name=http://crbug.com/70062
 
 LEAK
 name=http://crbug.com/74417 a
-*!operator new
+*!replace_operator_new
 *!disk_cache::BackendImpl::CreateEntryImpl
 
 LEAK
 name=http://crbug.com/74417 b
-*!operator new
+*!replace_operator_new
 *!disk_cache::BackendImpl::NewEntry
 
 # One more disk_cache::BackendImpl leak.  See also http://crbug.com/87500.
 LEAK
 name=http://crbug.com/74417 c
-*!operator new
+*!replace_operator_new
 ...
 *!disk_cache::EntryImpl::UserBuffer::UserBuffer
 
 LEAK
 name=http://crbug.com/75247
 ...
-*!operator new
+*!replace_operator_new
 *!AutofillDownloadTestHelper::AutofillDownloadTestHelper
 
 LEAK
@@ -1227,7 +1227,7 @@ softokn3.dll!NSC_ModuleDBFunc
 LEAK
 name=http://crbug.com/92166
 ...
-*!operator new
+*!replace_operator_new
 *!views::NativeWidgetWin::OnCreate
 
 # Possible real Chromium issue in DoCrossfade.
