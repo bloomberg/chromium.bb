@@ -75,6 +75,11 @@ void DBusCallbackTrue(const BoolDBusMethodCallback& callback) {
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
 }
 
+void DBusCallbackError(const BoolDBusMethodCallback& callback) {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_FAILURE, false));
+}
+
 void CertCallbackSuccess(const AttestationFlow::CertificateCallback& callback) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, true, "fake_cert"));
@@ -187,6 +192,7 @@ class AttestationPolicyObserverTest : public ::testing::Test {
     AttestationPolicyObserver observer(&policy_client_,
                                        &cryptohome_client_,
                                        &attestation_flow_);
+    observer.set_retry_delay(0);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -285,6 +291,15 @@ TEST_F(AttestationPolicyObserverTest, KeyExistsCertExpired) {
 
 TEST_F(AttestationPolicyObserverTest, IgnoreUnknownCertFormat) {
   SetupMocks(MOCK_KEY_EXISTS | MOCK_KEY_UPLOADED, "unsupported");
+  Run();
+}
+
+TEST_F(AttestationPolicyObserverTest, DBusFailureRetry) {
+  SetupMocks(MOCK_NEW_KEY, "");
+  // Simulate a DBus failure.
+  EXPECT_CALL(cryptohome_client_, TpmAttestationDoesKeyExist(_, _, _))
+      .WillOnce(WithArgs<2>(Invoke(DBusCallbackError)))
+      .WillRepeatedly(WithArgs<2>(Invoke(DBusCallbackFalse)));
   Run();
 }
 

@@ -35,6 +35,8 @@ const char kEnterpriseMachineKey[] = "attest-ent-machine";
 // been set large enough so that the majority of users will have gone through
 // a full sign-in during the period.
 const int kExpiryThresholdInDays = 30;
+const int kRetryDelay = 5;  // Seconds.
+const int kRetryLimit = 100;
 
 // A dbus callback which handles a boolean result.
 //
@@ -45,12 +47,15 @@ const int kExpiryThresholdInDays = 30;
 //   value - The value returned by the dbus operation.
 void DBusBoolRedirectCallback(const base::Closure& on_true,
                               const base::Closure& on_false,
+                              const base::Closure& on_failure,
                               const tracked_objects::Location& from_here,
                               chromeos::DBusMethodCallStatus status,
                               bool value) {
   if (status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
     LOG(ERROR) << "Cryptohome DBus method failed: " << from_here.ToString()
                << " - " << status;
+    if (!on_failure.is_null())
+      on_failure.Run();
     return;
   }
   const base::Closure& task = value ? on_true : on_false;
@@ -67,6 +72,7 @@ void DBusBoolRedirectCallback(const base::Closure& on_true,
 //   data - The data returned by the dbus operation.
 void DBusStringCallback(
     const base::Callback<void(const std::string&)> on_success,
+    const base::Closure& on_failure,
     const tracked_objects::Location& from_here,
     chromeos::DBusMethodCallStatus status,
     bool result,
@@ -74,6 +80,8 @@ void DBusStringCallback(
   if (status != chromeos::DBUS_METHOD_CALL_SUCCESS || !result) {
     LOG(ERROR) << "Cryptohome DBus method failed: " << from_here.ToString()
                << " - " << status << " - " << result;
+    if (!on_failure.is_null())
+      on_failure.Run();
     return;
   }
   on_success.Run(data);
@@ -90,6 +98,8 @@ AttestationPolicyObserver::AttestationPolicyObserver(
       policy_client_(policy_client),
       cryptohome_client_(NULL),
       attestation_flow_(NULL),
+      num_retries_(0),
+      retry_delay_(kRetryDelay),
       weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   cros_settings_->AddSettingsObserver(kDeviceAttestationEnabled, this);
@@ -104,6 +114,8 @@ AttestationPolicyObserver::AttestationPolicyObserver(
       policy_client_(policy_client),
       cryptohome_client_(cryptohome_client),
       attestation_flow_(attestation_flow),
+      num_retries_(0),
+      retry_delay_(kRetryDelay),
       weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   cros_settings_->AddSettingsObserver(kDeviceAttestationEnabled, this);
@@ -126,6 +138,7 @@ void AttestationPolicyObserver::Observe(
     LOG(WARNING) << "AttestationPolicyObserver: Unexpected event received.";
     return;
   }
+  num_retries_ = 0;
   Start();
 }
 
@@ -167,6 +180,8 @@ void AttestationPolicyObserver::Start() {
       base::Bind(DBusBoolRedirectCallback,
                  on_does_exist,
                  on_does_not_exist,
+                 base::Bind(&AttestationPolicyObserver::Reschedule,
+                            weak_factory_.GetWeakPtr()),
                  FROM_HERE));
 }
 
@@ -178,6 +193,8 @@ void AttestationPolicyObserver::GetNewCertificate() {
       base::Bind(DBusStringCallback,
                  base::Bind(&AttestationPolicyObserver::UploadCertificate,
                             weak_factory_.GetWeakPtr()),
+                 base::Bind(&AttestationPolicyObserver::Reschedule,
+                            weak_factory_.GetWeakPtr()),
                  FROM_HERE,
                  DBUS_METHOD_CALL_SUCCESS));
 }
@@ -188,6 +205,8 @@ void AttestationPolicyObserver::GetExistingCertificate() {
       kEnterpriseMachineKey,
       base::Bind(DBusStringCallback,
                  base::Bind(&AttestationPolicyObserver::CheckCertificateExpiry,
+                            weak_factory_.GetWeakPtr()),
+                 base::Bind(&AttestationPolicyObserver::Reschedule,
                             weak_factory_.GetWeakPtr()),
                  FROM_HERE));
 }
@@ -241,12 +260,17 @@ void AttestationPolicyObserver::GetKeyPayload(
   cryptohome_client_->TpmAttestationGetKeyPayload(
       KEY_DEVICE,
       kEnterpriseMachineKey,
-      base::Bind(DBusStringCallback, callback, FROM_HERE));
+      base::Bind(DBusStringCallback,
+                 callback,
+                 base::Bind(&AttestationPolicyObserver::Reschedule,
+                            weak_factory_.GetWeakPtr()),
+                 FROM_HERE));
 }
 
 void AttestationPolicyObserver::OnUploadComplete(bool status) {
   if (!status)
     return;
+  LOG(INFO) << "Enterprise Machine Certificate uploaded to DMServer.";
   GetKeyPayload(base::Bind(&AttestationPolicyObserver::MarkAsUploaded,
                            weak_factory_.GetWeakPtr()));
 }
@@ -268,7 +292,20 @@ void AttestationPolicyObserver::MarkAsUploaded(const std::string& key_payload) {
       base::Bind(DBusBoolRedirectCallback,
                  base::Closure(),
                  base::Closure(),
+                 base::Closure(),
                  FROM_HERE));
+}
+
+void AttestationPolicyObserver::Reschedule() {
+  if (++num_retries_ < kRetryLimit) {
+    content::BrowserThread::PostDelayedTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&AttestationPolicyObserver::Start,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(retry_delay_));
+  } else {
+    LOG(WARNING) << "AttestationPolicyObserver: Retry limit exceeded.";
+  }
 }
 
 }  // namespace attestation

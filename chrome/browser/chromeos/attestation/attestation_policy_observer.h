@@ -50,6 +50,11 @@ class AttestationPolicyObserver : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Sets the retry delay in seconds; useful in testing.
+  void set_retry_delay(int retry_delay) {
+    retry_delay_ = retry_delay;
+  }
+
  private:
   // Checks attestation policy and starts any necessary work.
   void Start();
@@ -80,11 +85,18 @@ class AttestationPolicyObserver : public content::NotificationObserver {
   // Marks a key as uploaded in the payload proto.
   void MarkAsUploaded(const std::string& key_payload);
 
+  // Reschedules a policy check (i.e. a call to Start) for a later time.
+  // TODO(dkrahn): A better solution would be to wait for a dbus signal which
+  // indicates the system is ready to process this task. See crbug.com/256845.
+  void Reschedule();
+
   CrosSettings* cros_settings_;
   policy::CloudPolicyClient* policy_client_;
   CryptohomeClient* cryptohome_client_;
   AttestationFlow* attestation_flow_;
   scoped_ptr<AttestationFlow> default_attestation_flow_;
+  int num_retries_;
+  int retry_delay_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
