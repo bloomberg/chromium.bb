@@ -38,6 +38,7 @@ WHITELISTED_LICENSES = [
     'APSL (v2) BSD (4 clause)',
     'BSD',
     'BSD (2 clause)',
+    'BSD (2 clause) ISC',
     'BSD (2 clause) MIT/X11 (BSD like)',
     'BSD (3 clause)',
     'BSD (3 clause) GPL (v2)',
@@ -308,7 +309,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',  # http://crbug.com/98450
     ],
     'third_party/mesa/src': [
-        'BSD (2 clause) ISC',
         'GPL (v2)',
         'GPL (v3 or later)',
         'MIT/X11 (BSD like) GPL (v3 or later) with Bison parser exception',
