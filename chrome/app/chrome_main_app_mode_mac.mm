@@ -47,11 +47,10 @@ class AppShimController;
 }
 
 - (id)initWithController:(AppShimController*)controller;
-
 - (BOOL)applicationOpenUntitledFile:(NSApplication *)app;
-
 - (void)applicationWillBecomeActive:(NSNotification*)notification;
-
+- (void)applicationWillHide:(NSNotification*)notification;
+- (void)applicationWillUnhide:(NSNotification*)notification;
 - (void)terminateNow;
 
 @end
@@ -65,8 +64,9 @@ class AppShimController : public IPC::Listener {
   // Connects to Chrome and sends a LaunchApp message.
   void Init();
 
-  // Sends a QuitApp message to Chrome.
-  void QuitApp();
+  void SendSetAppHidden(bool hidden);
+
+  void SendQuitApp();
 
   // Called when the app is activated, either by the user clicking on it in the
   // dock or by Cmd+Tabbing to it.
@@ -123,7 +123,7 @@ void AppShimController::Init() {
   [NSApp setDelegate:nsapp_delegate_];
 }
 
-void AppShimController::QuitApp() {
+void AppShimController::SendQuitApp() {
   channel_->Send(new AppShimHostMsg_QuitApp);
 }
 
@@ -161,6 +161,10 @@ void AppShimController::ActivateApp(bool is_reopen) {
   }
 }
 
+void AppShimController::SendSetAppHidden(bool hidden) {
+  channel_->Send(new AppShimHostMsg_SetAppHidden(hidden));
+}
+
 @implementation AppShimDelegate
 
 - (id)initWithController:(AppShimController*)controller {
@@ -184,10 +188,18 @@ void AppShimController::ActivateApp(bool is_reopen) {
   if (terminateNow_)
     return NSTerminateNow;
 
-  appShimController_->QuitApp();
+  appShimController_->SendQuitApp();
   // Wait for the channel to close before terminating.
   terminateRequested_ = YES;
   return NSTerminateLater;
+}
+
+- (void)applicationWillHide:(NSNotification*)notification {
+  appShimController_->SendSetAppHidden(true);
+}
+
+- (void)applicationWillUnhide:(NSNotification*)notification {
+  appShimController_->SendSetAppHidden(false);
 }
 
 - (void)terminateNow {

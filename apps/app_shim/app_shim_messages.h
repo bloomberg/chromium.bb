@@ -38,6 +38,10 @@ IPC_MESSAGE_CONTROL3(AppShimHostMsg_LaunchApp,
 IPC_MESSAGE_CONTROL1(AppShimHostMsg_FocusApp,
                      apps::AppShimFocusType /* focus type */)
 
+// Sent when the app shim is hidden or unhidden.
+IPC_MESSAGE_CONTROL1(AppShimHostMsg_SetAppHidden,
+                     bool /* hidden */)
+
 // Sent when the shim process receives a request to terminate. Once all of the
 // app's windows have closed, and the extension is unloaded, the AppShimHost
 // closes the channel. The shim process then completes the terminate request

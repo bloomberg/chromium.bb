@@ -46,6 +46,7 @@ bool AppShimHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AppShimHost, message)
     IPC_MESSAGE_HANDLER(AppShimHostMsg_LaunchApp, OnLaunchApp)
     IPC_MESSAGE_HANDLER(AppShimHostMsg_FocusApp, OnFocus)
+    IPC_MESSAGE_HANDLER(AppShimHostMsg_SetAppHidden, OnSetHidden)
     IPC_MESSAGE_HANDLER(AppShimHostMsg_QuitApp, OnQuit)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -86,6 +87,13 @@ void AppShimHost::OnFocus(apps::AppShimFocusType focus_type) {
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
   if (handler)
     handler->OnShimFocus(this, focus_type);
+}
+
+void AppShimHost::OnSetHidden(bool hidden) {
+  DCHECK(CalledOnValidThread());
+  apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
+  if (handler)
+    handler->OnShimSetHidden(this, hidden);
 }
 
 void AppShimHost::OnQuit() {

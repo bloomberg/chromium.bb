@@ -64,6 +64,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
   virtual bool OnShimLaunch(Host* host, AppShimLaunchType launch_type) OVERRIDE;
   virtual void OnShimClose(Host* host) OVERRIDE;
   virtual void OnShimFocus(Host* host, AppShimFocusType focus_type) OVERRIDE;
+  virtual void OnShimSetHidden(Host* host, bool hidden) OVERRIDE;
   virtual void OnShimQuit(Host* host) OVERRIDE;
 
   // AppLifetimeMonitor::Observer overrides:

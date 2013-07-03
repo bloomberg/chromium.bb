@@ -88,10 +88,14 @@ class AppShimHostTest : public testing::Test,
   }
 
   virtual void OnShimClose(Host* host) OVERRIDE { ++close_count_; }
+
   virtual void OnShimFocus(Host* host,
                            apps::AppShimFocusType focus_type) OVERRIDE {
     ++focus_count_;
   }
+
+  virtual void OnShimSetHidden(Host* host, bool hidden) OVERRIDE {}
+
   virtual void OnShimQuit(Host* host) OVERRIDE { ++quit_count_; }
 
   bool fail_launch_;

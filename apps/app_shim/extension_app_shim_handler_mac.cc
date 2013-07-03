@@ -205,6 +205,21 @@ void ExtensionAppShimHandler::OnShimFocus(Host* host,
   }
 }
 
+void ExtensionAppShimHandler::OnShimSetHidden(Host* host, bool hidden) {
+  DCHECK(delegate_->ProfileExistsForPath(host->GetProfilePath()));
+  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
+
+  const ShellWindowList windows =
+      delegate_->GetWindows(profile, host->GetAppId());
+  for (ShellWindowList::const_reverse_iterator it = windows.rbegin();
+       it != windows.rend(); ++it) {
+    if (hidden)
+      (*it)->GetBaseWindow()->Hide();
+    else
+      (*it)->GetBaseWindow()->ShowInactive();
+  }
+}
+
 void ExtensionAppShimHandler::OnShimQuit(Host* host) {
   DCHECK(delegate_->ProfileExistsForPath(host->GetProfilePath()));
   Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());

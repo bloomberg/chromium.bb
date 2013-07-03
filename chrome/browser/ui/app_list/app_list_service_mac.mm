@@ -72,6 +72,8 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual void OnShimClose(apps::AppShimHandler::Host* host) OVERRIDE;
   virtual void OnShimFocus(apps::AppShimHandler::Host* host,
                            apps::AppShimFocusType focus_type) OVERRIDE;
+  virtual void OnShimSetHidden(apps::AppShimHandler::Host* host,
+                               bool hidden) OVERRIDE;
   virtual void OnShimQuit(apps::AppShimHandler::Host* host) OVERRIDE;
 
  private:
@@ -337,6 +339,9 @@ void AppListServiceMac::OnShimFocus(apps::AppShimHandler::Host* host,
                                     apps::AppShimFocusType focus_type) {
   DismissAppList();
 }
+
+void AppListServiceMac::OnShimSetHidden(apps::AppShimHandler::Host* host,
+                                        bool hidden) {}
 
 void AppListServiceMac::OnShimQuit(apps::AppShimHandler::Host* host) {
   DismissAppList();

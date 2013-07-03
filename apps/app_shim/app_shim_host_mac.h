@@ -57,6 +57,8 @@ class AppShimHost : public IPC::Listener,
   // Called when the app shim process notifies that the app was focused.
   void OnFocus(apps::AppShimFocusType focus_type);
 
+  void OnSetHidden(bool hidden);
+
   // Called when the app shim process notifies that the app should quit.
   void OnQuit();
 
