@@ -75,6 +75,10 @@ webkit.org/b/90488 [ Debug ] http/tests/inspector [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled [ Slow ]
 webkit.org/b/90488 [ Debug ] inspector-protocol [ Slow ]
 
+crbug.com/257132 http/tests/inspector/extensions-useragent.html [ Failure Pass Timeout ]
+crbug.com/257132 http/tests/inspector/network/network-xhr-replay.html [ Failure Pass Timeout ]
+crbug.com/257132 http/tests/inspector/resource-har-conversion.html [ Failure Pass Timeout ]
+
 # Inspector IndexedDB tests are slow in Release as well.
 crbug.com/246190 [ Release ] http/tests/inspector/indexeddb [ Slow ]
 
@@ -1138,9 +1142,6 @@ webkit.org/b/96833 [ Debug ] svg/carto.net/selectionlist.svg [ ImageOnlyFailure 
 crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-alpha.html [ Crash Timeout ]
 crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-no-alpha.html [ Crash Timeout ]
 crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-reflection.html [ Crash Timeout ]
-
-# Started failing on r128793
-webkit.org/b/96953 http/tests/inspector/network/network-xhr-replay.html [ Pass Timeout ]
 
 webkit.org/b/97179 http/tests/css/link-css-disabled-value-with-slow-loading-sheet.html [ Failure Pass ]
 
