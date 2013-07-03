@@ -162,9 +162,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   bool OnVideoBuffers(const StreamParser::BufferQueue& buffers);
   bool OnTextBuffers(TextTrack* text_track,
                      const StreamParser::BufferQueue& buffers);
-  bool OnNeedKey(const std::string& type,
-                 scoped_ptr<uint8[]> init_data,
-                 int init_data_size);
   void OnNewMediaSegment(const std::string& source_id,
                          base::TimeDelta start_timestamp);
 

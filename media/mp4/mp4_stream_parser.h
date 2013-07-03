@@ -52,8 +52,7 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   bool ParseMoov(mp4::BoxReader* reader);
   bool ParseMoof(mp4::BoxReader* reader);
 
-  // Returns 'true' if sent or not required, 'false' if there was an error.
-  bool EmitNeedKeyIfNecessary(
+  void EmitNeedKeyIfNecessary(
       const std::vector<ProtectionSystemSpecificHeader>& headers);
 
   // To retain proper framing, each 'mdat' atom must be read; to limit memory

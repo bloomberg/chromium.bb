@@ -660,7 +660,7 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
       audio_cb,
       video_cb,
       base::Bind(&ChunkDemuxer::OnTextBuffers, base::Unretained(this)),
-      base::Bind(&ChunkDemuxer::OnNeedKey, base::Unretained(this)),
+      need_key_cb_,
       add_text_track_cb_,
       base::Bind(&ChunkDemuxer::OnNewMediaSegment, base::Unretained(this), id),
       log_cb_);
@@ -1157,17 +1157,6 @@ bool ChunkDemuxer::OnTextBuffers(
     text_track->addWebVTTCue(start, end, id, content, settings);
   }
 
-  return true;
-}
-
-// TODO(acolwell): Remove bool from StreamParser::NeedKeyCB so that
-// this method can be removed and need_key_cb_ can be passed directly
-// to the parser.
-bool ChunkDemuxer::OnNeedKey(const std::string& type,
-                             scoped_ptr<uint8[]> init_data,
-                             int init_data_size) {
-  lock_.AssertAcquired();
-  need_key_cb_.Run(type, init_data.Pass(), init_data_size);
   return true;
 }
 
