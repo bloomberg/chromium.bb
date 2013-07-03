@@ -2133,6 +2133,8 @@
         'browser/sync_file_system/drive_backend/api_util_interface.h',
         'browser/sync_file_system/drive_backend/local_sync_delegate.cc',
         'browser/sync_file_system/drive_backend/local_sync_delegate.h',
+        'browser/sync_file_system/drive_backend/metadata_database.cc',
+        'browser/sync_file_system/drive_backend/metadata_database.h',
         'browser/sync_file_system/drive_backend/metadata_db_migration_util.cc',
         'browser/sync_file_system/drive_backend/metadata_db_migration_util.h',
         'browser/sync_file_system/drive_backend/remote_sync_delegate.cc',
