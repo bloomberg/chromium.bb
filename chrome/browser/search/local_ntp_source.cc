@@ -49,11 +49,8 @@ const struct Resource{
     IDR_LOCAL_OMNIBOX_POPUP_IMAGES_SEARCH_ICON_PNG, "image/png" },
   { "images/2x/search_icon.png",
     IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_SEARCH_ICON_PNG, "image/png" },
-  { "images/google_logo.png", IDR_LOCAL_NTP_IMAGES_LOGO_PNG, "image/png" },
   { "images/2x/google_logo.png",
     IDR_LOCAL_NTP_IMAGES_2X_LOGO_PNG, "image/png" },
-  { "images/white_google_logo.png",
-    IDR_LOCAL_NTP_IMAGES_WHITE_LOGO_PNG, "image/png" },
   { "images/2x/white_google_logo.png",
     IDR_LOCAL_NTP_IMAGES_2X_WHITE_LOGO_PNG, "image/png" },
 };
