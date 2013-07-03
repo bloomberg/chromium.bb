@@ -2909,6 +2909,8 @@
             'platform/graphics/filters/LightSource.h',
             'platform/graphics/filters/PointLightSource.cpp',
             'platform/graphics/filters/PointLightSource.h',
+            'platform/graphics/filters/ReferenceFilter.cpp',
+            'platform/graphics/filters/ReferenceFilter.h',
             'platform/graphics/filters/SkiaImageFilterBuilder.cpp',
             'platform/graphics/filters/SkiaImageFilterBuilder.h',
             'platform/graphics/filters/SourceAlpha.cpp',
@@ -3167,6 +3169,8 @@
         'webcore_svg_files': [
             'rendering/style/SVGRenderStyle.cpp',
             'rendering/style/SVGRenderStyleDefs.cpp',
+            'rendering/svg/ReferenceFilterBuilder.cpp',
+            'rendering/svg/ReferenceFilterBuilder.h',
             'rendering/svg/RenderSVGBlock.cpp',
             'rendering/svg/RenderSVGBlock.h',
             'rendering/svg/RenderSVGContainer.cpp',

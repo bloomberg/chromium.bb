@@ -27,9 +27,9 @@
 #include "core/platform/graphics/filters/FEGaussianBlur.h"
 #include "core/platform/graphics/filters/FEMerge.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
+#include "core/platform/graphics/filters/ReferenceFilter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/graphics/filters/SourceGraphic.h"
-#include "core/rendering/FilterEffectRenderer.h"
 #include <gtest/gtest.h>
 
 using testing::Test;
@@ -39,59 +39,40 @@ class ImageFilterBuilderTest : public Test {
 protected:
     void colorSpaceTest()
     {
-        FilterOperations filterOps;
-
         // Build filter tree
-        Vector<RefPtr<FilterOperation> >& ops = filterOps.operations();
-
-        const String dummyUrl, dummyFragment;
-
-        RefPtr<FilterEffectRenderer> dummyFilterEffectRenderer = FilterEffectRenderer::create();
+        RefPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create();
 
         // Add a dummy source graphic input
-        RefPtr<FilterEffect> sourceEffect =
-            SourceGraphic::create(dummyFilterEffectRenderer.get());
+        RefPtr<FilterEffect> sourceEffect = referenceFilter->sourceGraphic();
         sourceEffect->setOperatingColorSpace(ColorSpaceDeviceRGB);
 
         // Add a blur effect (with input : source)
-        RefPtr<ReferenceFilterOperation> blurOperation =
-            ReferenceFilterOperation::create(dummyUrl, dummyFragment, FilterOperation::REFERENCE);
         RefPtr<FilterEffect> blurEffect =
-            FEGaussianBlur::create(dummyFilterEffectRenderer.get(), 3.0f, 3.0f);
+            FEGaussianBlur::create(referenceFilter.get(), 3.0f, 3.0f);
         blurEffect->setOperatingColorSpace(ColorSpaceLinearRGB);
-        blurOperation->setFilterEffect(blurEffect, dummyFilterEffectRenderer);
         blurEffect->inputEffects().append(sourceEffect);
-        ops.append(blurOperation);
 
         // Add a blend effect (with inputs : blur, source)
-        RefPtr<ReferenceFilterOperation> blendOperation =
-            ReferenceFilterOperation::create(dummyUrl, dummyFragment, FilterOperation::REFERENCE);
         RefPtr<FilterEffect> blendEffect =
-            FEBlend::create(dummyFilterEffectRenderer.get(), FEBLEND_MODE_NORMAL);
+            FEBlend::create(referenceFilter.get(), FEBLEND_MODE_NORMAL);
         blendEffect->setOperatingColorSpace(ColorSpaceDeviceRGB);
         FilterEffectVector& blendInputs = blendEffect->inputEffects();
         blendInputs.reserveCapacity(2);
         blendInputs.append(sourceEffect);
         blendInputs.append(blurEffect);
-        blendOperation->setFilterEffect(blendEffect, dummyFilterEffectRenderer);
-        ops.append(blendOperation);
 
         // Add a merge effect (with inputs : blur, blend)
-        RefPtr<ReferenceFilterOperation> mergeOperation =
-            ReferenceFilterOperation::create(dummyUrl, dummyFragment, FilterOperation::REFERENCE);
-        RefPtr<FilterEffect> mergeEffect =
-            FEMerge::create(dummyFilterEffectRenderer.get());
+        RefPtr<FilterEffect> mergeEffect = FEMerge::create(referenceFilter.get());
         mergeEffect->setOperatingColorSpace(ColorSpaceLinearRGB);
         FilterEffectVector& mergeInputs = mergeEffect->inputEffects();
         mergeInputs.reserveCapacity(2);
         mergeInputs.append(blurEffect);
         mergeInputs.append(blendEffect);
-        mergeOperation->setFilterEffect(mergeEffect, dummyFilterEffectRenderer);
-        ops.append(mergeOperation);
+        referenceFilter->setLastEffect(mergeEffect);
 
         // Get SkImageFilter resulting tree
         SkiaImageFilterBuilder builder;
-        SkAutoTUnref<SkImageFilter> filter(builder.build(filterOps));
+        SkAutoTUnref<SkImageFilter> filter(builder.build(referenceFilter->lastEffect(), ColorSpaceDeviceRGB));
 
         // Let's check that the resulting tree looks like this :
         //      ColorSpace (Linear->Device) : CS (L->D)

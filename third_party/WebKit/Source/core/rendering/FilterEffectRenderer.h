@@ -43,7 +43,6 @@
 
 namespace WebCore {
 
-typedef Vector<RefPtr<FilterEffect> > FilterEffectList;
 class CachedShader;
 class CustomFilterProgram;
 class Document;
@@ -96,7 +95,6 @@ public:
     ImageBuffer* output() const { return lastEffect()->asImageBuffer(); }
 
     bool build(RenderObject* renderer, const FilterOperations&);
-    PassRefPtr<FilterEffect> buildReferenceFilter(RenderObject* renderer, PassRefPtr<FilterEffect> previousEffect, ReferenceFilterOperation*);
     bool updateBackingStoreRect(const FloatRect& filterRect);
     void allocateBackingStoreIfNeeded();
     void clearIntermediateResults();
@@ -110,9 +108,7 @@ public:
     bool hasCustomShaderFilter() const { return m_hasCustomShaderFilter; }
     PassRefPtr<FilterEffect> lastEffect() const
     {
-        if (m_effects.size() > 0)
-            return m_effects.last();
-        return 0;
+        return m_lastEffect;
     }
 private:
 
@@ -121,8 +117,8 @@ private:
     
     FloatRect m_sourceDrawingRegion;
     
-    FilterEffectList m_effects;
     RefPtr<SourceGraphic> m_sourceGraphic;
+    RefPtr<FilterEffect> m_lastEffect;
     
     IntRectExtent m_outsets;
 

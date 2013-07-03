@@ -28,8 +28,6 @@
 
 #include "core/rendering/FilterEffectRenderer.h"
 
-#include "SVGNames.h"
-#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedDocument.h"
 #include "core/loader/cache/CachedSVGDocumentReference.h"
@@ -39,13 +37,14 @@
 #include "core/platform/graphics/filters/FEComponentTransfer.h"
 #include "core/platform/graphics/filters/FEDropShadow.h"
 #include "core/platform/graphics/filters/FEGaussianBlur.h"
-#include "core/platform/graphics/filters/SourceAlpha.h"
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 #include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
 #include "core/platform/graphics/filters/custom/FECustomFilter.h"
 #include "core/platform/graphics/filters/custom/ValidatedCustomFilterOperation.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/svg/ReferenceFilterBuilder.h"
+
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "wtf/MathExtras.h"
@@ -90,46 +89,6 @@ static PassRefPtr<FECustomFilter> createCustomFilterEffect(Filter* filter, Docum
         operation->meshRows(), operation->meshColumns(),  operation->meshType());
 }
 
-// Returns whether or not the SVGStyledElement object contains a valid color-interpolation-filters attribute
-static bool getSVGStyledElementColorSpace(SVGStyledElement* svgStyledElement, ColorSpace& cs)
-{
-    if (!svgStyledElement)
-        return false;
-
-    const RenderObject* renderer = svgStyledElement->renderer();
-    const RenderStyle* style = renderer ? renderer->style() : 0;
-    const SVGRenderStyle* svgStyle = style ? style->svgStyle() : 0;
-    EColorInterpolation eColorInterpolation = CI_AUTO;
-    if (svgStyle) {
-        // If a layout has been performed, then we can use the fast path to get this attribute
-        eColorInterpolation = svgStyle->colorInterpolationFilters();
-    } else {
-        // Otherwise, use the slow path by using string comparison (used by external svg files)
-        RefPtr<CSSValue> cssValue = svgStyledElement->getPresentationAttribute(
-            SVGNames::color_interpolation_filtersAttr.toString());
-        if (cssValue.get() && cssValue->isPrimitiveValue()) {
-            const CSSPrimitiveValue& primitiveValue = *((CSSPrimitiveValue*)cssValue.get());
-            eColorInterpolation = (EColorInterpolation)primitiveValue;
-        } else {
-            return false;
-        }
-    }
-
-    switch (eColorInterpolation) {
-    case CI_AUTO:
-    case CI_SRGB:
-        cs = ColorSpaceDeviceRGB;
-        break;
-    case CI_LINEARRGB:
-        cs = ColorSpaceLinearRGB;
-        break;
-    default:
-        return false;
-    }
-
-    return true;
-}
-
 FilterEffectRenderer::FilterEffectRenderer()
     : Filter(AffineTransform())
     , m_graphicsBufferAttached(false)
@@ -149,95 +108,11 @@ GraphicsContext* FilterEffectRenderer::inputContext()
     return sourceImage() ? sourceImage()->context() : 0;
 }
 
-PassRefPtr<FilterEffect> FilterEffectRenderer::buildReferenceFilter(RenderObject* renderer, PassRefPtr<FilterEffect> previousEffect, ReferenceFilterOperation* filterOperation)
-{
-    if (!renderer)
-        return 0;
-
-    Document* document = renderer->document();
-    ASSERT(document);
-
-    CachedSVGDocumentReference* cachedSVGDocumentReference = filterOperation->cachedSVGDocumentReference();
-    CachedDocument* cachedSVGDocument = cachedSVGDocumentReference ? cachedSVGDocumentReference->document() : 0;
-
-    // If we have an SVG document, this is an external reference. Otherwise
-    // we look up the referenced node in the current document.
-    if (cachedSVGDocument)
-        document = cachedSVGDocument->document();
-
-    if (!document)
-        return 0;
-
-    Element* filter = document->getElementById(filterOperation->fragment());
-    if (!filter) {
-        // Although we did not find the referenced filter, it might exist later
-        // in the document
-        document->accessSVGExtensions()->addPendingResource(filterOperation->fragment(), toElement(renderer->node()));
-        return 0;
-    }
-
-    if (!filter->isSVGElement() || !filter->hasTagName(SVGNames::filterTag))
-        return 0;
-
-    SVGFilterElement* filterElement = toSVGFilterElement(toSVGElement(filter));
-
-    RefPtr<FilterEffect> effect;
-
-    // FIXME: Figure out what to do with SourceAlpha. Right now, we're
-    // using the alpha of the original input layer, which is obviously
-    // wrong. We should probably be extracting the alpha from the 
-    // previousEffect, but this requires some more processing.  
-    // This may need a spec clarification.
-    RefPtr<SVGFilterBuilder> builder = SVGFilterBuilder::create(previousEffect, SourceAlpha::create(this));
-
-    ColorSpace filterColorSpace = ColorSpaceDeviceRGB;
-    const bool useFilterColorSpace = getSVGStyledElementColorSpace(filterElement, filterColorSpace);
-
-    for (Node* node = filterElement->firstChild(); node; node = node->nextSibling()) {
-        if (!node->isSVGElement())
-            continue;
-
-        SVGElement* element = toSVGElement(node);
-        if (!element->isFilterEffect())
-            continue;
-
-        SVGFilterPrimitiveStandardAttributes* effectElement = static_cast<SVGFilterPrimitiveStandardAttributes*>(element);
-
-        effect = effectElement->build(builder.get(), this);
-        if (!effect)
-            continue;
-
-        effectElement->setStandardAttributes(effect.get());
-        effect->setEffectBoundaries(SVGLengthContext::resolveRectangle<SVGFilterPrimitiveStandardAttributes>(effectElement, filterElement->primitiveUnits(), sourceImageRect()));
-
-        ColorSpace colorSpace = filterColorSpace;
-        if (useFilterColorSpace || getSVGStyledElementColorSpace(effectElement, colorSpace))
-            effect->setOperatingColorSpace(colorSpace);
-        builder->add(effectElement->result(), effect);
-        m_effects.append(effect);
-    }
-    return effect;
-}
-
 bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations& operations)
 {
     m_hasCustomShaderFilter = false;
     m_hasFilterThatMovesPixels = operations.hasFilterThatMovesPixels();
     
-    // Keep the old effects on the stack until we've created the new effects.
-    // New FECustomFilters can reuse cached resources from old FECustomFilters.
-    FilterEffectList oldEffects;
-    m_effects.swap(oldEffects);
-
-    // Inverse zoom the pre-zoomed CSS shorthand filters, so that they are in the zoom as the unzoomed reference filters
-    const RenderStyle* style = renderer->style();
-    float zoom = style ? style->effectiveZoom() : 1.0f;
-    float invZoom = 1.0f / zoom;
-    // Apply zoom to filter region here so that applyHorizontalScale/applyVerticalScale will
-    // work while create hardware filters through FE<some filter effect>::createImageFilter()
-    setFilterRegion(FloatRect(0, 0, 1, 1));
-    setAbsoluteFilterRegion(FloatRect(0, 0, zoom, zoom));
-
     RefPtr<FilterEffect> previousEffect = m_sourceGraphic;
     for (size_t i = 0; i < operations.operations().size(); ++i) {
         RefPtr<FilterEffect> effect;
@@ -245,8 +120,7 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
         switch (filterOperation->getOperationType()) {
         case FilterOperation::REFERENCE: {
             ReferenceFilterOperation* referenceOperation = static_cast<ReferenceFilterOperation*>(filterOperation);
-            effect = buildReferenceFilter(renderer, previousEffect, referenceOperation);
-            referenceOperation->setFilterEffect(effect, this);
+            effect = ReferenceFilterBuilder::build(this, renderer, previousEffect.get(), referenceOperation);
             break;
         }
         case FilterOperation::GRAYSCALE: {
@@ -370,15 +244,15 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
         }
         case FilterOperation::BLUR: {
             BlurFilterOperation* blurOperation = static_cast<BlurFilterOperation*>(filterOperation);
-            float stdDeviation = floatValueForLength(blurOperation->stdDeviation(), 0) * invZoom;
+            float stdDeviation = floatValueForLength(blurOperation->stdDeviation(), 0);
             effect = FEGaussianBlur::create(this, stdDeviation, stdDeviation);
             break;
         }
         case FilterOperation::DROP_SHADOW: {
             DropShadowFilterOperation* dropShadowOperation = static_cast<DropShadowFilterOperation*>(filterOperation);
-            float stdDeviation = dropShadowOperation->stdDeviation() * invZoom;
-            float x = dropShadowOperation->x() * invZoom;
-            float y = dropShadowOperation->y() * invZoom;
+            float stdDeviation = dropShadowOperation->stdDeviation();
+            float x = dropShadowOperation->x();
+            float y = dropShadowOperation->y();
             effect = FEDropShadow::create(this, stdDeviation, stdDeviation, x, y, dropShadowOperation->color(), 1);
             break;
         }
@@ -405,14 +279,17 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
                 effect->setClipsToBounds(false);
                 effect->setOperatingColorSpace(ColorSpaceDeviceRGB);
                 effect->inputEffects().append(previousEffect);
-                m_effects.append(effect);
             }
             previousEffect = effect.release();
         }
     }
 
+    // We need to keep the old effects alive until this point, so that filters like FECustomFilter
+    // can share cached resources across frames.
+    m_lastEffect = previousEffect;
+
     // If we didn't make any effects, tell our caller we are not valid
-    if (!m_effects.size())
+    if (!m_lastEffect.get())
         return false;
 
     return true;
@@ -445,9 +322,8 @@ void FilterEffectRenderer::allocateBackingStoreIfNeeded()
 
 void FilterEffectRenderer::clearIntermediateResults()
 {
-    m_sourceGraphic->clearResult();
-    for (size_t i = 0; i < m_effects.size(); ++i)
-        m_effects[i]->clearResult();
+    if (m_lastEffect.get())
+        m_lastEffect->clearResultsRecursive();
 }
 
 void FilterEffectRenderer::apply()

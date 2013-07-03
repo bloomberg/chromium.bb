@@ -34,6 +34,7 @@
 #include "core/platform/graphics/filters/DropShadowImageFilter.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
+#include "core/platform/graphics/filters/SourceGraphic.h"
 
 namespace {
 
@@ -218,11 +219,25 @@ SkImageFilter* SkiaImageFilterBuilder::build(const FilterOperations& operations)
         const FilterOperation& op = *operations.at(i);
         switch (op.getOperationType()) {
         case FilterOperation::REFERENCE: {
-            FilterEffect* filterEffect = static_cast<const ReferenceFilterOperation*>(&op)->filterEffect();
-            // FIXME: hook up parent filter to image source
-            if (filterEffect)
+            const ReferenceFilterOperation* referenceFilterOperation = static_cast<const ReferenceFilterOperation*>(&op);
+            ReferenceFilter* referenceFilter = referenceFilterOperation->filter();
+            if (referenceFilter && referenceFilter->lastEffect()) {
+                FilterEffect* filterEffect = referenceFilter->lastEffect();
+                // Link SourceGraphic to the previous filter in the chain.
+                // We don't know what color space the interior nodes will request, so we have to populate the map with both options.
+                // (Only one of these will actually have a color transform on it.)
+                FilterColorSpacePair deviceKey(referenceFilter->sourceGraphic(), ColorSpaceDeviceRGB);
+                FilterColorSpacePair linearKey(referenceFilter->sourceGraphic(), ColorSpaceLinearRGB);
+                m_map.set(deviceKey, transformColorSpace(filter, currentColorSpace, ColorSpaceDeviceRGB));
+                m_map.set(linearKey, transformColorSpace(filter, currentColorSpace, ColorSpaceLinearRGB));
+
                 currentColorSpace = filterEffect->operatingColorSpace();
-            filter.reset(SkiaImageFilterBuilder::build(filterEffect, currentColorSpace));
+                filter.reset(SkiaImageFilterBuilder::build(filterEffect, currentColorSpace));
+                // We might have no reference to the SourceGraphic's Skia filter now, so make
+                // sure we don't keep it in the map anymore.
+                m_map.remove(deviceKey);
+                m_map.remove(linearKey);
+            }
             break;
         }
         case FilterOperation::GRAYSCALE: {

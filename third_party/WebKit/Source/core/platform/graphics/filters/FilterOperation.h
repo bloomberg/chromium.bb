@@ -32,6 +32,7 @@
 #include "core/platform/graphics/LayoutSize.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/platform/graphics/filters/ReferenceFilter.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -162,8 +163,8 @@ public:
     CachedSVGDocumentReference* cachedSVGDocumentReference() const { return m_cachedSVGDocumentReference.get(); }
     void setCachedSVGDocumentReference(PassOwnPtr<CachedSVGDocumentReference> cachedSVGDocumentReference) { m_cachedSVGDocumentReference = cachedSVGDocumentReference; }
 
-    FilterEffect* filterEffect() const { return m_filterEffect.get(); }
-    void setFilterEffect(PassRefPtr<FilterEffect> filterEffect, PassRefPtr<Filter> filter) { m_filterEffect = filterEffect; m_filter = filter; }
+    ReferenceFilter* filter() const { return m_filter.get(); }
+    void setFilter(PassRefPtr<ReferenceFilter> filter) { m_filter = filter; }
 
 private:
 
@@ -185,8 +186,7 @@ private:
     String m_url;
     String m_fragment;
     OwnPtr<CachedSVGDocumentReference> m_cachedSVGDocumentReference;
-    RefPtr<FilterEffect> m_filterEffect;
-    RefPtr<Filter> m_filter;
+    RefPtr<ReferenceFilter> m_filter;
 };
 
 // GRAYSCALE, SEPIA, SATURATE and HUE_ROTATE are variations on a basic color matrix effect.
