@@ -114,6 +114,7 @@ static void implementsStaticAttrAttrSetter(v8::Local<v8::String> name, v8::Local
 {
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
     TestInterface::setImplementsStaticAttr(v);
+    return;
 }
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
@@ -176,6 +177,7 @@ static void implementsStr2AttrSetter(v8::Local<v8::String> name, v8::Local<v8::V
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
     imp->setImplementsStr2(v);
+    return;
 }
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
@@ -238,6 +240,7 @@ static void implementsNodeAttrSetter(v8::Local<v8::String> name, v8::Local<v8::V
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
     imp->setImplementsNode(WTF::getPtr(v));
+    return;
 }
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
@@ -280,6 +283,7 @@ static void Node23AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
     imp->setNode23(WTF::getPtr(v));
+    return;
 }
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
@@ -322,6 +326,7 @@ static void Node24AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
     imp->setNode24(WTF::getPtr(v));
+    return;
 }
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
@@ -364,6 +369,7 @@ static void Node25AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
     imp->setNode25(WTF::getPtr(v));
+    return;
 }
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
@@ -423,6 +429,7 @@ static void supplementalStaticAttrAttrSetter(v8::Local<v8::String> name, v8::Loc
 {
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
     TestPartialInterface::setSupplementalStaticAttr(v);
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -485,6 +492,7 @@ static void supplementalStr2AttrSetter(v8::Local<v8::String> name, v8::Local<v8:
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
     TestPartialInterface::setSupplementalStr2(imp, v);
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -547,6 +555,7 @@ static void supplementalNodeAttrSetter(v8::Local<v8::String> name, v8::Local<v8:
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
     TestPartialInterface::setSupplementalNode(imp, WTF::getPtr(v));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -589,6 +598,7 @@ static void Node13AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
     TestPartialInterface::setNode13(imp, WTF::getPtr(v));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -631,6 +641,7 @@ static void Node14AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
     TestPartialInterface::setNode14(imp, WTF::getPtr(v));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -673,6 +684,7 @@ static void Node15AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
     TestPartialInterface::setNode15(imp, WTF::getPtr(v));
+    return;
 }
 
 #endif // ENABLE(Condition11) || ENABLE(Condition12)

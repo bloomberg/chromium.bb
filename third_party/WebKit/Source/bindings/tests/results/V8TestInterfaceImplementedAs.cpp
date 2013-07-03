@@ -81,6 +81,7 @@ static void aAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, 
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
     imp->setA(v);
+    return;
 }
 
 static void aAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -107,6 +108,7 @@ static void bAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, 
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
     V8TRYCATCH_VOID(RealClass*, v, V8TestInterfaceImplementedAs::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceImplementedAs::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
     imp->setB(WTF::getPtr(v));
+    return;
 }
 
 static void bAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)

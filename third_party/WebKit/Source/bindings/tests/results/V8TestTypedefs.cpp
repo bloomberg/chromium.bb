@@ -86,6 +86,7 @@ static void unsignedLongLongAttrAttrSetter(v8::Local<v8::String> name, v8::Local
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     V8TRYCATCH_VOID(unsigned long long, v, toUInt64(value));
     imp->setUnsignedLongLongAttr(v);
+    return;
 }
 
 static void unsignedLongLongAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -112,6 +113,7 @@ static void immutableSerializedScriptValueAttrSetter(v8::Local<v8::String> name,
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     V8TRYCATCH_VOID(RefPtr<SerializedScriptValue>, v, SerializedScriptValue::create(value, info.GetIsolate()));
     imp->setImmutableSerializedScriptValue(WTF::getPtr(v));
+    return;
 }
 
 static void immutableSerializedScriptValueAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -144,6 +146,7 @@ static void attrWithGetterExceptionAttrSetter(v8::Local<v8::String> name, v8::Lo
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     V8TRYCATCH_VOID(int, v, toInt32(value));
     imp->setAttrWithGetterException(v);
+    return;
 }
 
 static void attrWithGetterExceptionAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -173,6 +176,7 @@ static void attrWithSetterExceptionAttrSetter(v8::Local<v8::String> name, v8::Lo
     imp->setAttrWithSetterException(v, ec);
     if (UNLIKELY(ec))
         setDOMException(ec, info.GetIsolate());
+    return;
 }
 
 static void attrWithSetterExceptionAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -205,6 +209,7 @@ static void stringAttrWithGetterExceptionAttrSetter(v8::Local<v8::String> name, 
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
     imp->setStringAttrWithGetterException(v);
+    return;
 }
 
 static void stringAttrWithGetterExceptionAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -234,6 +239,7 @@ static void stringAttrWithSetterExceptionAttrSetter(v8::Local<v8::String> name, 
     imp->setStringAttrWithSetterException(v, ec);
     if (UNLIKELY(ec))
         setDOMException(ec, info.GetIsolate());
+    return;
 }
 
 static void stringAttrWithSetterExceptionAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
