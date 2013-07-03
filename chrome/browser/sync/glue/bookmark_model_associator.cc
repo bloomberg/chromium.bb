@@ -9,9 +9,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
+#include "base/format_macros.h"
 #include "base/location.h"
 #include "base/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -732,9 +734,15 @@ syncer::SyncError BookmarkModelAssociator::CheckModelSyncState(
       // If the native version is higher, there was a sync persistence failure,
       // and we need to delay association until after a GetUpdates.
       if (sync_version < native_version) {
-        DVLOG(1) << "Native version (" << native_version << ") does not match "
-                 << "sync version (" << sync_version << ").";
-        // TODO(zea): return a persistence error here.
+        std::string message = base::StringPrintf(
+            "Native version (%" PRId64 ") does not match sync version (%"
+                PRId64 ")",
+            native_version,
+            sync_version);
+        return syncer::SyncError(FROM_HERE,
+                                 syncer::SyncError::PERSISTENCE_ERROR,
+                                 message,
+                                 syncer::BOOKMARKS);
       }
     }
   }

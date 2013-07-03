@@ -427,10 +427,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     return true;
   }
 
-  void StartSync() {
-    test_user_share_.Reload();
-
-    ASSERT_TRUE(CreatePermanentBookmarkNodes());
+  bool AssociateModels() {
+    DCHECK(!model_associator_);
 
     // Set up model associator.
     model_associator_.reset(new BookmarkModelAssociator(
@@ -448,7 +446,10 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     syncer::SyncError error = model_associator_->AssociateModels(
         &local_merge_result_,
         &syncer_merge_result_);
-    EXPECT_FALSE(error.IsSet());
+    if (error.IsSet())
+      return false;
+
+    base::MessageLoop::current()->RunUntilIdle();
 
     // Verify the merge results were calculated properly.
     EXPECT_EQ(local_count_before,
@@ -467,8 +468,14 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
               local_merge_result_.num_items_after_association());
     EXPECT_EQ(GetSyncBookmarkCount(),
               syncer_merge_result_.num_items_after_association());
+    return true;
+  }
 
-    base::MessageLoop::current()->RunUntilIdle();
+  void StartSync() {
+    test_user_share_.Reload();
+
+    ASSERT_TRUE(CreatePermanentBookmarkNodes());
+    ASSERT_TRUE(AssociateModels());
 
     // Set up change processor.
     change_processor_.reset(
@@ -1744,7 +1751,15 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData,
   TearDown();
   SetUp();
 
-  StartSync();
+  // First attempt fails due to a persistence error.
+  EXPECT_TRUE(CreatePermanentBookmarkNodes());
+  EXPECT_FALSE(AssociateModels());
+
+  // Second attempt succeeds due to the previous error resetting the native
+  // transaction version.
+  model_associator_.reset();
+  EXPECT_TRUE(CreatePermanentBookmarkNodes());
+  EXPECT_TRUE(AssociateModels());
 
   // Make sure we're back in sync.  In real life, the user would need
   // to reauthenticate before this happens, but in the test, authentication
@@ -1916,6 +1931,43 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateTransactionVersion) {
   ExpectTransactionVersionMatch(model_->bookmark_bar_node(), initial_versions);
   ExpectTransactionVersionMatch(model_->other_node(), initial_versions);
   ExpectTransactionVersionMatch(model_->mobile_node(), initial_versions);
+}
+
+// Test that sync persistence errors are detected and trigger a failed
+// association.
+TEST_F(ProfileSyncServiceBookmarkTestWithData, PersistenceError) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  StartSync();
+  WriteTestDataToBookmarkModel();
+  base::MessageLoop::current()->RunUntilIdle();
+
+  BookmarkNodeVersionMap initial_versions;
+
+  // Verify transaction versions in sync model and bookmark model (saved as
+  // transaction version of root node) are equal after
+  // WriteTestDataToBookmarkModel() created bookmarks.
+  {
+    syncer::ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
+    EXPECT_GT(trans.GetModelVersion(syncer::BOOKMARKS), 0);
+    GetTransactionVersions(model_->root_node(), &initial_versions);
+    EXPECT_EQ(trans.GetModelVersion(syncer::BOOKMARKS),
+              initial_versions[model_->root_node()->id()]);
+  }
+  ExpectTransactionVersionMatch(model_->bookmark_bar_node(),
+                                BookmarkNodeVersionMap());
+  ExpectTransactionVersionMatch(model_->other_node(),
+                                BookmarkNodeVersionMap());
+  ExpectTransactionVersionMatch(model_->mobile_node(),
+                                BookmarkNodeVersionMap());
+
+  // Now shut down sync and artificially increment the native model's version.
+  StopSync();
+  int64 root_version = initial_versions[model_->root_node()->id()];
+  model_->SetNodeMetaInfo(model_->root_node(), kBookmarkTransactionVersionKey,
+                          base::Int64ToString(root_version+1));
+
+  // Upon association, bookmarks should fail to associate.
+  EXPECT_FALSE(AssociateModels());
 }
 
 }  // namespace

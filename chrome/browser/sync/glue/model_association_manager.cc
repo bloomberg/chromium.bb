@@ -150,7 +150,8 @@ void ModelAssociationManager::Initialize(syncer::ModelTypeSet desired_types) {
   needs_crypto_types_.Clear();
   state_ = INITIALIZED_TO_CONFIGURE;
 
-  DVLOG(1) << "ModelAssociationManager: Initializing";
+  DVLOG(1) << "ModelAssociationManager: Initializing for "
+           << syncer::ModelTypeSetToString(desired_types);
 
   // Stop the types that are still loading from the previous configuration.
   // If they are enabled we will start them here once again.
@@ -217,7 +218,6 @@ void ModelAssociationManager::ResetForReconfiguration() {
 }
 
 void ModelAssociationManager::StopDisabledTypes() {
-  DCHECK_EQ(state_, INITIALIZED_TO_CONFIGURE);
   DVLOG(1) << "ModelAssociationManager: Stopping disabled types.";
   // Stop requested data types.
   for (size_t i = 0; i < needs_stop_.size(); ++i) {
@@ -231,7 +231,7 @@ void ModelAssociationManager::Stop() {
   bool need_to_call_model_association_done = false;
   DVLOG(1) << "ModelAssociationManager: Stopping MAM";
   if (state_ == CONFIGURING) {
-    DVLOG(1) << "ModelAssociationManager: In the middle of configuratio while"
+    DVLOG(1) << "ModelAssociationManager: In the middle of configuration while"
              << " stopping";
     state_ = ABORTED;
     DCHECK(currently_associating_ != NULL ||
@@ -435,7 +435,7 @@ void ModelAssociationManager::LoadModelForNextType() {
     return;
   }
 
-  DVLOG(1) << "ModelAssociationManager: All types have models loaded."
+  DVLOG(1) << "ModelAssociationManager: All types have models loaded. "
           << "Moving on to StartAssociatingNextType.";
 
   // If all controllers have their |LoadModels| invoked then pass onto
@@ -490,7 +490,7 @@ void ModelAssociationManager::ModelLoadCallback(
     NOTREACHED();
     return;
   } else if (state_ == IDLE) {
-    DVLOG(1) << "ModelAssociationManager: Models loaded after configure cycle"
+    DVLOG(1) << "ModelAssociationManager: Models loaded after configure cycle. "
             << "Informing DTM";
     // This datatype finished loading after the deadline imposed by the
     // originating configuration cycle. Inform the DataTypeManager that the
@@ -526,7 +526,19 @@ void ModelAssociationManager::StartAssociatingNextType() {
     return;
   }
 
-  // We are done with this cycle of association.
+  // We are done with this cycle of association. Stop any failed types now.
+  needs_stop_.clear();
+  for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
+       it != controllers_->end(); ++it) {
+    DataTypeController* dtc = (*it).second.get();
+    if (failed_data_types_info_.count(dtc->type()) > 0 &&
+        dtc->state() != DataTypeController::NOT_RUNNING) {
+      needs_stop_.push_back(dtc);
+      DVLOG(1) << "ModelTypeToString: Will stop " << dtc->name();
+    }
+  }
+  StopDisabledTypes();
+
   state_ = IDLE;
 
   DataTypeManager::ConfigureStatus configure_status = DataTypeManager::OK;

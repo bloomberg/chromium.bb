@@ -73,22 +73,27 @@ class DataTypeManagerImpl : public DataTypeManager,
     return &model_association_manager_;
   }
 
- protected:
-  // Divide |types| into sets by their priorities and return the sets from
-  // high priority to low priority.
-  virtual TypeSetPriorityList PrioritizeTypes(
-      const syncer::ModelTypeSet& types);
-
  private:
+  friend class TestDataTypeManager;
+
   // Abort configuration and stop all data types due to configuration errors.
   void Abort(ConfigureStatus status,
              const syncer::SyncError& error);
+
+  // Returns the priority types (control + priority user types).
+  // Virtual for overriding during tests.
+  virtual syncer::ModelTypeSet GetPriorityTypes() const;
+
+  // Divide |types| into sets by their priorities and return the sets from
+  // high priority to low priority.
+  TypeSetPriorityList PrioritizeTypes(const syncer::ModelTypeSet& types);
 
   // Post a task to reconfigure when no downloading or association are running.
   void ProcessReconfigure();
 
   void Restart(syncer::ConfigureReason reason);
   void DownloadReady(base::Time download_start_time,
+                     syncer::ModelTypeSet types_to_download,
                      syncer::ModelTypeSet high_priority_types_before,
                      syncer::ModelTypeSet first_sync_types,
                      syncer::ModelTypeSet failed_configuration_types);

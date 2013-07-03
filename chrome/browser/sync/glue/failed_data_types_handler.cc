@@ -65,8 +65,12 @@ void FailedDataTypesHandler::ResetCryptoErrors() {
   crypto_errors_.clear();
 }
 
-void FailedDataTypesHandler::ResetPersistenceErrors() {
-  persistence_errors_.clear();
+void FailedDataTypesHandler::ResetPersistenceErrorsFrom(
+    syncer::ModelTypeSet purged_types) {
+  for (syncer::ModelTypeSet::Iterator iter = purged_types.First(); iter.Good();
+       iter.Inc()) {
+    persistence_errors_.erase(iter.Get());
+  }
 }
 
 FailedDataTypesHandler::TypeErrorMap FailedDataTypesHandler::GetAllErrors()

@@ -193,6 +193,8 @@ TEST_F(SyncModelAssociationManagerTest, TypeFailModelAssociation) {
             DataTypeController::ASSOCIATING);
   GetController(controllers_, syncer::BOOKMARKS)->FinishStart(
       DataTypeController::ASSOCIATION_FAILED);
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
+            DataTypeController::NOT_RUNNING);
 }
 
 // Ensure configuring stops when a type returns a unrecoverable error.

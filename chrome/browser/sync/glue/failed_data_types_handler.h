@@ -29,8 +29,8 @@ class FailedDataTypesHandler {
   // Resets the set of types with cryptographer errors.
   void ResetCryptoErrors();
 
-  // Resets the set of types with persistence errors.
-  void ResetPersistenceErrors();
+  // Resets those persistence errors that intersect with |purged_types|.
+  void ResetPersistenceErrorsFrom(syncer::ModelTypeSet purged_types);
 
   // Returns a list of all the errors this class has recorded.
   TypeErrorMap GetAllErrors() const;

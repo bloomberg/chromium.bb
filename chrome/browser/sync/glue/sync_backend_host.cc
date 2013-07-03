@@ -637,9 +637,14 @@ void SyncBackendHost::ConfigureDataTypes(
       GetDataTypesInState(CRYPTO, config_state_map);
   disabled_types.PutAll(fatal_types);
   disabled_types.PutAll(crypto_types);
+  syncer::ModelTypeSet active_types =
+      GetDataTypesInState(CONFIGURE_ACTIVE, config_state_map);
+  syncer::ModelTypeSet clean_first_types =
+      GetDataTypesInState(CONFIGURE_CLEAN, config_state_map);
   syncer::ModelTypeSet types_to_download = registrar_->ConfigureDataTypes(
-      GetDataTypesInState(CONFIGURE_ACTIVE, config_state_map),
+      syncer::Union(active_types, clean_first_types),
       disabled_types);
+  types_to_download.PutAll(clean_first_types);
   types_to_download.RemoveAll(syncer::ProxyTypes());
   if (!types_to_download.Empty())
     types_to_download.Put(syncer::NIGORI);
@@ -699,7 +704,7 @@ void SyncBackendHost::ConfigureDataTypes(
                          types_to_download,
                          types_to_purge,
                          fatal_types,
-                         crypto_types,
+                         syncer::Union(crypto_types, clean_first_types),
                          inactive_types,
                          routing_info,
                          ready_task,

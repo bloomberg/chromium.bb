@@ -141,13 +141,21 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
   // 3. Flip |types_being_configured| to CONFIGURE_ACTIVE.
   // 4. Set non-enabled user types as DISABLED.
   // 5. Set the fatal and crypto types to their respective states.
-  syncer::ModelTypeSet fatal_types;
-  syncer::ModelTypeSet crypto_types;
-  fatal_types = failed_data_types_handler_->GetFatalErrorTypes();
-  crypto_types = failed_data_types_handler_->GetCryptoErrorTypes();
+  syncer::ModelTypeSet error_types =
+      failed_data_types_handler_->GetFailedTypes();
+  syncer::ModelTypeSet fatal_types =
+      failed_data_types_handler_->GetFatalErrorTypes();
+  syncer::ModelTypeSet crypto_types =
+      failed_data_types_handler_->GetCryptoErrorTypes();
+
+  // Types with persistence errors are only purged/resynced when they're
+  // actively being configured.
+  syncer::ModelTypeSet persistence_types =
+      failed_data_types_handler_->GetPersistenceErrorTypes();
+  persistence_types.RetainAll(types_being_configured);
+
   syncer::ModelTypeSet enabled_types = last_requested_types_;
-  enabled_types.RemoveAll(fatal_types);
-  enabled_types.RemoveAll(crypto_types);
+  enabled_types.RemoveAll(error_types);
   syncer::ModelTypeSet disabled_types =
       syncer::Difference(
           syncer::Union(syncer::UserTypes(), syncer::ControlTypes()),
@@ -165,6 +173,9 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
   BackendDataTypeConfigurer::SetDataTypesState(
       BackendDataTypeConfigurer::CONFIGURE_ACTIVE, to_configure,
       &config_state_map);
+  BackendDataTypeConfigurer::SetDataTypesState(
+      BackendDataTypeConfigurer::CONFIGURE_CLEAN, persistence_types,
+        &config_state_map);
   BackendDataTypeConfigurer::SetDataTypesState(
       BackendDataTypeConfigurer::DISABLED, disabled_types,
       &config_state_map);
@@ -222,16 +233,23 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
       BuildDataTypeConfigStateMap(download_types_queue_.front()),
       base::Bind(&DataTypeManagerImpl::DownloadReady,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Time::Now(), syncer::ModelTypeSet()),
+                 base::Time::Now(),
+                 download_types_queue_.front(),
+                 syncer::ModelTypeSet()),
       base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-TypeSetPriorityList DataTypeManagerImpl::PrioritizeTypes(
-    const syncer::ModelTypeSet& types) {
+syncer::ModelTypeSet DataTypeManagerImpl::GetPriorityTypes() const {
   syncer::ModelTypeSet high_priority_types;
   high_priority_types.PutAll(syncer::ControlTypes());
   high_priority_types.PutAll(syncer::PriorityUserTypes());
+  return high_priority_types;
+}
+
+TypeSetPriorityList DataTypeManagerImpl::PrioritizeTypes(
+    const syncer::ModelTypeSet& types) {
+  syncer::ModelTypeSet high_priority_types = GetPriorityTypes();
   high_priority_types.RetainAll(types);
 
   syncer::ModelTypeSet low_priority_types =
@@ -280,10 +298,15 @@ void DataTypeManagerImpl::OnDownloadRetry() {
 
 void DataTypeManagerImpl::DownloadReady(
     base::Time download_start_time,
+    syncer::ModelTypeSet types_to_download,
     syncer::ModelTypeSet high_priority_types_before,
     syncer::ModelTypeSet first_sync_types,
     syncer::ModelTypeSet failed_configuration_types) {
   DCHECK(state_ == DOWNLOAD_PENDING || state_ == CONFIGURING);
+
+  // Persistence errors are reset after each backend configuration attempt
+  // during which they would have been purged.
+  failed_data_types_handler_->ResetPersistenceErrorsFrom(types_to_download);
 
   // Ignore |failed_configuration_types| if we need to reconfigure
   // anyway.
@@ -309,8 +332,11 @@ void DataTypeManagerImpl::DownloadReady(
   state_ = CONFIGURING;
 
   // Pop and associate download-ready types.
-  syncer::ModelTypeSet ready_types = download_types_queue_.front();
+  syncer::ModelTypeSet ready_types = types_to_download;
   download_types_queue_.pop();
+  syncer::ModelTypeSet new_types_to_download;
+  if (!download_types_queue_.empty())
+    new_types_to_download = download_types_queue_.front();
 
   AssociationTypesInfo association_info;
   association_info.types = ready_types;
@@ -323,13 +349,14 @@ void DataTypeManagerImpl::DownloadReady(
     StartNextAssociation();
 
   // Download types of low priority while configuring types of high priority.
-  if (!download_types_queue_.empty()) {
+  if (!new_types_to_download.Empty()) {
     configurer_->ConfigureDataTypes(
         last_configure_reason_,
-        BuildDataTypeConfigStateMap(download_types_queue_.front()),
+        BuildDataTypeConfigStateMap(new_types_to_download),
         base::Bind(&DataTypeManagerImpl::DownloadReady,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Time::Now(),
+                   new_types_to_download,
                    syncer::Union(ready_types, high_priority_types_before)),
         base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
                    weak_ptr_factory_.GetWeakPtr()));
