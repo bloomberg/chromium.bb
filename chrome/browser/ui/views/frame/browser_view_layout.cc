@@ -182,9 +182,7 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
       bookmark_bar_->visible() &&
       browser()->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)) {
     bookmark_bar_size = bookmark_bar_->GetMinimumSize();
-    bookmark_bar_size.Enlarge(0,
-        -(views::NonClientFrameView::kClientEdgeThickness +
-            bookmark_bar_->GetToolbarOverlap(true)));
+    bookmark_bar_size.Enlarge(0, -bookmark_bar_->GetToolbarOverlap());
   }
   // TODO: Adjust the minimum height for the find bar.
 
@@ -485,8 +483,7 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
 
   bookmark_bar_->set_infobar_visible(InfobarVisible());
   int bookmark_bar_height = bookmark_bar_->GetPreferredSize().height();
-  y -= views::NonClientFrameView::kClientEdgeThickness +
-      bookmark_bar_->GetToolbarOverlap(false);
+  y -= bookmark_bar_->GetToolbarOverlap();
   bookmark_bar_->SetBounds(vertical_layout_rect_.x(),
                            y,
                            vertical_layout_rect_.width(),
@@ -575,7 +572,7 @@ int BrowserViewLayout::GetContentsOffsetForBookmarkBar() {
 
   // Offset for the detached bookmark bar.
   return bookmark_bar_->height() -
-      views::NonClientFrameView::kClientEdgeThickness;
+      bookmark_bar_->GetFullyDetachedToolbarOverlap();
 }
 
 int BrowserViewLayout::GetTopMarginForActiveContent() {

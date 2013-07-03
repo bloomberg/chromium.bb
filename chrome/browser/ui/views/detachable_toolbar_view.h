@@ -55,11 +55,6 @@ class DetachableToolbarView : public views::AccessiblePaneView {
                                    views::View* view);
 
   // Paint the horizontal border separating the shelf/bar from the toolbar or
-  // page content according to view's detached/attached state.
-  static void PaintHorizontalBorderForState(gfx::Canvas* canvas,
-                                            DetachableToolbarView* view);
-
-  // Paint the horizontal border separating the shelf/bar from the toolbar or
   // page content according to |at_top| with |color|.
   static void PaintHorizontalBorder(gfx::Canvas* canvas,
                                     DetachableToolbarView* view,

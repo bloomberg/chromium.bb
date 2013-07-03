@@ -100,9 +100,8 @@ class BookmarkBarView : public DetachableToolbarView,
   void SetBookmarkBarState(BookmarkBar::State state,
                            BookmarkBar::AnimateChangeType animate_type);
 
-  // How much we want the bookmark bar to overlap the toolbar.  If |return_max|
-  // is true, we return the maximum overlap rather than the current overlap.
-  int GetToolbarOverlap(bool return_max) const;
+  // Returns the toolbar overlap when fully detached.
+  int GetFullyDetachedToolbarOverlap() const;
 
   // Whether or not we are animating.
   bool is_animating();

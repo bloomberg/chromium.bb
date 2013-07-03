@@ -78,6 +78,7 @@
 #include "ui/views/view_constants.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/non_client_view.h"
 
 using content::OpenURLParams;
 using content::PageNavigator;
@@ -504,19 +505,13 @@ void BookmarkBarView::SetBookmarkBarState(
   bookmark_bar_state_ = state;
 }
 
-int BookmarkBarView::GetToolbarOverlap(bool return_max) const {
-  // When not detached, always overlap by the full amount.
-  if (return_max || bookmark_bar_state_ != BookmarkBar::DETACHED)
-    return kToolbarAttachedBookmarkBarOverlap;
-  // When detached with an infobar, overlap by 0 whenever the infobar
-  // is above us (i.e. when we're detached), since drawing over the infobar
-  // looks weird.
-  if (IsDetached() && infobar_visible_)
+int BookmarkBarView::GetFullyDetachedToolbarOverlap() const {
+  if (!infobar_visible_ && browser_->window()->IsFullscreen()) {
+    // There is no client edge to overlap when detached in fullscreen with no
+    // infobars visible.
     return 0;
-  // When detached with no infobar, animate the overlap between the attached and
-  // detached states.
-  return static_cast<int>(
-      kToolbarAttachedBookmarkBarOverlap * size_animation_->GetCurrentValue());
+  }
+  return views::NonClientFrameView::kClientEdgeThickness;
 }
 
 bool BookmarkBarView::is_animating() {
@@ -651,7 +646,23 @@ double BookmarkBarView::GetAnimationValue() const {
 }
 
 int BookmarkBarView::GetToolbarOverlap() const {
-  return GetToolbarOverlap(false);
+  int attached_overlap = kToolbarAttachedBookmarkBarOverlap +
+      views::NonClientFrameView::kClientEdgeThickness;
+  if (!IsDetached())
+    return attached_overlap;
+
+  int detached_overlap = GetFullyDetachedToolbarOverlap();
+
+  // Do not animate the overlap when the infobar is above us (i.e. when we're
+  // detached), since drawing over the infobar looks weird.
+  if (infobar_visible_)
+    return detached_overlap;
+
+  // When detached with no infobar, animate the overlap between the attached and
+  // detached states.
+  return detached_overlap + static_cast<int>(
+      (attached_overlap - detached_overlap) *
+          size_animation_->GetCurrentValue());
 }
 
 gfx::Size BookmarkBarView::GetPreferredSize() {
@@ -664,9 +675,13 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
   // Bookmarks" folder, along with appropriate margins and button padding.
   int width = kLeftMargin;
 
-  if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
+  int height = browser_defaults::kBookmarkBarHeight;
+  if (IsDetached()) {
     double current_state = 1 - size_animation_->GetCurrentValue();
     width += 2 * static_cast<int>(kNewtabHorizontalPadding * current_state);
+    height += static_cast<int>(
+        (chrome::kNTPBookmarkBarHeight - browser_defaults::kBookmarkBarHeight) *
+            current_state);
   }
 
   gfx::Size other_bookmarked_pref;
@@ -687,7 +702,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
       overflow_pref.width() + kButtonPadding +
       bookmarks_separator_pref.width();
 
-  return gfx::Size(width, browser_defaults::kBookmarkBarHeight);
+  return gfx::Size(width, height);
 }
 
 void BookmarkBarView::Layout() {
@@ -921,10 +936,10 @@ void BookmarkBarView::ShowImportDialog() {
   int64 install_time =
       g_browser_process->local_state()->GetInt64(prefs::kInstallDate);
   int64 time_from_install = base::Time::Now().ToTimeT() - install_time;
-  if (bookmark_bar_state_ == BookmarkBar::SHOW)
+  if (bookmark_bar_state_ == BookmarkBar::SHOW) {
     UMA_HISTOGRAM_COUNTS("Import.ShowDialog.FromBookmarkBarView",
                          time_from_install);
-  else if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
+  } else if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
     UMA_HISTOGRAM_COUNTS("Import.ShowDialog.FromFloatingBookmarkBarView",
                          time_from_install);
   }
