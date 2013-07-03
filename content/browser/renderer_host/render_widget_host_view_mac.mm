@@ -2549,7 +2549,7 @@ void RenderWidgetHostViewMac::FrameSwapped() {
 
 - (void)drawRect:(NSRect)dirtyRect {
   TRACE_EVENT0("browser", "RenderWidgetHostViewCocoa::drawRect");
-  DCHECK(!renderWidgetHostView_->use_core_animation_);
+  CHECK(!renderWidgetHostView_->use_core_animation_);
 
   if (!renderWidgetHostView_->render_widget_host_) {
     // TODO(shess): Consider using something more noticable?
@@ -2573,6 +2573,8 @@ void RenderWidgetHostViewMac::FrameSwapped() {
   if (renderWidgetHostView_->last_frame_was_accelerated_ &&
       renderWidgetHostView_->compositing_iosurface_) {
     if (renderWidgetHostView_->allow_overlapping_views_) {
+      CHECK_EQ(CORE_ANIMATION_DISABLED, GetCoreAnimationStatus());
+
       // If overlapping views need to be allowed, punch a hole in the window
       // to expose the GL underlay.
       TRACE_EVENT2("gpu", "NSRectFill clear", "w", damagedRect.width(),
