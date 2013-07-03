@@ -557,7 +557,8 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasToCanvasDrawGPU) {
   RunTest("canvas2d_balls_draw_from_canvas", kNone | kIsGpuCanvasTest);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasTextSW) {
+// Failing on windows GPU bots: crbug.com/255192
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, DISABLED_CanvasTextSW) {
   if (IsGpuAvailable() &&
       gpu::GPUTestBotConfig::CurrentConfigMatches("MAC AMD"))
     return;
