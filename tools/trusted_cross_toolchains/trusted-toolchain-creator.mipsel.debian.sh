@@ -9,12 +9,6 @@
 # This script is intended to build a mipsel-linux-gnu cross compilation
 # toolchain that runs on x86 linux and generates code for a little-endian,
 # hard-float, mips32 target.
-#
-# It expects the host machine to have relatively recent versions of GMP (4.2.0
-# or later), MPFR (2.4.2), and MPC (0.8.1) in order to build the GCC.
-#
-# Common way to get those is:
-# sudo apt-get install libmpfr-dev libmpc-dev libgmp3-dev
 
 ######################################################################
 # Config
@@ -28,6 +22,15 @@ readonly SCRIPT_DIR=$(dirname $0)
 
 readonly MAKE_OPTS="-j8"
 readonly ARCH="mips32"
+
+readonly GMP_URL="http://ftp.gnu.org/gnu/gmp/gmp-4.3.2.tar.bz2"
+readonly GMP_SHA1SUM="c011e8feaf1bb89158bd55eaabd7ef8fdd101a2c"
+
+readonly MPFR_URL="http://ftp.gnu.org/gnu/mpfr/mpfr-2.4.2.tar.bz2"
+readonly MPFR_SHA1SUM="7ca93006e38ae6e53a995af836173cf10ee7c18c"
+
+readonly MPC_URL="http://ftp.gnu.org/gnu/mpc/mpc-1.0.1.tar.gz"
+readonly MPC_SHA1SUM="8c7e19ad0dd9b3b5cc652273403423d6cf0c5edf"
 
 readonly GCC_URL="http://ftp.gnu.org/gnu/gcc/gcc-4.7.2/gcc-4.7.2.tar.bz2"
 readonly GCC_SHA1SUM="a464ba0f26eef24c29bcd1e7489421117fb9ee35"
@@ -98,12 +101,15 @@ CheckoutOrCopy() {
     exit 1
   fi
 
-  if [ "${filetype}" == "svn" ]; then
-    SubBanner "checkout from ${url} -> ${filename}"
-    svn --force export -r ${revision} ${url} ${filename}
-  else
-    SubBanner "copying from ${url}"
-    cp ${url} ${filename}
+  if [ ! -f "${filename}/completed" ]; then
+    if [ "${filetype}" == "svn" ]; then
+      SubBanner "checkout from ${url} -> ${filename}"
+      svn --force export -r ${revision} ${url} ${filename}
+    else
+      SubBanner "copying from ${url}"
+      cp ${url} ${filename}
+    fi
+    touch ${filename}/completed
   fi
 }
 
@@ -175,7 +181,7 @@ SanityCheck() {
     exit -1
   fi
 
-  for tool in cleanlinks wget ; do
+  for tool in wget ; do
     if ! which ${tool} ; then
       echo "Required binary $tool not found."
       echo "Exiting."
@@ -207,13 +213,41 @@ CreateTarBall() {
 DownloadOrCopyAndInstallToolchain() {
   Banner "Installing toolchain"
 
-  local tarball="${TMP}/${BINUTILS_URL##*/}"
-  DownloadOrCopyAndVerify ${BINUTILS_URL} ${BINUTILS_SHA1SUM}
+  tarball="${TMP}/${GCC_URL##*/}"
+  DownloadOrCopyAndVerify ${GCC_URL} ${GCC_SHA1SUM}
   SubBanner "extracting from ${tarball}"
   tar jxf ${tarball} -C ${TMP}
 
-  tarball="${TMP}/${GCC_URL##*/}"
-  DownloadOrCopyAndVerify ${GCC_URL} ${GCC_SHA1SUM}
+  pushd ${TMP}/gcc-*
+
+  local tarball="${TMP}/${GMP_URL##*/}"
+  DownloadOrCopyAndVerify ${GMP_URL} ${GMP_SHA1SUM}
+  SubBanner "extracting from ${tarball}"
+  tar jxf ${tarball}
+  local filename=`ls | grep gmp\-`
+  rm -f gmp
+  ln -s ${filename} gmp
+
+  local tarball="${TMP}/${MPFR_URL##*/}"
+  DownloadOrCopyAndVerify ${MPFR_URL} ${MPFR_SHA1SUM}
+  SubBanner "extracting from ${tarball}"
+  tar jxf ${tarball}
+  local filename=`ls | grep mpfr\-`
+  rm -f mpfr
+  ln -s ${filename} mpfr
+
+  local tarball="${TMP}/${MPC_URL##*/}"
+  DownloadOrCopyAndVerify ${MPC_URL} ${MPC_SHA1SUM}
+  SubBanner "extracting from ${tarball}"
+  tar zxf ${tarball}
+  local filename=`ls | grep mpc\-`
+  rm -f mpc
+  ln -s ${filename} mpc
+
+  popd
+
+  local tarball="${TMP}/${BINUTILS_URL##*/}"
+  DownloadOrCopyAndVerify ${BINUTILS_URL} ${BINUTILS_SHA1SUM}
   SubBanner "extracting from ${tarball}"
   tar jxf ${tarball} -C ${TMP}
 
@@ -248,6 +282,7 @@ DownloadOrCopyAndInstallToolchain() {
 
   Banner "Building binutils"
 
+  rm -rf ${BUILD_DIR}/binutils/
   mkdir -p ${BUILD_DIR}/binutils/
   pushd ${BUILD_DIR}/binutils/
 
@@ -268,6 +303,7 @@ DownloadOrCopyAndInstallToolchain() {
 
   Banner "Building GCC (initial)"
 
+  rm -rf ${BUILD_DIR}/gcc/initial
   mkdir -p ${BUILD_DIR}/gcc/initial
   pushd ${BUILD_DIR}/gcc/initial
 
@@ -309,6 +345,8 @@ DownloadOrCopyAndInstallToolchain() {
   Banner "Building EGLIBC (initial)"
 
   mkdir -p ${JAIL_MIPS32}/usr/lib
+
+  rm -rf ${BUILD_DIR}/eglibc/initial
   mkdir -p ${BUILD_DIR}/eglibc/initial
   pushd ${BUILD_DIR}/eglibc/initial
 
@@ -346,6 +384,7 @@ DownloadOrCopyAndInstallToolchain() {
 
   Banner "Building GCC (intermediate)"
 
+  rm -rf ${BUILD_DIR}/gcc/intermediate
   mkdir -p ${BUILD_DIR}/gcc/intermediate
   pushd ${BUILD_DIR}/gcc/intermediate
 
@@ -377,6 +416,7 @@ DownloadOrCopyAndInstallToolchain() {
 
   Banner "Building EGLIBC (final)"
 
+  rm -rf ${BUILD_DIR}/eglibc/final
   mkdir -p ${BUILD_DIR}/eglibc/final
   pushd ${BUILD_DIR}/eglibc/final
 
@@ -406,6 +446,7 @@ DownloadOrCopyAndInstallToolchain() {
 
   Banner "Building GCC (final)"
 
+  rm -rf ${BUILD_DIR}/gcc/final
   mkdir -p ${BUILD_DIR}/gcc/final
   pushd ${BUILD_DIR}/gcc/final
 
@@ -435,6 +476,7 @@ DownloadOrCopyAndInstallToolchain() {
 
   Banner "Building GDB"
 
+  rm -rf ${BUILD_DIR}/gdb/
   mkdir -p ${BUILD_DIR}/gdb/
   pushd ${BUILD_DIR}/gdb/
 
@@ -472,18 +514,19 @@ InstallTrustedLinkerScript() {
 # ----------------------------------------------------------------------
 
 readonly REPO_DEBIAN=http://ftp.debian.org/debian
-readonly MIPS32_PACKAGES=${REPO_DEBIAN}/dists/squeeze/main/binary-mipsel/Packages.bz2
+readonly MIPS32_PACKAGES=${REPO_DEBIAN}/dists/wheezy/main/binary-mipsel/Packages.bz2
 
-readonly BASE_PACKAGELIST_MIPS32=${SCRIPT_DIR}/packagelist.squeeze.mipsel.base
-readonly EXTRA_PACKAGELIST_MIPS32=${SCRIPT_DIR}/packagelist.squeeze.mipsel.extra
-readonly TMP_BASE_PKG_MIPS32=${TMP}/packagelist.generated.squeeze.mipsel.base
-readonly TMP_EXTRA_PKG_MIPS32=${TMP}/packagelist.generated.squeeze.mipsel.extra
+readonly BASE_PACKAGELIST_MIPS32=${SCRIPT_DIR}/packagelist.wheezy.mipsel.base
+readonly EXTRA_PACKAGELIST_MIPS32=${SCRIPT_DIR}/packagelist.wheezy.mipsel.extra
+readonly TMP_BASE_PKG_MIPS32=${TMP}/packagelist.generated.wheezy.mipsel.base
+readonly TMP_EXTRA_PKG_MIPS32=${TMP}/packagelist.generated.wheezy.mipsel.extra
 
 GeneratePackageLists() {
   local sdk_target=$1
   local packages=
   local TMP_PACKAGELIST=
   Banner "generating ${sdk_target} package lists for mips32"
+  rm -f ${TMP}/Packages.bz2
   DownloadOrCopy ${MIPS32_PACKAGES}
   bzcat ${TMP}/Packages.bz2\
     | egrep '^(Package:|Filename:)' > ${TMP}/Packages_mipsel
@@ -528,56 +571,78 @@ InstallMissingLibraries() {
     dpkg --fsys-tarfile ${package}\
       | tar -xvf - --exclude=./usr/share -C ${JAIL_MIPS32}
   done
+}
 
-  Banner "some cleanup"
+# Workaround for missing headers since pkg-config is not working correctly.
+FixIncludes() {
+  Banner "Fixing includes"
+  pushd ${JAIL_MIPS32}/usr/include/glib-2.0
+    ln -s ../../lib/glib-2.0/include/glibconfig.h .
+  popd
+
+  pushd ${JAIL_MIPS32}/usr/include/gtk-2.0
+    ln -s ../../lib/gtk-2.0/include/gdkconfig.h .
+  popd
+
+  pushd ${JAIL_MIPS32}/usr/include/dbus-1.0/dbus
+    ln -s ../../../lib/dbus-1.0/include/dbus/dbus-arch-deps.h .
+  popd
+}
+
+FixLinks() {
+  Banner "Fixing links"
+  pushd ${JAIL_MIPS32}/lib/
+    mv mipsel-linux-gnu/* .
+    rm -rf mipsel-linux-gnu
+    ln -s . mipsel-linux-gnu
+  popd
 
   pushd ${JAIL_MIPS32}/usr/lib/
-  cleanlinks > /dev/null 2> /dev/null
-  FixLibs
+    mkdir -p pkgconfig
+    mv mipsel-linux-gnu/pkgconfig/* pkgconfig/
+    rm -rf mipsel-linux-gnu/pkgconfig
+    mv mipsel-linux-gnu/* .
+    rm -rf mipsel-linux-gnu
+    ln -s . mipsel-linux-gnu
+  popd
+
+  pushd ${JAIL_MIPS32}/usr/lib/
+    rm -f libstdc++.so*
+    ln -s ../../../mipsel-linux-gnu/lib/libstdc++.so.6.0.17 .
+    ln -s libstdc++.so.6.0.17 libstdc++.so.6
+    ln -s libstdc++.so.6.0.17 libstdc++.so
+
+    rm -f libgcc_s.so*
+    ln -s ../../../mipsel-linux-gnu/lib/libgcc_s.so.1 .
+    ln -s libgcc_s.so.1 libgcc_s.so
   popd
 }
 
 FixLibs() {
   Banner "Fixing libraries"
 
-  rm -f libbz2.so
-  ln -s ../../lib/libbz2.so.1 libbz2.so
+  readonly liblist="libbz2.so       \
+                    libcom_err.so   \
+                    libdbus-1.so    \
+                    libexpat.so     \
+                    libglib-2.0.so  \
+                    libgpg-error.so \
+                    libkeyutils.so  \
+                    libpamc.so      \
+                    libpam_misc.so  \
+                    libpam.so       \
+                    libpci.so       \
+                    libpcre.so      \
+                    libpng12.so     \
+                    libudev.so      \
+                    libz.so"
 
-  rm -f libm.so
-  ln -s ../../lib/libm.so.6 libm.so
-
-  rm -f libdl.so
-  ln -s ../../lib/libdl.so.2 libdl.so
-
-  rm -f librt.so
-  ln -s ../../lib/librt.so.1 librt.so
-
-  rm -f libpcre.so
-  ln -s ../../lib/libpcre.so.3  libpcre.so
-
-  rm -f libresolv.so
-  ln -s ../../lib/libresolv.so.2  libresolv.so
-
-  rm -f libglib-2.0.so
-  ln -s ../../lib/libglib-2.0.so.0 libglib-2.0.so
-
-  rm -f libudev.so
-  ln -s ../../lib/libudev.so.0 libudev.so
-
-  rm -f libcom_err.so
-  ln -s ../../lib/libcom_err.so.2 libcom_err.so
-
-  rm -f libXdmcp.so
-  ln -s ../../lib/libXdmcp.so.6 libXdmcp.so
-
-  rm -f libstdc++.so*
-  ln -s ../../../mipsel-linux-gnu/lib/libstdc++.so.6.0.17 .
-  ln -s libstdc++.so.6.0.17 libstdc++.so.6
-  ln -s libstdc++.so.6.0.17 libstdc++.so
-
-  rm -f libgcc_s.so*
-  ln -s ../../../mipsel-linux-gnu/lib/libgcc_s.so.1 .
-  ln -s libgcc_s.so.1 libgcc_s.so
+  pushd ${JAIL_MIPS32}/usr/lib/
+    for library in ${liblist}; do
+      rm -f ${library}
+      ln -s ../../lib/${library}.[0123] ${library}
+    done
+  popd
 }
 
 BuildAndInstallQemu() {
@@ -615,8 +680,7 @@ BuildAndInstallQemu() {
     --disable-bsd-user \
     --target-list=mipsel-linux-user \
     --disable-sdl \
-    --disable-linux-aio \
-    --static
+    --disable-linux-aio
 
   SubBanner "Make"
   env -i PATH=/usr/bin/:/bin \
@@ -647,11 +711,14 @@ elif [[ $1 == "nacl_sdk" || $1 == "chrome_sdk" ]] ; then
   DownloadOrCopyAndInstallToolchain
   GeneratePackageLists $1
   InstallMissingLibraries $1
+  FixLinks
   if [[ $1 == "nacl_sdk" ]] ; then
     InstallTrustedLinkerScript
     BuildAndInstallQemu
     CreateTarBall $1
   else
+    FixLibs
+    FixIncludes
     CreateTarBall ${CROSS_TARBALL}
   fi
 
