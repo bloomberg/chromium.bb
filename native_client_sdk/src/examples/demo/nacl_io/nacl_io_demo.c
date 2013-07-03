@@ -42,13 +42,17 @@ static PPB_Messaging* ppb_messaging_interface = NULL;
 static PPB_Var* ppb_var_interface = NULL;
 
 static FuncNameMapping g_function_map[] = {
-  { "fopen", HandleFopen },
-  { "fwrite", HandleFwrite },
-  { "fread", HandleFread },
-  { "fseek", HandleFseek },
-  { "fclose", HandleFclose },
-  { "stat", HandleStat },
-  { NULL, NULL },
+  {"fopen", HandleFopen},
+  {"fwrite", HandleFwrite},
+  {"fread", HandleFread},
+  {"fseek", HandleFseek},
+  {"fclose", HandleFclose},
+  {"stat", HandleStat},
+  {"opendir", HandleOpendir},
+  {"readdir", HandleReaddir},
+  {"closedir", HandleClosedir},
+  {"mkdir", HandleMkdir},
+  {NULL, NULL},
 };
 
 /** A handle to the thread the handles messages. */
@@ -228,7 +232,9 @@ static void HandleMessage(char* message) {
   if (!function) {
     /* Function name wasn't found. Error. */
     ppb_messaging_interface->PostMessage(
-        g_instance, PrintfToVar("Error: Unknown function \"%s\"", function));
+        g_instance,
+        PrintfToVar("Error: Unknown function \"%s\"", function_name));
+    return;
   }
 
   /* Function name was found, call it. */

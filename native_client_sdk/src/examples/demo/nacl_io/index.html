@@ -45,6 +45,10 @@ found in the LICENSE file.
       <input type="radio" id="radiofwrite" name="group">fwrite
       <input type="radio" id="radiofseek" name="group">fseek
       <input type="radio" id="radiostat" name="group">stat
+      <input type="radio" id="radioopendir" name="group">opendir
+      <input type="radio" id="radioreaddir" name="group">readdir
+      <input type="radio" id="radioclosedir" name="group">closedir
+      <input type="radio" id="radiomkdir" name="group">mkdir
     </span>
   </div>
   <div class="function" id="fopen">
@@ -59,13 +63,13 @@ found in the LICENSE file.
         <option value="a">Append Write (a)</option>
         <option value="w+">Append Read/Write (a+)</option>
       </select>
-      <button id="fopenExecute">fopen</button>
+      <button>fopen</button>
     </span>
   </div>
   <div class="function" id="fclose" hidden>
     <span>
       <select class="file-handle" id="fcloseHandle"></select>
-      <button id="fcloseExecute">fclose</button>
+      <button>fclose</button>
     </span>
   </div>
   <div class="function" id="fread" hidden>
@@ -73,7 +77,7 @@ found in the LICENSE file.
       <select class="file-handle" id="freadHandle"></select>
       Count:
       <input type="text" id="freadBytes">
-      <button id="freadExecute">fread</button>
+      <button>fread</button>
     </span>
   </div>
   <div class="function" id="fwrite" hidden>
@@ -81,7 +85,7 @@ found in the LICENSE file.
       <select class="file-handle" id="fwriteHandle"></select>
       Data:
       <input type="text" id="fwriteData">
-      <button id="fwriteExecute">fwrite</button>
+      <button>fwrite</button>
     </span>
   </div>
   <div class="function" id="fseek" hidden>
@@ -95,14 +99,42 @@ found in the LICENSE file.
         <option value="1">SEEK_CUR</option>
         <option value="2">SEEK_END</option>
       </select>
-      <button id="fseekExecute">fseek</button>
+      <button>fseek</button>
     </span>
   </div>
   <div class="function" id="stat" hidden>
     <span>
       Filename:
       <input type="text" id="statFilename">
-      <button id="statExecute">stat</button>
+      <button>stat</button>
+    </span>
+  </div>
+  <div class="function" id="opendir" hidden>
+    <span>
+      Dirname:
+      <input type="text" id="opendirDirname">
+      <button>opendir</button>
+    </span>
+  </div>
+  <div class="function" id="readdir" hidden>
+    <span>
+      <select class="dir-handle" id="readdirHandle"></select>
+      <button>readdir</button>
+    </span>
+  </div>
+  <div class="function" id="closedir" hidden>
+    <span>
+      <select class="dir-handle" id="closedirHandle"></select>
+      <button>closedir</button>
+    </span>
+  </div>
+  <div class="function" id="mkdir" hidden>
+    <span>
+      Dirname:
+      <input type="text" id="mkdirDirname">
+      Mode (in octal):
+      <input type="text" id="mkdirMode" value="0644">
+      <button>mkdir</button>
     </span>
   </div>
   <pre id="log" style="font-weight: bold"></pre>

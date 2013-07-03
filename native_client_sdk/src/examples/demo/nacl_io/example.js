@@ -25,12 +25,17 @@ function attachListeners() {
     radioEls[i].addEventListener('click', onRadioClicked);
   }
 
-  document.getElementById('fopenExecute').addEventListener('click', fopen);
-  document.getElementById('fcloseExecute').addEventListener('click', fclose);
-  document.getElementById('freadExecute').addEventListener('click', fread);
-  document.getElementById('fwriteExecute').addEventListener('click', fwrite);
-  document.getElementById('fseekExecute').addEventListener('click', fseek);
-  document.getElementById('statExecute').addEventListener('click', stat);
+  // Wire up the 'click' event for each function's button.
+  var functionEls = document.querySelectorAll('.function');
+  for (var i = 0; i < functionEls.length; ++i) {
+    var functionEl = functionEls[i];
+    var id = functionEl.getAttribute('id');
+    var buttonEl = functionEl.querySelector('button');
+
+    // The function name matches the element id.
+    var func = window[id];
+    buttonEl.addEventListener('click', func);
+  }
 }
 
 function onRadioClicked(e) {
@@ -45,22 +50,22 @@ function onRadioClicked(e) {
   }
 }
 
-function addFilenameToSelectElements(filehandle, filename) {
-  var text = '[' + filehandle + '] ' + filename;
-  var selectEls = document.querySelectorAll('select.file-handle');
+function addNameToSelectElements(cssClass, handle, name) {
+  var text = '[' + handle + '] ' + name;
+  var selectEls = document.querySelectorAll(cssClass);
   for (var i = 0; i < selectEls.length; ++i) {
     var optionEl = document.createElement('option');
-    optionEl.setAttribute('value', filehandle);
+    optionEl.setAttribute('value', handle);
     optionEl.appendChild(document.createTextNode(text));
     selectEls[i].appendChild(optionEl);
   }
 }
 
-function removeFilenameFromSelectElements(filehandle) {
-  var optionEls = document.querySelectorAll('select.file-handle > option');
+function removeNameFromSelectElements(cssClass, handle) {
+  var optionEls = document.querySelectorAll(cssClass + ' > option');
   for (var i = 0; i < optionEls.length; ++i) {
     var optionEl = optionEls[i];
-    if (optionEl.value == filehandle) {
+    if (optionEl.value == handle) {
       var selectEl = optionEl.parentNode;
       selectEl.removeChild(optionEl);
     }
@@ -68,6 +73,7 @@ function removeFilenameFromSelectElements(filehandle) {
 }
 
 var filehandle_map = {};
+var dirhandle_map = {};
 
 function fopen(e) {
   var filename = document.getElementById('fopenFilename').value;
@@ -78,7 +84,7 @@ function fopen(e) {
 function fopenResult(filename, filehandle) {
   filehandle_map[filehandle] = filename;
 
-  addFilenameToSelectElements(filehandle, filename);
+  addNameToSelectElements('.file-handle', filehandle, filename);
   common.logMessage('File ' + filename + ' opened successfully.\n');
 }
 
@@ -89,7 +95,7 @@ function fclose(e) {
 
 function fcloseResult(filehandle) {
   var filename = filehandle_map[filehandle];
-  removeFilenameFromSelectElements(filehandle, filename);
+  removeNameFromSelectElements('.file-handle', filehandle, filename);
   common.logMessage('File ' + filename + ' closed successfully.\n');
 }
 
@@ -138,6 +144,56 @@ function statResult(filename, size) {
   common.logMessage('File ' + filename + ' has size ' + size + '.\n');
 }
 
+function opendir(e) {
+  var dirname = document.getElementById('opendirDirname').value;
+  nacl_module.postMessage(makeCall('opendir', dirname));
+}
+
+function opendirResult(dirname, dirhandle) {
+  dirhandle_map[dirhandle] = dirname;
+
+  addNameToSelectElements('.dir-handle', dirhandle, dirname);
+  common.logMessage('Directory ' + dirname + ' opened successfully.\n');
+}
+
+function readdir(e) {
+  var dirhandle = document.getElementById('readdirHandle').value;
+  nacl_module.postMessage(makeCall('readdir', dirhandle));
+}
+
+function readdirResult(dirhandle, ino, name) {
+  var dirname = dirhandle_map[dirhandle];
+  if (ino === '') {
+    common.logMessage('End of directory.\n');
+  } else {
+    common.logMessage('Read entry ("' + name + '", ino = ' + ino +
+                      ') from directory ' + dirname + '.\n');
+  }
+}
+
+function closedir(e) {
+  var dirhandle = document.getElementById('closedirHandle').value;
+  nacl_module.postMessage(makeCall('closedir', dirhandle));
+}
+
+function closedirResult(dirhandle) {
+  var dirname = dirhandle_map[dirhandle];
+  delete dirhandle_map[dirhandle];
+
+  removeNameFromSelectElements('.dir-handle', dirhandle, dirname);
+  common.logMessage('Directory ' + dirname + ' closed successfully.\n');
+}
+
+function mkdir(e) {
+  var dirname = document.getElementById('mkdirDirname').value;
+  var mode = document.getElementById('mkdirMode').value;
+  nacl_module.postMessage(makeCall('mkdir', dirname, mode));
+}
+
+function mkdirResult(dirname) {
+  common.logMessage('Directory ' + dirname + ' created successfully.\n');
+}
+
 /**
  * Return true when |s| starts with the string |prefix|.
  *
@@ -173,7 +229,8 @@ function handleMessage(message_event) {
     var resultFunc = window[funcResultName];
 
     if (!resultFunc) {
-      common.logMessage('Error: Bad message received from NaCl module.\n');
+      common.logMessage('Error: Bad message ' + funcName +
+                        ' received from NaCl module.\n');
       return;
     }
 

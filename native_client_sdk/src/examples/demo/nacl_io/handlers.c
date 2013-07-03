@@ -14,9 +14,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "nacl_io/osdirent.h"
+
 #include "nacl_io_demo.h"
 
 #define MAX_OPEN_FILES 10
+#define MAX_OPEN_DIRS 10
 
 #if defined(WIN32)
 #define stat _stat
@@ -28,16 +31,23 @@
 static FILE* g_OpenFiles[MAX_OPEN_FILES];
 
 /**
- * Add the file to the g_OpenFiles map.
- * @param[in] file The file to add to g_OpenFiles.
- * @return int The index of the FILE in g_OpenFiles, or -1 if there are too many
- *     open files. */
-static int AddFileToMap(FILE* file) {
+ * A mapping from int -> DIR*, so the JavaScript messages can refer to an open
+ * Directory. */
+static void* g_OpenDirs[MAX_OPEN_DIRS];
+
+/**
+ * Add |object| to |map| and return the index it was added at.
+ * @param[in] map The map to add the object to.
+ * @param[in] max_map_size The maximum map size.
+ * @param[in] object The object to add to the map.
+ * @return int The index of the added object, or -1 if there is no more space.
+ */
+static int AddToMap(void** map, int max_map_size, void* object) {
   int i;
-  assert(file != NULL);
-  for (i = 0; i < MAX_OPEN_FILES; ++i) {
-    if (g_OpenFiles[i] == NULL) {
-      g_OpenFiles[i] = file;
+  assert(object != NULL);
+  for (i = 0; i < max_map_size; ++i) {
+    if (map[i] == NULL) {
+      map[i] = object;
       return i;
     }
   }
@@ -46,11 +56,67 @@ static int AddFileToMap(FILE* file) {
 }
 
 /**
+ * Remove an object at index |i| from |map|.
+ * @param[in] map The map to remove from.
+ * @param[in] max_map_size The size of the map.
+ * @param[in] i The index to remove.
+ */
+static void RemoveFromMap(void** map, int max_map_size, int i) {
+  assert(i >= 0 && i < max_map_size);
+  map[i] = NULL;
+}
+
+/**
+ * Get the object from |map| at index |i|.
+ * @param[in] map The map to access.
+ * @param[in] max_map_size The size of the map.
+ * @param[in] i The index to access.
+ * @return the object at |map|. This will be NULL if there is no object at |i|.
+ */
+static void* GetFromMap(void** map, int max_map_size, int i) {
+  assert(i >= 0 && i < max_map_size);
+  return map[i];
+}
+
+/**
+ * Get an object given a string |s| containing the index.
+ * @param[in] map The map to access.
+ * @param[in] max_map_size The size of the map.
+ * @param[in] s The string containing the object index.
+ * @param[out] index The index of the object as an int.
+ * @return The object, or NULL if the index is invalid.
+ */
+static void* GetFromIndexString(void** map,
+                                int max_map_size,
+                                const char* s,
+                                int* index) {
+  char* endptr;
+  int result = strtol(s, &endptr, 10);
+  if (endptr != s + strlen(s)) {
+    /* Garbage at the end of the number...? */
+    return NULL;
+  }
+
+  if (index)
+    *index = result;
+
+  return GetFromMap(map, max_map_size, result);
+}
+
+/**
+ * Add the file to the g_OpenFiles map.
+ * @param[in] file The file to add to g_OpenFiles.
+ * @return int The index of the FILE in g_OpenFiles, or -1 if there are too many
+ *     open files. */
+static int AddFileToMap(FILE* file) {
+  return AddToMap((void**)g_OpenFiles, MAX_OPEN_FILES, file);
+}
+
+/**
  * Remove the file from the g_OpenFiles map.
  * @param[in] i The index of the file handle to remove. */
 static void RemoveFileFromMap(int i) {
-  assert(i >= 0 && i < MAX_OPEN_FILES);
-  g_OpenFiles[i] = NULL;
+  RemoveFromMap((void**)g_OpenFiles, MAX_OPEN_FILES, i);
 }
 
 /**
@@ -59,28 +125,57 @@ static void RemoveFileFromMap(int i) {
  * @return the FILE*, or NULL of there is no open file with that handle.
  */
 static FILE* GetFileFromMap(int i) {
-  assert(i >= 0 && i < MAX_OPEN_FILES);
-  return g_OpenFiles[i];
+  return (FILE*)GetFromMap((void**)g_OpenFiles, MAX_OPEN_FILES, i);
 }
 
 /**
  * Get a file, given a string containing the index.
  * @param[in] s The string containing the file index.
- * @param[out] file_index The file index of this file.
- * @return The FILE* for this file, or NULL if the index is invalid. */
+ * @param[out] file_index The index of this file.
+ * @return The FILE* for this file, or NULL if the index is invalid.
+ */
 static FILE* GetFileFromIndexString(const char* s, int* file_index) {
-  char* endptr;
-  int result = strtol(s, &endptr, 10);
-  if (endptr != s + strlen(s)) {
-    /* Garbage at the end of the number...? */
-    return NULL;
-  }
-
-  if (file_index)
-    *file_index = result;
-
-  return GetFileFromMap(result);
+  return (FILE*)GetFromIndexString(
+      (void**)g_OpenFiles, MAX_OPEN_FILES, s, file_index);
 }
+
+/* Win32 doesn't support DIR/opendir/readdir/closedir. */
+#if !defined(WIN32)
+/**
+ * Add the dir to the g_OpenDirs map.
+ * @param[in] dir The dir to add to g_OpenDirs.
+ * @return int The index of the DIR in g_OpenDirs, or -1 if there are too many
+ *     open dirs. */
+static int AddDirToMap(DIR* dir) {
+  return AddToMap((void**)g_OpenDirs, MAX_OPEN_DIRS, dir);
+}
+
+/**
+ * Remove the dir from the g_OpenDirs map.
+ * @param[in] i The index of the dir handle to remove. */
+static void RemoveDirFromMap(int i) {
+  RemoveFromMap((void**)g_OpenDirs, MAX_OPEN_DIRS, i);
+}
+/**
+ * Get a dir handle from the g_OpenDirs map.
+ * @param[in] i The index of the dir handle to get.
+ * @return the DIR*, or NULL of there is no open dir with that handle.
+ */
+static DIR* GetDirFromMap(int i) {
+  return (DIR*)GetFromMap((void**)g_OpenDirs, MAX_OPEN_DIRS, i);
+}
+
+/**
+ * Get a dir, given a string containing the index.
+ * @param[in] s The string containing the dir index.
+ * @param[out] dir_index The index of this dir.
+ * @return The DIR* for this dir, or NULL if the index is invalid.
+ */
+static DIR* GetDirFromIndexString(const char* s, int* dir_index) {
+  return (DIR*)GetFromIndexString(
+      (void**)g_OpenDirs, MAX_OPEN_DIRS, s, dir_index);
+}
+#endif
 
 /**
  * Handle a call to fopen() made by JavaScript.
@@ -377,5 +472,192 @@ int HandleStat(int num_params, char** params, char** output) {
   }
 
   *output = PrintfToNewString("stat\1%s\1%d", filename, buf.st_size);
+  return 0;
+}
+
+/**
+ * Handle a call to opendir() made by JavaScript.
+ *
+ * opendir expects 1 parameter:
+ *   0: The name of the directory
+ * on success, opendir returns a result in |output| separated by \1:
+ *   0: "opendir"
+ *   1: the directory name
+ *   2: the index of the directory
+ * on failure, opendir returns an error string in |output|.
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure. */
+int HandleOpendir(int num_params, char** params, char** output) {
+#if defined(WIN32)
+  *output = PrintfToNewString("Error: Win32 does not support opendir.");
+  return 1;
+#else
+  DIR* dir;
+  int dir_index;
+  const char* dirname;
+
+  if (num_params != 1) {
+    *output = PrintfToNewString("Error: opendir takes 1 parameter.");
+    return 1;
+  }
+
+  dirname = params[0];
+
+  dir = opendir(dirname);
+  if (!dir) {
+    *output = PrintfToNewString("Error: opendir returned a NULL DIR*.");
+    return 2;
+  }
+
+  dir_index = AddDirToMap(dir);
+  if (dir_index == -1) {
+    *output = PrintfToNewString(
+        "Error: Example only allows %d open dir handles.", MAX_OPEN_DIRS);
+    return 3;
+  }
+
+  *output = PrintfToNewString("opendir\1%s\1%d", dirname, dir_index);
+  return 0;
+#endif
+}
+
+/**
+ * Handle a call to readdir() made by JavaScript.
+ *
+ * readdir expects 1 parameter:
+ *   0: The index of the directory (which is mapped to a DIR*)
+ * on success, opendir returns a result in |output| separated by \1:
+ *   0: "readdir"
+ *   1: the inode number of the entry
+ *   2: the name of the entry
+ * on failure, readdir returns an error string in |output|.
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure. */
+int HandleReaddir(int num_params, char** params, char** output) {
+#if defined(WIN32)
+  *output = PrintfToNewString("Error: Win32 does not support readdir.");
+  return 1;
+#else
+  DIR* dir;
+  const char* dir_index_string;
+  struct dirent* entry;
+
+  if (num_params != 1) {
+    *output = PrintfToNewString("Error: readdir takes 1 parameter.");
+    return 1;
+  }
+
+  dir_index_string = params[0];
+  dir = GetDirFromIndexString(dir_index_string, NULL);
+
+  if (!dir) {
+    *output = PrintfToNewString("Error: Unknown dir handle %s.",
+                                dir_index_string);
+    return 2;
+  }
+
+  entry = readdir(dir);
+  if (entry != NULL) {
+    *output = PrintfToNewString("readdir\1%s\1%d\1%s", dir_index_string,
+                                entry->d_ino, entry->d_name);
+  } else {
+    *output = PrintfToNewString("readdir\1%s\1\1", dir_index_string);
+  }
+
+  return 0;
+#endif
+}
+
+/**
+ * Handle a call to closedir() made by JavaScript.
+ *
+ * closedir expects 1 parameter:
+ *   0: The index of the directory (which is mapped to a DIR*)
+ * on success, closedir returns a result in |output| separated by \1:
+ *   0: "closedir"
+ *   1: the name of the directory
+ * on failure, closedir returns an error string in |output|.
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure. */
+int HandleClosedir(int num_params, char** params, char** output) {
+#if defined(WIN32)
+  *output = PrintfToNewString("Error: Win32 does not support closedir.");
+  return 1;
+#else
+  DIR* dir;
+  int dir_index;
+  const char* dir_index_string;
+  int result;
+
+  if (num_params != 1) {
+    *output = PrintfToNewString("Error: closedir takes 1 parameters.");
+    return 1;
+  }
+
+  dir_index_string = params[0];
+  dir = GetDirFromIndexString(dir_index_string, &dir_index);
+  if (!dir) {
+    *output = PrintfToNewString("Error: Unknown dir handle %s.",
+                                dir_index_string);
+    return 2;
+  }
+
+  result = closedir(dir);
+  if (result) {
+    *output = PrintfToNewString("Error: closedir returned error %d.", result);
+    return 3;
+  }
+
+  RemoveDirFromMap(dir_index);
+
+  *output = PrintfToNewString("closedir\1%s", dir_index_string);
+  return 0;
+#endif
+}
+
+/**
+ * Handle a call to mkdir() made by JavaScript.
+ *
+ * mkdir expects 1 parameter:
+ *   0: The name of the directory
+ *   1: The mode to use for the new directory, in octal.
+ * on success, mkdir returns a result in |output| separated by \1:
+ *   0: "mkdir"
+ *   1: the name of the directory
+ * on failure, mkdir returns an error string in |output|.
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure. */
+int HandleMkdir(int num_params, char** params, char** output) {
+  const char* dirname;
+  int result;
+  int mode;
+
+  if (num_params != 2) {
+    *output = PrintfToNewString("Error: mkdir takes 2 parameters.");
+    return 1;
+  }
+
+  dirname = params[0];
+  mode = strtol(params[1], NULL, 8);
+
+  result = mkdir(dirname, mode);
+  if (result != 0) {
+    *output = PrintfToNewString("Error: mkdir returned error: %d", errno);
+    return 2;
+  }
+
+  *output = PrintfToNewString("mkdir\1%s", dirname);
   return 0;
 }
