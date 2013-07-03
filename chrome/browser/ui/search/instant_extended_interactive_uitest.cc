@@ -171,10 +171,6 @@ class InstantExtendedTest : public InProcessBrowserTest,
     return histogram->SnapshotSamples()->TotalCount();
   }
 
-  std::string GetOmniboxText() {
-    return UTF16ToUTF8(omnibox()->GetText());
-  }
-
   void SendDownArrow() {
     omnibox()->model()->OnUpOrDownKeyPressed(1);
     // Wait for JavaScript to run the key handler by executing a blank script.

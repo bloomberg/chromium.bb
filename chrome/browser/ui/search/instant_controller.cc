@@ -972,6 +972,11 @@ void InstantController::OmniboxFocusChanged(
   if (!extended_enabled() && !instant_enabled_)
     return;
 
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
+      content::Source<InstantController>(this),
+      content::NotificationService::NoDetails());
+
   if (extended_enabled()) {
     if (overlay_)
       overlay_->sender()->FocusChanged(omnibox_focus_state_, reason);

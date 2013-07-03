@@ -116,6 +116,8 @@ class InstantTestBase {
   bool HasUserInputInProgress();
   bool HasTemporaryText();
 
+  std::string GetOmniboxText();
+
   // Loads a named image from url |image| from the given |rvh| host.  |loaded|
   // returns whether the image was able to load without error.
   // The method returns true if the JavaScript executed cleanly.

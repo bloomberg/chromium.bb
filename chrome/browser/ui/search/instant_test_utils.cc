@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -210,6 +211,10 @@ bool InstantTestBase::HasUserInputInProgress() {
 
 bool InstantTestBase::HasTemporaryText() {
   return omnibox()->model()->has_temporary_text_;
+}
+
+std::string InstantTestBase::GetOmniboxText() {
+  return UTF16ToUTF8(omnibox()->GetText());
 }
 
 bool InstantTestBase::LoadImage(content::RenderViewHost* rvh,

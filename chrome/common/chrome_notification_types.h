@@ -415,6 +415,9 @@ enum NotificationType {
   // is the profile.
   NOTIFICATION_OMNIBOX_OPENED_URL,
 
+  // This is sent from Instant when the omnibox focus state changes.
+  NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
+
   // Sent when the Google URL for a profile has been updated.  Some services
   // cache this value and need to update themselves when it changes.  See
   // google_util::GetGoogleURLAndUpdateIfNecessary().  The source is the
