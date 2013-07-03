@@ -584,11 +584,6 @@ bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestR
         newSelection = expandSelectionToRespectUserSelectAll(innerNode, visiblePos);
 
     bool handled = updateSelectionForMouseDownDispatchingSelectStart(innerNode, newSelection, granularity);
-
-    if (event.event().button() == MiddleButton) {
-        // Ignore handled, since we want to paste to where the caret was placed anyway.
-        handled = handlePasteGlobalSelection(event.event()) || handled;
-    }
     return handled;
 }
 
@@ -850,7 +845,7 @@ bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& e
 
     m_frame->selection()->selectFrameElementInParentIfFullySelected();
 
-    if (event.event().button() == MiddleButton) {
+    if (event.event().button() == MiddleButton && !event.isOverLink()) {
         // Ignore handled, since we want to paste to where the caret was placed anyway.
         handled = handlePasteGlobalSelection(event.event()) || handled;
     }
