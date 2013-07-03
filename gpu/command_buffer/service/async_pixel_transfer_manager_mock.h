@@ -19,7 +19,7 @@ class MockAsyncPixelTransferManager : public AsyncPixelTransferManager {
   MOCK_METHOD0(BindCompletedAsyncTransfers, void());
   MOCK_METHOD2(AsyncNotifyCompletion,
       void(const AsyncMemoryParams& mem_params,
-           const CompletionCallback& callback));
+           AsyncPixelTransferCompletionObserver* observer));
   MOCK_METHOD0(GetTextureUploadCount, uint32());
   MOCK_METHOD0(GetTotalTextureUploadTime, base::TimeDelta());
   MOCK_METHOD0(ProcessMorePendingTransfers, void());

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/gpu_export.h"
 
@@ -34,11 +35,25 @@ class AsyncPixelTransferDelegate;
 struct AsyncMemoryParams;
 struct AsyncTexImage2DParams;
 
+class AsyncPixelTransferCompletionObserver
+    : public base::RefCountedThreadSafe<AsyncPixelTransferCompletionObserver> {
+ public:
+  AsyncPixelTransferCompletionObserver();
+
+  virtual void DidComplete(const AsyncMemoryParams& mem_params) = 0;
+
+ protected:
+  virtual ~AsyncPixelTransferCompletionObserver();
+
+ private:
+  friend class base::RefCountedThreadSafe<AsyncPixelTransferCompletionObserver>;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferCompletionObserver);
+};
+
 class GPU_EXPORT AsyncPixelTransferManager
     : public gles2::TextureManager::DestructionObserver {
  public:
-  typedef base::Callback<void(const AsyncMemoryParams&)> CompletionCallback;
-
   static AsyncPixelTransferManager* Create(gfx::GLContext* context);
 
   virtual ~AsyncPixelTransferManager();
@@ -50,7 +65,7 @@ class GPU_EXPORT AsyncPixelTransferManager
   // There's no guarantee that callback will run on the caller thread.
   virtual void AsyncNotifyCompletion(
       const AsyncMemoryParams& mem_params,
-      const CompletionCallback& callback) = 0;
+      AsyncPixelTransferCompletionObserver* observer) = 0;
 
   virtual uint32 GetTextureUploadCount() = 0;
   virtual base::TimeDelta GetTotalTextureUploadTime() = 0;

@@ -8,6 +8,10 @@
 
 namespace gpu {
 
+AsyncPixelTransferCompletionObserver::AsyncPixelTransferCompletionObserver() {}
+
+AsyncPixelTransferCompletionObserver::~AsyncPixelTransferCompletionObserver() {}
+
 AsyncPixelTransferManager::AsyncPixelTransferManager() {}
 
 AsyncPixelTransferManager::~AsyncPixelTransferManager() {

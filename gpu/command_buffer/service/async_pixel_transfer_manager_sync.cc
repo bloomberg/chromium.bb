@@ -109,8 +109,8 @@ void AsyncPixelTransferManagerSync::BindCompletedAsyncTransfers() {
 
 void AsyncPixelTransferManagerSync::AsyncNotifyCompletion(
     const AsyncMemoryParams& mem_params,
-    const CompletionCallback& callback) {
-  callback.Run(mem_params);
+    AsyncPixelTransferCompletionObserver* observer) {
+  observer->DidComplete(mem_params);
 }
 
 uint32 AsyncPixelTransferManagerSync::GetTextureUploadCount() {

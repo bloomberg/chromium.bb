@@ -27,11 +27,11 @@ static uint64 g_next_pixel_transfer_state_id = 1;
 void PerformNotifyCompletion(
     AsyncMemoryParams mem_params,
     ScopedSafeSharedMemory* safe_shared_memory,
-    const AsyncPixelTransferManager::CompletionCallback& callback) {
+    scoped_refptr<AsyncPixelTransferCompletionObserver> observer) {
   TRACE_EVENT0("gpu", "PerformNotifyCompletion");
   AsyncMemoryParams safe_mem_params = mem_params;
   safe_mem_params.shared_memory = safe_shared_memory->shared_memory();
-  callback.Run(safe_mem_params);
+  observer->DidComplete(safe_mem_params);
 }
 
 }  // namespace
@@ -262,9 +262,9 @@ void AsyncPixelTransferManagerIdle::BindCompletedAsyncTransfers() {
 
 void AsyncPixelTransferManagerIdle::AsyncNotifyCompletion(
     const AsyncMemoryParams& mem_params,
-    const CompletionCallback& callback) {
+    AsyncPixelTransferCompletionObserver* observer) {
   if (shared_state_.tasks.empty()) {
-    callback.Run(mem_params);
+    observer->DidComplete(mem_params);
     return;
   }
 
@@ -276,7 +276,7 @@ void AsyncPixelTransferManagerIdle::AsyncNotifyCompletion(
                base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
                                                       mem_params.shared_memory,
                                                       mem_params.shm_size)),
-               callback)));
+               make_scoped_refptr(observer))));
 }
 
 uint32 AsyncPixelTransferManagerIdle::GetTextureUploadCount() {
