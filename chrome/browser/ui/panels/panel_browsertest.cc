@@ -1379,14 +1379,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel2->Close();
 }
 
-// http://crbug.com/143247
-#if !defined(OS_WIN)
-#define MAYBE_NonExtensionDomainPanelsCloseOnUninstall DISABLED_NonExtensionDomainPanelsCloseOnUninstall
-#else
-#define MAYBE_NonExtensionDomainPanelsCloseOnUninstall NonExtensionDomainPanelsCloseOnUninstall
-#endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       MAYBE_NonExtensionDomainPanelsCloseOnUninstall) {
+                       NonExtensionDomainPanelsCloseOnUninstall) {
   // Create a test extension.
   DictionaryValue empty_value;
   scoped_refptr<extensions::Extension> extension =
@@ -1399,7 +1393,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   EXPECT_EQ(0, panel_manager->num_panels());
 
   // Create a panel with the extension as host.
-  CreatePanelParams params(extension_app_name, gfx::Rect(), SHOW_AS_INACTIVE);
+  CreatePanelParams params(extension_app_name, gfx::Rect(), SHOW_AS_ACTIVE);
   std::string extension_domain_url(extensions::kExtensionScheme);
   extension_domain_url += "://";
   extension_domain_url += extension->id();
@@ -1409,7 +1403,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   EXPECT_EQ(1, panel_manager->num_panels());
 
   // Create a panel with a non-extension host.
-  CreatePanelParams params1(extension_app_name, gfx::Rect(), SHOW_AS_INACTIVE);
+  CreatePanelParams params1(extension_app_name, gfx::Rect(), SHOW_AS_ACTIVE);
   params1.url = GURL(content::kAboutBlankURL);
   Panel* panel1 = CreatePanelWithParams(params1);
   EXPECT_EQ(2, panel_manager->num_panels());
