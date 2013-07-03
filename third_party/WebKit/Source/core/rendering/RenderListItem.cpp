@@ -268,32 +268,34 @@ void RenderListItem::updateMarkerLocation()
 {
     // Sanity check the location of our marker.
     if (m_marker) {
-        RenderObject* markerPar = m_marker->parent();
+        RenderObject* markerParent = m_marker->parent();
         RenderObject* lineBoxParent = getParentOfFirstLineBox(this, m_marker);
         if (!lineBoxParent) {
             // If the marker is currently contained inside an anonymous box,
             // then we are the only item in that anonymous box (since no line box
             // parent was found).  It's ok to just leave the marker where it is
             // in this case.
-            if (markerPar && markerPar->isAnonymousBlock())
-                lineBoxParent = markerPar;
+            if (markerParent && markerParent->isAnonymousBlock())
+                lineBoxParent = markerParent;
             else
                 lineBoxParent = this;
         }
 
-        if (markerPar != lineBoxParent || m_marker->preferredLogicalWidthsDirty()) {
+        if (markerParent != lineBoxParent || m_marker->preferredLogicalWidthsDirty()) {
             // Removing and adding the marker can trigger repainting in
             // containers other than ourselves, so we need to disable LayoutState.
             LayoutStateDisabler layoutStateDisabler(view());
             updateFirstLetter();
             m_marker->remove();
+            if (markerParent)
+                markerParent->dirtyLinesFromChangedChild(m_marker);
             if (!lineBoxParent)
                 lineBoxParent = this;
             lineBoxParent->addChild(m_marker, firstNonMarkerChild(lineBoxParent));
             m_marker->updateMarginsAndContent();
-            // If markerPar is an anonymous block that has lost all its children, destroy it.
-            if (markerPar && markerPar->isAnonymousBlock() && !markerPar->firstChild() && !toRenderBlock(markerPar)->continuation())
-                markerPar->destroy();
+            // If markerParent is an anonymous block that has lost all its children, destroy it.
+            if (markerParent && markerParent->isAnonymousBlock() && !markerParent->firstChild() && !toRenderBlock(markerParent)->continuation())
+                markerParent->destroy();
         }
     }
 }
