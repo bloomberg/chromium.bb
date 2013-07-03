@@ -471,6 +471,7 @@
         'cpu_unittest.cc',
         'debug/crash_logging_unittest.cc',
         'debug/leak_tracker_unittest.cc',
+        'debug/proc_maps_linux_unittest.cc',
         'debug/stack_trace_unittest.cc',
         'debug/trace_event_unittest.cc',
         'debug/trace_event_unittest.h',
@@ -823,6 +824,11 @@
             ['include', '^mac/bind_objc_block_unittest\\.mm$'],
             ['include', '^mac/scoped_nsobject_unittest\\.mm$'],
             ['include', '^sys_string_conversions_mac_unittest\\.mm$'],
+          ],
+        }],
+        ['OS == "android"', {
+          'sources/': [
+            ['include', '^debug/proc_maps_linux_unittest\\.cc$'],
           ],
         }],
       ],  # target_conditions

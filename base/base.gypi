@@ -133,6 +133,8 @@
           # allocator.gyp for details).
           'debug/leak_annotations.h',
           'debug/leak_tracker.h',
+          'debug/proc_maps_linux.cc',
+          'debug/proc_maps_linux.h',
           'debug/profiler.cc',
           'debug/profiler.h',
           'debug/stack_trace.cc',
@@ -716,6 +718,7 @@
               'power_monitor/power_monitor_posix.cc',
             ],
             'sources/': [
+              ['include', '^debug/proc_maps_linux\\.cc$'],
               ['include', '^files/file_path_watcher_linux\\.cc$'],
               ['include', '^process_util_linux\\.cc$'],
               ['include', '^process/memory_linux\\.cc$'],
