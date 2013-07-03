@@ -5,19 +5,17 @@
 from fnmatch import fnmatch
 import logging
 import mimetypes
-import os
 import traceback
+from urlparse import urlsplit
 
-from appengine_wrappers import IsDevServer
 from branch_utility import BranchUtility
 from file_system import FileNotFoundError
-from server_instance import ServerInstance
 from servlet import Servlet, Response
 import svn_constants
 
 def _IsBinaryMimetype(mimetype):
-  return any(mimetype.startswith(prefix)
-             for prefix in ['audio', 'image', 'video'])
+  return any(
+    mimetype.startswith(prefix) for prefix in ['audio', 'image', 'video'])
 
 class RenderServlet(Servlet):
   '''Servlet which renders templates.
@@ -32,31 +30,34 @@ class RenderServlet(Servlet):
     self._default_channel = default_channel
 
   def Get(self):
-    path_with_channel, headers = (self._request.path, self._request.headers)
+    ''' Render the page for a request.
+    '''
+    headers = self._request.headers
+    channel, path = BranchUtility.SplitChannelNameFromPath(self._request.path)
 
-    # Redirect "extensions" and "extensions/" to "extensions/index.html", etc.
-    if (os.path.splitext(path_with_channel)[1] == '' and
-        path_with_channel.find('/') == -1):
-      path_with_channel += '/'
-    if path_with_channel.endswith('/'):
-      return Response.Redirect('/%sindex.html' % path_with_channel)
-
-    channel, path = BranchUtility.SplitChannelNameFromPath(path_with_channel)
+    if path.split('/')[-1] == 'redirects.json':
+      return Response.Ok('')
 
     if channel == self._default_channel:
-      return Response.Redirect('/%s' % path)
-
+      return Response.Redirect('/' + path)
     if channel is None:
       channel = self._default_channel
 
     server_instance = self._delegate.CreateServerInstanceForChannel(channel)
 
-    canonical_path = (
-        server_instance.path_canonicalizer.Canonicalize(path).lstrip('/'))
-    if path != canonical_path:
-      redirect_path = (canonical_path if channel is None else
-                       '%s/%s' % (channel, canonical_path))
-      return Response.Redirect('/%s' % redirect_path)
+    redirect = server_instance.redirector.Redirect(self._request.host, path)
+    if redirect is not None:
+      if (channel != self._default_channel and
+          not urlsplit(redirect).scheme in ('http', 'https')):
+        redirect = '/%s%s' % (channel, redirect)
+      return Response.Redirect(redirect)
+
+    canonical_path = server_instance.path_canonicalizer.Canonicalize(path)
+    redirect = canonical_path.lstrip('/')
+    if path != redirect:
+      if channel is not None:
+        redirect = '%s/%s' % (channel, canonical_path)
+      return Response.Redirect('/' + redirect)
 
     templates = server_instance.template_data_source_factory.Create(
         self._request, path)
@@ -84,7 +85,7 @@ class RenderServlet(Servlet):
       elif path.endswith('.html'):
         content = templates.Render(path)
         content_type = 'text/html'
-    except FileNotFoundError as e:
+    except FileNotFoundError:
       logging.warning(traceback.format_exc())
       content = None
 

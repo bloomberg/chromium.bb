@@ -5,6 +5,7 @@
 
 import unittest
 
+from cron_servlet import CronServlet
 from fake_fetchers import ConfigureFakeFetchers
 from handler import Handler
 from servlet import Request
@@ -13,24 +14,10 @@ class HandlerTest(unittest.TestCase):
   def setUp(self):
     ConfigureFakeFetchers()
 
-  def testCodeGoogleRedirect(self):
-    response = Handler(Request('chrome/extensions/storage.html',
-                               'http://code.google.com',
-                               {})).Get()
-    self.assertEqual(302, response.status)
-    self.assertEqual('http://developer.chrome.com/extensions/storage.html',
-                     response.headers.get('Location'))
+  def testInvalid(self):
+    handler = Handler(Request.ForTest('_notreal'))
 
-  def testDeveloperGoogleRedirect(self):
-    response = Handler(Request.ForTest('')).Get()
-    self.assertEqual(302, response.status)
-    self.assertEqual('http://developer.google.com/chrome',
-                     response.headers.get('Location'))
-
-  def testAppRedirect(self):
-    response = Handler(Request.ForTest('apps.html')).Get()
-    self.assertEqual(302, response.status)
-    self.assertEqual('/apps/about_apps.html', response.headers.get('Location'))
+    self.assertEqual(404, handler.Get().status)
 
 if __name__ == '__main__':
   unittest.main()

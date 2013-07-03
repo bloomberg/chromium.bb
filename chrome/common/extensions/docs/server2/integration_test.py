@@ -67,6 +67,8 @@ class IntegrationTest(unittest.TestCase):
     start_time = time.time()
     try:
       for path, content in public_files.iteritems():
+        if path.endswith('redirects.json'):
+          continue
         def check_result(response):
           self.assertEqual(200, response.status,
               'Got %s when rendering %s' % (response.status, path))

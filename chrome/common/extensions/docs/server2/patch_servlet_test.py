@@ -95,11 +95,6 @@ class PatchServletTest(unittest.TestCase):
     # Invalid issue number results in a 404.
     self._AssertNotFound('extensions/index.html', '11111')
 
-    # Test redirect.
-    self.assertEqual(self._RenderWithPatch('extensions/',
-                                          issue).headers['Location'],
-                     '/_patch/%s/extensions/index.html' % issue)
-
   def testXssRedirect(self):
     def is_redirect(from_host, from_path, to_url):
       response = PatchServlet(Request.ForTest(from_path, host=from_host),

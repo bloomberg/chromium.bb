@@ -24,6 +24,7 @@ from local_file_system import LocalFileSystem
 from object_store_creator import ObjectStoreCreator
 from offline_file_system import OfflineFileSystem
 from path_canonicalizer import PathCanonicalizer
+from redirector import Redirector
 from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
 from sidenav_data_source import SidenavDataSource
@@ -121,6 +122,11 @@ class ServerInstance(object):
 
     self.content_cache = self.compiled_host_fs_factory.CreateIdentity(
         ServerInstance)
+
+    self.redirector = Redirector(
+        self.compiled_host_fs_factory,
+        self.host_file_system,
+        svn_constants.PUBLIC_TEMPLATE_PATH)
 
   @staticmethod
   def ForTest(file_system):

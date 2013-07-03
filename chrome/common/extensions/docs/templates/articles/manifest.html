@@ -47,11 +47,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="override.html">chrome_url_overrides</a>": {...},
 {{/is_apps}}
   "<a href="content_scripts.html">content_scripts</a>": [...],
-{{?is_apps}}
-  "<a href="app_csp.html">content_security_policy</a>": "<em>policyString</em>",
-{{:is_apps}}
   "<a href="contentSecurityPolicy.html">content_security_policy</a>": "<em>policyString</em>",
-{{/is_apps}}
   "<a href="fileBrowserHandler.html">file_browser_handlers</a>": [...],
   "<a href="#file_handlers">file_handlers</a>": {...},
   "<a href="#homepage_url">homepage_url</a>": "http://<em>path/to/homepage</em>",
@@ -431,7 +427,7 @@ The "plugins" requirement indicates
 if an app or extension requires NPAPI to run.
 This requirement is enabled by default
 when the manifest includes the
-<a href="http://developer.chrome.com/extensions/npapi.html">"plugins" field</a>. 
+<a href="http://developer.chrome.com/extensions/npapi.html">"plugins" field</a>.
 For apps and extensions that still work when plugins aren't available,
 you can disable this requirement
 by setting NPAPI to false.

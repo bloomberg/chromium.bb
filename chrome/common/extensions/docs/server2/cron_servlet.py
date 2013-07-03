@@ -79,15 +79,17 @@ class CronServlet(Servlet):
     server_instance = self._GetSafeServerInstance()
 
     def get_via_render_servlet(path):
-      return RenderServlet(
-          Request(path, self._request.host, self._request.headers),
-          _SingletonRenderServletDelegate(server_instance)).Get()
+      request = Request(path, self._request.host, self._request.headers)
+      delegate = _SingletonRenderServletDelegate(server_instance)
+      return RenderServlet(request, delegate).Get()
 
     def run_cron_for_dir(d, path_prefix=''):
       success = True
       start_time = time.time()
+      # TODO(jshumway): use server_instance.host_file_system.Walk.
+      # TODO(kalman): delete me where it's set.
       files = [f for f in server_instance.content_cache.GetFromFileListing(d)
-               if not f.endswith('/')]
+               if not f.endswith('/') and f != 'redirects.json']
       logging.info('cron/%s: rendering %s files from %s...' % (
           channel, len(files), d))
       try:
@@ -160,13 +162,11 @@ class CronServlet(Servlet):
           logging.info('cron/%s: rendering %s example zips took %s seconds' % (
               channel, len(example_zips), time.time() - start_time))
 
-      # Also trigger a redirect so that PathCanonicalizer has an opportunity to
-      # cache file listings.
-      logging.info('cron/%s: triggering a redirect...' % channel)
-      redirect_response = get_via_render_servlet('storage.html')
-      success = success and redirect_response.status == 302
     except DeadlineExceededError:
       success = False
+
+    logging.info("cron/%s: running Redirector cron..." % channel)
+    server_instance.redirector.Cron()
 
     logging.info('cron/%s: finished' % channel)
 

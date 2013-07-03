@@ -74,3 +74,24 @@ class FileSystem(object):
     different to a LocalFileSystem with a base path of /usr.
     '''
     raise NotImplementedError()
+
+  def Walk(self, root):
+    '''Recursively walk the directories in a file system, starting with root.
+    Emulates os.walk from the standard os module.
+    '''
+    if not root.endswith('/'):
+      root += '/'
+
+    dirs, files = [], []
+
+    for f in self.ReadSingle(root):
+      if f.endswith('/'):
+        dirs.append(f)
+      else:
+        files.append(f)
+
+    yield (root.rstrip('/'), dirs, files)
+
+    for d in dirs:
+      for walkinfo in self.Walk(root + d):
+        yield walkinfo
