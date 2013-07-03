@@ -24,3 +24,6 @@ ConditionVariableTest.LargeFastTaskTest
 
 # Flaky under Valgrind, see http://crbug.com/55517
 PlatformFile.TouchGetInfoPlatformFile
+
+# Fails under Valgrind http://crbug.com/256941
+ProcMapsTest.ReadProcMaps
