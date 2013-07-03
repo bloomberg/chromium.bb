@@ -142,7 +142,25 @@ class MediaCodecBridge {
     @CalledByNative
     private void queueInputBuffer(
             int index, int offset, int size, long presentationTimeUs, int flags) {
-        mMediaCodec.queueInputBuffer(index, offset, size, presentationTimeUs, flags);
+        try {
+            mMediaCodec.queueInputBuffer(index, offset, size, presentationTimeUs, flags);
+        } catch(IllegalStateException e) {
+            Log.e(TAG, "Failed to queue input buffer " + e.toString());
+        }
+    }
+
+    @CalledByNative
+    private void queueSecureInputBuffer(
+            int index, int offset, byte[] iv, byte[] keyId, int[] numBytesOfClearData,
+            int[] numBytesOfEncryptedData, int numSubSamples, long presentationTimeUs) {
+        try {
+            MediaCodec.CryptoInfo cryptoInfo = new MediaCodec.CryptoInfo();
+            cryptoInfo.set(numSubSamples, numBytesOfClearData, numBytesOfEncryptedData,
+                    keyId, iv, MediaCodec.CRYPTO_MODE_AES_CTR);
+            mMediaCodec.queueSecureInputBuffer(index, offset, cryptoInfo, presentationTimeUs, 0);
+        } catch(IllegalStateException e) {
+            Log.e(TAG, "Failed to queue secure input buffer " + e.toString());
+        }
     }
 
     @CalledByNative

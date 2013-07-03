@@ -16,6 +16,8 @@
 
 namespace media {
 
+struct SubsampleEntry;
+
 // This class serves as a bridge for native code to call java functions inside
 // Android MediaCodec class. For more information on Android MediaCodec, check
 // http://developer.android.com/reference/android/media/MediaCodec.html
@@ -62,6 +64,14 @@ class MEDIA_EXPORT MediaCodecBridge {
   size_t QueueInputBuffer(int index, const uint8* data, int size,
                           const base::TimeDelta& presentation_time);
 
+  // Similar to the above call, but submits a buffer that is encrypted.
+  size_t QueueSecureInputBuffer(
+      int index, const uint8* data, int data_size,
+      const uint8* key_id, int key_id_size,
+      const uint8* iv, int iv_size,
+      const SubsampleEntry* subsamples, int subsamples_size,
+      const base::TimeDelta& presentation_time);
+
   // Submits an empty buffer with a EOS (END OF STREAM) flag.
   void QueueEOS(int input_buffer_index);
 
@@ -98,6 +108,9 @@ class MEDIA_EXPORT MediaCodecBridge {
   jobject media_codec() { return j_media_codec_.obj(); }
 
  private:
+  // Fills a particular input buffer and returns the size of copied data.
+  size_t FillInputBuffer(int index, const uint8* data, int data_size);
+
   // Java MediaCodec instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_codec_;
 

@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "jni/MediaCodecBridge_jni.h"
 #include "media/base/bit_reader.h"
+#include "media/base/decrypt_config.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -48,6 +49,15 @@ static const char* VideoCodecToMimeType(const VideoCodec codec) {
     default:
       return NULL;
   }
+}
+
+static ScopedJavaLocalRef<jintArray> ToJavaIntArray(
+    JNIEnv* env, scoped_ptr<jint[]> native_array, int size) {
+  ScopedJavaLocalRef<jintArray> j_array;
+  j_array.Reset(env, env->NewIntArray(size));
+  env->SetIntArrayRegion(j_array.obj(), 0, size,
+                         native_array.get());
+  return j_array;
 }
 
 // static
@@ -106,22 +116,41 @@ void MediaCodecBridge::GetOutputFormat(int* width, int* height) {
 size_t MediaCodecBridge::QueueInputBuffer(
     int index, const uint8* data, int size,
     const base::TimeDelta& presentation_time) {
+  size_t size_to_copy = FillInputBuffer(index, data, size);
   JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> j_buffer(
-      Java_MediaCodecBridge_getInputBuffer(env, j_media_codec_.obj(), index));
-
-  uint8* direct_buffer =
-      static_cast<uint8*>(env->GetDirectBufferAddress(j_buffer.obj()));
-  int64 buffer_capacity = env->GetDirectBufferCapacity(j_buffer.obj());
-
-  size_t size_to_copy = (buffer_capacity < size) ? buffer_capacity : size;
-
-  if (size_to_copy > 0)
-    memcpy(direct_buffer, data, size_to_copy);
   Java_MediaCodecBridge_queueInputBuffer(
       env, j_media_codec_.obj(),
       index, 0, size_to_copy, presentation_time.InMicroseconds(), 0);
+  return size_to_copy;
+}
+
+size_t MediaCodecBridge::QueueSecureInputBuffer(
+    int index, const uint8* data, int data_size, const uint8* key_id,
+    int key_id_size, const uint8* iv, int iv_size,
+    const SubsampleEntry* subsamples, int subsamples_size,
+    const base::TimeDelta& presentation_time) {
+  size_t size_to_copy = FillInputBuffer(index, data, data_size);
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_key_id =
+      base::android::ToJavaByteArray(env, key_id, key_id_size);
+  ScopedJavaLocalRef<jbyteArray> j_iv =
+      base::android::ToJavaByteArray(env, iv, iv_size);
+  scoped_ptr<jint[]> native_clear_array(new jint[subsamples_size]);
+  scoped_ptr<jint[]> native_cypher_array(new jint[subsamples_size]);
+  for (int i = 0; i < subsamples_size; ++i) {
+    native_clear_array[i] = subsamples[i].clear_bytes;
+    native_cypher_array[i] = subsamples[i].cypher_bytes;
+  }
+  ScopedJavaLocalRef<jintArray> clear_array = ToJavaIntArray(
+      env, native_clear_array.Pass(), subsamples_size);
+  ScopedJavaLocalRef<jintArray> cypher_array = ToJavaIntArray(
+      env, native_cypher_array.Pass(), subsamples_size);
+
+  Java_MediaCodecBridge_queueSecureInputBuffer(
+      env, j_media_codec_.obj(), index, 0, j_iv.obj(), j_key_id.obj(),
+      clear_array.obj(), cypher_array.obj(), subsamples_size,
+      presentation_time.InMicroseconds());
   return size_to_copy;
 }
 
@@ -175,6 +204,27 @@ void MediaCodecBridge::ReleaseOutputBuffer(int index, bool render) {
 void MediaCodecBridge::GetOutputBuffers() {
   JNIEnv* env = AttachCurrentThread();
   Java_MediaCodecBridge_getOutputBuffers(env, j_media_codec_.obj());
+}
+
+size_t MediaCodecBridge::FillInputBuffer(
+    int index, const uint8* data, int size) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> j_buffer(
+      Java_MediaCodecBridge_getInputBuffer(env, j_media_codec_.obj(), index));
+
+  uint8* direct_buffer =
+      static_cast<uint8*>(env->GetDirectBufferAddress(j_buffer.obj()));
+  int64 buffer_capacity = env->GetDirectBufferCapacity(j_buffer.obj());
+
+  int size_to_copy = (buffer_capacity < size) ? buffer_capacity : size;
+  // TODO(qinmin): Handling the case that not all the data can be copied.
+  DCHECK(size_to_copy == size) <<
+      "Failed to fill all the data into the input buffer. Size to fill: "
+      << size << ". Size filled: " << size_to_copy;
+  if (size_to_copy > 0)
+    memcpy(direct_buffer, data, size_to_copy);
+  return size_to_copy;
 }
 
 AudioCodecBridge::AudioCodecBridge(const char* mime)

@@ -132,11 +132,24 @@ void MediaDecoderJob::DecodeInternal(
   }
   // TODO(qinmin): skip frames if video is falling far behind.
   if (input_buf_index >= 0) {
-    if (unit.end_of_stream) {
+    if (unit.end_of_stream || unit.data.empty()) {
       media_codec_bridge_->QueueEOS(input_buf_index);
-    } else {
+    } else if (unit.key_id.empty()){
       media_codec_bridge_->QueueInputBuffer(
           input_buf_index, &unit.data[0], unit.data.size(), unit.timestamp);
+    } else {
+      if (unit.iv.empty() || unit.subsamples.empty()) {
+        LOG(ERROR) << "The access unit doesn't have iv or subsamples while it "
+                   << "has key IDs!";
+        ui_loop_->PostTask(FROM_HERE, base::Bind(
+            callback, DECODE_FAILED, start_presentation_timestamp, 0, false));
+        return;
+      }
+      media_codec_bridge_->QueueSecureInputBuffer(
+          input_buf_index, &unit.data[0], unit.data.size(),
+          reinterpret_cast<const uint8*>(&unit.key_id[0]), unit.key_id.size(),
+          reinterpret_cast<const uint8*>(&unit.iv[0]), unit.iv.size(),
+          &unit.subsamples[0], unit.subsamples.size(), unit.timestamp);
     }
   }
 
