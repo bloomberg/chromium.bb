@@ -237,10 +237,12 @@ Node* nodeFromPoint(Document* document, int x, int y, LayoutPoint* localPoint)
 Element* TreeScope::elementFromPoint(int x, int y) const
 {
     Node* node = nodeFromPoint(rootNode()->document(), x, y);
-    while (node && !node->isElementNode())
+    if (node && node->isTextNode())
         node = node->parentNode();
-    if (node)
-        node = ancestorInThisScope(node);
+    ASSERT(!node || node->isElementNode() || node->isShadowRoot());
+    node = ancestorInThisScope(node);
+    if (!node || !node->isElementNode())
+        return 0;
     return toElement(node);
 }
 
