@@ -2008,6 +2008,11 @@
             'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
           ],
         }],
+        ['OS=="mac" or OS=="win"', {
+          'sources': [
+            'browser/media_galleries/fileapi/itunes_data_provider_browsertest.cc',
+          ],
+        }],
         ['os_posix == 0 or chromeos == 1', {
           'sources!': [
             'common/time_format_browsertest.cc',
