@@ -1909,6 +1909,11 @@ void HTMLInputElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
     info.addMember(m_listAttributeTargetObserver, "listAttributeTargetObserver");
 }
 
+bool HTMLInputElement::supportsInputModeAttribute() const
+{
+    return m_inputType->supportsInputModeAttribute();
+}
+
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 PassRefPtr<RenderStyle> HTMLInputElement::customStyleForRenderer()
 {

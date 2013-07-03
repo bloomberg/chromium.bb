@@ -64,4 +64,9 @@ bool TextInputType::shouldRespectSpeechAttribute()
     return true;
 }
 
+bool TextInputType::supportsInputModeAttribute() const
+{
+    return true;
+}
+
 } // namespace WebCore

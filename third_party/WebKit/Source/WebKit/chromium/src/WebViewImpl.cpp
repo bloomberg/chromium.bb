@@ -2214,6 +2214,8 @@ WebTextInputInfo WebViewImpl::textInputInfo()
     if (!node)
         return info;
 
+    info.inputMode = inputModeOfFocusedElement();
+
     info.type = textInputType();
     if (info.type == WebTextInputTypeNone)
         return info;
@@ -2301,6 +2303,26 @@ WebTextInputType WebViewImpl::textInputType()
         return WebTextInputTypeContentEditable;
 
     return WebTextInputTypeNone;
+}
+
+WebString WebViewImpl::inputModeOfFocusedElement()
+{
+    Node* node = focusedWebCoreNode();
+    if (!node)
+        return WebString();
+
+    if (node->hasTagName(HTMLNames::inputTag)) {
+        const HTMLInputElement* input = toHTMLInputElement(node);
+        if (input->supportsInputModeAttribute())
+            return input->fastGetAttribute(HTMLNames::inputmodeAttr);
+        return WebString();
+    }
+    if (isHTMLTextAreaElement(node)) {
+        const HTMLTextAreaElement* textarea = toHTMLTextAreaElement(node);
+        return textarea->fastGetAttribute(HTMLNames::inputmodeAttr);
+    }
+
+    return WebString();
 }
 
 bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const

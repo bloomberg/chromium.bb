@@ -59,6 +59,7 @@ private:
     virtual HTMLElement* cancelButtonElement() const OVERRIDE;
     virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;
     virtual void didSetValueByUserEdit(ValueChangeState) OVERRIDE;
+    virtual bool supportsInputModeAttribute() const OVERRIDE;
 
     void searchEventTimerFired(Timer<SearchInputType>*);
     bool searchEventsShouldBeDispatched() const;

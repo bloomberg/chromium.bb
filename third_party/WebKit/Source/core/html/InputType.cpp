@@ -919,6 +919,11 @@ bool InputType::supportsIndeterminateAppearance() const
     return false;
 }
 
+bool InputType::supportsInputModeAttribute() const
+{
+    return false;
+}
+
 bool InputType::supportsSelectionAPI() const
 {
     return false;

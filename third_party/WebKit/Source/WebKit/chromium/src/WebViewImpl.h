@@ -583,6 +583,8 @@ private:
 
     WebTextInputType textInputType();
 
+    WebString inputModeOfFocusedElement();
+
     // Returns true if the event was actually processed.
     bool keyEventDefault(const WebKeyboardEvent&);
 

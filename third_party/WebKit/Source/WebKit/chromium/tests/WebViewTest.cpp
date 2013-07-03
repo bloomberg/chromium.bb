@@ -180,6 +180,7 @@ protected:
                         HorizontalScrollbarState expectedHorizontalState, VerticalScrollbarState expectedVerticalState);
 
     void testTextInputType(WebTextInputType expectedType, const std::string& htmlFile);
+    void testInputMode(const WebString& expectedInputMode, const std::string& htmlFile);
 
     std::string m_baseURL;
 };
@@ -379,6 +380,26 @@ TEST_F(WebViewTest, TextInputType)
     testTextInputType(WebTextInputTypeNumber, "input_field_number.html");
     testTextInputType(WebTextInputTypeTelephone, "input_field_tel.html");
     testTextInputType(WebTextInputTypeURL, "input_field_url.html");
+}
+
+void WebViewTest::testInputMode(const WebString& expectedInputMode, const std::string& htmlFile)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(htmlFile.c_str()));
+    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + htmlFile);
+    webView->setInitialFocus(false);
+    EXPECT_EQ(expectedInputMode, webView->textInputInfo().inputMode);
+    webView->close();
+}
+
+TEST_F(WebViewTest, InputMode)
+{
+    testInputMode(WebString(), "input_mode_default.html");
+    testInputMode(WebString("unknown"), "input_mode_default_unknown.html");
+    testInputMode(WebString("verbatim"), "input_mode_default_verbatim.html");
+    testInputMode(WebString("verbatim"), "input_mode_type_text_verbatim.html");
+    testInputMode(WebString("verbatim"), "input_mode_type_search_verbatim.html");
+    testInputMode(WebString(), "input_mode_type_url_verbatim.html");
+    testInputMode(WebString("verbatim"), "input_mode_textarea_verbatim.html");
 }
 
 TEST_F(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo)

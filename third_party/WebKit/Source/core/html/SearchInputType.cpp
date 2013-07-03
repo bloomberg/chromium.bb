@@ -185,4 +185,9 @@ void SearchInputType::didSetValueByUserEdit(ValueChangeState state)
     TextFieldInputType::didSetValueByUserEdit(state);
 }
 
+bool SearchInputType::supportsInputModeAttribute() const
+{
+    return true;
+}
+
 } // namespace WebCore

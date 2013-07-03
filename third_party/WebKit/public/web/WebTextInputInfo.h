@@ -51,6 +51,9 @@ struct WebTextInputInfo {
     // The end position of the current composition, or -1 if there is none.
     int compositionEnd;
 
+    // The inputmode attribute value of the currently focused input field.
+    WebString inputMode;
+
     WEBKIT_EXPORT bool equals(const WebTextInputInfo&) const;
 
     WebTextInputInfo()

@@ -290,6 +290,8 @@ public:
 
     virtual bool supportsIndeterminateAppearance() const;
 
+    virtual bool supportsInputModeAttribute() const;
+
     virtual bool supportsSelectionAPI() const;
 
     // Gets width and height of the input element if the type of the
