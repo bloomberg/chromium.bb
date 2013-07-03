@@ -9907,8 +9907,10 @@ ssl3_SendNextProto(sslSocket *ss)
     int padding_len;
     static const unsigned char padding[32] = {0};
 
-    if (ss->ssl3.nextProto.len == 0)
+    if (ss->ssl3.nextProto.len == 0 ||
+        ss->ssl3.nextProtoState == SSL_NEXT_PROTO_SELECTED) {
 	return SECSuccess;
+    }
 
     PORT_Assert( ss->opt.noLocks || ssl_HaveXmitBufLock(ss));
     PORT_Assert( ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss));

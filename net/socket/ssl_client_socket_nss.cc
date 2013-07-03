@@ -2498,6 +2498,7 @@ void SSLClientSocketNSS::Core::UpdateNextProto() {
       std::string(reinterpret_cast<char*>(buf), buf_len);
   switch (state) {
     case SSL_NEXT_PROTO_NEGOTIATED:
+    case SSL_NEXT_PROTO_SELECTED:
       nss_handshake_state_.next_proto_status = kNextProtoNegotiated;
       break;
     case SSL_NEXT_PROTO_NO_OVERLAP:
