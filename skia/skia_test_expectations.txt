@@ -68,6 +68,6 @@ crbug.com/238755 transforms/3d/point-mapping/3d-point-mapping.html [ ImageOnlyFa
 crbug.com/238755 [ Linux ] fast/canvas/webgl/uniform-location.html [ Failure ]
 crbug.com/238755 [ Linux ] fast/canvas/webgl/gl-uniform-arrays.html [ Failure ]
 crbug.com/238755 [ Linux ] virtual/gpu/fast/canvas/webgl/point-size.html [ Failure ]
-crbug.com/238755 [ Linux ] css3/filters/custom/effect-custom-combined-missing.html [ ImageOnlyFailure ]
+crbug.com/238755 [ Linux ] css3/filters/custom/effect-custom-combined-missing.html [ ImageOnlyFailure Crash ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
