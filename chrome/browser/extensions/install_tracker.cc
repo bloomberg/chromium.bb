@@ -20,6 +20,8 @@ InstallTracker::InstallTracker(Profile* profile,
       content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
       content::Source<Profile>(profile));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+      content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
       content::Source<ExtensionSorting>(sorting));
   registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
@@ -94,6 +96,14 @@ void InstallTracker::Observe(int type,
         FOR_EACH_OBSERVER(InstallObserver, observers_,
                           OnExtensionDisabled(extension));
       }
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+
+      FOR_EACH_OBSERVER(InstallObserver, observers_,
+                        OnExtensionUninstalled(extension));
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED: {

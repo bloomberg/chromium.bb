@@ -163,6 +163,26 @@ TEST_F(AppsModelBuilderTest, Uninstall) {
   loop_.RunUntilIdle();
 }
 
+TEST_F(AppsModelBuilderTest, UninstallTerminatedApp) {
+  scoped_ptr<app_list::AppListModel::Apps> model(
+      new app_list::AppListModel::Apps);
+  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
+  builder.Build();
+
+  const extensions::Extension* app =
+      service_->GetInstalledExtension(kPackagedApp2Id);
+  ASSERT_TRUE(app != NULL);
+
+  // Simulate an app termination.
+  service_->TrackTerminatedExtensionForTest(app);
+
+  service_->UninstallExtension(kPackagedApp2Id, false, NULL);
+  EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
+            GetModelContent(model.get()));
+
+  loop_.RunUntilIdle();
+}
+
 TEST_F(AppsModelBuilderTest, OrdinalPrefsChange) {
   scoped_ptr<app_list::AppListModel::Apps> model(
       new app_list::AppListModel::Apps);

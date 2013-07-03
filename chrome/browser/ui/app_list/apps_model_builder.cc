@@ -194,14 +194,24 @@ void AppsModelBuilder::PopulateApps() {
 }
 
 void AppsModelBuilder::ResortApps() {
+  // Scan app items in |model_| and put the apps that do not have valid ordinals
+  // into |invalid_ordinal_apps|. This is needed to handle uninstalling a
+  // terminated app case, where there is no unload notification and uninstall
+  // notification comes in after the app's ordinals are cleared.
+  // See http://crbug.com/256749.
   Apps apps;
-  for (size_t i = 0; i < model_->item_count(); ++i)
-    apps.push_back(GetAppAt(i));
-
-  if (apps.empty())
-    return;
+  Apps invalid_ordinal_apps;
+  for (size_t i = 0; i < model_->item_count(); ++i) {
+    ExtensionAppItem* app = GetAppAt(i);
+    if (app->GetPageOrdinal().IsValid() && app->GetAppLaunchOrdinal().IsValid())
+      apps.push_back(app);
+    else
+      invalid_ordinal_apps.push_back(app);
+  }
 
   std::sort(apps.begin(), apps.end(), &AppPrecedes);
+  apps.insert(
+      apps.end(), invalid_ordinal_apps.begin(), invalid_ordinal_apps.end());
 
   base::AutoReset<bool> auto_reset(&ignore_changes_, true);
 
