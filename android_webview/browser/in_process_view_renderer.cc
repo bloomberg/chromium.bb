@@ -312,6 +312,8 @@ InProcessViewRenderer::InProcessViewRenderer(
       dip_scale_(0.0),
       continuous_invalidate_(false),
       block_invalidates_(false),
+      do_ensure_continuous_invalidation_task_pending_(false),
+      weak_factory_(this),
       width_(0),
       height_(0),
       attached_to_window_(false),
@@ -692,6 +694,21 @@ gfx::Vector2dF InProcessViewRenderer::GetTotalRootLayerScrollOffset() {
 
 void InProcessViewRenderer::EnsureContinuousInvalidation(
     AwDrawGLInfo* draw_info) {
+  if (continuous_invalidate_ && !block_invalidates_ &&
+      !do_ensure_continuous_invalidation_task_pending_) {
+    do_ensure_continuous_invalidation_task_pending_ = true;
+
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&InProcessViewRenderer::DoEnsureContinuousInvalidation,
+                   weak_factory_.GetWeakPtr(),
+                   static_cast<AwDrawGLInfo*>(NULL)));
+  }
+}
+
+void InProcessViewRenderer::DoEnsureContinuousInvalidation(
+    AwDrawGLInfo* draw_info) {
+  do_ensure_continuous_invalidation_task_pending_ = false;
   if (continuous_invalidate_ && !block_invalidates_) {
     if (draw_info) {
       draw_info->dirty_left = draw_info->clip_left;

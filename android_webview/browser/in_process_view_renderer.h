@@ -67,6 +67,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
 
  private:
   void EnsureContinuousInvalidation(AwDrawGLInfo* draw_info);
+  void DoEnsureContinuousInvalidation(AwDrawGLInfo* draw_info);
   bool DrawSWInternal(jobject java_canvas,
                       const gfx::Rect& clip_bounds);
   bool CompositeSW(SkCanvas* canvas);
@@ -92,6 +93,10 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   bool block_invalidates_;
   // Holds a callback to FallbackTickFired while it is pending.
   base::CancelableClosure fallback_tick_;
+
+  // TODO(boliu): Remove these when we are no longer starving native tasks.
+  bool do_ensure_continuous_invalidation_task_pending_;
+  base::WeakPtrFactory<InProcessViewRenderer> weak_factory_;
 
   int width_;
   int height_;
