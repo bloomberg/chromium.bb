@@ -1665,6 +1665,7 @@ static int
 doCompTrans (int start, int end)
 {
   int k;
+  int haveEndsegment = 0;
   if (cursorStatus != 2 && brailleIndicatorDefined (table->begComp))
     if (!for_updatePositions
 	(&indicRule->charsdots[0], 0, indicRule->dotslen))
@@ -1672,6 +1673,11 @@ doCompTrans (int start, int end)
   for (k = start; k < end; k++)
     {
       TranslationTableOffset compdots = 0;
+      if (currentInput[k] == ENDSEGMENT)
+      {
+      haveEndsegment = 1;
+      continue;
+      }
       src = k;
       if (currentInput[k] < 256)
 	compdots = table->compdotsPattern[currentInput[k]];
@@ -1691,6 +1697,12 @@ doCompTrans (int start, int end)
 	(&indicRule->charsdots[0], 0, indicRule->dotslen))
       return 0;
   src = end;
+  if (haveEndsegment)
+  {
+  widechar endSegment = ENDSEGMENT;
+  if (!for_updatePositions (&endSegment, 0, 1))
+  return 0;
+  }
   return 1;
 }
 
