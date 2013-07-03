@@ -31,7 +31,7 @@ import logging
 
 from google.appengine.ext import db
 
-from model.datastorefile import DataStoreFile
+from datastorefile import DataStoreFile
 
 
 class TestFile(DataStoreFile):
