@@ -1242,20 +1242,11 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
   panel_manager->CloseAll();
 }
 
-// http://crbug.com/175760; several panel tests failing regularly on mac.
-// http://crbug.com/240459 some panel tests are flaky on Linux/GTK.
-#if defined(OS_MACOSX) || defined(TOOLKIT_GTK)
-#define MAYBE_DetachWithSqueeze DISABLED_DetachWithSqueeze
-#else
-#define MAYBE_DetachWithSqueeze DetachWithSqueeze
-#endif
-IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DetachWithSqueeze) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelCollection* docked_collection = panel_manager->docked_collection();
   DetachedPanelCollection* detached_collection =
       panel_manager->detached_collection();
-
-  gfx::Vector2d drag_delta_to_detach = GetDragDeltaToDetach();
 
   // Create some docked panels.
   //   docked:    P1  P2  P3  P4  P5
@@ -1272,7 +1263,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DetachWithSqueeze) {
   //   detached:  P2
   //   docked:    P1  P3  P4 P5
   gfx::Point panel2_docked_position = panel2->GetBounds().origin();
-  DragPanelByDelta(panel2, drag_delta_to_detach);
+  gfx::Vector2d drag_delta_to_detach_panel2(-20, -100);
+  DragPanelByDelta(panel2, drag_delta_to_detach_panel2);
   ASSERT_EQ(1, detached_collection->num_panels());
   ASSERT_EQ(4, docked_collection->num_panels());
   EXPECT_EQ(PanelCollection::DOCKED, panel1->collection()->type());
@@ -1281,7 +1273,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DetachWithSqueeze) {
   EXPECT_EQ(PanelCollection::DOCKED, panel4->collection()->type());
   EXPECT_EQ(PanelCollection::DOCKED, panel5->collection()->type());
   gfx::Point panel2_new_position =
-      panel2_docked_position + drag_delta_to_detach;
+      panel2_docked_position + drag_delta_to_detach_panel2;
   EXPECT_EQ(panel2_new_position, panel2->GetBounds().origin());
 
   // Drag to detach the left-most docked panel.
@@ -1289,7 +1281,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DetachWithSqueeze) {
   //   detached:  P2  P4
   //   docked:    P1  P3  P5
   gfx::Point panel4_docked_position = panel4->GetBounds().origin();
-  DragPanelByDelta(panel4, drag_delta_to_detach);
+  gfx::Vector2d drag_delta_to_detach_panel4(-40, -250);
+  DragPanelByDelta(panel4, drag_delta_to_detach_panel4);
   ASSERT_EQ(2, detached_collection->num_panels());
   ASSERT_EQ(3, docked_collection->num_panels());
   EXPECT_EQ(PanelCollection::DOCKED, panel1->collection()->type());
@@ -1299,7 +1292,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DetachWithSqueeze) {
   EXPECT_EQ(PanelCollection::DOCKED, panel5->collection()->type());
   EXPECT_EQ(panel2_new_position, panel2->GetBounds().origin());
   gfx::Point panel4_new_position =
-      panel4_docked_position + drag_delta_to_detach;
+      panel4_docked_position + drag_delta_to_detach_panel4;
   EXPECT_EQ(panel4_new_position, panel4->GetBounds().origin());
 
   // Drag to detach the right-most docked panel.
@@ -1308,8 +1301,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DetachWithSqueeze) {
   //   docked:    P3  P5
   gfx::Point docked_position1 = panel1->GetBounds().origin();
   gfx::Point docked_position2 = panel3->GetBounds().origin();
-
-  DragPanelByDelta(panel1, drag_delta_to_detach);
+  gfx::Vector2d drag_delta_to_detach_panel1(-60, -400);
+  DragPanelByDelta(panel1, drag_delta_to_detach_panel1);
   ASSERT_EQ(3, detached_collection->num_panels());
   ASSERT_EQ(2, docked_collection->num_panels());
   EXPECT_EQ(PanelCollection::DETACHED, panel1->collection()->type());
@@ -1317,7 +1310,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DetachWithSqueeze) {
   EXPECT_EQ(PanelCollection::DOCKED, panel3->collection()->type());
   EXPECT_EQ(PanelCollection::DETACHED, panel4->collection()->type());
   EXPECT_EQ(PanelCollection::DOCKED, panel5->collection()->type());
-  gfx::Point panel1_new_position = docked_position1 + drag_delta_to_detach;
+  gfx::Point panel1_new_position =
+      docked_position1 + drag_delta_to_detach_panel1;
   EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
   EXPECT_EQ(panel2_new_position, panel2->GetBounds().origin());
   EXPECT_EQ(panel4_new_position, panel4->GetBounds().origin());
