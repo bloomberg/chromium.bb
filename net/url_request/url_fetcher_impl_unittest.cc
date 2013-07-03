@@ -1393,29 +1393,34 @@ TEST_F(URLFetcherFileTest, LargeGet) {
   base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 }
 
-TEST_F(URLFetcherFileTest, CanTakeOwnershipOfFile) {
-  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTP,
-                                SpawnedTestServer::kLocalhost,
-                                base::FilePath(kDocRoot));
-  ASSERT_TRUE(test_server.Start());
+TEST_F(URLFetcherFileTest, SavedOutputFileOwnerhisp) {
+  // If the caller takes the ownership of the output file, the file should
+  // persist even after URLFetcher is gone. If not, the file must be deleted.
+  const bool kTake[] = {false, true};
+  for (size_t i = 0; i < arraysize(kTake); ++i) {
+    take_ownership_of_file_ = kTake[i];
+    SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTP,
+                                  SpawnedTestServer::kLocalhost,
+                                  base::FilePath(kDocRoot));
+    ASSERT_TRUE(test_server.Start());
 
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  // Get a small file.
-  static const char kFileToFetch[] = "simple.html";
-  expected_file_ = test_server.GetDocumentRoot().AppendASCII(kFileToFetch);
-  CreateFetcherForFile(
-      test_server.GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
-      temp_dir.path().AppendASCII(kFileToFetch));
+    // Get a small file.
+    static const char kFileToFetch[] = "simple.html";
+    expected_file_ = test_server.GetDocumentRoot().AppendASCII(kFileToFetch);
+    CreateFetcherForFile(
+        test_server.GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
+        temp_dir.path().AppendASCII(kFileToFetch));
 
-  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+    base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 
-  base::MessageLoop::current()->RunUntilIdle();
-  ASSERT_FALSE(file_util::PathExists(file_path_)) << file_path_.value()
-                                                  << " not removed.";
+    base::MessageLoop::current()->RunUntilIdle();
+    ASSERT_EQ(kTake[i], file_util::PathExists(file_path_)) <<
+        "FilePath: " << file_path_.value();
+  }
 }
-
 
 TEST_F(URLFetcherFileTest, OverwriteExistingFile) {
   SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTP,
@@ -1505,23 +1510,30 @@ TEST_F(URLFetcherFileTest, LargeGetToTempFile) {
   base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 }
 
-TEST_F(URLFetcherFileTest, CanTakeOwnershipOfTempFile) {
-  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTP,
-                                SpawnedTestServer::kLocalhost,
-                                base::FilePath(kDocRoot));
-  ASSERT_TRUE(test_server.Start());
+TEST_F(URLFetcherFileTest, SavedOutputTempFileOwnerhisp) {
+  // If the caller takes the ownership of the temp file, the file should persist
+  // even after URLFetcher is gone. If not, the file must be deleted.
+  const bool kTake[] = {false, true};
+  for (size_t i = 0; i < arraysize(kTake); ++i) {
+    take_ownership_of_file_ = kTake[i];
 
-  // Get a small file.
-  static const char kFileToFetch[] = "simple.html";
-  expected_file_ = test_server.GetDocumentRoot().AppendASCII(kFileToFetch);
-  CreateFetcherForTempFile(test_server.GetURL(
-      std::string(kTestServerFilePrefix) + kFileToFetch));
+    SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTP,
+                                  SpawnedTestServer::kLocalhost,
+                                  base::FilePath(kDocRoot));
+    ASSERT_TRUE(test_server.Start());
 
-  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+    // Get a small file.
+    static const char kFileToFetch[] = "simple.html";
+    expected_file_ = test_server.GetDocumentRoot().AppendASCII(kFileToFetch);
+    CreateFetcherForTempFile(test_server.GetURL(
+        std::string(kTestServerFilePrefix) + kFileToFetch));
 
-  base::MessageLoop::current()->RunUntilIdle();
-  ASSERT_FALSE(file_util::PathExists(file_path_)) << file_path_.value()
-                                                  << " not removed.";
+    base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+
+    base::MessageLoop::current()->RunUntilIdle();
+    ASSERT_EQ(kTake[i], file_util::PathExists(file_path_)) <<
+        "FilePath: " << file_path_.value();
+  }
 }
 
 }  // namespace

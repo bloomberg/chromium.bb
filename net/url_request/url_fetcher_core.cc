@@ -358,9 +358,15 @@ bool URLFetcherCore::GetResponseAsFilePath(bool take_ownership,
   *out_response_path = file_writer_->file_path();
 
   if (take_ownership) {
-    network_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&URLFetcherCore::DisownFile, this));
+    // Intentionally calling file_writer_ method directly without posting the
+    // task to network_task_runner_.
+    //
+    // This is for correctly handling the case when DisownFile() is soon
+    // followed by Stop(). We have to make sure that DisownFile takes effect
+    // before Stop is executed and thus file_writer_ is deleted.
+    // This should be thread-safe since file_writer_->DisownFile itself does no
+    // file operation, it just flips the state to be referred in destruction.
+    file_writer_->DisownFile();
   }
   return true;
 }
@@ -862,11 +868,6 @@ void URLFetcherCore::ReadResponse() {
       (request_type_ != URLFetcher::HEAD))
     request_->Read(buffer_.get(), kBufferSize, &bytes_read);
   OnReadCompleted(request_.get(), bytes_read);
-}
-
-void URLFetcherCore::DisownFile() {
-  DCHECK(file_writer_);
-  file_writer_->DisownFile();
 }
 
 void URLFetcherCore::InformDelegateUploadProgress() {

@@ -205,9 +205,6 @@ class URLFetcherCore
   // Read response bytes from the request.
   void ReadResponse();
 
-  // Drop ownership of any file managed by |file_path_|.
-  void DisownFile();
-
   // Notify Delegate about the progress of upload/download.
   void InformDelegateUploadProgress();
   void InformDelegateUploadProgressInDelegateThread(int64 current, int64 total);
