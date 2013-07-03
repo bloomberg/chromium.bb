@@ -328,6 +328,9 @@ class WebContents;
 // coordinates.
 - (NSPoint)bookmarkBubblePoint;
 
+// Shows or hides the Instant overlay contents.
+- (void)commitInstant;
+
 // Returns the frame, in Cocoa (unflipped) screen coordinates, of the area where
 // Instant results are.  If Instant is not showing, returns the frame of where
 // it would be.

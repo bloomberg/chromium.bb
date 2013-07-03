@@ -37,6 +37,14 @@ class FakePageDelegate : public InstantPage::Delegate {
   MOCK_METHOD2(InstantPageAboutToNavigateMainFrame,
                void(const content::WebContents* contents,
                     const GURL& url));
+  MOCK_METHOD2(SetSuggestions,
+               void(const content::WebContents* contents,
+                    const std::vector<InstantSuggestion>& suggestions));
+  MOCK_METHOD3(ShowInstantOverlay,
+               void(const content::WebContents* contents,
+                    int height,
+                    InstantSizeUnits units));
+  MOCK_METHOD0(LogDropdownShown, void());
   MOCK_METHOD2(FocusOmnibox,
                void(const content::WebContents* contents,
                     OmniboxFocusState state));
@@ -336,11 +344,37 @@ TEST_F(InstantPageTest, AppropriateMessagesSentToIncognitoPages) {
   EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxMarginChange::ID));
 
   // Incognito pages should not get any others.
+  page->sender()->Update(string16(), 0, 0, false);
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxChange::ID));
+
+  page->sender()->Cancel(string16());
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxCancel::ID));
+
+  page->sender()->SetPopupBounds(gfx::Rect());
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxPopupResize::ID));
+
   page->sender()->SetFontInformation(string16(), 0);
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxFontInformation::ID));
 
+  page->sender()->SendAutocompleteResults(
+      std::vector<InstantAutocompleteResult>());
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxAutocompleteResults::ID));
+
+  page->sender()->UpOrDownKeyPressed(0);
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxUpOrDownKeyPressed::ID));
+
+  page->sender()->EscKeyPressed();
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxEscKeyPressed::ID));
+
+  page->sender()->CancelSelection(string16(), 0, 0, false);
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxCancelSelection::ID));
+
   page->sender()->SendThemeBackgroundInfo(ThemeBackgroundInfo());
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxThemeChanged::ID));
+
+  page->sender()->SetDisplayInstantResults(false);
+  EXPECT_FALSE(MessageWasSent(
+      ChromeViewMsg_SearchBoxSetDisplayInstantResults::ID));
 
   page->sender()->FocusChanged(
       OMNIBOX_FOCUS_NONE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);

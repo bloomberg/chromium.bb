@@ -12,6 +12,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/search/instant_overlay.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -125,6 +126,13 @@ void HistoryTabHelper::DidNavigateAnyFrame(
       prerender_contents->DidNavigate(add_page_args);
       return;
     }
+  }
+
+  InstantOverlay* instant_overlay =
+      InstantOverlay::FromWebContents(web_contents());
+  if (instant_overlay) {
+    instant_overlay->DidNavigate(add_page_args);
+    return;
   }
 
 #if !defined(OS_ANDROID)

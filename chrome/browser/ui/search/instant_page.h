@@ -33,8 +33,8 @@ class Rect;
 
 // InstantPage is used to exchange messages with a page that implements the
 // Instant/Embedded Search API (http://dev.chromium.org/embeddedsearch).
-// InstantPage is not used directly but via one of its derived classes,
-// InstantNTP and InstantTab.
+// InstantPage is not used directly but via one of its derived classes:
+// InstantOverlay, InstantNTP and InstantTab.
 class InstantPage : public content::WebContentsObserver,
                     public SearchModelObserver {
  public:
@@ -60,6 +60,22 @@ class InstantPage : public content::WebContentsObserver,
     virtual void InstantPageAboutToNavigateMainFrame(
         const content::WebContents* contents,
         const GURL& url) = 0;
+
+    // Called when the page has suggestions. Usually in response to Update(),
+    // SendAutocompleteResults() or UpOrDownKeyPressed().
+    virtual void SetSuggestions(
+        const content::WebContents* contents,
+        const std::vector<InstantSuggestion>& suggestions) = 0;
+
+    // Called when the page wants to be shown. Usually in response to Update()
+    // or SendAutocompleteResults().
+    virtual void ShowInstantOverlay(const content::WebContents* contents,
+                                    int height,
+                                    InstantSizeUnits units) = 0;
+
+    // Called when the page shows suggestions for logging purposes, regardless
+    // of whether the page is processing the call.
+    virtual void LogDropdownShown() = 0;
 
     // Called when the page wants the omnibox to be focused. |state| specifies
     // the omnibox focus state.
@@ -133,6 +149,8 @@ class InstantPage : public content::WebContentsObserver,
   // choose to ignore some or all of the received messages by overriding these
   // methods.
   virtual bool ShouldProcessAboutToNavigateMainFrame();
+  virtual bool ShouldProcessSetSuggestions();
+  virtual bool ShouldProcessShowInstantOverlay();
   virtual bool ShouldProcessFocusOmnibox();
   virtual bool ShouldProcessNavigateToURL();
   virtual bool ShouldProcessDeleteMostVisitedItem();
@@ -179,6 +197,11 @@ class InstantPage : public content::WebContentsObserver,
   // Update the status of Instant support.
   void InstantSupportDetermined(bool supports_instant);
 
+  void OnSetSuggestions(int page_id,
+                        const std::vector<InstantSuggestion>& suggestions);
+  void OnShowInstantOverlay(int page_id,
+                            int height,
+                            InstantSizeUnits units);
   void OnFocusOmnibox(int page_id, OmniboxFocusState state);
   void OnSearchBoxNavigate(int page_id,
                            const GURL& url,

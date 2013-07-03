@@ -50,6 +50,9 @@ void InstantOverlayModel::SetOverlayContents(
 }
 
 content::WebContents* InstantOverlayModel::GetOverlayContents() const {
+  // |controller_| maybe NULL durning tests.
+  if (controller_)
+    return controller_->GetOverlayContents();
   return overlay_contents_;
 }
 

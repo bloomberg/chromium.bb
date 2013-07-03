@@ -9,7 +9,11 @@
 
 InstantOverlayController::InstantOverlayController(Browser* browser)
     : browser_(browser) {
+  if (browser_->instant_controller())
+    browser_->instant_controller()->instant()->model()->AddObserver(this);
 }
 
 InstantOverlayController::~InstantOverlayController() {
+  if (browser_->instant_controller())
+    browser_->instant_controller()->instant()->model()->RemoveObserver(this);
 }

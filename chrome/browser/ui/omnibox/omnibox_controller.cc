@@ -50,6 +50,11 @@ void OmniboxController::StartAutocomplete(
   ClearPopupKeywordMode();
   popup_->SetHoveredLine(OmniboxPopupModel::kNoMatch);
 
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
+  InstantController* instant_controller = GetInstantController();
+  if (instant_controller)
+    instant_controller->OnAutocompleteStart();
+#endif
   if (chrome::IsInstantExtendedAPIEnabled()) {
     autocomplete_controller_->search_provider()->
         SetOmniboxStartMargin(omnibox_start_margin);
@@ -91,7 +96,7 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
 
       if (!prerender::IsOmniboxEnabled(profile_))
         DoPreconnect(*match);
-      omnibox_edit_model_->OnCurrentMatchChanged();
+      omnibox_edit_model_->OnCurrentMatchChanged(false);
     } else {
       InvalidateCurrentMatch();
       popup_->OnResultChanged();
@@ -102,16 +107,91 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
     popup_->OnResultChanged();
   }
 
-  if (!popup_->IsOpen() && was_open) {
+  // TODO(beaudoin): This may no longer be needed now that instant classic is
+  // gone.
+  if (popup_->IsOpen()) {
+    // The popup size may have changed, let instant know.
+    OnPopupBoundsChanged(popup_->view()->GetTargetBounds());
+
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
+    InstantController* instant_controller = GetInstantController();
+    if (instant_controller && !omnibox_edit_model_->in_revert()) {
+      instant_controller->HandleAutocompleteResults(
+          *autocomplete_controller_->providers(),
+          autocomplete_controller_->result());
+    }
+#endif
+  } else if (was_open) {
     // Accept the temporary text as the user text, because it makes little sense
     // to have temporary text when the popup is closed.
     omnibox_edit_model_->AcceptTemporaryTextAsUserText();
+    // The popup has been closed, let instant know.
+    OnPopupBoundsChanged(gfx::Rect());
   }
+}
+
+bool OmniboxController::DoInstant(const AutocompleteMatch& match,
+                                  string16 user_text,
+                                  string16 full_text,
+                                  size_t selection_start,
+                                  size_t selection_end,
+                                  bool user_input_in_progress,
+                                  bool in_escape_handler,
+                                  bool just_deleted_text,
+                                  bool keyword_is_selected) {
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
+  InstantController* instant_controller = GetInstantController();
+  if (!instant_controller)
+    return false;
+
+  // Remove "?" if we're in forced query mode.
+  AutocompleteInput::RemoveForcedQueryStringIfNecessary(
+      autocomplete_controller_->input().type(), &user_text);
+  AutocompleteInput::RemoveForcedQueryStringIfNecessary(
+      autocomplete_controller_->input().type(), &full_text);
+  return instant_controller->Update(
+      match, user_text, full_text, selection_start, selection_end,
+      UseVerbatimInstant(just_deleted_text), user_input_in_progress,
+      popup_->IsOpen(), in_escape_handler, keyword_is_selected);
+#else
+  return false;
+#endif
 }
 
 void OmniboxController::SetInstantSuggestion(
     const InstantSuggestion& suggestion) {
-  // TODO(jered): Delete this.
+// Should only get called for the HTML popup.
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
+  switch (suggestion.behavior) {
+    case INSTANT_COMPLETE_NOW:
+      // Set blue suggestion text.
+      // TODO(beaudoin): Create a valid current_match_ and call
+      // omnibox_edit_model_->OnCurrentMatchChanged.
+      return;
+
+    case INSTANT_COMPLETE_NEVER: {
+      DCHECK_EQ(INSTANT_SUGGESTION_SEARCH, suggestion.type);
+
+      // Set gray suggestion text.
+      // Remove "?" if we're in forced query mode.
+      gray_suggestion_ = suggestion.text;
+
+      omnibox_edit_model_->OnGrayTextChanged();
+      return;
+    }
+
+    case INSTANT_COMPLETE_REPLACE:
+      // Replace the entire omnibox text by the suggestion the user just arrowed
+      // to.
+      CreateAndSetInstantMatch(suggestion.text, suggestion.text,
+                               suggestion.type == INSTANT_SUGGESTION_SEARCH ?
+                                   AutocompleteMatchType::SEARCH_SUGGEST :
+                                   AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+
+      omnibox_edit_model_->OnCurrentMatchChanged(true);
+      return;
+  }
+#endif
 }
 
 void OmniboxController::InvalidateCurrentMatch() {
@@ -138,6 +218,12 @@ void OmniboxController::DoPreconnect(const AutocompleteMatch& match) {
     // can be many of these as a user types an initial series of characters,
     // the OS DNS cache could suffer eviction problems for minimal gain.
   }
+}
+
+void OmniboxController::OnPopupBoundsChanged(const gfx::Rect& bounds) {
+  InstantController* instant_controller = GetInstantController();
+  if (instant_controller)
+    instant_controller->SetPopupBounds(bounds);
 }
 
 bool OmniboxController::UseVerbatimInstant(bool just_deleted_text) const {

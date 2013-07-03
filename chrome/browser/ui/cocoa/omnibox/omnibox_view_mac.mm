@@ -900,6 +900,7 @@ void OmniboxViewMac::OnFrameChanged() {
   // things even cheaper by refactoring between the popup-placement
   // code and the matrix-population code.
   popup_view_->UpdatePopupAppearance();
+  model()->OnPopupBoundsChanged(popup_view_->GetTargetBounds());
 
   // Give controller a chance to rearrange decorations.
   model()->OnChanged();

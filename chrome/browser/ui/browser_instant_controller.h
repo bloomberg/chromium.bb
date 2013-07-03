@@ -58,11 +58,27 @@ class BrowserInstantController
   // this BrowserInstantController.
   InstantController* instant() { return &instant_; }
 
+  // Invoked by |instant_| to commit the |overlay| by merging it into the active
+  // tab or adding it as a new tab.
+  void CommitInstant(scoped_ptr<content::WebContents> overlay, bool in_new_tab);
+
+  // Invoked by |instant_| to autocomplete the |suggestion| into the omnibox.
+  void SetInstantSuggestion(const InstantSuggestion& suggestion);
+
+  // Invoked by |instant_| to get the bounds that the overlay is placed at,
+  // in screen coordinates.
+  gfx::Rect GetInstantBounds();
+
+  // Invoked by |instant_| to notify that the overlay gained focus, usually due
+  // to the user clicking on it.
+  void InstantOverlayFocused();
+
   // Invoked by |instant_| to give the omnibox focus, with the option of making
   // the caret invisible.
   void FocusOmnibox(bool caret_visibility);
 
-  // Invoked by |instant_| to get the currently active tab.
+  // Invoked by |instant_| to get the currently active tab, over which the
+  // overlay would be shown.
   content::WebContents* GetActiveWebContents() const;
 
   // Invoked by |browser_| when the active tab changes.

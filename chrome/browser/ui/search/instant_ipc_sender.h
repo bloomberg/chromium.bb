@@ -31,8 +31,28 @@ class InstantIPCSender : public content::WebContentsObserver {
   // Sets |web_contents| as the receiver of IPCs.
   void SetContents(content::WebContents* web_contents);
 
+  // Tells the page that the user typed |text| into the omnibox. If |verbatim|
+  // is false, the page predicts the query the user means to type and fetches
+  // results for the prediction. If |verbatim| is true, |text| is taken as the
+  // exact query (no prediction is made). |selection_start| and |selection_end|
+  // mark the inline autocompleted portion (i.e., blue highlighted text). The
+  // omnibox caret (cursor) is at |selection_end|.
+  virtual void Update(const string16& text,
+                      size_t selection_start,
+                      size_t selection_end,
+                      bool verbatim) {}
+
   // Tells the page that the user pressed Enter in the omnibox.
   virtual void Submit(const string16& text) {}
+
+  // Tells the page that the user clicked on it. Nothing is being cancelled; the
+  // poor choice of name merely reflects the IPC of the same (poor) name.
+  virtual void Cancel(const string16& text) {}
+
+  // Tells the page the bounds of the omnibox dropdown (in screen coordinates).
+  // This is used by the page to offset the results to avoid them being covered
+  // by the omnibox dropdown.
+  virtual void SetPopupBounds(const gfx::Rect& bounds) {}
 
   // Tells the page the bounds of the omnibox (in screen coordinates). This is
   // used by the page to align text or assets properly with the omnibox.
@@ -45,9 +65,31 @@ class InstantIPCSender : public content::WebContentsObserver {
   // Tells the page information it needs to display promos.
   virtual void SetPromoInformation(bool is_app_launcher_enabled) {}
 
+  // Tells the page about the available autocomplete results.
+  virtual void SendAutocompleteResults(
+      const std::vector<InstantAutocompleteResult>& results) {}
+
+  // Tells the page that the user pressed Up or Down in the omnibox. |count| is
+  // a repeat count, negative for moving up, positive for moving down.
+  virtual void UpOrDownKeyPressed(int count) {}
+
+  // Tells the page that the user pressed Esc key in the omnibox.
+  virtual void EscKeyPressed() {}
+
+  // Tells the page that the user pressed Esc in the omnibox after having
+  // arrowed down in the suggestions. The page should reset the selection to
+  // the first suggestion. Arguments are the same as those for Update().
+  virtual void CancelSelection(const string16& user_text,
+                               size_t selection_start,
+                               size_t selection_end,
+                               bool verbatim) {}
+
   // Tells the page about the current theme background.
   virtual void SendThemeBackgroundInfo(
       const ThemeBackgroundInfo& theme_info) {}
+
+  // Tells the page whether it is allowed to display Instant results.
+  virtual void SetDisplayInstantResults(bool display_instant_results) {}
 
   // Tells the page that the omnibox focus has changed.
   virtual void FocusChanged(OmniboxFocusState state,

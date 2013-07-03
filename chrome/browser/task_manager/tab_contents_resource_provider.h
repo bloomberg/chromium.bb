@@ -47,6 +47,7 @@ class TabContentsResourceProvider : public ResourceProvider,
 
   void Add(content::WebContents* web_contents);
   void Remove(content::WebContents* web_contents);
+  void InstantCommitted(content::WebContents* web_contents);
 
   void AddToTaskManager(content::WebContents* web_contents);
 

@@ -40,6 +40,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/search/instant_extended_context_menu_observer.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -644,8 +645,13 @@ void RenderViewContextMenu::InitMenu() {
       print_preview_menu_observer_.reset(
           new PrintPreviewContextMenuObserver(source_web_contents_));
     }
+    if (!instant_extended_observer_.get()) {
+      instant_extended_observer_.reset(
+          new InstantExtendedContextMenuObserver(source_web_contents_));
+    }
 
     observers_.AddObserver(print_preview_menu_observer_.get());
+    observers_.AddObserver(instant_extended_observer_.get());
   }
 }
 

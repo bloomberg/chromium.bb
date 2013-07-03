@@ -29,6 +29,8 @@ AlternateNavURLFetcher::AlternateNavURLFetcher(
       navigated_to_entry_(false) {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
+                 content::NotificationService::AllSources());
 }
 
 AlternateNavURLFetcher::~AlternateNavURLFetcher() {
@@ -53,6 +55,19 @@ void AlternateNavURLFetcher::Observe(
         registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                        content::Source<NavigationController>(
                           controller));
+        StartFetch(controller);
+      }
+      break;
+    }
+
+    case chrome::NOTIFICATION_INSTANT_COMMITTED: {
+      // See above.
+      NavigationController* controller =
+          &content::Source<content::WebContents>(source)->GetController();
+      if (controller_ == controller) {
+        delete this;
+      } else if (!controller_) {
+        navigated_to_entry_ = true;
         StartFetch(controller);
       }
       break;

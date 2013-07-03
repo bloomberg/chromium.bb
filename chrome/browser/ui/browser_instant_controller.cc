@@ -37,7 +37,8 @@ using content::UserMetricsAction;
 
 BrowserInstantController::BrowserInstantController(Browser* browser)
     : browser_(browser),
-      instant_(this, chrome::IsInstantExtendedAPIEnabled()),
+      instant_(this,
+               chrome::IsInstantExtendedAPIEnabled()),
       instant_unload_handler_(browser) {
 
   // TODO(sreeram): Perhaps this can be removed, if field trial info is
@@ -145,6 +146,29 @@ Profile* BrowserInstantController::profile() const {
   return browser_->profile();
 }
 
+void BrowserInstantController::CommitInstant(
+    scoped_ptr<content::WebContents> overlay,
+    bool in_new_tab) {
+  const extensions::Extension* extension =
+      profile()->GetExtensionService()->GetInstalledApp(overlay->GetURL());
+  if (extension) {
+    AppLauncherHandler::RecordAppLaunchType(
+        extension_misc::APP_LAUNCH_OMNIBOX_INSTANT,
+        extension->GetType());
+  }
+  if (in_new_tab) {
+    // TabStripModel takes ownership of |overlay|.
+    browser_->tab_strip_model()->AddWebContents(overlay.release(), -1,
+        instant_.last_transition_type(), TabStripModel::ADD_ACTIVE);
+  } else {
+    content::WebContents* contents = overlay.get();
+    ReplaceWebContentsAt(
+        browser_->tab_strip_model()->active_index(),
+        overlay.Pass());
+    browser_->window()->GetLocationBar()->SaveStateToContents(contents);
+  }
+}
+
 void BrowserInstantController::ReplaceWebContentsAt(
     int index,
     scoped_ptr<content::WebContents> new_contents) {
@@ -153,6 +177,20 @@ void BrowserInstantController::ReplaceWebContentsAt(
       ReplaceWebContentsAt(index, new_contents.release()));
   instant_unload_handler_.RunUnloadListenersOrDestroy(old_contents.Pass(),
                                                       index);
+}
+
+void BrowserInstantController::SetInstantSuggestion(
+    const InstantSuggestion& suggestion) {
+  browser_->window()->GetLocationBar()->SetInstantSuggestion(suggestion);
+}
+
+gfx::Rect BrowserInstantController::GetInstantBounds() {
+  return browser_->window()->GetInstantBounds();
+}
+
+void BrowserInstantController::InstantOverlayFocused() {
+  // NOTE: This is only invoked on aura.
+  browser_->window()->WebContentsFocused(instant_.GetOverlayContents());
 }
 
 void BrowserInstantController::FocusOmnibox(bool caret_visibility) {
@@ -206,7 +244,9 @@ void BrowserInstantController::ToggleVoiceSearch() {
 }
 
 void BrowserInstantController::ResetInstant(const std::string& pref_name) {
-  instant_.ReloadStaleNTP();
+  bool instant_checkbox_checked = chrome::IsInstantCheckboxChecked(profile());
+  bool use_local_overlay_only = !chrome::IsInstantCheckboxEnabled(profile());
+  instant_.SetInstantEnabled(instant_checkbox_checked, use_local_overlay_only);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

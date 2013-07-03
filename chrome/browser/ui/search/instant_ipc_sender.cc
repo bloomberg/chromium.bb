@@ -15,8 +15,24 @@ class InstantIPCSenderImpl : public InstantIPCSender {
   virtual ~InstantIPCSenderImpl() {}
 
  private:
+  virtual void Update(const string16& text,
+                      size_t selection_start,
+                      size_t selection_end,
+                      bool verbatim) OVERRIDE {
+    Send(new ChromeViewMsg_SearchBoxChange(routing_id(), text, verbatim,
+                                           selection_start, selection_end));
+  }
+
   virtual void Submit(const string16& text) OVERRIDE {
     Send(new ChromeViewMsg_SearchBoxSubmit(routing_id(), text));
+  }
+
+  virtual void Cancel(const string16& text) OVERRIDE {
+    Send(new ChromeViewMsg_SearchBoxCancel(routing_id(), text));
+  }
+
+  virtual void SetPopupBounds(const gfx::Rect& bounds) OVERRIDE {
+    Send(new ChromeViewMsg_SearchBoxPopupResize(routing_id(), bounds));
   }
 
   virtual void SetOmniboxBounds(const gfx::Rect& bounds) OVERRIDE {
@@ -35,9 +51,35 @@ class InstantIPCSenderImpl : public InstantIPCSender {
         routing_id(), is_app_launcher_enabled));
   }
 
+  virtual void SendAutocompleteResults(
+      const std::vector<InstantAutocompleteResult>& results) OVERRIDE {
+    Send(new ChromeViewMsg_SearchBoxAutocompleteResults(routing_id(), results));
+  }
+
+  virtual void UpOrDownKeyPressed(int count) OVERRIDE {
+    Send(new ChromeViewMsg_SearchBoxUpOrDownKeyPressed(routing_id(), count));
+  }
+
+  virtual void EscKeyPressed() OVERRIDE {
+    Send(new ChromeViewMsg_SearchBoxEscKeyPressed(routing_id()));
+  }
+
+  virtual void CancelSelection(const string16& user_text,
+                               size_t selection_start,
+                               size_t selection_end,
+                               bool verbatim) OVERRIDE {
+    Send(new ChromeViewMsg_SearchBoxCancelSelection(
+        routing_id(), user_text, verbatim, selection_start, selection_end));
+  }
+
   virtual void SendThemeBackgroundInfo(
       const ThemeBackgroundInfo& theme_info) OVERRIDE {
     Send(new ChromeViewMsg_SearchBoxThemeChanged(routing_id(), theme_info));
+  }
+
+  virtual void SetDisplayInstantResults(bool display_instant_results) OVERRIDE {
+    Send(new ChromeViewMsg_SearchBoxSetDisplayInstantResults(
+        routing_id(), display_instant_results));
   }
 
   virtual void FocusChanged(OmniboxFocusState state,
