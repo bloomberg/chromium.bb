@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -20,20 +21,23 @@ class NET_EXPORT_PRIVATE ProofVerifier {
 
   // VerifyProof checks that |signature| is a valid signature of
   // |server_config| by the public key in the leaf certificate of |certs|, and
-  // that |certs| is a valid chain for |hostname|. On success, it returns true.
-  // On failure, it returns false and sets |*error_details| to a description of
-  // the problem.
+  // that |certs| is a valid chain for |hostname|. On success, it returns OK.
+  // On failure, it returns ERR_FAILED and sets |*error_details| to a
+  // description of the problem. This function may also return ERR_IO_PENDING,
+  // in which case the |callback| will be run on the calling thread with the
+  // final OK/ERR_FAILED result when the proof is verified.
   //
   // The signature uses SHA-256 as the hash function and PSS padding in the
   // case of RSA.
   //
   // Note: this is just for testing. The CN of the certificate is ignored and
   // wildcards in the SANs are not supported.
-  virtual bool VerifyProof(const std::string& hostname,
-                           const std::string& server_config,
-                           const std::vector<std::string>& certs,
-                           const std::string& signature,
-                           std::string* error_details) const = 0;
+  virtual int VerifyProof(const std::string& hostname,
+                          const std::string& server_config,
+                          const std::vector<std::string>& certs,
+                          const std::string& signature,
+                          std::string* error_details,
+                          const CompletionCallback& callback) = 0;
 };
 
 }  // namespace net

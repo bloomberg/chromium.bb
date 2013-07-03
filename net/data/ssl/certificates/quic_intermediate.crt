@@ -1,0 +1,53 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 2 (0x2)
+    Signature Algorithm: sha1WithRSAEncryption
+        Issuer: O=Acme Co, CN=Root CA
+        Validity
+            Not Before: Jan  1 10:00:00 2013 GMT
+            Not After : Dec 31 10:00:00 2023 GMT
+        Subject: O=Acme Co, CN=Intermediate CA
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (1024 bit)
+                Modulus:
+                    00:af:95:dd:a0:eb:d7:c3:ba:a6:ae:db:6e:05:68:
+                    a0:00:15:a1:85:d1:89:ba:be:3a:7a:3b:8c:3b:41:
+                    07:76:63:71:28:f7:bf:a5:fb:b3:28:94:f9:9a:de:
+                    1d:03:00:ce:5e:25:06:6a:e6:c7:0a:6b:6d:d3:76:
+                    95:57:f5:16:f8:f0:43:de:b7:c7:1b:0b:83:f4:70:
+                    e6:29:a1:8d:22:12:9a:df:4b:31:e8:9b:86:7d:95:
+                    29:97:18:c1:34:2f:b6:a7:c1:c7:46:d6:9c:c6:a6:
+                    ae:6e:dd:8f:be:c2:ec:02:00:d2:54:f6:0f:a0:cc:
+                    af:04:85:65:98:a1:ea:73:f1
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Certificate Sign
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+    Signature Algorithm: sha1WithRSAEncryption
+         9a:68:79:17:6c:13:20:b3:5f:01:ca:ae:c0:bf:d2:7b:98:bf:
+         dd:4d:d1:c3:a5:ab:01:47:2e:c8:61:b4:f5:1d:55:04:f0:eb:
+         5d:84:5a:78:09:b0:f1:42:64:14:e8:9e:ba:c3:38:32:d3:16:
+         fe:e1:65:1f:76:da:e4:c0:83:62:4a:ae:d0:4e:00:2e:38:52:
+         91:81:62:94:b0:3d:69:b3:87:72:39:55:94:9e:ca:2c:ca:51:
+         3c:d3:3f:d2:1c:92:d3:de:df:ba:bc:45:9b:30:99:b4:39:f8:
+         17:55:94:7d:3a:ba:0e:e9:3f:2d:bc:f0:ea:6d:17:85:23:e4:
+         ca:94
+-----BEGIN CERTIFICATE-----
+MIIB+DCCAWOgAwIBAgIBAjALBgkqhkiG9w0BAQUwJDEQMA4GA1UEChMHQWNtZSBD
+bzEQMA4GA1UEAxMHUm9vdCBDQTAeFw0xMzAxMDExMDAwMDBaFw0yMzEyMzExMDAw
+MDBaMCwxEDAOBgNVBAoTB0FjbWUgQ28xGDAWBgNVBAMTD0ludGVybWVkaWF0ZSBD
+QTCBnTALBgkqhkiG9w0BAQEDgY0AMIGJAoGBAK+V3aDr18O6pq7bbgVooAAVoYXR
+ibq+Ono7jDtBB3ZjcSj3v6X7syiU+ZreHQMAzl4lBmrmxwprbdN2lVf1FvjwQ963
+xxsLg/Rw5imhjSISmt9LMeibhn2VKZcYwTQvtqfBx0bWnMamrm7dj77C7AIA0lT2
+D6DMrwSFZZih6nPxAgMBAAGjODA2MA4GA1UdDwEB/wQEAwIABDATBgNVHSUEDDAK
+BggrBgEFBQcDATAPBgNVHRMBAf8EBTADAQH/MAsGCSqGSIb3DQEBBQOBgQCaaHkX
+bBMgs18Byq7Av9J7mL/dTdHDpasBRy7IYbT1HVUE8OtdhFp4CbDxQmQU6J66wzgy
+0xb+4WUfdtrkwINiSq7QTgAuOFKRgWKUsD1ps4dyOVWUnsosylE80z/SHJLT3t+6
+vEWbMJm0OfgXVZR9OroO6T8tvPDqbReFI+TKlA==
+-----END CERTIFICATE-----

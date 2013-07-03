@@ -273,6 +273,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     const std::vector<std::string>& certs() const;
     const std::string& signature() const;
     bool proof_valid() const;
+    uint64 generation_counter() const;
 
     void set_source_address_token(base::StringPiece token);
 
@@ -283,8 +284,12 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     std::vector<std::string> certs_;    // A list of certificates in leaf-first
                                         // order.
     std::string server_config_sig_;     // A signature of |server_config_|.
-    bool server_config_valid_;  // true if |server_config_| is correctly signed
-                                // and |certs_| has been validated.
+    bool server_config_valid_;          // True if |server_config_| is correctly
+                                        // signed and |certs_| has been
+                                        // validated.
+    uint64 generation_counter_;         // Generation counter associated with
+                                        // the |server_config_|, |certs_| and
+                                        // |server_config_sig_| combination.
 
     // scfg contains the cached, parsed value of |server_config|.
     mutable scoped_ptr<CryptoHandshakeMessage> scfg_;
@@ -348,7 +353,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
                                    QuicCryptoNegotiatedParameters* out_params,
                                    std::string* error_details);
 
-  const ProofVerifier* proof_verifier() const;
+  ProofVerifier* proof_verifier() const;
 
   // SetProofVerifier takes ownership of a |ProofVerifier| that clients are
   // free to use in order to verify certificate chains from servers. If a

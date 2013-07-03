@@ -5,6 +5,7 @@
 #include "net/quic/quic_session.h"
 
 #include "base/stl_util.h"
+#include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_connection.h"
 
 using base::StringPiece;
@@ -255,6 +256,16 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
     default:
       LOG(ERROR) << ENDPOINT << "Got unknown handshake event: " << event;
   }
+}
+
+// TODO(rtenneti): Don't port proof_verifier code back to google3 until we have
+// a way to have single ProofVerifier that can handle multiple requests.
+ProofVerifier* QuicSession::proof_verifier() const {
+  return proof_verifier_.get();
+}
+
+void QuicSession::SetProofVerifier(ProofVerifier* verifier) {
+  proof_verifier_.reset(verifier);
 }
 
 QuicConfig* QuicSession::config() {

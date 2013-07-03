@@ -1,0 +1,56 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 3 (0x3)
+    Signature Algorithm: sha1WithRSAEncryption
+        Issuer: O=Acme Co, CN=Intermediate CA
+        Validity
+            Not Before: Jan  1 10:00:00 2013 GMT
+            Not After : Dec 31 10:00:00 2023 GMT
+        Subject: O=Acme Co, CN=Leaf certificate
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (1024 bit)
+                Modulus:
+                    00:c1:31:32:b2:28:dc:0d:a4:e0:4b:54:d6:fa:b7:
+                    d2:0c:45:29:bf:67:c7:d1:b8:a9:90:63:51:c4:96:
+                    9f:86:a9:47:d7:67:f6:f9:1d:37:29:c2:0a:55:a7:
+                    8c:29:97:dc:f2:7f:f4:97:d0:d5:44:c9:04:1c:48:
+                    ea:cc:a9:48:5c:eb:69:11:75:6e:db:7d:1a:5a:c0:
+                    9f:ad:a7:b8:0e:3b:a1:61:24:24:6f:64:84:ad:bb:
+                    28:06:c2:4a:c8:07:7b:46:33:8a:c7:81:77:92:4f:
+                    9d:88:1c:52:04:23:61:12:97:c7:e4:af:90:67:7e:
+                    fb:ac:3d:23:92:f0:c9:39:6d
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Digital Signature, Key Encipherment
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication
+            X509v3 Basic Constraints: critical
+                CA:FALSE
+            X509v3 Subject Alternative Name: 
+                DNS:test.example.com
+    Signature Algorithm: sha1WithRSAEncryption
+         ad:33:55:2a:80:4c:ab:bc:b3:34:f7:b3:7e:fb:05:a8:11:3f:
+         a1:35:56:4c:46:2f:8d:24:70:35:3a:66:8d:14:c4:fb:7f:d9:
+         76:de:c4:52:a7:42:8f:70:1d:fd:d5:33:04:69:5d:3c:18:03:
+         8f:db:19:d0:14:d8:1c:0b:b6:74:9c:cf:41:ba:24:d9:c4:c3:
+         cf:86:fb:15:3d:c4:99:ea:af:6a:29:34:ed:97:03:38:ed:38:
+         b3:21:39:a0:f0:16:ac:81:d3:88:52:d8:5e:a3:6d:e6:ec:3f:
+         e9:20:ac:d3:78:7b:ae:59:9e:5d:3b:5e:61:bb:43:88:cd:8e:
+         d0:0d
+-----BEGIN CERTIFICATE-----
+MIICGzCCAYagAwIBAgIBAzALBgkqhkiG9w0BAQUwLDEQMA4GA1UEChMHQWNtZSBD
+bzEYMBYGA1UEAxMPSW50ZXJtZWRpYXRlIENBMB4XDTEzMDEwMTEwMDAwMFoXDTIz
+MTIzMTEwMDAwMFowLTEQMA4GA1UEChMHQWNtZSBDbzEZMBcGA1UEAxMQTGVhZiBj
+ZXJ0aWZpY2F0ZTCBnTALBgkqhkiG9w0BAQEDgY0AMIGJAoGBAMExMrIo3A2k4EtU
+1vq30gxFKb9nx9G4qZBjUcSWn4apR9dn9vkdNynCClWnjCmX3PJ/9JfQ1UTJBBxI
+6sypSFzraRF1btt9GlrAn62nuA47oWEkJG9khK27KAbCSsgHe0YziseBd5JPnYgc
+UgQjYRKXx+SvkGd++6w9I5LwyTltAgMBAAGjUjBQMA4GA1UdDwEB/wQEAwIAoDAT
+BgNVHSUEDDAKBggrBgEFBQcDATAMBgNVHRMBAf8EAjAAMBsGA1UdEQQUMBKCEHRl
+c3QuZXhhbXBsZS5jb20wCwYJKoZIhvcNAQEFA4GBAK0zVSqATKu8szT3s377BagR
+P6E1VkxGL40kcDU6Zo0UxPt/2XbexFKnQo9wHf3VMwRpXTwYA4/bGdAU2BwLtnSc
+z0G6JNnEw8+G+xU9xJnqr2opNO2XAzjtOLMhOaDwFqyB04hS2F6jbebsP+kgrNN4
+e65Znl07XmG7Q4jNjtAN
+-----END CERTIFICATE-----

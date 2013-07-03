@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_crypto_client_stream.h"
 
+#include "net/base/completion_callback.h"
+#include "net/base/net_errors.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/null_encrypter.h"
@@ -18,10 +20,12 @@ QuicCryptoClientStream::QuicCryptoClientStream(
     QuicSession* session,
     QuicCryptoClientConfig* crypto_config)
     : QuicCryptoStream(session),
+      weak_factory_(this),
       next_state_(STATE_IDLE),
       num_client_hellos_(0),
       crypto_config_(crypto_config),
-      server_hostname_(server_hostname) {
+      server_hostname_(server_hostname),
+      generation_counter_(0) {
 }
 
 QuicCryptoClientStream::~QuicCryptoClientStream() {
@@ -29,12 +33,12 @@ QuicCryptoClientStream::~QuicCryptoClientStream() {
 
 void QuicCryptoClientStream::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
-  DoHandshakeLoop(&message);
+  DoHandshakeLoop(&message, OK);
 }
 
 bool QuicCryptoClientStream::CryptoConnect() {
   next_state_ = STATE_SEND_CHLO;
-  DoHandshakeLoop(NULL);
+  DoHandshakeLoop(NULL, OK);
   return true;
 }
 
@@ -50,7 +54,8 @@ int QuicCryptoClientStream::num_sent_client_hellos() const {
 static const int kMaxClientHellos = 3;
 
 void QuicCryptoClientStream::DoHandshakeLoop(
-    const CryptoHandshakeMessage* in) {
+    const CryptoHandshakeMessage* in,
+    int result) {
   CryptoHandshakeMessage out;
   QuicErrorCode error;
   string error_details;
@@ -66,6 +71,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(
     next_state_ = STATE_IDLE;
     switch (state) {
       case STATE_SEND_CHLO: {
+        // Send the subsequent client hello in plaintext.
+        session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_NONE);
         if (num_client_hellos_ > kMaxClientHellos) {
           CloseConnection(QUIC_CRYPTO_TOO_MANY_REJECTS);
           return;
@@ -122,6 +129,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         return;
       }
       case STATE_RECV_REJ:
+        DCHECK_EQ(OK, result);
         // We sent a dummy CHLO because we didn't have enough information to
         // perform a handshake, or we sent a full hello that the server
         // rejected. Here we hope to have a REJ that contains the information
@@ -139,30 +147,54 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           return;
         }
         if (!cached->proof_valid()) {
-          const ProofVerifier* verifier = crypto_config_->proof_verifier();
+          ProofVerifier* verifier = session()->proof_verifier();
           if (!verifier) {
             // If no verifier is set then we don't check the certificates.
             cached->SetProofValid();
           } else if (!cached->signature().empty()) {
-            // TODO(rtenneti): In Chromium, we will need to make VerifyProof()
-            // asynchronous.
-            if (!verifier->VerifyProof(server_hostname_,
-                                       cached->server_config(),
-                                       cached->certs(),
-                                       cached->signature(),
-                                       &error_details)) {
-              CloseConnectionWithDetails(QUIC_PROOF_INVALID,
-                                         "Proof invalid: " + error_details);
-              return;
-            }
-            cached->SetProofValid();
+            next_state_ = STATE_VERIFY_PROOF;
+            continue;
           }
         }
-        // Send the subsequent client hello in plaintext.
-        session()->connection()->SetDefaultEncryptionLevel(
-            ENCRYPTION_NONE);
         next_state_ = STATE_SEND_CHLO;
         break;
+      case STATE_VERIFY_PROOF: {
+        ProofVerifier* verifier = session()->proof_verifier();
+        DCHECK(verifier);
+        next_state_ = STATE_VERIFY_PROOF_COMPLETED;
+        generation_counter_ = cached->generation_counter();
+        result = verifier->VerifyProof(
+            server_hostname_,
+            cached->server_config(),
+            cached->certs(),
+            cached->signature(),
+            &error_details_,
+            base::Bind(&QuicCryptoClientStream::OnVerifyProofComplete,
+                       weak_factory_.GetWeakPtr()));
+        if (result == ERR_IO_PENDING) {
+          DVLOG(1) << "Doing VerifyProof";
+          return;
+        }
+        break;
+      }
+      case STATE_VERIFY_PROOF_COMPLETED: {
+        if (result != OK) {
+            CloseConnectionWithDetails(
+                QUIC_PROOF_INVALID, "Proof invalid: " + error_details_);
+            return;
+        }
+        ProofVerifier* verifier = session()->proof_verifier();
+        DCHECK(verifier);
+        // Check if generation_counter has changed between STATE_VERIFY_PROOF
+        // and STATE_VERIFY_PROOF_COMPLETED state changes.
+        if (generation_counter_ != cached->generation_counter()) {
+          next_state_ = STATE_VERIFY_PROOF;
+          continue;
+        }
+        cached->SetProofValid();
+        next_state_ = STATE_SEND_CHLO;
+        break;
+      }
       case STATE_RECV_SHLO: {
         // We sent a CHLO that we expected to be accepted and now we're hoping
         // for a SHLO from the server to confirm that.
@@ -230,6 +262,12 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         return;
     }
   }
+}
+
+void QuicCryptoClientStream::OnVerifyProofComplete(int result) {
+  DCHECK_EQ(STATE_VERIFY_PROOF_COMPLETED, next_state_);
+  DVLOG(1) << "VerifyProof completed: " << result;
+  DoHandshakeLoop(NULL, result);
 }
 
 }  // namespace net

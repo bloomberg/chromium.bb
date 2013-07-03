@@ -1,0 +1,50 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 4 (0x4)
+    Signature Algorithm: sha1WithRSAEncryption
+        Issuer: O=Acme Co, CN=Intermediate CA
+        Validity
+            Not Before: Jan  1 10:00:00 2013 GMT
+            Not After : Dec 31 10:00:00 2023 GMT
+        Subject: O=Acme Co, CN=ECDSA Leaf certificate
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (256 bit)
+                pub: 
+                    04:6d:48:d0:30:76:bb:bf:91:b1:d7:03:c2:fc:95:
+                    9b:e0:ea:42:ed:43:2c:a6:b2:23:c4:52:33:93:95:
+                    25:fc:16:75:83:9e:0f:0f:91:a5:47:b1:21:91:d4:
+                    94:94:30:b8:00:dc:1c:79:2c:fa:72:99:62:b2:fa:
+                    af:b0:ca:f2:42
+                ASN1 OID: prime256v1
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Digital Signature
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication
+            X509v3 Basic Constraints: critical
+                CA:FALSE
+            X509v3 Subject Alternative Name: 
+                DNS:test.example.com
+    Signature Algorithm: sha1WithRSAEncryption
+         5d:23:47:b4:b5:0f:38:18:cd:63:90:24:37:f1:da:67:66:a4:
+         fe:8d:53:3f:c5:a7:10:e6:21:a3:1d:b7:42:b0:1a:e7:d7:83:
+         3d:ea:7b:6b:89:85:bb:13:77:4d:45:ab:b2:e7:1e:ac:6e:74:
+         b6:9f:c4:e0:76:1c:e4:13:e9:6c:b1:20:a3:34:e8:1e:8a:71:
+         51:cb:00:44:71:64:f6:4b:9e:9a:2d:d9:9a:44:62:f5:8c:3c:
+         c5:ec:c1:1c:d5:bb:05:53:33:af:70:44:1d:5b:aa:23:67:30:
+         3e:d3:a9:5e:a2:57:84:86:aa:be:bd:7b:4f:74:d9:3b:cd:2e:
+         7e:d1
+-----BEGIN CERTIFICATE-----
+MIIB3DCCAUegAwIBAgIBBDALBgkqhkiG9w0BAQUwLDEQMA4GA1UEChMHQWNtZSBD
+bzEYMBYGA1UEAxMPSW50ZXJtZWRpYXRlIENBMB4XDTEzMDEwMTEwMDAwMFoXDTIz
+MTIzMTEwMDAwMFowMzEQMA4GA1UEChMHQWNtZSBDbzEfMB0GA1UEAxMWRUNEU0Eg
+TGVhZiBjZXJ0aWZpY2F0ZTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABG1I0DB2
+u7+RsdcDwvyVm+DqQu1DLKayI8RSM5OVJfwWdYOeDw+RpUexIZHUlJQwuADcHHks
++nKZYrL6r7DK8kKjUjBQMA4GA1UdDwEB/wQEAwIAgDATBgNVHSUEDDAKBggrBgEF
+BQcDATAMBgNVHRMBAf8EAjAAMBsGA1UdEQQUMBKCEHRlc3QuZXhhbXBsZS5jb20w
+CwYJKoZIhvcNAQEFA4GBAF0jR7S1DzgYzWOQJDfx2mdmpP6NUz/FpxDmIaMdt0Kw
+GufXgz3qe2uJhbsTd01Fq7LnHqxudLafxOB2HOQT6WyxIKM06B6KcVHLAERxZPZL
+npot2ZpEYvWMPMXswRzVuwVTM69wRB1bqiNnMD7TqV6iV4SGqr69e0902TvNLn7R
+-----END CERTIFICATE-----

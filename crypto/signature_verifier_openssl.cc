@@ -53,7 +53,17 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
       d2i_X509_ALGOR(NULL, &signature_algorithm, signature_algorithm_len));
   if (!algorithm.get())
     return false;
-  const EVP_MD* digest = EVP_get_digestbyobj(algorithm.get()->algorithm);
+  int nid = OBJ_obj2nid(algorithm.get()->algorithm);
+  const EVP_MD* digest;
+  if (nid == NID_ecdsa_with_SHA1) {
+    digest = EVP_sha1();
+  } else if (nid == NID_ecdsa_with_SHA256) {
+    digest = EVP_sha256();
+  } else {
+    // This works for PKCS #1 v1.5 RSA signatures, but not for ECDSA
+    // signatures.
+    digest = EVP_get_digestbyobj(algorithm.get()->algorithm);
+  }
   if (!digest)
     return false;
 
@@ -104,7 +114,8 @@ bool SignatureVerifier::VerifyFinal() {
   int rv = EVP_DigestVerifyFinal(verify_context_->ctx.get(),
                                  vector_as_array(&signature_),
                                  signature_.size());
-  DCHECK_GE(rv, 0);
+  // rv is -1 if a DER-encoded ECDSA signature cannot be decoded correctly.
+  DCHECK_GE(rv, -1);
   Reset();
   return rv == 1;
 }

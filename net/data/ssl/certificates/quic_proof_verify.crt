@@ -1,0 +1,106 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 1 (0x1)
+    Signature Algorithm: sha1WithRSAEncryption
+        Issuer: O=Acme Co, CN=Root CA
+        Validity
+            Not Before: Jan  1 10:00:00 2013 GMT
+            Not After : Dec 31 10:00:00 2023 GMT
+        Subject: O=Acme Co, CN=Root CA
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (1024 bit)
+                Modulus:
+                    00:f3:8f:b5:01:f7:8f:bf:0e:c3:bc:2e:43:f9:63:
+                    32:ae:e2:70:2d:77:70:bf:32:57:77:dd:00:f4:16:
+                    08:e2:f4:b8:b4:c9:bc:41:be:54:ba:44:3f:6f:77:
+                    f9:d1:1b:52:25:16:7d:df:f9:29:79:3c:7c:8f:16:
+                    e3:85:d5:7c:96:5e:2e:60:b3:80:e1:fc:09:b9:04:
+                    4d:ff:bc:05:25:55:96:b8:e7:7e:03:ed:f4:a1:93:
+                    54:66:b6:d5:e4:1f:92:94:52:7d:c3:60:89:5f:79:
+                    f9:63:d1:f4:bb:4d:fa:da:4d:2e:d2:1d:ac:dc:7a:
+                    4f:52:67:3f:ad:eb:ed:ba:cd
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Certificate Sign
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+    Signature Algorithm: sha1WithRSAEncryption
+         7c:0f:20:54:85:ea:e9:68:c5:15:fc:10:8a:09:98:0e:51:53:
+         7a:a3:37:c3:ec:8d:61:2c:49:66:d0:34:0b:8b:68:50:58:75:
+         1f:fb:76:87:89:16:7d:56:d1:be:2f:bb:ef:95:26:92:55:37:
+         6f:ca:82:e2:d4:93:33:80:1f:9c:b9:2d:1e:ee:3b:90:7d:13:
+         2e:28:9b:17:8c:15:5f:12:eb:ed:f2:86:2f:a5:f5:59:e4:f3:
+         07:a9:99:2d:32:70:d4:2a:d0:43:f2:1c:92:6d:75:f8:60:fa:
+         b5:8f:4f:07:6b:f6:c0:80:b3:4f:c8:9f:ed:11:bd:4d:d9:d7:
+         4a:2c
+-----BEGIN CERTIFICATE-----
+MIIB8DCCAVugAwIBAgIBATALBgkqhkiG9w0BAQUwJDEQMA4GA1UEChMHQWNtZSBD
+bzEQMA4GA1UEAxMHUm9vdCBDQTAeFw0xMzAxMDExMDAwMDBaFw0yMzEyMzExMDAw
+MDBaMCQxEDAOBgNVBAoTB0FjbWUgQ28xEDAOBgNVBAMTB1Jvb3QgQ0EwgZ0wCwYJ
+KoZIhvcNAQEBA4GNADCBiQKBgQDzj7UB94+/DsO8LkP5YzKu4nAtd3C/Mld33QD0
+Fgji9Li0ybxBvlS6RD9vd/nRG1IlFn3f+Sl5PHyPFuOF1XyWXi5gs4Dh/Am5BE3/
+vAUlVZa4534D7fShk1RmttXkH5KUUn3DYIlfeflj0fS7TfraTS7SHazcek9SZz+t
+6+26zQIDAQABozgwNjAOBgNVHQ8BAf8EBAMCAAQwEwYDVR0lBAwwCgYIKwYBBQUH
+AwEwDwYDVR0TAQH/BAUwAwEB/zALBgkqhkiG9w0BAQUDgYEAfA8gVIXq6WjFFfwQ
+igmYDlFTeqM3w+yNYSxJZtA0C4toUFh1H/t2h4kWfVbRvi+775UmklU3b8qC4tST
+M4AfnLktHu47kH0TLiibF4wVXxLr7fKGL6X1WeTzB6mZLTJw1CrQQ/Ickm11+GD6
+tY9PB2v2wICzT8if7RG9TdnXSiw=
+-----END CERTIFICATE-----
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 1 (0x1)
+    Signature Algorithm: sha1WithRSAEncryption
+        Issuer: O=Acme Co, CN=Root CA
+        Validity
+            Not Before: Jan  1 10:00:00 2013 GMT
+            Not After : Dec 31 10:00:00 2023 GMT
+        Subject: O=Acme Co, CN=Root CA
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (1024 bit)
+                Modulus:
+                    00:f3:8f:b5:01:f7:8f:bf:0e:c3:bc:2e:43:f9:63:
+                    32:ae:e2:70:2d:77:70:bf:32:57:77:dd:00:f4:16:
+                    08:e2:f4:b8:b4:c9:bc:41:be:54:ba:44:3f:6f:77:
+                    f9:d1:1b:52:25:16:7d:df:f9:29:79:3c:7c:8f:16:
+                    e3:85:d5:7c:96:5e:2e:60:b3:80:e1:fc:09:b9:04:
+                    4d:ff:bc:05:25:55:96:b8:e7:7e:03:ed:f4:a1:93:
+                    54:66:b6:d5:e4:1f:92:94:52:7d:c3:60:89:5f:79:
+                    f9:63:d1:f4:bb:4d:fa:da:4d:2e:d2:1d:ac:dc:7a:
+                    4f:52:67:3f:ad:eb:ed:ba:cd
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Certificate Sign
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+    Signature Algorithm: sha1WithRSAEncryption
+         7c:0f:20:54:85:ea:e9:68:c5:15:fc:10:8a:09:98:0e:51:53:
+         7a:a3:37:c3:ec:8d:61:2c:49:66:d0:34:0b:8b:68:50:58:75:
+         1f:fb:76:87:89:16:7d:56:d1:be:2f:bb:ef:95:26:92:55:37:
+         6f:ca:82:e2:d4:93:33:80:1f:9c:b9:2d:1e:ee:3b:90:7d:13:
+         2e:28:9b:17:8c:15:5f:12:eb:ed:f2:86:2f:a5:f5:59:e4:f3:
+         07:a9:99:2d:32:70:d4:2a:d0:43:f2:1c:92:6d:75:f8:60:fa:
+         b5:8f:4f:07:6b:f6:c0:80:b3:4f:c8:9f:ed:11:bd:4d:d9:d7:
+         4a:2c
+-----BEGIN CERTIFICATE-----
+MIIB8DCCAVugAwIBAgIBATALBgkqhkiG9w0BAQUwJDEQMA4GA1UEChMHQWNtZSBD
+bzEQMA4GA1UEAxMHUm9vdCBDQTAeFw0xMzAxMDExMDAwMDBaFw0yMzEyMzExMDAw
+MDBaMCQxEDAOBgNVBAoTB0FjbWUgQ28xEDAOBgNVBAMTB1Jvb3QgQ0EwgZ0wCwYJ
+KoZIhvcNAQEBA4GNADCBiQKBgQDzj7UB94+/DsO8LkP5YzKu4nAtd3C/Mld33QD0
+Fgji9Li0ybxBvlS6RD9vd/nRG1IlFn3f+Sl5PHyPFuOF1XyWXi5gs4Dh/Am5BE3/
+vAUlVZa4534D7fShk1RmttXkH5KUUn3DYIlfeflj0fS7TfraTS7SHazcek9SZz+t
+6+26zQIDAQABozgwNjAOBgNVHQ8BAf8EBAMCAAQwEwYDVR0lBAwwCgYIKwYBBQUH
+AwEwDwYDVR0TAQH/BAUwAwEB/zALBgkqhkiG9w0BAQUDgYEAfA8gVIXq6WjFFfwQ
+igmYDlFTeqM3w+yNYSxJZtA0C4toUFh1H/t2h4kWfVbRvi+775UmklU3b8qC4tST
+M4AfnLktHu47kH0TLiibF4wVXxLr7fKGL6X1WeTzB6mZLTJw1CrQQ/Ickm11+GD6
+tY9PB2v2wICzT8if7RG9TdnXSiw=
+-----END CERTIFICATE-----

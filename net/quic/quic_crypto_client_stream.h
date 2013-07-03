@@ -47,12 +47,18 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
     STATE_IDLE,
     STATE_SEND_CHLO,
     STATE_RECV_REJ,
+    STATE_VERIFY_PROOF,
+    STATE_VERIFY_PROOF_COMPLETED,
     STATE_RECV_SHLO,
   };
 
   // DoHandshakeLoop performs a step of the handshake state machine. Note that
   // |in| is NULL for the first call.
-  void DoHandshakeLoop(const CryptoHandshakeMessage* in);
+  void DoHandshakeLoop(const CryptoHandshakeMessage* in, int result);
+
+  void OnVerifyProofComplete(int result);
+
+  base::WeakPtrFactory<QuicCryptoClientStream> weak_factory_;
 
   State next_state_;
   // num_client_hellos_ contains the number of client hello messages that this
@@ -65,6 +71,12 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   std::string nonce_;
   // Server's hostname
   std::string server_hostname_;
+
+  // Generation counter from QuicCryptoClientConfig's CachedState.
+  uint64 generation_counter_;
+
+  // Error details for ProofVerifier's VerifyProof call.
+  std::string error_details_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientStream);
 };
