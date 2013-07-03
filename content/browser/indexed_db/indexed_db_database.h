@@ -19,6 +19,7 @@
 
 namespace content {
 
+class IndexedDBConnection;
 class IndexedDBDatabaseCallbacks;
 class IndexedDBBackingStore;
 class IndexedDBFactory;
@@ -83,10 +84,10 @@ class CONTENT_EXPORT IndexedDBDatabase
                          bool auto_increment);
   void DeleteObjectStore(int64 transaction_id, int64 object_store_id);
   void CreateTransaction(int64 transaction_id,
-                         scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+                         IndexedDBConnection* connection,
                          const std::vector<int64>& object_store_ids,
                          uint16 mode);
-  void Close(scoped_refptr<IndexedDBDatabaseCallbacks> callbacks);
+  void Close(IndexedDBConnection* connection);
 
   void Commit(int64 transaction_id);
   void Abort(int64 transaction_id);
@@ -164,20 +165,19 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   bool IsOpenConnectionBlocked() const;
   bool OpenInternal();
-  void RunVersionChangeTransaction(
-      scoped_refptr<IndexedDBCallbacks> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-      int64 transaction_id,
-      int64 requested_version,
-      WebKit::WebIDBCallbacks::DataLoss data_loss);
+  void RunVersionChangeTransaction(scoped_refptr<IndexedDBCallbacks> callbacks,
+                                   scoped_ptr<IndexedDBConnection> connection,
+                                   int64 transaction_id,
+                                   int64 requested_version,
+                                   WebKit::WebIDBCallbacks::DataLoss data_loss);
   void RunVersionChangeTransactionFinal(
       scoped_refptr<IndexedDBCallbacks> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+      scoped_ptr<IndexedDBConnection> connection,
       int64 transaction_id,
       int64 requested_version);
   void RunVersionChangeTransactionFinal(
       scoped_refptr<IndexedDBCallbacks> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+      scoped_ptr<IndexedDBConnection> connection,
       int64 transaction_id,
       int64 requested_version,
       WebKit::WebIDBCallbacks::DataLoss data_loss);
@@ -210,16 +210,18 @@ class CONTENT_EXPORT IndexedDBDatabase
   class PendingOpenCall;
   typedef std::list<PendingOpenCall*> PendingOpenCallList;
   PendingOpenCallList pending_open_calls_;
-  scoped_ptr<PendingOpenCall> pending_run_version_change_transaction_call_;
-  scoped_ptr<PendingOpenCall> pending_second_half_open_;
+
+  class PendingUpgradeCall;
+  scoped_ptr<PendingUpgradeCall> pending_run_version_change_transaction_call_;
+  class PendingSuccessCall;
+  scoped_ptr<PendingSuccessCall> pending_second_half_open_;
 
   class PendingDeleteCall;
   typedef std::list<PendingDeleteCall*> PendingDeleteCallList;
   PendingDeleteCallList pending_delete_calls_;
 
-  typedef list_set<scoped_refptr<IndexedDBDatabaseCallbacks> >
-      DatabaseCallbacksSet;
-  DatabaseCallbacksSet database_callbacks_set_;
+  typedef list_set<IndexedDBConnection*> ConnectionSet;
+  ConnectionSet connections_;
 
   bool closing_connection_;
 };

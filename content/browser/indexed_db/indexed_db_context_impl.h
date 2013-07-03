@@ -33,7 +33,7 @@ class SpecialStoragePolicy;
 
 namespace content {
 
-class WebIDBDatabaseImpl;
+class IndexedDBConnection;
 
 class CONTENT_EXPORT IndexedDBContextImpl
     : NON_EXPORTED_BASE(public IndexedDBContext) {
@@ -65,8 +65,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
       base::SequencedTaskRunner* task_runner) OVERRIDE;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
-  void ConnectionOpened(const GURL& origin_url, WebIDBDatabaseImpl* db);
-  void ConnectionClosed(const GURL& origin_url, WebIDBDatabaseImpl* db);
+  void ConnectionOpened(const GURL& origin_url, IndexedDBConnection* db);
+  void ConnectionClosed(const GURL& origin_url, IndexedDBConnection* db);
   void TransactionComplete(const GURL& origin_url);
   bool WouldBeOverQuota(const GURL& origin_url, int64 additional_bytes);
   bool IsOverQuota(const GURL& origin_url);
@@ -131,7 +131,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   scoped_ptr<std::set<GURL> > origin_set_;
   OriginToSizeMap origin_size_map_;
   OriginToSizeMap space_available_map_;
-  typedef std::set<WebIDBDatabaseImpl*> ConnectionSet;
+  typedef std::set<IndexedDBConnection*> ConnectionSet;
   std::map<GURL, ConnectionSet> connections_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);

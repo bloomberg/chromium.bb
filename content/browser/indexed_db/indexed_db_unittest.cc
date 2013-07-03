@@ -7,8 +7,8 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/browser/indexed_db/webidbdatabase_impl.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_context.h"
@@ -37,9 +37,7 @@ class IndexedDBTest : public testing::Test {
   }
 
  protected:
-  void FlushIndexedDBTaskRunner() {
-    task_runner_->RunUntilIdle();
-  }
+  void FlushIndexedDBTaskRunner() { task_runner_->RunUntilIdle(); }
 
   base::MessageLoop message_loop_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -120,18 +118,18 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   EXPECT_TRUE(file_util::DirectoryExists(session_only_path));
 }
 
-class MockWebIDBDatabase : public WebIDBDatabaseImpl {
+class MockConnection : public IndexedDBConnection {
  public:
-  explicit MockWebIDBDatabase(bool expect_force_close)
-      : WebIDBDatabaseImpl(NULL, NULL),
+  explicit MockConnection(bool expect_force_close)
+      : IndexedDBConnection(NULL, NULL),
         expect_force_close_(expect_force_close),
         force_close_called_(false) {}
 
-  virtual ~MockWebIDBDatabase() {
+  virtual ~MockConnection() {
     EXPECT_TRUE(force_close_called_ == expect_force_close_);
   }
 
-  virtual void forceClose() OVERRIDE {
+  virtual void ForceClose() OVERRIDE {
     ASSERT_TRUE(expect_force_close_);
     force_close_called_ = true;
   }
@@ -165,7 +163,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
     const bool kExpectForceClose = true;
 
-    MockWebIDBDatabase connection1(kExpectForceClose);
+    MockConnection connection1(kExpectForceClose);
     idb_context->TaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&IndexedDBContextImpl::ConnectionOpened,
@@ -173,7 +171,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
                    kTestOrigin,
                    &connection1));
 
-    MockWebIDBDatabase connection2(!kExpectForceClose);
+    MockConnection connection2(!kExpectForceClose);
     idb_context->TaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&IndexedDBContextImpl::ConnectionOpened,

@@ -29,12 +29,12 @@ struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
 struct IndexedDBHostMsg_FactoryOpen_Params;
 
 namespace content {
+class IndexedDBConnection;
 class IndexedDBContextImpl;
 class IndexedDBCursor;
 class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
-class WebIDBDatabaseImpl;
 struct IndexedDBDatabaseMetadata;
 
 // Handles all IndexedDB related messages from a particular renderer process.
@@ -62,8 +62,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   // IndexedDBCallbacks call these methods to add the results into the
   // applicable map.  See below for more details.
-  int32 Add(IndexedDBCursor* idb_cursor);
-  int32 Add(WebIDBDatabaseImpl* idb_database,
+  int32 Add(IndexedDBCursor* cursor);
+  int32 Add(IndexedDBConnection* connection,
             int32 ipc_thread_id,
             const GURL& origin_url);
 
@@ -190,7 +190,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnAbort(int32 ipc_database_id, int64 transaction_id);
     void OnCommit(int32 ipc_database_id, int64 transaction_id);
     IndexedDBDispatcherHost* parent_;
-    IDMap<WebIDBDatabaseImpl, IDMapOwnPointer> map_;
+    IDMap<IndexedDBConnection, IDMapOwnPointer> map_;
     WebIDBObjectIDToURLMap database_url_map_;
     TransactionIDToSizeMap transaction_size_map_;
     TransactionIDToURLMap transaction_url_map_;

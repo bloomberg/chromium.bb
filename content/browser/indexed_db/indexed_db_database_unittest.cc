@@ -13,13 +13,13 @@
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
+#include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/webidbdatabase_impl.h"
 
 namespace content {
 
@@ -50,9 +50,9 @@ class MockIDBCallbacks : public IndexedDBCallbacks {
                          const IndexedDBKey& key,
                          const IndexedDBKey& primary_key,
                          std::vector<char>* value) OVERRIDE {}
-  virtual void OnSuccess(scoped_refptr<IndexedDBDatabase> db,
+  virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
                          const IndexedDBDatabaseMetadata& metadata) OVERRIDE {
-    was_success_db_called_ = true;
+    connection_ = connection.Pass();
   }
   virtual void OnSuccess(const IndexedDBKey& key) OVERRIDE {}
   virtual void OnSuccess(std::vector<char>* value) OVERRIDE {}
@@ -69,11 +69,12 @@ class MockIDBCallbacks : public IndexedDBCallbacks {
       const std::vector<IndexedDBKey>& primary_keys,
       const std::vector<std::vector<char> >& values) OVERRIDE {}
 
+  IndexedDBConnection* connection() { return connection_.get(); }
+
  private:
-  virtual ~MockIDBCallbacks() { EXPECT_TRUE(was_success_db_called_); }
-  MockIDBCallbacks()
-      : IndexedDBCallbacks(NULL, 0, 0), was_success_db_called_(false) {}
-  bool was_success_db_called_;
+  virtual ~MockIDBCallbacks() { EXPECT_TRUE(connection_); }
+  MockIDBCallbacks() : IndexedDBCallbacks(NULL, 0, 0) {}
+  scoped_ptr<IndexedDBConnection> connection_;
 };
 
 class FakeIDBDatabaseCallbacks : public IndexedDBDatabaseCallbacks {
@@ -108,32 +109,32 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 
   scoped_refptr<MockIDBCallbacks> request1 = MockIDBCallbacks::Create();
-  scoped_refptr<FakeIDBDatabaseCallbacks> connection1 =
+  scoped_refptr<FakeIDBDatabaseCallbacks> callbacks1 =
       FakeIDBDatabaseCallbacks::Create();
   const int64 transaction_id1 = 1;
   db->OpenConnection(request1,
-                     connection1,
+                     callbacks1,
                      transaction_id1,
                      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
 
   EXPECT_FALSE(backing_store->HasOneRef());  // db, connection count > 0
 
   scoped_refptr<MockIDBCallbacks> request2 = MockIDBCallbacks::Create();
-  scoped_refptr<FakeIDBDatabaseCallbacks> connection2 =
+  scoped_refptr<FakeIDBDatabaseCallbacks> callbacks2 =
       FakeIDBDatabaseCallbacks::Create();
   const int64 transaction_id2 = 2;
   db->OpenConnection(request2,
-                     connection2,
+                     callbacks2,
                      transaction_id2,
                      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and connection
 
-  db->Close(connection1);
+  db->Close(request1->connection());
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and connection
 
-  db->Close(connection2);
+  db->Close(request2->connection());
   EXPECT_TRUE(backing_store->HasOneRef());
   EXPECT_FALSE(db->BackingStore().get());
 
@@ -174,23 +175,25 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 
-  scoped_refptr<MockIDBDatabaseCallbacks> connection =
+  scoped_refptr<MockIDBDatabaseCallbacks> callbacks =
       MockIDBDatabaseCallbacks::Create();
-  WebIDBDatabaseImpl web_database(backend, connection);
 
   scoped_refptr<MockIDBCallbacks> request = MockIDBCallbacks::Create();
   const int64 upgrade_transaction_id = 3;
   backend->OpenConnection(request,
-                          connection,
+                          callbacks,
                           upgrade_transaction_id,
                           IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
 
   const int64 transaction_id = 123;
   const std::vector<int64> scope;
-  web_database.createTransaction(
-      transaction_id, scope, indexed_db::TRANSACTION_READ_ONLY);
+  request->connection()->database()->CreateTransaction(
+      transaction_id,
+      request->connection(),
+      scope,
+      indexed_db::TRANSACTION_READ_ONLY);
 
-  web_database.forceClose();
+  request->connection()->ForceClose();
 
   EXPECT_TRUE(backing_store->HasOneRef());  // local
 }

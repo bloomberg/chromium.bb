@@ -19,13 +19,12 @@
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 
 namespace content {
+class IndexedDBConnection;
 class IndexedDBCursor;
 class IndexedDBDatabase;
 class IndexedDBDatabaseCallbacks;
-class WebIDBDatabaseImpl;
 struct IndexedDBDatabaseMetadata;
 
 class CONTENT_EXPORT IndexedDBCallbacks
@@ -76,13 +75,11 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // IndexedDBFactory::Open
   virtual void OnUpgradeNeeded(
       int64 old_version,
-      scoped_refptr<IndexedDBDatabase> db,
+      scoped_ptr<IndexedDBConnection> connection,
       const content::IndexedDBDatabaseMetadata& metadata,
       WebKit::WebIDBCallbacks::DataLoss data_loss);
-  virtual void OnSuccess(scoped_refptr<IndexedDBDatabase> db,
+  virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
                          const content::IndexedDBDatabaseMetadata& metadata);
-  void SetDatabaseCallbacks(
-      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks);
 
   // IndexedDBDatabase::OpenCursor
   virtual void OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
@@ -143,11 +140,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
  private:
   friend class base::RefCounted<IndexedDBCallbacks>;
-
-  scoped_ptr<WebIDBDatabaseImpl> web_database_impl_;
-  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_;
-  bool did_complete_;
-  bool did_create_proxy_;
 
   // Originally from IndexedDBCallbacks:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;

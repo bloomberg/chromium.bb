@@ -7,11 +7,11 @@
 #include <algorithm>
 #include <vector>
 
+#include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
-#include "content/browser/indexed_db/webidbdatabase_impl.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "webkit/browser/quota/quota_manager.h"
 
@@ -29,9 +29,7 @@ const int64 kNoTransaction = -1;
 IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                                        int32 ipc_thread_id,
                                        int32 ipc_callbacks_id)
-    : did_complete_(false),
-      did_create_proxy_(false),
-      dispatcher_host_(dispatcher_host),
+    : dispatcher_host_(dispatcher_host),
       ipc_callbacks_id_(ipc_callbacks_id),
       ipc_thread_id_(ipc_thread_id),
       ipc_cursor_id_(kNoCursor),
@@ -43,9 +41,7 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                                        int32 ipc_thread_id,
                                        int32 ipc_callbacks_id,
                                        int32 ipc_cursor_id)
-    : did_complete_(false),
-      did_create_proxy_(false),
-      dispatcher_host_(dispatcher_host),
+    : dispatcher_host_(dispatcher_host),
       ipc_callbacks_id_(ipc_callbacks_id),
       ipc_thread_id_(ipc_thread_id),
       ipc_cursor_id_(ipc_cursor_id),
@@ -59,9 +55,7 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                                        int32 ipc_database_callbacks_id,
                                        int64 host_transaction_id,
                                        const GURL& origin_url)
-    : did_complete_(false),
-      did_create_proxy_(false),
-      dispatcher_host_(dispatcher_host),
+    : dispatcher_host_(dispatcher_host),
       ipc_callbacks_id_(ipc_callbacks_id),
       ipc_thread_id_(ipc_thread_id),
       ipc_cursor_id_(kNoCursor),
@@ -99,7 +93,12 @@ void IndexedDBCallbacks::OnSuccess(const std::vector<string16>& value) {
 
 void IndexedDBCallbacks::OnBlocked(int64 existing_version) {
   DCHECK(dispatcher_host_);
+
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
+  // No transaction/db callbacks for DeleteDatabase.
+  DCHECK_EQ(kNoTransaction == host_transaction_id_,
+            kNoDatabaseCallbacks == ipc_database_callbacks_id_);
+  DCHECK_EQ(kNoDatabase, ipc_database_id_);
 
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksIntBlocked(
       ipc_thread_id_, ipc_callbacks_id_, existing_version));
@@ -107,19 +106,19 @@ void IndexedDBCallbacks::OnBlocked(int64 existing_version) {
 
 void IndexedDBCallbacks::OnUpgradeNeeded(
     int64 old_version,
-    scoped_refptr<IndexedDBDatabase> database,
+    scoped_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata,
     WebIDBCallbacks::DataLoss data_loss) {
   DCHECK(dispatcher_host_);
-  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
-  did_create_proxy_ = true;
 
-  WebIDBDatabaseImpl* web_database =
-      new WebIDBDatabaseImpl(database, database_callbacks_);
+  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
+  DCHECK_NE(kNoTransaction, host_transaction_id_);
+  DCHECK_EQ(kNoDatabase, ipc_database_id_);
+  DCHECK_NE(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
 
   dispatcher_host_->RegisterTransactionId(host_transaction_id_, origin_url_);
   int32 ipc_database_id =
-      dispatcher_host_->Add(web_database, ipc_thread_id_, origin_url_);
+      dispatcher_host_->Add(connection.release(), ipc_thread_id_, origin_url_);
   ipc_database_id_ = ipc_database_id;
   IndexedDBMsg_CallbacksUpgradeNeeded_Params params;
   params.ipc_thread_id = ipc_thread_id_;
@@ -130,25 +129,24 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
   params.idb_metadata = IndexedDBDispatcherHost::ConvertMetadata(metadata);
   params.data_loss = data_loss;
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksUpgradeNeeded(params));
-
-  database_callbacks_ = NULL;
 }
 
-void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBDatabase> database,
+void IndexedDBCallbacks::OnSuccess(scoped_ptr<IndexedDBConnection> connection,
                                    const IndexedDBDatabaseMetadata& metadata) {
   DCHECK(dispatcher_host_);
+
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
+  DCHECK_NE(kNoTransaction, host_transaction_id_);
+  DCHECK_NE(ipc_database_id_ == kNoDatabase, !connection);
+  DCHECK_NE(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
 
   scoped_refptr<IndexedDBCallbacks> self(this);
 
-  WebIDBDatabaseImpl* impl =
-      did_create_proxy_ ? 0
-                        : new WebIDBDatabaseImpl(database, database_callbacks_);
-  database_callbacks_ = NULL;
-
   int32 ipc_object_id = ipc_database_id_;
-  if (ipc_object_id == kNoDatabase)
-    ipc_object_id = dispatcher_host_->Add(impl, ipc_thread_id_, origin_url_);
+  if (ipc_object_id == kNoDatabase) {
+    ipc_object_id = dispatcher_host_->Add(
+        connection.release(), ipc_thread_id_, origin_url_);
+  }
 
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessIDBDatabase(
       ipc_thread_id_,
@@ -159,17 +157,13 @@ void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBDatabase> database,
   dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks::SetDatabaseCallbacks(
-    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks) {
-  database_callbacks_ = database_callbacks;
-}
-
 void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
                                    const IndexedDBKey& key,
                                    const IndexedDBKey& primary_key,
                                    std::vector<char>* value) {
   DCHECK(dispatcher_host_);
 
+  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
@@ -281,6 +275,7 @@ void IndexedDBCallbacks::OnSuccess(std::vector<char>* value,
 void IndexedDBCallbacks::OnSuccess(std::vector<char>* value) {
   DCHECK(dispatcher_host_);
 
+  DCHECK(kNoCursor == ipc_cursor_id_ || value == NULL);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
@@ -325,6 +320,7 @@ void IndexedDBCallbacks::OnSuccess(int64 value) {
 void IndexedDBCallbacks::OnSuccess() {
   DCHECK(dispatcher_host_);
 
+  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);

@@ -16,9 +16,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
-#include "content/browser/indexed_db/webidbdatabase_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/indexed_db_info.h"
 #include "content/public/common/content_switches.h"
@@ -195,9 +195,9 @@ void IndexedDBContextImpl::ForceClose(const GURL& origin_url) {
     ConnectionSet::iterator it = connections.begin();
     while (it != connections.end()) {
       // Remove before closing so callbacks don't double-erase
-      WebIDBDatabaseImpl* db = *it;
+      IndexedDBConnection* connection = *it;
       connections.erase(it++);
-      db->forceClose();
+      connection->ForceClose();
     }
     DCHECK_EQ(connections_[origin_url].size(), 0UL);
     connections_.erase(origin_url);
@@ -222,7 +222,7 @@ void IndexedDBContextImpl::SetTaskRunnerForTesting(
 }
 
 void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url,
-                                            WebIDBDatabaseImpl* connection) {
+                                            IndexedDBConnection* connection) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   DCHECK_EQ(connections_[origin_url].count(connection), 0UL);
   if (quota_manager_proxy()) {
@@ -242,7 +242,7 @@ void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url,
 }
 
 void IndexedDBContextImpl::ConnectionClosed(const GURL& origin_url,
-                                            WebIDBDatabaseImpl* connection) {
+                                            IndexedDBConnection* connection) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   // May not be in the map if connection was forced to close
   if (connections_.find(origin_url) == connections_.end() ||

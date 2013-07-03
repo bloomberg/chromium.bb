@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
@@ -59,18 +60,17 @@ class DeleteObjectStoreOperation : public IndexedDBTransaction::Operation {
 class IndexedDBDatabase::VersionChangeOperation
     : public IndexedDBTransaction::Operation {
  public:
-  VersionChangeOperation(
-      scoped_refptr<IndexedDBDatabase> database,
-      int64 transaction_id,
-      int64 version,
-      scoped_refptr<IndexedDBCallbacks> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-      WebKit::WebIDBCallbacks::DataLoss data_loss)
+  VersionChangeOperation(scoped_refptr<IndexedDBDatabase> database,
+                         int64 transaction_id,
+                         int64 version,
+                         scoped_refptr<IndexedDBCallbacks> callbacks,
+                         scoped_ptr<IndexedDBConnection> connection,
+                         WebKit::WebIDBCallbacks::DataLoss data_loss)
       : database_(database),
         transaction_id_(transaction_id),
         version_(version),
         callbacks_(callbacks),
-        database_callbacks_(database_callbacks),
+        connection_(connection.Pass()),
         data_loss_(data_loss) {}
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
@@ -79,7 +79,7 @@ class IndexedDBDatabase::VersionChangeOperation
   int64 transaction_id_;
   int64 version_;
   scoped_refptr<IndexedDBCallbacks> callbacks_;
-  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_;
+  scoped_ptr<IndexedDBConnection> connection_;
   WebKit::WebIDBCallbacks::DataLoss data_loss_;
 };
 
@@ -368,6 +368,8 @@ class ClearOperation : public IndexedDBTransaction::Operation {
   const scoped_refptr<IndexedDBCallbacks> callbacks_;
 };
 
+// PendingOpenCall has a scoped_refptr<IndexedDBDatabaseCallbacks> because it
+// isn't a connection yet.
 class IndexedDBDatabase::PendingOpenCall {
  public:
   PendingOpenCall(scoped_refptr<IndexedDBCallbacks> callbacks,
@@ -388,6 +390,55 @@ class IndexedDBDatabase::PendingOpenCall {
  private:
   scoped_refptr<IndexedDBCallbacks> callbacks_;
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_;
+  int64 version_;
+  const int64 transaction_id_;
+};
+
+// PendingUpgradeCall has a scoped_ptr<IndexedDBConnection> because it owns the
+// in-progress connection.
+class IndexedDBDatabase::PendingUpgradeCall {
+ public:
+  PendingUpgradeCall(scoped_refptr<IndexedDBCallbacks> callbacks,
+                     scoped_ptr<IndexedDBConnection> connection,
+                     int64 transaction_id,
+                     int64 version)
+      : callbacks_(callbacks),
+        connection_(connection.Pass()),
+        version_(version),
+        transaction_id_(transaction_id) {}
+  scoped_refptr<IndexedDBCallbacks> Callbacks() { return callbacks_; }
+  scoped_ptr<IndexedDBConnection> Connection() { return connection_.Pass(); }
+  int64 Version() { return version_; }
+  int64 TransactionId() const { return transaction_id_; }
+
+ private:
+  scoped_refptr<IndexedDBCallbacks> callbacks_;
+  scoped_ptr<IndexedDBConnection> connection_;
+  int64 version_;
+  const int64 transaction_id_;
+};
+
+// PendingSuccessCall has a IndexedDBConnection* because the connection is now
+// owned elsewhere, but we need to cancel the success call if that connection
+// closes before it is sent.
+class IndexedDBDatabase::PendingSuccessCall {
+ public:
+  PendingSuccessCall(scoped_refptr<IndexedDBCallbacks> callbacks,
+                     IndexedDBConnection* connection,
+                     int64 transaction_id,
+                     int64 version)
+      : callbacks_(callbacks),
+        connection_(connection),
+        version_(version),
+        transaction_id_(transaction_id) {}
+  scoped_refptr<IndexedDBCallbacks> Callbacks() { return callbacks_; }
+  IndexedDBConnection* Connection() { return connection_; }
+  int64 Version() { return version_; }
+  int64 TransactionId() const { return transaction_id_; }
+
+ private:
+  scoped_refptr<IndexedDBCallbacks> callbacks_;
+  IndexedDBConnection* connection_;
   int64 version_;
   const int64 transaction_id_;
 };
@@ -1389,10 +1440,11 @@ void IndexedDBDatabase::VersionChangeOperation::Perform(
     return;
   }
   DCHECK(!database_->pending_second_half_open_);
-  database_->pending_second_half_open_.reset(new PendingOpenCall(
-      callbacks_, database_callbacks_, transaction_id_, version_));
+
+  database_->pending_second_half_open_.reset(new PendingSuccessCall(
+      callbacks_, connection_.get(), transaction_id_, version_));
   callbacks_->OnUpgradeNeeded(
-      old_version, database_, database_->metadata(), data_loss_);
+      old_version, connection_.Pass(), database_->metadata(), data_loss_);
 }
 
 void IndexedDBDatabase::TransactionStarted(IndexedDBTransaction* transaction) {
@@ -1435,7 +1487,12 @@ void IndexedDBDatabase::TransactionFinishedAndCompleteFired(
     if (pending_second_half_open_) {
       DCHECK_EQ(pending_second_half_open_->Version(), metadata_.int_version);
       DCHECK(metadata_.id != kInvalidId);
-      pending_second_half_open_->Callbacks()->OnSuccess(this, this->metadata());
+
+      // Connection was already minted for OnUpgradeNeeded callback.
+      scoped_ptr<IndexedDBConnection> connection;
+
+      pending_second_half_open_->Callbacks()->OnSuccess(
+          connection.Pass(), this->metadata());
       pending_second_half_open_.reset();
     }
     ProcessPendingCalls();
@@ -1445,25 +1502,17 @@ void IndexedDBDatabase::TransactionFinishedAndCompleteFired(
 size_t IndexedDBDatabase::ConnectionCount() const {
   // This does not include pending open calls, as those should not block version
   // changes and deletes.
-  return database_callbacks_set_.size();
+  return connections_.size();
 }
 
 void IndexedDBDatabase::ProcessPendingCalls() {
-  if (pending_second_half_open_) {
-    DCHECK_EQ(pending_second_half_open_->Version(), metadata_.int_version);
-    DCHECK(metadata_.id != kInvalidId);
-    scoped_ptr<PendingOpenCall> pending_call = pending_second_half_open_.Pass();
-    pending_call->Callbacks()->OnSuccess(this, this->metadata());
-    // Fall through when complete, as pending opens may be unblocked.
-  }
-
   if (pending_run_version_change_transaction_call_ && ConnectionCount() == 1) {
     DCHECK(pending_run_version_change_transaction_call_->Version() >
            metadata_.int_version);
-    scoped_ptr<PendingOpenCall> pending_call =
+    scoped_ptr<PendingUpgradeCall> pending_call =
         pending_run_version_change_transaction_call_.Pass();
     RunVersionChangeTransactionFinal(pending_call->Callbacks(),
-                                     pending_call->DatabaseCallbacks(),
+                                     pending_call->Connection(),
                                      pending_call->TransactionId(),
                                      pending_call->Version());
     DCHECK_EQ(static_cast<size_t>(1), ConnectionCount());
@@ -1506,16 +1555,16 @@ void IndexedDBDatabase::ProcessPendingCalls() {
 
 void IndexedDBDatabase::CreateTransaction(
     int64 transaction_id,
-    scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+    IndexedDBConnection* connection,
     const std::vector<int64>& object_store_ids,
     uint16 mode) {
 
-  DCHECK(database_callbacks_set_.has(callbacks));
+  DCHECK(connections_.has(connection));
 
   scoped_refptr<IndexedDBTransaction> transaction =
       IndexedDBTransaction::Create(
           transaction_id,
-          callbacks,
+          connection->callbacks(),
           object_store_ids,
           static_cast<indexed_db::TransactionMode>(mode),
           this);
@@ -1564,8 +1613,8 @@ void IndexedDBDatabase::OpenConnection(
     // The database was deleted then immediately re-opened; OpenInternal()
     // recreates it in the backing store.
     if (OpenInternal()) {
-      DCHECK_EQ(metadata_.int_version,
-                IndexedDBDatabaseMetadata::NO_INT_VERSION);
+      DCHECK_EQ(IndexedDBDatabaseMetadata::NO_INT_VERSION,
+                metadata_.int_version);
     } else {
       string16 message;
       if (version == IndexedDBDatabaseMetadata::NO_INT_VERSION)
@@ -1587,20 +1636,23 @@ void IndexedDBDatabase::OpenConnection(
       metadata_.version == kNoStringVersion &&
       metadata_.int_version == IndexedDBDatabaseMetadata::NO_INT_VERSION;
 
+  scoped_ptr<IndexedDBConnection> connection(
+      new IndexedDBConnection(this, database_callbacks));
+
   if (version == IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION) {
     // For unit tests only - skip upgrade steps. Calling from script with
     // DEFAULT_INT_VERSION throws exception.
     // TODO(jsbell): DCHECK that not in unit tests.
     DCHECK(is_new_database);
-    database_callbacks_set_.insert(database_callbacks);
-    callbacks->OnSuccess(this, this->metadata());
+    connections_.insert(connection.get());
+    callbacks->OnSuccess(connection.Pass(), this->metadata());
     return;
   }
 
   if (version == IndexedDBDatabaseMetadata::NO_INT_VERSION) {
     if (!is_new_database) {
-      database_callbacks_set_.insert(database_callbacks);
-      callbacks->OnSuccess(this, this->metadata());
+      connections_.insert(connection.get());
+      callbacks->OnSuccess(connection.Pass(), this->metadata());
       return;
     }
     // Spec says: If no version is specified and no database exists, set
@@ -1609,9 +1661,9 @@ void IndexedDBDatabase::OpenConnection(
   }
 
   if (version > metadata_.int_version) {
-    database_callbacks_set_.insert(database_callbacks);
+    connections_.insert(connection.get());
     RunVersionChangeTransaction(
-        callbacks, database_callbacks, transaction_id, version, data_loss);
+        callbacks, connection.Pass(), transaction_id, version, data_loss);
     return;
   }
   if (version < metadata_.int_version) {
@@ -1623,29 +1675,30 @@ void IndexedDBDatabase::OpenConnection(
     return;
   }
   DCHECK_EQ(version, metadata_.int_version);
-  database_callbacks_set_.insert(database_callbacks);
-  callbacks->OnSuccess(this, this->metadata());
+  connections_.insert(connection.get());
+  callbacks->OnSuccess(connection.Pass(), this->metadata());
 }
 
 void IndexedDBDatabase::RunVersionChangeTransaction(
     scoped_refptr<IndexedDBCallbacks> callbacks,
-    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+    scoped_ptr<IndexedDBConnection> connection,
     int64 transaction_id,
     int64 requested_version,
     WebKit::WebIDBCallbacks::DataLoss data_loss) {
 
   DCHECK(callbacks.get());
-  DCHECK(database_callbacks_set_.has(database_callbacks));
+  DCHECK(connections_.has(connection.get()));
   if (ConnectionCount() > 1) {
     DCHECK_NE(WebKit::WebIDBCallbacks::DataLossTotal, data_loss);
     // Front end ensures the event is not fired at connections that have
     // close_pending set.
-    for (DatabaseCallbacksSet::const_iterator it =
-             database_callbacks_set_.begin();
-         it != database_callbacks_set_.end();
+    for (ConnectionSet::const_iterator it = connections_.begin();
+         it != connections_.end();
          ++it) {
-      if (it->get() != database_callbacks.get())
-        (*it)->OnVersionChange(metadata_.int_version, requested_version);
+      if (*it != connection.get()) {
+        (*it)->callbacks()->OnVersionChange(
+            metadata_.int_version, requested_version);
+      }
     }
     // TODO(jsbell): Remove the call to OnBlocked and instead wait
     // until the frontend tells us that all the "versionchange" events
@@ -1653,12 +1706,12 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
     callbacks->OnBlocked(metadata_.int_version);
 
     DCHECK(!pending_run_version_change_transaction_call_);
-    pending_run_version_change_transaction_call_.reset(new PendingOpenCall(
-        callbacks, database_callbacks, transaction_id, requested_version));
+    pending_run_version_change_transaction_call_.reset(new PendingUpgradeCall(
+        callbacks, connection.Pass(), transaction_id, requested_version));
     return;
   }
   RunVersionChangeTransactionFinal(callbacks,
-                                   database_callbacks,
+                                   connection.Pass(),
                                    transaction_id,
                                    requested_version,
                                    data_loss);
@@ -1666,13 +1719,13 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
 
 void IndexedDBDatabase::RunVersionChangeTransactionFinal(
     scoped_refptr<IndexedDBCallbacks> callbacks,
-    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+    scoped_ptr<IndexedDBConnection> connection,
     int64 transaction_id,
     int64 requested_version) {
   const WebKit::WebIDBCallbacks::DataLoss kDataLoss =
       WebKit::WebIDBCallbacks::DataLossNone;
   RunVersionChangeTransactionFinal(callbacks,
-                                   database_callbacks,
+                                   connection.Pass(),
                                    transaction_id,
                                    requested_version,
                                    kDataLoss);
@@ -1680,14 +1733,14 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
 
 void IndexedDBDatabase::RunVersionChangeTransactionFinal(
     scoped_refptr<IndexedDBCallbacks> callbacks,
-    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+    scoped_ptr<IndexedDBConnection> connection,
     int64 transaction_id,
     int64 requested_version,
     WebKit::WebIDBCallbacks::DataLoss data_loss) {
 
   std::vector<int64> object_store_ids;
   CreateTransaction(transaction_id,
-                    database_callbacks,
+                    connection.get(),
                     object_store_ids,
                     indexed_db::TRANSACTION_VERSION_CHANGE);
   scoped_refptr<IndexedDBTransaction> transaction =
@@ -1698,7 +1751,7 @@ void IndexedDBDatabase::RunVersionChangeTransactionFinal(
                                  transaction_id,
                                  requested_version,
                                  callbacks,
-                                 database_callbacks,
+                                 connection.Pass(),
                                  data_loss),
       new VersionChangeAbortOperation(
           this, metadata_.version, metadata_.int_version));
@@ -1710,14 +1763,13 @@ void IndexedDBDatabase::DeleteDatabase(
     scoped_refptr<IndexedDBCallbacks> callbacks) {
 
   if (IsDeleteDatabaseBlocked()) {
-    for (DatabaseCallbacksSet::const_iterator it =
-             database_callbacks_set_.begin();
-         it != database_callbacks_set_.end();
+    for (ConnectionSet::const_iterator it = connections_.begin();
+         it != connections_.end();
          ++it) {
       // Front end ensures the event is not fired at connections that have
       // close_pending set.
-      (*it)->OnVersionChange(metadata_.int_version,
-                             IndexedDBDatabaseMetadata::NO_INT_VERSION);
+      (*it)->callbacks()->OnVersionChange(
+          metadata_.int_version, IndexedDBDatabaseMetadata::NO_INT_VERSION);
     }
     // TODO(jsbell): Only fire OnBlocked if there are open
     // connections after the VersionChangeEvents are received, not
@@ -1750,10 +1802,8 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
   callbacks->OnSuccess();
 }
 
-void IndexedDBDatabase::Close(
-    scoped_refptr<IndexedDBDatabaseCallbacks> callbacks) {
-  DCHECK(callbacks.get());
-  DCHECK(database_callbacks_set_.has(callbacks));
+void IndexedDBDatabase::Close(IndexedDBConnection* connection) {
+  DCHECK(connections_.has(connection));
 
   // Close outstanding transactions from the closing connection. This
   // can not happen if the close is requested by the connection itself
@@ -1766,16 +1816,16 @@ void IndexedDBDatabase::Close(
                                         end = transactions.end();
          it != end;
          ++it) {
-      if (it->second->connection() == callbacks.get())
+      if (it->second->connection() == connection->callbacks())
         it->second->Abort(
             IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
                                    "Connection is closing."));
     }
   }
 
-  database_callbacks_set_.erase(callbacks);
+  connections_.erase(connection);
   if (pending_second_half_open_ &&
-      pending_second_half_open_->DatabaseCallbacks().get() == callbacks.get()) {
+      pending_second_half_open_->Connection() == connection) {
     pending_second_half_open_->Callbacks()->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionAbortError,
                                "The connection was closed."));
