@@ -15,6 +15,8 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
   FakeRasterWorkerPool() : RasterWorkerPool(NULL, 1) {}
 
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {}
+  virtual void OnRasterTasksFinished() OVERRIDE {}
+  virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE {}
 };
 
 }  // namespace
@@ -35,4 +37,15 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   1,
                   NULL,
                   resource_provider->best_texture_format()) {}
+
+void FakeTileManager::ReassignMemoryToOOMTilesRequiredForActivation() {
+  ReassignGpuMemoryToOOMTilesRequiredForActivation();
+}
+
+bool FakeTileManager::HasBeenAssignedMemory(Tile* tile) {
+  return std::find(tiles_that_need_to_be_rasterized().begin(),
+                   tiles_that_need_to_be_rasterized().end(),
+                   tile) != tiles_that_need_to_be_rasterized().end();
+}
+
 }  // namespace cc

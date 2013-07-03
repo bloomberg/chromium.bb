@@ -41,6 +41,10 @@ bool TestHooks::CanActivatePendingTree(LayerTreeHostImpl* host_impl) {
   return true;
 }
 
+bool TestHooks::CanActivatePendingTreeIfNeeded(LayerTreeHostImpl* host_impl) {
+  return true;
+}
+
 // Adapts LayerTreeHostImpl for test. Runs real code, then invokes test hooks.
 class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
  public:
@@ -114,7 +118,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     if (!pending_tree())
       return;
 
-    if (!test_hooks_->CanActivatePendingTree(this))
+    if (!test_hooks_->CanActivatePendingTreeIfNeeded(this))
       return;
 
     LayerTreeHostImpl::ActivatePendingTreeIfNeeded();

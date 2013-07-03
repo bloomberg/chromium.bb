@@ -1348,8 +1348,6 @@ void LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {
   DCHECK(pending_tree_);
   CHECK(settings_.impl_side_painting);
 
-  // This call may activate the tree.
-  CheckForCompletedTileUploads();
   if (!pending_tree_)
     return;
 

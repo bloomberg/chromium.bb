@@ -87,7 +87,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   }
 
   bool AreTilesRequiredForActivationReady() const {
-    return tiles_that_need_to_be_initialized_for_activation_.empty();
+    return tiles_that_need_to_be_initialized_for_activation_.empty() &&
+        oom_tiles_that_need_to_be_initialized_for_activation_.empty();
   }
 
  protected:
@@ -106,9 +107,17 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   // Overriden from RasterWorkerPoolClient:
   virtual bool ShouldForceTasksRequiredForActivationToComplete() const
       OVERRIDE;
+  virtual void DidFinishedRunningTasks() OVERRIDE;
+  virtual void DidFinishedRunningTasksRequiredForActivation() OVERRIDE;
 
   // Virtual for test
   virtual void ScheduleTasks();
+
+  const std::vector<Tile*>& tiles_that_need_to_be_rasterized() const {
+    return tiles_that_need_to_be_rasterized_;
+  }
+
+  void ReassignGpuMemoryToOOMTilesRequiredForActivation();
 
  private:
   void OnImageDecodeTaskCompleted(
@@ -151,6 +160,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   TileVector tiles_that_need_to_be_rasterized_;
   typedef std::set<Tile*> TileSet;
   TileSet tiles_that_need_to_be_initialized_for_activation_;
+  TileSet oom_tiles_that_need_to_be_initialized_for_activation_;
 
   bool ever_exceeded_memory_budget_;
   MemoryHistory::Entry memory_stats_from_last_assign_;

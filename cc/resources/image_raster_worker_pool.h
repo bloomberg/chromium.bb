@@ -21,6 +21,8 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
 
   // Overridden from RasterWorkerPool:
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
+  virtual void OnRasterTasksFinished() OVERRIDE;
+  virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE;
 
  private:
   ImageRasterWorkerPool(ResourceProvider* resource_provider,
@@ -29,7 +31,21 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
   void OnRasterTaskCompleted(
       scoped_refptr<internal::RasterWorkerPoolTask> task, bool was_canceled);
 
+  scoped_ptr<base::Value> StateAsValue() const;
+
+  static void CreateGraphNodeForImageTask(
+      internal::WorkerPoolTask* image_task,
+      const TaskVector& decode_tasks,
+      unsigned priority,
+      bool is_required_for_activation,
+      internal::GraphNode* raster_required_for_activation_finished_node,
+      internal::GraphNode* raster_finished_node,
+      TaskGraph* graph);
+
   TaskMap image_tasks_;
+
+  bool raster_tasks_pending_;
+  bool raster_tasks_required_for_activation_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageRasterWorkerPool);
 };
