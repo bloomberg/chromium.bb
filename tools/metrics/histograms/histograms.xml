@@ -182,6 +182,20 @@ other types of suffix sets.
   <summary>Interactions with the App Launcher promo dialog.</summary>
 </histogram>
 
+<histogram name="Apps.AppListSearchCommenced" units="searches">
+  <summary>
+    The number of searches that are started in the app list. This is gathered
+    each time the app list search box transitions from empty to non-empty.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppListSearchResultOpenType" enum="AppListSearchResult">
+  <summary>
+    The type of app list search result that was opened by the user. This is
+    gathered per click of a search result.
+  </summary>
+</histogram>
+
 <histogram name="AsyncDNS.ConfigChange" enum="BooleanSuccess">
   <summary>
     Whether DnsConfigService::OnConfigChange actually corresponded to a change
@@ -12921,6 +12935,13 @@ other types of suffix sets.
   <int value="1" label="Shown"/>
   <int value="2" label="Dismissed"/>
   <int value="3" label="Learn more"/>
+</enum>
+
+<enum name="AppListSearchResult" type="int">
+  <int value="0" label="OMNIBOX"/>
+  <int value="1" label="APP"/>
+  <int value="2" label="WEBSTORE"/>
+  <int value="3" label="SEARCH_WEBSTORE"/>
 </enum>
 
 <enum name="AppPromoAction" type="int">
