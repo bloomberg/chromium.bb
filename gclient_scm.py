@@ -4,11 +4,13 @@
 
 """Gclient-specific SCM-specific operations."""
 
+import collections
 import logging
 import os
 import posixpath
 import re
 import sys
+import threading
 import time
 
 import gclient_utils
@@ -152,8 +154,50 @@ class SCMWrapper(object):
     return getattr(self, command)(options, args, file_list)
 
 
+class GitFilter(object):
+  """A filter_fn implementation for quieting down git output messages.
+
+  Allows a custom function to skip certain lines (predicate), and will throttle
+  the output of percentage completed lines to only output every X seconds.
+  """
+  PERCENT_RE = re.compile('.* ([0-9]{1,2})% .*')
+
+  def __init__(self, time_throttle=0, predicate=None):
+    """
+    Args:
+      time_throttle (int): GitFilter will throttle 'noisy' output (such as the
+        XX% complete messages) to only be printed at least |time_throttle|
+        seconds apart.
+      predicate (f(line)): An optional function which is invoked for every line.
+        The line will be skipped if predicate(line) returns False.
+    """
+    self.last_time = 0
+    self.time_throttle = time_throttle
+    self.predicate = predicate
+
+  def __call__(self, line):
+    # git uses an escape sequence to clear the line; elide it.
+    esc = line.find(unichr(033))
+    if esc > -1:
+      line = line[:esc]
+    if self.predicate and not self.predicate(line):
+      return
+    now = time.time()
+    match = self.PERCENT_RE.match(line)
+    if not match:
+      self.last_time = 0
+    if (now - self.last_time) >= self.time_throttle:
+      self.last_time = now
+      print line
+
+
 class GitWrapper(SCMWrapper):
   """Wrapper for Git"""
+
+  cache_dir = None
+  # If a given cache is used in a solution more than once, prevent multiple
+  # threads from updating it simultaneously.
+  cache_locks = collections.defaultdict(threading.Lock)
 
   def __init__(self, url=None, root_dir=None, relpath=None):
     """Removes 'git+' fake prefix from git URL."""
@@ -296,6 +340,8 @@ class GitWrapper(SCMWrapper):
       print('\n_____ %s%s' % (self.relpath, rev_str))
       verbose = ['--verbose']
       printed_path = True
+
+    url = self._CreateOrUpdateCache(url, options)
 
     if revision.startswith('refs/'):
       rev_type = "branch"
@@ -674,6 +720,55 @@ class GitWrapper(SCMWrapper):
     base_url = self.url
     return base_url[:base_url.rfind('/')] + url
 
+  @staticmethod
+  def _NormalizeGitURL(url):
+    '''Takes a git url, strips the scheme, and ensures it ends with '.git'.'''
+    idx = url.find('://')
+    if idx != -1:
+      url = url[idx+3:]
+    if not url.endswith('.git'):
+      url += '.git'
+    return url
+
+  def _CreateOrUpdateCache(self, url, options):
+    """Make a new git mirror or update existing mirror for |url|, and return the
+    mirror URI to clone from.
+
+    If no cache-dir is specified, just return |url| unchanged.
+    """
+    if not self.cache_dir:
+      return url
+
+    # Replace - with -- to avoid ambiguity. / with - to flatten folder structure
+    folder = os.path.join(
+      self.cache_dir,
+      self._NormalizeGitURL(url).replace('-', '--').replace('/', '-'))
+
+    v = ['-v'] if options.verbose else []
+    filter_fn = lambda l: '[up to date]' not in l
+    with self.cache_locks[folder]:
+      gclient_utils.safe_makedirs(self.cache_dir)
+      if not os.path.exists(os.path.join(folder, 'config')):
+        gclient_utils.rmtree(folder)
+        self._Run(['clone'] + v + ['-c', 'core.deltaBaseCacheLimit=2g',
+                                   '--progress', '--mirror', url, folder],
+                  options, git_filter=True, filter_fn=filter_fn,
+                  cwd=self.cache_dir)
+      else:
+        # For now, assert that host/path/to/repo.git is identical. We may want
+        # to relax this restriction in the future to allow for smarter cache
+        # repo update schemes (such as pulling the same repo, but from a
+        # different host).
+        existing_url = self._Capture(['config', 'remote.origin.url'],
+                                     cwd=folder)
+        assert self._NormalizeGitURL(existing_url) == self._NormalizeGitURL(url)
+
+        # Would normally use `git remote update`, but it doesn't support
+        # --progress, so use fetch instead.
+        self._Run(['fetch'] + v + ['--multiple', '--progress', '--all'],
+                  options, git_filter=True, filter_fn=filter_fn, cwd=folder)
+    return folder
+
   def _Clone(self, revision, url, options):
     """Clone a git repository from the given URL.
 
@@ -687,6 +782,8 @@ class GitWrapper(SCMWrapper):
       # to stdout
       print('')
     clone_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'clone', '--progress']
+    if self.cache_dir:
+      clone_cmd.append('--shared')
     if revision.startswith('refs/heads/'):
       clone_cmd.extend(['-b', revision.replace('refs/heads/', '')])
       detach_head = False
@@ -702,20 +799,9 @@ class GitWrapper(SCMWrapper):
     if not os.path.exists(parent_dir):
       gclient_utils.safe_makedirs(parent_dir)
 
-    percent_re = re.compile('.* ([0-9]{1,2})% .*')
-    def _GitFilter(line):
-      # git uses an escape sequence to clear the line; elide it.
-      esc = line.find(unichr(033))
-      if esc > -1:
-        line = line[:esc]
-      match = percent_re.match(line)
-      if not match or not int(match.group(1)) % 10:
-        print '%s' % line
-
     for _ in range(3):
       try:
-        self._Run(clone_cmd, options, cwd=self._root_dir, filter_fn=_GitFilter,
-                  print_stdout=False)
+        self._Run(clone_cmd, options, cwd=self._root_dir, git_filter=True)
         break
       except subprocess2.CalledProcessError, e:
         # Too bad we don't have access to the actual output yet.
@@ -900,13 +986,13 @@ class GitWrapper(SCMWrapper):
       return None
     return branch
 
-  def _Capture(self, args):
+  def _Capture(self, args, cwd=None):
     return subprocess2.check_output(
         ['git'] + args,
         stderr=subprocess2.VOID,
         nag_timer=self.nag_timer,
         nag_max=self.nag_max,
-        cwd=self.checkout_path).strip()
+        cwd=cwd or self.checkout_path).strip()
 
   def _UpdateBranchHeads(self, options, fetch=False):
     """Adds, and optionally fetches, "branch-heads" refspecs if requested."""
@@ -930,11 +1016,16 @@ class GitWrapper(SCMWrapper):
           time.sleep(backoff_time)
           backoff_time *= 1.3
 
-  def _Run(self, args, options, **kwargs):
+  def _Run(self, args, _options, git_filter=False, **kwargs):
     kwargs.setdefault('cwd', self.checkout_path)
-    kwargs.setdefault('print_stdout', True)
     kwargs.setdefault('nag_timer', self.nag_timer)
     kwargs.setdefault('nag_max', self.nag_max)
+    if git_filter:
+      kwargs['filter_fn'] = GitFilter(kwargs['nag_timer'] / 2,
+                                      kwargs.get('filter_fn'))
+      kwargs.setdefault('print_stdout', False)
+    else:
+      kwargs.setdefault('print_stdout', True)
     stdout = kwargs.get('stdout', sys.stdout)
     stdout.write('\n________ running \'git %s\' in \'%s\'\n' % (
                  ' '.join(args), kwargs['cwd']))

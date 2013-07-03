@@ -898,6 +898,7 @@ solutions = [
     "safesync_url": "%(safesync_url)s",
   },
 ]
+cache_dir = %(cache_dir)r
 """)
 
   DEFAULT_SNAPSHOT_SOLUTION_TEXT = ("""\
@@ -949,6 +950,8 @@ solutions = [
       self._enforced_os = tuple(set(target_os))
     else:
       self._enforced_os = tuple(set(self._enforced_os).union(target_os))
+
+    gclient_scm.GitWrapper.cache_dir = config_dict.get('cache_dir')
 
     if not target_os and config_dict.get('target_os_only', False):
       raise gclient_utils.Error('Can\'t use target_os_only if target_os is '
@@ -1004,13 +1007,14 @@ solutions = [
     return client
 
   def SetDefaultConfig(self, solution_name, deps_file, solution_url,
-                       safesync_url, managed=True):
+                       safesync_url, managed=True, cache_dir=None):
     self.SetConfig(self.DEFAULT_CLIENT_FILE_TEXT % {
       'solution_name': solution_name,
       'solution_url': solution_url,
       'deps_file': deps_file,
       'safesync_url' : safesync_url,
       'managed': managed,
+      'cache_dir': cache_dir,
     })
 
   def _SaveEntries(self):
@@ -1405,6 +1409,10 @@ URL.
                          'will never sync them)')
   parser.add_option('--git-deps', action='store_true',
                     help='sets the deps file to ".DEPS.git" instead of "DEPS"')
+  parser.add_option('--cache-dir',
+                    help='(git only) Cache all git repos into this dir and do '
+                         'shared clones from the cache, instead of cloning '
+                         'directly from the remote. (experimental)')
   parser.set_defaults(config_filename=None)
   (options, args) = parser.parse_args(args)
   if options.output_config_file:
@@ -1432,7 +1440,8 @@ URL.
     if len(args) > 1:
       safesync_url = args[1]
     client.SetDefaultConfig(name, deps_file, base_url, safesync_url,
-                            managed=not options.unmanaged)
+                            managed=not options.unmanaged,
+                            cache_dir=options.cache_dir)
   client.SaveConfig()
   return 0
 
@@ -1720,8 +1729,8 @@ def Parser():
                          'probably can\'t contain any newlines.')
   parser.add_option('--no-nag-max', default=False, action='store_true',
                     help='If a subprocess runs for too long without generating'
-                    ' terminal output, generate warnings, but do not kill'
-                    ' the process.')
+                         ' terminal output, generate warnings, but do not kill'
+                         ' the process.')
   # Integrate standard options processing.
   old_parser = parser.parse_args
   def Parse(args):

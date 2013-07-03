@@ -170,7 +170,7 @@ class GClientSmoke(GClientSmokeBase):
     """testHelp: make sure no new command was added."""
     result = self.gclient(['help'])
     # Roughly, not too short, not too long.
-    self.assertTrue(1000 < len(result[0]) and len(result[0]) < 2100,
+    self.assertTrue(1000 < len(result[0]) and len(result[0]) < 2300,
                     'Too much written to stdout: %d bytes' % len(result[0]))
     self.assertEquals(0, len(result[1]))
     self.assertEquals(0, result[2])
@@ -178,7 +178,7 @@ class GClientSmoke(GClientSmokeBase):
   def testUnknown(self):
     result = self.gclient(['foo'])
     # Roughly, not too short, not too long.
-    self.assertTrue(1000 < len(result[0]) and len(result[0]) < 2100,
+    self.assertTrue(1000 < len(result[0]) and len(result[0]) < 2300,
                     'Too much written to stdout: %d bytes' % len(result[0]))
     self.assertEquals(0, len(result[1]))
     self.assertEquals(0, result[2])
@@ -214,7 +214,8 @@ class GClientSmoke(GClientSmokeBase):
           '    },\n'
           '    "safesync_url": "",\n'
           '  },\n'
-          ']\n') % self.svn_base)
+          ']\n'
+          'cache_dir = None\n') % self.svn_base)
 
     test(['config', self.git_base + 'repo_1', '--name', 'src'],
          ('solutions = [\n'
@@ -226,7 +227,8 @@ class GClientSmoke(GClientSmokeBase):
           '    },\n'
           '    "safesync_url": "",\n'
           '  },\n'
-          ']\n') % self.git_base)
+          ']\n'
+          'cache_dir = None\n') % self.git_base)
 
     test(['config', 'foo', 'faa'],
          'solutions = [\n'
@@ -238,7 +240,8 @@ class GClientSmoke(GClientSmokeBase):
          '    },\n'
          '    "safesync_url": "faa",\n'
          '  },\n'
-         ']\n')
+         ']\n'
+         'cache_dir = None\n')
 
     test(['config', 'foo', '--deps', 'blah'],
          'solutions = [\n'
@@ -250,7 +253,8 @@ class GClientSmoke(GClientSmokeBase):
          '    },\n'
           '    "safesync_url": "",\n'
          '  },\n'
-         ']\n')
+         ']\n'
+         'cache_dir = None\n')
 
     test(['config', '--spec', '["blah blah"]'], '["blah blah"]')
 

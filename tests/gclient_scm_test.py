@@ -685,6 +685,7 @@ class BaseGitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
       self.reset = False
       self.nohooks = False
       self.upstream = False
+      self.cache_dir = None
       self.merge = False
       self.jobs = 1
       self.delete_unversioned_trees = False
@@ -795,6 +796,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
         'GetRevisionDate',
         'GetUsableRev',
         'RunCommand',
+        'cache_dir',
+        'cache_locks',
         'cleanup',
         'diff',
         'nag_max',
