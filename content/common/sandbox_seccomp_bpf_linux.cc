@@ -1635,6 +1635,8 @@ ErrorCode FlashProcessPolicy(Sandbox* sandbox, int sysno, void*) {
   switch (sysno) {
     case __NR_clone:
       return RestrictCloneToThreadsAndEPERMFork(sandbox);
+    case __NR_pread64:
+    case __NR_pwrite64:
     case __NR_sched_get_priority_max:
     case __NR_sched_get_priority_min:
     case __NR_sched_getaffinity:
