@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IMPORTER_IMPORTER_DATA_TYPES_H_
-#define CHROME_BROWSER_IMPORTER_IMPORTER_DATA_TYPES_H_
+#ifndef CHROME_COMMON_IMPORTER_IMPORTER_DATA_TYPES_H_
+#define CHROME_COMMON_IMPORTER_IMPORTER_DATA_TYPES_H_
 
 #include <string>
 
@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/importer/importer_type.h"
+#include "chrome/common/importer/importer_type.h"
 #include "url/gurl.h"
 
 // Types needed for importing data from other browsers and the Google Toolbar.
@@ -53,4 +53,4 @@ struct URLKeywordInfo {
 
 }  // namespace importer
 
-#endif  // CHROME_BROWSER_IMPORTER_IMPORTER_DATA_TYPES_H_
+#endif  // CHROME_COMMON_IMPORTER_IMPORTER_DATA_TYPES_H_

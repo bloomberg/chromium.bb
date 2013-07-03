@@ -6,7 +6,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/external_process_importer_client.h"
-#include "chrome/browser/importer/importer_type.h"
+#include "chrome/browser/importer/importer_creator.h"
 #include "chrome/browser/importer/in_process_importer_bridge.h"
 
 ExternalProcessImporterHost::ExternalProcessImporterHost()

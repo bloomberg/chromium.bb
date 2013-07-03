@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_IMPORTER_IMPORTER_PROGRESS_OBSERVER_H_
 #define CHROME_BROWSER_IMPORTER_IMPORTER_PROGRESS_OBSERVER_H_
 
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer/importer_data_types.h"
 
 namespace importer {
 

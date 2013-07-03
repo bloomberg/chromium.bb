@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"
-#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list_observer.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/common/importer/importer_data_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

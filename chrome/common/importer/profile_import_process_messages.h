@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,19 +9,18 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
-#include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/common_param_traits_macros.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
+#include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/importer_url_row.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/password_form.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 
-#ifndef CHROME_BROWSER_IMPORTER_PROFILE_IMPORT_PROCESS_MESSAGES_H_
-#define CHROME_BROWSER_IMPORTER_PROFILE_IMPORT_PROCESS_MESSAGES_H_
+#ifndef CHROME_COMMON_IMPORTER_PROFILE_IMPORT_PROCESS_MESSAGES_H_
+#define CHROME_COMMON_IMPORTER_PROFILE_IMPORT_PROCESS_MESSAGES_H_
 
 namespace IPC {
 
@@ -222,7 +221,7 @@ struct ParamTraits<importer::URLKeywordInfo> {
 
 }  // namespace IPC
 
-#endif  // CHROME_BROWSER_IMPORTER_PROFILE_IMPORT_PROCESS_MESSAGES_H_
+#endif  // CHROME_COMMON_IMPORTER_PROFILE_IMPORT_PROCESS_MESSAGES_H_
 
 #define IPC_MESSAGE_START ProfileImportMsgStart
 

@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/importer_url_row.h"
 
 class GURL;

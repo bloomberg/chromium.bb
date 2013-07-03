@@ -10,10 +10,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
 #include "base/values.h"
-#include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/importer/profile_import_process_messages.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
+#include "chrome/common/importer/importer_data_types.h"
+#include "chrome/common/importer/profile_import_process_messages.h"
 #include "content/public/common/password_form.h"
 #include "ipc/ipc_sender.h"
 

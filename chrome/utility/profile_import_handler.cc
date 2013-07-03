@@ -10,7 +10,8 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/importer/external_process_importer_bridge.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/profile_import_process_messages.h"
+#include "chrome/browser/importer/importer_creator.h"
+#include "chrome/common/importer/profile_import_process_messages.h"
 #include "content/public/utility/utility_thread.h"
 
 namespace chrome {

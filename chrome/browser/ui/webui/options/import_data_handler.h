@@ -8,10 +8,10 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list_observer.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/common/importer/importer_data_types.h"
 
 class ImporterHost;
 class ImporterList;
