@@ -9,8 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
+#include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
+#include "ui/gfx/size.h"
 
 namespace content {
   class NavigationController;
@@ -28,6 +30,7 @@ namespace autofill {
 namespace autofill {
 
 class AutofillDialogCocoa : public AutofillDialogView,
+                            public TestableAutofillDialogView,
                             public ConstrainedWindowMacDelegate {
  public:
   explicit AutofillDialogCocoa(AutofillDialogController* controller);
@@ -54,8 +57,23 @@ class AutofillDialogCocoa : public AutofillDialogView,
   virtual void UpdateProgressBar(double value) OVERRIDE;
   virtual void ModelChanged() OVERRIDE;
   virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
+  virtual TestableAutofillDialogView* GetTestableView() OVERRIDE;
 
-  // ConstrainedWindowMacDelegate implementation.
+  // TestableAutofillDialogView implementation:
+  // TODO(groby): Create a separate class to implement the testable interface:
+  // http://crbug.com/256864
+  virtual void SubmitForTesting() OVERRIDE;
+  virtual void CancelForTesting() OVERRIDE;
+  virtual string16 GetTextContentsOfInput(const DetailInput& input) OVERRIDE;
+  virtual void SetTextContentsOfInput(const DetailInput& input,
+                                      const string16& contents) OVERRIDE;
+  virtual void SetTextContentsOfSuggestionInput(
+      DialogSection section,
+      const base::string16& text) OVERRIDE;
+  virtual void ActivateInput(const DetailInput& input) OVERRIDE;
+  virtual gfx::Size GetSize() const OVERRIDE;
+
+  // ConstrainedWindowMacDelegate implementation:
   virtual void OnConstrainedWindowClosed(
       ConstrainedWindowMac* window) OVERRIDE;
 
@@ -64,7 +82,6 @@ class AutofillDialogCocoa : public AutofillDialogView,
   void PerformClose();
 
  private:
-
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
   base::scoped_nsobject<AutofillDialogWindowController> sheet_controller_;
 

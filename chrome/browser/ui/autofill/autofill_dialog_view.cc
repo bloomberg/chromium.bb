@@ -20,10 +20,4 @@ AutofillDialogView* AutofillDialogView::Create(
 }
 #endif
 
-TestableAutofillDialogView* AutofillDialogView::GetTestableView() {
-  return NULL;
-}
-
-TestableAutofillDialogView::~TestableAutofillDialogView() {}
-
 }  // namespace autofill

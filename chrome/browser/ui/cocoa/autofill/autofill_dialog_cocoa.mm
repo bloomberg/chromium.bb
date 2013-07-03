@@ -120,6 +120,51 @@ void AutofillDialogCocoa::OnSignInResize(const gfx::Size& pref_size) {
   // TODO(groby): Implement Mac support for this.
 }
 
+TestableAutofillDialogView* AutofillDialogCocoa::GetTestableView() {
+  return this;
+}
+
+void AutofillDialogCocoa::SubmitForTesting() {
+  [sheet_controller_ accept:nil];
+}
+
+void AutofillDialogCocoa::CancelForTesting() {
+  [sheet_controller_ cancel:nil];
+}
+
+string16 AutofillDialogCocoa::GetTextContentsOfInput(const DetailInput& input) {
+  for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
+    DialogSection section = static_cast<DialogSection>(i);
+    DetailOutputMap contents;
+    [sheet_controller_ getInputs:&contents forSection:section];
+    DetailOutputMap::const_iterator it = contents.find(&input);
+    if (it != contents.end())
+      return it->second;
+  }
+
+  NOTREACHED();
+  return string16();
+}
+
+void AutofillDialogCocoa::SetTextContentsOfInput(const DetailInput& input,
+                                                 const string16& contents) {
+  // TODO(groby): Implement Mac support for this: http://crbug.com/256864
+}
+
+void AutofillDialogCocoa::SetTextContentsOfSuggestionInput(
+    DialogSection section,
+    const base::string16& text) {
+  // TODO(groby): Implement Mac support for this: http://crbug.com/256864
+}
+
+void AutofillDialogCocoa::ActivateInput(const DetailInput& input) {
+  // TODO(groby): Implement Mac support for this: http://crbug.com/256864
+}
+
+gfx::Size AutofillDialogCocoa::GetSize() const {
+  return gfx::Size(NSSizeToCGSize([[sheet_controller_ window] frame].size));
+}
+
 void AutofillDialogCocoa::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
   constrained_window_.reset();
@@ -241,7 +286,6 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 }
 
 - (IBAction)cancel:(id)sender {
-  // TODO(groby): Validation goes here.
   autofillDialog_->controller()->OnCancel();
   autofillDialog_->Hide();
 }
