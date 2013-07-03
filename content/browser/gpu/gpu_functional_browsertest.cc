@@ -129,9 +129,14 @@ IN_PROC_BROWSER_TEST_F(GpuFunctionalTest,
   VerifyGPUProcessOnPage("functional_3d_css.html", false);
 }
 
+#if defined(OS_LINUX)
+// crbug.com/257109
+#define MANUAL_TestGpuWithVideo DISABLED_TestGpuWithVideo
+#endif
+
 // Verify that gpu process is started when viewing video.
 IN_PROC_BROWSER_TEST_F(GpuFunctionalTest,
-                       IF_NOT_DEBUG_LINUX(MANUAL_TestGpuWithVideo)) {
+                       MANUAL_TestGpuWithVideo) {
   VerifyGPUProcessOnPage("functional_video.html", true);
 }
 
