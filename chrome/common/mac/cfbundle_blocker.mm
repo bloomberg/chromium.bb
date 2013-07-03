@@ -263,7 +263,7 @@ bool IsBundleAllowed(NSString* bundle_id, NSString* version) {
   // newer. Products added to the list must not cause crashes. Entries should
   // include the name of the product, URL, and the name and e-mail address of
   // someone responsible for the product's engineering. To add items to this
-  // list, file a bug at http://new.crbug.com/ using the "Defect on Mac OS"
+  // list, file a bug at http://crbug.com/new using the "Defect on Mac OS"
   // template, and provide the bundle ID (or IDs) and minimum CFBundleVersion
   // that's safe for Chrome to load, along with the necessary product and
   // contact information. Whitelisted bundles in this list may be removed if
