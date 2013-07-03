@@ -65,11 +65,6 @@ enum ResamplingMode {
     RESAMPLE_AWESOME,
 };
 
-static bool nearlyIntegral(float value)
-{
-    return fabs(value - floorf(value)) < std::numeric_limits<float>::epsilon();
-}
-
 static ResamplingMode computeResamplingMode(const SkMatrix& matrix, const NativeImageSkia& bitmap, float srcWidth, float srcHeight, float destWidth, float destHeight)
 {
     // The percent change below which we will not resample. This usually means
@@ -101,17 +96,8 @@ static ResamplingMode computeResamplingMode(const SkMatrix& matrix, const Native
         || srcHeight <= kSmallImageSizeThreshold
         || destWidth <= kSmallImageSizeThreshold
         || destHeight <= kSmallImageSizeThreshold) {
-        // Small image detected.
-
-        // Resample in the case where the new size would be non-integral.
-        // This can cause noticeable breaks in repeating patterns, except
-        // when the source image is only one pixel wide in that dimension.
-        if ((!nearlyIntegral(destWidth) && srcWidth > 1 + std::numeric_limits<float>::epsilon())
-            || (!nearlyIntegral(destHeight) && srcHeight > 1 + std::numeric_limits<float>::epsilon()))
-            return RESAMPLE_LINEAR;
-
-        // Otherwise, don't resample small images. These are often used for
-        // borders and rules (think 1x1 images used to make lines).
+        // Never resample small images. These are often used for borders and
+        // rules (think 1x1 images used to make lines).
         return RESAMPLE_NONE;
     }
 
