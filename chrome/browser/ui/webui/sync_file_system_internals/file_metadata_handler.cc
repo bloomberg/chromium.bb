@@ -14,6 +14,8 @@
 #include "chrome/browser/sync_file_system/file_metadata.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
+#include "chrome/browser/ui/webui/sync_file_system_internals/extension_statuses_handler.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/sync_file_system_internals_resources.h"
@@ -49,6 +51,10 @@ FileMetadataHandler::~FileMetadataHandler() {}
 
 void FileMetadataHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
+      "getExtensions",
+      base::Bind(&FileMetadataHandler::GetExtensions,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "getFileMetadata",
       base::Bind(&FileMetadataHandler::GetFileMetadata,
                  base::Unretained(this)));
@@ -56,9 +62,22 @@ void FileMetadataHandler::RegisterMessages() {
 
 void FileMetadataHandler::GetFileMetadata(
     const base::ListValue* args) {
-  OriginFileMetadataMap* metadata_map = new OriginFileMetadataMap;
+  std::string extension_id;
+  if (!args->GetString(0, &extension_id) || extension_id.empty()) {
+    LOG(WARNING) << "GetFileMetadata() Extension ID wasn't given";
+    return;
+  }
+
+  // Extension ID from JS is just the host. Need to reformat it to chrome
+  // extension type GURL.
+  const GURL origin = extensions::Extension::GetBaseURLFromExtensionId(
+      extension_id);
+
+  // Get all metadata for the one specific origin.
+  FileMetadataMap* metadata_map = new FileMetadataMap;
   size_t* num_results = new size_t(0);
   SyncFileSystemServiceFactory::GetForProfile(profile_)->GetFileMetadataMap(
+      origin,
       metadata_map,
       num_results,
       base::Bind(&FileMetadataHandler::DidGetFileMetadata,
@@ -67,11 +86,18 @@ void FileMetadataHandler::GetFileMetadata(
                  base::Owned(num_results)));
 }
 
+void FileMetadataHandler::GetExtensions(const base::ListValue* args) {
+  DCHECK(args);
+  base::ListValue list;
+  ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(profile_, &list);
+  web_ui()->CallJavascriptFunction("FileMetadata.onGetExtensions", list);
+}
+
 // TODO(calvinlo): This would probably be better if there was a drop down UI
 // box to pick one origin at a time. Then this function would only print
 // files for one origin.
 void FileMetadataHandler::DidGetFileMetadata(
-    OriginFileMetadataMap* metadata_map,
+    FileMetadataMap* metadata_map,
     size_t* num_results,
     sync_file_system::SyncStatusCode status) {
   DCHECK(metadata_map);
@@ -79,30 +105,24 @@ void FileMetadataHandler::DidGetFileMetadata(
 
   // Flatten map hierarchy in initial version.
   base::ListValue list;
-  RemoteFileSyncService::OriginFileMetadataMap::const_iterator origin_itr;
-  for (origin_itr = metadata_map->begin();
-       origin_itr != metadata_map->end();
-       ++origin_itr) {
-    RemoteFileSyncService::FileMetadataMap::const_iterator file_path_itr;
-    for (file_path_itr = origin_itr->second.begin();
-         file_path_itr != origin_itr->second.end();
-         ++file_path_itr) {
-      const GURL& origin = origin_itr->first;
-      const FileMetadata& metadata_object = file_path_itr->second;
-      std::string status_string = extensions::api::sync_file_system::ToString(
-            extensions::SyncFileStatusToExtensionEnum(
-                metadata_object.sync_status));
+  RemoteFileSyncService::FileMetadataMap::const_iterator file_path_itr;
+  for (file_path_itr = metadata_map->begin();
+       file_path_itr != metadata_map->end();
+       ++file_path_itr) {
+    const FileMetadata& metadata_object = file_path_itr->second;
+    std::string status_string = extensions::api::sync_file_system::ToString(
+          extensions::SyncFileStatusToExtensionEnum(
+              metadata_object.sync_status));
 
-      // Convert each file metadata object into primitives for rendering.
-      base::DictionaryValue* dict = new DictionaryValue;
-      dict->SetString("origin", origin.spec());
-      dict->SetString("status", status_string);
-      dict->SetString("type", FileTypeToString(metadata_object.type));
-      dict->SetString("title", metadata_object.title);
-      dict->SetString("details", metadata_object.service_specific_metadata);
-      list.Append(dict);
-    }
+    // Convert each file metadata object into primitives for rendering.
+    base::DictionaryValue* dict = new DictionaryValue;
+    dict->SetString("status", status_string);
+    dict->SetString("type", FileTypeToString(metadata_object.type));
+    dict->SetString("title", metadata_object.title);
+    dict->SetString("details", metadata_object.service_specific_metadata);
+    list.Append(dict);
   }
+
   web_ui()->CallJavascriptFunction("FileMetadata.onGetFileMetadata", list);
 }
 

@@ -588,60 +588,42 @@ void DriveMetadataStoreTest::ResetOriginRootDirectory_Body() {
 
 void DriveMetadataStoreTest::GetFileMetadataMap_Body() {
   InitializeDatabase();
-  DriveMetadataStore::OriginToFileMetadataMap metadata_map;
-  metadata_store()->GetFileMetadataMap(&metadata_map);
-  EXPECT_TRUE(metadata_map.empty());
 
-  // Add 2 files to one origin and 1 folder to another origin.
-  const GURL origin_a = GURL("chrome-extension://app_a");
-  const GURL origin_b = GURL("chrome-extension://app_b");
-  const base::FilePath origin_a_file_0 = base::FilePath(FPL("origin_a_file_0"));
-  const base::FilePath origin_a_file_1 = base::FilePath(FPL("origin_a_file_1"));
-  const base::FilePath origin_b_folder_0 = base::FilePath(FPL(
-      "origin_b_folder_0"));
+  // Save one file and folder to the origin.
+  const base::FilePath file_path = base::FilePath(FPL("file_0"));
+  const base::FilePath folder_path = base::FilePath(FPL("folder_0"));
 
-  const fileapi::FileSystemURL url_a_0 = CreateSyncableFileSystemURL(
-      origin_a, origin_a_file_0);
-  const fileapi::FileSystemURL url_a_1 = CreateSyncableFileSystemURL(
-      origin_a, origin_a_file_1);
-  const fileapi::FileSystemURL url_b_0 = CreateSyncableFileSystemURL(
-      origin_b, origin_b_folder_0);
+  const GURL origin = GURL("chrome-extension://app_a");
+  const fileapi::FileSystemURL url_0 = CreateSyncableFileSystemURL(
+      origin, file_path);
+  const fileapi::FileSystemURL url_1 = CreateSyncableFileSystemURL(
+      origin, folder_path);
 
   // Insert DrivaMetadata objects.
   EXPECT_EQ(SYNC_STATUS_OK, UpdateEntry(
-      url_a_0,
+      url_0,
       CreateMetadata("file:0", "1", false, false,
                      DriveMetadata_ResourceType_RESOURCE_TYPE_FILE)));
   EXPECT_EQ(SYNC_STATUS_OK, UpdateEntry(
-      url_a_1,
-      CreateMetadata("file:1", "2", false, true,
-                     DriveMetadata_ResourceType_RESOURCE_TYPE_FILE)));
-  EXPECT_EQ(SYNC_STATUS_OK, UpdateEntry(
-      url_b_0,
-      CreateMetadata("folder:0", "3", false, true,
+      url_1,
+      CreateMetadata("folder:0", "2", false, true,
                      DriveMetadata_ResourceType_RESOURCE_TYPE_FOLDER)));
 
   // Check that DriveMetadata objects get mapped back to generalized
   // FileMetadata objects.
-  metadata_store()->GetFileMetadataMap(&metadata_map);
+  DriveMetadataStore::FileMetadataMap metadata_map;
+  metadata_store()->GetFileMetadataMap(origin, &metadata_map);
   ASSERT_EQ(2U, metadata_map.size());
-  ASSERT_EQ(2U, metadata_map[origin_a].size());
-  ASSERT_EQ(1U, metadata_map[origin_b].size());
 
-  FileMetadata metadata_a_0 = metadata_map[origin_a][origin_a_file_0];
-  EXPECT_EQ("origin_a_file_0", metadata_a_0.title);
-  EXPECT_EQ(TYPE_FILE, metadata_a_0.type);
-  EXPECT_TRUE(!metadata_a_0.service_specific_metadata.empty());
+  FileMetadata metadata_0 = metadata_map[file_path];
+  EXPECT_EQ("file_0", metadata_0.title);
+  EXPECT_EQ(TYPE_FILE, metadata_0.type);
+  EXPECT_TRUE(!metadata_0.service_specific_metadata.empty());
 
-  FileMetadata metadata_a_1 = metadata_map[origin_a][origin_a_file_1];
-  EXPECT_EQ("origin_a_file_1", metadata_a_1.title);
-  EXPECT_EQ(TYPE_FILE, metadata_a_1.type);
-  EXPECT_TRUE(!metadata_a_1.service_specific_metadata.empty());
-
-  FileMetadata metadata_b_0 = metadata_map[origin_b][origin_b_folder_0];
-  EXPECT_EQ("origin_b_folder_0", metadata_b_0.title);
-  EXPECT_EQ(TYPE_FOLDER, metadata_b_0.type);
-  EXPECT_TRUE(!metadata_b_0.service_specific_metadata.empty());
+  FileMetadata metadata_1 = metadata_map[folder_path];
+  EXPECT_EQ("folder_0", metadata_1.title);
+  EXPECT_EQ(TYPE_FOLDER, metadata_1.type);
+  EXPECT_TRUE(!metadata_1.service_specific_metadata.empty());
 }
 
 TEST_F(DriveMetadataStoreTest, Initialization) {

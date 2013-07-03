@@ -109,7 +109,8 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual bool IsConflicting(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual RemoteServiceState GetCurrentState() const OVERRIDE;
   virtual void GetOriginStatusMap(OriginStatusMap* status_map) OVERRIDE;
-  virtual void GetFileMetadataMap(OriginFileMetadataMap* metadata_map) OVERRIDE;
+  virtual void GetFileMetadataMap(const GURL& origin,
+                                  FileMetadataMap* metadata_map) OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
   virtual SyncStatusCode SetConflictResolutionPolicy(
       ConflictResolutionPolicy policy) OVERRIDE;

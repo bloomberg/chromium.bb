@@ -29,11 +29,13 @@ class FileMetadataHandler : public content::WebUIMessageHandler {
   virtual void RegisterMessages() OVERRIDE;
 
  private:
-  typedef sync_file_system::RemoteFileSyncService::OriginFileMetadataMap
-      OriginFileMetadataMap;
+  void GetExtensions(const base::ListValue* args);
+
+  typedef sync_file_system::RemoteFileSyncService::FileMetadataMap
+      FileMetadataMap;
   void GetFileMetadata(const base::ListValue* args);
   void DidGetFileMetadata(
-      OriginFileMetadataMap* metadata_map,
+      FileMetadataMap* metadata_map,
       size_t* num_results,
       sync_file_system::SyncStatusCode status);
 

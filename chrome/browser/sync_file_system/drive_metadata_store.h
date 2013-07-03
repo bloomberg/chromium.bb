@@ -147,10 +147,9 @@ class DriveMetadataStore
   bool GetOriginByOriginRootDirectoryId(const std::string& resource_id,
                                         GURL* origin);
 
-  // Returns all file metadata grouped by origin.
+  // Returns all file metadata for the given origin.
   typedef std::map<base::FilePath, FileMetadata> FileMetadataMap;
-  typedef std::map<GURL, FileMetadataMap> OriginToFileMetadataMap;
-  void GetFileMetadataMap(OriginToFileMetadataMap* output_map);
+  void GetFileMetadataMap(const GURL& origin, FileMetadataMap* output_map);
 
  private:
   friend class DriveMetadataStoreTest;

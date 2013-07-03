@@ -769,28 +769,29 @@ bool DriveMetadataStore::GetOriginByOriginRootDirectoryId(
 }
 
 void DriveMetadataStore::GetFileMetadataMap(
-    OriginToFileMetadataMap* output_map) {
+    const GURL& origin,
+    FileMetadataMap* output_map) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!origin.is_empty());
   DCHECK(output_map);
 
-  for (MetadataMap::const_iterator origin_itr = metadata_map_.begin();
-       origin_itr != metadata_map_.end();
-       ++origin_itr) {
-    for (PathToMetadata::const_iterator itr = origin_itr->second.begin();
-         itr != origin_itr->second.end();
-         ++itr) {
-      // Convert Drive specific metadata to Common File metadata object.
-      const GURL& origin = origin_itr->first;
-      const std::string title = itr->first.BaseName().AsUTF8Unsafe();
-      const DriveMetadata& metadata = itr->second;
-      const FileType type = DriveTypeToFileMetadataType(metadata.type());
-      std::ostringstream details;
-      details << "resource_id=" << metadata.resource_id() << ", "
-              << "md5_checksum=" << metadata.md5_checksum() << ", "
-              << "to_be_fetched=" << metadata.to_be_fetched();
-      FileMetadata file_metadata(title, type, details.str());
-      (*output_map)[origin][itr->first] = file_metadata;
-    }
+  MetadataMap::const_iterator origin_itr = metadata_map_.find(origin);
+  if (origin_itr == metadata_map_.end())
+    return;
+
+  for (PathToMetadata::const_iterator itr = origin_itr->second.begin();
+       itr != origin_itr->second.end();
+       ++itr) {
+    // Convert Drive specific metadata to Common File metadata object.
+    const std::string title = itr->first.BaseName().AsUTF8Unsafe();
+    const DriveMetadata& metadata = itr->second;
+    const FileType type = DriveTypeToFileMetadataType(metadata.type());
+    std::ostringstream details;
+    details << "resource_id=" << metadata.resource_id() << ", "
+            << "md5_checksum=" << metadata.md5_checksum() << ", "
+            << "to_be_fetched=" << metadata.to_be_fetched();
+    FileMetadata file_metadata(title, type, details.str());
+    (*output_map)[itr->first] = file_metadata;
   }
 }
 

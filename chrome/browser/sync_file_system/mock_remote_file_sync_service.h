@@ -51,9 +51,9 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                      RemoteServiceState());
   MOCK_METHOD1(GetOriginStatusMap,
                void(RemoteFileSyncService::OriginStatusMap* status_map));
-  MOCK_METHOD1(
-      GetFileMetadataMap,
-      void(RemoteFileSyncService::OriginFileMetadataMap* metadata_map));
+  MOCK_METHOD2(GetFileMetadataMap,
+               void(const GURL& origin,
+                    RemoteFileSyncService::FileMetadataMap* metadata_map));
   MOCK_METHOD1(SetSyncEnabled, void(bool));
   MOCK_METHOD1(SetConflictResolutionPolicy,
                SyncStatusCode(ConflictResolutionPolicy));

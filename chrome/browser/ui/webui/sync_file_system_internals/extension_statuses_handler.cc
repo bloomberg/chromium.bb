@@ -36,17 +36,19 @@ void ExtensionStatusesHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ExtensionStatusesHandler::GetExtensionStatuses(
-    const base::ListValue* args) {
-  DCHECK(args);
+//static
+void ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(
+    Profile* profile,
+    base::ListValue* values) {
+  DCHECK(profile);
+  DCHECK(values);
   std::map<GURL, std::string> status_map;
-  SyncFileSystemServiceFactory::GetForProfile(profile_)->GetExtensionStatusMap(
+  SyncFileSystemServiceFactory::GetForProfile(profile)->GetExtensionStatusMap(
       &status_map);
 
   ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   DCHECK(extension_service);
-  base::ListValue list;
   for (std::map<GURL, std::string>::const_iterator itr = status_map.begin();
        itr != status_map.end();
        ++itr) {
@@ -61,9 +63,15 @@ void ExtensionStatusesHandler::GetExtensionStatuses(
     dict->SetString("extensionID", extension_id);
     dict->SetString("extensionName", extension->name());
     dict->SetString("status", itr->second);
-    list.Append(dict);
+    values->Append(dict);
   }
+}
 
+void ExtensionStatusesHandler::GetExtensionStatuses(
+    const base::ListValue* args) {
+  DCHECK(args);
+  base::ListValue list;
+  GetExtensionStatusesAsDictionary(profile_, &list);
   web_ui()->CallJavascriptFunction("ExtensionStatuses.onGetExtensionStatuses",
                                    list);
 }

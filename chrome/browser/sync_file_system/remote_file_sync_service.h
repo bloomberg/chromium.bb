@@ -145,10 +145,10 @@ class RemoteFileSyncService {
   typedef std::map<GURL, std::string> OriginStatusMap;
   virtual void GetOriginStatusMap(OriginStatusMap* status_map) = 0;
 
-  // Returns all file metadata grouped by origin.
+  // Returns file metadata for one origin.
   typedef std::map<base::FilePath, FileMetadata> FileMetadataMap;
-  typedef std::map<GURL, FileMetadataMap> OriginFileMetadataMap;
-  virtual void GetFileMetadataMap(OriginFileMetadataMap* metadata_map) = 0;
+  virtual void GetFileMetadataMap(const GURL& origin,
+                                  FileMetadataMap* metadata_map) = 0;
 
   // Enables or disables the background sync.
   // Setting this to false should disable the synchronization (and make

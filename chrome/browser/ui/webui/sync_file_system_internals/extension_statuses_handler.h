@@ -21,6 +21,11 @@ class ExtensionStatusesHandler : public content::WebUIMessageHandler {
   explicit ExtensionStatusesHandler(Profile* profile);
   virtual ~ExtensionStatusesHandler();
 
+  // Shared by Extension Statuses Tab and also File Metadata Tab to generate the
+  // extension drop down.
+  static void GetExtensionStatusesAsDictionary(Profile* profile,
+                                               base::ListValue* values);
+
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 

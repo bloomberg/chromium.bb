@@ -236,9 +236,10 @@ void DriveFileSyncService::GetOriginStatusMap(OriginStatusMap* status_map) {
 }
 
 void DriveFileSyncService::GetFileMetadataMap(
-    OriginFileMetadataMap* metadata_map) {
+    const GURL& origin,
+    FileMetadataMap* metadata_map) {
   DCHECK(metadata_map);
-  metadata_store_->GetFileMetadataMap(metadata_map);
+  metadata_store_->GetFileMetadataMap(origin, metadata_map);
 }
 
 void DriveFileSyncService::SetSyncEnabled(bool enabled) {
