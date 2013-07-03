@@ -196,7 +196,14 @@ var testSocketListening = function() {
         var match = !!s.match(request);
         chrome.test.assertTrue(match, "Received data does not match.");
         succeeded = true;
-        chrome.test.succeed();
+        // Test whether socket.getInfo correctly reflects the connection status
+        // if the peer has closed the connection.
+        setTimeout(function() {
+          socket.getInfo(acceptedSocketId, function(info) {
+            chrome.test.assertFalse(info.connected);
+            chrome.test.succeed();
+          });
+        }, 500);
       });
     });
   }
@@ -219,7 +226,9 @@ var testSocketListening = function() {
 
           // Write.
           string2ArrayBuffer(request, function(buf) {
-            socket.write(tmpSocketId, buf, function() {});
+            socket.write(tmpSocketId, buf, function() {
+              socket.disconnect(tmpSocketId);
+            });
           });
         });
     });

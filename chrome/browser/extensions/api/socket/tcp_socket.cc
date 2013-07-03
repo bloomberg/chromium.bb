@@ -41,8 +41,9 @@ TCPSocket::TCPSocket(net::TCPServerSocket* tcp_server_socket,
 // static
 TCPSocket* TCPSocket::CreateSocketForTesting(
     net::TCPClientSocket* tcp_client_socket,
-    const std::string& owner_extension_id) {
-  return new TCPSocket(tcp_client_socket, owner_extension_id);
+    const std::string& owner_extension_id,
+    bool is_connected) {
+  return new TCPSocket(tcp_client_socket, owner_extension_id, is_connected);
 }
 
 // static
@@ -127,7 +128,7 @@ void TCPSocket::Read(int count,
       break;
     }
 
-    if (!socket_.get() || !socket_->IsConnected()) {
+    if (!socket_.get() || !IsConnected()) {
         result = net::ERR_SOCKET_NOT_CONNECTED;
         break;
     }
@@ -215,6 +216,11 @@ void TCPSocket::Accept(const AcceptCompletionCallback &callback) {
   }
 }
 
+bool TCPSocket::IsConnected() {
+  RefreshConnectionStatus();
+  return is_connected_;
+}
+
 bool TCPSocket::GetPeerAddress(net::IPEndPoint* address) {
   if (!socket_.get())
     return false;
@@ -240,10 +246,19 @@ int TCPSocket::WriteImpl(net::IOBuffer* io_buffer,
                          const net::CompletionCallback& callback) {
   if (socket_mode_ != CLIENT)
     return net::ERR_FAILED;
-  else if (!socket_.get() || !socket_->IsConnected())
+  else if (!socket_.get() || !IsConnected())
     return net::ERR_SOCKET_NOT_CONNECTED;
   else
     return socket_->Write(io_buffer, io_buffer_size, callback);
+}
+
+void TCPSocket::RefreshConnectionStatus() {
+  if (!is_connected_) return;
+  if (server_socket_) return;
+  if (!socket_->IsConnected()) {
+    is_connected_ = false;
+    socket_->Disconnect();
+  }
 }
 
 void TCPSocket::OnConnectComplete(int result) {

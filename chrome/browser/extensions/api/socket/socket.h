@@ -76,7 +76,7 @@ class Socket : public ApiResource {
                      std::string* error_msg);
   virtual void Accept(const AcceptCompletionCallback &callback);
 
-  bool IsConnected();
+  virtual bool IsConnected() = 0;
 
   virtual bool GetPeerAddress(net::IPEndPoint* address) = 0;
   virtual bool GetLocalAddress(net::IPEndPoint* address) = 0;

@@ -73,7 +73,7 @@ TEST(SocketTest, TestTCPSocketRead) {
   CompleteHandler handler;
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, FAKE_ID));
+      tcp_client_socket, FAKE_ID, true));
 
   EXPECT_CALL(*tcp_client_socket, Read(_, _, _))
       .Times(1);
@@ -91,7 +91,7 @@ TEST(SocketTest, TestTCPSocketWrite) {
   CompleteHandler handler;
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, FAKE_ID));
+      tcp_client_socket, FAKE_ID, true));
 
   net::CompletionCallback callback;
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
@@ -113,7 +113,7 @@ TEST(SocketTest, TestTCPSocketBlockedWrite) {
   CompleteHandler handler;
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, FAKE_ID));
+      tcp_client_socket, FAKE_ID, true));
 
   net::CompletionCallback callback;
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
@@ -138,7 +138,7 @@ TEST(SocketTest, TestTCPSocketBlockedWriteReentry) {
   CompleteHandler handlers[5];
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, FAKE_ID));
+      tcp_client_socket, FAKE_ID, true));
 
   net::CompletionCallback callback;
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))

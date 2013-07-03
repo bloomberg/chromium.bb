@@ -186,6 +186,10 @@ void UDPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
     OnSendToComplete(result);
 }
 
+bool UDPSocket::IsConnected() {
+  return is_connected_;
+}
+
 bool UDPSocket::GetPeerAddress(net::IPEndPoint* address) {
   return !socket_.GetPeerAddress(address);
 }

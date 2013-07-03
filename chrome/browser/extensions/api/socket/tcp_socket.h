@@ -49,13 +49,16 @@ class TCPSocket : public Socket {
                      int backlog, std::string* error_msg) OVERRIDE;
   virtual void Accept(const AcceptCompletionCallback &callback) OVERRIDE;
 
+  virtual bool IsConnected() OVERRIDE;
+
   virtual bool GetPeerAddress(net::IPEndPoint* address) OVERRIDE;
   virtual bool GetLocalAddress(net::IPEndPoint* address) OVERRIDE;
   virtual Socket::SocketType GetSocketType() const OVERRIDE;
 
   static TCPSocket* CreateSocketForTesting(
       net::TCPClientSocket* tcp_client_socket,
-      const std::string& owner_extension_id);
+      const std::string& owner_extension_id,
+      bool is_connected = false);
   static TCPSocket* CreateServerSocketForTesting(
       net::TCPServerSocket* tcp_server_socket,
       const std::string& owner_extension_id);
@@ -66,6 +69,7 @@ class TCPSocket : public Socket {
                         const net::CompletionCallback& callback) OVERRIDE;
 
  private:
+  void RefreshConnectionStatus();
   void OnConnectComplete(int result);
   void OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
                       int result);
