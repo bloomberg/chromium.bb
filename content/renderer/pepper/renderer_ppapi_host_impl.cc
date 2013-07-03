@@ -157,6 +157,22 @@ RendererPpapiHostImpl::CreateInProcessResourceCreationAPI(
       new PepperInProcessResourceCreation(this, instance));
 }
 
+PepperBrowserConnection*
+RendererPpapiHostImpl::GetBrowserConnection(PP_Instance instance) const {
+  PluginInstance* instance_object = GetAndValidateInstance(instance);
+  if (!instance_object)
+    return NULL;
+
+  // Since we're the embedder, we can make assumptions about the delegate on
+  // the instance.
+  PepperPluginDelegateImpl* delegate =
+      static_cast<PepperPluginDelegateImpl*>(instance_object->delegate());
+  if (!delegate)
+    return NULL;
+
+  return delegate->pepper_browser_connection();
+}
+
 ppapi::host::PpapiHost* RendererPpapiHostImpl::GetPpapiHost() {
   return ppapi_host_.get();
 }
@@ -265,23 +281,15 @@ void RendererPpapiHostImpl::CreateBrowserResourceHost(
     PP_Instance instance,
     const IPC::Message& nested_msg,
     const base::Callback<void(int)>& callback) const {
-  PluginInstance* instance_object = GetAndValidateInstance(instance);
-  if (!instance_object)
+  PepperBrowserConnection* browser_connection = GetBrowserConnection(instance);
+  if (browser_connection == NULL) {
     callback.Run(0);
-
-  // Since we're the embedder, we can make assumptions about the delegate on
-  // the instance.
-  PepperPluginDelegateImpl* delegate =
-      static_cast<PepperPluginDelegateImpl*>(instance_object->delegate());
-  if (!delegate)
-    callback.Run(0);
-
-  PepperBrowserConnection* browser_connection =
-      delegate->pepper_browser_connection();
-  browser_connection->SendBrowserCreate(module_->GetPluginChildId(),
-                                        instance,
-                                        nested_msg,
-                                        callback);
+  } else {
+    browser_connection->SendBrowserCreate(module_->GetPluginChildId(),
+                                          instance,
+                                          nested_msg,
+                                          callback);
+  }
 }
 
 PluginInstance* RendererPpapiHostImpl::GetAndValidateInstance(

@@ -38,6 +38,7 @@ class PluginModule;
 
 namespace content {
 
+class PepperBrowserConnection;
 class PepperInProcessRouter;
 
 // This class is attached to a PluginModule via the module's embedder state.
@@ -81,6 +82,8 @@ class RendererPpapiHostImpl
   scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
       CreateInProcessResourceCreationAPI(
           webkit::ppapi::PluginInstance* instance);
+
+  PepperBrowserConnection* GetBrowserConnection(PP_Instance instance) const;
 
   // RendererPpapiHost implementation.
   virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
