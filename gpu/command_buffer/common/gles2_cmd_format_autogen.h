@@ -4887,7 +4887,7 @@ struct ReadPixels {
   void Init(
       GLint _x, GLint _y, GLsizei _width, GLsizei _height, GLenum _format,
       GLenum _type, uint32 _pixels_shm_id, uint32 _pixels_shm_offset,
-      uint32 _result_shm_id, uint32 _result_shm_offset) {
+      uint32 _result_shm_id, uint32 _result_shm_offset, GLboolean _async) {
     SetHeader();
     x = _x;
     y = _y;
@@ -4899,17 +4899,18 @@ struct ReadPixels {
     pixels_shm_offset = _pixels_shm_offset;
     result_shm_id = _result_shm_id;
     result_shm_offset = _result_shm_offset;
+    async = _async;
   }
 
   void* Set(
       void* cmd, GLint _x, GLint _y, GLsizei _width, GLsizei _height,
       GLenum _format, GLenum _type, uint32 _pixels_shm_id,
       uint32 _pixels_shm_offset, uint32 _result_shm_id,
-      uint32 _result_shm_offset) {
+      uint32 _result_shm_offset, GLboolean _async) {
     static_cast<ValueType*>(
         cmd)->Init(
             _x, _y, _width, _height, _format, _type, _pixels_shm_id,
-            _pixels_shm_offset, _result_shm_id, _result_shm_offset);
+            _pixels_shm_offset, _result_shm_id, _result_shm_offset, _async);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4924,10 +4925,11 @@ struct ReadPixels {
   uint32 pixels_shm_offset;
   uint32 result_shm_id;
   uint32 result_shm_offset;
+  uint32 async;
 };
 
-COMPILE_ASSERT(sizeof(ReadPixels) == 44,
-               Sizeof_ReadPixels_is_not_44);
+COMPILE_ASSERT(sizeof(ReadPixels) == 48,
+               Sizeof_ReadPixels_is_not_48);
 COMPILE_ASSERT(offsetof(ReadPixels, header) == 0,
                OffsetOf_ReadPixels_header_not_0);
 COMPILE_ASSERT(offsetof(ReadPixels, x) == 4,
@@ -4950,6 +4952,8 @@ COMPILE_ASSERT(offsetof(ReadPixels, result_shm_id) == 36,
                OffsetOf_ReadPixels_result_shm_id_not_36);
 COMPILE_ASSERT(offsetof(ReadPixels, result_shm_offset) == 40,
                OffsetOf_ReadPixels_result_shm_offset_not_40);
+COMPILE_ASSERT(offsetof(ReadPixels, async) == 44,
+               OffsetOf_ReadPixels_async_not_44);
 
 struct ReleaseShaderCompiler {
   typedef ReleaseShaderCompiler ValueType;
