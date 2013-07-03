@@ -5437,8 +5437,22 @@ sub NativeToJSValue
         return "$indent$receiver $nativeValue.v8Value();";
     }
 
+    my $conv = $extendedAttributes->{"TreatReturnedNullStringAs"};
+    if (($type eq "DOMString" || IsEnumType($type)) && $isReturnValue) {
+        my $nullAs = "NullStringAsEmpty";
+        if (defined $conv) {
+            if ($conv eq "Null") {
+                $nullAs = "NullStringAsNull";
+            } elsif ($conv eq "Undefined") {
+                $nullAs = "NullStringAsUndefined";
+            } else {
+                die "Unknown value for TreatReturnedNullStringAs extended attribute";
+            }
+        }
+        return "${indent}v8SetReturnValueString(${getHolderContainer}, $nativeValue, $getIsolate, $nullAs);";
+    }
+
     if ($type eq "DOMString" or IsEnumType($type)) {
-        my $conv = $extendedAttributes->{"TreatReturnedNullStringAs"};
         my $returnValue = "";
         if (defined $conv) {
             if ($conv eq "Null") {
@@ -5451,8 +5465,6 @@ sub NativeToJSValue
         } else {
             $returnValue = "v8String($nativeValue, $getIsolate$returnHandleTypeArg)";
         }
-        # FIXME: Use safe handles
-        return "${indent}v8SetReturnValue(${getHolderContainer}, $returnValue);" if $isReturnValue;
         return "$indent$receiver $returnValue;";
     }
 

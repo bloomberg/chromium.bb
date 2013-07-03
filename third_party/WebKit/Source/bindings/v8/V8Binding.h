@@ -119,6 +119,32 @@ namespace WebCore {
         args.GetReturnValue().SetNull();
     }
 
+    enum TreatNullStringAs {
+        NullStringAsEmpty,
+        NullStringAsNull,
+        NullStringAsUndefined,
+    };
+
+    template <class T>
+    inline void v8SetReturnValueString(const T& info, const String& string, v8::Isolate* isolate, TreatNullStringAs treatNullStringAs = NullStringAsEmpty)
+    {
+        if (string.isNull()) {
+            switch (treatNullStringAs) {
+            case NullStringAsEmpty:
+                v8SetReturnValue(info, v8::String::Empty(isolate));
+                break;
+            case NullStringAsNull:
+                v8SetReturnValueNull(info);
+                break;
+            case NullStringAsUndefined:
+                v8SetReturnValue(info, v8::Undefined(isolate));
+                break;
+            }
+            return;
+        }
+        V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info, string.impl(), isolate);
+    }
+
     // Convert v8 types to a WTF::String. If the V8 string is not already
     // an external string then it is transformed into an external string at this
     // point to avoid repeated conversions.
@@ -178,22 +204,6 @@ namespace WebCore {
     {
         if (string.isNull())
             return v8::String::Empty(isolate);
-        return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(string.impl(), handleType, isolate);
-    }
-
-    inline v8::Handle<v8::Value> v8StringOrNull(const String& string, v8::Isolate* isolate, ReturnHandleType handleType = ReturnLocalHandle)
-    {
-        ASSERT(isolate);
-        if (string.isNull())
-            return v8::Null(isolate);
-        return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(string.impl(), handleType, isolate);
-    }
-
-    inline v8::Handle<v8::Value> v8StringOrUndefined(const String& string, v8::Isolate* isolate, ReturnHandleType handleType = ReturnLocalHandle)
-    {
-        ASSERT(isolate);
-        if (string.isNull())
-            return v8::Undefined(isolate);
         return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(string.impl(), handleType, isolate);
     }
 

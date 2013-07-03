@@ -72,7 +72,7 @@ void V8XSLTProcessor::getParameterMethodCustom(const v8::FunctionCallbackInfo<v8
     if (result.isNull())
         return;
 
-    v8SetReturnValue(args, v8String(result, args.GetIsolate()));
+    v8SetReturnValueString(args, result, args.GetIsolate());
 }
 
 void V8XSLTProcessor::removeParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

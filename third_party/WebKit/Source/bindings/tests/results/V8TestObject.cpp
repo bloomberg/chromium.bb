@@ -107,7 +107,7 @@ static void readOnlyLongAttrAttrGetterCallback(v8::Local<v8::String> name, const
 static void readOnlyStringAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(imp->readOnlyStringAttr(), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, imp->readOnlyStringAttr(), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -148,7 +148,7 @@ static void staticReadOnlyLongAttrAttrGetterCallback(v8::Local<v8::String> name,
 
 static void staticStringAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValue(info, v8String(TestObj::staticStringAttr(), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, TestObj::staticStringAttr(), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -174,7 +174,7 @@ static void staticStringAttrAttrSetterCallback(v8::Local<v8::String> name, v8::L
 static void enumAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(imp->enumAttr(), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, imp->enumAttr(), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -204,7 +204,7 @@ static void enumAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8:
 static void readOnlyEnumAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(imp->readOnlyEnumAttr(), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, imp->readOnlyEnumAttr(), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -405,7 +405,7 @@ static void unsignedLongLongAttrAttrSetterCallback(v8::Local<v8::String> name, v
 static void stringAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(imp->stringAttr(), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, imp->stringAttr(), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -515,7 +515,7 @@ static void createAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 static void reflectedStringAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(imp->fastGetAttribute(WebCore::HTMLNames::reflectedstringattrAttr), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, imp->fastGetAttribute(WebCore::HTMLNames::reflectedstringattrAttr), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -623,7 +623,7 @@ static void reflectedBooleanAttrAttrSetterCallback(v8::Local<v8::String> name, v
 static void reflectedURLAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(imp->getURLAttribute(WebCore::HTMLNames::reflectedurlattrAttr), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, imp->getURLAttribute(WebCore::HTMLNames::reflectedurlattrAttr), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -650,7 +650,7 @@ static void reflectedURLAttrAttrSetterCallback(v8::Local<v8::String> name, v8::L
 static void reflectedStringAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(imp->fastGetAttribute(WebCore::HTMLNames::customContentStringAttrAttr), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, imp->fastGetAttribute(WebCore::HTMLNames::customContentStringAttrAttr), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -731,7 +731,7 @@ static void reflectedCustomBooleanAttrAttrSetterCallback(v8::Local<v8::String> n
 static void reflectedCustomURLAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(imp->getURLAttribute(WebCore::HTMLNames::customContentURLAttrAttr), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, imp->getURLAttribute(WebCore::HTMLNames::customContentURLAttrAttr), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -854,7 +854,7 @@ static void stringAttrWithGetterExceptionAttrGetter(v8::Local<v8::String> name, 
         setDOMException(ec, info.GetIsolate());
         return;
     };
-    v8SetReturnValue(info, v8String(v, info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, v, info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -881,7 +881,7 @@ static void stringAttrWithGetterExceptionAttrSetterCallback(v8::Local<v8::String
 static void stringAttrWithSetterExceptionAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(imp->stringAttrWithSetterException(), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, imp->stringAttrWithSetterException(), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -1946,7 +1946,7 @@ static void idAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value
 static void hashAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(imp->hash(), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, imp->hash(), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -2030,7 +2030,7 @@ static void nullableStringAttributeAttrGetter(v8::Local<v8::String> name, const 
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValue(info, v8String(v, info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, v, info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -3660,7 +3660,7 @@ static void methodWithEnforceRangeUInt64MethodCallback(const v8::FunctionCallbac
 static void conditionalMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestObj* imp = V8TestObject::toNative(args.Holder());
-    v8SetReturnValue(args, v8String(imp->conditionalMethod1(), args.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(args, imp->conditionalMethod1(), args.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -4921,7 +4921,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     String element = collection->namedItem(propertyName);
     if (element.isNull())
         return;
-    v8SetReturnValue(info, v8String(element, info.GetIsolate()));
+    v8SetReturnValueString(info, element, info.GetIsolate(), NullStringAsEmpty);
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

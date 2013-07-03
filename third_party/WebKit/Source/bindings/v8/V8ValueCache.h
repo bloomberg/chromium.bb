@@ -60,6 +60,15 @@ public:
         return v8ExternalStringSlow(stringImpl, handleType, isolate);
     }
 
+    template <class T>
+    void setReturnValueFromString(const T& info, StringImpl* stringImpl, v8::Isolate* isolate)
+    {
+        if (m_lastStringImpl.get() == stringImpl && m_lastV8String.isWeak())
+            info.GetReturnValue().Set(*m_lastV8String.persistent());
+        else
+            setReturnValueFromStringSlow(info, stringImpl, isolate);
+    }
+
     void clearOnGC() 
     {
         m_lastStringImpl = 0;
@@ -70,7 +79,35 @@ public:
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
+    static v8::Local<v8::String> makeExternalString(const String&);
+    static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::String>*, StringImpl*);
+
     v8::Handle<v8::String> v8ExternalStringSlow(StringImpl*, ReturnHandleType, v8::Isolate*);
+
+    template <class T>
+    void setReturnValueFromStringSlow(const T& info, StringImpl* stringImpl, v8::Isolate* isolate)
+    {
+        if (!stringImpl->length()) {
+            info.GetReturnValue().SetEmptyString();
+            return;
+        }
+
+        UnsafePersistent<v8::String> cachedV8String = m_stringCache.get(stringImpl);
+        if (cachedV8String.isWeak()) {
+            m_lastStringImpl = stringImpl;
+            m_lastV8String = cachedV8String;
+            info.GetReturnValue().Set(*cachedV8String.persistent());
+            return;
+        }
+
+        v8::Local<v8::String> newString = createStringAndInsertIntoCache(stringImpl, isolate);
+        if (newString.IsEmpty())
+            info.GetReturnValue().SetEmptyString();
+        else
+            info.GetReturnValue().Set(newString);
+    }
+
+    v8::Local<v8::String> createStringAndInsertIntoCache(StringImpl*, v8::Isolate*);
 
     HashMap<StringImpl*, UnsafePersistent<v8::String> > m_stringCache;
     UnsafePersistent<v8::String> m_lastV8String;

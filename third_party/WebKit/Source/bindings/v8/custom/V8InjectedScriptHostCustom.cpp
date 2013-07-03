@@ -310,7 +310,7 @@ void V8InjectedScriptHost::databaseIdMethodCustom(const v8::FunctionCallbackInfo
         Database* database = V8Database::toNative(v8::Handle<v8::Object>::Cast(args[0]));
         if (database) {
             InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder()); {
-                v8SetReturnValue(args, v8StringOrUndefined(host->databaseIdImpl(database), args.GetIsolate()));
+                v8SetReturnValueString(args, host->databaseIdImpl(database), args.GetIsolate(), NullStringAsUndefined);
                 return;
             }
         }
@@ -323,7 +323,7 @@ void V8InjectedScriptHost::storageIdMethodCustom(const v8::FunctionCallbackInfo<
         Storage* storage = V8Storage::toNative(v8::Handle<v8::Object>::Cast(args[0]));
         if (storage) {
             InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
-            v8SetReturnValue(args, v8StringOrUndefined(host->storageIdImpl(storage), args.GetIsolate()));
+            v8SetReturnValueString(args, host->storageIdImpl(storage), args.GetIsolate(), NullStringAsUndefined);
             return;
         }
     }

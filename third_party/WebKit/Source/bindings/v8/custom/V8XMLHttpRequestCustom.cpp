@@ -76,7 +76,7 @@ void V8XMLHttpRequest::responseTextAttrGetterCustom(v8::Local<v8::String> name, 
         return;
     }
     if (text.hasNoValue()) {
-        v8SetReturnValue(info, v8String(emptyString(), info.GetIsolate()));
+        v8SetReturnValueString(info, emptyString(), info.GetIsolate());
         return;
     }
     v8SetReturnValue(info, text.v8Value());

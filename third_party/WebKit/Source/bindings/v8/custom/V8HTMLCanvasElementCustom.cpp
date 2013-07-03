@@ -139,7 +139,7 @@ void V8HTMLCanvasElement::toDataURLMethodCustom(const v8::FunctionCallbackInfo<v
 
     String result = canvas->toDataURL(type, qualityPtr, ec);
     setDOMException(ec, args.GetIsolate());
-    v8SetReturnValue(args, v8StringOrUndefined(result, args.GetIsolate()));
+    v8SetReturnValueString(args, result, args.GetIsolate(), NullStringAsUndefined);
 }
 
 } // namespace WebCore

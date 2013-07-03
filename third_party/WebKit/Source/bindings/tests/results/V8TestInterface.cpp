@@ -93,7 +93,7 @@ static void implementsStaticReadOnlyAttrAttrGetterCallback(v8::Local<v8::String>
 
 static void implementsStaticAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValue(info, v8String(TestInterface::implementsStaticAttr(), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, TestInterface::implementsStaticAttr(), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -135,7 +135,7 @@ static void implementsStaticAttrAttrSetterCallback(v8::Local<v8::String> name, v
 static void implementsStr1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(imp->implementsStr1(), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, imp->implementsStr1(), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -155,7 +155,7 @@ static void implementsStr1AttrGetterCallback(v8::Local<v8::String> name, const v
 static void implementsStr2AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(imp->implementsStr2(), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, imp->implementsStr2(), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -408,7 +408,7 @@ static void supplementalStaticReadOnlyAttrAttrGetterCallback(v8::Local<v8::Strin
 
 static void supplementalStaticAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValue(info, v8String(TestPartialInterface::supplementalStaticAttr(), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, TestPartialInterface::supplementalStaticAttr(), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -450,7 +450,7 @@ static void supplementalStaticAttrAttrSetterCallback(v8::Local<v8::String> name,
 static void supplementalStr1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(TestPartialInterface::supplementalStr1(imp), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, TestPartialInterface::supplementalStr1(imp), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -470,7 +470,7 @@ static void supplementalStr1AttrGetterCallback(v8::Local<v8::String> name, const
 static void supplementalStr2AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, v8String(TestPartialInterface::supplementalStr2(imp), info.GetIsolate(), ReturnUnsafeHandle));
+    v8SetReturnValueString(info, TestPartialInterface::supplementalStr2(imp), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 

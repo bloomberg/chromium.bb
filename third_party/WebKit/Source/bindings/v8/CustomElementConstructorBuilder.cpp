@@ -177,7 +177,11 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
         return false;
 
     v8::Handle<v8::String> v8Name = v8String(definition->name(), isolate);
-    v8::Handle<v8::Value> v8Type = v8StringOrNull(definition->isTypeExtension() ? definition->type() : nullAtom, isolate);
+    v8::Handle<v8::Value> v8Type;
+    if (definition->isTypeExtension())
+        v8Type = v8String(definition->type(), isolate);
+    else
+        v8Type = v8::Null(isolate);
 
     m_constructor->SetName(v8Type->IsNull() ? v8Name : v8::Handle<v8::String>::Cast(v8Type));
 

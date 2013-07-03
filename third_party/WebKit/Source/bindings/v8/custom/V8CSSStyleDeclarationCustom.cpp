@@ -212,7 +212,7 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
                 cssValue.get())->getFloatValue(CSSPrimitiveValue::CSS_PX));
             return;
         }
-        v8SetReturnValue(info, v8StringOrNull(cssValue->cssText(), info.GetIsolate()));
+        v8SetReturnValueString(info, cssValue->cssText(), info.GetIsolate(), NullStringAsNull);
         return;
     }
 
@@ -220,7 +220,7 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
     if (result.isNull())
         result = ""; // convert null to empty string.
 
-    v8SetReturnValue(info, v8String(result, info.GetIsolate()));
+    v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
 void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
