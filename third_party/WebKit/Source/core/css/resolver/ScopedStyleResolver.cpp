@@ -174,6 +174,31 @@ void ScopedStyleTree::collectFeaturesTo(RuleFeatureSet& features)
         it->value->collectFeaturesTo(features);
 }
 
+inline void ScopedStyleTree::reparentNodes(const ScopedStyleResolver* oldParent, ScopedStyleResolver* newParent)
+{
+    // FIXME: this takes O(N) (N = number of all scoping nodes).
+    for (HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> >::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it) {
+        if (it->value->parent() == oldParent)
+            it->value->setParent(newParent);
+    }
+}
+
+void ScopedStyleTree::remove(const ContainerNode* scopingNode)
+{
+    if (!scopingNode || scopingNode->isDocumentNode())
+        return;
+
+    ScopedStyleResolver* resolverRemoved = scopedStyleResolverFor(scopingNode);
+    if (!resolverRemoved)
+        return;
+
+    reparentNodes(resolverRemoved, resolverRemoved->parent());
+    if (m_cache.scopedResolver == resolverRemoved)
+        m_cache.clear();
+
+    m_authorStyles.remove(scopingNode);
+}
+
 void ScopedStyleTree::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
@@ -253,7 +278,11 @@ void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features)
 void ScopedStyleResolver::resetAuthorStyle()
 {
     m_authorStyle = RuleSet::create();
-    m_atHostRules.clear();
+}
+
+void ScopedStyleResolver::resetAtHostRules(const ShadowRoot* shadowRoot)
+{
+    m_atHostRules.remove(shadowRoot);
 }
 
 bool ScopedStyleResolver::checkRegionStyle(Element* regionElement)

@@ -39,14 +39,14 @@
 
 namespace WebCore {
 
-void ShadowDistributedRules::addRule(StyleRule* rule, size_t selectorIndex, ContainerNode* scope, AddRuleFlags addRuleFlags)
+void ShadowDistributedRules::addRule(StyleRule* rule, size_t selectorIndex, ContainerNode* scopingNode, AddRuleFlags addRuleFlags)
 {
-    if (m_shadowDistributedRuleSetMap.contains(scope))
-        m_shadowDistributedRuleSetMap.get(scope)->addRule(rule, selectorIndex, addRuleFlags);
+    if (m_shadowDistributedRuleSetMap.contains(scopingNode))
+        m_shadowDistributedRuleSetMap.get(scopingNode)->addRule(rule, selectorIndex, addRuleFlags);
     else {
         OwnPtr<RuleSet> ruleSetForScope = RuleSet::create();
         ruleSetForScope->addRule(rule, selectorIndex, addRuleFlags);
-        m_shadowDistributedRuleSetMap.add(scope, ruleSetForScope.release());
+        m_shadowDistributedRuleSetMap.add(scopingNode, ruleSetForScope.release());
     }
 }
 
@@ -54,6 +54,11 @@ void ShadowDistributedRules::collectMatchRequests(bool includeEmptyRules, Vector
 {
     for (ShadowDistributedRuleSetMap::iterator it = m_shadowDistributedRuleSetMap.begin(); it != m_shadowDistributedRuleSetMap.end(); ++it)
         matchRequests.append(MatchRequest(it->value.get(), includeEmptyRules, it->key));
+}
+
+void ShadowDistributedRules::reset(const ContainerNode* scopingNode)
+{
+    m_shadowDistributedRuleSetMap.remove(scopingNode);
 }
 
 void ShadowDistributedRules::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

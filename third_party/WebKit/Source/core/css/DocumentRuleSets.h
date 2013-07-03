@@ -42,9 +42,10 @@ class RuleSet;
 
 class ShadowDistributedRules {
 public:
-    void addRule(StyleRule*, size_t selectorIndex, ContainerNode* scope, AddRuleFlags);
+    void addRule(StyleRule*, size_t selectorIndex, ContainerNode* scopingNode, AddRuleFlags);
     void collectMatchRequests(bool includeEmptyRules, Vector<MatchRequest>&);
     void clear() { m_shadowDistributedRuleSetMap.clear(); }
+    void reset(const ContainerNode* scopingNode);
     bool isEmpty() const { return m_shadowDistributedRuleSetMap.isEmpty(); }
     void reportMemoryUsage(MemoryObjectInfo*) const;
     void collectFeaturesTo(RuleFeatureSet&);

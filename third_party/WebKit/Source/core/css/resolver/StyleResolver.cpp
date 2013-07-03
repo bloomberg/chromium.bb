@@ -255,6 +255,41 @@ void StyleResolver::resetAuthorStyle()
     m_styleTree.clear();
 }
 
+void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
+{
+    m_styleTree.clear();
+    ScopedStyleResolver* resolver = scopingNode ? m_styleTree.scopedStyleResolverFor(scopingNode) : m_styleTree.scopedStyleResolverForDocument();
+    if (!resolver)
+        return;
+
+    m_ruleSets.shadowDistributedRules().reset(scopingNode);
+
+    resolver->resetAuthorStyle();
+
+    if (!scopingNode || !resolver->hasOnlyEmptyRuleSets())
+        return;
+
+    m_styleTree.remove(scopingNode);
+}
+
+void StyleResolver::resetAtHostRules(const ContainerNode* scopingNode)
+{
+    ASSERT(scopingNode);
+    ASSERT(scopingNode->isShadowRoot());
+
+    const ShadowRoot* shadowRoot = toShadowRoot(scopingNode);
+    const ContainerNode* shadowHost = shadowRoot->shadowHost();
+    ScopedStyleResolver* resolver = m_styleTree.scopedStyleResolverFor(shadowHost);
+    if (!resolver)
+        return;
+
+    resolver->resetAtHostRules(shadowRoot);
+    if (!resolver->hasOnlyEmptyRuleSets())
+        return;
+
+    m_styleTree.remove(shadowHost);
+}
+
 static PassOwnPtr<RuleSet> makeRuleSet(const Vector<RuleFeature>& rules)
 {
     size_t size = rules.size();

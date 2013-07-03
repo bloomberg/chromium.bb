@@ -58,6 +58,8 @@ public:
     void setParent(ScopedStyleResolver* newParent) { m_parent = newParent; }
     ScopedStyleResolver* parent() { return m_parent; }
 
+    bool hasOnlyEmptyRuleSets() const { return !m_authorStyle->ruleCount() && m_atHostRules.isEmpty(); }
+
 public:
     bool checkRegionStyle(Element*);
 
@@ -68,6 +70,8 @@ public:
     void addHostRule(StyleRuleHost*, bool hasDocumentSecurityOrigin, const ContainerNode* scopingNode);
     void collectFeaturesTo(RuleFeatureSet&);
     void resetAuthorStyle();
+    void resetAtHostRules(const ShadowRoot*);
+
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
@@ -101,6 +105,8 @@ public:
     void resolveScopedStyles(const Element*, Vector<ScopedStyleResolver*, 8>&);
     ScopedStyleResolver* scopedResolverFor(const Element*);
 
+    void remove(const ContainerNode* scopingNode);
+
     void pushStyleCache(const ContainerNode* scopingNode, const ContainerNode* parent);
     void popStyleCache(const ContainerNode* scopingNode);
 
@@ -115,6 +121,8 @@ private:
     bool cacheIsValid(const ContainerNode* parent) const { return parent && parent == m_cache.nodeForScopedStyles; }
     void resolveStyleCache(const ContainerNode* scopingNode);
     ScopedStyleResolver* enclosingScopedStyleResolverFor(const ContainerNode* scopingNode);
+
+    void reparentNodes(const ScopedStyleResolver* oldParent, ScopedStyleResolver* newParent);
 
 private:
     HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> > m_authorStyles;
