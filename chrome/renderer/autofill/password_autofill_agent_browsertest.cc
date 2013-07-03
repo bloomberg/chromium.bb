@@ -65,7 +65,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   // protected.
   void SimulateOnFillPasswordForm(
       const PasswordFormFillData& fill_data) {
-    AutofillMsg_FillPasswordForm msg(0, fill_data, false);
+    AutofillMsg_FillPasswordForm msg(0, fill_data);
     password_autofill_->OnMessageReceived(msg);
   }
 

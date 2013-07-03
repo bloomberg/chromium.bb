@@ -167,16 +167,10 @@ PasswordManagerDelegateImpl::~PasswordManagerDelegateImpl() {
 
 void PasswordManagerDelegateImpl::FillPasswordForm(
     const autofill::PasswordFormFillData& form_data) {
-  autofill::AutofillDriverImpl* autofill_driver =
-      autofill::AutofillDriverImpl::FromWebContents(web_contents_);
-  // Browser process will own popup UI, so renderer should not show the popup.
-  bool disable_popup = autofill_driver->autofill_manager()->IsNativeUiEnabled();
-
   web_contents_->GetRenderViewHost()->Send(
       new AutofillMsg_FillPasswordForm(
           web_contents_->GetRenderViewHost()->GetRoutingID(),
-          form_data,
-          disable_popup));
+          form_data));
 }
 
 void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(

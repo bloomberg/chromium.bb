@@ -87,9 +87,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Sets an external delegate.
   void SetExternalDelegate(AutofillExternalDelegate* delegate);
 
-  // Whether browser process will create and own the Autofill popup UI.
-  bool IsNativeUiEnabled();
-
   // Called from our external delegate so they cannot be private.
   virtual void OnFillAutofillFormData(int query_id,
                                       const FormData& form,

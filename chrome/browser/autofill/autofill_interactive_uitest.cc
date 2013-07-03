@@ -210,11 +210,9 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     AutofillDriverImpl* autofill_driver =
         AutofillDriverImpl::FromWebContents(web_contents);
     AutofillManager* autofill_manager = autofill_driver->autofill_manager();
-    if (autofill_manager->IsNativeUiEnabled()) {
-      scoped_ptr<AutofillExternalDelegate> external_delegate(
-          new TestAutofillExternalDelegate(web_contents, autofill_manager));
-      autofill_driver->SetAutofillExternalDelegate(external_delegate.Pass());
-    }
+    scoped_ptr<AutofillExternalDelegate> external_delegate(
+        new TestAutofillExternalDelegate(web_contents, autofill_manager));
+    autofill_driver->SetAutofillExternalDelegate(external_delegate.Pass());
     autofill_manager->SetTestDelegate(&test_delegate_);
   }
 

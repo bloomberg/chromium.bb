@@ -232,11 +232,9 @@ class AutofillTest : public InProcessBrowserTest {
     AutofillDriverImpl* autofill_driver =
         AutofillDriverImpl::FromWebContents(web_contents);
     AutofillManager* autofill_manager = autofill_driver->autofill_manager();
-    if (autofill_manager->IsNativeUiEnabled()) {
-      scoped_ptr<AutofillExternalDelegate> external_delegate(
-          new TestAutofillExternalDelegate(web_contents, autofill_manager));
-      autofill_driver->SetAutofillExternalDelegate(external_delegate.Pass());
-    }
+    scoped_ptr<AutofillExternalDelegate> external_delegate(
+        new TestAutofillExternalDelegate(web_contents, autofill_manager));
+    autofill_driver->SetAutofillExternalDelegate(external_delegate.Pass());
     autofill_manager->SetTestDelegate(&test_delegate_);
   }
 
@@ -471,14 +469,6 @@ class AutofillTest : public InProcessBrowserTest {
   }
 
   void SendKeyToPopupAndWait(ui::KeyboardCode key) {
-    // TODO(isherman): Remove this condition once the WebKit popup UI code is
-    // removed.
-    if (!external_delegate()) {
-      // When testing the WebKit-based UI, route all keys to the page.
-      SendKeyToPageAndWait(key);
-      return;
-    }
-
     // When testing the native UI, route popup-targeted key presses via the
     // external delegate.
     content::NativeWebKeyboardEvent event;

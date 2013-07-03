@@ -125,9 +125,8 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_FormDataFilled,
 // Fill a password form and prepare field autocomplete for multiple
 // matching logins. Lets the renderer know if it should disable the popup
 // because the browser process will own the popup UI.
-IPC_MESSAGE_ROUTED2(AutofillMsg_FillPasswordForm,
-                    autofill::PasswordFormFillData, /* the fill form data*/
-                    bool /* disable popup */ )
+IPC_MESSAGE_ROUTED1(AutofillMsg_FillPasswordForm,
+                    autofill::PasswordFormFillData /* the fill form data*/)
 
 // Send the heuristic and server field type predictions to the renderer.
 IPC_MESSAGE_ROUTED1(

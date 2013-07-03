@@ -246,10 +246,6 @@ void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
   autocomplete_history_manager_->SetExternalDelegate(delegate);
 }
 
-bool AutofillManager::IsNativeUiEnabled() {
-  return external_delegate_ != NULL;
-}
-
 bool AutofillManager::OnFormSubmitted(const FormData& form,
                                       const TimeTicks& timestamp) {
   // Let Autocomplete know as well.
@@ -620,8 +616,7 @@ void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
 }
 
 void AutofillManager::OnHideAutofillUi() {
-  if (IsNativeUiEnabled())
-    manager_delegate_->HideAutofillPopup();
+  manager_delegate_->HideAutofillPopup();
   manager_delegate_->HideAutocheckoutBubble();
 }
 

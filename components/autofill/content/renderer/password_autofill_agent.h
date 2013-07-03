@@ -80,8 +80,7 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
 
   // RenderView IPC handlers:
-  void OnFillPasswordForm(const PasswordFormFillData& form_data,
-                          bool disable_popup);
+  void OnFillPasswordForm(const PasswordFormFillData& form_data);
 
   // Scans the given frame for password forms and sends them up to the browser.
   // If |only_visible| is true, only forms visible in the layout are sent.
@@ -120,9 +119,6 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
 
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;
-
-  // Used to disable and hide the popup.
-  bool disable_popup_;
 
   // Used for UMA stats.
   OtherPossibleUsernamesUsage usernames_usage_;
