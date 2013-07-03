@@ -335,9 +335,13 @@ shell_grab_start(struct shell_grab *grab,
 	grab->pointer = pointer;
 
 	weston_pointer_start_grab(pointer, &grab->grab);
-	desktop_shell_send_grab_cursor(shell->child.desktop_shell, cursor);
-	weston_pointer_set_focus(pointer, shell->grab_surface,
-				 wl_fixed_from_int(0), wl_fixed_from_int(0));
+	if (shell->child.desktop_shell) {
+		desktop_shell_send_grab_cursor(shell->child.desktop_shell,
+					       cursor);
+		weston_pointer_set_focus(pointer, shell->grab_surface,
+					 wl_fixed_from_int(0),
+					 wl_fixed_from_int(0));
+	}
 }
 
 static void
