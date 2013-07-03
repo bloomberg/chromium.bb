@@ -299,6 +299,15 @@ static BoolValue AddNonfixedForRead(NaClSrpcArg** vec,
   return BoolTrue;
 }
 
+/*
+ * Minimal initialization of SRPC argument vectors declared as
+ *  NaClSrpcArg *arg_pointers[];
+ * so that they will be compatible with FreeArgs below.
+ */
+static void NaClSrpcArgVectorInit(NaClSrpcArg** arg_pointers) {
+  arg_pointers[0] = NULL;
+}
+
 static BoolValue AllocateArgs(NaClSrpcArg** arg_pointers, size_t length) {
   NaClSrpcArg* arg_array;
   nacl_abi_size_t i;
@@ -377,6 +386,9 @@ static ssize_t RecvRequest(struct NaClSrpcMessageChannel* channel,
   NaClSrpcImcDescType descs[NACL_SRPC_MAX_ARGS];
   size_t expected_bytes;
   ssize_t retval;
+
+  NaClSrpcArgVectorInit(results);
+  NaClSrpcArgVectorInit(inputs);
 
   /*
    * SrpcPeekMessage should have been called before this function, and should
@@ -568,6 +580,8 @@ static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
   ssize_t retval;
   size_t i;
 
+  NaClSrpcArgVectorInit(result_copy);
+
   if (results == NULL) {
     NaClSrpcLog(NACL_SRPC_LOG_ERROR,
                 "RecvResponse: results should not be NULL\n");
@@ -588,7 +602,8 @@ static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
                 rpc->is_request,
                 rpc->template_len,
                 rpc->value_len);
-    return -NACL_ABI_EINVAL;
+    retval = -NACL_ABI_EINVAL;
+    goto done;
   }
 
   /*
@@ -982,6 +997,9 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
   RpcCheckingClosure* closure = NULL;
   /* DISPATCH_EOF is the closest we have to an error return. */
   DispatchReturn dispatch_return = DISPATCH_EOF;
+
+  NaClSrpcArgVectorInit(args);
+  NaClSrpcArgVectorInit(rets);
 
   closure = (RpcCheckingClosure*) malloc(sizeof *closure);
   if (NULL == closure) {
