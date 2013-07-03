@@ -521,7 +521,6 @@ TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  const GURL kContentUrl("https://file_content_url/");
   const base::FilePath kOutputFilePath =
       temp_dir.path().AppendASCII("whatever.txt");
   google_apis::GDataErrorCode download_error = google_apis::GDATA_OTHER_ERROR;
@@ -529,7 +528,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kOutputFilePath,
-      kContentUrl,
+      "file:2_file_resource_id",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(
           &download_error, &output_file_path),
@@ -574,7 +573,6 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxDisabled) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  const GURL kContentUrl("https://file_content_url/");
   const base::FilePath kOutputFilePath =
       temp_dir.path().AppendASCII("whatever.txt");
   google_apis::GDataErrorCode download_error = google_apis::GDATA_OTHER_ERROR;
@@ -582,7 +580,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxDisabled) {
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kOutputFilePath,
-      kContentUrl,
+      "file:2_file_resource_id",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(
           &download_error, &output_file_path),
@@ -627,7 +625,6 @@ TEST_F(JobSchedulerTest, DownloadFileCellularEnabled) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  const GURL kContentUrl("https://file_content_url/");
   const base::FilePath kOutputFilePath =
       temp_dir.path().AppendASCII("whatever.txt");
   google_apis::GDataErrorCode download_error = google_apis::GDATA_OTHER_ERROR;
@@ -635,7 +632,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularEnabled) {
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kOutputFilePath,
-      kContentUrl,
+      "file:2_file_resource_id",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(
           &download_error, &output_file_path),
@@ -672,7 +669,6 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxEnabled) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  const GURL kContentUrl("https://file_content_url/");
   const base::FilePath kOutputFilePath =
       temp_dir.path().AppendASCII("whatever.txt");
   google_apis::GDataErrorCode download_error = google_apis::GDATA_OTHER_ERROR;
@@ -680,7 +676,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxEnabled) {
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kOutputFilePath,
-      kContentUrl,
+      "file:2_file_resource_id",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(
           &download_error, &output_file_path),
@@ -744,7 +740,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       temp_dir.path().AppendASCII("whatever.txt"),
-      GURL("https://file_content_url/"),
+      "file:2_file_resource_id",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&error, &path),
       google_apis::GetContentCallback());
@@ -839,7 +835,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
   scheduler_->DownloadFile(
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       temp_dir.path().AppendASCII("whatever.txt"),
-      GURL("https://file_content_url/"),
+      "file:2_file_resource_id",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&error, &path),
       google_apis::GetContentCallback());

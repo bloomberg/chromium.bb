@@ -551,7 +551,7 @@ CancelCallback FakeDriveService::DeleteResource(
 
 CancelCallback FakeDriveService::DownloadFile(
     const base::FilePath& local_cache_path,
-    const GURL& download_url,
+    const std::string& resource_id,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
     const ProgressCallback& progress_callback) {
@@ -568,7 +568,7 @@ CancelCallback FakeDriveService::DownloadFile(
   }
 
   // The field content.src is the URL to download the file.
-  base::DictionaryValue* entry = FindEntryByContentUrl(download_url);
+  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
   if (!entry) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,

@@ -249,7 +249,7 @@ class DriveServiceInterface {
       const std::string& directory_name,
       const google_apis::GetResourceEntryCallback& callback) = 0;
 
-  // Downloads a file from |download_url|. The downloaded file will
+  // Downloads a file with |resourced_id|. The downloaded file will
   // be stored at |local_cache_path| location. Upon completion, invokes
   // |download_action_callback| with results on the calling thread.
   // If |get_content_callback| is not empty,
@@ -262,7 +262,7 @@ class DriveServiceInterface {
   // |get_content_callback| and |progress_callback| may be null.
   virtual google_apis::CancelCallback DownloadFile(
       const base::FilePath& local_cache_path,
-      const GURL& download_url,
+      const std::string& resource_id,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const google_apis::ProgressCallback& progress_callback) = 0;

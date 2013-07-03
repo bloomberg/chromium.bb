@@ -862,7 +862,6 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
 
   std::vector<test_util::ProgressInfo> download_progress_values;
 
-  const GURL kContentUrl("https://file_content_url/");
   const base::FilePath kOutputFilePath =
       temp_dir.path().AppendASCII("whatever.txt");
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -870,7 +869,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
   test_util::TestGetContentCallback get_content_callback;
   fake_service_.DownloadFile(
       kOutputFilePath,
-      kContentUrl,
+      "file:2_file_resource_id",
       test_util::CreateCopyResultCallback(&error, &output_file_path),
       get_content_callback.callback(),
       base::Bind(&test_util::AppendProgressCallbackResult,
@@ -897,14 +896,13 @@ TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  const GURL kContentUrl("https://non_existing_content_url/");
   const base::FilePath kOutputFilePath =
       temp_dir.path().AppendASCII("whatever.txt");
   GDataErrorCode error = GDATA_OTHER_ERROR;
   base::FilePath output_file_path;
   fake_service_.DownloadFile(
       kOutputFilePath,
-      kContentUrl,
+      "file:non_existent_file_resource_id",
       test_util::CreateCopyResultCallback(&error, &output_file_path),
       GetContentCallback(),
       ProgressCallback());
@@ -921,14 +919,13 @@ TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  const GURL kContentUrl("https://file_content_url/");
   const base::FilePath kOutputFilePath =
       temp_dir.path().AppendASCII("whatever.txt");
   GDataErrorCode error = GDATA_OTHER_ERROR;
   base::FilePath output_file_path;
   fake_service_.DownloadFile(
       kOutputFilePath,
-      kContentUrl,
+      "file:2_file_resource_id",
       test_util::CreateCopyResultCallback(&error, &output_file_path),
       GetContentCallback(),
       ProgressCallback());

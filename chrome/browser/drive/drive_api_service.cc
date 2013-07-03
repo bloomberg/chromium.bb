@@ -25,7 +25,6 @@ using google_apis::AuthorizeAppCallback;
 using google_apis::CancelCallback;
 using google_apis::ChangeList;
 using google_apis::DownloadActionCallback;
-using google_apis::DownloadFileRequestBase;
 using google_apis::EntryActionCallback;
 using google_apis::FileList;
 using google_apis::FileResource;
@@ -54,6 +53,7 @@ using google_apis::drive::ContinueGetFileListRequest;
 using google_apis::drive::CopyResourceRequest;
 using google_apis::drive::CreateDirectoryRequest;
 using google_apis::drive::DeleteResourceRequest;
+using google_apis::drive::DownloadFileRequest;
 using google_apis::drive::GetUploadStatusRequest;
 using google_apis::drive::InitiateUploadExistingFileRequest;
 using google_apis::drive::InitiateUploadNewFileRequest;
@@ -483,7 +483,7 @@ CancelCallback DriveAPIService::GetAppList(const GetAppListCallback& callback) {
 
 CancelCallback DriveAPIService::DownloadFile(
     const base::FilePath& local_cache_path,
-    const GURL& download_url,
+    const std::string& resource_id,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
     const ProgressCallback& progress_callback) {
@@ -491,14 +491,14 @@ CancelCallback DriveAPIService::DownloadFile(
   DCHECK(!download_action_callback.is_null());
   // get_content_callback may be null.
 
-  // TODO(kinaba): crbug.com/254025: use resource_id based download request.
   return sender_->StartRequestWithRetry(
-      new DownloadFileRequestBase(sender_.get(),
-                                  download_action_callback,
-                                  get_content_callback,
-                                  progress_callback,
-                                  download_url,
-                                  local_cache_path));
+      new DownloadFileRequest(sender_.get(),
+                              url_generator_,
+                              resource_id,
+                              local_cache_path,
+                              download_action_callback,
+                              get_content_callback,
+                              progress_callback));
 }
 
 CancelCallback DriveAPIService::DeleteResource(

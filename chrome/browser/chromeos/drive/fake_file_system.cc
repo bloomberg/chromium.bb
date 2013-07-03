@@ -342,7 +342,7 @@ void FakeFileSystem::GetFileContentByPathAfterGetWapiResourceEntry(
                            base::Bind(&base::DoNothing));
   drive_service_->DownloadFile(
       cache_path,
-      GURL(gdata_entry->download_url()),
+      gdata_entry->resource_id(),
       base::Bind(&FakeFileSystem::GetFileContentByPathAfterDownloadFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  completion_callback),

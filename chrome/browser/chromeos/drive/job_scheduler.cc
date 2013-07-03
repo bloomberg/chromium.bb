@@ -534,7 +534,7 @@ void JobScheduler::AddNewDirectory(
 JobID JobScheduler::DownloadFile(
     const base::FilePath& virtual_path,
     const base::FilePath& local_cache_path,
-    const GURL& download_url,
+    const std::string& resource_id,
     const ClientContext& context,
     const google_apis::DownloadActionCallback& download_action_callback,
     const google_apis::GetContentCallback& get_content_callback) {
@@ -547,7 +547,7 @@ JobID JobScheduler::DownloadFile(
       &DriveServiceInterface::DownloadFile,
       base::Unretained(drive_service_),
       local_cache_path,
-      download_url,
+      resource_id,
       base::Bind(&JobScheduler::OnDownloadActionJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  new_job->job_info.job_id,

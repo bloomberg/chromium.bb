@@ -151,7 +151,7 @@ class JobScheduler
   JobID DownloadFile(
       const base::FilePath& virtual_path,
       const base::FilePath& local_cache_path,
-      const GURL& download_url,
+      const std::string& resource_id,
       const ClientContext& context,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback);

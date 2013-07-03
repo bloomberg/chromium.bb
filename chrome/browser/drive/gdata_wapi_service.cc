@@ -32,7 +32,7 @@ using google_apis::CopyHostedDocumentRequest;
 using google_apis::CreateDirectoryRequest;
 using google_apis::DeleteResourceRequest;
 using google_apis::DownloadActionCallback;
-using google_apis::DownloadFileRequestBase;
+using google_apis::DownloadFileRequest;
 using google_apis::EntryActionCallback;
 using google_apis::GDataErrorCode;
 using google_apis::GDATA_PARSE_ERROR;
@@ -334,7 +334,7 @@ CancelCallback GDataWapiService::GetAppList(
 
 CancelCallback GDataWapiService::DownloadFile(
     const base::FilePath& local_cache_path,
-    const GURL& download_url,
+    const std::string& resource_id,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
     const ProgressCallback& progress_callback) {
@@ -342,14 +342,14 @@ CancelCallback GDataWapiService::DownloadFile(
   DCHECK(!download_action_callback.is_null());
   // get_content_callback and progress_callback may be null.
 
-  // TODO(kinaba): crbug.com/254025: use resource_id based download request.
   return sender_->StartRequestWithRetry(
-      new DownloadFileRequestBase(sender_.get(),
-                                  download_action_callback,
-                                  get_content_callback,
-                                  progress_callback,
-                                  download_url,
-                                  local_cache_path));
+      new DownloadFileRequest(sender_.get(),
+                              url_generator_,
+                              download_action_callback,
+                              get_content_callback,
+                              progress_callback,
+                              resource_id,
+                              local_cache_path));
 }
 
 CancelCallback GDataWapiService::DeleteResource(

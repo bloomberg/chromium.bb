@@ -472,7 +472,7 @@ void DownloadOperation::EnsureFileDownloadedAfterPrepareForDownloadFile(
   JobID id = scheduler_->DownloadFile(
       params->drive_file_path,
       params->temp_download_file_path,
-      params->download_url,
+      entry_ptr->resource_id(),
       params->context,
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterDownloadFile,
                  weak_ptr_factory_.GetWeakPtr(),

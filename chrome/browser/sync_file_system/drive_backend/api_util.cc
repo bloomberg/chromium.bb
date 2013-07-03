@@ -725,9 +725,9 @@ void APIUtil::DownloadFileInternal(
   }
 
   DVLOG(2) << "Downloading file: " << entry->resource_id();
-  const GURL& download_url = entry->download_url();
+  const std::string& resource_id = entry->resource_id();
   drive_service_->DownloadFile(local_file_path,
-                               download_url,
+                               resource_id,
                                base::Bind(&APIUtil::DidDownloadFile,
                                           AsWeakPtr(),
                                           base::Passed(&entry),

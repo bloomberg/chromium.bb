@@ -249,7 +249,7 @@ GDataErrorCode FakeDriveServiceHelper::ReadFile(
   base::FilePath temp_file;
   EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_, &temp_file));
   fake_drive_service_->DownloadFile(
-      temp_file, file->download_url(),
+      temp_file, file->resource_id(),
       base::Bind(&DownloadResultCallback, &error),
       google_apis::GetContentCallback(),
       google_apis::ProgressCallback());
