@@ -611,44 +611,6 @@ void CrosListIPConfigs(const std::string& device_path,
       base::Bind(&ListIPConfigsCallback, callback, device_path));
 }
 
-bool CrosListIPConfigsAndBlock(const std::string& device_path,
-                               NetworkIPConfigVector* ipconfig_vector,
-                               std::vector<std::string>* ipconfig_paths,
-                               std::string* hardware_address) {
-  if (hardware_address)
-    hardware_address->clear();
-  const dbus::ObjectPath device_object_path(device_path);
-  ShillDeviceClient* device_client =
-      DBusThreadManager::Get()->GetShillDeviceClient();
-  // TODO(hashimoto): Remove this blocking D-Bus method call.
-  // crosbug.com/29902
-  scoped_ptr<base::DictionaryValue> properties(
-      device_client->CallGetPropertiesAndBlock(device_object_path));
-  if (!properties.get())
-    return false;
-
-  base::ListValue* ips = NULL;
-  if (!properties->GetListWithoutPathExpansion(
-          flimflam::kIPConfigsProperty, &ips))
-    return false;
-
-  for (size_t i = 0; i < ips->GetSize(); i++) {
-    std::string ipconfig_path;
-    if (!ips->GetString(i, &ipconfig_path)) {
-      LOG(WARNING) << "Found NULL ip for device " << device_path;
-      continue;
-    }
-    ParseIPConfig(device_path, ipconfig_path, ipconfig_vector);
-    if (ipconfig_paths)
-      ipconfig_paths->push_back(ipconfig_path);
-  }
-  // Store the hardware address as well.
-  if (hardware_address)
-    properties->GetStringWithoutPathExpansion(flimflam::kAddressProperty,
-                                              hardware_address);
-  return true;
-}
-
 void CrosRequestIPConfigRefresh(const std::string& ipconfig_path) {
   DBusThreadManager::Get()->GetShillIPConfigClient()->Refresh(
       dbus::ObjectPath(ipconfig_path),

@@ -735,14 +735,6 @@ void NetworkLibraryImplStub::GetIPConfigs(
   callback.Run(ip_configs_, hardware_address_);
 }
 
-NetworkIPConfigVector NetworkLibraryImplStub::GetIPConfigsAndBlock(
-    const std::string& device_path,
-    std::string* hardware_address,
-    HardwareAddressFormat format) {
-  *hardware_address = hardware_address_;
-  return ip_configs_;
-}
-
 void NetworkLibraryImplStub::SetIPParameters(const std::string& service_path,
                                              const std::string& address,
                                              const std::string& netmask,

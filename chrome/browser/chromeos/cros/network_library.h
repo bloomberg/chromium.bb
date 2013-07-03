@@ -1628,16 +1628,6 @@ class NetworkLibrary {
                             HardwareAddressFormat format,
                             const NetworkGetIPConfigsCallback& callback) = 0;
 
-  // DEPRECATED: DO NOT USE. Instead, use the asynchronous GetIPConfigs above.
-  // Fetches IP configs and hardware address for a given device_path. The
-  // hardware address is usually a MAC address like "0011AA22BB33".
-  // |hardware_address| will be an empty string, if no hardware address is
-  // found.
-  virtual NetworkIPConfigVector GetIPConfigsAndBlock(
-      const std::string& device_path,
-      std::string* hardware_address,
-      HardwareAddressFormat) = 0;
-
   // Sets the configuration of the IP parameters. This is called when user
   // changes IP settings from dhcp to static or vice versa or when user changes
   // the ip config info. If nothing is changed, this method does nothing.

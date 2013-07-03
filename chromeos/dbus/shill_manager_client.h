@@ -126,14 +126,6 @@ class CHROMEOS_EXPORT ShillManagerClient {
   // |callback| is called after the method call succeeds.
   virtual void GetProperties(const DictionaryValueCallback& callback) = 0;
 
-  // DEPRECATED DO NOT USE: Calls GetProperties method and blocks until the
-  // method call finishes.  The caller is responsible to delete the result.
-  // Thie method returns NULL when method call fails.
-  //
-  // TODO(hashimoto): Refactor blocking calls and remove this method.
-  // crosbug.com/29902
-  virtual base::DictionaryValue* CallGetPropertiesAndBlock() = 0;
-
   // Calls GetNetworksForGeolocation method.
   // |callback| is called after the method call succeeds.
   virtual void GetNetworksForGeolocation(

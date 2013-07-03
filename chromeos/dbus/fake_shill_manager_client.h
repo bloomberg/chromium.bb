@@ -23,7 +23,6 @@ class FakeShillManagerClient : public ShillManagerClient {
   virtual void RemovePropertyChangedObserver(
       ShillPropertyChangedObserver* observer) OVERRIDE;
   virtual void GetProperties(const DictionaryValueCallback& callback) OVERRIDE;
-  virtual base::DictionaryValue* CallGetPropertiesAndBlock() OVERRIDE;
   virtual void GetNetworksForGeolocation(
       const DictionaryValueCallback& callback) OVERRIDE;
   virtual void SetProperty(const std::string& name,

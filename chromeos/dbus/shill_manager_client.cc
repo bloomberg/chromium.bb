@@ -68,12 +68,6 @@ class ShillManagerClientImpl : public ShillManagerClient {
     helper_.CallDictionaryValueMethod(&method_call, callback);
   }
 
-  virtual base::DictionaryValue* CallGetPropertiesAndBlock() OVERRIDE {
-    dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
-                                 flimflam::kGetPropertiesFunction);
-    return helper_.CallDictionaryValueMethodAndBlock(&method_call);
-  }
-
   virtual void GetNetworksForGeolocation(
       const DictionaryValueCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,

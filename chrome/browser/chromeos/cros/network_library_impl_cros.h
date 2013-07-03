@@ -75,10 +75,6 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
       const std::string& device_path,
       HardwareAddressFormat format,
       const NetworkGetIPConfigsCallback& callback) OVERRIDE;
-  virtual NetworkIPConfigVector GetIPConfigsAndBlock(
-      const std::string& device_path,
-      std::string* hardware_address,
-      HardwareAddressFormat format) OVERRIDE;
   virtual void SetIPParameters(const std::string& service_path,
                                const std::string& address,
                                const std::string& netmask,

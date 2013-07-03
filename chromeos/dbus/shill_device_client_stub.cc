@@ -64,14 +64,6 @@ void ShillDeviceClientStub::GetProperties(
                  device_path, callback));
 }
 
-base::DictionaryValue* ShillDeviceClientStub::CallGetPropertiesAndBlock(
-    const dbus::ObjectPath& device_path){
-  base::DictionaryValue* device_properties = NULL;
-  stub_devices_.GetDictionaryWithoutPathExpansion(
-      device_path.value(), &device_properties);
-  return device_properties;
-}
-
 void ShillDeviceClientStub::ProposeScan(const dbus::ObjectPath& device_path,
                                         const VoidDBusMethodCallback& callback){
   PostVoidCallback(callback, DBUS_METHOD_CALL_SUCCESS);

@@ -239,18 +239,6 @@ CHROMEOS_EXPORT void CrosListIPConfigs(
     const std::string& device_path,
     const NetworkGetIPConfigsCallback& callback);
 
-// DEPRECATED, DO NOT USE: Use the asynchronous CrosListIPConfigs, above,
-// instead.
-// Gets a list of all the NetworkIPConfigs using a given device path.
-// Optionally, you can get ipconfig-paths and the hardware address. Pass NULL as
-// |ipconfig_paths| and |hardware_address| if you are not interested in these
-// values.
-CHROMEOS_EXPORT bool CrosListIPConfigsAndBlock(
-    const std::string& device_path,
-    NetworkIPConfigVector* ipconfig_vector,
-    std::vector<std::string>* ipconfig_paths,
-    std::string* hardware_address);
-
 // Refreshes the IP config |ipconfig_path| to pick up changes in
 // configuration, and renew the DHCP lease, if any.
 CHROMEOS_EXPORT void CrosRequestIPConfigRefresh(

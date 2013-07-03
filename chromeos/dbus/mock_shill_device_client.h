@@ -26,8 +26,6 @@ class MockShillDeviceClient : public ShillDeviceClient {
                     ShillPropertyChangedObserver* observer));
   MOCK_METHOD2(GetProperties, void(const dbus::ObjectPath& device_path,
                                    const DictionaryValueCallback& callback));
-  MOCK_METHOD1(CallGetPropertiesAndBlock,
-               base::DictionaryValue*(const dbus::ObjectPath& device_path));
   MOCK_METHOD2(ProposeScan, void(const dbus::ObjectPath& device_path,
                                  const VoidDBusMethodCallback& callback));
   MOCK_METHOD5(SetProperty, void(const dbus::ObjectPath& device_path,

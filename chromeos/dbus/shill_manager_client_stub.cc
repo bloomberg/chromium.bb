@@ -67,10 +67,6 @@ void ShillManagerClientStub::GetProperties(
           callback));
 }
 
-base::DictionaryValue* ShillManagerClientStub::CallGetPropertiesAndBlock() {
-  return stub_properties_.DeepCopy();
-}
-
 void ShillManagerClientStub::GetNetworksForGeolocation(
     const DictionaryValueCallback& callback) {
   if (callback.is_null())

@@ -544,34 +544,6 @@ void NetworkLibraryImplCros::GetIPConfigs(
                                format));
 }
 
-NetworkIPConfigVector NetworkLibraryImplCros::GetIPConfigsAndBlock(
-    const std::string& device_path,
-    std::string* hardware_address,
-    HardwareAddressFormat format) {
-  NetworkIPConfigVector ipconfig_vector;
-  CrosListIPConfigsAndBlock(device_path,
-                            &ipconfig_vector,
-                            NULL,
-                            hardware_address);
-
-  for (size_t i = 0; i < hardware_address->size(); ++i)
-    (*hardware_address)[i] = toupper((*hardware_address)[i]);
-  if (format == FORMAT_COLON_SEPARATED_HEX) {
-    if (hardware_address->size() % 2 == 0) {
-      std::string output;
-      for (size_t i = 0; i < hardware_address->size(); ++i) {
-        if ((i != 0) && (i % 2 == 0))
-          output.push_back(':');
-        output.push_back((*hardware_address)[i]);
-      }
-      *hardware_address = output;
-    }
-  } else {
-    DCHECK_EQ(format, FORMAT_RAW_HEX);
-  }
-  return ipconfig_vector;
-}
-
 void NetworkLibraryImplCros::SetIPParameters(const std::string& service_path,
                                              const std::string& address,
                                              const std::string& netmask,

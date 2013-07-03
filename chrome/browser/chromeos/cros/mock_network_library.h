@@ -167,10 +167,6 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD3(GetIPConfigs, void(const std::string&,
                                   HardwareAddressFormat,
                                   const NetworkGetIPConfigsCallback&));
-  MOCK_METHOD3(GetIPConfigsAndBlock,
-               NetworkIPConfigVector(const std::string&,
-                                     std::string*,
-                                     HardwareAddressFormat));
   MOCK_METHOD6(SetIPParameters, void(const std::string&,
                                      const std::string&,
                                      const std::string&,

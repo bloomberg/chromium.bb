@@ -46,10 +46,6 @@ void FakeShillManagerClient::GetService(const base::DictionaryValue& properties,
                                         const ErrorCallback& error_callback) {
 }
 
-base::DictionaryValue* FakeShillManagerClient::CallGetPropertiesAndBlock() {
-  return NULL;
-}
-
 void FakeShillManagerClient::AddPropertyChangedObserver(
     ShillPropertyChangedObserver* observer) {
 }

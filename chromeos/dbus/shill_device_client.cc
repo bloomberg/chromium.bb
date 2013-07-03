@@ -62,14 +62,6 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
     GetHelper(device_path)->CallDictionaryValueMethod(&method_call, callback);
   }
 
-  virtual base::DictionaryValue* CallGetPropertiesAndBlock(
-      const dbus::ObjectPath& device_path) OVERRIDE {
-    dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
-                                 flimflam::kGetPropertiesFunction);
-    return GetHelper(device_path)->CallDictionaryValueMethodAndBlock(
-        &method_call);
-  }
-
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
                            const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
