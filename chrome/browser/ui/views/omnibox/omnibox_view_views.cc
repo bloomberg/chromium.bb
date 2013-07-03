@@ -390,7 +390,15 @@ void OmniboxViewViews::Update(const content::WebContents* contents) {
 
     RevertAll();
 
-    if (was_select_all)
+    // Only select all when we have focus.  If we don't have focus, selecting
+    // all is unnecessary since the selection will change on regaining focus,
+    // and can in fact cause artifacts, e.g. if the user is on the NTP and
+    // clicks a link to navigate, causing |was_select_all| to be vacuously true
+    // for the empty omnibox, and we then select all here, leading to the
+    // trailing portion of a long URL being scrolled into view.  We could try
+    // and address cases like this, but it seems better to just not muck with
+    // things when the omnibox isn't focused to begin with.
+    if (was_select_all && model()->has_focus())
       SelectAll(range.is_reversed());
   } else if (changed_security_level) {
     EmphasizeURLComponents();
