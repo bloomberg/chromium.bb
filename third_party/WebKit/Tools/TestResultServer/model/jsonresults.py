@@ -367,19 +367,11 @@ class JsonResults(object):
     def _convert_full_results_format_to_aggregate(cls, full_results_format):
         num_total_tests = 0
         num_failing_tests = 0
-        fixableCounts = {}
         failures_by_type = full_results_format[FAILURES_BY_TYPE_KEY]
 
         # FIXME: full_results format has "FAIL" entries, but that is no longer a possible result type.
         if 'FAIL' in failures_by_type:
             del failures_by_type['FAIL']
-
-        for failure_type in failures_by_type:
-            count = failures_by_type[failure_type]
-            num_total_tests += count
-            if failure_type != PASS_STRING:
-                num_failing_tests += count
-            fixableCounts[FAILURE_TO_CHAR[failure_type]] = count
 
         tests = {}
         cls._populate_tests_from_full_results(full_results_format[TESTS_KEY], tests)
