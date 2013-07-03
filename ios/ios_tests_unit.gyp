@@ -7,23 +7,7 @@
    },
   'targets': [
     {
-      'target_name': 'ios_consumer_base',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'consumer/base/supports_user_data.cc',
-        'consumer/base/util.mm',
-        'public/consumer/base/supports_user_data.h',
-        'public/consumer/base/util.h',
-      ],
-    },
-    {
-      'target_name': 'ios_consumer_unittests',
+      'target_name': 'ios_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:base',
@@ -31,7 +15,7 @@
         '../base/base.gyp:test_support_base',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        'ios_consumer_base',
+        'ios_base.gyp:ios_consumer_base',
       ],
       'sources': [
         'consumer/base/supports_user_data_unittest.cc',

@@ -7,12 +7,17 @@
    },
   'targets': [
     {
-      'target_name': 'ios',
+      'target_name': 'ios_provider_web',
       'type': 'none',
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'public/provider/web/web_state.h',
+        'public/provider/web/web_state_user_data.h',
+      ],
       'dependencies': [
-        'ios_base.gyp:*',
-        'ios_web.gyp:*',
-        'ios_tests_unit.gyp:*',
+        'ios_base.gyp:ios_consumer_base',
       ],
     },
   ],
