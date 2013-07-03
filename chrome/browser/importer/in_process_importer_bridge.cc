@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/importer/importer_host.h"
+#include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
@@ -144,8 +144,8 @@ void ParseSearchEnginesFromFirefoxXMLData(
 
 InProcessImporterBridge::InProcessImporterBridge(
     ProfileWriter* writer,
-    base::WeakPtr<ImporterHost> host) : writer_(writer),
-                                        host_(host) {
+    base::WeakPtr<ExternalProcessImporterHost> host) : writer_(writer),
+                                                       host_(host) {
 }
 
 void InProcessImporterBridge::AddBookmarks(
@@ -229,25 +229,27 @@ void InProcessImporterBridge::SetPasswordForm(
 void InProcessImporterBridge::NotifyStarted() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ImporterHost::NotifyImportStarted, host_));
+      base::Bind(&ExternalProcessImporterHost::NotifyImportStarted, host_));
 }
 
 void InProcessImporterBridge::NotifyItemStarted(importer::ImportItem item) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ImporterHost::NotifyImportItemStarted, host_, item));
+      base::Bind(&ExternalProcessImporterHost::NotifyImportItemStarted,
+                 host_, item));
 }
 
 void InProcessImporterBridge::NotifyItemEnded(importer::ImportItem item) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ImporterHost::NotifyImportItemEnded, host_, item));
+      base::Bind(&ExternalProcessImporterHost::NotifyImportItemEnded,
+                 host_, item));
 }
 
 void InProcessImporterBridge::NotifyEnded() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ImporterHost::NotifyImportEnded, host_));
+      base::Bind(&ExternalProcessImporterHost::NotifyImportEnded, host_));
 }
 
 string16 InProcessImporterBridge::GetLocalizedString(int message_id) {

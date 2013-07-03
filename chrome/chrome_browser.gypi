@@ -860,8 +860,6 @@
         'browser/importer/importer_bridge.h',
         'browser/importer/importer_creator.cc',
         'browser/importer/importer_creator.h',
-        'browser/importer/importer_host.cc',
-        'browser/importer/importer_host.h',
         'browser/importer/importer_list.cc',
         'browser/importer/importer_list.h',
         'browser/importer/importer_list_observer.h',

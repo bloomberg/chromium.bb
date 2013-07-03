@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/firefox_importer_unittest_utils.h"
-#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/importer_unittest_utils.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -269,8 +268,8 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
       items = items | importer::SEARCH_ENGINES;
 
     // Deletes itself.
-    ImporterHost* host = new ExternalProcessImporterHost;
-    host->SetObserver(observer);
+    ExternalProcessImporterHost* host = new ExternalProcessImporterHost;
+    host->set_observer(observer);
     host->StartImportSettings(source_profile,
                               browser()->profile(),
                               items,

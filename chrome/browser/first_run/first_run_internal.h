@@ -5,22 +5,8 @@
 #ifndef CHROME_BROWSER_FIRST_RUN_FIRST_RUN_INTERNAL_H_
 #define CHROME_BROWSER_FIRST_RUN_FIRST_RUN_INTERNAL_H_
 
-#include <vector>
-
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
-#include "ui/gfx/native_widget_types.h"
-
-class CommandLine;
-class GURL;
-class ImporterHost;
-class ImporterList;
 class MasterPrefs;
 class Profile;
-class ProcessSingleton;
-class TemplateURLService;
 
 namespace base {
 class FilePath;

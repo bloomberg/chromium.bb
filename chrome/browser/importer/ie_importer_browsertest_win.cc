@@ -33,7 +33,6 @@
 #include "chrome/browser/importer/ie_importer_test_registry_overrider_win.h"
 #include "chrome/browser/importer/ie_importer_utils_win.h"
 #include "chrome/browser/importer/importer_bridge.h"
-#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/importer_unittest_utils.h"
 #include "chrome/browser/importer/pstore_declarations.h"
@@ -485,9 +484,9 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
 
   // Starts to import the above settings.
   // Deletes itself.
-  ImporterHost* host = new ExternalProcessImporterHost;
+  ExternalProcessImporterHost* host = new ExternalProcessImporterHost;
   TestObserver* observer = new TestObserver();
-  host->SetObserver(observer);
+  host->set_observer(observer);
 
   importer::SourceProfile source_profile;
   source_profile.importer_type = importer::TYPE_IE;
@@ -561,10 +560,10 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest,
 
     // Starts to import the above settings.
     // Deletes itself.
-    ImporterHost* host = new ExternalProcessImporterHost;
+    ExternalProcessImporterHost* host = new ExternalProcessImporterHost;
     MalformedFavoritesRegistryTestObserver* observer =
         new MalformedFavoritesRegistryTestObserver();
-    host->SetObserver(observer);
+    host->set_observer(observer);
 
     importer::SourceProfile source_profile;
     source_profile.importer_type = importer::TYPE_IE;

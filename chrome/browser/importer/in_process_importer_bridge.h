@@ -18,7 +18,7 @@
 class GURL;
 struct ImportedBookmarkEntry;
 struct ImportedFaviconUsage;
-class ImporterHost;
+class ExternalProcessImporterHost;
 
 namespace importer {
 struct URLKeywordInfo;
@@ -27,7 +27,7 @@ struct URLKeywordInfo;
 class InProcessImporterBridge : public ImporterBridge {
  public:
   InProcessImporterBridge(ProfileWriter* writer,
-                          base::WeakPtr<ImporterHost> host);
+                          base::WeakPtr<ExternalProcessImporterHost> host);
 
   // Begin ImporterBridge implementation:
   virtual void AddBookmarks(
@@ -69,7 +69,7 @@ class InProcessImporterBridge : public ImporterBridge {
   virtual ~InProcessImporterBridge();
 
   ProfileWriter* const writer_;  // weak
-  const base::WeakPtr<ImporterHost> host_;
+  const base::WeakPtr<ExternalProcessImporterHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessImporterBridge);
 };

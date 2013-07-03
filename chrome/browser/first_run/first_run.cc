@@ -24,7 +24,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_creator.h"
-#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/profile_writer.h"
@@ -231,12 +230,12 @@ void SetImportItem(PrefService* user_prefs,
 // |target_profile| for the items specified in the |items_to_import| bitfield.
 // This may be done in a separate process depending on the platform, but it will
 // always block until done.
-void ImportFromSourceProfile(ImporterHost* importer_host,
+void ImportFromSourceProfile(ExternalProcessImporterHost* importer_host,
                              const importer::SourceProfile& source_profile,
                              Profile* target_profile,
                              uint16 items_to_import) {
   ImportEndedObserver observer;
-  importer_host->SetObserver(&observer);
+  importer_host->set_observer(&observer);
   importer_host->StartImportSettings(source_profile,
                                      target_profile,
                                      items_to_import,
@@ -251,7 +250,7 @@ void ImportFromSourceProfile(ImporterHost* importer_host,
 // Imports bookmarks from an html file whose path is provided by
 // |import_bookmarks_path|.
 void ImportFromFile(Profile* profile,
-                    ImporterHost* file_importer_host,
+                    ExternalProcessImporterHost* file_importer_host,
                     const std::string& import_bookmarks_path) {
   importer::SourceProfile source_profile;
   source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
@@ -271,7 +270,7 @@ void ImportFromFile(Profile* profile,
 
 // Imports settings from the first profile in |importer_list|.
 void ImportSettings(Profile* profile,
-                    ImporterHost* importer_host,
+                    ExternalProcessImporterHost* importer_host,
                     scoped_refptr<ImporterList> importer_list,
                     int items_to_import) {
   const importer::SourceProfile& source_profile =
@@ -674,7 +673,7 @@ void AutoImport(
     int dont_import_items,
     const std::string& import_bookmarks_path) {
   // Deletes itself.
-  ImporterHost* importer_host = new ExternalProcessImporterHost;
+  ExternalProcessImporterHost* importer_host = new ExternalProcessImporterHost;
 
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
@@ -742,7 +741,8 @@ void AutoImport(
 
   if (!import_bookmarks_path.empty()) {
     // Deletes itself.
-    ImporterHost* file_importer_host = new ExternalProcessImporterHost;
+    ExternalProcessImporterHost* file_importer_host =
+        new ExternalProcessImporterHost;
     file_importer_host->set_headless();
 
     ImportFromFile(profile, file_importer_host, import_bookmarks_path);

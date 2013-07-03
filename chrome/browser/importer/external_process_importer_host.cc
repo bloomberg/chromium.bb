@@ -4,13 +4,34 @@
 
 #include "chrome/browser/importer/external_process_importer_host.h"
 
+#include "base/bind.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/importer/external_process_importer_client.h"
+#include "chrome/browser/importer/firefox_profile_lock.h"
+#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_creator.h"
+#include "chrome/browser/importer/importer_lock_dialog.h"
+#include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/in_process_importer_bridge.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_source.h"
+
+using content::BrowserThread;
 
 ExternalProcessImporterHost::ExternalProcessImporterHost()
-    : client_(NULL),
+    : weak_ptr_factory_(this),
+      headless_(false),
+      parent_window_(NULL),
+      observer_(NULL),
+      profile_(NULL),
+      waiting_for_bookmarkbar_model_(false),
+      installed_bookmark_observer_(false),
+      is_source_readable_(true),
+      client_(NULL),
       source_profile_(NULL),
       items_(0),
       cancelled_(false),
@@ -23,8 +44,6 @@ void ExternalProcessImporterHost::Cancel() {
     client_->Cancel();
   NotifyImportEnded();  // Tells the observer that we're done, and deletes us.
 }
-
-ExternalProcessImporterHost::~ExternalProcessImporterHost() {}
 
 void ExternalProcessImporterHost::StartImportSettings(
     const importer::SourceProfile& source_profile,
@@ -47,10 +66,42 @@ void ExternalProcessImporterHost::StartImportSettings(
 
   CheckForLoadedModels(items);
 
-  InvokeTaskIfDone();
+  LaunchImportIfReady();
 }
 
-void ExternalProcessImporterHost::InvokeTaskIfDone() {
+void ExternalProcessImporterHost::NotifyImportStarted() {
+  if (observer_)
+    observer_->ImportStarted();
+}
+
+void ExternalProcessImporterHost::NotifyImportItemStarted(
+    importer::ImportItem item) {
+  if (observer_)
+    observer_->ImportItemStarted(item);
+}
+
+void ExternalProcessImporterHost::NotifyImportItemEnded(
+    importer::ImportItem item) {
+  if (observer_)
+    observer_->ImportItemEnded(item);
+}
+
+void ExternalProcessImporterHost::NotifyImportEnded() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  firefox_lock_.reset();
+  if (observer_)
+    observer_->ImportEnded();
+  delete this;
+}
+
+ExternalProcessImporterHost::~ExternalProcessImporterHost() {
+  if (installed_bookmark_observer_) {
+    DCHECK(profile_);
+    BookmarkModelFactory::GetForProfile(profile_)->RemoveObserver(this);
+  }
+}
+
+void ExternalProcessImporterHost::LaunchImportIfReady() {
   if (waiting_for_bookmarkbar_model_ || !registrar_.IsEmpty() ||
       !is_source_readable_ || cancelled_)
     return;
@@ -76,5 +127,93 @@ void ExternalProcessImporterHost::Loaded(BookmarkModel* model,
   waiting_for_bookmarkbar_model_ = false;
   installed_bookmark_observer_ = false;
 
-  InvokeTaskIfDone();
+  LaunchImportIfReady();
+}
+
+void ExternalProcessImporterHost::BookmarkModelBeingDeleted(
+    BookmarkModel* model) {
+  installed_bookmark_observer_ = false;
+}
+
+void ExternalProcessImporterHost::BookmarkModelChanged() {
+}
+
+void ExternalProcessImporterHost::Observe(int type,
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED);
+  registrar_.RemoveAll();
+  LaunchImportIfReady();
+}
+
+void ExternalProcessImporterHost::ShowWarningDialog() {
+  DCHECK(!headless_);
+  importer::ShowImportLockDialog(
+      parent_window_,
+      base::Bind(&ExternalProcessImporterHost::OnImportLockDialogEnd,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ExternalProcessImporterHost::OnImportLockDialogEnd(bool is_continue) {
+  if (is_continue) {
+    // User chose to continue, then we check the lock again to make
+    // sure that Firefox has been closed. Try to import the settings
+    // if successful. Otherwise, show a warning dialog.
+    firefox_lock_->Lock();
+    if (firefox_lock_->HasAcquired()) {
+      is_source_readable_ = true;
+      LaunchImportIfReady();
+    } else {
+      ShowWarningDialog();
+    }
+  } else {
+    NotifyImportEnded();
+  }
+}
+
+bool ExternalProcessImporterHost::CheckForFirefoxLock(
+    const importer::SourceProfile& source_profile) {
+  if (source_profile.importer_type != importer::TYPE_FIREFOX3)
+    return true;
+
+  DCHECK(!firefox_lock_.get());
+  firefox_lock_.reset(new FirefoxProfileLock(source_profile.source_path));
+  if (firefox_lock_->HasAcquired())
+    return true;
+
+  // If fail to acquire the lock, we set the source unreadable and
+  // show a warning dialog, unless running without UI (in which case the import
+  // must be aborted).
+  is_source_readable_ = false;
+  if (headless_)
+    return false;
+
+  ShowWarningDialog();
+  return true;
+}
+
+void ExternalProcessImporterHost::CheckForLoadedModels(uint16 items) {
+  // A target profile must be loaded by StartImportSettings().
+  DCHECK(profile_);
+
+  // BookmarkModel should be loaded before adding IE favorites. So we observe
+  // the BookmarkModel if needed, and start the task after it has been loaded.
+  if ((items & importer::FAVORITES) && !writer_->BookmarkModelIsLoaded()) {
+    BookmarkModelFactory::GetForProfile(profile_)->AddObserver(this);
+    waiting_for_bookmarkbar_model_ = true;
+    installed_bookmark_observer_ = true;
+  }
+
+  // Observes the TemplateURLService if needed to import search engines from the
+  // other browser. We also check to see if we're importing bookmarks because
+  // we can import bookmark keywords from Firefox as search engines.
+  if ((items & importer::SEARCH_ENGINES) || (items & importer::FAVORITES)) {
+    if (!writer_->TemplateURLServiceIsLoaded()) {
+      TemplateURLService* model =
+          TemplateURLServiceFactory::GetForProfile(profile_);
+      registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
+                     content::Source<TemplateURLService>(model));
+      model->Load();
+    }
+  }
 }

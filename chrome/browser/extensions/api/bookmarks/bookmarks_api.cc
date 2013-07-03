@@ -979,7 +979,7 @@ void BookmarksImportFunction::FileSelected(const base::FilePath& path,
   // TODO(jgreenwald): remove ifdef once extensions are no longer built on
   // Android.
   // Deletes itself.
-  ImporterHost* importer_host = new ExternalProcessImporterHost;
+  ExternalProcessImporterHost* importer_host = new ExternalProcessImporterHost;
   importer::SourceProfile source_profile;
   source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
   source_profile.source_path = path;

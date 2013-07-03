@@ -120,10 +120,6 @@ void ImporterList::DetectSourceProfiles(
       base::Bind(&ImporterList::DetectSourceProfilesWorker, this, locale));
 }
 
-void ImporterList::SetObserver(importer::ImporterListObserver* observer) {
-  observer_ = observer;
-}
-
 void ImporterList::DetectSourceProfilesHack(const std::string& locale) {
   DetectSourceProfilesWorker(locale);
 }

@@ -35,10 +35,10 @@ ImportDataHandler::ImportDataHandler() : importer_host_(NULL),
 
 ImportDataHandler::~ImportDataHandler() {
   if (importer_list_.get())
-    importer_list_->SetObserver(NULL);
+    importer_list_->set_observer(NULL);
 
   if (importer_host_)
-    importer_host_->SetObserver(NULL);
+    importer_host_->set_observer(NULL);
 }
 
 void ImportDataHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
@@ -110,7 +110,7 @@ void ImportDataHandler::ImportData(const ListValue* args) {
     import_did_succeed_ = false;
 
     importer_host_ = new ExternalProcessImporterHost();
-    importer_host_->SetObserver(this);
+    importer_host_->set_observer(this);
     Profile* profile = Profile::FromWebUI(web_ui());
     importer_host_->StartImportSettings(source_profile, profile,
                                         import_services,
@@ -170,7 +170,7 @@ void ImportDataHandler::ImportItemEnded(importer::ImportItem item) {
 }
 
 void ImportDataHandler::ImportEnded() {
-  importer_host_->SetObserver(NULL);
+  importer_host_->set_observer(NULL);
   importer_host_ = NULL;
 
   if (import_did_succeed_) {
