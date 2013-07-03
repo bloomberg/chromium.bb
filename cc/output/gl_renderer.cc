@@ -54,7 +54,6 @@
 #include "ui/gfx/rect_conversions.h"
 
 using WebKit::WebGraphicsContext3D;
-using WebKit::WebGraphicsMemoryAllocation;
 
 namespace cc {
 

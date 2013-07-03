@@ -37,7 +37,6 @@ using testing::InSequence;
 using testing::Mock;
 using testing::Return;
 using testing::StrictMock;
-using WebKit::WebGraphicsMemoryAllocation;
 using WebKit::WebGLId;
 using WebKit::WebString;
 using WebKit::WGC3Dbitfield;
