@@ -96,15 +96,17 @@ FileError CheckPreConditionForEnsureFileDownloaded(
 }
 
 // Calls CheckPreConditionForEnsureFileDownloaded() with the entry specified by
-// the given ID.
+// the given ID. Also fills |drive_file_path| with the path of the entry.
 FileError CheckPreConditionForEnsureFileDownloadedByResourceId(
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
     const std::string& resource_id,
     const base::FilePath& temporary_file_directory,
+    base::FilePath* drive_file_path,
     base::FilePath* cache_file_path,
     ResourceEntry* entry) {
   FileError error = metadata->GetResourceEntryById(resource_id, entry);
+  *drive_file_path = metadata->GetFilePath(resource_id);
   if (error != FILE_ERROR_OK)
     return error;
   return CheckPreConditionForEnsureFileDownloaded(
@@ -146,33 +148,17 @@ bool CreateTemporaryReadableFileInDir(const base::FilePath& dir,
 
 // Prepares for downloading the file. Given the |resource_id|, allocates the
 // enough space for the file in the cache.
-// If succeeded, returns FILE_ERROR_OK with |entry| storing the ResourceEntry
-// of the resource, |drive_file_path| with storing the path of the entry,
-// and |temp_download_file| storing the path to the file in the cache.
-FileError PrepareForDownloadFile(
-    internal::ResourceMetadata* metadata,
-    internal::FileCache* cache,
-    const std::string& resource_id,
-    const base::FilePath& temporary_file_directory,
-    ResourceEntry* entry,
-    base::FilePath* drive_file_path,
-    base::FilePath* temp_download_file) {
-  DCHECK(metadata);
+// If succeeded, returns FILE_ERROR_OK with |temp_download_file| storing the
+// path to the file in the cache.
+FileError PrepareForDownloadFile(internal::FileCache* cache,
+                                 int64 expected_file_size,
+                                 const base::FilePath& temporary_file_directory,
+                                 base::FilePath* temp_download_file) {
   DCHECK(cache);
-  DCHECK(entry);
-  DCHECK(drive_file_path);
   DCHECK(temp_download_file);
 
-  FileError error = metadata->GetResourceEntryById(resource_id, entry);
-  if (error != FILE_ERROR_OK)
-    return error;
-
-  *drive_file_path = metadata->GetFilePath(resource_id);
-  if (drive_file_path->empty())
-    return FILE_ERROR_NOT_FOUND;
-
   // Ensure enough space in the cache.
-  if (!cache->FreeDiskSpaceIfNeededFor(entry->file_info().size()))
+  if (!cache->FreeDiskSpaceIfNeededFor(expected_file_size))
     return FILE_ERROR_NO_SPACE;
 
   // Create the temporary file which will store the downloaded content.
@@ -268,21 +254,6 @@ class DownloadOperation::DownloadCallback {
   // This class is copiable.
 };
 
-struct DownloadOperation::DownloadParams {
-  DownloadParams(const ClientContext& context,
-                 const GURL& download_url)
-      : context(context),
-        download_url(download_url),
-        entry(new ResourceEntry) {
-  }
-
-  ClientContext context;
-  GURL download_url;
-  scoped_ptr<ResourceEntry> entry;
-  base::FilePath drive_file_path;
-  base::FilePath temp_download_file_path;
-};
-
 DownloadOperation::DownloadOperation(
     base::SequencedTaskRunner* blocking_task_runner,
     OperationObserver* observer,
@@ -314,8 +285,9 @@ void DownloadOperation::EnsureFileDownloadedByResourceId(
   DownloadCallback callback(
       initialized_callback, get_content_callback, completion_callback);
 
-  ResourceEntry* entry = new ResourceEntry;
+  base::FilePath* drive_file_path = new base::FilePath;
   base::FilePath* cache_file_path = new base::FilePath;
+  ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
@@ -324,13 +296,15 @@ void DownloadOperation::EnsureFileDownloadedByResourceId(
                  base::Unretained(cache_),
                  resource_id,
                  temporary_file_directory_,
+                 drive_file_path,
                  cache_file_path,
                  entry),
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition,
                  weak_ptr_factory_.GetWeakPtr(),
-                 context,
                  callback,
+                 context,
                  base::Passed(make_scoped_ptr(entry)),
+                 base::Owned(drive_file_path),
                  base::Owned(cache_file_path)));
 }
 
@@ -346,8 +320,9 @@ void DownloadOperation::EnsureFileDownloadedByPath(
   DownloadCallback callback(
       initialized_callback, get_content_callback, completion_callback);
 
-  ResourceEntry* entry = new ResourceEntry;
+  base::FilePath* drive_file_path = new base::FilePath(file_path);
   base::FilePath* cache_file_path = new base::FilePath;
+  ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
@@ -360,20 +335,23 @@ void DownloadOperation::EnsureFileDownloadedByPath(
                  entry),
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition,
                  weak_ptr_factory_.GetWeakPtr(),
-                 context,
                  callback,
+                 context,
                  base::Passed(make_scoped_ptr(entry)),
+                 base::Owned(drive_file_path),
                  base::Owned(cache_file_path)));
 }
 
 void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
-    const ClientContext& context,
     const DownloadCallback& callback,
+    const ClientContext& context,
     scoped_ptr<ResourceEntry> entry,
+    base::FilePath* drive_file_path,
     base::FilePath* cache_file_path,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(entry);
+  DCHECK(drive_file_path);
   DCHECK(cache_file_path);
 
   if (error != FILE_ERROR_OK) {
@@ -390,94 +368,56 @@ void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
   }
 
   // If cache file is not found, try to download the file from the server
-  // instead. This logic is rather complicated but here's how this works:
-  //
-  // Retrieve fresh file metadata from server. We will extract file size and
-  // download url from there. Note that the download url is transient.
-  //
-  // Check if we have enough space, based on the expected file size.
+  // instead. Check if we have enough space, based on the expected file size.
   // - if we don't have enough space, try to free up the disk space
   // - if we still don't have enough space, return "no space" error
   // - if we have enough space, start downloading the file from the server
-  scheduler_->GetResourceEntry(
-      entry->resource_id(),
-      context,
-      base::Bind(&DownloadOperation::EnsureFileDownloadedAfterGetResourceEntry,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 context,
-                 callback));
-}
-
-void DownloadOperation::EnsureFileDownloadedAfterGetResourceEntry(
-    const ClientContext& context,
-    const DownloadCallback& callback,
-    google_apis::GDataErrorCode gdata_error,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  FileError error = util::GDataToFileError(gdata_error);
-  if (error != FILE_ERROR_OK) {
-    callback.OnError(error);
-    return;
-  }
-  DCHECK(resource_entry);
-
-  // The download URL is:
-  // 1) src attribute of content element, on GData WAPI.
-  // 2) the value of the key 'downloadUrl', on Drive API v2.
-  // In both cases, we can use ResourceEntry::download_url().
-  const GURL& download_url = resource_entry->download_url();
-
-  // The download URL can be empty for non-downloadable files (such as files
-  // shared from others with "prevent downloading by viewers" flag set.)
-  if (download_url.is_empty()) {
-    callback.OnError(FILE_ERROR_ACCESS_DENIED);
-    return;
-  }
-
-  // Before starting to download actually, refresh the metadata and allocate
-  // the cache space.
-  DownloadParams* params = new DownloadParams(context, download_url);
+  int64 size = entry->file_info().size();
+  base::FilePath* temp_download_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&PrepareForDownloadFile,
-                 base::Unretained(metadata_),
                  base::Unretained(cache_),
-                 resource_entry->resource_id(),
+                 size,
                  temporary_file_directory_,
-                 params->entry.get(),
-                 &params->drive_file_path,
-                 &params->temp_download_file_path),
+                 temp_download_file_path),
       base::Bind(
           &DownloadOperation::EnsureFileDownloadedAfterPrepareForDownloadFile,
           weak_ptr_factory_.GetWeakPtr(),
-          base::Owned(params),
-          callback));
+          callback,
+          context,
+          base::Passed(&entry),
+          *drive_file_path,
+          base::Owned(temp_download_file_path)));
 }
 
 void DownloadOperation::EnsureFileDownloadedAfterPrepareForDownloadFile(
-    DownloadParams* params,
     const DownloadCallback& callback,
+    const ClientContext& context,
+    scoped_ptr<ResourceEntry> entry,
+    const base::FilePath& drive_file_path,
+    base::FilePath* temp_download_file_path,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(params);
+  DCHECK(entry);
+  DCHECK(temp_download_file_path);
 
   if (error != FILE_ERROR_OK) {
     callback.OnError(error);
     return;
   }
 
-  ResourceEntry* entry_ptr = params->entry.get();
+  ResourceEntry* entry_ptr = entry.get();
   JobID id = scheduler_->DownloadFile(
-      params->drive_file_path,
-      params->temp_download_file_path,
+      drive_file_path,
+      *temp_download_file_path,
       entry_ptr->resource_id(),
-      params->context,
+      context,
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterDownloadFile,
                  weak_ptr_factory_.GetWeakPtr(),
-                 params->drive_file_path,
-                 base::Passed(&params->entry),
+                 drive_file_path,
+                 base::Passed(&entry),
                  callback),
       callback.get_content_callback());
 

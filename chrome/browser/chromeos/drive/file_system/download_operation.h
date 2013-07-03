@@ -81,31 +81,24 @@ class DownloadOperation {
   // Thin wrapper of Callbacks for EnsureFileDownloaded.
   class DownloadCallback;
 
-  // Parameters for JobScheduler::DownloadFile.
-  struct DownloadParams;
-
   // Part of EnsureFileDownloaded(). Called upon the completion of precondition
   // check.
   void EnsureFileDownloadedAfterCheckPreCondition(
-      const ClientContext& context,
       const DownloadCallback& callback,
+      const ClientContext& context,
       scoped_ptr<ResourceEntry> entry,
+      base::FilePath* drive_file_path,
       base::FilePath* cache_file_path,
       FileError error);
-
-  // Part of EnsureFileDownloaded(). Called upon the completion of fetching
-  // ResourceEntry from the server.
-  void EnsureFileDownloadedAfterGetResourceEntry(
-      const ClientContext& context,
-      const DownloadCallback& callback,
-      google_apis::GDataErrorCode gdata_error,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   // Part of EnsureFileDownloaded(). Called when it is ready to start
   // downloading the file.
   void EnsureFileDownloadedAfterPrepareForDownloadFile(
-      DownloadParams* params,
       const DownloadCallback& callback,
+      const ClientContext& context,
+      scoped_ptr<ResourceEntry> entry,
+      const base::FilePath& drive_file_path,
+      base::FilePath* temp_download_file_path,
       FileError error);
 
   // Part of EnsureFileDownloaded(). Called after the actual downloading.

@@ -30,7 +30,7 @@ namespace internal {
 
 namespace {
 
-// The content of files iniitally stored in the cache.
+// The content of files initially stored in the cache.
 const char kLocalContent[] = "Hello!";
 
 // The content of files stored in the service.
@@ -41,19 +41,25 @@ const char kRemoteContent[] = "World!";
 class SyncClientTestDriveService : public ::drive::FakeDriveService {
  public:
   // FakeDriveService override:
-  virtual google_apis::CancelCallback GetResourceEntry(
+  virtual google_apis::CancelCallback DownloadFile(
+      const base::FilePath& local_cache_path,
       const std::string& resource_id,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE {
+      const google_apis::DownloadActionCallback& download_action_callback,
+      const google_apis::GetContentCallback& get_content_callback,
+      const google_apis::ProgressCallback& progress_callback) OVERRIDE {
     if (resource_id == resource_id_to_be_cancelled_) {
-      scoped_ptr<google_apis::ResourceEntry> null;
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
-          base::Bind(callback,
+          base::Bind(download_action_callback,
                      google_apis::GDATA_CANCELLED,
-                     base::Passed(&null)));
+                     base::FilePath()));
       return google_apis::CancelCallback();
     }
-    return FakeDriveService::GetResourceEntry(resource_id, callback);
+    return FakeDriveService::DownloadFile(local_cache_path,
+                                          resource_id,
+                                          download_action_callback,
+                                          get_content_callback,
+                                          progress_callback);
   }
 
   void set_resource_id_to_be_cancelled(const std::string& resource_id) {
