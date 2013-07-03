@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
@@ -327,14 +328,41 @@ void TranslateHelper::CorrectLanguageCodeTypo(std::string* code) {
 }
 
 // static
-void TranslateHelper::ResetInvalidLanguageCode(std::string* code) {
-  // Roughly check if the language code follows [a-z][a-z](-[A-Z][A-Z]).
-  size_t dash_index = code->find('-');
-  if (!(dash_index == 2 && code->size() == 5) &&
-      !(dash_index == std::string::npos && code->size() == 2)) {
-    // Reset |language| to ignore the invalid code.
-    *code = std::string();
+bool TranslateHelper::IsValidLanguageCode(const std::string& code) {
+  // Roughly check if the language code follows /[a-zA-Z]{2,3}(-[a-zA-Z]{2})?/.
+  // TODO(hajimehoshi): How about es-419, which is used as an Accept language?
+  std::vector<std::string> chunks;
+  base::SplitString(code, '-', &chunks);
+
+  if (chunks.size() < 1 || 2 < chunks.size())
+    return false;
+
+  const std::string& main_code = chunks[0];
+
+  if (main_code.size() < 1 || 3 < main_code.size())
+    return false;
+
+  for (std::string::const_iterator it = main_code.begin();
+       it != main_code.end(); ++it) {
+    if (!IsAsciiAlpha(*it))
+      return false;
   }
+
+  if (chunks.size() == 1)
+    return true;
+
+  const std::string& sub_code = chunks[1];
+
+  if (sub_code.size() != 2)
+    return false;
+
+  for (std::string::const_iterator it = sub_code.begin();
+       it != sub_code.end(); ++it) {
+    if (!IsAsciiAlpha(*it))
+      return false;
+  }
+
+  return true;
 }
 
 // static
@@ -342,11 +370,12 @@ void TranslateHelper::ApplyLanguageCodeCorrection(std::string* code) {
   // Correct well-known format errors.
   CorrectLanguageCodeTypo(code);
 
-  // Convert language code synonym firstly because sometime synonym code is in
-  // invalid format, e.g. 'fil'. After validation, such a 3 characters language
-  // gets converted to an empty string.
+  if (!IsValidLanguageCode(*code)) {
+    *code = std::string();
+    return;
+  }
+
   TranslateUtil::ToTranslateLanguageSynonym(code);
-  ResetInvalidLanguageCode(code);
 }
 
 // static

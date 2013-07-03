@@ -30,32 +30,33 @@ TEST_F(TranslateHelperTest, LanguageCodeTypoCorrection) {
   EXPECT_EQ("ja-JP", language);
 }
 
-// Tests that invalid language code is reset to empty string.
-TEST_F(TranslateHelperTest, ResetInvalidLanguageCode) {
+// Tests if the language codes' format is invalid.
+TEST_F(TranslateHelperTest, IsValidLanguageCode) {
   std::string language;
 
   language = std::string("ja");
-  TranslateHelper::ResetInvalidLanguageCode(&language);
-  EXPECT_EQ("ja", language);
+  EXPECT_TRUE(TranslateHelper::IsValidLanguageCode(language));
 
   language = std::string("ja-JP");
-  TranslateHelper::ResetInvalidLanguageCode(&language);
-  EXPECT_EQ("ja-JP", language);
+  EXPECT_TRUE(TranslateHelper::IsValidLanguageCode(language));
 
-  // Invalid because of three characters before hyphen.
+  language = std::string("ceb");
+  EXPECT_TRUE(TranslateHelper::IsValidLanguageCode(language));
+
+  language = std::string("ceb-XX");
+  EXPECT_TRUE(TranslateHelper::IsValidLanguageCode(language));
+
+  // Invalid because the sub code consists of a number.
   language = std::string("utf-8");
-  TranslateHelper::ResetInvalidLanguageCode(&language);
-  EXPECT_TRUE(language.empty());
+  EXPECT_FALSE(TranslateHelper::IsValidLanguageCode(language));
 
   // Invalid because of six characters after hyphen.
   language = std::string("ja-YUKARI");
-  TranslateHelper::ResetInvalidLanguageCode(&language);
-  EXPECT_TRUE(language.empty());
+  EXPECT_FALSE(TranslateHelper::IsValidLanguageCode(language));
 
-  // Invalid because of three characters.
-  language = std::string("YMO");
-  TranslateHelper::ResetInvalidLanguageCode(&language);
-  EXPECT_TRUE(language.empty());
+  // Invalid because of four characters.
+  language = std::string("DHMO");
+  EXPECT_FALSE(TranslateHelper::IsValidLanguageCode(language));
 }
 
 // Tests that similar language table works.
