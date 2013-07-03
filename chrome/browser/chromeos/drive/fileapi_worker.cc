@@ -6,6 +6,8 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/task_runner_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
@@ -110,10 +112,62 @@ void RunCreateSnapshotFileCallback(
   callback.Run(base::PLATFORM_FILE_OK, file_info, local_path, scope_out_policy);
 }
 
+// Runs |callback| with |error| and |platform_file|.
+void RunOpenFileCallback(
+    const FileApiWorker::OpenFileCallback& callback,
+    base::PlatformFileError* error,
+    base::PlatformFile platform_file) {
+  callback.Run(*error, platform_file);
+}
+
+// Part of FileApiWorker::OpenFile(). Called after FileSystem::OpenFile().
+void OpenFileAfterFileSystemOpenFile(
+    int file_flags,
+    const FileApiWorker::OpenFileCallback& callback,
+    FileError error,
+    const base::FilePath& local_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != FILE_ERROR_OK) {
+    callback.Run(FileErrorToPlatformError(error),
+                 base::kInvalidPlatformFileValue);
+    return;
+  }
+
+  // Cache file prepared for modification is available. Open it locally.
+  base::PlatformFileError* result =
+      new base::PlatformFileError(base::PLATFORM_FILE_ERROR_FAILED);
+  bool posted = base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(), FROM_HERE,
+      base::Bind(&base::CreatePlatformFile,
+                 local_path, file_flags, static_cast<bool*>(NULL), result),
+      base::Bind(&RunOpenFileCallback, callback, base::Owned(result)));
+  DCHECK(posted);
+}
+
+// Part of FileApiWorker::OpenFile(). Called after FileSystem::GetFileByPath().
+void OpenFileAfterGetFileByPath(int file_flags,
+                                const FileApiWorker::OpenFileCallback& callback,
+                                FileError error,
+                                const base::FilePath& local_path,
+                                scoped_ptr<ResourceEntry> entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Just redirect to OpenFileAfterFileSystemOpenFile() with ignoring |entry|.
+  OpenFileAfterFileSystemOpenFile(file_flags, callback, error, local_path);
+}
+
+// Emits debug log when FileSystem::CloseFile() is complete.
+void EmitDebugLogForCloseFile(const base::FilePath& local_path,
+                              FileError file_error) {
+  DVLOG(1) << "Closed: " << local_path.AsUTF8Unsafe() << ": " << file_error;
+}
+
 }  // namespace
 
 FileApiWorker::FileApiWorker(FileSystemInterface* file_system)
-    : file_system_(file_system) {
+    : file_system_(file_system),
+      weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(file_system);
 }
@@ -197,6 +251,62 @@ void FileApiWorker::CreateSnapshotFile(
       base::Bind(&RunCreateSnapshotFileCallback, callback));
 }
 
+void FileApiWorker::OpenFile(const base::FilePath& file_path,
+                             int file_flags,
+                             const OpenFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // TODO(zelidrag): Wire all other file open operations.
+  if (file_flags & base::PLATFORM_FILE_DELETE_ON_CLOSE) {
+    NOTIMPLEMENTED() << "File create/write operations not yet supported "
+                     << file_path.value();
+    callback.Run(base::PLATFORM_FILE_ERROR_FAILED,
+                 base::kInvalidPlatformFileValue);
+    return;
+  }
+
+  // TODO(hidehiko): The opening logic should be moved to FileSystem.
+  //   crbug.com/256583.
+  if (file_flags & (base::PLATFORM_FILE_OPEN |
+                    base::PLATFORM_FILE_OPEN_ALWAYS |
+                    base::PLATFORM_FILE_OPEN_TRUNCATED)) {
+    if (file_flags & (base::PLATFORM_FILE_OPEN_TRUNCATED |
+                      base::PLATFORM_FILE_OPEN_ALWAYS |
+                      base::PLATFORM_FILE_WRITE |
+                      base::PLATFORM_FILE_EXCLUSIVE_WRITE)) {
+      // Open existing file for writing.
+      file_system_->OpenFile(
+          file_path,
+          base::Bind(&OpenFileAfterFileSystemOpenFile, file_flags, callback));
+    } else {
+      // Read-only file open.
+      file_system_->GetFileByPath(
+          file_path,
+          base::Bind(&OpenFileAfterGetFileByPath, file_flags, callback));
+    }
+  } else if (file_flags & (base::PLATFORM_FILE_CREATE |
+                           base::PLATFORM_FILE_CREATE_ALWAYS)) {
+    // Create a new file.
+    file_system_->CreateFile(
+        file_path,
+        file_flags & base::PLATFORM_FILE_EXCLUSIVE_WRITE,
+        base::Bind(&FileApiWorker::OpenFileAfterCreateFile,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   file_path, file_flags, callback));
+  } else {
+    NOTREACHED() << "Unhandled file flags combination " << file_flags;
+    callback.Run(base::PLATFORM_FILE_ERROR_FAILED,
+                 base::kInvalidPlatformFileValue);
+    return;
+  }
+}
+
+void FileApiWorker::CloseFile(const base::FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  file_system_->CloseFile(file_path,
+                          base::Bind(&EmitDebugLogForCloseFile, file_path));
+}
+
 void FileApiWorker::TouchFile(const base::FilePath& file_path,
                               const base::Time& last_access_time,
                               const base::Time& last_modified_time,
@@ -205,6 +315,31 @@ void FileApiWorker::TouchFile(const base::FilePath& file_path,
   file_system_->TouchFile(file_path, last_access_time, last_modified_time,
                           base::Bind(&RunStatusCallbackByFileError, callback));
 
+}
+
+void FileApiWorker::OpenFileAfterCreateFile(const base::FilePath& file_path,
+                                            int file_flags,
+                                            const OpenFileCallback& callback,
+                                            FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (error != FILE_ERROR_OK &&
+      (error != FILE_ERROR_EXISTS ||
+       (file_flags & base::PLATFORM_FILE_CREATE))) {
+    callback.Run(FileErrorToPlatformError(error),
+                 base::kInvalidPlatformFileValue);
+    return;
+  }
+
+  // If we are trying to always create an existing file, then
+  // if it really exists open it as truncated.
+  file_flags &=
+      ~(base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_CREATE_ALWAYS);
+  file_flags |= base::PLATFORM_FILE_OPEN_TRUNCATED;
+
+  // Open created (or existing) file for writing.
+  file_system_->OpenFile(
+      file_path,
+      base::Bind(&OpenFileAfterFileSystemOpenFile, file_flags, callback));
 }
 
 }  // namespace internal

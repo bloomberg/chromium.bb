@@ -9,7 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "webkit/common/blob/scoped_file.h"
 
 namespace base {
@@ -46,6 +48,9 @@ class FileApiWorker {
            const base::FilePath& snapshot_file_path,
            webkit_blob::ScopedFile::ScopeOutPolicy scope_out_policy)>
       CreateSnapshotFileCallback;
+  typedef base::Callback<
+      void(base::PlatformFileError result,
+           base::PlatformFile platform_file)> OpenFileCallback;
 
   // |file_system| must not be NULL.
   explicit FileApiWorker(FileSystemInterface* file_system);
@@ -104,6 +109,17 @@ class FileApiWorker {
   void CreateSnapshotFile(const base::FilePath& file_path,
                           const CreateSnapshotFileCallback& callback);
 
+  // Opens the file at |file_path| with options |file_flags|.
+  // Called from FileSystemProxy::OpenFile.
+  void OpenFile(const base::FilePath& file_path,
+                int file_flags,
+                const OpenFileCallback& callback);
+
+  // Closes the file at |file_path|.
+  // Called from FileSystemProxy::NotifyCloseFile and
+  // FileSystemProxy::CloseWRitableSnapshotFile.
+  void CloseFile(const base::FilePath& file_path);
+
   // Changes timestamp of the file at |file_path| to |last_access_time| and
   // |last_modified_time|. Called from FileSystemProxy::TouchFile().
   void TouchFile(const base::FilePath& file_path,
@@ -112,7 +128,17 @@ class FileApiWorker {
                  const StatusCallback& callback);
 
  private:
+  // Part of OpenFile(). Called after FileSystem::CreateFile().
+  void OpenFileAfterCreateFile(const base::FilePath& file_path,
+                               int file_flags,
+                               const OpenFileCallback& callback,
+                               FileError error);
+
   FileSystemInterface* file_system_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate the weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<FileApiWorker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileApiWorker);
 };

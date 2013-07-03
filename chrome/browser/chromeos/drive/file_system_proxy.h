@@ -132,24 +132,6 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const base::FilePath& virtual_path,
       const base::FilePath& local_path);
 
-  // Invoked during OpenFile() operation when truncate or write flags are set.
-  // This is called when a local modifiable cached file is ready for such
-  // operation.
-  void OnOpenFileForWriting(
-      int file_flags,
-      base::ProcessHandle peer_handle,
-      const OpenFileCallback& callback,
-      FileError file_error,
-      const base::FilePath& local_cache_path);
-
-  // Invoked during OpenFile() operation when file create flags are set.
-  void OnCreateFileForOpen(
-      const base::FilePath& file_path,
-      int file_flags,
-      base::ProcessHandle peer_handle,
-      const OpenFileCallback& callback,
-      FileError file_error);
-
   // Returns |file_system_| on UI thread.
   FileSystemInterface* GetFileSystemOnUIThread();
 
