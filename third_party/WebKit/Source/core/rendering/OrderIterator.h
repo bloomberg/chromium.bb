@@ -37,12 +37,12 @@
 namespace WebCore {
 
 class RenderBox;
-class RenderFlexibleBox;
 
 class OrderIterator {
     WTF_MAKE_NONCOPYABLE(OrderIterator);
 public:
-    OrderIterator(const RenderFlexibleBox*);
+    OrderIterator(const RenderBox*);
+
     void setOrderValues(Vector<int>&);
     RenderBox* currentChild() const { return m_currentChild; }
     RenderBox* first();
@@ -50,7 +50,7 @@ public:
     void reset();
 
 private:
-    const RenderFlexibleBox* m_flexibleBox;
+    const RenderBox* m_containerBox;
     RenderBox* m_currentChild;
     Vector<int> m_orderValues;
     Vector<int>::const_iterator m_orderValuesIterator;

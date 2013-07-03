@@ -32,11 +32,12 @@
 #include "core/rendering/OrderIterator.h"
 
 #include "core/rendering/RenderFlexibleBox.h"
+#include "core/rendering/RenderGrid.h"
 
 namespace WebCore {
 
-OrderIterator::OrderIterator(const RenderFlexibleBox* flexibleBox)
-    : m_flexibleBox(flexibleBox)
+OrderIterator::OrderIterator(const RenderBox* containerBox)
+    : m_containerBox(containerBox)
     , m_currentChild(0)
     , m_orderValuesIterator(0)
 {
@@ -91,7 +92,7 @@ RenderBox* OrderIterator::next()
                 m_orderValuesIterator = m_orderValues.begin();
             }
 
-            m_currentChild = m_flexibleBox->firstChildBox();
+            m_currentChild = m_containerBox->firstChildBox();
         } else {
             m_currentChild = m_currentChild->nextSiblingBox();
         }

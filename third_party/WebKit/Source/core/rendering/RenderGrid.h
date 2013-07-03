@@ -26,6 +26,7 @@
 #ifndef RenderGrid_h
 #define RenderGrid_h
 
+#include "core/rendering/OrderIterator.h"
 #include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
@@ -72,6 +73,7 @@ private:
     void insertItemIntoGrid(RenderBox*, size_t rowTrack, size_t columnTrack);
     void insertItemIntoGrid(RenderBox*, const GridCoordinate&);
     void placeItemsOnGrid();
+    void populateExplicitGridAndOrderIterator();
     void placeSpecifiedMajorAxisItemsOnGrid(Vector<RenderBox*>);
     void placeAutoMajorAxisItemsOnGrid(Vector<RenderBox*>);
     void placeAutoMajorAxisItemOnGrid(RenderBox*);
@@ -94,7 +96,6 @@ private:
     size_t explicitGridColumnCount() const;
     size_t explicitGridRowCount() const;
     size_t explicitGridSizeForSide(GridPositionSide) const;
-    size_t maximumIndexInDirection(TrackSizingDirection) const;
 
     LayoutUnit logicalContentHeightForChild(RenderBox*, Vector<GridTrack>&);
     LayoutUnit minContentForChild(RenderBox*, TrackSizingDirection, Vector<GridTrack>& columnTracks);
@@ -109,6 +110,8 @@ private:
     PassOwnPtr<GridSpan> resolveGridPositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition&, GridPositionSide) const;
 
     LayoutUnit gridAreaBreadthForChild(const RenderBox* child, TrackSizingDirection, const Vector<GridTrack>&) const;
+
+    virtual void paintChildren(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
 
 #ifndef NDEBUG
     bool tracksAreWiderThanMinTrackBreadth(TrackSizingDirection, const Vector<GridTrack>&);
@@ -128,6 +131,7 @@ private:
 
     Vector<Vector<Vector<RenderBox*, 1> > > m_grid;
     HashMap<const RenderBox*, GridCoordinate> m_gridItemCoordinate;
+    OrderIterator m_orderIterator;
 };
 
 } // namespace WebCore

@@ -150,6 +150,7 @@ private:
 
 RenderGrid::RenderGrid(Element* element)
     : RenderBlock(element)
+    , m_orderIterator(this)
 {
     // All of our children must be block level.
     setChildrenInline(false);
@@ -444,25 +445,6 @@ size_t RenderGrid::explicitGridSizeForSide(GridPositionSide side) const
     return (side == ColumnStartSide || side == ColumnEndSide) ? explicitGridColumnCount() : explicitGridRowCount();
 }
 
-size_t RenderGrid::maximumIndexInDirection(TrackSizingDirection direction) const
-{
-    size_t maximumIndex = std::max<size_t>(1, (direction == ForColumns) ? explicitGridColumnCount() : explicitGridRowCount());
-
-    for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
-        // This function bypasses the cache (cachedGridCoordinate()) as it is used to build it.
-        OwnPtr<GridSpan> positions = resolveGridPositionsFromStyle(child, direction);
-
-        // |positions| is NULL if we need to run the auto-placement algorithm. Our estimation ignores
-        // this case as the auto-placement algorithm will grow the grid as needed.
-        if (!positions)
-            continue;
-
-        maximumIndex = std::max(maximumIndex, positions->finalPositionIndex + 1);
-    }
-
-    return maximumIndex;
-}
-
 LayoutUnit RenderGrid::logicalContentHeightForChild(RenderBox* child, Vector<GridTrack>& columnTracks)
 {
     // FIXME: We shouldn't force a layout every time this function is called but
@@ -643,15 +625,12 @@ void RenderGrid::placeItemsOnGrid()
     ASSERT(!gridWasPopulated());
     ASSERT(m_gridItemCoordinate.isEmpty());
 
-    m_grid.grow(maximumIndexInDirection(ForRows));
-    size_t maximumColumnIndex = maximumIndexInDirection(ForColumns);
-    for (size_t i = 0; i < m_grid.size(); ++i)
-        m_grid[i].grow(maximumColumnIndex);
+    populateExplicitGridAndOrderIterator();
 
     Vector<RenderBox*> autoMajorAxisAutoGridItems;
     Vector<RenderBox*> specifiedMajorAxisAutoGridItems;
     GridAutoFlow autoFlow = style()->gridAutoFlow();
-    for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
+    for (RenderBox* child = m_orderIterator.first(); child; child = m_orderIterator.next()) {
         // FIXME: We never re-resolve positions if the grid is grown during auto-placement which may lead auto / <integer>
         // positions to not match the author's intent. The specification is unclear on what should be done in this case.
         OwnPtr<GridSpan> rowPositions = resolveGridPositionsFromStyle(child, ForRows);
@@ -679,6 +658,49 @@ void RenderGrid::placeItemsOnGrid()
 
     placeSpecifiedMajorAxisItemsOnGrid(specifiedMajorAxisAutoGridItems);
     placeAutoMajorAxisItemsOnGrid(autoMajorAxisAutoGridItems);
+}
+
+void RenderGrid::populateExplicitGridAndOrderIterator()
+{
+    // FIXME: We should find a way to share OrderIterator's Vector's
+    // initialization code with RenderFlexibleBox.
+    Vector<int> orderValues;
+    bool anyChildHasDefaultOrderValue = false;
+
+    size_t maximumRowIndex = std::max<size_t>(1, explicitGridRowCount());
+    size_t maximumColumnIndex = std::max<size_t>(1, explicitGridColumnCount());
+
+    for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
+        // Avoid growing the vector for the common-case default value of 0.
+        if (int order = child->style()->order())
+            orderValues.append(child->style()->order());
+        else
+            anyChildHasDefaultOrderValue = true;
+
+        // This function bypasses the cache (cachedGridCoordinate()) as it is used to build it.
+        OwnPtr<GridSpan> rowPositions = resolveGridPositionsFromStyle(child, ForRows);
+        OwnPtr<GridSpan> columnPositions = resolveGridPositionsFromStyle(child, ForColumns);
+
+        // |positions| is 0 if we need to run the auto-placement algorithm. Our estimation ignores
+        // this case as the auto-placement algorithm will grow the grid as needed.
+        if (rowPositions)
+            maximumRowIndex = std::max(maximumRowIndex, rowPositions->finalPositionIndex + 1);
+        if (columnPositions)
+            maximumColumnIndex = std::max(maximumColumnIndex, columnPositions->finalPositionIndex + 1);
+    }
+
+    m_grid.grow(maximumRowIndex);
+    for (size_t i = 0; i < m_grid.size(); ++i)
+        m_grid[i].grow(maximumColumnIndex);
+
+    if (anyChildHasDefaultOrderValue) {
+        // Avoid growing the vector to the default capacity of 16 if we're only going to put one item in it.
+        if (orderValues.isEmpty())
+            orderValues.reserveInitialCapacity(1);
+        orderValues.append(0);
+    }
+
+    m_orderIterator.setOrderValues(orderValues);
 }
 
 void RenderGrid::placeSpecifiedMajorAxisItemsOnGrid(Vector<RenderBox*> autoGridItems)
@@ -971,6 +993,12 @@ LayoutPoint RenderGrid::findChildLogicalPosition(RenderBox* child, const Vector<
 
     // FIXME: Handle margins on the grid item.
     return offset;
+}
+
+void RenderGrid::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    for (RenderBox* child = m_orderIterator.first(); child; child = m_orderIterator.next())
+        paintChild(child, paintInfo, paintOffset);
 }
 
 const char* RenderGrid::renderName() const
