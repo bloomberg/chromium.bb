@@ -45,6 +45,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
+#include "core/page/UseCounter.h"
 #include "core/rendering/RenderTextControl.h"
 
 using namespace std;
@@ -70,11 +71,13 @@ HTMLFormElement::HTMLFormElement(const QualifiedName& tagName, Document* documen
 
 PassRefPtr<HTMLFormElement> HTMLFormElement::create(Document* document)
 {
+    UseCounter::count(document, UseCounter::FormElement);
     return adoptRef(new HTMLFormElement(formTag, document));
 }
 
 PassRefPtr<HTMLFormElement> HTMLFormElement::create(const QualifiedName& tagName, Document* document)
 {
+    UseCounter::count(document, UseCounter::FormElement);
     return adoptRef(new HTMLFormElement(tagName, document));
 }
 
@@ -728,6 +731,13 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& retur
 
     returnValue0Enabled = true;
     returnValue0 = NamedNodesCollection::create(elements);
+}
+
+void HTMLFormElement::setDemoted(bool demoted)
+{
+    if (demoted)
+        UseCounter::count(document(), UseCounter::DemotedFormElement);
+    m_wasDemoted = demoted;
 }
 
 } // namespace
