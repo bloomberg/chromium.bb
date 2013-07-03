@@ -2885,8 +2885,8 @@ surface_rotate(struct shell_surface *surface, struct weston_seat *seat)
 		return;
 
 	weston_surface_to_global_float(surface->surface,
-				       surface->surface->geometry.width / 2,
-				       surface->surface->geometry.height / 2,
+				       surface->surface->geometry.width * 0.5f,
+				       surface->surface->geometry.height * 0.5f,
 				       &rotate->center.x, &rotate->center.y);
 
 	dx = wl_fixed_to_double(seat->pointer->x) - rotate->center.x;
