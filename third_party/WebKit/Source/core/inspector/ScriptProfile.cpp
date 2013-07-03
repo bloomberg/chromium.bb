@@ -72,6 +72,7 @@ static PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectFor
 
     RefPtr<TypeBuilder::Profiler::CPUProfileNode> result = TypeBuilder::Profiler::CPUProfileNode::create()
         .setFunctionName(toWebCoreString(node->GetFunctionName()))
+        .setScriptId(String::number(node->GetScriptId()))
         .setUrl(toWebCoreString(node->GetScriptResourceName()))
         .setLineNumber(node->GetLineNumber())
         .setTotalTime(node->GetTotalTime())
