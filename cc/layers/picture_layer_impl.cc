@@ -577,11 +577,14 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   invalidation_.Union(difference_region);
 
   if (CanHaveTilings()) {
-    // The reason the active layer's invalidation is needed here is becuase
-    // the recycle tree hasn't had that invalidation applied to it yet.
+    // The recycle tree's tiling set is two frames out of date, so it needs to
+    // have both this frame's invalidation and the previous frame's invalidation
+    // (stored on the active layer).
+    Region tiling_invalidation = other->invalidation_;
+    tiling_invalidation.Union(invalidation_);
     tilings_->SyncTilings(*other->tilings_,
                           bounds(),
-                          other->invalidation_,
+                          tiling_invalidation,
                           MinimumContentsScale());
   } else {
     tilings_->RemoveAllTilings();
