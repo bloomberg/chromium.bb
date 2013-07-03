@@ -24,7 +24,7 @@ base::TimeDelta GetTimeFromOriginalProcessStart(
   return base::Time::Now() - base::Time::FromInternalValue(remote_start_time);
 }
 
-}
+}  // namespace
 
 // static
 void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -41,8 +41,11 @@ void AppListService::RecordShowTimings(const CommandLine& command_line) {
   // The presence of kOriginalProcessStartTime implies that another process
   // has sent us its command line to handle, ie: we are already running.
   if (command_line.HasSwitch(switches::kOriginalProcessStartTime)) {
-     UMA_HISTOGRAM_LONG_TIMES("Startup.ShowAppListWarmStart",
-                              GetTimeFromOriginalProcessStart(command_line));
+    base::TimeDelta elapsed = GetTimeFromOriginalProcessStart(command_line);
+    if (command_line.HasSwitch(switches::kFastStart))
+      UMA_HISTOGRAM_LONG_TIMES("Startup.ShowAppListWarmStartFast", elapsed);
+    else
+      UMA_HISTOGRAM_LONG_TIMES("Startup.ShowAppListWarmStart", elapsed);
   } else {
     // base::CurrentProcessInfo::CreationTime() is only defined on win/mac.
 #if defined(OS_WIN) || defined(OS_MACOSX)

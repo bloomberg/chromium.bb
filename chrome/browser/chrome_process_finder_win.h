@@ -25,7 +25,9 @@ HWND FindRunningChromeWindow(const base::FilePath& user_data_dir);
 // Attempts to send the current command line to an already running instance of
 // Chrome via a WM_COPYDATA message.
 // Returns true if a running Chrome is found and successfully notified.
-NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window);
+// |fast_start| is true when this is being called on the window fast start path.
+NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window,
+                                                bool fast_start);
 
 }  // namespace chrome
 

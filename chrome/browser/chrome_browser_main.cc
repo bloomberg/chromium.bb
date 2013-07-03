@@ -427,9 +427,15 @@ bool ProcessSingletonNotificationCallback(
         command_line.GetSwitchValueASCII(switches::kOriginalProcessStartTime);
     int64 remote_start_time;
     if (base::StringToInt64(start_time_string, &remote_start_time)) {
-      UMA_HISTOGRAM_LONG_TIMES(
-          "Startup.WarmStartTimeFromRemoteProcessStart",
-          base::Time::Now() - base::Time::FromInternalValue(remote_start_time));
+      base::TimeDelta elapsed =
+          base::Time::Now() - base::Time::FromInternalValue(remote_start_time);
+      if (command_line.HasSwitch(switches::kFastStart)) {
+        UMA_HISTOGRAM_LONG_TIMES(
+            "Startup.WarmStartTimeFromRemoteProcessStartFast", elapsed);
+      } else {
+        UMA_HISTOGRAM_LONG_TIMES(
+            "Startup.WarmStartTimeFromRemoteProcessStart", elapsed);
+      }
     }
   }
 

@@ -93,7 +93,7 @@ std::string EscapeQueryParamValue(const std::string& text, bool use_plus) {
 
 // END COPY from net/base/escape.cc
 
-}
+}  // namespace
 
 namespace chrome {
 
@@ -102,7 +102,8 @@ HWND FindRunningChromeWindow(const base::FilePath& user_data_dir) {
                       user_data_dir.value().c_str());
 }
 
-NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window) {
+NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window,
+                                                bool fast_start) {
   DCHECK(remote_window);
   static const char kSearchUrl[] =
       "http://www.google.com/search?q=%s&sourceid=chrome&ie=UTF-8";
@@ -149,6 +150,9 @@ NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window) {
       switches::kOriginalProcessStartTime,
       base::Int64ToString(
           base::CurrentProcessInfo::CreationTime()->ToInternalValue()));
+
+  if (fast_start)
+    command_line.AppendSwitch(switches::kFastStart);
 
   // Send the command line to the remote chrome window.
   // Format is "START\0<<<current directory>>>\0<<<commandline>>>".

@@ -288,7 +288,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
     return PROCESS_NONE;
   }
 
-  switch (chrome::AttemptToNotifyRunningChrome(remote_window_)) {
+  switch (chrome::AttemptToNotifyRunningChrome(remote_window_, false)) {
     case chrome::NOTIFY_SUCCESS:
       return PROCESS_NOTIFIED;
     case chrome::NOTIFY_FAILED:

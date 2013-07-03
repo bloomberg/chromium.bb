@@ -750,6 +750,11 @@ const char kExtraSearchQueryParams[]        = "extra-search-query-params";
 // is UNKNOWN.
 const char kFakeVariationsChannel[]         = "fake-variations-channel";
 
+// If this flag is present then this command line is being delegated to an
+// already running chrome process via the fast path, ie: before chrome.dll is
+// loaded. It is useful to tell the difference for tracking purposes.
+const char kFastStart[]            = "fast-start";
+
 // These two flags are added around the switches about:flags adds to the
 // command line. This is useful to see which switches were added by about:flags
 // on about:version. They don't have any effect.

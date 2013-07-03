@@ -83,8 +83,10 @@ bool AttemptFastNotify(const CommandLine& command_line) {
   policy::path_parser::CheckUserDataDirPolicy(&user_data_dir);
 
   HWND chrome = chrome::FindRunningChromeWindow(user_data_dir);
-  return chrome &&
-      chrome::AttemptToNotifyRunningChrome(chrome) == chrome::NOTIFY_SUCCESS;
+  if (!chrome)
+    return false;
+  return chrome::AttemptToNotifyRunningChrome(chrome, true) ==
+      chrome::NOTIFY_SUCCESS;
 }
 
 }  // namespace
