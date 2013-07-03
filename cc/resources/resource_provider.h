@@ -286,9 +286,6 @@ class CC_EXPORT ResourceProvider {
   uint8_t* MapPixelBuffer(ResourceId id);
   void UnmapPixelBuffer(ResourceId id);
 
-  // Update pixels from acquired pixel buffer.
-  void SetPixelsFromBuffer(ResourceId id);
-
   // Asynchronously update pixels from acquired pixel buffer.
   void BeginSetPixels(ResourceId id);
   void ForceSetPixelsToComplete(ResourceId id);

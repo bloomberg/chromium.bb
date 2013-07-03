@@ -75,9 +75,7 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
   capabilities_.allow_partial_texture_updates = true;
   capabilities_.using_partial_swap = true;
 
-  capabilities_.using_map_image =
-      Settings().use_map_image &&
-      output_surface->capabilities().deferred_gl_initialization;
+  capabilities_.using_map_image = Settings().use_map_image;
 }
 
 SoftwareRenderer::~SoftwareRenderer() {}
