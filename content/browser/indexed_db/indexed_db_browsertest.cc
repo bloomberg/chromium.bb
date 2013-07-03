@@ -77,7 +77,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
         BrowserContext::GetDefaultStoragePartition(
             shell()->web_contents()->GetBrowserContext());
     return static_cast<IndexedDBContextImpl*>(partition->GetIndexedDBContext());
-  };
+  }
 
   void SetQuota(int quotaKilobytes) {
     const int kTemporaryStorageQuotaSize = quotaKilobytes
@@ -98,7 +98,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
     qm->SetTemporaryGlobalOverrideQuota(bytes, quota::QuotaCallback());
     // Don't return until the quota has been set.
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get()));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
     ASSERT_TRUE(helper->Run());
   }
 
@@ -111,8 +111,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
                    GURL("file:///")),
         base::Bind(&IndexedDBBrowserTest::DidGetDiskUsage, this));
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-        BrowserMainLoop::GetInstance()->indexed_db_thread()
-            ->message_loop_proxy().get()));
+        BrowserMainLoop::GetInstance()->indexed_db_thread()->
+            message_loop_proxy()));
     EXPECT_TRUE(helper->Run());
     // Wait for DidGetDiskUsage to be called.
     base::MessageLoop::current()->RunUntilIdle();
@@ -257,8 +257,8 @@ class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
         base::Bind(
             &CopyLevelDBToProfile, shell(), context, EnclosingLevelDBDir()));
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-        BrowserMainLoop::GetInstance()->indexed_db_thread()
-            ->message_loop_proxy().get()));
+        BrowserMainLoop::GetInstance()->indexed_db_thread()->
+            message_loop_proxy()));
     ASSERT_TRUE(helper->Run());
   }
 

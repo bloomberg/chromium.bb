@@ -58,7 +58,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
 
 TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
   {
-    IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
+    IndexedDBBackingStore::Transaction transaction1(backing_store_);
     transaction1.Begin();
     IndexedDBBackingStore::RecordIdentifier record;
     bool ok = backing_store_->PutRecord(
@@ -68,7 +68,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
   }
 
   {
-    IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
+    IndexedDBBackingStore::Transaction transaction2(backing_store_);
     transaction2.Begin();
     std::vector<char> result_value;
     bool ok =
@@ -93,7 +93,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
   std::vector<char> index_key_raw;
   EncodeIDBKey(index_key, &index_key_raw);
   {
-    IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
+    IndexedDBBackingStore::Transaction transaction1(backing_store_);
     transaction1.Begin();
     IndexedDBBackingStore::RecordIdentifier record;
     bool ok = backing_store_->PutRecord(&transaction1,
@@ -125,7 +125,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
   }
 
   {
-    IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
+    IndexedDBBackingStore::Transaction transaction2(backing_store_);
     transaction2.Begin();
     std::vector<char> result_value;
     bool ok = backing_store_->GetRecord(&transaction2,
@@ -169,7 +169,7 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
 
   std::vector<char> result_value;
 
-  IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
+  IndexedDBBackingStore::Transaction transaction1(backing_store_);
   transaction1.Begin();
 
   IndexedDBBackingStore::RecordIdentifier record;
@@ -269,7 +269,7 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
     EXPECT_TRUE(ok);
     EXPECT_GT(database_id, 0);
 
-    IndexedDBBackingStore::Transaction transaction(backing_store_.get());
+    IndexedDBBackingStore::Transaction transaction(backing_store_);
     transaction.Begin();
 
     ok = backing_store_->CreateObjectStore(&transaction,
@@ -406,8 +406,7 @@ TEST(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
   EXPECT_TRUE(mem_store1->HasOneRef());
 }
 
-TEST(IndexedDBFactoryTest, RejectLongOrigins)
-{
+TEST(IndexedDBFactoryTest, RejectLongOrigins) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   const base::FilePath base_path = temp_directory.path();
@@ -422,13 +421,13 @@ TEST(IndexedDBFactoryTest, RejectLongOrigins)
           std::string("http://" + origin + ":81/").c_str()));
   scoped_refptr<IndexedDBBackingStore> diskStore1 =
       factory->TestOpenBackingStore(too_long_origin, base_path);
-  EXPECT_FALSE(diskStore1.get());
+  EXPECT_FALSE(diskStore1);
 
   WebSecurityOrigin ok_origin =
       WebSecurityOrigin::createFromString("http://someorigin.com:82/");
   scoped_refptr<IndexedDBBackingStore> diskStore2 =
       factory->TestOpenBackingStore(ok_origin, base_path);
-  EXPECT_TRUE(diskStore2.get());
+  EXPECT_TRUE(diskStore2);
 }
 
 }  // namespace

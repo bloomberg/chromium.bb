@@ -59,7 +59,7 @@ void IndexedDBFactory::GetDatabaseNames(
   WebKit::WebIDBCallbacks::DataLoss data_loss;
   scoped_refptr<IndexedDBBackingStore> backing_store =
       OpenBackingStore(database_identifier, data_directory, &data_loss);
-  if (!backing_store.get()) {
+  if (!backing_store) {
     callbacks->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
                                "Internal error opening backing store for "
@@ -92,7 +92,7 @@ void IndexedDBFactory::DeleteDatabase(
   WebKit::WebIDBCallbacks::DataLoss data_loss;
   scoped_refptr<IndexedDBBackingStore> backing_store =
       OpenBackingStore(database_identifier, data_directory, &data_loss);
-  if (!backing_store.get()) {
+  if (!backing_store) {
     callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16("Internal error opening backing store "
@@ -100,9 +100,9 @@ void IndexedDBFactory::DeleteDatabase(
     return;
   }
 
-  scoped_refptr<IndexedDBDatabase> database_backend = IndexedDBDatabase::Create(
-      name, backing_store.get(), this, unique_identifier);
-  if (!database_backend.get()) {
+  scoped_refptr<IndexedDBDatabase> database_backend =
+      IndexedDBDatabase::Create(name, backing_store, this, unique_identifier);
+  if (!database_backend) {
     callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16("Internal error creating database backend for "
@@ -110,7 +110,7 @@ void IndexedDBFactory::DeleteDatabase(
     return;
   }
 
-  database_backend_map_[unique_identifier] = database_backend.get();
+  database_backend_map_[unique_identifier] = database_backend;
   database_backend->DeleteDatabase(callbacks);
   database_backend_map_.erase(unique_identifier);
 }
@@ -172,7 +172,7 @@ void IndexedDBFactory::Open(
   if (it == database_backend_map_.end()) {
     scoped_refptr<IndexedDBBackingStore> backing_store =
         OpenBackingStore(database_identifier, data_directory, &data_loss);
-    if (!backing_store.get()) {
+    if (!backing_store) {
       callbacks->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
           ASCIIToUTF16(
@@ -180,9 +180,9 @@ void IndexedDBFactory::Open(
       return;
     }
 
-    database_backend = IndexedDBDatabase::Create(
-        name, backing_store.get(), this, unique_identifier);
-    if (!database_backend.get()) {
+    database_backend =
+        IndexedDBDatabase::Create(name, backing_store, this, unique_identifier);
+    if (!database_backend) {
       callbacks->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
           ASCIIToUTF16(
@@ -190,7 +190,7 @@ void IndexedDBFactory::Open(
       return;
     }
 
-    database_backend_map_[unique_identifier] = database_backend.get();
+    database_backend_map_[unique_identifier] = database_backend;
   } else {
     database_backend = it->second;
   }

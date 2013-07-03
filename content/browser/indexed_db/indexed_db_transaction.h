@@ -70,22 +70,19 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   }
   int64 id() const { return id_; }
 
-  IndexedDBDatabase* database() const { return database_.get(); }
-  IndexedDBDatabaseCallbacks* connection() const {
-    return callbacks_.get();
-  }
+  IndexedDBDatabase* database() const { return database_; }
+  IndexedDBDatabaseCallbacks* connection() const { return callbacks_; }
 
  protected:
   virtual ~IndexedDBTransaction();
   friend class base::RefCounted<IndexedDBTransaction>;
 
  private:
-  IndexedDBTransaction(
-      int64 id,
-      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
-      const std::set<int64>& object_store_ids,
-      indexed_db::TransactionMode,
-      IndexedDBDatabase* db);
+  IndexedDBTransaction(int64 id,
+                       scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+                       const std::set<int64>& object_store_ids,
+                       indexed_db::TransactionMode,
+                       IndexedDBDatabase* db);
 
   enum State {
     UNUSED,         // Created, but no tasks yet.

@@ -26,13 +26,13 @@ quota::QuotaStatusCode DeleteOriginDataOnIndexedDBThread(
 }
 
 int64 GetOriginUsageOnIndexedDBThread(IndexedDBContextImpl* context,
-                                   const GURL& origin) {
+                                      const GURL& origin) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
   return context->GetOriginDiskUsage(origin);
 }
 
 void GetAllOriginsOnIndexedDBThread(IndexedDBContextImpl* context,
-                                 std::set<GURL>* origins_to_return) {
+                                    std::set<GURL>* origins_to_return) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
   std::vector<GURL> all_origins = context->GetAllOrigins();
   origins_to_return->insert(all_origins.begin(), all_origins.end());
@@ -45,8 +45,8 @@ void DidGetOrigins(const IndexedDBQuotaClient::GetOriginsCallback& callback,
 }
 
 void GetOriginsForHostOnIndexedDBThread(IndexedDBContextImpl* context,
-                                     const std::string& host,
-                                     std::set<GURL>* origins_to_return) {
+                                        const std::string& host,
+                                        std::set<GURL>* origins_to_return) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
   std::vector<GURL> all_origins = context->GetAllOrigins();
   for (std::vector<GURL>::const_iterator iter = all_origins.begin();
@@ -75,7 +75,7 @@ void IndexedDBQuotaClient::GetOriginUsage(const GURL& origin_url,
                                           quota::StorageType type,
                                           const GetUsageCallback& callback) {
   DCHECK(!callback.is_null());
-  DCHECK(indexed_db_context_.get());
+  DCHECK(indexed_db_context_);
 
   // IndexedDB is in the temp namespace for now.
   if (type != quota::kStorageTypeTemporary) {
@@ -89,7 +89,7 @@ void IndexedDBQuotaClient::GetOriginUsage(const GURL& origin_url,
     return;
   }
 
-   base::PostTaskAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       indexed_db_context_->TaskRunner(),
       FROM_HERE,
       base::Bind(
@@ -101,7 +101,7 @@ void IndexedDBQuotaClient::GetOriginsForType(
     quota::StorageType type,
     const GetOriginsCallback& callback) {
   DCHECK(!callback.is_null());
-  DCHECK(indexed_db_context_.get());
+  DCHECK(indexed_db_context_);
 
   // All databases are in the temp namespace for now.
   if (type != quota::kStorageTypeTemporary) {
@@ -129,7 +129,7 @@ void IndexedDBQuotaClient::GetOriginsForHost(
     const std::string& host,
     const GetOriginsCallback& callback) {
   DCHECK(!callback.is_null());
-  DCHECK(indexed_db_context_.get());
+  DCHECK(indexed_db_context_);
 
   // All databases are in the temp namespace for now.
   if (type != quota::kStorageTypeTemporary) {

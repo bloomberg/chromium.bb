@@ -153,7 +153,7 @@ void IndexedDBInternalsUI::DownloadOriginData(const base::ListValue* args) {
       &FindContext, partition_path, &result_partition, &result_context);
   BrowserContext::ForEachStoragePartition(browser_context, cb);
   DCHECK(result_partition);
-  DCHECK(result_context.get());
+  DCHECK(result_context);
 
   result_context->TaskRunner()->PostTask(
       FROM_HERE,
@@ -183,8 +183,7 @@ void IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread(
   // has completed.
   base::FilePath temp_path = temp_dir.Take();
 
-  std::string origin_id =
-      webkit_database::GetIdentifierFromOrigin(origin_url);
+  std::string origin_id = webkit_database::GetIdentifierFromOrigin(origin_url);
   base::FilePath zip_path =
       temp_path.AppendASCII(origin_id).AddExtension(FILE_PATH_LITERAL("zip"));
 

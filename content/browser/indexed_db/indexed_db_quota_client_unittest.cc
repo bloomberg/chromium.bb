@@ -47,22 +47,20 @@ class IndexedDBQuotaClientTest : public testing::Test {
         new quota::MockQuotaManager(
             false /*in_memory*/,
             browser_context_->GetPath(),
-            base::MessageLoop::current()->message_loop_proxy().get(),
-            base::MessageLoop::current()->message_loop_proxy().get(),
+            base::MessageLoop::current()->message_loop_proxy(),
+            base::MessageLoop::current()->message_loop_proxy(),
             browser_context_->GetSpecialStoragePolicy());
 
     idb_context_ =
         new IndexedDBContextImpl(browser_context_->GetPath(),
                                  browser_context_->GetSpecialStoragePolicy(),
                                  quota_manager->proxy(),
-                                 task_runner_.get());
+                                 task_runner_);
     base::MessageLoop::current()->RunUntilIdle();
     setup_temp_dir();
   }
 
-  void FlushIndexedDBTaskRunner() {
-    task_runner_->RunUntilIdle();
-  }
+  void FlushIndexedDBTaskRunner() { task_runner_->RunUntilIdle(); }
 
   void setup_temp_dir() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -133,7 +131,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return delete_status_;
   }
 
-  IndexedDBContextImpl* idb_context() { return idb_context_.get(); }
+  IndexedDBContextImpl* idb_context() { return idb_context_; }
 
   void SetFileSizeTo(const base::FilePath& path, int size) {
     std::string junk(size, 'a');

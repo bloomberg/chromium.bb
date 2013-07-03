@@ -1032,7 +1032,7 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
   string16 error_message;
   bool obeys_constraints = false;
   bool backing_store_success = MakeIndexWriters(transaction,
-                                                backing_store_.get(),
+                                                backing_store_,
                                                 database_id_,
                                                 object_store_,
                                                 *key,
@@ -1073,7 +1073,7 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
   for (size_t i = 0; i < index_writers.size(); ++i) {
     IndexWriter* index_writer = index_writers[i];
     index_writer->WriteIndexKeys(record_identifier,
-                                 backing_store_.get(),
+                                 backing_store_,
                                  transaction->BackingStoreTransaction(),
                                  database_id_,
                                  object_store_.id);
@@ -1145,7 +1145,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores[object_store_id];
   bool backing_store_success = MakeIndexWriters(transaction,
-                                                store.get(),
+                                                store,
                                                 id(),
                                                 object_store_metadata,
                                                 *primary_key,
@@ -1170,7 +1170,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
   for (size_t i = 0; i < index_writers.size(); ++i) {
     IndexWriter* index_writer = index_writers[i];
     index_writer->WriteIndexKeys(record_identifier,
-                                 store.get(),
+                                 store,
                                  transaction->BackingStoreTransaction(),
                                  id(),
                                  object_store_id);
@@ -1569,7 +1569,7 @@ void IndexedDBDatabase::CreateTransaction(
           static_cast<indexed_db::TransactionMode>(mode),
           this);
   DCHECK(transactions_.find(transaction_id) == transactions_.end());
-  transactions_[transaction_id] = transaction.get();
+  transactions_[transaction_id] = transaction;
 }
 
 bool IndexedDBDatabase::IsOpenConnectionBlocked() const {
@@ -1595,7 +1595,7 @@ void IndexedDBDatabase::OpenConnection(
     int64 transaction_id,
     int64 version,
     WebKit::WebIDBCallbacks::DataLoss data_loss) {
-  DCHECK(backing_store_.get());
+  DCHECK(backing_store_);
 
   // TODO(jsbell): Should have a priority queue so that higher version
   // requests are processed first. http://crbug.com/225850
@@ -1686,7 +1686,7 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
     int64 requested_version,
     WebKit::WebIDBCallbacks::DataLoss data_loss) {
 
-  DCHECK(callbacks.get());
+  DCHECK(callbacks);
   DCHECK(connections_.has(connection.get()));
   if (ConnectionCount() > 1) {
     DCHECK_NE(WebKit::WebIDBCallbacks::DataLossTotal, data_loss);
@@ -1788,7 +1788,7 @@ bool IndexedDBDatabase::IsDeleteDatabaseBlocked() const {
 void IndexedDBDatabase::DeleteDatabaseFinal(
     scoped_refptr<IndexedDBCallbacks> callbacks) {
   DCHECK(!IsDeleteDatabaseBlocked());
-  DCHECK(backing_store_.get());
+  DCHECK(backing_store_);
   if (!backing_store_->DeleteDatabase(metadata_.name)) {
     callbacks->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -1851,7 +1851,7 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection) {
 
     // factory_ should only be null in unit tests.
     // TODO(jsbell): DCHECK(factory_ || !in_unit_tests) - somehow.
-    if (factory_.get())
+    if (factory_)
       factory_->RemoveIDBDatabaseBackend(identifier_);
   }
 }

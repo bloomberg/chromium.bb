@@ -108,13 +108,13 @@ IndexedDBContextImpl::IndexedDBContextImpl(
 
 IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  if (!idb_factory_.get()) {
+  if (!idb_factory_) {
     // Prime our cache of origins with existing databases so we can
     // detect when dbs are newly created.
     GetOriginSet();
     idb_factory_ = IndexedDBFactory::Create();
   }
-  return idb_factory_.get();
+  return idb_factory_;
 }
 
 std::vector<GURL> IndexedDBContextImpl::GetAllOrigins() {
@@ -205,8 +205,7 @@ void IndexedDBContextImpl::ForceClose(const GURL& origin_url) {
 }
 
 base::FilePath IndexedDBContextImpl::GetFilePath(const GURL& origin_url) {
-  std::string origin_id =
-      webkit_database::GetIdentifierFromOrigin(origin_url);
+  std::string origin_id = webkit_database::GetIdentifierFromOrigin(origin_url);
   return GetIndexedDBFilePath(origin_id);
 }
 
@@ -284,12 +283,12 @@ bool IndexedDBContextImpl::IsOverQuota(const GURL& origin_url) {
 }
 
 quota::QuotaManagerProxy* IndexedDBContextImpl::quota_manager_proxy() {
-  return quota_manager_proxy_.get();
+  return quota_manager_proxy_;
 }
 
 IndexedDBContextImpl::~IndexedDBContextImpl() {
-  if (idb_factory_.get()) {
-    IndexedDBFactory* factory = idb_factory_.get();
+  if (idb_factory_) {
+    IndexedDBFactory* factory = idb_factory_;
     factory->AddRef();
     idb_factory_ = NULL;
     if (!task_runner_->ReleaseSoon(FROM_HERE, factory)) {
@@ -304,7 +303,7 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
     return;
 
   bool has_session_only_databases =
-      special_storage_policy_.get() &&
+      special_storage_policy_ &&
       special_storage_policy_->HasSessionOnlyOrigins();
 
   // Clearning only session-only databases, and there are none.
@@ -320,16 +319,14 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
 base::FilePath IndexedDBContextImpl::GetIndexedDBFilePath(
     const std::string& origin_id) const {
   DCHECK(!data_path_.empty());
-  return data_path_.AppendASCII(origin_id).
-      AddExtension(kIndexedDBExtension).
-      AddExtension(kLevelDBExtension);
+  return data_path_.AppendASCII(origin_id).AddExtension(kIndexedDBExtension)
+      .AddExtension(kLevelDBExtension);
 }
 
 int64 IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {
   if (data_path_.empty())
     return 0;
-  std::string origin_id =
-      webkit_database::GetIdentifierFromOrigin(origin_url);
+  std::string origin_id = webkit_database::GetIdentifierFromOrigin(origin_url);
   base::FilePath file_path = GetIndexedDBFilePath(origin_id);
   return base::ComputeDirectorySize(file_path);
 }
@@ -369,13 +366,12 @@ void IndexedDBContextImpl::GotUsageAndQuota(const GURL& origin_url,
     // We seem to no longer care to wait around for the answer.
     return;
   }
-  TaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&IndexedDBContextImpl::GotUpdatedQuota,
-                 this,
-                 origin_url,
-                 usage,
-                 quota));
+  TaskRunner()->PostTask(FROM_HERE,
+                         base::Bind(&IndexedDBContextImpl::GotUpdatedQuota,
+                                    this,
+                                    origin_url,
+                                    usage,
+                                    quota));
 }
 
 void IndexedDBContextImpl::GotUpdatedQuota(const GURL& origin_url,

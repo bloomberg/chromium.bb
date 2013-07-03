@@ -58,11 +58,8 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   // Create the scope which will ensure we run the destructor of the context
   // which should trigger the clean up.
   {
-    scoped_refptr<IndexedDBContextImpl> idb_context =
-        new IndexedDBContextImpl(temp_dir.path(),
-                                 special_storage_policy_.get(),
-                                 NULL,
-                                 task_runner_.get());
+    scoped_refptr<IndexedDBContextImpl> idb_context = new IndexedDBContextImpl(
+        temp_dir.path(), special_storage_policy_, NULL, task_runner_);
 
     normal_path = idb_context->GetFilePathForTesting(
         webkit_database::GetIdentifierFromOrigin(kNormalOrigin));
@@ -92,11 +89,8 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   {
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
-    scoped_refptr<IndexedDBContextImpl> idb_context =
-        new IndexedDBContextImpl(temp_dir.path(),
-                                 special_storage_policy_.get(),
-                                 NULL,
-                                 task_runner_.get());
+    scoped_refptr<IndexedDBContextImpl> idb_context = new IndexedDBContextImpl(
+        temp_dir.path(), special_storage_policy_, NULL, task_runner_);
 
     // Save session state. This should bypass the destruction-time deletion.
     idb_context->SetForceKeepSessionState();
@@ -151,11 +145,8 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
     const GURL kTestOrigin("http://test/");
 
-    scoped_refptr<IndexedDBContextImpl> idb_context =
-        new IndexedDBContextImpl(temp_dir.path(),
-                                 special_storage_policy_.get(),
-                                 NULL,
-                                 task_runner_.get());
+    scoped_refptr<IndexedDBContextImpl> idb_context = new IndexedDBContextImpl(
+        temp_dir.path(), special_storage_policy_, NULL, task_runner_);
 
     test_path = idb_context->GetFilePathForTesting(
         webkit_database::GetIdentifierFromOrigin(kTestOrigin));
@@ -187,9 +178,8 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
     idb_context->TaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&IndexedDBContextImpl::DeleteForOrigin,
-                   idb_context,
-                   kTestOrigin));
+        base::Bind(
+            &IndexedDBContextImpl::DeleteForOrigin, idb_context, kTestOrigin));
     FlushIndexedDBTaskRunner();
     message_loop_.RunUntilIdle();
   }

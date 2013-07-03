@@ -29,11 +29,8 @@ TEST(IndexedDBDatabaseTest, BackingStoreRetention) {
   EXPECT_TRUE(backing_store->HasOneRef());
 
   IndexedDBFactory* factory = 0;
-  scoped_refptr<IndexedDBDatabase> db =
-      IndexedDBDatabase::Create(ASCIIToUTF16("db"),
-                                backing_store.get(),
-                                factory,
-                                ASCIIToUTF16("uniqueid"));
+  scoped_refptr<IndexedDBDatabase> db = IndexedDBDatabase::Create(
+      ASCIIToUTF16("db"), backing_store, factory, ASCIIToUTF16("uniqueid"));
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
   db = NULL;
   EXPECT_TRUE(backing_store->HasOneRef());  // local
@@ -100,11 +97,8 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   EXPECT_TRUE(backing_store->HasOneRef());  // local
 
   IndexedDBFactory* factory = 0;
-  scoped_refptr<IndexedDBDatabase> db =
-      IndexedDBDatabase::Create(ASCIIToUTF16("db"),
-                                backing_store.get(),
-                                factory,
-                                ASCIIToUTF16("uniqueid"));
+  scoped_refptr<IndexedDBDatabase> db = IndexedDBDatabase::Create(
+      ASCIIToUTF16("db"), backing_store, factory, ASCIIToUTF16("uniqueid"));
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 
@@ -136,7 +130,7 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
 
   db->Close(request2->connection());
   EXPECT_TRUE(backing_store->HasOneRef());
-  EXPECT_FALSE(db->BackingStore().get());
+  EXPECT_FALSE(db->BackingStore());
 
   db = NULL;
 }
@@ -167,11 +161,8 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
   EXPECT_TRUE(backing_store->HasOneRef());
 
   IndexedDBFactory* factory = 0;
-  scoped_refptr<IndexedDBDatabase> backend =
-      IndexedDBDatabase::Create(ASCIIToUTF16("db"),
-                                backing_store.get(),
-                                factory,
-                                ASCIIToUTF16("uniqueid"));
+  scoped_refptr<IndexedDBDatabase> backend = IndexedDBDatabase::Create(
+      ASCIIToUTF16("db"), backing_store, factory, ASCIIToUTF16("uniqueid"));
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 

@@ -41,7 +41,7 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
       database_dispatcher_host_(new DatabaseDispatcherHost(this)),
       cursor_dispatcher_host_(new CursorDispatcherHost(this)),
       ipc_process_id_(ipc_process_id) {
-  DCHECK(indexed_db_context_.get());
+  DCHECK(indexed_db_context_);
 }
 
 IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {}

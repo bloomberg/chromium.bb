@@ -109,9 +109,9 @@ class CONTENT_EXPORT IndexedDBBackingStore
     }
 
    private:
-    std::vector<char>
-        primary_key_;  // TODO(jsbell): Make it more clear that this is
-                       // the *encoded* version of the key.
+    // TODO(jsbell): Make it more clear that this is the *encoded* version of
+    // the key.
+    std::vector<char> primary_key_;
     int64 version_;
     DISALLOW_COPY_AND_ASSIGN(RecordIdentifier);
   };
@@ -280,7 +280,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     static LevelDBTransaction* LevelDBTransactionFrom(
         Transaction* transaction) {
-      return transaction->transaction_.get();
+      return transaction->transaction_;
     }
 
    private:
