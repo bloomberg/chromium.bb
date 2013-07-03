@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/test/chromedriver/chrome/log.h"
@@ -36,8 +37,8 @@ void ReadRequestBody(const struct mg_request_info* const request_info,
     if (request_info->http_headers[header_index].name == NULL) {
       break;
     }
-    if (strcmp(request_info->http_headers[header_index].name,
-               "Content-Length") == 0) {
+    if (LowerCaseEqualsASCII(request_info->http_headers[header_index].name,
+                             "content-length")) {
       base::StringToInt(
           request_info->http_headers[header_index].value, &content_length);
       break;
