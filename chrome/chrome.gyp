@@ -221,6 +221,10 @@
             '..',
           ],
           'sources': [
+            'browser/devtools/adb/android_usb_device.cc',
+            'browser/devtools/adb/android_usb_device.h',
+            'browser/devtools/adb/android_usb_socket.cc',
+            'browser/devtools/adb/android_usb_socket.h',
             'browser/devtools/adb_client_socket.cc',
             'browser/devtools/adb_client_socket.h',
             'browser/devtools/browser_list_tabcontents_provider.cc',
