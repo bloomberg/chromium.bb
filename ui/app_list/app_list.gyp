@@ -201,6 +201,12 @@
             ['exclude', 'cocoa/'],
           ],
         }],
+        # See http://crbug.com/162998#c4 for why this is needed.
+        ['OS=="linux" and linux_use_tcmalloc==1', {
+          'dependencies': [
+            '../../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
