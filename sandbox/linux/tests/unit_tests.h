@@ -11,13 +11,10 @@
 
 namespace sandbox {
 
-// DISABLE_IF_THREADED is a helper to disable tests that can't have
-// threads on configurations that are known to always have them.
-// Currently, only TSAN is known to always start threads.
 #if defined(THREAD_SANITIZER)
-#define DISABLE_IF_THREADED(test_name) DISABLED_##test_name
+#define DISABLE_ON_TSAN(test_name) DISABLED_##test_name
 #else
-#define DISABLE_IF_THREADED(test_name) test_name
+#define DISABLE_ON_TSAN(test_name) test_name
 #endif  // defined(THREAD_SANITIZER)
 
 // While it is perfectly OK for a complex test to provide its own DeathCheck
@@ -43,7 +40,7 @@ namespace sandbox {
 // parameters are typically set to one of the DEATH_XXX() macros.
 #define SANDBOX_DEATH_TEST(test_case_name, test_name, death)                  \
   void TEST_##test_name(void *);                                              \
-  TEST(test_case_name, DISABLE_IF_THREADED(test_name)) {                      \
+  TEST(test_case_name, test_name) {                                           \
     sandbox::UnitTests::RunTestInProcess(TEST_##test_name, NULL, death);      \
   }                                                                           \
   void TEST_##test_name(void *)

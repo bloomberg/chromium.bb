@@ -28,6 +28,7 @@
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "sandbox/linux/services/broker_process.h"
 #include "sandbox/linux/services/linux_syscalls.h"
+#include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Workaround for Android's prctl.h file.
@@ -101,7 +102,7 @@ ErrorCode VerboseAPITestingPolicy(Sandbox *sandbox, int sysno, void *aux) {
   }
 }
 
-SANDBOX_TEST(SandboxBpf, VerboseAPITesting) {
+SANDBOX_TEST(SandboxBpf, DISABLE_ON_TSAN(VerboseAPITesting)) {
   if (Sandbox::SupportsSeccompSandbox(-1) ==
       playground2::Sandbox::STATUS_AVAILABLE) {
     pid_t test_var = 0;

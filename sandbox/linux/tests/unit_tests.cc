@@ -12,6 +12,7 @@
 
 #include "base/file_util.h"
 #include "base/third_party/valgrind/valgrind.h"
+#include "build/build_config.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
 namespace {
@@ -32,7 +33,8 @@ int CountThreads() {
   // "." and "..".
   if (task_d != 0 || task_stat.st_nlink < 3)
     return -1;
-  return task_stat.st_nlink - 2;
+  const int num_threads = task_stat.st_nlink - 2;
+  return num_threads;
 }
 
 }  // namespace
@@ -85,9 +87,18 @@ void UnitTests::RunTestInProcess(UnitTests::Test test, void *arg,
                                  DeathCheck death, const void *death_aux) {
   // We need to fork(), so we can't be multi-threaded, as threads could hold
   // locks.
-  ASSERT_EQ(1, CountThreads()) << "Running sandbox tests with multiple threads "
-                               << "is not supported and will make the tests "
-                               << "flaky.\n";
+  int num_threads = CountThreads();
+#if defined(THREAD_SANITIZER)
+  // Under TSAN, there is a special helper thread. It should be completely
+  // invisible to our testing, so we ignore it. It should be ok to fork()
+  // with this thread. It's currently buggy, but it's the best we can do until
+  // there is a way to delay the start of the thread
+  // (https://code.google.com/p/thread-sanitizer/issues/detail?id=19).
+  num_threads--;
+#endif
+  ASSERT_EQ(1, num_threads) << "Running sandbox tests with multiple threads "
+                            << "is not supported and will make the tests "
+                            << "flaky.\n";
   int fds[2];
   ASSERT_EQ(0, pipe(fds));
   // Check that our pipe is not on one of the standard file descriptor.

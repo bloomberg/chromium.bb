@@ -20,9 +20,11 @@ namespace sandbox {
 // A BPF_DEATH_TEST is just the same as a BPF_TEST, but it assumes that the
 // test will fail with a particular known error condition. Use the DEATH_XXX()
 // macros from unit_tests.h to specify the expected error condition.
+// A BPF_DEATH_TEST is always disabled under ThreadSanitizer, see
+// crbug.com/243968.
 #define BPF_DEATH_TEST(test_case_name, test_name, death, policy, aux...)      \
   void BPF_TEST_##test_name(sandbox::BpfTests<aux>::AuxType& BPF_AUX);        \
-  TEST(test_case_name, DISABLE_IF_THREADED(test_name)) {                      \
+  TEST(test_case_name, DISABLE_ON_TSAN(test_name)) {                          \
     sandbox::BpfTests<aux>::TestArgs arg(BPF_TEST_##test_name, policy);       \
     sandbox::BpfTests<aux>::RunTestInProcess(                                 \
                                    sandbox::BpfTests<aux>::TestWrapper, &arg, \
