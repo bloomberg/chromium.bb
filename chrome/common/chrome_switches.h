@@ -242,7 +242,6 @@ extern const char kKioskModePrinting[];
 extern const char kLimitedInstallFromWebstore[];
 extern const char kLoadComponentExtension[];
 extern const char kLoadExtension[];
-extern const char kLogNetLog[];
 extern const char kMakeDefaultBrowser[];
 extern const char kManagedUserSyncToken[];
 extern const char kManaged[];

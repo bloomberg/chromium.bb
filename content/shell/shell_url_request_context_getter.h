@@ -21,6 +21,7 @@ namespace net {
 class HostResolver;
 class MappedHostResolver;
 class NetworkDelegate;
+class NetLog;
 class ProxyConfigService;
 class URLRequestContextStorage;
 }
@@ -34,7 +35,8 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
       const base::FilePath& base_path,
       base::MessageLoop* io_loop,
       base::MessageLoop* file_loop,
-      ProtocolHandlerMap* protocol_handlers);
+      ProtocolHandlerMap* protocol_handlers,
+      net::NetLog* net_log);
 
   // net::URLRequestContextGetter implementation.
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
@@ -51,6 +53,7 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   base::FilePath base_path_;
   base::MessageLoop* io_loop_;
   base::MessageLoop* file_loop_;
+  net::NetLog* net_log_;
 
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<net::NetworkDelegate> network_delegate_;

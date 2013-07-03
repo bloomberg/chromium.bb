@@ -137,6 +137,8 @@
         'shell/shell_login_dialog.h',
         'shell/shell_message_filter.cc',
         'shell/shell_message_filter.h',
+	'shell/shell_net_log.cc',
+	'shell/shell_net_log.h',
         'shell/shell_network_delegate.cc',
         'shell/shell_network_delegate.h',
         'shell/shell_plugin_service_filter.cc',

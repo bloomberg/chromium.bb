@@ -13,6 +13,10 @@ namespace base {
 class Thread;
 }
 
+namespace net {
+class NetLog;
+}
+
 namespace content {
 
 class ShellBrowserContext;
@@ -42,7 +46,10 @@ class ShellBrowserMainParts : public BrowserMainParts {
     return off_the_record_browser_context_.get();
   }
 
+  net::NetLog* net_log() { return net_log_.get(); }
+
  private:
+  scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<ShellBrowserContext> browser_context_;
   scoped_ptr<ShellBrowserContext> off_the_record_browser_context_;
 

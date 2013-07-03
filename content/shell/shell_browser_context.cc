@@ -54,8 +54,10 @@ class ShellBrowserContext::ShellResourceContext : public ResourceContext {
   DISALLOW_COPY_AND_ASSIGN(ShellResourceContext);
 };
 
-ShellBrowserContext::ShellBrowserContext(bool off_the_record)
+ShellBrowserContext::ShellBrowserContext(bool off_the_record,
+                                         net::NetLog* net_log)
     : off_the_record_(off_the_record),
+      net_log_(net_log),
       ignore_certificate_errors_(false),
       resource_context_(new ShellResourceContext) {
   InitWhileIOAllowed();
@@ -138,7 +140,8 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
       GetPath(),
       BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO),
       BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::FILE),
-      protocol_handlers);
+      protocol_handlers,
+      net_log_);
   resource_context_->set_url_request_context_getter(url_request_getter_.get());
   return url_request_getter_.get();
 }

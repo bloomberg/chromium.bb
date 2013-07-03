@@ -165,6 +165,10 @@ const char kDisableLocalStorage[]           = "disable-local-storage";
 // builds.
 const char kDisableLogging[]                = "disable-logging";
 
+// Enables displaying net log events on the command line, or writing the events
+// to a separate file if a file name is given.
+const char kLogNetLog[]                     = "log-net-log";
+
 // Prevent plugins from running.
 const char kDisablePlugins[]                = "disable-plugins";
 

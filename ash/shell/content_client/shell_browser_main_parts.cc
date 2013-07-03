@@ -19,6 +19,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/shell_browser_context.h"
+#include "content/shell/shell_net_log.h"
 #include "net/base/net_module.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/env.h"
@@ -101,7 +102,9 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
-  browser_context_.reset(new content::ShellBrowserContext(false));
+  net_log_.reset(new content::ShellNetLog());
+  browser_context_.reset(new content::ShellBrowserContext(
+      false, net_log_.get()));
 
   // A ViewsDelegate is required.
   if (!views::ViewsDelegate::views_delegate)

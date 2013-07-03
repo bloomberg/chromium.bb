@@ -36,7 +36,7 @@ ExamplesBrowserMainParts::~ExamplesBrowserMainParts() {
 }
 
 void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
-  browser_context_.reset(new content::ShellBrowserContext(false));
+  browser_context_.reset(new content::ShellBrowserContext(false, NULL));
 
 #if !defined(OS_CHROMEOS) && defined(USE_AURA)
   gfx::Screen::SetScreenInstance(

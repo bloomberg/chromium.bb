@@ -13,6 +13,10 @@
 #include "content/public/browser/content_browser_client.h"
 #include "net/url_request/url_request_job_factory.h"
 
+namespace net {
+class NetLog;
+}
+
 namespace content {
 
 class DownloadManagerDelegate;
@@ -22,7 +26,7 @@ class ShellURLRequestContextGetter;
 
 class ShellBrowserContext : public BrowserContext {
  public:
-  explicit ShellBrowserContext(bool off_the_record);
+  ShellBrowserContext(bool off_the_record, net::NetLog* net_log);
   virtual ~ShellBrowserContext();
 
   // BrowserContext implementation.
@@ -61,6 +65,7 @@ class ShellBrowserContext : public BrowserContext {
   void InitWhileIOAllowed();
 
   bool off_the_record_;
+  net::NetLog* net_log_;
   bool ignore_certificate_errors_;
   base::FilePath path_;
   scoped_ptr<ShellResourceContext> resource_context_;

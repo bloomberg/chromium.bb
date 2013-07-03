@@ -23,6 +23,7 @@
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_message_filter.h"
+#include "content/shell/shell_net_log.h"
 #include "content/shell/shell_quota_permission_context.h"
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/shell_web_contents_view_delegate_creator.h"
@@ -181,6 +182,10 @@ WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
 QuotaPermissionContext*
 ShellContentBrowserClient::CreateQuotaPermissionContext() {
   return new ShellQuotaPermissionContext();
+}
+
+net::NetLog* ShellContentBrowserClient::GetNetLog() {
+  return shell_browser_main_parts_->net_log();
 }
 
 #if defined(OS_ANDROID)

@@ -884,10 +884,6 @@ const char kDisableCloudPolicyOnSignin[]    = "disable-cloud-policy-on-signin";
 // Loads an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
 
-// Enables displaying net log events on the command line, or writing the events
-// to a separate file if a file name is given.
-const char kLogNetLog[]                     = "log-net-log";
-
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 

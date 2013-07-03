@@ -18,6 +18,7 @@
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_devtools_delegate.h"
+#include "content/shell/shell_net_log.h"
 #include "googleurl/src/gurl.h"
 #include "grit/net_resources.h"
 #include "net/base/net_module.h"
@@ -107,8 +108,10 @@ void ShellBrowserMainParts::PreEarlyInitialization() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
-  browser_context_.reset(new ShellBrowserContext(false));
-  off_the_record_browser_context_.reset(new ShellBrowserContext(true));
+  net_log_.reset(new ShellNetLog());
+  browser_context_.reset(new ShellBrowserContext(false, net_log_.get()));
+  off_the_record_browser_context_.reset(
+      new ShellBrowserContext(true, net_log_.get()));
 
   Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);

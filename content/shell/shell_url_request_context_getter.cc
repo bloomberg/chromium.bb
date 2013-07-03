@@ -61,11 +61,13 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     const base::FilePath& base_path,
     base::MessageLoop* io_loop,
     base::MessageLoop* file_loop,
-    ProtocolHandlerMap* protocol_handlers)
+    ProtocolHandlerMap* protocol_handlers,
+    net::NetLog* net_log)
     : ignore_certificate_errors_(ignore_certificate_errors),
       base_path_(base_path),
       io_loop_(io_loop),
-      file_loop_(file_loop) {
+      file_loop_(file_loop),
+      net_log_(net_log) {
   // Must first be created on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -91,6 +93,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
     url_request_context_.reset(new net::URLRequestContext());
+    url_request_context_->set_net_log(net_log_);
     network_delegate_.reset(new ShellNetworkDelegate);
     if (command_line.HasSwitch(switches::kDumpRenderTree))
       ShellNetworkDelegate::SetAcceptAllCookies(false);
@@ -105,7 +108,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         new net::StaticHttpUserAgentSettings("en-us,en", EmptyString()));
 
     scoped_ptr<net::HostResolver> host_resolver(
-        net::HostResolver::CreateDefaultResolver(NULL));
+        net::HostResolver::CreateDefaultResolver(
+            url_request_context_->net_log()));
 
     storage_->set_cert_verifier(net::CertVerifier::CreateDefault());
     storage_->set_transport_security_state(new net::TransportSecurityState);
@@ -117,7 +121,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
           net::ProxyService::CreateUsingSystemProxyResolver(
           proxy_config_service_.release(),
           0,
-          NULL));
+          url_request_context_->net_log()));
     }
     storage_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     storage_->set_http_auth_handler_factory(
@@ -157,6 +161,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         network_delegate_.get();
     network_session_params.http_server_properties =
         url_request_context_->http_server_properties();
+    network_session_params.net_log =
+        url_request_context_->net_log();
     network_session_params.ignore_certificate_errors =
         ignore_certificate_errors_;
     if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
