@@ -2773,8 +2773,10 @@
               }],
               ['OS=="android" and android_webview_build==1', {
                 'ldflags!': [
-                  # Must not turn on --fatal-warnings, see crbug.com/157326.
+                  # Must not turn on --fatal-warnings or warn-shared-textrel,
+                  # see crbug.com/157326.
                   '-Wl,--fatal-warnings',
+                  '-Wl,--warn-shared-textrel',
                 ],
               }],
               ['OS=="android" and android_full_debug==0', {
@@ -2852,8 +2854,10 @@
               }],
               ['OS=="android" and android_webview_build==1', {
                 'ldflags!': [
-                  # Must not turn on --fatal-warnings, see crbug.com/157326.
+                  # Must not turn on --fatal-warnings or
+                  # shared-text-rel, see crbug.com/157326.
                   '-Wl,--fatal-warnings',
+                  '-Wl,--warn-shared-textrel',
                 ],
               }],
               ['clang==1', {
