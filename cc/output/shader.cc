@@ -408,7 +408,7 @@ std::string VertexShaderQuadAA::GetShaderString() const {
     uniform vec4 viewport;
     uniform TexCoordPrecision vec2 quad[4];
     uniform TexCoordPrecision vec3 edge[8];
-    varying TexCoordPrecision float edge_dist[8];
+    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
 
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
@@ -416,9 +416,14 @@ std::string VertexShaderQuadAA::GetShaderString() const {
           pos.x, pos.y, a_position.z, a_position.w);
       vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);
       vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);
-      vec3 p = gl_Position.w * screen_pos;
-      for (int i = 0; i < 8; i++)
-        edge_dist[i] = dot(edge[i], p);
+      edge_dist[0] = vec4(dot(edge[0], screen_pos),
+                          dot(edge[1], screen_pos),
+                          dot(edge[2], screen_pos),
+                          dot(edge[3], screen_pos)) * gl_Position.w;
+      edge_dist[1] = vec4(dot(edge[4], screen_pos),
+                          dot(edge[5], screen_pos),
+                          dot(edge[6], screen_pos),
+                          dot(edge[7], screen_pos)) * gl_Position.w;
     }
   );  // NOLINT(whitespace/parens)
 }
@@ -474,7 +479,7 @@ std::string VertexShaderQuadTexTransformAA::GetShaderString() const {
     uniform TexCoordPrecision vec3 edge[8];
     uniform TexCoordPrecision vec4 texTrans;
     varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision float edge_dist[8];
+    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
 
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
@@ -482,9 +487,14 @@ std::string VertexShaderQuadTexTransformAA::GetShaderString() const {
           pos.x, pos.y, a_position.z, a_position.w);
       vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);
       vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);
-      vec3 p = gl_Position.w * screen_pos;
-      for (int i = 0; i < 8; i++)
-        edge_dist[i] = dot(edge[i], p);
+      edge_dist[0] = vec4(dot(edge[0], screen_pos),
+                          dot(edge[1], screen_pos),
+                          dot(edge[2], screen_pos),
+                          dot(edge[3], screen_pos)) * gl_Position.w;
+      edge_dist[1] = vec4(dot(edge[4], screen_pos),
+                          dot(edge[5], screen_pos),
+                          dot(edge[6], screen_pos),
+                          dot(edge[7], screen_pos)) * gl_Position.w;
       v_texCoord = (pos.xy + vec2(0.5)) * texTrans.zw + texTrans.xy;
     }
   );  // NOLINT(whitespace/parens)
@@ -590,7 +600,7 @@ std::string VertexShaderTileAA::GetShaderString() const {
     uniform TexCoordPrecision vec3 edge[8];
     uniform TexCoordPrecision vec4 vertexTexTransform;
     varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision float edge_dist[8];
+    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
 
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
@@ -598,9 +608,14 @@ std::string VertexShaderTileAA::GetShaderString() const {
           pos.x, pos.y, a_position.z, a_position.w);
       vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);
       vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);
-      vec3 p = gl_Position.w * screen_pos;
-      for (int i = 0; i < 8; i++)
-        edge_dist[i] = dot(edge[i], p);
+      edge_dist[0] = vec4(dot(edge[0], screen_pos),
+                          dot(edge[1], screen_pos),
+                          dot(edge[2], screen_pos),
+                          dot(edge[3], screen_pos)) * gl_Position.w;
+      edge_dist[1] = vec4(dot(edge[4], screen_pos),
+                          dot(edge[5], screen_pos),
+                          dot(edge[6], screen_pos),
+                          dot(edge[7], screen_pos)) * gl_Position.w;
       v_texCoord = pos.xy * vertexTexTransform.zw + vertexTexTransform.xy;
     }
   );  // NOLINT(whitespace/parens)
@@ -945,13 +960,11 @@ std::string FragmentShaderRGBATexAlphaAA::GetShaderString(
     uniform sampler2D s_texture;
     uniform float alpha;
     varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision float edge_dist[8];
+    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
 
     void main() {
       vec4 texColor = texture2D(s_texture, v_texCoord);
-      vec4 d4 = min(
-          vec4(edge_dist[0], edge_dist[1], edge_dist[2], edge_dist[3]),
-          vec4(edge_dist[4], edge_dist[5], edge_dist[6], edge_dist[7]));
+      vec4 d4 = min(edge_dist[0], edge_dist[1]);
       vec2 d2 = min(d4.xz, d4.yw);
       float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
       gl_FragColor = texColor * alpha * aa;
@@ -999,16 +1012,14 @@ std::string FragmentShaderRGBATexClampAlphaAA::GetShaderString(
     uniform float alpha;
     uniform TexCoordPrecision vec4 fragmentTexTransform;
     varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision float edge_dist[8];
+    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
 
     void main() {
       TexCoordPrecision vec2 texCoord =
           clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw +
           fragmentTexTransform.xy;
       vec4 texColor = texture2D(s_texture, texCoord);
-      vec4 d4 = min(
-          vec4(edge_dist[0], edge_dist[1], edge_dist[2], edge_dist[3]),
-          vec4(edge_dist[4], edge_dist[5], edge_dist[6], edge_dist[7]));
+      vec4 d4 = min(edge_dist[0], edge_dist[1]);
       vec2 d2 = min(d4.xz, d4.yw);
       float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
       gl_FragColor = texColor * alpha * aa;
@@ -1024,16 +1035,14 @@ std::string FragmentShaderRGBATexClampSwizzleAlphaAA::GetShaderString(
     uniform float alpha;
     uniform TexCoordPrecision vec4 fragmentTexTransform;
     varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision float edge_dist[8];
+    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
 
     void main() {
       TexCoordPrecision vec2 texCoord =
           clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw +
           fragmentTexTransform.xy;
       vec4 texColor = texture2D(s_texture, texCoord);
-      vec4 d4 = min(
-          vec4(edge_dist[0], edge_dist[1], edge_dist[2], edge_dist[3]),
-          vec4(edge_dist[4], edge_dist[5], edge_dist[6], edge_dist[7]));
+      vec4 d4 = min(edge_dist[0], edge_dist[1]);
       vec2 d2 = min(d4.xz, d4.yw);
       float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
       gl_FragColor = vec4(texColor.z, texColor.y, texColor.x, texColor.w) *
@@ -1151,7 +1160,7 @@ std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderString(
     uniform TexCoordPrecision vec2 maskTexCoordOffset;
     uniform float alpha;
     varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision float edge_dist[8];
+    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
 
     void main() {
       vec4 texColor = texture2D(s_texture, v_texCoord);
@@ -1159,9 +1168,7 @@ std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderString(
           vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
                maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
       vec4 maskColor = texture2D(s_mask, maskTexCoord);
-      vec4 d4 = min(
-          vec4(edge_dist[0], edge_dist[1], edge_dist[2], edge_dist[3]),
-          vec4(edge_dist[4], edge_dist[5], edge_dist[6], edge_dist[7]));
+      vec4 d4 = min(edge_dist[0], edge_dist[1]);
       vec2 d2 = min(d4.xz, d4.yw);
       float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
       gl_FragColor = texColor * alpha * maskColor.w * aa;
@@ -1231,7 +1238,7 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString(
     uniform vec4 colorOffset;
     uniform float alpha;
     varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision float edge_dist[8];
+    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
 
     void main() {
       vec4 texColor = texture2D(s_texture, v_texCoord);
@@ -1244,9 +1251,7 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString(
           vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
                maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
       vec4 maskColor = texture2D(s_mask, maskTexCoord);
-      vec4 d4 = min(
-          vec4(edge_dist[0], edge_dist[1], edge_dist[2], edge_dist[3]),
-          vec4(edge_dist[4], edge_dist[5], edge_dist[6], edge_dist[7]));
+      vec4 d4 = min(edge_dist[0], edge_dist[1]);
       vec2 d2 = min(d4.xz, d4.yw);
       float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
       gl_FragColor = texColor * alpha * maskColor.w * aa;
@@ -1302,7 +1307,7 @@ std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderString(
     uniform mat4 colorMatrix;
     uniform vec4 colorOffset;
     varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision float edge_dist[8];
+    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
 
     void main() {
       vec4 texColor = texture2D(s_texture, v_texCoord);
@@ -1311,9 +1316,7 @@ std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderString(
       texColor = colorMatrix * texColor + colorOffset;
       texColor.rgb *= texColor.a;
       texColor = clamp(texColor, 0.0, 1.0);
-      vec4 d4 = min(
-          vec4(edge_dist[0], edge_dist[1], edge_dist[2], edge_dist[3]),
-          vec4(edge_dist[4], edge_dist[5], edge_dist[6], edge_dist[7]));
+      vec4 d4 = min(edge_dist[0], edge_dist[1]);
       vec2 d2 = min(d4.xz, d4.yw);
       float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
       gl_FragColor = texColor * alpha * aa;
@@ -1598,12 +1601,10 @@ std::string FragmentShaderColorAA::GetShaderString(
   return FRAGMENT_SHADER(
     precision mediump float;
     uniform vec4 color;
-    varying float edge_dist[8];
+    varying vec4 edge_dist[2];  // 8 edge distances.
 
     void main() {
-      vec4 d4 = min(
-          vec4(edge_dist[0], edge_dist[1], edge_dist[2], edge_dist[3]),
-          vec4(edge_dist[4], edge_dist[5], edge_dist[6], edge_dist[7]));
+      vec4 d4 = min(edge_dist[0], edge_dist[1]);
       vec2 d2 = min(d4.xz, d4.yw);
       float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
       gl_FragColor = color * aa;

@@ -1002,7 +1002,7 @@ TEST_F(GLRendererPixelTest, AntiAliasingPerspective) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("anti_aliasing_perspective.png")),
-      ExactPixelComparator(true)));
+      FuzzyPixelOffByOneComparator(true)));
 }
 
 TYPED_TEST(RendererPixelTestWithSkiaGPUBackend, PictureDrawQuadIdentityScale) {
