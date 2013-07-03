@@ -16,7 +16,6 @@ struct nacl_irt_basic __libnacl_irt_basic;
 struct nacl_irt_fdio __libnacl_irt_fdio;
 struct nacl_irt_filename __libnacl_irt_filename;
 struct nacl_irt_memory __libnacl_irt_memory;
-struct nacl_irt_dyncode __libnacl_irt_dyncode;
 struct nacl_irt_tls __libnacl_irt_tls;
 struct nacl_irt_clock __libnacl_irt_clock;
 struct nacl_irt_dev_getpid __libnacl_irt_dev_getpid;
@@ -120,6 +119,5 @@ void __libnacl_irt_init(Elf32_auxv_t *auxv) {
                                   sizeof(struct nacl_irt_memory_v0_1));
     __libnacl_irt_memory.mprotect = __libnacl_irt_mprotect;
   }
-  DO_QUERY(NACL_IRT_DYNCODE_v0_1, dyncode);
   DO_QUERY(NACL_IRT_TLS_v0_1, tls);
 }
