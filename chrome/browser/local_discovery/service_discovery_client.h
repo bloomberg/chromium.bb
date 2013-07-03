@@ -14,6 +14,10 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
 
+namespace net {
+class MDnsClient;
+}
+
 namespace local_discovery {
 
 struct ServiceDescription {
@@ -126,13 +130,6 @@ class ServiceDiscoveryClient {
   virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) = 0;
-
-  // Lazily create and return static instance for ServiceDiscoveryClient.
-  static ServiceDiscoveryClient* GetInstance();
-
-  // Set the global instance (for testing). MUST be called before the first call
-  // to GetInstance.
-  static void SetInstance(ServiceDiscoveryClient* instance);
 };
 
 }  // namespace local_discovery

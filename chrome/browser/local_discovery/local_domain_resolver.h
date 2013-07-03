@@ -19,7 +19,9 @@ class LocalDomainResolver {
   typedef base::Callback<void(bool, const net::IPAddressNumber&)>
       IPAddressCallback;
 
-  LocalDomainResolver(const std::string& domain,
+  // |mdns_client| must outlive the LocalDomainResolver.
+  LocalDomainResolver(net::MDnsClient* mdns_client,
+                      const std::string& domain,
                       net::AddressFamily address_family,
                       const IPAddressCallback& callback);
   ~LocalDomainResolver();
@@ -43,6 +45,8 @@ class LocalDomainResolver {
   scoped_ptr<net::MDnsTransaction> transaction_aaaa_;
 
   int transaction_failures_;
+
+  net::MDnsClient* mdns_client_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalDomainResolver);
 };

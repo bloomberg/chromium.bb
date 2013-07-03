@@ -150,12 +150,8 @@ class NET_EXPORT MDnsClient {
   virtual void StopListening() = 0;
   virtual bool IsListening() const = 0;
 
-  // Lazily create and return static instance for MDnsClient.
-  static MDnsClient* GetInstance();
-
-  // Set the global instance (for testing). MUST be called before the first call
-  // to GetInstance.
-  static void SetInstance(MDnsClient* instance);
+  // Create the default MDnsClient
+  static scoped_ptr<MDnsClient> CreateDefault();
 };
 
 }  // namespace net

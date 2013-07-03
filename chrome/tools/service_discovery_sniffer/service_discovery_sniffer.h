@@ -13,10 +13,12 @@
 
 namespace local_discovery {
 
-// Resolves a service and prints out information regarding it to the console.
+// Resolves a service and prints out information regarding it to the
+// console. |client| must outlive the ServicePrinter.
 class ServicePrinter {
  public:
-  explicit ServicePrinter(std::string service_name);
+  ServicePrinter(ServiceDiscoveryClient* client,
+                 const std::string& service_name);
   ~ServicePrinter();
 
   void Added();
@@ -34,10 +36,11 @@ class ServicePrinter {
 };
 
 // Monitors a service type and prints information regarding all services on it
-// to the console.
+// to the console. |client| must outlive the ServiceTypePrinter.
 class ServiceTypePrinter : public ServiceWatcher::Delegate {
  public:
-  explicit ServiceTypePrinter(std::string service_type);
+  ServiceTypePrinter(ServiceDiscoveryClient* client,
+                     const std::string& service_type);
   virtual ~ServiceTypePrinter();
 
   bool Start();
@@ -49,6 +52,7 @@ class ServiceTypePrinter : public ServiceWatcher::Delegate {
 
   ServiceMap services_;
   scoped_ptr<ServiceWatcher> watcher_;
+  ServiceDiscoveryClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceTypePrinter);
 };

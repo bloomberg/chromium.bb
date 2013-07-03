@@ -149,13 +149,12 @@ class ServiceDiscoveryTest : public ::testing::Test {
       : socket_factory_(new net::MockMDnsSocketFactory),
         mdns_client_(
             scoped_ptr<net::MDnsConnection::SocketFactory>(
-                socket_factory_)) {
-    net::MDnsClient::SetInstance(&mdns_client_);
+                socket_factory_)),
+        service_discovery_client_(&mdns_client_) {
     mdns_client_.StartListening();
   }
 
   virtual ~ServiceDiscoveryTest() {
-    net::MDnsClient::SetInstance(NULL);
   }
 
  protected:

@@ -10,11 +10,12 @@
 
 namespace local_discovery {
 
-LocalDomainResolver::LocalDomainResolver(const std::string& domain,
+LocalDomainResolver::LocalDomainResolver(net::MDnsClient* mdns_client,
+                                         const std::string& domain,
                                          net::AddressFamily address_family,
                                          const IPAddressCallback& callback)
     : domain_(domain), address_family_(address_family), callback_(callback),
-      transaction_failures_(0) {
+      transaction_failures_(0), mdns_client_(mdns_client) {
 }
 
 LocalDomainResolver::~LocalDomainResolver() {
@@ -40,7 +41,7 @@ bool LocalDomainResolver::Start() {
 
 scoped_ptr<net::MDnsTransaction> LocalDomainResolver::CreateTransaction(
     uint16 type) {
-  return net::MDnsClient::GetInstance()->CreateTransaction(
+  return mdns_client_->CreateTransaction(
       type, domain_, net::MDnsTransaction::SINGLE_RESULT |
                      net::MDnsTransaction::QUERY_CACHE |
                      net::MDnsTransaction::QUERY_NETWORK,

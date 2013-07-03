@@ -21,7 +21,8 @@ namespace local_discovery {
 
 class ServiceDiscoveryClientImpl : public ServiceDiscoveryClient {
  public:
-  ServiceDiscoveryClientImpl();
+  // |mdns_client| must outlive the Service Discovery Client.
+  explicit ServiceDiscoveryClientImpl(net::MDnsClient* mdns_client);
   virtual ~ServiceDiscoveryClientImpl();
 
   // ServiceDiscoveryClient implementation:
@@ -32,9 +33,9 @@ class ServiceDiscoveryClientImpl : public ServiceDiscoveryClient {
   virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) OVERRIDE;
-
-  static ServiceDiscoveryClientImpl* GetInstance();
  private:
+  net::MDnsClient* mdns_client_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryClientImpl);
 };
 
@@ -43,7 +44,8 @@ class ServiceWatcherImpl : public ServiceWatcher,
                            public base::SupportsWeakPtr<ServiceWatcherImpl> {
  public:
   ServiceWatcherImpl(const std::string& service_type,
-                     ServiceWatcher::Delegate* delegate);
+                     ServiceWatcher::Delegate* delegate,
+                     net::MDnsClient* mdns_client);
   // Listening will automatically stop when the destructor is called.
   virtual ~ServiceWatcherImpl();
 
@@ -74,7 +76,8 @@ class ServiceWatcherImpl : public ServiceWatcher,
  private:
   struct ServiceListeners {
     ServiceListeners(const std::string& service_name,
-                     ServiceWatcherImpl* watcher);
+                     ServiceWatcherImpl* watcher,
+                     net::MDnsClient* mdns_client);
     ~ServiceListeners();
     bool Start();
 
@@ -112,6 +115,8 @@ class ServiceWatcherImpl : public ServiceWatcher,
   ServiceWatcher::Delegate* delegate_;
   bool started_;
 
+  net::MDnsClient* mdns_client_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceWatcherImpl);
 };
 
@@ -120,7 +125,8 @@ class ServiceResolverImpl
       public base::SupportsWeakPtr<ServiceResolverImpl> {
  public:
   ServiceResolverImpl(const std::string& service_name,
-                      const ServiceResolver::ResolveCompleteCallback& callback);
+                      const ServiceResolver::ResolveCompleteCallback& callback,
+                      net::MDnsClient* mdns_client);
 
   virtual ~ServiceResolverImpl();
 
@@ -187,6 +193,8 @@ class ServiceResolverImpl
 
   scoped_ptr<ServiceDescription> service_staging_;
   scoped_ptr<ServiceDescription> service_final_;
+
+  net::MDnsClient* mdns_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceResolverImpl);
 };

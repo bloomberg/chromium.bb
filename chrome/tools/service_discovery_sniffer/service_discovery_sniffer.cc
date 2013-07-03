@@ -8,13 +8,17 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/local_discovery/service_discovery_client_impl.h"
 #include "chrome/tools/service_discovery_sniffer/service_discovery_sniffer.h"
+#include "net/dns/mdns_client.h"
 
 namespace local_discovery {
 
-ServicePrinter::ServicePrinter(std::string service_name) : changed_(false) {
+ServicePrinter::ServicePrinter(ServiceDiscoveryClient* client,
+                               const std::string& service_name)
+    : changed_(false) {
   service_resolver_ =
-      ServiceDiscoveryClient::GetInstance()->CreateServiceResolver(
+      client->CreateServiceResolver(
           service_name,
           base::Bind(&ServicePrinter::OnServiceResolved,
                      base::Unretained(this)));
@@ -39,7 +43,7 @@ void ServicePrinter::Removed() {
 }
 
 void ServicePrinter::OnServiceResolved(ServiceResolver::RequestStatus status,
-                                const ServiceDescription& service) {
+                                       const ServiceDescription& service) {
   if (changed_) {
     printf("Service Updated: %s\n", service.instance_name().c_str());
   } else {
@@ -60,9 +64,10 @@ void ServicePrinter::OnServiceResolved(ServiceResolver::RequestStatus status,
   }
 }
 
-ServiceTypePrinter::ServiceTypePrinter(std::string service_type)  {
-  watcher_ = ServiceDiscoveryClient::GetInstance()->CreateServiceWatcher(
-      service_type, this);
+ServiceTypePrinter::ServiceTypePrinter(ServiceDiscoveryClient* client,
+                                       const std::string& service_type)
+    : client_(client)  {
+  watcher_ = client_->CreateServiceWatcher(service_type, this);
 }
 
 bool ServiceTypePrinter::Start() {
@@ -76,9 +81,9 @@ ServiceTypePrinter::~ServiceTypePrinter() {
 }
 
 void ServiceTypePrinter::OnServiceUpdated(ServiceWatcher::UpdateType update,
-                                   const std::string& service_name) {
+                                          const std::string& service_name) {
   if (update == ServiceWatcher::UPDATE_ADDED) {
-    services_[service_name].reset(new ServicePrinter(service_name));
+    services_[service_name].reset(new ServicePrinter(client_, service_name));
     services_[service_name]->Added();
   } else if (update == ServiceWatcher::UPDATE_CHANGED) {
     services_[service_name]->Changed();
@@ -99,8 +104,15 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  { // To guarantee/make explicit the ordering constraint.
+  scoped_ptr<net::MDnsClient> mdns_client = net::MDnsClient::CreateDefault();
+  mdns_client->StartListening();
+  scoped_ptr<local_discovery::ServiceDiscoveryClient> service_discovery_client;
+  service_discovery_client.reset(
+      new local_discovery::ServiceDiscoveryClientImpl(mdns_client.get()));
+  {
+    // To guarantee/make explicit the ordering constraint.
     local_discovery::ServiceTypePrinter print_changes(
+        service_discovery_client.get(),
         std::string(argv[1]) + "._tcp.local");
 
     if (!print_changes.Start())

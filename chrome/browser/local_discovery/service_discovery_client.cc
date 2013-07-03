@@ -4,10 +4,7 @@
 
 #include "chrome/browser/local_discovery/service_discovery_client.h"
 
-#include "chrome/browser/local_discovery/service_discovery_client_impl.h"
-
 namespace local_discovery {
-static ServiceDiscoveryClient* g_instance = NULL;
 
 ServiceDescription::ServiceDescription() {
 }
@@ -29,15 +26,6 @@ std::string ServiceDescription::service_type() const {
   if (first_period == std::string::npos)
     return "";
   return service_name.substr(first_period+1);
-}
-
-
-ServiceDiscoveryClient* ServiceDiscoveryClient::GetInstance() {
-  return g_instance ? g_instance : ServiceDiscoveryClientImpl::GetInstance();
-}
-
-void ServiceDiscoveryClient::SetInstance(ServiceDiscoveryClient* instance) {
-  g_instance = instance;
 }
 
 }  // namespace local_discovery

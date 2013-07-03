@@ -14,40 +14,38 @@
 
 namespace local_discovery {
 
-ServiceDiscoveryClientImpl::ServiceDiscoveryClientImpl() {
+ServiceDiscoveryClientImpl::ServiceDiscoveryClientImpl(
+    net::MDnsClient* mdns_client) : mdns_client_(mdns_client) {
 }
 
 ServiceDiscoveryClientImpl::~ServiceDiscoveryClientImpl() {
-}
-
-// static
-ServiceDiscoveryClientImpl* ServiceDiscoveryClientImpl::GetInstance() {
-  return Singleton<ServiceDiscoveryClientImpl>::get();
 }
 
 scoped_ptr<ServiceWatcher> ServiceDiscoveryClientImpl::CreateServiceWatcher(
     const std::string& service_type,
     ServiceWatcher::Delegate* delegate) {
   return scoped_ptr<ServiceWatcher>(new ServiceWatcherImpl(
-      service_type,  delegate));
+      service_type,  delegate, mdns_client_));
 }
 
 scoped_ptr<ServiceResolver> ServiceDiscoveryClientImpl::CreateServiceResolver(
     const std::string& service_name,
     const ServiceResolver::ResolveCompleteCallback& callback) {
   return scoped_ptr<ServiceResolver>(new ServiceResolverImpl(
-      service_name, callback));
+      service_name, callback, mdns_client_));
 }
 
 ServiceWatcherImpl::ServiceWatcherImpl(
     const std::string& service_type,
-    ServiceWatcher::Delegate* delegate)
-    : service_type_(service_type), delegate_(delegate), started_(false) {
+    ServiceWatcher::Delegate* delegate,
+    net::MDnsClient* mdns_client)
+    : service_type_(service_type), delegate_(delegate), started_(false),
+      mdns_client_(mdns_client) {
 }
 
 bool ServiceWatcherImpl::Start() {
   DCHECK(!started_);
-  listener_ = net::MDnsClient::GetInstance()->CreateListener(
+  listener_ = mdns_client_->CreateListener(
       net::dns_protocol::kTypePTR, service_type_, this);
   if (!listener_->Start())
     return false;
@@ -97,7 +95,7 @@ bool ServiceWatcherImpl::CreateTransaction(
   // TODO(noamsml): Add flag for force_refresh when supported.
 
   if (transaction_flags) {
-    *transaction = net::MDnsClient::GetInstance()->CreateTransaction(
+    *transaction = mdns_client_->CreateTransaction(
         net::dns_protocol::kTypePTR, service_type_, transaction_flags,
         base::Bind(&ServiceWatcherImpl::OnTransactionResponse,
                    base::Unretained(this), transaction));
@@ -162,10 +160,11 @@ void ServiceWatcherImpl::OnTransactionResponse(
 
 ServiceWatcherImpl::ServiceListeners::ServiceListeners(
     const std::string& service_name,
-    ServiceWatcherImpl* watcher) : update_pending_(false) {
-  srv_listener_ = net::MDnsClient::GetInstance()->CreateListener(
+    ServiceWatcherImpl* watcher,
+    net::MDnsClient* mdns_client) : update_pending_(false) {
+  srv_listener_ = mdns_client->CreateListener(
       net::dns_protocol::kTypeSRV, service_name, watcher);
-  txt_listener_ = net::MDnsClient::GetInstance()->CreateListener(
+  txt_listener_ = mdns_client->CreateListener(
       net::dns_protocol::kTypeTXT, service_name, watcher);
 }
 
@@ -184,7 +183,7 @@ void ServiceWatcherImpl::AddService(const std::string& service) {
       make_pair(service, static_cast<ServiceListeners*>(NULL)));
   if (found.second) {  // Newly inserted.
     found.first->second = linked_ptr<ServiceListeners>(
-        new ServiceListeners(service, this));
+        new ServiceListeners(service, this, mdns_client_));
     bool success = found.first->second->Start();
 
     DeferUpdate(UPDATE_ADDED, service);
@@ -226,18 +225,19 @@ void ServiceWatcherImpl::RemoveService(const std::string& service) {
 }
 
 void ServiceWatcherImpl::OnNsecRecord(const std::string& name,
-                                          unsigned rrtype) {
+                                      unsigned rrtype) {
   // Do nothing. It is an error for hosts to broadcast an NSEC record for PTR
   // on any name.
 }
 
 ServiceResolverImpl::ServiceResolverImpl(
     const std::string& service_name,
-    const ResolveCompleteCallback& callback)
+    const ResolveCompleteCallback& callback,
+    net::MDnsClient* mdns_client)
     : service_name_(service_name), callback_(callback),
       is_resolving_(false), has_resolved_(false), metadata_resolved_(false),
       address_resolved_(false), service_staging_(new ServiceDescription),
-      service_final_(new ServiceDescription) {
+      service_final_(new ServiceDescription), mdns_client_(mdns_client) {
   service_staging_->service_name = service_name_;
   service_final_->service_name = service_name_;
 }
@@ -266,7 +266,7 @@ ServiceResolverImpl::~ServiceResolverImpl() {
 }
 
 bool ServiceResolverImpl::CreateTxtTransaction() {
-  txt_transaction_ = net::MDnsClient::GetInstance()->CreateTransaction(
+  txt_transaction_ = mdns_client_->CreateTransaction(
       net::dns_protocol::kTypeTXT, service_name_,
       net::MDnsTransaction::SINGLE_RESULT | net::MDnsTransaction::QUERY_CACHE |
       net::MDnsTransaction::QUERY_NETWORK,
@@ -277,7 +277,7 @@ bool ServiceResolverImpl::CreateTxtTransaction() {
 
 // TODO(noamsml): quick-resolve for AAAA records.  Since A records tend to be in
 void ServiceResolverImpl::CreateATransaction() {
-  a_transaction_ = net::MDnsClient::GetInstance()->CreateTransaction(
+  a_transaction_ = mdns_client_->CreateTransaction(
       net::dns_protocol::kTypeA,
       service_staging_.get()->address.host(),
       net::MDnsTransaction::SINGLE_RESULT | net::MDnsTransaction::QUERY_CACHE,
@@ -287,7 +287,7 @@ void ServiceResolverImpl::CreateATransaction() {
 }
 
 bool ServiceResolverImpl::CreateSrvTransaction() {
-  srv_transaction_ = net::MDnsClient::GetInstance()->CreateTransaction(
+  srv_transaction_ = mdns_client_->CreateTransaction(
       net::dns_protocol::kTypeSRV, service_name_,
       net::MDnsTransaction::SINGLE_RESULT | net::MDnsTransaction::QUERY_CACHE |
       net::MDnsTransaction::QUERY_NETWORK,

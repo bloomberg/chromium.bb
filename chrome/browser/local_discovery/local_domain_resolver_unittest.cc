@@ -64,11 +64,9 @@ class LocalDomainResolverTest : public testing::Test {
     mdns_client_(
         scoped_ptr<net::MDnsConnection::SocketFactory>(
             socket_factory_)) {
-    net::MDnsClient::SetInstance(&mdns_client_);
   }
 
   ~LocalDomainResolverTest() {
-    net::MDnsClient::SetInstance(NULL);
   }
 
   void AddressCallback(bool resolved, const net::IPAddressNumber& address) {
@@ -100,7 +98,7 @@ class LocalDomainResolverTest : public testing::Test {
 
 TEST_F(LocalDomainResolverTest, ResolveDomainA) {
   LocalDomainResolver resolver(
-      "myhello.local", net::ADDRESS_FAMILY_IPV4,
+      &mdns_client_, "myhello.local", net::ADDRESS_FAMILY_IPV4,
       base::Bind(&LocalDomainResolverTest::AddressCallback,
                  base::Unretained(this)));
 
@@ -117,7 +115,7 @@ TEST_F(LocalDomainResolverTest, ResolveDomainA) {
 
 TEST_F(LocalDomainResolverTest, ResolveDomainAAAA) {
   LocalDomainResolver resolver(
-      "myhello.local", net::ADDRESS_FAMILY_IPV6,
+      &mdns_client_, "myhello.local", net::ADDRESS_FAMILY_IPV6,
       base::Bind(&LocalDomainResolverTest::AddressCallback,
                  base::Unretained(this)));
 
@@ -134,7 +132,7 @@ TEST_F(LocalDomainResolverTest, ResolveDomainAAAA) {
 
 TEST_F(LocalDomainResolverTest, ResolveDomainAny) {
   LocalDomainResolver resolver(
-      "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
+      &mdns_client_, "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
       base::Bind(&LocalDomainResolverTest::AddressCallback,
                  base::Unretained(this)));
 
@@ -151,7 +149,7 @@ TEST_F(LocalDomainResolverTest, ResolveDomainAny) {
 
 TEST_F(LocalDomainResolverTest, ResolveDomainNone) {
   LocalDomainResolver resolver(
-      "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
+      &mdns_client_, "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
       base::Bind(&LocalDomainResolverTest::AddressCallback,
                  base::Unretained(this)));
 
