@@ -103,7 +103,6 @@ private:
     bool m_willExecuteWhenDocumentFinishedParsing : 1;
     bool m_forceAsync : 1;
     bool m_willExecuteInOrder : 1;
-    bool m_requestUsesAccessControl : 1;
     String m_characterEncoding;
     String m_fallbackCharacterEncoding;
 };

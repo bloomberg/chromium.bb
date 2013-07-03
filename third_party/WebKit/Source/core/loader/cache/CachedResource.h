@@ -101,6 +101,7 @@ public:
     ResourceRequest& resourceRequest() { return m_resourceRequest; }
     const KURL& url() const { return m_resourceRequest.url();}
     Type type() const { return static_cast<Type>(m_type); }
+    const ResourceLoaderOptions& options() const {  return m_options; }
 
     void didChangePriority(ResourceLoadPriority);
 
@@ -159,6 +160,7 @@ public:
     // FIXME: Remove the stringless variant once all the callsites' error messages are updated.
     bool passesAccessControlCheck(SecurityOrigin*);
     bool passesAccessControlCheck(SecurityOrigin*, String& errorDescription);
+    bool canBeAccessedBy(SecurityOrigin*, String& error);
 
     // Called by the cache if the object has been removed from the cache
     // while still being referenced. This means the object should delete itself

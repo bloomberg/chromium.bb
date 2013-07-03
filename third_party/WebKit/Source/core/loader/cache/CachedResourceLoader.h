@@ -124,7 +124,7 @@ public:
     void checkForPendingPreloads();
     void printPreloadStats();
     bool canRequest(CachedResource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload = false);
-    
+    bool canAccess(CachedResource*);
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
     static const ResourceLoaderOptions& defaultCachedResourceOptions();

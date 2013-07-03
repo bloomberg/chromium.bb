@@ -68,7 +68,8 @@ enum ContentSecurityPolicyCheck {
 
 enum RequestOriginPolicy {
     UseDefaultOriginRestrictionsForType,
-    RestrictToSameOrigin
+    RestrictToSameOrigin,
+    PotentiallyCrossOriginEnabled // Indicates "potentially CORS-enabled fetch" in HTML standard.
 };
 
 struct ResourceLoaderOptions {

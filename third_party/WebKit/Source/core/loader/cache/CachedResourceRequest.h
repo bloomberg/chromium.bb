@@ -34,7 +34,7 @@
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
-class Document;
+class SecurityOrigin;
 
 class CachedResourceRequest {
 public:
@@ -57,6 +57,7 @@ public:
     DeferOption defer() const { return m_defer; }
     void setDefer(DeferOption defer) { m_defer = defer; }
     void setContentSecurityCheck(ContentSecurityPolicyCheck contentSecurityPolicyOption) { m_options.contentSecurityPolicyOption = contentSecurityPolicyOption; }
+    void setPotentiallyCrossOriginEnabled(SecurityOrigin*, StoredCredentials);
 
 private:
     ResourceRequest m_resourceRequest;

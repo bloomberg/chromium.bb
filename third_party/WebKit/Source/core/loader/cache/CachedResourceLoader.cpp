@@ -421,6 +421,31 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const KURL& url
     return true;
 }
 
+bool CachedResourceLoader::canAccess(CachedResource* resource)
+{
+    // Redirects can change the response URL different from one of request.
+    if (!canRequest(resource->type(), resource->response().url(), resource->options(), false))
+        return false;
+
+    String error;
+    switch (resource->type()) {
+    case CachedResource::Script:
+        if (resource->options().requestOriginPolicy == PotentiallyCrossOriginEnabled
+            && !m_document->securityOrigin()->canRequest(resource->response().url())
+            && !resource->passesAccessControlCheck(m_document->securityOrigin(), error)) {
+            m_document->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Script from origin '" + SecurityOrigin::create(resource->response().url())->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + error);
+            return false;
+        }
+
+        break;
+    default:
+        ASSERT_NOT_REACHED(); // FIXME: generalize to non-script resources
+        return false;
+    }
+
+    return true;
+}
+
 CachedResourceHandle<CachedResource> CachedResourceLoader::requestResource(CachedResource::Type type, CachedResourceRequest& request)
 {
     KURL url = request.resourceRequest().url();

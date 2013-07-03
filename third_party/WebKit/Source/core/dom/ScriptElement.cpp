@@ -36,7 +36,6 @@
 #include "core/dom/Text.h"
 #include "core/html/HTMLScriptElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedScript.h"
@@ -65,7 +64,6 @@ ScriptElement::ScriptElement(Element* element, bool parserInserted, bool already
     , m_willExecuteWhenDocumentFinishedParsing(false)
     , m_forceAsync(!parserInserted)
     , m_willExecuteInOrder(false)
-    , m_requestUsesAccessControl(false)
 {
     ASSERT(m_element);
     if (parserInserted && m_element->document()->scriptableDocumentParser() && !m_element->document()->isInDocumentWrite())
@@ -253,9 +251,8 @@ bool ScriptElement::requestScript(const String& sourceUrl)
 
         String crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
         if (!crossOriginMode.isNull()) {
-            m_requestUsesAccessControl = true;
             StoredCredentials allowCredentials = equalIgnoringCase(crossOriginMode, "use-credentials") ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-            updateRequestForAccessControl(request.mutableResourceRequest(), m_element->document()->securityOrigin(), allowCredentials);
+            request.setPotentiallyCrossOriginEnabled(m_element->document()->securityOrigin(), allowCredentials);
         }
         request.setCharset(scriptCharset());
 
@@ -358,14 +355,8 @@ void ScriptElement::notifyFinished(CachedResource* resource)
     ASSERT_UNUSED(resource, resource == m_cachedScript);
     if (!m_cachedScript)
         return;
-
-    String error;
-    if (m_requestUsesAccessControl
-        && !m_element->document()->securityOrigin()->canRequest(m_cachedScript->response().url())
-        && !m_cachedScript->passesAccessControlCheck(m_element->document()->securityOrigin(), error)) {
-
+    if (!m_element->document()->cachedResourceLoader()->canAccess(m_cachedScript.get())) {
         dispatchErrorEvent();
-        m_element->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Script from origin '" + SecurityOrigin::create(m_cachedScript->response().url())->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + error);
         return;
     }
 

@@ -27,6 +27,7 @@
 #include "core/loader/cache/CachedResourceRequest.h"
 
 #include "core/dom/Element.h"
+#include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/cache/CachedResourceInitiatorInfo.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 
@@ -65,6 +66,13 @@ CachedResourceRequest::CachedResourceRequest(const ResourceRequest& resourceRequ
 
 CachedResourceRequest::~CachedResourceRequest()
 {
+}
+
+void CachedResourceRequest::setPotentiallyCrossOriginEnabled(SecurityOrigin* origin, StoredCredentials allowCredentials)
+{
+    updateRequestForAccessControl(m_resourceRequest, origin, allowCredentials);
+    ASSERT(m_options.requestOriginPolicy == UseDefaultOriginRestrictionsForType); // Allows only tightening from the default value.
+    m_options.requestOriginPolicy = PotentiallyCrossOriginEnabled;
 }
 
 } // namespace WebCore
