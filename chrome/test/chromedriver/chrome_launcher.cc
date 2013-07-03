@@ -198,8 +198,11 @@ Status LaunchDesktopChrome(
   CommandLine command(CommandLine::NO_PROGRAM);
   base::ScopedTempDir user_data_dir;
   base::ScopedTempDir extension_dir;
-  PrepareCommandLine(port, capabilities,
-                     &command, &user_data_dir, &extension_dir);
+  Status status = PrepareCommandLine(port, capabilities,
+                                     &command, &user_data_dir, &extension_dir);
+  if (status.IsError())
+    return status;
+
   for (size_t i = 0; i < arraysize(kCommonSwitches); i++)
     command.AppendSwitch(kCommonSwitches[i]);
   base::LaunchOptions options;
@@ -229,7 +232,7 @@ Status LaunchDesktopChrome(
   scoped_ptr<DevToolsHttpClient> devtools_client;
   std::string version;
   int build_no;
-  Status status = WaitForDevToolsAndCheckVersion(
+  status = WaitForDevToolsAndCheckVersion(
       port, context_getter, socket_factory, log, &devtools_client, &version,
       &build_no);
 
