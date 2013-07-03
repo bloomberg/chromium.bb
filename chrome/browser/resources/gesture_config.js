@@ -89,7 +89,7 @@ GeneralConfig.prototype = {
    */
   loadForm: function() {
     for (var i = 0; i < this.fields.length; i++)
-      this.getPreferenceValue(this.fields[i].key);
+      this.updatePreferenceValue(this.fields[i].key);
   },
 
   /**
@@ -108,11 +108,11 @@ GeneralConfig.prototype = {
   /**
    * Requests a preference setting's value.
    * This method is asynchronous; the result is provided by a call to
-   * getPreferenceValueResult.
+   * updatePreferenceValueResult.
    * @param {string} prefName The name of the preference value being requested.
    */
-  getPreferenceValue: function(prefName) {
-    chrome.send('getPreferenceValue', [this.prefix + prefName]);
+  updatePreferenceValue: function(prefName) {
+    chrome.send('updatePreferenceValue', [this.prefix + prefName]);
   },
 
   /**
@@ -127,7 +127,7 @@ GeneralConfig.prototype = {
 
   /**
    * Resets a preference to its default value and get that callback
-   * to getPreferenceValueResult with the new value of the preference.
+   * to updatePreferenceValueResult with the new value of the preference.
    * @param {string} prefName The name of the requested preference.
    */
   resetPreferenceValue: function(prefName) {
@@ -525,11 +525,11 @@ window.gesture_config = {
   },
 
   /**
-   * Handle callback from call to getPreferenceValue.
+   * Handle callback from call to updatePreferenceValue.
    * @param {string} prefName The name of the requested preference value.
    * @param {value} value The current value associated with prefName.
    */
-  getPreferenceValueResult: function(prefName, value) {
+  updatePreferenceValueResult: function(prefName, value) {
     prefName = prefName.substring(prefName.indexOf('.') + 1);
     $(prefName).value = value;
   },

@@ -22,14 +22,14 @@ class GestureConfigUI : public content::WebUIController {
   /**
    * Request a preference setting's value.
    * This method is asynchronous; the result is provided by a call to
-   * the JS method 'gesture_config.getPreferenceValueResult'.
+   * the JS method 'gesture_config.updatePreferenceValueResult'.
    */
-  void GetPreferenceValue(const base::ListValue* args);
+  void UpdatePreferenceValue(const base::ListValue* args);
 
   /**
    * Reset a preference to its default value and return this value
    * via asynchronous callback to the JS method
-   * 'gesture_config.getPreferenceValueResult'.
+   * 'gesture_config.updatePreferenceValueResult'.
    */
   void ResetPreferenceValue(const base::ListValue* args);
 

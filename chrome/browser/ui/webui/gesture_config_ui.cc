@@ -27,8 +27,8 @@ GestureConfigUI::GestureConfigUI(content::WebUI* web_ui)
 
   // Register callback handlers.
   web_ui->RegisterMessageCallback(
-      "getPreferenceValue",
-      base::Bind(&GestureConfigUI::GetPreferenceValue,
+      "updatePreferenceValue",
+      base::Bind(&GestureConfigUI::UpdatePreferenceValue,
                  base::Unretained(this)));
   web_ui->RegisterMessageCallback(
       "resetPreferenceValue",
@@ -51,19 +51,18 @@ GestureConfigUI::GestureConfigUI(content::WebUI* web_ui)
 GestureConfigUI::~GestureConfigUI() {
 }
 
-void GestureConfigUI::GetPreferenceValue(const base::ListValue* args) {
+void GestureConfigUI::UpdatePreferenceValue(const base::ListValue* args) {
   std::string pref_name;
 
   if (!args->GetString(0, &pref_name)) return;
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
 
   base::StringValue js_pref_name(pref_name);
   base::FundamentalValue js_pref_value(prefs->GetDouble(pref_name.c_str()));
 
   web_ui()->CallJavascriptFunction(
-      "gesture_config.getPreferenceValueResult",
+      "gesture_config.updatePreferenceValueResult",
       js_pref_name,
       js_pref_value);
 }
@@ -73,30 +72,10 @@ void GestureConfigUI::ResetPreferenceValue(const base::ListValue* args) {
 
   if (!args->GetString(0, &pref_name)) return;
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
 
-  base::StringValue js_pref_name(pref_name);
-  double d;
-  if (prefs->GetDefaultPrefValue(pref_name.c_str())->GetAsDouble(&d)) {
-    base::FundamentalValue js_pref_value(d);
-    const PrefService::Preference* pref =
-        prefs->FindPreference(pref_name.c_str());
-    switch (pref->GetType()) {
-      case base::Value::TYPE_INTEGER:
-        prefs->SetInteger(pref_name.c_str(), static_cast<int>(d));
-        break;
-      case base::Value::TYPE_DOUBLE:
-        prefs->SetDouble(pref_name.c_str(), d);
-        break;
-      default:
-        NOTREACHED();
-    }
-    web_ui()->CallJavascriptFunction(
-        "gesture_config.getPreferenceValueResult",
-        js_pref_name,
-        js_pref_value);
-  }
+  prefs->ClearPref(pref_name.c_str());
+  UpdatePreferenceValue(args);
 }
 
 void GestureConfigUI::SetPreferenceValue(const base::ListValue* args) {
@@ -105,8 +84,7 @@ void GestureConfigUI::SetPreferenceValue(const base::ListValue* args) {
 
   if (!args->GetString(0, &pref_name) || !args->GetDouble(1, &value)) return;
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
 
   const PrefService::Preference* pref =
       prefs->FindPreference(pref_name.c_str());
