@@ -58,8 +58,10 @@ const int kTitleLogoSpacing = 5;
 const int kTitleIconOffsetX = 4;
 // Space between window edge and title text, when there is no icon.
 const int kTitleNoIconOffsetX = 8;
-// Color for the title text.
-const SkColor kTitleTextColor = SkColorSetRGB(40, 40, 40);
+// Color for the non-maximized window title text.
+const SkColor kNonMaximizedWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
+// Color for the maximized window title text.
+const SkColor kMaximizedWindowTitleTextColor = SK_ColorWHITE;
 // Size of header/content separator line below the header image.
 const int kHeaderContentSeparatorSize = 1;
 // Color of header bottom edge line.
@@ -591,9 +593,11 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
   views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (delegate && delegate->ShouldShowWindowTitle()) {
     gfx::Rect title_bounds = GetTitleBounds(view, title_font);
+    SkColor title_color = frame_->IsMaximized() ?
+        kMaximizedWindowTitleTextColor : kNonMaximizedWindowTitleTextColor;
     canvas->DrawStringInt(delegate->GetWindowTitle(),
                           title_font,
-                          kTitleTextColor,
+                          title_color,
                           view->GetMirroredXForRect(title_bounds),
                           title_bounds.y(),
                           title_bounds.width(),
