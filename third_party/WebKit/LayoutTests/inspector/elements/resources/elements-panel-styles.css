@@ -1,5 +1,10 @@
 body {
     font-size: 12px;
+    text-indent: 20px !important;
+}
+
+body .foo {
+    text-indent: 10px;
 }
 
 #container {
@@ -23,6 +28,7 @@ body {
     font-weight: bold;
     padding: 4px;
     padding-right: 1px;
+    text-indent: 0 !important;
 }
 
 .foo, .foo::before {
@@ -50,4 +56,8 @@ body {
 
 .foo::before {
     /* Empty rule that should be reported in the Styles pane */
+}
+
+html {
+    color: magenta !important;
 }
