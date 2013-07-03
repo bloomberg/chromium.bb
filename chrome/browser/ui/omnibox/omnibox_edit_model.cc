@@ -890,8 +890,8 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
 }
 
 void OmniboxEditModel::OnControlKeyChanged(bool pressed) {
-  // TODO(beaudoin): Remove this function entirely and all the code that calls
-  // it.
+  if (pressed == (control_key_state_ == UP))
+    control_key_state_ = pressed ? DOWN_WITHOUT_CHANGE : UP;
 }
 
 void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
