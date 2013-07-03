@@ -673,10 +673,6 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     // Enable WebSocket over SPDY.
     net::WebSocketJob::set_websocket_over_spdy_enabled(true);
   }
-  if (command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
-    globals_->max_spdy_sessions_per_domain.set(
-        GetSwitchValueAsInt(command_line, switches::kMaxSpdySessionsPerDomain));
-  }
   if (command_line.HasSwitch(switches::kMaxSpdyConcurrentStreams)) {
     globals_->max_spdy_concurrent_streams_limit.set(
         GetSwitchValueAsInt(command_line, switches::kMaxSpdyConcurrentStreams));
@@ -865,8 +861,6 @@ void IOThread::InitializeNetworkSessionParams(
   params->testing_fixed_http_port = globals_->testing_fixed_http_port;
   params->testing_fixed_https_port = globals_->testing_fixed_https_port;
 
-  globals_->max_spdy_sessions_per_domain.CopyToIfSet(
-      &params->max_spdy_sessions_per_domain);
   globals_->initial_max_spdy_concurrent_streams.CopyToIfSet(
       &params->spdy_initial_max_concurrent_streams);
   globals_->max_spdy_concurrent_streams_limit.CopyToIfSet(

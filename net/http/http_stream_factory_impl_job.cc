@@ -1099,7 +1099,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     spdy_session = spdy_pool->GetIfExists(spdy_session_key, net_log_);
     if (!spdy_session.get()) {
       int error = spdy_pool->GetSpdySessionFromSocket(spdy_session_key,
-                                                      connection_.release(),
+                                                      connection_.Pass(),
                                                       net_log_,
                                                       spdy_certificate_error_,
                                                       &new_spdy_session_,

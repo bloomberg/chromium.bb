@@ -129,7 +129,6 @@ class SpdyProxyClientSocketTest
   HostPortPair endpoint_host_port_pair_;
   ProxyServer proxy_;
   SpdySessionKey endpoint_spdy_session_key_;
-  scoped_refptr<TransportSocketParams> transport_params_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyProxyClientSocketTest);
 };
@@ -154,12 +153,7 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
       proxy_(ProxyServer::SCHEME_HTTPS, proxy_host_port_),
       endpoint_spdy_session_key_(endpoint_host_port_pair_,
                                  proxy_,
-                                 kPrivacyModeDisabled),
-      transport_params_(new TransportSocketParams(proxy_host_port_,
-                                                  LOWEST,
-                                                  false,
-                                                  false,
-                                                  OnHostResolutionCallback())) {
+                                 kPrivacyModeDisabled) {
   session_deps_.net_log = net_log_.bound().net_log();
 }
 
@@ -189,22 +183,10 @@ void SpdyProxyClientSocketTest::Initialize(MockRead* reads,
   session_ = SpdySessionDependencies::SpdyCreateSessionDeterministic(
       &session_deps_);
 
-  // Creates a new spdy session.
+  // Creates the SPDY session and stream.
   spdy_session_ =
-      session_->spdy_session_pool()->Get(endpoint_spdy_session_key_,
-                                         net_log_.bound());
-
-  // Perform the TCP connect.
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  EXPECT_EQ(OK,
-            connection->Init(endpoint_host_port_pair_.ToString(),
-                             transport_params_, LOWEST, CompletionCallback(),
-                             session_->GetTransportSocketPool(
-                                 HttpNetworkSession::NORMAL_SOCKET_POOL),
-                             net_log_.bound()));
-  spdy_session_->InitializeWithSocket(connection.release(), false, OK);
-
-  // Create the SPDY Stream.
+      CreateInsecureSpdySession(
+          session_, endpoint_spdy_session_key_, BoundNetLog());
   base::WeakPtr<SpdyStream> spdy_stream(
       CreateStreamSynchronously(
           SPDY_BIDIRECTIONAL_STREAM, spdy_session_, url_, LOWEST,

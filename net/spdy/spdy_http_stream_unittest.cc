@@ -87,61 +87,27 @@ class SpdyHttpStreamTest : public testing::Test,
   // Initializes the session using DeterministicSocketData.  It's advisable
   // to use this function rather than the OrderedSocketData, since the
   // DeterministicSocketData behaves in a reasonable manner.
-  int InitSessionDeterministic(MockRead* reads, size_t reads_count,
-                               MockWrite* writes, size_t writes_count,
-                               HostPortPair& host_port_pair) {
-    SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                       kPrivacyModeDisabled);
+  void InitSessionDeterministic(MockRead* reads, size_t reads_count,
+                                MockWrite* writes, size_t writes_count,
+                                const SpdySessionKey& key) {
     deterministic_data_.reset(
         new DeterministicSocketData(reads, reads_count, writes, writes_count));
     session_deps_.deterministic_socket_factory->AddSocketDataProvider(
         deterministic_data_.get());
     http_session_ =
         SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
-    session_ = http_session_->spdy_session_pool()->Get(key, BoundNetLog());
-    transport_params_ = new TransportSocketParams(host_port_pair,
-                                                  MEDIUM, false, false,
-                                                  OnHostResolutionCallback());
-    TestCompletionCallback callback;
-    scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-    EXPECT_EQ(ERR_IO_PENDING,
-              connection->Init(host_port_pair.ToString(),
-                               transport_params_,
-                               MEDIUM,
-                               callback.callback(),
-                               http_session_->GetTransportSocketPool(
-                                   HttpNetworkSession::NORMAL_SOCKET_POOL),
-                               BoundNetLog()));
-    EXPECT_EQ(OK, callback.WaitForResult());
-    return session_->InitializeWithSocket(connection.release(), false, OK);
+    session_ = CreateInsecureSpdySession(http_session_, key, BoundNetLog());
   }
 
   // Initializes the session using the finicky OrderedSocketData class.
-  int InitSession(MockRead* reads, size_t reads_count,
-                  MockWrite* writes, size_t writes_count,
-                  HostPortPair& host_port_pair) {
-    SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                       kPrivacyModeDisabled);
+  void InitSession(MockRead* reads, size_t reads_count,
+                   MockWrite* writes, size_t writes_count,
+                   const SpdySessionKey& key) {
     data_.reset(new OrderedSocketData(reads, reads_count,
                                       writes, writes_count));
     session_deps_.socket_factory->AddSocketDataProvider(data_.get());
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
-    session_ = http_session_->spdy_session_pool()->Get(key, BoundNetLog());
-    transport_params_ = new TransportSocketParams(host_port_pair,
-                                                  MEDIUM, false, false,
-                                                  OnHostResolutionCallback());
-    TestCompletionCallback callback;
-    scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-    EXPECT_EQ(ERR_IO_PENDING,
-              connection->Init(host_port_pair.ToString(),
-                               transport_params_,
-                               MEDIUM,
-                               callback.callback(),
-                               http_session_->GetTransportSocketPool(
-                                   HttpNetworkSession::NORMAL_SOCKET_POOL),
-                               BoundNetLog()));
-    EXPECT_EQ(OK, callback.WaitForResult());
-    return session_->InitializeWithSocket(connection.release(), false, OK);
+    session_ = CreateInsecureSpdySession(http_session_, key, BoundNetLog());
   }
 
   void TestSendCredentials(
@@ -156,7 +122,6 @@ class SpdyHttpStreamTest : public testing::Test,
   scoped_ptr<DeterministicSocketData> deterministic_data_;
   scoped_refptr<HttpNetworkSession> http_session_;
   scoped_refptr<SpdySession> session_;
-  scoped_refptr<TransportSocketParams> transport_params_;
 
  private:
   MockECSignatureCreatorFactory ec_signature_creator_factory_;
@@ -177,7 +142,7 @@ TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
   HostPortPair host_port_pair("www.google.com", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      kPrivacyModeDisabled);
-  EXPECT_EQ(OK, InitSession(reads, arraysize(reads), NULL, 0, host_port_pair));
+  InitSession(reads, arraysize(reads), NULL, 0, key);
 
   SpdyHttpStream stream(session_.get(), false);
   UploadProgress progress = stream.GetUploadProgress();
@@ -200,8 +165,7 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
   HostPortPair host_port_pair("www.google.com", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      kPrivacyModeDisabled);
-  EXPECT_EQ(OK, InitSession(reads, arraysize(reads), writes, arraysize(writes),
-      host_port_pair));
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -224,7 +188,7 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
 
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));
-  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
   EXPECT_FALSE(http_stream->GetLoadTimingInfo(&load_timing_info));
 
   // This triggers the MockWrite and read 2
@@ -238,7 +202,7 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
 
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
-  EXPECT_FALSE(http_session_->spdy_session_pool()->HasSession(key));
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
   EXPECT_TRUE(data()->at_read_eof());
   EXPECT_TRUE(data()->at_write_eof());
 
@@ -277,9 +241,9 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   HostPortPair host_port_pair("www.google.com", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      kPrivacyModeDisabled);
-  ASSERT_EQ(OK, InitSessionDeterministic(reads, arraysize(reads),
-                                         writes, arraysize(writes),
-                                         host_port_pair));
+  InitSessionDeterministic(reads, arraysize(reads),
+                           writes, arraysize(writes),
+                           key);
 
   HttpRequestInfo request1;
   request1.method = "GET";
@@ -296,7 +260,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
                                            CompletionCallback()));
   EXPECT_EQ(ERR_IO_PENDING, http_stream1->SendRequest(headers1, &response1,
                                                       callback1.callback()));
-  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
   HttpRequestInfo request2;
   request2.method = "GET";
@@ -313,7 +277,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
                                            CompletionCallback()));
   EXPECT_EQ(ERR_IO_PENDING, http_stream2->SendRequest(headers2, &response2,
                                                       callback2.callback()));
-  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
   // First write.
   deterministic_data()->RunFor(1);
@@ -368,9 +332,9 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   HostPortPair host_port_pair("www.google.com", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      kPrivacyModeDisabled);
-  EXPECT_EQ(OK, InitSession(vector_as_array(&reads), reads.size(),
-                            vector_as_array(&writes), writes.size(),
-                            host_port_pair));
+  InitSession(vector_as_array(&reads), reads.size(),
+              vector_as_array(&writes), writes.size(),
+              key);
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
   UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
@@ -398,7 +362,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
 
   EXPECT_EQ(ERR_IO_PENDING, http_stream.SendRequest(
       headers, &response, callback.callback()));
-  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
   // This results in writing the post body and reading the response headers.
   callback.WaitForResult();
@@ -410,7 +374,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
 
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
-  EXPECT_FALSE(http_session_->spdy_session_pool()->HasSession(key));
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
   EXPECT_TRUE(data()->at_read_eof());
   EXPECT_TRUE(data()->at_write_eof());
 }
@@ -444,10 +408,9 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   HostPortPair host_port_pair("www.google.com", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      kPrivacyModeDisabled);
-
-  ASSERT_EQ(OK, InitSessionDeterministic(reads, arraysize(reads),
-                                         writes, arraysize(writes),
-                                         host_port_pair));
+  InitSessionDeterministic(reads, arraysize(reads),
+                           writes, arraysize(writes),
+                           key);
 
   UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
 
@@ -472,7 +435,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   // complete asynchronously.
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));
-  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
   // Complete the initial request write and the first chunk.
   deterministic_data()->RunFor(2);
@@ -540,8 +503,7 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
   HostPortPair host_port_pair("www.google.com", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      kPrivacyModeDisabled);
-  EXPECT_EQ(OK, InitSession(reads, arraysize(reads), writes, arraysize(writes),
-      host_port_pair));
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -569,7 +531,7 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
 
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
-  EXPECT_FALSE(http_session_->spdy_session_pool()->HasSession(key));
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
   EXPECT_TRUE(data()->at_read_eof());
   EXPECT_TRUE(data()->at_write_eof());
 }
@@ -686,36 +648,7 @@ void SpdyHttpStreamTest::TestSendCredentials(
   socket_factory->AddSSLSocketDataProvider(&ssl);
   http_session_ = SpdySessionDependencies::SpdyCreateSessionDeterministic(
       &session_deps_);
-  session_ = http_session_->spdy_session_pool()->Get(key, BoundNetLog());
-  transport_params_ = new TransportSocketParams(host_port_pair,
-                                                MEDIUM, false, false,
-                                                OnHostResolutionCallback());
-  TestCompletionCallback callback;
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  SSLConfig ssl_config;
-  scoped_refptr<SOCKSSocketParams> socks_params;
-  scoped_refptr<HttpProxySocketParams> http_proxy_params;
-  scoped_refptr<SSLSocketParams> ssl_params(
-      new SSLSocketParams(transport_params_,
-                          socks_params,
-                          http_proxy_params,
-                          ProxyServer::SCHEME_DIRECT,
-                          host_port_pair,
-                          ssl_config,
-                          0,
-                          false,
-                          false));
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection->Init(host_port_pair.ToString(),
-                             ssl_params,
-                             MEDIUM,
-                             callback.callback(),
-                             http_session_->GetSSLSocketPool(
-                                 HttpNetworkSession::NORMAL_SOCKET_POOL),
-                             BoundNetLog()));
-  callback.WaitForResult();
-  EXPECT_EQ(OK,
-            session_->InitializeWithSocket(connection.release(), true, OK));
+  session_ = CreateSecureSpdySession(http_session_, key, BoundNetLog());
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -734,9 +667,10 @@ void SpdyHttpStreamTest::TestSendCredentials(
   //  GURL new_origin(kUrl2);
   //  EXPECT_TRUE(session_->NeedsCredentials(new_origin));
 
+  TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));
-  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
   data.RunFor(2);
   callback.WaitForResult();
@@ -790,35 +724,9 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      kPrivacyModeDisabled);
 
-  DeterministicSocketData data(reads, arraysize(reads),
-                               writes, arraysize(writes));
-
-  DeterministicMockClientSocketFactory* socket_factory =
-      session_deps_.deterministic_socket_factory.get();
-  socket_factory->AddSocketDataProvider(&data);
-
-  http_session_ = SpdySessionDependencies::SpdyCreateSessionDeterministic(
-      &session_deps_);
-  session_ = http_session_->spdy_session_pool()->Get(key, BoundNetLog());
-  transport_params_ = new TransportSocketParams(host_port_pair,
-                                                MEDIUM, false, false,
-                                                OnHostResolutionCallback());
-
-  TestCompletionCallback callback;
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection->Init(host_port_pair.ToString(),
-                             transport_params_,
-                             MEDIUM,
-                             callback.callback(),
-                             http_session_->GetTransportSocketPool(
-                                 HttpNetworkSession::NORMAL_SOCKET_POOL),
-                             BoundNetLog()));
-
-  callback.WaitForResult();
-  EXPECT_EQ(OK,
-            session_->InitializeWithSocket(connection.release(), false, OK));
+  InitSessionDeterministic(reads, arraysize(reads),
+                           writes, arraysize(writes),
+                           key);
 
   UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
 
@@ -840,12 +748,13 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   HttpResponseInfo response;
   // This will attempt to Write() the initial request and headers, which will
   // complete asynchronously.
+  TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));
-  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
   // Complete the initial request write and first chunk.
-  data.RunFor(2);
+  deterministic_data_->RunFor(2);
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -855,7 +764,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
             http_stream->stream()->send_window_size());
 
   // Read window update.
-  data.RunFor(1);
+  deterministic_data_->RunFor(1);
 
   // Verify the window update.
   ASSERT_TRUE(http_stream->stream() != NULL);
@@ -863,11 +772,11 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
             http_stream->stream()->send_window_size());
 
   // Read response headers.
-  data.RunFor(1);
+  deterministic_data_->RunFor(1);
   ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
 
   // Read and check |chunk1| response.
-  data.RunFor(1);
+  deterministic_data_->RunFor(1);
   scoped_refptr<IOBuffer> buf1(new IOBuffer(kUploadDataSize));
   ASSERT_EQ(kUploadDataSize,
             http_stream->ReadResponseBody(
@@ -875,11 +784,11 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   EXPECT_EQ(kUploadData, std::string(buf1->data(), kUploadDataSize));
 
   // Finish reading the |EOF|.
-  data.RunFor(1);
+  deterministic_data_->RunFor(1);
   ASSERT_TRUE(response.headers.get());
   ASSERT_EQ(200, response.headers->response_code());
-  EXPECT_TRUE(data.at_read_eof());
-  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(deterministic_data_->at_read_eof());
+  EXPECT_TRUE(deterministic_data_->at_write_eof());
 }
 
 TEST_P(SpdyHttpStreamTest, SendCredentialsEC) {
@@ -947,49 +856,9 @@ TEST_P(SpdyHttpStreamTest, DontSendCredentialsForHttpUrlsEC) {
                      ProxyServer::FromURI("proxy.google.com",
                                           ProxyServer::SCHEME_HTTPS),
                      kPrivacyModeDisabled);
-
-  DeterministicMockClientSocketFactory* socket_factory =
-      session_deps_.deterministic_socket_factory.get();
-  DeterministicSocketData data(reads, arraysize(reads),
-                               writes, arraysize(writes));
-  socket_factory->AddSocketDataProvider(&data);
-  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  ssl.channel_id_sent = true;
-  ssl.server_bound_cert_service = server_bound_cert_service.get();
-  ssl.protocol_negotiated = GetParam();
-  socket_factory->AddSSLSocketDataProvider(&ssl);
-  http_session_ = SpdySessionDependencies::SpdyCreateSessionDeterministic(
-      &session_deps_);
-  session_ = http_session_->spdy_session_pool()->Get(key, BoundNetLog());
-  transport_params_ = new TransportSocketParams(host_port_pair,
-                                                MEDIUM, false, false,
-                                                OnHostResolutionCallback());
-  TestCompletionCallback callback;
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  SSLConfig ssl_config;
-  scoped_refptr<SOCKSSocketParams> socks_params;
-  scoped_refptr<HttpProxySocketParams> http_proxy_params;
-  scoped_refptr<SSLSocketParams> ssl_params(
-      new SSLSocketParams(transport_params_,
-                          socks_params,
-                          http_proxy_params,
-                          ProxyServer::SCHEME_DIRECT,
-                          host_port_pair,
-                          ssl_config,
-                          0,
-                          false,
-                          false));
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection->Init(host_port_pair.ToString(),
-                             ssl_params,
-                             MEDIUM,
-                             callback.callback(),
-                             http_session_->GetSSLSocketPool(
-                                 HttpNetworkSession::NORMAL_SOCKET_POOL),
-                             BoundNetLog()));
-  callback.WaitForResult();
-  EXPECT_EQ(OK,
-            session_->InitializeWithSocket(connection.release(), true, OK));
+  InitSessionDeterministic(reads, arraysize(reads),
+                           writes, arraysize(writes),
+                           key);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -1004,11 +873,12 @@ TEST_P(SpdyHttpStreamTest, DontSendCredentialsForHttpUrlsEC) {
       http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
                                     net_log, CompletionCallback()));
 
+  TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));
-  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(key));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
-  data.RunFor(2);
+  deterministic_data_->RunFor(2);
   EXPECT_EQ(OK, callback.WaitForResult());
 
   // Start up second request for resource on a new origin.
@@ -1021,16 +891,16 @@ TEST_P(SpdyHttpStreamTest, DontSendCredentialsForHttpUrlsEC) {
                                      net_log, CompletionCallback()));
   EXPECT_EQ(ERR_IO_PENDING, http_stream2->SendRequest(headers, &response,
                                                       callback.callback()));
-  data.RunFor(1);
+  deterministic_data_->RunFor(1);
   EXPECT_EQ(OK, callback.WaitForResult());
 
   EXPECT_EQ(ERR_IO_PENDING, http_stream2->ReadResponseHeaders(
       callback.callback()));
-  data.RunFor(1);
+  deterministic_data_->RunFor(1);
   EXPECT_EQ(OK, callback.WaitForResult());
   ASSERT_TRUE(response.headers.get() != NULL);
   ASSERT_EQ(200, response.headers->response_code());
-  data.RunFor(1);
+  deterministic_data_->RunFor(1);
   sequenced_worker_pool->Shutdown();
 }
 

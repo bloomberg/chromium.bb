@@ -154,7 +154,6 @@ class IOThread : public content::BrowserThreadDelegate {
     bool http_pipelining_enabled;
     uint16 testing_fixed_http_port;
     uint16 testing_fixed_https_port;
-    Optional<size_t> max_spdy_sessions_per_domain;
     Optional<size_t> initial_max_spdy_concurrent_streams;
     Optional<size_t> max_spdy_concurrent_streams_limit;
     Optional<bool> force_spdy_single_domain;

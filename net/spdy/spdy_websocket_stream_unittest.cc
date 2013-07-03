@@ -237,9 +237,9 @@ class SpdyWebSocketStreamTest
         false));
   }
 
-  int InitSession(MockRead* reads, size_t reads_count,
-                  MockWrite* writes, size_t writes_count,
-                  bool throttling) {
+  void InitSession(MockRead* reads, size_t reads_count,
+                   MockWrite* writes, size_t writes_count,
+                   bool throttling) {
     data_.reset(new OrderedSocketData(reads, reads_count,
                                       writes, writes_count));
     session_deps_.socket_factory->AddSocketDataProvider(data_.get());
@@ -255,22 +255,8 @@ class SpdyWebSocketStreamTest
           spdy_settings_value_to_set_);
     }
 
-    EXPECT_FALSE(spdy_session_pool->HasSession(spdy_session_key_));
-    session_ = spdy_session_pool->Get(spdy_session_key_, BoundNetLog());
-    EXPECT_TRUE(spdy_session_pool->HasSession(spdy_session_key_));
-    transport_params_ = new TransportSocketParams(host_port_pair_, MEDIUM,
-                                                  false, false,
-                                                  OnHostResolutionCallback());
-    TestCompletionCallback callback;
-    scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-    EXPECT_EQ(ERR_IO_PENDING,
-              connection->Init(host_port_pair_.ToString(), transport_params_,
-                               MEDIUM, callback.callback(),
-                               http_session_->GetTransportSocketPool(
-                                   HttpNetworkSession::NORMAL_SOCKET_POOL),
-                               BoundNetLog()));
-    EXPECT_EQ(OK, callback.WaitForResult());
-    return session_->InitializeWithSocket(connection.release(), false, OK);
+    session_ = CreateInsecureSpdySession(
+        http_session_, spdy_session_key_, BoundNetLog());
   }
 
   void SendRequest() {
@@ -292,7 +278,6 @@ class SpdyWebSocketStreamTest
   scoped_ptr<OrderedSocketData> data_;
   scoped_refptr<HttpNetworkSession> http_session_;
   scoped_refptr<SpdySession> session_;
-  scoped_refptr<TransportSocketParams> transport_params_;
   scoped_ptr<SpdyWebSocketStream> websocket_stream_;
   SpdyStreamId stream_id_;
   SpdyStreamId created_stream_id_;
@@ -341,8 +326,7 @@ TEST_P(SpdyWebSocketStreamTest, Basic) {
     MockRead(SYNCHRONOUS, 0, 8)  // EOF cause OnCloseSpdyStream event.
   };
 
-  EXPECT_EQ(OK, InitSession(reads, arraysize(reads),
-                            writes, arraysize(writes), false));
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), false);
 
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
@@ -395,8 +379,8 @@ TEST_P(SpdyWebSocketStreamTest, Basic) {
   EXPECT_EQ(OK, events[6].result);
 
   // EOF close SPDY session.
-  EXPECT_TRUE(!http_session_->spdy_session_pool()->HasSession(
-      spdy_session_key_));
+  EXPECT_FALSE(
+      HasSpdySession(http_session_->spdy_session_pool(), spdy_session_key_));
   EXPECT_TRUE(data()->at_read_eof());
   EXPECT_TRUE(data()->at_write_eof());
 }
@@ -414,8 +398,7 @@ TEST_P(SpdyWebSocketStreamTest, DestructionBeforeClose) {
     MockRead(ASYNC, ERR_IO_PENDING, 5)
   };
 
-  EXPECT_EQ(OK, InitSession(reads, arraysize(reads),
-                            writes, arraysize(writes), false));
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), false);
 
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
@@ -457,8 +440,8 @@ TEST_P(SpdyWebSocketStreamTest, DestructionBeforeClose) {
             events[3].event_type);
   EXPECT_EQ(static_cast<int>(kMessageFrameLength), events[3].result);
 
-  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(
-      spdy_session_key_));
+  EXPECT_TRUE(
+      HasSpdySession(http_session_->spdy_session_pool(), spdy_session_key_));
   EXPECT_TRUE(data()->at_read_eof());
   EXPECT_TRUE(data()->at_write_eof());
 }
@@ -477,8 +460,7 @@ TEST_P(SpdyWebSocketStreamTest, DestructionAfterExplicitClose) {
     MockRead(ASYNC, ERR_IO_PENDING, 6)
   };
 
-  EXPECT_EQ(OK, InitSession(reads, arraysize(reads),
-                            writes, arraysize(writes), false));
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), false);
 
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
@@ -520,8 +502,8 @@ TEST_P(SpdyWebSocketStreamTest, DestructionAfterExplicitClose) {
   EXPECT_EQ(static_cast<int>(kMessageFrameLength), events[3].result);
   EXPECT_EQ(SpdyWebSocketStreamEvent::EVENT_CLOSE, events[4].event_type);
 
-  EXPECT_TRUE(http_session_->spdy_session_pool()->HasSession(
-      spdy_session_key_));
+  EXPECT_TRUE(
+      HasSpdySession(http_session_->spdy_session_pool(), spdy_session_key_));
 }
 
 TEST_P(SpdyWebSocketStreamTest, IOPending) {
@@ -546,8 +528,7 @@ TEST_P(SpdyWebSocketStreamTest, IOPending) {
     MockRead(SYNCHRONOUS, 0, 11)  // EOF cause OnCloseSpdyStream event.
   };
 
-  EXPECT_EQ(OK, InitSession(reads, arraysize(reads),
-                            writes, arraysize(writes), true));
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), true);
 
   // Create a dummy WebSocketStream which cause ERR_IO_PENDING to another
   // WebSocketStream under test.
@@ -621,8 +602,8 @@ TEST_P(SpdyWebSocketStreamTest, IOPending) {
   EXPECT_EQ(OK, events[7].result);
 
   // EOF close SPDY session.
-  EXPECT_TRUE(!http_session_->spdy_session_pool()->HasSession(
-      spdy_session_key_));
+  EXPECT_FALSE(
+      HasSpdySession(http_session_->spdy_session_pool(), spdy_session_key_));
   EXPECT_TRUE(data()->at_read_eof());
   EXPECT_TRUE(data()->at_write_eof());
 }

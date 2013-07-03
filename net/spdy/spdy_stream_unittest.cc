@@ -47,31 +47,14 @@ class SpdyStreamTest : public ::testing::Test,
 
   SpdyStreamTest()
       : spdy_util_(GetParam()),
-        host_port_pair_("www.google.com", 80),
         session_deps_(GetParam()),
         offset_(0) {}
 
-  scoped_refptr<SpdySession> CreateSpdySession() {
-    SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
+  scoped_refptr<SpdySession> CreateDefaultSpdySession() {
+    SpdySessionKey key(HostPortPair("www.google.com", 80),
+                       ProxyServer::Direct(),
                        kPrivacyModeDisabled);
-    scoped_refptr<SpdySession> session(
-        session_->spdy_session_pool()->Get(key, BoundNetLog()));
-    return session;
-  }
-
-  void InitializeSpdySession(const scoped_refptr<SpdySession>& session,
-                             const HostPortPair& host_port_pair) {
-    scoped_refptr<TransportSocketParams> transport_params(
-        new TransportSocketParams(host_port_pair, LOWEST, false, false,
-                                  OnHostResolutionCallback()));
-
-    scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-    EXPECT_EQ(OK, connection->Init(host_port_pair_.ToString(), transport_params,
-                                   LOWEST, CompletionCallback(),
-                                   session_->GetTransportSocketPool(
-                                       HttpNetworkSession::NORMAL_SOCKET_POOL),
-                                   BoundNetLog()));
-    session->InitializeWithSocket(connection.release(), false, OK);
+    return CreateInsecureSpdySession(session_, key, BoundNetLog());
   }
 
   virtual void TearDown() {
@@ -116,7 +99,6 @@ class SpdyStreamTest : public ::testing::Test,
   }
 
   SpdyTestUtil spdy_util_;
-  HostPortPair host_port_pair_;
   SpdySessionDependencies session_deps_;
   scoped_refptr<HttpNetworkSession> session_;
 
@@ -163,9 +145,7 @@ TEST_P(SpdyStreamTest, SendDataAfterOpen) {
 
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  scoped_refptr<SpdySession> session(CreateSpdySession());
-
-  InitializeSpdySession(session, host_port_pair_);
+  scoped_refptr<SpdySession> session(CreateDefaultSpdySession());
 
   base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(
@@ -197,7 +177,6 @@ TEST_P(SpdyStreamTest, SendDataAfterOpen) {
 
 TEST_P(SpdyStreamTest, PushedStream) {
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
-  scoped_refptr<SpdySession> spdy_session(CreateSpdySession());
 
   AddReadEOF();
 
@@ -208,8 +187,7 @@ TEST_P(SpdyStreamTest, PushedStream) {
 
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  InitializeSpdySession(spdy_session, host_port_pair_);
-  BoundNetLog net_log;
+  scoped_refptr<SpdySession> spdy_session(CreateDefaultSpdySession());
 
   // Conjure up a stream.
   SpdyStream stream(SPDY_PUSH_STREAM,
@@ -218,7 +196,7 @@ TEST_P(SpdyStreamTest, PushedStream) {
                     DEFAULT_PRIORITY,
                     kSpdyStreamInitialWindowSize,
                     kSpdyStreamInitialWindowSize,
-                    net_log);
+                    BoundNetLog());
   stream.set_stream_id(2);
   EXPECT_FALSE(stream.HasUrl());
 
@@ -244,8 +222,7 @@ TEST_P(SpdyStreamTest, PushedStream) {
 
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy_util_.GetStatusKey()));
 
-  spdy_session->CloseSessionOnError(
-      ERR_CONNECTION_CLOSED, true, "Closing session");
+  spdy_session->CloseSessionOnError(ERR_CONNECTION_CLOSED, "Closing session");
 }
 
 TEST_P(SpdyStreamTest, StreamError) {
@@ -281,9 +258,7 @@ TEST_P(SpdyStreamTest, StreamError) {
 
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  scoped_refptr<SpdySession> session(CreateSpdySession());
-
-  InitializeSpdySession(session, host_port_pair_);
+  scoped_refptr<SpdySession> session(CreateDefaultSpdySession());
 
   base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(
@@ -367,9 +342,7 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
 
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  scoped_refptr<SpdySession> session(CreateSpdySession());
-
-  InitializeSpdySession(session, host_port_pair_);
+  scoped_refptr<SpdySession> session(CreateDefaultSpdySession());
 
   base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(
@@ -432,9 +405,7 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
 
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  scoped_refptr<SpdySession> session(CreateSpdySession());
-
-  InitializeSpdySession(session, host_port_pair_);
+  scoped_refptr<SpdySession> session(CreateDefaultSpdySession());
 
   base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(
@@ -494,9 +465,7 @@ TEST_P(SpdyStreamTest, UpperCaseHeaders) {
 
   session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
-  scoped_refptr<SpdySession> session(CreateSpdySession());
-
-  InitializeSpdySession(session, host_port_pair_);
+  scoped_refptr<SpdySession> session(CreateDefaultSpdySession());
 
   base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(
@@ -554,9 +523,7 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersOnPush) {
 
   session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
-  scoped_refptr<SpdySession> session(CreateSpdySession());
-
-  InitializeSpdySession(session, host_port_pair_);
+  scoped_refptr<SpdySession> session(CreateDefaultSpdySession());
 
   base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(
@@ -631,9 +598,7 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
 
   session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
-  scoped_refptr<SpdySession> session(CreateSpdySession());
-
-  InitializeSpdySession(session, host_port_pair_);
+  scoped_refptr<SpdySession> session(CreateDefaultSpdySession());
 
   base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(
@@ -713,9 +678,7 @@ TEST_P(SpdyStreamTest, DuplicateHeaders) {
 
   session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
-  scoped_refptr<SpdySession> session(CreateSpdySession());
-
-  InitializeSpdySession(session, host_port_pair_);
+  scoped_refptr<SpdySession> session(CreateDefaultSpdySession());
 
   base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(
@@ -784,10 +747,8 @@ TEST_P(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
 
   session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
-  scoped_refptr<SpdySession> session(CreateSpdySession());
+  scoped_refptr<SpdySession> session(CreateDefaultSpdySession());
   GURL url(kStreamUrl);
-
-  InitializeSpdySession(session, host_port_pair_);
 
   base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(
@@ -877,9 +838,7 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
 
   session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
-  scoped_refptr<SpdySession> session(CreateSpdySession());
-
-  InitializeSpdySession(session, host_port_pair_);
+  scoped_refptr<SpdySession> session(CreateDefaultSpdySession());
 
   base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(
@@ -971,9 +930,7 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
 
   session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
-  scoped_refptr<SpdySession> session(CreateSpdySession());
-
-  InitializeSpdySession(session, host_port_pair_);
+  scoped_refptr<SpdySession> session(CreateDefaultSpdySession());
 
   base::WeakPtr<SpdyStream> stream =
       CreateStreamSynchronously(

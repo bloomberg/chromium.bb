@@ -1424,9 +1424,6 @@ const char kUseSpdy[]                       = "use-spdy";
 // This will only work if asynchronous spell checking is not disabled.
 const char kUseSpellingSuggestions[]        = "use-spelling-suggestions";
 
-// Sets the maximum SPDY sessions per domain.
-const char kMaxSpdySessionsPerDomain[]      = "max-spdy-sessions-per-domain";
-
 // Sets the maximum concurrent streams over a SPDY session.
 const char kMaxSpdyConcurrentStreams[]      = "max-spdy-concurrent-streams";
 

@@ -562,10 +562,9 @@ class SpdyNetworkTransactionTest
                        kPrivacyModeDisabled);
     BoundNetLog log;
     const scoped_refptr<HttpNetworkSession>& session = helper.session();
-    SpdySessionPool* pool(session->spdy_session_pool());
-    EXPECT_TRUE(pool->HasSession(key));
-    scoped_refptr<SpdySession> spdy_session(pool->Get(key, log));
-    ASSERT_TRUE(spdy_session.get() != NULL);
+    scoped_refptr<SpdySession> spdy_session =
+        session->spdy_session_pool()->GetIfExists(key, log);
+    ASSERT_TRUE(spdy_session != NULL);
     EXPECT_EQ(0u, spdy_session->num_active_streams());
     EXPECT_EQ(0u, spdy_session->num_unclaimed_pushed_streams());
   }
@@ -4603,12 +4602,12 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   HostPortPair host_port_pair("www.google.com", helper.port());
   SpdySessionKey session_pool_key_direct(
       host_port_pair, ProxyServer::Direct(), kPrivacyModeDisabled);
-  EXPECT_TRUE(spdy_session_pool->HasSession(session_pool_key_direct));
+  EXPECT_TRUE(HasSpdySession(spdy_session_pool, session_pool_key_direct));
   SpdySessionKey session_pool_key_proxy(
       host_port_pair,
       ProxyServer::FromURI("www.foo.com", ProxyServer::SCHEME_HTTP),
       kPrivacyModeDisabled);
-  EXPECT_FALSE(spdy_session_pool->HasSession(session_pool_key_proxy));
+  EXPECT_FALSE(HasSpdySession(spdy_session_pool, session_pool_key_proxy));
 
   // Set up data for the proxy connection.
   const char kConnect443[] = {"CONNECT www.google.com:443 HTTP/1.1\r\n"

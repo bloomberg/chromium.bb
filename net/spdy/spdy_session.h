@@ -207,7 +207,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
               bool enable_credential_frames,
               bool enable_compression,
               bool enable_ping_based_connection_checking,
-              NextProto default_protocol_,
+              NextProto default_protocol,
               size_t stream_initial_recv_window_size,
               size_t initial_max_concurrent_streams,
               size_t max_concurrent_streams_limit,
@@ -240,7 +240,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // testing, setting is_secure to false allows initialization with a
   // pre-existing TCP socket.
   // Returns OK on success, or an error on failure.
-  Error InitializeWithSocket(ClientSocketHandle* connection,
+  Error InitializeWithSocket(scoped_ptr<ClientSocketHandle> connection,
                              bool is_secure,
                              int certificate_error_code);
 
@@ -340,9 +340,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // |remove_from_pool| indicates whether to also remove the session from the
   // session pool.
   // |description| indicates the reason for the error.
-  void CloseSessionOnError(Error err,
-                           bool remove_from_pool,
-                           const std::string& description);
+  void CloseSessionOnError(Error err, const std::string& description);
 
   // Retrieves information on the current state of the SPDY session as a
   // Value.  Caller takes possession of the returned value.
@@ -368,10 +366,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // session has been used to send/receive data at all.
   bool GetLoadTimingInfo(SpdyStreamId stream_id,
                          LoadTimingInfo* load_timing_info) const;
-
-  void set_spdy_session_pool(SpdySessionPool* pool) {
-    spdy_session_pool_ = NULL;
-  }
 
   // Returns true if session is not currently active
   bool is_active() const {

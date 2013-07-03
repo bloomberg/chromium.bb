@@ -593,14 +593,14 @@ int WebSocketJob::TrySpdyStream() {
   SpdySessionPool* spdy_pool = session->spdy_session_pool();
   PrivacyMode privacy_mode = socket_->privacy_mode();
   const SpdySessionKey key(HostPortPair::FromURL(socket_->url()),
-                               socket_->proxy_server(), privacy_mode);
-  if (!spdy_pool->HasSession(key))
-    return OK;
-
+                           socket_->proxy_server(), privacy_mode);
   // Forbid wss downgrade to SPDY without SSL.
   // TODO(toyoshim): Does it realize the same policy with HTTP?
   scoped_refptr<SpdySession> spdy_session =
-      spdy_pool->Get(key, *socket_->net_log());
+      spdy_pool->GetIfExists(key, *socket_->net_log());
+  if (!spdy_session)
+    return OK;
+
   SSLInfo ssl_info;
   bool was_npn_negotiated;
   NextProto protocol_negotiated = kProtoUnknown;

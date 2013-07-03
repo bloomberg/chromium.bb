@@ -70,7 +70,6 @@ HttpNetworkSession::Params::Params()
       http_pipelining_enabled(false),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
-      max_spdy_sessions_per_domain(0),
       force_spdy_single_domain(false),
       enable_spdy_ip_pooling(true),
       enable_spdy_credential_frames(false),
@@ -114,7 +113,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,
                          params.http_server_properties,
-                         params.max_spdy_sessions_per_domain,
                          params.force_spdy_single_domain,
                          params.enable_spdy_ip_pooling,
                          params.enable_spdy_credential_frames,
@@ -208,7 +206,7 @@ void HttpNetworkSession::CloseAllConnections() {
 void HttpNetworkSession::CloseIdleConnections() {
   normal_socket_pool_manager_->CloseIdleSockets();
   websocket_socket_pool_manager_->CloseIdleSockets();
-  spdy_session_pool_.CloseIdleSessions();
+  spdy_session_pool_.CloseCurrentIdleSessions();
 }
 
 ClientSocketPoolManager* HttpNetworkSession::GetSocketPoolManager(

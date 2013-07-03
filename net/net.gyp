@@ -1774,6 +1774,7 @@
         'spdy/spdy_protocol_test.cc',
         'spdy/spdy_proxy_client_socket_unittest.cc',
         'spdy/spdy_read_queue_unittest.cc',
+        'spdy/spdy_session_pool_unittest.cc',
         'spdy/spdy_session_test_util.cc',
         'spdy/spdy_session_test_util.h',
         'spdy/spdy_session_unittest.cc',
@@ -2038,12 +2039,10 @@
                   'cookies/cookie_store_unittest.h',
                   'http/http_auth_controller_unittest.cc',
                   'http/http_network_layer_unittest.cc',
-                  'http/http_network_transaction_spdy2_unittest.cc',
-                  'http/http_network_transaction_spdy3_unittest.cc',
-                  'spdy/spdy_http_stream_spdy2_unittest.cc',
-                  'spdy/spdy_http_stream_spdy3_unittest.cc',
-                  'spdy/spdy_proxy_client_socket_spdy3_unittest.cc',
-                  'spdy/spdy_session_spdy3_unittest.cc',
+                  'http/http_network_transaction_unittest.cc',
+                  'spdy/spdy_http_stream_unittest.cc',
+                  'spdy/spdy_proxy_client_socket_unittest.cc',
+                  'spdy/spdy_session_unittest.cc',
 
                   # These tests crash when run with coverage turned on:
                   # http://crbug.com/177203

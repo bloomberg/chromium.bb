@@ -757,43 +757,15 @@ TEST_F(SSLClientSocketPoolTest, IPPooling) {
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
   CreatePool(true /* tcp pool */, false, false);
-  scoped_refptr<SSLSocketParams> params = SSLParams(ProxyServer::SCHEME_DIRECT,
-                                                    true);
+  scoped_refptr<SpdySession> spdy_session =
+      CreateSecureSpdySession(session_, test_hosts[0].key, BoundNetLog());
 
-  scoped_ptr<ClientSocketHandle> handle(new ClientSocketHandle());
-  TestCompletionCallback callback;
-  int rv = handle->Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_FALSE(handle->is_initialized());
-  EXPECT_FALSE(handle->socket());
-
-  EXPECT_EQ(OK, callback.WaitForResult());
-  EXPECT_TRUE(handle->is_initialized());
-  EXPECT_TRUE(handle->socket());
-
-  SSLClientSocket* ssl_socket = static_cast<SSLClientSocket*>(handle->socket());
-  EXPECT_TRUE(ssl_socket->WasNpnNegotiated());
-  std::string proto;
-  std::string server_protos;
-  ssl_socket->GetNextProto(&proto, &server_protos);
-  EXPECT_EQ(SSLClientSocket::NextProtoFromString(proto),
-            kProtoSPDY2);
-
-  // TODO(rtenneti): MockClientSocket::GetPeerAddress returns 0 as the port
-  // number. Fix it to return port 80 and then use GetPeerAddress to AddAlias.
-  SpdySessionPoolPeer pool_peer(session_->spdy_session_pool());
-  pool_peer.AddAlias(test_hosts[0].addresses.front(), test_hosts[0].key);
-
-  scoped_refptr<SpdySession> spdy_session;
-  rv = session_->spdy_session_pool()->GetSpdySessionFromSocket(
-    test_hosts[0].key, handle.release(), BoundNetLog(), 0,
-      &spdy_session, true);
-  EXPECT_EQ(0, rv);
-
-  EXPECT_TRUE(session_->spdy_session_pool()->HasSession(test_hosts[0].key));
-  EXPECT_FALSE(session_->spdy_session_pool()->HasSession(test_hosts[1].key));
-  EXPECT_TRUE(session_->spdy_session_pool()->HasSession(test_hosts[2].key));
+  EXPECT_TRUE(
+      HasSpdySession(session_->spdy_session_pool(), test_hosts[0].key));
+  EXPECT_FALSE(
+      HasSpdySession(session_->spdy_session_pool(), test_hosts[1].key));
+  EXPECT_TRUE(
+      HasSpdySession(session_->spdy_session_pool(), test_hosts[2].key));
 
   session_->spdy_session_pool()->CloseAllSessions();
 }
@@ -838,41 +810,13 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
   socket_factory_.AddSSLSocketDataProvider(ssl);
 
   CreatePool(true /* tcp pool */, false, false);
-  scoped_refptr<SSLSocketParams> params = SSLParams(ProxyServer::SCHEME_DIRECT,
-                                                    true);
+  scoped_refptr<SpdySession> spdy_session =
+      CreateSecureSpdySession(session_, test_hosts[0].key, BoundNetLog());
 
-  scoped_ptr<ClientSocketHandle> handle(new ClientSocketHandle());
-  rv = handle->Init(
-      "a", params, MEDIUM, callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_FALSE(handle->is_initialized());
-  EXPECT_FALSE(handle->socket());
-
-  EXPECT_EQ(OK, callback.WaitForResult());
-  EXPECT_TRUE(handle->is_initialized());
-  EXPECT_TRUE(handle->socket());
-
-  SSLClientSocket* ssl_socket = static_cast<SSLClientSocket*>(handle->socket());
-  EXPECT_TRUE(ssl_socket->WasNpnNegotiated());
-  std::string proto;
-  std::string server_protos;
-  ssl_socket->GetNextProto(&proto, &server_protos);
-  EXPECT_EQ(SSLClientSocket::NextProtoFromString(proto),
-            kProtoSPDY2);
-
-  // TODO(rtenneti): MockClientSocket::GetPeerAddress returns 0 as the port
-  // number. Fix it to return port 80 and then use GetPeerAddress to AddAlias.
-  SpdySessionPoolPeer pool_peer(session_->spdy_session_pool());
-  pool_peer.AddAlias(test_hosts[0].addresses.front(), test_hosts[0].key);
-
-  scoped_refptr<SpdySession> spdy_session;
-  rv = session_->spdy_session_pool()->GetSpdySessionFromSocket(
-    test_hosts[0].key, handle.release(), BoundNetLog(), 0,
-      &spdy_session, true);
-  EXPECT_EQ(0, rv);
-
-  EXPECT_TRUE(session_->spdy_session_pool()->HasSession(test_hosts[0].key));
-  EXPECT_FALSE(session_->spdy_session_pool()->HasSession(test_hosts[1].key));
+  EXPECT_TRUE(
+      HasSpdySession(session_->spdy_session_pool(), test_hosts[0].key));
+  EXPECT_FALSE(
+      HasSpdySession(session_->spdy_session_pool(), test_hosts[1].key));
 
   session_->spdy_session_pool()->CloseAllSessions();
 }

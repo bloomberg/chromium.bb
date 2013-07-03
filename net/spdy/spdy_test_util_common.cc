@@ -17,10 +17,12 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/socket/transport_client_socket_pool.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
+#include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_stream.h"
 
 namespace net {
@@ -28,8 +30,9 @@ namespace net {
 namespace {
 
 bool next_proto_is_spdy(NextProto next_proto) {
-  return next_proto >= kProtoSPDYMinimumVersion &&
-         next_proto <= kProtoSPDYMaximumVersion;
+  // TODO(akalin): Change this to kProtoSPDYMinimumVersion once we
+  // stop supporting SPDY/1.
+  return next_proto >= kProtoSPDY2 && next_proto <= kProtoSPDYMaximumVersion;
 }
 
 // Parses a URL into the scheme, host, and path components required for a
@@ -478,22 +481,165 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
 SpdyURLRequestContext::~SpdyURLRequestContext() {
 }
 
-SpdySessionPoolPeer::SpdySessionPoolPeer(SpdySessionPool* pool) : pool_(pool) {
+bool HasSpdySession(SpdySessionPool* pool, const SpdySessionKey& key) {
+  return pool->GetIfExists(key, BoundNetLog()) != NULL;
 }
 
-void SpdySessionPoolPeer::AddAlias(
-    const IPEndPoint& address,
-    const SpdySessionKey& key) {
-  pool_->AddAlias(address, key);
+namespace {
+
+scoped_refptr<SpdySession> CreateSpdySessionHelper(
+    const scoped_refptr<HttpNetworkSession>& http_session,
+    const SpdySessionKey& key,
+    const BoundNetLog& net_log,
+    bool is_secure) {
+  EXPECT_FALSE(HasSpdySession(http_session->spdy_session_pool(), key));
+
+  scoped_refptr<TransportSocketParams> transport_params(
+      new TransportSocketParams(
+          key.host_port_pair(), MEDIUM, false, false,
+          OnHostResolutionCallback()));
+
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  TestCompletionCallback callback;
+
+  int rv = ERR_UNEXPECTED;
+  if (is_secure) {
+    SSLConfig ssl_config;
+    scoped_refptr<SOCKSSocketParams> socks_params;
+    scoped_refptr<HttpProxySocketParams> http_proxy_params;
+    scoped_refptr<SSLSocketParams> ssl_params(
+        new SSLSocketParams(transport_params,
+                            socks_params,
+                            http_proxy_params,
+                            ProxyServer::SCHEME_DIRECT,
+                            key.host_port_pair(),
+                            ssl_config,
+                            0,
+                            false,
+                            false));
+    rv = connection->Init(key.host_port_pair().ToString(),
+                          ssl_params,
+                          MEDIUM,
+                          callback.callback(),
+                          http_session->GetSSLSocketPool(
+                              HttpNetworkSession::NORMAL_SOCKET_POOL),
+                          net_log);
+  } else {
+    rv = connection->Init(key.host_port_pair().ToString(),
+                          transport_params,
+                          MEDIUM,
+                          callback.callback(),
+                          http_session->GetTransportSocketPool(
+                              HttpNetworkSession::NORMAL_SOCKET_POOL),
+                          net_log);
+  }
+
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+
+  EXPECT_EQ(OK, rv);
+
+  scoped_refptr<SpdySession> spdy_session;
+  EXPECT_EQ(
+      OK,
+      http_session->spdy_session_pool()->GetSpdySessionFromSocket(
+          key, connection.Pass(), net_log, OK, &spdy_session,
+          is_secure));
+  EXPECT_TRUE(HasSpdySession(http_session->spdy_session_pool(), key));
+  return spdy_session;
+}
+
+}  // namespace
+
+scoped_refptr<SpdySession> CreateInsecureSpdySession(
+    const scoped_refptr<HttpNetworkSession>& http_session,
+    const SpdySessionKey& key,
+    const BoundNetLog& net_log) {
+  return CreateSpdySessionHelper(http_session, key, net_log,
+                                 false /* is_secure */);
+}
+
+scoped_refptr<SpdySession> CreateSecureSpdySession(
+    const scoped_refptr<HttpNetworkSession>& http_session,
+    const SpdySessionKey& key,
+    const BoundNetLog& net_log) {
+  return CreateSpdySessionHelper(http_session, key, net_log,
+                                 true /* is_secure */);
+}
+
+namespace {
+
+// A ClientSocket used for CreateFakeSpdySession() below.
+class FakeSpdySessionClientSocket : public MockClientSocket {
+ public:
+  FakeSpdySessionClientSocket() : MockClientSocket(BoundNetLog()) {}
+  virtual ~FakeSpdySessionClientSocket() {}
+
+  virtual int Read(IOBuffer* buf, int buf_len,
+                   const CompletionCallback& callback) OVERRIDE {
+    return ERR_IO_PENDING;
+  }
+
+  virtual int Write(IOBuffer* buf, int buf_len,
+                    const CompletionCallback& callback) OVERRIDE {
+    return ERR_IO_PENDING;
+  }
+
+  // Return kProtoUnknown to use the pool's default protocol.
+  virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
+    return kProtoUnknown;
+  }
+
+  // The functions below are not expected to be called.
+
+  virtual int Connect(const CompletionCallback& callback) OVERRIDE {
+    ADD_FAILURE();
+    return ERR_UNEXPECTED;
+  }
+
+  virtual bool WasEverUsed() const OVERRIDE {
+    ADD_FAILURE();
+    return false;
+  }
+
+  virtual bool UsingTCPFastOpen() const OVERRIDE {
+    ADD_FAILURE();
+    return false;
+  }
+
+  virtual bool WasNpnNegotiated() const OVERRIDE {
+    ADD_FAILURE();
+    return false;
+  }
+
+  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE {
+    ADD_FAILURE();
+    return false;
+  }
+};
+
+}  // namespace
+
+scoped_refptr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
+                                                 const SpdySessionKey& key) {
+  EXPECT_FALSE(HasSpdySession(pool, key));
+  scoped_refptr<SpdySession> spdy_session;
+  scoped_ptr<ClientSocketHandle> handle(new ClientSocketHandle());
+  handle->set_socket(new FakeSpdySessionClientSocket());
+  EXPECT_EQ(
+      OK,
+      pool->GetSpdySessionFromSocket(
+          key, handle.Pass(), BoundNetLog(), OK, &spdy_session,
+          true /* is_secure */));
+  EXPECT_TRUE(HasSpdySession(pool, key));
+  return spdy_session;
+}
+
+SpdySessionPoolPeer::SpdySessionPoolPeer(SpdySessionPool* pool) : pool_(pool) {
 }
 
 void SpdySessionPoolPeer::RemoveAliases(const SpdySessionKey& key) {
   pool_->RemoveAliases(key);
-}
-
-void SpdySessionPoolPeer::RemoveSpdySession(
-    const scoped_refptr<SpdySession>& session) {
-  pool_->Remove(session);
 }
 
 void SpdySessionPoolPeer::DisableDomainAuthenticationVerification() {

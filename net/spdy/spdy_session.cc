@@ -57,6 +57,7 @@ const int kMinPushedStreamLifetimeSeconds = 300;
 SpdyMajorVersion NPNToSpdyVersion(NextProto next_proto) {
   switch (next_proto) {
     case kProtoSPDY2:
+    case kProtoSPDY21:
       return SPDY2;
     case kProtoSPDY3:
     case kProtoSPDY31:
@@ -440,20 +441,21 @@ SpdySession::~SpdySession() {
 }
 
 Error SpdySession::InitializeWithSocket(
-    ClientSocketHandle* connection,
+    scoped_ptr<ClientSocketHandle> connection,
     bool is_secure,
     int certificate_error_code) {
   base::StatsCounter spdy_sessions("spdy.sessions");
   spdy_sessions.Increment();
 
   state_ = STATE_DO_READ;
-  connection_.reset(connection);
+  connection_ = connection.Pass();
   connection_->AddLayeredPool(this);
   is_secure_ = is_secure;
   certificate_error_code_ = certificate_error_code;
 
   NextProto protocol = default_protocol_;
-  NextProto protocol_negotiated = connection->socket()->GetNegotiatedProtocol();
+  NextProto protocol_negotiated =
+      connection_->socket()->GetNegotiatedProtocol();
   if (protocol_negotiated != kProtoUnknown) {
     protocol = protocol_negotiated;
   }
@@ -466,8 +468,10 @@ Error SpdySession::InitializeWithSocket(
                                             host_port_pair().ToString()));
   }
 
+  // TODO(akalin): Change this to kProtoSPDYMinimumVersion once we
+  // stop supporting SPDY/1.
   DCHECK_GE(protocol, kProtoSPDY2);
-  DCHECK_LE(protocol, kProtoSPDY4a2);
+  DCHECK_LE(protocol, kProtoSPDYMaximumVersion);
   if (protocol >= kProtoSPDY31) {
     flow_control_state_ = FLOW_CONTROL_STREAM_AND_SESSION;
     session_send_window_size_ = kSpdySessionInitialWindowSize;
@@ -532,7 +536,6 @@ int SpdySession::GetPushStream(
         PROTOCOL_ERROR_REQUEST_FOR_SECURE_CONTENT_OVER_INSECURE_SESSION);
     CloseSessionOnError(
         static_cast<Error>(certificate_error_code_),
-        true,
         "Tried to get SPDY stream for secure content over an unauthenticated "
         "session.");
     return ERR_SPDY_PROTOCOL_ERROR;
@@ -573,7 +576,6 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
         PROTOCOL_ERROR_REQUEST_FOR_SECURE_CONTENT_OVER_INSECURE_SESSION);
     CloseSessionOnError(
         static_cast<Error>(certificate_error_code_),
-        true,
         "Tried to create SPDY stream for secure content over an "
         "unauthenticated session.");
     return ERR_SPDY_PROTOCOL_ERROR;
@@ -587,7 +589,6 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
     if (!connection_->socket()->IsConnected()) {
       CloseSessionOnError(
           ERR_CONNECTION_CLOSED,
-          true,
           "Tried to create SPDY stream for a closed socket connection.");
       return ERR_CONNECTION_CLOSED;
     }
@@ -1095,7 +1096,7 @@ int SpdySession::DoReadComplete(int result) {
                                   total_bytes_received_, 1, 100000000, 50);
       error = ERR_CONNECTION_CLOSED;
     }
-    CloseSessionOnError(error, true, "result is <= 0.");
+    CloseSessionOnError(error, "result is <= 0.");
     return ERR_CONNECTION_CLOSED;
   }
 
@@ -1139,7 +1140,7 @@ void SpdySession::OnWriteComplete(int result) {
     in_flight_write_frame_type_ = DATA;
     in_flight_write_frame_size_ = 0;
     in_flight_write_stream_.reset();
-    CloseSessionOnError(static_cast<Error>(result), true, "Write error");
+    CloseSessionOnError(static_cast<Error>(result), "Write error");
     return;
   }
 
@@ -1338,7 +1339,6 @@ int SpdySession::GetNewStreamId() {
 }
 
 void SpdySession::CloseSessionOnError(Error err,
-                                      bool remove_from_pool,
                                       const std::string& description) {
   // Closing all streams can have a side-effect of dropping the last reference
   // to |this|.  Hold a reference through this function.
@@ -1358,8 +1358,9 @@ void SpdySession::CloseSessionOnError(Error err,
                                 total_bytes_received_, 1, 100000000, 50);
     state_ = STATE_CLOSED;
     error_ = err;
-    if (remove_from_pool)
-      RemoveFromPool();
+    // TODO(akalin): Move this after CloseAllStreams() once we're
+    // owned by the pool.
+    RemoveFromPool();
     CloseAllStreams(err);
   }
 }
@@ -1574,7 +1575,7 @@ void SpdySession::OnError(SpdyFramer::SpdyError error_code) {
       static_cast<SpdyProtocolErrorDetails>(error_code));
   std::string description = base::StringPrintf(
       "SPDY_ERROR error_code: %d.", error_code);
-  CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, true, description);
+  CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, description);
 }
 
 void SpdySession::OnStreamError(SpdyStreamId stream_id,
@@ -1965,6 +1966,7 @@ void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
                  active_streams_.size(),
                  unclaimed_pushed_streams_.size(),
                  status));
+  // TODO(akalin): Move into a "going away" state in the pool instead.
   RemoveFromPool();
   CloseAllStreamsAfter(last_accepted_stream_id, ERR_ABORTED);
 }
@@ -1983,8 +1985,7 @@ void SpdySession::OnPing(uint32 unique_id) {
   --pings_in_flight_;
   if (pings_in_flight_ < 0) {
     RecordProtocolErrorHistogram(PROTOCOL_ERROR_UNEXPECTED_PING);
-    CloseSessionOnError(
-        ERR_SPDY_PROTOCOL_ERROR, true, "pings_in_flight_ is < 0.");
+    CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "pings_in_flight_ is < 0.");
     pings_in_flight_ = 0;
     return;
   }
@@ -2018,7 +2019,6 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
       RecordProtocolErrorHistogram(PROTOCOL_ERROR_INVALID_WINDOW_UPDATE_SIZE);
       CloseSessionOnError(
           ERR_SPDY_PROTOCOL_ERROR,
-          true,
           "Received WINDOW_UPDATE with an invalid delta_window_size " +
           base::UintToString(delta_window_size));
       return;
@@ -2269,7 +2269,7 @@ void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
   base::TimeDelta delay = hung_interval_ - (now - last_activity_time_);
 
   if (delay.InMilliseconds() < 0 || last_activity_time_ < last_check_time) {
-    CloseSessionOnError(ERR_SPDY_PING_FAILED, true, "Failed ping.");
+    CloseSessionOnError(ERR_SPDY_PING_FAILED, "Failed ping.");
     // Track all failed PING messages in a separate bucket.
     const base::TimeDelta kFailedPing =
         base::TimeDelta::FromInternalValue(INT_MAX);
@@ -2427,7 +2427,6 @@ void SpdySession::IncreaseSendWindowSize(int32 delta_window_size) {
     RecordProtocolErrorHistogram(PROTOCOL_ERROR_INVALID_WINDOW_UPDATE_SIZE);
     CloseSessionOnError(
         ERR_SPDY_PROTOCOL_ERROR,
-        true,
         "Received WINDOW_UPDATE [delta: " +
             base::IntToString(delta_window_size) +
             "] for session overflows session_send_window_size_ [current: " +
@@ -2509,7 +2508,6 @@ void SpdySession::DecreaseRecvWindowSize(int32 delta_window_size) {
     RecordProtocolErrorHistogram(PROTOCOL_ERROR_RECEIVE_WINDOW_VIOLATION);
     CloseSessionOnError(
         ERR_SPDY_PROTOCOL_ERROR,
-        true,
         "delta_window_size is " + base::IntToString(delta_window_size) +
             " in DecreaseRecvWindowSize, which is larger than the receive " +
             "window size of " + base::IntToString(session_recv_window_size_));

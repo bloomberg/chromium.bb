@@ -272,29 +272,8 @@ class MockHttpTransactionFactory : public HttpTransactionFactory {
     spdy_session_key_ = SpdySessionKey(host_port_pair_,
                                             ProxyServer::Direct(),
                                             kPrivacyModeDisabled);
-    SpdySessionPool* spdy_session_pool =
-        http_session_->spdy_session_pool();
-    DCHECK(spdy_session_pool);
-    EXPECT_FALSE(spdy_session_pool->HasSession(spdy_session_key_));
-    session_ =
-        spdy_session_pool->Get(spdy_session_key_, BoundNetLog());
-    EXPECT_TRUE(spdy_session_pool->HasSession(spdy_session_key_));
-
-    transport_params_ =
-        new TransportSocketParams(host_port_pair_,
-                                       MEDIUM,
-                                       false,
-                                       false,
-                                       OnHostResolutionCallback());
-    ClientSocketHandle* connection = new ClientSocketHandle;
-    EXPECT_EQ(OK,
-              connection->Init(host_port_pair_.ToString(), transport_params_,
-                               MEDIUM, CompletionCallback(),
-                               http_session_->GetTransportSocketPool(
-                                   HttpNetworkSession::NORMAL_SOCKET_POOL),
-                               BoundNetLog()));
-    EXPECT_EQ(OK,
-              session_->InitializeWithSocket(connection, false, OK));
+    session_ = CreateInsecureSpdySession(
+        http_session_, spdy_session_key_, BoundNetLog());
   }
 
   virtual int CreateTransaction(
@@ -318,7 +297,6 @@ class MockHttpTransactionFactory : public HttpTransactionFactory {
   OrderedSocketData* data_;
   scoped_ptr<SpdySessionDependencies> session_deps_;
   scoped_refptr<HttpNetworkSession> http_session_;
-  scoped_refptr<TransportSocketParams> transport_params_;
   scoped_refptr<SpdySession> session_;
   HostPortPair host_port_pair_;
   SpdySessionKey spdy_session_key_;

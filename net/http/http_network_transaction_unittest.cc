@@ -8856,41 +8856,7 @@ TEST_P(HttpNetworkTransactionTest,
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      kPrivacyModeDisabled);
   scoped_refptr<SpdySession> spdy_session =
-      session->spdy_session_pool()->Get(key, BoundNetLog());
-  scoped_refptr<TransportSocketParams> transport_params(
-      new TransportSocketParams(host_port_pair, MEDIUM, false, false,
-                                OnHostResolutionCallback()));
-
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection->Init(host_port_pair.ToString(),
-                             transport_params,
-                             LOWEST,
-                             callback.callback(),
-                             session->GetTransportSocketPool(
-                                 HttpNetworkSession::NORMAL_SOCKET_POOL),
-                             BoundNetLog()));
-  EXPECT_EQ(OK, callback.WaitForResult());
-
-  SSLConfig ssl_config;
-  session->ssl_config_service()->GetSSLConfig(&ssl_config);
-  scoped_ptr<ClientSocketHandle> ssl_connection(new ClientSocketHandle);
-  SSLClientSocketContext context;
-  context.cert_verifier = session_deps_.cert_verifier.get();
-  context.transport_security_state =
-      session_deps_.transport_security_state.get();
-  ssl_connection->set_socket(
-      session_deps_.socket_factory->CreateSSLClientSocket(
-          connection.release(),
-          HostPortPair(std::string(), 443),
-          ssl_config,
-          context));
-  EXPECT_EQ(ERR_IO_PENDING,
-            ssl_connection->socket()->Connect(callback.callback()));
-  EXPECT_EQ(OK, callback.WaitForResult());
-
-  EXPECT_EQ(OK, spdy_session->InitializeWithSocket(ssl_connection.release(),
-                                                   true, OK));
+      CreateSecureSpdySession(session, key, BoundNetLog());
 
   trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
@@ -10022,23 +9988,7 @@ TEST_P(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      kPrivacyModeDisabled);
   scoped_refptr<SpdySession> spdy_session =
-      session->spdy_session_pool()->Get(key, BoundNetLog());
-  scoped_refptr<TransportSocketParams> transport_params(
-      new TransportSocketParams(host_port_pair, MEDIUM, false, false,
-                                OnHostResolutionCallback()));
-  TestCompletionCallback callback;
-
-  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection->Init(host_port_pair.ToString(),
-                             transport_params,
-                             LOWEST,
-                             callback.callback(),
-                             session->GetTransportSocketPool(
-                                 HttpNetworkSession::NORMAL_SOCKET_POOL),
-                             BoundNetLog()));
-  EXPECT_EQ(OK, callback.WaitForResult());
-  spdy_session->InitializeWithSocket(connection.release(), false, OK);
+      CreateInsecureSpdySession(session, key, BoundNetLog());
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -10051,6 +10001,7 @@ TEST_P(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
+  TestCompletionCallback callback;
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -11386,7 +11337,7 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   SpdySessionKey spdy_session_key_a(
       host_port_pair_a, ProxyServer::Direct(), kPrivacyModeDisabled);
   EXPECT_FALSE(
-      session->spdy_session_pool()->HasSession(spdy_session_key_a));
+      HasSpdySession(session->spdy_session_pool(), spdy_session_key_a));
 
   TestCompletionCallback callback;
   HttpRequestInfo request1;
@@ -11412,13 +11363,13 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   EXPECT_EQ("hello!", response_data);
   trans.reset();
   EXPECT_TRUE(
-      session->spdy_session_pool()->HasSession(spdy_session_key_a));
+      HasSpdySession(session->spdy_session_pool(), spdy_session_key_a));
 
   HostPortPair host_port_pair_b("www.b.com", 443);
   SpdySessionKey spdy_session_key_b(
       host_port_pair_b, ProxyServer::Direct(), kPrivacyModeDisabled);
   EXPECT_FALSE(
-      session->spdy_session_pool()->HasSession(spdy_session_key_b));
+      HasSpdySession(session->spdy_session_pool(), spdy_session_key_b));
   HttpRequestInfo request2;
   request2.method = "GET";
   request2.url = GURL("https://www.b.com/");
@@ -11438,15 +11389,15 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello!", response_data);
   EXPECT_FALSE(
-      session->spdy_session_pool()->HasSession(spdy_session_key_a));
+      HasSpdySession(session->spdy_session_pool(), spdy_session_key_a));
   EXPECT_TRUE(
-      session->spdy_session_pool()->HasSession(spdy_session_key_b));
+      HasSpdySession(session->spdy_session_pool(), spdy_session_key_b));
 
   HostPortPair host_port_pair_a1("www.a.com", 80);
   SpdySessionKey spdy_session_key_a1(
       host_port_pair_a1, ProxyServer::Direct(), kPrivacyModeDisabled);
   EXPECT_FALSE(
-      session->spdy_session_pool()->HasSession(spdy_session_key_a1));
+      HasSpdySession(session->spdy_session_pool(), spdy_session_key_a1));
   HttpRequestInfo request3;
   request3.method = "GET";
   request3.url = GURL("http://www.a.com/");
@@ -11466,9 +11417,9 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello!", response_data);
   EXPECT_FALSE(
-      session->spdy_session_pool()->HasSession(spdy_session_key_a));
+      HasSpdySession(session->spdy_session_pool(), spdy_session_key_a));
   EXPECT_FALSE(
-      session->spdy_session_pool()->HasSession(spdy_session_key_b));
+      HasSpdySession(session->spdy_session_pool(), spdy_session_key_b));
 
   HttpStreamFactory::SetNextProtos(std::vector<std::string>());
 }
