@@ -480,9 +480,9 @@ bool GpuVideoDecoder::NeedsBitstreamConversion() const {
   return needs_bitstream_conversion_;
 }
 
-bool GpuVideoDecoder::HasOutputFrameAvailable() const {
+bool GpuVideoDecoder::CanReadWithoutStalling() const {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
-  return available_pictures_ > 0;
+  return available_pictures_ > 0 || !ready_video_frames_.empty();
 }
 
 void GpuVideoDecoder::NotifyInitializeDone() {

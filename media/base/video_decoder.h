@@ -88,7 +88,7 @@ class MEDIA_EXPORT VideoDecoder {
   // a VideoFrame. Most implementations can allocate a new VideoFrame and hence
   // this will always return true. Override and return false for decoders that
   // use a fixed set of VideoFrames for decoding.
-  virtual bool HasOutputFrameAvailable() const;
+  virtual bool CanReadWithoutStalling() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoDecoder);

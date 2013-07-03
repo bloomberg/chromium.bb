@@ -68,7 +68,7 @@ class MEDIA_EXPORT VideoFrameStream : public DemuxerStream {
 
   // Returns true if the decoder currently has the ability to decode and return
   // a VideoFrame.
-  bool HasOutputFrameAvailable() const;
+  bool CanReadWithoutStalling() const;
 
   // DemuxerStream implementation.
   virtual void Read(const ReadCB& read_cb) OVERRIDE;

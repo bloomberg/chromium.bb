@@ -90,7 +90,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual bool HasAlpha() const OVERRIDE;
   virtual bool NeedsBitstreamConversion() const OVERRIDE;
-  virtual bool HasOutputFrameAvailable() const OVERRIDE;
+  virtual bool CanReadWithoutStalling() const OVERRIDE;
 
   // VideoDecodeAccelerator::Client implementation.
   virtual void NotifyInitializeDone() OVERRIDE;

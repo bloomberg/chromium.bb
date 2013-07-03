@@ -396,7 +396,7 @@ void VideoRendererBase::FrameReady(VideoDecoder::Status status,
   AddReadyFrame_Locked(frame);
 
   if (state_ == kPrerolling) {
-    if (!video_frame_stream_.HasOutputFrameAvailable() ||
+    if (!video_frame_stream_.CanReadWithoutStalling() ||
         ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames)) {
       TransitionToPrerolled_Locked();
     }

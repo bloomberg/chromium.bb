@@ -507,6 +507,22 @@ TEST_F(VideoRendererBaseTest, Preroll_RightAfter) {
   Shutdown();
 }
 
+TEST_F(VideoRendererBaseTest, PlayAfterPreroll) {
+  Initialize();
+  Pause();
+  Flush();
+  QueuePrerollFrames(kFrameDurationInMs * 4);
+
+  Preroll(kFrameDurationInMs * 4, PIPELINE_OK);
+  EXPECT_EQ(kFrameDurationInMs * 4, GetCurrentTimestampInMs());
+
+  Play();
+  // Advance time past prerolled time to trigger a Read().
+  AdvanceTimeInMs(5 * kFrameDurationInMs);
+  WaitForPendingRead();
+  Shutdown();
+}
+
 TEST_F(VideoRendererBaseTest, GetCurrentFrame_Initialized) {
   Initialize();
   EXPECT_TRUE(GetCurrentFrame().get());  // Due to prerolling.

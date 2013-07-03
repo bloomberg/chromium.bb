@@ -141,9 +141,9 @@ void VideoFrameStream::Stop(const base::Closure& closure) {
   message_loop_->PostTask(FROM_HERE, base::ResetAndReturn(&stop_cb_));
 }
 
-bool VideoFrameStream::HasOutputFrameAvailable() const {
+bool VideoFrameStream::CanReadWithoutStalling() const {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  return decoder_->HasOutputFrameAvailable();
+  return decoder_->CanReadWithoutStalling();
 }
 
 void VideoFrameStream::Read(const DemuxerStream::ReadCB& demuxer_read_cb) {

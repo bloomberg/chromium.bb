@@ -18,7 +18,7 @@ bool VideoDecoder::NeedsBitstreamConversion() const {
   return false;
 }
 
-bool VideoDecoder::HasOutputFrameAvailable() const {
+bool VideoDecoder::CanReadWithoutStalling() const {
   return true;
 }
 
