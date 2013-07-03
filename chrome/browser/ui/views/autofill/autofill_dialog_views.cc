@@ -1860,33 +1860,46 @@ void AutofillDialogViews::ShowErrorBubbleForViewIfNecessary(views::View* view) {
 
 void AutofillDialogViews::MarkInputsInvalid(DialogSection section,
                                             const ValidityData& validity_data) {
-  DetailsGroup group = *GroupForSection(section);
-  DCHECK(group.container->visible());
+  DetailsGroup* group = GroupForSection(section);
+  DCHECK(group->container->visible());
 
   typedef std::map<AutofillFieldType,
       base::Callback<void(const base::string16&)> > FieldMap;
   FieldMap field_map;
 
-  if (group.manual_input->visible()) {
-    for (TextfieldMap::const_iterator iter = group.textfields.begin();
-         iter != group.textfields.end(); ++iter) {
+  if (group->manual_input->visible()) {
+    for (TextfieldMap::const_iterator iter = group->textfields.begin();
+         iter != group->textfields.end(); ++iter) {
       field_map[iter->first->type] = base::Bind(
           &AutofillDialogViews::SetValidityForInput<DecoratedTextfield>,
           base::Unretained(this),
           iter->second);
     }
-    for (ComboboxMap::const_iterator iter = group.comboboxes.begin();
-         iter != group.comboboxes.end(); ++iter) {
+    for (ComboboxMap::const_iterator iter = group->comboboxes.begin();
+         iter != group->comboboxes.end(); ++iter) {
       field_map[iter->first->type] = base::Bind(
           &AutofillDialogViews::SetValidityForInput<views::Combobox>,
           base::Unretained(this),
           iter->second);
     }
-  } else if (section == SECTION_CC) {
-    field_map[CREDIT_CARD_VERIFICATION_CODE] = base::Bind(
-        &AutofillDialogViews::SetValidityForInput<DecoratedTextfield>,
-        base::Unretained(this),
-        group.suggested_info->decorated_textfield());
+  } else {
+    // Purge invisible views from |validity_map_|.
+    std::map<views::View*, base::string16>::iterator it;
+    for (it = validity_map_.begin(); it != validity_map_.end();) {
+      DCHECK(GroupForView(it->first));
+      if (GroupForView(it->first) == group)
+        validity_map_.erase(it++);
+      else
+        ++it;
+    }
+
+    if (section == SECTION_CC) {
+      // Special case CVC as it's not part of |group->manual_input|.
+      field_map[CREDIT_CARD_VERIFICATION_CODE] = base::Bind(
+          &AutofillDialogViews::SetValidityForInput<DecoratedTextfield>,
+          base::Unretained(this),
+          group->suggested_info->decorated_textfield());
+    }
   }
 
   // Flag invalid fields, removing them from |field_map|.
@@ -1946,6 +1959,8 @@ bool AutofillDialogViews::ValidateGroup(const DetailsGroup& group,
 
 bool AutofillDialogViews::ValidateForm() {
   bool all_valid = true;
+  validity_map_.clear();
+
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
     const DetailsGroup& group = iter->second;
