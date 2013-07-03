@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/first_run/first_run_internal.h"
 
 #include <shellapi.h>
 
@@ -17,7 +17,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "base/win/metro.h"
-#include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"

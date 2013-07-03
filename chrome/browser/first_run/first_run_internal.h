@@ -17,6 +17,7 @@ class CommandLine;
 class GURL;
 class ImporterHost;
 class ImporterList;
+class MasterPrefs;
 class Profile;
 class ProcessSingleton;
 class TemplateURLService;

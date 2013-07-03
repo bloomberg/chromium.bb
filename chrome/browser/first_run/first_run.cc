@@ -453,9 +453,6 @@ bool IsOrganicFirstRun() {
 #endif
 
 }  // namespace internal
-}  // namespace first_run
-
-namespace first_run {
 
 MasterPrefs::MasterPrefs()
     : ping_delay(0),
