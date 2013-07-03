@@ -4,26 +4,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs content browser tests."""
+"""Runs content_browsertests."""
 
-import optparse
+import logging
+import os
 import sys
 
-from pylib.browsertests import dispatch
-from pylib.utils import run_tests_helper
-from pylib.utils import test_options_parser
-
-def main(argv):
-  option_parser = optparse.OptionParser()
-  test_options_parser.AddGTestOptions(option_parser)
-  options, args = option_parser.parse_args(argv)
-
-  if len(args) > 1:
-    option_parser.error('Unknown argument: %s' % args[1:])
-
-  run_tests_helper.SetLogLevel(options.verbose_count)
-  return dispatch.Dispatch(options)
+from pylib import cmd_helper
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  args = ['python',
+          os.path.join(os.path.dirname(__file__), 'test_runner.py'),
+          'content_browsertests'] + sys.argv[1:]
+  logging.warning('*' * 80)
+  logging.warning('This script is deprecated and will be removed soon.')
+  logging.warning('Use the following instead: %s', ' '.join(args))
+  logging.warning('*' * 80)
+  sys.exit(cmd_helper.RunCmd(args))

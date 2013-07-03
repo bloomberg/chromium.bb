@@ -10,13 +10,12 @@ import sys
 import types
 
 from pylib import android_commands
-from pylib import constants
 from pylib.base import base_test_result
 from pylib.instrumentation import test_package
 from pylib.instrumentation import test_runner
+from pylib.utils import report_results
 
 import python_test_base
-from python_test_caller import CallPythonTest
 from python_test_sharder import PythonTestSharder
 from test_info_collection import TestInfoCollection
 
@@ -56,13 +55,16 @@ def DispatchPythonTests(options):
 
   Returns:
     A list of test results.
+
+  Raises:
+    Exception: If there are no attached devices.
   """
 
   attached_devices = android_commands.GetAttachedDevices()
   if not attached_devices:
     raise Exception('You have no devices attached or visible!')
-  if options.device:
-    attached_devices = [options.device]
+  if options.test_device:
+    attached_devices = [options.test_device]
 
   test_collection = TestInfoCollection()
   all_tests = _GetAllTests(options.python_test_root, options.official_build)
