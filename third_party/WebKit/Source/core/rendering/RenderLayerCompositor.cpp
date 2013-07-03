@@ -2497,7 +2497,7 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
         case RootLayerAttachedViaEnclosingFrame: {
             // The layer will get hooked up via RenderLayerBacking::updateGraphicsLayerConfiguration()
             // for the frame's renderer in the parent document.
-            m_renderView->document()->ownerElement()->scheduleSyntheticStyleChange();
+            m_renderView->document()->ownerElement()->scheduleLayerUpdate();
             break;
         }
     }
@@ -2520,7 +2520,7 @@ void RenderLayerCompositor::detachRootLayer()
             m_rootContentLayer->removeFromParent();
 
         if (HTMLFrameOwnerElement* ownerElement = m_renderView->document()->ownerElement())
-            ownerElement->scheduleSyntheticStyleChange();
+            ownerElement->scheduleLayerUpdate();
         break;
     }
     case RootLayerAttachedViaChromeClient: {
@@ -2560,13 +2560,13 @@ void RenderLayerCompositor::notifyIFramesOfCompositingChange()
 
     for (Frame* child = frame->tree()->firstChild(); child; child = child->tree()->traverseNext(frame)) {
         if (child->document() && child->document()->ownerElement())
-            child->document()->ownerElement()->scheduleSyntheticStyleChange();
+            child->document()->ownerElement()->scheduleLayerUpdate();
     }
     
     // Compositing also affects the answer to RenderIFrame::requiresAcceleratedCompositing(), so 
     // we need to schedule a style recalc in our parent document.
     if (HTMLFrameOwnerElement* ownerElement = m_renderView->document()->ownerElement())
-        ownerElement->scheduleSyntheticStyleChange();
+        ownerElement->scheduleLayerUpdate();
 }
 
 bool RenderLayerCompositor::layerHas3DContent(const RenderLayer* layer) const

@@ -2863,17 +2863,17 @@ PassRefPtr<HTMLCollection> Element::ensureCachedHTMLCollection(CollectionType ty
     return ensureRareData()->ensureNodeLists()->addCacheWithAtomicName<HTMLCollection>(this, type);
 }
 
-static void needsSyntheticStyleChangeCallback(Node* node)
+static void scheduleLayerUpdateCallback(Node* node)
 {
-    node->setNeedsStyleRecalc(SyntheticStyleChange);
+    node->setNeedsLayerUpdate();
 }
 
-void Element::scheduleSyntheticStyleChange()
+void Element::scheduleLayerUpdate()
 {
     if (postAttachCallbacksAreSuspended())
-        queuePostAttachCallback(needsSyntheticStyleChangeCallback, this);
+        queuePostAttachCallback(scheduleLayerUpdateCallback, this);
     else
-        setNeedsStyleRecalc(SyntheticStyleChange);
+        setNeedsLayerUpdate();
 }
 
 HTMLCollection* Element::cachedHTMLCollection(CollectionType type)

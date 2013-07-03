@@ -371,7 +371,7 @@ public:
     PassRefPtr<Element> cloneElementWithChildren();
     PassRefPtr<Element> cloneElementWithoutChildren();
 
-    void scheduleSyntheticStyleChange();
+    void scheduleLayerUpdate();
 
     void normalizeAttributes();
     String nodeNamePreservingCase() const;
