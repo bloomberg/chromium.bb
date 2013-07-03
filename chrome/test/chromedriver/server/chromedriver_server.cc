@@ -204,6 +204,7 @@ int main(int argc, char *argv[]) {
     printf("Started ChromeDriver (v%s) on port %s\n",
            kChromeDriverVersion,
            port.c_str());
+    fflush(stdout);
   }
 
 #if defined(OS_POSIX)
