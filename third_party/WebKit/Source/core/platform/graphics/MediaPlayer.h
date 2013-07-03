@@ -87,7 +87,7 @@ public:
     
     virtual CORSMode mediaPlayerCORSMode() const = 0;
 
-    virtual void mediaPlayerNeedsStyleRecalc() = 0;
+    virtual void scheduleLayerUpdate() = 0;
 
     virtual void mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate>) = 0;
     virtual void mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPrivate>) = 0;

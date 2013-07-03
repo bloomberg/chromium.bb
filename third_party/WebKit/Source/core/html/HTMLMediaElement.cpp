@@ -3937,9 +3937,9 @@ void HTMLMediaElement::removeBehaviorsRestrictionsAfterFirstUserGesture()
     m_restrictions = NoRestrictions;
 }
 
-void HTMLMediaElement::mediaPlayerNeedsStyleRecalc()
+void HTMLMediaElement::scheduleLayerUpdate()
 {
-    setNeedsStyleRecalc(WebCore::SyntheticStyleChange);
+    setNeedsLayerUpdate();
 }
 
 void HTMLMediaElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
