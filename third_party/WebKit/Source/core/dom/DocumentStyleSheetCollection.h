@@ -108,7 +108,7 @@ public:
 private:
     DocumentStyleSheetCollection(Document*);
 
-    void collectActiveStyleSheets(Vector<RefPtr<StyleSheet> >&);
+    void collectStyleSheets(Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
     enum StyleResolverUpdateType {
         Reconstruct,
         Reset,

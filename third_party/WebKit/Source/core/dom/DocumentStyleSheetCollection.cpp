@@ -244,7 +244,7 @@ void DocumentStyleSheetCollection::removeStyleSheetCandidateNode(Node* node)
     m_styleSheetCandidateNodes.remove(node);
 }
 
-void DocumentStyleSheetCollection::collectActiveStyleSheets(Vector<RefPtr<StyleSheet> >& sheets)
+void DocumentStyleSheetCollection::collectStyleSheets(Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
 {
     if (m_document->settings() && !m_document->settings()->authorAndUserStylesEnabled())
         return;
@@ -254,11 +254,11 @@ void DocumentStyleSheetCollection::collectActiveStyleSheets(Vector<RefPtr<StyleS
     for (DocumentOrderedList::iterator it = begin; it != end; ++it) {
         Node* n = *it;
         StyleSheet* sheet = 0;
+        CSSStyleSheet* activeSheet = 0;
         if (n->nodeType() == Node::PROCESSING_INSTRUCTION_NODE) {
             // Processing instruction (XML documents only).
             // We don't support linking to embedded CSS stylesheets, see <https://bugs.webkit.org/show_bug.cgi?id=49281> for discussion.
             ProcessingInstruction* pi = static_cast<ProcessingInstruction*>(n);
-            sheet = pi->sheet();
             // Don't apply XSL transforms to already transformed documents -- <rdar://problem/4132806>
             if (pi->isXSL() && !m_document->transformSourceDocument()) {
                 // Don't apply XSL transforms until loading is finished.
@@ -266,6 +266,9 @@ void DocumentStyleSheetCollection::collectActiveStyleSheets(Vector<RefPtr<StyleS
                     m_document->applyXSLTransform(pi);
                 return;
             }
+            sheet = pi->sheet();
+            if (sheet && !sheet->disabled() && sheet->isCSSStyleSheet())
+                activeSheet = static_cast<CSSStyleSheet*>(sheet);
         } else if ((n->isHTMLElement() && (n->hasTagName(linkTag) || n->hasTagName(styleTag))) || (n->isSVGElement() && n->hasTagName(SVGNames::styleTag))) {
             Element* e = toElement(n);
             AtomicString title = e->getAttribute(titleAttr);
@@ -273,10 +276,8 @@ void DocumentStyleSheetCollection::collectActiveStyleSheets(Vector<RefPtr<StyleS
             if (e->hasLocalName(linkTag)) {
                 // <LINK> element
                 HTMLLinkElement* linkElement = static_cast<HTMLLinkElement*>(n);
-                if (linkElement->isDisabled())
-                    continue;
                 enabledViaScript = linkElement->isEnabledViaScript();
-                if (linkElement->styleSheetIsLoading()) {
+                if (!linkElement->isDisabled() && linkElement->styleSheetIsLoading()) {
                     // it is loading but we should still decide which style sheet set to use
                     if (!enabledViaScript && !title.isEmpty() && m_preferredStylesheetSetName.isEmpty()) {
                         const AtomicString& rel = e->getAttribute(relAttr);
@@ -285,19 +286,21 @@ void DocumentStyleSheetCollection::collectActiveStyleSheets(Vector<RefPtr<StyleS
                             m_selectedStylesheetSetName = title;
                         }
                     }
+
                     continue;
                 }
-                if (!linkElement->sheet())
+                sheet = linkElement->sheet();
+                if (!sheet)
                     title = nullAtom;
-            }
-            // Get the current preferred styleset. This is the
-            // set of sheets that will be enabled.
-            if (n->isSVGElement() && n->hasTagName(SVGNames::styleTag))
+            } else if (n->isSVGElement() && n->hasTagName(SVGNames::styleTag)) {
                 sheet = static_cast<SVGStyleElement*>(n)->sheet();
-            else if (e->hasLocalName(linkTag))
-                sheet = static_cast<HTMLLinkElement*>(n)->sheet();
-            else if (e->hasTagName(HTMLNames::styleTag))
-                sheet = toHTMLStyleElement(n)->sheet();
+            } else {
+                sheet = static_cast<HTMLStyleElement*>(n)->sheet();
+            }
+
+            if (sheet && !sheet->disabled() && sheet->isCSSStyleSheet())
+                activeSheet = static_cast<CSSStyleSheet*>(sheet);
+
             // Check to see if this sheet belongs to a styleset
             // (thus making it PREFERRED or ALTERNATE rather than
             // PERSISTENT).
@@ -313,14 +316,16 @@ void DocumentStyleSheetCollection::collectActiveStyleSheets(Vector<RefPtr<StyleS
                         m_preferredStylesheetSetName = m_selectedStylesheetSetName = title;
                 }
                 if (title != m_preferredStylesheetSetName)
-                    sheet = 0;
+                    activeSheet = 0;
             }
 
             if (rel.contains("alternate") && title.isEmpty())
-                sheet = 0;
+                activeSheet = 0;
         }
         if (sheet)
-            sheets.append(sheet);
+            styleSheets.append(sheet);
+        if (activeSheet)
+            activeSheets.append(activeSheet);
     }
 }
 
@@ -392,17 +397,6 @@ static bool styleSheetsUseRemUnits(const Vector<RefPtr<CSSStyleSheet> >& sheets)
     return false;
 }
 
-static void filterEnabledCSSStyleSheets(Vector<RefPtr<CSSStyleSheet> >& result, const Vector<RefPtr<StyleSheet> >& sheets)
-{
-    for (unsigned i = 0; i < sheets.size(); ++i) {
-        if (!sheets[i]->isCSSStyleSheet())
-            continue;
-        if (sheets[i]->disabled())
-            continue;
-        result.append(static_cast<CSSStyleSheet*>(sheets[i].get()));
-    }
-}
-
 static void collectActiveCSSStyleSheetsFromSeamlessParents(Vector<RefPtr<CSSStyleSheet> >& sheets, Document* document)
 {
     HTMLIFrameElement* seamlessParentIFrame = document->seamlessParentIFrame();
@@ -425,14 +419,12 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleResolverUpdateMo
     if (!m_document->renderer() || !m_document->attached())
         return false;
 
-    Vector<RefPtr<StyleSheet> > activeStyleSheets;
-    collectActiveStyleSheets(activeStyleSheets);
-
+    Vector<RefPtr<StyleSheet> > styleSheets;
     Vector<RefPtr<CSSStyleSheet> > activeCSSStyleSheets;
     activeCSSStyleSheets.append(injectedAuthorStyleSheets());
     activeCSSStyleSheets.append(documentAuthorStyleSheets());
     collectActiveCSSStyleSheetsFromSeamlessParents(activeCSSStyleSheets, m_document);
-    filterEnabledCSSStyleSheets(activeCSSStyleSheets, activeStyleSheets);
+    collectStyleSheets(styleSheets, activeCSSStyleSheets);
 
     StyleResolverUpdateType styleResolverUpdateType;
     bool requiresFullStyleRecalc;
@@ -452,8 +444,8 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleResolverUpdateMo
         resetCSSFeatureFlags();
     }
     m_activeAuthorStyleSheets.swap(activeCSSStyleSheets);
-    InspectorInstrumentation::activeStyleSheetsUpdated(m_document, activeStyleSheets);
-    m_styleSheetsForStyleSheetList.swap(activeStyleSheets);
+    InspectorInstrumentation::activeStyleSheetsUpdated(m_document, styleSheets);
+    m_styleSheetsForStyleSheetList.swap(styleSheets);
 
     m_usesRemUnits = styleSheetsUseRemUnits(m_activeAuthorStyleSheets);
     m_needsUpdateActiveStylesheetsOnStyleRecalc = false;

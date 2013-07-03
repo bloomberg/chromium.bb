@@ -531,6 +531,9 @@ void LinkStyle::setDisabledState(bool disabled)
             return;
         }
 
+        if (m_sheet)
+            m_sheet->setDisabled(disabled);
+
         // Load the sheet, since it's never been loaded before.
         if (!m_sheet && m_disabledState == EnabledViaScript) {
             if (m_owner->shouldProcessStyle())

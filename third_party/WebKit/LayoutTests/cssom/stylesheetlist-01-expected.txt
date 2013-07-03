@@ -1,0 +1,10 @@
+This text should be green
+
+PASS Check that all stylesheets are initially present in document.styleSheets 
+PASS Check that no stylesheets are applied when disabled 
+PASS #s1 accessible through document.styleSheets after disabling 
+PASS #s2 accessible through document.styleSheets after disabling 
+PASS #s3 accessible through document.styleSheets after disabling 
+PASS #s4 accessible through document.styleSheets after disabling 
+PASS #s5 accessible through document.styleSheets after disabling 
+
