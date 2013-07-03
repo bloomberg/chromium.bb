@@ -282,7 +282,7 @@ void NetworkConfigurationHandler::CreateConfiguration(
         base::Bind(&network_handler::ShillErrorCallbackFunction,
                    "", error_callback));
   } else {
-    manager->GetService(
+    manager->ConfigureService(
         properties,
         base::Bind(&NetworkConfigurationHandler::RunCreateNetworkCallback,
                    AsWeakPtr(), callback),

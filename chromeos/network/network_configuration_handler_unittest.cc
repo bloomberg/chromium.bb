@@ -153,7 +153,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     callback.Run(result);
   }
 
-  void OnGetService(const base::DictionaryValue& properties,
+  void OnConfigureService(const base::DictionaryValue& properties,
                     const ObjectPathCallback& callback,
                     const ShillClientHelper::ErrorCallback& error_callback) {
     callback.Run(dbus::ObjectPath("/service/2"));
@@ -333,9 +333,9 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
 
   EXPECT_CALL(
       *mock_manager_client_,
-      GetService(_, _, _)).WillOnce(
+      ConfigureService(_, _, _)).WillOnce(
           Invoke(this,
-                 &NetworkConfigurationHandlerTest::OnGetService));
+                 &NetworkConfigurationHandlerTest::OnConfigureService));
   network_configuration_handler_->CreateConfiguration(
       value,
       base::Bind(&StringResultCallback, std::string("/service/2")),
