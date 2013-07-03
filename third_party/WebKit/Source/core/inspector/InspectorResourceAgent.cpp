@@ -723,6 +723,7 @@ void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, c
 
     ResourceRequest request(url);
     request.setHTTPMethod("GET");
+    request.setCachePolicy(ReloadIgnoringCacheData);
     if (requestHeaders) {
         for (JSONObject::iterator it = (*requestHeaders)->begin(); it != (*requestHeaders)->end(); ++it) {
             String value;
