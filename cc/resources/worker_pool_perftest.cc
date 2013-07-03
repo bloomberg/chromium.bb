@@ -69,41 +69,31 @@ class PerfWorkerPool : public WorkerPool {
                      unsigned max_depth,
                      unsigned num_children_per_node) {
     TaskVector tasks;
-    unsigned priority = 0u;
     TaskGraph graph;
 
-    scoped_ptr<GraphNode> root_node;
-    if (root_task) {
-      root_node = make_scoped_ptr(new GraphNode);
-      root_node->set_task(root_task);
-    }
+    scoped_ptr<internal::GraphNode> root_node;
+    if (root_task)
+      root_node = make_scoped_ptr(new internal::GraphNode(root_task, 0u));
 
-    scoped_ptr<GraphNode> leaf_node;
-    if (leaf_task) {
-      leaf_node = make_scoped_ptr(new GraphNode);
-      leaf_node->set_task(leaf_task);
-    }
+    scoped_ptr<internal::GraphNode> leaf_node;
+    if (leaf_task)
+      leaf_node = make_scoped_ptr(new internal::GraphNode(leaf_task, 0u));
 
     if (max_depth) {
-      priority = BuildTaskGraph(&tasks,
-                                &graph,
-                                root_node.get(),
-                                leaf_node.get(),
-                                priority,
-                                0,
-                                max_depth,
-                                num_children_per_node);
+      BuildTaskGraph(&tasks,
+                     &graph,
+                     root_node.get(),
+                     leaf_node.get(),
+                     0,
+                     max_depth,
+                     num_children_per_node);
     }
 
-    if (leaf_node) {
-      leaf_node->set_priority(priority++);
+    if (leaf_node)
       graph.set(leaf_task, leaf_node.Pass());
-    }
 
-    if (root_node) {
-      root_node->set_priority(priority++);
+    if (root_node)
       graph.set(root_task, root_node.Pass());
-    }
 
     SetTaskGraph(&graph);
 
@@ -113,28 +103,26 @@ class PerfWorkerPool : public WorkerPool {
  private:
   typedef std::vector<scoped_refptr<internal::WorkerPoolTask> > TaskVector;
 
-  unsigned BuildTaskGraph(TaskVector* tasks,
-                          TaskGraph* graph,
-                          GraphNode* dependent_node,
-                          GraphNode* leaf_node,
-                          unsigned priority,
-                          unsigned current_depth,
-                          unsigned max_depth,
-                          unsigned num_children_per_node) {
+  void BuildTaskGraph(TaskVector* tasks,
+                      TaskGraph* graph,
+                      internal::GraphNode* dependent_node,
+                      internal::GraphNode* leaf_node,
+                      unsigned current_depth,
+                      unsigned max_depth,
+                      unsigned num_children_per_node) {
     scoped_refptr<PerfWorkerPoolTaskImpl> task(new PerfWorkerPoolTaskImpl);
-    scoped_ptr<GraphNode> node(new GraphNode);
-    node->set_task(task.get());
+    scoped_ptr<internal::GraphNode> node(
+        new internal::GraphNode(task.get(), 0u));
 
     if (current_depth < max_depth) {
       for (unsigned i = 0; i < num_children_per_node; ++i) {
-        priority = BuildTaskGraph(tasks,
-                                  graph,
-                                  node.get(),
-                                  leaf_node,
-                                  priority,
-                                  current_depth + 1,
-                                  max_depth,
-                                  num_children_per_node);
+        BuildTaskGraph(tasks,
+                       graph,
+                       node.get(),
+                       leaf_node,
+                       current_depth + 1,
+                       max_depth,
+                       num_children_per_node);
       }
     } else if (leaf_node) {
       leaf_node->add_dependent(node.get());
@@ -145,11 +133,8 @@ class PerfWorkerPool : public WorkerPool {
       node->add_dependent(dependent_node);
       dependent_node->add_dependency();
     }
-    node->set_priority(priority);
     graph->set(task.get(), node.Pass());
     tasks->push_back(task.get());
-
-    return priority + 1;
   }
 
   TaskVector tasks_;

@@ -77,24 +77,22 @@ class FakeWorkerPool : public WorkerPool {
             base::Bind(&FakeWorkerPool::OnTasksCompleted,
                        base::Unretained(this)),
             base::Closure()));
-    scoped_ptr<GraphNode> completion_node(new GraphNode);
-    completion_node->set_task(new_completion_task.get());
+    scoped_ptr<internal::GraphNode> completion_node(
+        new internal::GraphNode(new_completion_task.get(), 0u));
 
     for (std::vector<Task>::const_iterator it = tasks.begin();
          it != tasks.end(); ++it) {
       scoped_refptr<FakeWorkerPoolTaskImpl> new_task(
           new FakeWorkerPoolTaskImpl(it->callback, it->reply));
-      scoped_ptr<GraphNode> node(new GraphNode);
-      node->set_task(new_task.get());
-      node->set_priority(it->priority);
+      scoped_ptr<internal::GraphNode> node(
+          new internal::GraphNode(new_task.get(), it->priority));
 
       DCHECK(it->dependent_count);
       for (unsigned i = 0; i < it->dependent_count; ++i) {
         scoped_refptr<FakeWorkerPoolTaskImpl> new_dependent_task(
             new FakeWorkerPoolTaskImpl(it->dependent, base::Closure()));
-        scoped_ptr<GraphNode> dependent_node(new GraphNode);
-        dependent_node->set_task(new_dependent_task.get());
-        dependent_node->set_priority(it->priority);
+        scoped_ptr<internal::GraphNode> dependent_node(
+            new internal::GraphNode(new_dependent_task.get(), it->priority));
         dependent_node->add_dependent(completion_node.get());
         completion_node->add_dependency();
         node->add_dependent(dependent_node.get());

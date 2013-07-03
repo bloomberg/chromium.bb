@@ -750,6 +750,14 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
   }
 
   virtual bool CanActivatePendingTree(LayerTreeHostImpl* impl) OVERRIDE {
+    if (frame_ >= 1)
+      return true;
+
+    return false;
+  }
+
+  virtual bool CanActivatePendingTreeIfNeeded(LayerTreeHostImpl* impl)
+      OVERRIDE {
     frame_++;
     if (frame_ == 1) {
       first_frame_time_ = impl->CurrentFrameTimeTicks();
@@ -2898,6 +2906,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
 
   virtual void BeginTest() OVERRIDE {
     initialized_gl_ = false;
+    num_draws_ = 0;
     PostSetNeedsCommitToMainThread();
   }
 
@@ -2922,8 +2931,11 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
           base::Unretained(this),
           base::Unretained(host_impl)));
     } else {
-      EXPECT_EQ(2u, layer_impl->append_quads_count());
-      EndTest();
+      if (!num_draws_) {
+        EXPECT_EQ(2u, layer_impl->append_quads_count());
+        EndTest();
+      }
+      num_draws_++;
     }
   }
 
@@ -2949,6 +2961,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> layer_;
   bool initialized_gl_;
+  int num_draws_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestDeferredInitialize);

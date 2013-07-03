@@ -15,6 +15,11 @@ class FakeTileManager : public TileManager {
   FakeTileManager(TileManagerClient* client,
                   ResourceProvider* resource_provider);
 
+  virtual void ScheduleTasks() OVERRIDE {}
+
+  void ReassignMemoryToOOMTilesRequiredForActivation();
+  bool HasBeenAssignedMemory(Tile* tile);
+
   virtual ~FakeTileManager() { }
 };
 
