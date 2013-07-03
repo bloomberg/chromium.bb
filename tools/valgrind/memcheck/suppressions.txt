@@ -544,6 +544,15 @@
    Memcheck:Uninitialized
    obj:/lib/libc-2.11.1.so
 }
+# net::SniffXML() clearly tries to read < 8 bytes, but strncasecmp() reads 8.
+{
+   bug_58730_strncasecmp_uninit (Third Party)
+   Memcheck:Uninitialized
+   ...
+   fun:strncasecmp
+   fun:_ZN4base11strncasecmpEPKcS1_m
+   fun:_ZN3netL8SniffXMLEPKcmPbPSs
+}
 {
    # I believe it's a bug in gtk+-2.12.x and should already be fixed in recent gtk.
    bug_61685 (Third Party)
@@ -6057,6 +6066,22 @@
    fun:vpx_codec_encode
 }
 {
+   bug_169311
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore18StyleSheetContents6createERKNS_16CSSParserContextE
+   fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
+   fun:_ZN7WebCoreL12parseUASheetEPKcj
+   fun:_ZN7WebCore21CSSDefaultStyleSheets15viewSourceStyleEv
+   fun:_ZN7WebCore13StyleResolver12matchUARulesERNS_20ElementRuleCollectorE
+   fun:_ZN7WebCore13StyleResolver15styleForElementEPNS_7ElementEPNS_11RenderStyleENS_20StyleSharingBehaviorENS_20RuleMatchingBehaviorEPNS_12RenderRegionE
+   fun:_ZN7WebCore13StyleResolverC1EPNS_8DocumentEb
+   fun:_ZN7WebCore8Document19createStyleResolverEv
+   fun:_ZN7WebCore8Document13styleResolverEv
+   fun:_ZN7WebCore7Element24originalStyleForRendererEv
+   fun:_ZN7WebCore7Element16styleForRendererEv
+}
+{
    bug_170340
    Memcheck:Uninitialized
    fun:_ZN3WTF12AtomicString3addEPKt
@@ -7051,6 +7076,20 @@
    fun:_ZN7content17WorkerServiceImpl11GetInstanceEv
    fun:_ZN7content19WorkerMessageFilter16OnChannelClosingEv
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelClosedEv
+}
+{
+   bug_245714b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content17WorkerServiceImplC1Ev
+   fun:_ZN22DefaultSingletonTraitsIN7content17WorkerServiceImplEE3NewEv
+   fun:_ZN9SingletonIN7content17WorkerServiceImplE22DefaultSingletonTraitsIS1_ES1_E3getEv
+   fun:_ZN7content17WorkerServiceImpl11GetInstanceEv
+   fun:_ZN7content22ResourceRequestDetailsC1EPKN3net10URLRequestEi
+   fun:_ZN7content26ResourceDispatcherHostImpl18DidReceiveResponseEPNS_14ResourceLoaderE
+   fun:_ZN7content14ResourceLoader23CompleteResponseStartedEv
+   fun:_ZN7content14ResourceLoader17OnResponseStartedEPN3net10URLRequestE
+   fun:_ZN3net10URLRequest21NotifyResponseStartedEv
 }
 {
    bug_245828
