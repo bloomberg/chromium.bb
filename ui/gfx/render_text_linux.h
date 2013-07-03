@@ -79,8 +79,6 @@ class RenderTextLinux : public RenderText {
 
   // The text in the |layout_|.
   const char* layout_text_;
-  // The text length.
-  size_t layout_text_len_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderTextLinux);
 };
