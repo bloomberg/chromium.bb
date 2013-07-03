@@ -97,7 +97,10 @@ cr.define('options', function() {
         node.classList.add('extension-highlight');
 
       var item = node.querySelector('.extension-list-item');
-      item.style.backgroundImage = 'url(' + extension.icon + ')';
+      var extensionIconUrl = extension.icon;
+      if (extension.allow_reload)
+        extensionIconUrl = extension.icon + '?' + Date.now();
+      item.style.backgroundImage = 'url(' + extensionIconUrl + ')';
 
       var title = node.querySelector('.extension-title');
       title.textContent = extension.name;
