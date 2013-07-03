@@ -364,6 +364,12 @@ bool SwapInInstantNTP(chrome::NavigateParams* params,
       url, source_contents, &params->target_contents);
 }
 
+chrome::HostDesktopType GetHostDesktop(Browser* browser) {
+  if (browser)
+    return browser->host_desktop_type();
+  return chrome::GetActiveDesktop();
+}
+
 }  // namespace
 
 namespace chrome {
@@ -385,12 +391,9 @@ NavigateParams::NavigateParams(Browser* a_browser,
       ref_behavior(IGNORE_REF),
       browser(a_browser),
       initiating_profile(NULL),
+      host_desktop_type(GetHostDesktop(a_browser)),
       is_cross_site_redirect(false) {
-        if (a_browser)
-          host_desktop_type = a_browser->host_desktop_type();
-        else
-          host_desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
-      }
+}
 
 NavigateParams::NavigateParams(Browser* a_browser,
                                WebContents* a_target_contents)
@@ -407,12 +410,9 @@ NavigateParams::NavigateParams(Browser* a_browser,
       ref_behavior(IGNORE_REF),
       browser(a_browser),
       initiating_profile(NULL),
+      host_desktop_type(GetHostDesktop(a_browser)),
       is_cross_site_redirect(false) {
-        if (a_browser)
-          host_desktop_type = a_browser->host_desktop_type();
-        else
-          host_desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
-      }
+}
 
 NavigateParams::NavigateParams(Profile* a_profile,
                                const GURL& a_url,
@@ -431,8 +431,9 @@ NavigateParams::NavigateParams(Profile* a_profile,
       ref_behavior(IGNORE_REF),
       browser(NULL),
       initiating_profile(a_profile),
-      host_desktop_type(chrome::HOST_DESKTOP_TYPE_NATIVE),
-      is_cross_site_redirect(false) {}
+      host_desktop_type(chrome::GetActiveDesktop()),
+      is_cross_site_redirect(false) {
+}
 
 NavigateParams::~NavigateParams() {}
 
