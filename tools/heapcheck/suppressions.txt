@@ -980,3 +980,9 @@
    fun:__RT_impl_Runtime_ParallelRecompile
    fun:v8::internal::Runtime_ParallelRecompile
 }
+{
+   bug_257069
+   Heapcheck:Leak
+   fun:base::Value::CreateIntegerValue
+   fun:TestBody
+}
