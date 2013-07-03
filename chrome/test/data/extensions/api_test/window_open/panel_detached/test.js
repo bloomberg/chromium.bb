@@ -7,7 +7,7 @@ function createCallback(win) {
   // Unlike docked panels, detached is not alwaysOnTop.
   chrome.test.assertEq(false, win.alwaysOnTop);
   // Close the detached window to prevent the stacking.
-  chrome.windows.remove(win.id);
+  chrome.windows.remove(win.id, chrome.test.callbackPass());
 }
 
 chrome.test.runTests([
