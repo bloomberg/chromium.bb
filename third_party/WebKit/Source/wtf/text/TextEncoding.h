@@ -44,17 +44,19 @@ public:
     const char* domName() const; // name exposed via DOM
     bool usesVisualOrdering() const;
     bool isJapanese() const;
-    
+
+    bool hasTrivialDisplayString() const { return m_backslashAsCurrencySymbol == '\\'; }
+
     PassRefPtr<StringImpl> displayString(PassRefPtr<StringImpl> str) const
     {
-        if (m_backslashAsCurrencySymbol == '\\' || !str)
+        if (hasTrivialDisplayString() || !str)
             return str;
         return str->replace('\\', m_backslashAsCurrencySymbol);
     }
     template <typename CharacterType>
     void displayBuffer(CharacterType* characters, unsigned len) const
     {
-        if (m_backslashAsCurrencySymbol == '\\')
+        if (hasTrivialDisplayString())
             return;
         for (unsigned i = 0; i < len; ++i) {
             if (characters[i] == '\\')

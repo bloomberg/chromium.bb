@@ -415,6 +415,33 @@ static void gbkCallbackSubstitute(const void* context, UConverterFromUnicodeArgs
     UCNV_FROM_U_CALLBACK_SUBSTITUTE(context, fromUArgs, codeUnits, length, codePoint, reason, err);
 }
 
+class TextCodecInput {
+public:
+    TextCodecInput(const TextEncoding& encoding, const UChar* characters, size_t length)
+        : m_begin(characters)
+        , m_end(characters + length)
+    {
+        if (encoding.hasTrivialDisplayString())
+            return;
+        m_buffer.reserveInitialCapacity(length);
+        m_buffer.append(characters, length);
+        // FIXME: We should see if there is "force ASCII range" mode in ICU;
+        // until then, we change the backslash into a yen sign.
+        // Encoding will change the yen sign back into a backslash.
+        encoding.displayBuffer(m_buffer.data(), m_buffer.size());
+        m_begin = m_buffer.data();
+        m_end = m_begin + m_buffer.size();
+    }
+
+    const UChar* begin() const { return m_begin; }
+    const UChar* end() const { return m_end; }
+
+private:
+    const UChar* m_begin;
+    const UChar* m_end;
+    Vector<UChar> m_buffer;
+};
+
 CString TextCodecICU::encode(const UChar* characters, size_t length, UnencodableHandling handling)
 {
     if (!length)
@@ -425,14 +452,10 @@ CString TextCodecICU::encode(const UChar* characters, size_t length, Unencodable
     if (!m_converterICU)
         return CString();
 
-    // FIXME: We should see if there is "force ASCII range" mode in ICU;
-    // until then, we change the backslash into a yen sign.
-    // Encoding will change the yen sign back into a backslash.
-    String copy(characters, length);
-    copy = m_encoding.displayString(copy.impl());
+    TextCodecInput input(m_encoding, characters, length);
 
-    const UChar* source = copy.bloatedCharacters();
-    const UChar* sourceLimit = source + copy.length();
+    const UChar* source = input.begin();
+    const UChar* end = input.end();
 
     UErrorCode err = U_ZERO_ERROR;
 
@@ -460,7 +483,7 @@ CString TextCodecICU::encode(const UChar* characters, size_t length, Unencodable
         char* target = buffer;
         char* targetLimit = target + ConversionBufferSize;
         err = U_ZERO_ERROR;
-        ucnv_fromUnicode(m_converterICU, &target, targetLimit, &source, sourceLimit, 0, true, &err);
+        ucnv_fromUnicode(m_converterICU, &target, targetLimit, &source, end, 0, true, &err);
         size_t count = target - buffer;
         result.grow(size + count);
         memcpy(result.data() + size, buffer, count);
