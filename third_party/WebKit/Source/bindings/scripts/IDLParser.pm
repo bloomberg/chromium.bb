@@ -50,7 +50,7 @@ struct( callbackFunction => {
 # Used to represent 'interface' blocks
 struct( domInterface => {
     name => '$',      # Class identifier
-    parents => '@',      # List of strings
+    parent => '$',      # Parent class identifier
     constants => '@',    # List of 'domConstant'
     functions => '@',    # List of 'domFunction'
     attributes => '@',    # List of 'domAttribute'    
@@ -515,7 +515,7 @@ sub parseInterface
         my $interfaceNameToken = $self->getToken();
         $self->assertTokenType($interfaceNameToken, IdentifierToken);
         $interface->name($interfaceNameToken->value());
-        push(@{$interface->parents}, @{$self->parseInheritance()});
+        $interface->parent($self->parseInheritance());
         $self->assertTokenValue($self->getToken(), "{", __LINE__);
         my $interfaceMembers = $self->parseInterfaceMembers();
         $self->assertTokenValue($self->getToken(), "}", __LINE__);
@@ -713,7 +713,7 @@ sub parseException
         $self->assertTokenType($exceptionNameToken, IdentifierToken);
         $interface->name($exceptionNameToken->value());
         $interface->isException(1);
-        push(@{$interface->parents}, @{$self->parseInheritance()});
+        $interface->parent($self->parseInheritance());
         $self->assertTokenValue($self->getToken(), "{", __LINE__);
         my $exceptionMembers = $self->parseExceptionMembers();
         $self->assertTokenValue($self->getToken(), "}", __LINE__);
@@ -749,17 +749,14 @@ sub parseExceptionMembers
 sub parseInheritance
 {
     my $self = shift;
-    my @parent = ();
+    my $parent;
 
     my $next = $self->nextToken();
     if ($next->value() eq ":") {
         $self->assertTokenValue($self->getToken(), ":", __LINE__);
-        my $scopedName = $self->parseScopedName();
-        push(@parent, $scopedName);
-        # Multiple inheritance?
-        push(@parent, @{$self->parseIdentifiers()});
+        $parent = $self->parseScopedName();
     }
-    return \@parent;
+    return $parent;
 }
 
 sub parseEnum

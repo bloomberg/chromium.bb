@@ -617,9 +617,6 @@ sub GenerateHeader
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
-    # Copy contents of parent interfaces except the first parent.
-    my @parents;
-    AddMethodsConstantsAndAttributesFromParentInterfaces($interface, \@parents);
     LinkOverloadedFunctions($interface);
 
     # Ensure the IsDOMNodeType function is in sync.
@@ -627,11 +624,8 @@ sub GenerateHeader
 
     my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($interfaceName);
 
-    if ($v8ClassName !~ /SVG/) {
-        for my $parent (@{$interface->parents}) {
-            AddToHeaderIncludes("V8${parent}.h");
-        }
-    }
+    my $parentInterface = $interface->parent;
+    AddToHeaderIncludes("V8${parentInterface}.h") if $parentInterface;
     AddToHeaderIncludes("bindings/v8/WrapperTypeInfo.h");
     AddToHeaderIncludes("bindings/v8/V8Binding.h");
     AddToHeaderIncludes("bindings/v8/V8DOMWrapper.h");
@@ -823,7 +817,7 @@ END
 
     my $customWrap = $interface->extendedAttributes->{"CustomToV8"};
     if ($noToV8) {
-        die "Can't suppress toV8 for subclass\n" if @parents;
+        die "Can't suppress toV8 for subclass\n" if $interface->parent;
     } elsif ($noWrap) {
         die "Must have custom toV8\n" if !$customWrap;
         $header{nameSpaceWebCore}->add(<<END);
@@ -2695,7 +2689,8 @@ bool fill${implClassName}Init(${implClassName}Init& eventInit, const Dictionary&
 {
 END
 
-    foreach my $interfaceBase (@{$interface->parents}) {
+    if ($interface->parent) {
+        my $interfaceBase = $interface->parent;
         $code .= <<END;
     if (!fill${interfaceBase}Init(eventInit, options))
         return false;
@@ -3892,12 +3887,11 @@ sub GenerateImplementation
     # Find the super descriptor.
     my $parentClass = "";
     my $parentClassTemplate = "";
-    foreach (@{$interface->parents}) {
-        my $parent = $_;
+    if ($interface->parent) {
+        my $parent = $interface->parent;
         AddToImplIncludes("V8${parent}.h");
         $parentClass = "V8" . $parent;
         $parentClassTemplate = $parentClass . "::GetTemplate(isolate, currentWorldType)";
-        last;
     }
 
     my $parentClassInfo = $parentClass ? "&${parentClass}::info" : "0";
@@ -4722,8 +4716,8 @@ sub BaseInterfaceName
 {
     my $interface = shift;
 
-    while (@{$interface->parents}) {
-        $interface = ParseInterface(@{$interface->parents}[0]);
+    while ($interface->parent) {
+        $interface = ParseInterface($interface->parent);
     }
 
     return $interface->name;
@@ -5594,12 +5588,10 @@ sub ForAllParents
     $recurse = sub {
         my $currentInterface = shift;
 
-        for (@{$currentInterface->parents}) {
-            my $interfaceName = $_;
-            my $parentInterface = ParseInterface($interfaceName);
-
+        if ($currentInterface->parent) {
+            my $parentInterface = ParseInterface($currentInterface->parent);
             if ($beforeRecursion) {
-                &$beforeRecursion($parentInterface) eq 'prune' and next;
+                &$beforeRecursion($parentInterface) eq 'prune' and return;
             }
             &$recurse($parentInterface);
             &$afterRecursion($parentInterface) if $afterRecursion;
@@ -5607,45 +5599,6 @@ sub ForAllParents
     };
 
     &$recurse($interface);
-}
-
-sub AddMethodsConstantsAndAttributesFromParentInterfaces
-{
-    # Add to $interface all of its inherited interface members, except for those
-    # inherited through $interface's first listed parent.  If an array reference
-    # is passed in as $parents, the names of all ancestor interfaces visited
-    # will be appended to the array. The names of $interface's first listed parent
-    # and its ancestors will also be appended to $parents.
-
-    my $interface = shift;
-    my $parents = shift;
-
-    my $first = 1;
-    ForAllParents($interface, sub {
-        my $currentInterface = shift;
-
-        if ($first) {
-            # Ignore first parent class, already handled by the generation itself.
-            $first = 0;
-
-            # Just collect the names of the direct ancestor interfaces,
-            # if necessary.
-            push(@$parents, $currentInterface->name);
-            ForAllParents($currentInterface, sub {
-                my $currentInterface = shift;
-                push(@$parents, $currentInterface->name);
-            });
-            return 'prune';
-        }
-
-        # Collect the name of this additional parent.
-        push(@$parents, $currentInterface->name) if $parents;
-
-        # Add this parent's members to $interface.
-        push(@{$interface->constants}, @{$currentInterface->constants});
-        push(@{$interface->functions}, @{$currentInterface->functions});
-        push(@{$interface->attributes}, @{$currentInterface->attributes});
-    });
 }
 
 sub FindSuperMethod
